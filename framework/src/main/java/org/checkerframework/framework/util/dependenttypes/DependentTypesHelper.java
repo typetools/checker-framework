@@ -449,8 +449,7 @@ public class DependentTypesHelper {
         }
         Tree enclTree = pathTillEnclTree.getLeaf();
 
-        if (enclTree instanceof MethodTree) {
-          MethodTree methodDeclTree = (MethodTree) enclTree;
+        if (enclTree instanceof MethodTree methodDeclTree) {
           StringToJavaExpression stringToJavaExpr =
               stringExpr ->
                   StringToJavaExpression.atMethodBody(

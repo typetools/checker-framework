@@ -429,8 +429,7 @@ public abstract class CFAbstractTransfer<
   private boolean doesLambdaLeak(CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
     LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
     Tree lambdaParent = aTypeFactory.getPath(lambdaTree).getParentPath().getLeaf();
-    if (lambdaParent instanceof MethodInvocationTree) {
-      MethodInvocationTree invok = (MethodInvocationTree) lambdaParent;
+    if (lambdaParent instanceof MethodInvocationTree invok) {
       ExecutableElement methodElt = TreeUtils.elementFromUse(invok);
       AliasingAnnotatedTypeFactory aliasingAtf =
           analysis
@@ -958,9 +957,8 @@ public abstract class CFAbstractTransfer<
    */
   @SideEffectFree
   protected List<Node> splitAssignments(Node node) {
-    if (node instanceof AssignmentNode) {
+    if (node instanceof AssignmentNode a) {
       List<Node> result = new ArrayList<>(2);
-      AssignmentNode a = (AssignmentNode) node;
       result.add(a.getTarget());
       result.addAll(splitAssignments(a.getExpression()));
       return result;

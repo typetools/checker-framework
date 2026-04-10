@@ -289,7 +289,7 @@ public class IsSigMethodCriterion implements Criterion {
 
     Tree leaf = path.getLeaf();
 
-    if (!(leaf instanceof MethodTree)) {
+    if (!(leaf instanceof MethodTree mt)) {
       Criteria.dbug.debug(
           "IsSigMethodCriterion.isSatisfiedBy(%s) => false: not a METHOD tree%n",
           Main.leafString(path));
@@ -301,8 +301,6 @@ public class IsSigMethodCriterion implements Criterion {
     //      Main.leafString(path));
     //  return false;
     // }
-
-    MethodTree mt = (MethodTree) leaf;
 
     if (!simpleMethodName.equals(mt.getName().toString())) {
       Criteria.dbug.debug("IsSigMethodCriterion.isSatisfiedBy => false: Names don't match%n");

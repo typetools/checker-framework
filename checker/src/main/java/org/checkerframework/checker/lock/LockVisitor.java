@@ -1024,23 +1024,16 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     Tree tree = path.getLeaf();
     Tree.Kind kind = tree.getKind();
 
-    switch (kind) {
-      case ARRAY_TYPE:
-      case VARIABLE:
-      case TYPE_CAST:
-      case INSTANCE_OF:
-      case METHOD:
-      case NEW_ARRAY:
-      case TYPE_PARAMETER:
-        // TODO: visitAnnotation does not currently visit annotations on wildcard bounds.
-        // Address this for the Lock Checker somehow and enable these, as well as the
-        // corresponding test cases in ChapterExamples.java
-        // case EXTENDS_WILDCARD:
-        // case SUPER_WILDCARD:
-        return path;
-      default:
-        return null;
-    }
+    return switch (kind) {
+      case ARRAY_TYPE, VARIABLE, TYPE_CAST, INSTANCE_OF, METHOD, NEW_ARRAY, TYPE_PARAMETER ->
+          // TODO: visitAnnotation does not currently visit annotations on wildcard bounds.
+          // Address this for the Lock Checker somehow and enable these, as well as the
+          // corresponding test cases in ChapterExamples.java
+          // case EXTENDS_WILDCARD:
+          // case SUPER_WILDCARD:
+          path;
+      default -> null;
+    };
   }
 
   /**

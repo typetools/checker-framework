@@ -357,16 +357,12 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         List<Long> exprValues = atypeFactory.getIntValues(exprAnno);
         if (castValues.size() == 1 && exprValues.size() == 1) {
           // Special-case singleton sets for speed.
-          switch (castTypeKind) {
-            case BYTE:
-              return castValues.get(0).byteValue() == exprValues.get(0).byteValue();
-            case INT:
-              return castValues.get(0).intValue() == exprValues.get(0).intValue();
-            case SHORT:
-              return castValues.get(0).shortValue() == exprValues.get(0).shortValue();
-            default:
-              return castValues.get(0).longValue() == exprValues.get(0).longValue();
-          }
+          return switch (castTypeKind) {
+            case BYTE -> castValues.get(0).byteValue() == exprValues.get(0).byteValue();
+            case INT -> castValues.get(0).intValue() == exprValues.get(0).intValue();
+            case SHORT -> castValues.get(0).shortValue() == exprValues.get(0).shortValue();
+            default -> castValues.get(0).longValue() == exprValues.get(0).longValue();
+          };
         } else {
           switch (castTypeKind) {
             case BYTE:

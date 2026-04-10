@@ -529,8 +529,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             || returnTree.getExpression() instanceof LambdaExpressionTree) {
           Tree enclosing = TreePathUtil.enclosingMethodOrLambda(path);
           AnnotatedTypeMirror ret = null;
-          if (enclosing instanceof MethodTree) {
-            MethodTree enclosingMethod = (MethodTree) enclosing;
+          if (enclosing instanceof MethodTree enclosingMethod) {
             boolean valid = validateTypeOf(enclosing);
             if (valid) {
               ret = atypeFactory.getMethodReturnType(enclosingMethod, returnTree);

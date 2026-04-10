@@ -55,10 +55,9 @@ public class EnsuresCalledMethodOnExceptionContract {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof EnsuresCalledMethodOnExceptionContract)) {
+    if (!(o instanceof EnsuresCalledMethodOnExceptionContract that)) {
       return false;
     }
-    EnsuresCalledMethodOnExceptionContract that = (EnsuresCalledMethodOnExceptionContract) o;
     return expression.equals(that.expression) && method.equals(that.method);
   }
 

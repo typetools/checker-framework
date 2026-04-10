@@ -791,10 +791,9 @@ public class ASTPathCriterion implements Criterion {
             && entry.getArgument() == 0
             && entry.childSelectorIs(ASTPath.BOUND);
       case METHOD: // nullary constructor? receiver?
-        if (!(node instanceof MethodTree)) {
+        if (!(node instanceof MethodTree method)) {
           return false;
         }
-        MethodTree method = (MethodTree) node;
         List<? extends VariableTree> params = method.getParameters();
         if ("<init>".equals(method.getName().toString())) {
           if (ix == last) {
@@ -824,10 +823,9 @@ public class ASTPathCriterion implements Criterion {
         }
         return false;
       case NEW_ARRAY:
-        if (!(node instanceof NewArrayTree)) {
+        if (!(node instanceof NewArrayTree newArray)) {
           return false;
         }
-        NewArrayTree newArray = (NewArrayTree) node;
         int arg = entry.getArgument();
         if (entry.childSelectorIs(ASTPath.TYPE)) {
           if (ix == last) {
@@ -863,8 +861,7 @@ public class ASTPathCriterion implements Criterion {
    * @return the array depth of the given tree
    */
   private static int arrayDepth(Tree tree) {
-    if (tree instanceof NewArrayTree) {
-      NewArrayTree newArray = (NewArrayTree) tree;
+    if (tree instanceof NewArrayTree newArray) {
       Tree type = newArray.getType();
       if (type != null) {
         return type.accept(
@@ -998,71 +995,70 @@ public class ASTPathCriterion implements Criterion {
   }
 
   public boolean isExpression(Tree.Kind kind) {
-    switch (kind) {
-      case ARRAY_ACCESS:
-      case ASSIGNMENT:
-      case CONDITIONAL_EXPRESSION:
-      case EXPRESSION_STATEMENT:
-      case MEMBER_SELECT:
-      case MEMBER_REFERENCE:
-      case IDENTIFIER:
-      case INSTANCE_OF:
-      case METHOD_INVOCATION:
-      case NEW_ARRAY:
-      case NEW_CLASS:
-      case LAMBDA_EXPRESSION:
-      case PARENTHESIZED:
-      case TYPE_CAST:
-      case POSTFIX_INCREMENT:
-      case POSTFIX_DECREMENT:
-      case PREFIX_INCREMENT:
-      case PREFIX_DECREMENT:
-      case UNARY_PLUS:
-      case UNARY_MINUS:
-      case BITWISE_COMPLEMENT:
-      case LOGICAL_COMPLEMENT:
-      case MULTIPLY:
-      case DIVIDE:
-      case REMAINDER:
-      case PLUS:
-      case MINUS:
-      case LEFT_SHIFT:
-      case RIGHT_SHIFT:
-      case UNSIGNED_RIGHT_SHIFT:
-      case LESS_THAN:
-      case GREATER_THAN:
-      case LESS_THAN_EQUAL:
-      case GREATER_THAN_EQUAL:
-      case EQUAL_TO:
-      case NOT_EQUAL_TO:
-      case AND:
-      case XOR:
-      case OR:
-      case CONDITIONAL_AND:
-      case CONDITIONAL_OR:
-      case MULTIPLY_ASSIGNMENT:
-      case DIVIDE_ASSIGNMENT:
-      case REMAINDER_ASSIGNMENT:
-      case PLUS_ASSIGNMENT:
-      case MINUS_ASSIGNMENT:
-      case LEFT_SHIFT_ASSIGNMENT:
-      case RIGHT_SHIFT_ASSIGNMENT:
-      case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
-      case AND_ASSIGNMENT:
-      case XOR_ASSIGNMENT:
-      case OR_ASSIGNMENT:
-      case INT_LITERAL:
-      case LONG_LITERAL:
-      case FLOAT_LITERAL:
-      case DOUBLE_LITERAL:
-      case BOOLEAN_LITERAL:
-      case CHAR_LITERAL:
-      case STRING_LITERAL:
-      case NULL_LITERAL:
-        return true;
-      default:
-        return false;
-    }
+    return switch (kind) {
+      case ARRAY_ACCESS,
+          ASSIGNMENT,
+          CONDITIONAL_EXPRESSION,
+          EXPRESSION_STATEMENT,
+          MEMBER_SELECT,
+          MEMBER_REFERENCE,
+          IDENTIFIER,
+          INSTANCE_OF,
+          METHOD_INVOCATION,
+          NEW_ARRAY,
+          NEW_CLASS,
+          LAMBDA_EXPRESSION,
+          PARENTHESIZED,
+          TYPE_CAST,
+          POSTFIX_INCREMENT,
+          POSTFIX_DECREMENT,
+          PREFIX_INCREMENT,
+          PREFIX_DECREMENT,
+          UNARY_PLUS,
+          UNARY_MINUS,
+          BITWISE_COMPLEMENT,
+          LOGICAL_COMPLEMENT,
+          MULTIPLY,
+          DIVIDE,
+          REMAINDER,
+          PLUS,
+          MINUS,
+          LEFT_SHIFT,
+          RIGHT_SHIFT,
+          UNSIGNED_RIGHT_SHIFT,
+          LESS_THAN,
+          GREATER_THAN,
+          LESS_THAN_EQUAL,
+          GREATER_THAN_EQUAL,
+          EQUAL_TO,
+          NOT_EQUAL_TO,
+          AND,
+          XOR,
+          OR,
+          CONDITIONAL_AND,
+          CONDITIONAL_OR,
+          MULTIPLY_ASSIGNMENT,
+          DIVIDE_ASSIGNMENT,
+          REMAINDER_ASSIGNMENT,
+          PLUS_ASSIGNMENT,
+          MINUS_ASSIGNMENT,
+          LEFT_SHIFT_ASSIGNMENT,
+          RIGHT_SHIFT_ASSIGNMENT,
+          UNSIGNED_RIGHT_SHIFT_ASSIGNMENT,
+          AND_ASSIGNMENT,
+          XOR_ASSIGNMENT,
+          OR_ASSIGNMENT,
+          INT_LITERAL,
+          LONG_LITERAL,
+          FLOAT_LITERAL,
+          DOUBLE_LITERAL,
+          BOOLEAN_LITERAL,
+          CHAR_LITERAL,
+          STRING_LITERAL,
+          NULL_LITERAL ->
+          true;
+      default -> false;
+    };
   }
 
   /**

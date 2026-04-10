@@ -583,10 +583,8 @@ public class NullnessVisitor
 
     if (classTree.getKind() == Tree.Kind.ENUM) {
       for (Tree member : classTree.getMembers()) {
-        if (member instanceof VariableTree
-            && TreeUtils.elementFromDeclaration((VariableTree) member).getKind()
-                == ElementKind.ENUM_CONSTANT) {
-          VariableTree varDecl = (VariableTree) member;
+        if (member instanceof VariableTree varDecl
+            && TreeUtils.elementFromDeclaration(varDecl).getKind() == ElementKind.ENUM_CONSTANT) {
           List<? extends AnnotationTree> annoTrees = varDecl.getModifiers().getAnnotations();
           Tree type = varDecl.getType();
           if (atypeFactory.containsNullnessAnnotation(annoTrees, type)) {

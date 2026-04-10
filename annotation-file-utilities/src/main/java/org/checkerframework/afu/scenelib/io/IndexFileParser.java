@@ -154,24 +154,14 @@ public final class IndexFileParser {
   private void expectChar(char c) throws IOException, ParseException {
     if (!matchChar(c)) {
       // Alternately, could use st.toString().
-      String found;
-      switch (st.ttype) {
-        case StreamTokenizer.TT_WORD:
-          found = st.sval;
-          break;
-        case StreamTokenizer.TT_NUMBER:
-          found = String.valueOf(st.nval);
-          break;
-        case StreamTokenizer.TT_EOL:
-          found = "end of line";
-          break;
-        case StreamTokenizer.TT_EOF:
-          found = "end of file";
-          break;
-        default:
-          found = "'" + String.valueOf((char) st.ttype) + "'";
-          break;
-      }
+      String found =
+          switch (st.ttype) {
+            case StreamTokenizer.TT_WORD -> st.sval;
+            case StreamTokenizer.TT_NUMBER -> String.valueOf(st.nval);
+            case StreamTokenizer.TT_EOL -> "end of line";
+            case StreamTokenizer.TT_EOF -> "end of file";
+            default -> "'" + String.valueOf((char) st.ttype) + "'";
+          };
       throw new ParseException("Expected '" + c + "', found " + found);
     }
   }
@@ -435,9 +425,8 @@ public final class IndexFileParser {
   /** Parse scalar annotation value. */
   // HMMM can a (readonly) Integer be casted to a writable Object?
   private Object parseScalarAFV(ScalarAFT aft) throws IOException, ParseException {
-    if (aft instanceof BasicAFT) {
+    if (aft instanceof BasicAFT baft) {
       Object val;
-      BasicAFT baft = (BasicAFT) aft;
       Class<?> type = baft.type;
       if (type == boolean.class) {
         if (matchKeyword("true")) {
@@ -516,8 +505,7 @@ public final class IndexFileParser {
       String name = expectQualifiedName();
       assert aft.isValidValue(name);
       return name;
-    } else if (aft instanceof AnnotationAFT) {
-      AnnotationAFT aaft = (AnnotationAFT) aft;
+    } else if (aft instanceof AnnotationAFT aaft) {
       AnnotationDef d = parseAnnotationHead();
       if (!d.name.equals(aaft.annotationDef.name)) {
         throw new ParseException(
@@ -584,8 +572,7 @@ public final class IndexFileParser {
           "The annotation type " + d.name + " has no field called " + fieldName);
     }
     AnnotationFieldType aft = aft1;
-    if (aft instanceof ArrayAFT) {
-      ArrayAFT aaft = (ArrayAFT) aft;
+    if (aft instanceof ArrayAFT aaft) {
       if (aaft.elementType == null) {
         // Array of unknown element type--must be zero-length
         expectChar('{');
@@ -594,8 +581,7 @@ public final class IndexFileParser {
       } else {
         parseAndAddArrayAFV(aaft, ab.beginArrayField(fieldName, aaft));
       }
-    } else if (aft instanceof ScalarAFT) {
-      ScalarAFT saft = (ScalarAFT) aft;
+    } else if (aft instanceof ScalarAFT saft) {
       Object value = parseScalarAFV(saft);
       ab.addScalarField(fieldName, saft, value);
     } else {
@@ -696,11 +682,8 @@ public final class IndexFileParser {
       if (abbreviate) {
         int i = name.lastIndexOf('.');
         if (i >= 0) {
-          Set<String> importSet = scene.imports.get(annotationFullyQualifiedName);
-          if (importSet == null) {
-            importSet = new TreeSet<>();
-            scene.imports.put(annotationFullyQualifiedName, importSet);
-          }
+          Set<String> importSet =
+              scene.imports.computeIfAbsent(annotationFullyQualifiedName, k -> new TreeSet<>());
           importSet.add(name);
           String baseName = name.substring(i + 1);
           name = baseName;

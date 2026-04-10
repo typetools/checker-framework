@@ -389,10 +389,9 @@ public abstract class InitializationAnnotatedTypeFactory<
    */
   protected boolean areAllFieldsInitializedOnly(ClassTree classTree) {
     for (Tree member : classTree.getMembers()) {
-      if (!(member instanceof VariableTree)) {
+      if (!(member instanceof VariableTree var)) {
         continue;
       }
-      VariableTree var = (VariableTree) member;
       VariableElement varElt = TreeUtils.elementFromDeclaration(var);
       // var is not initialized-only
       if (getDeclAnnotation(varElt, NotOnlyInitialized.class) != null) {

@@ -498,9 +498,8 @@ public class MustCallInference {
         mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
       }
 
-    } else if (lhs instanceof LocalVariableNode) {
+    } else if (lhs instanceof LocalVariableNode lhsVar) {
       // Updates the set of tracked obligations. (case 4)
-      LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       mcca.updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
     }
   }
@@ -707,8 +706,7 @@ public class MustCallInference {
       // In the CFG, explicit passing of multiple arguments in the varargs position is
       // represented via an ArrayCreationNode. In this case, it checks the called methods
       // set of each argument passed in this position.
-      if (arg instanceof ArrayCreationNode) {
-        ArrayCreationNode varArgsNode = (ArrayCreationNode) arg;
+      if (arg instanceof ArrayCreationNode varArgsNode) {
         for (Node varArgNode : varArgsNode.getInitializers()) {
           inferOwningForParamOrField(obligations, invocation, varArgNode);
         }

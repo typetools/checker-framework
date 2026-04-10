@@ -104,11 +104,8 @@ public class CheckedExceptionsUtil {
           removeAssignable(altern, thrownExceptionTypes);
         }
       } else {
-        for (TypeMirror thrownType : new ArrayList<>(thrownExceptionTypes)) {
-          if (context.env.getTypeUtils().isAssignable(thrownType, type)) {
-            thrownExceptionTypes.remove(thrownType);
-          }
-        }
+        thrownExceptionTypes.removeIf(
+            thrownType -> context.env.getTypeUtils().isAssignable(thrownType, type));
       }
     }
 
@@ -248,11 +245,9 @@ public class CheckedExceptionsUtil {
           removeAssignable(altern, thrownExceptionTypes);
         }
       } else {
-        for (AnnotatedTypeMirror thrownType : new ArrayList<>(thrownExceptionTypes)) {
-          if (context.env.getTypeUtils().isAssignable(thrownType.getUnderlyingType(), type)) {
-            thrownExceptionTypes.remove(thrownType);
-          }
-        }
+        thrownExceptionTypes.removeIf(
+            thrownType ->
+                context.env.getTypeUtils().isAssignable(thrownType.getUnderlyingType(), type));
       }
     }
 

@@ -135,10 +135,9 @@ public class CollectionToArrayHeuristics {
    * @return true if the argument is handled and assume to return nonnull elements
    */
   private boolean isHandledArrayCreation(Tree argument, String receiver) {
-    if (!(argument instanceof NewArrayTree)) {
+    if (!(argument instanceof NewArrayTree newArr)) {
       return false;
     }
-    NewArrayTree newArr = (NewArrayTree) argument;
 
     // empty array initializer
     if (newArr.getInitializers() != null) {

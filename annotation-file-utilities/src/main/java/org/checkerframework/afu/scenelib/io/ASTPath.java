@@ -224,14 +224,11 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
 
     // argument < 0 valid for two cases
     private boolean negativeAllowed() {
-      switch (treeKind) {
-        case CLASS:
-          return childSelectorIs(BOUND);
-        case METHOD:
-          return childSelectorIs(PARAMETER);
-        default:
-          return false;
-      }
+      return switch (treeKind) {
+        case CLASS -> childSelectorIs(BOUND);
+        case METHOD -> childSelectorIs(PARAMETER);
+        default -> false;
+      };
     }
 
     @Override
@@ -275,12 +272,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
   }
 
   private static Comparator<ASTPath> comparator =
-      new Comparator<ASTPath>() {
-        @Override
-        public int compare(ASTPath p1, ASTPath p2) {
-          return p1 == null ? (p2 == null ? 0 : -1) : p1.compareTo(p2);
-        }
-      };
+      (p1, p2) -> p1 == null ? (p2 == null ? 0 : -1) : p1.compareTo(p2);
 
   ASTPath() {}
 
@@ -637,16 +629,14 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
     }
 
     private boolean nonDecl(TreePath path) {
-      switch (path.getLeaf().getKind()) {
-        case CLASS:
-        case METHOD:
-          return false;
-        case VARIABLE:
+      return switch (path.getLeaf().getKind()) {
+        case CLASS, METHOD -> false;
+        case VARIABLE -> {
           TreePath parentPath = path.getParentPath();
-          return parentPath != null && parentPath.getLeaf().getKind() != Tree.Kind.CLASS;
-        default:
-          return true;
-      }
+          yield parentPath != null && parentPath.getLeaf().getKind() != Tree.Kind.CLASS;
+        }
+        default -> true;
+      };
     }
 
     public boolean matches(TreePath path) {
@@ -1281,19 +1271,18 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
   }
 
   public static boolean isTypeKind(Tree.Kind kind) {
-    switch (kind) {
-      case ANNOTATED_TYPE:
-      case ARRAY_TYPE:
-      case IDENTIFIER:
-      case INTERSECTION_TYPE:
+    return switch (kind) {
       // case MEMBER_SELECT:
-      case PARAMETERIZED_TYPE:
-      case PRIMITIVE_TYPE:
-      case UNION_TYPE:
-        return true;
-      default:
-        return false;
-    }
+      case ANNOTATED_TYPE,
+          ARRAY_TYPE,
+          IDENTIFIER,
+          INTERSECTION_TYPE,
+          PARAMETERIZED_TYPE,
+          PRIMITIVE_TYPE,
+          UNION_TYPE ->
+          true;
+      default -> false;
+    };
   }
 
   /**
@@ -1328,16 +1317,10 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
    * @return true if the given kind can be identified by an {@code ASTPath}
    */
   public static boolean isHandled(Tree.Kind kind) {
-    switch (kind) {
-      case BREAK:
-      case COMPILATION_UNIT:
-      case CONTINUE:
-      case IMPORT:
-      case MODIFIERS:
-        return false;
-      default:
-        return !isDeclaration(kind);
-    }
+    return switch (kind) {
+      case BREAK, COMPILATION_UNIT, CONTINUE, IMPORT, MODIFIERS -> false;
+      default -> !isDeclaration(kind);
+    };
   } // TODO: need "isType"?
 
   @Override

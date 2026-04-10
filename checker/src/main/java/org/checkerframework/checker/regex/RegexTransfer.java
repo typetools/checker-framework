@@ -60,8 +60,7 @@ public class RegexTransfer extends CFTransfer {
     MethodAccessNode target = n.getTarget();
     ExecutableElement method = target.getMethod();
     Node receiver = target.getReceiver();
-    if (receiver instanceof ClassNameNode) {
-      ClassNameNode cnn = (ClassNameNode) receiver;
+    if (receiver instanceof ClassNameNode cnn) {
       String receiverName = cnn.getElement().toString();
       if (isRegexUtil(receiverName)) {
         result = handleRegexUtil(n, method, result);
@@ -88,8 +87,7 @@ public class RegexTransfer extends CFTransfer {
       // regex annotation without count otherwise)
       Node count = n.getArgument(1);
       int groupCount;
-      if (count instanceof IntegerLiteralNode) {
-        IntegerLiteralNode iln = (IntegerLiteralNode) count;
+      if (count instanceof IntegerLiteralNode iln) {
         groupCount = iln.getValue();
       } else {
         groupCount = 0;
@@ -107,8 +105,7 @@ public class RegexTransfer extends CFTransfer {
       AnnotationMirror regexAnnotation;
       Node count = n.getArgument(1);
       int groupCount;
-      if (count instanceof IntegerLiteralNode) {
-        IntegerLiteralNode iln = (IntegerLiteralNode) count;
+      if (count instanceof IntegerLiteralNode iln) {
         groupCount = iln.getValue();
       } else {
         groupCount = 0;

@@ -500,12 +500,10 @@ public abstract class AbstractAnalysis<
     @SuppressWarnings("nullness") // CF bug: "INFERENCE FAILED"
     TransferResult<V, S> transferResult = node.accept(transferFunction, transferInput);
     setCurrentNode(null);
-    if (node instanceof AssignmentNode) {
+    if (node instanceof AssignmentNode assignment) {
       // store the flow-refined value effectively for final local variables
-      AssignmentNode assignment = (AssignmentNode) node;
       Node lhst = assignment.getTarget();
-      if (lhst instanceof LocalVariableNode) {
-        LocalVariableNode lhs = (LocalVariableNode) lhst;
+      if (lhst instanceof LocalVariableNode lhs) {
         VariableElement elem = lhs.getElement();
         if (ElementUtils.isEffectivelyFinal(elem)) {
           V resval = transferResult.getResultValue();

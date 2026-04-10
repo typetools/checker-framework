@@ -525,26 +525,17 @@ public class I18nFormatterTreeUtil {
       extends SimpleTypeVisitor8<Class<? extends Object>, Class<Void>> {
     @Override
     public Class<? extends Object> visitPrimitive(PrimitiveType t, Class<Void> v) {
-      switch (t.getKind()) {
-        case BOOLEAN:
-          return Boolean.class;
-        case BYTE:
-          return Byte.class;
-        case CHAR:
-          return Character.class;
-        case SHORT:
-          return Short.class;
-        case INT:
-          return Integer.class;
-        case LONG:
-          return Long.class;
-        case FLOAT:
-          return Float.class;
-        case DOUBLE:
-          return Double.class;
-        default:
-          throw new BugInCF("unknown primitive type " + t);
-      }
+      return switch (t.getKind()) {
+        case BOOLEAN -> Boolean.class;
+        case BYTE -> Byte.class;
+        case CHAR -> Character.class;
+        case SHORT -> Short.class;
+        case INT -> Integer.class;
+        case LONG -> Long.class;
+        case FLOAT -> Float.class;
+        case DOUBLE -> Double.class;
+        default -> throw new BugInCF("unknown primitive type " + t);
+      };
     }
 
     @Override
