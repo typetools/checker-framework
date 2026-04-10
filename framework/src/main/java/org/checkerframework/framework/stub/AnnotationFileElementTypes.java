@@ -472,6 +472,7 @@ public class AnnotationFileElementTypes {
     } else {
       // Handle annotations on record declarations.
       boolean canTransferAnnotationsToSameName;
+      // Do nothing unless this element is a record.
       Element enclosingType =
           switch (elt.getKind()) {
             case METHOD -> {
@@ -496,7 +497,7 @@ public class AnnotationFileElementTypes {
               canTransferAnnotationsToSameName = false;
               yield null;
             }
-          }; // Do nothing unless this element is a record.
+          };
 
       if (canTransferAnnotationsToSameName && enclosingType.getKind() == ElementKind.RECORD) {
         AnnotationFileParser.RecordStub recordStub =

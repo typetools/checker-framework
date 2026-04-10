@@ -3663,6 +3663,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return ((DetachedVarSymbol) elt).getDeclaration();
     }
 
+    // Prevent calling declarationFor on elements we know we don't have the tree for.
     // TODO: handle type parameter declarations?
     Tree fromElt =
         switch (elt.getKind()) {
@@ -3680,7 +3681,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
               com.sun.tools.javac.tree.TreeInfo.declarationFor(
                   (com.sun.tools.javac.code.Symbol) elt, (com.sun.tools.javac.tree.JCTree) root);
         };
-    // Prevent calling declarationFor on elements we know we don't have the tree for.
 
     if (shouldCache) {
       elementToTreeCache.put(elt, fromElt);
