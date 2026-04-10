@@ -50,7 +50,7 @@ public abstract class CloneOrUpdateRelatedTask extends GitTask {
   /**
    * Creates a new CloneOrUpdateRelatedTask.
    *
-   * @param execOperations Used to run exec commands
+   * @param execOperations used to run exec commands
    */
   @Inject
   public CloneOrUpdateRelatedTask(ExecOperations execOperations) {
