@@ -164,10 +164,9 @@ public class ObjectCreationNode extends Node {
   @Override
   @Pure
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ObjectCreationNode)) {
+    if (!(obj instanceof ObjectCreationNode other)) {
       return false;
     }
-    ObjectCreationNode other = (ObjectCreationNode) obj;
     // TODO: See issue 470.
     if (typeToInstantiate == null && other.getTypeToInstantiate() != null) {
       return false;

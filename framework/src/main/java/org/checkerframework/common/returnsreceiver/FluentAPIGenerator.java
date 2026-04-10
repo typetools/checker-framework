@@ -39,6 +39,7 @@ public class FluentAPIGenerator {
    * Enum of supported fluent API generators. For such generators, the checker can automatically
    * add @This annotations on method return types in the generated code.
    */
+  @SuppressWarnings("NotJavadoc") // Error Prone flags Javadoc comments on local class methods.
   private enum FluentAPIGenerators {
     /**
      * The <a
@@ -47,11 +48,9 @@ public class FluentAPIGenerator {
      */
     AUTO_VALUE {
 
-      /**
-       * The qualified name of the AutoValue Builder annotation. This needs to be constructed
-       * dynamically due to a side effect of the shadow plugin. See {@link
-       * getAutoValueBuilderCanonicalName()} for more information.
-       */
+      // The qualified name of the AutoValue Builder annotation. This needs to be constructed
+      // dynamically due to a side effect of the shadow plugin. See {@link
+      // getAutoValueBuilderCanonicalName()} for more information.
       private final String AUTO_VALUE_BUILDER = getAutoValueBuilderCanonicalName();
 
       @Override
@@ -92,6 +91,7 @@ public class FluentAPIGenerator {
        *
        * @return {@code "com.google.auto.value.AutoValue.Builder"}
        */
+      @SuppressWarnings("NotJavadoc") // Error Prone flags Javadoc comments on local class methods.
       private @CanonicalName String getAutoValueBuilderCanonicalName() {
         String com = "com";
         @SuppressWarnings("signature:assignment") // string concatenation
