@@ -37,7 +37,7 @@ public class TypecheckResult {
   /**
    * Creates a TypecheckResult.
    *
-   * @param configuration the test configuration.
+   * @param configuration the test configuration
    * @param compilationResult the compilation result
    * @param expectedDiagnostics the expected diagnostics
    * @param missingDiagnostics the diagnostics that were expected but were not issued
