@@ -15,8 +15,8 @@ public @Interned class InternedClass2 {
   }
 
   InternedClass2 factory(int i) {
-    // :: error: [interned.object.creation] :: error: [method.invocation]
-    new InternedClass2(i).someMethod(); // error, call to constructor on for @Interned class.
+    // :: error: [interned.object.creation]
+    new InternedClass2(i).someMethod();
     (new InternedClass2(i)).intern(); // ok, call to constructor receiver to @InternMethod
     ((((new InternedClass2(i))))).intern(); // ok, call to constructor receiver to @InternMethod
     return new InternedClass2(i).intern(); // ok, call to constructor receiver to @InternMethod

@@ -3,6 +3,7 @@ package org.checkerframework.checker.interning;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
@@ -213,6 +214,12 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         type.replaceAnnotation(INTERNED);
       }
       return super.visitTypeCast(tree, type);
+    }
+
+    @Override
+    public Void visitNewClass(NewClassTree tree, AnnotatedTypeMirror type) {
+      type.replaceAnnotation(INTERNED_DISTINCT);
+      return super.visitNewClass(tree, type);
     }
 
     @Override

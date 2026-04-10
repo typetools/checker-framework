@@ -2,10 +2,10 @@ import org.checkerframework.checker.interning.qual.Interned;
 
 public class Comparison {
 
-  void testInterned() {
+  @Interned String a = "foo";
+  @Interned String b = "bar";
 
-    @Interned String a = "foo";
-    @Interned String b = "bar";
+  void testInterned() {
 
     if (a == b) {
       System.out.println("yes");
@@ -20,10 +20,10 @@ public class Comparison {
     }
   }
 
-  void testNotInterned() {
+  String c = new String("foo");
+  String d = new String("bar");
 
-    String c = new String("foo");
-    String d = new String("bar");
+  void testNotInterned() {
 
     // :: error: [not.interned]
     if (c == d) {

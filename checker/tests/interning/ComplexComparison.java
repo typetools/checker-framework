@@ -27,10 +27,10 @@ public class ComplexComparison {
     }
   }
 
-  void testNotInterned() {
+  String e = new String("foo");
+  String f = new String("bar");
 
-    String e = new String("foo");
-    String f = new String("bar");
+  void testNotInterned() {
 
     // :: error: [not.interned]
     if (e != null && f != null && e == f) {

@@ -20,7 +20,6 @@ public class ConstantsInterning {
     is = AC;
     is = A + "C";
     is = A + B + "C";
-    // :: error: [assignment]
     is = D;
     // :: error: [assignment]
     is = A + E;

@@ -10,13 +10,13 @@ public class Polymorphism {
     return s;
   }
 
-  void testParam() {
-    String notInterned = new String("not interned");
-    @Interned String interned = "interned";
+  String notInterned = new String("not interned");
+  @Interned String interned = "interned";
 
+  void testParam() {
     interned = identity(interned);
     // :: error: [assignment]
-    interned = identity(notInterned); // invalid
+    interned = identity(notInterned);
   }
 
   // test as receiver
@@ -24,13 +24,13 @@ public class Polymorphism {
     return this;
   }
 
-  void testReceiver() {
-    Polymorphism notInterned = new Polymorphism();
-    @Interned Polymorphism interned = null;
+  Polymorphism notInternedP = new Polymorphism();
+  @Interned Polymorphism internedP = null;
 
-    interned = interned.getSelf();
+  void testReceiver() {
+    internedP = internedP.getSelf();
     // :: error: [assignment]
-    interned = notInterned.getSelf(); // invalid
+    internedP = notInternedP.getSelf();
   }
 
   // Test assinging interned to PolyInterned
@@ -41,8 +41,7 @@ public class Polymorphism {
       // :: error: [return]
       return "m";
     } else {
-      // :: error: [return]
-      return new String("m"); // invalid
+      return new String("m"); // valid: new String() is @InternedDistinct
     }
   }
 
