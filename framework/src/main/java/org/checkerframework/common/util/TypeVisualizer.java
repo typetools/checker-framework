@@ -15,7 +15,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -169,20 +168,7 @@ public class TypeVisualizer {
    *
    * @param type the delegate; that is, the wrapped value
    */
-  private record Node(@InternedDistinct AnnotatedTypeMirror type) {
-
-    @Override
-    public boolean equals(@Nullable Object obj) {
-      if (obj == null) {
-        return false;
-      }
-      if (obj instanceof Node) {
-        return ((Node) obj).type == this.type;
-      }
-
-      return false;
-    }
-  }
+  private record Node(@InternedDistinct AnnotatedTypeMirror type) {}
 
   /**
    * Drawing visits a type and writes a dot file to the location specified. It contains data

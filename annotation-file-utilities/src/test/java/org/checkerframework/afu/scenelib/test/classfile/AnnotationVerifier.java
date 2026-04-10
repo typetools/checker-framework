@@ -821,6 +821,8 @@ public class AnnotationVerifier {
    */
   private record ParameterDescription(int parameter, String descriptor, boolean visible) {
 
+    // equals() and hashCode() are defined because they ignore two of the record fields.
+
     @Override
     public boolean equals(@Nullable Object o) {
       if (o instanceof ParameterDescription p) {
