@@ -36,7 +36,7 @@ public abstract class CloneOrUpdateRelatedTask extends GitTask {
    */
   private static final String DEFAULT_ORG = "typetools";
 
-  /** The branch to use to clone the related repository if a matching branch is not found */
+  /** The branch to use to clone the related repository if a matching branch is not found. */
   private static final String DEFAULT_BRANCH = "master";
 
   /**
