@@ -879,15 +879,16 @@ There are several reasons for this design choice.
 
 Java permits you to initialize an instance field either in the constructor
 or in a field initializer.  The Checker Framework behaves as if the field
-initializer assignments are performed at the beginning of the constructor,
-because that is how Java executes the program.
+initializer assignments are performed at the beginning of the constructor
+(after superclass construction), because that is how Java executes the
+program.
 
 Here is an example:
 
 \begin{Verbatim}
 class MyClass1 {
   @Nullable Object field;
-  MyClass() {
+  MyClass1() {
     field = new Object();
     field.toString(); // no possible NullPointerException
   }
@@ -895,7 +896,7 @@ class MyClass1 {
 
 class MyClass2 {
   @Nullable Object field = new Object(); // Same initialization as for MyClass1
-  MyClass() {
+  MyClass2() {
     field.toString(); // no possible NullPointerException
   }
 }
@@ -907,6 +908,9 @@ class MyClass3 {
   }
 }
 \end{Verbatim}
+
+For consistency, the Checker Framework treats the \<MyClass1> and
+\<MyClass2> constructors the same.
 
 
 \subsectionAndLabel{Why doesn't the Checker Framework track relationships between variables?}{faq-relationships-between-variables}
