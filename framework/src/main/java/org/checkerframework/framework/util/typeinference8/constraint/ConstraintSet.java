@@ -390,11 +390,11 @@ public class ConstraintSet implements ReductionResult {
     Constraint constraint = this.pop();
     ReductionResult result = constraint.reduce(context);
     if (result instanceof ReductionResultPair) {
-      boundSet.merge(((ReductionResultPair) result).boundSet);
+      boundSet.merge(((ReductionResultPair) result).boundSet());
       if (boundSet.containsFalse()) {
         throw new FalseBoundException(constraint, result);
       }
-      this.addAll(((ReductionResultPair) result).constraintSet);
+      this.addAll(((ReductionResultPair) result).constraintSet());
     } else if (result instanceof TypeConstraint) {
       // Add the new constraints to the beginning of the list so they are reduced first. This is
       // because each constraint is supposed to be reduced until no other constraints are produced

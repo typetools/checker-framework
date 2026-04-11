@@ -598,7 +598,7 @@ public class LockAnnotatedTypeFactory
     // the call site (e.g. @GuardedBy("someLock") and replace the return type at the call site
     // with this type.
 
-    AnnotatedExecutableType invokedMethod = mType.executableType;
+    AnnotatedExecutableType invokedMethod = mType.executableType();
 
     if (invokedMethod.getElement().getKind() == ElementKind.CONSTRUCTOR) {
       return mType;

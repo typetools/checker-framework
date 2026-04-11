@@ -270,7 +270,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
       try {
         e =
             StringToJavaExpression.atMethodInvocation(
-                postcond.getExpression(), node.getTree(), atypeFactory.getChecker());
+                postcond.expression(), node.getTree(), atypeFactory.getChecker());
       } catch (JavaExpressionParseException ex) {
         // This parse error will be reported later. For now, we'll skip this malformed
         // postcondition and move on to the others.
@@ -281,8 +281,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
       // calls `insertOrRefine` in a loop.  Even worse, this code appears within a loop.
       // For now we aren't too worried about it, since the number of
       // EnsuresCalledMethodsOnException annotations should be small.
-      AnnotationMirror calledMethod =
-          atypeFactory.createAccumulatorAnnotation(postcond.getMethod());
+      AnnotationMirror calledMethod = atypeFactory.createAccumulatorAnnotation(postcond.method());
       for (Map.Entry<TypeMirror, AccumulationStore> successor : exceptionalStores.entrySet()) {
         TypeMirror caughtException = successor.getKey();
         if (types.isSubtype(caughtException, javaLangExceptionType)) {

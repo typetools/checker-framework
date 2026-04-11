@@ -1357,37 +1357,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return new AssertMethodTuple(booleanParam, exceptionType, isAssertFalse);
   }
 
-  /** Holds the elements of an {@link AssertMethod} annotation. */
-  protected static class AssertMethodTuple {
+  /**
+   * Holds the elements of an {@link AssertMethod} annotation.
+   *
+   * @param booleanParam 0-based index of the parameter of the expression that is tested by the
+   *     assert method. (Or -1 if this isn't an assert method.)
+   * @param exceptionType the type of the exception thrown by the assert method
+   * @param isAssertFalse is this an assert false method?
+   */
+  /*package-private*/ record AssertMethodTuple(
+      int booleanParam, TypeMirror exceptionType, boolean isAssertFalse) {
 
     /** A tuple representing the lack of an {@link AssertMethodTuple}. */
-    protected static final AssertMethodTuple NONE = new AssertMethodTuple(-1, null, false);
-
-    /**
-     * 0-based index of the parameter of the expression that is tested by the assert method. (Or -1
-     * if this isn't an assert method.)
-     */
-    public final int booleanParam;
-
-    /** The type of the exception thrown by the assert method. */
-    public final TypeMirror exceptionType;
-
-    /** Is this an assert false method? */
-    public final boolean isAssertFalse;
-
-    /**
-     * Creates an AssertMethodTuple.
-     *
-     * @param booleanParam 0-based index of the parameter of the expression that is tested by the
-     *     assert method
-     * @param exceptionType the type of the exception thrown by the assert method
-     * @param isAssertFalse is this an assert false method
-     */
-    public AssertMethodTuple(int booleanParam, TypeMirror exceptionType, boolean isAssertFalse) {
-      this.booleanParam = booleanParam;
-      this.exceptionType = exceptionType;
-      this.isAssertFalse = isAssertFalse;
-    }
+    /*package-private*/ static final AssertMethodTuple NONE =
+        new AssertMethodTuple(-1, null, false);
   }
 
   /**

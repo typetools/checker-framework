@@ -3201,28 +3201,14 @@ public class AnnotationFileParser {
   // Parse state
   //
 
-  /** Represents a class: its package name and name (including outer class names if any). */
-  private static class FqName {
-    /** Name of the package being parsed, or null. */
-    public final @Nullable String packageName;
-
-    /**
-     * Name of the type being parsed. Includes outer class names if any. Null if the parser has
-     * parsed a package declaration but has not yet gotten to a type declaration.
-     */
-    public final @Nullable String className;
-
-    /**
-     * Create a new FqName, which represents a class.
-     *
-     * @param packageName name of the package, or null
-     * @param className unqualified name of the type, including outer class names if any. May be
-     *     null.
-     */
-    public FqName(@Nullable String packageName, @Nullable String className) {
-      this.packageName = packageName;
-      this.className = className;
-    }
+  /**
+   * Represents a class: its package name and name (including outer class names if any).
+   *
+   * @param packageName name of the package being parsed, or null
+   * @param className name of the type being parsed. Includes outer class names if any. Null if the
+   *     parser has parsed a package declaration but has not yet gotten to a type declaration.
+   */
+  private record FqName(@Nullable String packageName, @Nullable String className) {
 
     /** Fully-qualified name of the class. */
     @Override

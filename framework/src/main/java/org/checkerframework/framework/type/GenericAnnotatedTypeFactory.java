@@ -1859,7 +1859,7 @@ public abstract class GenericAnnotatedTypeFactory<
   protected ParameterizedExecutableType constructorFromUse(
       NewClassTree tree, boolean inferTypeArgs) {
     ParameterizedExecutableType mType = super.constructorFromUse(tree, inferTypeArgs);
-    AnnotatedExecutableType method = mType.executableType;
+    AnnotatedExecutableType method = mType.executableType();
     dependentTypesHelper.atConstructorInvocation(method, tree);
     return mType;
   }
@@ -2229,7 +2229,7 @@ public abstract class GenericAnnotatedTypeFactory<
   protected ParameterizedExecutableType methodFromUse(
       MethodInvocationTree tree, boolean inferTypeArg) {
     ParameterizedExecutableType mType = super.methodFromUse(tree, inferTypeArg);
-    AnnotatedExecutableType method = mType.executableType;
+    AnnotatedExecutableType method = mType.executableType();
     dependentTypesHelper.atMethodInvocation(method, tree);
     return mType;
   }
@@ -2811,7 +2811,7 @@ public abstract class GenericAnnotatedTypeFactory<
     for (Map.Entry<String, InferredDeclared> entry : methodAnnos.getPreconditions().entrySet()) {
       result.addAll(
           getPreconditionAnnotations(
-              entry.getKey(), entry.getValue().inferred, entry.getValue().declared));
+              entry.getKey(), entry.getValue().inferred(), entry.getValue().declared()));
     }
     result.sort(Ordering.usingToString());
     return result;
@@ -2835,7 +2835,7 @@ public abstract class GenericAnnotatedTypeFactory<
     for (Map.Entry<String, InferredDeclared> entry : methodAnnos.getPostconditions().entrySet()) {
       result.addAll(
           getPostconditionAnnotations(
-              entry.getKey(), entry.getValue().inferred, entry.getValue().declared, preconds));
+              entry.getKey(), entry.getValue().inferred(), entry.getValue().declared(), preconds));
     }
     result.sort(Ordering.usingToString());
     return result;

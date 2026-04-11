@@ -628,7 +628,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     // matches those in corresponding locations on the method call site.
 
     ParameterizedExecutableType mType = atypeFactory.methodFromUse(methodInvocationTree);
-    AnnotatedExecutableType invokedMethod = mType.executableType;
+    AnnotatedExecutableType invokedMethod = mType.executableType();
 
     List<AnnotatedTypeMirror> paramTypes =
         AnnotatedTypes.adaptParameters(

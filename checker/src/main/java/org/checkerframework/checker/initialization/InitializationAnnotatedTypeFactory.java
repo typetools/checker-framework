@@ -1014,7 +1014,7 @@ public abstract class InitializationAnnotatedTypeFactory<
         super.methodFromUse(tree, methodElt, receiverType, inferTypeArgs);
     if (tree instanceof MemberReferenceTree
         && ((MemberReferenceTree) tree).getMode() == ReferenceMode.NEW) {
-      x.executableType.getReturnType().replaceAnnotation(INITIALIZED);
+      x.executableType().getReturnType().replaceAnnotation(INITIALIZED);
     }
     return x;
   }
