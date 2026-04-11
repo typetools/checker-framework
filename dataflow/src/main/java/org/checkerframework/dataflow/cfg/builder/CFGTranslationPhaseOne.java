@@ -3893,8 +3893,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Tree leftTree = tree.getLeftOperand();
     Tree rightTree = tree.getRightOperand();
 
-    // This `switch` statement sets `r`; afterward, `extendWithNode(r);` is called.
-    // If rNodeAlreadyAdded is true, then don't call `extendWithNode(r);` afterward.
+    // This `switch` statement sets `r`; afterward, `extendWithNode(r)` is called.
+    // If rNodeAlreadyAdded is true, then don't call `extendWithNode(r)` afterward.
     boolean rNodeAlreadyAdded = false;
     Tree.Kind kind = tree.getKind();
     switch (kind) {
