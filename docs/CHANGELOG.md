@@ -10,7 +10,7 @@
 ### Implementation details
 
 New method annotation `DoesNotUnrefineReceiver`.
-Interface `AnnotationProvider` has a new method `isDoesNotUnrefineReceiver()`.
+Interface `AnnotationProvider` has a new method `hasDoesNotUnrefineReceiver()`.
 
 ### Closed issues
 

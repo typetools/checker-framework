@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BinaryOperator;
+import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -237,42 +238,68 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (hasSideEffect) {
 
       boolean sideEffectsUnrefineAliases = gatypeFactory.sideEffectsUnrefineAliases;
+      Node receiver = methodInvocationNode.getTarget().getReceiver();
+      boolean hasDoesNotUnrefineReceiver = atypeFactory.hasDoesNotUnrefineReceiver(method);
 
-      // update local variables
       // TODO: Also remove if any element/argument to the annotation is not
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
+
+      // If @DoesNotUnrefineReceiver is present, compute the receiver as a JavaExpression so
+      // that it can be exempted from unrefinement in all expression categories below.
+      @Nullable JavaExpression receiverJe =
+          hasDoesNotUnrefineReceiver ? JavaExpression.fromNode(receiver) : null;
+      // Returns true if the expression should NOT be unrefined (because the method is
+      // annotated @DoesNotUnrefineReceiver and the expression is the receiver).
+      Predicate<JavaExpression> doNotUnrefine =
+          receiverJe != null ? je -> je.equals(receiverJe) : je -> false;
+
+      // Update local variables.
       if (sideEffectsUnrefineAliases) {
-        localVariableValues.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
+        localVariableValues
+            .entrySet()
+            .removeIf(
+                e -> {
+                  LocalVariable lv = e.getKey();
+                  return lv.isModifiableByOtherCode() && !doNotUnrefine.test(lv);
+                });
       }
 
-      // update this value
-      if (sideEffectsUnrefineAliases && !atypeFactory.isDoesNotUnrefineReceiver(method)) {
+      // Update this value.
+      if (sideEffectsUnrefineAliases && !(receiverJe instanceof ThisReference)) {
         thisValue = null;
       }
 
-      // update field values
+      // Update field values.
+      Predicate<FieldAccess> doNotUnrefineField = fa -> doNotUnrefine.test(fa);
       if (sideEffectsUnrefineAliases) {
-        fieldValues.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
+        fieldValues
+            .entrySet()
+            .removeIf(
+                (Map.Entry<FieldAccess, V> e) -> {
+                  FieldAccess fa = e.getKey();
+                  return fa.isModifiableByOtherCode() && !doNotUnrefine.test(fa);
+                });
       } else {
-        // Case 2 (unassignable fields) and case 3 (monotonic fields)
-        updateFieldValuesForMethodCall(gatypeFactory);
+        // Case 2 (unassignable fields) and case 3 (monotonic fields).
+        updateFieldValuesForMethodCall(gatypeFactory, doNotUnrefineField);
       }
 
       // Update array values.
-      arrayValues.clear();
+      arrayValues.entrySet().removeIf(e -> !doNotUnrefine.test(e.getKey()));
 
       // Update information about method calls.
-      updateMethodCallValues();
+      methodCallExpressions
+          .entrySet()
+          .removeIf(
+              e -> {
+                MethodCall mc = e.getKey();
+                return mc.isModifiableByOtherCode() && !doNotUnrefine.test(mc);
+              });
     }
 
     // Store information about method calls if possible.
     JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
     replaceValue(methodCall, val);
-  }
-
-  /** Update information about method calls. */
-  private void updateMethodCallValues() {
-    methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
   }
 
   /**
@@ -358,15 +385,23 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * fields that have a monotonic annotation.
    *
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
+   * @param doNotUnrefine if true of a field access, don't unrefine it. This predicate indicates
+   *     exceptions: fields that is not updated by this method.
    */
   private void updateFieldValuesForMethodCall(
-      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory) {
+      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory, Predicate<FieldAccess> doNotUnrefine) {
     Map<FieldAccess, V> newFieldValues = new HashMap<>(MapsP.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
       V previousValue = e.getValue();
 
-      V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
+      V newValue;
+      boolean doNotUnrefineResult = doNotUnrefine.test(fieldAccess);
+      if (doNotUnrefineResult) {
+        newValue = previousValue;
+      } else {
+        newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
+      }
       if (newValue != null) {
         // Keep information for all hierarchies where we had a monotonic annotation.
         newFieldValues.put(fieldAccess, newValue);
