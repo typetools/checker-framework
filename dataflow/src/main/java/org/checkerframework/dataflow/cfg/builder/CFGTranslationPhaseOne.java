@@ -3612,6 +3612,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             assert kind == Tree.Kind.MINUS_ASSIGNMENT;
             operNode = new NumericalSubtractionNode(operTree, targetRHS, value);
           }
+          extendWithNode(operNode);
 
           TypeMirror castType = TypeAnnotationUtils.unannotatedType(leftType);
           TypeCastTree castTree = treeBuilder.buildTypeCast(castType, operTree);
@@ -3897,12 +3898,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
         if (kind == Tree.Kind.MULTIPLY) {
           r = new NumericalMultiplicationNode(tree, left, right);
+          extendWithNode(r);
         } else if (kind == Tree.Kind.DIVIDE) {
           if (TypesUtils.isIntegralPrimitive(exprType)) {
             r = new IntegerDivisionNode(tree, left, right);
             extendWithNodeWithException(r, arithmeticExceptionType);
           } else {
             r = new FloatingDivisionNode(tree, left, right);
+            extendWithNode(r);
           }
         } else {
           assert kind == Tree.Kind.REMAINDER;
@@ -3911,6 +3914,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             extendWithNodeWithException(r, arithmeticExceptionType);
           } else {
             r = new FloatingRemainderNode(tree, left, right);
+            extendWithNode(r);
           }
         }
       }
