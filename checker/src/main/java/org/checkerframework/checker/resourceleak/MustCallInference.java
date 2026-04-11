@@ -490,11 +490,11 @@ public class MustCallInference {
       if (TreeUtils.isConstructor(methodTree) && getOwningFields().size() == 1) {
         // case 1 is satisfied.
         addMustCallAliasToFormalParameter(paramIndex);
-        mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
+        mcca.removeObligationsContainingVar(obligations, rhsLvn);
       } else {
         // case 2 is satisfied.
         addOwningToParam(paramIndex);
-        mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
+        mcca.removeObligationsContainingVar(obligations, rhsLvn);
       }
 
     } else if (lhs instanceof LocalVariableNode lhsVar) {
