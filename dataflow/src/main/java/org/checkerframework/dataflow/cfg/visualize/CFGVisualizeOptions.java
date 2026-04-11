@@ -109,6 +109,7 @@ public class CFGVisualizeOptions {
         case "--outputdir":
           if (i >= args.length - 1) {
             printError("Did not find <outputdir> after --outputdir.");
+            error = true;
             continue;
           }
           i++;
@@ -120,6 +121,7 @@ public class CFGVisualizeOptions {
         case "--method":
           if (i >= args.length - 1) {
             printError("Did not find <name> after --method.");
+            error = true;
             continue;
           }
           i++;
@@ -128,6 +130,7 @@ public class CFGVisualizeOptions {
         case "--class":
           if (i >= args.length - 1) {
             printError("Did not find <name> after --class.");
+            error = true;
             continue;
           }
           i++;
