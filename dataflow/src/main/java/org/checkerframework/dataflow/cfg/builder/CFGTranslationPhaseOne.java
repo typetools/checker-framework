@@ -3539,12 +3539,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         Node operNode;
         if (kind == Tree.Kind.MULTIPLY_ASSIGNMENT) {
           operNode = new NumericalMultiplicationNode(operTree, targetRHS, value);
+          extendWithNode(operNode);
         } else if (kind == Tree.Kind.DIVIDE_ASSIGNMENT) {
           if (TypesUtils.isIntegralPrimitive(exprType)) {
             operNode = new IntegerDivisionNode(operTree, targetRHS, value);
             extendWithNodeWithException(operNode, arithmeticExceptionType);
           } else {
             operNode = new FloatingDivisionNode(operTree, targetRHS, value);
+            // No exception: floating-point division by zero yields Infinity or NaN.
+            extendWithNode(operNode);
           }
         } else {
           assert kind == Tree.Kind.REMAINDER_ASSIGNMENT;
@@ -3553,6 +3556,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             extendWithNodeWithException(operNode, arithmeticExceptionType);
           } else {
             operNode = new FloatingRemainderNode(operTree, targetRHS, value);
+            // No exception: floating-point division by zero yields Infinity or NaN.
+            extendWithNode(operNode);
           }
         }
         extendWithNode(operNode);
@@ -3607,7 +3612,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             assert kind == Tree.Kind.MINUS_ASSIGNMENT;
             operNode = new NumericalSubtractionNode(operTree, targetRHS, value);
           }
-          extendWithNode(operNode);
 
           TypeMirror castType = TypeAnnotationUtils.unannotatedType(leftType);
           TypeCastTree castTree = treeBuilder.buildTypeCast(castType, operTree);
