@@ -3894,6 +3894,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Tree leftTree = tree.getLeftOperand();
     Tree rightTree = tree.getRightOperand();
 
+    // This `switch` statement sets `r`; afterward, `extendWithNode(r);` is called.
+    // If rNodeAlreadyAdded is true, then don't call `extendWithNode(r);` afterward.
+    boolean rNodeAlreadyAdded = false;
     Tree.Kind kind = tree.getKind();
     switch (kind) {
       case DIVIDE:
@@ -3916,6 +3919,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             if (TypesUtils.isIntegralPrimitive(exprType)) {
               r = new IntegerDivisionNode(tree, left, right);
               extendWithNodeWithException(r, arithmeticExceptionType);
+              rNodeAlreadyAdded = true;
             } else {
               r = new FloatingDivisionNode(tree, left, right);
             }
@@ -3924,6 +3928,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             if (TypesUtils.isIntegralPrimitive(exprType)) {
               r = new IntegerRemainderNode(tree, left, right);
               extendWithNodeWithException(r, arithmeticExceptionType);
+              rNodeAlreadyAdded = true;
             } else {
               r = new FloatingRemainderNode(tree, left, right);
             }
@@ -4124,7 +4129,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         throw new BugInCF("unexpected binary tree: " + kind);
     }
     assert r != null : "unexpected binary tree";
-    extendWithNode(r);
+    if (!rNodeAlreadyAdded) {
+      extendWithNode(r);
+    }
     return r;
   }
 
