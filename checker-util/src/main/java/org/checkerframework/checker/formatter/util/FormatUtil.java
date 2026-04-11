@@ -147,14 +147,13 @@ public class FormatUtil {
       conv.put(
           last,
           ConversionCategory.intersect(
-              conv.containsKey(lastKey) ? conv.get(lastKey) : ConversionCategory.UNUSED,
-              c.category()));
+              conv.getOrDefault(lastKey, ConversionCategory.UNUSED), c.category()));
     }
 
     ConversionCategory[] res = new ConversionCategory[maxindex + 1];
     for (int i = 0; i <= maxindex; ++i) {
       Integer key = i; // autoboxing prevents recognizing that containsKey => get() != null
-      res[i] = conv.containsKey(key) ? conv.get(key) : ConversionCategory.UNUSED;
+      res[i] = conv.getOrDefault(key, ConversionCategory.UNUSED);
     }
     return res;
   }

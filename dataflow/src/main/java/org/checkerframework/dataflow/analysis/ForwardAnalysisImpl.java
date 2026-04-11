@@ -364,18 +364,19 @@ public class ForwardAnalysisImpl<
    */
   @SideEffectFree
   private List<LocalVariableNode> getParameters(UnderlyingAST underlyingAST) {
-    switch (underlyingAST.getKind()) {
-      case METHOD:
+    return switch (underlyingAST.getKind()) {
+      case METHOD -> {
         MethodTree tree = ((CFGMethod) underlyingAST).getMethod();
         // TODO: document that LocalVariableNode has no block that it belongs to
-        return CollectionsPlume.mapList(LocalVariableNode::new, tree.getParameters());
-      case LAMBDA:
+        yield CollectionsPlume.mapList(LocalVariableNode::new, tree.getParameters());
+      }
+      case LAMBDA -> {
         LambdaExpressionTree lambda = ((CFGLambda) underlyingAST).getLambdaTree();
         // TODO: document that LocalVariableNode has no block that it belongs to
-        return CollectionsPlume.mapList(LocalVariableNode::new, lambda.getParameters());
-      default:
-        return Collections.emptyList();
-    }
+        yield CollectionsPlume.mapList(LocalVariableNode::new, lambda.getParameters());
+      }
+      default -> Collections.emptyList();
+    };
   }
 
   @Override
@@ -541,14 +542,11 @@ public class ForwardAnalysisImpl<
    * @return the store corresponding to the location right before the basic block {@code b}
    */
   protected @Nullable S getStoreBefore(Block b, Store.Kind kind) {
-    switch (kind) {
-      case THEN:
-        return thenStores.get(b);
-      case ELSE:
-        return elseStores.get(b);
-      default:
-        throw new BugInCF("Unexpected Store.Kind: " + kind);
-    }
+    return switch (kind) {
+      case THEN -> thenStores.get(b);
+      case ELSE -> elseStores.get(b);
+      default -> throw new BugInCF("Unexpected Store.Kind: " + kind);
+    };
   }
 
   /**

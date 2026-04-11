@@ -86,17 +86,15 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
    * @return true if an element was removed
    */
   private boolean checkAdd(int behavior, V old) {
-    switch (behavior) {
-      case REPLACE:
+    return switch (behavior) {
+      case REPLACE -> {
         remove(old);
-        return true;
-      case IGNORE:
-        return false;
-      case THROW_EXCEPTION:
-        throw new IllegalStateException();
-      default:
-        throw new IllegalArgumentException();
-    }
+        yield true;
+      }
+      case IGNORE -> false;
+      case THROW_EXCEPTION -> throw new IllegalStateException();
+      default -> throw new IllegalArgumentException();
+    };
   }
 
   private static boolean eq(Object x, Object y) {

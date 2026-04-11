@@ -466,9 +466,7 @@ public class AnnotationUtils {
     // Can't use deepEquals() to compare val1 and val2, because they might have mismatched
     // AnnotationValue vs. CheckerFrameworkAnnotationValue, and AnnotationValue doesn't override
     // equals().  So, write my own version of deepEquals().
-    if ((val1 instanceof List<?>) && (val2 instanceof List<?>)) {
-      List<?> list1 = (List<?>) val1;
-      List<?> list2 = (List<?>) val2;
+    if ((val1 instanceof List<?> list1) && (val2 instanceof List<?> list2)) {
       if (list1.size() != list2.size()) {
         return list1.size() - list2.size();
       }

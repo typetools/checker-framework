@@ -140,18 +140,13 @@ public class Typing extends TypeConstraint {
   @Override
   public ReductionResult reduce(Java8InferenceContext context) {
 
-    switch (getKind()) {
-      case TYPE_COMPATIBILITY:
-        return reduceCompatible();
-      case SUBTYPE:
-        return reduceSubtyping(context);
-      case CONTAINED:
-        return reduceContained();
-      case TYPE_EQUALITY:
-        return reduceEquality();
-      default:
-        throw new BugInCF("Unexpected kind: " + getKind());
-    }
+    return switch (getKind()) {
+      case TYPE_COMPATIBILITY -> reduceCompatible();
+      case SUBTYPE -> reduceSubtyping(context);
+      case CONTAINED -> reduceContained();
+      case TYPE_EQUALITY -> reduceEquality();
+      default -> throw new BugInCF("Unexpected kind: " + getKind());
+    };
   }
 
   /**
@@ -199,19 +194,13 @@ public class Typing extends TypeConstraint {
       return ConstraintSet.TRUE;
     }
 
-    switch (T.getTypeKind()) {
-      case DECLARED:
-        return reduceSubtypeClass(context);
-      case ARRAY:
-        return reduceSubtypeArray();
-      case WILDCARD:
-      case TYPEVAR:
-        return reduceSubtypeTypeVariable();
-      case INTERSECTION:
-        return reduceSubtypingIntersection();
-      default:
-        return ConstraintSet.FALSE;
-    }
+    return switch (T.getTypeKind()) {
+      case DECLARED -> reduceSubtypeClass(context);
+      case ARRAY -> reduceSubtypeArray();
+      case WILDCARD, TYPEVAR -> reduceSubtypeTypeVariable();
+      case INTERSECTION -> reduceSubtypingIntersection();
+      default -> ConstraintSet.FALSE;
+    };
   }
 
   /**
@@ -464,19 +453,16 @@ public class Typing extends TypeConstraint {
 
   @Override
   public String toString() {
-    switch (kind) {
-      case TYPE_COMPATIBILITY:
-        return S + " -> " + T;
-      case SUBTYPE:
-        return S + " <: " + T;
-      case CONTAINED:
-        return S + " <= " + T;
-      case TYPE_EQUALITY:
-        return S + " = " + T;
-      default:
+    return switch (kind) {
+      case TYPE_COMPATIBILITY -> S + " -> " + T;
+      case SUBTYPE -> S + " <: " + T;
+      case CONTAINED -> S + " <= " + T;
+      case TYPE_EQUALITY -> S + " = " + T;
+      default -> {
         assert false;
-        return super.toString();
-    }
+        yield super.toString();
+      }
+    };
   }
 
   @Override

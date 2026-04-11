@@ -60,14 +60,11 @@ public class QualifierTyping implements Constraint {
 
   @Override
   public ReductionResult reduce(Java8InferenceContext context) {
-    switch (getKind()) {
-      case QUALIFIER_EQUALITY:
-        return reduceEquality(context);
-      case QUALIFIER_SUBTYPE:
-        return reduceSubtyping(context);
-      default:
-        throw new BugInCF("Unexpected kind: " + getKind());
-    }
+    return switch (getKind()) {
+      case QUALIFIER_EQUALITY -> reduceEquality(context);
+      case QUALIFIER_SUBTYPE -> reduceSubtyping(context);
+      default -> throw new BugInCF("Unexpected kind: " + getKind());
+    };
   }
 
   /**
@@ -87,14 +84,12 @@ public class QualifierTyping implements Constraint {
     }
 
     ConstraintSet constraintSet = new ConstraintSet();
-    if (Q instanceof QualifierVar) {
+    if (Q instanceof QualifierVar var) {
       // Q <: R
-      QualifierVar var = (QualifierVar) Q;
       constraintSet.addAll(var.addBound(BoundKind.UPPER, R));
     }
-    if (R instanceof QualifierVar) {
+    if (R instanceof QualifierVar var) {
       // Q <: R
-      QualifierVar var = (QualifierVar) R;
       constraintSet.addAll(var.addBound(BoundKind.LOWER, Q));
     }
     return constraintSet;
@@ -117,14 +112,12 @@ public class QualifierTyping implements Constraint {
       return ConstraintSet.TRUE_ANNO_FAIL;
     }
     ConstraintSet constraintSet = new ConstraintSet();
-    if (Q instanceof QualifierVar) {
+    if (Q instanceof QualifierVar var) {
       // Q == R
-      QualifierVar var = (QualifierVar) Q;
       constraintSet.addAll(var.addBound(BoundKind.EQUAL, R));
     }
-    if (R instanceof QualifierVar) {
+    if (R instanceof QualifierVar var) {
       // Q == R
-      QualifierVar var = (QualifierVar) R;
       constraintSet.addAll(var.addBound(BoundKind.EQUAL, Q));
     }
     return constraintSet;
@@ -132,15 +125,13 @@ public class QualifierTyping implements Constraint {
 
   @Override
   public String toString() {
-    switch (kind) {
-      case QUALIFIER_SUBTYPE:
-        return Q + " <: " + R;
-
-      case QUALIFIER_EQUALITY:
-        return Q + " = " + R;
-      default:
+    return switch (kind) {
+      case QUALIFIER_SUBTYPE -> Q + " <: " + R;
+      case QUALIFIER_EQUALITY -> Q + " = " + R;
+      default -> {
         assert false;
-        return super.toString();
-    }
+        yield super.toString();
+      }
+    };
   }
 }

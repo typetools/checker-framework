@@ -731,8 +731,7 @@ public class AnnotatedTypes {
       targs = ((MethodInvocationTree) expr).getTypeArguments();
     } else if (expr instanceof NewClassTree) {
       targs = ((NewClassTree) expr).getTypeArguments();
-    } else if (expr instanceof MemberReferenceTree) {
-      MemberReferenceTree memRef = ((MemberReferenceTree) expr);
+    } else if (expr instanceof MemberReferenceTree memRef) {
       if (inferTypeArgs && TreeUtils.needsTypeArgInference(memRef)) {
         InferenceResult inferenceResult =
             atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, expr, preType);
@@ -791,34 +790,15 @@ public class AnnotatedTypes {
 
   /**
    * Class representing type arguments for a method, constructor, or method reference expression.
+   *
+   * @param typeArguments a mapping from {@link TypeVariable} to its annotated type argument
+   * @param uncheckedConversion true if unchecked conversion was needed for inference
+   * @param inferenceCrash true if type argument inference crashed
    */
-  public static class TypeArguments {
-
-    /** A mapping from {@link TypeVariable} to its annotated type argument. */
-    public final Map<TypeVariable, AnnotatedTypeMirror> typeArguments;
-
-    /** True if unchecked conversion was needed for inference. */
-    public final boolean uncheckedConversion;
-
-    /** True if type argument inference crashed. */
-    public final boolean inferenceCrash;
-
-    /**
-     * Creates a {@link TypeArguments} object.
-     *
-     * @param typeArguments a mapping from {@link TypeVariable} to its annotated type argument
-     * @param uncheckedConversion true if unchecked conversion was needed for inference
-     * @param inferenceCrash true if type argument inference crashed
-     */
-    public TypeArguments(
-        Map<TypeVariable, AnnotatedTypeMirror> typeArguments,
-        boolean uncheckedConversion,
-        boolean inferenceCrash) {
-      this.typeArguments = typeArguments;
-      this.uncheckedConversion = uncheckedConversion;
-      this.inferenceCrash = inferenceCrash;
-    }
-  }
+  public record TypeArguments(
+      Map<TypeVariable, AnnotatedTypeMirror> typeArguments,
+      boolean uncheckedConversion,
+      boolean inferenceCrash) {}
 
   /**
    * Returns the lub of two annotated types.
@@ -1070,12 +1050,11 @@ public class AnnotatedTypes {
     }
 
     AnnotatedTypeMirror lastParam = parameters.get(parameters.size() - 1);
-    if (!(lastParam instanceof AnnotatedArrayType)) {
+    if (!(lastParam instanceof AnnotatedArrayType varargs)) {
       throw new BugInCF(
           String.format(
               "for varargs call %s, last parameter %s is not an array", invok, lastParam));
     }
-    AnnotatedArrayType varargs = (AnnotatedArrayType) lastParam;
 
     if (parameters.size() == args.size()) {
       // Check if one sent an element or an array
@@ -1150,8 +1129,7 @@ public class AnnotatedTypes {
     int lastIndex = parameterTypes.size() - 1;
     AnnotatedTypeMirror lastType = parameterTypes.get(lastIndex);
     boolean parameterBeforeVarargs = index < lastIndex;
-    if (!parameterBeforeVarargs && lastType instanceof AnnotatedArrayType) {
-      AnnotatedArrayType arrayType = (AnnotatedArrayType) lastType;
+    if (!parameterBeforeVarargs && lastType instanceof AnnotatedArrayType arrayType) {
       if (hasVarargs) {
         return arrayType.getComponentType();
       }
@@ -1344,10 +1322,8 @@ public class AnnotatedTypes {
     TypeParameterElement type2ParamElem =
         (TypeParameterElement) type2.getUnderlyingType().asElement();
 
-    if (type1ParamElem.getGenericElement() instanceof ExecutableElement
-        && type2ParamElem.getGenericElement() instanceof ExecutableElement) {
-      ExecutableElement type1Executable = (ExecutableElement) type1ParamElem.getGenericElement();
-      ExecutableElement type2Executable = (ExecutableElement) type2ParamElem.getGenericElement();
+    if (type1ParamElem.getGenericElement() instanceof ExecutableElement type1Executable
+        && type2ParamElem.getGenericElement() instanceof ExecutableElement type2Executable) {
 
       TypeElement type1Class = (TypeElement) type1Executable.getEnclosingElement();
       TypeElement type2Class = (TypeElement) type2Executable.getEnclosingElement();

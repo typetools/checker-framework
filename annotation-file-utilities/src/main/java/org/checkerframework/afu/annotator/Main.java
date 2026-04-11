@@ -18,7 +18,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -460,8 +459,7 @@ public class Main {
         for (Annotation anno : annos) {
           el.tlAnnotationsHere.add(anno);
         }
-        if (ins instanceof TypedInsertion) {
-          TypedInsertion ti = (TypedInsertion) ins;
+        if (ins instanceof TypedInsertion ti) {
           if (!rec.astPath.isEmpty()) {
             // addInnerTypePaths(decl, rec, ti, insertionSources);
           }
@@ -599,15 +597,11 @@ public class Main {
           }
         }
         AScene scene = spec.getScene();
-        Collections.sort(
-            parsedSpec,
-            new Comparator<Insertion>() {
-              @Override
-              public int compare(Insertion i1, Insertion i2) {
-                ASTPath p1 = i1.getCriteria().getASTPath();
-                ASTPath p2 = i2.getCriteria().getASTPath();
-                return p1 == null ? p2 == null ? 0 : -1 : p2 == null ? 1 : p1.compareTo(p2);
-              }
+        parsedSpec.sort(
+            (Insertion i1, Insertion i2) -> {
+              ASTPath p1 = i1.getCriteria().getASTPath();
+              ASTPath p2 = i2.getCriteria().getASTPath();
+              return p1 == null ? p2 == null ? 0 : -1 : p2 == null ? 1 : p1.compareTo(p2);
             });
         if (convert_jaifs) {
           scenes.put(jaifFile, filteredScene(scene));
@@ -773,17 +767,14 @@ public class Main {
         Set<IPair<Integer, ASTPath>> positionKeysUnsorted = positions.keySet();
         Set<IPair<Integer, ASTPath>> positionKeysSorted =
             new TreeSet<IPair<Integer, ASTPath>>(
-                new Comparator<IPair<Integer, ASTPath>>() {
-                  @Override
-                  public int compare(IPair<Integer, ASTPath> p1, IPair<Integer, ASTPath> p2) {
-                    int c = Integer.compare(p2.first, p1.first);
-                    if (c != 0) {
-                      return c;
-                    }
-                    return p2.second == null
-                        ? (p1.second == null ? 0 : -1)
-                        : (p1.second == null ? 1 : p2.second.compareTo(p1.second));
+                (p1, p2) -> {
+                  int c = Integer.compare(p2.first, p1.first);
+                  if (c != 0) {
+                    return c;
                   }
+                  return p2.second == null
+                      ? (p1.second == null ? 0 : -1)
+                      : (p1.second == null ? 1 : p2.second.compareTo(p1.second));
                 });
         positionKeysSorted.addAll(positionKeysUnsorted);
         for (IPair<Integer, ASTPath> pair : positionKeysSorted) {
@@ -946,8 +937,7 @@ public class Main {
               dbug.debug("Need import %s%n  due to insertion %s%n", packageNames, toInsert);
               imports.addAll(packageNames);
             }
-            if (iToInsert instanceof AnnotationInsertion) {
-              AnnotationInsertion annoToInsert = (AnnotationInsertion) iToInsert;
+            if (iToInsert instanceof AnnotationInsertion annoToInsert) {
               Set<String> annoImports =
                   annotationImports.get(annoToInsert.getAnnotationFullyQualifiedName());
               if (annoImports != null) {
@@ -1086,18 +1076,15 @@ public class Main {
    * that they are alphabetized when inserted).
    */
   private static Comparator<Insertion> insertionSorter =
-      new Comparator<Insertion>() {
-        @Override
-        public int compare(Insertion i1, Insertion i2) {
-          boolean separateLine1 = i1.isSeparateLine();
-          boolean separateLine2 = i2.isSeparateLine();
-          if (separateLine1 && !separateLine2) {
-            return 1;
-          } else if (separateLine2 && !separateLine1) {
-            return -1;
-          } else {
-            return -i1.getText().compareTo(i2.getText());
-          }
+      (i1, i2) -> {
+        boolean separateLine1 = i1.isSeparateLine();
+        boolean separateLine2 = i2.isSeparateLine();
+        if (separateLine1 && !separateLine2) {
+          return 1;
+        } else if (separateLine2 && !separateLine1) {
+          return -1;
+        } else {
+          return -i1.getText().compareTo(i2.getText());
         }
       };
 

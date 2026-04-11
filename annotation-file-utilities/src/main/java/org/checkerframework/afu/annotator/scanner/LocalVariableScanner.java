@@ -130,17 +130,11 @@ public class LocalVariableScanner extends CommonScanner {
    * @param offset the start offset of the local variable
    */
   public static void addToMethodNameCounter(String methodName, String varName, Integer offset) {
-    Map<String, List<Integer>> nameOffsetCounter = methodNameCounter.get(methodName);
-    if (nameOffsetCounter == null) {
-      nameOffsetCounter = new HashMap<>();
-      methodNameCounter.put(methodName, nameOffsetCounter);
-    }
+    Map<String, List<Integer>> nameOffsetCounter =
+        methodNameCounter.computeIfAbsent(methodName, k -> new HashMap<>());
 
-    List<Integer> listOfOffsets = nameOffsetCounter.get(varName);
-    if (listOfOffsets == null) {
-      listOfOffsets = new ArrayList<>();
-      nameOffsetCounter.put(varName, listOfOffsets);
-    }
+    List<Integer> listOfOffsets =
+        nameOffsetCounter.computeIfAbsent(varName, k -> new ArrayList<>());
 
     listOfOffsets.add(offset);
   }

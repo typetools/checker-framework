@@ -926,10 +926,9 @@ public class MustCallConsistencyAnalyzer {
   public boolean shouldTrackInvocationResult(
       Set<Obligation> obligations, Node node, boolean isMustCallInference) {
     Tree callTree = node.getTree();
-    if (callTree instanceof NewClassTree) {
+    if (callTree instanceof NewClassTree newClassTree) {
       // Constructor results from new expressions are tracked as long as the declared type has
       // a non-empty @MustCall annotation.
-      NewClassTree newClassTree = (NewClassTree) callTree;
       ExecutableElement executableElement = TreeUtils.elementFromUse(newClassTree);
       TypeElement typeElt = TypesUtils.getTypeElement(ElementUtils.getType(executableElement));
       return typeElt == null
@@ -1025,8 +1024,7 @@ public class MustCallConsistencyAnalyzer {
     }
     for (int i = 0; i < arguments.size(); i++) {
       Node n = removeCastsAndGetTmpVarIfPresent(arguments.get(i));
-      if (n instanceof LocalVariableNode) {
-        LocalVariableNode local = (LocalVariableNode) n;
+      if (n instanceof LocalVariableNode local) {
         if (varTrackedInObligations(obligations, local)) {
 
           // check if parameter has an @Owning annotation
@@ -1144,10 +1142,8 @@ public class MustCallConsistencyAnalyzer {
       // Remove Obligations from local variables, now that the owning field is responsible.
       // (When obligation creation is turned off, non-final fields cannot take ownership.)
       if (isOwningField
-          && rhs instanceof LocalVariableNode
+          && rhs instanceof LocalVariableNode rhsVar
           && (cmAtf.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
-
-        LocalVariableNode rhsVar = (LocalVariableNode) rhs;
 
         MethodTree enclosingMethod = cfg.getEnclosingMethod(assignmentNode.getTree());
         boolean inConstructor = enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
@@ -1197,8 +1193,7 @@ public class MustCallConsistencyAnalyzer {
               new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
         }
       }
-    } else if (lhs instanceof LocalVariableNode) {
-      LocalVariableNode lhsVar = (LocalVariableNode) lhs;
+    } else if (lhs instanceof LocalVariableNode lhsVar) {
       updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
     }
   }
@@ -1370,9 +1365,7 @@ public class MustCallConsistencyAnalyzer {
       }
       // If rhs is a variable tracked in the Obligation's resource alias set, gen the lhs
       // by adding it to the resource alias set.
-      if (rhs instanceof LocalVariableNode
-          && obligation.canBeSatisfiedThrough((LocalVariableNode) rhs)) {
-        LocalVariableNode rhsVar = (LocalVariableNode) rhs;
+      if (rhs instanceof LocalVariableNode rhsVar && obligation.canBeSatisfiedThrough(rhsVar)) {
         if (newResourceAliasesForObligation == null) {
           newResourceAliasesForObligation = new LinkedHashSet<>(obligation.resourceAliases);
         }
@@ -1442,7 +1435,7 @@ public class MustCallConsistencyAnalyzer {
 
     Node lhsNode = node.getTarget();
 
-    if (!(lhsNode instanceof FieldAccessNode)) {
+    if (!(lhsNode instanceof FieldAccessNode lhs)) {
       throw new TypeSystemError(
           "checkReassignmentToOwningField: non-field node "
               + node
@@ -1450,7 +1443,6 @@ public class MustCallConsistencyAnalyzer {
               + node.getClass());
     }
 
-    FieldAccessNode lhs = (FieldAccessNode) lhsNode;
     Node receiver = lhs.getReceiver();
 
     if (permitStaticOwning && receiver instanceof ClassNameNode) {
@@ -1777,8 +1769,7 @@ public class MustCallConsistencyAnalyzer {
    * @return the arguments, in order
    */
   /*package-private*/ List<Node> getArgumentsOfInvocation(Node node) {
-    if (node instanceof MethodInvocationNode) {
-      MethodInvocationNode invocationNode = (MethodInvocationNode) node;
+    if (node instanceof MethodInvocationNode invocationNode) {
       return invocationNode.getArguments();
     } else if (node instanceof ObjectCreationNode) {
       return ((ObjectCreationNode) node).getArguments();
@@ -1797,8 +1788,7 @@ public class MustCallConsistencyAnalyzer {
    */
   /*package-private*/ List<? extends VariableElement> getParametersOfInvocation(Node node) {
     ExecutableElement executableElement;
-    if (node instanceof MethodInvocationNode) {
-      MethodInvocationNode invocationNode = (MethodInvocationNode) node;
+    if (node instanceof MethodInvocationNode invocationNode) {
       executableElement = TreeUtils.elementFromUse(invocationNode.getTree());
     } else if (node instanceof ObjectCreationNode) {
       executableElement = TreeUtils.elementFromUse(((ObjectCreationNode) node).getTree());
@@ -2201,10 +2191,9 @@ public class MustCallConsistencyAnalyzer {
    * @return true if node is a MethodInvocationNode of a method with a CreatesMustCallFor annotation
    */
   private boolean isInvocationOfCreatesMustCallForMethod(Node node) {
-    if (!(node instanceof MethodInvocationNode)) {
+    if (!(node instanceof MethodInvocationNode miNode)) {
       return false;
     }
-    MethodInvocationNode miNode = (MethodInvocationNode) node;
     return cmAtf.hasCreatesMustCallFor(miNode);
   }
 

@@ -37,8 +37,7 @@ final class PackageCriterion implements Criterion {
         "PackageCriterion.isSatisfiedBy(%s, %s); this=%s%n",
         Main.leafString(path), tree, this.toString());
 
-    if (tree instanceof CompilationUnitTree) {
-      CompilationUnitTree cu = (CompilationUnitTree) tree;
+    if (tree instanceof CompilationUnitTree cu) {
       if (cu.getSourceFile().getName().endsWith("package-info.java")) {
         ExpressionTree pn = cu.getPackageName();
         assert ((pn instanceof IdentifierTree) || (pn instanceof MemberSelectTree));

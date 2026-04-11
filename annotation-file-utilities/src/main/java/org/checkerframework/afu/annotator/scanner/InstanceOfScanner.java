@@ -73,11 +73,8 @@ public class InstanceOfScanner extends CommonScanner {
    * @param offset the offset to add
    */
   public static void addInstanceOfToMethod(String methodName, Integer offset) {
-    List<Integer> offsetList = methodNameToInstanceOfOffsets.get(methodName);
-    if (offsetList == null) {
-      offsetList = new ArrayList<>();
-      methodNameToInstanceOfOffsets.put(methodName, offsetList);
-    }
+    List<Integer> offsetList =
+        methodNameToInstanceOfOffsets.computeIfAbsent(methodName, k -> new ArrayList<>());
     offsetList.add(offset);
   }
 

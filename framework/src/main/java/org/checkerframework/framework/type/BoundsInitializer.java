@@ -79,19 +79,16 @@ public class BoundsInitializer {
    */
   public static WildcardType getUpperBoundAsWildcard(TypeVariable typeVariable, Types types) {
     TypeMirror upperBound = typeVariable.getUpperBound();
-    switch (upperBound.getKind()) {
-      case ARRAY:
-      case DECLARED:
-      case TYPEVAR:
-        return types.getWildcardType(upperBound, null);
-      case INTERSECTION:
-        // Can't create a wildcard with an intersection as an extends bound, so use
-        // an unbound wildcard instead.
-        return types.getWildcardType(null, null);
-      default:
-        throw new BugInCF(
-            "Unexpected upper bound kind: %s type: %s", upperBound.getKind(), upperBound);
-    }
+    return switch (upperBound.getKind()) {
+      case ARRAY, DECLARED, TYPEVAR -> types.getWildcardType(upperBound, null);
+      case INTERSECTION ->
+          // Can't create a wildcard with an intersection as an extends bound, so use
+          // an unbound wildcard instead.
+          types.getWildcardType(null, null);
+      default ->
+          throw new BugInCF(
+              "Unexpected upper bound kind: %s type: %s", upperBound.getKind(), upperBound);
+    };
   }
 
   /**

@@ -160,8 +160,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
 
   @Override
   protected Object processErrorMessageArg(Object arg) {
-    if (arg instanceof Collection) {
-      Collection<?> carg = (Collection<?>) arg;
+    if (arg instanceof Collection<?> carg) {
       return CollectionsPlume.mapList(this::processErrorMessageArg, carg);
     } else if (arg instanceof AnnotationMirror && getTypeFactory() != null) {
       return getTypeFactory()

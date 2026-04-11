@@ -224,15 +224,13 @@ public class LockAnnotatedTypeFactory
    * @return true if the expression is effectively final
    */
   boolean isExpressionEffectivelyFinal(JavaExpression expr) {
-    if (expr instanceof FieldAccess) {
-      FieldAccess fieldAccess = (FieldAccess) expr;
+    if (expr instanceof FieldAccess fieldAccess) {
       JavaExpression receiver = fieldAccess.getReceiver();
       // Don't call fieldAccess
       return fieldAccess.isFinal() && isExpressionEffectivelyFinal(receiver);
     } else if (expr instanceof LocalVariable) {
       return ElementUtils.isEffectivelyFinal(((LocalVariable) expr).getElement());
-    } else if (expr instanceof MethodCall) {
-      MethodCall methodCall = (MethodCall) expr;
+    } else if (expr instanceof MethodCall methodCall) {
       for (JavaExpression arg : methodCall.getArguments()) {
         if (!isExpressionEffectivelyFinal(arg)) {
           return false;
@@ -600,7 +598,7 @@ public class LockAnnotatedTypeFactory
     // the call site (e.g. @GuardedBy("someLock") and replace the return type at the call site
     // with this type.
 
-    AnnotatedExecutableType invokedMethod = mType.executableType;
+    AnnotatedExecutableType invokedMethod = mType.executableType();
 
     if (invokedMethod.getElement().getKind() == ElementKind.CONSTRUCTOR) {
       return mType;

@@ -367,11 +367,9 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     // containing such class/lambda
     if (isDirectlyMarkedUIThroughInference(tree)) {
       typeMirror.replaceAnnotation(AnnotationBuilder.fromClass(elements, UI.class));
-    } else if (tree instanceof ParenthesizedTree) {
-      ParenthesizedTree parenthesizedTree = (ParenthesizedTree) tree;
+    } else if (tree instanceof ParenthesizedTree parenthesizedTree) {
       return this.getAnnotatedType(parenthesizedTree.getExpression());
-    } else if (tree instanceof ConditionalExpressionTree) {
-      ConditionalExpressionTree cet = (ConditionalExpressionTree) tree;
+    } else if (tree instanceof ConditionalExpressionTree cet) {
       boolean isTrueOperandUI =
           (cet.getTrueExpression() != null
               && this.getAnnotatedType(cet.getTrueExpression()).hasPrimaryAnnotation(UI.class));

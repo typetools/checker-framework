@@ -11,8 +11,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,43 +118,38 @@ public class QualifierDefaults {
 
   /** CLIMB locations whose standard default is top for a given type system. */
   public static final List<TypeUseLocation> STANDARD_CLIMB_DEFAULTS_TOP =
-      Collections.unmodifiableList(
-          Arrays.asList(
-              TypeUseLocation.LOCAL_VARIABLE,
-              TypeUseLocation.RESOURCE_VARIABLE,
-              TypeUseLocation.EXCEPTION_PARAMETER,
-              TypeUseLocation.IMPLICIT_UPPER_BOUND));
+      List.of(
+          TypeUseLocation.LOCAL_VARIABLE,
+          TypeUseLocation.RESOURCE_VARIABLE,
+          TypeUseLocation.EXCEPTION_PARAMETER,
+          TypeUseLocation.IMPLICIT_UPPER_BOUND);
 
   /** CLIMB locations whose standard default is bottom for a given type system. */
   public static final List<TypeUseLocation> STANDARD_CLIMB_DEFAULTS_BOTTOM =
-      Collections.unmodifiableList(Arrays.asList(TypeUseLocation.IMPLICIT_LOWER_BOUND));
+      List.of(TypeUseLocation.IMPLICIT_LOWER_BOUND);
 
   /** List of TypeUseLocations that are valid for unchecked code defaults. */
   private static final List<TypeUseLocation> validUncheckedCodeDefaultLocations =
-      Collections.unmodifiableList(
-          Arrays.asList(
-              TypeUseLocation.FIELD,
-              TypeUseLocation.PARAMETER,
-              TypeUseLocation.RETURN,
-              TypeUseLocation.RECEIVER,
-              TypeUseLocation.UPPER_BOUND,
-              TypeUseLocation.LOWER_BOUND,
-              TypeUseLocation.OTHERWISE,
-              TypeUseLocation.ALL));
+      List.of(
+          TypeUseLocation.FIELD,
+          TypeUseLocation.PARAMETER,
+          TypeUseLocation.RETURN,
+          TypeUseLocation.RECEIVER,
+          TypeUseLocation.UPPER_BOUND,
+          TypeUseLocation.LOWER_BOUND,
+          TypeUseLocation.OTHERWISE,
+          TypeUseLocation.ALL);
 
   /** Standard unchecked default locations that should be top. */
   // Fields are defaulted to top so that warnings are issued at field reads, which we believe are
   // more common than field writes. Future work is to specify different defaults for field reads
   // and field writes.  (When a field is written to, its type should be bottom.)
   public static final List<TypeUseLocation> STANDARD_UNCHECKED_DEFAULTS_TOP =
-      Collections.unmodifiableList(
-          Arrays.asList(
-              TypeUseLocation.RETURN, TypeUseLocation.FIELD, TypeUseLocation.UPPER_BOUND));
+      List.of(TypeUseLocation.RETURN, TypeUseLocation.FIELD, TypeUseLocation.UPPER_BOUND);
 
   /** Standard unchecked default locations that should be bottom. */
   public static final List<TypeUseLocation> STANDARD_UNCHECKED_DEFAULTS_BOTTOM =
-      Collections.unmodifiableList(
-          Arrays.asList(TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND));
+      List.of(TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND);
 
   /** True if conservative defaults should be used in unannotated source code. */
   private final boolean useConservativeDefaultsSource;
@@ -1193,8 +1186,7 @@ public class QualifierDefaults {
       }
 
     } else {
-      if (typeParamDecl instanceof TypeParameterTree) {
-        TypeParameterTree tptree = (TypeParameterTree) typeParamDecl;
+      if (typeParamDecl instanceof TypeParameterTree tptree) {
 
         List<? extends Tree> bnds = tptree.getBounds();
         if (bnds != null && !bnds.isEmpty()) {

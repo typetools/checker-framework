@@ -129,8 +129,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
               atypeFactory.getAnnotatedType((MethodTree) methodTree);
           contextType = methodType.getReturnType();
         }
-      } else if (parentTree instanceof MethodInvocationTree && useAssignmentContext) {
-        MethodInvocationTree methodInvocationTree = (MethodInvocationTree) parentTree;
+      } else if (parentTree instanceof MethodInvocationTree methodInvocationTree
+          && useAssignmentContext) {
         useAssignmentContext = false;
         AnnotatedExecutableType m;
         try {
@@ -138,7 +138,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
               && methodInvocationToType.containsKey(methodInvocationTree)) {
             m = methodInvocationToType.get(methodInvocationTree);
           } else {
-            m = atypeFactory.methodFromUse(methodInvocationTree).executableType;
+            m = atypeFactory.methodFromUse(methodInvocationTree).executableType();
             if (atypeFactory.shouldCache) {
               methodInvocationToType.put(methodInvocationTree, m);
             }

@@ -258,7 +258,7 @@ public abstract class Insertion {
    *
    * @param s the string representation of an annotation
    * @return given {@code @com.foo.bar(baz)} it returns a pair of {@code com.foo} and
-   *     {@code @bar(baz)}.
+   *     {@code @bar(baz)}
    */
   public static IPair<String, String> removePackage(String s) {
     int nameEnd = s.indexOf('(');

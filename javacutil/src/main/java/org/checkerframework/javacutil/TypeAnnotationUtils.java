@@ -166,8 +166,8 @@ public class TypeAnnotationUtils {
       if (!types.isSameType(t1, t2)) {
         return false;
       }
-      Map<Symbol.MethodSymbol, Attribute> map1 = ((Attribute.Compound) a1).getElementValues();
-      Map<Symbol.MethodSymbol, Attribute> map2 = ((Attribute.Compound) a2).getElementValues();
+      Map<Symbol.MethodSymbol, Attribute> map1 = ac1.getElementValues();
+      Map<Symbol.MethodSymbol, Attribute> map2 = ac2.getElementValues();
       // Is this test, which uses equals() for the keys, too strict?
       if (!map1.keySet().equals(map2.keySet())) {
         return false;
@@ -535,110 +535,72 @@ public class TypeAnnotationUtils {
    * @return a copied TypeAnnotationPosition
    */
   public static TypeAnnotationPosition copyTAPosition(TypeAnnotationPosition tapos) {
-    TypeAnnotationPosition res;
-    switch (tapos.type) {
-      case CAST:
-        res =
-            TypeAnnotationPosition.typeCast(
-                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
-        break;
-      case CLASS_EXTENDS:
-        res =
-            TypeAnnotationPosition.classExtends(
-                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
-        break;
-      case CLASS_TYPE_PARAMETER:
-        res =
-            TypeAnnotationPosition.typeParameter(
-                tapos.location, tapos.onLambda, tapos.parameter_index, tapos.pos);
-        break;
-      case CLASS_TYPE_PARAMETER_BOUND:
-        res =
-            TypeAnnotationPosition.typeParameterBound(
-                tapos.location,
-                tapos.onLambda,
-                tapos.parameter_index,
-                tapos.bound_index,
-                tapos.pos);
-        break;
-      case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
-        res =
-            TypeAnnotationPosition.constructorInvocationTypeArg(
-                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
-        break;
-      case CONSTRUCTOR_REFERENCE:
-        res = TypeAnnotationPosition.constructorRef(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT:
-        res =
-            TypeAnnotationPosition.constructorRefTypeArg(
-                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
-        break;
-      case EXCEPTION_PARAMETER:
-        res = TypeAnnotationPosition.exceptionParameter(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case FIELD:
-        res = TypeAnnotationPosition.field(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case INSTANCEOF:
-        res = TypeAnnotationPosition.instanceOf(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case LOCAL_VARIABLE:
-        res = TypeAnnotationPosition.localVariable(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case METHOD_FORMAL_PARAMETER:
-        res =
-            TypeAnnotationPosition.methodParameter(
-                tapos.location, tapos.onLambda, tapos.parameter_index, tapos.pos);
-        break;
-      case METHOD_INVOCATION_TYPE_ARGUMENT:
-        res =
-            TypeAnnotationPosition.methodInvocationTypeArg(
-                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
-        break;
-      case METHOD_RECEIVER:
-        res = TypeAnnotationPosition.methodReceiver(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case METHOD_REFERENCE:
-        res = TypeAnnotationPosition.methodRef(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case METHOD_REFERENCE_TYPE_ARGUMENT:
-        res =
-            TypeAnnotationPosition.methodRefTypeArg(
-                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
-        break;
-      case METHOD_RETURN:
-        res = TypeAnnotationPosition.methodReturn(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case METHOD_TYPE_PARAMETER:
-        res =
-            TypeAnnotationPosition.methodTypeParameter(
-                tapos.location, tapos.onLambda, tapos.parameter_index, tapos.pos);
-        break;
-      case METHOD_TYPE_PARAMETER_BOUND:
-        res =
-            TypeAnnotationPosition.methodTypeParameterBound(
-                tapos.location,
-                tapos.onLambda,
-                tapos.parameter_index,
-                tapos.bound_index,
-                tapos.pos);
-        break;
-      case NEW:
-        res = TypeAnnotationPosition.newObj(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case RESOURCE_VARIABLE:
-        res = TypeAnnotationPosition.resourceVariable(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case THROWS:
-        res =
-            TypeAnnotationPosition.methodThrows(
-                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
-        break;
-      case UNKNOWN:
-      default:
-        throw new BugInCF("Unexpected target type: " + tapos + " at " + tapos.type);
-    }
+    TypeAnnotationPosition res =
+        switch (tapos.type) {
+          case CAST ->
+              TypeAnnotationPosition.typeCast(
+                  tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+          case CLASS_EXTENDS ->
+              TypeAnnotationPosition.classExtends(
+                  tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+          case CLASS_TYPE_PARAMETER ->
+              TypeAnnotationPosition.typeParameter(
+                  tapos.location, tapos.onLambda, tapos.parameter_index, tapos.pos);
+          case CLASS_TYPE_PARAMETER_BOUND ->
+              TypeAnnotationPosition.typeParameterBound(
+                  tapos.location,
+                  tapos.onLambda,
+                  tapos.parameter_index,
+                  tapos.bound_index,
+                  tapos.pos);
+          case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT ->
+              TypeAnnotationPosition.constructorInvocationTypeArg(
+                  tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+          case CONSTRUCTOR_REFERENCE ->
+              TypeAnnotationPosition.constructorRef(tapos.location, tapos.onLambda, tapos.pos);
+          case CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT ->
+              TypeAnnotationPosition.constructorRefTypeArg(
+                  tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+          case EXCEPTION_PARAMETER ->
+              TypeAnnotationPosition.exceptionParameter(tapos.location, tapos.onLambda, tapos.pos);
+          case FIELD -> TypeAnnotationPosition.field(tapos.location, tapos.onLambda, tapos.pos);
+          case INSTANCEOF ->
+              TypeAnnotationPosition.instanceOf(tapos.location, tapos.onLambda, tapos.pos);
+          case LOCAL_VARIABLE ->
+              TypeAnnotationPosition.localVariable(tapos.location, tapos.onLambda, tapos.pos);
+          case METHOD_FORMAL_PARAMETER ->
+              TypeAnnotationPosition.methodParameter(
+                  tapos.location, tapos.onLambda, tapos.parameter_index, tapos.pos);
+          case METHOD_INVOCATION_TYPE_ARGUMENT ->
+              TypeAnnotationPosition.methodInvocationTypeArg(
+                  tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+          case METHOD_RECEIVER ->
+              TypeAnnotationPosition.methodReceiver(tapos.location, tapos.onLambda, tapos.pos);
+          case METHOD_REFERENCE ->
+              TypeAnnotationPosition.methodRef(tapos.location, tapos.onLambda, tapos.pos);
+          case METHOD_REFERENCE_TYPE_ARGUMENT ->
+              TypeAnnotationPosition.methodRefTypeArg(
+                  tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+          case METHOD_RETURN ->
+              TypeAnnotationPosition.methodReturn(tapos.location, tapos.onLambda, tapos.pos);
+          case METHOD_TYPE_PARAMETER ->
+              TypeAnnotationPosition.methodTypeParameter(
+                  tapos.location, tapos.onLambda, tapos.parameter_index, tapos.pos);
+          case METHOD_TYPE_PARAMETER_BOUND ->
+              TypeAnnotationPosition.methodTypeParameterBound(
+                  tapos.location,
+                  tapos.onLambda,
+                  tapos.parameter_index,
+                  tapos.bound_index,
+                  tapos.pos);
+          case NEW -> TypeAnnotationPosition.newObj(tapos.location, tapos.onLambda, tapos.pos);
+          case RESOURCE_VARIABLE ->
+              TypeAnnotationPosition.resourceVariable(tapos.location, tapos.onLambda, tapos.pos);
+          case THROWS ->
+              TypeAnnotationPosition.methodThrows(
+                  tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+          default -> throw new BugInCF("Unexpected target type: " + tapos + " at " + tapos.type);
+        };
     return res;
   }
 

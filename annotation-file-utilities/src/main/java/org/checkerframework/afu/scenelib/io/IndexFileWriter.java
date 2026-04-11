@@ -512,8 +512,7 @@ public final class IndexFileWriter {
   public static void formatAnnotationValue(StringBuilder sb, AnnotationFieldType aft, Object o) {
     if (aft instanceof AnnotationAFT) {
       formatAnnotation(sb, (Annotation) o);
-    } else if (aft instanceof ArrayAFT) {
-      ArrayAFT aaft = (ArrayAFT) aft;
+    } else if (aft instanceof ArrayAFT aaft) {
       List<?> l = (List<?>) o;
       sb.append("{");
       if (aaft.elementType == null) {

@@ -125,7 +125,7 @@ public class InferenceFactory {
         MethodInvocationTree methodInvocation = (MethodInvocationTree) context;
 
         AnnotatedExecutableType methodType =
-            factory.methodFromUseWithoutTypeArgInference(methodInvocation).executableType;
+            factory.methodFromUseWithoutTypeArgInference(methodInvocation).executableType();
 
         AnnotatedTypeMirror paramType =
             assignedToExecutable(
@@ -138,7 +138,7 @@ public class InferenceFactory {
       case NEW_CLASS:
         NewClassTree newClassTree = (NewClassTree) context;
         AnnotatedExecutableType constructorType =
-            factory.constructorFromUseWithoutTypeArgInference(newClassTree).executableType;
+            factory.constructorFromUseWithoutTypeArgInference(newClassTree).executableType();
         AnnotatedTypeMirror constATM =
             assignedToExecutable(path, newClassTree, newClassTree.getArguments(), constructorType);
         return new ProperType(
@@ -165,8 +165,7 @@ public class InferenceFactory {
         HashSet<Kind> kinds =
             new HashSet<>(Arrays.asList(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD));
         Tree enclosing = TreePathUtil.enclosingOfKind(path, kinds);
-        if (enclosing instanceof MethodTree) {
-          MethodTree methodTree = (MethodTree) enclosing;
+        if (enclosing instanceof MethodTree methodTree) {
           AnnotatedTypeMirror res = factory.getMethodReturnType(methodTree);
           return new ProperType(res, TreeUtils.typeOf(methodTree.getReturnType()), this.context);
         } else {
@@ -235,9 +234,7 @@ public class InferenceFactory {
    */
   public static AnnotatedTypeMirror assignedToVariable(
       AnnotatedTypeFactory atypeFactory, Tree assignmentContext) {
-    if (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>) {
-      final GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
-          ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory);
+    if (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf) {
       return gatf.getAnnotatedTypeLhsNoTypeVarDefault(assignmentContext);
     } else {
       return atypeFactory.getAnnotatedType(assignmentContext);
@@ -419,8 +416,8 @@ public class InferenceFactory {
     }
 
     // Adapt to class type arguments.
-    if (expressionTree instanceof NewClassTree && !TreeUtils.isDiamondTree(expressionTree)) {
-      NewClassTree newClassTree = (NewClassTree) expressionTree;
+    if (expressionTree instanceof NewClassTree newClassTree
+        && !TreeUtils.isDiamondTree(expressionTree)) {
       List<? extends Tree> typeArgs = TreeUtils.getTypeArgumentsToNewClassTree(newClassTree);
       if (!typeArgs.isEmpty()) {
         ExecutableElement e = TreeUtils.elementFromUse(newClassTree);
@@ -707,12 +704,14 @@ public class InferenceFactory {
     AnnotatedExecutableType executableType;
     if (invocation instanceof MethodInvocationTree) {
       executableType =
-          typeFactory.methodFromUseWithoutTypeArgInference((MethodInvocationTree) invocation)
-              .executableType;
+          typeFactory
+              .methodFromUseWithoutTypeArgInference((MethodInvocationTree) invocation)
+              .executableType();
     } else {
       executableType =
-          typeFactory.constructorFromUseWithoutTypeArgInference((NewClassTree) invocation)
-              .executableType;
+          typeFactory
+              .constructorFromUseWithoutTypeArgInference((NewClassTree) invocation)
+              .executableType();
     }
     return new InvocationType(
         executableType, getTypeOfMethodAdaptedToUse(invocation, context), invocation, context);
@@ -785,9 +784,9 @@ public class InferenceFactory {
     // The type of the compileTimeDeclaration if it were invoked with a receiver expression
     // of type {@code type}
     AnnotatedExecutableType compileTimeType =
-        typeFactory.methodFromUseWithoutTypeArgInference(
-                memRef, compileTimeDeclaration, enclosingType)
-            .executableType;
+        typeFactory
+            .methodFromUseWithoutTypeArgInference(memRef, compileTimeDeclaration, enclosingType)
+            .executableType();
 
     if (enclosingType.getKind() == TypeKind.DECLARED && memRefKind.isUnbound()) {
       // If compileTimeDeclaration is declared in a super class, then the receiver type is changed

@@ -38,8 +38,7 @@ public class AdditionalArgument implements Constraint {
 
   @Override
   public ConstraintSet reduce(Java8InferenceContext context) {
-    if (methodOrConstructorInvocation instanceof MethodInvocationTree) {
-      MethodInvocationTree methodInvocation = (MethodInvocationTree) methodOrConstructorInvocation;
+    if (methodOrConstructorInvocation instanceof MethodInvocationTree methodInvocation) {
       InvocationType methodType =
           context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(methodInvocation);
       Theta newMap =

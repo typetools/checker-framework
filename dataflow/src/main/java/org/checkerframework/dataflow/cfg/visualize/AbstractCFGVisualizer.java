@@ -398,16 +398,12 @@ public abstract class AbstractCFGVisualizer<
    * @return the String representation of the special block
    */
   protected String visualizeSpecialBlockHelper(SpecialBlock sbb) {
-    switch (sbb.getSpecialType()) {
-      case ENTRY:
-        return "<entry>";
-      case EXIT:
-        return "<exit>";
-      case EXCEPTIONAL_EXIT:
-        return "<exceptional-exit>";
-      default:
-        throw new BugInCF("Unrecognized special block type: " + sbb.getType());
-    }
+    return switch (sbb.getSpecialType()) {
+      case ENTRY -> "<entry>";
+      case EXIT -> "<exit>";
+      case EXCEPTIONAL_EXIT -> "<exceptional-exit>";
+      default -> throw new BugInCF("Unrecognized special block type: " + sbb.getType());
+    };
   }
 
   /**

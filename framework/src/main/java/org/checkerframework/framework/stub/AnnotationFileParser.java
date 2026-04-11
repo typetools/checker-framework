@@ -1022,8 +1022,7 @@ public class AnnotationFileParser {
       return typeDeclTypeParameters;
     }
 
-    if (typeDecl instanceof RecordDeclaration) {
-      RecordDeclaration recordDecl = (RecordDeclaration) typeDecl;
+    if (typeDecl instanceof RecordDeclaration recordDecl) {
       NodeList<Parameter> recordMembers = recordDecl.getParameters();
       Map<String, RecordComponentStub> byName =
           ArrayMap.newArrayMapOrLinkedHashMap(recordMembers.size());
@@ -1916,8 +1915,7 @@ public class AnnotationFileParser {
           elementsToDecl, fakeOverrideDecls, typeElt, member, typeDecl.getNameAsString(), astNode);
     }
     // For an enum type declaration, also add the enum constants
-    if (typeDecl instanceof EnumDeclaration) {
-      EnumDeclaration enumDecl = (EnumDeclaration) typeDecl;
+    if (typeDecl instanceof EnumDeclaration enumDecl) {
       // getEntries() gives the list of enum constant declarations
       for (BodyDeclaration<?> member : enumDecl.getEntries()) {
         putNewElement(
@@ -1958,8 +1956,7 @@ public class AnnotationFileParser {
       BodyDeclaration<?> member,
       String typeDeclName,
       NodeWithRange<?> astNode) {
-    if (member instanceof MethodDeclaration) {
-      MethodDeclaration method = (MethodDeclaration) member;
+    if (member instanceof MethodDeclaration method) {
       Element elt = findElement(typeElt, method, /* noWarn= */ true);
       if (elt != null) {
         putIfAbsent(elementsToDecl, elt, method);
@@ -1979,8 +1976,7 @@ public class AnnotationFileParser {
       if (elt != null) {
         putIfAbsent(elementsToDecl, elt, member);
       }
-    } else if (member instanceof FieldDeclaration) {
-      FieldDeclaration fieldDecl = (FieldDeclaration) member;
+    } else if (member instanceof FieldDeclaration fieldDecl) {
       for (VariableDeclarator var : fieldDecl.getVariables()) {
         Element varelt = findElement(typeElt, var);
         if (varelt != null) {
@@ -2111,11 +2107,10 @@ public class AnnotationFileParser {
 
       case DECLARED:
       case TYPEVAR:
-        if (!(javaParserType instanceof ClassOrInterfaceType)) {
+        if (!(javaParserType instanceof ClassOrInterfaceType javaParserClassType)) {
           return false;
         }
         com.sun.tools.javac.code.Type javacTypeInternal = (com.sun.tools.javac.code.Type) javacType;
-        ClassOrInterfaceType javaParserClassType = (ClassOrInterfaceType) javaParserType;
 
         // Use asString() because toString() includes annotations.
         String javaParserString = javaParserClassType.asString();
@@ -2503,8 +2498,7 @@ public class AnnotationFileParser {
 
     if (annotation instanceof MarkerAnnotationExpr) {
       return AnnotationBuilder.fromName(elements, annoName);
-    } else if (annotation instanceof NormalAnnotationExpr) {
-      NormalAnnotationExpr nrmanno = (NormalAnnotationExpr) annotation;
+    } else if (annotation instanceof NormalAnnotationExpr nrmanno) {
       AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoName);
       List<MemberValuePair> pairs = nrmanno.getPairs();
       if (pairs != null) {
@@ -2526,8 +2520,7 @@ public class AnnotationFileParser {
         }
       }
       return builder.build();
-    } else if (annotation instanceof SingleMemberAnnotationExpr) {
-      SingleMemberAnnotationExpr sglanno = (SingleMemberAnnotationExpr) annotation;
+    } else if (annotation instanceof SingleMemberAnnotationExpr sglanno) {
       AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoName);
       Expression valExpr = sglanno.getMemberValue();
       try {
@@ -2589,29 +2582,27 @@ public class AnnotationFileParser {
     } else if (expr instanceof LongLiteralExpr) {
       return convert(((LongLiteralExpr) expr).asNumber(), valueKind);
     } else if (expr instanceof UnaryExpr) {
-      switch (expr.toString()) {
+      return switch (expr.toString()) {
         // Special-case the minimum values.  Separately parsing a "-" and a value
         // doesn't correctly handle the minimum values, because the absolute value of
         // the smallest member of an integral type is larger than the largest value.
-        case "-9223372036854775808L":
-        case "-9223372036854775808l":
-          return convert(Long.MIN_VALUE, valueKind, false);
-        case "-2147483648":
-          return convert(Integer.MIN_VALUE, valueKind, false);
-        default:
+        case "-9223372036854775808L", "-9223372036854775808l" ->
+            convert(Long.MIN_VALUE, valueKind, false);
+        case "-2147483648" -> convert(Integer.MIN_VALUE, valueKind, false);
+        default -> {
           if (((UnaryExpr) expr).getOperator() == UnaryExpr.Operator.MINUS) {
             Object value =
                 getValueOfExpressionInAnnotation(
                     name, ((UnaryExpr) expr).getExpression(), valueKind);
             if (value instanceof Number) {
-              return convert((Number) value, valueKind, true);
+              yield convert((Number) value, valueKind, true);
             }
           }
           throw new AnnotationFileParserException(
               "unexpected Unary annotation expression: " + expr);
-      }
-    } else if (expr instanceof ClassExpr) {
-      ClassExpr classExpr = (ClassExpr) expr;
+        }
+      };
+    } else if (expr instanceof ClassExpr classExpr) {
       @SuppressWarnings("signature") // Type.toString(): @FullyQualifiedName
       @FullyQualifiedName String className = classExpr.getType().toString();
       if (importedTypes.containsKey(className)) {
@@ -2690,30 +2681,24 @@ public class AnnotationFileParser {
    */
   private Object convert(Number number, TypeKind expectedKind, boolean negate) {
     byte scalefactor = (byte) (negate ? -1 : 1);
-    switch (expectedKind) {
-      case BYTE:
-        return number.byteValue() * scalefactor;
-      case SHORT:
-        return number.shortValue() * scalefactor;
-      case INT:
-        return number.intValue() * scalefactor;
-      case LONG:
-        return number.longValue() * scalefactor;
-      case CHAR:
+    return switch (expectedKind) {
+      case BYTE -> number.byteValue() * scalefactor;
+      case SHORT -> number.shortValue() * scalefactor;
+      case INT -> number.intValue() * scalefactor;
+      case LONG -> number.longValue() * scalefactor;
+      case CHAR -> {
         // It's not possible for `number` to be negative when `expectedkind` is a CHAR, and
         // casting a negative value to char is illegal.
         if (negate) {
           throw new BugInCF(
               "convert(%s, %s, %s): can't negate a char", number, expectedKind, negate);
         }
-        return (char) number.intValue();
-      case FLOAT:
-        return number.floatValue() * scalefactor;
-      case DOUBLE:
-        return number.doubleValue() * scalefactor;
-      default:
-        throw new BugInCF("Unexpected expectedKind: " + expectedKind);
-    }
+        yield (char) number.intValue();
+      }
+      case FLOAT -> number.floatValue() * scalefactor;
+      case DOUBLE -> number.doubleValue() * scalefactor;
+      default -> throw new BugInCF("Unexpected expectedKind: " + expectedKind);
+    };
   }
 
   /**
@@ -3216,28 +3201,14 @@ public class AnnotationFileParser {
   // Parse state
   //
 
-  /** Represents a class: its package name and name (including outer class names if any). */
-  private static class FqName {
-    /** Name of the package being parsed, or null. */
-    public final @Nullable String packageName;
-
-    /**
-     * Name of the type being parsed. Includes outer class names if any. Null if the parser has
-     * parsed a package declaration but has not yet gotten to a type declaration.
-     */
-    public final @Nullable String className;
-
-    /**
-     * Create a new FqName, which represents a class.
-     *
-     * @param packageName name of the package, or null
-     * @param className unqualified name of the type, including outer class names if any. May be
-     *     null.
-     */
-    public FqName(@Nullable String packageName, @Nullable String className) {
-      this.packageName = packageName;
-      this.className = className;
-    }
+  /**
+   * Represents a class: its package name and name (including outer class names if any).
+   *
+   * @param packageName name of the package being parsed, or null
+   * @param className name of the type being parsed. Includes outer class names if any. Null if the
+   *     parser has parsed a package declaration but has not yet gotten to a type declaration.
+   */
+  private record FqName(@Nullable String packageName, @Nullable String className) {
 
     /** Fully-qualified name of the class. */
     @Override

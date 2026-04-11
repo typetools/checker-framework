@@ -109,16 +109,14 @@ public class Constant implements AbstractValue<Constant> {
 
   @Override
   public String toString() {
-    switch (type) {
-      case TOP:
-        return "T";
-      case BOTTOM:
-        return "-";
-      case CONSTANT:
+    return switch (type) {
+      case TOP -> "T";
+      case BOTTOM -> "-";
+      case CONSTANT -> {
         assert isConstant() : "@AssumeAssertion(nullness)";
-        return value.toString();
-      default:
-        throw new BugInCF("Unexpected type: " + type);
-    }
+        yield value.toString();
+      }
+      default -> throw new BugInCF("Unexpected type: " + type);
+    };
   }
 }

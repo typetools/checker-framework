@@ -150,22 +150,17 @@ public class Range {
    * @return the range for the given primitive type
    */
   public static Range create(TypeKind typeKind) {
-    switch (typeKind) {
-      case INT:
-        return INT_EVERYTHING;
-      case SHORT:
-        return SHORT_EVERYTHING;
-      case BYTE:
-        return BYTE_EVERYTHING;
-      case CHAR:
-        return CHAR_EVERYTHING;
-      case LONG:
-        return LONG_EVERYTHING;
-      default:
-        throw new IllegalArgumentException(
-            "Invalid TypeKind for Range: expected INT, SHORT, BYTE, CHAR, or LONG, got "
-                + typeKind);
-    }
+    return switch (typeKind) {
+      case INT -> INT_EVERYTHING;
+      case SHORT -> SHORT_EVERYTHING;
+      case BYTE -> BYTE_EVERYTHING;
+      case CHAR -> CHAR_EVERYTHING;
+      case LONG -> LONG_EVERYTHING;
+      default ->
+          throw new IllegalArgumentException(
+              "Invalid TypeKind for Range: expected INT, SHORT, BYTE, CHAR, or LONG, got "
+                  + typeKind);
+    };
   }
 
   /**
