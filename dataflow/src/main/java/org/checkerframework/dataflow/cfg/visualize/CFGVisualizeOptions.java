@@ -106,43 +106,37 @@ public class CFGVisualizeOptions {
 
     for (int i = 1; i < args.length; i++) {
       switch (args[i]) {
-        case "--outputdir":
+        case "--outputdir" -> {
           if (i >= args.length - 1) {
             printError("Did not find <outputdir> after --outputdir.");
             continue;
           }
           i++;
           output = args[i];
-          break;
-        case "--pdf":
-          pdf = true;
-          break;
-        case "--method":
+        }
+        case "--pdf" -> pdf = true;
+        case "--method" -> {
           if (i >= args.length - 1) {
             printError("Did not find <name> after --method.");
             continue;
           }
           i++;
           method = args[i];
-          break;
-        case "--class":
+        }
+        case "--class" -> {
           if (i >= args.length - 1) {
             printError("Did not find <name> after --class.");
             continue;
           }
           i++;
           clas = args[i];
-          break;
-        case "--verbose":
-          verbose = true;
-          break;
-        case "--string":
-          string = true;
-          break;
-        default:
+        }
+        case "--verbose" -> verbose = true;
+        case "--string" -> string = true;
+        default -> {
           printError("Unknown command line argument: " + args[i]);
           error = true;
-          break;
+        }
       }
     }
 

@@ -4243,34 +4243,28 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     } else {
       Element element = TreeUtils.elementFromUse(tree);
       switch (element.getKind()) {
-        case FIELD:
+        case FIELD -> {
           // Note that "this"/"super" is a field, but not a field access.
           if (element.getSimpleName().contentEquals("this")) {
             node = new ExplicitThisNode(tree);
           } else {
             node = new SuperNode(tree);
           }
-          break;
-        case EXCEPTION_PARAMETER:
-        case LOCAL_VARIABLE:
-        case RESOURCE_VARIABLE:
-        case PARAMETER:
-        case BINDING_VARIABLE:
-          node = new LocalVariableNode(tree);
-          break;
-        case PACKAGE:
-          node = new PackageNameNode(tree);
-          break;
-        default:
+        }
+        case EXCEPTION_PARAMETER, LOCAL_VARIABLE, RESOURCE_VARIABLE, PARAMETER, BINDING_VARIABLE ->
+            node = new LocalVariableNode(tree);
+        case PACKAGE -> node = new PackageNameNode(tree);
+        default -> {
           if (ElementUtils.isTypeDeclaration(element)) {
             node = new ClassNameNode(tree);
-            break;
+          } else {
+            throw new BugInCF("bad element kind " + element.getKind());
           }
-          throw new BugInCF("bad element kind " + element.getKind());
+        }
       }
     }
-    if (node instanceof ClassNameNode) {
-      extendWithClassNameNode((ClassNameNode) node);
+    if (node instanceof ClassNameNode classNameNode) {
+      extendWithClassNameNode(classNameNode);
     } else {
       extendWithNode(node);
     }

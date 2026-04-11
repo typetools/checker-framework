@@ -886,10 +886,10 @@ public class ASTPathCriterion implements Criterion {
         }
       }
       return depth;
-    } else if (tree instanceof AnnotatedTypeTree) {
-      return arrayDepth(((AnnotatedTypeTree) tree).getUnderlyingType());
-    } else if (tree instanceof ArrayTypeTree) {
-      return 1 + arrayDepth(((ArrayTypeTree) tree).getType());
+    } else if (tree instanceof AnnotatedTypeTree annotatedTypeTree) {
+      return arrayDepth(annotatedTypeTree.getUnderlyingType());
+    } else if (tree instanceof ArrayTypeTree arrayTypeTree) {
+      return 1 + arrayDepth(arrayTypeTree.getType());
     } else {
       return 0;
     }
