@@ -3556,11 +3556,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             extendWithNodeWithException(operNode, arithmeticExceptionType);
           } else {
             operNode = new FloatingRemainderNode(operTree, targetRHS, value);
-            // No exception: floating-point division by zero yields Infinity or NaN.
+            // No exception: floating-point remainder by zero yields NaN.
             extendWithNode(operNode);
           }
         }
-        extendWithNode(operNode);
 
         TypeMirror castType = TypeAnnotationUtils.unannotatedType(leftType);
         TypeCastTree castTree = treeBuilder.buildTypeCast(castType, operTree);
