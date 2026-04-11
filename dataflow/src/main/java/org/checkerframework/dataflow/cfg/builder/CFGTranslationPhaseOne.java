@@ -3565,7 +3565,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               extendWithNodeWithException(operNode, arithmeticExceptionType);
             } else {
               operNode = new FloatingDivisionNode(operTree, targetRHS, value);
-              // No exception: division by zero yields NaN.
+              // No exception: floating-point division by zero yields Infinity or NaN.
               extendWithNode(operNode);
             }
           } else {
@@ -3575,7 +3575,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               extendWithNodeWithException(operNode, arithmeticExceptionType);
             } else {
               operNode = new FloatingRemainderNode(operTree, targetRHS, value);
-              // No exception: division by zero yields NaN.
+              // No exception: floating-point remainder by zero yields NaN.
               extendWithNode(operNode);
             }
           }
