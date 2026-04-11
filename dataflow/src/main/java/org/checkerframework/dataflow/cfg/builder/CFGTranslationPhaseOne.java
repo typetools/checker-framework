@@ -3915,7 +3915,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           if (kind == Tree.Kind.MULTIPLY) {
             r = new NumericalMultiplicationNode(tree, left, right);
           } else if (kind == Tree.Kind.DIVIDE) {
-            if (TypesUtils.isIntegralPrimitive(exprType)) {
+            if (TypesUtils.isIntegralPrimitive(promotedType)) {
               r = new IntegerDivisionNode(tree, left, right);
               extendWithNodeWithException(r, arithmeticExceptionType);
               rNodeAlreadyAdded = true;
@@ -3924,7 +3924,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             }
           } else {
             assert kind == Tree.Kind.REMAINDER;
-            if (TypesUtils.isIntegralPrimitive(exprType)) {
+            if (TypesUtils.isIntegralPrimitive(promotedType)) {
               r = new IntegerRemainderNode(tree, left, right);
               extendWithNodeWithException(r, arithmeticExceptionType);
               rNodeAlreadyAdded = true;
