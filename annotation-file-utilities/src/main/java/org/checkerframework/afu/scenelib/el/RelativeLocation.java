@@ -74,7 +74,7 @@ public final class RelativeLocation implements Comparable<RelativeLocation> {
    */
   @Override
   public boolean equals(Object o) {
-    return o instanceof RelativeLocation && equals((RelativeLocation) o);
+    return o instanceof RelativeLocation other && equals(other);
   }
 
   @Override

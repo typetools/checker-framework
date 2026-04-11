@@ -102,7 +102,7 @@ public class TypePathEntry {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof TypePathEntry && equals((TypePathEntry) o);
+    return o instanceof TypePathEntry other && equals(other);
   }
 
   @Override

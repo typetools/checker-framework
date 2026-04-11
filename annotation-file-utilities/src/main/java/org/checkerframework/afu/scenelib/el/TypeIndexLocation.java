@@ -16,7 +16,7 @@ public class TypeIndexLocation {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof TypeIndexLocation && equals((TypeIndexLocation) o);
+    return o instanceof TypeIndexLocation other && equals(other);
   }
 
   @Override
