@@ -3904,7 +3904,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         {
           // see JLS 15.17
 
-          TypeMirror exprType = TreeUtils.typeOf(tree);
           TypeMirror leftType = TreeUtils.typeOf(leftTree);
           TypeMirror rightType = TreeUtils.typeOf(rightTree);
           TypeMirror promotedType = binaryPromotedType(leftType, rightType);
