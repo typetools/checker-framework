@@ -742,6 +742,7 @@ public final class TreeUtils {
    * @param tree the ExpressionTree to test
    * @return true if the tree refers to an identifier, member select, or method invocation
    */
+  @SuppressWarnings("nullness:contracts.conditional.postcondition") // CF doesn't handle switch expr
   @EnsuresNonNullIf(result = true, expression = "elementFromTree(#1)")
   @EnsuresNonNullIf(result = true, expression = "elementFromUse(#1)")
   @Pure
