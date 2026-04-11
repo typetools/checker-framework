@@ -138,8 +138,8 @@ public class ValueTransfer extends CFTransfer {
     TypeKind subNodeTypeKind = subNode.getType().getKind();
 
     // handle values converted to string (ints, longs, longs with @IntRange)
-    if (subNode instanceof StringConversionNode) {
-      return getStringLengthRange(((StringConversionNode) subNode).getOperand(), p);
+    if (subNode instanceof StringConversionNode scn) {
+      return getStringLengthRange(scn.getOperand(), p);
     } else if (isIntRange(subNode, p)) {
       return getIntRangeStringLengthRange(subNode, p);
     } else if (subNodeTypeKind == TypeKind.INT) {
@@ -176,8 +176,8 @@ public class ValueTransfer extends CFTransfer {
     TypeKind subNodeTypeKind = subNode.getType().getKind();
 
     // handle values converted to string (characters, bytes, shorts, ints with @IntRange)
-    if (subNode instanceof StringConversionNode) {
-      return getStringLengths(((StringConversionNode) subNode).getOperand(), p);
+    if (subNode instanceof StringConversionNode scn) {
+      return getStringLengths(scn.getOperand(), p);
     } else if (subNodeTypeKind == TypeKind.CHAR) {
       // characters always have length 1
       return Collections.singletonList(1);
@@ -231,8 +231,8 @@ public class ValueTransfer extends CFTransfer {
       values = getBooleanValues(subNode, p);
     } else if (subNode.getType().getKind() == TypeKind.CHAR) {
       values = getCharValues(subNode, p);
-    } else if (subNode instanceof StringConversionNode) {
-      return getStringValues(((StringConversionNode) subNode).getOperand(), p);
+    } else if (subNode instanceof StringConversionNode scn) {
+      return getStringValues(scn.getOperand(), p);
     } else if (isIntRange(subNode, p)) {
       Range range = getIntRange(subNode, p);
       List<Long> longValues = ValueCheckerUtils.getValuesFromRange(range, Long.class);
@@ -657,8 +657,8 @@ public class ValueTransfer extends CFTransfer {
    *     null, or if this method is not precise enough
    */
   private boolean isNullable(Node node) {
-    if (node instanceof StringConversionNode) {
-      if (((StringConversionNode) node).getOperand().getType().getKind().isPrimitive()) {
+    if (node instanceof StringConversionNode scn) {
+      if (scn.getOperand().getType().getKind().isPrimitive()) {
         return false;
       }
     } else if (node instanceof StringLiteralNode) {
@@ -689,17 +689,13 @@ public class ValueTransfer extends CFTransfer {
           rightValues = CollectionsPlume.append(rightValues, "null");
         }
       } else {
-        if (leftOperand instanceof StringConversionNode) {
-          if (((StringConversionNode) leftOperand).getOperand().getType().getKind()
-              == TypeKind.NULL) {
-            leftValues = CollectionsPlume.append(leftValues, "null");
-          }
+        if (leftOperand instanceof StringConversionNode scn
+            && scn.getOperand().getType().getKind() == TypeKind.NULL) {
+          leftValues = CollectionsPlume.append(leftValues, "null");
         }
-        if (rightOperand instanceof StringConversionNode) {
-          if (((StringConversionNode) rightOperand).getOperand().getType().getKind()
-              == TypeKind.NULL) {
-            rightValues = CollectionsPlume.append(rightValues, "null");
-          }
+        if (rightOperand instanceof StringConversionNode scn
+            && scn.getOperand().getType().getKind() == TypeKind.NULL) {
+          rightValues = CollectionsPlume.append(rightValues, "null");
         }
       }
 

@@ -67,7 +67,7 @@ public interface SetOfTypes {
   @Pure
   static SetOfTypes anyOfTheseNames(ImmutableSet<@CanonicalName String> names) {
     return (typeUtils, u) ->
-        u instanceof Type && names.contains(((Type) u).tsym.getQualifiedName().toString());
+        u instanceof Type t && names.contains(t.tsym.getQualifiedName().toString());
   }
 
   /**

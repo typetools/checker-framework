@@ -183,11 +183,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       return true;
     }
 
-    if (!(o instanceof AnnotatedTypeMirror)) {
+    if (!(o instanceof AnnotatedTypeMirror atm)) {
       return false;
     }
 
-    return EQUALITY_COMPARER.visit(this, (AnnotatedTypeMirror) o, null);
+    return EQUALITY_COMPARER.visit(this, atm, null);
   }
 
   @Pure

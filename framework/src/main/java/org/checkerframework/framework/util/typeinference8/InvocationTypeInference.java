@@ -151,8 +151,8 @@ public class InvocationTypeInference {
     InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
     ProperType target = context.inferenceTypeFactory.getTargetType();
     List<? extends ExpressionTree> args;
-    if (invocation instanceof MethodInvocationTree) {
-      args = ((MethodInvocationTree) invocation).getArguments();
+    if (invocation instanceof MethodInvocationTree mit) {
+      args = mit.getArguments();
     } else {
       args = ((NewClassTree) invocation).getArguments();
     }

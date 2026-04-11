@@ -1590,8 +1590,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
         ElementAnnotationApplier.apply(type, elt, this);
       }
-    } else if (decl instanceof ClassTree) {
-      type = fromClass((ClassTree) decl);
+    } else if (decl instanceof ClassTree ct) {
+      type = fromClass(ct);
     } else if (decl instanceof VariableTree) {
       type = fromMember(decl);
     } else if (decl instanceof MethodTree) {
@@ -3656,8 +3656,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     // Check for new declarations, outside of the AST.
-    if (elt instanceof DetachedVarSymbol) {
-      return ((DetachedVarSymbol) elt).getDeclaration();
+    if (elt instanceof DetachedVarSymbol dvs) {
+      return dvs.getDeclaration();
     }
 
     // Prevent calling declarationFor on elements we know we don't have the tree for.
@@ -5878,8 +5878,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // Shorten tree arguments to keep the output readable.
       for (int i = 0; i < args.length; ++i) {
         Object arg = args[i];
-        if (arg instanceof Tree) {
-          args[i] = TreeUtils.toStringTruncated((Tree) arg, 60);
+        if (arg instanceof Tree argTree) {
+          args[i] = TreeUtils.toStringTruncated(argTree, 60);
         }
       }
 

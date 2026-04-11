@@ -247,8 +247,8 @@ public class Range {
     if (this == obj) {
       return true;
     }
-    if (obj instanceof Range) {
-      return equalsRange((Range) obj);
+    if (obj instanceof Range r) {
+      return equalsRange(r);
     }
     return false;
   }

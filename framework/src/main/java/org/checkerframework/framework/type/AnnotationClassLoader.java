@@ -461,8 +461,8 @@ public class AnnotationClassLoader implements Closeable {
    */
   private @Nullable URLClassLoader getClassLoader() {
     ClassLoader result = InternalUtils.getClassLoaderForClass(checker.getClass());
-    if (result instanceof URLClassLoader) {
-      return (@Nullable URLClassLoader) result;
+    if (result instanceof URLClassLoader urlcl) {
+      return urlcl;
     } else {
       // Java 9+ use an internal classloader that doesn't support getting URLs. Ignore.
       return null;

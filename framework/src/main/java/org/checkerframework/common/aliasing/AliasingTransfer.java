@@ -92,14 +92,14 @@ public class AliasingTransfer extends CFTransfer {
       Node n, CFStore store, ExecutableElement executableElement, ExpressionTree tree) {
     // TODO: Process ObjectCreationNode here after fixing issue:
     // https://github.com/eisop/checker-framework/issues/400
-    if (!(n instanceof MethodInvocationNode)) {
+    if (!(n instanceof MethodInvocationNode min)) {
       return;
     }
     if (TreeUtils.isEnumSuperCall((MethodInvocationTree) n.getTree())) {
       // Skipping the init() method for enums.
       return;
     }
-    List<Node> args = ((MethodInvocationNode) n).getArguments();
+    List<Node> args = min.getArguments();
     List<? extends VariableElement> params = executableElement.getParameters();
     assert (args.size() == params.size())
         : "Number of arguments in "

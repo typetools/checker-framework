@@ -218,8 +218,8 @@ public class CollectionToArrayHeuristics {
    */
   // This method is quite sloppy, but works most of the time
   private String receiverName(Tree tree) {
-    if (tree instanceof MemberSelectTree) {
-      return ((MemberSelectTree) tree).getExpression().toString();
+    if (tree instanceof MemberSelectTree mst) {
+      return mst.getExpression().toString();
     } else {
       return "this";
     }

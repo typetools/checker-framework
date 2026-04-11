@@ -208,8 +208,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   public void methodFromUsePreSubstitution(
       ExpressionTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
     ExecutableElement declaration;
-    if (tree instanceof MethodInvocationTree) {
-      declaration = TreeUtils.elementFromUse((MethodInvocationTree) tree);
+    if (tree instanceof MethodInvocationTree mit) {
+      declaration = TreeUtils.elementFromUse(mit);
     } else if (tree instanceof MemberReferenceTree) {
       declaration = (ExecutableElement) TreeUtils.elementFromUse(tree);
     } else {

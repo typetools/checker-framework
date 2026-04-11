@@ -168,8 +168,8 @@ public class KeyForPropagator {
     }
     Tree assignmentContext = TreePathUtil.getContextForPolyExpression(path);
     AnnotatedTypeMirror assignedTo;
-    if (assignmentContext instanceof VariableTree) {
-      if (TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) assignmentContext)) {
+    if (assignmentContext instanceof VariableTree vt) {
+      if (TreeUtils.isVariableTreeDeclaredUsingVar(vt)) {
         return;
       }
       assignedTo = atypeFactory.getAnnotatedTypeLhs(assignmentContext);

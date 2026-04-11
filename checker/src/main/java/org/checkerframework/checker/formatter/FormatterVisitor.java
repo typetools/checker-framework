@@ -223,11 +223,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     }
     while (paramIndex < params.size()) {
       ExpressionTree argTree = args.get(callIndex);
-      if (!(argTree instanceof IdentifierTree)) {
+      if (!(argTree instanceof IdentifierTree argIt)) {
         return false;
       }
       VariableTree param = params.get(paramIndex);
-      if (param.getName() != ((IdentifierTree) argTree).getName()) {
+      if (param.getName() != argIt.getName()) {
         return false;
       }
       paramIndex++;

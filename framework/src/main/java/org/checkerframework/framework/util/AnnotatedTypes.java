@@ -727,10 +727,10 @@ public class AnnotatedTypes {
     }
 
     List<? extends Tree> targs;
-    if (expr instanceof MethodInvocationTree) {
-      targs = ((MethodInvocationTree) expr).getTypeArguments();
-    } else if (expr instanceof NewClassTree) {
-      targs = ((NewClassTree) expr).getTypeArguments();
+    if (expr instanceof MethodInvocationTree mit) {
+      targs = mit.getTypeArguments();
+    } else if (expr instanceof NewClassTree nct) {
+      targs = nct.getTypeArguments();
     } else if (expr instanceof MemberReferenceTree memRef) {
       if (inferTypeArgs && TreeUtils.needsTypeArgInference(memRef)) {
         InferenceResult inferenceResult =

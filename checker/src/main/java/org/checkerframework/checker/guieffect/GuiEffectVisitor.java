@@ -292,8 +292,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     Effect targetEffect = atypeFactory.getComputedEffectAtCallsite(tree, receiverType, methodElt);
 
     Effect callerEffect = null;
-    if (callerTree instanceof MethodTree) {
-      ExecutableElement callerElt = TreeUtils.elementFromDeclaration((MethodTree) callerTree);
+    if (callerTree instanceof MethodTree ctMt) {
+      ExecutableElement callerElt = TreeUtils.elementFromDeclaration(ctMt);
       if (debugSpew) {
         System.err.println("callerElt found");
       }
@@ -345,9 +345,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
       // Field initializers inside anonymous inner classes show up with a null current-method
       // --- the traversal goes straight from the class to the initializer.
       assert (currentMethods.peek() == null || callerEffect.equals(effStack.peek()));
-    } else if (callerTree instanceof LambdaExpressionTree) {
-      callerEffect =
-          atypeFactory.getInferedEffectForLambdaExpression((LambdaExpressionTree) callerTree);
+    } else if (callerTree instanceof LambdaExpressionTree ctLet) {
+      callerEffect = atypeFactory.getInferedEffectForLambdaExpression(ctLet);
       // Perform lambda polymorphic effect inference: @PolyUI lambda, calling @UIEffect => @UI
       // lambda
       if (targetEffect.isUI() && callerEffect.isPoly()) {

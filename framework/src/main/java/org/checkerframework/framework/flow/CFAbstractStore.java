@@ -813,10 +813,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   public @Nullable V getValue(FieldAccessNode n) {
     JavaExpression je = JavaExpression.fromNodeFieldAccess(n);
-    if (je instanceof FieldAccess) {
-      return fieldValues.get((FieldAccess) je);
-    } else if (je instanceof ClassName) {
-      return classValues.get((ClassName) je);
+    if (je instanceof FieldAccess fa) {
+      return fieldValues.get(fa);
+    } else if (je instanceof ClassName cn) {
+      return classValues.get(cn);
     } else if (je instanceof ThisReference || je instanceof SuperReference) {
       // "return thisValue" is wrong, because the node refers to an outer this.
       // So, return null for now.  TODO: improve.
@@ -877,12 +877,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   public void updateForAssignment(Node n, @Nullable V val) {
     JavaExpression je = JavaExpression.fromNode(n);
-    if (je instanceof ArrayAccess) {
-      updateForArrayAssignment((ArrayAccess) je, val);
-    } else if (je instanceof FieldAccess) {
-      updateForFieldAccessAssignment((FieldAccess) je, val);
-    } else if (je instanceof LocalVariable) {
-      updateForLocalVariableAssignment((LocalVariable) je, val);
+    if (je instanceof ArrayAccess aa) {
+      updateForArrayAssignment(aa, val);
+    } else if (je instanceof FieldAccess fa) {
+      updateForFieldAccessAssignment(fa, val);
+    } else if (je instanceof LocalVariable lv) {
+      updateForLocalVariableAssignment(lv, val);
     } else {
       throw new BugInCF("Unexpected je of class " + je.getClass());
     }

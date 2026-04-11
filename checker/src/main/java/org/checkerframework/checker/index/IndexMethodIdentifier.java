@@ -132,10 +132,10 @@ public class IndexMethodIdentifier {
    *     this}
    */
   public boolean isLengthOfMethodInvocation(Tree tree) {
-    if (!(tree instanceof MethodInvocationTree)) {
+    if (!(tree instanceof MethodInvocationTree mit)) {
       return false;
     }
-    return isLengthOfMethodInvocation(TreeUtils.elementFromUse((MethodInvocationTree) tree));
+    return isLengthOfMethodInvocation(TreeUtils.elementFromUse(mit));
   }
 
   /**

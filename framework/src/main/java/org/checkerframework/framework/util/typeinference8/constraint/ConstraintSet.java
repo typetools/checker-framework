@@ -189,8 +189,8 @@ public class ConstraintSet implements ReductionResult {
     // Collection of all outputs of c.
     Set<Variable> allOutputsOfC = new LinkedHashSet<>();
     for (Constraint constraint : c.list) {
-      if (constraint instanceof TypeConstraint) {
-        allOutputsOfC.addAll(((TypeConstraint) constraint).getOutputVariables());
+      if (constraint instanceof TypeConstraint tc) {
+        allOutputsOfC.addAll(tc.getOutputVariables());
       }
       // No other constraints have output variables
     }
@@ -300,8 +300,8 @@ public class ConstraintSet implements ReductionResult {
   public Set<Variable> getAllInferenceVariables() {
     Set<Variable> vars = new LinkedHashSet<>();
     for (Constraint c : list) {
-      if (c instanceof TypeConstraint) {
-        vars.addAll(((TypeConstraint) c).getInferenceVariables());
+      if (c instanceof TypeConstraint tc) {
+        vars.addAll(tc.getInferenceVariables());
       }
     }
     return vars;
@@ -315,8 +315,8 @@ public class ConstraintSet implements ReductionResult {
   public Set<Variable> getAllInputVariables() {
     Set<Variable> vars = new LinkedHashSet<>();
     for (Constraint constraint : list) {
-      if (constraint instanceof TypeConstraint) {
-        vars.addAll(((TypeConstraint) constraint).getInputVariables());
+      if (constraint instanceof TypeConstraint tc) {
+        vars.addAll(tc.getInputVariables());
       }
     }
     return vars;
@@ -325,8 +325,8 @@ public class ConstraintSet implements ReductionResult {
   /** Applies the instantiations to all the constraints in this set. */
   public void applyInstantiations() {
     for (Constraint constraint : list) {
-      if (constraint instanceof TypeConstraint) {
-        ((TypeConstraint) constraint).applyInstantiations();
+      if (constraint instanceof TypeConstraint tc) {
+        tc.applyInstantiations();
       }
     }
   }
@@ -389,28 +389,28 @@ public class ConstraintSet implements ReductionResult {
 
     Constraint constraint = this.pop();
     ReductionResult result = constraint.reduce(context);
-    if (result instanceof ReductionResultPair) {
-      boundSet.merge(((ReductionResultPair) result).boundSet());
+    if (result instanceof ReductionResultPair rrp) {
+      boundSet.merge(rrp.boundSet());
       if (boundSet.containsFalse()) {
         throw new FalseBoundException(constraint, result);
       }
-      this.addAll(((ReductionResultPair) result).constraintSet());
+      this.addAll(rrp.constraintSet());
     } else if (result instanceof TypeConstraint) {
       // Add the new constraints to the beginning of the list so they are reduced first. This is
       // because each constraint is supposed to be reduced until no other constraints are produced
       // before moving onto another constraint.
       this.push((Constraint) result);
-    } else if (result instanceof ConstraintSet) {
+    } else if (result instanceof ConstraintSet cs) {
       if (result == TRUE_ANNO_FAIL) {
         this.annotationFailure = true;
       } else {
         // Add the new constraints to the beginning of the list so they are reduced first. This is
         // because each constraint is supposed to be reduced until no other constraints are produced
         // before moving onto another constraint.
-        this.pushAll((ConstraintSet) result);
+        this.pushAll(cs);
       }
-    } else if (result instanceof BoundSet) {
-      boundSet.merge((BoundSet) result);
+    } else if (result instanceof BoundSet bs) {
+      boundSet.merge(bs);
       if (boundSet.containsFalse()) {
         throw new FalseBoundException(constraint, result);
       }
@@ -424,8 +424,8 @@ public class ConstraintSet implements ReductionResult {
     if (this.annotationFailure) {
       boundSet.annoInferenceFailed = true;
       if (!alreadyFailed && boundSet.errorMsg.isEmpty()) {
-        if (constraint instanceof TypeConstraint) {
-          boundSet.errorMsg = ((TypeConstraint) constraint).constraintHistory();
+        if (constraint instanceof TypeConstraint tc) {
+          boundSet.errorMsg = tc.constraintHistory();
         } else {
           boundSet.errorMsg = constraint.toString();
         }

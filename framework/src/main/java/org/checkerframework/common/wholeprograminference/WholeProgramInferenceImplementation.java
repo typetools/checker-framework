@@ -305,9 +305,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         atypeFactory.wpiAdjustForUpdateNonField(receiverArgATM);
         T receiverAnnotations =
             storage.getReceiverAnnotations(methodElt, receiverParamATM, atypeFactory);
-        if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
-          ((GenericAnnotatedTypeFactory) this.atypeFactory)
-              .getDependentTypesHelper()
+        if (this.atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf) {
+          gatf.getDependentTypesHelper()
               .delocalizeAtCallsite(receiverArgATM, invocationTree, arguments, receiver, methodElt);
         }
         updateAnnotationSet(
@@ -390,9 +389,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       int paramIndex = varargsParam ? methodElt.getParameters().size() : i + 1;
       T paramAnnotations =
           storage.getParameterAnnotations(methodElt, paramIndex, paramATM, ve, atypeFactory);
-      if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
-        ((GenericAnnotatedTypeFactory) this.atypeFactory)
-            .getDependentTypesHelper()
+      if (this.atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf) {
+        gatf.getDependentTypesHelper()
             .delocalizeAtCallsite(argATM, invocationTree, arguments, receiver, methodElt);
       }
       updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
@@ -642,12 +640,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     Element element;
     String fieldName;
-    if (lhs instanceof FieldAccessNode) {
-      element = ((FieldAccessNode) lhs).getElement();
-      fieldName = ((FieldAccessNode) lhs).getFieldName();
-    } else if (lhs instanceof LocalVariableNode) {
-      element = ((LocalVariableNode) lhs).getElement();
-      fieldName = ((LocalVariableNode) lhs).getName();
+    if (lhs instanceof FieldAccessNode fan) {
+      element = fan.getElement();
+      fieldName = fan.getFieldName();
+    } else if (lhs instanceof LocalVariableNode lvn) {
+      element = lvn.getElement();
+      fieldName = lvn.getName();
     } else {
       throw new BugInCF(
           "updateFromFieldAssignment received an unexpected node type: " + lhs.getClass());

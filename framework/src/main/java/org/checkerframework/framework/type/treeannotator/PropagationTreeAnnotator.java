@@ -112,21 +112,20 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     AnnotatedTypeMirror contextType = null;
     if (path != null && path.getParentPath() != null) {
       Tree parentTree = path.getParentPath().getLeaf();
-      if (parentTree instanceof AssignmentTree) {
-        Tree var = ((AssignmentTree) parentTree).getVariable();
+      if (parentTree instanceof AssignmentTree at) {
+        Tree var = at.getVariable();
         contextType = atypeFactory.getAnnotatedType(var);
-      } else if (parentTree instanceof VariableTree) {
-        if (!TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) parentTree)) {
+      } else if (parentTree instanceof VariableTree vt) {
+        if (!TreeUtils.isVariableTreeDeclaredUsingVar(vt)) {
           contextType = atypeFactory.getAnnotatedType(parentTree);
         }
-      } else if (parentTree instanceof CompoundAssignmentTree) {
-        Tree var = ((CompoundAssignmentTree) parentTree).getVariable();
+      } else if (parentTree instanceof CompoundAssignmentTree cat) {
+        Tree var = cat.getVariable();
         contextType = atypeFactory.getAnnotatedType(var);
       } else if (parentTree instanceof ReturnTree) {
         Tree methodTree = TreePathUtil.enclosingMethodOrLambda(path.getParentPath());
-        if (methodTree instanceof MethodTree) {
-          AnnotatedExecutableType methodType =
-              atypeFactory.getAnnotatedType((MethodTree) methodTree);
+        if (methodTree instanceof MethodTree mt) {
+          AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(mt);
           contextType = methodType.getReturnType();
         }
       } else if (parentTree instanceof MethodInvocationTree methodInvocationTree

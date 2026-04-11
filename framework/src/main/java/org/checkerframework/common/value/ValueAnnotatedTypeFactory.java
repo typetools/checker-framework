@@ -798,8 +798,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       List<String> stringVals =
           CollectionsPlume.mapList(
               o -> {
-                if (o instanceof char[]) {
-                  return new String((char[]) o);
+                if (o instanceof char[] ca) {
+                  return new String(ca);
                 } else {
                   return o.toString();
                 }
@@ -830,8 +830,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<Number> numberVals = new ArrayList<>(values.size());
         List<Character> characterVals = new ArrayList<>(values.size());
         for (Object o : values) {
-          if (o instanceof Character) {
-            characterVals.add((Character) o);
+          if (o instanceof Character ch) {
+            characterVals.add(ch);
           } else {
             numberVals.add((Number) o);
           }
@@ -844,8 +844,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       case CHAR:
         List<Character> charVals = new ArrayList<>(values.size());
         for (Object o : values) {
-          if (o instanceof Number) {
-            charVals.add((char) ((Number) o).intValue());
+          if (o instanceof Number num) {
+            charVals.add((char) num.intValue());
           } else {
             charVals.add((char) o);
           }
@@ -1667,8 +1667,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     if (expressionObj instanceof ValueLiteral sequenceLiteral) {
       Object sequenceLiteralValue = sequenceLiteral.getValue();
-      if (sequenceLiteralValue instanceof String) {
-        return ((String) sequenceLiteralValue).length();
+      if (sequenceLiteralValue instanceof String s) {
+        return s.length();
       }
     } else if (expressionObj instanceof ArrayCreation arrayCreation) {
       // This is only expected to support array creations in varargs methods
