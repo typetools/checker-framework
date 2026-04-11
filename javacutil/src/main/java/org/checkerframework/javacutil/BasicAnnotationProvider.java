@@ -91,7 +91,7 @@ public class BasicAnnotationProvider implements AnnotationProvider {
    * present on the given method, with an empty "values" element.
    */
   @Override
-  public boolean isDoesNotUnrefineReceiver(ExecutableElement methodElement) {
+  public boolean hasDoesNotUnrefineReceiver(ExecutableElement methodElement) {
     for (AnnotationMirror am : methodElement.getAnnotationMirrors()) {
       if (AnnotationUtils.areSameByName(
           am, "org.checkerframework.dataflow.qual.DoesNotUnrefineReceiver")) {

@@ -64,5 +64,5 @@ public interface AnnotationProvider {
    * @param methodElement a method
    * @return true if the method does not unrefine its receiver
    */
-  boolean isDoesNotUnrefineReceiver(ExecutableElement methodElement);
+  boolean hasDoesNotUnrefineReceiver(ExecutableElement methodElement);
 }

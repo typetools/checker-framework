@@ -5866,7 +5866,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   @Override
-  public boolean isDoesNotUnrefineReceiver(ExecutableElement methodElement) {
+  public boolean hasDoesNotUnrefineReceiver(ExecutableElement methodElement) {
     for (AnnotationMirror am : getDeclAnnotations(methodElement)) {
       if (areSameByClass(am, org.checkerframework.dataflow.qual.DoesNotUnrefineReceiver.class)) {
         List<String> typeSystems =
