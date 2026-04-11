@@ -54,6 +54,7 @@ the answers, or other questions to include here.
 \\ \ref{faq-false-positive}: What is a ``false positive'' warning?
 \\ \ref{faq-false-positive-extend-checker-framework}: How can I improve the Checker Framework to eliminate a false positive warning?
 \\ \ref{faq-infer-fields}: Why doesn't the Checker Framework infer types for fields and method return types?
+\\ \ref{faq-field-initializers}: Why are some operations legal in constructors but not in methods?
 \\ \ref{faq-relationships-between-variables}: Why doesn't the Checker Framework track relationships between variables?
 \\ \ref{faq-path-sensitive}: Why isn't the Checker Framework path-sensitive?
 
@@ -872,6 +873,40 @@ There are several reasons for this design choice.
 
 % In the future, the Checker Framework may infer types for final fields; if
 % programmers see inconsistent results, they should write types explicitly.
+
+
+\subsectionAndLabel{Why are some operations legal in constructors but not in methods?}{faq-field-initializers}
+
+Java permits you to initialize an instance field either in the constructor
+or in a field initializer.  The Checker Framework behaves as if the field
+initializer assignments are performed at the beginning of the constructor,
+because that is how Java executes the program.
+
+Here is an example:
+
+\begin{Verbatim}
+class MyClass1 {
+  @Nullable Object field;
+  MyClass() {
+    field = new Object();
+    field.toString(); // no possible NullPointerException
+  }
+}
+
+class MyClass2 {
+  @Nullable Object field = new Object(); // Same initialization as for MyClass1
+  MyClass() {
+    field.toString(); // no possible NullPointerException
+  }
+}
+
+class MyClass3 {
+  @Nullable Object field;
+  void myMethod() {
+    field.toString(); // Nullness Checker warns: possible NullPointerException
+  }
+}
+\end{Verbatim}
 
 
 \subsectionAndLabel{Why doesn't the Checker Framework track relationships between variables?}{faq-relationships-between-variables}
