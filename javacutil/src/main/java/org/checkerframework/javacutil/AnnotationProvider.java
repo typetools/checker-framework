@@ -58,8 +58,7 @@ public interface AnnotationProvider {
   boolean isDeterministic(ExecutableElement methodElement);
 
   /**
-   * Returns true if the given method may have side effects but does not does not unrefine its
-   * receiver.
+   * Returns true if the given method may have side effects but does not unrefine its receiver.
    *
    * @param methodElement a method
    * @return true if the method does not unrefine its receiver

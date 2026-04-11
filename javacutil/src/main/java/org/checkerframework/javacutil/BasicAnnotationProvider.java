@@ -88,7 +88,7 @@ public class BasicAnnotationProvider implements AnnotationProvider {
    * {@inheritDoc}
    *
    * <p>This implementation returns true if the {@code @DoesNotUnrefineReceiver} annotation is
-   * present on the given method, with an empty "values" element.
+   * present on the given method, with "allcheckers" in the {@code value} element.
    */
   @Override
   public boolean hasDoesNotUnrefineReceiver(ExecutableElement methodElement) {
@@ -98,7 +98,7 @@ public class BasicAnnotationProvider implements AnnotationProvider {
         @SuppressWarnings("deprecation") // calls from the framework are permitted
         List<String> typeSystems =
             AnnotationUtils.getElementValueArray(am, "value", String.class, true);
-        return typeSystems.isEmpty();
+        return typeSystems.contains("allcheckers");
       }
     }
     return false;

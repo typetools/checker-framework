@@ -270,7 +270,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
 
       // Update field values.
-      Predicate<FieldAccess> doNotUnrefineField = fa -> doNotUnrefine.test(fa);
       if (sideEffectsUnrefineAliases) {
         fieldValues
             .entrySet()
@@ -281,7 +280,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 });
       } else {
         // Case 2 (unassignable fields) and case 3 (monotonic fields).
-        updateFieldValuesForMethodCall(gatypeFactory, doNotUnrefineField);
+        updateFieldValuesForMethodCall(gatypeFactory, doNotUnrefine::test);
       }
 
       // Update array values.
@@ -386,7 +385,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
    * @param doNotUnrefine if true of a field access, don't unrefine it. This predicate indicates
-   *     exceptions: fields that is not updated by this method.
+   *     exceptions: fields that are not updated by this method.
    */
   private void updateFieldValuesForMethodCall(
       GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory, Predicate<FieldAccess> doNotUnrefine) {
