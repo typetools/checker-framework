@@ -138,7 +138,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
               && methodInvocationToType.containsKey(methodInvocationTree)) {
             m = methodInvocationToType.get(methodInvocationTree);
           } else {
-            m = atypeFactory.methodFromUse(methodInvocationTree).executableType;
+            m = atypeFactory.methodFromUse(methodInvocationTree).executableType();
             if (atypeFactory.shouldCache) {
               methodInvocationToType.put(methodInvocationTree, m);
             }

@@ -376,7 +376,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
   public AnnotatedTypeMirror visitNewClass(NewClassTree tree, AnnotatedTypeFactory f) {
     // Add annotations that are on the constructor declaration.
     AnnotatedDeclaredType returnType =
-        (AnnotatedDeclaredType) f.constructorFromUse(tree).executableType.getReturnType();
+        (AnnotatedDeclaredType) f.constructorFromUse(tree).executableType().getReturnType();
     // Clear the annotations on the return type, so that the explicit annotations can be added
     // first, then the annotations from the return type are added as needed.
     AnnotationMirrorSet fromReturn = new AnnotationMirrorSet(returnType.getPrimaryAnnotations());
@@ -389,7 +389,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
   @Override
   public AnnotatedTypeMirror visitMethodInvocation(
       MethodInvocationTree tree, AnnotatedTypeFactory f) {
-    AnnotatedExecutableType ex = f.methodFromUse(tree).executableType;
+    AnnotatedExecutableType ex = f.methodFromUse(tree).executableType();
     AnnotatedTypeMirror returnT = ex.getReturnType().asUse();
     if (TypesUtils.isCapturedTypeVariable(returnT.getUnderlyingType())
         && !TypesUtils.isCapturedTypeVariable(TreeUtils.typeOf(tree))) {

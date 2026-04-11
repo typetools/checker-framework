@@ -2329,20 +2329,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
   }
 
-  /** The type for an instantiated generic method or constructor. */
-  public static class ParameterizedExecutableType {
-    /** The method's/constructor's type. */
-    public final AnnotatedExecutableType executableType;
-
-    /** The types of the generic type arguments. */
-    public final List<AnnotatedTypeMirror> typeArgs;
+  /**
+   * The type for an instantiated generic method or constructor.
+   *
+   * @param executableType the method's/constructor's type.
+   * @param typeArgs the types of the generic type arguments
+   */
+  public record ParameterizedExecutableType(
+      AnnotatedExecutableType executableType, List<AnnotatedTypeMirror> typeArgs) {
 
     /** Create a ParameterizedExecutableType. */
-    public ParameterizedExecutableType(
-        AnnotatedExecutableType executableType, List<AnnotatedTypeMirror> typeArgs) {
-      this.executableType = executableType;
-      this.typeArgs = typeArgs;
-    }
+    public ParameterizedExecutableType {}
 
     @Override
     public String toString() {
@@ -2510,7 +2507,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     TypeArguments typeArguments =
         AnnotatedTypes.findTypeArguments(this, tree, methodElt, methodType, inferTypeArgs);
-    Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg = typeArguments.typeArguments;
+    Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg = typeArguments.typeArguments();
     if (!typeParamToTypeArg.isEmpty()) {
       for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
         typeargs.add(typeParamToTypeArg.get(tv.getUnderlyingType()));
@@ -2519,7 +2516,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeParamToTypeArg, methodType);
     }
 
-    if (typeArguments.inferenceCrash && tree instanceof MethodInvocationTree) {
+    if (typeArguments.inferenceCrash() && tree instanceof MethodInvocationTree) {
       // If inference crashed, then the return type will not be the correct Java type.  This
       // can cause crashes elsewhere in the framework.  To avoid those crashes, create an ATM
       // with the correct Java type and default annotations.  (If inference crashes an error
@@ -2528,7 +2525,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       AnnotatedTypeMirror returnType = AnnotatedTypeMirror.createType(type, this, false);
       addDefaultAnnotations(returnType);
       methodType.setReturnType(returnType);
-    } else if (typeArguments.uncheckedConversion) {
+    } else if (typeArguments.uncheckedConversion()) {
       methodType.setReturnType(methodType.getReturnType().getErased());
     }
 
@@ -2895,7 +2892,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     TypeArguments typeArguments =
         AnnotatedTypes.findTypeArguments(this, tree, ctor, con, inferTypeArgs);
     Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg =
-        new HashMap<>(typeArguments.typeArguments);
+        new HashMap<>(typeArguments.typeArguments());
     List<AnnotatedTypeMirror> typeargs;
     if (typeParamToTypeArg.isEmpty()) {
       typeargs = Collections.emptyList();
@@ -2910,7 +2907,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     stubTypes.injectRecordComponentType(types, ctor, con);
 
-    if (typeArguments.inferenceCrash) {
+    if (typeArguments.inferenceCrash()) {
       // If inference crashed, then the return type will not be the correct Java type.  This
       // can cause crashes elsewhere in the framework.  To avoid those crashes, create an ATM
       // with the correct Java type and default annotations.  (If inference crashes an error
@@ -5710,8 +5707,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     for (Map.Entry<String, InferredDeclared> entry : conditionMap.entrySet()) {
       String expr = entry.getKey();
       InferredDeclared pair = entry.getValue();
-      AnnotatedTypeMirror inferredType = pair.inferred;
-      AnnotatedTypeMirror declaredType = pair.declared;
+      AnnotatedTypeMirror inferredType = pair.inferred();
+      AnnotatedTypeMirror declaredType = pair.declared();
       if (otherIsSupertype ? isPrecondition : !isPrecondition) {
         // other is a supertype & compare preconditions, or
         // other is a subtype & compare postconditions.

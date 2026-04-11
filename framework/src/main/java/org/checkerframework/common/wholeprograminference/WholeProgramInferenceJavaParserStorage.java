@@ -1278,13 +1278,13 @@ public class WholeProgramInferenceJavaParserStorage
   /**
    * Stores the JavaParser node for a compilation unit and the list of wrappers for the classes and
    * interfaces in that compilation unit.
+   *
+   * @param compilationUnit compilation unit being wrapped
+   * @param types wrappers for classes and interfaces in {@code compilationUnit}
    */
-  private static class CompilationUnitAnnos implements DeepCopyable<CompilationUnitAnnos> {
-    /** Compilation unit being wrapped. */
-    public final CompilationUnit compilationUnit;
-
-    /** Wrappers for classes and interfaces in {@code compilationUnit}. */
-    public final List<ClassOrInterfaceAnnos> types;
+  private record CompilationUnitAnnos(
+      CompilationUnit compilationUnit, List<ClassOrInterfaceAnnos> types)
+      implements DeepCopyable<CompilationUnitAnnos> {
 
     /**
      * Constructs a wrapper around the given compilation unit.
@@ -1292,20 +1292,7 @@ public class WholeProgramInferenceJavaParserStorage
      * @param compilationUnit compilation unit to wrap
      */
     public CompilationUnitAnnos(CompilationUnit compilationUnit) {
-      this.compilationUnit = compilationUnit;
-      this.types = new ArrayList<>();
-    }
-
-    /**
-     * Private constructor for use by deepCopy().
-     *
-     * @param compilationUnit compilation unit to wrap
-     * @param types wrappers for classes and interfaces in {@code compilationUnit}
-     */
-    private CompilationUnitAnnos(
-        CompilationUnit compilationUnit, List<ClassOrInterfaceAnnos> types) {
-      this.compilationUnit = compilationUnit;
-      this.types = types;
+      this(compilationUnit, new ArrayList<>());
     }
 
     @Override
@@ -2066,28 +2053,11 @@ public class WholeProgramInferenceJavaParserStorage
     }
   }
 
-  /** A pair of two annotated types: an inferred type and a declared type. */
-  public static class InferredDeclared {
-    /** The inferred type. */
-    public final AnnotatedTypeMirror inferred;
-
-    /** The declared type. */
-    public final AnnotatedTypeMirror declared;
-
-    /**
-     * Creates an InferredDeclared.
-     *
-     * @param inferred the inferred type
-     * @param declared the declared type
-     */
-    public InferredDeclared(AnnotatedTypeMirror inferred, AnnotatedTypeMirror declared) {
-      this.inferred = inferred;
-      this.declared = declared;
-    }
-
-    @Override
-    public String toString() {
-      return "InferredDeclared(" + inferred + ", " + declared + ")";
-    }
-  }
+  /**
+   * A pair of two annotated types: an inferred type and a declared type.
+   *
+   * @param inferred the inferred type
+   * @param declared the declared type
+   */
+  public record InferredDeclared(AnnotatedTypeMirror inferred, AnnotatedTypeMirror declared) {}
 }

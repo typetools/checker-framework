@@ -5,7 +5,6 @@ import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
@@ -26,6 +25,7 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
+import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.MethodExitKind;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.FieldAccess;
@@ -420,44 +420,11 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
   /**
    * An obligation that must be satisfied by a destructor. Helper type for {@link
    * #checkOwningField(VariableElement)}.
+   *
+   * @param mustCallMethod the method that must be called on the field
+   * @param exitKind when the method must be called
    */
-  // TODO: In the future, this class should be a record.
-  private static final class DestructorObligation {
-    /** The method that must be called on the field. */
-    final String mustCallMethod;
-
-    /** When the method must be called. */
-    final MustCallConsistencyAnalyzer.MethodExitKind exitKind;
-
-    /**
-     * Create a new obligation.
-     *
-     * @param mustCallMethod the method that must be called
-     * @param exitKind when the method must be called
-     */
-    public DestructorObligation(
-        String mustCallMethod, MustCallConsistencyAnalyzer.MethodExitKind exitKind) {
-      this.mustCallMethod = mustCallMethod;
-      this.exitKind = exitKind;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
-      DestructorObligation that = (DestructorObligation) o;
-      return mustCallMethod.equals(that.mustCallMethod) && exitKind == that.exitKind;
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(mustCallMethod, exitKind);
-    }
-  }
+  private record DestructorObligation(String mustCallMethod, MethodExitKind exitKind) {}
 
   /**
    * Checks validity of a field {@code field} with an {@code @}{@link Owning} annotation. Say the
@@ -549,10 +516,10 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
             Set<EnsuresCalledMethodOnExceptionContract> exceptionalPostconds =
                 rlTypeFactory.getExceptionalPostconditions(siblingMethod);
             for (EnsuresCalledMethodOnExceptionContract postcond : exceptionalPostconds) {
-              if (expressionIsFieldAccess(postcond.getExpression(), field)) {
+              if (expressionIsFieldAccess(postcond.expression(), field)) {
                 unsatisfiedMustCallObligationsOfOwningField.remove(
                     new DestructorObligation(
-                        postcond.getMethod(),
+                        postcond.method(),
                         MustCallConsistencyAnalyzer.MethodExitKind.EXCEPTIONAL_EXIT));
               }
             }

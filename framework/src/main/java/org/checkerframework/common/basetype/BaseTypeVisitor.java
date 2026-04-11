@@ -1888,15 +1888,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     ParameterizedExecutableType preInference =
         atypeFactory.methodFromUseWithoutTypeArgInference(tree);
-    if (!preInference.executableType.getElement().getTypeParameters().isEmpty()
-        && preInference.typeArgs.isEmpty()) {
-      if (!checkTypeArgumentInference(tree, preInference.executableType)) {
+    if (!preInference.executableType().getElement().getTypeParameters().isEmpty()
+        && preInference.typeArgs().isEmpty()) {
+      if (!checkTypeArgumentInference(tree, preInference.executableType())) {
         return null;
       }
     }
     ParameterizedExecutableType mType = atypeFactory.methodFromUse(tree);
-    AnnotatedExecutableType invokedMethod = mType.executableType;
-    List<AnnotatedTypeMirror> typeargs = mType.typeArgs;
+    AnnotatedExecutableType invokedMethod = mType.executableType();
+    List<AnnotatedTypeMirror> typeargs = mType.typeArgs();
 
     List<AnnotatedTypeParameterBounds> paramBounds =
         CollectionsPlume.mapList(
@@ -2239,16 +2239,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     ParameterizedExecutableType preInference =
         atypeFactory.constructorFromUseWithoutTypeArgInference(tree);
-    if (!preInference.executableType.getElement().getTypeParameters().isEmpty()
+    if (!preInference.executableType().getElement().getTypeParameters().isEmpty()
         || TreeUtils.isDiamondTree(tree)) {
-      if (!checkTypeArgumentInference(tree, preInference.executableType)) {
+      if (!checkTypeArgumentInference(tree, preInference.executableType())) {
         return null;
       }
     }
 
     ParameterizedExecutableType fromUse = atypeFactory.constructorFromUse(tree);
-    AnnotatedExecutableType constructorType = fromUse.executableType;
-    List<AnnotatedTypeMirror> typeargs = fromUse.typeArgs;
+    AnnotatedExecutableType constructorType = fromUse.executableType();
+    List<AnnotatedTypeMirror> typeargs = fromUse.typeArgs();
 
     List<? extends ExpressionTree> passedArguments = tree.getArguments();
     List<AnnotatedTypeMirror> params =
@@ -3990,7 +3990,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         atypeFactory.methodFromUseWithoutTypeArgInference(
             memberReferenceTree, compileTimeDeclaration, enclosingType);
     if (TreeUtils.needsTypeArgInference(memberReferenceTree)) {
-      if (!checkTypeArgumentInference(memberReferenceTree, preInference.executableType)) {
+      if (!checkTypeArgumentInference(memberReferenceTree, preInference.executableType())) {
         return true;
       }
     }
@@ -3998,8 +3998,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // The type of the compileTimeDeclaration if it were invoked with a receiver expression
     // of type {@code type}
     AnnotatedExecutableType invocationType =
-        atypeFactory.methodFromUse(memberReferenceTree, compileTimeDeclaration, enclosingType)
-            .executableType;
+        atypeFactory
+            .methodFromUse(memberReferenceTree, compileTimeDeclaration, enclosingType)
+            .executableType();
 
     // This needs to be done before invocationType.getReturnType() and
     // functionType.getReturnType()

@@ -115,23 +115,10 @@ public class FormatterTreeUtil {
    * A wrapper around a value of type E, plus an ExpressionTree location.
    *
    * @param <E> the type of the wrapped value
+   * @param value the wrapped value
+   * @param location the location of the value
    */
-  public static class Result<E> {
-    /** The wrapped value. */
-    private final E value;
-
-    /** The location of the value. */
-    public final ExpressionTree location;
-
-    public Result(E value, ExpressionTree location) {
-      this.value = value;
-      this.location = location;
-    }
-
-    public E value() {
-      return value;
-    }
-  }
+  public record Result<E>(E value, ExpressionTree location) {}
 
   /**
    * Returns true if the call is to a method with the @ReturnsFormat annotation. An example of such

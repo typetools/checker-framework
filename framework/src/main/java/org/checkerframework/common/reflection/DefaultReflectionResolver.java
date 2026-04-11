@@ -141,7 +141,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       }
       ParameterizedExecutableType resolvedResult = factory.methodFromUse(resolvedTree);
 
-      AnnotatedTypeMirror returnType = resolvedResult.executableType.getReturnType();
+      AnnotatedTypeMirror returnType = resolvedResult.executableType().getReturnType();
       TypeMirror returnTM = returnType.getUnderlyingType();
 
       // Lub return types
@@ -150,7 +150,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       // Glb receiver types (actual method receiver is passed as first
       // argument to invoke(Object, Object[]))
       // Check for static methods whose receiver is null
-      AnnotatedTypeMirror receiverType = resolvedResult.executableType.getReceiverType();
+      AnnotatedTypeMirror receiverType = resolvedResult.executableType().getReceiverType();
       if (receiverType == null) {
         // If the method is static the first argument to Method.invoke isn't used, so assume
         // top.
@@ -167,7 +167,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       // Glb parameter types.  All formal parameter types get combined together because
       // Method#invoke takes as argument an array of parameter types, so there is no way to
       // distinguish the types of different formal parameters.
-      for (AnnotatedTypeMirror mirror : resolvedResult.executableType.getParameterTypes()) {
+      for (AnnotatedTypeMirror mirror : resolvedResult.executableType().getParameterTypes()) {
         TypeMirror mirrorTM = mirror.getUnderlyingType();
         paramsGlb = glb(paramsGlb, mirrorTM, mirror.getPrimaryAnnotations(), mirrorTM, factory);
       }
@@ -184,22 +184,22 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      */
 
     // return value
-    origResult.executableType.getReturnType().clearPrimaryAnnotations();
-    origResult.executableType.getReturnType().addAnnotations(returnLub);
+    origResult.executableType().getReturnType().clearPrimaryAnnotations();
+    origResult.executableType().getReturnType().addAnnotations(returnLub);
 
     // receiver type
-    origResult.executableType.getParameterTypes().get(0).clearPrimaryAnnotations();
-    origResult.executableType.getParameterTypes().get(0).addAnnotations(receiverGlb);
+    origResult.executableType().getParameterTypes().get(0).clearPrimaryAnnotations();
+    origResult.executableType().getParameterTypes().get(0).addAnnotations(receiverGlb);
 
     // parameter types
     if (paramsGlb != null) {
       AnnotatedArrayType origArrayType =
-          (AnnotatedArrayType) origResult.executableType.getParameterTypes().get(1);
+          (AnnotatedArrayType) origResult.executableType().getParameterTypes().get(1);
       origArrayType.getComponentType().clearPrimaryAnnotations();
       origArrayType.getComponentType().addAnnotations(paramsGlb);
     }
 
-    debugReflection("Resolved annotations: " + origResult.executableType);
+    debugReflection("Resolved annotations: " + origResult.executableType());
     return origResult;
   }
 
@@ -289,7 +289,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         continue;
       }
       ParameterizedExecutableType resolvedResult = factory.constructorFromUse(resolvedTree);
-      AnnotatedExecutableType executableType = resolvedResult.executableType;
+      AnnotatedExecutableType executableType = resolvedResult.executableType();
       AnnotatedTypeMirror returnType = executableType.getReturnType();
       TypeMirror returnTM = returnType.getUnderlyingType();
 
@@ -312,18 +312,18 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      */
 
     // return value
-    origResult.executableType.getReturnType().clearPrimaryAnnotations();
-    origResult.executableType.getReturnType().addAnnotations(returnLub);
+    origResult.executableType().getReturnType().clearPrimaryAnnotations();
+    origResult.executableType().getReturnType().addAnnotations(returnLub);
 
     // parameter types
     if (paramsGlb != null) {
       AnnotatedArrayType origArrayType =
-          (AnnotatedArrayType) origResult.executableType.getParameterTypes().get(0);
+          (AnnotatedArrayType) origResult.executableType().getParameterTypes().get(0);
       origArrayType.getComponentType().clearPrimaryAnnotations();
       origArrayType.getComponentType().addAnnotations(paramsGlb);
     }
 
-    debugReflection("Resolved annotations: " + origResult.executableType);
+    debugReflection("Resolved annotations: " + origResult.executableType());
     return origResult;
   }
 

@@ -204,7 +204,7 @@ public class I18nFormatterTreeUtil {
    * @param args arguments to the diagnostic message
    */
   public final void failure(Result<?> res, @CompilerMessageKey String msgKey, Object... args) {
-    checker.reportError(res.location, msgKey, args);
+    checker.reportError(res.location(), msgKey, args);
   }
 
   /**
@@ -215,7 +215,7 @@ public class I18nFormatterTreeUtil {
    * @param args arguments to the diagnostic message
    */
   public final void warning(Result<?> res, @CompilerMessageKey String msgKey, Object... args) {
-    checker.reportWarning(res.location, msgKey, args);
+    checker.reportWarning(res.location(), msgKey, args);
   }
 
   private I18nConversionCategory @Nullable [] asFormatCallCategoriesLowLevel(

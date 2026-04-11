@@ -790,34 +790,15 @@ public class AnnotatedTypes {
 
   /**
    * Class representing type arguments for a method, constructor, or method reference expression.
+   *
+   * @param typeArguments a mapping from {@link TypeVariable} to its annotated type argument
+   * @param uncheckedConversion true if unchecked conversion was needed for inference
+   * @param inferenceCrash true if type argument inference crashed
    */
-  public static class TypeArguments {
-
-    /** A mapping from {@link TypeVariable} to its annotated type argument. */
-    public final Map<TypeVariable, AnnotatedTypeMirror> typeArguments;
-
-    /** True if unchecked conversion was needed for inference. */
-    public final boolean uncheckedConversion;
-
-    /** True if type argument inference crashed. */
-    public final boolean inferenceCrash;
-
-    /**
-     * Creates a {@link TypeArguments} object.
-     *
-     * @param typeArguments a mapping from {@link TypeVariable} to its annotated type argument
-     * @param uncheckedConversion true if unchecked conversion was needed for inference
-     * @param inferenceCrash true if type argument inference crashed
-     */
-    public TypeArguments(
-        Map<TypeVariable, AnnotatedTypeMirror> typeArguments,
-        boolean uncheckedConversion,
-        boolean inferenceCrash) {
-      this.typeArguments = typeArguments;
-      this.uncheckedConversion = uncheckedConversion;
-      this.inferenceCrash = inferenceCrash;
-    }
-  }
+  public record TypeArguments(
+      Map<TypeVariable, AnnotatedTypeMirror> typeArguments,
+      boolean uncheckedConversion,
+      boolean inferenceCrash) {}
 
   /**
    * Returns the lub of two annotated types.

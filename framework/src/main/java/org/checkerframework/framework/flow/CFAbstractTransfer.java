@@ -504,13 +504,13 @@ public abstract class CFAbstractTransfer<
     boolean isConstructor = TreeUtils.isConstructor(methodTree);
     TypeElement classEle = TreeUtils.elementFromDeclaration(classTree);
     for (FieldInitialValue<V> fieldInitialValue : analysis.getFieldInitialValues()) {
-      VariableElement varEle = fieldInitialValue.fieldDecl.getField();
+      VariableElement varEle = fieldInitialValue.fieldDecl().getField();
       // TODO: should field visibility matter? An access from outside the class might observe
       // the declared type instead of a refined type. Issue a warning to alert users?
-      if (fieldInitialValue.initializer != null
+      if (fieldInitialValue.initializer() != null
           && ElementUtils.isFinal(varEle)
           && analysis.atypeFactory.isImmutable(ElementUtils.getType(varEle))) {
-        store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.initializer);
+        store.insertValue(fieldInitialValue.fieldDecl(), fieldInitialValue.initializer());
       }
 
       // Maybe insert the declared type:
@@ -519,14 +519,14 @@ public abstract class CFAbstractTransfer<
         // fully initialized.
         boolean isInitializedReceiver = !isNotFullyInitializedReceiver(methodTree);
         if (isInitializedReceiver && varEle.getEnclosingElement().equals(classEle)) {
-          store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
+          store.insertValue(fieldInitialValue.fieldDecl(), fieldInitialValue.declared());
         }
       } else {
         // If it is a constructor, then only use the declared type if the field has been
         // initialized.
-        if (fieldInitialValue.initializer != null
+        if (fieldInitialValue.initializer() != null
             && varEle.getEnclosingElement().equals(classEle)) {
-          store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
+          store.insertValue(fieldInitialValue.fieldDecl(), fieldInitialValue.declared());
         }
       }
     }

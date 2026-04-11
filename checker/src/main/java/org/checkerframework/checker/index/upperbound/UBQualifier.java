@@ -490,32 +490,15 @@ public abstract class UBQualifier {
       return map;
     }
 
-    /** A triple that is the return type of {@link #mapToSequencesAndOffsets}. */
-    private static class SequencesOffsetsAndClass {
-      /** List of sequences. */
-      public final List<String> sequences;
-
-      /** List of offsets. */
-      public final List<String> offsets;
-
-      /** The class of the annotation to be built. */
-      public final Class<? extends Annotation> annoClass;
-
-      /**
-       * Creates a new SequencesOffsetsAndClass.
-       *
-       * @param sequences list of sequences
-       * @param offsets list of offsets
-       * @param annoClass the class of the annotation to be built
-       */
-      public SequencesOffsetsAndClass(
-          List<String> sequences, List<String> offsets, Class<? extends Annotation> annoClass) {
-
-        this.sequences = sequences;
-        this.offsets = offsets;
-        this.annoClass = annoClass;
-      }
-    }
+    /**
+     * A triple that is the return type of {@link #mapToSequencesAndOffsets}.
+     *
+     * @param sequences list of sequences
+     * @param offsets list of offsets
+     * @param annoClass the class of the annotation to be built
+     */
+    private record SequencesOffsetsAndClass(
+        List<String> sequences, List<String> offsets, Class<? extends Annotation> annoClass) {}
 
     /**
      * Given the map representation, returns parallel-arrays representation.
