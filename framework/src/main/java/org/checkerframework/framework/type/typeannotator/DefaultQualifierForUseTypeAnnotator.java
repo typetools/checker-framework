@@ -78,7 +78,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
     if (atypeFactory.shouldCache && elementToDefaults.containsKey(element)) {
       return elementToDefaults.get(element);
     }
-    AnnotationMirrorSet explictAnnos = getExplicitAnnos(element);
+    AnnotationMirrorSet explicitAnnos = getExplicitAnnos(element);
     AnnotationMirrorSet defaultAnnos = getDefaultQualifierForUses(element);
     AnnotationMirrorSet noDefaultAnnos = getHierarchiesNoDefault(element);
     AnnotationMirrorSet annosToApply = new AnnotationMirrorSet();
@@ -93,7 +93,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
         annosToApply.add(defaultAnno);
       } else {
         AnnotationMirror explict =
-            atypeFactory.getQualifierHierarchy().findAnnotationInHierarchy(explictAnnos, top);
+            atypeFactory.getQualifierHierarchy().findAnnotationInHierarchy(explicitAnnos, top);
         if (explict != null) {
           annosToApply.add(explict);
         }
