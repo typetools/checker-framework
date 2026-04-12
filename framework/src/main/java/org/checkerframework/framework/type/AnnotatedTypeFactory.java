@@ -2380,7 +2380,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * expression.
    *
    * @param tree the method invocation tree
-   * @return the type of the invoked method and any (explict or inferred) type arguments
+   * @return the type of the invoked method and any (explicit or inferred) type arguments
    */
   public final ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
     return methodFromUse(tree, true);
@@ -2970,7 +2970,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns the partially-annotated explicit class type arguments of the new class tree. The {@code
-   * AnnotatedTypeMirror} only include the annotations explicitly written on the explict type
+   * AnnotatedTypeMirror} only include the annotations explicitly written on the explicit type
    * arguments. (If {@code newClass} use a diamond operator, this method returns the empty list.)
    * For example, when called with {@code new MyClass<@HERE String>()} this method would return a
    * list containing {@code @HERE String}.

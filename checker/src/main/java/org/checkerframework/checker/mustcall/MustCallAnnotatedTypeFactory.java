@@ -366,8 +366,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
     @Override
     protected AnnotationMirrorSet getExplicitAnnos(Element element) {
-      AnnotationMirrorSet explict = super.getExplicitAnnos(element);
-      if (explict.isEmpty() && ElementUtils.isTypeElement(element)) {
+      AnnotationMirrorSet explicit = super.getExplicitAnnos(element);
+      if (explicit.isEmpty() && ElementUtils.isTypeElement(element)) {
         AnnotationMirror inheritableMustCall =
             getDeclAnnotation(element, InheritableMustCall.class);
         if (inheritableMustCall != null) {
@@ -377,7 +377,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
           return AnnotationMirrorSet.singleton(createMustCall(mustCallVal));
         }
       }
-      return explict;
+      return explicit;
     }
   }
 
@@ -399,9 +399,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
     @Override
     protected AnnotationMirrorSet getAnnotationFromElement(Element element) {
-      AnnotationMirrorSet explict = super.getAnnotationFromElement(element);
-      if (!explict.isEmpty()) {
-        return explict;
+      AnnotationMirrorSet explicit = super.getAnnotationFromElement(element);
+      if (!explicit.isEmpty()) {
+        return explicit;
       }
       AnnotationMirror inheritableMustCall = getDeclAnnotation(element, InheritableMustCall.class);
       if (inheritableMustCall != null) {
