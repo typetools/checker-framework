@@ -892,7 +892,7 @@ public class Insertions implements Iterable<Insertion> {
         case PARAMETERIZED_TYPE -> {
           if (d == 0 && tpe.step == TypePath.TYPE_ARGUMENT) {
             r = r.extend(Tree.Kind.PARAMETERIZED_TYPE, ASTPath.TYPE_ARGUMENT, tpe.argument);
-            t = ((JCTree.JCTypeApply) t).getTypeArguments().get(tpe.step);
+            t = ((JCTree.JCTypeApply) t).getTypeArguments().get(tpe.argument);
           } else if (d > 0 && tpe.step == TypePath.INNER_TYPE) {
             Tree temp = ((JCTree.JCTypeApply) t).getType();
             r = r.extend(Tree.Kind.PARAMETERIZED_TYPE, ASTPath.TYPE);
