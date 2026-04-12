@@ -101,7 +101,7 @@ public class TreeUtilsAfterJava17 {
      *
      * @param caseTree the case expression to get the labels from
      * @param useDefaultCaseLabelTree true if the result should contain a {@code
-     *     DefaultCaseLabelTree}.
+     *     DefaultCaseLabelTree}
      * @return the list of case labels in the case
      */
     private static List<? extends Tree> getLabels(
