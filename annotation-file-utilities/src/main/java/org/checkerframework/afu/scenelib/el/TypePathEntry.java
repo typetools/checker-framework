@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.objectweb.asm.TypePath;
 
 /**
@@ -101,7 +102,7 @@ public class TypePathEntry {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     return o instanceof TypePathEntry other && equals(other);
   }
 

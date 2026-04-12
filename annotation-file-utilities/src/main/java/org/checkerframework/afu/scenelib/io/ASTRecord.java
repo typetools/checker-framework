@@ -10,6 +10,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Structure bundling an {@link ASTPath} with information about its starting point. Necessary
@@ -78,7 +79,7 @@ public class ASTRecord implements Comparable<ASTRecord> {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     return o instanceof ASTRecord astRecord && equals(astRecord);
   }
 
