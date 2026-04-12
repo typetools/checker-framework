@@ -106,7 +106,7 @@ public final class InClassCriterion implements Criterion {
       boolean checkLocal = false;
 
       switch (tree.getKind()) {
-        case COMPILATION_UNIT:
+        case COMPILATION_UNIT -> {
           debug("InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
           ExpressionTree packageTree = ((CompilationUnitTree) tree).getPackageName();
           if (packageTree == null) {
@@ -123,11 +123,8 @@ public final class InClassCriterion implements Criterion {
               return false;
             }
           }
-          break;
-        case CLASS:
-        case INTERFACE:
-        case ENUM:
-        case ANNOTATION_TYPE:
+        }
+        case CLASS, INTERFACE, ENUM, ANNOTATION_TYPE -> {
           if (i > 0 && trees.get(i - 1) instanceof NewClassTree) {
             // For an anonymous class, the CLASS tree is always directly inside of
             // a NEW_CLASS tree. If that's the case here then skip this iteration
@@ -175,8 +172,8 @@ public final class InClassCriterion implements Criterion {
             debug("false InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
             return false;
           }
-          break;
-        case NEW_CLASS:
+        }
+        case NEW_CLASS -> {
           // When matching the "new Class() { ... }" expression itself, we
           // should not use the anonymous class name.  But when matching
           // within the braces, we should.
@@ -187,19 +184,18 @@ public final class InClassCriterion implements Criterion {
             NewClassTree nc = (NewClassTree) tree;
             checkAnon = nc.getClassBody() != null;
           }
-          break;
-        case METHOD:
-        case VARIABLE:
+        }
+        case METHOD, VARIABLE -> {
           // Avoid searching inside inner classes of the matching class,
           // lest a homographic inner class lead to a spurious match.
           if (insideMatch) {
             debug("false InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
             return false;
           }
-          break;
-        default:
+        }
+        default -> {
           // nothing to do
-          break;
+        }
       }
 
       if (checkAnon) {

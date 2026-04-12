@@ -135,8 +135,8 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
     // output fields and methods
     for (Element enclosedElt : typeElt.getEnclosedElements()) {
-      if (enclosedElt instanceof TypeElement) {
-        printClassType((TypeElement) enclosedElt, atypeFactory);
+      if (enclosedElt instanceof TypeElement te) {
+        printClassType(te, atypeFactory);
       }
       if (!enclosedElt.getKind().isField() && !(enclosedElt instanceof ExecutableElement)) {
         continue;

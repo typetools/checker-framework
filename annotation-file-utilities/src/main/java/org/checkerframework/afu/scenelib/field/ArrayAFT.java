@@ -26,10 +26,9 @@ public final class ArrayAFT extends AnnotationFieldType {
 
   @Override
   public boolean isValidValue(Object o) {
-    if (!(o instanceof Collection)) {
+    if (!(o instanceof Collection<?> asCollection)) {
       return false;
     }
-    Collection<?> asCollection = (Collection<?>) o;
     if (elementType == null) {
       return asCollection.isEmpty();
     }

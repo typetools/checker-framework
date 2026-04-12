@@ -360,8 +360,6 @@ allprojects { currentProj ->
         options.errorprone.errorproneArgs = [
           // TODO: Fix these warnings now that JDK 17 is used.
           "-Xep:StatementSwitchToExpressionSwitch:OFF",
-          // TODO: Fix these warnings now that JDK 17 is used.
-          "-Xep:PatternMatchingInstanceof:OFF",
           // Many compiler classes are interned.
           "-Xep:ReferenceEquality:OFF",
           // Not useful to suggest Splitter; maybe clean up.
@@ -396,6 +394,8 @@ allprojects { currentProj ->
           "-Xep:ASTHelpersSuggestions:OFF",
           // Removing "public" from private class members loses information about the abstraction.
           "-Xep:EffectivelyPrivate:OFF",
+          // Broken in Error Prone 2.49.0; see https://github.com/google/error-prone/issues/5710.
+          "-Xep:AlreadyChecked:OFF",
           // -Werror halts the build if Error Prone issues a warning, which ensures that
           // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
           // stops as soon as it issues one warning, rather than outputting them all.

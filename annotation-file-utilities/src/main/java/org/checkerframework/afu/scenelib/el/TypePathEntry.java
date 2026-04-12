@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.objectweb.asm.TypePath;
 
 /**
@@ -70,21 +71,22 @@ public class TypePathEntry {
    * @return a TypePathEntry
    */
   public static TypePathEntry create(int step, int argument) {
-    switch (step) {
-      case TypePath.ARRAY_ELEMENT:
+    return switch (step) {
+      case TypePath.ARRAY_ELEMENT -> {
         assert argument == 0;
-        return ARRAY_ELEMENT;
-      case TypePath.INNER_TYPE:
+        yield ARRAY_ELEMENT;
+      }
+      case TypePath.INNER_TYPE -> {
         assert argument == 0;
-        return INNER_TYPE;
-      case TypePath.WILDCARD_BOUND:
+        yield INNER_TYPE;
+      }
+      case TypePath.WILDCARD_BOUND -> {
         assert argument == 0;
-        return WILDCARD_BOUND;
-      case TypePath.TYPE_ARGUMENT:
-        return new TypePathEntry(step, argument);
-      default:
-        throw new Error("Bad step " + step);
-    }
+        yield WILDCARD_BOUND;
+      }
+      case TypePath.TYPE_ARGUMENT -> new TypePathEntry(step, argument);
+      default -> throw new Error("Bad step " + step);
+    };
   }
 
   /**
@@ -100,8 +102,8 @@ public class TypePathEntry {
   }
 
   @Override
-  public boolean equals(Object o) {
-    return o instanceof TypePathEntry && equals((TypePathEntry) o);
+  public boolean equals(@Nullable Object o) {
+    return o instanceof TypePathEntry other && equals(other);
   }
 
   @Override
@@ -118,18 +120,13 @@ public class TypePathEntry {
    * @return the String reresentaion of the TypePathEntry
    */
   public static String toString(int step, int argument) {
-    switch (step) {
-      case TypePath.ARRAY_ELEMENT:
-        return "[";
-      case TypePath.INNER_TYPE:
-        return ".";
-      case TypePath.WILDCARD_BOUND:
-        return "*";
-      case TypePath.TYPE_ARGUMENT:
-        return String.valueOf(argument) + ";";
-      default:
-        throw new Error("Bad step " + step);
-    }
+    return switch (step) {
+      case TypePath.ARRAY_ELEMENT -> "[";
+      case TypePath.INNER_TYPE -> ".";
+      case TypePath.WILDCARD_BOUND -> "*";
+      case TypePath.TYPE_ARGUMENT -> String.valueOf(argument) + ";";
+      default -> throw new Error("Bad step " + step);
+    };
   }
 
   @Override

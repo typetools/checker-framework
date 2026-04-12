@@ -171,40 +171,40 @@ public class AnnotationConverter {
   @SuppressWarnings("unchecked") // This is actually checked in the first instanceOf call below.
   protected static void addFieldToAnnotationBuilder(
       String fieldKey, Object obj, AnnotationBuilder builder) {
-    if (obj instanceof List<?>) {
-      builder.setValue(fieldKey, (List<Object>) obj);
-    } else if (obj instanceof String) {
-      builder.setValue(fieldKey, (String) obj);
-    } else if (obj instanceof Integer) {
-      builder.setValue(fieldKey, (Integer) obj);
-    } else if (obj instanceof Float) {
-      builder.setValue(fieldKey, (Float) obj);
-    } else if (obj instanceof Long) {
-      builder.setValue(fieldKey, (Long) obj);
-    } else if (obj instanceof Boolean) {
-      builder.setValue(fieldKey, (Boolean) obj);
-    } else if (obj instanceof Character) {
-      builder.setValue(fieldKey, (Character) obj);
-    } else if (obj instanceof Class<?>) {
-      builder.setValue(fieldKey, (Class<?>) obj);
-    } else if (obj instanceof Double) {
-      builder.setValue(fieldKey, (Double) obj);
-    } else if (obj instanceof Enum<?>) {
-      builder.setValue(fieldKey, (Enum<?>) obj);
-    } else if (obj instanceof Enum<?>[]) {
-      builder.setValue(fieldKey, (Enum<?>[]) obj);
-    } else if (obj instanceof AnnotationMirror) {
-      builder.setValue(fieldKey, (AnnotationMirror) obj);
-    } else if (obj instanceof Object[]) {
-      builder.setValue(fieldKey, (Object[]) obj);
-    } else if (obj instanceof TypeMirror) {
-      builder.setValue(fieldKey, (TypeMirror) obj);
-    } else if (obj instanceof Short) {
-      builder.setValue(fieldKey, (Short) obj);
-    } else if (obj instanceof VariableElement) {
-      builder.setValue(fieldKey, (VariableElement) obj);
-    } else if (obj instanceof VariableElement[]) {
-      builder.setValue(fieldKey, (VariableElement[]) obj);
+    if (obj instanceof List<?> list) {
+      builder.setValue(fieldKey, (List<Object>) list);
+    } else if (obj instanceof String s) {
+      builder.setValue(fieldKey, s);
+    } else if (obj instanceof Integer i) {
+      builder.setValue(fieldKey, i);
+    } else if (obj instanceof Float f) {
+      builder.setValue(fieldKey, f);
+    } else if (obj instanceof Long l) {
+      builder.setValue(fieldKey, l);
+    } else if (obj instanceof Boolean b) {
+      builder.setValue(fieldKey, b);
+    } else if (obj instanceof Character c) {
+      builder.setValue(fieldKey, c);
+    } else if (obj instanceof Class<?> cls) {
+      builder.setValue(fieldKey, cls);
+    } else if (obj instanceof Double d) {
+      builder.setValue(fieldKey, d);
+    } else if (obj instanceof Enum<?> e) {
+      builder.setValue(fieldKey, e);
+    } else if (obj instanceof Enum<?>[] enumArr) {
+      builder.setValue(fieldKey, enumArr);
+    } else if (obj instanceof AnnotationMirror am) {
+      builder.setValue(fieldKey, am);
+    } else if (obj instanceof Object[] objArr) {
+      builder.setValue(fieldKey, objArr);
+    } else if (obj instanceof TypeMirror tm) {
+      builder.setValue(fieldKey, tm);
+    } else if (obj instanceof Short sh) {
+      builder.setValue(fieldKey, sh);
+    } else if (obj instanceof VariableElement ve) {
+      builder.setValue(fieldKey, ve);
+    } else if (obj instanceof VariableElement[] veArr) {
+      builder.setValue(fieldKey, veArr);
     } else {
       throw new BugInCF("Unrecognized type: " + obj.getClass());
     }

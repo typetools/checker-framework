@@ -1281,16 +1281,8 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
     public MethodVisitor visitMethod(
         int access, String name, String descriptor, String signature, String[] exceptions) {
       String methodDescription = name + descriptor;
-      constrs = dynamicConstructors.get(methodDescription);
-      if (constrs == null) {
-        constrs = new TreeSet<>();
-        dynamicConstructors.put(methodDescription, constrs);
-      }
-      lambdas = lambdaExpressions.get(methodDescription);
-      if (lambdas == null) {
-        lambdas = new TreeSet<>();
-        lambdaExpressions.put(methodDescription, lambdas);
-      }
+      constrs = dynamicConstructors.computeIfAbsent(methodDescription, k -> new TreeSet<>());
+      lambdas = lambdaExpressions.computeIfAbsent(methodDescription, k -> new TreeSet<>());
 
       return new MethodCodeOffsetAdapter(classReader, null, codeStart) {
         @Override

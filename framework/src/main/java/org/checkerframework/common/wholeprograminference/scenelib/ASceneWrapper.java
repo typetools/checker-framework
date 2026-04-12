@@ -130,18 +130,15 @@ public class ASceneWrapper {
     AScene scene = theScene.clone();
     removeAnnosFromScene(scene, annosToIgnore);
     scene.prune();
-    String filepath;
-    switch (outputFormat) {
-      case JAIF:
-        filepath = jaifPath;
-        break;
-      case STUB:
-        String astubWithChecker = "-" + checker.getClass().getCanonicalName() + ".astub";
-        filepath = jaifPath.replace(".jaif", astubWithChecker);
-        break;
-      default:
-        throw new BugInCF("Unhandled outputFormat " + outputFormat);
-    }
+    String filepath =
+        switch (outputFormat) {
+          case JAIF -> jaifPath;
+          case STUB -> {
+            String astubWithChecker = "-" + checker.getClass().getCanonicalName() + ".astub";
+            yield jaifPath.replace(".jaif", astubWithChecker);
+          }
+          default -> throw new BugInCF("Unhandled outputFormat " + outputFormat);
+        };
     new File(filepath).delete();
     // Only write non-empty scenes into files.
     if (!scene.isEmpty()) {

@@ -52,8 +52,8 @@ public abstract class VivifyingMap<K, V> extends WrapperMap<K, V> {
     // but using an iterator affords efficient deletion.
     for (Iterator<Map.Entry<K, V>> ei = entrySet().iterator(); ei.hasNext(); ) {
       V value = ei.next().getValue();
-      if (value instanceof VivifyingMap) {
-        ((VivifyingMap) value).prune();
+      if (value instanceof VivifyingMap<?, ?> vm) {
+        vm.prune();
       }
       if (isEmptyValue(value)) {
         ei.remove();

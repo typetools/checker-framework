@@ -65,6 +65,7 @@ public class CodeOffsetAdapter extends ClassVisitor {
   }
 
   @Override
+  @SuppressWarnings("NotJavadoc") // Error Prone flags Javadoc comments on local class methods.
   public MethodVisitor visitMethod(
       int access, String name, String descriptor, String signature, String[] exceptions) {
     MethodVisitor methodVisitor =

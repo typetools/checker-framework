@@ -430,8 +430,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     switch (tree.getKind()) {
       case VARIABLE:
         Tree lt = ((VariableTree) tree).getType();
-        if (lt instanceof ParameterizedTypeTree) {
-          typeargtree = (ParameterizedTypeTree) lt;
+        if (lt instanceof ParameterizedTypeTree ptt) {
+          typeargtree = ptt;
         } else {
           // System.out.println("Found a: " + lt);
         }
@@ -442,8 +442,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       case NEW_CLASS:
         NewClassTree nct = (NewClassTree) tree;
         ExpressionTree nctid = nct.getIdentifier();
-        if (nctid instanceof ParameterizedTypeTree) {
-          typeargtree = (ParameterizedTypeTree) nctid;
+        if (nctid instanceof ParameterizedTypeTree ptt) {
+          typeargtree = ptt;
           /*
            * This is quite tricky... for anonymous class instantiations,
            * the type at this point has no type arguments. By doing the
@@ -455,8 +455,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       case ANNOTATED_TYPE:
         AnnotatedTypeTree tr = (AnnotatedTypeTree) tree;
         ExpressionTree undtr = tr.getUnderlyingType();
-        if (undtr instanceof ParameterizedTypeTree) {
-          typeargtree = (ParameterizedTypeTree) undtr;
+        if (undtr instanceof ParameterizedTypeTree ptt) {
+          typeargtree = ptt;
         } else if (undtr instanceof IdentifierTree) {
           // @Something D -> Nothing to do
         } else {
@@ -656,8 +656,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       reportInvalidBounds(type, tree);
     }
     AnnotatedTypeVariable useOfTypeVar = type.asUse();
-    if (tree instanceof TypeParameterTree) {
-      TypeParameterTree typeParameterTree = (TypeParameterTree) tree;
+    if (tree instanceof TypeParameterTree typeParameterTree) {
       visitedNodes.put(useOfTypeVar, defaultResult);
       visitTypeParameterBounds(useOfTypeVar, typeParameterTree);
       visitedNodes.put(useOfTypeVar, defaultResult);

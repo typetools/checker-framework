@@ -128,8 +128,8 @@ public final class IndexFileWriter {
    */
   private void printAnnotations(AElement e) {
     printAnnotations(e.tlAnnotationsHere);
-    if (e instanceof AMethod) {
-      printAnnotations(((AMethod) e).contracts);
+    if (e instanceof AMethod aMethod) {
+      printAnnotations(aMethod.contracts);
     }
   }
 
@@ -512,8 +512,7 @@ public final class IndexFileWriter {
   public static void formatAnnotationValue(StringBuilder sb, AnnotationFieldType aft, Object o) {
     if (aft instanceof AnnotationAFT) {
       formatAnnotation(sb, (Annotation) o);
-    } else if (aft instanceof ArrayAFT) {
-      ArrayAFT aaft = (ArrayAFT) aft;
+    } else if (aft instanceof ArrayAFT aaft) {
       List<?> l = (List<?>) o;
       sb.append("{");
       if (aaft.elementType == null) {
@@ -534,8 +533,8 @@ public final class IndexFileWriter {
       sb.append("}");
     } else if (aft instanceof ClassTokenAFT) {
       aft.format(sb, o);
-    } else if (aft instanceof BasicAFT && o instanceof String) {
-      sb.append(Strings.escape((String) o));
+    } else if (aft instanceof BasicAFT && o instanceof String s) {
+      sb.append(Strings.escape(s));
     } else if (aft instanceof BasicAFT && o instanceof Long) {
       sb.append(o.toString());
       sb.append("L");

@@ -372,8 +372,8 @@ public class OptionalImplVisitor
     }
 
     ExpressionTree isPresentReceiver = TreeUtils.getReceiverTree(condExpr);
-    if (isPresentReceiver instanceof MethodInvocationTree) {
-      ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) isPresentReceiver);
+    if (isPresentReceiver instanceof MethodInvocationTree iprMit) {
+      ExecutableElement ele = TreeUtils.elementFromUse(iprMit);
       boolean isPure =
           PurityUtils.isDeterministic(atypeFactory, ele)
               && PurityUtils.isSideEffectFree(atypeFactory, ele);
@@ -392,24 +392,22 @@ public class OptionalImplVisitor
       return;
     }
 
-    if (thenStmt instanceof VariableTree) {
-      ExpressionTree initializer = ((VariableTree) thenStmt).getInitializer();
-      if (initializer instanceof MethodInvocationTree) {
-        checkConditionalStatementIsPresentGetCall(
-            tree, (MethodInvocationTree) initializer, isPresentCall, "prefer.map");
+    if (thenStmt instanceof VariableTree thenVt) {
+      ExpressionTree initializer = thenVt.getInitializer();
+      if (initializer instanceof MethodInvocationTree initMit) {
+        checkConditionalStatementIsPresentGetCall(tree, initMit, isPresentCall, "prefer.map");
         return;
       }
     }
 
-    if (!(thenStmt instanceof ExpressionStatementTree)) {
+    if (!(thenStmt instanceof ExpressionStatementTree thenEst)) {
       return;
     }
-    ExpressionTree thenExpr = ((ExpressionStatementTree) thenStmt).getExpression();
-    if (!(thenExpr instanceof MethodInvocationTree)) {
+    ExpressionTree thenExpr = thenEst.getExpression();
+    if (!(thenExpr instanceof MethodInvocationTree thenMit)) {
       return;
     }
-    checkConditionalStatementIsPresentGetCall(
-        tree, (MethodInvocationTree) thenExpr, isPresentCall, "prefer.ifpresent");
+    checkConditionalStatementIsPresentGetCall(tree, thenMit, isPresentCall, "prefer.ifpresent");
   }
 
   /**
@@ -702,10 +700,9 @@ public class OptionalImplVisitor
         // The receiver can be null if the receiver is the implicit "this.".
         return;
       }
-      if (!(receiver instanceof MethodInvocationTree)) {
+      if (!(receiver instanceof MethodInvocationTree methodCall)) {
         return;
       }
-      MethodInvocationTree methodCall = (MethodInvocationTree) receiver;
       if (isOptionalPropagation(methodCall)) {
         receiver = TreeUtils.getReceiverTree(methodCall);
         continue;
@@ -956,8 +953,7 @@ public class OptionalImplVisitor
     TreePath getParentPath = getPath.getParentPath();
     // "getParent" means "the parent of the node `Optional::get`".
     Tree getParent = getParentPath.getLeaf();
-    if (getParent instanceof MethodInvocationTree) {
-      MethodInvocationTree hasGetAsArgumentTree = (MethodInvocationTree) getParent;
+    if (getParent instanceof MethodInvocationTree hasGetAsArgumentTree) {
       ExecutableElement hasGetAsArgumentElement = TreeUtils.elementFromUse(hasGetAsArgumentTree);
       if (!hasGetAsArgumentElement.equals(streamMap)) {
         // Optional::get is not an argument to stream#map
@@ -966,8 +962,7 @@ public class OptionalImplVisitor
       // hasGetAsArgumentTree is an invocation of Stream#map(...).
       Tree mapReceiverTree = TreeUtils.getReceiverTree(hasGetAsArgumentTree);
       // Will check whether mapParent is the call `Stream.filter(Optional::isPresent)`.
-      if (mapReceiverTree instanceof MethodInvocationTree) {
-        MethodInvocationTree fluentToMapTree = (MethodInvocationTree) mapReceiverTree;
+      if (mapReceiverTree instanceof MethodInvocationTree fluentToMapTree) {
         ExecutableElement fluentToMapElement = TreeUtils.elementFromUse(fluentToMapTree);
         if (!fluentToMapElement.equals(streamFilter)) {
           // The receiver of map(Optional::get) is not Stream#filter
@@ -975,9 +970,8 @@ public class OptionalImplVisitor
         }
         MethodInvocationTree filterInvocationTree = fluentToMapTree;
         ExpressionTree filterArgTree = filterInvocationTree.getArguments().get(0);
-        if (filterArgTree instanceof MemberReferenceTree) {
-          ExecutableElement filterArgElement =
-              TreeUtils.elementFromUse((MemberReferenceTree) filterArgTree);
+        if (filterArgTree instanceof MemberReferenceTree faMrt) {
+          ExecutableElement filterArgElement = TreeUtils.elementFromUse(faMrt);
           return filterArgElement.equals(optionalIsPresent);
         }
       }

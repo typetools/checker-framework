@@ -186,34 +186,23 @@ public class TypeVarUseApplier {
    */
   private static List<Attribute.TypeCompound> getAnnotations(
       Element useElem, Element declarationElem) {
-    final List<Attribute.TypeCompound> annotations;
-    switch (useElem.getKind()) {
-      case METHOD:
-        annotations = getReturnAnnos(useElem);
-        break;
-
-      case PARAMETER:
-        annotations = getParameterAnnos(useElem);
-        break;
-
-      case FIELD:
-      case LOCAL_VARIABLE:
-      case RESOURCE_VARIABLE:
-        annotations = getVariableAnnos(useElem);
-        break;
-
-      default:
-        throw new BugInCF(
-            "TypeVarUseApplier::extractAndApply : "
-                + "Unhandled element kind "
-                + useElem.getKind()
-                + "useElem ( "
-                + useElem
-                + " ) "
-                + "declarationElem ( "
-                + declarationElem
-                + " ) ");
-    }
+    final List<Attribute.TypeCompound> annotations =
+        switch (useElem.getKind()) {
+          case METHOD -> getReturnAnnos(useElem);
+          case PARAMETER -> getParameterAnnos(useElem);
+          case FIELD, LOCAL_VARIABLE, RESOURCE_VARIABLE -> getVariableAnnos(useElem);
+          default ->
+              throw new BugInCF(
+                  "TypeVarUseApplier::extractAndApply : "
+                      + "Unhandled element kind "
+                      + useElem.getKind()
+                      + "useElem ( "
+                      + useElem
+                      + " ) "
+                      + "declarationElem ( "
+                      + declarationElem
+                      + " ) ");
+        };
 
     return annotations;
   }

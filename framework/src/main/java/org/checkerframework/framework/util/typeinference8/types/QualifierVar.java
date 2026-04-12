@@ -91,8 +91,8 @@ public class QualifierVar extends AbstractQualifier {
     if (otherQual == this) {
       return ConstraintSet.TRUE;
     }
-    if (kind == BoundKind.EQUAL && otherQual instanceof Qualifier) {
-      instantiation = ((Qualifier) otherQual).getAnnotation();
+    if (kind == BoundKind.EQUAL && otherQual instanceof Qualifier q) {
+      instantiation = q.getAnnotation();
     }
     if (qualifierBounds.get(kind).add(otherQual)) {
       return addConstraintsFromComplementaryBounds(kind, otherQual);
@@ -157,15 +157,15 @@ public class QualifierVar extends AbstractQualifier {
     if (instantiation == null) {
       AnnotationMirror lub = null;
       for (AbstractQualifier lower : qualifierBounds.get(BoundKind.LOWER)) {
-        if (lower instanceof Qualifier) {
+        if (lower instanceof Qualifier ql) {
           if (lub != null) {
             lub =
                 context
                     .typeFactory
                     .getQualifierHierarchy()
-                    .leastUpperBoundQualifiersOnly(lub, ((Qualifier) lower).getAnnotation());
+                    .leastUpperBoundQualifiersOnly(lub, ql.getAnnotation());
           } else {
-            lub = ((Qualifier) lower).getAnnotation();
+            lub = ql.getAnnotation();
           }
         }
       }
@@ -175,15 +175,15 @@ public class QualifierVar extends AbstractQualifier {
       }
       AnnotationMirror glb = null;
       for (AbstractQualifier upper : qualifierBounds.get(BoundKind.UPPER)) {
-        if (upper instanceof Qualifier) {
+        if (upper instanceof Qualifier qu) {
           if (glb != null) {
             glb =
                 context
                     .typeFactory
                     .getQualifierHierarchy()
-                    .greatestLowerBoundQualifiersOnly(glb, ((Qualifier) upper).getAnnotation());
+                    .greatestLowerBoundQualifiersOnly(glb, qu.getAnnotation());
           } else {
-            glb = ((Qualifier) upper).getAnnotation();
+            glb = qu.getAnnotation();
           }
         }
       }
