@@ -173,7 +173,7 @@ public final class LocalLocation {
   }
 
   @Override
-  public boolean equals(/*@ReadOnly*/ Object o) {
+  public boolean equals(@Nullable Object o) {
     return o instanceof LocalLocation localLocation && equals(localLocation);
   }
 
