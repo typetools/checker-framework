@@ -306,32 +306,15 @@ public class AnnotationFileUtil {
     @Override
     public void visit(PrimitiveType n, Void arg) {
       switch (n.getType()) {
-        case BOOLEAN:
-          sb.append("boolean");
-          break;
-        case BYTE:
-          sb.append("byte");
-          break;
-        case CHAR:
-          sb.append("char");
-          break;
-        case DOUBLE:
-          sb.append("double");
-          break;
-        case FLOAT:
-          sb.append("float");
-          break;
-        case INT:
-          sb.append("int");
-          break;
-        case LONG:
-          sb.append("long");
-          break;
-        case SHORT:
-          sb.append("short");
-          break;
-        default:
-          throw new BugInCF("AnnotationFileUtil: unknown type: " + n.getType());
+        case BOOLEAN -> sb.append("boolean");
+        case BYTE -> sb.append("byte");
+        case CHAR -> sb.append("char");
+        case DOUBLE -> sb.append("double");
+        case FLOAT -> sb.append("float");
+        case INT -> sb.append("int");
+        case LONG -> sb.append("long");
+        case SHORT -> sb.append("short");
+        default -> throw new BugInCF("AnnotationFileUtil: unknown type: " + n.getType());
       }
     }
 

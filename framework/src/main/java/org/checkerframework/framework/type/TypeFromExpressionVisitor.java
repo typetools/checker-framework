@@ -240,17 +240,17 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
       return f.getAnnotatedType(elt);
     }
     switch (elt.getKind()) {
-      case METHOD:
-      case CONSTRUCTOR: // x0.super() in anoymous classes
-      case PACKAGE: // "java.lang" in new java.lang.Short("2")
-      case CLASS: // o instanceof MyClass.InnerClass
-      case RECORD:
-      case ENUM:
-      case INTERFACE: // o instanceof MyClass.InnerInterface
-      case ANNOTATION_TYPE:
+      case METHOD,
+          CONSTRUCTOR, // x0.super() in anoymous classes
+          PACKAGE, // "java.lang" in new java.lang.Short("2")
+          CLASS, // o instanceof MyClass.InnerClass
+          RECORD,
+          ENUM,
+          INTERFACE, // o instanceof MyClass.InnerInterface
+          ANNOTATION_TYPE -> {
         return f.fromElement(elt);
-      default:
-        // Fall-through.
+      }
+      default -> {} // Fall-through.
     }
 
     if (tree.getIdentifier().contentEquals("this")) {

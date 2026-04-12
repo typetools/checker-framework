@@ -741,20 +741,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /*package-private*/ AnnotationMirror createArrayLengthResultAnnotation(AnnotatedTypeMirror type) {
     AnnotationMirror arrayAnno = type.getPrimaryAnnotationInHierarchy(UNKNOWNVAL);
     switch (AnnotationUtils.annotationName(arrayAnno)) {
-      case ARRAYLEN_NAME:
+      case ARRAYLEN_NAME -> {
         // array.length, where array : @ArrayLen(x)
         List<Integer> lengths = getArrayLength(arrayAnno);
         return createNumberAnnotationMirror(new ArrayList<>(lengths));
-      case ARRAYLENRANGE_NAME:
+      }
+      case ARRAYLENRANGE_NAME -> {
         // array.length, where array : @ArrayLenRange(x)
         Range range = getRange(arrayAnno);
         return createIntRangeAnnotation(range);
-      case STRINGVAL_NAME:
+      }
+      case STRINGVAL_NAME -> {
         List<String> strings = getStringValues(arrayAnno);
         List<Integer> lengthsS = ValueCheckerUtils.getLengthsForStringValues(strings);
         return createNumberAnnotationMirror(new ArrayList<>(lengthsS));
-      default:
+      }
+      default -> {
         return createIntRangeAnnotation(0, Integer.MAX_VALUE);
+      }
     }
   }
 
@@ -818,15 +822,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     switch (primitiveKind) {
-      case BOOLEAN:
+      case BOOLEAN -> {
         List<Boolean> boolVals = CollectionsPlume.mapList((Object o) -> (Boolean) o, values);
         return createBooleanAnnotation(boolVals);
-      case DOUBLE:
-      case FLOAT:
-      case INT:
-      case LONG:
-      case SHORT:
-      case BYTE:
+      }
+      case DOUBLE, FLOAT, INT, LONG, SHORT, BYTE -> {
         List<Number> numberVals = new ArrayList<>(values.size());
         List<Character> characterVals = new ArrayList<>(values.size());
         for (Object o : values) {
@@ -841,7 +841,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           return createCharAnnotation(characterVals);
         }
         return createNumberAnnotationMirror(new ArrayList<>(numberVals));
-      case CHAR:
+      }
+      case CHAR -> {
         List<Character> charVals = new ArrayList<>(values.size());
         for (Object o : values) {
           if (o instanceof Number num) {
@@ -851,8 +852,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           }
         }
         return createCharAnnotation(charVals);
-      default:
-        throw new UnsupportedOperationException("Unexpected kind:" + resultType);
+      }
+      default -> throw new UnsupportedOperationException("Unexpected kind:" + resultType);
     }
   }
 

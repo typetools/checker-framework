@@ -120,30 +120,37 @@ public class AnnotationConverter {
    */
   protected static AnnotationFieldType typeMirrorToAnnotationFieldType(TypeMirror tm) {
     switch (tm.getKind()) {
-      case BOOLEAN:
+      case BOOLEAN -> {
         return BasicAFT.forType(boolean.class);
+      }
       // Primitives
-      case BYTE:
+      case BYTE -> {
         return BasicAFT.forType(byte.class);
-      case CHAR:
+      }
+      case CHAR -> {
         return BasicAFT.forType(char.class);
-      case DOUBLE:
+      }
+      case DOUBLE -> {
         return BasicAFT.forType(double.class);
-      case FLOAT:
+      }
+      case FLOAT -> {
         return BasicAFT.forType(float.class);
-      case INT:
+      }
+      case INT -> {
         return BasicAFT.forType(int.class);
-      case LONG:
+      }
+      case LONG -> {
         return BasicAFT.forType(long.class);
-      case SHORT:
+      }
+      case SHORT -> {
         return BasicAFT.forType(short.class);
-
-      case ARRAY:
+      }
+      case ARRAY -> {
         TypeMirror componentType = ((ArrayType) tm).getComponentType();
         AnnotationFieldType componentAFT = typeMirrorToAnnotationFieldType(componentType);
         return new ArrayAFT((ScalarAFT) componentAFT);
-
-      case DECLARED:
+      }
+      case DECLARED -> {
         String className = TypesUtils.getQualifiedName((DeclaredType) tm);
         if (className.equals("java.lang.String")) {
           return BasicAFT.forType(String.class);
@@ -153,11 +160,11 @@ public class AnnotationConverter {
           // This must be an enum constant.
           return new EnumAFT(className);
         }
-
-      default:
-        throw new BugInCF(
-            "typeMirrorToAnnotationFieldType: unexpected argument %s [%s %s]",
-            tm, tm.getKind(), tm.getClass());
+      }
+      default ->
+          throw new BugInCF(
+              "typeMirrorToAnnotationFieldType: unexpected argument %s [%s %s]",
+              tm, tm.getKind(), tm.getClass());
     }
   }
 
