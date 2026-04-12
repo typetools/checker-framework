@@ -1622,12 +1622,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         continue;
       }
       List<? extends AnnotationMirror> explicitAnnos = TreeUtils.annotationsFromTree(att);
-      for (AnnotationMirror explictAnno : explicitAnnos) {
-        if (atypeFactory.isSupportedQualifier(explictAnno)) {
-          AnnotationMirror anno = intersection.getPrimaryAnnotationInHierarchy(explictAnno);
-          if (!AnnotationUtils.areSame(anno, explictAnno)) {
+      for (AnnotationMirror explicitAnno : explicitAnnos) {
+        if (atypeFactory.isSupportedQualifier(explicitAnno)) {
+          AnnotationMirror anno = intersection.getPrimaryAnnotationInHierarchy(explicitAnno);
+          if (!AnnotationUtils.areSame(anno, explicitAnno)) {
             checker.reportWarning(
-                boundTree, "explicit.annotation.ignored", explictAnno, anno, explictAnno, anno);
+                boundTree, "explicit.annotation.ignored", explicitAnno, anno, explicitAnno, anno);
           }
         }
       }
