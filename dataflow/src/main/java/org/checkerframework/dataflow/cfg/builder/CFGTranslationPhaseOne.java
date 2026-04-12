@@ -3527,7 +3527,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           Node targetLHS = scan(tree.getVariable(), p);
           Node value = scan(tree.getExpression(), p);
 
-          TypeMirror exprType = TreeUtils.typeOf(tree);
           TypeMirror leftType = TreeUtils.typeOf(tree.getVariable());
           TypeMirror rightType = TreeUtils.typeOf(tree.getExpression());
           TypeMirror promotedType = binaryPromotedType(leftType, rightType);
@@ -3543,7 +3542,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             operNode = new NumericalMultiplicationNode(operTree, targetRHS, value);
             extendWithNode(operNode);
           } else if (kind == Tree.Kind.DIVIDE_ASSIGNMENT) {
-            if (TypesUtils.isIntegralPrimitive(exprType)) {
+            if (TypesUtils.isIntegralPrimitive(promotedType)) {
               operNode = new IntegerDivisionNode(operTree, targetRHS, value);
               extendWithNodeWithException(operNode, arithmeticExceptionType);
             } else {
@@ -3553,7 +3552,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             }
           } else {
             assert kind == Tree.Kind.REMAINDER_ASSIGNMENT;
-            if (TypesUtils.isIntegralPrimitive(exprType)) {
+            if (TypesUtils.isIntegralPrimitive(promotedType)) {
               operNode = new IntegerRemainderNode(operTree, targetRHS, value);
               extendWithNodeWithException(operNode, arithmeticExceptionType);
             } else {
@@ -3894,6 +3893,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Tree leftTree = tree.getLeftOperand();
     Tree rightTree = tree.getRightOperand();
 
+    // This `switch` statement sets `r`; afterward, `extendWithNode(r)` is called.
+    // If rNodeAlreadyAdded is true, then don't call `extendWithNode(r)` afterward.
+    boolean rNodeAlreadyAdded = false;
     Tree.Kind kind = tree.getKind();
     switch (kind) {
       case DIVIDE:
@@ -3902,7 +3904,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         {
           // see JLS 15.17
 
-          TypeMirror exprType = TreeUtils.typeOf(tree);
           TypeMirror leftType = TreeUtils.typeOf(leftTree);
           TypeMirror rightType = TreeUtils.typeOf(rightTree);
           TypeMirror promotedType = binaryPromotedType(leftType, rightType);
@@ -3913,17 +3914,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           if (kind == Tree.Kind.MULTIPLY) {
             r = new NumericalMultiplicationNode(tree, left, right);
           } else if (kind == Tree.Kind.DIVIDE) {
-            if (TypesUtils.isIntegralPrimitive(exprType)) {
+            if (TypesUtils.isIntegralPrimitive(promotedType)) {
               r = new IntegerDivisionNode(tree, left, right);
               extendWithNodeWithException(r, arithmeticExceptionType);
+              rNodeAlreadyAdded = true;
             } else {
               r = new FloatingDivisionNode(tree, left, right);
             }
           } else {
             assert kind == Tree.Kind.REMAINDER;
-            if (TypesUtils.isIntegralPrimitive(exprType)) {
+            if (TypesUtils.isIntegralPrimitive(promotedType)) {
               r = new IntegerRemainderNode(tree, left, right);
               extendWithNodeWithException(r, arithmeticExceptionType);
+              rNodeAlreadyAdded = true;
             } else {
               r = new FloatingRemainderNode(tree, left, right);
             }
@@ -4124,7 +4127,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         throw new BugInCF("unexpected binary tree: " + kind);
     }
     assert r != null : "unexpected binary tree";
-    extendWithNode(r);
+    if (!rNodeAlreadyAdded) {
+      extendWithNode(r);
+    }
     return r;
   }
 
