@@ -372,8 +372,8 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
       if (name != null && criteria.isOnFieldDeclaration()) {
         return IPair.of(astRecord(node), jn.getStartPosition());
       }
-      if (jt instanceof JCTypeApply) {
-        JCExpression type = ((JCTypeApply) jt).clazz;
+      if (jt instanceof JCTypeApply jcTypeApply) {
+        JCExpression type = jcTypeApply.clazz;
         return pathAndPos(type);
       }
       return IPair.of(astRecord(node), jn.pos);
@@ -440,8 +440,8 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
         assert na.elems != null;
         int maxDimsSize = 0;
         for (JCExpression elem : na.elems) {
-          if (elem instanceof JCNewArray) {
-            int elemDimsSize = getDimsSize((JCNewArray) elem);
+          if (elem instanceof JCNewArray jcNewArray) {
+            int elemDimsSize = getDimsSize(jcNewArray);
             maxDimsSize = Math.max(maxDimsSize, elemDimsSize);
           } else if (elem instanceof JCArrayTypeTree) {
             // Does this ever happen?  javac's Pretty.java handles it.
@@ -449,10 +449,10 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
           }
         }
         return maxDimsSize + 1;
-      } else if (tree instanceof JCAnnotatedType) {
-        return getDimsSize(((JCAnnotatedType) tree).underlyingType);
-      } else if (tree instanceof JCArrayTypeTree) {
-        return 1 + getDimsSize(((JCArrayTypeTree) tree).elemtype);
+      } else if (tree instanceof JCAnnotatedType jcAnnotatedType) {
+        return getDimsSize(jcAnnotatedType.underlyingType);
+      } else if (tree instanceof JCArrayTypeTree jcArrayTypeTree) {
+        return 1 + getDimsSize(jcArrayTypeTree.elemtype);
       } else {
         return 0;
       }
@@ -1198,22 +1198,20 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
           assert handled(node);
           dbug.debug("pos=%d at return type node: %s%n", pos, returnType.getClass());
         }
-      } else if ((node instanceof TypeParameterTree
+      } else if ((node instanceof TypeParameterTree tpt
               && i.getCriteria().onBoundZero()
-              && (((TypeParameterTree) node).getBounds().isEmpty()
-                  || ((JCExpression) ((TypeParameterTree) node).getBounds().get(0))
-                      .type.tsym.isInterface()))
-          || (node instanceof WildcardTree
-              && ((WildcardTree) node).getBound() == null
+              && (tpt.getBounds().isEmpty()
+                  || ((JCExpression) tpt.getBounds().get(0)).type.tsym.isInterface()))
+          || (node instanceof WildcardTree wct
+              && wct.getBound() == null
               && wildcardLast(i.getCriteria().getGenericArrayLocation().getLocation()))) {
         IPair<ASTRecord, Integer> pair = tpf.scan(node, i);
         insertRecord = pair.first;
         pos = pair.second;
 
         if (i.getKind() == Insertion.Kind.ANNOTATION) {
-          if (node instanceof TypeParameterTree
-              && !((TypeParameterTree) node).getBounds().isEmpty()) {
-            Tree bound = ((TypeParameterTree) node).getBounds().get(0);
+          if (node instanceof TypeParameterTree tpt2 && !tpt2.getBounds().isEmpty()) {
+            Tree bound = tpt2.getBounds().get(0);
             pos = ((JCExpression) bound).getStartPosition();
             ((AnnotationInsertion) i).setGenerateBound(true);
           } else {
@@ -1594,8 +1592,8 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
         if (n.getKind() == Tree.Kind.CLASS) {
           alreadyPresent = ((ClassTree) n).getModifiers().getAnnotations();
           break;
-        } else if (n instanceof MethodTree) {
-          alreadyPresent = ((MethodTree) n).getModifiers().getAnnotations();
+        } else if (n instanceof MethodTree mt) {
+          alreadyPresent = mt.getModifiers().getAnnotations();
           break;
         } else if (n instanceof VariableTree vt) {
           @SuppressWarnings("interning:not.interned") // reference equality check
@@ -1605,40 +1603,40 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
           }
           alreadyPresent = vt.getModifiers().getAnnotations();
           break;
-        } else if (n instanceof TypeCastTree) {
-          Tree type = ((TypeCastTree) n).getType();
-          if (type instanceof AnnotatedTypeTree) {
-            alreadyPresent = ((AnnotatedTypeTree) type).getAnnotations();
+        } else if (n instanceof TypeCastTree tct) {
+          Tree type = tct.getType();
+          if (type instanceof AnnotatedTypeTree att) {
+            alreadyPresent = att.getAnnotations();
           }
           break;
-        } else if (n instanceof InstanceOfTree) {
-          Tree type = ((InstanceOfTree) n).getType();
-          if (type instanceof AnnotatedTypeTree) {
-            alreadyPresent = ((AnnotatedTypeTree) type).getAnnotations();
+        } else if (n instanceof InstanceOfTree iot) {
+          Tree type = iot.getType();
+          if (type instanceof AnnotatedTypeTree att) {
+            alreadyPresent = att.getAnnotations();
           }
           break;
         } else if (n instanceof NewClassTree) {
           JCNewClass nc = (JCNewClass) n;
-          if (nc.clazz instanceof AnnotatedTypeTree) {
-            alreadyPresent = ((AnnotatedTypeTree) nc.clazz).getAnnotations();
+          if (nc.clazz instanceof AnnotatedTypeTree att) {
+            alreadyPresent = att.getAnnotations();
           }
           break;
         } else if (n instanceof ParameterizedTypeTree) {
           // If we pass through a parameterized type, stop, otherwise we
           // mix up annotations on the outer type.
           break;
-        } else if (n instanceof ArrayTypeTree) {
-          Tree type = ((ArrayTypeTree) n).getType();
-          if (type instanceof AnnotatedTypeTree) {
-            alreadyPresent = ((AnnotatedTypeTree) type).getAnnotations();
+        } else if (n instanceof ArrayTypeTree att2) {
+          Tree type = att2.getType();
+          if (type instanceof AnnotatedTypeTree att) {
+            alreadyPresent = att.getAnnotations();
           }
           break;
-        } else if (n instanceof AnnotatedTypeTree) {
-          alreadyPresent = ((AnnotatedTypeTree) n).getAnnotations();
+        } else if (n instanceof AnnotatedTypeTree att) {
+          alreadyPresent = att.getAnnotations();
           break;
         }
 
-        childExpression = (n instanceof ExpressionTree) ? (ExpressionTree) n : null;
+        childExpression = (n instanceof ExpressionTree et) ? et : null;
         // TODO: don't add cast insertion if it's already present.
       }
     }

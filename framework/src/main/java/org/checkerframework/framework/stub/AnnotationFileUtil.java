@@ -168,12 +168,12 @@ public class AnnotationFileUtil {
     String methodRep = toString(method);
 
     for (BodyDeclaration<?> member : type.getMembers()) {
-      if (member instanceof MethodDeclaration) {
-        if (toString((MethodDeclaration) member).equals(methodRep)) {
+      if (member instanceof MethodDeclaration md) {
+        if (toString(md).equals(methodRep)) {
           return member;
         }
-      } else if (member instanceof ConstructorDeclaration) {
-        if (toString((ConstructorDeclaration) member).equals(methodRep)) {
+      } else if (member instanceof ConstructorDeclaration cd) {
+        if (toString(cd).equals(methodRep)) {
           return member;
         }
       }
@@ -215,10 +215,10 @@ public class AnnotationFileUtil {
   }
 
   /*package-private*/ static @Nullable String toString(Element element) {
-    if (element instanceof ExecutableElement) {
-      return toString((ExecutableElement) element);
-    } else if (element instanceof VariableElement) {
-      return toString((VariableElement) element);
+    if (element instanceof ExecutableElement ee) {
+      return toString(ee);
+    } else if (element instanceof VariableElement ve) {
+      return toString(ve);
     } else {
       return null;
     }

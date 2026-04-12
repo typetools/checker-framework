@@ -984,16 +984,16 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     // Look in the type factory, if not found in the store.
-    if (expr instanceof LocalVariable) {
-      Element ele = ((LocalVariable) expr).getElement();
+    if (expr instanceof LocalVariable lv) {
+      Element ele = lv.getElement();
       // Because of
       // https://github.com/eisop/checker-framework/issues/14
       // and the workaround in
       // org.checkerframework.framework.type.ElementAnnotationApplier.applyInternal
       // The annotationMirror may not contain all explicitly written annotations.
       return getAnnotatedType(ele).getPrimaryAnnotations();
-    } else if (expr instanceof FieldAccess) {
-      Element ele = ((FieldAccess) expr).getField();
+    } else if (expr instanceof FieldAccess fa) {
+      Element ele = fa.getField();
       return getAnnotatedType(ele).getPrimaryAnnotations();
     } else {
       return AnnotationMirrorSet.emptySet();
@@ -1145,8 +1145,8 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public @Nullable Store getRegularExitStore(Tree tree) {
     if (regularExitStores == null) {
-      if (tree instanceof MethodTree) {
-        if (((MethodTree) tree).getBody() == null) {
+      if (tree instanceof MethodTree mt) {
+        if (mt.getBody() == null) {
           // No body: the method is abstract or in an interface
           return null;
         }
@@ -2166,11 +2166,11 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     Tree declTree = declarationFromElement(elt);
-    if (declTree == null || !(declTree instanceof VariableTree)) {
+    if (!(declTree instanceof VariableTree declVt)) {
       return;
     }
 
-    ExpressionTree initializer = ((VariableTree) declTree).getInitializer();
+    ExpressionTree initializer = declVt.getInitializer();
     if (initializer == null) {
       return;
     }
@@ -2238,8 +2238,8 @@ public abstract class GenericAnnotatedTypeFactory<
   public void methodFromUsePreSubstitution(
       ExpressionTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
     super.methodFromUsePreSubstitution(tree, type, resolvePolyQuals);
-    if (tree instanceof MethodInvocationTree && resolvePolyQuals) {
-      poly.resolve((MethodInvocationTree) tree, type);
+    if (tree instanceof MethodInvocationTree mit && resolvePolyQuals) {
+      poly.resolve(mit, type);
     }
   }
 

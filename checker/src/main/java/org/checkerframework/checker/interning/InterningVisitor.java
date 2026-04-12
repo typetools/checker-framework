@@ -310,16 +310,15 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     List<? extends StatementTree> bodyStatements = body.getStatements();
     if (bodyStatements.size() == 1) {
       StatementTree bodyStatement = bodyStatements.get(0);
-      if (bodyStatement instanceof ReturnTree) {
-        ExpressionTree returnExpr =
-            TreeUtils.withoutParens(((ReturnTree) bodyStatement).getExpression());
+      if (bodyStatement instanceof ReturnTree rt) {
+        ExpressionTree returnExpr = TreeUtils.withoutParens(rt.getExpression());
         if (returnExpr.getKind() == Tree.Kind.EQUAL_TO) {
           BinaryTree bt = (BinaryTree) returnExpr;
           ExpressionTree lhsTree = bt.getLeftOperand();
           ExpressionTree rhsTree = bt.getRightOperand();
-          if (lhsTree instanceof IdentifierTree && rhsTree instanceof IdentifierTree) {
-            Name leftName = ((IdentifierTree) lhsTree).getName();
-            Name rightName = ((IdentifierTree) rhsTree).getName();
+          if (lhsTree instanceof IdentifierTree lhsIt && rhsTree instanceof IdentifierTree rhsIt) {
+            Name leftName = lhsIt.getName();
+            Name rightName = rhsIt.getName();
             Name paramName = equalsMethod.getParameters().get(0).getName();
             if ((leftName.contentEquals("this") && rightName == paramName)
                 || (leftName == paramName && rightName.contentEquals("this"))) {
@@ -346,7 +345,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
   public boolean validateTypeOf(Tree tree) {
     // Don't check the result type of a constructor, because it must be @UnknownInterned, even
     // if the type on the class declaration is @Interned.
-    if (tree instanceof MethodTree && TreeUtils.isConstructor((MethodTree) tree)) {
+    if (tree instanceof MethodTree treeAsmt && TreeUtils.isConstructor(treeAsmt)) {
       return true;
     } else if (tree instanceof NewClassTree newClassTree) {
       TypeMirror typeMirror = TreeUtils.typeOf(newClassTree);
@@ -384,10 +383,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
       }
       if (parentPath != null && parentPath.getParentPath() != null) {
         Tree parent = parentPath.getParentPath().getLeaf();
-        if (parent instanceof MethodInvocationTree) {
+        if (parent instanceof MethodInvocationTree parentMit) {
           // Allow new MyInternType().intern(), where "intern" is any method marked
           // @InternMethod.
-          ExecutableElement elt = TreeUtils.elementFromUse((MethodInvocationTree) parent);
+          ExecutableElement elt = TreeUtils.elementFromUse(parentMit);
           if (atypeFactory.getDeclAnnotation(elt, InternMethod.class) != null) {
             return true;
           }
@@ -471,7 +470,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     ExpressionTree right = binaryTree.getRightOperand();
 
     // Only valid if we're comparing identifiers.
-    if (!(left instanceof IdentifierTree && right instanceof IdentifierTree)) {
+    if (!(left instanceof IdentifierTree leftIt) || !(right instanceof IdentifierTree rightIt)) {
       return false;
     }
 
@@ -524,8 +523,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     ExecutableElement enclosingMethod = TreeUtils.elementFromDeclaration(methodTree);
     assert enclosingMethod != null;
 
-    Element lhs = TreeUtils.elementFromUse((IdentifierTree) left);
-    Element rhs = TreeUtils.elementFromUse((IdentifierTree) right);
+    Element lhs = TreeUtils.elementFromUse(leftIt);
+    Element rhs = TreeUtils.elementFromUse(rightIt);
 
     // Matcher to check for if statement that returns zero
     Heuristics.Matcher matcherIfReturnsZero =
@@ -759,12 +758,12 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     ExpressionTree right = TreeUtils.withoutParens(topBinaryTree.getRightOperand());
 
     // Only valid if we're comparing identifiers.
-    if (!(left instanceof IdentifierTree && right instanceof IdentifierTree)) {
+    if (!(left instanceof IdentifierTree leftIt) || !(right instanceof IdentifierTree rightIt)) {
       return false;
     }
 
-    Element lhs = TreeUtils.elementFromUse((IdentifierTree) left);
-    Element rhs = TreeUtils.elementFromUse((IdentifierTree) right);
+    Element lhs = TreeUtils.elementFromUse(leftIt);
+    Element rhs = TreeUtils.elementFromUse(rightIt);
 
     // looking for ((a == b || a.compareTo(b) == 0)
     Heuristics.Matcher matcherEqOrCompareTo =

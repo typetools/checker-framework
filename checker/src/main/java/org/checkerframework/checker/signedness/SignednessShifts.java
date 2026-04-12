@@ -56,17 +56,17 @@ public class SignednessShifts {
     Tree castType = cast.getType();
 
     Tree underlyingType;
-    if (castType instanceof AnnotatedTypeTree) {
-      underlyingType = ((AnnotatedTypeTree) castType).getUnderlyingType();
+    if (castType instanceof AnnotatedTypeTree att) {
+      underlyingType = att.getUnderlyingType();
     } else {
       underlyingType = castType;
     }
 
-    if (!(underlyingType instanceof PrimitiveTypeTree)) {
+    if (!(underlyingType instanceof PrimitiveTypeTree ptt)) {
       return null;
     }
 
-    return (PrimitiveTypeTree) underlyingType;
+    return ptt;
   }
 
   /**

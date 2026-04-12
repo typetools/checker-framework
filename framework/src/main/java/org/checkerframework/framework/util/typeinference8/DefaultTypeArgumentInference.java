@@ -79,18 +79,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
     AnnotatedExecutableType outerMethodType;
     if (outerTree != expressionTree) {
-      if (outerTree instanceof MethodInvocationTree) {
+      if (outerTree instanceof MethodInvocationTree mit) {
+        pathToExpression = typeFactory.getPath(outerTree);
+        outerMethodType = typeFactory.methodFromUseWithoutTypeArgInference(mit).executableType();
+      } else if (outerTree instanceof NewClassTree nct) {
         pathToExpression = typeFactory.getPath(outerTree);
         outerMethodType =
-            typeFactory
-                .methodFromUseWithoutTypeArgInference((MethodInvocationTree) outerTree)
-                .executableType();
-      } else if (outerTree instanceof NewClassTree) {
-        pathToExpression = typeFactory.getPath(outerTree);
-        outerMethodType =
-            typeFactory
-                .constructorFromUseWithoutTypeArgInference((NewClassTree) outerTree)
-                .executableType();
+            typeFactory.constructorFromUseWithoutTypeArgInference(nct).executableType();
       } else if (outerTree instanceof MemberReferenceTree) {
         pathToExpression = typeFactory.getPath(outerTree);
         outerMethodType = null;
@@ -106,14 +101,14 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
     try {
       java8Inference = new InvocationTypeInference(typeFactory, pathToExpression);
-      if (outerTree instanceof MemberReferenceTree) {
-        return java8Inference.infer((MemberReferenceTree) outerTree);
+      if (outerTree instanceof MemberReferenceTree mrt) {
+        return java8Inference.infer(mrt);
       } else {
         InferenceResult result = java8Inference.infer(outerTree, outerMethodType);
         if (!result.getResults().containsKey(expressionTree)
-            && expressionTree instanceof MemberReferenceTree) {
+            && expressionTree instanceof MemberReferenceTree mrt2) {
           java8Inference.context.pathToExpression = typeFactory.getPath(expressionTree);
-          return java8Inference.infer((MemberReferenceTree) expressionTree);
+          return java8Inference.infer(mrt2);
         }
         return result.swapTypeVariables(methodType, expressionTree);
       }

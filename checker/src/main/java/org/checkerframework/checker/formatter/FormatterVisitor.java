@@ -127,7 +127,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             if (!isWrappedFormatCall(fc, enclosingMethod)) {
               ftu.warning(invc, "format.indirect.arguments");
             }
-          // TODO:  If it is explict array construction, such as "new Object[] {
+          // TODO:  If it is explicit array construction, such as "new Object[] {
           // ... }", then we could treat it like the VARARGS case, analyzing each
           // argument.  "new array" is probably rare, in the varargs position.
           // fall through
@@ -223,11 +223,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     }
     while (paramIndex < params.size()) {
       ExpressionTree argTree = args.get(callIndex);
-      if (!(argTree instanceof IdentifierTree)) {
+      if (!(argTree instanceof IdentifierTree argIt)) {
         return false;
       }
       VariableTree param = params.get(paramIndex);
-      if (param.getName() != ((IdentifierTree) argTree).getName()) {
+      if (param.getName() != argIt.getName()) {
         return false;
       }
       paramIndex++;

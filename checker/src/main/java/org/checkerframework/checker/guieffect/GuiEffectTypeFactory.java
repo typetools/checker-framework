@@ -286,8 +286,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     if (targetEffect.isPoly()) {
       AnnotatedTypeMirror srcType;
       ExpressionTree methodSelect = tree.getMethodSelect();
-      if (methodSelect instanceof MemberSelectTree) {
-        ExpressionTree src = ((MemberSelectTree) methodSelect).getExpression();
+      if (methodSelect instanceof MemberSelectTree mst) {
+        ExpressionTree src = mst.getExpression();
         srcType = getAnnotatedType(src);
       } else if (methodSelect instanceof IdentifierTree) {
         // Tree.Kind.IDENTIFIER, e.g. a direct call like "super()"
@@ -346,8 +346,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
    * @return true if it is a lambda expression or new class marked as UI by inference
    */
   public boolean isDirectlyMarkedUIThroughInference(Tree tree) {
-    if (tree instanceof LambdaExpressionTree) {
-      return uiLambdas.contains((LambdaExpressionTree) tree);
+    if (tree instanceof LambdaExpressionTree let) {
+      return uiLambdas.contains(let);
     } else if (tree instanceof NewClassTree) {
       AnnotatedTypeMirror typeMirror = super.getAnnotatedType(tree);
       if (typeMirror.getKind() == TypeKind.DECLARED) {

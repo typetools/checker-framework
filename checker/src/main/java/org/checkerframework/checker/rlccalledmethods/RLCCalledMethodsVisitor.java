@@ -569,7 +569,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
   private boolean expressionIsFieldAccess(String e, VariableElement field) {
     try {
       JavaExpression je = StringToJavaExpression.atFieldDecl(e, field, this.checker);
-      return je instanceof FieldAccess && ((FieldAccess) je).getField().equals(field);
+      return je instanceof FieldAccess fa && fa.getField().equals(field);
     } catch (JavaExpressionParseException ex) {
       // The parsing error will be reported elsewhere, assuming e was derived from an
       // annotation.

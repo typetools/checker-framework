@@ -1133,12 +1133,12 @@ public class QualifierDefaults {
    * @return the boundType for type
    */
   private BoundType getBoundType(AnnotatedTypeMirror type) {
-    if (type instanceof AnnotatedTypeVariable) {
-      return getTypeVarBoundType((AnnotatedTypeVariable) type);
+    if (type instanceof AnnotatedTypeVariable atv) {
+      return getTypeVarBoundType(atv);
     }
 
-    if (type instanceof AnnotatedWildcardType) {
-      return getWildcardBoundType((AnnotatedWildcardType) type);
+    if (type instanceof AnnotatedWildcardType awt) {
+      return getWildcardBoundType(awt);
     }
 
     throw new BugInCF("Unexpected type kind: type=" + type);

@@ -587,9 +587,8 @@ public class WholeProgramInferenceScenesStorage
     TypeMirror rhsTM = rhsATM.getUnderlyingType();
     AnnotatedTypeMirror atmFromScene = atmFromStorageLocation(rhsTM, type);
     updateAtmWithLub(rhsATM, atmFromScene);
-    if (lhsATM instanceof AnnotatedTypeVariable) {
-      AnnotationMirrorSet upperAnnos =
-          ((AnnotatedTypeVariable) lhsATM).getUpperBound().getAnnotations();
+    if (lhsATM instanceof AnnotatedTypeVariable atv) {
+      AnnotationMirrorSet upperAnnos = atv.getUpperBound().getAnnotations();
       // If the inferred type is a subtype of the upper bounds of the
       // current type on the source code, halt.
       if (upperAnnos.size() == rhsATM.getPrimaryAnnotations().size()

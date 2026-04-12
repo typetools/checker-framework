@@ -102,12 +102,13 @@ public class InsertAjavaAnnotations {
               Collections.emptyList(),
               null,
               Collections.emptyList());
-      if (!(cTask instanceof JavacTask)) {
+      if (!(cTask instanceof JavacTask javacTask)) {
         System.err.println("Could not get a valid JavacTask: " + cTask.getClass());
         System.exit(1);
+        throw new AssertionError("unreachable");
       }
 
-      return ((JavacTask) cTask).getElements();
+      return javacTask.getElements();
     } catch (IOException e) {
       throw new Error(e);
     }
@@ -230,10 +231,10 @@ public class InsertAjavaAnnotations {
 
       // `src`'s annotations are type annotations.
       Position position;
-      if (dest instanceof ClassOrInterfaceType) {
+      if (dest instanceof ClassOrInterfaceType coit) {
         // In a multi-part name like my.package.MyClass, type annotations go directly in
         // front of MyClass instead of the full name.
-        position = ((ClassOrInterfaceType) dest).getName().getBegin().get();
+        position = coit.getName().getBegin().get();
       } else {
         position = dest.getBegin().get();
       }

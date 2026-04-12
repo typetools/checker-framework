@@ -210,13 +210,11 @@ public abstract class CFAbstractTransfer<
     analysis.setCurrentTree(tree);
     AnnotatedTypeMirror at;
     try {
-      if (node instanceof MethodInvocationNode
-          && ((MethodInvocationNode) node).getIterableExpression() != null) {
-        ExpressionTree iter = ((MethodInvocationNode) node).getIterableExpression();
+      if (node instanceof MethodInvocationNode min && min.getIterableExpression() != null) {
+        ExpressionTree iter = min.getIterableExpression();
         at = factory.getIterableElementType(iter);
-      } else if (node instanceof ArrayAccessNode
-          && ((ArrayAccessNode) node).getArrayExpression() != null) {
-        ExpressionTree array = ((ArrayAccessNode) node).getArrayExpression();
+      } else if (node instanceof ArrayAccessNode aan && aan.getArrayExpression() != null) {
+        ExpressionTree array = aan.getArrayExpression();
         at = factory.getIterableElementType(array);
       } else {
         at = factory.getAnnotatedType(tree);
@@ -348,9 +346,9 @@ public abstract class CFAbstractTransfer<
               atypeFactory.getPath(lambda.getLambdaTree()), TreeUtils.classAndMethodTreeKinds());
 
       Element enclosingElement = null;
-      if (enclosingTree instanceof MethodTree) {
+      if (enclosingTree instanceof MethodTree enclosingMt) {
         // If it is in an initializer, we need to use locals from the initializer.
-        enclosingElement = TreeUtils.elementFromDeclaration((MethodTree) enclosingTree);
+        enclosingElement = TreeUtils.elementFromDeclaration(enclosingMt);
 
       } else if (TreeUtils.isClassTree(enclosingTree)) {
 
@@ -977,14 +975,14 @@ public abstract class CFAbstractTransfer<
     if (shouldPerformWholeProgramInference(n.getTree(), lhs.getTree())) {
       // Fields defined in interfaces are LocalVariableNodes with ElementKind of FIELD.
       if (lhs instanceof FieldAccessNode
-          || (lhs instanceof LocalVariableNode
-              && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.FIELD)) {
+          || (lhs instanceof LocalVariableNode lhsLvn
+              && lhsLvn.getElement().getKind() == ElementKind.FIELD)) {
         // Updates inferred field type
         analysis.atypeFactory.getWholeProgramInference().updateFromFieldAssignment(lhs, rhs);
-      } else if (lhs instanceof LocalVariableNode
-          && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.PARAMETER) {
+      } else if (lhs instanceof LocalVariableNode lhsLvn2
+          && lhsLvn2.getElement().getKind() == ElementKind.PARAMETER) {
         // lhs is a formal parameter of some method
-        VariableElement param = ((LocalVariableNode) lhs).getElement();
+        VariableElement param = lhsLvn2.getElement();
         analysis
             .atypeFactory
             .getWholeProgramInference()
@@ -1271,11 +1269,10 @@ public abstract class CFAbstractTransfer<
       Set<? extends Contract> postconditions) {
 
     StringToJavaExpression stringToJavaExpr = null;
-    if (invocationNode instanceof MethodInvocationNode) {
+    if (invocationNode instanceof MethodInvocationNode min) {
       stringToJavaExpr =
           stringExpr ->
-              StringToJavaExpression.atMethodInvocation(
-                  stringExpr, (MethodInvocationNode) invocationNode, analysis.checker);
+              StringToJavaExpression.atMethodInvocation(stringExpr, min, analysis.checker);
     } else if (invocationNode instanceof ObjectCreationNode) {
       stringToJavaExpr =
           stringExpr ->

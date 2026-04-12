@@ -345,12 +345,12 @@ public class InferenceFactory {
    */
   private static @Nullable DeclaredType getReceiverType(ExpressionTree tree) {
     Tree receiverTree;
-    if (tree instanceof NewClassTree) {
-      receiverTree = ((NewClassTree) tree).getEnclosingExpression();
-      if (receiverTree == null && ((NewClassTree) tree).getClassBody() == null) {
-        TypeMirror t = TreeUtils.elementFromUse((NewClassTree) tree).getReceiverType();
-        if (t instanceof DeclaredType) {
-          return (DeclaredType) t;
+    if (tree instanceof NewClassTree nct) {
+      receiverTree = nct.getEnclosingExpression();
+      if (receiverTree == null && nct.getClassBody() == null) {
+        TypeMirror t = TreeUtils.elementFromUse(nct).getReceiverType();
+        if (t instanceof DeclaredType dt) {
+          return dt;
         }
         return null;
       }
@@ -440,8 +440,8 @@ public class InferenceFactory {
     }
     // Adapt to explicit method type arguments.
     List<? extends Tree> typeArgs;
-    if (expressionTree instanceof MethodInvocationTree) {
-      typeArgs = ((MethodInvocationTree) expressionTree).getTypeArguments();
+    if (expressionTree instanceof MethodInvocationTree mit) {
+      typeArgs = mit.getTypeArguments();
     } else {
       typeArgs = ((NewClassTree) expressionTree).getTypeArguments();
     }
@@ -702,11 +702,8 @@ public class InferenceFactory {
    */
   public InvocationType getTypeOfMethodAdaptedToUse(ExpressionTree invocation) {
     AnnotatedExecutableType executableType;
-    if (invocation instanceof MethodInvocationTree) {
-      executableType =
-          typeFactory
-              .methodFromUseWithoutTypeArgInference((MethodInvocationTree) invocation)
-              .executableType();
+    if (invocation instanceof MethodInvocationTree mit) {
+      executableType = typeFactory.methodFromUseWithoutTypeArgInference(mit).executableType();
     } else {
       executableType =
           typeFactory
@@ -1011,12 +1008,9 @@ public class InferenceFactory {
     }
     List<? extends AnnotatedTypeMirror> thrownTypes;
     List<? extends TypeMirror> thrownTypeMirrors;
-    if (expression instanceof LambdaExpressionTree) {
-      thrownTypeMirrors =
-          CheckedExceptionsUtil.thrownCheckedExceptions((LambdaExpressionTree) expression, context);
-      thrownTypes =
-          CheckedExceptionsUtil.thrownCheckedExceptionsATM(
-              (LambdaExpressionTree) expression, context);
+    if (expression instanceof LambdaExpressionTree let) {
+      thrownTypeMirrors = CheckedExceptionsUtil.thrownCheckedExceptions(let, context);
+      thrownTypes = CheckedExceptionsUtil.thrownCheckedExceptionsATM(let, context);
     } else {
       thrownTypeMirrors =
           TypesUtils.findFunctionType(TreeUtils.typeOf(expression), context.env).getThrownTypes();

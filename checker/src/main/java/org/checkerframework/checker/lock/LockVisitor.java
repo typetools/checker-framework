@@ -1061,8 +1061,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       Tree parent = getCurrentPath().getParentPath().getLeaf();
       // If the parent is not a member select, or if it is and the field is the expression,
       // then the field is accessed via an implicit this.
-      if ((!(parent instanceof MemberSelectTree)
-              || ((MemberSelectTree) parent).getExpression() == tree)
+      if ((!(parent instanceof MemberSelectTree parentMst) || parentMst.getExpression() == tree)
           && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
         AnnotationMirror guardedBy =
             atypeFactory.getSelfType(tree).getPrimaryAnnotationInHierarchy(atypeFactory.GUARDEDBY);

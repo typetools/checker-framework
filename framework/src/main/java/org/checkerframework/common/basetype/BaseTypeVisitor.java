@@ -769,10 +769,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     for (Tree mem : classTree.getMembers()) {
-      if (mem instanceof VariableTree) {
+      if (mem instanceof VariableTree memVt) {
         AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(mem);
         List<DiagMessage> hasInvalidPoly;
-        if (ElementUtils.isStatic(TreeUtils.elementFromDeclaration((VariableTree) mem))) {
+        if (ElementUtils.isStatic(TreeUtils.elementFromDeclaration(memVt))) {
           // A polymorphic qualifier is not allowed on a static field even if the class
           // has a qualifier parameter.
           hasInvalidPoly = hasInvalidPolyScanner.visit(fieldType, polys);
@@ -1560,10 +1560,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       ReturnNode returnStmt = pair.first;
 
       Node retValNode = returnStmt.getResult();
-      Boolean retVal =
-          retValNode instanceof BooleanLiteralNode
-              ? ((BooleanLiteralNode) retValNode).getValue()
-              : null;
+      Boolean retVal = retValNode instanceof BooleanLiteralNode bln ? bln.getValue() : null;
 
       TransferResult<?, ?> transferResult = (TransferResult<?, ?>) pair.second;
       if (transferResult == null) {
@@ -1622,17 +1619,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected void checkExplicitAnnotationsOnIntersectionBounds(
       AnnotatedIntersectionType intersection, List<? extends Tree> boundTrees) {
     for (Tree boundTree : boundTrees) {
-      if (!(boundTree instanceof AnnotatedTypeTree)) {
+      if (!(boundTree instanceof AnnotatedTypeTree att)) {
         continue;
       }
-      List<? extends AnnotationMirror> explicitAnnos =
-          TreeUtils.annotationsFromTree((AnnotatedTypeTree) boundTree);
-      for (AnnotationMirror explictAnno : explicitAnnos) {
-        if (atypeFactory.isSupportedQualifier(explictAnno)) {
-          AnnotationMirror anno = intersection.getPrimaryAnnotationInHierarchy(explictAnno);
-          if (!AnnotationUtils.areSame(anno, explictAnno)) {
+      List<? extends AnnotationMirror> explicitAnnos = TreeUtils.annotationsFromTree(att);
+      for (AnnotationMirror explicitAnno : explicitAnnos) {
+        if (atypeFactory.isSupportedQualifier(explicitAnno)) {
+          AnnotationMirror anno = intersection.getPrimaryAnnotationInHierarchy(explicitAnno);
+          if (!AnnotationUtils.areSame(anno, explicitAnno)) {
             checker.reportWarning(
-                boundTree, "explicit.annotation.ignored", explictAnno, anno, explictAnno, anno);
+                boundTree, "explicit.annotation.ignored", explicitAnno, anno, explicitAnno, anno);
           }
         }
       }
@@ -1722,8 +1718,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // This simple code completely igonores enum constants and try-with-resources declarations.
     // It could be made to catch some user errors in those locations, but it doesn't seem worth
     // the effort to do so.
-    if (tree instanceof VariableTree) {
-      ElementKind varKind = TreeUtils.elementFromDeclaration((VariableTree) tree).getKind();
+    if (tree instanceof VariableTree vt) {
+      ElementKind varKind = TreeUtils.elementFromDeclaration(vt).getKind();
       switch (varKind) {
         case ENUM_CONSTANT:
           // Enum constants are "public static final" by default, so the annotation always
@@ -4425,8 +4421,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
       String msgKey = isMethodReference ? "methodref.param" : "override.param";
       Tree posTree =
-          overriderTree instanceof MethodTree
-              ? ((MethodTree) overriderTree).getParameters().get(index)
+          overriderTree instanceof MethodTree overriderMt
+              ? overriderMt.getParameters().get(index)
               : overriderTree;
 
       if (showchecks) {
@@ -4514,8 +4510,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
       String msgKey = isMethodReference ? "methodref.return" : "override.return";
       Tree posTree =
-          overriderTree instanceof MethodTree
-              ? ((MethodTree) overriderTree).getReturnType()
+          overriderTree instanceof MethodTree overriderMt
+              ? overriderMt.getReturnType()
               : overriderTree;
       // The return type of a MethodTree is null for a constructor.
       if (posTree == null) {
@@ -4823,10 +4819,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     Tree tree = this.enclosingStatement(accessTree);
 
-    if (tree != null
-        && tree instanceof AssignmentTree
-        && ((AssignmentTree) tree).getVariable() == accessTree
-        && ((AssignmentTree) tree).getExpression().getKind() == Tree.Kind.NULL_LITERAL) {
+    if (tree instanceof AssignmentTree at
+        && at.getVariable() == accessTree
+        && at.getExpression().getKind() == Tree.Kind.NULL_LITERAL) {
       // Assigning unused to null is OK.
       return;
     }

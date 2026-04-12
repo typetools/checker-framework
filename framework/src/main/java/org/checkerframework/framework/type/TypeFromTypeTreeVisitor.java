@@ -134,9 +134,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
     // Don't initialize the type arguments if they are empty. The type arguments might be a
     // diamond which should be inferred.
-    if (result instanceof AnnotatedDeclaredType && !args.isEmpty()) {
-      assert result instanceof AnnotatedDeclaredType : tree + " --> " + result;
-      ((AnnotatedDeclaredType) result).setTypeArguments(args);
+    if (result instanceof AnnotatedDeclaredType adt && !args.isEmpty()) {
+      adt.setTypeArguments(args);
     }
     return result;
   }

@@ -92,10 +92,10 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
       if (defaultAnno != null) {
         annosToApply.add(defaultAnno);
       } else {
-        AnnotationMirror explict =
+        AnnotationMirror explicit =
             atypeFactory.getQualifierHierarchy().findAnnotationInHierarchy(explicitAnnos, top);
-        if (explict != null) {
-          annosToApply.add(explict);
+        if (explicit != null) {
+          annosToApply.add(explicit);
         }
       }
     }

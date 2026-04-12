@@ -294,7 +294,7 @@ public class Insertions implements Iterable<Insertion> {
           node = ASTIndex.getNode(cut, rec);
         }
 
-        if (ins instanceof TypedInsertion) {
+        if (ins instanceof TypedInsertion typedIns) {
           TypedInsertion tins = outerInsertions.get(rec);
           if (ins instanceof NewInsertion nins) {
             if (entry.getTreeKind() == Tree.Kind.NEW_ARRAY && entry.childSelectorIs(ASTPath.TYPE)) {
@@ -355,9 +355,9 @@ public class Insertions implements Iterable<Insertion> {
             }
           }
           if (tins == null) {
-            outerInsertions.put(rec, (TypedInsertion) ins);
-          } else if (tins.getType().equals(((TypedInsertion) ins).getType())) {
-            mergeTypedInsertions(tins, (TypedInsertion) ins);
+            outerInsertions.put(rec, typedIns);
+          } else if (tins.getType().equals(typedIns.getType())) {
+            mergeTypedInsertions(tins, typedIns);
           }
         } else {
           int d = newArrayInnerTypeDepth(p);
