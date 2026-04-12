@@ -803,20 +803,20 @@ public class NullnessVisitor
     Tree t = typeTree;
     while (t != null) {
       switch (t.getKind()) {
-        case MEMBER_SELECT:
+        case MEMBER_SELECT -> {
           Tree expr = ((MemberSelectTree) t).getExpression();
           if (atypeFactory.containsNullnessAnnotation(annoTrees, expr)) {
             checker.reportError(expr, "nullness.on.outer");
           }
           t = null;
-          break;
-        case PRIMITIVE_TYPE:
+        }
+        case PRIMITIVE_TYPE -> {
           if (atypeFactory.containsNullnessAnnotation(annoTrees, t)) {
             checker.reportError(t, "nullness.on.primitive");
           }
           t = null;
-          break;
-        case ANNOTATED_TYPE:
+        }
+        case ANNOTATED_TYPE -> {
           AnnotatedTypeTree at = ((AnnotatedTypeTree) t);
           Tree underlying = at.getUnderlyingType();
           if (underlying instanceof PrimitiveTypeTree) {
@@ -827,16 +827,10 @@ public class NullnessVisitor
           } else {
             t = underlying;
           }
-          break;
-        case ARRAY_TYPE:
-          t = ((ArrayTypeTree) t).getType();
-          break;
-        case PARAMETERIZED_TYPE:
-          t = ((ParameterizedTypeTree) t).getType();
-          break;
-        default:
-          t = null;
-          break;
+        }
+        case ARRAY_TYPE -> t = ((ArrayTypeTree) t).getType();
+        case PARAMETERIZED_TYPE -> t = ((ParameterizedTypeTree) t).getType();
+        default -> t = null;
       }
     }
 

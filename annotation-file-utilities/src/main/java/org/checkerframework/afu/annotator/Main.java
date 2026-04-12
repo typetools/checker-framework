@@ -404,19 +404,12 @@ public class Main {
               Tree leaf = path.getLeaf();
               switch (leaf.getKind()) {
                 // TODO: Is this an infinite loop if leaf is a VARIABLE or METHOD?
-                case VARIABLE:
-                  varTree = (JCTree.JCVariableDecl) leaf;
-                  break;
-                case METHOD:
-                  methTree = (JCTree.JCMethodDecl) leaf;
-                  break;
-                case ANNOTATION:
-                case CLASS:
-                case ENUM:
-                case INTERFACE:
+                case VARIABLE -> varTree = (JCTree.JCVariableDecl) leaf;
+                case METHOD -> methTree = (JCTree.JCMethodDecl) leaf;
+                case ANNOTATION, CLASS, ENUM, INTERFACE -> {
                   break loop;
-                default:
-                  path = path.getParentPath();
+                }
+                default -> path = path.getParentPath();
               }
             }
             while (path != null) {

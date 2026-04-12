@@ -194,29 +194,27 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
       if (treeRange != null) {
         switch (javaType.getKind()) {
-          case BYTE:
-          case CHAR:
+          case BYTE, CHAR -> {
             if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
               type.replaceAnnotation(SIGNED_POSITIVE);
             }
-            break;
-          case SHORT:
+          }
+          case SHORT -> {
             if (treeRange.isWithin(0, Short.MAX_VALUE)) {
               type.replaceAnnotation(SIGNED_POSITIVE);
             }
-            break;
-          case INT:
+          }
+          case INT -> {
             if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
               type.replaceAnnotation(SIGNED_POSITIVE);
             }
-            break;
-          case LONG:
+          }
+          case LONG -> {
             if (treeRange.isWithin(0, Long.MAX_VALUE)) {
               type.replaceAnnotation(SIGNED_POSITIVE);
             }
-            break;
-          default:
-            // Nothing
+          }
+          default -> {} // Nothing
         }
       }
     }
@@ -293,9 +291,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
       switch (tree.getKind()) {
-        case LEFT_SHIFT:
-        case RIGHT_SHIFT:
-        case UNSIGNED_RIGHT_SHIFT:
+        case LEFT_SHIFT, RIGHT_SHIFT, UNSIGNED_RIGHT_SHIFT -> {
           TreePath path = getPath(tree);
           if (path != null
               && (SignednessShifts.isMaskedShiftEitherSignedness(tree, path)
@@ -305,9 +301,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
             type.replaceAnnotations(lht.getPrimaryAnnotations());
           }
-          break;
-        default:
-          // Do nothing
+        }
+        default -> {} // Do nothing
       }
       return null;
     }

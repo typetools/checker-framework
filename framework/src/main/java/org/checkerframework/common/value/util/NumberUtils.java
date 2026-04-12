@@ -46,37 +46,43 @@ public class NumberUtils {
       throw new UnsupportedOperationException(type.toString());
     }
     switch (typeKind) {
-      case BYTE:
+      case BYTE -> {
         if (isUnsigned) {
           return CollectionsPlume.<Number, Short>mapList(
               NumberUtils::byteValueUnsigned, (Iterable<Number>) numbers);
         } else {
           return CollectionsPlume.mapList(Number::byteValue, numbers);
         }
-      case CHAR:
+      }
+      case CHAR -> {
         return CollectionsPlume.mapList(Number::intValue, numbers);
-      case DOUBLE:
+      }
+      case DOUBLE -> {
         return CollectionsPlume.mapList(Number::doubleValue, numbers);
-      case FLOAT:
+      }
+      case FLOAT -> {
         return CollectionsPlume.mapList(Number::floatValue, numbers);
-      case INT:
+      }
+      case INT -> {
         if (isUnsigned) {
           return CollectionsPlume.<Number, Long>mapList(
               NumberUtils::intValueUnsigned, (Iterable<Number>) numbers);
         } else {
           return CollectionsPlume.mapList(Number::intValue, numbers);
         }
-      case LONG:
+      }
+      case LONG -> {
         return CollectionsPlume.mapList(Number::longValue, numbers);
-      case SHORT:
+      }
+      case SHORT -> {
         if (isUnsigned) {
           return CollectionsPlume.<Number, Integer>mapList(
               NumberUtils::shortValueUnsigned, (Iterable<Number>) numbers);
         } else {
           return CollectionsPlume.mapList(Number::shortValue, numbers);
         }
-      default:
-        throw new UnsupportedOperationException(typeKind + ": " + type);
+      }
+      default -> throw new UnsupportedOperationException(typeKind + ": " + type);
     }
   }
 

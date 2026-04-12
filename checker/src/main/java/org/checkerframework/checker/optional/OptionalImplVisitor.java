@@ -188,14 +188,12 @@ public class OptionalImplVisitor
     boolean negate = false;
     while (true) {
       switch (expression.getKind()) {
-        case PARENTHESIZED:
-          expression = ((ParenthesizedTree) expression).getExpression();
-          break;
-        case LOGICAL_COMPLEMENT:
+        case PARENTHESIZED -> expression = ((ParenthesizedTree) expression).getExpression();
+        case LOGICAL_COMPLEMENT -> {
           expression = ((UnaryTree) expression).getExpression();
           negate = !negate;
-          break;
-        case METHOD_INVOCATION:
+        }
+        case METHOD_INVOCATION -> {
           if (TreeUtils.isMethodInvocation(expression, optionalIsPresent, env)) {
             return IPair.of(!negate, TreeUtils.getReceiverTree(expression));
           } else if (TreeUtils.isMethodInvocation(expression, optionalIsEmpty, env)) {
@@ -203,8 +201,10 @@ public class OptionalImplVisitor
           } else {
             return null;
           }
-        default:
+        }
+        default -> {
           return null;
+        }
       }
     }
   }

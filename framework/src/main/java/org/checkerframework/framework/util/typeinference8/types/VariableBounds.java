@@ -191,23 +191,23 @@ public class VariableBounds {
       BoundKind kind, Set<? extends AbstractQualifier> qualifiers) {
     Set<AbstractQualifier> equalBounds = qualifierBounds.get(BoundKind.EQUAL);
     switch (kind) {
-      case EQUAL:
+      case EQUAL -> {
         addQualifierConstraint(qualifiers, equalBounds, Kind.QUALIFIER_EQUALITY);
         addQualifierConstraint(
             qualifierBounds.get(BoundKind.LOWER), qualifiers, Kind.QUALIFIER_SUBTYPE);
         addQualifierConstraint(
             qualifiers, qualifierBounds.get(BoundKind.UPPER), Kind.QUALIFIER_SUBTYPE);
-        break;
-      case LOWER:
+      }
+      case LOWER -> {
         addQualifierConstraint(qualifiers, equalBounds, Kind.QUALIFIER_SUBTYPE);
         addQualifierConstraint(
             qualifiers, qualifierBounds.get(BoundKind.UPPER), Kind.QUALIFIER_SUBTYPE);
-        break;
-      default: // UPPER
+      }
+      default -> { // UPPER
         addQualifierConstraint(equalBounds, qualifiers, Kind.QUALIFIER_SUBTYPE);
         addQualifierConstraint(
             qualifierBounds.get(BoundKind.LOWER), qualifiers, Kind.QUALIFIER_SUBTYPE);
-        break;
+      }
     }
   }
 
@@ -245,7 +245,7 @@ public class VariableBounds {
       tc.source = "From complementary bound.";
     }
     switch (kind) {
-      case EQUAL:
+      case EQUAL -> {
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
             constraints.add(new Typing(parent, boundType, t, Kind.TYPE_EQUALITY));
@@ -261,8 +261,8 @@ public class VariableBounds {
             constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
           }
         }
-        break;
-      case LOWER:
+      }
+      case LOWER -> {
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
             constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
@@ -273,8 +273,8 @@ public class VariableBounds {
             constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
           }
         }
-        break;
-      case UPPER:
+      }
+      case UPPER -> {
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
             constraints.add(new Typing(parent, t, boundType, Kind.SUBTYPE));
@@ -285,7 +285,7 @@ public class VariableBounds {
             constraints.add(new Typing(parent, t, boundType, Kind.SUBTYPE));
           }
         }
-        break;
+      }
     }
 
     if (kind == BoundKind.UPPER) {
@@ -305,19 +305,19 @@ public class VariableBounds {
     if (boundType.isUseOfVariable() && !boundType.ignoreAnnotations) {
       UseOfVariable boundVar = (UseOfVariable) boundType;
       switch (kind) {
-        case EQUAL:
+        case EQUAL -> {
           boundVar.addQualifierBound(BoundKind.EQUAL, qualifierBounds.get(BoundKind.EQUAL));
           boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.LOWER));
           boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.UPPER));
-          break;
-        case LOWER:
+        }
+        case LOWER -> {
           boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.EQUAL));
           boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.LOWER));
-          break;
-        case UPPER:
+        }
+        case UPPER -> {
           boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.EQUAL));
           boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.UPPER));
-          break;
+        }
       }
     }
   }

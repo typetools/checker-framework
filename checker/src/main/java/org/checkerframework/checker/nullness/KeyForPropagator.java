@@ -130,19 +130,13 @@ public class KeyForPropagator {
       }
 
       switch (direction) {
-        case TO_SUBTYPE:
-          replacer.visit(supertypeArg, subtypeArg);
-          break;
-
-        case TO_SUPERTYPE:
-          replacer.visit(subtypeArg, supertypeArg);
-          break;
-
-        case BOTH:
+        case TO_SUBTYPE -> replacer.visit(supertypeArg, subtypeArg);
+        case TO_SUPERTYPE -> replacer.visit(subtypeArg, supertypeArg);
+        case BOTH -> {
           // note if they both have an annotation nothing will happen
           replacer.visit(subtypeArg, supertypeArg);
           replacer.visit(supertypeArg, subtypeArg);
-          break;
+        }
       }
     }
   }

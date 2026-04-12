@@ -216,15 +216,13 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     result.getLowerBound().addAnnotations(annotations);
 
     switch (bounds.size()) {
-      case 0:
-        break;
-      case 1:
-        result.setUpperBound(bounds.get(0));
-        break;
-      default:
+      case 0 -> {}
+      case 1 -> result.setUpperBound(bounds.get(0));
+      default -> {
         AnnotatedIntersectionType intersection = (AnnotatedIntersectionType) result.getUpperBound();
         intersection.setBounds(bounds);
         intersection.copyIntersectionBoundAnnotations();
+      }
     }
 
     return result;

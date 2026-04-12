@@ -113,46 +113,36 @@ public final class TypesUtils {
    */
   public static Class<?> getClassFromType(TypeMirror typeMirror) {
 
-    // I'm having trouble converting this to a new-style arrow switch expression.
-    switch (typeMirror.getKind()) {
-      case INT:
-        return int.class;
-      case LONG:
-        return long.class;
-      case SHORT:
-        return short.class;
-      case BYTE:
-        return byte.class;
-      case CHAR:
-        return char.class;
-      case DOUBLE:
-        return double.class;
-      case FLOAT:
-        return float.class;
-      case BOOLEAN:
-        return boolean.class;
-
-      case ARRAY:
+    return switch (typeMirror.getKind()) {
+      case INT -> int.class;
+      case LONG -> long.class;
+      case SHORT -> short.class;
+      case BYTE -> byte.class;
+      case CHAR -> char.class;
+      case DOUBLE -> double.class;
+      case FLOAT -> float.class;
+      case BOOLEAN -> boolean.class;
+      case ARRAY -> {
         Class<?> componentClass = getClassFromType(((ArrayType) typeMirror).getComponentType());
-        return componentClass.arrayType();
-
-      case DECLARED:
+        yield componentClass.arrayType();
+      }
+      case DECLARED -> {
         // BUG: need to compute a @ClassGetName, but this code computes a
         // @CanonicalNameOrEmpty.  They are different for inner classes.
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Names.toString
         @DotSeparatedIdentifiers String typeString = TypesUtils.getQualifiedName((DeclaredType) typeMirror).toString();
         if (typeString.equals("<nulltype>")) {
-          return void.class;
+          yield void.class;
+        } else {
+          try {
+            yield Class.forName(typeString);
+          } catch (ClassNotFoundException | NoClassDefFoundError | UnsupportedClassVersionError e) {
+            yield Object.class;
+          }
         }
-        try {
-          return Class.forName(typeString);
-        } catch (ClassNotFoundException | NoClassDefFoundError | UnsupportedClassVersionError e) {
-          return Object.class;
-        }
-
-      default:
-        return Object.class;
-    }
+      }
+      default -> Object.class;
+    };
   }
 
   // Getters

@@ -973,14 +973,12 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     processLambdaExpression(javacTree, node);
     visitLists(javacTree.getParameters(), node.getParameters());
     switch (javacTree.getBodyKind()) {
-      case EXPRESSION:
+      case EXPRESSION -> {
         assert node.getBody() instanceof ExpressionStmt;
         ExpressionStmt body = (ExpressionStmt) node.getBody();
         javacTree.getBody().accept(this, body.getExpression());
-        break;
-      case STATEMENT:
-        javacTree.getBody().accept(this, node.getBody());
-        break;
+      }
+      case STATEMENT -> javacTree.getBody().accept(this, node.getBody());
     }
 
     return null;
@@ -1552,16 +1550,10 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
         == node.getExtendedType().isPresent();
     assert (javacTree.getKind() == Tree.Kind.SUPER_WILDCARD) == node.getSuperType().isPresent();
     switch (javacTree.getKind()) {
-      case UNBOUNDED_WILDCARD:
-        break;
-      case EXTENDS_WILDCARD:
-        javacTree.getBound().accept(this, node.getExtendedType().get());
-        break;
-      case SUPER_WILDCARD:
-        javacTree.getBound().accept(this, node.getSuperType().get());
-        break;
-      default:
-        throw new BugInCF("Unexpected wildcard kind: %s", javacTree);
+      case UNBOUNDED_WILDCARD -> {}
+      case EXTENDS_WILDCARD -> javacTree.getBound().accept(this, node.getExtendedType().get());
+      case SUPER_WILDCARD -> javacTree.getBound().accept(this, node.getSuperType().get());
+      default -> throw new BugInCF("Unexpected wildcard kind: %s", javacTree);
     }
 
     return null;

@@ -792,25 +792,11 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
       boolean visible = isRuntimeRetention(tla);
 
       switch (typeSort) {
-        case TypeReference.INSTANCEOF:
-          {
+        case TypeReference.INSTANCEOF, TypeReference.NEW ->
             typeReference = TypeReference.newTypeReference(typeSort);
-            break;
-          }
-
-        case TypeReference.NEW:
-          {
-            typeReference = TypeReference.newTypeReference(typeSort);
-            break;
-          }
-
-        case TypeReference.CAST:
-          {
+        case TypeReference.CAST ->
             typeReference = TypeReference.newTypeArgumentReference(typeSort, typeIndex);
-            break;
-          }
-        default:
-          throw new IllegalArgumentException();
+        default -> throw new IllegalArgumentException();
       }
 
       return super.visitInsnAnnotation(typeReference.getValue(), typePath, desc, visible);

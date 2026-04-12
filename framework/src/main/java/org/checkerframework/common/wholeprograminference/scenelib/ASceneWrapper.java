@@ -144,13 +144,12 @@ public class ASceneWrapper {
     if (!scene.isEmpty()) {
       try {
         switch (outputFormat) {
-          case STUB:
-            // For stub files, pass in the checker to compute contracts on the fly;
-            // precomputing yields incorrect annotations, most likely due to nested
-            // classes.
-            SceneToStubWriter.write(this, filepath, checker);
-            break;
-          case JAIF:
+          case STUB ->
+              // For stub files, pass in the checker to compute contracts on the fly;
+              // precomputing yields incorrect annotations, most likely due to nested
+              // classes.
+              SceneToStubWriter.write(this, filepath, checker);
+          case JAIF -> {
             // For .jaif files, precompute contracts because the Annotation File
             // Utilities knows nothing about (and cannot depend on) the Checker
             // Framework.
@@ -170,9 +169,8 @@ public class ASceneWrapper {
             try (Writer fw = Files.newBufferedWriter(Paths.get(filepath), StandardCharsets.UTF_8)) {
               IndexFileWriter.write(scene, fw);
             }
-            break;
-          default:
-            throw new BugInCF("Unhandled outputFormat " + outputFormat);
+          }
+          default -> throw new BugInCF("Unhandled outputFormat " + outputFormat);
         }
       } catch (IOException e) {
         throw new UserError("Problem while writing %s: %s", filepath, e.getMessage());

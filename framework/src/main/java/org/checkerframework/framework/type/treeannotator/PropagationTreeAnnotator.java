@@ -308,16 +308,12 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         TypeKind exprKind = exprType.getPrimitiveKind();
         if (exprKind != null) {
           switch (TypeKindUtils.getPrimitiveConversionKind(exprKind, castKind)) {
-            case WIDENING:
-              expressionAnnos =
-                  atypeFactory.getWidenedAnnotations(expressionAnnos, exprKind, castKind);
-              break;
-            case NARROWING:
-              atypeFactory.getNarrowedAnnotations(expressionAnnos, exprKind, castKind);
-              break;
-            case SAME:
-              // Nothing to do
-              break;
+            case WIDENING ->
+                expressionAnnos =
+                    atypeFactory.getWidenedAnnotations(expressionAnnos, exprKind, castKind);
+            case NARROWING ->
+                atypeFactory.getNarrowedAnnotations(expressionAnnos, exprKind, castKind);
+            case SAME -> {} // Nothing to do
           }
         }
       }

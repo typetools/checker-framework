@@ -907,14 +907,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     int intValue = n.getValue();
     AnnotationMirror newAnno;
     switch (intValue) {
-      case 0:
-        newAnno = atypeFactory.ZERO;
-        break;
-      case -1:
-        newAnno = atypeFactory.NEGATIVEONE;
-        break;
-      default:
+      case 0 -> newAnno = atypeFactory.ZERO;
+      case -1 -> newAnno = atypeFactory.NEGATIVEONE;
+      default -> {
         return result;
+      }
     }
     CFValue c = new CFValue(analysis, AnnotationMirrorSet.singleton(newAnno), intTM);
     return new RegularTransferResult<>(c, result.getRegularStore());
