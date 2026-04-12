@@ -312,7 +312,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
                 expressionAnnos =
                     atypeFactory.getWidenedAnnotations(expressionAnnos, exprKind, castKind);
             case NARROWING ->
-                atypeFactory.getNarrowedAnnotations(expressionAnnos, exprKind, castKind);
+                expressionAnnos =
+                    atypeFactory.getNarrowedAnnotations(expressionAnnos, exprKind, castKind);
             case SAME -> {} // Nothing to do
           }
         }
