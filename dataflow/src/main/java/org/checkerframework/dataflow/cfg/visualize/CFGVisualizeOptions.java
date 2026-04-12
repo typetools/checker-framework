@@ -106,7 +106,7 @@ public class CFGVisualizeOptions {
 
     for (int i = 1; i < args.length; i++) {
       switch (args[i]) {
-        case "--outputdir":
+        case "--outputdir" -> {
           if (i >= args.length - 1 || args[i + 1].startsWith("--")) {
             printError("Did not find <outputdir> after --outputdir.");
             error = true;
@@ -114,11 +114,9 @@ public class CFGVisualizeOptions {
           }
           i++;
           output = args[i];
-          break;
-        case "--pdf":
-          pdf = true;
-          break;
-        case "--method":
+        }
+        case "--pdf" -> pdf = true;
+        case "--method" -> {
           if (i >= args.length - 1 || args[i + 1].startsWith("--")) {
             printError("Did not find <name> after --method.");
             error = true;
@@ -126,8 +124,8 @@ public class CFGVisualizeOptions {
           }
           i++;
           method = args[i];
-          break;
-        case "--class":
+        }
+        case "--class" -> {
           if (i >= args.length - 1 || args[i + 1].startsWith("--")) {
             printError("Did not find <name> after --class.");
             error = true;
@@ -135,17 +133,13 @@ public class CFGVisualizeOptions {
           }
           i++;
           clas = args[i];
-          break;
-        case "--verbose":
-          verbose = true;
-          break;
-        case "--string":
-          string = true;
-          break;
-        default:
+        }
+        case "--verbose" -> verbose = true;
+        case "--string" -> string = true;
+        default -> {
           printError("Unknown command line argument: " + args[i]);
           error = true;
-          break;
+        }
       }
     }
 

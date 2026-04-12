@@ -741,20 +741,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /*package-private*/ AnnotationMirror createArrayLengthResultAnnotation(AnnotatedTypeMirror type) {
     AnnotationMirror arrayAnno = type.getPrimaryAnnotationInHierarchy(UNKNOWNVAL);
     switch (AnnotationUtils.annotationName(arrayAnno)) {
-      case ARRAYLEN_NAME:
+      case ARRAYLEN_NAME -> {
         // array.length, where array : @ArrayLen(x)
         List<Integer> lengths = getArrayLength(arrayAnno);
         return createNumberAnnotationMirror(new ArrayList<>(lengths));
-      case ARRAYLENRANGE_NAME:
+      }
+      case ARRAYLENRANGE_NAME -> {
         // array.length, where array : @ArrayLenRange(x)
         Range range = getRange(arrayAnno);
         return createIntRangeAnnotation(range);
-      case STRINGVAL_NAME:
+      }
+      case STRINGVAL_NAME -> {
         List<String> strings = getStringValues(arrayAnno);
         List<Integer> lengthsS = ValueCheckerUtils.getLengthsForStringValues(strings);
         return createNumberAnnotationMirror(new ArrayList<>(lengthsS));
-      default:
+      }
+      default -> {
         return createIntRangeAnnotation(0, Integer.MAX_VALUE);
+      }
     }
   }
 
@@ -798,8 +802,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       List<String> stringVals =
           CollectionsPlume.mapList(
               o -> {
-                if (o instanceof char[]) {
-                  return new String((char[]) o);
+                if (o instanceof char[] ca) {
+                  return new String(ca);
                 } else {
                   return o.toString();
                 }
@@ -818,20 +822,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     switch (primitiveKind) {
-      case BOOLEAN:
+      case BOOLEAN -> {
         List<Boolean> boolVals = CollectionsPlume.mapList((Object o) -> (Boolean) o, values);
         return createBooleanAnnotation(boolVals);
-      case DOUBLE:
-      case FLOAT:
-      case INT:
-      case LONG:
-      case SHORT:
-      case BYTE:
+      }
+      case DOUBLE, FLOAT, INT, LONG, SHORT, BYTE -> {
         List<Number> numberVals = new ArrayList<>(values.size());
         List<Character> characterVals = new ArrayList<>(values.size());
         for (Object o : values) {
-          if (o instanceof Character) {
-            characterVals.add((Character) o);
+          if (o instanceof Character ch) {
+            characterVals.add(ch);
           } else {
             numberVals.add((Number) o);
           }
@@ -841,18 +841,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           return createCharAnnotation(characterVals);
         }
         return createNumberAnnotationMirror(new ArrayList<>(numberVals));
-      case CHAR:
+      }
+      case CHAR -> {
         List<Character> charVals = new ArrayList<>(values.size());
         for (Object o : values) {
-          if (o instanceof Number) {
-            charVals.add((char) ((Number) o).intValue());
+          if (o instanceof Number num) {
+            charVals.add((char) num.intValue());
           } else {
             charVals.add((char) o);
           }
         }
         return createCharAnnotation(charVals);
-      default:
-        throw new UnsupportedOperationException("Unexpected kind:" + resultType);
+      }
+      default -> throw new UnsupportedOperationException("Unexpected kind:" + resultType);
     }
   }
 
@@ -1667,8 +1668,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     if (expressionObj instanceof ValueLiteral sequenceLiteral) {
       Object sequenceLiteralValue = sequenceLiteral.getValue();
-      if (sequenceLiteralValue instanceof String) {
-        return ((String) sequenceLiteralValue).length();
+      if (sequenceLiteralValue instanceof String s) {
+        return s.length();
       }
     } else if (expressionObj instanceof ArrayCreation arrayCreation) {
       // This is only expected to support array creations in varargs methods

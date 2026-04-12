@@ -690,20 +690,12 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
       // aElement is a field, skip the annotation for now to avoid crashing.
       try {
         switch (typeReference.getSort()) {
-          case TypeReference.CLASS_TYPE_PARAMETER_BOUND:
-            handleClassTypeParameterBound((AClass) aElement);
-            break;
-          case TypeReference.CLASS_TYPE_PARAMETER:
-            handleClassTypeParameter((AClass) aElement);
-            break;
-          case TypeReference.CLASS_EXTENDS:
-            handleClassExtends((AClass) aElement);
-            break;
-          case TypeReference.FIELD:
-            handleField(aElement);
-            break;
-          case TypeReference.LOCAL_VARIABLE:
-          case TypeReference.RESOURCE_VARIABLE:
+          case TypeReference.CLASS_TYPE_PARAMETER_BOUND ->
+              handleClassTypeParameterBound((AClass) aElement);
+          case TypeReference.CLASS_TYPE_PARAMETER -> handleClassTypeParameter((AClass) aElement);
+          case TypeReference.CLASS_EXTENDS -> handleClassExtends((AClass) aElement);
+          case TypeReference.FIELD -> handleField(aElement);
+          case TypeReference.LOCAL_VARIABLE, TypeReference.RESOURCE_VARIABLE -> {
             if (aElement instanceof AMethod) {
               handleMethodLocalVariable((AMethod) aElement);
             } else {
@@ -712,8 +704,8 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
                 System.err.println("Unhandled local variable annotation for " + aElement);
               }
             }
-            break;
-          case TypeReference.NEW:
+          }
+          case TypeReference.NEW -> {
             if (aElement instanceof AMethod) {
               handleMethodObjectCreation((AMethod) aElement);
             } else {
@@ -722,14 +714,11 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
                 System.err.println("Unhandled NEW annotation for " + aElement);
               }
             }
-            break;
-          case TypeReference.METHOD_FORMAL_PARAMETER:
-            handleMethodFormalParameter((AMethod) aElement);
-            break;
-          case TypeReference.METHOD_RECEIVER:
-            handleMethodReceiver((AMethod) aElement);
-            break;
-          case TypeReference.CAST:
+          }
+          case TypeReference.METHOD_FORMAL_PARAMETER ->
+              handleMethodFormalParameter((AMethod) aElement);
+          case TypeReference.METHOD_RECEIVER -> handleMethodReceiver((AMethod) aElement);
+          case TypeReference.CAST -> {
             if (aElement instanceof AMethod) {
               handleMethodTypecast((AMethod) aElement);
             } else {
@@ -738,11 +727,9 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
                 System.err.println("Unhandled TYPECAST annotation for " + aElement);
               }
             }
-            break;
-          case TypeReference.METHOD_RETURN:
-            handleMethodReturnType((AMethod) aElement);
-            break;
-          case TypeReference.INSTANCEOF:
+          }
+          case TypeReference.METHOD_RETURN -> handleMethodReturnType((AMethod) aElement);
+          case TypeReference.INSTANCEOF -> {
             if (aElement instanceof AMethod) {
               handleMethodInstanceOf((AMethod) aElement);
             } else {
@@ -751,33 +738,24 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
                 System.err.println("Unhandled INSTANCEOF annotation for " + aElement);
               }
             }
-            break;
-          case TypeReference.METHOD_TYPE_PARAMETER_BOUND:
-            handleMethodTypeParameterBound((AMethod) aElement);
-            break;
-          case TypeReference.THROWS:
-            handleThrows((AMethod) aElement);
-            break;
-          case TypeReference.CONSTRUCTOR_REFERENCE: // TODO
-          case TypeReference.METHOD_REFERENCE:
-            handleMethodReference((AMethod) aElement);
-            break;
-          case TypeReference.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT: // TODO
-          case TypeReference.METHOD_REFERENCE_TYPE_ARGUMENT:
-            handleReferenceTypeArgument((AMethod) aElement);
-            break;
-          case TypeReference.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT: // TODO
-          case TypeReference.METHOD_INVOCATION_TYPE_ARGUMENT:
-            handleInvocationTypeArgument((AMethod) aElement);
-            break;
-          case TypeReference.METHOD_TYPE_PARAMETER:
-            handleMethodTypeParameter((AMethod) aElement);
-            break;
-          case TypeReference.EXCEPTION_PARAMETER: // TODO: Change if this error is ever thrown.
-            throw new Error("EXCEPTION_PARAMETER TypeReference case.");
+          }
+          case TypeReference.METHOD_TYPE_PARAMETER_BOUND ->
+              handleMethodTypeParameterBound((AMethod) aElement);
+          case TypeReference.THROWS -> handleThrows((AMethod) aElement);
+          case TypeReference.CONSTRUCTOR_REFERENCE, TypeReference.METHOD_REFERENCE -> // TODO
+              handleMethodReference((AMethod) aElement);
+          case TypeReference.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT, // TODO
+              TypeReference.METHOD_REFERENCE_TYPE_ARGUMENT ->
+              handleReferenceTypeArgument((AMethod) aElement);
+          case TypeReference.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT, // TODO
+              TypeReference.METHOD_INVOCATION_TYPE_ARGUMENT ->
+              handleInvocationTypeArgument((AMethod) aElement);
+          case TypeReference.METHOD_TYPE_PARAMETER -> handleMethodTypeParameter((AMethod) aElement);
+          case TypeReference.EXCEPTION_PARAMETER -> // TODO: Change if this error is ever thrown.
+              throw new Error("EXCEPTION_PARAMETER TypeReference case.");
           // TODO: ensure all cases covered.
-          default:
-            throw new RuntimeException("Unknown TypeReference: " + typeReference.getSort());
+          default ->
+              throw new RuntimeException("Unknown TypeReference: " + typeReference.getSort());
         }
       } catch (ClassCastException e) {
         System.err.println("Exception trace: " + e.getMessage());

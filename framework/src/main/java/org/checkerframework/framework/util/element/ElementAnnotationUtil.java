@@ -466,20 +466,17 @@ public class ElementAnnotationUtil {
     while (!tailOfLocations.isEmpty()) {
       TypePathEntry currentLocation = tailOfLocations.removeFirst();
       switch (currentLocation.tag) {
-        case INNER_TYPE:
-          outerToInner.removeFirst();
-          break;
-        case TYPE_ARGUMENT:
+        case INNER_TYPE -> outerToInner.removeFirst();
+        case TYPE_ARGUMENT -> {
           AnnotatedDeclaredType innerType = outerToInner.getFirst();
           if (currentLocation.arg < innerType.getTypeArguments().size()) {
             AnnotatedTypeMirror typeArg = innerType.getTypeArguments().get(currentLocation.arg);
             return getTypeAtLocation(typeArg, tailOfLocations);
           } else {
             error = true;
-            break;
           }
-        default:
-          error = true;
+        }
+        default -> error = true;
       }
       if (error) {
         break;

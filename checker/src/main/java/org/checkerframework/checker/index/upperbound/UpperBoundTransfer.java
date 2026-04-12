@@ -156,11 +156,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     Node expNode = node.getExpression();
 
     // strip off typecast if any
-    Node expNodeSansCast =
-        (expNode instanceof TypeCastNode) ? ((TypeCastNode) expNode).getOperand() : expNode;
+    Node expNodeSansCast = (expNode instanceof TypeCastNode tcn) ? tcn.getOperand() : expNode;
     // null if right-hand-side is not an array creation expression
-    ArrayCreationNode acNode =
-        (expNodeSansCast instanceof ArrayCreationNode) ? (ArrayCreationNode) expNodeSansCast : null;
+    ArrayCreationNode acNode = (expNodeSansCast instanceof ArrayCreationNode acn2) ? acn2 : null;
 
     if (acNode != null) {
       // Right-hand side of assignment is an array creation expression
@@ -196,17 +194,17 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    */
   private void propagateToOperands(
       LessThanLengthOf typeOfNode, Node node, TransferInput<CFValue, CFStore> in, CFStore store) {
-    if (node instanceof NumericalAdditionNode) {
-      Node right = ((NumericalAdditionNode) node).getRightOperand();
-      Node left = ((NumericalAdditionNode) node).getLeftOperand();
+    if (node instanceof NumericalAdditionNode nan) {
+      Node right = nan.getRightOperand();
+      Node left = nan.getLeftOperand();
       propagateToAdditionOperand(typeOfNode, left, right, in, store);
       propagateToAdditionOperand(typeOfNode, right, left, in, store);
-    } else if (node instanceof NumericalSubtractionNode) {
-      propagateToSubtractionOperands(typeOfNode, (NumericalSubtractionNode) node, in, store);
-    } else if (node instanceof NumericalMultiplicationNode) {
+    } else if (node instanceof NumericalSubtractionNode nsn) {
+      propagateToSubtractionOperands(typeOfNode, nsn, in, store);
+    } else if (node instanceof NumericalMultiplicationNode nmn) {
       if (atypeFactory.hasLowerBoundTypeByClass(node, Positive.class)) {
-        Node right = ((NumericalMultiplicationNode) node).getRightOperand();
-        Node left = ((NumericalMultiplicationNode) node).getLeftOperand();
+        Node right = nmn.getRightOperand();
+        Node left = nmn.getLeftOperand();
         propagateToMultiplicationOperand(typeOfNode, left, right, in, store);
         propagateToMultiplicationOperand(typeOfNode, right, left, in, store);
       }
@@ -481,8 +479,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     } else if (atypeFactory.getMethodIdentifier().isLengthOfMethodInvocation(lengthAccess)) {
       JavaExpression ma = JavaExpression.fromNode(lengthAccess);
-      if (ma instanceof MethodCall) {
-        receiver = ((MethodCall) ma).getReceiver();
+      if (ma instanceof MethodCall mc) {
+        receiver = mc.getReceiver();
       }
     }
 
@@ -732,8 +730,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     if (atypeFactory.getMethodIdentifier().isLengthOfMethodInvocation(n)) {
       JavaExpression stringLength = JavaExpression.fromNode(n);
-      if (stringLength instanceof MethodCall) {
-        JavaExpression receiverJe = ((MethodCall) stringLength).getReceiver();
+      if (stringLength instanceof MethodCall mc2) {
+        JavaExpression receiverJe = mc2.getReceiver();
         Tree receiverTree = n.getTarget().getReceiver().getTree();
         // receiverTree is null when the receiver is implicit "this".
         if (receiverTree != null) {
@@ -909,14 +907,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     int intValue = n.getValue();
     AnnotationMirror newAnno;
     switch (intValue) {
-      case 0:
-        newAnno = atypeFactory.ZERO;
-        break;
-      case -1:
-        newAnno = atypeFactory.NEGATIVEONE;
-        break;
-      default:
+      case 0 -> newAnno = atypeFactory.ZERO;
+      case -1 -> newAnno = atypeFactory.NEGATIVEONE;
+      default -> {
         return result;
+      }
     }
     CFValue c = new CFValue(analysis, AnnotationMirrorSet.singleton(newAnno), intTM);
     return new RegularTransferResult<>(c, result.getRegularStore());

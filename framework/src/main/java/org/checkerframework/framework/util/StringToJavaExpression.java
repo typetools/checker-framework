@@ -282,8 +282,7 @@ public interface StringToJavaExpression {
     JavaExpression receiver = JavaExpression.getPseudoReceiver(parentPath, enclosingType);
     // If receiver isn't a ThisReference, then the lambda is in a static context and "this"
     // cannot be referenced in the expression.
-    ThisReference thisReference =
-        receiver instanceof ThisReference ? (ThisReference) receiver : null;
+    ThisReference thisReference = receiver instanceof ThisReference tr ? tr : null;
     List<JavaExpression> paramsAsLocals = new ArrayList<>(lambdaTree.getParameters().size());
     List<FormalParameter> parameters = new ArrayList<>(lambdaTree.getParameters().size());
     int oneBasedIndex = 1;

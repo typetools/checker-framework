@@ -349,19 +349,17 @@ public class AnnotatedTypes {
     // asMemberOf is only for fields, variables, and methods!
     // Otherwise, simply use fromElement.
     switch (elem.getKind()) {
-      case PACKAGE:
-      case INSTANCE_INIT:
-      case OTHER:
-      case STATIC_INIT:
-      case TYPE_PARAMETER:
+      case PACKAGE, INSTANCE_INIT, OTHER, STATIC_INIT, TYPE_PARAMETER -> {
         return elemType;
-      default:
+      }
+      default -> {
         if (t == null || ElementUtils.isStatic(elem)) {
           return elemType;
         }
         AnnotatedTypeMirror res = asMemberOfImpl(types, atypeFactory, t, elem, elemType);
         atypeFactory.postAsMemberOf(res, t, elem);
         return res;
+      }
     }
   }
 
@@ -383,14 +381,15 @@ public class AnnotatedTypes {
       Element member,
       AnnotatedTypeMirror memberType) {
     switch (receiverType.getKind()) {
-      case ARRAY:
+      case ARRAY -> {
         // Method references like String[]::clone should have a return type of String[]
         // rather than Object.
         if (SyntheticArrays.isArrayClone(receiverType, member)) {
           return SyntheticArrays.replaceReturnType(member, (AnnotatedArrayType) receiverType);
         }
         return memberType;
-      case TYPEVAR:
+      }
+      case TYPEVAR -> {
         return asMemberOf(
             types,
             atypeFactory,
@@ -398,7 +397,8 @@ public class AnnotatedTypes {
                 ((AnnotatedTypeVariable) receiverType).getUpperBound()),
             member,
             memberType);
-      case WILDCARD:
+      }
+      case WILDCARD -> {
         if (AnnotatedTypes.isTypeArgOfRawType(receiverType)) {
           return substituteTypeArgsFromRawTypes(atypeFactory, member, memberType);
         }
@@ -408,7 +408,8 @@ public class AnnotatedTypes {
             ((AnnotatedWildcardType) receiverType).getExtendsBound().deepCopy(),
             member,
             memberType);
-      case INTERSECTION:
+      }
+      case INTERSECTION -> {
         AnnotatedTypeMirror result = memberType;
         TypeMirror enclosingElementType = member.getEnclosingElement().asType();
         for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) receiverType).getBounds()) {
@@ -423,16 +424,18 @@ public class AnnotatedTypes {
           }
         }
         return result;
-      case UNION:
+      }
+      case UNION -> {
         return substituteTypeVariables(types, atypeFactory, receiverType, member, memberType);
-      case DECLARED:
+      }
+      case DECLARED -> {
         AnnotatedDeclaredType receiverTypeDT = (AnnotatedDeclaredType) receiverType;
         if (isRawCall(receiverTypeDT, member, types)) {
           return memberType.getErased();
         }
         return substituteTypeVariables(types, atypeFactory, receiverType, member, memberType);
-      default:
-        throw new BugInCF("asMemberOf called on unexpected type.%nt: %s", receiverType);
+      }
+      default -> throw new BugInCF("asMemberOf called on unexpected type.%nt: %s", receiverType);
     }
   }
 
@@ -727,10 +730,10 @@ public class AnnotatedTypes {
     }
 
     List<? extends Tree> targs;
-    if (expr instanceof MethodInvocationTree) {
-      targs = ((MethodInvocationTree) expr).getTypeArguments();
-    } else if (expr instanceof NewClassTree) {
-      targs = ((NewClassTree) expr).getTypeArguments();
+    if (expr instanceof MethodInvocationTree mit) {
+      targs = mit.getTypeArguments();
+    } else if (expr instanceof NewClassTree nct) {
+      targs = nct.getTypeArguments();
     } else if (expr instanceof MemberReferenceTree memRef) {
       if (inferTypeArgs && TreeUtils.needsTypeArgInference(memRef)) {
         InferenceResult inferenceResult =
@@ -1376,19 +1379,12 @@ public class AnnotatedTypes {
     while (source.getPrimaryAnnotationInHierarchy(top) == null) {
 
       switch (source.getKind()) {
-        case TYPEVAR:
-          source = ((AnnotatedTypeVariable) source).getUpperBound();
-          break;
-
-        case WILDCARD:
-          source = ((AnnotatedWildcardType) source).getExtendsBound();
-          break;
-
-        case INTERSECTION:
+        case TYPEVAR -> source = ((AnnotatedTypeVariable) source).getUpperBound();
+        case WILDCARD -> source = ((AnnotatedWildcardType) source).getExtendsBound();
+        case INTERSECTION -> {
           // if there are multiple conflicting annotations, choose the lowest
           AnnotationMirror glb =
               glbOfBoundsInHierarchy((AnnotatedIntersectionType) source, top, qualHierarchy);
-
           if (glb == null) {
             throw new BugInCF(
                 "AnnotatedIntersectionType has no annotation in hierarchy "
@@ -1398,18 +1394,18 @@ public class AnnotatedTypes {
                     + source);
           }
           return glb;
-
-        default:
+        }
+        default -> {
           if (canBeEmpty) {
             return null;
           }
-
           throw new BugInCF(
               StringsPlume.joinLines(
                   "Unexpected AnnotatedTypeMirror with no primary annotation.",
                   "toSearch=" + toSearch,
                   "top=" + top,
                   "source=" + source));
+        }
       }
     }
 
@@ -1431,26 +1427,20 @@ public class AnnotatedTypes {
     while (kind == TypeKind.TYPEVAR || kind == TypeKind.WILDCARD || kind == TypeKind.INTERSECTION) {
 
       switch (source.getKind()) {
-        case TYPEVAR:
-          source = ((AnnotatedTypeVariable) source).getLowerBound();
-          break;
-
-        case WILDCARD:
-          source = ((AnnotatedWildcardType) source).getSuperBound();
-          break;
-
-        case INTERSECTION:
+        case TYPEVAR -> source = ((AnnotatedTypeVariable) source).getLowerBound();
+        case WILDCARD -> source = ((AnnotatedWildcardType) source).getSuperBound();
+        case INTERSECTION -> {
           // if there are multiple conflicting annotations, choose the lowest
           AnnotationMirrorSet glb = glbOfBounds((AnnotatedIntersectionType) source, qualHierarchy);
           return glb;
-
-        default:
-          throw new BugInCF(
-              "Unexpected AnnotatedTypeMirror with no primary annotation;"
-                  + " toSearch="
-                  + toSearch
-                  + " source="
-                  + source);
+        }
+        default ->
+            throw new BugInCF(
+                "Unexpected AnnotatedTypeMirror with no primary annotation;"
+                    + " toSearch="
+                    + toSearch
+                    + " source="
+                    + source);
       }
 
       kind = source.getKind();
@@ -1476,26 +1466,20 @@ public class AnnotatedTypes {
     while (kind == TypeKind.TYPEVAR || kind == TypeKind.WILDCARD || kind == TypeKind.INTERSECTION) {
 
       switch (source.getKind()) {
-        case TYPEVAR:
-          source = ((AnnotatedTypeVariable) source).getUpperBound();
-          break;
-
-        case WILDCARD:
-          source = ((AnnotatedWildcardType) source).getExtendsBound();
-          break;
-
-        case INTERSECTION:
+        case TYPEVAR -> source = ((AnnotatedTypeVariable) source).getUpperBound();
+        case WILDCARD -> source = ((AnnotatedWildcardType) source).getExtendsBound();
+        case INTERSECTION -> {
           // if there are multiple conflicting annotations, choose the lowest
           AnnotationMirrorSet glb = glbOfBounds((AnnotatedIntersectionType) source, qualHierarchy);
           return glb;
-
-        default:
-          throw new BugInCF(
-              "Unexpected AnnotatedTypeMirror with no primary annotation;"
-                  + " toSearch="
-                  + toSearch
-                  + " source="
-                  + source);
+        }
+        default ->
+            throw new BugInCF(
+                "Unexpected AnnotatedTypeMirror with no primary annotation;"
+                    + " toSearch="
+                    + toSearch
+                    + " source="
+                    + source);
       }
 
       kind = source.getKind();

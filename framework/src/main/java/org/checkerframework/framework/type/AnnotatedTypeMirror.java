@@ -126,50 +126,33 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     AnnotatedTypeMirror result;
     switch (type.getKind()) {
-      case ARRAY:
-        result = new AnnotatedArrayType((ArrayType) type, atypeFactory);
-        break;
-      case DECLARED:
-        result = new AnnotatedDeclaredType((DeclaredType) type, atypeFactory, isDeclaration);
-        break;
-      case ERROR:
-        throw new BugInCF(
-            "AnnotatedTypeMirror.createType: input is not compilable. Found error type: " + type);
-
-      case EXECUTABLE:
-        result = new AnnotatedExecutableType((ExecutableType) type, atypeFactory);
-        break;
-      case VOID:
-      case PACKAGE:
-      case NONE:
-        result = new AnnotatedNoType((NoType) type, atypeFactory);
-        break;
-      case NULL:
-        result = new AnnotatedNullType((NullType) type, atypeFactory);
-        break;
-      case TYPEVAR:
-        result = new AnnotatedTypeVariable((TypeVariable) type, atypeFactory, isDeclaration);
-        break;
-      case WILDCARD:
-        result = new AnnotatedWildcardType((WildcardType) type, atypeFactory);
-        break;
-      case INTERSECTION:
-        result = new AnnotatedIntersectionType((IntersectionType) type, atypeFactory);
-        break;
-      case UNION:
-        result = new AnnotatedUnionType((UnionType) type, atypeFactory);
-        break;
-      default:
+      case ARRAY -> result = new AnnotatedArrayType((ArrayType) type, atypeFactory);
+      case DECLARED ->
+          result = new AnnotatedDeclaredType((DeclaredType) type, atypeFactory, isDeclaration);
+      case ERROR ->
+          throw new BugInCF(
+              "AnnotatedTypeMirror.createType: input is not compilable. Found error type: " + type);
+      case EXECUTABLE -> result = new AnnotatedExecutableType((ExecutableType) type, atypeFactory);
+      case VOID, PACKAGE, NONE -> result = new AnnotatedNoType((NoType) type, atypeFactory);
+      case NULL -> result = new AnnotatedNullType((NullType) type, atypeFactory);
+      case TYPEVAR ->
+          result = new AnnotatedTypeVariable((TypeVariable) type, atypeFactory, isDeclaration);
+      case WILDCARD -> result = new AnnotatedWildcardType((WildcardType) type, atypeFactory);
+      case INTERSECTION ->
+          result = new AnnotatedIntersectionType((IntersectionType) type, atypeFactory);
+      case UNION -> result = new AnnotatedUnionType((UnionType) type, atypeFactory);
+      default -> {
         if (type.getKind().isPrimitive()) {
           result = new AnnotatedPrimitiveType((PrimitiveType) type, atypeFactory);
-          break;
+        } else {
+          throw new BugInCF(
+              "AnnotatedTypeMirror.createType: unidentified type "
+                  + type
+                  + " ("
+                  + type.getKind()
+                  + ")");
         }
-        throw new BugInCF(
-            "AnnotatedTypeMirror.createType: unidentified type "
-                + type
-                + " ("
-                + type.getKind()
-                + ")");
+      }
     }
     /*if (jctype.isAnnotated()) {
         result.addAnnotations(jctype.getAnnotationMirrors());
@@ -183,11 +166,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       return true;
     }
 
-    if (!(o instanceof AnnotatedTypeMirror)) {
+    if (!(o instanceof AnnotatedTypeMirror atm)) {
       return false;
     }
 
-    return EQUALITY_COMPARER.visit(this, (AnnotatedTypeMirror) o, null);
+    return EQUALITY_COMPARER.visit(this, atm, null);
   }
 
   @Pure

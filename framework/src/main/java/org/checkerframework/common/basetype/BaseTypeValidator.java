@@ -248,20 +248,17 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     final AnnotatedTypeMirror lowerBound;
 
     switch (type.getKind()) {
-      case TYPEVAR:
+      case TYPEVAR -> {
         label = "type parameter";
         upperBound = ((AnnotatedTypeVariable) type).getUpperBound();
         lowerBound = ((AnnotatedTypeVariable) type).getLowerBound();
-        break;
-
-      case WILDCARD:
+      }
+      case WILDCARD -> {
         label = "wildcard";
         upperBound = ((AnnotatedWildcardType) type).getExtendsBound();
         lowerBound = ((AnnotatedWildcardType) type).getSuperBound();
-        break;
-
-      default:
-        throw new BugInCF("Type is not bounded.%ntype=%s%ntree=%s", type, tree);
+      }
+      default -> throw new BugInCF("Type is not bounded.%ntype=%s%ntree=%s", type, tree);
     }
 
     checker.reportError(
@@ -428,22 +425,19 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     ParameterizedTypeTree typeargtree = null;
 
     switch (tree.getKind()) {
-      case VARIABLE:
+      case VARIABLE -> {
         Tree lt = ((VariableTree) tree).getType();
-        if (lt instanceof ParameterizedTypeTree) {
-          typeargtree = (ParameterizedTypeTree) lt;
-        } else {
-          // System.out.println("Found a: " + lt);
+        if (lt instanceof ParameterizedTypeTree ptt) {
+          typeargtree = ptt;
         }
-        break;
-      case PARAMETERIZED_TYPE:
-        typeargtree = (ParameterizedTypeTree) tree;
-        break;
-      case NEW_CLASS:
+        // else System.out.println("Found a: " + lt);
+      }
+      case PARAMETERIZED_TYPE -> typeargtree = (ParameterizedTypeTree) tree;
+      case NEW_CLASS -> {
         NewClassTree nct = (NewClassTree) tree;
         ExpressionTree nctid = nct.getIdentifier();
-        if (nctid instanceof ParameterizedTypeTree) {
-          typeargtree = (ParameterizedTypeTree) nctid;
+        if (nctid instanceof ParameterizedTypeTree ptt) {
+          typeargtree = ptt;
           /*
            * This is quite tricky... for anonymous class instantiations,
            * the type at this point has no type arguments. By doing the
@@ -451,12 +445,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
            */
           type = (AnnotatedDeclaredType) atypeFactory.getAnnotatedType(typeargtree);
         }
-        break;
-      case ANNOTATED_TYPE:
+      }
+      case ANNOTATED_TYPE -> {
         AnnotatedTypeTree tr = (AnnotatedTypeTree) tree;
         ExpressionTree undtr = tr.getUnderlyingType();
-        if (undtr instanceof ParameterizedTypeTree) {
-          typeargtree = (ParameterizedTypeTree) undtr;
+        if (undtr instanceof ParameterizedTypeTree ptt) {
+          typeargtree = ptt;
         } else if (undtr instanceof IdentifierTree) {
           // @Something D -> Nothing to do
         } else {
@@ -468,29 +462,25 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           typeargtree = p.first;
           type = p.second;
         }
-        break;
-      case IDENTIFIER:
-      case ARRAY_TYPE:
-      case NEW_ARRAY:
-      case MEMBER_SELECT:
-      case UNBOUNDED_WILDCARD:
-      case EXTENDS_WILDCARD:
-      case SUPER_WILDCARD:
-      case TYPE_PARAMETER:
-        // Nothing to do.
-        break;
-      case METHOD:
+      }
+      case IDENTIFIER,
+          ARRAY_TYPE,
+          NEW_ARRAY,
+          MEMBER_SELECT,
+          UNBOUNDED_WILDCARD,
+          EXTENDS_WILDCARD,
+          SUPER_WILDCARD,
+          TYPE_PARAMETER -> {} // Nothing to do.
+      case METHOD -> {
         // If a MethodTree is passed, it's just the return type that is validated.
         // See BaseTypeVisitor#validateTypeOf.
         MethodTree methodTree = (MethodTree) tree;
         if (methodTree.getReturnType() instanceof ParameterizedTypeTree) {
           typeargtree = (ParameterizedTypeTree) methodTree.getReturnType();
         }
-        break;
-      default:
-        // The parameterized type is the result of some expression tree.
+      }
+      default -> {} // The parameterized type is the result of some expression tree.
         // No need to do anything further.
-        break;
     }
 
     return IPair.of(typeargtree, type);

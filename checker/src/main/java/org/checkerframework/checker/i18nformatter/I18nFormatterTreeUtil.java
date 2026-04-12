@@ -221,15 +221,14 @@ public class I18nFormatterTreeUtil {
   private I18nConversionCategory @Nullable [] asFormatCallCategoriesLowLevel(
       MethodInvocationNode node) {
     Node vararg = node.getArgument(1);
-    if (vararg instanceof ArrayCreationNode) {
-      List<Node> convs = ((ArrayCreationNode) vararg).getInitializers();
+    if (vararg instanceof ArrayCreationNode acn) {
+      List<Node> convs = acn.getInitializers();
       I18nConversionCategory[] res = new I18nConversionCategory[convs.size()];
       for (int i = 0; i < convs.size(); i++) {
         Node conv = convs.get(i);
-        if (conv instanceof FieldAccessNode) {
-          if (typeMirrorToClass(((FieldAccessNode) conv).getType())
-              == I18nConversionCategory.class) {
-            res[i] = I18nConversionCategory.valueOf(((FieldAccessNode) conv).getFieldName());
+        if (conv instanceof FieldAccessNode fan) {
+          if (typeMirrorToClass(fan.getType()) == I18nConversionCategory.class) {
+            res[i] = I18nConversionCategory.valueOf(fan.getFieldName());
             continue; /* avoid returning null */
           }
         }
@@ -251,8 +250,8 @@ public class I18nFormatterTreeUtil {
     Result<I18nConversionCategory[]> ret = new Result<>(null, node.getTree());
 
     // Now only work with a literal string
-    if (firstParam instanceof StringLiteralNode) {
-      String s = ((StringLiteralNode) firstParam).getValue();
+    if (firstParam instanceof StringLiteralNode sln) {
+      String s = sln.getValue();
       if (translations.containsKey(s)) {
         String value = translations.get(s);
         ret = new Result<>(I18nFormatUtil.formatParameterCategories(value), node.getTree());

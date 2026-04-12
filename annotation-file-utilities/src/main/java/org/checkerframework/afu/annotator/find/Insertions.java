@@ -294,7 +294,7 @@ public class Insertions implements Iterable<Insertion> {
           node = ASTIndex.getNode(cut, rec);
         }
 
-        if (ins instanceof TypedInsertion) {
+        if (ins instanceof TypedInsertion typedIns) {
           TypedInsertion tins = outerInsertions.get(rec);
           if (ins instanceof NewInsertion nins) {
             if (entry.getTreeKind() == Tree.Kind.NEW_ARRAY && entry.childSelectorIs(ASTPath.TYPE)) {
@@ -355,9 +355,9 @@ public class Insertions implements Iterable<Insertion> {
             }
           }
           if (tins == null) {
-            outerInsertions.put(rec, (TypedInsertion) ins);
-          } else if (tins.getType().equals(((TypedInsertion) ins).getType())) {
-            mergeTypedInsertions(tins, (TypedInsertion) ins);
+            outerInsertions.put(rec, typedIns);
+          } else if (tins.getType().equals(typedIns.getType())) {
+            mergeTypedInsertions(tins, typedIns);
           }
         } else {
           int d = newArrayInnerTypeDepth(p);
@@ -477,7 +477,7 @@ public class Insertions implements Iterable<Insertion> {
         } else {
           Tree t = path.getLeaf();
           switch (t.getKind()) {
-            case NEW_ARRAY:
+            case NEW_ARRAY -> {
               int d = 0;
               ASTPath.ASTEntry e = localTypePath.getLast();
               List<TypePathEntry> loc = null;
@@ -503,9 +503,8 @@ public class Insertions implements Iterable<Insertion> {
               tins = new NewInsertion(type, criteria, inners);
               tins.setInserted(true);
               outerInsertions.put(rec, tins);
-              break;
-            default:
-              break;
+            }
+            default -> {}
           }
         }
       }
@@ -532,33 +531,36 @@ public class Insertions implements Iterable<Insertion> {
         // find actual type
         ClassSymbol csym = null;
         switch (tins.getKind()) {
-          case CONSTRUCTOR:
+          case CONSTRUCTOR -> {
             if (node instanceof JCTree.JCMethodDecl) {
               MethodSymbol msym = ((JCTree.JCMethodDecl) node).sym;
               csym = (ClassSymbol) msym.owner;
               node = TypeTree.fromJavacType(csym.type);
-              break;
             } else if (node instanceof JCTree.JCClassDecl) {
               csym = ((JCTree.JCClassDecl) node).sym;
               if (csym.owner instanceof ClassSymbol) {
                 csym = (ClassSymbol) csym.owner;
                 node = TypeTree.fromJavacType(csym.type);
-                break;
+              } else {
+                throw new RuntimeException();
               }
+            } else {
+              throw new RuntimeException();
             }
-            throw new RuntimeException();
-          case NEW:
+          }
+          case NEW -> {
             if (node instanceof JCTree.JCNewArray) {
               if (node.toString().startsWith("{")) {
                 node = TypeTree.fromJavacType(((JCTree.JCNewArray) node).type);
-                break;
               } else {
                 organized.add(ins);
                 continue;
               }
+            } else {
+              throw new RuntimeException();
             }
-            throw new RuntimeException();
-          case RECEIVER:
+          }
+          case RECEIVER -> {
             if (node instanceof JCTree.JCMethodDecl jmd) {
               csym = (ClassSymbol) jmd.sym.owner;
               if ("<init>".equals(jmd.name.toString())) {
@@ -569,11 +571,11 @@ public class Insertions implements Iterable<Insertion> {
             }
             if (csym != null) {
               node = TypeTree.fromJavacType(csym.type);
-              break;
+            } else {
+              throw new RuntimeException();
             }
-            throw new RuntimeException();
-          default:
-            throw new RuntimeException();
+          }
+          default -> throw new RuntimeException();
         }
       }
 
@@ -655,26 +657,26 @@ public class Insertions implements Iterable<Insertion> {
         }
 
         switch (kind) {
-          case ARRAY_TYPE:
+          case ARRAY_TYPE -> {
             if (expectedDepth == 0 && node.getKind() == kind) {
               node = ((ArrayTypeTree) node).getType();
               while (--actualDepth >= 0) {
                 tpes.add(TypePathEntry.INNER_TYPE);
               }
               tpes.add(TypePathEntry.ARRAY_ELEMENT);
-              break;
+            } else {
+              throw new RuntimeException();
             }
-            throw new RuntimeException();
-
-          case MEMBER_SELECT:
+          }
+          case MEMBER_SELECT -> {
             if (--expectedDepth >= 0) { // otherwise, shouldn't have MEMBER_SELECT
               node = ((MemberSelectTree) node).getExpression();
               ++actualDepth;
-              break;
+            } else {
+              throw new RuntimeException();
             }
-            throw new RuntimeException();
-
-          case NEW_ARRAY:
+          }
+          case NEW_ARRAY -> {
             assert tpes.isEmpty();
             topLevelTypePath =
                 topLevelTypePath.add(new ASTPath.ASTEntry(Tree.Kind.NEW_ARRAY, ASTPath.TYPE, 0));
@@ -697,16 +699,16 @@ public class Insertions implements Iterable<Insertion> {
               } else {
                 throw new RuntimeException("NYI"); // TODO
               }
-              break;
+            } else {
+              throw new RuntimeException();
             }
-            throw new RuntimeException();
-
-          case PARAMETERIZED_TYPE:
+          }
+          case PARAMETERIZED_TYPE -> {
             if (node.getKind() == kind) {
               ParameterizedTypeTree ptt = (ParameterizedTypeTree) node;
               if (entry.childSelectorIs(ASTPath.TYPE)) {
                 node = ptt.getType();
-                break; // ParameterizedType.type is "transparent" wrt type path
+                // ParameterizedType.type is "transparent" wrt type path
               } else if (expectedDepth == 0 && entry.childSelectorIs(ASTPath.TYPE_ARGUMENT)) {
                 List<? extends Tree> typeArgs = ptt.getTypeArguments();
                 int j = entry.getArgument();
@@ -719,13 +721,17 @@ public class Insertions implements Iterable<Insertion> {
                   }
                   node = typeArgs.get(j);
                   tpes.add(TypePathEntry.create(TypePath.TYPE_ARGUMENT, j));
-                  break;
+                } else {
+                  throw new RuntimeException();
                 }
+              } else {
+                throw new RuntimeException();
               }
+            } else {
+              throw new RuntimeException();
             }
-            throw new RuntimeException();
-
-          case UNBOUNDED_WILDCARD:
+          }
+          case UNBOUNDED_WILDCARD -> {
             if (ASTPath.isWildcard(node.getKind())) {
               if (expectedDepth == 0
                   && (i < 1 || localTypePath.get(i - 1).getTreeKind() != Tree.Kind.INSTANCE_OF)
@@ -734,14 +740,14 @@ public class Insertions implements Iterable<Insertion> {
                   tpes.add(TypePathEntry.INNER_TYPE);
                 }
                 tpes.add(TypePathEntry.WILDCARD_BOUND);
-                break;
+              } else {
+                throw new RuntimeException();
               }
+            } else {
+              throw new RuntimeException();
             }
-            throw new RuntimeException();
-
-          default:
-            node = ASTIndex.getNode(cut, rec);
-            break;
+          }
+          default -> node = ASTIndex.getNode(cut, rec);
         }
 
         ++i;
@@ -779,22 +785,17 @@ public class Insertions implements Iterable<Insertion> {
     while (!path.isEmpty()) {
       ASTPath.ASTEntry entry = path.getLast();
       switch (entry.getTreeKind()) {
-        case ANNOTATED_TYPE:
-        case MEMBER_SELECT:
-        case PARAMETERIZED_TYPE:
-        case UNBOUNDED_WILDCARD:
-          result = 0;
-          break;
-        case ARRAY_TYPE:
-          ++result;
-          break;
-        case NEW_ARRAY:
+        case ANNOTATED_TYPE, MEMBER_SELECT, PARAMETERIZED_TYPE, UNBOUNDED_WILDCARD -> result = 0;
+        case ARRAY_TYPE -> ++result;
+        case NEW_ARRAY -> {
           if (entry.childSelectorIs(ASTPath.TYPE) && entry.hasArgument()) {
             result += entry.getArgument();
           }
           return result;
-        default:
+        }
+        default -> {
           return 0;
+        }
       }
       path = path.getParentPath();
     }
@@ -821,12 +822,11 @@ public class Insertions implements Iterable<Insertion> {
       int d = localDepth(node);
 
       switch (t.getKind()) {
-        case ANNOTATED_TYPE:
+        case ANNOTATED_TYPE -> {
           r = r.extend(Tree.Kind.ANNOTATED_TYPE, ASTPath.TYPE);
           t = ((JCTree.JCAnnotatedType) t).getUnderlyingType();
-          break;
-
-        case ARRAY_TYPE:
+        }
+        case ARRAY_TYPE -> {
           if (d == 0 && tpe.step == TypePath.ARRAY_ELEMENT) {
             int a = 0;
             if (!r.astPath.isEmpty()) {
@@ -841,11 +841,11 @@ public class Insertions implements Iterable<Insertion> {
                         .extend(Tree.Kind.NEW_ARRAY, ASTPath.TYPE, a)
                     : r.extend(Tree.Kind.ARRAY_TYPE, ASTPath.TYPE);
             t = ((ArrayTypeTree) t).getType();
-            break;
+          } else {
+            throw new RuntimeException();
           }
-          throw new RuntimeException();
-
-        case MEMBER_SELECT:
+        }
+        case MEMBER_SELECT -> {
           if (d > 0 && tpe.step == TypePath.INNER_TYPE) {
             Tree temp = t;
             do {
@@ -863,8 +863,8 @@ public class Insertions implements Iterable<Insertion> {
             } while (tpe.step == TypePath.INNER_TYPE);
           }
           throw new RuntimeException();
-
-        case NEW_ARRAY:
+        }
+        case NEW_ARRAY -> {
           if (d == 0) {
             if (!r.astPath.isEmpty()) {
               ASTPath.ASTEntry e = r.astPath.getLast();
@@ -885,15 +885,14 @@ public class Insertions implements Iterable<Insertion> {
             }
             r = r.extend(Tree.Kind.ARRAY_TYPE, ASTPath.TYPE);
             t = ((JCTree.JCArrayTypeTree) t).getType();
-            break;
+          } else {
+            throw new RuntimeException();
           }
-          throw new RuntimeException();
-
-        case PARAMETERIZED_TYPE:
+        }
+        case PARAMETERIZED_TYPE -> {
           if (d == 0 && tpe.step == TypePath.TYPE_ARGUMENT) {
             r = r.extend(Tree.Kind.PARAMETERIZED_TYPE, ASTPath.TYPE_ARGUMENT, tpe.argument);
-            t = ((JCTree.JCTypeApply) t).getTypeArguments().get(tpe.step);
-            break;
+            t = ((JCTree.JCTypeApply) t).getTypeArguments().get(tpe.argument);
           } else if (d > 0 && tpe.step == TypePath.INNER_TYPE) {
             Tree temp = ((JCTree.JCTypeApply) t).getType();
             r = r.extend(Tree.Kind.PARAMETERIZED_TYPE, ASTPath.TYPE);
@@ -911,22 +910,23 @@ public class Insertions implements Iterable<Insertion> {
                 continue outer; // avoid next() at end of loop
               }
             } while (tpe.step == TypePath.INNER_TYPE);
+            throw new RuntimeException();
+          } else {
+            throw new RuntimeException();
           }
-          throw new RuntimeException();
-
-        case EXTENDS_WILDCARD:
-        case SUPER_WILDCARD:
-        case UNBOUNDED_WILDCARD:
+        }
+        case EXTENDS_WILDCARD, SUPER_WILDCARD, UNBOUNDED_WILDCARD -> {
           if (tpe.step == TypePath.WILDCARD_BOUND) {
             t = ((JCTree.JCWildcard) t).getBound();
-            break;
+          } else {
+            throw new RuntimeException();
           }
-          throw new RuntimeException();
-
-        default:
+        }
+        default -> {
           if (iter.hasNext()) {
             throw new RuntimeException();
           }
+        }
       }
 
       if (!iter.hasNext()) {
@@ -954,48 +954,41 @@ public class Insertions implements Iterable<Insertion> {
       return;
     }
     switch (t1.getKind()) {
-      case ARRAY:
-        {
-          ArrayType at1 = (ArrayType) t1;
-          ArrayType at2 = (ArrayType) t2;
-          mergeTypes(at1.getComponentType(), at2.getComponentType());
-          return;
+      case ARRAY -> {
+        ArrayType at1 = (ArrayType) t1;
+        ArrayType at2 = (ArrayType) t2;
+        mergeTypes(at1.getComponentType(), at2.getComponentType());
+      }
+      case BOUNDED -> {
+        BoundedType bt1 = (BoundedType) t1;
+        BoundedType bt2 = (BoundedType) t2;
+        if (bt1.getBoundKind() != bt2.getBoundKind()) {
+          throw new Error(String.format("Types have different bounds: %s %s", t1, t2));
         }
-      case BOUNDED:
-        {
-          BoundedType bt1 = (BoundedType) t1;
-          BoundedType bt2 = (BoundedType) t2;
-          if (bt1.getBoundKind() != bt2.getBoundKind()) {
-            throw new Error(String.format("Types have different bounds: %s %s", t1, t2));
-          }
-          mergeTypes(bt1.getBound(), bt2.getBound());
-          mergeTypes(bt1.getName(), bt2.getName());
-          return;
+        mergeTypes(bt1.getBound(), bt2.getBound());
+        mergeTypes(bt1.getName(), bt2.getName());
+      }
+      case DECLARED -> {
+        DeclaredType dt1 = (DeclaredType) t1;
+        DeclaredType dt2 = (DeclaredType) t2;
+        List<Type> params1 = dt1.getTypeParameters();
+        List<Type> params2 = dt2.getTypeParameters();
+        int numParams = params1.size();
+        if (params2.size() != numParams) {
+          throw new Error(
+              String.format("Types have different numbers of parameters: %s %s", t1, t2));
         }
-      case DECLARED:
-        {
-          DeclaredType dt1 = (DeclaredType) t1;
-          DeclaredType dt2 = (DeclaredType) t2;
-          List<Type> params1 = dt1.getTypeParameters();
-          List<Type> params2 = dt2.getTypeParameters();
-          int numParams = params1.size();
-          if (params2.size() != numParams) {
-            throw new Error(
-                String.format("Types have different numbers of parameters: %s %s", t1, t2));
+        mergeTypes(dt1.getInnerType(), dt2.getInnerType());
+        for (String anno : dt2.getAnnotations()) {
+          if (!dt1.getAnnotations().contains(anno)) {
+            dt1.addAnnotation(anno);
           }
-          mergeTypes(dt1.getInnerType(), dt2.getInnerType());
-          for (String anno : dt2.getAnnotations()) {
-            if (!dt1.getAnnotations().contains(anno)) {
-              dt1.addAnnotation(anno);
-            }
-          }
-          for (int i = 0; i < numParams; i++) {
-            mergeTypes(params1.get(i), params2.get(i));
-          }
-          return;
         }
-      default:
-        throw new RuntimeException();
+        for (int i = 0; i < numParams; i++) {
+          mergeTypes(params1.get(i), params2.get(i));
+        }
+      }
+      default -> throw new RuntimeException();
     }
   }
 
@@ -1009,10 +1002,8 @@ public class Insertions implements Iterable<Insertion> {
     loop:
     while (t != null) {
       switch (t.getKind()) {
-        case ANNOTATED_TYPE:
-          t = ((AnnotatedTypeTree) t).getUnderlyingType();
-          break;
-        case MEMBER_SELECT:
+        case ANNOTATED_TYPE -> t = ((AnnotatedTypeTree) t).getUnderlyingType();
+        case MEMBER_SELECT -> {
           if (t instanceof JCTree.JCFieldAccess jfa) {
             if (jfa.sym.kind == Kinds.Kind.PCK) {
               t = jfa.getExpression();
@@ -1021,9 +1012,10 @@ public class Insertions implements Iterable<Insertion> {
           }
           t = ((MemberSelectTree) t).getExpression();
           ++result;
-          break;
-        default:
+        }
+        default -> {
           break loop;
+        }
       }
     }
     return result;
@@ -1122,22 +1114,27 @@ public class Insertions implements Iterable<Insertion> {
       if (jt != null) {
         Kind kind = jt.getKind();
         switch (kind) {
-          case ANNOTATED_TYPE:
+          case ANNOTATED_TYPE -> {
             return fromJCTree(((JCTree.JCAnnotatedType) jt).getUnderlyingType());
-          case IDENTIFIER:
+          }
+          case IDENTIFIER -> {
             return new IdentifierTT(((JCTree.JCIdent) jt).sym.getSimpleName().toString());
-          case ARRAY_TYPE:
+          }
+          case ARRAY_TYPE -> {
             return new ArrayTT(fromJCTree(((JCTree.JCArrayTypeTree) jt).getType()));
-          case MEMBER_SELECT:
+          }
+          case MEMBER_SELECT -> {
             return new MemberSelectTT(
                 fromJCTree(((JCTree.JCFieldAccess) jt).getExpression()),
                 ((JCTree.JCFieldAccess) jt).getIdentifier());
-          case EXTENDS_WILDCARD:
-          case SUPER_WILDCARD:
+          }
+          case EXTENDS_WILDCARD, SUPER_WILDCARD -> {
             return new WildcardTT(kind, fromJCTree(((JCTree.JCWildcard) jt).getBound()));
-          case UNBOUNDED_WILDCARD:
+          }
+          case UNBOUNDED_WILDCARD -> {
             return new WildcardTT();
-          case PARAMETERIZED_TYPE:
+          }
+          case PARAMETERIZED_TYPE -> {
             com.sun.tools.javac.util.List<JCExpression> typeArgs =
                 ((JCTree.JCTypeApply) jt).getTypeArguments();
             List<Tree> args = new ArrayList<>(typeArgs.size());
@@ -1145,8 +1142,8 @@ public class Insertions implements Iterable<Insertion> {
               args.add(fromJCTree(typeArg));
             }
             return new ParameterizedTypeTT(fromJCTree(((JCTree.JCTypeApply) jt).getType()), args);
-          default:
-            break;
+          }
+          default -> {}
         }
       }
       return null;
@@ -1155,17 +1152,19 @@ public class Insertions implements Iterable<Insertion> {
     /** Create a TypeTree from a scene-lib Type. */
     static TypeTree fromType(final Type type) {
       switch (type.getKind()) {
-        case ARRAY:
+        case ARRAY -> {
           final ArrayType atype = (ArrayType) type;
           final TypeTree componentType = fromType(atype.getComponentType());
           return new ArrayTT(componentType);
-        case BOUNDED:
+        }
+        case BOUNDED -> {
           final BoundedType btype = (BoundedType) type;
           final BoundedType.BoundKind bk = btype.getBoundKind();
           final String bname = btype.getName().getName();
           final TypeTree bound = fromType(btype.getBound());
           return new TypeParameterTT(bname, bk, bound);
-        case DECLARED:
+        }
+        case DECLARED -> {
           final DeclaredType dtype = (DeclaredType) type;
           if (dtype.isWildcard()) {
             return new WildcardTT();
@@ -1190,8 +1189,8 @@ public class Insertions implements Iterable<Insertion> {
               return new PrimitiveTypeTT(typeKind);
             }
           }
-        default:
-          throw new RuntimeException("unknown type kind " + type.getKind());
+        }
+        default -> throw new RuntimeException("unknown type kind " + type.getKind());
       }
     }
 
@@ -1203,29 +1202,29 @@ public class Insertions implements Iterable<Insertion> {
     /** Create a javac Type from a scene-lib Type. */
     static Type javacTypeToType(final com.sun.tools.javac.code.Type jtype) {
       switch (jtype.getKind()) {
-        case ARRAY:
+        case ARRAY -> {
           com.sun.tools.javac.code.Type.ArrayType arraytype =
               (com.sun.tools.javac.code.Type.ArrayType) jtype;
           return new ArrayType(javacTypeToType(arraytype.elemtype));
-        case DECLARED:
-          {
-            com.sun.tools.javac.code.Type t = jtype;
-            DeclaredType d = null;
-            do {
-              DeclaredType d0 = d;
-              com.sun.tools.javac.code.Type.ClassType ct =
-                  (com.sun.tools.javac.code.Type.ClassType) t;
-              d = new DeclaredType(ct.tsym.name.toString());
-              d.setInnerType(d0);
-              // d0 = d;
-              for (com.sun.tools.javac.code.Type a : ct.getTypeArguments()) {
-                d.addTypeParameter(javacTypeToType(a));
-              }
-              t = ct.getEnclosingType();
-            } while (t.getKind() == TypeKind.DECLARED);
-            return d;
-          }
-        case WILDCARD:
+        }
+        case DECLARED -> {
+          com.sun.tools.javac.code.Type t = jtype;
+          DeclaredType d = null;
+          do {
+            DeclaredType d0 = d;
+            com.sun.tools.javac.code.Type.ClassType ct =
+                (com.sun.tools.javac.code.Type.ClassType) t;
+            d = new DeclaredType(ct.tsym.name.toString());
+            d.setInnerType(d0);
+            // d0 = d;
+            for (com.sun.tools.javac.code.Type a : ct.getTypeArguments()) {
+              d.addTypeParameter(javacTypeToType(a));
+            }
+            t = ct.getEnclosingType();
+          } while (t.getKind() == TypeKind.DECLARED);
+          return d;
+        }
+        case WILDCARD -> {
           com.sun.tools.javac.code.Type.WildcardType wildcard =
               ((com.sun.tools.javac.code.Type.WildcardType) jtype);
           if (wildcard.kind == com.sun.tools.javac.code.BoundKind.UNBOUND) {
@@ -1235,47 +1234,44 @@ public class Insertions implements Iterable<Insertion> {
               new DeclaredType(jtype.tsym.name.toString()),
               wildcard.kind,
               (DeclaredType) javacTypeToType(wildcard.bound));
-        case TYPEVAR:
-          {
-            Type upperBound =
-                javacTypeToType(((com.sun.tools.javac.code.Type.TypeVar) jtype).getUpperBound());
-            if (upperBound.getKind() == Type.Kind.DECLARED) {
-              return new BoundedType(
-                  new DeclaredType(jtype.tsym.name.toString()),
-                  BoundedType.BoundKind.EXTENDS,
-                  (DeclaredType) upperBound);
-            } else {
-              return upperBound;
-            }
+        }
+        case TYPEVAR -> {
+          Type upperBound =
+              javacTypeToType(((com.sun.tools.javac.code.Type.TypeVar) jtype).getUpperBound());
+          if (upperBound.getKind() == Type.Kind.DECLARED) {
+            return new BoundedType(
+                new DeclaredType(jtype.tsym.name.toString()),
+                BoundedType.BoundKind.EXTENDS,
+                (DeclaredType) upperBound);
+          } else {
+            return upperBound;
           }
-        case INTERSECTION:
+        }
+        case INTERSECTION -> {
           return new DeclaredType(jtype.tsym.erasure_field.tsym.name.toString());
-        case UNION:
+        }
+        case UNION -> {
           // TODO
           throw new Error("UNION case not yet implemented");
-        // TODO: reinstate after replacing "throw new Error()": break;
-        case BOOLEAN:
-        case BYTE:
-        case CHAR:
-        case DOUBLE:
-        case LONG:
-        case SHORT:
-        case FLOAT:
-        case INT:
+          // TODO: reinstate after replacing "throw new Error()": use a return statement
+        }
+        case BOOLEAN, BYTE, CHAR, DOUBLE, LONG, SHORT, FLOAT, INT -> {
           return new DeclaredType(jtype.tsym.name.toString());
-        case ERROR:
+        }
+        case ERROR -> {
           // Return a fake declared type that corresponds to the error.
           // This ignores setup problems where some classes can't be found.
           return new DeclaredType(jtype.toString());
+        }
         // case EXECUTABLE:
         // case NONE:
         // case NULL:
         // case OTHER:
         // case PACKAGE:
         // case VOID:
-        default:
-          throw new Error(
-              "Found unknown type: " + jtype + " (" + jtype.getKind() + "). Check your setup.");
+        default ->
+            throw new Error(
+                "Found unknown type: " + jtype + " (" + jtype.getKind() + "). Check your setup.");
       }
     }
 

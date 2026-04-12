@@ -358,10 +358,6 @@ allprojects { currentProj ->
         options.errorprone.enabled = compilerRunsOnJava21orHigher
         options.errorprone.disableWarningsInGeneratedCode = true
         options.errorprone.errorproneArgs = [
-          // TODO: Fix these warnings now that JDK 17 is used.
-          "-Xep:StatementSwitchToExpressionSwitch:OFF",
-          // TODO: Fix these warnings now that JDK 17 is used.
-          "-Xep:PatternMatchingInstanceof:OFF",
           // Many compiler classes are interned.
           "-Xep:ReferenceEquality:OFF",
           // Not useful to suggest Splitter; maybe clean up.

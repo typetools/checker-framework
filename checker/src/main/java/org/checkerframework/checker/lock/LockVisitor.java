@@ -859,20 +859,21 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       tree = TreeUtils.withoutParens(tree);
 
       switch (tree.getKind()) {
-        case MEMBER_SELECT:
+        case MEMBER_SELECT -> {
           if (!isTreeSymbolEffectivelyFinalOrUnmodifiable(tree)) {
             checker.reportError(tree, "lock.expression.not.final", lockExpressionTree);
             return false;
           }
           tree = ((MemberSelectTree) tree).getExpression();
-          break;
-        case IDENTIFIER:
+        }
+        case IDENTIFIER -> {
           if (!isTreeSymbolEffectivelyFinalOrUnmodifiable(tree)) {
             checker.reportError(tree, "lock.expression.not.final", lockExpressionTree);
             return false;
           }
           return result;
-        case METHOD_INVOCATION:
+        }
+        case METHOD_INVOCATION -> {
           Element elem = TreeUtils.elementFromUse(tree);
           if (atypeFactory.getDeclAnnotationNoAliases(elem, Deterministic.class) == null
               && atypeFactory.getDeclAnnotationNoAliases(elem, Pure.class) == null) {
@@ -887,10 +888,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
           }
 
           tree = methodInvocationTree.getMethodSelect();
-          break;
-        default:
+        }
+        default -> {
           checker.reportError(tree, "lock.expression.possibly.not.final", lockExpressionTree);
           return false;
+        }
       }
     }
   }
@@ -1061,8 +1063,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       Tree parent = getCurrentPath().getParentPath().getLeaf();
       // If the parent is not a member select, or if it is and the field is the expression,
       // then the field is accessed via an implicit this.
-      if ((!(parent instanceof MemberSelectTree)
-              || ((MemberSelectTree) parent).getExpression() == tree)
+      if ((!(parent instanceof MemberSelectTree parentMst) || parentMst.getExpression() == tree)
           && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
         AnnotationMirror guardedBy =
             atypeFactory.getSelfType(tree).getPrimaryAnnotationInHierarchy(atypeFactory.GUARDEDBY);

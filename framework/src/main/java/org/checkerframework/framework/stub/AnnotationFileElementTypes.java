@@ -615,17 +615,12 @@ public class AnnotationFileElementTypes {
       } else if (factory.types.isSubtype(receiverTypeMirror, fakeLocation)) {
         TypeElement fakeElement = TypesUtils.getTypeElement(fakeLocation);
         switch (fakeElement.getKind()) {
-          case CLASS:
-          case ENUM:
-            applicableClasses.add(fakeLocation);
-            break;
-          case INTERFACE:
-          case ANNOTATION_TYPE:
-            applicableInterfaces.add(fakeLocation);
-            break;
-          default:
-            throw new BugInCF(
-                "What type? %s %s %s", fakeElement.getKind(), fakeElement.getClass(), fakeElement);
+          case CLASS, ENUM -> applicableClasses.add(fakeLocation);
+          case INTERFACE, ANNOTATION_TYPE -> applicableInterfaces.add(fakeLocation);
+          default ->
+              throw new BugInCF(
+                  "What type? %s %s %s",
+                  fakeElement.getKind(), fakeElement.getClass(), fakeElement);
         }
       }
     }

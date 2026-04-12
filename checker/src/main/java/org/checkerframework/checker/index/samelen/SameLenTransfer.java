@@ -173,9 +173,9 @@ public class SameLenTransfer extends CFTransfer {
 
   /** Returns true if node is of the form "someArray.length". */
   private boolean isArrayLengthAccess(Node node) {
-    return (node instanceof FieldAccessNode
-        && ((FieldAccessNode) node).getFieldName().equals("length")
-        && ((FieldAccessNode) node).getReceiver().getType().getKind() == TypeKind.ARRAY);
+    return (node instanceof FieldAccessNode fan
+        && fan.getFieldName().equals("length")
+        && fan.getReceiver().getType().getKind() == TypeKind.ARRAY);
   }
 
   /**

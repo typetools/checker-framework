@@ -135,15 +135,15 @@ public class JVMNames {
   @SuppressWarnings("signature") // com.sun.source.tree.Tree is not yet annotated
   private static void treeToJVMLString(Tree typeTree, StringBuilder builder) {
     switch (typeTree.getKind()) {
-      case ARRAY_TYPE:
+      case ARRAY_TYPE -> {
         builder.append('[');
         treeToJVMLString(((ArrayTypeTree) typeTree).getType(), builder);
-        break;
-      default:
+      }
+      default -> {
         String str = typeTree.toString();
         builder.append(
             "void".equals(str) ? "V" : Signatures.binaryNameToFieldDescriptor(typeTree.toString()));
-        break;
+      }
     }
   }
 

@@ -384,30 +384,25 @@ public class QualifierDefaults {
   public void annotate(Element elt, AnnotatedTypeMirror type) {
     if (elt != null) {
       switch (elt.getKind()) {
-        case FIELD:
-        case LOCAL_VARIABLE:
-        case PARAMETER:
-        case RESOURCE_VARIABLE:
-        case EXCEPTION_PARAMETER:
-        case ENUM_CONSTANT:
+        case FIELD,
+            LOCAL_VARIABLE,
+            PARAMETER,
+            RESOURCE_VARIABLE,
+            EXCEPTION_PARAMETER,
+            ENUM_CONSTANT -> {
           String varName = elt.getSimpleName().toString();
           ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
               .getDefaultForTypeAnnotator()
               .defaultTypeFromName(type, varName);
-
-          break;
-
-        case METHOD:
+        }
+        case METHOD -> {
           String methodName = elt.getSimpleName().toString();
           AnnotatedTypeMirror returnType = ((AnnotatedExecutableType) type).getReturnType();
           ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
               .getDefaultForTypeAnnotator()
               .defaultTypeFromName(returnType, methodName);
-
-          break;
-
-        default:
-          break;
+        }
+        default -> {} // do nothing
       }
     }
 
@@ -449,11 +444,11 @@ public class QualifierDefaults {
 
     for (Tree t : path) {
       switch (t.getKind()) {
-        case ANNOTATED_TYPE:
-        case ANNOTATION:
+        case ANNOTATED_TYPE, ANNOTATION -> {
           // If the tree is in an annotation, then there is no relevant scope.
           return null;
-        case VARIABLE:
+        }
+        case VARIABLE -> {
           VariableTree vtree = (VariableTree) t;
           ExpressionTree vtreeInit = vtree.getInitializer();
           @SuppressWarnings("interning:not.interned") // check cached value
@@ -475,15 +470,14 @@ public class QualifierDefaults {
             break;
           }
           return TreeUtils.elementFromDeclaration((VariableTree) t);
-        case METHOD:
+        }
+        case METHOD -> {
           return TreeUtils.elementFromDeclaration((MethodTree) t);
-        case CLASS:
-        case RECORD:
-        case ENUM:
-        case INTERFACE:
-        case ANNOTATION_TYPE:
+        }
+        case CLASS, RECORD, ENUM, INTERFACE, ANNOTATION_TYPE -> {
           return TreeUtils.elementFromDeclaration((ClassTree) t);
-        default: // Do nothing.
+        }
+        default -> {} // Do nothing.
       }
       prev = t;
     }
@@ -510,29 +504,21 @@ public class QualifierDefaults {
     // The location to take defaults from.
     Element elt;
     switch (tree.getKind()) {
-      case MEMBER_SELECT:
-        elt = TreeUtils.elementFromUse((MemberSelectTree) tree);
-        break;
-
-      case IDENTIFIER:
+      case MEMBER_SELECT -> elt = TreeUtils.elementFromUse((MemberSelectTree) tree);
+      case IDENTIFIER -> {
         elt = TreeUtils.elementFromUse((IdentifierTree) tree);
         if (ElementUtils.isTypeDeclaration(elt)) {
           // If the identifier is a type, then use the scope of the tree.
           elt = nearestEnclosingExceptLocal(tree);
         }
-        break;
-
-      case METHOD_INVOCATION:
-        elt = TreeUtils.elementFromUse((MethodInvocationTree) tree);
-        break;
-
+      }
+      case METHOD_INVOCATION -> elt = TreeUtils.elementFromUse((MethodInvocationTree) tree);
       // TODO cases for array access, etc. -- every expression tree
       // (The above probably means that we should use defaults in the
       // scope of the declaration of the array.  Is that right?  -MDE)
-
-      default:
-        // If no associated symbol was found, use the tree's (lexical) scope.
-        elt = nearestEnclosingExceptLocal(tree);
+      default ->
+          // If no associated symbol was found, use the tree's (lexical) scope.
+          elt = nearestEnclosingExceptLocal(tree);
         // elt = nearestEnclosing(tree);
     }
     // System.out.println("applyDefaults on tree " + tree +
@@ -885,25 +871,25 @@ public class QualifierDefaults {
         // Some defaults only apply to the top level type.
         boolean isTopLevelType = t == type;
         switch (location) {
-          case FIELD:
+          case FIELD -> {
             if (scope != null && scope.getKind() == ElementKind.FIELD && isTopLevelType) {
               addAnnotation(t, qual);
             }
-            break;
-          case LOCAL_VARIABLE:
+          }
+          case LOCAL_VARIABLE -> {
             if (scope != null && scope.getKind() == ElementKind.LOCAL_VARIABLE && isTopLevelType) {
               // TODO: how do we determine that we are in a cast or instanceof type?
               addAnnotation(t, qual);
             }
-            break;
-          case RESOURCE_VARIABLE:
+          }
+          case RESOURCE_VARIABLE -> {
             if (scope != null
                 && scope.getKind() == ElementKind.RESOURCE_VARIABLE
                 && isTopLevelType) {
               addAnnotation(t, qual);
             }
-            break;
-          case EXCEPTION_PARAMETER:
+          }
+          case EXCEPTION_PARAMETER -> {
             if (scope != null
                 && scope.getKind() == ElementKind.EXCEPTION_PARAMETER
                 && isTopLevelType) {
@@ -916,8 +902,8 @@ public class QualifierDefaults {
                 }
               }
             }
-            break;
-          case PARAMETER:
+          }
+          case PARAMETER -> {
             if (scope != null && scope.getKind() == ElementKind.PARAMETER && isTopLevelType) {
               addAnnotation(t, qual);
             } else if (scope != null
@@ -932,8 +918,8 @@ public class QualifierDefaults {
                 }
               }
             }
-            break;
-          case RECEIVER:
+          }
+          case RECEIVER -> {
             if (scope != null
                 && scope.getKind() == ElementKind.PARAMETER
                 && isTopLevelType
@@ -952,8 +938,8 @@ public class QualifierDefaults {
                 addAnnotation(receiver, qual);
               }
             }
-            break;
-          case RETURN:
+          }
+          case RETURN -> {
             if (scope != null
                 && scope.getKind() == ElementKind.METHOD
                 && t.getKind() == TypeKind.EXECUTABLE
@@ -963,8 +949,8 @@ public class QualifierDefaults {
                 addAnnotation(returnType, qual);
               }
             }
-            break;
-          case CONSTRUCTOR_RESULT:
+          }
+          case CONSTRUCTOR_RESULT -> {
             if (scope != null
                 && scope.getKind() == ElementKind.CONSTRUCTOR
                 && t.getKind() == TypeKind.EXECUTABLE
@@ -976,45 +962,43 @@ public class QualifierDefaults {
                 addAnnotation(returnType, qual);
               }
             }
-            break;
-          case IMPLICIT_LOWER_BOUND:
+          }
+          case IMPLICIT_LOWER_BOUND -> {
             if (isLowerBound && boundType.isOneOf(BoundType.UNBOUNDED, BoundType.UPPER)) {
               addAnnotation(t, qual);
             }
-            break;
-          case EXPLICIT_LOWER_BOUND:
+          }
+          case EXPLICIT_LOWER_BOUND -> {
             if (isLowerBound && boundType.isOneOf(BoundType.LOWER)) {
               addAnnotation(t, qual);
             }
-            break;
-          case LOWER_BOUND:
+          }
+          case LOWER_BOUND -> {
             if (isLowerBound) {
               addAnnotation(t, qual);
             }
-            break;
-          case IMPLICIT_UPPER_BOUND:
+          }
+          case IMPLICIT_UPPER_BOUND -> {
             if (isUpperBound && boundType.isOneOf(BoundType.UNBOUNDED, BoundType.LOWER)) {
               addAnnotation(t, qual);
             }
-            break;
-          case EXPLICIT_UPPER_BOUND:
+          }
+          case EXPLICIT_UPPER_BOUND -> {
             if (isUpperBound && boundType.isOneOf(BoundType.UPPER)) {
               addAnnotation(t, qual);
             }
-            break;
-          case UPPER_BOUND:
+          }
+          case UPPER_BOUND -> {
             if (this.isUpperBound) {
               addAnnotation(t, qual);
             }
-            break;
-          case OTHERWISE:
-          case ALL:
-            // TODO: forbid ALL if anything else was given.
-            addAnnotation(t, qual);
-            break;
-          default:
-            throw new BugInCF(
-                "QualifierDefaults.DefaultApplierElement: unhandled location: " + location);
+          }
+          case OTHERWISE, ALL ->
+              // TODO: forbid ALL if anything else was given.
+              addAnnotation(t, qual);
+          default ->
+              throw new BugInCF(
+                  "QualifierDefaults.DefaultApplierElement: unhandled location: " + location);
         }
 
         return super.scan(t, qual);
@@ -1133,12 +1117,12 @@ public class QualifierDefaults {
    * @return the boundType for type
    */
   private BoundType getBoundType(AnnotatedTypeMirror type) {
-    if (type instanceof AnnotatedTypeVariable) {
-      return getTypeVarBoundType((AnnotatedTypeVariable) type);
+    if (type instanceof AnnotatedTypeVariable atv) {
+      return getTypeVarBoundType(atv);
     }
 
-    if (type instanceof AnnotatedWildcardType) {
-      return getWildcardBoundType((AnnotatedWildcardType) type);
+    if (type instanceof AnnotatedWildcardType awt) {
+      return getWildcardBoundType(awt);
     }
 
     throw new BugInCF("Unexpected type kind: type=" + type);

@@ -976,7 +976,7 @@ public class AnnotationFileParser {
 
     List<AnnotatedTypeVariable> typeDeclTypeParameters = null;
     if (typeElt.getKind() == ElementKind.ENUM) {
-      if (!(typeDecl instanceof EnumDeclaration)) {
+      if (!(typeDecl instanceof EnumDeclaration enumDecl)) {
         warn(
             typeDecl,
             innerName
@@ -984,7 +984,7 @@ public class AnnotationFileParser {
                 + javaParserNodeToStringTruncated(typeDecl, 100));
         return null;
       }
-      typeDeclTypeParameters = processEnum((EnumDeclaration) typeDecl, typeElt);
+      typeDeclTypeParameters = processEnum(enumDecl, typeElt);
       typeParameters.addAll(typeDeclTypeParameters);
     } else if (typeElt.getKind() == ElementKind.ANNOTATION_TYPE) {
       if (!(typeDecl instanceof AnnotationDeclaration)) {
@@ -1043,17 +1043,15 @@ public class AnnotationFileParser {
       Element elt = entry.getKey();
       BodyDeclaration<?> decl = entry.getValue();
       switch (elt.getKind()) {
-        case FIELD:
-          processField((FieldDeclaration) decl, (VariableElement) elt);
-          break;
-        case ENUM_CONSTANT:
+        case FIELD -> processField((FieldDeclaration) decl, (VariableElement) elt);
+        case ENUM_CONSTANT -> {
           // Enum constants can occur as fields in stubs files when their
           // type has an annotation on it, e.g. see DeviceTypeTest which ends up with
           // the TRACKER enum constant annotated with DefaultType:
-          if (decl instanceof FieldDeclaration) {
-            processField((FieldDeclaration) decl, (VariableElement) elt);
-          } else if (decl instanceof EnumConstantDeclaration) {
-            processEnumConstant((EnumConstantDeclaration) decl, (VariableElement) elt);
+          if (decl instanceof FieldDeclaration fd) {
+            processField(fd, (VariableElement) elt);
+          } else if (decl instanceof EnumConstantDeclaration ecd) {
+            processEnumConstant(ecd, (VariableElement) elt);
           } else {
             throw new BugInCF(
                 "Unexpected decl type "
@@ -1061,24 +1059,18 @@ public class AnnotationFileParser {
                     + " for ENUM_CONSTANT kind, original: "
                     + decl);
           }
-          break;
-        case CONSTRUCTOR:
-        case METHOD:
-          processCallableDeclaration((CallableDeclaration<?>) decl, (ExecutableElement) elt);
-          break;
-        case CLASS:
-        case INTERFACE:
-          // Not processing an ajava file, so ignore the return value.
-          processTypeDecl((ClassOrInterfaceDeclaration) decl, innerName, null);
-          break;
-        case ENUM:
-          // Not processing an ajava file, so ignore the return value.
-          processTypeDecl((EnumDeclaration) decl, innerName, null);
-          break;
-        default:
-          /* do nothing */
-          stubWarnNotFound(decl, "AnnotationFileParser ignoring: " + elt);
-          break;
+        }
+        case CONSTRUCTOR, METHOD ->
+            processCallableDeclaration((CallableDeclaration<?>) decl, (ExecutableElement) elt);
+        case CLASS, INTERFACE ->
+            // Not processing an ajava file, so ignore the return value.
+            processTypeDecl((ClassOrInterfaceDeclaration) decl, innerName, null);
+        case ENUM ->
+            // Not processing an ajava file, so ignore the return value.
+            processTypeDecl((EnumDeclaration) decl, innerName, null);
+        default ->
+            /* do nothing */
+            stubWarnNotFound(decl, "AnnotationFileParser ignoring: " + elt);
       }
     }
     for (Map.Entry<Element, List<BodyDeclaration<?>>> entry : members.second.entrySet()) {
@@ -1165,8 +1157,8 @@ public class AnnotationFileParser {
     }
 
     annotateTypeParameters(decl, elt, typeArguments, typeParameters);
-    if (decl instanceof ClassOrInterfaceDeclaration) {
-      annotateSupertypes((ClassOrInterfaceDeclaration) decl, type);
+    if (decl instanceof ClassOrInterfaceDeclaration coid) {
+      annotateSupertypes(coid, type);
     }
     putMerge(annotationFileAnnos.atypes, elt, type);
     List<AnnotatedTypeVariable> typeVariables = new ArrayList<>(type.getTypeArguments().size());
@@ -1490,8 +1482,8 @@ public class AnnotationFileParser {
   }
 
   private @Nullable ClassOrInterfaceType unwrapDeclaredType(Type type) {
-    if (type instanceof ClassOrInterfaceType) {
-      return (ClassOrInterfaceType) type;
+    if (type instanceof ClassOrInterfaceType coit) {
+      return coit;
     } else if (type instanceof ReferenceType && type.getArrayLevel() == 0) {
       return unwrapDeclaredType(type.getElementType());
     } else {
@@ -1519,8 +1511,8 @@ public class AnnotationFileParser {
       @Nullable NodeList<AnnotationExpr> declAnnos,
       NodeWithRange<?> astNode) {
     if (atype.getKind() == TypeKind.ARRAY) {
-      if (typeDef instanceof ReferenceType) {
-        annotateAsArray((AnnotatedArrayType) atype, (ReferenceType) typeDef, declAnnos, astNode);
+      if (typeDef instanceof ReferenceType rt) {
+        annotateAsArray((AnnotatedArrayType) atype, rt, declAnnos, astNode);
       } else {
         warn(astNode, "expected ReferenceType but found: " + typeDef);
       }
@@ -1545,7 +1537,7 @@ public class AnnotationFileParser {
     }
 
     switch (atype.getKind()) {
-      case DECLARED:
+      case DECLARED -> {
         ClassOrInterfaceType declType = unwrapDeclaredType(typeDef);
         if (declType == null) {
           break;
@@ -1571,8 +1563,8 @@ public class AnnotationFileParser {
             annotate(adeclTypeArgs.get(i), declTypeArgs.get(i), null, astNode);
           }
         }
-        break;
-      case WILDCARD:
+      }
+      case WILDCARD -> {
         AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atype;
         // Ensure that the file also has a wildcard type, report an error otherwise
         if (!typeDef.isWildcardType()) {
@@ -1602,8 +1594,8 @@ public class AnnotationFileParser {
         } else {
           annotate(atype, primaryAnnotations, astNode);
         }
-        break;
-      case TYPEVAR:
+      }
+      case TYPEVAR -> {
         // Add annotations from the declaration of the TypeVariable
         AnnotatedTypeVariable typeVarUse = (AnnotatedTypeVariable) atype;
         Types typeUtils = processingEnv.getTypeUtils();
@@ -1615,9 +1607,8 @@ public class AnnotationFileParser {
         }
         // Add back the primary annotations.
         annotate(atype, primaryAnnotations, astNode);
-        break;
-      default:
-        // No additional annotations to add.
+      }
+      default -> {} // No additional annotations to add.
     }
   }
 
@@ -1971,8 +1962,8 @@ public class AnnotationFileParser {
           l.add(member);
         }
       }
-    } else if (member instanceof ConstructorDeclaration) {
-      Element elt = findElement(typeElt, (ConstructorDeclaration) member);
+    } else if (member instanceof ConstructorDeclaration cd) {
+      Element elt = findElement(typeElt, cd);
       if (elt != null) {
         putIfAbsent(elementsToDecl, elt, member);
       }
@@ -1983,18 +1974,18 @@ public class AnnotationFileParser {
           putIfAbsent(elementsToDecl, varelt, fieldDecl);
         }
       }
-    } else if (member instanceof EnumConstantDeclaration) {
-      Element elt = findElement(typeElt, (EnumConstantDeclaration) member, astNode);
+    } else if (member instanceof EnumConstantDeclaration ecd) {
+      Element elt = findElement(typeElt, ecd, astNode);
       if (elt != null) {
         putIfAbsent(elementsToDecl, elt, member);
       }
-    } else if (member instanceof ClassOrInterfaceDeclaration) {
-      Element elt = findElement(typeElt, (ClassOrInterfaceDeclaration) member);
+    } else if (member instanceof ClassOrInterfaceDeclaration coid) {
+      Element elt = findElement(typeElt, coid);
       if (elt != null) {
         putIfAbsent(elementsToDecl, elt, member);
       }
-    } else if (member instanceof EnumDeclaration) {
-      Element elt = findElement(typeElt, (EnumDeclaration) member);
+    } else if (member instanceof EnumDeclaration ed) {
+      Element elt = findElement(typeElt, ed);
       if (elt != null) {
         putIfAbsent(elementsToDecl, elt, member);
       }
@@ -2088,25 +2079,31 @@ public class AnnotationFileParser {
   private boolean sameType(TypeMirror javacType, Type javaParserType) {
 
     switch (javacType.getKind()) {
-      case BOOLEAN:
+      case BOOLEAN -> {
         return javaParserType.equals(PrimitiveType.booleanType());
-      case BYTE:
+      }
+      case BYTE -> {
         return javaParserType.equals(PrimitiveType.byteType());
-      case CHAR:
+      }
+      case CHAR -> {
         return javaParserType.equals(PrimitiveType.charType());
-      case DOUBLE:
+      }
+      case DOUBLE -> {
         return javaParserType.equals(PrimitiveType.doubleType());
-      case FLOAT:
+      }
+      case FLOAT -> {
         return javaParserType.equals(PrimitiveType.floatType());
-      case INT:
+      }
+      case INT -> {
         return javaParserType.equals(PrimitiveType.intType());
-      case LONG:
+      }
+      case LONG -> {
         return javaParserType.equals(PrimitiveType.longType());
-      case SHORT:
+      }
+      case SHORT -> {
         return javaParserType.equals(PrimitiveType.shortType());
-
-      case DECLARED:
-      case TYPEVAR:
+      }
+      case DECLARED, TYPEVAR -> {
         if (!(javaParserType instanceof ClassOrInterfaceType javaParserClassType)) {
           return false;
         }
@@ -2118,15 +2115,14 @@ public class AnnotationFileParser {
         // Check both fully-qualified name and simple name.
         return javacElement.toString().equals(javaParserString)
             || javacElement.getSimpleName().contentEquals(javaParserString);
-
-      case ARRAY:
+      }
+      case ARRAY -> {
         return javaParserType.isArrayType()
             && sameType(
                 ((ArrayType) javacType).getComponentType(),
                 javaParserType.asArrayType().getComponentType());
-
-      default:
-        throw new BugInCF("Unhandled type %s of kind %s", javacType, javacType.getKind());
+      }
+      default -> throw new BugInCF("Unhandled type %s of kind %s", javacType, javacType.getKind());
     }
   }
 
@@ -2553,8 +2549,8 @@ public class AnnotationFileParser {
       throws AnnotationFileParserException {
     if (expr instanceof FieldAccessExpr || expr instanceof NameExpr) {
       VariableElement elem;
-      if (expr instanceof NameExpr) {
-        elem = findVariableElement((NameExpr) expr);
+      if (expr instanceof NameExpr ne) {
+        elem = findVariableElement(ne);
       } else {
         elem = findVariableElement((FieldAccessExpr) expr);
       }
@@ -2562,26 +2558,26 @@ public class AnnotationFileParser {
         throw new AnnotationFileParserException(String.format("variable %s not found", expr));
       }
       Object value = elem.getConstantValue() != null ? elem.getConstantValue() : elem;
-      if (value instanceof Number) {
-        return convert((Number) value, valueKind);
+      if (value instanceof Number n) {
+        return convert(n, valueKind);
       } else {
         return value;
       }
-    } else if (expr instanceof StringLiteralExpr) {
-      return ((StringLiteralExpr) expr).asString();
-    } else if (expr instanceof BooleanLiteralExpr) {
-      return ((BooleanLiteralExpr) expr).getValue();
-    } else if (expr instanceof CharLiteralExpr) {
-      return convert((int) ((CharLiteralExpr) expr).asChar(), valueKind);
-    } else if (expr instanceof DoubleLiteralExpr) {
+    } else if (expr instanceof StringLiteralExpr sle) {
+      return sle.asString();
+    } else if (expr instanceof BooleanLiteralExpr ble) {
+      return ble.getValue();
+    } else if (expr instanceof CharLiteralExpr cle) {
+      return convert((int) cle.asChar(), valueKind);
+    } else if (expr instanceof DoubleLiteralExpr dle) {
       // No conversion needed if the expression is a double, the annotation value must be a
       // double, too.
-      return ((DoubleLiteralExpr) expr).asDouble();
-    } else if (expr instanceof IntegerLiteralExpr) {
-      return convert(((IntegerLiteralExpr) expr).asNumber(), valueKind);
-    } else if (expr instanceof LongLiteralExpr) {
-      return convert(((LongLiteralExpr) expr).asNumber(), valueKind);
-    } else if (expr instanceof UnaryExpr) {
+      return dle.asDouble();
+    } else if (expr instanceof IntegerLiteralExpr ile) {
+      return convert(ile.asNumber(), valueKind);
+    } else if (expr instanceof LongLiteralExpr lle) {
+      return convert(lle.asNumber(), valueKind);
+    } else if (expr instanceof UnaryExpr ue) {
       return switch (expr.toString()) {
         // Special-case the minimum values.  Separately parsing a "-" and a value
         // doesn't correctly handle the minimum values, because the absolute value of
@@ -2590,12 +2586,10 @@ public class AnnotationFileParser {
             convert(Long.MIN_VALUE, valueKind, false);
         case "-2147483648" -> convert(Integer.MIN_VALUE, valueKind, false);
         default -> {
-          if (((UnaryExpr) expr).getOperator() == UnaryExpr.Operator.MINUS) {
-            Object value =
-                getValueOfExpressionInAnnotation(
-                    name, ((UnaryExpr) expr).getExpression(), valueKind);
-            if (value instanceof Number) {
-              yield convert((Number) value, valueKind, true);
+          if (ue.getOperator() == UnaryExpr.Operator.MINUS) {
+            Object value = getValueOfExpressionInAnnotation(name, ue.getExpression(), valueKind);
+            if (value instanceof Number n) {
+              yield convert(n, valueKind, true);
             }
           }
           throw new AnnotationFileParserException(
@@ -2720,13 +2714,13 @@ public class AnnotationFileParser {
     } else {
       valueKind = declaredType.getKind();
     }
-    if (expr instanceof ArrayInitializerExpr) {
+    if (expr instanceof ArrayInitializerExpr aie) {
       if (declaredType.getKind() != TypeKind.ARRAY) {
         throw new AnnotationFileParserException(
             "unhandled annotation attribute type: " + expr + " and declaredType: " + declaredType);
       }
 
-      List<Expression> arrayExpressions = ((ArrayInitializerExpr) expr).getValues();
+      List<Expression> arrayExpressions = aie.getValues();
       Object[] values = new Object[arrayExpressions.size()];
 
       for (int i = 0; i < arrayExpressions.size(); ++i) {
@@ -2754,30 +2748,30 @@ public class AnnotationFileParser {
    * @param value the element value
    */
   private void builderSetValue(AnnotationBuilder builder, String name, Object value) {
-    if (value instanceof Boolean) {
-      builder.setValue(name, (Boolean) value);
-    } else if (value instanceof Character) {
-      builder.setValue(name, (Character) value);
-    } else if (value instanceof Class<?>) {
-      builder.setValue(name, (Class<?>) value);
-    } else if (value instanceof Double) {
-      builder.setValue(name, (Double) value);
-    } else if (value instanceof Enum<?>) {
-      builder.setValue(name, (Enum<?>) value);
-    } else if (value instanceof Float) {
-      builder.setValue(name, (Float) value);
-    } else if (value instanceof Integer) {
-      builder.setValue(name, (Integer) value);
-    } else if (value instanceof Long) {
-      builder.setValue(name, (Long) value);
-    } else if (value instanceof Short) {
-      builder.setValue(name, (Short) value);
-    } else if (value instanceof String) {
-      builder.setValue(name, (String) value);
-    } else if (value instanceof TypeMirror) {
-      builder.setValue(name, (TypeMirror) value);
-    } else if (value instanceof VariableElement) {
-      builder.setValue(name, (VariableElement) value);
+    if (value instanceof Boolean b) {
+      builder.setValue(name, b);
+    } else if (value instanceof Character c) {
+      builder.setValue(name, c);
+    } else if (value instanceof Class<?> cls) {
+      builder.setValue(name, cls);
+    } else if (value instanceof Double d) {
+      builder.setValue(name, d);
+    } else if (value instanceof Enum<?> e) {
+      builder.setValue(name, e);
+    } else if (value instanceof Float f) {
+      builder.setValue(name, f);
+    } else if (value instanceof Integer i) {
+      builder.setValue(name, i);
+    } else if (value instanceof Long l) {
+      builder.setValue(name, l);
+    } else if (value instanceof Short sh) {
+      builder.setValue(name, sh);
+    } else if (value instanceof String s) {
+      builder.setValue(name, s);
+    } else if (value instanceof TypeMirror tm) {
+      builder.setValue(name, tm);
+    } else if (value instanceof VariableElement ve) {
+      builder.setValue(name, ve);
     } else {
       throw new BugInCF("Unexpected builder value: %s", value);
     }

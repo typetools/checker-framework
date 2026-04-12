@@ -180,10 +180,10 @@ public class RegexTransfer extends CFTransfer {
       Node possibleConstant,
       boolean isGreater,
       TransferResult<CFValue, CFStore> resultIn) {
-    if (!(possibleMatcher instanceof MethodInvocationNode)) {
+    if (!(possibleMatcher instanceof MethodInvocationNode pmMin)) {
       return resultIn;
     }
-    if (!(possibleConstant instanceof IntegerLiteralNode)) {
+    if (!(possibleConstant instanceof IntegerLiteralNode pcIln)) {
       return resultIn;
     }
 
@@ -192,10 +192,10 @@ public class RegexTransfer extends CFTransfer {
       return resultIn;
     }
 
-    MethodAccessNode methodAccessNode = ((MethodInvocationNode) possibleMatcher).getTarget();
+    MethodAccessNode methodAccessNode = pmMin.getTarget();
     JavaExpression matcherReceiver = JavaExpression.fromNode(methodAccessNode.getReceiver());
 
-    int constant = ((IntegerLiteralNode) possibleConstant).getValue();
+    int constant = pcIln.getValue();
     int groupCount = isGreater ? constant + 1 : constant;
 
     CFStore thenStore = resultIn.getRegularStore();

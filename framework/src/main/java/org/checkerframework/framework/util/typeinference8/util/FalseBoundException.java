@@ -23,8 +23,6 @@ public class FalseBoundException extends RuntimeException {
             + " Result: "
             + result
             + "\n"
-            + (constraint instanceof TypeConstraint
-                ? ((TypeConstraint) constraint).constraintHistory()
-                : ""));
+            + (constraint instanceof TypeConstraint tc ? tc.constraintHistory() : ""));
   }
 }

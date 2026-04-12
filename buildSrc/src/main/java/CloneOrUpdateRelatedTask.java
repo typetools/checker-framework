@@ -113,12 +113,14 @@ public abstract class CloneOrUpdateRelatedTask extends GitTask {
       // org.
       return;
     }
-    if (remoteBranchExists(cfOrg, relatedRepoName, cfBranch)) {
-      throw new RuntimeException(
-          String.format(
-              "Please checkout the corresponding %s branch. URL: %s Branch: %s.",
-              relatedRepoName, getGitHubHttpsUrl(cfOrg, relatedRepoName), cfBranch));
-    }
+    // This is disabled because it breaks the following scenario:  create a new branch of jdk
+    // without a corresponding checker-framework branch, make a pull request.
+    // if (remoteBranchExists(cfOrg, relatedRepoName, cfBranch)) {
+    //   throw new RuntimeException(
+    //       String.format(
+    //           "Please checkout the corresponding %s branch. URL: %s Branch: %s.",
+    //           relatedRepoName, getGitHubHttpsUrl(cfOrg, relatedRepoName), cfBranch));
+    // }
   }
 
   /**

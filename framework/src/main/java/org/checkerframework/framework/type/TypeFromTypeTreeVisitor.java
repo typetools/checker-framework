@@ -134,9 +134,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
     // Don't initialize the type arguments if they are empty. The type arguments might be a
     // diamond which should be inferred.
-    if (result instanceof AnnotatedDeclaredType && !args.isEmpty()) {
-      assert result instanceof AnnotatedDeclaredType : tree + " --> " + result;
-      ((AnnotatedDeclaredType) result).setTypeArguments(args);
+    if (result instanceof AnnotatedDeclaredType adt && !args.isEmpty()) {
+      adt.setTypeArguments(args);
     }
     return result;
   }
@@ -217,15 +216,13 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     result.getLowerBound().addAnnotations(annotations);
 
     switch (bounds.size()) {
-      case 0:
-        break;
-      case 1:
-        result.setUpperBound(bounds.get(0));
-        break;
-      default:
+      case 0 -> {}
+      case 1 -> result.setUpperBound(bounds.get(0));
+      default -> {
         AnnotatedIntersectionType intersection = (AnnotatedIntersectionType) result.getUpperBound();
         intersection.setBounds(bounds);
         intersection.copyIntersectionBoundAnnotations();
+      }
     }
 
     return result;

@@ -188,7 +188,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
     AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(tree);
     switch (AnnotationUtils.annotationName(anno)) {
-      case ValueAnnotatedTypeFactory.INTRANGE_NAME:
+      case ValueAnnotatedTypeFactory.INTRANGE_NAME -> {
         // If there are 2 arguments, issue an error if from.greater.than.to.
         // If there are fewer than 2 arguments, we needn't worry about this problem because
         // the other argument will be defaulted to Long.MIN_VALUE or Long.MAX_VALUE
@@ -201,12 +201,12 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             return null;
           }
         }
-        break;
-      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
-      case ValueAnnotatedTypeFactory.BOOLVAL_NAME:
-      case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
-      case ValueAnnotatedTypeFactory.INTVAL_NAME:
-      case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+      }
+      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME,
+          ValueAnnotatedTypeFactory.BOOLVAL_NAME,
+          ValueAnnotatedTypeFactory.DOUBLEVAL_NAME,
+          ValueAnnotatedTypeFactory.INTVAL_NAME,
+          ValueAnnotatedTypeFactory.STRINGVAL_NAME -> {
         @SuppressWarnings("deprecation") // concrete annotation class is not known
         List<Object> values =
             AnnotationUtils.getElementValueArray(anno, "value", Object.class, false);
@@ -229,8 +229,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             return null;
           }
         }
-        break;
-      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
+      }
+      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME -> {
         long from = getTypeFactory().getArrayLenRangeFromValue(anno);
         long to = getTypeFactory().getArrayLenRangeToValue(anno);
         if (from > to) {
@@ -240,8 +240,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
           checker.reportWarning(tree, "negative.arraylen", from);
           return null;
         }
-        break;
-      case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
+      }
+      case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME -> {
         List<String> matchesRegexes =
             AnnotationUtils.getElementValueArray(
                 anno, atypeFactory.matchesRegexValueElement, String.class);
@@ -252,8 +252,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             checker.reportWarning(tree, "invalid.matches.regex", pse.getMessage());
           }
         }
-        break;
-      case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME:
+      }
+      case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME -> {
         List<String> doesNotMatchRegexes =
             AnnotationUtils.getElementValueArray(
                 anno, atypeFactory.doesNotMatchRegexValueElement, String.class);
@@ -264,9 +264,10 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             checker.reportWarning(tree, "invalid.doesnotmatch.regex", pse.getMessage());
           }
         }
-        break;
-      default:
+      }
+      default -> {
         // Do nothing.
+      }
     }
 
     return super.visitAnnotation(tree, p);
@@ -365,36 +366,32 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
           };
         } else {
           switch (castTypeKind) {
-            case BYTE:
-              {
-                TreeSet<Byte> castValuesSet =
-                    new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, castValues));
-                TreeSet<Byte> exprValuesSet =
-                    new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, exprValues));
-                return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
-              }
-            case INT:
-              {
-                TreeSet<Integer> castValuesSet =
-                    new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, castValues));
-                TreeSet<Integer> exprValuesSet =
-                    new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, exprValues));
-                return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
-              }
-            case SHORT:
-              {
-                TreeSet<Short> castValuesSet =
-                    new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, castValues));
-                TreeSet<Short> exprValuesSet =
-                    new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, exprValues));
-                return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
-              }
-            default:
-              {
-                TreeSet<Long> castValuesSet = new TreeSet<>(castValues);
-                TreeSet<Long> exprValuesSet = new TreeSet<>(exprValues);
-                return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
-              }
+            case BYTE -> {
+              TreeSet<Byte> castValuesSet =
+                  new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, castValues));
+              TreeSet<Byte> exprValuesSet =
+                  new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, exprValues));
+              return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+            }
+            case INT -> {
+              TreeSet<Integer> castValuesSet =
+                  new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, castValues));
+              TreeSet<Integer> exprValuesSet =
+                  new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, exprValues));
+              return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+            }
+            case SHORT -> {
+              TreeSet<Short> castValuesSet =
+                  new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, castValues));
+              TreeSet<Short> exprValuesSet =
+                  new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, exprValues));
+              return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+            }
+            default -> {
+              TreeSet<Long> castValuesSet = new TreeSet<>(castValues);
+              TreeSet<Long> exprValuesSet = new TreeSet<>(exprValues);
+              return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+            }
           }
         }
       }

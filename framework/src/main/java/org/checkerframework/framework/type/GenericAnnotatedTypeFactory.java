@@ -984,16 +984,16 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     // Look in the type factory, if not found in the store.
-    if (expr instanceof LocalVariable) {
-      Element ele = ((LocalVariable) expr).getElement();
+    if (expr instanceof LocalVariable lv) {
+      Element ele = lv.getElement();
       // Because of
       // https://github.com/eisop/checker-framework/issues/14
       // and the workaround in
       // org.checkerframework.framework.type.ElementAnnotationApplier.applyInternal
       // The annotationMirror may not contain all explicitly written annotations.
       return getAnnotatedType(ele).getPrimaryAnnotations();
-    } else if (expr instanceof FieldAccess) {
-      Element ele = ((FieldAccess) expr).getField();
+    } else if (expr instanceof FieldAccess fa) {
+      Element ele = fa.getField();
       return getAnnotatedType(ele).getPrimaryAnnotations();
     } else {
       return AnnotationMirrorSet.emptySet();
@@ -1145,8 +1145,8 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public @Nullable Store getRegularExitStore(Tree tree) {
     if (regularExitStores == null) {
-      if (tree instanceof MethodTree) {
-        if (((MethodTree) tree).getBody() == null) {
+      if (tree instanceof MethodTree mt) {
+        if (mt.getBody() == null) {
           // No body: the method is abstract or in an interface
           return null;
         }
@@ -1343,16 +1343,11 @@ public abstract class GenericAnnotatedTypeFactory<
         }
         for (Tree m : members) {
           switch (m.getKind()) {
-            case CLASS:
-            case RECORD: // Including RECORD
-            case ANNOTATION_TYPE:
-            case INTERFACE:
-            case ENUM:
-              // Visit inner and nested class trees.
-              // TODO: Use no store for them? What can be captured?
-              classQueue.add(IPair.of((ClassTree) m, capturedStore));
-              break;
-            case METHOD:
+            case CLASS, RECORD, ANNOTATION_TYPE, INTERFACE, ENUM ->
+                // Visit inner and nested class trees.
+                // TODO: Use no store for them? What can be captured?
+                classQueue.add(IPair.of((ClassTree) m, capturedStore));
+            case METHOD -> {
               MethodTree mt = (MethodTree) m;
 
               // Skip abstract and native methods because they have no body.
@@ -1370,8 +1365,8 @@ public abstract class GenericAnnotatedTypeFactory<
               // have been processed.
               CFGMethod method = new CFGMethod(mt, ct);
               methods.add(method);
-              break;
-            case VARIABLE:
+            }
+            case VARIABLE -> {
               // A top-level variable is a field.
               VariableTree vt = (VariableTree) m;
               ExpressionTree initializer = vt.getInitializer();
@@ -1379,6 +1374,7 @@ public abstract class GenericAnnotatedTypeFactory<
               Value declaredValue = analysis.createAbstractValue(declaredType);
               FieldAccess fieldExpr = (FieldAccess) JavaExpression.fromVariableTree(vt);
               // analyze initializer if present
+              Value initializerValue = null;
               if (initializer != null) {
                 boolean isStatic = vt.getModifiers().getFlags().contains(Modifier.STATIC);
                 ControlFlowGraph cfg =
@@ -1393,16 +1389,11 @@ public abstract class GenericAnnotatedTypeFactory<
                         isStatic,
                         capturedStore);
                 postAnalyze(cfg);
-                Value initializerValue = flowResult.getValue(initializer);
-                if (initializerValue != null) {
-                  fieldValues.add(
-                      new FieldInitialValue<>(fieldExpr, declaredValue, initializerValue));
-                  break;
-                }
+                initializerValue = flowResult.getValue(initializer);
               }
-              fieldValues.add(new FieldInitialValue<>(fieldExpr, declaredValue, null));
-              break;
-            case BLOCK:
+              fieldValues.add(new FieldInitialValue<>(fieldExpr, declaredValue, initializerValue));
+            }
+            case BLOCK -> {
               BlockTree b = (BlockTree) m;
               ControlFlowGraph cfg =
                   analyze(
@@ -1416,10 +1407,8 @@ public abstract class GenericAnnotatedTypeFactory<
                       b.isStatic(),
                       capturedStore);
               postAnalyze(cfg);
-              break;
-            default:
-              assert false : "Unexpected member: " + m.getKind();
-              break;
+            }
+            default -> throw new BugInCF("Unexpected member: " + m.getKind());
           }
         }
 
@@ -1782,16 +1771,10 @@ public abstract class GenericAnnotatedTypeFactory<
     // be called from elsewhere and would expect flow-sensitive type refinements.
     shouldCache = false;
     switch (lhsTree.getKind()) {
-      case VARIABLE:
-      case IDENTIFIER:
-      case MEMBER_SELECT:
-      case ARRAY_ACCESS:
-        res = getAnnotatedType(lhsTree);
-        break;
-      case PARENTHESIZED:
-        res = getAnnotatedTypeLhs(TreeUtils.withoutParens((ExpressionTree) lhsTree));
-        break;
-      default:
+      case VARIABLE, IDENTIFIER, MEMBER_SELECT, ARRAY_ACCESS -> res = getAnnotatedType(lhsTree);
+      case PARENTHESIZED ->
+          res = getAnnotatedTypeLhs(TreeUtils.withoutParens((ExpressionTree) lhsTree));
+      default -> {
         if (TreeUtils.isTypeTree(lhsTree)) {
           // lhsTree is a type tree at the pseudo assignment of a returned expression to
           // declared return type.
@@ -1804,6 +1787,7 @@ public abstract class GenericAnnotatedTypeFactory<
                   + " Tree.Kind: "
                   + lhsTree.getKind());
         }
+      }
     }
     useFlow = oldUseFlow;
     shouldCache = oldShouldCache;
@@ -2109,16 +2093,16 @@ public abstract class GenericAnnotatedTypeFactory<
       return;
     }
     switch (elt.getKind()) {
-      case CONSTRUCTOR:
-      case METHOD:
-      case FIELD:
-      case RESOURCE_VARIABLE:
-      case EXCEPTION_PARAMETER:
-      case LOCAL_VARIABLE:
-      case PARAMETER:
-        break;
-      default:
+      case CONSTRUCTOR,
+          METHOD,
+          FIELD,
+          RESOURCE_VARIABLE,
+          EXCEPTION_PARAMETER,
+          LOCAL_VARIABLE,
+          PARAMETER -> {} // continue below
+      default -> {
         return;
+      }
     }
 
     applyLocalVariableQualifierParameterDefaults(elt, type);
@@ -2167,11 +2151,11 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     Tree declTree = declarationFromElement(elt);
-    if (declTree == null || !(declTree instanceof VariableTree)) {
+    if (!(declTree instanceof VariableTree declVt)) {
       return;
     }
 
-    ExpressionTree initializer = ((VariableTree) declTree).getInitializer();
+    ExpressionTree initializer = declVt.getInitializer();
     if (initializer == null) {
       return;
     }
@@ -2239,8 +2223,8 @@ public abstract class GenericAnnotatedTypeFactory<
   public void methodFromUsePreSubstitution(
       ExpressionTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
     super.methodFromUsePreSubstitution(tree, type, resolvePolyQuals);
-    if (tree instanceof MethodInvocationTree && resolvePolyQuals) {
-      poly.resolve((MethodInvocationTree) tree, type);
+    if (tree instanceof MethodInvocationTree mit && resolvePolyQuals) {
+      poly.resolve(mit, type);
     }
   }
 
@@ -2412,14 +2396,9 @@ public abstract class GenericAnnotatedTypeFactory<
       String opt = opts.get(i);
       String[] split = opt.split("=", -1);
       switch (split.length) {
-        case 1:
-          res.put(split[0], true);
-          break;
-        case 2:
-          res.put(split[0], split[1]);
-          break;
-        default:
-          throw new UserError("Too many '=' in cfgviz option: " + opt);
+        case 1 -> res.put(split[0], true);
+        case 2 -> res.put(split[0], split[1]);
+        default -> throw new UserError("Too many '=' in cfgviz option: " + opt);
       }
     }
     return res;
@@ -2569,40 +2548,38 @@ public abstract class GenericAnnotatedTypeFactory<
 
       // Primitives have no subtyping relationships, but the lookup might have failed
       // because tm has metadata such as annotations.
-      case BOOLEAN:
-      case BYTE:
-      case CHAR:
-      case DOUBLE:
-      case FLOAT:
-      case INT:
-      case LONG:
-      case SHORT:
+      case BOOLEAN, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SHORT -> {
         for (TypeMirror relevantJavaType : relevantJavaTypes) {
           if (types.isSameType(tm, relevantJavaType)) {
             return true;
           }
         }
         return false;
+      }
 
       // Void is never relevant
-      case VOID:
+      case VOID -> {
         return false;
+      }
 
-      case ARRAY:
+      case ARRAY -> {
         return arraysAreRelevant;
+      }
 
-      case DECLARED:
+      case DECLARED -> {
         for (TypeMirror relevantJavaType : relevantJavaTypes) {
           if (types.isSubtype(relevantJavaType, tm) || types.isSubtype(tm, relevantJavaType)) {
             return true;
           }
         }
         return false;
+      }
 
-      case TYPEVAR:
+      case TYPEVAR -> {
         return isRelevant(((TypeVariable) tm).getUpperBound());
+      }
 
-      case NULL:
+      case NULL -> {
         for (TypeMirror relevantJavaType : relevantJavaTypes) {
           switch (relevantJavaType.getKind()) {
             case BOOLEAN:
@@ -2630,14 +2607,14 @@ public abstract class GenericAnnotatedTypeFactory<
           }
         }
         return false;
+      }
 
-      case EXECUTABLE:
-      case MODULE:
-      case PACKAGE:
+      case EXECUTABLE, MODULE, PACKAGE -> {
         return false;
+      }
 
-      default:
-        throw new BugInCF("isRelevantHelper(%s): Unexpected TypeKind %s", tm, tm.getKind());
+      default ->
+          throw new BugInCF("isRelevantHelper(%s): Unexpected TypeKind %s", tm, tm.getKind());
     }
   }
 

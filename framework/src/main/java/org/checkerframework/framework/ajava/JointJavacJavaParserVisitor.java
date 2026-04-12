@@ -191,8 +191,8 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public Void visitAnnotation(AnnotationTree javacTree, Node javaParserNode) {
     // javac stores annotation arguments as assignments, so @MyAnno("myArg") is stored the same
     // as @MyAnno(value="myArg") which has a single element argument list with an assignment.
-    if (javaParserNode instanceof MarkerAnnotationExpr) {
-      processAnnotation(javacTree, (MarkerAnnotationExpr) javaParserNode);
+    if (javaParserNode instanceof MarkerAnnotationExpr mae) {
+      processAnnotation(javacTree, mae);
     } else if (javaParserNode instanceof SingleMemberAnnotationExpr node) {
       processAnnotation(javacTree, node);
       assert javacTree.getArguments().size() == 1;
@@ -292,8 +292,8 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
 
   @Override
   public Void visitBlock(BlockTree javacTree, Node javaParserNode) {
-    if (javaParserNode instanceof InitializerDeclaration) {
-      return javacTree.accept(this, ((InitializerDeclaration) javaParserNode).getBody());
+    if (javaParserNode instanceof InitializerDeclaration id) {
+      return javacTree.accept(this, id.getBody());
     }
 
     BlockStmt node = castNode(BlockStmt.class, javaParserNode, javacTree);
@@ -526,10 +526,10 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     } else if (javaParserNode instanceof AnnotationDeclaration node) {
       processClass(javacTree, node);
       visitClassMembers(javacTree.getMembers(), node.getMembers());
-    } else if (javaParserNode instanceof LocalClassDeclarationStmt) {
-      javacTree.accept(this, ((LocalClassDeclarationStmt) javaParserNode).getClassDeclaration());
-    } else if (javaParserNode instanceof LocalRecordDeclarationStmt) {
-      javacTree.accept(this, ((LocalRecordDeclarationStmt) javaParserNode).getRecordDeclaration());
+    } else if (javaParserNode instanceof LocalClassDeclarationStmt lcds) {
+      javacTree.accept(this, lcds.getClassDeclaration());
+    } else if (javaParserNode instanceof LocalRecordDeclarationStmt lrds) {
+      javacTree.accept(this, lrds.getRecordDeclaration());
     } else if (javaParserNode instanceof EnumDeclaration node) {
       processClass(javacTree, node);
       visitLists(javacTree.getImplementsClause(), node.getImplementedTypes());
@@ -816,8 +816,8 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       List<? extends Tree> javacInvokTypeArgs = javacInvok.getTypeArguments();
       if ((javacInvokArgs.isEmpty()
               && javacInvokTypeArgs.isEmpty()
-              && javacInvokMethod instanceof IdentifierTree)
-          && ((IdentifierTree) javacInvokMethod).getName().toString().equals("yield")) {
+              && javacInvokMethod instanceof IdentifierTree it)
+          && it.getName().toString().equals("yield")) {
 
         Expression javaParserYieldExpression = javaParserYieldStmt.getExpression();
         if (javaParserYieldExpression instanceof LambdaExpr javaParserLambda) {
@@ -852,11 +852,11 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       } else {
         assert javacInitializers.hasNext();
         StatementTree javacInitializer = javacInitializers.next();
-        if (javacInitializer instanceof ExpressionStatementTree) {
+        if (javacInitializer instanceof ExpressionStatementTree est) {
           // JavaParser doesn't wrap other kinds of expressions in an expression
           // statement, but javac does. For example, suppose that the initializer is
           // "index++", as in the test all-systems/LightWeightCache.java.
-          ((ExpressionStatementTree) javacInitializer).getExpression().accept(this, initializer);
+          est.getExpression().accept(this, initializer);
         } else {
           // This is likely to lead to a crash, if it ever happens: javacInitializer is a
           // StatementTree of some kind, but initializer is a raw expression (not wrapped
@@ -884,22 +884,22 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
 
   @Override
   public Void visitIdentifier(IdentifierTree javacTree, Node javaParserNode) {
-    if (javaParserNode instanceof ClassOrInterfaceType) {
-      processIdentifier(javacTree, (ClassOrInterfaceType) javaParserNode);
-    } else if (javaParserNode instanceof Name) {
-      processIdentifier(javacTree, (Name) javaParserNode);
-    } else if (javaParserNode instanceof NameExpr) {
-      processIdentifier(javacTree, (NameExpr) javaParserNode);
-    } else if (javaParserNode instanceof SimpleName) {
-      processIdentifier(javacTree, (SimpleName) javaParserNode);
-    } else if (javaParserNode instanceof ThisExpr) {
-      processIdentifier(javacTree, (ThisExpr) javaParserNode);
-    } else if (javaParserNode instanceof SuperExpr) {
-      processIdentifier(javacTree, (SuperExpr) javaParserNode);
-    } else if (javaParserNode instanceof TypeExpr) {
+    if (javaParserNode instanceof ClassOrInterfaceType coit) {
+      processIdentifier(javacTree, coit);
+    } else if (javaParserNode instanceof Name n) {
+      processIdentifier(javacTree, n);
+    } else if (javaParserNode instanceof NameExpr ne) {
+      processIdentifier(javacTree, ne);
+    } else if (javaParserNode instanceof SimpleName sn) {
+      processIdentifier(javacTree, sn);
+    } else if (javaParserNode instanceof ThisExpr te) {
+      processIdentifier(javacTree, te);
+    } else if (javaParserNode instanceof SuperExpr se) {
+      processIdentifier(javacTree, se);
+    } else if (javaParserNode instanceof TypeExpr typeExpr) {
       // This occurs in a member reference like MyClass::myMember. The MyClass is wrapped in a
       // TypeExpr.
-      javacTree.accept(this, ((TypeExpr) javaParserNode).getType());
+      javacTree.accept(this, typeExpr.getType());
     } else {
       throwUnexpectedNodeType(javacTree, javaParserNode);
     }
@@ -973,14 +973,12 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     processLambdaExpression(javacTree, node);
     visitLists(javacTree.getParameters(), node.getParameters());
     switch (javacTree.getBodyKind()) {
-      case EXPRESSION:
+      case EXPRESSION -> {
         assert node.getBody() instanceof ExpressionStmt;
         ExpressionStmt body = (ExpressionStmt) node.getBody();
         javacTree.getBody().accept(this, body.getExpression());
-        break;
-      case STATEMENT:
-        javacTree.getBody().accept(this, node.getBody());
-        break;
+      }
+      case STATEMENT -> javacTree.getBody().accept(this, node.getBody());
     }
 
     return null;
@@ -988,15 +986,15 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
 
   @Override
   public Void visitLiteral(LiteralTree javacTree, Node javaParserNode) {
-    if (javaParserNode instanceof LiteralExpr) {
-      processLiteral(javacTree, (LiteralExpr) javaParserNode);
-    } else if (javaParserNode instanceof UnaryExpr) {
+    if (javaParserNode instanceof LiteralExpr le) {
+      processLiteral(javacTree, le);
+    } else if (javaParserNode instanceof UnaryExpr ue) {
       // Occurs for negative literals such as -7.
-      processLiteral(javacTree, (UnaryExpr) javaParserNode);
-    } else if (javaParserNode instanceof BinaryExpr) {
+      processLiteral(javacTree, ue);
+    } else if (javaParserNode instanceof BinaryExpr be) {
       // Occurs for expression like "a" + "b" where javac compresses them to "ab" but
       // JavaParser doesn't.
-      processLiteral(javacTree, (BinaryExpr) javaParserNode);
+      processLiteral(javacTree, be);
     } else {
       throwUnexpectedNodeType(javacTree, javaParserNode);
     }
@@ -1056,16 +1054,14 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
 
   @Override
   public Void visitMethod(MethodTree javacTree, Node javaParserNode) {
-    if (javaParserNode instanceof MethodDeclaration) {
-      visitMethodForMethodDeclaration(javacTree, (MethodDeclaration) javaParserNode);
-    } else if (javaParserNode instanceof ConstructorDeclaration) {
-      visitMethodForConstructorDeclaration(javacTree, (ConstructorDeclaration) javaParserNode);
-    } else if (javaParserNode instanceof CompactConstructorDeclaration) {
-      visitMethodForConstructorDeclaration(
-          javacTree, (CompactConstructorDeclaration) javaParserNode);
-    } else if (javaParserNode instanceof AnnotationMemberDeclaration) {
-      visitMethodForAnnotationMemberDeclaration(
-          javacTree, (AnnotationMemberDeclaration) javaParserNode);
+    if (javaParserNode instanceof MethodDeclaration md) {
+      visitMethodForMethodDeclaration(javacTree, md);
+    } else if (javaParserNode instanceof ConstructorDeclaration cd) {
+      visitMethodForConstructorDeclaration(javacTree, cd);
+    } else if (javaParserNode instanceof CompactConstructorDeclaration ccd) {
+      visitMethodForConstructorDeclaration(javacTree, ccd);
+    } else if (javaParserNode instanceof AnnotationMemberDeclaration amd) {
+      visitMethodForAnnotationMemberDeclaration(javacTree, amd);
     } else {
       throwUnexpectedNodeType(javacTree, javaParserNode);
       throw new BugInCF("unreachable");
@@ -1313,10 +1309,10 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
 
   @Override
   public Void visitPrimitiveType(PrimitiveTypeTree javacTree, Node javaParserNode) {
-    if (javaParserNode instanceof PrimitiveType) {
-      processPrimitiveType(javacTree, (PrimitiveType) javaParserNode);
-    } else if (javaParserNode instanceof VoidType) {
-      processPrimitiveType(javacTree, (VoidType) javaParserNode);
+    if (javaParserNode instanceof PrimitiveType pt) {
+      processPrimitiveType(javacTree, pt);
+    } else if (javaParserNode instanceof VoidType vt) {
+      processPrimitiveType(javacTree, vt);
     } else {
       throwUnexpectedNodeType(javacTree, javaParserNode);
     }
@@ -1554,16 +1550,10 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
         == node.getExtendedType().isPresent();
     assert (javacTree.getKind() == Tree.Kind.SUPER_WILDCARD) == node.getSuperType().isPresent();
     switch (javacTree.getKind()) {
-      case UNBOUNDED_WILDCARD:
-        break;
-      case EXTENDS_WILDCARD:
-        javacTree.getBound().accept(this, node.getExtendedType().get());
-        break;
-      case SUPER_WILDCARD:
-        javacTree.getBound().accept(this, node.getSuperType().get());
-        break;
-      default:
-        throw new BugInCF("Unexpected wildcard kind: %s", javacTree);
+      case UNBOUNDED_WILDCARD -> {}
+      case EXTENDS_WILDCARD -> javacTree.getBound().accept(this, node.getExtendedType().get());
+      case SUPER_WILDCARD -> javacTree.getBound().accept(this, node.getSuperType().get());
+      default -> throw new BugInCF("Unexpected wildcard kind: %s", javacTree);
     }
 
     return null;

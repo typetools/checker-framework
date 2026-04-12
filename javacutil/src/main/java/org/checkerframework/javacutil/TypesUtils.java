@@ -111,6 +111,8 @@ public final class TypesUtils {
    * @param typeMirror a TypeMirror
    * @return the class for {@code typeMirror}
    */
+  @SuppressWarnings(
+      "StatementSwitchToExpressionSwitch") // Task :javacutil:javadoc fails under JDK 17
   public static Class<?> getClassFromType(TypeMirror typeMirror) {
 
     switch (typeMirror.getKind()) {

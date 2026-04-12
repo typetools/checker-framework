@@ -86,13 +86,8 @@ public class Typing extends TypeConstraint {
     super(parent, t);
     assert S != null;
     switch (kind) {
-      case TYPE_COMPATIBILITY:
-      case SUBTYPE:
-      case CONTAINED:
-      case TYPE_EQUALITY:
-        break;
-      default:
-        throw new BugInCF("Unexpected kind: " + kind);
+      case TYPE_COMPATIBILITY, SUBTYPE, CONTAINED, TYPE_EQUALITY -> {} // valid kinds
+      default -> throw new BugInCF("Unexpected kind: " + kind);
     }
     this.S = S;
     this.kind = kind;

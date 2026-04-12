@@ -42,11 +42,8 @@ public class QualifierTyping implements Constraint {
   public QualifierTyping(AbstractQualifier Q, AbstractQualifier R, Kind kind) {
     assert Q != null && R != null;
     switch (kind) {
-      case QUALIFIER_SUBTYPE:
-      case QUALIFIER_EQUALITY:
-        break;
-      default:
-        throw new BugInCF("Unexpected kind: " + kind);
+      case QUALIFIER_SUBTYPE, QUALIFIER_EQUALITY -> {}
+      default -> throw new BugInCF("Unexpected kind: " + kind);
     }
     this.R = R;
     this.Q = Q;
@@ -74,9 +71,9 @@ public class QualifierTyping implements Constraint {
    * @return the result of reducing this constraint
    */
   private ReductionResult reduceSubtyping(Java8InferenceContext context) {
-    if (Q instanceof Qualifier && R instanceof Qualifier) {
-      AnnotationMirror qAnno = ((Qualifier) Q).getAnnotation();
-      AnnotationMirror rAnno = ((Qualifier) R).getAnnotation();
+    if (Q instanceof Qualifier qQual && R instanceof Qualifier rQual) {
+      AnnotationMirror qAnno = qQual.getAnnotation();
+      AnnotationMirror rAnno = rQual.getAnnotation();
       if (context.typeFactory.getQualifierHierarchy().isSubtypeQualifiersOnly(qAnno, rAnno)) {
         return ConstraintSet.TRUE;
       }
@@ -102,9 +99,9 @@ public class QualifierTyping implements Constraint {
    * @return the result of reducing this constraint
    */
   private ReductionResult reduceEquality(Java8InferenceContext context) {
-    if (Q instanceof Qualifier && R instanceof Qualifier) {
-      AnnotationMirror qAnno = ((Qualifier) Q).getAnnotation();
-      AnnotationMirror rAnno = ((Qualifier) R).getAnnotation();
+    if (Q instanceof Qualifier qQual && R instanceof Qualifier rQual) {
+      AnnotationMirror qAnno = qQual.getAnnotation();
+      AnnotationMirror rAnno = rQual.getAnnotation();
       if (context.typeFactory.getQualifierHierarchy().isSubtypeQualifiersOnly(qAnno, rAnno)
           && context.typeFactory.getQualifierHierarchy().isSubtypeQualifiersOnly(rAnno, qAnno)) {
         return ConstraintSet.TRUE;

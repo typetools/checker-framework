@@ -138,8 +138,8 @@ public class ValueTransfer extends CFTransfer {
     TypeKind subNodeTypeKind = subNode.getType().getKind();
 
     // handle values converted to string (ints, longs, longs with @IntRange)
-    if (subNode instanceof StringConversionNode) {
-      return getStringLengthRange(((StringConversionNode) subNode).getOperand(), p);
+    if (subNode instanceof StringConversionNode scn) {
+      return getStringLengthRange(scn.getOperand(), p);
     } else if (isIntRange(subNode, p)) {
       return getIntRangeStringLengthRange(subNode, p);
     } else if (subNodeTypeKind == TypeKind.INT) {
@@ -176,8 +176,8 @@ public class ValueTransfer extends CFTransfer {
     TypeKind subNodeTypeKind = subNode.getType().getKind();
 
     // handle values converted to string (characters, bytes, shorts, ints with @IntRange)
-    if (subNode instanceof StringConversionNode) {
-      return getStringLengths(((StringConversionNode) subNode).getOperand(), p);
+    if (subNode instanceof StringConversionNode scn) {
+      return getStringLengths(scn.getOperand(), p);
     } else if (subNodeTypeKind == TypeKind.CHAR) {
       // characters always have length 1
       return Collections.singletonList(1);
@@ -215,14 +215,18 @@ public class ValueTransfer extends CFTransfer {
     }
     String annoName = AnnotationUtils.annotationName(anno);
     switch (annoName) {
-      case ValueAnnotatedTypeFactory.UNKNOWN_NAME:
+      case ValueAnnotatedTypeFactory.UNKNOWN_NAME -> {
         return null;
-      case ValueAnnotatedTypeFactory.BOTTOMVAL_NAME:
+      }
+      case ValueAnnotatedTypeFactory.BOTTOMVAL_NAME -> {
         return Collections.emptyList();
-      case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+      }
+      case ValueAnnotatedTypeFactory.STRINGVAL_NAME -> {
         return atypeFactory.getStringValues(anno);
-      default:
+      }
+      default -> {
         // Do nothing.
+      }
     }
 
     // @IntVal, @IntRange, @DoubleVal, @BoolVal (have to be converted to string)
@@ -231,8 +235,8 @@ public class ValueTransfer extends CFTransfer {
       values = getBooleanValues(subNode, p);
     } else if (subNode.getType().getKind() == TypeKind.CHAR) {
       values = getCharValues(subNode, p);
-    } else if (subNode instanceof StringConversionNode) {
-      return getStringValues(((StringConversionNode) subNode).getOperand(), p);
+    } else if (subNode instanceof StringConversionNode scn) {
+      return getStringValues(scn.getOperand(), p);
     } else if (isIntRange(subNode, p)) {
       Range range = getIntRange(subNode, p);
       List<Long> longValues = ValueCheckerUtils.getValuesFromRange(range, Long.class);
@@ -657,8 +661,8 @@ public class ValueTransfer extends CFTransfer {
    *     null, or if this method is not precise enough
    */
   private boolean isNullable(Node node) {
-    if (node instanceof StringConversionNode) {
-      if (((StringConversionNode) node).getOperand().getType().getKind().isPrimitive()) {
+    if (node instanceof StringConversionNode scn) {
+      if (scn.getOperand().getType().getKind().isPrimitive()) {
         return false;
       }
     } else if (node instanceof StringLiteralNode) {
@@ -689,17 +693,13 @@ public class ValueTransfer extends CFTransfer {
           rightValues = CollectionsPlume.append(rightValues, "null");
         }
       } else {
-        if (leftOperand instanceof StringConversionNode) {
-          if (((StringConversionNode) leftOperand).getOperand().getType().getKind()
-              == TypeKind.NULL) {
-            leftValues = CollectionsPlume.append(leftValues, "null");
-          }
+        if (leftOperand instanceof StringConversionNode scn
+            && scn.getOperand().getType().getKind() == TypeKind.NULL) {
+          leftValues = CollectionsPlume.append(leftValues, "null");
         }
-        if (rightOperand instanceof StringConversionNode) {
-          if (((StringConversionNode) rightOperand).getOperand().getType().getKind()
-              == TypeKind.NULL) {
-            rightValues = CollectionsPlume.append(rightValues, "null");
-          }
+        if (rightOperand instanceof StringConversionNode scn
+            && scn.getOperand().getType().getKind() == TypeKind.NULL) {
+          rightValues = CollectionsPlume.append(rightValues, "null");
         }
       }
 
@@ -857,47 +857,28 @@ public class ValueTransfer extends CFTransfer {
       NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
       for (Number right : rights) {
         switch (op) {
-          case ADDITION:
-            resultValues.add(nmLeft.plus(right));
-            break;
-          case DIVISION:
+          case ADDITION -> resultValues.add(nmLeft.plus(right));
+          case DIVISION -> {
             Number result = nmLeft.divide(right);
             if (result != null) {
               resultValues.add(result);
             }
-            break;
-          case MULTIPLICATION:
-            resultValues.add(nmLeft.times(right));
-            break;
-          case REMAINDER:
+          }
+          case MULTIPLICATION -> resultValues.add(nmLeft.times(right));
+          case REMAINDER -> {
             Number resultR = nmLeft.remainder(right);
             if (resultR != null) {
               resultValues.add(resultR);
             }
-            break;
-          case SUBTRACTION:
-            resultValues.add(nmLeft.minus(right));
-            break;
-          case SHIFT_LEFT:
-            resultValues.add(nmLeft.shiftLeft(right));
-            break;
-          case SIGNED_SHIFT_RIGHT:
-            resultValues.add(nmLeft.signedShiftRight(right));
-            break;
-          case UNSIGNED_SHIFT_RIGHT:
-            resultValues.add(nmLeft.unsignedShiftRight(right));
-            break;
-          case BITWISE_AND:
-            resultValues.add(nmLeft.bitwiseAnd(right));
-            break;
-          case BITWISE_OR:
-            resultValues.add(nmLeft.bitwiseOr(right));
-            break;
-          case BITWISE_XOR:
-            resultValues.add(nmLeft.bitwiseXor(right));
-            break;
-          default:
-            throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
+          }
+          case SUBTRACTION -> resultValues.add(nmLeft.minus(right));
+          case SHIFT_LEFT -> resultValues.add(nmLeft.shiftLeft(right));
+          case SIGNED_SHIFT_RIGHT -> resultValues.add(nmLeft.signedShiftRight(right));
+          case UNSIGNED_SHIFT_RIGHT -> resultValues.add(nmLeft.unsignedShiftRight(right));
+          case BITWISE_AND -> resultValues.add(nmLeft.bitwiseAnd(right));
+          case BITWISE_OR -> resultValues.add(nmLeft.bitwiseOr(right));
+          case BITWISE_XOR -> resultValues.add(nmLeft.bitwiseXor(right));
+          default -> throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
         }
       }
     }
@@ -1098,17 +1079,10 @@ public class ValueTransfer extends CFTransfer {
     for (Number left : lefts) {
       NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
       switch (op) {
-        case PLUS:
-          resultValues.add(nmLeft.unaryPlus());
-          break;
-        case MINUS:
-          resultValues.add(nmLeft.unaryMinus());
-          break;
-        case BITWISE_COMPLEMENT:
-          resultValues.add(nmLeft.bitwiseComplement());
-          break;
-        default:
-          throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
+        case PLUS -> resultValues.add(nmLeft.unaryPlus());
+        case MINUS -> resultValues.add(nmLeft.unaryMinus());
+        case BITWISE_COMPLEMENT -> resultValues.add(nmLeft.bitwiseComplement());
+        default -> throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
       }
     }
     return resultValues;
@@ -1278,13 +1252,13 @@ public class ValueTransfer extends CFTransfer {
     final Range elseRightRange;
 
     switch (op) {
-      case EQUAL:
+      case EQUAL -> {
         thenLeftRange = leftRange.refineEqualTo(rightRange);
         thenRightRange = thenLeftRange; // Equality only needs to be computed once.
         elseLeftRange = leftRange.refineNotEqualTo(rightRange);
         elseRightRange = rightRange.refineNotEqualTo(leftRange);
-        break;
-      case GREATER_THAN:
+      }
+      case GREATER_THAN -> {
         if (rightIsLoopBoundLiteral) {
           thenLeftRange = Range.createOrNothing(rightRange.from + 1, leftRange.to);
           thenRightRange = rightRange;
@@ -1294,8 +1268,8 @@ public class ValueTransfer extends CFTransfer {
         }
         elseLeftRange = leftRange.refineLessThanEq(rightRange);
         elseRightRange = rightRange.refineGreaterThanEq(leftRange);
-        break;
-      case GREATER_THAN_EQ:
+      }
+      case GREATER_THAN_EQ -> {
         if (rightIsLoopBoundLiteral) {
           thenLeftRange = Range.createOrNothing(rightRange.from, leftRange.to);
           thenRightRange = rightRange;
@@ -1305,8 +1279,8 @@ public class ValueTransfer extends CFTransfer {
         }
         elseLeftRange = leftRange.refineLessThan(rightRange);
         elseRightRange = rightRange.refineGreaterThan(leftRange);
-        break;
-      case LESS_THAN:
+      }
+      case LESS_THAN -> {
         if (rightIsLoopBoundLiteral) {
           thenLeftRange = Range.createOrNothing(leftRange.from, rightRange.to - 1);
           thenRightRange = rightRange;
@@ -1316,8 +1290,8 @@ public class ValueTransfer extends CFTransfer {
         }
         elseLeftRange = leftRange.refineGreaterThanEq(rightRange);
         elseRightRange = rightRange.refineLessThanEq(leftRange);
-        break;
-      case LESS_THAN_EQ:
+      }
+      case LESS_THAN_EQ -> {
         if (rightIsLoopBoundLiteral) {
           thenLeftRange = Range.createOrNothing(leftRange.from, rightRange.to);
           thenRightRange = rightRange;
@@ -1327,15 +1301,14 @@ public class ValueTransfer extends CFTransfer {
         }
         elseLeftRange = leftRange.refineGreaterThan(rightRange);
         elseRightRange = rightRange.refineLessThan(leftRange);
-        break;
-      case NOT_EQUAL:
+      }
+      case NOT_EQUAL -> {
         thenLeftRange = leftRange.refineNotEqualTo(rightRange);
         thenRightRange = rightRange.refineNotEqualTo(leftRange);
         elseLeftRange = leftRange.refineEqualTo(rightRange);
         elseRightRange = elseLeftRange; // Equality only needs to be computed once.
-        break;
-      default:
-        throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
+      }
+      default -> throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
     }
 
     if (rightIsLoopBoundLiteral) {

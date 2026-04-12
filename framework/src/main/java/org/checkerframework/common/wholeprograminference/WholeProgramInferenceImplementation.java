@@ -305,9 +305,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         atypeFactory.wpiAdjustForUpdateNonField(receiverArgATM);
         T receiverAnnotations =
             storage.getReceiverAnnotations(methodElt, receiverParamATM, atypeFactory);
-        if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
-          ((GenericAnnotatedTypeFactory) this.atypeFactory)
-              .getDependentTypesHelper()
+        if (this.atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf) {
+          gatf.getDependentTypesHelper()
               .delocalizeAtCallsite(receiverArgATM, invocationTree, arguments, receiver, methodElt);
         }
         updateAnnotationSet(
@@ -390,9 +389,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       int paramIndex = varargsParam ? methodElt.getParameters().size() : i + 1;
       T paramAnnotations =
           storage.getParameterAnnotations(methodElt, paramIndex, paramATM, ve, atypeFactory);
-      if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
-        ((GenericAnnotatedTypeFactory) this.atypeFactory)
-            .getDependentTypesHelper()
+      if (this.atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf) {
+        gatf.getDependentTypesHelper()
             .delocalizeAtCallsite(argATM, invocationTree, arguments, receiver, methodElt);
       }
       updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
@@ -642,12 +640,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     Element element;
     String fieldName;
-    if (lhs instanceof FieldAccessNode) {
-      element = ((FieldAccessNode) lhs).getElement();
-      fieldName = ((FieldAccessNode) lhs).getFieldName();
-    } else if (lhs instanceof LocalVariableNode) {
-      element = ((LocalVariableNode) lhs).getElement();
-      fieldName = ((LocalVariableNode) lhs).getName();
+    if (lhs instanceof FieldAccessNode fan) {
+      element = fan.getElement();
+      fieldName = fan.getFieldName();
+    } else if (lhs instanceof LocalVariableNode lvn) {
+      element = lvn.getElement();
+      fieldName = lvn.getName();
     } else {
       throw new BugInCF(
           "updateFromFieldAssignment received an unexpected node type: " + lhs.getClass());
@@ -1077,16 +1075,15 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     }
 
     switch (sourceCodeATM.getKind()) {
-      case TYPEVAR:
+      case TYPEVAR -> {
         updateAtmWithLub(
             ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
             ((AnnotatedTypeVariable) ajavaATM).getLowerBound());
         updateAtmWithLub(
             ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
             ((AnnotatedTypeVariable) ajavaATM).getUpperBound());
-        break;
-      case WILDCARD:
-        break;
+      }
+      case WILDCARD -> {}
       // throw new BugInCF("This can't happen");
       // TODO: This comment is wrong: the wildcard case does get entered.
       // Because inferring type arguments is not supported, wildcards won't be
@@ -1099,8 +1096,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       //         atf,
       //         ((AnnotatedWildcardType) sourceCodeATM).getSuperBound(),
       //         ((AnnotatedWildcardType) ajavaATM).getSuperBound());
-      // break;
-      case ARRAY:
+      case ARRAY -> {
         AnnotatedTypeMirror sourceCodeComponent =
             ((AnnotatedArrayType) sourceCodeATM).getComponentType();
         AnnotatedTypeMirror ajavaComponent = ((AnnotatedArrayType) ajavaATM).getComponentType();
@@ -1115,18 +1111,15 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
                         + " unexpected difference in type structure.",
                     "LHS kind: " + sourceCodeComponent.getKind(),
                     "RHS kind: " + ajavaComponent.getKind()));
-            break;
           }
         }
-        break;
+      }
       // case DECLARED:
       // Inferring annotations on type arguments is not supported, so no need to recur on
       // generic types. If this was ever implemented, this method would need a
       // VisitHistory object to prevent infinite recursion on types such as T extends
       // List<T>.
-      default:
-        // ATM only has primary annotations
-        break;
+      default -> {} // ATM only has primary annotations
     }
 
     // LUB primary annotations

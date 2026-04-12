@@ -587,9 +587,8 @@ public class WholeProgramInferenceScenesStorage
     TypeMirror rhsTM = rhsATM.getUnderlyingType();
     AnnotatedTypeMirror atmFromScene = atmFromStorageLocation(rhsTM, type);
     updateAtmWithLub(rhsATM, atmFromScene);
-    if (lhsATM instanceof AnnotatedTypeVariable) {
-      AnnotationMirrorSet upperAnnos =
-          ((AnnotatedTypeVariable) lhsATM).getUpperBound().getAnnotations();
+    if (lhsATM instanceof AnnotatedTypeVariable atv) {
+      AnnotationMirrorSet upperAnnos = atv.getUpperBound().getAnnotations();
       // If the inferred type is a subtype of the upper bounds of the
       // current type on the source code, halt.
       if (upperAnnos.size() == rhsATM.getPrimaryAnnotations().size()
@@ -615,14 +614,14 @@ public class WholeProgramInferenceScenesStorage
   private void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror jaifATM) {
 
     switch (sourceCodeATM.getKind()) {
-      case TYPEVAR:
+      case TYPEVAR -> {
         updateAtmWithLub(
             ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
             ((AnnotatedTypeVariable) jaifATM).getLowerBound());
         updateAtmWithLub(
             ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
             ((AnnotatedTypeVariable) jaifATM).getUpperBound());
-        break;
+      }
       //        case WILDCARD:
       // Because inferring type arguments is not supported, wildcards won't be encoutered
       //            updateAtmWithLub(((AnnotatedWildcardType)
@@ -632,19 +631,15 @@ public class WholeProgramInferenceScenesStorage
       //            updateAtmWithLub(((AnnotatedWildcardType)
       // sourceCodeATM).getSuperBound(),
       //                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
-      //            break;
-      case ARRAY:
-        updateAtmWithLub(
-            ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
-            ((AnnotatedArrayType) jaifATM).getComponentType());
-        break;
+      case ARRAY ->
+          updateAtmWithLub(
+              ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
+              ((AnnotatedArrayType) jaifATM).getComponentType());
       // case DECLARED:
       // inferring annotations on type arguments is not supported, so no need to recur on
       // generic types. If this was every implemented, this method would need VisitHistory
       // object to prevent infinite recursion on types such as T extends List<T>.
-      default:
-        // ATM only has primary annotations
-        break;
+      default -> {} // ATM only has primary annotations
     }
 
     // LUB primary annotations

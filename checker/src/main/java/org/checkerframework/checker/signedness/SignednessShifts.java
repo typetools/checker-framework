@@ -56,17 +56,17 @@ public class SignednessShifts {
     Tree castType = cast.getType();
 
     Tree underlyingType;
-    if (castType instanceof AnnotatedTypeTree) {
-      underlyingType = ((AnnotatedTypeTree) castType).getUnderlyingType();
+    if (castType instanceof AnnotatedTypeTree att) {
+      underlyingType = att.getUnderlyingType();
     } else {
       underlyingType = castType;
     }
 
-    if (!(underlyingType instanceof PrimitiveTypeTree)) {
+    if (!(underlyingType instanceof PrimitiveTypeTree ptt)) {
       return null;
     }
 
-    return (PrimitiveTypeTree) underlyingType;
+    return ptt;
   }
 
   /**
@@ -168,18 +168,17 @@ public class SignednessShifts {
     long shiftBits;
     long shiftAmount;
     switch (shiftTypeKind) {
-      case INT:
+      case INT -> {
         shiftBits = 32;
         // When the LHS of the shift is an int, the 5 lower order bits of the RHS are used.
         shiftAmount = 0x1F & getLong(shiftAmountLit.getValue());
-        break;
-      case LONG:
+      }
+      case LONG -> {
         shiftBits = 64;
         // When the LHS of the shift is a long, the 6 lower order bits of the RHS are used.
         shiftAmount = 0x3F & getLong(shiftAmountLit.getValue());
-        break;
-      default:
-        throw new TypeSystemError("Invalid shift type");
+      }
+      default -> throw new TypeSystemError("Invalid shift type");
     }
 
     // Determine number of bits in the cast type

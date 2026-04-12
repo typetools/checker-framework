@@ -450,8 +450,7 @@ public abstract class InitializationAnnotatedTypeFactory<
       TreePath topLevelMemberPath = findTopLevelClassMemberForTree(path);
       if (topLevelMemberPath != null && topLevelMemberPath.getLeaf() != null) {
         Tree topLevelMember = topLevelMemberPath.getLeaf();
-        if (!(topLevelMember instanceof MethodTree)
-            || TreeUtils.isConstructor((MethodTree) topLevelMember)) {
+        if (!(topLevelMember instanceof MethodTree tlmMt) || TreeUtils.isConstructor(tlmMt)) {
           setSelfTypeInInitializationCode(tree, enclosing, topLevelMemberPath);
         }
         path = topLevelMemberPath.getParentPath();
@@ -1012,8 +1011,7 @@ public abstract class InitializationAnnotatedTypeFactory<
       boolean inferTypeArgs) {
     ParameterizedExecutableType x =
         super.methodFromUse(tree, methodElt, receiverType, inferTypeArgs);
-    if (tree instanceof MemberReferenceTree
-        && ((MemberReferenceTree) tree).getMode() == ReferenceMode.NEW) {
+    if (tree instanceof MemberReferenceTree mrt && mrt.getMode() == ReferenceMode.NEW) {
       x.executableType().getReturnType().replaceAnnotation(INITIALIZED);
     }
     return x;

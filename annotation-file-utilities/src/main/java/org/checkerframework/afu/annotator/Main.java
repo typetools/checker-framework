@@ -247,7 +247,7 @@ public class Main {
             ASTPath p = entry.getKey();
             ATypeElementWithType e = entry.getValue();
             Type type = e.getType();
-            if (type instanceof DeclaredType && ((DeclaredType) type).getName().isEmpty()) {
+            if (type instanceof DeclaredType declaredType && declaredType.getName().isEmpty()) {
               insertAnnotations.put(p, e);
               // visitTypeElement(e, insertAnnotations.getVivify(p));
             } else {
@@ -329,7 +329,7 @@ public class Main {
     ASTPath.ASTEntry entry;
     for (TypePathEntry tpe : tpes) {
       switch (tpe.step) {
-        case TypePath.ARRAY_ELEMENT:
+        case TypePath.ARRAY_ELEMENT -> {
           if (!astPath.isEmpty()) {
             entry = astPath.getLast();
             if (entry.getTreeKind() == Tree.Kind.NEW_ARRAY && entry.childSelectorIs(ASTPath.TYPE)) {
@@ -339,20 +339,16 @@ public class Main {
             }
           }
           entry = new ASTPath.ASTEntry(Tree.Kind.ARRAY_TYPE, ASTPath.TYPE);
-          break;
-        case TypePath.INNER_TYPE:
-          entry = new ASTPath.ASTEntry(Tree.Kind.MEMBER_SELECT, ASTPath.EXPRESSION);
-          break;
-        case TypePath.TYPE_ARGUMENT:
-          entry =
-              new ASTPath.ASTEntry(
-                  Tree.Kind.PARAMETERIZED_TYPE, ASTPath.TYPE_ARGUMENT, tpe.argument);
-          break;
-        case TypePath.WILDCARD_BOUND:
-          entry = new ASTPath.ASTEntry(Tree.Kind.UNBOUNDED_WILDCARD, ASTPath.BOUND);
-          break;
-        default:
-          throw new IllegalArgumentException("unknown type tag " + tpe.step);
+        }
+        case TypePath.INNER_TYPE ->
+            entry = new ASTPath.ASTEntry(Tree.Kind.MEMBER_SELECT, ASTPath.EXPRESSION);
+        case TypePath.TYPE_ARGUMENT ->
+            entry =
+                new ASTPath.ASTEntry(
+                    Tree.Kind.PARAMETERIZED_TYPE, ASTPath.TYPE_ARGUMENT, tpe.argument);
+        case TypePath.WILDCARD_BOUND ->
+            entry = new ASTPath.ASTEntry(Tree.Kind.UNBOUNDED_WILDCARD, ASTPath.BOUND);
+        default -> throw new IllegalArgumentException("unknown type tag " + tpe.step);
       }
       astPath = astPath.extend(entry);
     }
@@ -407,19 +403,13 @@ public class Main {
             while (path != null) {
               Tree leaf = path.getLeaf();
               switch (leaf.getKind()) {
-                case VARIABLE:
-                  varTree = (JCTree.JCVariableDecl) leaf;
-                  break;
-                case METHOD:
-                  methTree = (JCTree.JCMethodDecl) leaf;
-                  break;
-                case ANNOTATION:
-                case CLASS:
-                case ENUM:
-                case INTERFACE:
+                // TODO: Is this an infinite loop if leaf is a VARIABLE or METHOD?
+                case VARIABLE -> varTree = (JCTree.JCVariableDecl) leaf;
+                case METHOD -> methTree = (JCTree.JCMethodDecl) leaf;
+                case ANNOTATION_TYPE, CLASS, ENUM, INTERFACE -> {
                   break loop;
-                default:
-                  path = path.getParentPath();
+                }
+                default -> path = path.getParentPath();
               }
             }
             while (path != null) {

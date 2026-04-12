@@ -133,18 +133,17 @@ public class FormatterTreeUtil {
   private ConversionCategory @Nullable [] asFormatCallCategoriesLowLevel(
       MethodInvocationNode node) {
     Node vararg = node.getArgument(1);
-    if (!(vararg instanceof ArrayCreationNode)) {
+    if (!(vararg instanceof ArrayCreationNode acn)) {
       return null;
     }
-    List<Node> convs = ((ArrayCreationNode) vararg).getInitializers();
+    List<Node> convs = acn.getInitializers();
     ConversionCategory[] res = new ConversionCategory[convs.size()];
     for (int i = 0; i < convs.size(); ++i) {
       Node conv = convs.get(i);
-      if (conv instanceof FieldAccessNode) {
-        Class<? extends Object> clazz =
-            TypesUtils.getClassFromType(((FieldAccessNode) conv).getType());
+      if (conv instanceof FieldAccessNode fan) {
+        Class<? extends Object> clazz = TypesUtils.getClassFromType(fan.getType());
         if (clazz == ConversionCategory.class) {
-          res[i] = ConversionCategory.valueOf(((FieldAccessNode) conv).getFieldName());
+          res[i] = ConversionCategory.valueOf(fan.getFieldName());
           continue; /* avoid returning null */
         }
       }
