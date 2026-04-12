@@ -406,7 +406,7 @@ public class Main {
                 // TODO: Is this an infinite loop if leaf is a VARIABLE or METHOD?
                 case VARIABLE -> varTree = (JCTree.JCVariableDecl) leaf;
                 case METHOD -> methTree = (JCTree.JCMethodDecl) leaf;
-                case ANNOTATION, CLASS, ENUM, INTERFACE -> {
+                case ANNOTATION_TYPE, CLASS, ENUM, INTERFACE -> {
                   break loop;
                 }
                 default -> path = path.getParentPath();

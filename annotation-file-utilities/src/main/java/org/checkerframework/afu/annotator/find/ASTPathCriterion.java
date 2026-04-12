@@ -370,7 +370,7 @@ public class ASTPathCriterion implements Criterion {
             return cach.getBlock();
           }
         }
-        case ANNOTATION, CLASS, ENUM, INTERFACE -> {
+        case ANNOTATION_TYPE, CLASS, ENUM, INTERFACE -> {
           ClassTree clazz = (ClassTree) actualNode;
           int arg = astNode.getArgument();
           if (astNode.childSelectorIs(ASTPath.TYPE_PARAMETER)) {
