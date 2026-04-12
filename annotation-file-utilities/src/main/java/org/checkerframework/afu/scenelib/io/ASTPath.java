@@ -688,501 +688,429 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
         }
 
         switch (actualNode.getKind()) {
-          case ANNOTATED_TYPE:
-            {
-              AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) actualNode;
-              if (astNode.childSelectorIs(ANNOTATION)) {
-                int arg = astNode.getArgument();
-                List<? extends AnnotationTree> annos = annotatedType.getAnnotations();
-                if (arg >= annos.size()) {
-                  return false;
-                }
-                next = annos.get(arg);
-              } else {
-                next = annotatedType.getUnderlyingType();
-              }
-              break;
-            }
-          case ARRAY_ACCESS:
-            {
-              ArrayAccessTree arrayAccess = (ArrayAccessTree) actualNode;
-              if (astNode.childSelectorIs(EXPRESSION)) {
-                next = arrayAccess.getExpression();
-              } else {
-                next = arrayAccess.getIndex();
-              }
-              break;
-            }
-          case ARRAY_TYPE:
-            {
-              ArrayTypeTree arrayType = (ArrayTypeTree) actualNode;
-              next = arrayType.getType();
-              break;
-            }
-          case ASSERT:
-            {
-              AssertTree azzert = (AssertTree) actualNode;
-              if (astNode.childSelectorIs(CONDITION)) {
-                next = azzert.getCondition();
-              } else {
-                next = azzert.getDetail();
-              }
-              break;
-            }
-          case ASSIGNMENT:
-            {
-              AssignmentTree assignment = (AssignmentTree) actualNode;
-              if (astNode.childSelectorIs(VARIABLE)) {
-                next = assignment.getVariable();
-              } else {
-                next = assignment.getExpression();
-              }
-              break;
-            }
-          case BLOCK:
-            {
-              BlockTree block = (BlockTree) actualNode;
+          case ANNOTATED_TYPE -> {
+            AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) actualNode;
+            if (astNode.childSelectorIs(ANNOTATION)) {
               int arg = astNode.getArgument();
-              List<? extends StatementTree> statements = block.getStatements();
-              if (arg >= block.getStatements().size()) {
+              List<? extends AnnotationTree> annos = annotatedType.getAnnotations();
+              if (arg >= annos.size()) {
+                return false;
+              }
+              next = annos.get(arg);
+            } else {
+              next = annotatedType.getUnderlyingType();
+            }
+          }
+          case ARRAY_ACCESS -> {
+            ArrayAccessTree arrayAccess = (ArrayAccessTree) actualNode;
+            if (astNode.childSelectorIs(EXPRESSION)) {
+              next = arrayAccess.getExpression();
+            } else {
+              next = arrayAccess.getIndex();
+            }
+          }
+          case ARRAY_TYPE -> {
+            ArrayTypeTree arrayType = (ArrayTypeTree) actualNode;
+            next = arrayType.getType();
+          }
+          case ASSERT -> {
+            AssertTree azzert = (AssertTree) actualNode;
+            if (astNode.childSelectorIs(CONDITION)) {
+              next = azzert.getCondition();
+            } else {
+              next = azzert.getDetail();
+            }
+          }
+          case ASSIGNMENT -> {
+            AssignmentTree assignment = (AssignmentTree) actualNode;
+            if (astNode.childSelectorIs(VARIABLE)) {
+              next = assignment.getVariable();
+            } else {
+              next = assignment.getExpression();
+            }
+          }
+          case BLOCK -> {
+            BlockTree block = (BlockTree) actualNode;
+            int arg = astNode.getArgument();
+            List<? extends StatementTree> statements = block.getStatements();
+            if (arg >= block.getStatements().size()) {
+              return false;
+            }
+            next = statements.get(arg);
+          }
+          case CASE -> {
+            CaseTree caze = (CaseTree) actualNode;
+            int arg = astNode.getArgument();
+            if (astNode.childSelectorIs(EXPRESSION)) {
+              List<? extends ExpressionTree> expressions = caze.getExpressions();
+              // If expressions is empty, it means default case:
+              if (arg >= expressions.size()) {
+                return false;
+              }
+              next = expressions.get(arg);
+            } else {
+              List<? extends StatementTree> statements = caze.getStatements();
+              if (arg >= statements.size()) {
                 return false;
               }
               next = statements.get(arg);
-              break;
             }
-          case CASE:
-            {
-              CaseTree caze = (CaseTree) actualNode;
+          }
+          case CATCH -> {
+            CatchTree cach = (CatchTree) actualNode;
+            if (astNode.childSelectorIs(PARAMETER)) {
+              next = cach.getParameter();
+            } else {
+              next = cach.getBlock();
+            }
+          }
+          case CLASS -> {
+            ClassTree clazz = (ClassTree) actualNode;
+            int arg = astNode.getArgument();
+            if (astNode.childSelectorIs(BOUND)) {
+              next = arg == -1 ? clazz.getExtendsClause() : clazz.getImplementsClause().get(arg);
+            } else {
+              next = clazz.getTypeParameters().get(arg);
+            }
+          }
+          case CONDITIONAL_EXPRESSION -> {
+            ConditionalExpressionTree conditionalExpression =
+                (ConditionalExpressionTree) actualNode;
+            if (astNode.childSelectorIs(CONDITION)) {
+              next = conditionalExpression.getCondition();
+            } else if (astNode.childSelectorIs(TRUE_EXPRESSION)) {
+              next = conditionalExpression.getTrueExpression();
+            } else {
+              next = conditionalExpression.getFalseExpression();
+            }
+          }
+          case DO_WHILE_LOOP -> {
+            DoWhileLoopTree doWhileLoop = (DoWhileLoopTree) actualNode;
+            if (astNode.childSelectorIs(CONDITION)) {
+              next = doWhileLoop.getCondition();
+            } else {
+              next = doWhileLoop.getStatement();
+            }
+          }
+          case ENHANCED_FOR_LOOP -> {
+            EnhancedForLoopTree enhancedForLoop = (EnhancedForLoopTree) actualNode;
+            if (astNode.childSelectorIs(VARIABLE)) {
+              next = enhancedForLoop.getVariable();
+            } else if (astNode.childSelectorIs(EXPRESSION)) {
+              next = enhancedForLoop.getExpression();
+            } else {
+              next = enhancedForLoop.getStatement();
+            }
+          }
+          case EXPRESSION_STATEMENT -> {
+            ExpressionStatementTree expressionStatement = (ExpressionStatementTree) actualNode;
+            next = expressionStatement.getExpression();
+          }
+          case FOR_LOOP -> {
+            ForLoopTree forLoop = (ForLoopTree) actualNode;
+            if (astNode.childSelectorIs(INITIALIZER)) {
               int arg = astNode.getArgument();
-              if (astNode.childSelectorIs(EXPRESSION)) {
-                List<? extends ExpressionTree> expressions = caze.getExpressions();
-                // If expressions is empty, it means default case:
-                if (arg >= expressions.size()) {
-                  return false;
-                }
-                next = expressions.get(arg);
-              } else {
-                List<? extends StatementTree> statements = caze.getStatements();
-                if (arg >= statements.size()) {
-                  return false;
-                }
-                next = statements.get(arg);
+              List<? extends StatementTree> inits = forLoop.getInitializer();
+              if (arg >= inits.size()) {
+                return false;
               }
-              break;
-            }
-          case CATCH:
-            {
-              CatchTree cach = (CatchTree) actualNode;
-              if (astNode.childSelectorIs(PARAMETER)) {
-                next = cach.getParameter();
-              } else {
-                next = cach.getBlock();
-              }
-              break;
-            }
-          case CLASS:
-            {
-              ClassTree clazz = (ClassTree) actualNode;
+              next = inits.get(arg);
+            } else if (astNode.childSelectorIs(CONDITION)) {
+              next = forLoop.getCondition();
+            } else if (astNode.childSelectorIs(UPDATE)) {
               int arg = astNode.getArgument();
-              if (astNode.childSelectorIs(BOUND)) {
-                next = arg == -1 ? clazz.getExtendsClause() : clazz.getImplementsClause().get(arg);
-              } else {
-                next = clazz.getTypeParameters().get(arg);
+              List<? extends ExpressionStatementTree> updates = forLoop.getUpdate();
+              if (arg >= updates.size()) {
+                return false;
               }
-              break;
+              next = updates.get(arg);
+            } else {
+              next = forLoop.getStatement();
             }
-          case CONDITIONAL_EXPRESSION:
-            {
-              ConditionalExpressionTree conditionalExpression =
-                  (ConditionalExpressionTree) actualNode;
-              if (astNode.childSelectorIs(CONDITION)) {
-                next = conditionalExpression.getCondition();
-              } else if (astNode.childSelectorIs(TRUE_EXPRESSION)) {
-                next = conditionalExpression.getTrueExpression();
-              } else {
-                next = conditionalExpression.getFalseExpression();
+          }
+          case IF -> {
+            IfTree iff = (IfTree) actualNode;
+            if (astNode.childSelectorIs(CONDITION)) {
+              next = iff.getCondition();
+            } else if (astNode.childSelectorIs(THEN_STATEMENT)) {
+              next = iff.getThenStatement();
+            } else {
+              next = iff.getElseStatement();
+            }
+          }
+          case INSTANCE_OF -> {
+            InstanceOfTree instanceOf = (InstanceOfTree) actualNode;
+            if (astNode.childSelectorIs(EXPRESSION)) {
+              next = instanceOf.getExpression();
+            } else {
+              next = instanceOf.getType();
+            }
+          }
+          case LABELED_STATEMENT -> {
+            LabeledStatementTree labeledStatement = (LabeledStatementTree) actualNode;
+            next = labeledStatement.getStatement();
+          }
+          case LAMBDA_EXPRESSION -> {
+            LambdaExpressionTree lambdaExpression = (LambdaExpressionTree) actualNode;
+            if (astNode.childSelectorIs(PARAMETER)) {
+              int arg = astNode.getArgument();
+              List<? extends VariableTree> params = lambdaExpression.getParameters();
+              if (arg >= params.size()) {
+                return false;
               }
-              break;
+              next = params.get(arg);
+            } else {
+              next = lambdaExpression.getBody();
             }
-          case DO_WHILE_LOOP:
-            {
-              DoWhileLoopTree doWhileLoop = (DoWhileLoopTree) actualNode;
-              if (astNode.childSelectorIs(CONDITION)) {
-                next = doWhileLoop.getCondition();
-              } else {
-                next = doWhileLoop.getStatement();
+          }
+          case MEMBER_REFERENCE -> {
+            MemberReferenceTree memberReference = (MemberReferenceTree) actualNode;
+            if (astNode.childSelectorIs(QUALIFIER_EXPRESSION)) {
+              next = memberReference.getQualifierExpression();
+            } else {
+              int arg = astNode.getArgument();
+              List<? extends ExpressionTree> typeArgs = memberReference.getTypeArguments();
+              if (arg >= typeArgs.size()) {
+                return false;
               }
-              break;
+              next = typeArgs.get(arg);
             }
-          case ENHANCED_FOR_LOOP:
-            {
-              EnhancedForLoopTree enhancedForLoop = (EnhancedForLoopTree) actualNode;
+          }
+          case MEMBER_SELECT -> {
+            MemberSelectTree memberSelect = (MemberSelectTree) actualNode;
+            next = memberSelect.getExpression();
+          }
+          case METHOD -> {
+            MethodTree method = (MethodTree) actualNode;
+            int arg = astNode.getArgument();
+            if (astNode.childSelectorIs(TYPE)) {
+              next = method.getReturnType();
+            } else if (astNode.childSelectorIs(PARAMETER)) {
+              next = arg == -1 ? method.getReceiverParameter() : method.getParameters().get(arg);
+            } else if (astNode.childSelectorIs(TYPE_PARAMETER)) {
+              next = method.getTypeParameters().get(arg);
+            } else if (astNode.childSelectorIs(BODY)) {
+              next = method.getBody();
+            } else { // THROWS?
+              return false;
+            }
+          }
+          case METHOD_INVOCATION -> {
+            MethodInvocationTree methodInvocation = (MethodInvocationTree) actualNode;
+            if (astNode.childSelectorIs(TYPE_ARGUMENT)) {
+              int arg = astNode.getArgument();
+              List<? extends Tree> typeArgs = methodInvocation.getTypeArguments();
+              if (arg >= typeArgs.size()) {
+                return false;
+              }
+              next = typeArgs.get(arg);
+            } else if (astNode.childSelectorIs(METHOD_SELECT)) {
+              next = methodInvocation.getMethodSelect();
+            } else {
+              int arg = astNode.getArgument();
+              List<? extends ExpressionTree> args = methodInvocation.getArguments();
+              if (arg >= args.size()) {
+                return false;
+              }
+              next = args.get(arg);
+            }
+          }
+          case NEW_ARRAY -> {
+            NewArrayTree newArray = (NewArrayTree) actualNode;
+            if (astNode.childSelectorIs(TYPE)) {
+              int arg = astNode.getArgument();
+              if (arg < 0) {
+                next = newArray.getType();
+              } else {
+                return arg == depth;
+              }
+            } else if (astNode.childSelectorIs(DIMENSION)) {
+              int arg = astNode.getArgument();
+              List<? extends ExpressionTree> dims = newArray.getDimensions();
+              if (arg >= dims.size()) {
+                return false;
+              }
+              next = dims.get(arg);
+            } else {
+              int arg = astNode.getArgument();
+              List<? extends ExpressionTree> inits = newArray.getInitializers();
+              if (arg >= inits.size()) {
+                return false;
+              }
+              next = inits.get(arg);
+            }
+          }
+          case NEW_CLASS -> {
+            NewClassTree newClass = (NewClassTree) actualNode;
+            if (astNode.childSelectorIs(ENCLOSING_EXPRESSION)) {
+              next = newClass.getEnclosingExpression();
+            } else if (astNode.childSelectorIs(TYPE_ARGUMENT)) {
+              int arg = astNode.getArgument();
+              List<? extends Tree> typeArgs = newClass.getTypeArguments();
+              if (arg >= typeArgs.size()) {
+                return false;
+              }
+              next = typeArgs.get(arg);
+            } else if (astNode.childSelectorIs(IDENTIFIER)) {
+              next = newClass.getIdentifier();
+            } else if (astNode.childSelectorIs(ARGUMENT)) {
+              int arg = astNode.getArgument();
+              List<? extends ExpressionTree> args = newClass.getArguments();
+              if (arg >= args.size()) {
+                return false;
+              }
+              next = args.get(arg);
+            } else {
+              next = newClass.getClassBody();
+            }
+          }
+          case PARAMETERIZED_TYPE -> {
+            ParameterizedTypeTree parameterizedType = (ParameterizedTypeTree) actualNode;
+            if (astNode.childSelectorIs(TYPE)) {
+              next = parameterizedType.getType();
+            } else {
+              int arg = astNode.getArgument();
+              List<? extends Tree> typeArgs = parameterizedType.getTypeArguments();
+              if (arg >= typeArgs.size()) {
+                return false;
+              }
+              next = typeArgs.get(arg);
+            }
+          }
+          case PARENTHESIZED -> {
+            ParenthesizedTree parenthesized = (ParenthesizedTree) actualNode;
+            next = parenthesized.getExpression();
+          }
+          case RETURN -> {
+            ReturnTree returnn = (ReturnTree) actualNode;
+            next = returnn.getExpression();
+          }
+          case SWITCH -> {
+            SwitchTree zwitch = (SwitchTree) actualNode;
+            if (astNode.childSelectorIs(EXPRESSION)) {
+              next = zwitch.getExpression();
+            } else {
+              int arg = astNode.getArgument();
+              List<? extends CaseTree> cases = zwitch.getCases();
+              if (arg >= cases.size()) {
+                return false;
+              }
+              next = cases.get(arg);
+            }
+          }
+          case SYNCHRONIZED -> {
+            SynchronizedTree synchronizzed = (SynchronizedTree) actualNode;
+            if (astNode.childSelectorIs(EXPRESSION)) {
+              next = synchronizzed.getExpression();
+            } else {
+              next = synchronizzed.getBlock();
+            }
+          }
+          case THROW -> {
+            ThrowTree throww = (ThrowTree) actualNode;
+            next = throww.getExpression();
+          }
+          case TRY -> {
+            TryTree tryy = (TryTree) actualNode;
+            if (astNode.childSelectorIs(BLOCK)) {
+              next = tryy.getBlock();
+            } else if (astNode.childSelectorIs(CATCH)) {
+              int arg = astNode.getArgument();
+              List<? extends CatchTree> catches = tryy.getCatches();
+              if (arg >= catches.size()) {
+                return false;
+              }
+              next = catches.get(arg);
+            } else if (astNode.childSelectorIs(FINALLY_BLOCK)) {
+              next = tryy.getFinallyBlock();
+            } else {
+              int arg = astNode.getArgument();
+              List<? extends Tree> resources = tryy.getResources();
+              if (arg >= resources.size()) {
+                return false;
+              }
+              next = resources.get(arg);
+            }
+          }
+          case TYPE_CAST -> {
+            TypeCastTree typeCast = (TypeCastTree) actualNode;
+            if (astNode.childSelectorIs(TYPE)) {
+              next = typeCast.getType();
+            } else {
+              next = typeCast.getExpression();
+            }
+          }
+          case UNION_TYPE -> {
+            UnionTypeTree unionType = (UnionTypeTree) actualNode;
+            int arg = astNode.getArgument();
+            List<? extends Tree> typeAlts = unionType.getTypeAlternatives();
+            if (arg >= typeAlts.size()) {
+              return false;
+            }
+            next = typeAlts.get(arg);
+          }
+          case VARIABLE -> {
+            VariableTree var = (VariableTree) actualNode;
+            if (astNode.childSelectorIs(INITIALIZER)) {
+              next = var.getInitializer();
+            } else {
+              next = var.getType();
+            }
+          }
+          case WHILE_LOOP -> {
+            WhileLoopTree whileLoop = (WhileLoopTree) actualNode;
+            if (astNode.childSelectorIs(CONDITION)) {
+              next = whileLoop.getCondition();
+            } else {
+              next = whileLoop.getStatement();
+            }
+          }
+          default -> {
+            if (isBinaryOperator(actualNode.getKind())) {
+              BinaryTree binary = (BinaryTree) actualNode;
+              if (astNode.childSelectorIs(LEFT_OPERAND)) {
+                next = binary.getLeftOperand();
+              } else {
+                next = binary.getRightOperand();
+              }
+            } else if (isCompoundAssignment(actualNode.getKind())) {
+              CompoundAssignmentTree compoundAssignment = (CompoundAssignmentTree) actualNode;
               if (astNode.childSelectorIs(VARIABLE)) {
-                next = enhancedForLoop.getVariable();
-              } else if (astNode.childSelectorIs(EXPRESSION)) {
-                next = enhancedForLoop.getExpression();
+                next = compoundAssignment.getVariable();
               } else {
-                next = enhancedForLoop.getStatement();
+                next = compoundAssignment.getExpression();
               }
-              break;
-            }
-          case EXPRESSION_STATEMENT:
-            {
-              ExpressionStatementTree expressionStatement = (ExpressionStatementTree) actualNode;
-              next = expressionStatement.getExpression();
-              break;
-            }
-          case FOR_LOOP:
-            {
-              ForLoopTree forLoop = (ForLoopTree) actualNode;
-              if (astNode.childSelectorIs(INITIALIZER)) {
-                int arg = astNode.getArgument();
-                List<? extends StatementTree> inits = forLoop.getInitializer();
-                if (arg >= inits.size()) {
+            } else if (isUnaryOperator(actualNode.getKind())) {
+              UnaryTree unary = (UnaryTree) actualNode;
+              next = unary.getExpression();
+            } else if (isWildcard(actualNode.getKind())) {
+              WildcardTree wildcard = (WildcardTree) actualNode;
+              // The following check is necessary because Oracle has decided that
+              //   x instanceof Class<? extends Object>
+              // will remain illegal even though it means the same thing as
+              //   x instanceof Class<?>.
+              if (i > 0) { // TODO: refactor GenericArrayLoc to use same code?
+                Tree ancestor = actualPath.get(i - 1);
+                if (ancestor instanceof InstanceOfTree) {
+                  System.err.println(
+                      "WARNING: wildcard bounds not allowed"
+                          + " in 'instanceof' expression; skipping insertion");
                   return false;
-                }
-                next = inits.get(arg);
-              } else if (astNode.childSelectorIs(CONDITION)) {
-                next = forLoop.getCondition();
-              } else if (astNode.childSelectorIs(UPDATE)) {
-                int arg = astNode.getArgument();
-                List<? extends ExpressionStatementTree> updates = forLoop.getUpdate();
-                if (arg >= updates.size()) {
-                  return false;
-                }
-                next = updates.get(arg);
-              } else {
-                next = forLoop.getStatement();
-              }
-              break;
-            }
-          case IF:
-            {
-              IfTree iff = (IfTree) actualNode;
-              if (astNode.childSelectorIs(CONDITION)) {
-                next = iff.getCondition();
-              } else if (astNode.childSelectorIs(THEN_STATEMENT)) {
-                next = iff.getThenStatement();
-              } else {
-                next = iff.getElseStatement();
-              }
-              break;
-            }
-          case INSTANCE_OF:
-            {
-              InstanceOfTree instanceOf = (InstanceOfTree) actualNode;
-              if (astNode.childSelectorIs(EXPRESSION)) {
-                next = instanceOf.getExpression();
-              } else {
-                next = instanceOf.getType();
-              }
-              break;
-            }
-          case LABELED_STATEMENT:
-            {
-              LabeledStatementTree labeledStatement = (LabeledStatementTree) actualNode;
-              next = labeledStatement.getStatement();
-              break;
-            }
-          case LAMBDA_EXPRESSION:
-            {
-              LambdaExpressionTree lambdaExpression = (LambdaExpressionTree) actualNode;
-              if (astNode.childSelectorIs(PARAMETER)) {
-                int arg = astNode.getArgument();
-                List<? extends VariableTree> params = lambdaExpression.getParameters();
-                if (arg >= params.size()) {
-                  return false;
-                }
-                next = params.get(arg);
-              } else {
-                next = lambdaExpression.getBody();
-              }
-              break;
-            }
-          case MEMBER_REFERENCE:
-            {
-              MemberReferenceTree memberReference = (MemberReferenceTree) actualNode;
-              if (astNode.childSelectorIs(QUALIFIER_EXPRESSION)) {
-                next = memberReference.getQualifierExpression();
-              } else {
-                int arg = astNode.getArgument();
-                List<? extends ExpressionTree> typeArgs = memberReference.getTypeArguments();
-                if (arg >= typeArgs.size()) {
-                  return false;
-                }
-                next = typeArgs.get(arg);
-              }
-              break;
-            }
-          case MEMBER_SELECT:
-            {
-              MemberSelectTree memberSelect = (MemberSelectTree) actualNode;
-              next = memberSelect.getExpression();
-              break;
-            }
-          case METHOD:
-            {
-              MethodTree method = (MethodTree) actualNode;
-              int arg = astNode.getArgument();
-              if (astNode.childSelectorIs(TYPE)) {
-                next = method.getReturnType();
-              } else if (astNode.childSelectorIs(PARAMETER)) {
-                next = arg == -1 ? method.getReceiverParameter() : method.getParameters().get(arg);
-              } else if (astNode.childSelectorIs(TYPE_PARAMETER)) {
-                next = method.getTypeParameters().get(arg);
-              } else if (astNode.childSelectorIs(BODY)) {
-                next = method.getBody();
-              } else { // THROWS?
-                return false;
-              }
-              break;
-            }
-          case METHOD_INVOCATION:
-            {
-              MethodInvocationTree methodInvocation = (MethodInvocationTree) actualNode;
-              if (astNode.childSelectorIs(TYPE_ARGUMENT)) {
-                int arg = astNode.getArgument();
-                List<? extends Tree> typeArgs = methodInvocation.getTypeArguments();
-                if (arg >= typeArgs.size()) {
-                  return false;
-                }
-                next = typeArgs.get(arg);
-              } else if (astNode.childSelectorIs(METHOD_SELECT)) {
-                next = methodInvocation.getMethodSelect();
-              } else {
-                int arg = astNode.getArgument();
-                List<? extends ExpressionTree> args = methodInvocation.getArguments();
-                if (arg >= args.size()) {
-                  return false;
-                }
-                next = args.get(arg);
-              }
-              break;
-            }
-          case NEW_ARRAY:
-            {
-              NewArrayTree newArray = (NewArrayTree) actualNode;
-              if (astNode.childSelectorIs(TYPE)) {
-                int arg = astNode.getArgument();
-                if (arg < 0) {
-                  next = newArray.getType();
-                } else {
-                  return arg == depth;
-                }
-              } else if (astNode.childSelectorIs(DIMENSION)) {
-                int arg = astNode.getArgument();
-                List<? extends ExpressionTree> dims = newArray.getDimensions();
-                if (arg >= dims.size()) {
-                  return false;
-                }
-                next = dims.get(arg);
-              } else {
-                int arg = astNode.getArgument();
-                List<? extends ExpressionTree> inits = newArray.getInitializers();
-                if (arg >= inits.size()) {
-                  return false;
-                }
-                next = inits.get(arg);
-              }
-              break;
-            }
-          case NEW_CLASS:
-            {
-              NewClassTree newClass = (NewClassTree) actualNode;
-              if (astNode.childSelectorIs(ENCLOSING_EXPRESSION)) {
-                next = newClass.getEnclosingExpression();
-              } else if (astNode.childSelectorIs(TYPE_ARGUMENT)) {
-                int arg = astNode.getArgument();
-                List<? extends Tree> typeArgs = newClass.getTypeArguments();
-                if (arg >= typeArgs.size()) {
-                  return false;
-                }
-                next = typeArgs.get(arg);
-              } else if (astNode.childSelectorIs(IDENTIFIER)) {
-                next = newClass.getIdentifier();
-              } else if (astNode.childSelectorIs(ARGUMENT)) {
-                int arg = astNode.getArgument();
-                List<? extends ExpressionTree> args = newClass.getArguments();
-                if (arg >= args.size()) {
-                  return false;
-                }
-                next = args.get(arg);
-              } else {
-                next = newClass.getClassBody();
-              }
-              break;
-            }
-          case PARAMETERIZED_TYPE:
-            {
-              ParameterizedTypeTree parameterizedType = (ParameterizedTypeTree) actualNode;
-              if (astNode.childSelectorIs(TYPE)) {
-                next = parameterizedType.getType();
-              } else {
-                int arg = astNode.getArgument();
-                List<? extends Tree> typeArgs = parameterizedType.getTypeArguments();
-                if (arg >= typeArgs.size()) {
-                  return false;
-                }
-                next = typeArgs.get(arg);
-              }
-              break;
-            }
-          case PARENTHESIZED:
-            {
-              ParenthesizedTree parenthesized = (ParenthesizedTree) actualNode;
-              next = parenthesized.getExpression();
-              break;
-            }
-          case RETURN:
-            {
-              ReturnTree returnn = (ReturnTree) actualNode;
-              next = returnn.getExpression();
-              break;
-            }
-          case SWITCH:
-            {
-              SwitchTree zwitch = (SwitchTree) actualNode;
-              if (astNode.childSelectorIs(EXPRESSION)) {
-                next = zwitch.getExpression();
-              } else {
-                int arg = astNode.getArgument();
-                List<? extends CaseTree> cases = zwitch.getCases();
-                if (arg >= cases.size()) {
-                  return false;
-                }
-                next = cases.get(arg);
-              }
-              break;
-            }
-          case SYNCHRONIZED:
-            {
-              SynchronizedTree synchronizzed = (SynchronizedTree) actualNode;
-              if (astNode.childSelectorIs(EXPRESSION)) {
-                next = synchronizzed.getExpression();
-              } else {
-                next = synchronizzed.getBlock();
-              }
-              break;
-            }
-          case THROW:
-            {
-              ThrowTree throww = (ThrowTree) actualNode;
-              next = throww.getExpression();
-              break;
-            }
-          case TRY:
-            {
-              TryTree tryy = (TryTree) actualNode;
-              if (astNode.childSelectorIs(BLOCK)) {
-                next = tryy.getBlock();
-              } else if (astNode.childSelectorIs(CATCH)) {
-                int arg = astNode.getArgument();
-                List<? extends CatchTree> catches = tryy.getCatches();
-                if (arg >= catches.size()) {
-                  return false;
-                }
-                next = catches.get(arg);
-              } else if (astNode.childSelectorIs(FINALLY_BLOCK)) {
-                next = tryy.getFinallyBlock();
-              } else {
-                int arg = astNode.getArgument();
-                List<? extends Tree> resources = tryy.getResources();
-                if (arg >= resources.size()) {
-                  return false;
-                }
-                next = resources.get(arg);
-              }
-              break;
-            }
-          case TYPE_CAST:
-            {
-              TypeCastTree typeCast = (TypeCastTree) actualNode;
-              if (astNode.childSelectorIs(TYPE)) {
-                next = typeCast.getType();
-              } else {
-                next = typeCast.getExpression();
-              }
-              break;
-            }
-          case UNION_TYPE:
-            {
-              UnionTypeTree unionType = (UnionTypeTree) actualNode;
-              int arg = astNode.getArgument();
-              List<? extends Tree> typeAlts = unionType.getTypeAlternatives();
-              if (arg >= typeAlts.size()) {
-                return false;
-              }
-              next = typeAlts.get(arg);
-              break;
-            }
-          case VARIABLE:
-            {
-              VariableTree var = (VariableTree) actualNode;
-              if (astNode.childSelectorIs(INITIALIZER)) {
-                next = var.getInitializer();
-              } else {
-                next = var.getType();
-              }
-              break;
-            }
-          case WHILE_LOOP:
-            {
-              WhileLoopTree whileLoop = (WhileLoopTree) actualNode;
-              if (astNode.childSelectorIs(CONDITION)) {
-                next = whileLoop.getCondition();
-              } else {
-                next = whileLoop.getStatement();
-              }
-              break;
-            }
-          default:
-            {
-              if (isBinaryOperator(actualNode.getKind())) {
-                BinaryTree binary = (BinaryTree) actualNode;
-                if (astNode.childSelectorIs(LEFT_OPERAND)) {
-                  next = binary.getLeftOperand();
-                } else {
-                  next = binary.getRightOperand();
-                }
-              } else if (isCompoundAssignment(actualNode.getKind())) {
-                CompoundAssignmentTree compoundAssignment = (CompoundAssignmentTree) actualNode;
-                if (astNode.childSelectorIs(VARIABLE)) {
-                  next = compoundAssignment.getVariable();
-                } else {
-                  next = compoundAssignment.getExpression();
-                }
-              } else if (isUnaryOperator(actualNode.getKind())) {
-                UnaryTree unary = (UnaryTree) actualNode;
-                next = unary.getExpression();
-              } else if (isWildcard(actualNode.getKind())) {
-                WildcardTree wildcard = (WildcardTree) actualNode;
-                // The following check is necessary because Oracle has decided that
-                //   x instanceof Class<? extends Object>
-                // will remain illegal even though it means the same thing as
-                //   x instanceof Class<?>.
-                if (i > 0) { // TODO: refactor GenericArrayLoc to use same code?
-                  Tree ancestor = actualPath.get(i - 1);
-                  if (ancestor instanceof InstanceOfTree) {
+                } else if (i > 1 && ancestor instanceof ParameterizedTypeTree) {
+                  ancestor = actualPath.get(i - 2);
+                  if (ancestor instanceof ArrayTypeTree) {
                     System.err.println(
                         "WARNING: wildcard bounds not allowed"
-                            + " in 'instanceof' expression; skipping insertion");
+                            + " in generic array type; skipping insertion");
                     return false;
-                  } else if (i > 1 && ancestor instanceof ParameterizedTypeTree) {
-                    ancestor = actualPath.get(i - 2);
-                    if (ancestor instanceof ArrayTypeTree) {
-                      System.err.println(
-                          "WARNING: wildcard bounds not allowed"
-                              + " in generic array type; skipping insertion");
-                      return false;
-                    }
                   }
                 }
-                next = wildcard.getBound();
-              } else {
-                throw new IllegalArgumentException("Illegal kind: " + actualNode.getKind());
               }
-              break;
+              next = wildcard.getBound();
+            } else {
+              throw new IllegalArgumentException("Illegal kind: " + actualNode.getKind());
             }
+          }
         }
 
         if (dbug.isEnabled()) {

@@ -114,102 +114,93 @@ public class ForwardAnalysisImpl<
   @Override
   public void performAnalysisBlock(Block b) {
     switch (b.getType()) {
-      case REGULAR_BLOCK:
-        {
-          RegularBlock rb = (RegularBlock) b;
-          // Apply transfer function to contents
-          TransferInput<V, S> inputBefore = getInputBefore(rb);
-          assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
-          currentInput = inputBefore.copy();
-          Node lastNode = null;
-          boolean addToWorklistAgain = false;
-          for (Node n : rb.getNodes()) {
-            assert currentInput != null : "@AssumeAssertion(nullness): invariant";
-            TransferResult<V, S> transferResult = callTransferFunction(n, currentInput);
-            addToWorklistAgain |= updateNodeValues(n, transferResult);
-            currentInput = new TransferInput<>(n, this, transferResult);
-            lastNode = n;
-          }
+      case REGULAR_BLOCK -> {
+        RegularBlock rb = (RegularBlock) b;
+        // Apply transfer function to contents
+        TransferInput<V, S> inputBefore = getInputBefore(rb);
+        assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
+        currentInput = inputBefore.copy();
+        Node lastNode = null;
+        boolean addToWorklistAgain = false;
+        for (Node n : rb.getNodes()) {
           assert currentInput != null : "@AssumeAssertion(nullness): invariant";
-          // Loop will run at least once, making transferResult non-null
-          // Propagate store to successors
-          Block succ = rb.getSuccessor();
-          assert succ != null
-              : "@AssumeAssertion(nullness): regular basic block without non-exceptional successor"
-                  + " unexpected";
-          propagateStoresTo(succ, lastNode, currentInput, rb.getFlowRule(), addToWorklistAgain);
-          break;
+          TransferResult<V, S> transferResult = callTransferFunction(n, currentInput);
+          addToWorklistAgain |= updateNodeValues(n, transferResult);
+          currentInput = new TransferInput<>(n, this, transferResult);
+          lastNode = n;
         }
-      case EXCEPTION_BLOCK:
-        {
-          ExceptionBlock eb = (ExceptionBlock) b;
-          // Apply transfer function to content
-          TransferInput<V, S> inputBefore = getInputBefore(eb);
-          assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
-          currentInput = inputBefore.copy();
-          Node node = eb.getNode();
-          TransferResult<V, S> transferResult = callTransferFunction(node, currentInput);
-          boolean addToWorklistAgain = updateNodeValues(node, transferResult);
-          // Propagate store to successor
-          Block succ = eb.getSuccessor();
-          if (succ != null) {
-            currentInput = new TransferInput<>(node, this, transferResult);
-            propagateStoresTo(succ, node, currentInput, eb.getFlowRule(), addToWorklistAgain);
+        assert currentInput != null : "@AssumeAssertion(nullness): invariant";
+        // Loop will run at least once, making transferResult non-null
+        // Propagate store to successors
+        Block succ = rb.getSuccessor();
+        assert succ != null
+            : "@AssumeAssertion(nullness): regular basic block without non-exceptional successor"
+                + " unexpected";
+        propagateStoresTo(succ, lastNode, currentInput, rb.getFlowRule(), addToWorklistAgain);
+      }
+      case EXCEPTION_BLOCK -> {
+        ExceptionBlock eb = (ExceptionBlock) b;
+        // Apply transfer function to content
+        TransferInput<V, S> inputBefore = getInputBefore(eb);
+        assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
+        currentInput = inputBefore.copy();
+        Node node = eb.getNode();
+        TransferResult<V, S> transferResult = callTransferFunction(node, currentInput);
+        boolean addToWorklistAgain = updateNodeValues(node, transferResult);
+        // Propagate store to successor
+        Block succ = eb.getSuccessor();
+        if (succ != null) {
+          currentInput = new TransferInput<>(node, this, transferResult);
+          propagateStoresTo(succ, node, currentInput, eb.getFlowRule(), addToWorklistAgain);
+        }
+        // Propagate store to exceptional successors
+        for (Map.Entry<TypeMirror, Set<Block>> e : eb.getExceptionalSuccessors().entrySet()) {
+          TypeMirror cause = e.getKey();
+          if (isIgnoredExceptionType(cause)) {
+            continue;
           }
-          // Propagate store to exceptional successors
-          for (Map.Entry<TypeMirror, Set<Block>> e : eb.getExceptionalSuccessors().entrySet()) {
-            TypeMirror cause = e.getKey();
-            if (isIgnoredExceptionType(cause)) {
-              continue;
+          S exceptionalStore = transferResult.getExceptionalStore(cause);
+          if (exceptionalStore != null) {
+            for (Block exceptionSucc : e.getValue()) {
+              addStoreBefore(
+                  exceptionSucc, node, exceptionalStore, Store.Kind.BOTH, addToWorklistAgain);
             }
-            S exceptionalStore = transferResult.getExceptionalStore(cause);
-            if (exceptionalStore != null) {
-              for (Block exceptionSucc : e.getValue()) {
-                addStoreBefore(
-                    exceptionSucc, node, exceptionalStore, Store.Kind.BOTH, addToWorklistAgain);
-              }
-            } else {
-              for (Block exceptionSucc : e.getValue()) {
-                addStoreBefore(
-                    exceptionSucc,
-                    node,
-                    inputBefore.copy().getRegularStore(),
-                    Store.Kind.BOTH,
-                    addToWorklistAgain);
-              }
+          } else {
+            for (Block exceptionSucc : e.getValue()) {
+              addStoreBefore(
+                  exceptionSucc,
+                  node,
+                  inputBefore.copy().getRegularStore(),
+                  Store.Kind.BOTH,
+                  addToWorklistAgain);
             }
           }
-          break;
         }
-      case CONDITIONAL_BLOCK:
-        {
-          ConditionalBlock cb = (ConditionalBlock) b;
-          // Get store before
-          TransferInput<V, S> inputBefore = getInputBefore(cb);
-          assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
-          TransferInput<V, S> input = inputBefore.copy();
-          // Propagate store to successor
-          Block thenSucc = cb.getThenSuccessor();
-          Block elseSucc = cb.getElseSuccessor();
-          propagateStoresTo(thenSucc, null, input, cb.getThenFlowRule(), false);
-          propagateStoresTo(elseSucc, null, input, cb.getElseFlowRule(), false);
-          break;
+      }
+      case CONDITIONAL_BLOCK -> {
+        ConditionalBlock cb = (ConditionalBlock) b;
+        // Get store before
+        TransferInput<V, S> inputBefore = getInputBefore(cb);
+        assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
+        TransferInput<V, S> input = inputBefore.copy();
+        // Propagate store to successor
+        Block thenSucc = cb.getThenSuccessor();
+        Block elseSucc = cb.getElseSuccessor();
+        propagateStoresTo(thenSucc, null, input, cb.getThenFlowRule(), false);
+        propagateStoresTo(elseSucc, null, input, cb.getElseFlowRule(), false);
+      }
+      case SPECIAL_BLOCK -> {
+        // Special basic blocks are empty and cannot throw exceptions,
+        // thus there is no need to perform any analysis.
+        SpecialBlock sb = (SpecialBlock) b;
+        Block succ = sb.getSuccessor();
+        if (succ != null) {
+          TransferInput<V, S> input = getInputBefore(b);
+          assert input != null : "@AssumeAssertion(nullness): invariant";
+          propagateStoresTo(succ, null, input, sb.getFlowRule(), false);
         }
-      case SPECIAL_BLOCK:
-        {
-          // Special basic blocks are empty and cannot throw exceptions,
-          // thus there is no need to perform any analysis.
-          SpecialBlock sb = (SpecialBlock) b;
-          Block succ = sb.getSuccessor();
-          if (succ != null) {
-            TransferInput<V, S> input = getInputBefore(b);
-            assert input != null : "@AssumeAssertion(nullness): invariant";
-            propagateStoresTo(succ, null, input, sb.getFlowRule(), false);
-          }
-          break;
-        }
-      default:
-        throw new BugInCF("Unexpected block type: " + b.getType());
+      }
+      default -> throw new BugInCF("Unexpected block type: " + b.getType());
     }
   }
 
@@ -255,68 +246,65 @@ public class ForwardAnalysisImpl<
     isRunning = true;
     try {
       switch (block.getType()) {
-        case REGULAR_BLOCK:
-          {
-            RegularBlock rb = (RegularBlock) block;
-            // Apply transfer function to contents until we found the node we are
-            // looking for.
-            TransferInput<V, S> store = blockTransferInput;
-            TransferResult<V, S> transferResult;
-            for (Node n : rb.getNodes()) {
-              setCurrentNode(n);
-              if (n == node && preOrPost == Analysis.BeforeOrAfter.BEFORE) {
-                return store.getRegularStore();
-              }
-              if (cache != null && cache.containsKey(n)) {
-                transferResult = cache.get(n);
-              } else {
-                // Copy the store to avoid changing other blocks' transfer inputs in
-                // {@link #inputs}
-                transferResult = callTransferFunction(n, store.copy());
-                if (cache != null) {
-                  cache.put(n, transferResult);
-                }
-              }
-              if (n == node) {
-                return transferResult.getRegularStore();
-              }
-              store = new TransferInput<>(n, this, transferResult);
+        case REGULAR_BLOCK -> {
+          RegularBlock rb = (RegularBlock) block;
+          // Apply transfer function to contents until we found the node we are
+          // looking for.
+          TransferInput<V, S> store = blockTransferInput;
+          TransferResult<V, S> transferResult;
+          for (Node n : rb.getNodes()) {
+            setCurrentNode(n);
+            if (n == node && preOrPost == Analysis.BeforeOrAfter.BEFORE) {
+              return store.getRegularStore();
             }
-            throw new BugInCF("node %s is not in node.getBlock()=%s", node, block);
-          }
-        case EXCEPTION_BLOCK:
-          {
-            ExceptionBlock eb = (ExceptionBlock) block;
-            // Apply the transfer function to content
-            if (eb.getNode() != node) {
-              throw new BugInCF(
-                  "Node should be equal to eb.getNode(). But get: node: "
-                      + node
-                      + "\teb.getNode(): "
-                      + eb.getNode());
-            }
-            if (preOrPost == Analysis.BeforeOrAfter.BEFORE) {
-              return blockTransferInput.getRegularStore();
-            }
-            setCurrentNode(node);
-            // Copy the store to avoid changing other blocks' transfer inputs in {@link
-            // #inputs}
-            TransferResult<V, S> transferResult;
-            if (cache != null && cache.containsKey(node)) {
-              transferResult = cache.get(node);
+            if (cache != null && cache.containsKey(n)) {
+              transferResult = cache.get(n);
             } else {
               // Copy the store to avoid changing other blocks' transfer inputs in
               // {@link #inputs}
-              transferResult = callTransferFunction(node, blockTransferInput.copy());
+              transferResult = callTransferFunction(n, store.copy());
               if (cache != null) {
-                cache.put(node, transferResult);
+                cache.put(n, transferResult);
               }
             }
-            return transferResult.getRegularStore();
+            if (n == node) {
+              return transferResult.getRegularStore();
+            }
+            store = new TransferInput<>(n, this, transferResult);
           }
-        default:
-          // Only regular blocks and exceptional blocks can hold nodes.
-          throw new BugInCF("Unexpected block type: " + block.getType());
+          throw new BugInCF("node %s is not in node.getBlock()=%s", node, block);
+        }
+        case EXCEPTION_BLOCK -> {
+          ExceptionBlock eb = (ExceptionBlock) block;
+          // Apply the transfer function to content
+          if (eb.getNode() != node) {
+            throw new BugInCF(
+                "Node should be equal to eb.getNode(). But get: node: "
+                    + node
+                    + "\teb.getNode(): "
+                    + eb.getNode());
+          }
+          if (preOrPost == Analysis.BeforeOrAfter.BEFORE) {
+            return blockTransferInput.getRegularStore();
+          }
+          setCurrentNode(node);
+          // Copy the store to avoid changing other blocks' transfer inputs in {@link
+          // #inputs}
+          TransferResult<V, S> transferResult;
+          if (cache != null && cache.containsKey(node)) {
+            transferResult = cache.get(node);
+          } else {
+            // Copy the store to avoid changing other blocks' transfer inputs in
+            // {@link #inputs}
+            transferResult = callTransferFunction(node, blockTransferInput.copy());
+            if (cache != null) {
+              cache.put(node, transferResult);
+            }
+          }
+          return transferResult.getRegularStore();
+        }
+        // Only regular blocks and exceptional blocks can hold nodes.
+        default -> throw new BugInCF("Unexpected block type: " + block.getType());
       }
     } finally {
       setCurrentNode(oldCurrentNode);
@@ -383,10 +371,10 @@ public class ForwardAnalysisImpl<
   protected TransferResult<V, S> callTransferFunction(Node node, TransferInput<V, S> input) {
     TransferResult<V, S> transferResult = super.callTransferFunction(node, input);
 
-    if (node instanceof ReturnNode) {
+    if (node instanceof ReturnNode returnNode) {
       // Save a copy of the store to later check if some property holds at a given return
       // statement.
-      storesAtReturnStatements.put((ReturnNode) node, transferResult);
+      storesAtReturnStatements.put(returnNode, transferResult);
     }
     return transferResult;
   }
@@ -399,7 +387,7 @@ public class ForwardAnalysisImpl<
       Store.FlowRule flowRule,
       boolean addToWorklistAgain) {
     switch (flowRule) {
-      case EACH_TO_EACH:
+      case EACH_TO_EACH -> {
         if (currentInput.containsTwoStores()) {
           addStoreBefore(
               succ, node, currentInput.getThenStore(), Store.Kind.THEN, addToWorklistAgain);
@@ -409,23 +397,23 @@ public class ForwardAnalysisImpl<
           addStoreBefore(
               succ, node, currentInput.getRegularStore(), Store.Kind.BOTH, addToWorklistAgain);
         }
-        break;
-      case THEN_TO_BOTH:
+      }
+      case THEN_TO_BOTH -> {
         addStoreBefore(
             succ, node, currentInput.getThenStore(), Store.Kind.BOTH, addToWorklistAgain);
-        break;
-      case ELSE_TO_BOTH:
+      }
+      case ELSE_TO_BOTH -> {
         addStoreBefore(
             succ, node, currentInput.getElseStore(), Store.Kind.BOTH, addToWorklistAgain);
-        break;
-      case THEN_TO_THEN:
+      }
+      case THEN_TO_THEN -> {
         addStoreBefore(
             succ, node, currentInput.getThenStore(), Store.Kind.THEN, addToWorklistAgain);
-        break;
-      case ELSE_TO_ELSE:
+      }
+      case ELSE_TO_ELSE -> {
         addStoreBefore(
             succ, node, currentInput.getElseStore(), Store.Kind.ELSE, addToWorklistAgain);
-        break;
+      }
     }
   }
 
@@ -455,33 +443,29 @@ public class ForwardAnalysisImpl<
       }
     }
     switch (kind) {
-      case THEN:
-        {
-          // Update the then store
-          S newThenStore = mergeStores(s, thenStore, shouldWiden);
-          if (!newThenStore.equals(thenStore)) {
-            thenStores.put(b, newThenStore);
-            if (elseStore != null) {
-              inputs.put(b, new TransferInput<>(node, this, newThenStore, elseStore));
-              addBlockToWorklist = true;
-            }
+      case THEN -> {
+        // Update the then store
+        S newThenStore = mergeStores(s, thenStore, shouldWiden);
+        if (!newThenStore.equals(thenStore)) {
+          thenStores.put(b, newThenStore);
+          if (elseStore != null) {
+            inputs.put(b, new TransferInput<>(node, this, newThenStore, elseStore));
+            addBlockToWorklist = true;
           }
-          break;
         }
-      case ELSE:
-        {
-          // Update the else store
-          S newElseStore = mergeStores(s, elseStore, shouldWiden);
-          if (!newElseStore.equals(elseStore)) {
-            elseStores.put(b, newElseStore);
-            if (thenStore != null) {
-              inputs.put(b, new TransferInput<>(node, this, thenStore, newElseStore));
-              addBlockToWorklist = true;
-            }
+      }
+      case ELSE -> {
+        // Update the else store
+        S newElseStore = mergeStores(s, elseStore, shouldWiden);
+        if (!newElseStore.equals(elseStore)) {
+          elseStores.put(b, newElseStore);
+          if (thenStore != null) {
+            inputs.put(b, new TransferInput<>(node, this, thenStore, newElseStore));
+            addBlockToWorklist = true;
           }
-          break;
         }
-      case BOTH:
+      }
+      case BOTH -> {
         @SuppressWarnings("interning:not.interned")
         boolean sameStore = (thenStore == elseStore);
         if (sameStore) {
@@ -510,6 +494,7 @@ public class ForwardAnalysisImpl<
             addBlockToWorklist = true;
           }
         }
+      }
     }
     if (addBlockToWorklist) {
       addToWorklist(b);

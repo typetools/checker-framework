@@ -74,8 +74,8 @@ public abstract class AbstractCFGVisualizer<
     if (o == null) {
       return false;
     }
-    if (o instanceof String) {
-      return Boolean.parseBoolean((String) o);
+    if (o instanceof String string) {
+      return Boolean.parseBoolean(string);
     }
     return (boolean) o;
   }
