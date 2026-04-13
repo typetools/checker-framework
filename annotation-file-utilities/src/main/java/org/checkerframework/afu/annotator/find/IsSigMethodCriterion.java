@@ -19,8 +19,10 @@ import java.util.Set;
 import org.checkerframework.afu.annotator.Main;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.FieldDescriptor;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.checker.signature.qual.MethodDescriptor;
 import org.plumelib.reflection.Signatures;
 import org.plumelib.util.CollectionsPlume;
@@ -101,21 +103,35 @@ public class IsSigMethodCriterion implements Criterion {
     return result;
   }
 
-  // Abstracts out the inner loop of matchTypeParams.
-  // goalType is fully-qualified.
-  @SuppressWarnings("regex:argument") // p.getKey() is a Java identifier, which is a valid regex
+  /**
+   * Abstracts out the inner loop of matchTypeParams.
+   *
+   * @param goalType the actual type argument
+   * @param type the type of the type parameter
+   * @param typeParamToClassMap maps a type parameter name to a class name for the type parameter
+   * @param context the context
+   */
   private boolean matchTypeParam(
-      String goalType, Tree type, Map<String, String> typeParamToClassMap, Context context) {
+      @FullyQualifiedName String goalType,
+      Tree type,
+      Map<String, String> typeParamToClassMap,
+      Context context) {
     String simpleType = type.toString();
 
     boolean haveMatch = matchSimpleType(goalType, simpleType, context);
     if (!haveMatch) {
       if (!typeParamToClassMap.isEmpty()) {
         for (Map.Entry<String, String> p : typeParamToClassMap.entrySet()) {
-          simpleType = simpleType.replaceAll("\\b" + p.getKey() + "\\b", p.getValue());
+          @SuppressWarnings(
+              "regex:assignment") // a type parameter name is an identifer, which is a valid regex
+          @Regex String typeParamName = p.getKey();
+          // There is no need for Pattern.quote() or Matcher.quoteReplacement():  key is a
+          // type parameter name, which is an identifier with no special characters.  p.getValue()
+          // may contain "$", but followed by a letter rather than a number.
+          simpleType = simpleType.replaceAll("\\b" + typeParamName + "\\b", p.getValue());
           haveMatch = matchSimpleType(goalType, simpleType, context);
           if (!haveMatch) {
-            Criteria.dbug.debug("matchTypeParams() => false:%n");
+            Criteria.dbug.debug("matchTypeParam() => false:%n");
             Criteria.dbug.debug("  type = %s%n", type);
             Criteria.dbug.debug("  simpleType = %s%n", simpleType);
             Criteria.dbug.debug("  goalType = %s%n", goalType);
@@ -126,6 +142,13 @@ public class IsSigMethodCriterion implements Criterion {
     return haveMatch;
   }
 
+  /**
+   * Matches type parameters
+   *
+   * @param sourceParams the type parameters
+   * @param typeParamToClassMap maps type parameter name to class name for the type parameter
+   * @param context the context
+   */
   private boolean matchTypeParams(
       List<? extends VariableTree> sourceParams,
       Map<String, String> typeParamToClassMap,

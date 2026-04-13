@@ -74,7 +74,10 @@ public final class InClassCriterion implements Criterion {
     return isSatisfiedBy(path, className, exactMatch);
   }
 
+  /** Pattern that matches an anonymous class name. */
   static @Regex(3) Pattern anonclassPattern;
+
+  /** Pattern that matches a local class name. */
   static @Regex(4) Pattern localClassPattern;
 
   static {

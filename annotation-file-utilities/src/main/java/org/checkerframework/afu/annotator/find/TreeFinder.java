@@ -127,6 +127,9 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
   /**
    * Returns regular expression matching "anything but" {@code c}: a single comment, character or
    * string literal, or non-{@code c} character.
+   *
+   * @param c a character not to match
+   * @return a regex that matches anything other than the given character
    */
   @StaticallyExecutable
   @SuppressWarnings("regex:return") // the returned string is a valid regex

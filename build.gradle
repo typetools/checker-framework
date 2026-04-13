@@ -1083,7 +1083,7 @@ subprojects {
     tasks.register("typecheck-part2") {
       description = "Run the Checker Framework on itself (part 2)"
       group = "Verification"
-      dependsOn("checkResourceLeak", "checkSignature")
+      dependsOn("checkRegex", "checkResourceLeak", "checkSignature")
       if (!(project.name.is("framework") || project.name.is("checker"))) {
         dependsOn("checkNullness")
       }

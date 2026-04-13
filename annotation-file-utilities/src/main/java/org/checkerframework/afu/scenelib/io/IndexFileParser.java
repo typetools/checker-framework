@@ -299,7 +299,7 @@ public final class IndexFileParser {
    * @throws IOException if there is trouble reading the index file
    * @throws ParseException if the file contents are not valid
    */
-  private @Identifier String expectIdentifier() throws IOException, ParseException {
+  private @Identifier @Regex String expectIdentifier() throws IOException, ParseException {
     String id = matchIdentifier();
     if (id == null) {
       throw new ParseException("Expected an identifier");
@@ -911,8 +911,8 @@ public final class IndexFileParser {
 
   private void parseMethod(AClass c) throws IOException, ParseException {
     expectKeyword("method");
-    // special case: method could be <init> or <clinit>
-    String key;
+    // `key` is a Java identifier or "<init>" or "<clinit>".
+    @Regex String key;
     if (matchChar('<')) {
       String basename = expectIdentifier();
       if (!(basename.equals("init") || basename.equals("clinit"))) {
@@ -925,8 +925,6 @@ public final class IndexFileParser {
       // TODO: className is no longer private in AClass.
       // It's too bad that className is private in AClass and thus must be
       // extracted from what toString() returns.
-      // key is a Java identifier or "<init>"/"<clinit>", which are valid in a regex
-      @SuppressWarnings("regex:assignment")
       @Regex String aclassRegex = "AClass: (?:[^. ]+\\.)*" + key;
       if (Pattern.matches(aclassRegex, c.toString())) { // ugh
         key = "<init>";

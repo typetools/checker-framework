@@ -479,7 +479,8 @@ public class InsertAjavaAnnotations {
    * with contents {@code javaFileContents} that uses the given line separator and returns the
    * resulting String.
    *
-   * @param annotationFile input stream for an ajava file for {@code javaFileContents}
+   * @param annotationFile input stream for an ajava file that corresponds to {@code
+   *     javaFileContents}
    * @param javaFileContents contents of a Java file to insert annotations into
    * @param lineSeparator the line separator {@code javaFileContents} uses
    * @return a modified {@code javaFileContents} with annotations from {@code annotationFile}
@@ -543,7 +544,7 @@ public class InsertAjavaAnnotations {
       File javaFile = new File(javaFileName);
       String fileContents = FilesPlume.readString(Path.of(javaFileName));
       @SuppressWarnings("regex") // next release of plume-lib annotates `inferLineSeparator()`
-      @Regex String lineSeparator = FilesPlume.inferLineSeparator(annotationFileName);
+      @Regex String lineSeparator = FilesPlume.inferLineSeparator(javaFileName);
       try (FileInputStream annotationInputStream = new FileInputStream(annotationFileName)) {
         String result = insertAnnotations(annotationInputStream, fileContents, lineSeparator);
         FilesPlume.writeString(javaFile, result);
