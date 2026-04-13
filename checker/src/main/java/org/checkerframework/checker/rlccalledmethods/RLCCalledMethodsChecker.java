@@ -11,6 +11,7 @@ import org.checkerframework.checker.resourceleak.SetOfTypes;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
+import org.checkerframework.framework.source.SuppressWarningsPrefix;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 
@@ -20,6 +21,7 @@ import org.checkerframework.javacutil.UserError;
  * Runs the MustCallChecker as a subchecker in order to share the CFG.
  */
 @StubFiles("IOUtils.astub")
+@SuppressWarningsPrefix({"calledmethods", "rlccalledmethods", "resourceleak"})
 public class RLCCalledMethodsChecker extends CalledMethodsChecker {
 
   /** Creates a RLCCalledMethodsChecker. */
