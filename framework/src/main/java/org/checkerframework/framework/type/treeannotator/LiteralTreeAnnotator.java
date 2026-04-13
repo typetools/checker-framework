@@ -107,6 +107,10 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
       }
 
       for (String regex : forLiterals.stringPatterns()) {
+        if (!RegexUtil.isRegex(regex)) {
+          throw new TypeSystemError(
+              "In @QualifierForLiterals(...), \"" + regex + "\" is not a regular expression");
+        }
         addStringPattern(regex, theQual);
       }
 

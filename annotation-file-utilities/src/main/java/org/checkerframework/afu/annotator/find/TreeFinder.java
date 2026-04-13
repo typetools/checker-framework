@@ -130,7 +130,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
    */
   @StaticallyExecutable
   @SuppressWarnings("regex:return") // the returned string is a valid regex
-  private static final @regex String otherThan(char c) {
+  private static final @Regex String otherThan(char c) {
     String cEscaped =
         switch (c) {
           case '/', '"', '\'' -> ""; // already present in class defn
