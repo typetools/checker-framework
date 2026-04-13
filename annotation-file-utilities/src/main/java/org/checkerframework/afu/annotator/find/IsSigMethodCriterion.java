@@ -110,6 +110,7 @@ public class IsSigMethodCriterion implements Criterion {
    * @param type the type of the type parameter
    * @param typeParamToClassMap maps a type parameter name to a class name for the type parameter
    * @param context the context
+   * @return true if there is a match
    */
   private boolean matchTypeParam(
       @FullyQualifiedName String goalType,
@@ -148,6 +149,7 @@ public class IsSigMethodCriterion implements Criterion {
    * @param sourceParams the type parameters
    * @param typeParamToClassMap maps type parameter name to class name for the type parameter
    * @param context the context
+   * @return true if there is a match
    */
   private boolean matchTypeParams(
       List<? extends VariableTree> sourceParams,

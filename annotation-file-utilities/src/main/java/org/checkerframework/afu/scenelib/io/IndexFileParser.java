@@ -915,6 +915,7 @@ public final class IndexFileParser {
 
   private void parseMethod(AClass c) throws IOException, ParseException {
     expectKeyword("method");
+    // special case: method could be <init> or <clinit>
     String key;
     if (matchChar('<')) {
       String basename = expectIdentifier();

@@ -945,6 +945,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param patternName the name of the pattern to look up in the options
    * @param options the options supplied by the user
    * @param defaultPattern the pattern to return if the user didn't supply a value
+   * @return the user-supplied pattern for {@code patternName}
    */
   @SuppressWarnings(
       "regex:argument") // pattern string comes from user options; validated by try-catch
