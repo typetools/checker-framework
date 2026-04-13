@@ -242,8 +242,12 @@ public final class IndexFileParser {
    * @param x a string
    * @return true if the given string is an identifier
    */
-  @SuppressWarnings("signature:contracts.conditional.postcondition") // string parsing
+  @SuppressWarnings({
+    "signature:contracts.conditional.postcondition", // string parsing
+    "regex:contracts.conditional.postcondition" // string parsing
+  })
   @EnsuresQualifierIf(result = true, expression = "#1", qualifier = Identifier.class)
+  @EnsuresQualifierIf(result = true, expression = "#1", qualifier = Regex.class)
   private boolean isValidIdentifier(String x) {
     if (x.length() == 0
         || !Character.isJavaIdentifierStart(x.charAt(0))
@@ -263,7 +267,7 @@ public final class IndexFileParser {
    *
    * @return the next token, so long as it is an identifier; otherwise, returns null
    */
-  private @Identifier String checkIdentifier() {
+  private @Identifier @Regex String checkIdentifier() {
     if (st.sval == null) {
       return null;
     } else {
@@ -282,7 +286,7 @@ public final class IndexFileParser {
    * @return the next token, so long as it is an identifier; otherwise, returns null
    * @throws IOException if there is trouble reading the index file
    */
-  private @Identifier String matchIdentifier() throws IOException {
+  private @Identifier @Regex String matchIdentifier() throws IOException {
     String x = checkIdentifier();
     if (x != null) {
       st.nextToken();
@@ -911,8 +915,7 @@ public final class IndexFileParser {
 
   private void parseMethod(AClass c) throws IOException, ParseException {
     expectKeyword("method");
-    // `key` is a Java identifier or "<init>" or "<clinit>".
-    @Regex String key;
+    String key;
     if (matchChar('<')) {
       String basename = expectIdentifier();
       if (!(basename.equals("init") || basename.equals("clinit"))) {
@@ -930,6 +933,7 @@ public final class IndexFileParser {
         key = "<init>";
       }
     }
+    // `key` is now a Java identifier or "<init>" or "<clinit>".
 
     expectChar('(');
     key += '(';
