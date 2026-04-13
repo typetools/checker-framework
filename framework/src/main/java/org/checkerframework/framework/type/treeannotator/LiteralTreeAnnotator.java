@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -189,7 +190,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
    * @param theQual {@code AnnotationMirror} to apply to Strings that match the regex
    * @see #addStringPattern(Pattern,AnnotationMirror)
    */
-  public void addStringPattern(String regex, AnnotationMirror theQual) {
+  public void addStringPattern(@Regex String regex, AnnotationMirror theQual) {
     boolean res =
         qualHierarchy.updateMappingToMutableSet(stringPatterns, Pattern.compile(regex), theQual);
     if (!res) {

@@ -54,6 +54,7 @@ import org.checkerframework.afu.scenelib.type.BoundedType.BoundKind;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.Identifier;
@@ -938,9 +939,13 @@ public final class IndexFileParser {
       key = "<" + basename + ">";
     } else {
       key = expectIdentifier();
+      // TODO: className is no longer private in AClass.
       // It's too bad that className is private in AClass and thus must be
       // extracted from what toString() returns.
-      if (Pattern.matches("AClass: (?:[^. ]+\\.)*" + key, c.toString())) { // ugh
+      // key is a Java identifier or "<init>"/"<clinit>", which are valid in a regex
+      @SuppressWarnings("regex:assignment")
+      @Regex String aclassRegex = "AClass: (?:[^. ]+\\.)*" + key;
+      if (Pattern.matches(aclassRegex, c.toString())) { // ugh
         key = "<init>";
       }
     }

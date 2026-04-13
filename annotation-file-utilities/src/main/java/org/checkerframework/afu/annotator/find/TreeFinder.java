@@ -73,6 +73,8 @@ import org.checkerframework.afu.scenelib.io.DebugWriter;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.regex.qual.Regex;
+import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.objectweb.asm.TypePath;
 import org.plumelib.util.IPair;
 
@@ -126,7 +128,9 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
    * Returns regular expression matching "anything but" {@code c}: a single comment, character or
    * string literal, or non-{@code c} character.
    */
-  private static final String otherThan(char c) {
+  @StaticallyExecutable
+  @SuppressWarnings("regex:return") // the returned string is a valid regex
+  private static final @Regex String otherThan(char c) {
     String cEscaped;
 
     // escape if necessary for use in character class
@@ -212,7 +216,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
       int pos = Position.NOPOS;
       int stop = Math.min(end, s.length());
       String cQuoted = c == '/' ? nonDelimSlash : Pattern.quote(String.valueOf(c));
-      String regex = "(?:" + otherThan(c) + ")*+" + cQuoted;
+      @Regex String regex = "(?:" + otherThan(c) + ")*+" + cQuoted;
       Pattern p = Pattern.compile(regex, Pattern.MULTILINE);
       Matcher m = p.matcher(s).region(start, stop);
 
@@ -817,10 +821,10 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
 
         if (pos < 0) {
           // no "[", so check for "..."
-          String nonDot = otherThan('.');
-          String regex = "(?:(?:\\.\\.?)?" + nonDot + ")*(\\.\\.\\.)";
+          @Regex(1) String regex = "(?:(?:\\.\\.?)?" + otherThan('.') + ")*(\\.\\.\\.)";
           Pattern p = Pattern.compile(regex, Pattern.MULTILINE);
-          Matcher m = p.matcher(s).region(start, end);
+          @Regex(1) Matcher m = p.matcher(s);
+          m.region(start, end);
 
           if (m.find()) {
             pos = m.start(1);

@@ -111,14 +111,15 @@ public class IsSigMethodCriterion implements Criterion {
 
   // Abstracts out the inner loop of matchTypeParams.
   // goalType is fully-qualified.
+  @SuppressWarnings("regex:argument") // p.getKey() is a Java identifier, which is a valid regex
   private boolean matchTypeParam(
-      String goalType, Tree type, Map<String, String> typeToClassMap, Context context) {
+      String goalType, Tree type, Map<String, String> typeParamToClassMap, Context context) {
     String simpleType = type.toString();
 
     boolean haveMatch = matchSimpleType(goalType, simpleType, context);
     if (!haveMatch) {
-      if (!typeToClassMap.isEmpty()) {
-        for (Map.Entry<String, String> p : typeToClassMap.entrySet()) {
+      if (!typeParamToClassMap.isEmpty()) {
+        for (Map.Entry<String, String> p : typeParamToClassMap.entrySet()) {
           simpleType = simpleType.replaceAll("\\b" + p.getKey() + "\\b", p.getValue());
           haveMatch = matchSimpleType(goalType, simpleType, context);
           if (!haveMatch) {
@@ -135,14 +136,14 @@ public class IsSigMethodCriterion implements Criterion {
 
   private boolean matchTypeParams(
       List<? extends VariableTree> sourceParams,
-      Map<String, String> typeToClassMap,
+      Map<String, String> typeParamToClassMap,
       Context context) {
     assert sourceParams.size() == fullyQualifiedParams.size();
     for (int i = 0; i < sourceParams.size(); i++) {
       String fullType = fullyQualifiedParams.get(i);
       VariableTree vt = sourceParams.get(i);
       Tree vtType = vt.getType();
-      if (!matchTypeParam(fullType, vtType, typeToClassMap, context)) {
+      if (!matchTypeParam(fullType, vtType, typeParamToClassMap, context)) {
         Criteria.dbug.debug(
             "matchTypeParam() => false:%n  i=%d vt = %s%n  fullType = %s%n", i, vt, fullType);
         return false;
@@ -329,7 +330,7 @@ public class IsSigMethodCriterion implements Criterion {
     // <T> void foo(T t)
     //  creates mapping: T -> Object
 
-    Map<String, String> typeToClassMap = new HashMap<>();
+    Map<String, String> typeParamToClassMap = new HashMap<>();
     for (TypeParameterTree param : mt.getTypeParameters()) {
       String paramName = param.getName().toString();
       String paramClass = "Object";
@@ -341,7 +342,7 @@ public class IsSigMethodCriterion implements Criterion {
         }
         paramClass = boundZero.toString();
       }
-      typeToClassMap.put(paramName, paramClass);
+      typeParamToClassMap.put(paramName, paramClass);
     }
 
     // Do the same for the enclosing class.
@@ -363,21 +364,21 @@ public class IsSigMethodCriterion implements Criterion {
             }
             paramClass = pb.toString();
           }
-          typeToClassMap.put(paramName, paramClass);
+          typeParamToClassMap.put(paramName, paramClass);
         }
         classpath = classpath.getParentPath();
         ct = enclosingClass(classpath);
       }
     }
 
-    if (!matchTypeParams(sourceParams, typeToClassMap, context)) {
+    if (!matchTypeParams(sourceParams, typeParamToClassMap, context)) {
       Criteria.dbug.debug("IsSigMethodCriterion => false: Parameter types don't match%n");
       return false;
     }
 
     if (mt.getReturnType() != null // must be a constructor
         && returnType != null
-        && !matchTypeParam(returnType, mt.getReturnType(), typeToClassMap, context)) {
+        && !matchTypeParam(returnType, mt.getReturnType(), typeParamToClassMap, context)) {
       Criteria.dbug.debug("IsSigMethodCriterion => false: Return types don't match%n");
       return false;
     }
