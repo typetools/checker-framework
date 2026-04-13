@@ -178,6 +178,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
    * Therefore, some validation is still done in #validateType below.
    */
   @Override
+  @SuppressWarnings(
+      "regex:argument") // strings from annotations are checked by PatternSyntaxException catch
   public Void visitAnnotation(AnnotationTree tree, Void p) {
     List<? extends ExpressionTree> args = tree.getArguments();
 

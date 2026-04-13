@@ -46,6 +46,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
    * @param otherAnno annotation from the value checker hierarchy
    * @return greatest lower bound of {@code stringValAnno} and {@code otherAnno}
    */
+  @SuppressWarnings(
+      "regex:type.arguments.not.inferred") // AnnotationUtils.getElementValueArray contains @Regex
+  // strings
   private AnnotationMirror glbOfStringVal(
       AnnotationMirror stringValAnno, AnnotationMirror otherAnno) {
     List<String> values = atypeFactory.getStringValues(stringValAnno);
@@ -219,6 +222,12 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
    * @return the least upper bound of a1 and a2
    */
   @Override
+  @SuppressWarnings({
+    "regex:assignment", // getMatchesRegexValues/getDoesNotMatchRegexValues return valid @Regex
+    // strings
+    "regex:type.arguments.not.inferred" // AnnotationUtils.getElementValueArray contains @Regex
+    // strings
+  })
   public @Nullable AnnotationMirror leastUpperBoundQualifiers(
       AnnotationMirror a1, AnnotationMirror a2) {
     if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
@@ -417,6 +426,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
    * @return true if subAnno is a subtype of superAnno, false otherwise
    */
   @Override
+  @SuppressWarnings(
+      "regex:argument") // AnnotationUtils.getElementValueArray returns @Regex strings from regex
+  // annotations
   public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
     subAnno = atypeFactory.convertSpecialIntRangeToStandardIntRange(subAnno);
     superAnno = atypeFactory.convertSpecialIntRangeToStandardIntRange(superAnno);

@@ -194,10 +194,10 @@ public class FormatUtil {
    * Returns the index, in the argument list, of the value that will be formatted by the matched
    * format specifier.
    *
-   * @param m a matcher that matches a format specifier
+   * @param m a match of {@code fsPattern}
    * @return the index of the argument to format
    */
-  private static int indexFromFormat(Matcher m) {
+  private static int indexFromFormat(@Regex(6) Matcher m) {
     int index;
     String s = m.group(1);
     String group2 = m.group(2); // not @Deterministic, so extract into local var
@@ -217,8 +217,11 @@ public class FormatUtil {
    * @param m a matcher that matches a format specifier
    * @return the conversion character from the format specifier
    */
-  @SuppressWarnings(
-      "nullness:dereference.of.nullable") // group formatSpecifierConversion always exists
+  @SuppressWarnings({
+    "nullness:dereference.of.nullable", // group formatSpecifierConversion always exists
+    "regex:group.count.unknown" // formatSpecifierT=5 and formatSpecifierConversion=6 are within
+    // range
+  })
   private static char conversionCharFromFormat(@Regex(6) Matcher m) {
     String tGroup = m.group(formatSpecifierT);
     if (tGroup != null) {

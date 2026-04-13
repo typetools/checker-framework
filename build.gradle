@@ -836,7 +836,7 @@ subprojects {
 
     // Tasks such as `checkInterning` and `checkResourceLeak` run various checkers on all the main source sets.
     // These pass and are run by the `typecheck` task.
-    // When you add one here, also update a dependsOn(item for the "typecheck" task.)
+    // When you add one here, also update a dependsOn item for the "typecheck" task.
     createCheckTypeTask(project.name, "Formatter",
         "org.checkerframework.checker.formatter.FormatterChecker")
 
@@ -866,6 +866,8 @@ subprojects {
         ])
     createCheckTypeTask(project.name, "Purity",
         "org.checkerframework.framework.util.PurityChecker")
+    createCheckTypeTask(project.name, "Regex",
+        "org.checkerframework.checker.regex.RegexChecker")
     createCheckTypeTask(project.name, "ResourceLeak",
         "org.checkerframework.checker.resourceleak.ResourceLeakChecker")
     createCheckTypeTask(project.name, "Signature",
@@ -1081,7 +1083,7 @@ subprojects {
     tasks.register("typecheck-part2") {
       description = "Run the Checker Framework on itself (part 2)"
       group = "Verification"
-      dependsOn("checkResourceLeak", "checkSignature")
+      dependsOn("checkRegex", "checkResourceLeak", "checkSignature")
       if (!(project.name.is("framework") || project.name.is("checker"))) {
         dependsOn("checkNullness")
       }
