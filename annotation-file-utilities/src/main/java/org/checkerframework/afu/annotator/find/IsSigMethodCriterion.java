@@ -22,7 +22,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.FieldDescriptor;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.checker.signature.qual.MethodDescriptor;
 import org.plumelib.reflection.Signatures;
 import org.plumelib.util.CollectionsPlume;
@@ -113,7 +112,7 @@ public class IsSigMethodCriterion implements Criterion {
    * @return true if there is a match
    */
   private boolean matchTypeParam(
-      @FullyQualifiedName String goalType,
+      @BinaryName String goalType,
       Tree type,
       Map<String, String> typeParamToClassMap,
       Context context) {
