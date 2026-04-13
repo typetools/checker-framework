@@ -54,6 +54,7 @@ import org.checkerframework.afu.scenelib.type.BoundedType.BoundKind;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
@@ -267,7 +268,7 @@ public final class IndexFileParser {
    *
    * @return the next token, so long as it is an identifier; otherwise, returns null
    */
-  private @Identifier @Regex String checkIdentifier() {
+  private @Identifier @Regex @Nullable String checkIdentifier() {
     if (st.sval == null) {
       return null;
     } else {
