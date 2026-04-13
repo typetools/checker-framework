@@ -69,8 +69,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   public Void visitImport(ImportTree tree, Void p) {
     // Javac stores an import like a.* as a member select, but JavaParser just stores "a", so
     // don't add the member select in that case.
-    if (tree.getQualifiedIdentifier() instanceof MemberSelectTree) {
-      MemberSelectTree memberSelect = (MemberSelectTree) tree.getQualifiedIdentifier();
+    if (tree.getQualifiedIdentifier() instanceof MemberSelectTree memberSelect) {
       if (memberSelect.getIdentifier().contentEquals("*")) {
         memberSelect.getExpression().accept(this, p);
         return null;
@@ -96,22 +95,19 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
       // instance of an enum.
       for (Tree member : tree.getMembers()) {
         member.accept(this, p);
-        if (!(member instanceof VariableTree)) {
+        if (!(member instanceof VariableTree variable)) {
           continue;
         }
 
-        VariableTree variable = (VariableTree) member;
         ExpressionTree initializer = variable.getInitializer();
-        if (initializer == null || !(initializer instanceof NewClassTree)) {
+        if (initializer == null || !(initializer instanceof NewClassTree constructor)) {
           continue;
         }
 
-        NewClassTree constructor = (NewClassTree) initializer;
-        if (!(constructor.getIdentifier() instanceof IdentifierTree)) {
+        if (!(constructor.getIdentifier() instanceof IdentifierTree name)) {
           continue;
         }
 
-        IdentifierTree name = (IdentifierTree) constructor.getIdentifier();
         if (name.getName().contentEquals(tree.getSimpleName())) {
           trees.remove(variable.getType());
           trees.remove(constructor);
@@ -146,8 +142,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
           // If the user declares a compact canonical constructor, javac will
           // automatically fill in the parameters.
           // These trees also don't have a match:
-          if (member instanceof MethodTree) {
-            MethodTree methodTree = (MethodTree) member;
+          if (member instanceof MethodTree methodTree) {
             if (TreeUtils.isCompactCanonicalRecordConstructor(methodTree)) {
               for (VariableTree canonicalParameter : methodTree.getParameters()) {
                 canonicalParameter.accept(removeAllVisitor, null);
@@ -181,8 +176,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
         trees.remove(last.getType());
       }
 
-      if (last.getType() instanceof AnnotatedTypeTree) {
-        AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) last.getType();
+      if (last.getType() instanceof AnnotatedTypeTree annotatedType) {
         if (annotatedType.getUnderlyingType() instanceof ArrayTypeTree) {
           trees.remove(annotatedType);
           trees.remove(annotatedType.getUnderlyingType());
@@ -294,10 +288,8 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     // be added. JavaParser has no expression statement surrounding these, so remove the
     // expression statement itself.
     Void result = super.visitExpressionStatement(tree, p);
-    if (tree.getExpression() instanceof MethodInvocationTree) {
-      MethodInvocationTree invocation = (MethodInvocationTree) tree.getExpression();
-      if (invocation.getMethodSelect() instanceof IdentifierTree) {
-        IdentifierTree identifier = (IdentifierTree) invocation.getMethodSelect();
+    if (tree.getExpression() instanceof MethodInvocationTree invocation) {
+      if (invocation.getMethodSelect() instanceof IdentifierTree identifier) {
         if (identifier.getName().contentEquals("this")
             || identifier.getName().contentEquals("super")) {
           trees.remove(tree);
@@ -350,8 +342,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     scan(body.getImplementsClause(), p);
     for (Tree member : body.getMembers()) {
       // Constructors cannot be declared in an anonymous class, so don't add them.
-      if (member instanceof MethodTree) {
-        MethodTree methodTree = (MethodTree) member;
+      if (member instanceof MethodTree methodTree) {
         if (methodTree.getName().contentEquals("<init>")) {
           continue;
         }

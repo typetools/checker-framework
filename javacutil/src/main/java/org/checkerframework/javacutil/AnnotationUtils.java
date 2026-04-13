@@ -72,8 +72,8 @@ public class AnnotationUtils {
    * @return the fully-qualified name of an annotation as a String
    */
   public static final @CanonicalName String annotationName(AnnotationMirror annotation) {
-    if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror) {
-      return ((AnnotationBuilder.CheckerFrameworkAnnotationMirror) annotation).annotationName;
+    if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror cfam) {
+      return cfam.annotationName;
     }
     DeclaredType annoType = annotation.getAnnotationType();
     TypeElement elm = (TypeElement) annoType.asElement();
@@ -93,8 +93,8 @@ public class AnnotationUtils {
    */
   public static final @CanonicalName @Interned String annotationNameInterned(
       AnnotationMirror annotation) {
-    if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror) {
-      return ((AnnotationBuilder.CheckerFrameworkAnnotationMirror) annotation).annotationName;
+    if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror cfam) {
+      return cfam.annotationName;
     }
     DeclaredType annoType = annotation.getAnnotationType();
     TypeElement elm = (TypeElement) annoType.asElement();
@@ -159,10 +159,10 @@ public class AnnotationUtils {
 
     // This is largely duplicated code.  The point of this block is that
     // the `if (name1 == name2)` test is very fast.
-    if (a1 instanceof CheckerFrameworkAnnotationMirror
-        && a2 instanceof CheckerFrameworkAnnotationMirror) {
-      @Interned @CanonicalName String name1 = ((CheckerFrameworkAnnotationMirror) a1).annotationName;
-      @Interned @CanonicalName String name2 = ((CheckerFrameworkAnnotationMirror) a2).annotationName;
+    if (a1 instanceof CheckerFrameworkAnnotationMirror cfam1
+        && a2 instanceof CheckerFrameworkAnnotationMirror cfam2) {
+      @Interned @CanonicalName String name1 = cfam1.annotationName;
+      @Interned @CanonicalName String name2 = cfam2.annotationName;
       if (name1 == name2) {
         return 0;
       } else {
@@ -466,9 +466,7 @@ public class AnnotationUtils {
     // Can't use deepEquals() to compare val1 and val2, because they might have mismatched
     // AnnotationValue vs. CheckerFrameworkAnnotationValue, and AnnotationValue doesn't override
     // equals().  So, write my own version of deepEquals().
-    if ((val1 instanceof List<?>) && (val2 instanceof List<?>)) {
-      List<?> list1 = (List<?>) val1;
-      List<?> list2 = (List<?>) val2;
+    if ((val1 instanceof List<?> list1) && (val2 instanceof List<?> list2)) {
       if (list1.size() != list2.size()) {
         return list1.size() - list2.size();
       }
@@ -484,17 +482,17 @@ public class AnnotationUtils {
         }
       }
       return 0;
-    } else if ((val1 instanceof AnnotationMirror) && (val2 instanceof AnnotationMirror)) {
-      return compareAnnotationMirrors((AnnotationMirror) val1, (AnnotationMirror) val2);
-    } else if ((val1 instanceof AnnotationValue) && (val2 instanceof AnnotationValue)) {
+    } else if (val1 instanceof AnnotationMirror am1 && val2 instanceof AnnotationMirror am2) {
+      return compareAnnotationMirrors(am1, am2);
+    } else if (val1 instanceof AnnotationValue av1 && val2 instanceof AnnotationValue av2) {
       // This case occurs because of the recursive call when comparing arrays of annotation
       // values.
-      return compareAnnotationValue((AnnotationValue) val1, (AnnotationValue) val2);
+      return compareAnnotationValue(av1, av2);
     }
 
-    if ((val1 instanceof Type.ClassType) && (val2 instanceof Type.ClassType)) {
+    if (val1 instanceof Type.ClassType ct1 && val2 instanceof Type.ClassType ct2) {
       // Type.ClassType does not override equals
-      if (TypesUtils.areSameDeclaredTypes((Type.ClassType) val1, (Type.ClassType) val2)) {
+      if (TypesUtils.areSameDeclaredTypes(ct1, ct2)) {
         return 0;
       }
     }
@@ -545,37 +543,25 @@ public class AnnotationUtils {
    * @return the set of {@link ElementKind}s corresponding to {@code elementType}
    */
   public static EnumSet<ElementKind> getElementKindsForElementType(ElementType elementType) {
-    switch (elementType) {
-      case TYPE:
-        return EnumSet.copyOf(ElementUtils.typeElementKinds());
-      case FIELD:
-        return EnumSet.of(ElementKind.FIELD, ElementKind.ENUM_CONSTANT);
-      case METHOD:
-        return EnumSet.of(ElementKind.METHOD);
-      case PARAMETER:
-        return EnumSet.of(ElementKind.PARAMETER);
-      case CONSTRUCTOR:
-        return EnumSet.of(ElementKind.CONSTRUCTOR);
-      case LOCAL_VARIABLE:
-        return EnumSet.of(
-            ElementKind.LOCAL_VARIABLE,
-            ElementKind.RESOURCE_VARIABLE,
-            ElementKind.EXCEPTION_PARAMETER);
-      case ANNOTATION_TYPE:
-        return EnumSet.of(ElementKind.ANNOTATION_TYPE);
-      case PACKAGE:
-        return EnumSet.of(ElementKind.PACKAGE);
-      case TYPE_PARAMETER:
-        return EnumSet.of(ElementKind.TYPE_PARAMETER);
-      case TYPE_USE:
-        return EnumSet.noneOf(ElementKind.class);
-      case MODULE:
-        return EnumSet.of(ElementKind.MODULE);
-      case RECORD_COMPONENT:
-        return EnumSet.of(ElementKind.RECORD_COMPONENT);
-      default:
-        throw new BugInCF("Unrecognized ElementType: " + elementType);
-    }
+    return switch (elementType) {
+      case TYPE -> EnumSet.copyOf(ElementUtils.typeElementKinds());
+      case FIELD -> EnumSet.of(ElementKind.FIELD, ElementKind.ENUM_CONSTANT);
+      case METHOD -> EnumSet.of(ElementKind.METHOD);
+      case PARAMETER -> EnumSet.of(ElementKind.PARAMETER);
+      case CONSTRUCTOR -> EnumSet.of(ElementKind.CONSTRUCTOR);
+      case LOCAL_VARIABLE ->
+          EnumSet.of(
+              ElementKind.LOCAL_VARIABLE,
+              ElementKind.RESOURCE_VARIABLE,
+              ElementKind.EXCEPTION_PARAMETER);
+      case ANNOTATION_TYPE -> EnumSet.of(ElementKind.ANNOTATION_TYPE);
+      case PACKAGE -> EnumSet.of(ElementKind.PACKAGE);
+      case TYPE_PARAMETER -> EnumSet.of(ElementKind.TYPE_PARAMETER);
+      case TYPE_USE -> EnumSet.noneOf(ElementKind.class);
+      case MODULE -> EnumSet.of(ElementKind.MODULE);
+      case RECORD_COMPONENT -> EnumSet.of(ElementKind.RECORD_COMPONENT);
+      default -> throw new BugInCF("Unrecognized ElementType: " + elementType);
+    };
   }
 
   // **********************************************************************

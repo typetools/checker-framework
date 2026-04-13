@@ -4,21 +4,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.CatchTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionStatementTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.TryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreeScanner;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,7 +27,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -48,8 +38,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
-import org.checkerframework.checker.interning.qual.FindDistinct;
-import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -629,10 +617,10 @@ public class MustCallConsistencyAnalyzer {
   private void updateObligationsForInvocation(
       Set<Obligation> obligations, Node node, @Nullable TypeMirror exceptionType) {
     removeObligationsAtOwnershipTransferToParameters(obligations, node, exceptionType);
-    if (node instanceof MethodInvocationNode miNode
+    if (node instanceof MethodInvocationNode min
         && cmAtf.canCreateObligations()
-        && cmAtf.hasCreatesMustCallFor(miNode)) {
-      checkCreatesMustCallForInvocation(obligations, miNode);
+        && cmAtf.hasCreatesMustCallFor(min)) {
+      checkCreatesMustCallForInvocation(obligations, min);
       // Count calls to @CreatesMustCallFor methods as creating new resources. Doing so could
       // result in slightly over-counting, because @CreatesMustCallFor doesn't guarantee that
       // a new resource is created: it just means that a new resource might have been created.
@@ -859,9 +847,9 @@ public class MustCallConsistencyAnalyzer {
     // position.
     List<Node> mustCallAliases = getMustCallAliasArgumentNodes(node);
     // If call returns @This, add the receiver to mustCallAliases.
-    if (node instanceof MethodInvocationNode miNode
+    if (node instanceof MethodInvocationNode min2
         && cmAtf.returnsThis((MethodInvocationTree) tree)) {
-      mustCallAliases.add(removeCastsAndGetTmpVarIfPresent(miNode.getTarget().getReceiver()));
+      mustCallAliases.add(removeCastsAndGetTmpVarIfPresent(min2.getTarget().getReceiver()));
     }
 
     if (mustCallAliases.isEmpty()) {
@@ -875,10 +863,10 @@ public class MustCallConsistencyAnalyzer {
           // Handling of @Owning fields is a completely separate check, and there is never
           // a need to track an alias of a non-@Owning field, as by definition such a
           // field does not have must-call obligations!
-        } else if (mustCallAlias instanceof LocalVariableNode lvn) {
+        } else if (mustCallAlias instanceof LocalVariableNode mca) {
           // If mustCallAlias is a local variable already being tracked, add
           // tmpVarAsResourceAlias to the set containing mustCallAlias.
-          Obligation obligationContainingMustCallAlias = getObligationForVar(obligations, lvn);
+          Obligation obligationContainingMustCallAlias = getObligationForVar(obligations, mca);
           if (obligationContainingMustCallAlias != null) {
             ResourceAlias tmpVarAsResourceAlias =
                 new ResourceAlias(
@@ -1153,10 +1141,8 @@ public class MustCallConsistencyAnalyzer {
       // Remove Obligations from local variables, now that the owning field is responsible.
       // (When obligation creation is turned off, non-final fields cannot take ownership.)
       if (isOwningField
-          && rhs instanceof LocalVariableNode
+          && rhs instanceof LocalVariableNode rhsVar
           && (cmAtf.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
-
-        LocalVariableNode rhsVar = (LocalVariableNode) rhs;
 
         MethodTree enclosingMethod = cfg.getEnclosingMethod(assignmentNode.getTree());
         boolean inConstructor = enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
@@ -1166,8 +1152,8 @@ public class MustCallConsistencyAnalyzer {
         // on exception `this` becomes inaccessible.
         Set<MethodExitKind> toClear;
         if (inConstructor
-            && lhs instanceof FieldAccessNode
-            && ((FieldAccessNode) lhs).getReceiver() instanceof ThisNode) {
+            && lhs instanceof FieldAccessNode lhsFan
+            && lhsFan.getReceiver() instanceof ThisNode) {
           toClear = Collections.singleton(MethodExitKind.NORMAL_RETURN);
         } else {
           toClear = MethodExitKind.ALL;
@@ -1448,7 +1434,7 @@ public class MustCallConsistencyAnalyzer {
 
     Node lhsNode = node.getTarget();
 
-    if (!(lhsNode instanceof FieldAccessNode)) {
+    if (!(lhsNode instanceof FieldAccessNode lhs)) {
       throw new TypeSystemError(
           "checkReassignmentToOwningField: non-field node "
               + node
@@ -1456,7 +1442,6 @@ public class MustCallConsistencyAnalyzer {
               + node.getClass());
     }
 
-    FieldAccessNode lhs = (FieldAccessNode) lhsNode;
     Node receiver = lhs.getReceiver();
 
     if (permitStaticOwning && receiver instanceof ClassNameNode) {
@@ -1528,7 +1513,8 @@ public class MustCallConsistencyAnalyzer {
       if (Objects.equals(enclosingClassElement, receiverTypeElement)) {
         VariableElement lhsElement = lhs.getElement();
         if (lhsElement.getModifiers().contains(Modifier.PRIVATE)
-            && isFirstWriteToFieldInConstructor(node.getTree(), lhsElement, enclosingMethodTree)) {
+            && ConstructorFirstWriteAnalysis.isFirstWriteToFieldInConstructor(
+                node.getTree(), lhsElement, enclosingMethodTree, cmAtf)) {
           // Safe; first assignment in constructor.
           return;
         }
@@ -1540,7 +1526,8 @@ public class MustCallConsistencyAnalyzer {
     // extend beyond the method's body (and which therefore could not be targeted by an
     // annotation on the method declaration), or 2) the rhs is a null literal (so there's
     // nothing to reset).
-    if (!(receiver instanceof LocalVariableNode lvn && varTrackedInObligations(obligations, lvn))
+    if (!(receiver instanceof LocalVariableNode receiverLvn
+            && varTrackedInObligations(obligations, receiverLvn))
         && !(node.getExpression() instanceof NullLiteralNode)) {
       checkEnclosingMethodIsCreatesMustCallFor(node, enclosingMethodTree);
     }
@@ -1652,104 +1639,6 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Returns true if the given assignment is the first write to {@code targetField} on its path in
-   * the constructor. This method is conservative: it returns {@code false} unless it can prove that
-   * the write is the first. This check runs only for non-final fields because the Java compiler
-   * already forbids reassignment of final fields.
-   *
-   * <p>The result is {@code true} only if all the following hold:
-   *
-   * <ul>
-   *   <li>(1) The field has no non-null inline initializer at its declaration.
-   *   <li>(2) The field is not assigned in any instance initializer block.
-   *   <li>(3) An AST scan of the constructor body does not encounter an earlier write to the same
-   *       field or a disqualifying side effect before reaching the target assignment.
-   * </ul>
-   *
-   * @param assignment the assignment tree being analyzed, which is a statement in the body of
-   *     {@code constructor}
-   * @param targetField the field assigned by {@code assignment}; its type is non-primitive
-   * @param constructor the constructor where the assignment appears
-   * @return true if this assignment is the first write during construction
-   */
-  private boolean isFirstWriteToFieldInConstructor(
-      @FindDistinct Tree assignment,
-      @FindDistinct VariableElement targetField,
-      MethodTree constructor) {
-    TreePath constructorPath = cmAtf.getPath(constructor);
-    if (constructorPath == null) {
-      return false;
-    }
-    ClassTree classTree = TreePathUtil.enclosingClass(constructorPath);
-    if (classTree == null) {
-      return false;
-    }
-
-    for (Tree member : classTree.getMembers()) {
-      // (1) Disallow non-null inline initializer on the same field declaration.
-      if (member instanceof VariableTree decl) {
-        VariableElement declElement = TreeUtils.elementFromDeclaration(decl);
-        if (targetField == declElement
-            && decl.getInitializer() != null
-            && decl.getInitializer().getKind() != Tree.Kind.NULL_LITERAL) {
-          return false;
-        }
-        continue;
-      }
-      // (2) Disallow assignment in any instance initializer block.
-      if (member instanceof BlockTree initBlock) {
-        if (initBlock.isStatic()) {
-          continue;
-        }
-        // The variables accessed from within the anonymous class need to be effectively final, so
-        // AtomicBoolean is used here.
-        AtomicBoolean isInitialized = new AtomicBoolean(false);
-        initBlock.accept(
-            new TreeScanner<Void, Void>() {
-              @Override
-              public Void visitAssignment(AssignmentTree assignmentTree, Void unused) {
-                ExpressionTree lhs = assignmentTree.getVariable();
-                Element lhsElement = TreeUtils.elementFromTree(lhs);
-                if (targetField == lhsElement) {
-                  isInitialized.set(true);
-                  return null;
-                }
-                return super.visitAssignment(assignmentTree, unused);
-              }
-
-              @Override
-              public Void visitMethodInvocation(MethodInvocationTree node, Void unused) {
-                // Any side-effecting method call in an initializer block could write to the field.
-                if (!cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))) {
-                  isInitialized.set(true);
-                  return null;
-                }
-                return super.visitMethodInvocation(node, unused);
-              }
-
-              @Override
-              public Void visitNewClass(NewClassTree node, Void unused) {
-                if (!cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))) {
-                  isInitialized.set(true);
-                  return null;
-                }
-                return super.visitNewClass(node, unused);
-              }
-            },
-            null);
-        if (isInitialized.get()) {
-          return false;
-        }
-      }
-    }
-
-    // (3): Single-pass conservative scan of the constructor body in source order.
-    FirstWriteScanResult r =
-        scanForFirstWrite(constructor.getBody().getStatements(), assignment, targetField, cmAtf);
-    return r == FirstWriteScanResult.FIRST_ASSIGNMENT;
-  }
-
-  /**
    * Checks that the method that encloses an assignment is marked with @CreatesMustCallFor
    * annotation whose target is the object whose field is being re-assigned.
    *
@@ -1759,14 +1648,14 @@ public class MustCallConsistencyAnalyzer {
   private void checkEnclosingMethodIsCreatesMustCallFor(
       AssignmentNode node, MethodTree enclosingMethod) {
     Node lhs = node.getTarget();
-    if (!(lhs instanceof FieldAccessNode fan)) {
+    if (!(lhs instanceof FieldAccessNode lhsFan)) {
       return;
     }
-    if (permitStaticOwning && fan.getReceiver() instanceof ClassNameNode) {
+    if (permitStaticOwning && lhsFan.getReceiver() instanceof ClassNameNode) {
       return;
     }
 
-    String receiverString = receiverAsString((FieldAccessNode) lhs);
+    String receiverString = receiverAsString(lhsFan);
     if ("this".equals(receiverString) && TreeUtils.isConstructor(enclosingMethod)) {
       // Constructors always create must-call obligations, so there is no need for them to
       // be annotated.
@@ -1865,8 +1754,8 @@ public class MustCallConsistencyAnalyzer {
     }
 
     // If none of the parameters were @MustCallAlias, it must be the receiver
-    if (result.isEmpty() && callNode instanceof MethodInvocationNode min) {
-      result.add(removeCastsAndGetTmpVarIfPresent(min.getTarget().getReceiver()));
+    if (result.isEmpty() && callNode instanceof MethodInvocationNode callMin) {
+      result.add(removeCastsAndGetTmpVarIfPresent(callMin.getTarget().getReceiver()));
     }
 
     return result;
@@ -1915,8 +1804,8 @@ public class MustCallConsistencyAnalyzer {
     ExecutableElement executableElement;
     if (node instanceof MethodInvocationNode invocationNode) {
       executableElement = TreeUtils.elementFromUse(invocationNode.getTree());
-    } else if (node instanceof ObjectCreationNode ocn) {
-      executableElement = TreeUtils.elementFromUse(ocn.getTree());
+    } else if (node instanceof ObjectCreationNode ocn2) {
+      executableElement = TreeUtils.elementFromUse(ocn2.getTree());
     } else {
       throw new TypeSystemError("unexpected node type " + node.getClass());
     }
@@ -2054,10 +1943,10 @@ public class MustCallConsistencyAnalyzer {
       // successor block, but can vary slightly depending on the exception type.  There might
       // be some opportunities for optimization in this mostly-redundant work.
       for (Node node : currentBlock.getNodes()) {
-        if (node instanceof AssignmentNode assignmentNode) {
-          updateObligationsForAssignment(obligations, cfg, assignmentNode);
-        } else if (node instanceof ReturnNode returnNode) {
-          updateObligationsForOwningReturn(obligations, cfg, returnNode);
+        if (node instanceof AssignmentNode an) {
+          updateObligationsForAssignment(obligations, cfg, an);
+        } else if (node instanceof ReturnNode rn) {
+          updateObligationsForOwningReturn(obligations, cfg, rn);
         } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
           updateObligationsForInvocation(obligations, node, successorAndExceptionType.second);
         }
@@ -2675,269 +2564,6 @@ public class MustCallConsistencyAnalyzer {
         }
       }
       return result.toString();
-    }
-  }
-
-  /** Result of scanning the constructor for the target assignment under the conservative rules. */
-  private enum FirstWriteScanResult {
-    /** The target assignment is definitely the first assignment in the scanned region. */
-    FIRST_ASSIGNMENT,
-    /**
-     * Disqualified by an earlier write, disallowed call/allocation, or unsupported statement form.
-     */
-    REASSIGNMENT,
-    /** The target assignment does not occur in the scanned region. */
-    UNASSIGNED
-  }
-
-  /**
-   * Scans {@code stmts} in source order to determine whether {@code targetAssignment} is definitely
-   * the first write to {@code targetField} in this constructor fragment.
-   *
-   * <p>This helper is conservative and does not model every statement form. Unsupported constructs
-   * are documented inline below and conservatively return {@link
-   * FirstWriteScanResult#REASSIGNMENT}.
-   *
-   * @param stmts statements to scan in source order
-   * @param targetAssignment the assignment under test
-   * @param targetField the field assigned by {@code targetAssignment}
-   * @param cmAtf the factory used for side-effect reasoning
-   * @return {@link FirstWriteScanResult#FIRST_ASSIGNMENT} if {@code targetAssignment} is reached
-   *     before any disqualifying event; {@link FirstWriteScanResult#REASSIGNMENT} if an earlier
-   *     write, disallowed call/allocation, or unsupported statement form prevents proving that;
-   *     otherwise {@link FirstWriteScanResult#UNASSIGNED} if the target assignment does not occur
-   *     in the scanned region
-   */
-  private static FirstWriteScanResult scanForFirstWrite(
-      List<? extends StatementTree> stmts,
-      Tree targetAssignment,
-      VariableElement targetField,
-      RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
-    for (StatementTree stmt : stmts) {
-      if (stmt instanceof BlockTree blockTree) {
-        // Nested blocks preserve source order, so scan them recursively.
-        FirstWriteScanResult r =
-            scanForFirstWrite(blockTree.getStatements(), targetAssignment, targetField, cmAtf);
-        if (r != FirstWriteScanResult.UNASSIGNED) {
-          return r;
-        }
-        continue;
-      }
-
-      if (stmt instanceof ExpressionStatementTree est) {
-        // Expression statements execute here in source order, so scan the expression subtree.
-        FirstWriteScanResult res =
-            ConstructorFirstWriteScanner.isFirstWrite(
-                est.getExpression(), targetAssignment, targetField, cmAtf);
-        if (res != FirstWriteScanResult.UNASSIGNED) {
-          return res;
-        }
-        continue;
-      }
-
-      if (stmt instanceof VariableTree vt) {
-        ExpressionTree init = vt.getInitializer();
-        if (init != null) {
-          FirstWriteScanResult res =
-              ConstructorFirstWriteScanner.isFirstWrite(init, targetAssignment, targetField, cmAtf);
-          if (res != FirstWriteScanResult.UNASSIGNED) {
-            return res;
-          }
-        }
-        continue;
-      }
-
-      if (stmt instanceof TryTree tryTree) {
-
-        // finally introduces ordering across try/catch that requires CFG reasoning
-        if (tryTree.getFinallyBlock() != null) {
-          return FirstWriteScanResult.REASSIGNMENT;
-        }
-
-        // try-with-resources evaluates resource initializers before the try body. Modeling those
-        // effects would require extra handling, so reject.
-        if (!tryTree.getResources().isEmpty()) {
-          return FirstWriteScanResult.REASSIGNMENT;
-        }
-
-        // If any catch assigns the field, then initialization is path-dependent (try vs catch).
-        // Without control-flow reasoning, conservatively reject.
-        if (catchAssignsField(tryTree, targetField)) {
-          return FirstWriteScanResult.REASSIGNMENT;
-        }
-
-        // Scan the try block body only (catch blocks are handled above).
-        FirstWriteScanResult res =
-            scanForFirstWrite(
-                tryTree.getBlock().getStatements(), targetAssignment, targetField, cmAtf);
-        if (res != FirstWriteScanResult.UNASSIGNED) {
-          return res;
-        }
-        continue;
-      }
-
-      // Any other statement kind requires control-flow-aware reasoning that this helper does not
-      // attempt. Loops and switches can repeat or fall through before the target. An `if` could
-      // be handled more precisely by a more path-sensitive implementation, but this AST-only
-      // helper does not distinguish which branch executes, so it conservatively rejects all of
-      // them here.
-      return FirstWriteScanResult.REASSIGNMENT;
-    }
-
-    return FirstWriteScanResult.UNASSIGNED;
-  }
-
-  /**
-   * Returns true if any {@code catch} block of {@code tryTree} contains an assignment to {@code
-   * targetField}.
-   *
-   * <p>This is used to conservatively reject {@code try/catch} regions where initialization becomes
-   * path-dependent (a write may occur in {@code try} on the normal path or in {@code catch} on an
-   * exceptional path).
-   *
-   * @param tryTree the try statement to inspect
-   * @param targetField the field to check for assignments
-   * @return true if any catch block assigns {@code targetField}
-   */
-  private static boolean catchAssignsField(TryTree tryTree, VariableElement targetField) {
-    for (CatchTree ct : tryTree.getCatches()) {
-      AtomicBoolean assigns = new AtomicBoolean(false);
-      ct.getBlock()
-          .accept(
-              new TreeScanner<Void, Void>() {
-                @Override
-                public Void visitAssignment(AssignmentTree node, Void p) {
-                  Element lhsEl = TreeUtils.elementFromUse(node.getVariable());
-                  if (targetField.equals(lhsEl)) {
-                    assigns.set(true);
-                    return null;
-                  }
-                  return super.visitAssignment(node, p);
-                }
-              },
-              null);
-      if (assigns.get()) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Visitor that determines whether a given assignment in a constructor is definitely the first
-   * write to its field before any earlier assignment or side-effecting call. The entry point is
-   * {@link #isFirstWrite}.
-   *
-   * <p>This performs a single AST traversal over the provided tree fragment and is deliberately
-   * conservative: it does not reason about control flow or path feasibility. It is intended to be
-   * applied only to supported fragments (expressions and statement subtrees selected by the
-   * caller), not to arbitrary statements containing branching/looping constructs.
-   */
-  private static final class ConstructorFirstWriteScanner
-      extends TreeScanner<FirstWriteScanResult, Void> {
-
-    /** The assignment under test within the constructor. */
-    private final @InternedDistinct Tree targetAssignment;
-
-    /** The field assigned by {@code targetAssignment}. */
-    private final VariableElement targetField;
-
-    /** The annotated type factory, used to determine whether a method has any side effects. */
-    private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
-
-    /**
-     * Creates a scanner that checks if {@code assignment} is the first write to {@code targetField}
-     * within the current constructor. The scan stops as soon as a decisive result (true/false) is
-     * encountered.
-     *
-     * @param targetAssignment the assignment being analyzed
-     * @param targetField the field written by that assignment
-     * @param cmAtf the type factory for side-effect reasoning
-     */
-    private ConstructorFirstWriteScanner(
-        @FindDistinct Tree targetAssignment,
-        VariableElement targetField,
-        RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
-      this.targetAssignment = targetAssignment;
-      this.targetField = targetField;
-      this.cmAtf = cmAtf;
-    }
-
-    /**
-     * Scans {@code root} to determine whether {@code targetAssignment} is reached before any
-     * disqualifying event within this tree fragment.
-     *
-     * <p>This method is conservative and AST-only. It returns {@link
-     * FirstWriteScanResult#FIRST_ASSIGNMENT} if the target assignment is encountered before any
-     * earlier write to {@code targetField} or any potentially side-effecting call/allocation
-     * (except {@code super(...)}). It returns {@link FirstWriteScanResult#REASSIGNMENT} if a
-     * disqualifying event is encountered first. Otherwise, it returns {@link
-     * FirstWriteScanResult#UNASSIGNED} if the target assignment does not appear in {@code root}.
-     *
-     * @param root the statement to scan
-     * @param targetAssignment the target assignment
-     * @param targetField the field assigned by {@code targetAssignment}
-     * @param cmAtf the factory for side-effect reasoning
-     * @return the scan result for {@code root}
-     */
-    static FirstWriteScanResult isFirstWrite(
-        ExpressionTree root,
-        @FindDistinct Tree targetAssignment,
-        VariableElement targetField,
-        RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
-      FirstWriteScanResult r =
-          new ConstructorFirstWriteScanner(targetAssignment, targetField, cmAtf).scan(root, null);
-      // TreeScanner may return null if the subtree contains no relevant nodes.
-      return r == null ? FirstWriteScanResult.UNASSIGNED : r;
-    }
-
-    @Override
-    public FirstWriteScanResult visitAssignment(AssignmentTree node, Void p) {
-      Element lhsEl = TreeUtils.elementFromUse(node.getVariable());
-      if (targetField.equals(lhsEl)) {
-        // Found an assignment to the same field:
-        //   - current assignment → first write → FIRST_ASSIGNMENT
-        //   - earlier assignment → not first → REASSIGNMENT
-        return node == targetAssignment
-            ? FirstWriteScanResult.FIRST_ASSIGNMENT
-            : FirstWriteScanResult.REASSIGNMENT;
-      }
-      return super.visitAssignment(node, p);
-    }
-
-    @Override
-    public FirstWriteScanResult visitMethodInvocation(MethodInvocationTree node, Void p) {
-      // Treat any method call before the target assignment as possibly assigning the field,
-      // unless it is a side-effect-free method or a super(...) constructor call.
-      if (cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))
-          || TreeUtils.isSuperConstructorCall(node)) {
-        return super.visitMethodInvocation(node, p);
-      }
-      return FirstWriteScanResult.REASSIGNMENT;
-    }
-
-    @Override
-    public FirstWriteScanResult visitNewClass(NewClassTree node, Void p) {
-      // An object creation with side effects can modify constructor fields (e.g., via Helper(this),
-      // where `this` can be modified in Helper's constructor).
-      if (cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))) {
-        return super.visitNewClass(node, p);
-      }
-      return FirstWriteScanResult.REASSIGNMENT;
-    }
-
-    @Override
-    public FirstWriteScanResult reduce(FirstWriteScanResult r1, FirstWriteScanResult r2) {
-      // Return the first decisive result. REASSIGNMENT dominates (unsafe earlier write/call), then
-      // FIRST_ASSIGNMENT (reached target safely), UNASSIGNED means inconclusive so far.
-      if (r1 == FirstWriteScanResult.REASSIGNMENT || r2 == FirstWriteScanResult.REASSIGNMENT) {
-        return FirstWriteScanResult.REASSIGNMENT;
-      }
-      if (r1 == FirstWriteScanResult.FIRST_ASSIGNMENT
-          || r2 == FirstWriteScanResult.FIRST_ASSIGNMENT) {
-        return FirstWriteScanResult.FIRST_ASSIGNMENT;
-      }
-      return FirstWriteScanResult.UNASSIGNED;
     }
   }
 }

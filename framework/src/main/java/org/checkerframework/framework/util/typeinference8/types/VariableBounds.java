@@ -241,8 +241,8 @@ public class VariableBounds {
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public void addConstraintsFromComplementaryBounds(
       Constraint parent, BoundKind kind, AbstractType boundType) {
-    if (parent instanceof TypeConstraint) {
-      ((TypeConstraint) parent).source = "From complementary bound.";
+    if (parent instanceof TypeConstraint tc) {
+      tc.source = "From complementary bound.";
     }
     switch (kind) {
       case EQUAL:

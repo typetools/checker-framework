@@ -867,9 +867,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
       ExpressionTree seqTree = getLengthSequenceTree(seqLenTree);
 
-      if (randTree instanceof MethodInvocationTree && seqTree != null) {
-
-        MethodInvocationTree mitree = (MethodInvocationTree) randTree;
+      if (randTree instanceof MethodInvocationTree mitree && seqTree != null) {
 
         if (imf.isMathRandom(mitree, processingEnv)) {
           // Okay, so this is Math.random() * array.length, which must be NonNegative
@@ -906,18 +904,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    * @return a @{@link UpperBoundLiteral} annotation
    */
   public AnnotationMirror createLiteral(int i) {
-    switch (i) {
-      case -1:
-        return NEGATIVEONE;
-      case 0:
-        return ZERO;
-      case 1:
-        return ONE;
-      default:
-        return new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
-            .setValue("value", i)
-            .build();
-    }
+    return switch (i) {
+      case -1 -> NEGATIVEONE;
+      case 0 -> ZERO;
+      case 1 -> ONE;
+      default ->
+          new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
+              .setValue("value", i)
+              .build();
+    };
   }
 
   /**

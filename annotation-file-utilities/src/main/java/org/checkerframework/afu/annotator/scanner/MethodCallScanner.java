@@ -69,11 +69,8 @@ public class MethodCallScanner extends CommonScanner {
    * @param offset the offset to add
    */
   public static void addMethodCallToMethod(String methodName, Integer offset) {
-    List<Integer> offsetList = methodNameToMethodCallOffsets.get(methodName);
-    if (offsetList == null) {
-      offsetList = new ArrayList<>();
-      methodNameToMethodCallOffsets.put(methodName, offsetList);
-    }
+    List<Integer> offsetList =
+        methodNameToMethodCallOffsets.computeIfAbsent(methodName, k -> new ArrayList<>());
     offsetList.add(offset);
   }
 

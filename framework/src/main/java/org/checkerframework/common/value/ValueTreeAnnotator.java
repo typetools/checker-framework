@@ -12,9 +12,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -49,27 +47,25 @@ class ValueTreeAnnotator extends TreeAnnotator {
 
   /** The domain of the Constant Value Checker: the types for which it estimates possible values. */
   protected static final Set<String> COVERED_CLASS_STRINGS =
-      Collections.unmodifiableSet(
-          new HashSet<>(
-              Arrays.asList(
-                  "int",
-                  "java.lang.Integer",
-                  "double",
-                  "java.lang.Double",
-                  "byte",
-                  "java.lang.Byte",
-                  "java.lang.String",
-                  "char",
-                  "java.lang.Character",
-                  "float",
-                  "java.lang.Float",
-                  "boolean",
-                  "java.lang.Boolean",
-                  "long",
-                  "java.lang.Long",
-                  "short",
-                  "java.lang.Short",
-                  "char[]")));
+      Set.of(
+          "int",
+          "java.lang.Integer",
+          "double",
+          "java.lang.Double",
+          "byte",
+          "java.lang.Byte",
+          "java.lang.String",
+          "char",
+          "java.lang.Character",
+          "float",
+          "java.lang.Float",
+          "boolean",
+          "java.lang.Boolean",
+          "long",
+          "java.lang.Long",
+          "short",
+          "java.lang.Short",
+          "char[]");
 
   /**
    * Create a ValueTreeAnnotator.
@@ -656,17 +652,14 @@ class ValueTreeAnnotator extends TreeAnnotator {
       return;
     }
 
-    Name id;
-    switch (tree.getKind()) {
-      case MEMBER_SELECT:
-        id = ((MemberSelectTree) tree).getIdentifier();
-        break;
-      case IDENTIFIER:
-        id = ((IdentifierTree) tree).getName();
-        break;
-      default:
-        throw new TypeSystemError("unexpected kind of enum constant use tree: " + tree.getKind());
-    }
+    Name id =
+        switch (tree.getKind()) {
+          case MEMBER_SELECT -> ((MemberSelectTree) tree).getIdentifier();
+          case IDENTIFIER -> ((IdentifierTree) tree).getName();
+          default ->
+              throw new TypeSystemError(
+                  "unexpected kind of enum constant use tree: " + tree.getKind());
+        };
     AnnotationMirror stringVal =
         atypeFactory.createStringAnnotation(Collections.singletonList(id.toString()));
     type.replaceAnnotation(stringVal);

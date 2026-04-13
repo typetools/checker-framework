@@ -351,32 +351,20 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     TypeKind kind = type.getKind();
 
-    switch (kind) {
-      case BOOLEAN:
-        return false;
-      case BYTE:
-      case SHORT:
-      case INT:
-      case LONG:
-      case CHAR:
-        return true;
-      case FLOAT:
-      case DOUBLE:
-        return false;
-
-      case DECLARED:
-      case TYPEVAR:
-      case WILDCARD:
+    return switch (kind) {
+      case BOOLEAN -> false;
+      case BYTE, SHORT, INT, LONG, CHAR -> true;
+      case FLOAT, DOUBLE -> false;
+      case DECLARED, TYPEVAR, WILDCARD -> {
         TypeMirror erasedType = types.erasure(type.getUnderlyingType());
-        return (TypesUtils.isBoxedPrimitive(erasedType)
+        yield (TypesUtils.isBoxedPrimitive(erasedType)
             || TypesUtils.isObject(erasedType)
             || TypesUtils.isErasedSubtype(numberTM, erasedType, types)
             || TypesUtils.isErasedSubtype(serializableTM, erasedType, types)
             || TypesUtils.isErasedSubtype(comparableTM, erasedType, types));
-
-      default:
-        return false;
-    }
+      }
+      default -> false;
+    };
   }
 
   @Override

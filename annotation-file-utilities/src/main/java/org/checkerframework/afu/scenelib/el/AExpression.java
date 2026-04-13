@@ -89,7 +89,7 @@ public class AExpression extends AElement {
 
   @Override
   public boolean equals(AElement o) {
-    return o instanceof AExpression && ((AExpression) o).equalsExpression(this);
+    return o instanceof AExpression expr && expr.equalsExpression(this);
   }
 
   protected boolean equalsExpression(AExpression o) {

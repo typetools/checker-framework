@@ -138,11 +138,10 @@ public class InvocationType {
       returnType = typeFactory.getAnnotatedType(e);
     } else if (invocation instanceof MethodInvocationTree
         || invocation instanceof MemberReferenceTree) {
-      if (invocation instanceof MemberReferenceTree
-          && ((MemberReferenceTree) invocation).getMode() == ReferenceMode.NEW) {
+      if (invocation instanceof MemberReferenceTree mrt && mrt.getMode() == ReferenceMode.NEW) {
         returnType =
             context.typeFactory.getResultingTypeOfConstructorMemberReference(
-                (MemberReferenceTree) invocation, annotatedExecutableType);
+                mrt, annotatedExecutableType);
         returnTypeJava = returnType.getUnderlyingType();
       } else {
         returnTypeJava = methodType.getReturnType();
@@ -187,9 +186,8 @@ public class InvocationType {
         paramsJava.add(vararg.getComponentType());
       }
     }
-    if (invocation instanceof MemberReferenceTree
-        && MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) invocation)
-            .isUnbound()) {
+    if (invocation instanceof MemberReferenceTree mrt
+        && MemberReferenceKind.getMemberReferenceKind(mrt).isUnbound()) {
       params.add(0, annotatedExecutableType.getReceiverType());
       paramsJava.add(0, annotatedExecutableType.getReceiverType().getUnderlyingType());
     }

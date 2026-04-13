@@ -400,27 +400,21 @@ public class ElementAnnotationUtil {
       // For other kinds of types, no work is required for an empty type path.
       return type;
     }
-    switch (type.getKind()) {
-      case NULL:
-        return getLocationTypeANT((AnnotatedNullType) type, location);
-      case DECLARED:
-        return getLocationTypeADT(
-            (AnnotatedDeclaredType) type, location, anno, isComponentTypeOfArray);
-      case WILDCARD:
-        return getLocationTypeAWT((AnnotatedWildcardType) type, location);
-      case ARRAY:
-        return getLocationTypeAAT((AnnotatedArrayType) type, location, anno);
-      case UNION:
-        return getLocationTypeAUT((AnnotatedUnionType) type, location);
-      case INTERSECTION:
-        return getLocationTypeAIT((AnnotatedIntersectionType) type, location);
-      default:
-        // Raise an error for all other types below.
-    }
-    throw new UnexpectedAnnotationLocationException(
-        "ElementAnnotationUtil.getTypeAtLocation: "
-            + "unexpected annotation with location found for type: %s (kind: %s) location: ",
-        type, type.getKind(), location);
+    // Raise an error for all other types below.
+    return switch (type.getKind()) {
+      case NULL -> getLocationTypeANT((AnnotatedNullType) type, location);
+      case DECLARED ->
+          getLocationTypeADT((AnnotatedDeclaredType) type, location, anno, isComponentTypeOfArray);
+      case WILDCARD -> getLocationTypeAWT((AnnotatedWildcardType) type, location);
+      case ARRAY -> getLocationTypeAAT((AnnotatedArrayType) type, location, anno);
+      case UNION -> getLocationTypeAUT((AnnotatedUnionType) type, location);
+      case INTERSECTION -> getLocationTypeAIT((AnnotatedIntersectionType) type, location);
+      default ->
+          throw new UnexpectedAnnotationLocationException(
+              "ElementAnnotationUtil.getTypeAtLocation: "
+                  + "unexpected annotation with location found for type: %s (kind: %s) location: ",
+              type, type.getKind(), location);
+    };
   }
 
   /**

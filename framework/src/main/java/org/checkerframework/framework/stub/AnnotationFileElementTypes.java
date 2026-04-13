@@ -472,30 +472,32 @@ public class AnnotationFileElementTypes {
     } else {
       // Handle annotations on record declarations.
       boolean canTransferAnnotationsToSameName;
-      Element enclosingType; // Do nothing unless this element is a record.
-      switch (elt.getKind()) {
-        case METHOD:
-          // Annotations transfer to zero-arg accessor methods of same name:
-          canTransferAnnotationsToSameName = ((ExecutableElement) elt).getParameters().isEmpty();
-          enclosingType = elt.getEnclosingElement();
-          break;
-        case FIELD:
-          // Annotations transfer to fields of same name:
-          canTransferAnnotationsToSameName = true;
-          enclosingType = elt.getEnclosingElement();
-          break;
-        case PARAMETER:
-          // Annotations transfer to compact canonical constructor parameter of same name:
-          canTransferAnnotationsToSameName =
-              ElementUtils.isCompactCanonicalRecordConstructor(elt.getEnclosingElement())
-                  && elt.getEnclosingElement().getKind() == ElementKind.CONSTRUCTOR;
-          enclosingType = elt.getEnclosingElement().getEnclosingElement();
-          break;
-        default:
-          canTransferAnnotationsToSameName = false;
-          enclosingType = null;
-          break;
-      }
+      // Do nothing unless this element is a record.
+      Element enclosingType =
+          switch (elt.getKind()) {
+            case METHOD -> {
+              // Annotations transfer to zero-arg accessor methods of same name:
+              canTransferAnnotationsToSameName =
+                  ((ExecutableElement) elt).getParameters().isEmpty();
+              yield elt.getEnclosingElement();
+            }
+            case FIELD -> {
+              // Annotations transfer to fields of same name:
+              canTransferAnnotationsToSameName = true;
+              yield elt.getEnclosingElement();
+            }
+            case PARAMETER -> {
+              // Annotations transfer to compact canonical constructor parameter of same name:
+              canTransferAnnotationsToSameName =
+                  ElementUtils.isCompactCanonicalRecordConstructor(elt.getEnclosingElement())
+                      && elt.getEnclosingElement().getKind() == ElementKind.CONSTRUCTOR;
+              yield elt.getEnclosingElement().getEnclosingElement();
+            }
+            default -> {
+              canTransferAnnotationsToSameName = false;
+              yield null;
+            }
+          };
 
       if (canTransferAnnotationsToSameName && enclosingType.getKind() == ElementKind.RECORD) {
         AnnotationFileParser.RecordStub recordStub =

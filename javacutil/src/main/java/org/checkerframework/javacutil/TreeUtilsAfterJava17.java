@@ -100,8 +100,8 @@ public class TreeUtilsAfterJava17 {
      * might contain a single pattern tree.
      *
      * @param caseTree the case expression to get the labels from
-     * @param useDefaultCaseLabelTree whether the result should contain a {@code
-     *     DefaultCaseLabelTree}.
+     * @param useDefaultCaseLabelTree true if the result should contain a {@code
+     *     DefaultCaseLabelTree}
      * @return the list of case labels in the case
      */
     private static List<? extends Tree> getLabels(

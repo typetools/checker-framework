@@ -78,7 +78,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
   protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
-      Tree valueTree,
+      Tree errorLocation,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
 
@@ -89,7 +89,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
       valueType.addAnnotation(getTypeFactory().createIntRangeAnnotation(Range.CHAR_EVERYTHING));
     }
 
-    return super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    return super.commonAssignmentCheck(varType, valueType, errorLocation, errorKey, extraArgs);
   }
 
   /**
@@ -357,16 +357,12 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         List<Long> exprValues = atypeFactory.getIntValues(exprAnno);
         if (castValues.size() == 1 && exprValues.size() == 1) {
           // Special-case singleton sets for speed.
-          switch (castTypeKind) {
-            case BYTE:
-              return castValues.get(0).byteValue() == exprValues.get(0).byteValue();
-            case INT:
-              return castValues.get(0).intValue() == exprValues.get(0).intValue();
-            case SHORT:
-              return castValues.get(0).shortValue() == exprValues.get(0).shortValue();
-            default:
-              return castValues.get(0).longValue() == exprValues.get(0).longValue();
-          }
+          return switch (castTypeKind) {
+            case BYTE -> castValues.get(0).byteValue() == exprValues.get(0).byteValue();
+            case INT -> castValues.get(0).intValue() == exprValues.get(0).intValue();
+            case SHORT -> castValues.get(0).shortValue() == exprValues.get(0).shortValue();
+            default -> castValues.get(0).longValue() == exprValues.get(0).longValue();
+          };
         } else {
           switch (castTypeKind) {
             case BYTE:
@@ -409,9 +405,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     // IEEE 754 behavior and should not be flagged as an unsafe cast if the result
     // is the correctly-rounded representation.
     // When a float is cast to double, no precision is lost, so it is always safe.
-    if (castTypeKind != null
-        && exprTypeKind != null
-        && TypeKindUtils.isFloatingPoint(castTypeKind)
+    if (TypeKindUtils.isFloatingPoint(castTypeKind)
         && TypeKindUtils.isFloatingPoint(exprTypeKind)) {
       if (AnnotationUtils.areSameByName(castAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)
           && AnnotationUtils.areSameByName(exprAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)) {

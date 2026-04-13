@@ -62,17 +62,11 @@ public class AnnotationFileUtil {
      * @return true if this represents a stub file
      */
     public boolean isStub() {
-      switch (this) {
-        case JDK_STUB:
-        case BUILTIN_STUB:
-        case COMMAND_LINE_STUB:
-        case AJAVA_AS_STUB:
-          return true;
-        case AJAVA:
-          return false;
-        default:
-          throw new BugInCF("unhandled case " + this);
-      }
+      return switch (this) {
+        case JDK_STUB, BUILTIN_STUB, COMMAND_LINE_STUB, AJAVA_AS_STUB -> true;
+        case AJAVA -> false;
+        default -> throw new BugInCF("unhandled case " + this);
+      };
     }
 
     /**
@@ -81,17 +75,11 @@ public class AnnotationFileUtil {
      * @return true if this annotation file is built-in (not provided on the command line)
      */
     public boolean isBuiltIn() {
-      switch (this) {
-        case JDK_STUB:
-        case BUILTIN_STUB:
-          return true;
-        case COMMAND_LINE_STUB:
-        case AJAVA_AS_STUB:
-        case AJAVA:
-          return false;
-        default:
-          throw new BugInCF("unhandled case " + this);
-      }
+      return switch (this) {
+        case JDK_STUB, BUILTIN_STUB -> true;
+        case COMMAND_LINE_STUB, AJAVA_AS_STUB, AJAVA -> false;
+        default -> throw new BugInCF("unhandled case " + this);
+      };
     }
 
     /**
@@ -100,17 +88,11 @@ public class AnnotationFileUtil {
      * @return true if this annotation file was provided on the command line (not built-in)
      */
     public boolean isCommandLine() {
-      switch (this) {
-        case JDK_STUB:
-        case BUILTIN_STUB:
-          return false;
-        case COMMAND_LINE_STUB:
-        case AJAVA_AS_STUB:
-        case AJAVA:
-          return true;
-        default:
-          throw new BugInCF("unhandled case " + this);
-      }
+      return switch (this) {
+        case JDK_STUB, BUILTIN_STUB -> false;
+        case COMMAND_LINE_STUB, AJAVA_AS_STUB, AJAVA -> true;
+        default -> throw new BugInCF("unhandled case " + this);
+      };
     }
   }
 
@@ -163,10 +145,9 @@ public class AnnotationFileUtil {
     }
 
     for (BodyDeclaration<?> member : type.getMembers()) {
-      if (!(member instanceof FieldDeclaration)) {
+      if (!(member instanceof FieldDeclaration decl)) {
         continue;
       }
-      FieldDeclaration decl = (FieldDeclaration) member;
       for (VariableDeclarator var : decl.getVariables()) {
         if (toString(var).equals(field.getSimpleName().toString())) {
           return decl;
@@ -187,12 +168,12 @@ public class AnnotationFileUtil {
     String methodRep = toString(method);
 
     for (BodyDeclaration<?> member : type.getMembers()) {
-      if (member instanceof MethodDeclaration) {
-        if (toString((MethodDeclaration) member).equals(methodRep)) {
+      if (member instanceof MethodDeclaration md) {
+        if (toString(md).equals(methodRep)) {
           return member;
         }
-      } else if (member instanceof ConstructorDeclaration) {
-        if (toString((ConstructorDeclaration) member).equals(methodRep)) {
+      } else if (member instanceof ConstructorDeclaration cd) {
+        if (toString(cd).equals(methodRep)) {
           return member;
         }
       }
@@ -234,10 +215,10 @@ public class AnnotationFileUtil {
   }
 
   /*package-private*/ static @Nullable String toString(Element element) {
-    if (element instanceof ExecutableElement) {
-      return toString((ExecutableElement) element);
-    } else if (element instanceof VariableElement) {
-      return toString((VariableElement) element);
+    if (element instanceof ExecutableElement ee) {
+      return toString(ee);
+    } else if (element instanceof VariableElement ve) {
+      return toString(ve);
     } else {
       return null;
     }

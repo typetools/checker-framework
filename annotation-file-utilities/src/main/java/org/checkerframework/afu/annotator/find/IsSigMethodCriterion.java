@@ -32,15 +32,7 @@ import org.plumelib.util.CollectionsPlume;
 public class IsSigMethodCriterion implements Criterion {
 
   // The context is used for determining the fully qualified name of methods.
-  private static class Context {
-    public final String packageName;
-    public final List<String> imports;
-
-    public Context(String packageName, List<String> imports) {
-      this.packageName = packageName;
-      this.imports = imports;
-    }
-  }
+  private record Context(String packageName, List<String> imports) {}
 
   /** Map from compilation unit to Context. */
   private static final Map<CompilationUnitTree, Context> contextCache = new HashMap<>();
@@ -289,7 +281,7 @@ public class IsSigMethodCriterion implements Criterion {
 
     Tree leaf = path.getLeaf();
 
-    if (!(leaf instanceof MethodTree)) {
+    if (!(leaf instanceof MethodTree mt)) {
       Criteria.dbug.debug(
           "IsSigMethodCriterion.isSatisfiedBy(%s) => false: not a METHOD tree%n",
           Main.leafString(path));
@@ -301,8 +293,6 @@ public class IsSigMethodCriterion implements Criterion {
     //      Main.leafString(path));
     //  return false;
     // }
-
-    MethodTree mt = (MethodTree) leaf;
 
     if (!simpleMethodName.equals(mt.getName().toString())) {
       Criteria.dbug.debug("IsSigMethodCriterion.isSatisfiedBy => false: Names don't match%n");

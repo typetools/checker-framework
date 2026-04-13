@@ -115,23 +115,10 @@ public class FormatterTreeUtil {
    * A wrapper around a value of type E, plus an ExpressionTree location.
    *
    * @param <E> the type of the wrapped value
+   * @param value the wrapped value
+   * @param location the location of the value
    */
-  public static class Result<E> {
-    /** The wrapped value. */
-    private final E value;
-
-    /** The location of the value. */
-    public final ExpressionTree location;
-
-    public Result(E value, ExpressionTree location) {
-      this.value = value;
-      this.location = location;
-    }
-
-    public E value() {
-      return value;
-    }
-  }
+  public record Result<E>(E value, ExpressionTree location) {}
 
   /**
    * Returns true if the call is to a method with the @ReturnsFormat annotation. An example of such
@@ -146,18 +133,17 @@ public class FormatterTreeUtil {
   private ConversionCategory @Nullable [] asFormatCallCategoriesLowLevel(
       MethodInvocationNode node) {
     Node vararg = node.getArgument(1);
-    if (!(vararg instanceof ArrayCreationNode)) {
+    if (!(vararg instanceof ArrayCreationNode acn)) {
       return null;
     }
-    List<Node> convs = ((ArrayCreationNode) vararg).getInitializers();
+    List<Node> convs = acn.getInitializers();
     ConversionCategory[] res = new ConversionCategory[convs.size()];
     for (int i = 0; i < convs.size(); ++i) {
       Node conv = convs.get(i);
-      if (conv instanceof FieldAccessNode) {
-        Class<? extends Object> clazz =
-            TypesUtils.getClassFromType(((FieldAccessNode) conv).getType());
+      if (conv instanceof FieldAccessNode fan) {
+        Class<? extends Object> clazz = TypesUtils.getClassFromType(fan.getType());
         if (clazz == ConversionCategory.class) {
-          res[i] = ConversionCategory.valueOf(((FieldAccessNode) conv).getFieldName());
+          res[i] = ConversionCategory.valueOf(fan.getFieldName());
           continue; /* avoid returning null */
         }
       }

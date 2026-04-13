@@ -305,9 +305,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         atypeFactory.wpiAdjustForUpdateNonField(receiverArgATM);
         T receiverAnnotations =
             storage.getReceiverAnnotations(methodElt, receiverParamATM, atypeFactory);
-        if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
-          ((GenericAnnotatedTypeFactory) this.atypeFactory)
-              .getDependentTypesHelper()
+        if (this.atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf) {
+          gatf.getDependentTypesHelper()
               .delocalizeAtCallsite(receiverArgATM, invocationTree, arguments, receiver, methodElt);
         }
         updateAnnotationSet(
@@ -390,9 +389,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       int paramIndex = varargsParam ? methodElt.getParameters().size() : i + 1;
       T paramAnnotations =
           storage.getParameterAnnotations(methodElt, paramIndex, paramATM, ve, atypeFactory);
-      if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
-        ((GenericAnnotatedTypeFactory) this.atypeFactory)
-            .getDependentTypesHelper()
+      if (this.atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf) {
+        gatf.getDependentTypesHelper()
             .delocalizeAtCallsite(argATM, invocationTree, arguments, receiver, methodElt);
       }
       updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
@@ -642,12 +640,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     Element element;
     String fieldName;
-    if (lhs instanceof FieldAccessNode) {
-      element = ((FieldAccessNode) lhs).getElement();
-      fieldName = ((FieldAccessNode) lhs).getFieldName();
-    } else if (lhs instanceof LocalVariableNode) {
-      element = ((LocalVariableNode) lhs).getElement();
-      fieldName = ((LocalVariableNode) lhs).getName();
+    if (lhs instanceof FieldAccessNode fan) {
+      element = fan.getElement();
+      fieldName = fan.getFieldName();
+    } else if (lhs instanceof LocalVariableNode lvn) {
+      element = lvn.getElement();
+      fieldName = lvn.getName();
     } else {
       throw new BugInCF(
           "updateFromFieldAssignment received an unexpected node type: " + lhs.getClass());
@@ -1017,8 +1015,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     // For type variables, infer primary annotations for field type use locations, but
     // for other locations only infer primary annotations if they are a super type of the upper
     // bound of declaration of the type variable.
-    if (defLoc != TypeUseLocation.FIELD && lhsATM instanceof AnnotatedTypeVariable) {
-      AnnotatedTypeVariable lhsTV = (AnnotatedTypeVariable) lhsATM;
+    if (defLoc != TypeUseLocation.FIELD && lhsATM instanceof AnnotatedTypeVariable lhsTV) {
       AnnotatedTypeMirror decl =
           atypeFactory.getAnnotatedType(lhsTV.getUnderlyingType().asElement());
       AnnotationMirrorSet upperAnnos = decl.getAnnotations();

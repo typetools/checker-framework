@@ -70,11 +70,10 @@ import org.plumelib.util.IPair;
     // Otherwise, the thrown type and the caught type are unrelated declared types, so they do
     // not overlap on any non-null value.
 
-    while (!(thrown instanceof DeclaredType)) {
+    while (!(thrown instanceof DeclaredType declaredThrown)) {
       assert thrown instanceof TypeVariable : "thrown type must be a variable or a declared type";
       thrown = ((TypeVariable) thrown).getUpperBound();
     }
-    DeclaredType declaredThrown = (DeclaredType) thrown;
     assert thrown != null : "thrown type must be bounded by a declared type";
 
     for (IPair<TypeMirror, Label> pair : catchLabels) {

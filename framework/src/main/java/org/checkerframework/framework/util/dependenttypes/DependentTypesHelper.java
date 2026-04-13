@@ -323,21 +323,19 @@ public class DependentTypesHelper {
     }
 
     StringToJavaExpression stringToJavaExpr;
-    if (tree instanceof MethodInvocationTree) {
+    if (tree instanceof MethodInvocationTree mit) {
       stringToJavaExpr =
           stringExpr ->
-              StringToJavaExpression.atMethodInvocation(
-                  stringExpr, (MethodInvocationTree) tree, factory.getChecker());
+              StringToJavaExpression.atMethodInvocation(stringExpr, mit, factory.getChecker());
       if (debugStringToJavaExpression) {
         System.out.printf(
             "atInvocation(%s, %s) 1 created %s%n",
             methodType, TreeUtils.toStringTruncated(tree, 65), stringToJavaExpr);
       }
-    } else if (tree instanceof NewClassTree) {
+    } else if (tree instanceof NewClassTree nct) {
       stringToJavaExpr =
           stringExpr ->
-              StringToJavaExpression.atConstructorInvocation(
-                  stringExpr, (NewClassTree) tree, factory.getChecker());
+              StringToJavaExpression.atConstructorInvocation(stringExpr, nct, factory.getChecker());
       if (debugStringToJavaExpression) {
         System.out.printf(
             "atInvocation(%s, %s) 2 created %s%n",
@@ -449,8 +447,7 @@ public class DependentTypesHelper {
         }
         Tree enclTree = pathTillEnclTree.getLeaf();
 
-        if (enclTree instanceof MethodTree) {
-          MethodTree methodDeclTree = (MethodTree) enclTree;
+        if (enclTree instanceof MethodTree methodDeclTree) {
           StringToJavaExpression stringToJavaExpr =
               stringExpr ->
                   StringToJavaExpression.atMethodBody(
