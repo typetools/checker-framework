@@ -15,8 +15,6 @@ Removed deprecated names "builder", "object.construction", and
 
 ### Implementation details
 
-Deprecated method `SystemUtil.getJreVersion()`.
-
 ### Closed issues
 
 ## Version 4.0.0 (2026-04-07)
