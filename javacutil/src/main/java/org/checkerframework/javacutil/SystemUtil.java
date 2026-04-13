@@ -151,9 +151,8 @@ public class SystemUtil {
     throw new IllegalArgumentException(); // Invalid first byte for UTF-8 character.
   }
 
-  /** The major version number of the Java runtime (JRE), such as 8, 11, or 17. */
-  @SuppressWarnings("deprecation") // remove @SuppressWarnings when getJreVersion() isn't deprecated
-  public static final int jreVersion = getJreVersion();
+  /** The major version number of the Java runtime (JRE), such as 17, 21, or 25. */
+  public static final int jreVersion = Runtime.version().feature();
 
   // Keep in sync with BCELUtil.java (in the bcel-util project).
   /**
@@ -170,7 +169,9 @@ public class SystemUtil {
    * exist on JDK 8.
    *
    * @return the major version of the Java runtime
+   * @deprecated use {@code Runtime.version().feature()}
    */
+  @Deprecated(forRemoval = true, since = "4.1.0")
   private static int getJreVersion() {
     String version = System.getProperty("java.version");
 
