@@ -243,12 +243,8 @@ public final class IndexFileParser {
    * @param x a string
    * @return true if the given string is an identifier
    */
-  @SuppressWarnings({
-    "signature:contracts.conditional.postcondition", // string parsing
-    "regex:contracts.conditional.postcondition" // string parsing
-  })
+  @SuppressWarnings("signature:contracts.conditional.postcondition") // string parsing
   @EnsuresQualifierIf(result = true, expression = "#1", qualifier = Identifier.class)
-  @EnsuresQualifierIf(result = true, expression = "#1", qualifier = Regex.class)
   private boolean isValidIdentifier(String x) {
     if (x.length() == 0
         || !Character.isJavaIdentifierStart(x.charAt(0))
@@ -268,7 +264,7 @@ public final class IndexFileParser {
    *
    * @return the next token, so long as it is an identifier; otherwise, returns null
    */
-  private @Identifier @Regex @Nullable String checkIdentifier() {
+  private @Identifier @Nullable String checkIdentifier() {
     if (st.sval == null) {
       return null;
     } else {
@@ -287,7 +283,7 @@ public final class IndexFileParser {
    * @return the next token, so long as it is an identifier; otherwise, returns null
    * @throws IOException if there is trouble reading the index file
    */
-  private @Identifier @Regex String matchIdentifier() throws IOException {
+  private @Identifier String matchIdentifier() throws IOException {
     String x = checkIdentifier();
     if (x != null) {
       st.nextToken();
@@ -304,7 +300,7 @@ public final class IndexFileParser {
    * @throws IOException if there is trouble reading the index file
    * @throws ParseException if the file contents are not valid
    */
-  private @Identifier @Regex String expectIdentifier() throws IOException, ParseException {
+  private @Identifier String expectIdentifier() throws IOException, ParseException {
     String id = matchIdentifier();
     if (id == null) {
       throw new ParseException("Expected an identifier");
@@ -930,7 +926,7 @@ public final class IndexFileParser {
       // TODO: className is no longer private in AClass.
       // It's too bad that className is private in AClass and thus must be
       // extracted from what toString() returns.
-      @Regex String aclassRegex = "AClass: (?:[^. ]+\\.)*" + key;
+      @Regex String aclassRegex = "AClass: (?:[^. ]+\\.)*" + Pattern.quote(key);
       if (Pattern.matches(aclassRegex, c.toString())) { // ugh
         key = "<init>";
       }

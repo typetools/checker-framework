@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.checkerframework.afu.annotator.Main;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -125,10 +127,13 @@ public class IsSigMethodCriterion implements Criterion {
           @SuppressWarnings(
               "regex:assignment") // a type parameter name is an identifer, which is a valid regex
           @Regex String typeParamName = p.getKey();
-          // There is no need for Pattern.quote() or Matcher.quoteReplacement():  key is a
-          // type parameter name, which is an identifier with no special characters.  p.getValue()
-          // may contain "$", but followed by a letter rather than a number.
-          simpleType = simpleType.replaceAll("\\b" + typeParamName + "\\b", p.getValue());
+          // Pattern.quote() is gratuitous because key is a type parameter name, which is an
+          // identifier with no special characters.  Matcher.quoteReplacement is gratuitous because
+          // p.getValue() may contain "$", but followed by a letter rather than a number.
+          simpleType =
+              simpleType.replaceAll(
+                  "\\b" + Pattern.quote(typeParamName) + "\\b",
+                  Matcher.quoteReplacement(p.getValue()));
           haveMatch = matchSimpleType(goalType, simpleType, context);
           if (!haveMatch) {
             Criteria.dbug.debug("matchTypeParam() => false:%n");
