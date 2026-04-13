@@ -61,10 +61,9 @@ public class NodeUtils {
    *     length
    */
   public static boolean isArrayLengthFieldAccess(Node node) {
-    if (!(node instanceof FieldAccessNode)) {
+    if (!(node instanceof FieldAccessNode fieldAccess)) {
       return false;
     }
-    FieldAccessNode fieldAccess = (FieldAccessNode) node;
     return fieldAccess.getFieldName().equals("length")
         && fieldAccess.getReceiver().getType().getKind() == TypeKind.ARRAY;
   }
@@ -79,10 +78,10 @@ public class NodeUtils {
    */
   public static boolean isMethodInvocation(
       Node node, ExecutableElement method, ProcessingEnvironment env) {
-    if (!(node instanceof MethodInvocationNode)) {
+    if (!(node instanceof MethodInvocationNode methodInvocationNode)) {
       return false;
     }
-    ExecutableElement invoked = ((MethodInvocationNode) node).getTarget().getMethod();
+    ExecutableElement invoked = methodInvocationNode.getTarget().getMethod();
     return ElementUtils.isMethod(invoked, method, env);
   }
 
@@ -96,10 +95,10 @@ public class NodeUtils {
    */
   public static boolean isMethodInvocation(
       Node node, List<ExecutableElement> methods, ProcessingEnvironment env) {
-    if (!(node instanceof MethodInvocationNode)) {
+    if (!(node instanceof MethodInvocationNode methodInvocationNode)) {
       return false;
     }
-    ExecutableElement invoked = ((MethodInvocationNode) node).getTarget().getMethod();
+    ExecutableElement invoked = methodInvocationNode.getTarget().getMethod();
     return CollectionsPlume.anyMatch(
         methods, method -> ElementUtils.isMethod(invoked, method, env));
   }
@@ -112,10 +111,10 @@ public class NodeUtils {
    * @return true if the node is equivalent to a literal with value {@code value}
    */
   public static boolean isConstantBoolean(Node n, boolean value) {
-    if (n instanceof BooleanLiteralNode) {
-      return ((BooleanLiteralNode) n).getValue() == value;
-    } else if (n instanceof ConditionalNotNode) {
-      return isConstantBoolean(((ConditionalNotNode) n).getOperand(), !value);
+    if (n instanceof BooleanLiteralNode bln) {
+      return bln.getValue() == value;
+    } else if (n instanceof ConditionalNotNode cnn) {
+      return isConstantBoolean(cnn.getOperand(), !value);
     } else {
       return false;
     }

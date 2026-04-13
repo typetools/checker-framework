@@ -212,7 +212,7 @@ public class NullnessAnnotatedTypeFactory
           "org.jmlspecs.annotation.NonNull",
           // https://github.com/jspecify/jspecify/blob/main/src/main/java/org/jspecify/annotations/NonNull.java
           "org.jspecify.annotations.NonNull",
-          // 2022-11-17: Deprecated old package location, remove after some grace period
+          // 2022-11-17: Deprecated old package location, remove after some grace period.
           // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/nullness
           "org.jspecify.nullness.NonNull",
           // https://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NonNull.html
@@ -344,7 +344,7 @@ public class NullnessAnnotatedTypeFactory
           "org.jmlspecs.annotation.Nullable",
           // https://github.com/jspecify/jspecify/blob/main/src/main/java/org/jspecify/annotations/Nullable.java
           "org.jspecify.annotations.Nullable",
-          // 2022-11-17: Deprecated old package location, remove after some grace period
+          // 2022-11-17: Deprecated old package location, remove after some grace period.
           // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/nullness
           "org.jspecify.nullness.Nullable",
           "org.jspecify.nullness.NullnessUnspecified",
@@ -516,7 +516,7 @@ public class NullnessAnnotatedTypeFactory
   protected ParameterizedExecutableType methodFromUse(
       MethodInvocationTree tree, boolean inferTypeArgs) {
     ParameterizedExecutableType mType = super.methodFromUse(tree, inferTypeArgs);
-    AnnotatedExecutableType method = mType.executableType;
+    AnnotatedExecutableType method = mType.executableType();
 
     // Special cases for method invocations with specific arguments.
     systemGetPropertyHandler.handle(tree, method);
@@ -709,7 +709,7 @@ public class NullnessAnnotatedTypeFactory
       // the most useful element type is @Initialized (which is also accurate).
       AnnotatedArrayType arrayType = (AnnotatedArrayType) type;
       AnnotatedTypeMirror componentType = arrayType.getComponentType();
-      if (componentType.hasEffectiveAnnotation(FBCBOTTOM)) {
+      if (componentType.hasAnnotation(FBCBOTTOM)) {
         componentType.replaceAnnotation(INITIALIZED);
       }
       return null;

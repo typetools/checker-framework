@@ -20,7 +20,7 @@ status=0
 JAVA_VER=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
 if [ "${JAVA_VER}" != "8" ] && [ "${JAVA_VER}" != "11" ]; then
   # spotlessGroovy often fails with: "java.io.IOException: Failed to provision P2 dependencies"
-  ./gradlew spotlessGroovy || (sleep 60 && true)
+  ./gradlew spotlessGroovy > /dev/null 2>&1 || (sleep 60 && true)
   ./gradlew spotlessCheck --warning-mode=all
 fi
 if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --exclude-dir=tests --exclude="*.astub" --exclude="*.tex" '^\(import static \|import .*\*;$\)'; then

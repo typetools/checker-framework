@@ -13,23 +13,12 @@ public abstract class Strings {
     StringBuilder out = new StringBuilder("\"");
     for (int pos = 0; pos < in.length(); pos++) {
       switch (in.charAt(pos)) {
-        case '\n':
-          out.append("\\n");
-          break;
-        case '\t':
-          out.append("\\t");
-          break;
-        case '\\':
-          out.append("\\\\");
-          break;
-        case '\'':
-          out.append("\\\'");
-          break;
-        case '\"':
-          out.append("\\\"");
-          break;
-        default:
-          out.append(in.charAt(pos));
+        case '\n' -> out.append("\\n");
+        case '\t' -> out.append("\\t");
+        case '\\' -> out.append("\\\\");
+        case '\'' -> out.append("\\\'");
+        case '\"' -> out.append("\\\"");
+        default -> out.append(in.charAt(pos));
       }
     }
     out.append('\"');

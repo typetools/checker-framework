@@ -31,21 +31,20 @@ ext {
   // 1. Run Gradle using JDK 21:
   // mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64" >> ~/.gradle/gradle.properties
   //
-  // 2. Use JDK 24 for all Java tasks: (24 could be replaced with any version.)
-  // export ORG_GRADLE_PROJECT_jdkTestVersion=24
+  // 2. Use JDK 25 for all Java tasks: (25 could be replaced with any version.)
+  // export ORG_GRADLE_PROJECT_jdkTestVersion=25
   // or
-  // ./gradlew sometask -PjdkTestVersion=24
+  // ./gradlew sometask -PjdkTestVersion=25
   //
   // 3. Compile the Checker Framework using JDK 21: (Overrides the version specified in `jdkTestVersion` for compiling only.)
   // export ORG_GRADLE_PROJECT_useJdk21Compiler=true
   // or
   // ./gradlew sometask -PuseJdk21Compiler=true
 
-  gradleRunsOnJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
   gradleRunsOnJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
   gradleRunsOnJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
-  gradleRunsOnJava24orHigher = JavaVersion.current() >= JavaVersion.VERSION_24
   gradleRunsOnJava25orHigher = JavaVersion.current() >= JavaVersion.VERSION_25
+  gradleRunsOnJava26orHigher = JavaVersion.current() >= JavaVersion.VERSION_26
   // The JDK for running tests: the jdkTestVersion property or if not set, JavaVersion.current()
   if (project.getProperties().containsKey("jdkTestVersion")) {
     testJdkVersion = Integer.valueOf(project.getProperties().get("jdkTestVersion"))
@@ -58,9 +57,9 @@ ext {
   compilerJdkVersion = jdk21Compiler ? 21 : testJdkVersion
   compilerRunsOnJava21orHigher = compilerJdkVersion >= 21
 
-  // As of 2025-04-28 (Lombok 1.18.38), delombok supports JDK 24-ea but not
-  // JDK 24 proper; see https://projectlombok.org/changelog .
-  skipDelombok = gradleRunsOnJava24orHigher
+  // As of 2026-03-11 (Lombok 1.18.44), delombok does not support JDK 26;
+  // see https://projectlombok.org/changelog .
+  skipDelombok = gradleRunsOnJava26orHigher
 
   parentDir = file("${rootDir}/../").absolutePath
   afuManualDir = "docs/annotation-file-utilities/"
@@ -156,9 +155,6 @@ allprojects { currentProj ->
   }
 
   configurations {
-    // This is required to run the Checker Framework on JDK 8.
-    javacJar
-
     // Holds the combined classpath of all subprojects including the subprojects themselves.
     allProjects
 
@@ -172,8 +168,6 @@ allprojects { currentProj ->
 
   dependencies {
     errorprone(libs.error.prone.core)
-
-    javacJar(libs.javac)
 
     allProjects(subprojects)
   }
@@ -198,8 +192,8 @@ allprojects { currentProj ->
     // the sections with labels "javac-jdk11-non-modularized", "maven", and "sbt" in the manual
     // and in the checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
     compilerArgsForRunningCF = [
-      // These are required in Java 16+ because the --illegal-access option is set to deny
-      // by default.  None of these packages are accessed via reflection, so the module
+      // These are required because the --illegal-access option is set to deny by default.
+      // None of these packages is accessed via reflection, so the module
       // only needs to be exported, but not opened.
       "--add-exports",
       "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
@@ -255,6 +249,9 @@ allprojects { currentProj ->
         if (!name.equals("javadocDoclintAll")) {
           options.memberLevel = javadocMemberLevel
         }
+        // Without the following exclude, Javadoc will error on checker-qual with "error: reference not found"
+        // on class in checker.jar.
+        exclude("**/module-info.java")
         classpath += configurations.named("checkerFatJar").get().asFileTree
         options.taglets("org.checkerframework.taglet.ManualTaglet")
         options.tagletPath(project(":framework-test").sourceSets.taglet.output.classesDirs.getFiles() as File[])
@@ -290,20 +287,15 @@ allprojects { currentProj ->
       // Uncomment when needed.
       // // Put source files in deterministic order, for debugging.
       // compilationTask.source = compilationTask.source.sort()
-
-      // This test is for whether the Checker Framework supports (runs under) Java 8.
-      // Currently, the Checker Framework does support Java 8.
-      if (true) {
-        // Using `options.release.set(8)` here leads to compilation
-        // errors such as "package com.sun.source.tree does not exist".
-        sourceCompatibility = 8
-        targetCompatibility = 8
-        // Because the target is 8, all of the public compiler classes are accessible, so
-        // --add-exports are not required (nor are they allowed with target 8). See
-        // https://openjdk.org/jeps/247 for details on compiling for older versions.
+      if ((project.name.equals("checker-qual")
+          || project.name.equals("checker-util")
+          || project.name.equals("checker-qual-android"))) {
+        options.release = 11
       } else {
-        // This makes the class files Java 11, and then the Checker Framework would not run under Java 8.
-        options.release.set(11)
+        // Can't use --release with --add-exports, otherwise you'll see errors like:
+        // error: exporting a package from system module jdk.compiler is not allowed with --release
+        sourceCompatibility = 17
+        targetCompatibility = 17
         options.compilerArgs += [
           "--add-exports",
           "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
@@ -400,6 +392,8 @@ allprojects { currentProj ->
           "-Xep:ASTHelpersSuggestions:OFF",
           // Removing "public" from private class members loses information about the abstraction.
           "-Xep:EffectivelyPrivate:OFF",
+          // Broken in Error Prone 2.49.0; see https://github.com/google/error-prone/issues/5710.
+          "-Xep:AlreadyChecked:OFF",
           // -Werror halts the build if Error Prone issues a warning, which ensures that
           // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
           // stops as soon as it issues one warning, rather than outputting them all.
@@ -547,7 +541,6 @@ tasks.register("zip", Zip) {
         "annotation-file-utilities/bin/**",
         "annotation-file-utilities/dist/**",
         "annotation-file-utilities/LICENSE.txt",
-        "checker/bin/**",
         "checker/dist/**",
         "checker/resources/**",
         "docs/CHANGELOG.md",
@@ -576,6 +569,15 @@ tasks.register("zip", Zip) {
         "docs/examples/MavenExample/README",
         "docs/examples/MavenExample/src/main/java/org/checkerframework/example/MavenExample.java",
         "docs/tutorial/**")
+  }
+
+  from(layout.projectDirectory) {
+    include("checker/bin/**")
+    filePermissions {
+      user { execute = true }
+      group { execute = true }
+      other { execute = true }
+    }
   }
 
   from("dataflow/manual/checker-framework-dataflow-manual.pdf") {
@@ -837,11 +839,24 @@ subprojects {
     // When you add one here, also update a dependsOn item for the "typecheck" task.
     createCheckTypeTask(project.name, "Formatter",
         "org.checkerframework.checker.formatter.FormatterChecker")
+
+    def checkInterningArgs = [
+      "-Astubs=javax-lang-model-element-name.astub"
+    ]
+    if ((project.name.equals("checker-qual")
+        || project.name.equals("checker-util")
+        || project.name.equals("checker-qual-android"))) {
+      // Because these projects use --release=11, the stubparser issues warnings like:
+      //  warning: javax-lang-model-element-name.astub:(line 11,col 1): Package not found: com.sun.tools.javac.util
+      //  so just suppress them.
+      checkInterningArgs += "-AstubNoWarnIfNotFound"
+    }
+
+
     createCheckTypeTask(project.name, "Interning",
         "org.checkerframework.checker.interning.InterningChecker",
-        [
-          "-Astubs=javax-lang-model-element-name.astub"
-        ])
+        checkInterningArgs)
+
     createCheckTypeTask(project.name, "Optional",
         "org.checkerframework.checker.optional.OptionalChecker",
         [

@@ -105,10 +105,9 @@ public class BinaryOperation extends JavaExpression {
 
   @Override
   public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof BinaryOperation)) {
+    if (!(je instanceof BinaryOperation other)) {
       return false;
     }
-    BinaryOperation other = (BinaryOperation) je;
     return operationKind == other.getOperationKind()
         && left.syntacticEquals(other.left)
         && right.syntacticEquals(other.right);
@@ -134,10 +133,9 @@ public class BinaryOperation extends JavaExpression {
 
   @Override
   public boolean equals(@Nullable Object other) {
-    if (!(other instanceof BinaryOperation)) {
+    if (!(other instanceof BinaryOperation biOp)) {
       return false;
     }
-    BinaryOperation biOp = (BinaryOperation) other;
     if (!(operationKind == biOp.getOperationKind())) {
       return false;
     }
@@ -154,20 +152,11 @@ public class BinaryOperation extends JavaExpression {
    * @return true if the binary operation is commutative
    */
   private boolean isCommutative() {
-    switch (operationKind) {
-      case PLUS:
-      case MULTIPLY:
-      case AND:
-      case OR:
-      case XOR:
-      case EQUAL_TO:
-      case NOT_EQUAL_TO:
-      case CONDITIONAL_AND:
-      case CONDITIONAL_OR:
-        return true;
-      default:
-        return false;
-    }
+    return switch (operationKind) {
+      case PLUS, MULTIPLY, AND, OR, XOR, EQUAL_TO, NOT_EQUAL_TO, CONDITIONAL_AND, CONDITIONAL_OR ->
+          true;
+      default -> false;
+    };
   }
 
   @Override
@@ -182,48 +171,28 @@ public class BinaryOperation extends JavaExpression {
    * @return the Java source code representation of the given operation
    */
   private String operationKindToString(Tree.Kind operationKind) {
-    switch (operationKind) {
-      case CONDITIONAL_AND:
-        return "&&";
-      case AND:
-        return "&";
-      case OR:
-        return "|";
-      case DIVIDE:
-        return "/";
-      case EQUAL_TO:
-        return "==";
-      case GREATER_THAN:
-        return ">";
-      case GREATER_THAN_EQUAL:
-        return ">=";
-      case LEFT_SHIFT:
-        return "<<";
-      case LESS_THAN:
-        return "<";
-      case LESS_THAN_EQUAL:
-        return "<=";
-      case MINUS:
-        return "-";
-      case MULTIPLY:
-        return "*";
-      case NOT_EQUAL_TO:
-        return "!=";
-      case CONDITIONAL_OR:
-        return "||";
-      case PLUS:
-        return "+";
-      case REMAINDER:
-        return "%";
-      case RIGHT_SHIFT:
-        return ">>";
-      case UNSIGNED_RIGHT_SHIFT:
-        return ">>>";
-      case XOR:
-        return "^";
-      default:
-        throw new BugInCF("unhandled " + operationKind);
-    }
+    return switch (operationKind) {
+      case CONDITIONAL_AND -> "&&";
+      case AND -> "&";
+      case OR -> "|";
+      case DIVIDE -> "/";
+      case EQUAL_TO -> "==";
+      case GREATER_THAN -> ">";
+      case GREATER_THAN_EQUAL -> ">=";
+      case LEFT_SHIFT -> "<<";
+      case LESS_THAN -> "<";
+      case LESS_THAN_EQUAL -> "<=";
+      case MINUS -> "-";
+      case MULTIPLY -> "*";
+      case NOT_EQUAL_TO -> "!=";
+      case CONDITIONAL_OR -> "||";
+      case PLUS -> "+";
+      case REMAINDER -> "%";
+      case RIGHT_SHIFT -> ">>";
+      case UNSIGNED_RIGHT_SHIFT -> ">>>";
+      case XOR -> "^";
+      default -> throw new BugInCF("unhandled " + operationKind);
+    };
   }
 
   @Override

@@ -147,14 +147,13 @@ public class FormatUtil {
       conv.put(
           last,
           ConversionCategory.intersect(
-              conv.containsKey(lastKey) ? conv.get(lastKey) : ConversionCategory.UNUSED,
-              c.category()));
+              conv.getOrDefault(lastKey, ConversionCategory.UNUSED), c.category()));
     }
 
     ConversionCategory[] res = new ConversionCategory[maxindex + 1];
     for (int i = 0; i <= maxindex; ++i) {
       Integer key = i; // autoboxing prevents recognizing that containsKey => get() != null
-      res[i] = conv.containsKey(key) ? conv.get(key) : ConversionCategory.UNUSED;
+      res[i] = conv.getOrDefault(key, ConversionCategory.UNUSED);
     }
     return res;
   }
@@ -201,15 +200,13 @@ public class FormatUtil {
   private static int indexFromFormat(@Regex(6) Matcher m) {
     int index;
     String s = m.group(1);
-    if (s != null) { // explicit index
+    String group2 = m.group(2); // not @Deterministic, so extract into local var
+    if (group2 != null && group2.indexOf('<') != -1) {
+      index = -1; // relative index
+    } else if (s != null) { // explicit index
       index = Integer.parseInt(s.substring(0, s.length() - 1));
     } else {
-      String group2 = m.group(2); // not @Deterministic, so extract into local var
-      if (group2 != null && group2.contains(String.valueOf('<'))) {
-        index = -1; // relative index
-      } else {
-        index = 0; // ordinary index
-      }
+      index = 0; // ordinary index
     }
     return index;
   }

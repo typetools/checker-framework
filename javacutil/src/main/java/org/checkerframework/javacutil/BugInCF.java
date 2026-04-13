@@ -92,8 +92,8 @@ public class BugInCF extends RuntimeException {
    */
   public BugInCF(@Nullable Tree location, String message, Throwable cause) {
     super(message, cause);
-    if (cause instanceof BugInCF && ((BugInCF) cause).getLocation() != null) {
-      this.location = ((BugInCF) cause).getLocation();
+    if (cause instanceof BugInCF bugInCf && bugInCf.getLocation() != null) {
+      this.location = bugInCf.getLocation();
     } else {
       this.location = location;
     }
@@ -127,8 +127,7 @@ public class BugInCF extends RuntimeException {
    * @return {@code throwable} if its a {@code BugInCF} otherwise a new {@code BugInCF} object
    */
   public static BugInCF addLocation(Tree location, Throwable throwable) {
-    if (throwable instanceof BugInCF) {
-      BugInCF bugInCF = (BugInCF) throwable;
+    if (throwable instanceof BugInCF bugInCF) {
       if (bugInCF.location == null) {
         bugInCF.location = location;
       }
