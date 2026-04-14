@@ -35,11 +35,10 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 final class ConstructorFirstWriteAnalysis {
 
-  /**
-   * The entry point is {@link #isFirstWriteToFieldInConstructor(Tree, VariableElement, MethodTree,
-   * RLCCalledMethodsAnnotatedTypeFactory)}.
-   */
-  private ConstructorFirstWriteAnalysis() {}
+  /** Do not instantiate. */
+  private ConstructorFirstWriteAnalysis() {
+    throw new Error("Do not instantiate");
+  }
 
   /**
    * Returns true if the given assignment is the first write to {@code targetField} on its path in
@@ -59,9 +58,10 @@ final class ConstructorFirstWriteAnalysis {
    * @param assignment the assignment tree being analyzed, which is a statement in the body of
    *     {@code constructor}
    * @param targetField the field assigned by {@code assignment}; its type is non-primitive
-   * @param constructor the constructor where the assignment appears
+   * @param constructor the constructor where {@code assignment} appears
    * @param cmAtf the factory used for side-effect reasoning and tree-path lookup
-   * @return true if this assignment is the first write during construction
+   * @return true if this assignment is definitely the first write during construction, or false if
+   *     that fact cannot be established
    */
   static boolean isFirstWriteToFieldInConstructor(
       @FindDistinct Tree assignment,
@@ -171,7 +171,8 @@ final class ConstructorFirstWriteAnalysis {
     /** The target assignment is definitely the first assignment in the scanned region. */
     FIRST_ASSIGNMENT,
     /**
-     * Disqualified by an earlier write, disallowed call/allocation, or unsupported statement form.
+     * The target assignment might be a reassignment. It is disqualified by an earlier write,
+     * disallowed call, or unsupported statement form.
      */
     REASSIGNMENT,
     /** The target assignment does not occur in the scanned region. */
@@ -198,8 +199,7 @@ final class ConstructorFirstWriteAnalysis {
    * @return {@link FirstWriteScanResult#FIRST_ASSIGNMENT} if {@code targetAssignment} is reached
    *     before any disqualifying event; {@link FirstWriteScanResult#REASSIGNMENT} if an earlier
    *     write, disallowed call/allocation, or unsupported statement form prevents proving that;
-   *     otherwise {@link FirstWriteScanResult#UNASSIGNED} if the target assignment does not occur
-   *     in the scanned region
+   *     otherwise {@link FirstWriteScanResult#UNASSIGNED}
    */
   private static FirstWriteScanResult scanForFirstWrite(
       List<? extends StatementTree> stmts,
