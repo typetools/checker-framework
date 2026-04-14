@@ -42,11 +42,8 @@ public class QualifierTyping implements Constraint {
   public QualifierTyping(AbstractQualifier Q, AbstractQualifier R, Kind kind) {
     assert Q != null && R != null;
     switch (kind) {
-      case QUALIFIER_SUBTYPE:
-      case QUALIFIER_EQUALITY:
-        break;
-      default:
-        throw new BugInCF("Unexpected kind: " + kind);
+      case QUALIFIER_SUBTYPE, QUALIFIER_EQUALITY -> {}
+      default -> throw new BugInCF("Unexpected kind: " + kind);
     }
     this.R = R;
     this.Q = Q;

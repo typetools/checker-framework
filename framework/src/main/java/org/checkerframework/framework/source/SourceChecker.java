@@ -692,8 +692,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         throw new UserError("Must supply an argument to -AwarnUnneededSuppressionsExceptions");
       }
       try {
-        warnUnneededSuppressionsExceptions =
+        @SuppressWarnings(
+            "regex:argument") // user-provided string; validity checked by PatternSyntaxException
+        // catch
+        Pattern warnUnneededSuppressionsExceptionsPattern =
             Pattern.compile(warnUnneededSuppressionsExceptionsString);
+        warnUnneededSuppressionsExceptions = warnUnneededSuppressionsExceptionsPattern;
       } catch (PatternSyntaxException e) {
         throw new UserError(
             "Argument to -AwarnUnneededSuppressionsExceptions is not a regular expression: "
@@ -935,6 +939,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return getPattern(patternName, options, ".");
   }
 
+  /**
+   * Returns a pattern from user-supplied options.
+   *
+   * @param patternName the name of the pattern to look up in the options
+   * @param options the options supplied by the user
+   * @param defaultPattern the pattern to return if the user didn't supply a value
+   * @return the user-supplied pattern for {@code patternName}
+   */
+  @SuppressWarnings(
+      "regex:argument") // pattern string comes from user options; validated by try-catch
   private Pattern getPattern(
       String patternName, Map<String, String> options, String defaultPattern) {
     String pattern;
@@ -2131,34 +2145,36 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
       String[] split = key.split(OPTION_SEPARATOR);
 
-      splitlengthswitch:
       switch (split.length) {
-        case 1:
+        case 1 -> {
           // No separator, option always active.
           activeOpts.put(key, value);
-          break;
-        case 2:
+        }
+        case 2 -> {
           Class<?> clazz = this.getClass();
-
+          boolean found = false;
           do {
             if (clazz.getCanonicalName().equals(split[0])
                 || clazz.getSimpleName().equals(split[0])) {
               // Valid class-option pair.
               activeOpts.put(split[1], value);
-              break splitlengthswitch;
+              found = true;
+              break;
             }
-
             clazz = clazz.getSuperclass();
           } while (clazz != null
               && !clazz.getName().equals(AbstractTypeProcessor.class.getCanonicalName()));
-          // Didn't find a matching class. Option might be for another processor. Add
-          // option anyways. javac will warn if no processor supports the option.
-          activeOpts.put(key, value);
-          break;
-        default:
+          if (!found) {
+            // Didn't find a matching class. Option might be for another processor. Add
+            // option anyways. javac will warn if no processor supports the option.
+            activeOpts.put(key, value);
+          }
+        }
+        default -> {
           // Too many separators. Option might be for another processor. Add option
           // anyways. javac will warn if no processor supports the option.
           activeOpts.put(key, value);
+        }
       }
     }
     return activeOpts;

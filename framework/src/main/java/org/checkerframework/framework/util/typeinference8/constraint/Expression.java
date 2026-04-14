@@ -96,21 +96,25 @@ public class Expression extends TypeConstraint {
       return new Typing(this, s, T, TypeConstraint.Kind.TYPE_COMPATIBILITY);
     }
     switch (expression.getKind()) {
-      case PARENTHESIZED:
+      case PARENTHESIZED -> {
         return new Expression(this, TreeUtils.withoutParens(expression), T);
-      case NEW_CLASS:
-      case METHOD_INVOCATION:
+      }
+      case NEW_CLASS, METHOD_INVOCATION -> {
         return reduceMethodInvocation(context);
-      case CONDITIONAL_EXPRESSION:
+      }
+      case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) expression;
         TypeConstraint trueConstraint = new Expression(this, conditional.getTrueExpression(), T);
         Constraint falseConstraint = new Expression(this, conditional.getFalseExpression(), T);
         return new ConstraintSet(trueConstraint, falseConstraint);
-      case LAMBDA_EXPRESSION:
+      }
+      case LAMBDA_EXPRESSION -> {
         return reduceLambda(context);
-      case MEMBER_REFERENCE:
+      }
+      case MEMBER_REFERENCE -> {
         return reduceMethodRef(context);
-      case SWITCH_EXPRESSION:
+      }
+      case SWITCH_EXPRESSION -> {
         ConstraintSet set = new ConstraintSet();
         SwitchExpressionScanner<Void, Void> scanner =
             new FunctionalSwitchExpressionScanner<>(
@@ -122,10 +126,10 @@ public class Expression extends TypeConstraint {
                 (c1, c2) -> null);
         scanner.scanSwitchExpression((SwitchExpressionTree) expression, null);
         return set;
-
-      default:
-        throw new BugInCF(
-            "Unexpected expression kind: %s, Expression: %s", expression.getKind(), expression);
+      }
+      default ->
+          throw new BugInCF(
+              "Unexpected expression kind: %s, Expression: %s", expression.getKind(), expression);
     }
   }
 

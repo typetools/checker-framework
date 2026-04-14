@@ -52,6 +52,7 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.stub.AnnotationFileParser;
@@ -200,7 +201,7 @@ public class InsertAjavaAnnotations {
      * @param destFileContents the String the second vistide AST was parsed from
      * @param lineSeparator the line separator that {@code destFileContents} uses
      */
-    public BuildInsertionsVisitor(String destFileContents, String lineSeparator) {
+    public BuildInsertionsVisitor(String destFileContents, @Regex String lineSeparator) {
       allAnnotations = null;
       String[] lines = destFileContents.split(lineSeparator);
       this.lines = Arrays.asList(lines);
@@ -478,14 +479,15 @@ public class InsertAjavaAnnotations {
    * with contents {@code javaFileContents} that uses the given line separator and returns the
    * resulting String.
    *
-   * @param annotationFile input stream for an ajava file for {@code javaFileContents}
+   * @param annotationFile input stream for an ajava file that corresponds to {@code
+   *     javaFileContents}
    * @param javaFileContents contents of a Java file to insert annotations into
    * @param lineSeparator the line separator {@code javaFileContents} uses
    * @return a modified {@code javaFileContents} with annotations from {@code annotationFile}
    *     inserted
    */
   public String insertAnnotations(
-      InputStream annotationFile, String javaFileContents, String lineSeparator) {
+      InputStream annotationFile, String javaFileContents, @Regex String lineSeparator) {
     CompilationUnit annotationCu = JavaParserUtil.parseCompilationUnit(annotationFile);
     CompilationUnit javaCu = JavaParserUtil.parseCompilationUnit(javaFileContents);
     BuildInsertionsVisitor insertionVisitor =
@@ -541,7 +543,8 @@ public class InsertAjavaAnnotations {
     try {
       File javaFile = new File(javaFileName);
       String fileContents = FilesPlume.readString(Path.of(javaFileName));
-      String lineSeparator = FilesPlume.inferLineSeparator(annotationFileName);
+      @SuppressWarnings("regex") // next release of plume-lib annotates `inferLineSeparator()`
+      @Regex String lineSeparator = FilesPlume.inferLineSeparator(javaFileName);
       try (FileInputStream annotationInputStream = new FileInputStream(annotationFileName)) {
         String result = insertAnnotations(annotationInputStream, fileContents, lineSeparator);
         FilesPlume.writeString(javaFile, result);

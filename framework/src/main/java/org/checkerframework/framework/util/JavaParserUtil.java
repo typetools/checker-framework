@@ -378,66 +378,30 @@ public class JavaParserUtil {
     if (currentSourceVersion == null) {
       // Use String comparison so we can compile on older JDKs which
       // don't have all the latest SourceVersion constants:
-      switch (env.getSourceVersion().name()) {
-        case "RELEASE_8":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_8;
-          break;
-        case "RELEASE_9":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_9;
-          break;
-        case "RELEASE_10":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_10;
-          break;
-        case "RELEASE_11":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_11;
-          break;
-        case "RELEASE_12":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_12;
-          break;
-        case "RELEASE_13":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_13;
-          break;
-        case "RELEASE_14":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_14;
-          break;
-        case "RELEASE_15":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_15;
-          break;
-        case "RELEASE_16":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_16;
-          break;
-        case "RELEASE_17":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_17;
-          break;
-        case "RELEASE_18":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_18;
-          break;
-        case "RELEASE_19":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_19;
-          break;
-        case "RELEASE_20":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_20;
-          break;
-        case "RELEASE_21":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_21;
-          break;
-        case "RELEASE_22":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_22;
-          break;
-        case "RELEASE_23":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_23;
-          break;
-        case "RELEASE_24":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_24;
-          break;
-        case "RELEASE_25":
-          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_25;
-          break;
-        // Up-to-date as of (2026-03-26).  See
-        // https://www.javadoc.io/doc/com.github.javaparser/javaparser-core/latest/com/github/javaparser/ParserConfiguration.LanguageLevel.html .
-        default:
-          currentSourceVersion = DEFAULT_LANGUAGE_LEVEL;
-      }
+      currentSourceVersion =
+          switch (env.getSourceVersion().name()) {
+            case "RELEASE_8" -> ParserConfiguration.LanguageLevel.JAVA_8;
+            case "RELEASE_9" -> ParserConfiguration.LanguageLevel.JAVA_9;
+            case "RELEASE_10" -> ParserConfiguration.LanguageLevel.JAVA_10;
+            case "RELEASE_11" -> ParserConfiguration.LanguageLevel.JAVA_11;
+            case "RELEASE_12" -> ParserConfiguration.LanguageLevel.JAVA_12;
+            case "RELEASE_13" -> ParserConfiguration.LanguageLevel.JAVA_13;
+            case "RELEASE_14" -> ParserConfiguration.LanguageLevel.JAVA_14;
+            case "RELEASE_15" -> ParserConfiguration.LanguageLevel.JAVA_15;
+            case "RELEASE_16" -> ParserConfiguration.LanguageLevel.JAVA_16;
+            case "RELEASE_17" -> ParserConfiguration.LanguageLevel.JAVA_17;
+            case "RELEASE_18" -> ParserConfiguration.LanguageLevel.JAVA_18;
+            case "RELEASE_19" -> ParserConfiguration.LanguageLevel.JAVA_19;
+            case "RELEASE_20" -> ParserConfiguration.LanguageLevel.JAVA_20;
+            case "RELEASE_21" -> ParserConfiguration.LanguageLevel.JAVA_21;
+            case "RELEASE_22" -> ParserConfiguration.LanguageLevel.JAVA_22;
+            case "RELEASE_23" -> ParserConfiguration.LanguageLevel.JAVA_23;
+            case "RELEASE_24" -> ParserConfiguration.LanguageLevel.JAVA_24;
+            case "RELEASE_25" -> ParserConfiguration.LanguageLevel.JAVA_25;
+            // Up-to-date as of 2026-03-26.  See
+            // https://www.javadoc.io/doc/com.github.javaparser/javaparser-core/latest/com/github/javaparser/ParserConfiguration.LanguageLevel.html .
+            default -> DEFAULT_LANGUAGE_LEVEL;
+          };
     }
     return currentSourceVersion;
   }

@@ -111,27 +111,27 @@ public class QualifierVar extends AbstractQualifier {
   private ConstraintSet addConstraintsFromComplementaryBounds(BoundKind kind, AbstractQualifier s) {
     ConstraintSet constraints = new ConstraintSet();
     switch (kind) {
-      case EQUAL:
+      case EQUAL -> {
         for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
           if (s != t) {
             constraints.add(new QualifierTyping(s, t, Kind.TYPE_EQUALITY));
           }
         }
-        break;
-      case LOWER:
+      }
+      case LOWER -> {
         for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
           if (s != t) {
             constraints.add(new QualifierTyping(s, t, Kind.SUBTYPE));
           }
         }
-        break;
-      case UPPER:
+      }
+      case UPPER -> {
         for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
           if (s != t) {
             constraints.add(new QualifierTyping(t, s, Kind.SUBTYPE));
           }
         }
-        break;
+      }
     }
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {

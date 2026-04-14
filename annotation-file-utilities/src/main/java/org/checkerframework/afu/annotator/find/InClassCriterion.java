@@ -18,6 +18,7 @@ import org.checkerframework.afu.annotator.scanner.LocalClassScanner;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 
 // If there are dollar signs in a name, then there are two
@@ -73,8 +74,11 @@ public final class InClassCriterion implements Criterion {
     return isSatisfiedBy(path, className, exactMatch);
   }
 
-  static Pattern anonclassPattern;
-  static Pattern localClassPattern;
+  /** Pattern that matches an anonymous class name. */
+  static @Regex(3) Pattern anonclassPattern;
+
+  /** Pattern that matches a local class name. */
+  static @Regex(4) Pattern localClassPattern;
 
   static {
     // for JDK 7: anonclassPattern = Pattern.compile("^(?<num>[0-9]+)(\\$(?<remaining>.*))?$");
