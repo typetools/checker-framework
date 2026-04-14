@@ -1051,12 +1051,13 @@ public class MustCallConsistencyAnalyzer {
    * @param obligations the current set of tracked Obligations. If ownership is transferred, it is
    *     side-effected to remove any Obligations that are resource-aliased to the return node.
    * @param cfg the CFG of the enclosing method
-   * @param node a return node
+   * @param node a return node, which must have an expression
    */
   private void updateObligationsForOwningReturn(
       Set<Obligation> obligations, ControlFlowGraph cfg, ReturnNode node) {
     if (isTransferOwnershipAtReturn(cfg)) {
-      Node returnExpr = node.getResult();
+      @SuppressWarnings("nullness:argument") // the return node has an expression
+      @NonNull Node returnExpr = node.getResult();
       returnExpr = getTempVarOrNode(returnExpr);
       if (returnExpr instanceof LocalVariableNode lvn) {
         removeObligationsContainingVar(
