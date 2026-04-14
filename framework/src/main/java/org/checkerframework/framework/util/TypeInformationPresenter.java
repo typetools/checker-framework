@@ -242,71 +242,61 @@ public class TypeInformationPresenter {
 
       // We are decreasing endCol by 1 because we want it to be inclusive
       switch (tree.getKind()) {
-        case UNARY_PLUS:
-        case UNARY_MINUS:
-        case BITWISE_COMPLEMENT:
-        case LOGICAL_COMPLEMENT:
-        case MULTIPLY:
-        case DIVIDE:
-        case REMAINDER:
-        case PLUS:
-        case MINUS:
-        case AND:
-        case XOR:
-        case OR:
-        case ASSIGNMENT:
-        case LESS_THAN:
-        case GREATER_THAN:
-          // 1-character operators
-          endCol = startCol;
-          break;
-        case PREFIX_INCREMENT:
-        case PREFIX_DECREMENT:
-        case POSTFIX_INCREMENT:
-        case POSTFIX_DECREMENT:
-        case LEFT_SHIFT:
-        case RIGHT_SHIFT:
-        case CONDITIONAL_AND:
-        case CONDITIONAL_OR:
-        case MULTIPLY_ASSIGNMENT:
-        case DIVIDE_ASSIGNMENT:
-        case REMAINDER_ASSIGNMENT:
-        case PLUS_ASSIGNMENT:
-        case MINUS_ASSIGNMENT:
-        case AND_ASSIGNMENT:
-        case XOR_ASSIGNMENT:
-        case OR_ASSIGNMENT:
-        case LESS_THAN_EQUAL:
-        case GREATER_THAN_EQUAL:
-        case EQUAL_TO:
-        case NOT_EQUAL_TO:
-          // 2-character operators
-          endCol = startCol + 1;
-          break;
-        case UNSIGNED_RIGHT_SHIFT:
-        case LEFT_SHIFT_ASSIGNMENT:
-        case RIGHT_SHIFT_ASSIGNMENT:
-          // 3-character operators
-          endCol = startCol + 2;
-          break;
-        case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
-          // 4-character operators
-          endCol = startCol + 3;
-          break;
-        case IDENTIFIER:
-          endCol = startCol + ((IdentifierTree) tree).getName().length() - 1;
-          break;
-        case VARIABLE:
-          endCol = startCol + ((VariableTree) tree).getName().length() - 1;
-          break;
-        case MEMBER_SELECT:
+        case UNARY_PLUS,
+            UNARY_MINUS,
+            BITWISE_COMPLEMENT,
+            LOGICAL_COMPLEMENT,
+            MULTIPLY,
+            DIVIDE,
+            REMAINDER,
+            PLUS,
+            MINUS,
+            AND,
+            XOR,
+            OR,
+            ASSIGNMENT,
+            LESS_THAN,
+            GREATER_THAN ->
+            // 1-character operators
+            endCol = startCol;
+        case PREFIX_INCREMENT,
+            PREFIX_DECREMENT,
+            POSTFIX_INCREMENT,
+            POSTFIX_DECREMENT,
+            LEFT_SHIFT,
+            RIGHT_SHIFT,
+            CONDITIONAL_AND,
+            CONDITIONAL_OR,
+            MULTIPLY_ASSIGNMENT,
+            DIVIDE_ASSIGNMENT,
+            REMAINDER_ASSIGNMENT,
+            PLUS_ASSIGNMENT,
+            MINUS_ASSIGNMENT,
+            AND_ASSIGNMENT,
+            XOR_ASSIGNMENT,
+            OR_ASSIGNMENT,
+            LESS_THAN_EQUAL,
+            GREATER_THAN_EQUAL,
+            EQUAL_TO,
+            NOT_EQUAL_TO ->
+            // 2-character operators
+            endCol = startCol + 1;
+        case UNSIGNED_RIGHT_SHIFT, LEFT_SHIFT_ASSIGNMENT, RIGHT_SHIFT_ASSIGNMENT ->
+            // 3-character operators
+            endCol = startCol + 2;
+        case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT ->
+            // 4-character operators
+            endCol = startCol + 3;
+        case IDENTIFIER -> endCol = startCol + ((IdentifierTree) tree).getName().length() - 1;
+        case VARIABLE -> endCol = startCol + ((VariableTree) tree).getName().length() - 1;
+        case MEMBER_SELECT -> {
           // The preferred start column of MemberSelectTree locates the "."
           // character before the member identifier. So we increase startCol
           // by 1 to point to the start of the member identifier.
           startCol += 1;
           endCol = startCol + ((MemberSelectTree) tree).getIdentifier().length() - 1;
-          break;
-        case MEMBER_REFERENCE:
+        }
+        case MEMBER_REFERENCE -> {
           MemberReferenceTree memberReferenceTree = (MemberReferenceTree) tree;
 
           final int identifierLength;
@@ -323,19 +313,17 @@ public class TypeInformationPresenter {
           endCol = lineMap.getColumnNumber(endPos) - 1;
           startLine = endLine;
           startCol = endCol - identifierLength + 1;
-          break;
-        case TYPE_PARAMETER:
-          endCol = startCol + ((TypeParameterTree) tree).getName().length() - 1;
-          break;
-        case METHOD:
-          endCol = startCol + ((MethodTree) tree).getName().length() - 1;
-          break;
-        case METHOD_INVOCATION:
+        }
+        case TYPE_PARAMETER ->
+            endCol = startCol + ((TypeParameterTree) tree).getName().length() - 1;
+        case METHOD -> endCol = startCol + ((MethodTree) tree).getName().length() - 1;
+        case METHOD_INVOCATION -> {
           return computeMessageRange(((MethodInvocationTree) tree).getMethodSelect());
-        default:
+        }
+        default -> {
           endLine = lineMap.getLineNumber(endPos);
           endCol = lineMap.getColumnNumber(endPos) - 1;
-          break;
+        }
       }
 
       // convert 1-based positions to 0-based positions
@@ -407,28 +395,26 @@ public class TypeInformationPresenter {
     public Void visitUnary(UnaryTree tree, Void unused) {
       Tree.Kind treeKind = tree.getKind();
       switch (treeKind) {
-        case UNARY_PLUS:
-        case UNARY_MINUS:
-        case BITWISE_COMPLEMENT:
-        case LOGICAL_COMPLEMENT:
-        case PREFIX_INCREMENT:
-        case PREFIX_DECREMENT:
-          reportTreeType(tree, factory.getAnnotatedType(tree));
-          break;
-        case POSTFIX_INCREMENT:
-        case POSTFIX_DECREMENT:
+        case UNARY_PLUS,
+            UNARY_MINUS,
+            BITWISE_COMPLEMENT,
+            LOGICAL_COMPLEMENT,
+            PREFIX_INCREMENT,
+            PREFIX_DECREMENT ->
+            reportTreeType(tree, factory.getAnnotatedType(tree));
+        case POSTFIX_INCREMENT, POSTFIX_DECREMENT -> {
           reportTreeType(tree, factory.getAnnotatedType(tree));
           if (genFactory != null) {
             reportTreeType(
                 tree, genFactory.getAnnotatedTypeRhsUnaryAssign(tree), MessageKind.ASSIGN_RHS_TYPE);
           }
-          break;
-        default:
-          throw new BugInCF(
-              "Unsupported unary tree type "
-                  + treeKind
-                  + " for "
-                  + TypeInformationPresenter.class.getCanonicalName());
+        }
+        default ->
+            throw new BugInCF(
+                "Unsupported unary tree type "
+                    + treeKind
+                    + " for "
+                    + TypeInformationPresenter.class.getCanonicalName());
       }
       return super.visitUnary(tree, unused);
     }
@@ -462,20 +448,17 @@ public class TypeInformationPresenter {
     @Override
     public Void visitIdentifier(IdentifierTree tree, Void unused) {
       switch (TreeUtils.elementFromUse(tree).getKind()) {
-        case ENUM_CONSTANT:
-        case FIELD:
-        case PARAMETER:
-        case LOCAL_VARIABLE:
-        case EXCEPTION_PARAMETER:
-        case RESOURCE_VARIABLE:
-        case CONSTRUCTOR:
-          reportTreeType(tree, factory.getAnnotatedType(tree));
-          break;
-        case METHOD:
-          reportTreeType(tree, factory.getAnnotatedType(tree), MessageKind.DECLARED_TYPE);
-          break;
-        default:
-          break;
+        case ENUM_CONSTANT,
+            FIELD,
+            PARAMETER,
+            LOCAL_VARIABLE,
+            EXCEPTION_PARAMETER,
+            RESOURCE_VARIABLE,
+            CONSTRUCTOR ->
+            reportTreeType(tree, factory.getAnnotatedType(tree));
+        case METHOD ->
+            reportTreeType(tree, factory.getAnnotatedType(tree), MessageKind.DECLARED_TYPE);
+        default -> {} // do nothing
       }
       return super.visitIdentifier(tree, unused);
     }

@@ -483,23 +483,23 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
   private void scanUp(TreePath path) {
     Tree tree = path.getLeaf();
     switch (tree.getKind()) {
-      case ASSIGNMENT:
+      case ASSIGNMENT -> {
         AssignmentTree assignmentTree = (AssignmentTree) tree;
         commonAssignmentCheck(
             atypeFactory.getAnnotatedType(assignmentTree.getVariable()),
             atypeFactory.getAnnotatedType(assignmentTree.getExpression()),
             assignmentTree.getExpression(),
             "assignment");
-        break;
-      case VARIABLE:
+      }
+      case VARIABLE -> {
         VariableTree variableTree = (VariableTree) tree;
         commonAssignmentCheck(
             atypeFactory.getAnnotatedType(variableTree),
             atypeFactory.getAnnotatedType(variableTree.getInitializer()),
             variableTree.getInitializer(),
             "assignment");
-        break;
-      case METHOD_INVOCATION:
+      }
+      case METHOD_INVOCATION -> {
         MethodInvocationTree invocationTree = (MethodInvocationTree) tree;
         List<? extends ExpressionTree> args = invocationTree.getArguments();
         ParameterizedExecutableType mType = atypeFactory.methodFromUse(invocationTree);
@@ -521,8 +521,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 methodName);
           }
         }
-        break;
-      case RETURN:
+      }
+      case RETURN -> {
         ReturnTree returnTree = (ReturnTree) tree;
         if (returnTree.getExpression() instanceof NewClassTree
             || returnTree.getExpression() instanceof LambdaExpressionTree) {
@@ -548,18 +548,20 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 "return");
           }
         }
-        break;
-      case METHOD:
-        // Stop scanning at method boundaries, since the expression can't escape the method
-        // without either being assigned to a field or returned.
+      }
+      case METHOD ->
+      // Stop scanning at method boundaries, since the expression can't escape the method
+      // without either being assigned to a field or returned.
+      {
         return;
-      case CLASS:
+      }
+      case CLASS -> {
         // Can't ever happen, because we stop scanning at either method or field initializer
         // boundaries
         assert false;
         return;
-      default:
-        scanUp(path.getParentPath());
+      }
+      default -> scanUp(path.getParentPath());
     }
   }
 

@@ -1043,10 +1043,8 @@ public class AnnotationFileParser {
       Element elt = entry.getKey();
       BodyDeclaration<?> decl = entry.getValue();
       switch (elt.getKind()) {
-        case FIELD:
-          processField((FieldDeclaration) decl, (VariableElement) elt);
-          break;
-        case ENUM_CONSTANT:
+        case FIELD -> processField((FieldDeclaration) decl, (VariableElement) elt);
+        case ENUM_CONSTANT -> {
           // Enum constants can occur as fields in stubs files when their
           // type has an annotation on it, e.g. see DeviceTypeTest which ends up with
           // the TRACKER enum constant annotated with DefaultType:
@@ -1061,24 +1059,18 @@ public class AnnotationFileParser {
                     + " for ENUM_CONSTANT kind, original: "
                     + decl);
           }
-          break;
-        case CONSTRUCTOR:
-        case METHOD:
-          processCallableDeclaration((CallableDeclaration<?>) decl, (ExecutableElement) elt);
-          break;
-        case CLASS:
-        case INTERFACE:
-          // Not processing an ajava file, so ignore the return value.
-          processTypeDecl((ClassOrInterfaceDeclaration) decl, innerName, null);
-          break;
-        case ENUM:
-          // Not processing an ajava file, so ignore the return value.
-          processTypeDecl((EnumDeclaration) decl, innerName, null);
-          break;
-        default:
-          /* do nothing */
-          stubWarnNotFound(decl, "AnnotationFileParser ignoring: " + elt);
-          break;
+        }
+        case CONSTRUCTOR, METHOD ->
+            processCallableDeclaration((CallableDeclaration<?>) decl, (ExecutableElement) elt);
+        case CLASS, INTERFACE ->
+            // Not processing an ajava file, so ignore the return value.
+            processTypeDecl((ClassOrInterfaceDeclaration) decl, innerName, null);
+        case ENUM ->
+            // Not processing an ajava file, so ignore the return value.
+            processTypeDecl((EnumDeclaration) decl, innerName, null);
+        default ->
+            /* do nothing */
+            stubWarnNotFound(decl, "AnnotationFileParser ignoring: " + elt);
       }
     }
     for (Map.Entry<Element, List<BodyDeclaration<?>>> entry : members.second.entrySet()) {
@@ -1545,7 +1537,7 @@ public class AnnotationFileParser {
     }
 
     switch (atype.getKind()) {
-      case DECLARED:
+      case DECLARED -> {
         ClassOrInterfaceType declType = unwrapDeclaredType(typeDef);
         if (declType == null) {
           break;
@@ -1571,8 +1563,8 @@ public class AnnotationFileParser {
             annotate(adeclTypeArgs.get(i), declTypeArgs.get(i), null, astNode);
           }
         }
-        break;
-      case WILDCARD:
+      }
+      case WILDCARD -> {
         AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atype;
         // Ensure that the file also has a wildcard type, report an error otherwise
         if (!typeDef.isWildcardType()) {
@@ -1602,8 +1594,8 @@ public class AnnotationFileParser {
         } else {
           annotate(atype, primaryAnnotations, astNode);
         }
-        break;
-      case TYPEVAR:
+      }
+      case TYPEVAR -> {
         // Add annotations from the declaration of the TypeVariable
         AnnotatedTypeVariable typeVarUse = (AnnotatedTypeVariable) atype;
         Types typeUtils = processingEnv.getTypeUtils();
@@ -1615,9 +1607,8 @@ public class AnnotationFileParser {
         }
         // Add back the primary annotations.
         annotate(atype, primaryAnnotations, astNode);
-        break;
-      default:
-        // No additional annotations to add.
+      }
+      default -> {} // No additional annotations to add.
     }
   }
 
@@ -2088,25 +2079,31 @@ public class AnnotationFileParser {
   private boolean sameType(TypeMirror javacType, Type javaParserType) {
 
     switch (javacType.getKind()) {
-      case BOOLEAN:
+      case BOOLEAN -> {
         return javaParserType.equals(PrimitiveType.booleanType());
-      case BYTE:
+      }
+      case BYTE -> {
         return javaParserType.equals(PrimitiveType.byteType());
-      case CHAR:
+      }
+      case CHAR -> {
         return javaParserType.equals(PrimitiveType.charType());
-      case DOUBLE:
+      }
+      case DOUBLE -> {
         return javaParserType.equals(PrimitiveType.doubleType());
-      case FLOAT:
+      }
+      case FLOAT -> {
         return javaParserType.equals(PrimitiveType.floatType());
-      case INT:
+      }
+      case INT -> {
         return javaParserType.equals(PrimitiveType.intType());
-      case LONG:
+      }
+      case LONG -> {
         return javaParserType.equals(PrimitiveType.longType());
-      case SHORT:
+      }
+      case SHORT -> {
         return javaParserType.equals(PrimitiveType.shortType());
-
-      case DECLARED:
-      case TYPEVAR:
+      }
+      case DECLARED, TYPEVAR -> {
         if (!(javaParserType instanceof ClassOrInterfaceType javaParserClassType)) {
           return false;
         }
@@ -2118,15 +2115,14 @@ public class AnnotationFileParser {
         // Check both fully-qualified name and simple name.
         return javacElement.toString().equals(javaParserString)
             || javacElement.getSimpleName().contentEquals(javaParserString);
-
-      case ARRAY:
+      }
+      case ARRAY -> {
         return javaParserType.isArrayType()
             && sameType(
                 ((ArrayType) javacType).getComponentType(),
                 javaParserType.asArrayType().getComponentType());
-
-      default:
-        throw new BugInCF("Unhandled type %s of kind %s", javacType, javacType.getKind());
+      }
+      default -> throw new BugInCF("Unhandled type %s of kind %s", javacType, javacType.getKind());
     }
   }
 

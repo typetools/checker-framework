@@ -111,9 +111,10 @@ public final class TypesUtils {
    * @param typeMirror a TypeMirror
    * @return the class for {@code typeMirror}
    */
+  @SuppressWarnings(
+      "StatementSwitchToExpressionSwitch") // Task :javacutil:javadoc fails under JDK 17
   public static Class<?> getClassFromType(TypeMirror typeMirror) {
 
-    // I'm having trouble converting this to a new-style arrow switch expression.
     switch (typeMirror.getKind()) {
       case INT:
         return int.class;

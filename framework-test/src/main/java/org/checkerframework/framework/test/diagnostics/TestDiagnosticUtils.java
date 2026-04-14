@@ -140,7 +140,10 @@ public class TestDiagnosticUtils {
    * @param diagnosticString the string to parse
    * @return a diagnostic parsed from the given string
    */
-  @SuppressWarnings("nullness") // TODO: regular expression group access
+  @SuppressWarnings({
+    "nullness", // TODO: regular expression group access
+    "regex:group.count" // group count varies by pattern; callers ensure correct group counts
+  })
   protected static TestDiagnostic fromPatternMatching(
       Pattern diagnosticPattern,
       Pattern warningPattern,

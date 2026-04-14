@@ -135,15 +135,11 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     boolean enableLombokSupport = true;
     for (String framework : disabledFrameworks) {
       switch (framework) {
-        case "autovalue":
-          enableAutoValueSupport = false;
-          break;
-        case "lombok":
-          enableLombokSupport = false;
-          break;
-        default:
-          throw new UserError(
-              "Unsupported builder framework in -AdisableBuilderFrameworkSupports: " + framework);
+        case "autovalue" -> enableAutoValueSupport = false;
+        case "lombok" -> enableLombokSupport = false;
+        default ->
+            throw new UserError(
+                "Unsupported builder framework in -AdisableBuilderFrameworkSupports: " + framework);
       }
     }
     if (enableAutoValueSupport) {

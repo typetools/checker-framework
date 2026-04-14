@@ -438,43 +438,30 @@ public class LockAnnotatedTypeFactory
       boolean weaker = false;
 
       switch (other) {
-        case MAYRELEASELOCKS:
-          break;
-        case RELEASESNOLOCKS:
+        case MAYRELEASELOCKS -> {}
+        case RELEASESNOLOCKS -> {
           if (this == MAYRELEASELOCKS) {
             weaker = true;
           }
-          break;
-        case LOCKINGFREE:
+        }
+        case LOCKINGFREE -> {
           switch (this) {
-            case MAYRELEASELOCKS:
-            case RELEASESNOLOCKS:
-              weaker = true;
-              break;
-            default:
+            case MAYRELEASELOCKS, RELEASESNOLOCKS -> weaker = true;
+            default -> {}
           }
-          break;
-        case SIDEEFFECTFREE:
+        }
+        case SIDEEFFECTFREE -> {
           switch (this) {
-            case MAYRELEASELOCKS:
-            case RELEASESNOLOCKS:
-            case LOCKINGFREE:
-              weaker = true;
-              break;
-            default:
+            case MAYRELEASELOCKS, RELEASESNOLOCKS, LOCKINGFREE -> weaker = true;
+            default -> {}
           }
-          break;
-        case PURE:
+        }
+        case PURE -> {
           switch (this) {
-            case MAYRELEASELOCKS:
-            case RELEASESNOLOCKS:
-            case LOCKINGFREE:
-            case SIDEEFFECTFREE:
-              weaker = true;
-              break;
-            default:
+            case MAYRELEASELOCKS, RELEASESNOLOCKS, LOCKINGFREE, SIDEEFFECTFREE -> weaker = true;
+            default -> {}
           }
-          break;
+        }
       }
 
       return weaker;

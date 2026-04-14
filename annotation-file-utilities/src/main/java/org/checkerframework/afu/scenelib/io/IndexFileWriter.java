@@ -332,20 +332,20 @@ public final class IndexFileWriter {
 
   private void printType(Type type) {
     switch (type.getKind()) {
-      case ARRAY:
+      case ARRAY -> {
         ArrayType a = (ArrayType) type;
         printType(a.getComponentType());
         pw.print("[]");
-        break;
-      case BOUNDED:
+      }
+      case BOUNDED -> {
         BoundedType b = (BoundedType) type;
         printType(b.getName());
         pw.print(" ");
         pw.print(b.getBoundKind());
         pw.print(" ");
         printType(b.getBound());
-        break;
-      case DECLARED:
+      }
+      case DECLARED -> {
         DeclaredType d = (DeclaredType) type;
         pw.print(d.getName());
         if (!d.isWildcard()) {
@@ -368,7 +368,7 @@ public final class IndexFileWriter {
             printType(inner);
           }
         }
-        break;
+      }
     }
   }
 

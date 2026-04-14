@@ -221,14 +221,8 @@ public class TypeVarUseApplier {
 
       TypeAnnotationPosition pos = anno.position;
       switch (pos.type) {
-        case FIELD:
-        case LOCAL_VARIABLE:
-        case RESOURCE_VARIABLE:
-        case EXCEPTION_PARAMETER:
-          annotations.add(anno);
-          break;
-
-        default:
+        case FIELD, LOCAL_VARIABLE, RESOURCE_VARIABLE, EXCEPTION_PARAMETER -> annotations.add(anno);
+        default -> {}
       }
     }
 

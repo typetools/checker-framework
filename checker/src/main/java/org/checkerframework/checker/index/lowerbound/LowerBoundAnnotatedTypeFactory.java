@@ -311,22 +311,15 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror typeDst) {
       AnnotatedTypeMirror typeSrc = getAnnotatedType(tree.getExpression());
       switch (tree.getKind()) {
-        case PREFIX_INCREMENT:
-          promoteType(typeSrc, typeDst);
-          break;
-        case PREFIX_DECREMENT:
-          demoteType(typeSrc, typeDst);
-          break;
-        case POSTFIX_INCREMENT:
-        case POSTFIX_DECREMENT:
-          // Do nothing. The CF should take care of these itself.
-          break;
-        case BITWISE_COMPLEMENT:
-          handleBitWiseComplement(
-              getSearchIndexAnnotatedTypeFactory().getAnnotatedType(tree.getExpression()), typeDst);
-          break;
-        default:
-          break;
+        case PREFIX_INCREMENT -> promoteType(typeSrc, typeDst);
+        case PREFIX_DECREMENT -> demoteType(typeSrc, typeDst);
+        case POSTFIX_INCREMENT,
+            POSTFIX_DECREMENT -> {} // Do nothing. The CF should take care of these itself.
+        case BITWISE_COMPLEMENT ->
+            handleBitWiseComplement(
+                getSearchIndexAnnotatedTypeFactory().getAnnotatedType(tree.getExpression()),
+                typeDst);
+        default -> {}
       }
       return super.visitUnary(tree, typeDst);
     }

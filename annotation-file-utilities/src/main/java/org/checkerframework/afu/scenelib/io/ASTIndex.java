@@ -219,14 +219,8 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
     @Override
     public Void defaultAction(Tree node, ASTRecord rec) {
       switch (node.getKind()) {
-        case BREAK:
-        case COMPILATION_UNIT:
-        case CONTINUE:
-        case IMPORT:
-        case MODIFIERS:
-          break; // not handled
-        default:
-          put(node, rec);
+        case BREAK, COMPILATION_UNIT, CONTINUE, IMPORT, MODIFIERS -> {} // not handled
+        default -> put(node, rec);
       }
       return null;
     }

@@ -73,6 +73,8 @@ import org.checkerframework.afu.scenelib.io.DebugWriter;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.regex.qual.Regex;
+import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.objectweb.asm.TypePath;
 import org.plumelib.util.IPair;
 
@@ -125,8 +127,13 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
   /**
    * Returns regular expression matching "anything but" {@code c}: a single comment, character or
    * string literal, or non-{@code c} character.
+   *
+   * @param c a character not to match
+   * @return a regex that matches anything other than the given character
    */
-  private static final String otherThan(char c) {
+  @StaticallyExecutable
+  @SuppressWarnings("regex:return") // the returned string is a valid regex
+  private static final @Regex String otherThan(char c) {
     String cEscaped =
         switch (c) {
           case '/', '"', '\'' -> ""; // already present in class defn
@@ -203,7 +210,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
       int pos = Position.NOPOS;
       int stop = Math.min(end, s.length());
       String cQuoted = c == '/' ? nonDelimSlash : Pattern.quote(String.valueOf(c));
-      String regex = "(?:" + otherThan(c) + ")*+" + cQuoted;
+      @Regex String regex = "(?:" + otherThan(c) + ")*+" + cQuoted;
       Pattern p = Pattern.compile(regex, Pattern.MULTILINE);
       Matcher m = p.matcher(s).region(start, stop);
 
@@ -264,10 +271,10 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
     private IPair<ASTRecord, Integer> getBaseTypePosition(JCTree t) {
       while (true) {
         switch (t.getKind()) {
-          case IDENTIFIER:
-          case PRIMITIVE_TYPE:
+          case IDENTIFIER, PRIMITIVE_TYPE -> {
             return pathAndPos(t);
-          case MEMBER_SELECT:
+          }
+          case MEMBER_SELECT -> {
             JCTree exp = t;
             do { // locate pkg name, if any
               JCFieldAccess jfa = (JCFieldAccess) exp;
@@ -289,29 +296,26 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
             }
             return pathAndPos(
                 t, getFirstInstanceAfter('.', TreePathUtil.getEndPosition(t, tree)) + 1);
-          case ARRAY_TYPE:
-            t = ((JCArrayTypeTree) t).elemtype;
-            break;
-          case PARAMETERIZED_TYPE:
+          }
+          case ARRAY_TYPE -> t = ((JCArrayTypeTree) t).elemtype;
+          case PARAMETERIZED_TYPE -> {
             return pathAndPos(t, t.getStartPosition());
-          case EXTENDS_WILDCARD:
-          case SUPER_WILDCARD:
-            t = ((JCWildcard) t).inner;
-            break;
-          case UNBOUNDED_WILDCARD:
+          }
+          case EXTENDS_WILDCARD, SUPER_WILDCARD -> t = ((JCWildcard) t).inner;
+          case UNBOUNDED_WILDCARD -> {
             // This is "?" as in "List<?>".  ((JCWildcard) t).inner is null.
             // There is nowhere to attach the annotation, so for now return
             // the "?" tree itself.
             return pathAndPos(t);
-          case ANNOTATED_TYPE:
-            // If this type already has annotations on it, get the underlying
-            // type, without annotations.
-            t = ((JCAnnotatedType) t).underlyingType;
-            break;
-          default:
-            throw new RuntimeException(
-                String.format(
-                    "Unrecognized type (kind=%s, class=%s): %s", t.getKind(), t.getClass(), t));
+          }
+          case ANNOTATED_TYPE ->
+              // If this type already has annotations on it, get the underlying
+              // type, without annotations.
+              t = ((JCAnnotatedType) t).underlyingType;
+          default ->
+              throw new RuntimeException(
+                  String.format(
+                      "Unrecognized type (kind=%s, class=%s): %s", t.getKind(), t.getClass(), t));
         }
       }
     }
@@ -503,23 +507,23 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
           while (j < n) {
             ASTPath.ASTEntry entry = astPath.get(j);
             switch (entry.getTreeKind()) {
-              case ANNOTATED_TYPE:
+              case ANNOTATED_TYPE -> {
                 typeTree = ((AnnotatedTypeTree) typeTree).getUnderlyingType();
                 continue; // no increment
-              case ARRAY_TYPE:
-                typeTree = ((ArrayTypeTree) typeTree).getType();
-                break;
-              case MEMBER_SELECT:
+              }
+              case ARRAY_TYPE -> typeTree = ((ArrayTypeTree) typeTree).getType();
+              case MEMBER_SELECT -> {
                 if (typeTree instanceof JCFieldAccess jfa) {
                   typeTree = jfa.getExpression();
                   // if just a qualifier, don't increment loop counter
                   if (jfa.sym.getKind() == ElementKind.PACKAGE) {
                     continue;
                   }
-                  break;
+                } else {
+                  break loop;
                 }
-                break loop;
-              case PARAMETERIZED_TYPE:
+              }
+              case PARAMETERIZED_TYPE -> {
                 if (entry.childSelectorIs(ASTPath.TYPE_ARGUMENT)) {
                   int arg = entry.getArgument();
                   List<? extends Tree> typeArgs =
@@ -528,9 +532,10 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
                 } else { // ASTPath.TYPE
                   typeTree = ((ParameterizedTypeTree) typeTree).getType();
                 }
-                break;
-              default:
+              }
+              default -> {
                 break loop;
+              }
             }
             ++j;
           }
@@ -806,10 +811,10 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
 
         if (pos < 0) {
           // no "[", so check for "..."
-          String nonDot = otherThan('.');
-          String regex = "(?:(?:\\.\\.?)?" + nonDot + ")*(\\.\\.\\.)";
+          @Regex(1) String regex = "(?:(?:\\.\\.?)?" + otherThan('.') + ")*(\\.\\.\\.)";
           Pattern p = Pattern.compile(regex, Pattern.MULTILINE);
-          Matcher m = p.matcher(s).region(start, end);
+          @Regex(1) Matcher m = p.matcher(s);
+          m.region(start, end);
 
           if (m.find()) {
             pos = m.start(1);
@@ -1054,12 +1059,12 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
           boolean isTypeAnnotation = adef.isTypeAnnotation();
 
           switch (node.getKind()) {
-            case NEW_CLASS:
+            case NEW_CLASS -> {
               if (!isTypeAnnotation) {
                 continue;
               }
-              break;
-            case IDENTIFIER:
+            }
+            case IDENTIFIER -> {
               Tree parent = parent(node);
               Tree.Kind parentKind = parent.getKind();
               if (parentKind == Tree.Kind.NEW_CLASS) {
@@ -1069,9 +1074,10 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
               if (id.getName().contentEquals("this")) {
                 continue;
               }
-              break;
-            default:
+            }
+            default -> {
               // TODO: make this switch statement exhaustive and check each case.
+            }
           }
         }
 

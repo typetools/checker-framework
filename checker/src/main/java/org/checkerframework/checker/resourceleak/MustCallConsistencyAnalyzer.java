@@ -2168,7 +2168,7 @@ public class MustCallConsistencyAnalyzer {
    */
   private AccumulationStore getStoreForEdgeFromEmptyBlock(Block currentBlock, Block successor) {
     switch (currentBlock.getType()) {
-      case CONDITIONAL_BLOCK:
+      case CONDITIONAL_BLOCK -> {
         ConditionalBlock condBlock = (ConditionalBlock) currentBlock;
         if (condBlock.getThenSuccessor().equals(successor)) {
           return cmAtf.getInput(currentBlock).getThenStore();
@@ -2177,10 +2177,11 @@ public class MustCallConsistencyAnalyzer {
         } else {
           throw new BugInCF("successor not found");
         }
-      case SPECIAL_BLOCK:
+      }
+      case SPECIAL_BLOCK -> {
         return cmAtf.getInput(successor).getRegularStore();
-      default:
-        throw new BugInCF("unexpected block type " + currentBlock.getType());
+      }
+      default -> throw new BugInCF("unexpected block type " + currentBlock.getType());
     }
   }
 

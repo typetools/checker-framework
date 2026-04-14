@@ -345,33 +345,33 @@ class ValueTreeAnnotator extends TreeAnnotator {
     }
     Object value = tree.getValue();
     switch (tree.getKind()) {
-      case BOOLEAN_LITERAL:
+      case BOOLEAN_LITERAL -> {
         AnnotationMirror boolAnno =
             atypeFactory.createBooleanAnnotation(Collections.singletonList((Boolean) value));
         type.replaceAnnotation(boolAnno);
         return null;
-
-      case CHAR_LITERAL:
+      }
+      case CHAR_LITERAL -> {
         AnnotationMirror charAnno =
             atypeFactory.createCharAnnotation(Collections.singletonList((Character) value));
         type.replaceAnnotation(charAnno);
         return null;
-
-      case DOUBLE_LITERAL:
-      case FLOAT_LITERAL:
-      case INT_LITERAL:
-      case LONG_LITERAL:
+      }
+      case DOUBLE_LITERAL, FLOAT_LITERAL, INT_LITERAL, LONG_LITERAL -> {
         AnnotationMirror numberAnno =
             atypeFactory.createNumberAnnotationMirror(Collections.singletonList((Number) value));
         type.replaceAnnotation(numberAnno);
         return null;
-      case STRING_LITERAL:
+      }
+      case STRING_LITERAL -> {
         AnnotationMirror stringAnno =
             atypeFactory.createStringAnnotation(Collections.singletonList((String) value));
         type.replaceAnnotation(stringAnno);
         return null;
-      default:
+      }
+      default -> {
         return null;
+      }
     }
   }
 
