@@ -48,20 +48,18 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
     Result<FormatType> type = fc.getFormatType();
 
     switch (type.value()) {
-      case I18NINVALID:
-        tu.failure(type, "i18nformat.string", fc.getInvalidError());
-        break;
-      case I18NFORMATFOR:
+      case I18NINVALID -> tu.failure(type, "i18nformat.string", fc.getInvalidError());
+      case I18NFORMATFOR -> {
         if (!fc.isValidFormatForInvocation()) {
           Result<FormatType> failureType = fc.getInvalidInvocationType();
           tu.failure(failureType, "i18nformat.formatfor");
         }
-        break;
-      case I18NFORMAT:
+      }
+      case I18NFORMAT -> {
         Result<InvocationType> invc = fc.getInvocationType();
         I18nConversionCategory[] formatCats = fc.getFormatCategories();
         switch (invc.value()) {
-          case VARARG:
+          case VARARG -> {
             Result<TypeMirror>[] paramTypes = fc.getParamTypes();
             int paraml = paramTypes.length;
             int formatl = formatCats.length;
@@ -80,12 +78,9 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
               Result<TypeMirror> param = paramTypes[i];
               TypeMirror paramType = param.value();
               switch (formatCat) {
-                case UNUSED:
-                  tu.warning(param, "i18nformat.argument.unused", " " + (1 + i));
-                  break;
-                case GENERAL:
-                  break;
-                default:
+                case UNUSED -> tu.warning(param, "i18nformat.argument.unused", " " + (1 + i));
+                case GENERAL -> {}
+                default -> {
                   if (!fc.isValidParameter(formatCat, paramType)) {
                     ExecutableElement method = TreeUtils.elementFromUse(fc.getTree());
                     CharSequence methodName = ElementUtils.getSimpleDescription(method);
@@ -97,25 +92,22 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                         paramType,
                         formatCat);
                   }
+                }
               }
             }
-            break;
-          case NULLARRAY:
-          // fall-through
-          case ARRAY:
+          }
+          case NULLARRAY, ARRAY -> {
             for (I18nConversionCategory cat : formatCats) {
               if (cat == I18nConversionCategory.UNUSED) {
                 tu.warning(invc, "i18nformat.argument.unused", "");
               }
             }
             tu.warning(invc, "i18nformat.indirect.arguments");
-            break;
-          default:
-            break;
+          }
+          default -> {}
         }
-        break;
-      default:
-        break;
+      }
+      default -> {}
     }
   }
 

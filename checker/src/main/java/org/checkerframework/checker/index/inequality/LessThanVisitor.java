@@ -98,8 +98,8 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
         String expression = expressions.get(0);
         if (expression.endsWith(" + 1")) {
           String value = expression.substring(0, expression.length() - 4);
-          if (valueTree instanceof IdentifierTree) {
-            String id = ((IdentifierTree) valueTree).getName().toString();
+          if (valueTree instanceof IdentifierTree vtIt) {
+            String id = vtIt.getName().toString();
             if (id.equals(value)) {
               isLessThan = true;
             }

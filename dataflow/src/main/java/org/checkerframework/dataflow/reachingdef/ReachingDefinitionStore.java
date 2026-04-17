@@ -1,6 +1,5 @@
 package org.checkerframework.dataflow.reachingdef;
 
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -41,17 +40,11 @@ public class ReachingDefinitionStore implements Store<ReachingDefinitionStore> {
    * @param defTarget target of a reaching definition
    */
   public void killDef(Node defTarget) {
-    Iterator<ReachingDefinitionNode> it = reachingDefSet.iterator();
-    while (it.hasNext()) {
-      // We use `.equals` instead of `==` here to compare value equality
-      // rather than reference equality, because if two left-hand side node
-      // have same values, we need to kill the old one and replace with the
-      // new one.
-      ReachingDefinitionNode generatedDefNode = it.next();
-      if (generatedDefNode.def.getTarget().equals(defTarget)) {
-        it.remove();
-      }
-    }
+    // We use `.equals` instead of `==` here to compare value equality
+    // rather than reference equality, because if two left-hand side node
+    // have same values, we need to kill the old one and replace with the
+    // new one.
+    reachingDefSet.removeIf(generatedDefNode -> generatedDefNode.def.getTarget().equals(defTarget));
   }
 
   /**

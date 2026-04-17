@@ -244,20 +244,14 @@ public class SignaturePrinter extends AbstractTypeProcessor {
     }
 
     private String typeIdentifier(TypeElement e) {
-      switch (e.getKind()) {
-        case INTERFACE:
-          return "interface";
-        case CLASS:
-          return "class";
-        case ANNOTATION_TYPE:
-          return "@interface";
-        case ENUM:
-          return "enum";
-        case RECORD:
-          return "record";
-        default:
-          throw new IllegalArgumentException("Not a type element: " + e.getKind());
-      }
+      return switch (e.getKind()) {
+        case INTERFACE -> "interface";
+        case CLASS -> "class";
+        case ANNOTATION_TYPE -> "@interface";
+        case ENUM -> "enum";
+        case RECORD -> "record";
+        default -> throw new IllegalArgumentException("Not a type element: " + e.getKind());
+      };
     }
 
     @Override

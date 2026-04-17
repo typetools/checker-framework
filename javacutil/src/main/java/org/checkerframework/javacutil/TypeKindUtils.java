@@ -208,25 +208,16 @@ public final class TypeKindUtils {
    * @return the number of bits in its representation, or -1 if not integral
    */
   private static int numBits(TypeKind tk) {
-    switch (tk) {
-      case BYTE:
-        return 8;
-      case SHORT:
-        return 16;
-      case CHAR:
-        return 16;
-      case INT:
-        return 32;
-      case LONG:
-        return 64;
-      case FLOAT:
-        return 32;
-      case DOUBLE:
-        return 64;
-      case BOOLEAN:
-      default:
-        return -1;
-    }
+    return switch (tk) {
+      case BYTE -> 8;
+      case SHORT -> 16;
+      case CHAR -> 16;
+      case INT -> 32;
+      case LONG -> 64;
+      case FLOAT -> 32;
+      case DOUBLE -> 64;
+      default -> -1;
+    };
   }
 
   /**
@@ -236,23 +227,14 @@ public final class TypeKindUtils {
    * @return the minimum value representable by the given integral primitive type
    */
   public static long minValue(TypeKind tk) {
-    switch (tk) {
-      case BYTE:
-        return Byte.MIN_VALUE;
-      case SHORT:
-        return Short.MIN_VALUE;
-      case CHAR:
-        return Character.MIN_VALUE;
-      case INT:
-        return Integer.MIN_VALUE;
-      case LONG:
-        return Long.MIN_VALUE;
-      case FLOAT:
-      case DOUBLE:
-      case BOOLEAN:
-      default:
-        throw new BugInCF(tk + " does not have a minimum value");
-    }
+    return switch (tk) {
+      case BYTE -> Byte.MIN_VALUE;
+      case SHORT -> Short.MIN_VALUE;
+      case CHAR -> Character.MIN_VALUE;
+      case INT -> Integer.MIN_VALUE;
+      case LONG -> Long.MIN_VALUE;
+      default -> throw new BugInCF(tk + " does not have a minimum value");
+    };
   }
 
   /**
@@ -262,22 +244,13 @@ public final class TypeKindUtils {
    * @return the maximum value representable by the given integral primitive type
    */
   public static long maxValue(TypeKind tk) {
-    switch (tk) {
-      case BYTE:
-        return Byte.MAX_VALUE;
-      case SHORT:
-        return Short.MAX_VALUE;
-      case CHAR:
-        return Character.MAX_VALUE;
-      case INT:
-        return Integer.MAX_VALUE;
-      case LONG:
-        return Long.MAX_VALUE;
-      case FLOAT:
-      case DOUBLE:
-      case BOOLEAN:
-      default:
-        throw new BugInCF(tk + " does not have a maximum value");
-    }
+    return switch (tk) {
+      case BYTE -> Byte.MAX_VALUE;
+      case SHORT -> Short.MAX_VALUE;
+      case CHAR -> Character.MAX_VALUE;
+      case INT -> Integer.MAX_VALUE;
+      case LONG -> Long.MAX_VALUE;
+      default -> throw new BugInCF(tk + " does not have a maximum value");
+    };
   }
 }

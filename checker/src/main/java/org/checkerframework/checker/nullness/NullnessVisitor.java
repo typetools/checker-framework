@@ -188,8 +188,8 @@ public class NullnessVisitor
         // constructor.
         // Note that this method should return non-null only for fields of this class, not
         // fields of any other class, including outer classes.
-        if (!(receiver instanceof IdentifierTree)
-            || !((IdentifierTree) receiver).getName().contentEquals("this")) {
+        if (!(receiver instanceof IdentifierTree receiverIt)
+            || !receiverIt.getName().contentEquals("this")) {
           return null;
         }
       // fallthrough
@@ -303,8 +303,8 @@ public class NullnessVisitor
   private static boolean isNewArrayAllZeroDims(NewArrayTree tree) {
     boolean isAllZeros = true;
     for (ExpressionTree dim : tree.getDimensions()) {
-      if (dim instanceof LiteralTree) {
-        Object val = ((LiteralTree) dim).getValue();
+      if (dim instanceof LiteralTree lt) {
+        Object val = lt.getValue();
         if (!(val instanceof Number) || !Integer.valueOf(0).equals(val)) {
           isAllZeros = false;
           break;
@@ -421,9 +421,8 @@ public class NullnessVisitor
     // The "reference type" is the type after "instanceof".
     Tree refTypeTree = tree.getType();
     if (refTypeTree != null) {
-      if (refTypeTree instanceof AnnotatedTypeTree) {
-        List<? extends AnnotationMirror> annotations =
-            TreeUtils.annotationsFromTree((AnnotatedTypeTree) refTypeTree);
+      if (refTypeTree instanceof AnnotatedTypeTree att) {
+        List<? extends AnnotationMirror> annotations = TreeUtils.annotationsFromTree(att);
         if (AnnotationUtils.containsSame(annotations, NULLABLE)) {
           checker.reportError(tree, "instanceof.nullable");
         }
@@ -583,10 +582,8 @@ public class NullnessVisitor
 
     if (classTree.getKind() == Tree.Kind.ENUM) {
       for (Tree member : classTree.getMembers()) {
-        if (member instanceof VariableTree
-            && TreeUtils.elementFromDeclaration((VariableTree) member).getKind()
-                == ElementKind.ENUM_CONSTANT) {
-          VariableTree varDecl = (VariableTree) member;
+        if (member instanceof VariableTree varDecl
+            && TreeUtils.elementFromDeclaration(varDecl).getKind() == ElementKind.ENUM_CONSTANT) {
           List<? extends AnnotationTree> annoTrees = varDecl.getModifiers().getAnnotations();
           Tree type = varDecl.getType();
           if (atypeFactory.containsNullnessAnnotation(annoTrees, type)) {
@@ -605,8 +602,8 @@ public class NullnessVisitor
    * @param typeTree a supertype tree, from an {@code extends} or {@code implements} clause
    */
   private void reportErrorIfSupertypeContainsNullnessAnnotation(Tree typeTree) {
-    if (typeTree instanceof AnnotatedTypeTree) {
-      List<? extends AnnotationTree> annoTrees = ((AnnotatedTypeTree) typeTree).getAnnotations();
+    if (typeTree instanceof AnnotatedTypeTree att) {
+      List<? extends AnnotationTree> annoTrees = att.getAnnotations();
       if (atypeFactory.containsNullnessAnnotation(annoTrees)) {
         checker.reportError(typeTree, "nullness.on.supertype");
       }
@@ -806,20 +803,20 @@ public class NullnessVisitor
     Tree t = typeTree;
     while (t != null) {
       switch (t.getKind()) {
-        case MEMBER_SELECT:
+        case MEMBER_SELECT -> {
           Tree expr = ((MemberSelectTree) t).getExpression();
           if (atypeFactory.containsNullnessAnnotation(annoTrees, expr)) {
             checker.reportError(expr, "nullness.on.outer");
           }
           t = null;
-          break;
-        case PRIMITIVE_TYPE:
+        }
+        case PRIMITIVE_TYPE -> {
           if (atypeFactory.containsNullnessAnnotation(annoTrees, t)) {
             checker.reportError(t, "nullness.on.primitive");
           }
           t = null;
-          break;
-        case ANNOTATED_TYPE:
+        }
+        case ANNOTATED_TYPE -> {
           AnnotatedTypeTree at = ((AnnotatedTypeTree) t);
           Tree underlying = at.getUnderlyingType();
           if (underlying instanceof PrimitiveTypeTree) {
@@ -830,16 +827,10 @@ public class NullnessVisitor
           } else {
             t = underlying;
           }
-          break;
-        case ARRAY_TYPE:
-          t = ((ArrayTypeTree) t).getType();
-          break;
-        case PARAMETERIZED_TYPE:
-          t = ((ParameterizedTypeTree) t).getType();
-          break;
-        default:
-          t = null;
-          break;
+        }
+        case ARRAY_TYPE -> t = ((ArrayTypeTree) t).getType();
+        case PARAMETERIZED_TYPE -> t = ((ParameterizedTypeTree) t).getType();
+        default -> t = null;
       }
     }
 

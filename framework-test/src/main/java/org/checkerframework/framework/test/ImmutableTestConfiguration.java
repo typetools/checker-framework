@@ -64,7 +64,7 @@ public class ImmutableTestConfiguration implements TestConfiguration {
       Map<String, @Nullable String> options,
       boolean shouldEmitDebugInfo) {
     this.diagnosticFiles = Collections.unmodifiableList(diagnosticFiles);
-    this.testSourceFiles = Collections.unmodifiableList(new ArrayList<>(testSourceFiles));
+    this.testSourceFiles = List.copyOf(testSourceFiles);
     this.processors = new ArrayList<>(processors);
     this.options = Collections.unmodifiableMap(new LinkedHashMap<>(options));
     this.shouldEmitDebugInfo = shouldEmitDebugInfo;
