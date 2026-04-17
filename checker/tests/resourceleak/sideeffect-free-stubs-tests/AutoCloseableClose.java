@@ -7,8 +7,8 @@ import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.qual.Owning;
 
 class AutoCloseableClose implements AutoCloseable {
-  private @Owning AutoCloseable first = new AutoClosableResource();
-  private @Owning AutoCloseable second = new AutoClosableResource();
+  private @Owning AutoCloseable first = new AutoCloseableResource();
+  private @Owning AutoCloseable second = new AutoCloseableResource();
 
   @Override
   @EnsuresCalledMethods(

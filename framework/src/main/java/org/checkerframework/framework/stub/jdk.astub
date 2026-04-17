@@ -22,8 +22,8 @@ class Category {
 }
 
 class Logger extends Category {
-    @SideEffectFree public void trace(Object message);
-    @SideEffectFree public void trace(Object message, Throwable t);
+  @SideEffectFree public void trace(Object message);
+  @SideEffectFree public void trace(Object message, Throwable t);
 }
 
 // Log4j 2.x API stubs (package org.apache.logging.log4j).
