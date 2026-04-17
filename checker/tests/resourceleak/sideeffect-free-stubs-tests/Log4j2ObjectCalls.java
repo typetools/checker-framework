@@ -8,11 +8,6 @@ import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.qual.Owning;
 
-final class CloseableResource implements Closeable {
-  @Override
-  public void close() {}
-}
-
 class Log4j2DebugObject implements Closeable {
   private static final Logger logger = LogManager.getLogger();
   private @Owning CloseableResource resource = new CloseableResource();

@@ -1,24 +1,11 @@
 package java.lang;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 public interface AutoCloseable {
   @SideEffectFree
   void close(@GuardSatisfied AutoCloseable this) throws Exception;
-}
-
-public class Throwable {
-  @SideEffectFree
-  public void printStackTrace();
-
-  @SideEffectFree
-  public void printStackTrace(PrintStream s);
-
-  @SideEffectFree
-  public void printStackTrace(PrintWriter s);
 }
 
 package java.io;

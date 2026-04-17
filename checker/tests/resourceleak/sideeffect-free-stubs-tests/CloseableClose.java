@@ -7,14 +7,9 @@ import java.io.Closeable;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.qual.Owning;
 
-final class TestCloseable implements Closeable {
-  @Override
-  public void close() {}
-}
-
 class CloseableClose implements Closeable {
-  private @Owning Closeable first = new TestCloseable();
-  private @Owning Closeable second = new TestCloseable();
+  private @Owning Closeable first = new CloseableResource();
+  private @Owning Closeable second = new CloseableResource();
 
   @Override
   @EnsuresCalledMethods(

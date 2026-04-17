@@ -6,14 +6,9 @@
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.qual.Owning;
 
-final class TestAutoCloseable implements AutoCloseable {
-  @Override
-  public void close() {}
-}
-
 class AutoCloseableClose implements AutoCloseable {
-  private @Owning AutoCloseable first = new TestAutoCloseable();
-  private @Owning AutoCloseable second = new TestAutoCloseable();
+  private @Owning AutoCloseable first = new AutoClosableResource();
+  private @Owning AutoCloseable second = new AutoClosableResource();
 
   @Override
   @EnsuresCalledMethods(
