@@ -20,16 +20,10 @@ public final class TypeKindUtils {
    * @return true if typeKind is a primitive integral type kind
    */
   public static boolean isIntegral(TypeKind typeKind) {
-    switch (typeKind) {
-      case INT:
-      case SHORT:
-      case BYTE:
-      case CHAR:
-      case LONG:
-        return true;
-      default:
-        return false;
-    }
+    return switch (typeKind) {
+      case INT, SHORT, BYTE, CHAR, LONG -> true;
+      default -> false;
+    };
   }
 
   /**
@@ -40,15 +34,10 @@ public final class TypeKindUtils {
    *     as an integer
    */
   public static boolean isIntegralNumeric(TypeKind typeKind) {
-    switch (typeKind) {
-      case INT:
-      case SHORT:
-      case BYTE:
-      case LONG:
-        return true;
-      default:
-        return false;
-    }
+    return switch (typeKind) {
+      case INT, SHORT, BYTE, LONG -> true;
+      default -> false;
+    };
   }
 
   /**
@@ -58,13 +47,10 @@ public final class TypeKindUtils {
    * @return true if typeKind is a primitive floating point type kind
    */
   public static boolean isFloatingPoint(TypeKind typeKind) {
-    switch (typeKind) {
-      case FLOAT:
-      case DOUBLE:
-        return true;
-      default:
-        return false;
-    }
+    return switch (typeKind) {
+      case FLOAT, DOUBLE -> true;
+      default -> false;
+    };
   }
 
   /**
@@ -74,18 +60,10 @@ public final class TypeKindUtils {
    * @return true if the argument is a primitive numeric type kind
    */
   public static boolean isNumeric(TypeKind typeKind) {
-    switch (typeKind) {
-      case BYTE:
-      case CHAR:
-      case DOUBLE:
-      case FLOAT:
-      case INT:
-      case LONG:
-      case SHORT:
-        return true;
-      default:
-        return false;
-    }
+    return switch (typeKind) {
+      case BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SHORT -> true;
+      default -> false;
+    };
   }
 
   // Cannot create an overload that takes an AnnotatedTypeMirror because the javacutil
@@ -103,32 +81,23 @@ public final class TypeKindUtils {
       return typeKind;
     }
 
-    if (!(type instanceof DeclaredType)) {
+    if (!(type instanceof DeclaredType dt)) {
       return null;
     }
 
-    String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
+    String typeString = TypesUtils.getQualifiedName(dt).toString();
 
-    switch (typeString) {
-      case "java.lang.Byte":
-        return TypeKind.BYTE;
-      case "java.lang.Boolean":
-        return TypeKind.BOOLEAN;
-      case "java.lang.Character":
-        return TypeKind.CHAR;
-      case "java.lang.Double":
-        return TypeKind.DOUBLE;
-      case "java.lang.Float":
-        return TypeKind.FLOAT;
-      case "java.lang.Integer":
-        return TypeKind.INT;
-      case "java.lang.Long":
-        return TypeKind.LONG;
-      case "java.lang.Short":
-        return TypeKind.SHORT;
-      default:
-        return null;
-    }
+    return switch (typeString) {
+      case "java.lang.Byte" -> TypeKind.BYTE;
+      case "java.lang.Boolean" -> TypeKind.BOOLEAN;
+      case "java.lang.Character" -> TypeKind.CHAR;
+      case "java.lang.Double" -> TypeKind.DOUBLE;
+      case "java.lang.Float" -> TypeKind.FLOAT;
+      case "java.lang.Integer" -> TypeKind.INT;
+      case "java.lang.Long" -> TypeKind.LONG;
+      case "java.lang.Short" -> TypeKind.SHORT;
+      default -> null;
+    };
   }
 
   // No overload that takes AnnotatedTypeMirror because javacutil cannot depend on framework.
@@ -239,25 +208,16 @@ public final class TypeKindUtils {
    * @return the number of bits in its representation, or -1 if not integral
    */
   private static int numBits(TypeKind tk) {
-    switch (tk) {
-      case BYTE:
-        return 8;
-      case SHORT:
-        return 16;
-      case CHAR:
-        return 16;
-      case INT:
-        return 32;
-      case LONG:
-        return 64;
-      case FLOAT:
-        return 32;
-      case DOUBLE:
-        return 64;
-      case BOOLEAN:
-      default:
-        return -1;
-    }
+    return switch (tk) {
+      case BYTE -> 8;
+      case SHORT -> 16;
+      case CHAR -> 16;
+      case INT -> 32;
+      case LONG -> 64;
+      case FLOAT -> 32;
+      case DOUBLE -> 64;
+      default -> -1;
+    };
   }
 
   /**
@@ -267,23 +227,14 @@ public final class TypeKindUtils {
    * @return the minimum value representable by the given integral primitive type
    */
   public static long minValue(TypeKind tk) {
-    switch (tk) {
-      case BYTE:
-        return Byte.MIN_VALUE;
-      case SHORT:
-        return Short.MIN_VALUE;
-      case CHAR:
-        return Character.MIN_VALUE;
-      case INT:
-        return Integer.MIN_VALUE;
-      case LONG:
-        return Long.MIN_VALUE;
-      case FLOAT:
-      case DOUBLE:
-      case BOOLEAN:
-      default:
-        throw new BugInCF(tk + " does not have a minimum value");
-    }
+    return switch (tk) {
+      case BYTE -> Byte.MIN_VALUE;
+      case SHORT -> Short.MIN_VALUE;
+      case CHAR -> Character.MIN_VALUE;
+      case INT -> Integer.MIN_VALUE;
+      case LONG -> Long.MIN_VALUE;
+      default -> throw new BugInCF(tk + " does not have a minimum value");
+    };
   }
 
   /**
@@ -293,22 +244,13 @@ public final class TypeKindUtils {
    * @return the maximum value representable by the given integral primitive type
    */
   public static long maxValue(TypeKind tk) {
-    switch (tk) {
-      case BYTE:
-        return Byte.MAX_VALUE;
-      case SHORT:
-        return Short.MAX_VALUE;
-      case CHAR:
-        return Character.MAX_VALUE;
-      case INT:
-        return Integer.MAX_VALUE;
-      case LONG:
-        return Long.MAX_VALUE;
-      case FLOAT:
-      case DOUBLE:
-      case BOOLEAN:
-      default:
-        throw new BugInCF(tk + " does not have a maximum value");
-    }
+    return switch (tk) {
+      case BYTE -> Byte.MAX_VALUE;
+      case SHORT -> Short.MAX_VALUE;
+      case CHAR -> Character.MAX_VALUE;
+      case INT -> Integer.MAX_VALUE;
+      case LONG -> Long.MAX_VALUE;
+      default -> throw new BugInCF(tk + " does not have a maximum value");
+    };
   }
 }

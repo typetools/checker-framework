@@ -53,7 +53,7 @@ public class ATypeElement extends AElement {
 
   @Override
   public boolean equals(AElement o) {
-    return o instanceof ATypeElement && ((ATypeElement) o).equalsTypeElement(this);
+    return o instanceof ATypeElement ate && ate.equalsTypeElement(this);
   }
 
   // note:  does not call super.equals, so does not check name

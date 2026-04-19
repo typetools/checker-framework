@@ -41,10 +41,9 @@ public class LocalVariable extends JavaExpression {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof LocalVariable)) {
+    if (!(obj instanceof LocalVariable other)) {
       return false;
     }
-    LocalVariable other = (LocalVariable) obj;
 
     return sameElement(element, other.element);
   }
@@ -105,10 +104,9 @@ public class LocalVariable extends JavaExpression {
 
   @Override
   public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof LocalVariable)) {
+    if (!(je instanceof LocalVariable other)) {
       return false;
     }
-    LocalVariable other = (LocalVariable) je;
     return this.equals(other);
   }
 

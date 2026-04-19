@@ -25,7 +25,7 @@ dependencies {
   implementation(plugin(libs.plugins.com.diffplug.spotless))
   implementation(libs.jgit.jgit)
   implementation(libs.jgit.ssh.apache)
-  implementation("org.bouncycastle:bcprov-jdk15to18:1.83")
+  implementation("org.bouncycastle:bcprov-jdk18on:1.84")
   implementation(gradleApi())
 }
 

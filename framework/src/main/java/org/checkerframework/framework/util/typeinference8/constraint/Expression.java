@@ -6,6 +6,7 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -95,36 +96,40 @@ public class Expression extends TypeConstraint {
       return new Typing(this, s, T, TypeConstraint.Kind.TYPE_COMPATIBILITY);
     }
     switch (expression.getKind()) {
-      case PARENTHESIZED:
+      case PARENTHESIZED -> {
         return new Expression(this, TreeUtils.withoutParens(expression), T);
-      case NEW_CLASS:
-      case METHOD_INVOCATION:
+      }
+      case NEW_CLASS, METHOD_INVOCATION -> {
         return reduceMethodInvocation(context);
-      case CONDITIONAL_EXPRESSION:
+      }
+      case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) expression;
         TypeConstraint trueConstraint = new Expression(this, conditional.getTrueExpression(), T);
         Constraint falseConstraint = new Expression(this, conditional.getFalseExpression(), T);
         return new ConstraintSet(trueConstraint, falseConstraint);
-      case LAMBDA_EXPRESSION:
+      }
+      case LAMBDA_EXPRESSION -> {
         return reduceLambda(context);
-      case MEMBER_REFERENCE:
+      }
+      case MEMBER_REFERENCE -> {
         return reduceMethodRef(context);
-      default:
-        if (TreeUtils.isSwitchExpression(expression)) {
-          ConstraintSet set = new ConstraintSet();
-          SwitchExpressionScanner<Void, Void> scanner =
-              new FunctionalSwitchExpressionScanner<>(
-                  (ExpressionTree valueTree, Void unused) -> {
-                    Constraint c = new Expression(this, valueTree, T);
-                    set.add(c);
-                    return null;
-                  },
-                  (c1, c2) -> null);
-          scanner.scanSwitchExpression(expression, null);
-          return set;
-        }
-        throw new BugInCF(
-            "Unexpected expression kind: %s, Expression: %s", expression.getKind(), expression);
+      }
+      case SWITCH_EXPRESSION -> {
+        ConstraintSet set = new ConstraintSet();
+        SwitchExpressionScanner<Void, Void> scanner =
+            new FunctionalSwitchExpressionScanner<>(
+                (ExpressionTree valueTree, Void unused) -> {
+                  Constraint c = new Expression(this, valueTree, T);
+                  set.add(c);
+                  return null;
+                },
+                (c1, c2) -> null);
+        scanner.scanSwitchExpression((SwitchExpressionTree) expression, null);
+        return set;
+      }
+      default ->
+          throw new BugInCF(
+              "Unexpected expression kind: %s, Expression: %s", expression.getKind(), expression);
     }
   }
 
@@ -160,8 +165,7 @@ public class Expression extends TypeConstraint {
   private BoundSet reduceMethodInvocation(Java8InferenceContext context) {
     ExpressionTree expressionTree = expression;
     List<? extends ExpressionTree> args;
-    if (expressionTree instanceof NewClassTree) {
-      NewClassTree newClassTree = (NewClassTree) expressionTree;
+    if (expressionTree instanceof NewClassTree newClassTree) {
       args = newClassTree.getArguments();
     } else {
       MethodInvocationTree methodInvocationTree = (MethodInvocationTree) expressionTree;
