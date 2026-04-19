@@ -33,10 +33,9 @@ public class ClassName extends JavaExpression {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ClassName)) {
+    if (!(obj instanceof ClassName other)) {
       return false;
     }
-    ClassName other = (ClassName) obj;
     return typeString.equals(other.typeString);
   }
 
@@ -73,10 +72,9 @@ public class ClassName extends JavaExpression {
 
   @Override
   public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof ClassName)) {
+    if (!(je instanceof ClassName other)) {
       return false;
     }
-    ClassName other = (ClassName) je;
     return typeString.equals(other.typeString);
   }
 

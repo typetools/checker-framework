@@ -2,8 +2,6 @@ Checker Framework redesign/refactoring (in priority order):
 
 (Throughout the refactorings, incrementally update the manual.)
 
-* rename commonAssignmentCheck to subtypeCheck
-
 * rename asMemberOf or postAsMemberOf to fieldFromUse
 
 * isSubtype should not return boolean.

@@ -93,13 +93,13 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
 
     JavaExpression e;
     try {
-      e = StringToJavaExpression.atMethodBody(postcond.getExpression(), tree, checker);
+      e = StringToJavaExpression.atMethodBody(postcond.expression(), tree, checker);
     } catch (JavaExpressionParseException ex) {
       checker.report(tree, new DiagMessage(ex));
       return;
     }
 
-    AnnotationMirror requiredAnno = atypeFactory.createAccumulatorAnnotation(postcond.getMethod());
+    AnnotationMirror requiredAnno = atypeFactory.createAccumulatorAnnotation(postcond.method());
 
     CFAbstractValue<?> value = exitStore.getValue(e);
     AnnotationMirror inferredAnno = null;
@@ -113,8 +113,8 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
           tree,
           "contracts.exceptional.postcondition",
           tree.getName(),
-          contractExpressionAndType(postcond.getExpression(), inferredAnno),
-          contractExpressionAndType(postcond.getExpression(), requiredAnno));
+          contractExpressionAndType(postcond.expression(), inferredAnno),
+          contractExpressionAndType(postcond.expression(), requiredAnno));
     }
   }
 

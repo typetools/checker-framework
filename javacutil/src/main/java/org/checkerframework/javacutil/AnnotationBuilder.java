@@ -623,15 +623,15 @@ public class AnnotationBuilder {
 
     if (expected.getKind() == TypeKind.DECLARED
         && ((DeclaredType) expected).asElement().getKind() == ElementKind.ANNOTATION_TYPE
-        && givenValue instanceof AnnotationMirror) {
-      found = ((AnnotationMirror) givenValue).getAnnotationType();
+        && givenValue instanceof AnnotationMirror am) {
+      found = am.getAnnotationType();
       isSubtype = ((DeclaredType) expected).asElement().equals(((DeclaredType) found).asElement());
-    } else if (givenValue instanceof AnnotationMirror) {
-      found = ((AnnotationMirror) givenValue).getAnnotationType();
+    } else if (givenValue instanceof AnnotationMirror am) {
+      found = am.getAnnotationType();
       // TODO: why is this always failing???
       isSubtype = false;
-    } else if (givenValue instanceof VariableElement) {
-      found = ((VariableElement) givenValue).asType();
+    } else if (givenValue instanceof VariableElement ve) {
+      found = ve.asType();
       if (expected.getKind() == TypeKind.DECLARED) {
         isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
       } else {
@@ -770,18 +770,16 @@ public class AnnotationBuilder {
         toStringVal = "\"" + value + "\"";
       } else if (value instanceof Character) {
         toStringVal = "\'" + value + "\'";
-      } else if (value instanceof List<?>) {
-        List<?> list = (List<?>) value;
+      } else if (value instanceof List<?> list) {
         toStringVal = "{" + StringsPlume.join(", ", list) + "}";
-      } else if (value instanceof VariableElement) {
+      } else if (value instanceof VariableElement var) {
         // for Enums
-        VariableElement var = (VariableElement) value;
         String encl = var.getEnclosingElement().toString();
         if (!encl.isEmpty()) {
           encl = encl + '.';
         }
         toStringVal = encl + var;
-      } else if (value instanceof TypeMirror && TypesUtils.isClassType((TypeMirror) value)) {
+      } else if (value instanceof TypeMirror tm && TypesUtils.isClassType(tm)) {
         toStringVal = value.toString() + ".class";
       } else {
         toStringVal = value.toString();
@@ -793,30 +791,30 @@ public class AnnotationBuilder {
     @SuppressWarnings("unchecked")
     @Override
     public <R, P> R accept(AnnotationValueVisitor<R, P> v, P p) {
-      if (value instanceof AnnotationMirror) {
-        return v.visitAnnotation((AnnotationMirror) value, p);
-      } else if (value instanceof List) {
-        return v.visitArray((List<? extends AnnotationValue>) value, p);
-      } else if (value instanceof Boolean) {
-        return v.visitBoolean((Boolean) value, p);
-      } else if (value instanceof Character) {
-        return v.visitChar((Character) value, p);
-      } else if (value instanceof Double) {
-        return v.visitDouble((Double) value, p);
-      } else if (value instanceof VariableElement) {
-        return v.visitEnumConstant((VariableElement) value, p);
-      } else if (value instanceof Float) {
-        return v.visitFloat((Float) value, p);
-      } else if (value instanceof Integer) {
-        return v.visitInt((Integer) value, p);
-      } else if (value instanceof Long) {
-        return v.visitLong((Long) value, p);
-      } else if (value instanceof Short) {
-        return v.visitShort((Short) value, p);
-      } else if (value instanceof String) {
-        return v.visitString((String) value, p);
-      } else if (value instanceof TypeMirror) {
-        return v.visitType((TypeMirror) value, p);
+      if (value instanceof AnnotationMirror am) {
+        return v.visitAnnotation(am, p);
+      } else if (value instanceof List<?> list) {
+        return v.visitArray((List<? extends AnnotationValue>) list, p);
+      } else if (value instanceof Boolean b) {
+        return v.visitBoolean(b, p);
+      } else if (value instanceof Character c) {
+        return v.visitChar(c, p);
+      } else if (value instanceof Double d) {
+        return v.visitDouble(d, p);
+      } else if (value instanceof VariableElement ve) {
+        return v.visitEnumConstant(ve, p);
+      } else if (value instanceof Float f) {
+        return v.visitFloat(f, p);
+      } else if (value instanceof Integer i) {
+        return v.visitInt(i, p);
+      } else if (value instanceof Long l) {
+        return v.visitLong(l, p);
+      } else if (value instanceof Short s) {
+        return v.visitShort(s, p);
+      } else if (value instanceof String str) {
+        return v.visitString(str, p);
+      } else if (value instanceof TypeMirror tm) {
+        return v.visitType(tm, p);
       } else {
         assert false : " unknown type : " + v.getClass();
         return v.visitUnknown(this, p);
@@ -826,10 +824,9 @@ public class AnnotationBuilder {
     @Override
     public boolean equals(@Nullable Object obj) {
       // System.out.printf("Calling CFAV.equals()%n");
-      if (!(obj instanceof AnnotationValue)) {
+      if (!(obj instanceof AnnotationValue other)) {
         return false;
       }
-      AnnotationValue other = (AnnotationValue) obj;
       return Objects.equals(this.getValue(), other.getValue());
     }
 

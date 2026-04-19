@@ -49,25 +49,24 @@ public class SignednessShifts {
    * @return type of a primitive cast, or null if not a cast to a primitive
    */
   private static @Nullable PrimitiveTypeTree primitiveTypeCast(Tree tree) {
-    if (!(tree instanceof TypeCastTree)) {
+    if (!(tree instanceof TypeCastTree cast)) {
       return null;
     }
 
-    TypeCastTree cast = (TypeCastTree) tree;
     Tree castType = cast.getType();
 
     Tree underlyingType;
-    if (castType instanceof AnnotatedTypeTree) {
-      underlyingType = ((AnnotatedTypeTree) castType).getUnderlyingType();
+    if (castType instanceof AnnotatedTypeTree att) {
+      underlyingType = att.getUnderlyingType();
     } else {
       underlyingType = castType;
     }
 
-    if (!(underlyingType instanceof PrimitiveTypeTree)) {
+    if (!(underlyingType instanceof PrimitiveTypeTree ptt)) {
       return null;
     }
 
-    return (PrimitiveTypeTree) underlyingType;
+    return ptt;
   }
 
   /**
@@ -169,41 +168,29 @@ public class SignednessShifts {
     long shiftBits;
     long shiftAmount;
     switch (shiftTypeKind) {
-      case INT:
+      case INT -> {
         shiftBits = 32;
         // When the LHS of the shift is an int, the 5 lower order bits of the RHS are used.
         shiftAmount = 0x1F & getLong(shiftAmountLit.getValue());
-        break;
-      case LONG:
+      }
+      case LONG -> {
         shiftBits = 64;
         // When the LHS of the shift is a long, the 6 lower order bits of the RHS are used.
         shiftAmount = 0x3F & getLong(shiftAmountLit.getValue());
-        break;
-      default:
-        throw new TypeSystemError("Invalid shift type");
+      }
+      default -> throw new TypeSystemError("Invalid shift type");
     }
 
     // Determine number of bits in the cast type
-    long castBits;
-    switch (castTypeKind) {
-      case BYTE:
-        castBits = 8;
-        break;
-      case CHAR:
-        castBits = 8;
-        break;
-      case SHORT:
-        castBits = 16;
-        break;
-      case INT:
-        castBits = 32;
-        break;
-      case LONG:
-        castBits = 64;
-        break;
-      default:
-        throw new TypeSystemError("Invalid cast target");
-    }
+    long castBits =
+        switch (castTypeKind) {
+          case BYTE -> 8;
+          case CHAR -> 8;
+          case SHORT -> 16;
+          case INT -> 32;
+          case LONG -> 64;
+          default -> throw new TypeSystemError("Invalid cast target");
+        };
 
     long bitsDiscarded = shiftBits - castBits;
 

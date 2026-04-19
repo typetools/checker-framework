@@ -37,10 +37,9 @@ public class ConditionalNotNode extends UnaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ConditionalNotNode)) {
+    if (!(obj instanceof ConditionalNotNode other)) {
       return false;
     }
-    ConditionalNotNode other = (ConditionalNotNode) obj;
     return getOperand().equals(other.getOperand());
   }
 
