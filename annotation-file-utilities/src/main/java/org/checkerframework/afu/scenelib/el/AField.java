@@ -108,7 +108,7 @@ public class AField extends ADeclaration {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof AField && equalsField((AField) o);
+    return o instanceof AField aField && equalsField(aField);
   }
 
   /**

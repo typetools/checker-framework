@@ -543,8 +543,7 @@ public class GenericArrayLocationCriterion implements Criterion {
         || (t instanceof ArrayTypeTree)
         || (t.getKind() == Tree.Kind.EXTENDS_WILDCARD)
         || (t.getKind() == Tree.Kind.SUPER_WILDCARD)
-        || (t instanceof AnnotatedTypeTree
-            && isGenericOrArray(((AnnotatedTypeTree) t).getUnderlyingType()))
+        || (t instanceof AnnotatedTypeTree att && isGenericOrArray(att.getUnderlyingType()))
     // Monolithic:  one node for entire "new".  So, handle specially.
     // || (t.getKind() == Tree.Kind.NEW_ARRAY)
     );

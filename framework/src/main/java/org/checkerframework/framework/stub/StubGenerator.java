@@ -197,7 +197,7 @@ public class StubGenerator {
       out.print("enum");
     } else if (typeElement.getKind() == ElementKind.INTERFACE) {
       out.print("interface");
-    } else if (typeElement.getKind().name().equals("RECORD")) {
+    } else if (typeElement.getKind() == ElementKind.RECORD) {
       out.print("record");
     } else if (typeElement.getKind() == ElementKind.CLASS) {
       out.print("class");
@@ -271,10 +271,10 @@ public class StubGenerator {
   private void printMember(Element member, List<TypeElement> innerClass) {
     if (member.getKind().isField()) {
       printFieldDecl((VariableElement) member);
-    } else if (member instanceof ExecutableElement) {
-      printMethodDecl((ExecutableElement) member);
-    } else if (member instanceof TypeElement) {
-      innerClass.add((TypeElement) member);
+    } else if (member instanceof ExecutableElement ee) {
+      printMethodDecl(ee);
+    } else if (member instanceof TypeElement te) {
+      innerClass.add(te);
     }
   }
 

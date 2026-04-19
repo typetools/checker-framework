@@ -114,7 +114,7 @@ public class KeyForAnnotatedTypeFactory
   protected ParameterizedExecutableType constructorFromUse(
       NewClassTree tree, boolean inferTypeArgs) {
     ParameterizedExecutableType result = super.constructorFromUse(tree, inferTypeArgs);
-    keyForPropagator.propagateNewClassTree(tree, result.executableType.getReturnType(), this);
+    keyForPropagator.propagateNewClassTree(tree, result.executableType().getReturnType(), this);
     return result;
   }
 
