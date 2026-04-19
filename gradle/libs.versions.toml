@@ -14,17 +14,22 @@ biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.2.3" }
 
 [versions]
 
+# If you update errorprone-version:
+#  * Temporarily comment out "-Werror" in build.gradle files.
+#  * Repeatedly run `./gradlew clean compileJava` and fix all errors.
+#  * Uncomment "-Werror".
+errorprone-version = "2.49.0"
+
 junit-junit = "4.13.2"
 
 jgit-version = "7.6.0.202603022253-r"
 
 [libraries]
 
-# If you update errorproneVersion:
-#  * Temporarily comment out "-Werror" in build.gradle files.
-#  * Repeatedly run `./gradlew clean compileJava` and fix all errors.
-#  * Uncomment "-Werror".
-error-prone-core = "com.google.errorprone:error_prone_core:2.48.0"
+# This line might need to be updated by hand, because sometimes the artifact
+# name itself changes (independently of the version number), such as from
+# org.apache.spark:spark-sql_2.12 to org.apache.spark:spark-sql_2.13.
+spark-sql = "org.apache.spark:spark-sql_2.13:4.1.1"
 
 asm = "org.ow2.asm:asm:9.9.1"
 
@@ -44,7 +49,9 @@ classgraph = "io.github.classgraph:classgraph:4.8.184"
 
 commons-io = "commons-io:commons-io:2.21.0"
 
-error-prone-annotations = "com.google.errorprone:error_prone_annotations:2.48.0"
+error-prone-annotations = { group = "com.google.errorprone", name = "error_prone_annotations", version.ref = "errorprone-version" }
+
+error-prone-core = { group = "com.google.errorprone", name = "error_prone_core", version.ref = "errorprone-version" }
 
 google-java-format = "com.google.googlejavaformat:google-java-format:1.35.0"
 
@@ -52,7 +59,7 @@ guava = "org.checkerframework.annotatedlib:guava:33.1.0.2-jre"
 
 hashmap-util = "org.plumelib:hashmap-util:0.0.1"
 
-javac = "com.google.errorprone:javac:9+181-r4173-1"
+javac-parse = "org.plumelib:javac-parse:0.9.0"
 
 javax-servlet-api = "javax.servlet:javax.servlet-api:4.0.1"
 
@@ -72,6 +79,4 @@ reflection-util = "org.plumelib:reflection-util:1.1.6"
 
 require-javadoc = "org.plumelib:require-javadoc:2.0.0"
 
-spark-sql = "org.apache.spark:spark-sql_2.12:3.5.8"
-
-stubparser = "org.checkerframework:stubparser:3.27.1"
+stubparser = "org.checkerframework:stubparser:3.28.0"

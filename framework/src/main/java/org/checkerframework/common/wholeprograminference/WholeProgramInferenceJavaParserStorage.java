@@ -406,16 +406,15 @@ public class WholeProgramInferenceJavaParserStorage
       String expression,
       AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
-    switch (preOrPost) {
-      case BEFORE:
-        return getPreconditionsForExpression(
-            className, methodElement, expression, declaredType, atypeFactory);
-      case AFTER:
-        return getPostconditionsForExpression(
-            className, methodElement, expression, declaredType, atypeFactory);
-      default:
-        throw new BugInCF("Unexpected " + preOrPost);
-    }
+    return switch (preOrPost) {
+      case BEFORE ->
+          getPreconditionsForExpression(
+              className, methodElement, expression, declaredType, atypeFactory);
+      case AFTER ->
+          getPostconditionsForExpression(
+              className, methodElement, expression, declaredType, atypeFactory);
+      default -> throw new BugInCF("Unexpected " + preOrPost);
+    };
   }
 
   /**
@@ -509,7 +508,7 @@ public class WholeProgramInferenceJavaParserStorage
       // See the comment on the similar exception in #getParameterAnnotations, above.
       return false;
     }
-    boolean isNewAnnotation = fieldAnnos != null && fieldAnnos.addDeclarationAnnotation(anno);
+    boolean isNewAnnotation = fieldAnnos.addDeclarationAnnotation(anno);
     if (isNewAnnotation) {
       modifiedFiles.add(getFileForElement(field));
     }
@@ -711,6 +710,7 @@ public class WholeProgramInferenceJavaParserStorage
    */
   private void createWrappersForClass(
       ClassTree javacClass, TypeDeclaration<?> javaParserClass, CompilationUnitAnnos sourceAnnos) {
+    @SuppressWarnings("NotJavadoc") // Error Prone flags Javadoc comments on local class methods.
     JointJavacJavaParserVisitor visitor =
         new DefaultJointVisitor() {
 
@@ -1306,11 +1306,10 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     com.github.javaparser.ast.Node parent = methodDeclaration.getParentNode().get();
-    if (!(parent instanceof TypeDeclaration)) {
+    if (!(parent instanceof TypeDeclaration<?> parentDecl)) {
       return;
     }
 
-    TypeDeclaration<?> parentDecl = (TypeDeclaration<?>) parent;
     ClassOrInterfaceType receiver = new ClassOrInterfaceType();
     receiver.setName(parentDecl.getName());
     if (parentDecl.isClassOrInterfaceDeclaration()) {
@@ -1355,13 +1354,13 @@ public class WholeProgramInferenceJavaParserStorage
   /**
    * Stores the JavaParser node for a compilation unit and the list of wrappers for the classes and
    * interfaces in that compilation unit.
+   *
+   * @param compilationUnit compilation unit being wrapped
+   * @param types wrappers for classes and interfaces in {@code compilationUnit}
    */
-  private static class CompilationUnitAnnos implements DeepCopyable<CompilationUnitAnnos> {
-    /** Compilation unit being wrapped. */
-    public final CompilationUnit compilationUnit;
-
-    /** Wrappers for classes and interfaces in {@code compilationUnit}. */
-    public final List<ClassOrInterfaceAnnos> types;
+  private record CompilationUnitAnnos(
+      CompilationUnit compilationUnit, List<ClassOrInterfaceAnnos> types)
+      implements DeepCopyable<CompilationUnitAnnos> {
 
     /**
      * Constructs a wrapper around the given compilation unit.
@@ -1369,20 +1368,7 @@ public class WholeProgramInferenceJavaParserStorage
      * @param compilationUnit compilation unit to wrap
      */
     public CompilationUnitAnnos(CompilationUnit compilationUnit) {
-      this.compilationUnit = compilationUnit;
-      this.types = new ArrayList<>();
-    }
-
-    /**
-     * Private constructor for use by deepCopy().
-     *
-     * @param compilationUnit compilation unit to wrap
-     * @param types wrappers for classes and interfaces in {@code compilationUnit}
-     */
-    private CompilationUnitAnnos(
-        CompilationUnit compilationUnit, List<ClassOrInterfaceAnnos> types) {
-      this.compilationUnit = compilationUnit;
-      this.types = types;
+      this(compilationUnit, new ArrayList<>());
     }
 
     @Override
@@ -1905,9 +1891,7 @@ public class WholeProgramInferenceJavaParserStorage
      * locations.
      */
     public void transferAnnotations() {
-      if (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>) {
-        GenericAnnotatedTypeFactory<?, ?, ?, ?> genericAtf =
-            (GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory;
+      if (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> genericAtf) {
         for (AnnotationMirror contractAnno : genericAtf.getContractAnnotations(this)) {
           declaration.addAnnotation(
               AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
@@ -2104,8 +2088,7 @@ public class WholeProgramInferenceJavaParserStorage
         // because declaration annotations need to be attached to the FieldDeclaration
         // node instead.
         Node declParent = declaration.getParentNode().orElse(null);
-        if (declParent instanceof FieldDeclaration) {
-          FieldDeclaration decl = (FieldDeclaration) declParent;
+        if (declParent instanceof FieldDeclaration decl) {
           for (AnnotationMirror annotation : declarationAnnotations) {
             decl.addAnnotation(
                 AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
@@ -2146,28 +2129,11 @@ public class WholeProgramInferenceJavaParserStorage
     }
   }
 
-  /** A pair of two annotated types: an inferred type and a declared type. */
-  public static class InferredDeclared {
-    /** The inferred type. */
-    public final AnnotatedTypeMirror inferred;
-
-    /** The declared type. */
-    public final AnnotatedTypeMirror declared;
-
-    /**
-     * Creates an InferredDeclared.
-     *
-     * @param inferred the inferred type
-     * @param declared the declared type
-     */
-    public InferredDeclared(AnnotatedTypeMirror inferred, AnnotatedTypeMirror declared) {
-      this.inferred = inferred;
-      this.declared = declared;
-    }
-
-    @Override
-    public String toString() {
-      return "InferredDeclared(" + inferred + ", " + declared + ")";
-    }
-  }
+  /**
+   * A pair of two annotated types: an inferred type and a declared type.
+   *
+   * @param inferred the inferred type
+   * @param declared the declared type
+   */
+  public record InferredDeclared(AnnotatedTypeMirror inferred, AnnotatedTypeMirror declared) {}
 }

@@ -69,11 +69,8 @@ public class MemberReferenceScanner extends CommonScanner {
    * @param offset the offset to add
    */
   public static void addMemberReferenceToMethod(String methodName, Integer offset) {
-    List<Integer> offsetList = methodNameToMemberReferenceOffsets.get(methodName);
-    if (offsetList == null) {
-      offsetList = new ArrayList<>();
-      methodNameToMemberReferenceOffsets.put(methodName, offsetList);
-    }
+    List<Integer> offsetList =
+        methodNameToMemberReferenceOffsets.computeIfAbsent(methodName, k -> new ArrayList<>());
     offsetList.add(offset);
   }
 

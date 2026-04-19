@@ -81,8 +81,8 @@ public abstract class DefCollector {
 
     // define the fields first
     for (AnnotationFieldType aft : d.fieldTypes.values()) {
-      if (aft instanceof AnnotationAFT) {
-        collect(((AnnotationAFT) aft).annotationDef);
+      if (aft instanceof AnnotationAFT annotationAft) {
+        collect(annotationAft.annotationDef);
       }
     }
 

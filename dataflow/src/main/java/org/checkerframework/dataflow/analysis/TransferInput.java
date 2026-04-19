@@ -29,9 +29,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
    * The regular result store (or {@code null} if none is present, because {@link #thenStore} and
    * {@link #elseStore} are set). The following invariant is maintained:
    *
-   * <pre><code>
-   * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
-   * </code></pre>
+   * <pre>{@code store == null  <==>  thenStore != null && elseStore != null}</pre>
    */
   protected final @Nullable S store;
 
