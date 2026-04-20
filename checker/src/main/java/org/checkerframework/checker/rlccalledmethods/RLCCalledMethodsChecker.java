@@ -20,12 +20,8 @@ import org.checkerframework.javacutil.UserError;
  * CalledMethodsChecker} used as a subchecker in the ResourceLeakChecker, and never independently.
  * Runs the MustCallChecker as a subchecker in order to share the CFG.
  */
-<<<<<<< rlc-sideeffect-stub
 @StubFiles({"IOUtils.astub", "log4j.astub"})
-=======
-@StubFiles("IOUtils.astub")
 @SuppressWarningsPrefix({"calledmethods", "rlccalledmethods", "resourceleak"})
->>>>>>> master
 public class RLCCalledMethodsChecker extends CalledMethodsChecker {
 
   /** Creates a RLCCalledMethodsChecker. */
