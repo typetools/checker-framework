@@ -367,7 +367,7 @@ final class ConstructorFirstWriteAnalysis {
      * @param cmAtf the type factory for side-effect reasoning
      */
     private InitializerAssignmentScanner(
-        VariableElement targetField, RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
+        @FindDistinct VariableElement targetField, RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
       this.targetField = targetField;
       this.cmAtf = cmAtf;
     }
@@ -383,7 +383,7 @@ final class ConstructorFirstWriteAnalysis {
      */
     static boolean mayBeAssigned(
         BlockTree initializerBlock,
-        VariableElement targetField,
+        @FindDistinct VariableElement targetField,
         RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
       return new InitializerAssignmentScanner(targetField, cmAtf).scan(initializerBlock, null);
     }
@@ -563,6 +563,9 @@ final class ConstructorFirstWriteAnalysis {
    * find a match.
    */
   private abstract static class BooleanShortCircuitScanner extends TreeScanner<Boolean, Void> {
+
+    /** Do not instantiate. */
+    private BooleanShortCircuitScanner() {}
 
     @Override
     public Boolean scan(Tree tree, Void p) {
