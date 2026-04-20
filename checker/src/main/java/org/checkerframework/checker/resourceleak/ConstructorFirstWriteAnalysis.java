@@ -354,7 +354,7 @@ final class ConstructorFirstWriteAnalysis {
   private static final class InitializerAssignmentScanner extends BooleanShortCircuitScanner {
 
     /** The field being analyzed. */
-    private final VariableElement targetField;
+    private final @InternedDistinct VariableElement targetField;
 
     /** The annotated type factory, used to determine whether a method has any side effects. */
     private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
