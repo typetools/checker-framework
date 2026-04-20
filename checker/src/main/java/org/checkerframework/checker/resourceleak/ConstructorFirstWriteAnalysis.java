@@ -6,6 +6,7 @@ import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -16,8 +17,8 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
@@ -43,8 +44,7 @@ final class ConstructorFirstWriteAnalysis {
   /**
    * Returns true if the given assignment is the first write to {@code targetField} on its path in
    * the constructor. This method is conservative: it returns {@code false} unless it can prove that
-   * the write is the first. This check runs only for non-final fields because the Java compiler
-   * already forbids reassignment of final fields.
+   * the write is the first.
    *
    * <p>The result is {@code true} only if all the following hold:
    *
@@ -57,7 +57,8 @@ final class ConstructorFirstWriteAnalysis {
    *
    * @param assignment the assignment tree being analyzed, which is a statement in the body of
    *     {@code constructor}
-   * @param targetField the field assigned by {@code assignment}; its type is non-primitive
+   * @param targetField the non-final field assigned by {@code assignment}; its type is
+   *     non-primitive
    * @param constructor the constructor where {@code assignment} appears
    * @param cmAtf the factory used for side-effect reasoning and tree-path lookup
    * @return true if this assignment is definitely the first write during construction, or false if
@@ -76,7 +77,35 @@ final class ConstructorFirstWriteAnalysis {
     if (classTree == null) {
       throw new BugInCF("Constructor has no enclosing class: %s", constructor);
     }
+    // Java compiler already forbids reassignment of final fields.
+    if (targetField.getModifiers().contains(Modifier.FINAL)) {
+      throw new BugInCF("Target field is final: %s", targetField);
+    }
 
+    // (1) and (2):
+    if (mayBeAssignedInInitializer(classTree, targetField, cmAtf)) {
+      return false;
+    }
+
+    // (3): Single-pass conservative scan of the constructor body in source order.
+    FirstWriteScanResult r =
+        scanStatementsForFirstWrite(
+            constructor.getBody().getStatements(), assignment, targetField, cmAtf);
+    return r == FirstWriteScanResult.FIRST_ASSIGNMENT;
+  }
+
+  /**
+   * Returns true if the class contains any initializer that prevents proving that a constructor
+   * assignment is the field's first write.
+   *
+   * <p>A disqualifying initializer is either a non-null inline initializer on the target field
+   * declaration or an instance initializer block that assigns the field or contains a
+   * side-effecting call or allocation.
+   */
+  private static boolean mayBeAssignedInInitializer(
+      ClassTree classTree,
+      VariableElement targetField,
+      RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
     for (Tree member : classTree.getMembers()) {
       // (1) Disallow non-null inline initializer on the same field declaration.
       if (member instanceof VariableTree decl) {
@@ -84,86 +113,22 @@ final class ConstructorFirstWriteAnalysis {
         if (targetField == declElement
             && decl.getInitializer() != null
             && decl.getInitializer().getKind() != Tree.Kind.NULL_LITERAL) {
-          return false;
+          return true;
         }
         continue;
       }
+
       // (2) Disallow assignment in any instance initializer block.
       if (member instanceof BlockTree initBlock) {
         if (initBlock.isStatic()) {
           continue;
         }
-        // The variables accessed from within the anonymous class need to be effectively final, so
-        // AtomicBoolean is used here.
-        AtomicBoolean isInitialized = new AtomicBoolean(false);
-        initBlock.accept(
-            new TreeScanner<Void, Void>() {
-              @Override
-              public Void scan(Tree tree, Void unused) {
-                // Stop descending once an earlier write or other disqualifying side effect is
-                // found.
-                if (isInitialized.get() || tree == null) {
-                  return null;
-                }
-                return super.scan(tree, unused);
-              }
-
-              @Override
-              public Void scan(Iterable<? extends Tree> trees, Void unused) {
-                // Stop visiting sibling nodes once a disqualifying node has been found.
-                if (isInitialized.get() || trees == null) {
-                  return null;
-                }
-                for (Tree tree : trees) {
-                  if (isInitialized.get()) {
-                    return null;
-                  }
-                  scan(tree, unused);
-                }
-                return null;
-              }
-
-              @Override
-              public Void visitAssignment(AssignmentTree assignmentTree, Void unused) {
-                ExpressionTree lhs = assignmentTree.getVariable();
-                Element lhsElement = TreeUtils.elementFromTree(lhs);
-                if (targetField == lhsElement) {
-                  isInitialized.set(true);
-                  return null;
-                }
-                return super.visitAssignment(assignmentTree, unused);
-              }
-
-              @Override
-              public Void visitMethodInvocation(MethodInvocationTree node, Void unused) {
-                // Any side-effecting method call in an initializer block could write to the field.
-                if (!cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))) {
-                  isInitialized.set(true);
-                  return null;
-                }
-                return super.visitMethodInvocation(node, unused);
-              }
-
-              @Override
-              public Void visitNewClass(NewClassTree node, Void unused) {
-                if (!cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))) {
-                  isInitialized.set(true);
-                  return null;
-                }
-                return super.visitNewClass(node, unused);
-              }
-            },
-            null);
-        if (isInitialized.get()) {
-          return false;
+        if (InitializerAssignmentScanner.mayBeAssigned(initBlock, targetField, cmAtf)) {
+          return true;
         }
       }
     }
-
-    // (3): Single-pass conservative scan of the constructor body in source order.
-    FirstWriteScanResult r =
-        scanForFirstWrite(constructor.getBody().getStatements(), assignment, targetField, cmAtf);
-    return r == FirstWriteScanResult.FIRST_ASSIGNMENT;
+    return false;
   }
 
   /** Result of scanning the constructor for the target assignment under the conservative rules. */
@@ -175,7 +140,7 @@ final class ConstructorFirstWriteAnalysis {
      * disallowed call, or unsupported statement form.
      */
     REASSIGNMENT,
-    /** The target assignment does not occur in the scanned region. */
+    /** No assignment to the target field occurs in the scanned region. */
     UNASSIGNED
   }
 
@@ -201,7 +166,7 @@ final class ConstructorFirstWriteAnalysis {
    *     write, disallowed call/allocation, or unsupported statement form prevents proving that;
    *     otherwise {@link FirstWriteScanResult#UNASSIGNED}
    */
-  private static FirstWriteScanResult scanForFirstWrite(
+  private static FirstWriteScanResult scanStatementsForFirstWrite(
       List<? extends StatementTree> stmts,
       Tree targetAssignment,
       VariableElement targetField,
@@ -210,7 +175,8 @@ final class ConstructorFirstWriteAnalysis {
       if (stmt instanceof BlockTree blockTree) {
         // Nested blocks preserve source order, so scan them recursively.
         FirstWriteScanResult r =
-            scanForFirstWrite(blockTree.getStatements(), targetAssignment, targetField, cmAtf);
+            scanStatementsForFirstWrite(
+                blockTree.getStatements(), targetAssignment, targetField, cmAtf);
         if (r != FirstWriteScanResult.UNASSIGNED) {
           return r;
         }
@@ -218,9 +184,8 @@ final class ConstructorFirstWriteAnalysis {
       }
 
       if (stmt instanceof ExpressionStatementTree est) {
-        // Expression statements execute here in source order, so scan the expression subtree.
         FirstWriteScanResult res =
-            ConstructorFirstWriteScanner.isFirstWrite(
+            ExpressionFirstWriteScanner.scanExpressionForFirstWrite(
                 est.getExpression(), targetAssignment, targetField, cmAtf);
         if (res != FirstWriteScanResult.UNASSIGNED) {
           return res;
@@ -232,7 +197,8 @@ final class ConstructorFirstWriteAnalysis {
         ExpressionTree init = vt.getInitializer();
         if (init != null) {
           FirstWriteScanResult res =
-              ConstructorFirstWriteScanner.isFirstWrite(init, targetAssignment, targetField, cmAtf);
+              ExpressionFirstWriteScanner.scanExpressionForFirstWrite(
+                  init, targetAssignment, targetField, cmAtf);
           if (res != FirstWriteScanResult.UNASSIGNED) {
             return res;
           }
@@ -261,7 +227,7 @@ final class ConstructorFirstWriteAnalysis {
 
         // Scan the try block body only (catch blocks are handled above).
         FirstWriteScanResult res =
-            scanForFirstWrite(
+            scanStatementsForFirstWrite(
                 tryTree.getBlock().getStatements(), targetAssignment, targetField, cmAtf);
         if (res != FirstWriteScanResult.UNASSIGNED) {
           return res;
@@ -269,10 +235,51 @@ final class ConstructorFirstWriteAnalysis {
         continue;
       }
 
+      if (stmt instanceof IfTree ifTree) {
+        FirstWriteScanResult condRes =
+            ExpressionFirstWriteScanner.scanExpressionForFirstWrite(
+                ifTree.getCondition(), targetAssignment, targetField, cmAtf);
+        if (condRes != FirstWriteScanResult.UNASSIGNED) {
+          return condRes;
+        }
+
+        StatementTree thenStmt = ifTree.getThenStatement();
+        StatementTree elseStmt = ifTree.getElseStatement();
+
+        boolean targetInThen = containsTargetAssignment(thenStmt, targetAssignment);
+        boolean targetInElse = containsTargetAssignment(elseStmt, targetAssignment);
+
+        // If the target assignment is in one branch, only that branch is on the path to the
+        // target assignment.
+        if (targetInThen) {
+          return scanStatementsForFirstWrite(
+              List.of(thenStmt), targetAssignment, targetField, cmAtf);
+        }
+        if (targetInElse) {
+          return scanStatementsForFirstWrite(
+              List.of(elseStmt), targetAssignment, targetField, cmAtf);
+        }
+
+        // Otherwise, the target assignment is after the if statement, so either branch may execute
+        // before the target assignment.
+        FirstWriteScanResult thenRes =
+            scanStatementsForFirstWrite(List.of(thenStmt), targetAssignment, targetField, cmAtf);
+
+        FirstWriteScanResult elseRes =
+            elseStmt == null
+                ? FirstWriteScanResult.UNASSIGNED
+                : scanStatementsForFirstWrite(
+                    List.of(elseStmt), targetAssignment, targetField, cmAtf);
+
+        if (thenRes == FirstWriteScanResult.UNASSIGNED
+            && elseRes == FirstWriteScanResult.UNASSIGNED) {
+          continue;
+        }
+        return FirstWriteScanResult.REASSIGNMENT;
+      }
+
       // Any other statement kind requires control-flow-aware reasoning that this helper does not
-      // attempt. Loops and switches can repeat or fall through before the target. An `if` could
-      // be handled more precisely by a more path-sensitive implementation, but this AST-only
-      // helper does not distinguish which branch executes, so it conservatively rejects all of
+      // attempt. Loops and switches can repeat or fall through before the target. Reject all of
       // them here.
       return FirstWriteScanResult.REASSIGNMENT;
     }
@@ -293,47 +300,115 @@ final class ConstructorFirstWriteAnalysis {
    * @return true if any catch block assigns {@code targetField}
    */
   private static boolean catchAssignsField(TryTree tryTree, VariableElement targetField) {
+    // This scanner is used to check whether a catch block assigns the target field.
+    TreeScanner<Boolean, Void> fieldAssignmentScanner =
+        new BooleanShortCircuitScanner() {
+          @Override
+          public Boolean visitAssignment(AssignmentTree node, Void p) {
+            Element lhsEl = TreeUtils.elementFromUse(node.getVariable());
+            if (targetField.equals(lhsEl)) {
+              return true;
+            }
+            return super.visitAssignment(node, p);
+          }
+        };
     for (CatchTree ct : tryTree.getCatches()) {
-      AtomicBoolean assigns = new AtomicBoolean(false);
-      ct.getBlock()
-          .accept(
-              new TreeScanner<Void, Void>() {
-                @Override
-                public Void visitAssignment(AssignmentTree node, Void p) {
-                  Element lhsEl = TreeUtils.elementFromUse(node.getVariable());
-                  if (targetField.equals(lhsEl)) {
-                    assigns.set(true);
-                    return null;
-                  }
-                  return super.visitAssignment(node, p);
-                }
-              },
-              null);
-      if (assigns.get()) {
+      boolean catchAssignsField = fieldAssignmentScanner.scan(ct.getBlock(), null);
+      if (catchAssignsField) {
         return true;
       }
     }
     return false;
   }
 
+  private static boolean containsTargetAssignment(Tree tree, Tree targetAssignment) {
+    TreeScanner<Boolean, Void> targetScanner =
+        new BooleanShortCircuitScanner() {
+          @Override
+          public Boolean visitAssignment(AssignmentTree node, Void p) {
+            if (node == targetAssignment) {
+              return true;
+            }
+            return super.visitAssignment(node, p);
+          }
+        };
+    return targetScanner.scan(tree, null);
+  }
+
   /**
-   * Visitor that scans an expression subtree to determine whether a given constructor assignment is
-   * definitely the first write to its field before any earlier assignment or side-effecting call in
-   * that subtree. The entry point is {@link #isFirstWrite}.
+   * Scanner that checks whether an instance initializer block assigns the target field.
    *
-   * <p>This visitor is used only on expression subtrees from constructor-body expression statements
-   * and local-variable initializers that {@link #scanForFirstWrite(List, Tree, VariableElement,
-   * RLCCalledMethodsAnnotatedTypeFactory)} has already decided to scan. It does not handle field
-   * initializers, static or instance initializer blocks, or statement-level control-flow
-   * constructs.
+   * <p>It returns true if the initializer block either assigns the field directly or may do so
+   * through a side-effecting method call or object creation.
+   */
+  private static final class InitializerAssignmentScanner extends BooleanShortCircuitScanner {
+
+    private final VariableElement targetField;
+    private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
+
+    /**
+     * Creates a scanner that checks whether an instance initializer block assigns the target field.
+     *
+     * @param targetField the field being checked
+     * @param cmAtf the type factory for side-effect reasoning
+     */
+    private InitializerAssignmentScanner(
+        VariableElement targetField, RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
+      this.targetField = targetField;
+      this.cmAtf = cmAtf;
+    }
+
+    static boolean mayBeAssigned(
+        BlockTree initializerBlock,
+        VariableElement targetField,
+        RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
+      return new InitializerAssignmentScanner(targetField, cmAtf).scan(initializerBlock, null);
+    }
+
+    @Override
+    public Boolean visitAssignment(AssignmentTree node, Void p) {
+      Element assignedElement = TreeUtils.elementFromTree(node.getVariable());
+      if (targetField == assignedElement) {
+        return true;
+      }
+      return super.visitAssignment(node, p);
+    }
+
+    @Override
+    public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
+      // Any side-effecting method call in an initializer block could write to the field.
+      if (!cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))) {
+        return true;
+      }
+      return super.visitMethodInvocation(node, p);
+    }
+
+    @Override
+    public Boolean visitNewClass(NewClassTree node, Void p) {
+      if (!cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))) {
+        return true;
+      }
+      return super.visitNewClass(node, p);
+    }
+  }
+
+  /**
+   * Scanner that scans an expression to determine whether a given assignment is definitely the
+   * first write to its field before any earlier assignment or side-effecting call in that
+   * expression. The entry point is {@link #scanExpressionForFirstWrite}.
+   *
+   * <p>This scanner is used only on expressions that {@link #scanStatementsForFirstWrite(List,
+   * Tree, VariableElement, RLCCalledMethodsAnnotatedTypeFactory)} has already decided to scan. It
+   * does not handle field initializers, static or instance initializer blocks, or statement-level
+   * control-flow constructs.
    *
    * <p>If it is used on an unsupported fragment, the result is conservative only with respect to
-   * the scanned expression subtree; it does not account for surrounding control flow.
+   * the scanned expression; it does not account for surrounding control flow.
    */
-  private static final class ConstructorFirstWriteScanner
+  private static final class ExpressionFirstWriteScanner
       extends TreeScanner<FirstWriteScanResult, Void> {
 
-    /** The assignment under test within the constructor. */
+    /** The assignment being analyzed. */
     private final @InternedDistinct Tree targetAssignment;
 
     /** The field assigned by {@code targetAssignment}. */
@@ -343,21 +418,14 @@ final class ConstructorFirstWriteAnalysis {
     private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
 
     /**
-     * Set once scanning reaches {@link FirstWriteScanResult#FIRST_ASSIGNMENT} or {@link
-     * FirstWriteScanResult#REASSIGNMENT}, to short-circuit further traversal.
-     */
-    private FirstWriteScanResult scanResult = FirstWriteScanResult.UNASSIGNED;
-
-    /**
      * Creates a scanner that checks if {@code assignment} is the first write to {@code targetField}
-     * within the current constructor. The scan stops as soon as a decisive result (true/false) is
-     * encountered.
+     * in the scanned expression. The scan stops as soon as a decisive result is encountered.
      *
      * @param targetAssignment the assignment being analyzed
      * @param targetField the field written by that assignment
      * @param cmAtf the type factory for side-effect reasoning
      */
-    private ConstructorFirstWriteScanner(
+    private ExpressionFirstWriteScanner(
         @FindDistinct Tree targetAssignment,
         VariableElement targetField,
         RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
@@ -370,27 +438,25 @@ final class ConstructorFirstWriteAnalysis {
      * Scans {@code root} to determine whether {@code targetAssignment} is reached before any
      * disqualifying event within this tree fragment.
      *
-     * <p>This method reasons only about the syntax tree rooted at {@code root}; it does not build a
-     * control-flow graph, perform path-sensitive reasoning, or inspect callees. It returns {@link
-     * FirstWriteScanResult#FIRST_ASSIGNMENT} if the target assignment is encountered before any
-     * earlier write to {@code targetField} or any potentially side-effecting call/allocation
-     * (except {@code super(...)}). It returns {@link FirstWriteScanResult#REASSIGNMENT} if a
-     * disqualifying event is encountered first. Otherwise, it returns {@link
-     * FirstWriteScanResult#UNASSIGNED} if the target assignment does not appear in {@code root}.
+     * <p>It returns {@link FirstWriteScanResult#FIRST_ASSIGNMENT} if the target assignment is
+     * encountered before any earlier write to {@code targetField} or any potentially side-effecting
+     * call/allocation. It returns {@link FirstWriteScanResult#REASSIGNMENT} if a disqualifying
+     * event is encountered first. Otherwise, it returns {@link FirstWriteScanResult#UNASSIGNED} if
+     * the target assignment does not appear in {@code root}.
      *
-     * @param root the statement to scan
+     * @param root the expression to scan
      * @param targetAssignment the target assignment
      * @param targetField the field assigned by {@code targetAssignment}
      * @param cmAtf the factory for side-effect reasoning
      * @return the scan result for {@code root}
      */
-    static FirstWriteScanResult isFirstWrite(
+    static FirstWriteScanResult scanExpressionForFirstWrite(
         ExpressionTree root,
         @FindDistinct Tree targetAssignment,
         VariableElement targetField,
         RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
       FirstWriteScanResult r =
-          new ConstructorFirstWriteScanner(targetAssignment, targetField, cmAtf).scan(root, null);
+          new ExpressionFirstWriteScanner(targetAssignment, targetField, cmAtf).scan(root, null);
       return r;
     }
 
@@ -411,7 +477,9 @@ final class ConstructorFirstWriteAnalysis {
     @Override
     public FirstWriteScanResult visitMethodInvocation(MethodInvocationTree node, Void p) {
       // Treat any method call before the target assignment as possibly assigning the field,
-      // unless it is a side-effect-free method or a super(...) constructor call.
+      // unless it is a side-effect-free method. An explicit super(...) call is also allowed,
+      // because Java compiler adds a superclass-constructor call even when it is not written
+      // explicitly.
       if (cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))
           || TreeUtils.isSuperConstructorCall(node)) {
         return super.visitMethodInvocation(node, p);
@@ -421,8 +489,8 @@ final class ConstructorFirstWriteAnalysis {
 
     @Override
     public FirstWriteScanResult visitNewClass(NewClassTree node, Void p) {
-      // An object creation with side effects can modify constructor fields (e.g., via Helper(this),
-      // where `this` can be modified in Helper's constructor).
+      // An object creation with side effects can modify the target field (e.g., via Helper(this),
+      // where `Helper` can mutate `this`).
       if (cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))) {
         return super.visitNewClass(node, p);
       }
@@ -431,28 +499,68 @@ final class ConstructorFirstWriteAnalysis {
 
     @Override
     public FirstWriteScanResult scan(Tree tree, Void p) {
-      if (scanResult != FirstWriteScanResult.UNASSIGNED || tree == null) {
-        return scanResult;
+      if (tree == null) {
+        return FirstWriteScanResult.UNASSIGNED;
       }
       FirstWriteScanResult result = super.scan(tree, p);
-      if (result != null && result != FirstWriteScanResult.UNASSIGNED) {
-        scanResult = result;
-      }
-      return scanResult;
+      return result == null ? FirstWriteScanResult.UNASSIGNED : result;
     }
 
     @Override
     public FirstWriteScanResult scan(Iterable<? extends Tree> trees, Void p) {
-      if (scanResult != FirstWriteScanResult.UNASSIGNED || trees == null) {
-        return scanResult;
-      }
       for (Tree tree : trees) {
         FirstWriteScanResult result = scan(tree, p);
         if (result != FirstWriteScanResult.UNASSIGNED) {
           return result;
         }
       }
-      return scanResult;
+      return FirstWriteScanResult.UNASSIGNED;
+    }
+
+    @Override
+    public FirstWriteScanResult reduce(FirstWriteScanResult r1, FirstWriteScanResult r2) {
+      // Preserve the first decisive result found among the children.
+      if (r1 != null && r1 != FirstWriteScanResult.UNASSIGNED) {
+        return r1;
+      }
+      if (r2 == null) {
+        return FirstWriteScanResult.UNASSIGNED;
+      }
+      return r2;
+    }
+  }
+
+  /** Base class for boolean tree scanners that short-circuit once a subtree returns true. */
+  private abstract static class BooleanShortCircuitScanner extends TreeScanner<Boolean, Void> {
+
+    @Override
+    public Boolean scan(Tree tree, Void p) {
+      if (tree == null) {
+        return false;
+      }
+      Boolean result = super.scan(tree, p);
+      return result != null && result;
+    }
+
+    @Override
+    public Boolean scan(Iterable<? extends Tree> trees, Void p) {
+      for (Tree tree : trees) {
+        if (scan(tree, p)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public Boolean reduce(Boolean r1, Boolean r2) {
+      if (r1 == null) {
+        return r2;
+      }
+      if (r2 == null) {
+        return r1;
+      }
+      return r1 || r2;
     }
   }
 }

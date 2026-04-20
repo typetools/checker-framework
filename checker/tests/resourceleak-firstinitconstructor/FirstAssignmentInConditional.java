@@ -1,12 +1,6 @@
-// Demonstrates conservative behavior for assignments inside conditionals.
-//
-// Because the current analysis does not reason about control-flow branches,
-// each assignment inside an if/else is treated as a potential re-assignment
-// rather than the first write. As a result, every write below is reported,
-// even though each branch actually assigns the field only once.
-//
-// A CFG-aware implementation would recognize that only one branch executes
-// and would not warn on any of these assignments.
+// Test for a field's reassignment within a constructor, where the assignments are within the
+// brances
+// of a conditional.
 
 import java.io.FileInputStream;
 import org.checkerframework.checker.calledmethods.qual.*;
@@ -19,11 +13,9 @@ class FirstAssignmentInConditional {
   public FirstAssignmentInConditional(boolean b) {
     try {
       if (b) {
-        // ::error: [required.method.not.called]
-        s = new FileInputStream("test1.txt"); // false positive: first write in this branch
+        s = new FileInputStream("test1.txt");
       } else {
-        // ::error: [required.method.not.called]
-        s = new FileInputStream("test2.txt"); // false positive: first write in this branch
+        s = new FileInputStream("test2.txt");
       }
     } catch (Exception e) {
     }
@@ -33,21 +25,67 @@ class FirstAssignmentInConditional {
     try {
       if (b1) {
         if (b2) {
-          // ::error: [required.method.not.called]
-          s = new FileInputStream("test1.txt"); // false positive
+          s = new FileInputStream("test1.txt");
         } else {
-          // ::error: [required.method.not.called]
-          s = new FileInputStream("test2.txt"); // false positive
+          s = new FileInputStream("test2.txt");
         }
       } else {
         if (b2) {
-          // ::error: [required.method.not.called]
-          s = new FileInputStream("test1.txt"); // false positive
+          s = new FileInputStream("test1.txt");
         } else {
-          // ::error: [required.method.not.called]
-          s = new FileInputStream("test2.txt"); // false positive
+          s = new FileInputStream("test2.txt");
         }
       }
+    } catch (Exception e) {
+    }
+  }
+
+  public FirstAssignmentInConditional(int n) {
+    try {
+      if (n > 0) {
+        s = new FileInputStream("test1.txt");
+      }
+    } catch (Exception e) {
+    }
+  }
+
+  public FirstAssignmentInConditional(boolean b, int n) {
+    try {
+      if (b) {
+        int x = n + 1;
+      } else {
+        int y = n + 2;
+      }
+      s = new FileInputStream("test1.txt");
+    } catch (Exception e) {
+    }
+  }
+
+  public FirstAssignmentInConditional(boolean b1, boolean b2, int n) {
+    try {
+      if (b1) {
+        if (b2) {
+          int x = n + 1;
+        } else {
+          int y = n + 2;
+        }
+      } else {
+        int z = n + 3;
+      }
+      s = new FileInputStream("test1.txt");
+    } catch (Exception e) {
+    }
+  }
+
+  // This one should still be rejected: the write after the conditional is not definitely the first
+  // write on all paths.
+  public FirstAssignmentInConditional(boolean b, String ignored) {
+    try {
+      if (b) {
+        s = new FileInputStream("test1.txt");
+      }
+      // ::error: [required.method.not.called]
+      s = new FileInputStream("test2.txt");
     } catch (Exception e) {
     }
   }
