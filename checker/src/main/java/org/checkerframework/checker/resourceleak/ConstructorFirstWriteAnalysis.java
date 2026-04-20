@@ -46,7 +46,7 @@ final class ConstructorFirstWriteAnalysis {
    * the constructor. This method is conservative: it returns {@code false} unless it can prove that
    * the write is the first.
    *
-   * <p>The result is {@code true} only if all the following hold:
+   * <p>It returns {@code true} only if all the following hold:
    *
    * <ul>
    *   <li>(1) The field has no non-null inline initializer at its declaration.
@@ -77,12 +77,13 @@ final class ConstructorFirstWriteAnalysis {
     if (classTree == null) {
       throw new BugInCF("Constructor has no enclosing class: %s", constructor);
     }
-    // Java compiler already forbids reassignment of final fields.
+    // Final fields should not reach this helper, because they cannot be reassigned.
     if (targetField.getModifiers().contains(Modifier.FINAL)) {
       throw new BugInCF("Target field is final: %s", targetField);
     }
 
-    // (1) and (2):
+    // (1) and (2): if the field has non-null inline initializer or is assigned in an instance
+    // initializer block, then the constructor assignment is not the first write.
     if (mayBeAssignedInInitializer(classTree, targetField, cmAtf)) {
       return false;
     }
@@ -95,19 +96,21 @@ final class ConstructorFirstWriteAnalysis {
   }
 
   /**
-   * Returns true if the class contains any initializer that prevents proving that a constructor
-   * assignment is the field's first write.
+   * Returns true if {@code classTree} contains a non-null field initializer or an instance
+   * initializer block that may assign {@code targetField}.
    *
-   * <p>A disqualifying initializer is either a non-null inline initializer on the target field
-   * declaration or an instance initializer block that assigns the field or contains a
-   * side-effecting call or allocation.
+   * @param classTree the class to inspect
+   * @param targetField the field being checked
+   * @param cmAtf the factory used for side-effect reasoning
+   * @return true if {@code targetField} may be assigned in a field initializer or instance
+   *     initializer block in {@code classTree}
    */
   private static boolean mayBeAssignedInInitializer(
       ClassTree classTree,
-      VariableElement targetField,
+      @FindDistinct VariableElement targetField,
       RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
     for (Tree member : classTree.getMembers()) {
-      // (1) Disallow non-null inline initializer on the same field declaration.
+      // Non-null inline initializer on the field declaration.
       if (member instanceof VariableTree decl) {
         VariableElement declElement = TreeUtils.elementFromDeclaration(decl);
         if (targetField == declElement
@@ -118,7 +121,7 @@ final class ConstructorFirstWriteAnalysis {
         continue;
       }
 
-      // (2) Disallow assignment in any instance initializer block.
+      // Assignment in any instance initializer block.
       if (member instanceof BlockTree initBlock) {
         if (initBlock.isStatic()) {
           continue;
@@ -131,7 +134,7 @@ final class ConstructorFirstWriteAnalysis {
     return false;
   }
 
-  /** Result of scanning the constructor for the target assignment under the conservative rules. */
+  /** Result of scanning the constructor for the target assignment. */
   private enum FirstWriteScanResult {
     /** The target assignment is definitely the first assignment in the scanned region. */
     FIRST_ASSIGNMENT,
@@ -236,6 +239,7 @@ final class ConstructorFirstWriteAnalysis {
       }
 
       if (stmt instanceof IfTree ifTree) {
+        // Scan the condition first and return any decisive result
         FirstWriteScanResult condRes =
             ExpressionFirstWriteScanner.scanExpressionForFirstWrite(
                 ifTree.getCondition(), targetAssignment, targetField, cmAtf);
@@ -250,7 +254,7 @@ final class ConstructorFirstWriteAnalysis {
         boolean targetInElse = containsTargetAssignment(elseStmt, targetAssignment);
 
         // If the target assignment is in one branch, only that branch is on the path to the
-        // target assignment.
+        // target assignment. Return the result after scanning that branch.
         if (targetInThen) {
           return scanStatementsForFirstWrite(
               List.of(thenStmt), targetAssignment, targetField, cmAtf);
@@ -265,12 +269,14 @@ final class ConstructorFirstWriteAnalysis {
         FirstWriteScanResult thenRes =
             scanStatementsForFirstWrite(List.of(thenStmt), targetAssignment, targetField, cmAtf);
 
+        // The else branch may not exist
         FirstWriteScanResult elseRes =
             elseStmt == null
                 ? FirstWriteScanResult.UNASSIGNED
                 : scanStatementsForFirstWrite(
                     List.of(elseStmt), targetAssignment, targetField, cmAtf);
 
+        // If both branches are unassigned, then continue scanning after the if statement.
         if (thenRes == FirstWriteScanResult.UNASSIGNED
             && elseRes == FirstWriteScanResult.UNASSIGNED) {
           continue;
@@ -291,15 +297,12 @@ final class ConstructorFirstWriteAnalysis {
    * Returns true if any {@code catch} block of {@code tryTree} contains an assignment to {@code
    * targetField}.
    *
-   * <p>This is used to conservatively reject {@code try/catch} regions where initialization becomes
-   * path-dependent (a write may occur in {@code try} on the normal path or in {@code catch} on an
-   * exceptional path).
-   *
    * @param tryTree the try statement to inspect
    * @param targetField the field to check for assignments
    * @return true if any catch block assigns {@code targetField}
    */
-  private static boolean catchAssignsField(TryTree tryTree, VariableElement targetField) {
+  private static boolean catchAssignsField(
+      TryTree tryTree, @FindDistinct VariableElement targetField) {
     // This scanner is used to check whether a catch block assigns the target field.
     TreeScanner<Boolean, Void> fieldAssignmentScanner =
         new BooleanShortCircuitScanner() {
@@ -321,7 +324,14 @@ final class ConstructorFirstWriteAnalysis {
     return false;
   }
 
-  private static boolean containsTargetAssignment(Tree tree, Tree targetAssignment) {
+  /**
+   * Returns true if {@code tree} contains {@code targetAssignment}.
+   *
+   * @param tree the tree to scan
+   * @param targetAssignment the assignment to look for
+   * @return true if {@code targetAssignment} occurs within {@code tree}
+   */
+  private static boolean containsTargetAssignment(Tree tree, @FindDistinct Tree targetAssignment) {
     TreeScanner<Boolean, Void> targetScanner =
         new BooleanShortCircuitScanner() {
           @Override
@@ -343,11 +353,15 @@ final class ConstructorFirstWriteAnalysis {
    */
   private static final class InitializerAssignmentScanner extends BooleanShortCircuitScanner {
 
+    /** The field being analyzed. */
     private final VariableElement targetField;
+
+    /** The annotated type factory, used to determine whether a method has any side effects. */
     private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
 
     /**
-     * Creates a scanner that checks whether an instance initializer block assigns the target field.
+     * Creates a scanner that checks whether an instance initializer block may assign {@code
+     * targetField}.
      *
      * @param targetField the field being checked
      * @param cmAtf the type factory for side-effect reasoning
@@ -358,6 +372,15 @@ final class ConstructorFirstWriteAnalysis {
       this.cmAtf = cmAtf;
     }
 
+    /**
+     * Returns true if {@code initializerBlock} directly assigns {@code targetField} or may assign
+     * it through a side-effecting call or allocation.
+     *
+     * @param initializerBlock the initializer block to scan
+     * @param targetField the field under analyze
+     * @param cmAtf the factory used for side-effect reasoning
+     * @return true if {@code initializerBlock} may assign {@code targetField}
+     */
     static boolean mayBeAssigned(
         BlockTree initializerBlock,
         VariableElement targetField,
@@ -418,8 +441,9 @@ final class ConstructorFirstWriteAnalysis {
     private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
 
     /**
-     * Creates a scanner that checks if {@code assignment} is the first write to {@code targetField}
-     * in the scanned expression. The scan stops as soon as a decisive result is encountered.
+     * Creates a scanner that checks if {@code targetAssignment} is the first write to {@code
+     * targetField} in the scanned expression. The scan stops as soon as a decisive result is
+     * encountered.
      *
      * @param targetAssignment the assignment being analyzed
      * @param targetField the field written by that assignment
@@ -530,7 +554,14 @@ final class ConstructorFirstWriteAnalysis {
     }
   }
 
-  /** Base class for boolean tree scanners that short-circuit once a subtree returns true. */
+  /**
+   * Tree scanner that returns {@code true} as soon as a scanned subtree returns {@code true}. This
+   * class treats {@code null} results as {@code false}, combines child results using logical OR,
+   * and stops scanning sibling trees after the first {@code true} result.
+   *
+   * <p>Subclasses define the matching condition in visit methods and return {@code true} when they
+   * find a match.
+   */
   private abstract static class BooleanShortCircuitScanner extends TreeScanner<Boolean, Void> {
 
     @Override
