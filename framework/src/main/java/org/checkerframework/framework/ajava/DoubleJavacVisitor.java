@@ -66,7 +66,7 @@ import com.sun.source.tree.YieldTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17;
 import org.checkerframework.javacutil.UserError;
 
 /**
@@ -277,8 +277,8 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   private void visitConstantCaseLabel(Tree tree1, Tree tree2) {
     defaultAction(tree1, tree2);
     scan(
-        TreeUtilsAfterJava11.ConstantCaseLabelUtils.getConstantExpression(tree1),
-        TreeUtilsAfterJava11.ConstantCaseLabelUtils.getConstantExpression(tree2));
+        TreeUtilsAfterJava17.ConstantCaseLabelUtils.getConstantExpression(tree1),
+        TreeUtilsAfterJava17.ConstantCaseLabelUtils.getConstantExpression(tree2));
   }
 
   /**
@@ -290,8 +290,8 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   private void visitPatternCaseLabel(Tree tree1, Tree tree2) {
     defaultAction(tree1, tree2);
     scan(
-        TreeUtilsAfterJava11.PatternCaseLabelUtils.getPattern(tree1),
-        TreeUtilsAfterJava11.PatternCaseLabelUtils.getPattern(tree2));
+        TreeUtilsAfterJava17.PatternCaseLabelUtils.getPattern(tree1),
+        TreeUtilsAfterJava17.PatternCaseLabelUtils.getPattern(tree2));
   }
 
   /**
@@ -303,11 +303,11 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   private void visitDeconstructionPattern(Tree tree1, Tree tree2) {
     defaultAction(tree1, tree2);
     scan(
-        TreeUtilsAfterJava11.DeconstructionPatternUtils.getDeconstructor(tree1),
-        TreeUtilsAfterJava11.DeconstructionPatternUtils.getDeconstructor(tree2));
+        TreeUtilsAfterJava17.DeconstructionPatternUtils.getDeconstructor(tree1),
+        TreeUtilsAfterJava17.DeconstructionPatternUtils.getDeconstructor(tree2));
     scanList(
-        TreeUtilsAfterJava11.DeconstructionPatternUtils.getNestedPatterns(tree1),
-        TreeUtilsAfterJava11.DeconstructionPatternUtils.getNestedPatterns(tree2));
+        TreeUtilsAfterJava17.DeconstructionPatternUtils.getNestedPatterns(tree1),
+        TreeUtilsAfterJava17.DeconstructionPatternUtils.getNestedPatterns(tree2));
   }
 
   /**
@@ -320,9 +320,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitYield(YieldTree tree1, Tree tree2) {
     defaultAction(tree1, tree2);
-    scan(
-        TreeUtilsAfterJava11.YieldUtils.getValue(tree1),
-        TreeUtilsAfterJava11.YieldUtils.getValue(tree2));
+    scan(tree1.getValue(), ((YieldTree) tree2).getValue());
     return null;
   }
 
@@ -336,12 +334,9 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitSwitchExpression(SwitchExpressionTree tree1, Tree tree2) {
     defaultAction(tree1, tree2);
-    scan(
-        TreeUtilsAfterJava11.SwitchExpressionUtils.getExpression(tree1),
-        TreeUtilsAfterJava11.SwitchExpressionUtils.getExpression(tree2));
-    scanList(
-        TreeUtilsAfterJava11.SwitchExpressionUtils.getCases(tree1),
-        TreeUtilsAfterJava11.SwitchExpressionUtils.getCases(tree2));
+    SwitchExpressionTree swTree2 = (SwitchExpressionTree) tree2;
+    scan(tree1.getExpression(), swTree2.getExpression());
+    scanList(tree1.getCases(), swTree2.getCases());
     return null;
   }
 
@@ -355,9 +350,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitBindingPattern(BindingPatternTree tree1, Tree tree2) {
     defaultAction(tree1, tree2);
-    scan(
-        TreeUtilsAfterJava11.BindingPatternUtils.getVariable(tree1),
-        TreeUtilsAfterJava11.BindingPatternUtils.getVariable(tree2));
+    scan(tree1.getVariable(), ((BindingPatternTree) tree2).getVariable());
     return null;
   }
 
@@ -622,7 +615,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
   /**
    * Visits a case clause and scans its labels, guard expression (JDK 21+), body (rule-case, JDK
-   * 12+), and statements (statement-case). Uses {@link TreeUtilsAfterJava11.CaseUtils} to handle
+   * 12+), and statements (statement-case). Uses {@link TreeUtilsAfterJava17.CaseUtils} to handle
    * JDK 12+ and 21+ API differences. For a given case, exactly one of {@code body} or {@code
    * statements} will be non-null; {@link #scan} and {@link #scanList} handle the null.
    *
@@ -636,14 +629,12 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     defaultAction(ctree1, ctree2);
 
     scanList(
-        TreeUtilsAfterJava11.CaseUtils.getLabels(ctree1),
-        TreeUtilsAfterJava11.CaseUtils.getLabels(ctree2));
+        TreeUtilsAfterJava17.CaseUtils.getLabels(ctree1),
+        TreeUtilsAfterJava17.CaseUtils.getLabels(ctree2));
     scan(
-        TreeUtilsAfterJava11.CaseUtils.getGuard(ctree1),
-        TreeUtilsAfterJava11.CaseUtils.getGuard(ctree2));
-    scan(
-        TreeUtilsAfterJava11.CaseUtils.getBody(ctree1),
-        TreeUtilsAfterJava11.CaseUtils.getBody(ctree2));
+        TreeUtilsAfterJava17.CaseUtils.getGuard(ctree1),
+        TreeUtilsAfterJava17.CaseUtils.getGuard(ctree2));
+    scan(ctree1.getBody(), ctree2.getBody());
     @SuppressWarnings("deprecation")
     List<? extends Tree> stmts1 = ctree1.getStatements();
     @SuppressWarnings("deprecation")
@@ -1024,9 +1015,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
     scan(itree1.getExpression(), itree2.getExpression());
     scan(itree1.getType(), itree2.getType());
-    scan(
-        TreeUtilsAfterJava11.InstanceOfUtils.getPattern(itree1),
-        TreeUtilsAfterJava11.InstanceOfUtils.getPattern(itree2));
+    scan(itree1.getPattern(), itree2.getPattern());
     return null;
   }
 
