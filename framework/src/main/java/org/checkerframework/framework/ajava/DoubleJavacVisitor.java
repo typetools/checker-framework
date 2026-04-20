@@ -7,6 +7,7 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
@@ -47,6 +48,7 @@ import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ProvidesTree;
 import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
@@ -60,6 +62,7 @@ import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.source.tree.YieldTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -221,11 +224,11 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   //
 
   /**
-   * Dispatches tree kinds added after JDK 11 to their individual private visit methods. Because
-   * these tree classes do not exist at compile time on JDK 11, they cannot be handled via
+   * Dispatches tree kinds added after JDK 17 to their individual private visit methods. Because
+   * these tree classes do not exist at compile time on JDK 17, they cannot be handled via
    * {@code @Override} methods directly.
    *
-   * <p>When JDK 11 support is dropped, remove this method and {@link #scan}'s call to it, promote
+   * <p>When JDK 17 support is dropped, remove this method and {@link #scan}'s call to it, promote
    * each private {@code visitXyz(Tree, Tree)} below to a {@code @Override public Void
    * visitXyz(XyzTree, Tree)}, and update the parameter types accordingly.
    *
@@ -234,73 +237,25 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * @return true if the tree kind was handled, false otherwise
    */
   private boolean visitReflective(Tree tree1, Tree tree2) {
-    switch (tree1.getKind().name()) {
-      case "YIELD":
-        visitYield(tree1, tree2);
-        return true;
-      case "SWITCH_EXPRESSION":
-        visitSwitchExpression(tree1, tree2);
-        return true;
-      case "BINDING_PATTERN":
-        visitBindingPattern(tree1, tree2);
-        return true;
-      case "DEFAULT_CASE_LABEL":
+    return switch (tree1.getKind().name()) {
+      case "DEFAULT_CASE_LABEL" -> {
         visitDefaultCaseLabel(tree1, tree2);
-        return true;
-      case "CONSTANT_CASE_LABEL":
+        yield true;
+      }
+      case "CONSTANT_CASE_LABEL" -> {
         visitConstantCaseLabel(tree1, tree2);
-        return true;
-      case "PATTERN_CASE_LABEL":
+        yield true;
+      }
+      case "PATTERN_CASE_LABEL" -> {
         visitPatternCaseLabel(tree1, tree2);
-        return true;
-      case "DECONSTRUCTION_PATTERN":
+        yield true;
+      }
+      case "DECONSTRUCTION_PATTERN" -> {
         visitDeconstructionPattern(tree1, tree2);
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  /**
-   * Visits a yield expression (JDK 13+) and scans its value.
-   *
-   * @param tree1 yield tree from the first AST
-   * @param tree2 yield tree from the second AST
-   */
-  private void visitYield(Tree tree1, Tree tree2) {
-    defaultAction(tree1, tree2);
-    scan(
-        TreeUtilsAfterJava11.YieldUtils.getValue(tree1),
-        TreeUtilsAfterJava11.YieldUtils.getValue(tree2));
-  }
-
-  /**
-   * Visits a switch expression (JDK 12+) and scans its expression and cases.
-   *
-   * @param tree1 switch expression tree from the first AST
-   * @param tree2 switch expression tree from the second AST
-   */
-  private void visitSwitchExpression(Tree tree1, Tree tree2) {
-    defaultAction(tree1, tree2);
-    scan(
-        TreeUtilsAfterJava11.SwitchExpressionUtils.getExpression(tree1),
-        TreeUtilsAfterJava11.SwitchExpressionUtils.getExpression(tree2));
-    scanList(
-        TreeUtilsAfterJava11.SwitchExpressionUtils.getCases(tree1),
-        TreeUtilsAfterJava11.SwitchExpressionUtils.getCases(tree2));
-  }
-
-  /**
-   * Visits a binding pattern (JDK 16+) and scans its variable.
-   *
-   * @param tree1 binding pattern tree from the first AST
-   * @param tree2 binding pattern tree from the second AST
-   */
-  private void visitBindingPattern(Tree tree1, Tree tree2) {
-    defaultAction(tree1, tree2);
-    scan(
-        TreeUtilsAfterJava11.BindingPatternUtils.getVariable(tree1),
-        TreeUtilsAfterJava11.BindingPatternUtils.getVariable(tree2));
+        yield true;
+      }
+      default -> false;
+    };
   }
 
   /**
@@ -353,6 +308,57 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     scanList(
         TreeUtilsAfterJava11.DeconstructionPatternUtils.getNestedPatterns(tree1),
         TreeUtilsAfterJava11.DeconstructionPatternUtils.getNestedPatterns(tree2));
+  }
+
+  /**
+   * Visits a yield expression (JDK 13+) and scans its value.
+   *
+   * @param tree1 yield tree from the first AST
+   * @param tree2 yield tree from the second AST
+   * @return null
+   */
+  @Override
+  public Void visitYield(YieldTree tree1, Tree tree2) {
+    defaultAction(tree1, tree2);
+    scan(
+        TreeUtilsAfterJava11.YieldUtils.getValue(tree1),
+        TreeUtilsAfterJava11.YieldUtils.getValue(tree2));
+    return null;
+  }
+
+  /**
+   * Visits a switch expression (JDK 12+) and scans its expression and cases.
+   *
+   * @param tree1 switch expression tree from the first AST
+   * @param tree2 switch expression tree from the second AST
+   * @return null
+   */
+  @Override
+  public Void visitSwitchExpression(SwitchExpressionTree tree1, Tree tree2) {
+    defaultAction(tree1, tree2);
+    scan(
+        TreeUtilsAfterJava11.SwitchExpressionUtils.getExpression(tree1),
+        TreeUtilsAfterJava11.SwitchExpressionUtils.getExpression(tree2));
+    scanList(
+        TreeUtilsAfterJava11.SwitchExpressionUtils.getCases(tree1),
+        TreeUtilsAfterJava11.SwitchExpressionUtils.getCases(tree2));
+    return null;
+  }
+
+  /**
+   * Visits a binding pattern (JDK 16+) and scans its variable.
+   *
+   * @param tree1 binding pattern tree from the first AST
+   * @param tree2 binding pattern tree from the second AST
+   * @return null
+   */
+  @Override
+  public Void visitBindingPattern(BindingPatternTree tree1, Tree tree2) {
+    defaultAction(tree1, tree2);
+    scan(
+        TreeUtilsAfterJava11.BindingPatternUtils.getVariable(tree1),
+        TreeUtilsAfterJava11.BindingPatternUtils.getVariable(tree2));
+    return null;
   }
 
   /**
@@ -425,14 +431,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     scanList(ctree1.getTypeParameters(), ctree2.getTypeParameters());
     scan(ctree1.getExtendsClause(), ctree2.getExtendsClause());
     scanList(ctree1.getImplementsClause(), ctree2.getImplementsClause());
-    scanList(
-        TreeUtilsAfterJava11.ClassTreeUtils.getPermitsClause(ctree1),
-        TreeUtilsAfterJava11.ClassTreeUtils.getPermitsClause(ctree2));
-
-    // Record components are only available on JDK 16+; access via reflection.
-    scanList(
-        TreeUtilsAfterJava11.ClassTreeUtils.getRecordComponents(ctree1),
-        TreeUtilsAfterJava11.ClassTreeUtils.getRecordComponents(ctree2));
+    scanList(ctree1.getPermitsClause(), ctree2.getPermitsClause());
 
     scanList(ctree1.getMembers(), ctree2.getMembers());
     return null;

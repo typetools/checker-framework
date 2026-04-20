@@ -3,7 +3,6 @@ package org.checkerframework.javacutil;
 import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CaseTree.CaseKind;
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.SwitchExpressionTree;
@@ -46,57 +45,6 @@ public class TreeUtilsAfterJava11 {
     @Deprecated(forRemoval = true, since = "4.0.0")
     public static VariableTree getVariable(Tree bindingPatternTree) {
       return ((BindingPatternTree) bindingPatternTree).getVariable();
-    }
-  }
-
-  /** Utility methods for accessing {@code ClassTree} methods added after Java 11. */
-  public static class ClassTreeUtils {
-
-    /** Do not instantiate ClassTreeUtils. */
-    private ClassTreeUtils() {
-      throw new AssertionError("Cannot be instantiated.");
-    }
-
-    /** The {@code ClassTree.getPermitsClause} method for Java 17 and higher; null otherwise. */
-    private static @Nullable Method GET_PERMITS_CLAUSE = null;
-
-    /** The {@code ClassTree.getRecordComponents} method for Java 16 and higher; null otherwise. */
-    private static @Nullable Method GET_RECORD_COMPONENTS = null;
-
-    /**
-     * Returns the permits clause of {@code classTree}. Returns an empty list if the class is not a
-     * sealed class or if the JDK version does not support sealed classes.
-     *
-     * @param classTree the class tree whose permits clause is returned
-     * @return the permits clause of {@code classTree}, or an empty list
-     */
-    @SuppressWarnings("unchecked")
-    public static List<? extends Tree> getPermitsClause(ClassTree classTree) {
-      if (sourceVersionNumber < 17) {
-        return Collections.emptyList();
-      }
-      if (GET_PERMITS_CLAUSE == null) {
-        GET_PERMITS_CLAUSE = getMethod(ClassTree.class, "getPermitsClause");
-      }
-      return (List<? extends Tree>) invokeNonNullResult(GET_PERMITS_CLAUSE, classTree);
-    }
-
-    /**
-     * Returns the record components of {@code classTree}. Returns an empty list if the class is not
-     * a record or if the JDK version does not support records.
-     *
-     * @param classTree the class tree whose record components are returned
-     * @return the record components of {@code classTree}, or an empty list
-     */
-    @SuppressWarnings("unchecked")
-    public static List<? extends Tree> getRecordComponents(ClassTree classTree) {
-      if (sourceVersionNumber < 16) {
-        return Collections.emptyList();
-      }
-      if (GET_RECORD_COMPONENTS == null) {
-        GET_RECORD_COMPONENTS = getMethod(ClassTree.class, "getRecordComponents");
-      }
-      return (List<? extends Tree>) invokeNonNullResult(GET_RECORD_COMPONENTS, classTree);
     }
   }
 
