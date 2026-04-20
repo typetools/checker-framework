@@ -9,8 +9,8 @@
 
 ### Implementation details
 
-New method annotation `DoesNotUnrefineReceiver`.
-Interface `AnnotationProvider` has a new method `hasDoesNotUnrefineReceiver()`.
+New method annotation `@DoesNotUnrefineReceiver`.
+`AnnotatedTypeFactory` has a new method `hasDoesNotUnrefineReceiver()`.
 
 ### Closed issues
 

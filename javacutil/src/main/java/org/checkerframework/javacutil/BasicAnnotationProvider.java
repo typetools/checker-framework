@@ -83,24 +83,4 @@ public class BasicAnnotationProvider implements AnnotationProvider {
 
     return false;
   }
-
-  /**
-   * {@inheritDoc}
-   *
-   * <p>This implementation returns true if the {@code @DoesNotUnrefineReceiver} annotation is
-   * present on the given method, with "allcheckers" in the {@code value} element.
-   */
-  @Override
-  public boolean hasDoesNotUnrefineReceiver(ExecutableElement methodElement) {
-    for (AnnotationMirror am : methodElement.getAnnotationMirrors()) {
-      if (AnnotationUtils.areSameByName(
-          am, "org.checkerframework.dataflow.qual.DoesNotUnrefineReceiver")) {
-        @SuppressWarnings("deprecation") // calls from the framework are permitted
-        List<String> typeSystems =
-            AnnotationUtils.getElementValueArray(am, "value", String.class, true);
-        return typeSystems.contains("allcheckers");
-      }
-    }
-    return false;
-  }
 }
