@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -23,6 +24,8 @@ import org.checkerframework.framework.type.typeannotator.DefaultForTypeAnnotator
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeSystemError;
+import org.plumelib.util.RegexUtil;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -106,6 +109,10 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
       }
 
       for (String regex : forLiterals.stringPatterns()) {
+        if (!RegexUtil.isRegex(regex)) {
+          throw new TypeSystemError(
+              "In @QualifierForLiterals(...), \"" + regex + "\" is not a regular expression");
+        }
         addStringPattern(regex, theQual);
       }
 
@@ -189,7 +196,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
    * @param theQual {@code AnnotationMirror} to apply to Strings that match the regex
    * @see #addStringPattern(Pattern,AnnotationMirror)
    */
-  public void addStringPattern(String regex, AnnotationMirror theQual) {
+  public void addStringPattern(@Regex String regex, AnnotationMirror theQual) {
     boolean res =
         qualHierarchy.updateMappingToMutableSet(stringPatterns, Pattern.compile(regex), theQual);
     if (!res) {

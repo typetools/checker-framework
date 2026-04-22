@@ -111,6 +111,8 @@ public final class TypesUtils {
    * @param typeMirror a TypeMirror
    * @return the class for {@code typeMirror}
    */
+  @SuppressWarnings(
+      "StatementSwitchToExpressionSwitch") // Task :javacutil:javadoc fails under JDK 17
   public static Class<?> getClassFromType(TypeMirror typeMirror) {
 
     switch (typeMirror.getKind()) {
@@ -682,15 +684,13 @@ public final class TypesUtils {
    */
   public static TypeMirror upperBound(TypeMirror type) {
     do {
-      if (type instanceof TypeVariable) {
-        TypeVariable tvar = (TypeVariable) type;
+      if (type instanceof TypeVariable tvar) {
         if (tvar.getUpperBound() != null) {
           type = tvar.getUpperBound();
         } else {
           break;
         }
-      } else if (type instanceof WildcardType) {
-        WildcardType wc = (WildcardType) type;
+      } else if (type instanceof WildcardType wc) {
         if (wc.getExtendsBound() != null) {
           type = wc.getExtendsBound();
         } else {

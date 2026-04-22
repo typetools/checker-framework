@@ -36,16 +36,16 @@ public class Theta extends LinkedHashMap<TypeVariable, Variable> {
 
   @Override
   public boolean containsKey(Object key) {
-    if (key instanceof TypeVariable) {
-      return super.containsKey(getTypeVariable((TypeVariable) key));
+    if (key instanceof TypeVariable tv) {
+      return super.containsKey(getTypeVariable(tv));
     }
     return false;
   }
 
   @Override
   public Variable get(Object key) {
-    if (key instanceof TypeVariable) {
-      return super.get(getTypeVariable((TypeVariable) key));
+    if (key instanceof TypeVariable tv) {
+      return super.get(getTypeVariable(tv));
     }
     return super.get(key);
   }

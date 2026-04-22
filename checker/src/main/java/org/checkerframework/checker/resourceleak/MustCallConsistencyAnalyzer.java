@@ -616,10 +616,10 @@ public class MustCallConsistencyAnalyzer {
   private void updateObligationsForInvocation(
       Set<Obligation> obligations, Node node, @Nullable TypeMirror exceptionType) {
     removeObligationsAtOwnershipTransferToParameters(obligations, node, exceptionType);
-    if (node instanceof MethodInvocationNode
+    if (node instanceof MethodInvocationNode min
         && cmAtf.canCreateObligations()
-        && cmAtf.hasCreatesMustCallFor((MethodInvocationNode) node)) {
-      checkCreatesMustCallForInvocation(obligations, (MethodInvocationNode) node);
+        && cmAtf.hasCreatesMustCallFor(min)) {
+      checkCreatesMustCallForInvocation(obligations, min);
       // Count calls to @CreatesMustCallFor methods as creating new resources. Doing so could
       // result in slightly over-counting, because @CreatesMustCallFor doesn't guarantee that
       // a new resource is created: it just means that a new resource might have been created.
@@ -725,14 +725,14 @@ public class MustCallConsistencyAnalyzer {
    */
   private boolean isValidCreatesMustCallForExpression(
       Set<Obligation> obligations, JavaExpression expression, TreePath invocationPath) {
-    if (expression instanceof FieldAccess) {
-      Element elt = ((FieldAccess) expression).getField();
+    if (expression instanceof FieldAccess fa) {
+      Element elt = fa.getField();
       if (!noLightweightOwnership && cmAtf.hasOwning(elt)) {
         // The expression is an Owning field.  This satisfies case 1.
         return true;
       }
-    } else if (expression instanceof LocalVariable) {
-      Element elt = ((LocalVariable) expression).getElement();
+    } else if (expression instanceof LocalVariable lv) {
+      Element elt = lv.getElement();
       if (!noLightweightOwnership && cmAtf.hasOwning(elt)) {
         // The expression is an Owning formal parameter. Note that this cannot actually
         // be a local variable (despite expressions's type being LocalVariable) because
@@ -846,10 +846,9 @@ public class MustCallConsistencyAnalyzer {
     // position.
     List<Node> mustCallAliases = getMustCallAliasArgumentNodes(node);
     // If call returns @This, add the receiver to mustCallAliases.
-    if (node instanceof MethodInvocationNode && cmAtf.returnsThis((MethodInvocationTree) tree)) {
-      mustCallAliases.add(
-          removeCastsAndGetTmpVarIfPresent(
-              ((MethodInvocationNode) node).getTarget().getReceiver()));
+    if (node instanceof MethodInvocationNode min2
+        && cmAtf.returnsThis((MethodInvocationTree) tree)) {
+      mustCallAliases.add(removeCastsAndGetTmpVarIfPresent(min2.getTarget().getReceiver()));
     }
 
     if (mustCallAliases.isEmpty()) {
@@ -863,11 +862,10 @@ public class MustCallConsistencyAnalyzer {
           // Handling of @Owning fields is a completely separate check, and there is never
           // a need to track an alias of a non-@Owning field, as by definition such a
           // field does not have must-call obligations!
-        } else if (mustCallAlias instanceof LocalVariableNode) {
+        } else if (mustCallAlias instanceof LocalVariableNode mca) {
           // If mustCallAlias is a local variable already being tracked, add
           // tmpVarAsResourceAlias to the set containing mustCallAlias.
-          Obligation obligationContainingMustCallAlias =
-              getObligationForVar(obligations, (LocalVariableNode) mustCallAlias);
+          Obligation obligationContainingMustCallAlias = getObligationForVar(obligations, mca);
           if (obligationContainingMustCallAlias != null) {
             ResourceAlias tmpVarAsResourceAlias =
                 new ResourceAlias(
@@ -926,10 +924,9 @@ public class MustCallConsistencyAnalyzer {
   public boolean shouldTrackInvocationResult(
       Set<Obligation> obligations, Node node, boolean isMustCallInference) {
     Tree callTree = node.getTree();
-    if (callTree instanceof NewClassTree) {
+    if (callTree instanceof NewClassTree newClassTree) {
       // Constructor results from new expressions are tracked as long as the declared type has
       // a non-empty @MustCall annotation.
-      NewClassTree newClassTree = (NewClassTree) callTree;
       ExecutableElement executableElement = TreeUtils.elementFromUse(newClassTree);
       TypeElement typeElt = TypesUtils.getTypeElement(ElementUtils.getType(executableElement));
       return typeElt == null
@@ -952,8 +949,8 @@ public class MustCallConsistencyAnalyzer {
       // MustCallAlias constructor (because a this/super constructor call can only occur in
       // the body of another constructor).
       for (Node mustCallAliasArgument : mustCallAliasArguments) {
-        if (mustCallAliasArgument instanceof LocalVariableNode) {
-          removeObligationsContainingVar(obligations, (LocalVariableNode) mustCallAliasArgument);
+        if (mustCallAliasArgument instanceof LocalVariableNode lvn) {
+          removeObligationsContainingVar(obligations, lvn);
         }
       }
       return false;
@@ -1025,8 +1022,7 @@ public class MustCallConsistencyAnalyzer {
     }
     for (int i = 0; i < arguments.size(); i++) {
       Node n = removeCastsAndGetTmpVarIfPresent(arguments.get(i));
-      if (n instanceof LocalVariableNode) {
-        LocalVariableNode local = (LocalVariableNode) n;
+      if (n instanceof LocalVariableNode local) {
         if (varTrackedInObligations(obligations, local)) {
 
           // check if parameter has an @Owning annotation
@@ -1101,10 +1097,10 @@ public class MustCallConsistencyAnalyzer {
     }
 
     UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
-    if (underlyingAST instanceof UnderlyingAST.CFGMethod) {
+    if (underlyingAST instanceof UnderlyingAST.CFGMethod cfgMethod) {
       // TODO: lambdas? In that case false is returned below, which means that ownership will
       //  not be transferred.
-      MethodTree method = ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
+      MethodTree method = cfgMethod.getMethod();
       ExecutableElement executableElement = TreeUtils.elementFromDeclaration(method);
       return !cmAtf.hasNotOwning(executableElement);
     }
@@ -1144,10 +1140,8 @@ public class MustCallConsistencyAnalyzer {
       // Remove Obligations from local variables, now that the owning field is responsible.
       // (When obligation creation is turned off, non-final fields cannot take ownership.)
       if (isOwningField
-          && rhs instanceof LocalVariableNode
+          && rhs instanceof LocalVariableNode rhsVar
           && (cmAtf.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
-
-        LocalVariableNode rhsVar = (LocalVariableNode) rhs;
 
         MethodTree enclosingMethod = cfg.getEnclosingMethod(assignmentNode.getTree());
         boolean inConstructor = enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
@@ -1157,8 +1151,8 @@ public class MustCallConsistencyAnalyzer {
         // on exception `this` becomes inaccessible.
         Set<MethodExitKind> toClear;
         if (inConstructor
-            && lhs instanceof FieldAccessNode
-            && ((FieldAccessNode) lhs).getReceiver() instanceof ThisNode) {
+            && lhs instanceof FieldAccessNode lhsFan
+            && lhsFan.getReceiver() instanceof ThisNode) {
           toClear = Collections.singleton(MethodExitKind.NORMAL_RETURN);
         } else {
           toClear = MethodExitKind.ALL;
@@ -1197,8 +1191,7 @@ public class MustCallConsistencyAnalyzer {
               new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
         }
       }
-    } else if (lhs instanceof LocalVariableNode) {
-      LocalVariableNode lhsVar = (LocalVariableNode) lhs;
+    } else if (lhs instanceof LocalVariableNode lhsVar) {
       updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
     }
   }
@@ -1370,9 +1363,7 @@ public class MustCallConsistencyAnalyzer {
       }
       // If rhs is a variable tracked in the Obligation's resource alias set, gen the lhs
       // by adding it to the resource alias set.
-      if (rhs instanceof LocalVariableNode
-          && obligation.canBeSatisfiedThrough((LocalVariableNode) rhs)) {
-        LocalVariableNode rhsVar = (LocalVariableNode) rhs;
+      if (rhs instanceof LocalVariableNode rhsVar && obligation.canBeSatisfiedThrough(rhsVar)) {
         if (newResourceAliasesForObligation == null) {
           newResourceAliasesForObligation = new LinkedHashSet<>(obligation.resourceAliases);
         }
@@ -1442,7 +1433,7 @@ public class MustCallConsistencyAnalyzer {
 
     Node lhsNode = node.getTarget();
 
-    if (!(lhsNode instanceof FieldAccessNode)) {
+    if (!(lhsNode instanceof FieldAccessNode lhs)) {
       throw new TypeSystemError(
           "checkReassignmentToOwningField: non-field node "
               + node
@@ -1450,7 +1441,6 @@ public class MustCallConsistencyAnalyzer {
               + node.getClass());
     }
 
-    FieldAccessNode lhs = (FieldAccessNode) lhsNode;
     Node receiver = lhs.getReceiver();
 
     if (permitStaticOwning && receiver instanceof ClassNameNode) {
@@ -1518,8 +1508,8 @@ public class MustCallConsistencyAnalyzer {
     // extend beyond the method's body (and which therefore could not be targeted by an
     // annotation on the method declaration), or 2) the rhs is a null literal (so there's
     // nothing to reset).
-    if (!(receiver instanceof LocalVariableNode
-            && varTrackedInObligations(obligations, (LocalVariableNode) receiver))
+    if (!(receiver instanceof LocalVariableNode receiverLvn
+            && varTrackedInObligations(obligations, receiverLvn))
         && !(node.getExpression() instanceof NullLiteralNode)) {
       checkEnclosingMethodIsCreatesMustCallFor(node, enclosingMethodTree);
     }
@@ -1640,14 +1630,14 @@ public class MustCallConsistencyAnalyzer {
   private void checkEnclosingMethodIsCreatesMustCallFor(
       AssignmentNode node, MethodTree enclosingMethod) {
     Node lhs = node.getTarget();
-    if (!(lhs instanceof FieldAccessNode)) {
+    if (!(lhs instanceof FieldAccessNode lhsFan)) {
       return;
     }
-    if (permitStaticOwning && ((FieldAccessNode) lhs).getReceiver() instanceof ClassNameNode) {
+    if (permitStaticOwning && lhsFan.getReceiver() instanceof ClassNameNode) {
       return;
     }
 
-    String receiverString = receiverAsString((FieldAccessNode) lhs);
+    String receiverString = receiverAsString(lhsFan);
     if ("this".equals(receiverString) && TreeUtils.isConstructor(enclosingMethod)) {
       // Constructors always create must-call obligations, so there is no need for them to
       // be annotated.
@@ -1706,11 +1696,11 @@ public class MustCallConsistencyAnalyzer {
     if (receiver instanceof ThisNode) {
       return "this";
     }
-    if (receiver instanceof LocalVariableNode) {
-      return ((LocalVariableNode) receiver).getName();
+    if (receiver instanceof LocalVariableNode lvn) {
+      return lvn.getName();
     }
-    if (receiver instanceof ClassNameNode) {
-      return ((ClassNameNode) receiver).getElement().toString();
+    if (receiver instanceof ClassNameNode cnn) {
+      return cnn.getElement().toString();
     }
     if (receiver instanceof SuperNode) {
       return "super";
@@ -1746,10 +1736,8 @@ public class MustCallConsistencyAnalyzer {
     }
 
     // If none of the parameters were @MustCallAlias, it must be the receiver
-    if (result.isEmpty() && callNode instanceof MethodInvocationNode) {
-      result.add(
-          removeCastsAndGetTmpVarIfPresent(
-              ((MethodInvocationNode) callNode).getTarget().getReceiver()));
+    if (result.isEmpty() && callNode instanceof MethodInvocationNode callMin) {
+      result.add(removeCastsAndGetTmpVarIfPresent(callMin.getTarget().getReceiver()));
     }
 
     return result;
@@ -1777,11 +1765,10 @@ public class MustCallConsistencyAnalyzer {
    * @return the arguments, in order
    */
   /*package-private*/ List<Node> getArgumentsOfInvocation(Node node) {
-    if (node instanceof MethodInvocationNode) {
-      MethodInvocationNode invocationNode = (MethodInvocationNode) node;
+    if (node instanceof MethodInvocationNode invocationNode) {
       return invocationNode.getArguments();
-    } else if (node instanceof ObjectCreationNode) {
-      return ((ObjectCreationNode) node).getArguments();
+    } else if (node instanceof ObjectCreationNode ocn) {
+      return ocn.getArguments();
     } else {
       throw new TypeSystemError("unexpected node type " + node.getClass());
     }
@@ -1797,11 +1784,10 @@ public class MustCallConsistencyAnalyzer {
    */
   /*package-private*/ List<? extends VariableElement> getParametersOfInvocation(Node node) {
     ExecutableElement executableElement;
-    if (node instanceof MethodInvocationNode) {
-      MethodInvocationNode invocationNode = (MethodInvocationNode) node;
+    if (node instanceof MethodInvocationNode invocationNode) {
       executableElement = TreeUtils.elementFromUse(invocationNode.getTree());
-    } else if (node instanceof ObjectCreationNode) {
-      executableElement = TreeUtils.elementFromUse(((ObjectCreationNode) node).getTree());
+    } else if (node instanceof ObjectCreationNode ocn2) {
+      executableElement = TreeUtils.elementFromUse(ocn2.getTree());
     } else {
       throw new TypeSystemError("unexpected node type " + node.getClass());
     }
@@ -1939,10 +1925,10 @@ public class MustCallConsistencyAnalyzer {
       // successor block, but can vary slightly depending on the exception type.  There might
       // be some opportunities for optimization in this mostly-redundant work.
       for (Node node : currentBlock.getNodes()) {
-        if (node instanceof AssignmentNode) {
-          updateObligationsForAssignment(obligations, cfg, (AssignmentNode) node);
-        } else if (node instanceof ReturnNode) {
-          updateObligationsForOwningReturn(obligations, cfg, (ReturnNode) node);
+        if (node instanceof AssignmentNode an) {
+          updateObligationsForAssignment(obligations, cfg, an);
+        } else if (node instanceof ReturnNode rn) {
+          updateObligationsForOwningReturn(obligations, cfg, rn);
         } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
           updateObligationsForInvocation(obligations, node, successorAndExceptionType.second);
         }
@@ -2164,7 +2150,7 @@ public class MustCallConsistencyAnalyzer {
    */
   private AccumulationStore getStoreForEdgeFromEmptyBlock(Block currentBlock, Block successor) {
     switch (currentBlock.getType()) {
-      case CONDITIONAL_BLOCK:
+      case CONDITIONAL_BLOCK -> {
         ConditionalBlock condBlock = (ConditionalBlock) currentBlock;
         if (condBlock.getThenSuccessor().equals(successor)) {
           return cmAtf.getInput(currentBlock).getThenStore();
@@ -2173,10 +2159,11 @@ public class MustCallConsistencyAnalyzer {
         } else {
           throw new BugInCF("successor not found");
         }
-      case SPECIAL_BLOCK:
+      }
+      case SPECIAL_BLOCK -> {
         return cmAtf.getInput(successor).getRegularStore();
-      default:
-        throw new BugInCF("unexpected block type " + currentBlock.getType());
+      }
+      default -> throw new BugInCF("unexpected block type " + currentBlock.getType());
     }
   }
 
@@ -2201,10 +2188,9 @@ public class MustCallConsistencyAnalyzer {
    * @return true if node is a MethodInvocationNode of a method with a CreatesMustCallFor annotation
    */
   private boolean isInvocationOfCreatesMustCallForMethod(Node node) {
-    if (!(node instanceof MethodInvocationNode)) {
+    if (!(node instanceof MethodInvocationNode miNode)) {
       return false;
     }
-    MethodInvocationNode miNode = (MethodInvocationNode) node;
     return cmAtf.hasCreatesMustCallFor(miNode);
   }
 

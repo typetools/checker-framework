@@ -150,7 +150,7 @@ public abstract class TypeConstraint implements Constraint {
    */
   protected List<Variable> getInputVariablesForExpression(ExpressionTree tree, AbstractType T) {
     switch (tree.getKind()) {
-      case LAMBDA_EXPRESSION:
+      case LAMBDA_EXPRESSION -> {
         if (T.isUseOfVariable()) {
           return Collections.singletonList(((UseOfVariable) T).getVariable());
         } else {
@@ -176,7 +176,8 @@ public abstract class TypeConstraint implements Constraint {
           }
           return inputs;
         }
-      case MEMBER_REFERENCE:
+      }
+      case MEMBER_REFERENCE -> {
         if (T.isUseOfVariable()) {
           return Collections.singletonList(((UseOfVariable) T).getVariable());
         } else if (TreeUtils.isExactMethodReference((MemberReferenceTree) tree)) {
@@ -193,15 +194,18 @@ public abstract class TypeConstraint implements Constraint {
           }
           return inputs;
         }
-      case PARENTHESIZED:
+      }
+      case PARENTHESIZED -> {
         return getInputVariablesForExpression(TreeUtils.withoutParens(tree), T);
-      case CONDITIONAL_EXPRESSION:
+      }
+      case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) tree;
         List<Variable> inputs = new ArrayList<>();
         inputs.addAll(getInputVariablesForExpression(conditional.getTrueExpression(), T));
         inputs.addAll(getInputVariablesForExpression(conditional.getFalseExpression(), T));
         return inputs;
-      case SWITCH_EXPRESSION:
+      }
+      case SWITCH_EXPRESSION -> {
         List<Variable> inputs2 = new ArrayList<>();
 
         SwitchExpressionScanner<Boolean, Void> scanner =
@@ -211,9 +215,10 @@ public abstract class TypeConstraint implements Constraint {
                 (r1, r2) -> null);
         scanner.scanSwitchExpression((SwitchExpressionTree) tree, null);
         return inputs2;
-
-      default:
+      }
+      default -> {
         return Collections.emptyList();
+      }
     }
   }
 

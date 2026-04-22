@@ -275,7 +275,7 @@ public class TreePathUtil {
   /**
    * Returns the {@link MethodHandle} for retrieving the end position of a {@link JCTree}.
    *
-   * @return the {@link MethodHandle} for retrieving the end position of a {@link JCTree}.
+   * @return the {@link MethodHandle} for retrieving the end position of a {@link JCTree}
    */
   private static MethodHandle getEndPosMethodHandle() {
     MethodHandles.Lookup lookup = MethodHandles.lookup();

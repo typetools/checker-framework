@@ -742,22 +742,20 @@ public final class TreeUtils {
    * @param tree the ExpressionTree to test
    * @return true if the tree refers to an identifier, member select, or method invocation
    */
+  @SuppressWarnings("nullness:contracts.conditional.postcondition") // CF doesn't handle switch expr
   @EnsuresNonNullIf(result = true, expression = "elementFromTree(#1)")
   @EnsuresNonNullIf(result = true, expression = "elementFromUse(#1)")
   @Pure
   public static boolean isUseOfElement(ExpressionTree tree) {
     ExpressionTree realnode = TreeUtils.withoutParens(tree);
-    switch (realnode.getKind()) {
-      case IDENTIFIER:
-      case MEMBER_SELECT:
-      case METHOD_INVOCATION:
-      case NEW_CLASS:
+    return switch (realnode.getKind()) {
+      case IDENTIFIER, MEMBER_SELECT, METHOD_INVOCATION, NEW_CLASS -> {
         assert elementFromTree(tree) != null : "@AssumeAssertion(nullness): inspection";
         assert elementFromUse(tree) != null : "@AssumeAssertion(nullness): inspection";
-        return true;
-      default:
-        return false;
-    }
+        yield true;
+      }
+      default -> false;
+    };
   }
 
   /**

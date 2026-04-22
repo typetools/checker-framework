@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BinaryOperator;
+import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -237,42 +238,69 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (hasSideEffect) {
 
       boolean sideEffectsUnrefineAliases = gatypeFactory.sideEffectsUnrefineAliases;
+      Node receiver = methodInvocationNode.getTarget().getReceiver();
+      boolean hasDoesNotUnrefineReceiver = atypeFactory.hasDoesNotUnrefineReceiver(method);
 
-      // update local variables
       // TODO: Also remove if any element/argument to the annotation is not
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
+
+      // If @DoesNotUnrefineReceiver is present, compute the receiver as a JavaExpression so
+      // that it can be exempted from unrefinement in all expression categories below.
+      @Nullable JavaExpression receiverJe =
+          hasDoesNotUnrefineReceiver ? JavaExpression.fromNode(receiver) : null;
+      // Returns true if the expression should NOT be unrefined (because the method is
+      // annotated @DoesNotUnrefineReceiver and the expression is the receiver).
+      Predicate<JavaExpression> doNotUnrefine =
+          receiverJe != null ? je -> je.equals(receiverJe) : je -> false;
+
+      // Update local variables.
       if (sideEffectsUnrefineAliases) {
-        localVariableValues.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
+        localVariableValues
+            .entrySet()
+            .removeIf(
+                e -> {
+                  LocalVariable lv = e.getKey();
+                  return lv.isModifiableByOtherCode() && !doNotUnrefine.test(lv);
+                });
       }
 
-      // update this value
-      if (sideEffectsUnrefineAliases) {
+      // Update this value.
+      if (sideEffectsUnrefineAliases
+          && !(receiverJe instanceof ThisReference)
+          && !(receiverJe instanceof SuperReference)) {
         thisValue = null;
       }
 
-      // update field values
+      // Update field values.
       if (sideEffectsUnrefineAliases) {
-        fieldValues.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
+        fieldValues
+            .entrySet()
+            .removeIf(
+                (Map.Entry<FieldAccess, V> e) -> {
+                  FieldAccess fa = e.getKey();
+                  return fa.isModifiableByOtherCode() && !doNotUnrefine.test(fa);
+                });
       } else {
-        // Case 2 (unassignable fields) and case 3 (monotonic fields)
-        updateFieldValuesForMethodCall(gatypeFactory);
+        // Case 2 (unassignable fields) and case 3 (monotonic fields).
+        updateFieldValuesForMethodCall(gatypeFactory, doNotUnrefine::test);
       }
 
       // Update array values.
-      arrayValues.clear();
+      arrayValues.entrySet().removeIf(e -> !doNotUnrefine.test(e.getKey()));
 
       // Update information about method calls.
-      updateMethodCallValues();
+      methodCallExpressions
+          .entrySet()
+          .removeIf(
+              e -> {
+                MethodCall mc = e.getKey();
+                return mc.isModifiableByOtherCode() && !doNotUnrefine.test(mc);
+              });
     }
 
     // Store information about method calls if possible.
     JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
     replaceValue(methodCall, val);
-  }
-
-  /** Update information about method calls. */
-  private void updateMethodCallValues() {
-    methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
   }
 
   /**
@@ -358,15 +386,23 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * fields that have a monotonic annotation.
    *
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
+   * @param doNotUnrefine if true of a field access, don't unrefine it. This predicate indicates
+   *     exceptions: fields that are not updated by this method.
    */
   private void updateFieldValuesForMethodCall(
-      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory) {
+      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory, Predicate<FieldAccess> doNotUnrefine) {
     Map<FieldAccess, V> newFieldValues = new HashMap<>(MapsP.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
       V previousValue = e.getValue();
 
-      V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
+      V newValue;
+      boolean doNotUnrefineResult = doNotUnrefine.test(fieldAccess);
+      if (doNotUnrefineResult) {
+        newValue = previousValue;
+      } else {
+        newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
+      }
       if (newValue != null) {
         // Keep information for all hierarchies where we had a monotonic annotation.
         newFieldValues.put(fieldAccess, newValue);
@@ -614,15 +650,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return;
     }
 
-    if (expr instanceof LocalVariable) {
-      LocalVariable localVar = (LocalVariable) expr;
+    if (expr instanceof LocalVariable localVar) {
       V oldValue = localVariableValues.get(localVar);
       V newValue = merger.apply(oldValue, value);
       if (newValue != null) {
         localVariableValues.put(localVar, newValue);
       }
-    } else if (expr instanceof FieldAccess) {
-      FieldAccess fieldAcc = (FieldAccess) expr;
+    } else if (expr instanceof FieldAccess fieldAcc) {
       // Only store information about final fields (where the receiver is
       // also fixed) if concurrent semantics are enabled.
       boolean isMonotonic = isMonotonicUpdate(fieldAcc, value);
@@ -633,8 +667,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           fieldValues.put(fieldAcc, newValue);
         }
       }
-    } else if (expr instanceof MethodCall) {
-      MethodCall method = (MethodCall) expr;
+    } else if (expr instanceof MethodCall method) {
       // Don't store any information if concurrent semantics are enabled.
       if (sequentialSemantics) {
         V oldValue = methodCallExpressions.get(method);
@@ -643,8 +676,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           methodCallExpressions.put(method, newValue);
         }
       }
-    } else if (expr instanceof ArrayAccess) {
-      ArrayAccess arrayAccess = (ArrayAccess) expr;
+    } else if (expr instanceof ArrayAccess arrayAccess) {
       if (sequentialSemantics) {
         V oldValue = arrayValues.get(arrayAccess);
         V newValue = merger.apply(oldValue, value);
@@ -660,8 +692,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           thisValue = newValue;
         }
       }
-    } else if (expr instanceof ClassName) {
-      ClassName className = (ClassName) expr;
+    } else if (expr instanceof ClassName className) {
       if (sequentialSemantics || !className.isAssignableByOtherCode()) {
         V oldValue = classValues.get(className);
         V newValue = merger.apply(oldValue, value);
@@ -766,20 +797,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // Expressions containing unknown expressions are not stored.
       return;
     }
-    if (expr instanceof LocalVariable) {
-      LocalVariable localVar = (LocalVariable) expr;
+    if (expr instanceof LocalVariable localVar) {
       localVariableValues.remove(localVar);
-    } else if (expr instanceof FieldAccess) {
-      FieldAccess fieldAcc = (FieldAccess) expr;
+    } else if (expr instanceof FieldAccess fieldAcc) {
       fieldValues.remove(fieldAcc);
-    } else if (expr instanceof MethodCall) {
-      MethodCall method = (MethodCall) expr;
+    } else if (expr instanceof MethodCall method) {
       methodCallExpressions.remove(method);
-    } else if (expr instanceof ArrayAccess) {
-      ArrayAccess a = (ArrayAccess) expr;
+    } else if (expr instanceof ArrayAccess a) {
       arrayValues.remove(a);
-    } else if (expr instanceof ClassName) {
-      ClassName c = (ClassName) expr;
+    } else if (expr instanceof ClassName c) {
       classValues.remove(c);
     } else if (expr instanceof ThisReference) {
       thisValue = null;
@@ -796,22 +822,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *     available
    */
   public @Nullable V getValue(JavaExpression expr) {
-    if (expr instanceof LocalVariable) {
-      LocalVariable localVar = (LocalVariable) expr;
+    if (expr instanceof LocalVariable localVar) {
       return localVariableValues.get(localVar);
     } else if (expr instanceof ThisReference || expr instanceof SuperReference) {
       return thisValue;
-    } else if (expr instanceof FieldAccess) {
-      FieldAccess fieldAcc = (FieldAccess) expr;
+    } else if (expr instanceof FieldAccess fieldAcc) {
       return fieldValues.get(fieldAcc);
-    } else if (expr instanceof MethodCall) {
-      MethodCall method = (MethodCall) expr;
+    } else if (expr instanceof MethodCall method) {
       return methodCallExpressions.get(method);
-    } else if (expr instanceof ArrayAccess) {
-      ArrayAccess a = (ArrayAccess) expr;
+    } else if (expr instanceof ArrayAccess a) {
       return arrayValues.get(a);
-    } else if (expr instanceof ClassName) {
-      ClassName c = (ClassName) expr;
+    } else if (expr instanceof ClassName c) {
       return classValues.get(c);
     } else {
       throw new BugInCF("Unexpected JavaExpression: " + expr + " (" + expr.getClass() + ")");
@@ -828,10 +849,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   public @Nullable V getValue(FieldAccessNode n) {
     JavaExpression je = JavaExpression.fromNodeFieldAccess(n);
-    if (je instanceof FieldAccess) {
-      return fieldValues.get((FieldAccess) je);
-    } else if (je instanceof ClassName) {
-      return classValues.get((ClassName) je);
+    if (je instanceof FieldAccess fa) {
+      return fieldValues.get(fa);
+    } else if (je instanceof ClassName cn) {
+      return classValues.get(cn);
     } else if (je instanceof ThisReference || je instanceof SuperReference) {
       // "return thisValue" is wrong, because the node refers to an outer this.
       // So, return null for now.  TODO: improve.
@@ -892,12 +913,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   public void updateForAssignment(Node n, @Nullable V val) {
     JavaExpression je = JavaExpression.fromNode(n);
-    if (je instanceof ArrayAccess) {
-      updateForArrayAssignment((ArrayAccess) je, val);
-    } else if (je instanceof FieldAccess) {
-      updateForFieldAccessAssignment((FieldAccess) je, val);
-    } else if (je instanceof LocalVariable) {
-      updateForLocalVariableAssignment((LocalVariable) je, val);
+    if (je instanceof ArrayAccess aa) {
+      updateForArrayAssignment(aa, val);
+    } else if (je instanceof FieldAccess fa) {
+      updateForFieldAccessAssignment(fa, val);
+    } else if (je instanceof LocalVariable lv) {
+      updateForLocalVariableAssignment(lv, val);
     } else {
       throw new BugInCF("Unexpected je of class " + je.getClass());
     }
