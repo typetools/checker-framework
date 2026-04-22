@@ -135,8 +135,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * @param tree1 the first tree to scan, or null
    * @param tree2 the second tree to scan, or null
    */
-  public final void assertSameKind(@Nullable Tree tree1, @Nullable Tree tree2) {
-
+  protected final void assertSameKind(@Nullable Tree tree1, @Nullable Tree tree2) {
     if (tree1 == null && tree2 == null) {
       return;
     }
@@ -149,11 +148,10 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
           "%s: one tree is null: tree1=%s [%s] tree2=%s [%s]",
           this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2);
     }
-
-    if (tree1.getKind() != tree2.getKind()) {
+    if (kind1 != kind2) {
       throw new UserError(
           "%s: mismatched kinds: tree1=%s [%s] tree2=%s [%s]",
-          this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2);
+          this.getClass().getCanonicalName(), tree1, tree1.getKind(), tree2, tree2.getKind());
     }
   }
 
@@ -164,7 +162,13 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * @param list1 the first list of trees
    * @param list2 the second list of trees
    */
-  public final void assertSameLength(List<? extends Tree> list1, List<? extends Tree> list2) {
+  protected final void assertSameLength(
+      @Nullable List<? extends Tree> list1, @Nullable List<? extends Tree> list2) {
+    if (list1 == null || list2 == null) {
+      throw new UserError(
+          "%s: one list is null: list1=%s list2=%s",
+          this.getClass().getCanonicalName(), list1, list2);
+    }
     if (list1.size() != list2.size()) {
       throw new UserError(
           "%s: different size lists: %s (size %d), %s (size %d)",
@@ -187,8 +191,8 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    */
   public final void scan(@Nullable Tree tree1, @Nullable Tree tree2) {
     assertSameKind(tree1, tree2);
-
-    if (tree1 == null && tree2 == null) {
+    if (tree1 == null) {
+      assert tree2 == null;
       return;
     }
 
@@ -212,7 +216,11 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * @param list1 the first list of trees
    * @param list2 the second list of trees
    */
-  public final void scanList(List<? extends Tree> list1, List<? extends Tree> list2) {
+  public final void scanList(
+      @Nullable List<? extends Tree> list1, @Nullable List<? extends Tree> list2) {
+    if (list1 == null && list2 == null) {
+      return;
+    }
     assertSameLength(list1, list2);
     for (int i = 0; i < list1.size(); i++) {
       scan(list1.get(i), list2.get(i));
@@ -376,7 +384,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   }
 
   /**
-   * Visits a package declaration and scans its name.
+   * Visits a package declaration and scans its annotations and name.
    *
    * @param ptree1 package tree from the first AST
    * @param tree2 package tree from the second AST
@@ -409,7 +417,8 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
   /**
    * Visits a class-like declaration and scans its modifiers, type parameters, superclass,
-   * interfaces, permits clause, record components (on JDK 16+, via reflection), and members.
+   * interfaces, permits clause, and members. For records, record components appear in the members
+   * list and are therefore included.
    *
    * @param ctree1 class tree from the first AST
    * @param tree2 class tree from the second AST
@@ -447,7 +456,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     scanList(mtree1.getTypeParameters(), mtree2.getTypeParameters());
 
     scan(mtree1.getReturnType(), mtree2.getReturnType());
-    // Receiver parameters may be absent in .java and present in .ajava.
+    // A receiver parameter may be absent in .java and present in .ajava.
     if (mtree1.getReceiverParameter() != null && mtree2.getReceiverParameter() != null) {
       scan(mtree1.getReceiverParameter(), mtree2.getReceiverParameter());
     }
@@ -617,7 +626,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * Visits a case clause and scans its labels, guard expression (JDK 21+), body (rule-case, JDK
    * 12+), and statements (statement-case). Uses {@link TreeUtilsAfterJava17.CaseUtils} to handle
    * JDK 12+ and 21+ API differences. For a given case, exactly one of {@code body} or {@code
-   * statements} will be non-null; {@link #scan} and {@link #scanList} handle the null.
+   * statements} will be non-null; the code guards against null before calling {@link #scanList}.
    *
    * @param ctree1 case tree from the first AST
    * @param tree2 case tree from the second AST
@@ -628,18 +637,17 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     CaseTree ctree2 = (CaseTree) tree2;
     defaultAction(ctree1, ctree2);
 
+    // getLabels() subsumes getExpressions().
     scanList(
         TreeUtilsAfterJava17.CaseUtils.getLabels(ctree1),
         TreeUtilsAfterJava17.CaseUtils.getLabels(ctree2));
     scan(
         TreeUtilsAfterJava17.CaseUtils.getGuard(ctree1),
         TreeUtilsAfterJava17.CaseUtils.getGuard(ctree2));
+    // For a given CaseTree, either getBody() or getStatements() returns null.
     scan(ctree1.getBody(), ctree2.getBody());
-    @SuppressWarnings("deprecation")
-    List<? extends Tree> stmts1 = ctree1.getStatements();
-    @SuppressWarnings("deprecation")
-    List<? extends Tree> stmts2 = ctree2.getStatements();
-    scanList(stmts1, stmts2);
+    // getStatements() returns null for expression case statements.
+    scanList(ctree1.getStatements(), ctree2.getStatements());
     return null;
   }
 
