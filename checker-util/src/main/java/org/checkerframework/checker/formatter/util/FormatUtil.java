@@ -17,6 +17,11 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 @AnnotatedFor("nullness")
 public class FormatUtil {
 
+  /** Do not instantiate. */
+  private FormatUtil() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * A representation of a format specifier, which is represented by "%..." in the format string.
    * Indicates how to convert a value into a string.
@@ -142,14 +147,13 @@ public class FormatUtil {
       conv.put(
           last,
           ConversionCategory.intersect(
-              conv.containsKey(lastKey) ? conv.get(lastKey) : ConversionCategory.UNUSED,
-              c.category()));
+              conv.getOrDefault(lastKey, ConversionCategory.UNUSED), c.category()));
     }
 
     ConversionCategory[] res = new ConversionCategory[maxindex + 1];
     for (int i = 0; i <= maxindex; ++i) {
       Integer key = i; // autoboxing prevents recognizing that containsKey => get() != null
-      res[i] = conv.containsKey(key) ? conv.get(key) : ConversionCategory.UNUSED;
+      res[i] = conv.getOrDefault(key, ConversionCategory.UNUSED);
     }
     return res;
   }
@@ -190,21 +194,19 @@ public class FormatUtil {
    * Returns the index, in the argument list, of the value that will be formatted by the matched
    * format specifier.
    *
-   * @param m a matcher that matches a format specifier
+   * @param m a match of {@code fsPattern}
    * @return the index of the argument to format
    */
-  private static int indexFromFormat(Matcher m) {
+  private static int indexFromFormat(@Regex(6) Matcher m) {
     int index;
     String s = m.group(1);
-    if (s != null) { // explicit index
+    String group2 = m.group(2); // not @Deterministic, so extract into local var
+    if (group2 != null && group2.indexOf('<') != -1) {
+      index = -1; // relative index
+    } else if (s != null) { // explicit index
       index = Integer.parseInt(s.substring(0, s.length() - 1));
     } else {
-      String group2 = m.group(2); // not @Deterministic, so extract into local var
-      if (group2 != null && group2.contains(String.valueOf('<'))) {
-        index = -1; // relative index
-      } else {
-        index = 0; // ordinary index
-      }
+      index = 0; // ordinary index
     }
     return index;
   }
@@ -215,8 +217,11 @@ public class FormatUtil {
    * @param m a matcher that matches a format specifier
    * @return the conversion character from the format specifier
    */
-  @SuppressWarnings(
-      "nullness:dereference.of.nullable") // group formatSpecifierConversion always exists
+  @SuppressWarnings({
+    "nullness:dereference.of.nullable", // group formatSpecifierConversion always exists
+    "regex:group.count.unknown" // formatSpecifierT=5 and formatSpecifierConversion=6 are within
+    // range
+  })
   private static char conversionCharFromFormat(@Regex(6) Matcher m) {
     String tGroup = m.group(formatSpecifierT);
     if (tGroup != null) {
@@ -236,7 +241,7 @@ public class FormatUtil {
    * @deprecated This method is public only for testing. Use private method {@code
    *     #conversionCharFromFormat(Matcher)}.
    */
-  @Deprecated // used only for testing.  Use conversionCharFromFormat(Matcher).
+  @Deprecated // Not for removal. Used only for testing
   public static char conversionCharFromFormat(String formatSpecifier) {
     Matcher m = fsPattern.matcher(formatSpecifier);
     assert m.find();
@@ -251,7 +256,7 @@ public class FormatUtil {
    */
   private static Conversion[] parse(String format) {
     ArrayList<Conversion> cs = new ArrayList<>();
-    @Regex(7) Matcher m = fsPattern.matcher(format);
+    @Regex(6) Matcher m = fsPattern.matcher(format);
     while (m.find()) {
       char c = conversionCharFromFormat(m);
       switch (c) {

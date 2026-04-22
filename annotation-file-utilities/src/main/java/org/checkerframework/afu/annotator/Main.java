@@ -18,7 +18,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -64,7 +63,6 @@ import org.checkerframework.afu.scenelib.io.ASTRecord;
 import org.checkerframework.afu.scenelib.io.DebugWriter;
 import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.checkerframework.afu.scenelib.io.IndexFileWriter;
-import org.checkerframework.afu.scenelib.io.classfile.ClassFileReader;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.afu.scenelib.util.CommandLineUtils;
@@ -137,6 +135,11 @@ import org.plumelib.util.IPair;
  * <!-- end options doc -->
  */
 public class Main {
+
+  /** Do not instantiate. */
+  private Main() {
+    throw new Error("Do not instantiate");
+  }
 
   // Options
 
@@ -245,7 +248,7 @@ public class Main {
             ASTPath p = entry.getKey();
             ATypeElementWithType e = entry.getValue();
             Type type = e.getType();
-            if (type instanceof DeclaredType && ((DeclaredType) type).getName().isEmpty()) {
+            if (type instanceof DeclaredType declaredType && declaredType.getName().isEmpty()) {
               insertAnnotations.put(p, e);
               // visitTypeElement(e, insertAnnotations.getVivify(p));
             } else {
@@ -327,7 +330,7 @@ public class Main {
     ASTPath.ASTEntry entry;
     for (TypePathEntry tpe : tpes) {
       switch (tpe.step) {
-        case TypePath.ARRAY_ELEMENT:
+        case TypePath.ARRAY_ELEMENT -> {
           if (!astPath.isEmpty()) {
             entry = astPath.getLast();
             if (entry.getTreeKind() == Tree.Kind.NEW_ARRAY && entry.childSelectorIs(ASTPath.TYPE)) {
@@ -337,20 +340,16 @@ public class Main {
             }
           }
           entry = new ASTPath.ASTEntry(Tree.Kind.ARRAY_TYPE, ASTPath.TYPE);
-          break;
-        case TypePath.INNER_TYPE:
-          entry = new ASTPath.ASTEntry(Tree.Kind.MEMBER_SELECT, ASTPath.EXPRESSION);
-          break;
-        case TypePath.TYPE_ARGUMENT:
-          entry =
-              new ASTPath.ASTEntry(
-                  Tree.Kind.PARAMETERIZED_TYPE, ASTPath.TYPE_ARGUMENT, tpe.argument);
-          break;
-        case TypePath.WILDCARD_BOUND:
-          entry = new ASTPath.ASTEntry(Tree.Kind.UNBOUNDED_WILDCARD, ASTPath.BOUND);
-          break;
-        default:
-          throw new IllegalArgumentException("unknown type tag " + tpe.step);
+        }
+        case TypePath.INNER_TYPE ->
+            entry = new ASTPath.ASTEntry(Tree.Kind.MEMBER_SELECT, ASTPath.EXPRESSION);
+        case TypePath.TYPE_ARGUMENT ->
+            entry =
+                new ASTPath.ASTEntry(
+                    Tree.Kind.PARAMETERIZED_TYPE, ASTPath.TYPE_ARGUMENT, tpe.argument);
+        case TypePath.WILDCARD_BOUND ->
+            entry = new ASTPath.ASTEntry(Tree.Kind.UNBOUNDED_WILDCARD, ASTPath.BOUND);
+        default -> throw new IllegalArgumentException("unknown type tag " + tpe.step);
       }
       astPath = astPath.extend(entry);
     }
@@ -405,19 +404,13 @@ public class Main {
             while (path != null) {
               Tree leaf = path.getLeaf();
               switch (leaf.getKind()) {
-                case VARIABLE:
-                  varTree = (JCTree.JCVariableDecl) leaf;
-                  break;
-                case METHOD:
-                  methTree = (JCTree.JCMethodDecl) leaf;
-                  break;
-                case ANNOTATION:
-                case CLASS:
-                case ENUM:
-                case INTERFACE:
+                // TODO: Is this an infinite loop if leaf is a VARIABLE or METHOD?
+                case VARIABLE -> varTree = (JCTree.JCVariableDecl) leaf;
+                case METHOD -> methTree = (JCTree.JCMethodDecl) leaf;
+                case ANNOTATION_TYPE, CLASS, ENUM, INTERFACE -> {
                   break loop;
-                default:
-                  path = path.getParentPath();
+                }
+                default -> path = path.getParentPath();
               }
             }
             while (path != null) {
@@ -457,8 +450,7 @@ public class Main {
         for (Annotation anno : annos) {
           el.tlAnnotationsHere.add(anno);
         }
-        if (ins instanceof TypedInsertion) {
-          TypedInsertion ti = (TypedInsertion) ins;
+        if (ins instanceof TypedInsertion ti) {
           if (!rec.astPath.isEmpty()) {
             // addInnerTypePaths(decl, rec, ti, insertionSources);
           }
@@ -499,7 +491,7 @@ public class Main {
   public static void main(String[] args) throws IOException {
 
     if (verbose) {
-      System.out.printf("insert-annotations-to-source (%s)%n", ClassFileReader.INDEX_UTILS_VERSION);
+      System.out.printf("insert-annotations-to-source%n");
     }
 
     Options options =
@@ -596,15 +588,11 @@ public class Main {
           }
         }
         AScene scene = spec.getScene();
-        Collections.sort(
-            parsedSpec,
-            new Comparator<Insertion>() {
-              @Override
-              public int compare(Insertion i1, Insertion i2) {
-                ASTPath p1 = i1.getCriteria().getASTPath();
-                ASTPath p2 = i2.getCriteria().getASTPath();
-                return p1 == null ? p2 == null ? 0 : -1 : p2 == null ? 1 : p1.compareTo(p2);
-              }
+        parsedSpec.sort(
+            (Insertion i1, Insertion i2) -> {
+              ASTPath p1 = i1.getCriteria().getASTPath();
+              ASTPath p2 = i2.getCriteria().getASTPath();
+              return p1 == null ? p2 == null ? 0 : -1 : p2 == null ? 1 : p1.compareTo(p2);
             });
         if (convert_jaifs) {
           scenes.put(jaifFile, filteredScene(scene));
@@ -618,7 +606,7 @@ public class Main {
         }
         verb.debug("Read %d annotations from %s%n", parsedSpec.size(), jaifFile);
         if (omit_annotation != null) {
-          List<Insertion> filtered = new ArrayList<Insertion>(parsedSpec.size());
+          List<Insertion> filtered = new ArrayList<>(parsedSpec.size());
           for (Insertion insertion : parsedSpec) {
             // TODO: this won't omit annotations if the insertion is more than
             // just the annotation (such as if the insertion is a cast
@@ -639,7 +627,7 @@ public class Main {
         insertions.addAll(parsedSpec);
         annotationImports.putAll(spec.annotationImports());
       } catch (RuntimeException e) {
-        if (e.getCause() != null && e.getCause() instanceof FileNotFoundException) {
+        if (e.getCause() instanceof FileNotFoundException) {
           System.err.println("File not found: " + jaifFile);
           System.exit(1);
         } else {
@@ -770,17 +758,14 @@ public class Main {
         Set<IPair<Integer, ASTPath>> positionKeysUnsorted = positions.keySet();
         Set<IPair<Integer, ASTPath>> positionKeysSorted =
             new TreeSet<IPair<Integer, ASTPath>>(
-                new Comparator<IPair<Integer, ASTPath>>() {
-                  @Override
-                  public int compare(IPair<Integer, ASTPath> p1, IPair<Integer, ASTPath> p2) {
-                    int c = Integer.compare(p2.first, p1.first);
-                    if (c != 0) {
-                      return c;
-                    }
-                    return p2.second == null
-                        ? (p1.second == null ? 0 : -1)
-                        : (p1.second == null ? 1 : p2.second.compareTo(p1.second));
+                (p1, p2) -> {
+                  int c = Integer.compare(p2.first, p1.first);
+                  if (c != 0) {
+                    return c;
                   }
+                  return p2.second == null
+                      ? (p1.second == null ? 0 : -1)
+                      : (p1.second == null ? 1 : p2.second.compareTo(p1.second));
                 });
         positionKeysSorted.addAll(positionKeysUnsorted);
         for (IPair<Integer, ASTPath> pair : positionKeysSorted) {
@@ -943,8 +928,7 @@ public class Main {
               dbug.debug("Need import %s%n  due to insertion %s%n", packageNames, toInsert);
               imports.addAll(packageNames);
             }
-            if (iToInsert instanceof AnnotationInsertion) {
-              AnnotationInsertion annoToInsert = (AnnotationInsertion) iToInsert;
+            if (iToInsert instanceof AnnotationInsertion annoToInsert) {
               Set<String> annoImports =
                   annotationImports.get(annoToInsert.getAnnotationFullyQualifiedName());
               if (annoImports != null) {
@@ -1083,18 +1067,15 @@ public class Main {
    * that they are alphabetized when inserted).
    */
   private static Comparator<Insertion> insertionSorter =
-      new Comparator<Insertion>() {
-        @Override
-        public int compare(Insertion i1, Insertion i2) {
-          boolean separateLine1 = i1.isSeparateLine();
-          boolean separateLine2 = i2.isSeparateLine();
-          if (separateLine1 && !separateLine2) {
-            return 1;
-          } else if (separateLine2 && !separateLine1) {
-            return -1;
-          } else {
-            return -i1.getText().compareTo(i2.getText());
-          }
+      (i1, i2) -> {
+        boolean separateLine1 = i1.isSeparateLine();
+        boolean separateLine2 = i2.isSeparateLine();
+        if (separateLine1 && !separateLine2) {
+          return 1;
+        } else if (separateLine2 && !separateLine1) {
+          return -1;
+        } else {
+          return -i1.getText().compareTo(i2.getText());
         }
       };
 
@@ -1102,7 +1083,7 @@ public class Main {
   public static Map<String, Boolean> hasExplicitConstructor = new HashMap<>();
 
   /**
-   * Fills in the {@link hasExplicitConstructor} map.
+   * Fills in the {@link #hasExplicitConstructor} map.
    *
    * @param javaFiles the Java files that were passed on the command line
    */
