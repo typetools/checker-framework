@@ -288,7 +288,7 @@ public class AMethod extends ADeclaration {
 
   @Override
   public boolean equals(AElement o) {
-    return o instanceof AMethod && ((AMethod) o).equalsMethod(this);
+    return o instanceof AMethod am && am.equalsMethod(this);
   }
 
   boolean equalsMethod(AMethod o) {

@@ -319,22 +319,21 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
     TransferInput<V, S> transferInput = inputs.get(block);
     assert transferInput != null : "@AssumeAssertion(nullness): transferInput should be non-null";
     Analysis<V, S, ?> analysis = transferInput.analysis;
-    switch (analysis.getDirection()) {
-      case FORWARD:
-        return transferInput.getRegularStore();
-      case BACKWARD:
+    return switch (analysis.getDirection()) {
+      case FORWARD -> transferInput.getRegularStore();
+      case BACKWARD -> {
         List<Node> nodes = block.getNodes();
         if (nodes.isEmpty()) {
           // This block doesn't contain any node, return the store in the transfer input.
-          return transferInput.getRegularStore();
+          yield transferInput.getRegularStore();
         } else {
           Node firstNode = nodes.get(0);
-          return analysis.runAnalysisFor(
+          yield analysis.runAnalysisFor(
               firstNode, Analysis.BeforeOrAfter.BEFORE, transferInput, nodeValues, analysisCaches);
         }
-      default:
-        throw new BugInCF("Unknown direction: " + analysis.getDirection());
-    }
+      }
+      default -> throw new BugInCF("Unknown direction: " + analysis.getDirection());
+    };
   }
 
   /**
@@ -357,21 +356,20 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
     TransferInput<V, S> transferInput = inputs.get(block);
     assert transferInput != null : "@AssumeAssertion(nullness): transferInput should be non-null";
     Analysis<V, S, ?> analysis = transferInput.analysis;
-    switch (analysis.getDirection()) {
-      case FORWARD:
+    return switch (analysis.getDirection()) {
+      case FORWARD -> {
         Node lastNode = block.getLastNode();
         if (lastNode == null) {
           // This block doesn't contain any node, return the store in the transfer input.
-          return transferInput.getRegularStore();
+          yield transferInput.getRegularStore();
         } else {
-          return analysis.runAnalysisFor(
+          yield analysis.runAnalysisFor(
               lastNode, Analysis.BeforeOrAfter.AFTER, transferInput, nodeValues, analysisCaches);
         }
-      case BACKWARD:
-        return transferInput.getRegularStore();
-      default:
-        throw new BugInCF("Unknown direction: " + analysis.getDirection());
-    }
+      }
+      case BACKWARD -> transferInput.getRegularStore();
+      default -> throw new BugInCF("Unknown direction: " + analysis.getDirection());
+    };
   }
 
   /**

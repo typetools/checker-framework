@@ -80,8 +80,8 @@ public class DeconstructorPatternNode extends Node {
       } else {
         bindingVariables = new ArrayList<>(nestedPatterns.size());
         for (Node patternNode : nestedPatterns) {
-          if (patternNode instanceof LocalVariableNode) {
-            bindingVariables.add((LocalVariableNode) patternNode);
+          if (patternNode instanceof LocalVariableNode localVariableNode) {
+            bindingVariables.add(localVariableNode);
           } else if (patternNode instanceof AnyPatternNode) {
             // Do nothing, as AnyPatternNode does not have binding variables.
           } else {

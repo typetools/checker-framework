@@ -69,10 +69,9 @@ public class ReturnNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ReturnNode)) {
+    if (!(obj instanceof ReturnNode other)) {
       return false;
     }
-    ReturnNode other = (ReturnNode) obj;
     return Objects.equals(result, other.result);
   }
 

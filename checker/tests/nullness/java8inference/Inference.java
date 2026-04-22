@@ -18,12 +18,6 @@ public class Inference {
   }
 
   MyStream<String> test(MyStream<String> p) {
-    /* Need Java 8 assignment context to correctly infer type arguments.
-         return p.collect(toImmutableStream());
-                    ^
-       found   : @Initialized @NonNull MyStream<? extends @Initialized @Nullable Object>
-       required: @Initialized @NonNull MyStream<@Initialized @NonNull String>
-    */
     return p.collect(toImmutableStream());
   }
 }

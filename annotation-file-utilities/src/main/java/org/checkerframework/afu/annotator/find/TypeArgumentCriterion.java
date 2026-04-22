@@ -37,14 +37,11 @@ public class TypeArgumentCriterion implements Criterion {
     List<? extends Tree> typeArgs;
 
     switch (parent.getKind()) {
-      case MEMBER_REFERENCE:
-        typeArgs = ((JCTree.JCMemberReference) parent).getTypeArguments();
-        break;
-      case METHOD_INVOCATION:
-        typeArgs = ((JCTree.JCMethodInvocation) parent).getTypeArguments();
-        break;
-      default:
+      case MEMBER_REFERENCE -> typeArgs = ((JCTree.JCMemberReference) parent).getTypeArguments();
+      case METHOD_INVOCATION -> typeArgs = ((JCTree.JCMethodInvocation) parent).getTypeArguments();
+      default -> {
         return isSatisfiedBy(parentPath);
+      }
     }
 
     @SuppressWarnings("interning:not.interned") // reference equality check
