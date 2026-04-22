@@ -475,6 +475,16 @@ final class ConstructorFirstWriteAnalysis {
 
     @Override
     public FirstWriteScanResult visitAssignment(AssignmentTree node, Void p) {
+      // Scan the LHS for side-effecting-calls, e.g., sideEffect().f = ...;
+      FirstWriteScanResult lhsRes = scan(node.getVariable(), p);
+      if (lhsRes != FirstWriteScanResult.UNASSIGNED) {
+        return lhsRes;
+      }
+      // Scan the RHS to catch nested assignments, e.g., ... = (this.f = new Foo()).
+      FirstWriteScanResult rhsRes = scan(node.getExpression(), p);
+      if (rhsRes != FirstWriteScanResult.UNASSIGNED) {
+        return rhsRes;
+      }
       Element lhsEl = TreeUtils.elementFromUse(node.getVariable());
       if (targetField == lhsEl) {
         // Found an assignment to the same field:
