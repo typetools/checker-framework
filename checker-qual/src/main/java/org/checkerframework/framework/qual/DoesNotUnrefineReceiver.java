@@ -15,9 +15,8 @@ import java.lang.annotation.Target;
  * @checker_framework.manual #type-refinement-purity Side effects, determinism, purity, and
  *     flow-sensitive analysis
  */
-// @InheritedAnnotation cannot be written here, because "dataflow" project cannot depend on
-// "framework" project.
 @Documented
+@InheritedAnnotation
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface DoesNotUnrefineReceiver {
