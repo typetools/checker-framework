@@ -19,10 +19,10 @@ class MethodCodeOffsetAdapter extends MethodVisitor {
   private final ClassReader classReader;
 
   /** Offset from start of class file to code attribute for method. */
-  private int codeStart = 0;
+  private int codeStart;
 
   /** Number of attributes for this method. */
-  private int attrCount = 0;
+  private int attrCount;
 
   /** Offset from start of bytecodes to current instruction. */
   private int offset;
@@ -155,13 +155,6 @@ class MethodCodeOffsetAdapter extends MethodVisitor {
     previousOffset = offset;
     offset += 8 - ((offset - codeStart) & 3);
     offset += 4 + 8 * readInt(offset);
-  }
-
-  @Deprecated
-  @Override
-  public void visitMethodInsn(int opcode, String owner, String name, String descriptor) {
-    super.visitMethodInsn(opcode, owner, name, descriptor);
-    advance(opcode == Opcodes.INVOKEINTERFACE ? 5 : 3);
   }
 
   @Override

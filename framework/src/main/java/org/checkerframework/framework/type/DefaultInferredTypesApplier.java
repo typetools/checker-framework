@@ -106,7 +106,7 @@ public class DefaultInferredTypesApplier {
     TypeVariable typeVar = (TypeVariable) inferredTypeMirror;
     AnnotatedTypeVariable typeVariableDecl =
         (AnnotatedTypeVariable) factory.getAnnotatedType(typeVar.asElement());
-    AnnotationMirror upperBound = typeVariableDecl.getEffectiveAnnotationInHierarchy(top);
+    AnnotationMirror upperBound = typeVariableDecl.getAnnotationInHierarchy(top);
 
     if (omitSubtypingCheck
         || hierarchy.isSubtypeShallow(upperBound, typeVar, notInferred, type.getUnderlyingType())) {
@@ -125,7 +125,7 @@ public class DefaultInferredTypesApplier {
     TypeVariable typeVar = (TypeVariable) inferredTypeMirror;
     AnnotatedTypeVariable typeVariableDecl =
         (AnnotatedTypeVariable) factory.getAnnotatedType(typeVar.asElement());
-    AnnotationMirror upperBound = typeVariableDecl.getEffectiveAnnotationInHierarchy(top);
+    AnnotationMirror upperBound = typeVariableDecl.getAnnotationInHierarchy(top);
     if (omitSubtypingCheck
         || hierarchy.isSubtypeShallow(
             upperBound,
