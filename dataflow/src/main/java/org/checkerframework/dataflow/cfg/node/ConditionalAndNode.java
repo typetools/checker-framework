@@ -38,10 +38,9 @@ public class ConditionalAndNode extends BinaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ConditionalAndNode)) {
+    if (!(obj instanceof ConditionalAndNode other)) {
       return false;
     }
-    ConditionalAndNode other = (ConditionalAndNode) obj;
     return getLeftOperand().equals(other.getLeftOperand())
         && getRightOperand().equals(other.getRightOperand());
   }

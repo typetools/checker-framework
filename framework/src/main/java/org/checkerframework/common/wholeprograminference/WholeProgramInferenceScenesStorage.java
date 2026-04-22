@@ -7,6 +7,9 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Target;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,19 +69,12 @@ import org.plumelib.util.MapsP;
  * if using {@link OutputFormat#STUB}.
  *
  * <p>This class populates the initial Scenes by reading existing .jaif files on the {@link
- * #JAIF_FILES_PATH} directory (regardless of output format). Having more information in those
+ * #inferOutputDirectory} directory (regardless of output format). Having more information in those
  * initial .jaif files means that the precision achieved by the whole-program inference analysis
  * will be better. {@link #writeScenes} rewrites the initial .jaif files and may create new ones.
  */
 public class WholeProgramInferenceScenesStorage
     implements WholeProgramInferenceStorage<ATypeElement> {
-
-  /**
-   * Directory where .jaif files will be written to and read from. This directory is relative to
-   * where the CF's javac command is executed.
-   */
-  public static final String JAIF_FILES_PATH =
-      "build" + File.separator + "whole-program-inference" + File.separator;
 
   /** The type factory associated with this WholeProgramInferenceScenesStorage. */
   protected final AnnotatedTypeFactory atypeFactory;
@@ -97,13 +93,13 @@ public class WholeProgramInferenceScenesStorage
    */
   private final boolean ignoreNullAssignments;
 
-  /** Maps .jaif file paths (Strings) to Scenes. Relative to JAIF_FILES_PATH. */
+  /** Maps .jaif file paths (Strings) to Scenes. Relative to inferOutputDirectory. */
   public final Map<String, ASceneWrapper> scenes = new HashMap<>();
 
   /**
    * Scenes that were modified since the last time all Scenes were written into .jaif files. Each
-   * String element of this set is a path (relative to JAIF_FILES_PATH) to the .jaif file of the
-   * corresponding Scene in the set. It is obtained by passing a class name as argument to the
+   * String element of this set is a path (relative to inferOutputDirectory) to the .jaif file of
+   * the corresponding Scene in the set. It is obtained by passing a class name as argument to the
    * {@link #getJaifPath} method.
    *
    * <p>Modifying a Scene means adding (or changing) a type annotation for a field, method return
@@ -134,43 +130,42 @@ public class WholeProgramInferenceScenesStorage
    */
   private final Map<String, AnnotatedTypeMirror> postconditionsToDeclaredTypes = new HashMap<>();
 
+  /** The directory for reading and writing .jaif files. */
+  private final Path inferOutputDirectory;
+
   /**
    * Default constructor.
    *
    * @param atypeFactory the type factory associated with this WholeProgramInferenceScenesStorage
+   * @param inferOutputDirectory the directory into which to write whole program inference files
    */
-  public WholeProgramInferenceScenesStorage(AnnotatedTypeFactory atypeFactory) {
+  public WholeProgramInferenceScenesStorage(
+      AnnotatedTypeFactory atypeFactory, String inferOutputDirectory) {
     this.atypeFactory = atypeFactory;
     boolean isNullness =
         atypeFactory.getClass().getSimpleName().equals("NullnessAnnotatedTypeFactory");
     this.ignoreNullAssignments = !isNullness;
+    try {
+      this.inferOutputDirectory = Path.of(inferOutputDirectory);
+    } catch (InvalidPathException e) {
+      throw new UserError("Invalid -AinferOutputDirectory path: " + inferOutputDirectory, e);
+    }
   }
 
   @Override
   public String getFileForElement(Element elt) {
-    String className;
-    switch (elt.getKind()) {
-      case CONSTRUCTOR:
-      case METHOD:
-        className = ElementUtils.getEnclosingClassName((ExecutableElement) elt);
-        break;
-      case LOCAL_VARIABLE:
-        className = getEnclosingClassName((LocalVariableNode) elt);
-        break;
-      case FIELD:
-      case ENUM_CONSTANT:
-        ClassSymbol enclosingClass = ((VarSymbol) elt).enclClass();
-        className = enclosingClass.flatname.toString();
-        break;
-      case CLASS:
-        className = ElementUtils.getBinaryName((TypeElement) elt);
-        break;
-      case PARAMETER:
-        className = ElementUtils.getEnclosingClassName((VariableElement) elt);
-        break;
-      default:
-        throw new BugInCF("What element? %s %s", elt.getKind(), elt);
-    }
+    String className =
+        switch (elt.getKind()) {
+          case CONSTRUCTOR, METHOD -> ElementUtils.getEnclosingClassName((ExecutableElement) elt);
+          case LOCAL_VARIABLE -> getEnclosingClassName((LocalVariableNode) elt);
+          case FIELD, ENUM_CONSTANT -> {
+            ClassSymbol enclosingClass = ((VarSymbol) elt).enclClass();
+            yield enclosingClass.flatname.toString();
+          }
+          case CLASS -> ElementUtils.getBinaryName((TypeElement) elt);
+          case PARAMETER -> ElementUtils.getEnclosingClassName((VariableElement) elt);
+          default -> throw new BugInCF("What element? %s %s", elt.getKind(), elt);
+        };
     String file = getJaifPath(className);
     return file;
   }
@@ -308,14 +303,13 @@ public class WholeProgramInferenceScenesStorage
       String expression,
       AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
-    switch (preOrPost) {
-      case BEFORE:
-        return getPreconditionsForExpression(className, methodElement, expression, declaredType);
-      case AFTER:
-        return getPostconditionsForExpression(className, methodElement, expression, declaredType);
-      default:
-        throw new BugInCF("Unexpected " + preOrPost);
-    }
+    return switch (preOrPost) {
+      case BEFORE ->
+          getPreconditionsForExpression(className, methodElement, expression, declaredType);
+      case AFTER ->
+          getPostconditionsForExpression(className, methodElement, expression, declaredType);
+      default -> throw new BugInCF("Unexpected " + preOrPost);
+    };
   }
 
   /**
@@ -478,9 +472,10 @@ public class WholeProgramInferenceScenesStorage
    */
   public void writeScenes(OutputFormat outputFormat, BaseTypeChecker checker) {
     // Create WPI directory if it doesn't exist already.
-    File jaifDir = new File(JAIF_FILES_PATH);
-    if (!jaifDir.exists()) {
-      jaifDir.mkdirs();
+    try {
+      Files.createDirectories(inferOutputDirectory);
+    } catch (IOException e) {
+      throw new UserError("Cannot create " + inferOutputDirectory.toAbsolutePath(), e);
     }
     // Write scenes into files.
     for (String jaifPath : modifiedScenes) {
@@ -496,7 +491,7 @@ public class WholeProgramInferenceScenesStorage
    * @return the path to the .jaif file
    */
   protected String getJaifPath(String className) {
-    String jaifPath = JAIF_FILES_PATH + className + ".jaif";
+    String jaifPath = inferOutputDirectory.resolve(className + ".jaif").toString();
     return jaifPath;
   }
 
@@ -592,9 +587,8 @@ public class WholeProgramInferenceScenesStorage
     TypeMirror rhsTM = rhsATM.getUnderlyingType();
     AnnotatedTypeMirror atmFromScene = atmFromStorageLocation(rhsTM, type);
     updateAtmWithLub(rhsATM, atmFromScene);
-    if (lhsATM instanceof AnnotatedTypeVariable) {
-      AnnotationMirrorSet upperAnnos =
-          ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
+    if (lhsATM instanceof AnnotatedTypeVariable atv) {
+      AnnotationMirrorSet upperAnnos = atv.getUpperBound().getAnnotations();
       // If the inferred type is a subtype of the upper bounds of the
       // current type on the source code, halt.
       if (upperAnnos.size() == rhsATM.getPrimaryAnnotations().size()
@@ -620,14 +614,14 @@ public class WholeProgramInferenceScenesStorage
   private void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror jaifATM) {
 
     switch (sourceCodeATM.getKind()) {
-      case TYPEVAR:
+      case TYPEVAR -> {
         updateAtmWithLub(
             ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
             ((AnnotatedTypeVariable) jaifATM).getLowerBound());
         updateAtmWithLub(
             ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
             ((AnnotatedTypeVariable) jaifATM).getUpperBound());
-        break;
+      }
       //        case WILDCARD:
       // Because inferring type arguments is not supported, wildcards won't be encoutered
       //            updateAtmWithLub(((AnnotatedWildcardType)
@@ -637,19 +631,15 @@ public class WholeProgramInferenceScenesStorage
       //            updateAtmWithLub(((AnnotatedWildcardType)
       // sourceCodeATM).getSuperBound(),
       //                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
-      //            break;
-      case ARRAY:
-        updateAtmWithLub(
-            ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
-            ((AnnotatedArrayType) jaifATM).getComponentType());
-        break;
+      case ARRAY ->
+          updateAtmWithLub(
+              ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
+              ((AnnotatedArrayType) jaifATM).getComponentType());
       // case DECLARED:
       // inferring annotations on type arguments is not supported, so no need to recur on
       // generic types. If this was every implemented, this method would need VisitHistory
       // object to prevent infinite recursion on types such as T extends List<T>.
-      default:
-        // ATM only has primary annotations
-        break;
+      default -> {} // ATM only has primary annotations
     }
 
     // LUB primary annotations
@@ -928,8 +918,7 @@ public class WholeProgramInferenceScenesStorage
     // Only update the ATypeElement if there are no explicit annotations.
     if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
       for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
-        addAnnotationsToATypeElement(
-            newATM, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
+        addAnnotationsToATypeElement(newATM, typeToUpdate, defLoc, am, curATM.hasAnnotation(am));
       }
     } else if (curATM.getKind() == TypeKind.TYPEVAR) {
       // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
@@ -942,8 +931,7 @@ public class WholeProgramInferenceScenesStorage
           // in the same hierarchy.
           break;
         }
-        addAnnotationsToATypeElement(
-            newATM, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
+        addAnnotationsToATypeElement(newATM, typeToUpdate, defLoc, am, curATM.hasAnnotation(am));
       }
     }
 
@@ -974,11 +962,8 @@ public class WholeProgramInferenceScenesStorage
       // that should not be inserted in source code
       String firstKey = aTypeElementToString(typeToUpdate);
       IPair<String, TypeUseLocation> key = IPair.of(firstKey, defLoc);
-      Set<String> annosIgnored = annosToIgnore.get(key);
-      if (annosIgnored == null) {
-        annosIgnored = new HashSet<>(MapsP.mapCapacity(1));
-        annosToIgnore.put(key, annosIgnored);
-      }
+      Set<String> annosIgnored =
+          annosToIgnore.computeIfAbsent(key, k -> new HashSet<>(MapsP.mapCapacity(1)));
       annosIgnored.add(anno.def().toString());
     }
   }

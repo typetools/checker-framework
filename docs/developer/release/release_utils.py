@@ -19,7 +19,7 @@ import subprocess
 import urllib.request
 from pathlib import Path
 
-from release_vars import (  # ty: ignore # TODO: limitation in ty
+from release_vars import (
     execute,
     execute_output,
     execute_status,
@@ -88,7 +88,7 @@ def prompt_yes_no(msg: str, default: bool = False) -> bool:
 
     result = prompt_w_default(msg, default_str, "^(Yes|yes|No|no)$")
 
-    return result == "yes" or result == "Yes"
+    return result in {"yes", "Yes"}
 
 
 def prompt_yn(msg: str) -> bool:
@@ -98,7 +98,7 @@ def prompt_yn(msg: str) -> bool:
         true if the answer was y, false otherwise.
     """
     y_or_n = "z"
-    while y_or_n != "y" and y_or_n != "n":
+    while y_or_n not in {"y", "n"}:
         print(msg + " [y|n]")
         y_or_n = input().lower()
 
@@ -155,7 +155,7 @@ def continue_or_exit(msg: str) -> None:
     continue_script = prompt_w_default(
         msg + " Continue ('no' will exit the script)?", "yes", "^(Yes|yes|No|no)$"
     )
-    if continue_script == "no" or continue_script == "No":
+    if continue_script in {"no", "No"}:
         raise Exception("User elected NOT to continue at prompt: " + msg)
 
 
@@ -163,7 +163,7 @@ def continue_or_exit(msg: str) -> None:
 # Version Utils
 
 
-# From http://stackoverflow.com/a/1714190/173852, but doesn't strip trailing zeroes
+# From https://stackoverflow.com/a/1714190/173852, but doesn't strip trailing zeroes
 def version_number_to_array(version_num: str) -> list[int]:
     """Given a version number, return an array of the elements, as integers.
 
@@ -289,6 +289,9 @@ def update_repo(path: Path, bareflag: bool) -> None:
 
 def commit_tag_and_push(version: str, path: Path, tag_prefix: str) -> None:
     """Commit the changes made for this release, add a tag, and push these changes."""
+    # Remove the pre-commit hook because it can cause errors.
+    execute("rm -f .git/hooks/pre-commit", working_dir=path)
+
     # Do nothing (instead of erring) if there is nothing to commit.
     if execute_status("git diff-index --quiet HEAD", working_dir=path) != 0:
         execute(f'git commit -a -m "new release {version}"', working_dir=path)
@@ -473,16 +476,11 @@ def read_first_line(file_path: Path) -> str:
     return first_line
 
 
-def ensure_group_access(path: Path) -> None:
-    """Give group access to all files and directories under the specified path."""
-    # Errs for any file not owned by this user.
+def ensure_writeable(path: Path) -> None:
+    """Permit user and group to read/write everything under the specified path."""
+    # Ignore errors.  It errs for any file not owned by this user.
     # But, the point is to set group writeability of any *new* files.
-    execute(f"chmod -f -R g+rw {path}")
-
-
-def ensure_user_access(path: Path) -> None:
-    """Give the user access to all files and directories under the specified path."""
-    execute(f"chmod -f -R u+rwx {path}")
+    execute_status(f"chmod -f -R ug+rw {path}")
 
 
 def set_umask() -> None:
@@ -503,7 +501,7 @@ def delete_if_exists(file_to_delete: Path) -> None:
 
 def delete_directory(path: Path) -> None:
     """Delete all files and directories under the specified path."""
-    ensure_group_access(path)
+    ensure_writeable(path)
     shutil.rmtree(path)
 
 
@@ -589,7 +587,7 @@ We have released a new version of the Checker Framework.
 The Checker Framework lets you create and/or run pluggable type checkers, in order to detect and prevent bugs in your code.
 
 You can find documentation and download links at:
-http://CheckerFramework.org/
+https://CheckerFramework.org/
 
 Changes for Checker Framework version {version}:
 

@@ -43,12 +43,14 @@ including people who wish to edit its source code or make pull requests.
       <li><a href="#github-configuration">GitHub configuration</a></li>
       <li><a href="#ci">Continuous Integration</a>
         <ul>
+          <li><a href="#ci-circleci">CircleCI</a></li>
           <li><a href="#ci-azure-pipelines">Azure Pipelines</a>
             <ul>
               <li><a href="#ci-increasing-quota">Increasing quota</a></li>
               <li><a href="#project-visibility">How to change project visibility settings</a></li>
             </ul></li>
           <li><a href="#ci-travis">Travis CI</a></li>
+          <li><a href="#ci-related-projects">Continuous Integration failures in related projects (daikon, plume-lib, etc.)</a></li>
           <li><a href="#ci-failure">Reproducing Continuous Integration build failures</a></li>
         </ul></li>
       <li><a href="#Documenting_refactoring_ideas">Documenting refactoring ideas</a></li>
@@ -207,7 +209,7 @@ Below are some steps you might try to resolve this issue (in order):
 <h2 id="tests">Testing the Checker Framework</h2>
 
 <p>
-For writing new test cases, see file <a href="https://raw.githubusercontent.com/typetools/checker-framework/master/checker/tests/README.md"><code>checker/tests/README.md</code></a>.
+For writing new test cases, see file <a href="https://github.com/typetools/checker-framework/blob/master/checker/tests/README.md"><code>checker/tests/README.md</code></a>.
 </p>
 
 
@@ -275,7 +277,7 @@ After that succeeds, import the projects into your IDE as Gradle projects.
 </p>
 
 <p>
-If your IDE cannot find <code>com.sun.source.*</code> packages, try changing the project JDK to JDK 11 or JDK 17.
+If your IDE cannot find <code>com.sun.source.*</code> packages, try changing the project JDK to JDK 17 or JDK 21.
 </p>
 
 <p>
@@ -422,8 +424,16 @@ branches after they are merged</a>.
 <p>
 The Checker Framework has continuous integration jobs that run in Azure
 Pipelines, CircleCI, and/or Travis CI on each push to GitHub.
-We recommend Azure Pipelines.
+We recommend Azure Pipelines or CircleCI.
 </p>
+
+
+<h3 id="ci-circleci">CircleCI</h3>
+
+<p>
+  TODO: Document how to set up CircleCI.
+</p>
+
 
 <h3 id="ci-azure-pipelines">Azure Pipelines</h3>
 
@@ -512,6 +522,53 @@ To change your project's visibility settings (usually to "Public" to enable CI):
   <li>Click settings</li>
   <li>Find "checker-framework" in the list, and click the slider to enable it.</li>
 </ul>
+
+
+<h3 id="ci-related-projects">Continuous Integration failures in related projects (daikon, plume-lib, etc.)</h3>
+
+<p>
+  Continuous integration type-checks external projects such as daikon and
+  plume-lib libraries.  If you change the Checker Framework, then you might need
+  to change code being type-checked &mdash; for example, to fix a newly-revealed
+  defect (bug) or to remove a warning suppression that is no longer necessary.
+</p>
+
+<p>
+  Suppose that Checker Framework pull request #2222 is from fork ORG (that is,
+  GitHub organization ORG) and branch B.  The pull request is to
+  organization <code>typetools</code>, project <code>checker-framework</code>,
+  and branch <code>master</code>.
+</p>
+
+<ol>
+  <li>
+    Create a fork of the relevant project (such
+    as <a href="https://github.com/codespecs/daikon">daikon</a>
+    or <a href="https://github.com/plume-lib/plume-util">plume-util</a>) in
+    GitHub organization ORG.
+  </li>
+  <li>
+    Create a branch, in ORG, with exactly the same name as B.
+  </li>
+  <li>
+    Create a pull request for the new branch.  In the description of that pull
+    request, write "Merge with
+    https://github.com/typetools/checker-framework/pull/<em>2222</em>".
+  </li>
+  <li>
+    Edit the description of pull request #2222 to refer back to the
+    newly-created pull request:  "Merge with
+    https://github.com/<em>UPSTREAM_ORG</em>/<em>PROJECT</em>/pull/<em>NNN</em>".
+  </li>
+</ol>
+
+<p>
+  When CI runs for the new pull request, it will use your fork and branch of the
+  Checker Framework.  When CI runs for your Checker Framework pull request, it
+  will typecheck the newly-created branch.  When all the CI runs pass, merge all
+  the branches in quick succession &mdash; that is, click the squash-and-merge
+  buttons one after another.
+</p>
 
 
 <h3 id="ci-failure">Reproducing Continuous Integration build failures</h3>

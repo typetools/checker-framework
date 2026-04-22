@@ -14,7 +14,7 @@ public class SuppressWarningsPartialKeys {
 
   @SuppressWarnings("type")
   @NonNull Object suppressed5() {
-    // :: error: (return)
+    // :: error: [return]
     return null;
   }
 
@@ -25,49 +25,49 @@ public class SuppressWarningsPartialKeys {
 
   @SuppressWarnings("i")
   @NonNull Object err1() {
-    // :: error: (return)
+    // :: error: [return]
     return null;
   }
 
   @SuppressWarnings("")
   @NonNull Object err6() {
-    // :: error: (return)
+    // :: error: [return]
     return null;
   }
 
   @SuppressWarnings("nullness:i")
   @NonNull Object errn1() {
-    // :: error: (return)
+    // :: error: [return]
     return null;
   }
 
   @SuppressWarnings("nullness:eturn.type")
   @NonNull Object errn2() {
-    // :: error: (return)
+    // :: error: [return]
     return null;
   }
 
   @SuppressWarnings("nullness:typ")
   @NonNull Object errn3() {
-    // :: error: (return)
+    // :: error: [return]
     return null;
   }
 
   @SuppressWarnings("nullness:ype.incompatible")
   @NonNull Object errn4() {
-    // :: error: (return)
+    // :: error: [return]
     return null;
   }
 
   @SuppressWarnings("nullness:return.type.")
   @NonNull Object errn5() {
-    // :: error: (return)
+    // :: error: [return]
     return null;
   }
 
   @SuppressWarnings("nullness:")
   @NonNull Object errn6() {
-    // :: error: (return)
+    // :: error: [return]
     return null;
   }
 }

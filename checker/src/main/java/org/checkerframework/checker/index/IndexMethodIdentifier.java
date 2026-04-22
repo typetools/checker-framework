@@ -132,10 +132,10 @@ public class IndexMethodIdentifier {
    *     this}
    */
   public boolean isLengthOfMethodInvocation(Tree tree) {
-    if (!(tree instanceof MethodInvocationTree)) {
+    if (!(tree instanceof MethodInvocationTree mit)) {
       return false;
     }
-    return isLengthOfMethodInvocation(TreeUtils.elementFromUse((MethodInvocationTree) tree));
+    return isLengthOfMethodInvocation(TreeUtils.elementFromUse(mit));
   }
 
   /**
@@ -168,8 +168,7 @@ public class IndexMethodIdentifier {
    *     this}
    */
   public boolean isLengthOfMethodInvocation(Node node) {
-    if (node instanceof MethodInvocationNode) {
-      MethodInvocationNode methodInvocationNode = (MethodInvocationNode) node;
+    if (node instanceof MethodInvocationNode methodInvocationNode) {
       MethodAccessNode methodAccessNode = methodInvocationNode.getTarget();
       ExecutableElement ele = methodAccessNode.getMethod();
 

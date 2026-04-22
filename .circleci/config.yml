@@ -5,7 +5,7 @@ jobs:
   # Only proceed to other jobs if canary_jobs passes.
   canary_jobs:
     docker:
-      - image: 'cimg/base:2025.12'
+      - image: 'cimg/base:2026.04'
     resource_class: small
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -82,7 +82,7 @@ jobs:
           command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-cftests-junit.sh
           no_output_timeout: "30m"
 
-  junit_jdk25:
+  junit_part1_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
@@ -101,8 +101,53 @@ jobs:
           paths:
             - .git
       - run:
+          name: test-cftests-junit.sh part1
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit.sh part1
+          no_output_timeout: "30m"
+  junit_part2_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+          name: test-cftests-junit.sh part2
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit.sh part2
+          no_output_timeout: "30m"
+
+  junit_jdk26:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk26'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
           name: test-cftests-junit.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=26 && ./checker/bin-devel/test-cftests-junit.sh
           no_output_timeout: "30m"
 
   nonjunit_jdk25:
@@ -266,6 +311,29 @@ jobs:
       - run:
           name: test-misc.sh
           command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-misc.sh
+
+  misc_jdk26:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk26-plus'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &sourcefull-cache source-v1full-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1full-{{ .Branch }}-'
+            - source-v1full-
+      - checkout:
+          method: full
+      - save_cache:
+          key: *sourcefull-cache
+          paths:
+            - .git
+      - run:
+          name: test-misc.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=26 && ./checker/bin-devel/test-misc.sh
 
   # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk25:
@@ -431,29 +499,14 @@ workflows:
     jobs:
       - canary_jobs:
           requires:
-            - junit_jdk25
+            - junit_part1_jdk25
+            - junit_part2_jdk25
             - nonjunit_jdk25
             - typecheck_part1_jdk25
             - typecheck_part2_jdk25
             - misc_jdk25
-            - misc_jdk25
+            - misc_jdk26
 
-      - junit_jdk11:
-          requires:
-            - canary_jobs
-            - junit_jdk25
-
-      - junit_jdk17:
-          requires:
-            - canary_jobs
-            - junit_jdk25
-
-      - junit_jdk21:
-          requires:
-            - canary_jobs
-            - junit_jdk25
-
-      - junit_jdk25
       - nonjunit_jdk25
       - misc_jdk11:
           requires:
@@ -471,8 +524,16 @@ workflows:
             - misc_jdk25
 
       - misc_jdk25
+      - misc_jdk26:
+          requires:
+            - canary_jobs
+
       - typecheck_part1_jdk25
       - typecheck_part2_jdk25
+
+      - junit_jdk26:
+          requires:
+            - canary_jobs
 
       - inference_part1_jdk25:
           requires:

@@ -9,7 +9,7 @@ jobs:
   # Only proceed to other jobs if canary_jobs passes.
   canary_jobs:
     docker:
-      - image: 'cimg/base:2025.10'
+      - image: 'cimg/base:2026.03'
     resource_class: small
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -26,25 +26,25 @@ workflows:
     jobs:
       - canary_jobs:
           requires:
-            - junit_jdk[]canary_version
+            - junit_part1_jdk[]canary_version
+            - junit_part2_jdk[]canary_version
             - nonjunit_jdk[]canary_version
             - typecheck_part1_jdk[]canary_version
             - typecheck_part2_jdk[]canary_version
             - misc_jdk[]canary_version
             - misc_jdk[]latest_version
 
-job_dependences(11, junit)
-job_dependences(17, junit)
-job_dependences(21, junit)
-job_dependences(25, junit)
 job_dependences(canary_version, nonjunit)
 job_dependences(11, misc)
 job_dependences(17, misc)
 job_dependences(21, misc)
-job_dependences(25, misc)
+job_dependences(canary_version, misc)
+job_dependences(latest_version, misc)
 job_dependences(canary_version, typecheck_part1)
 job_dependences(canary_version, typecheck_part2)
 
+ifelse([The following jobs are not canary jobs, so they run after canary jobs succeed.])dnl
+job_dependences_not_in_canary(latest_version, junit)
 job_dependences_not_in_canary(canary_version, inference_part1)
 job_dependences_not_in_canary(canary_version, inference_part2)
 job_dependences_not_in_canary(canary_version, daikon_part1)

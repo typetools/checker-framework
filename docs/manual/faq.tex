@@ -54,6 +54,7 @@ the answers, or other questions to include here.
 \\ \ref{faq-false-positive}: What is a ``false positive'' warning?
 \\ \ref{faq-false-positive-extend-checker-framework}: How can I improve the Checker Framework to eliminate a false positive warning?
 \\ \ref{faq-infer-fields}: Why doesn't the Checker Framework infer types for fields and method return types?
+\\ \ref{faq-field-initializers}: Why are some operations legal in constructors but not in methods?
 \\ \ref{faq-relationships-between-variables}: Why doesn't the Checker Framework track relationships between variables?
 \\ \ref{faq-path-sensitive}: Why isn't the Checker Framework path-sensitive?
 
@@ -874,6 +875,44 @@ There are several reasons for this design choice.
 % programmers see inconsistent results, they should write types explicitly.
 
 
+\subsectionAndLabel{Why are some operations legal in constructors but not in methods?}{faq-field-initializers}
+
+Java permits you to initialize an instance field either in the constructor
+or in a field initializer.  The Checker Framework behaves as if the field
+initializer assignments are performed at the beginning of the constructor
+(after superclass construction), because that is how Java executes the
+program.
+
+Here is an example:
+
+\begin{Verbatim}
+class MyClass1 {
+  @Nullable Object field;
+  MyClass1() {
+    field = new Object();
+    field.toString(); // no possible NullPointerException
+  }
+}
+
+class MyClass2 {
+  @Nullable Object field = new Object(); // Same initialization as for MyClass1
+  MyClass2() {
+    field.toString(); // no possible NullPointerException
+  }
+}
+
+class MyClass3 {
+  @Nullable Object field;
+  void myMethod() {
+    field.toString(); // Nullness Checker warns: possible NullPointerException
+  }
+}
+\end{Verbatim}
+
+For consistency, the Checker Framework treats the \<MyClass1> and
+\<MyClass2> constructors the same.
+
+
 \subsectionAndLabel{Why doesn't the Checker Framework track relationships between variables?}{faq-relationships-between-variables}
 
 The Checker Framework estimates the possible run-time value of each
@@ -1289,7 +1328,7 @@ Java basetype is a logical unit, which aids people reading the code.
   @Positive
   public int numItems;
 
-  // Right
+  // Correct formatting
   public @Positive int numItems;
 
   // Wrong formatting
@@ -1298,7 +1337,7 @@ Java basetype is a logical unit, which aids people reading the code.
     ...
   }
 
-  // Right
+  // Correct formatting
   public @Nullable Object getThing() {
     ...
   }
@@ -1312,7 +1351,7 @@ By contrast, declaration annotations are conventionally written on their own lin
     ...
   }
 
-  // Right
+  // Correct formatting
   @Deprecated
   URL toURL() {
     ...
@@ -1354,8 +1393,8 @@ The popular
 tool formats type annotations incorrectly, with type annotations on their
 own line instead of on the same line with the type they modify.  (Actually,
 you can see from method \ahref{https://github.com/google/google-java-format/blob/master/core/src/main/java/com/google/googlejavaformat/java/JavaInputAstVisitor.java}{\<JavaInputAstVisitor>}\<.typeAnnotations()> that
-it handles two \<@Nullable> annotations correctly, but all other type
-annotations incorrectly!  This would be fixed by merging
+it handles two of the many \<@Nullable> \<@NonNull> annotations correctly,
+but all other type annotations incorrectly!  This would be fixed by merging
 \ahref{https://github.com/google/google-java-format/pull/802}{pull request
   \#802}.)
 Until this bug in google-java-format is fixed, you have these options:
@@ -1373,6 +1412,29 @@ Until this bug in google-java-format is fixed, you have these options:
 %   \href{https://github.com/palantir/palantir-java-format}{palantir-java-format},
 %   which is a variant of google-java-format that fixes the bug (among other
 %   differences from google-java-format).
+\end{itemize}
+
+If you define a new type qualifier --- for example, because you are using the
+Subtyping Checker (Chapter~\ref{subtyping-checker}) or Fake Enum Checker
+(Chapter~\ref{fenum-checker}), or because you have created a new checker
+(Chapter~\ref{creating-a-checker}) --- then the above tools will format
+your new type qualifiers incorrectly, like declaration qualifiers.  Here is
+how to fix the formatting.
+
+\begin{itemize}
+\item
+  For \ahref{https://github.com/diffplug/spotless}{Spotless}, change your
+  configuration to indicate the new type qualifiers.  If you use the
+  \ahref{https://github.com/diffplug/spotless/tree/main/plugin-gradle}{Spotless
+  plugin for Gradle}, edit your \<build.gradle> file to change
+  \<formatAnnotations()> to (for example)
+  \<formatAnnotations().addTypeAnnotation("Growable").addTypeAnnotation("Modifiable")...>.
+\item
+  For
+  \ahref{https://github.com/plume-lib/run-google-java-format}{run-google-java-format},
+  make a pull request to change variable \<type\_annotations> in file
+  \ahref{https://github.com/plume-lib/run-google-java-format/blob/master/fixup-google-java-format.py}{fixup-google-java-format.py}.
+%% Write text about palantir-java-format when it is uncommented in the list above.
 \end{itemize}
 
 
@@ -1890,7 +1952,7 @@ escape hatch, ``Semantic Versioning is all about conveying meaning by how
 the version number changes.''  It has not been updated in over a decade
 (since January 2013), has only ever been updated once (from
 1.0.0 to 2.0.0), and has
-% 87 as of 2023-04-07.
+% 87 as of 2023-04-07, 97 as of 2026-03-28.
 about 100 open issues.
 It is a proposal, not a standard nor an official definition.
 Projects that claim to follow it often do so loosely.
@@ -1899,7 +1961,7 @@ Projects that claim to follow it often do so loosely.
 If the Checker Framework strictly used semver.org's definition, every
 release would be a new major version, and the current version string would
 be
-% 213 releases as of: Version 3.33.0 (April 3, 2023)
+% 247 releases as of: Version 3.54.1 (2026-04-01)
 past version 200.0.0.
 Always incrementing the major version number would not convey meaning to
 its users --- for example, it would not indicate major new functionality or
@@ -2161,7 +2223,7 @@ nullness and \<Optional> and the benefits of each.
 
 \subsectionAndLabel{How does pluggable type-checking compare with JML?}{faq-jml}
 
-\href{http://www.eecs.ucf.edu/~leavens/JML/index.shtml}{JML}, the Java Modeling
+\href{https://www.eecs.ucf.edu/~leavens/JML/index.shtml}{JML}, the Java Modeling
 Language~\cite{LeavensBR2006:JML}, is a language for writing formal
 specifications.
 

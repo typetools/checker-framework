@@ -2,9 +2,9 @@
 \chapterAndLabel{How to create a new checker}{creating-a-checker}
 \label{writing-a-checker} % for old links; don't use any more!
 
-\newcommand{\TreeAPIBase}{https://docs.oracle.com/en/java/javase/17/docs/api/jdk.compiler/com/sun/source}
+\newcommand{\TreeAPIBase}{https://docs.oracle.com/en/java/javase/25/docs/api/jdk.compiler/com/sun/source}
 \newcommand{\refTreeclass}[2]{\href{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
-\newcommand{\ModelAPIBase}{https://docs.oracle.com/en/java/javase/17/docs/api/java.compiler/javax/lang/model}
+\newcommand{\ModelAPIBase}{https://docs.oracle.com/en/java/javase/25/docs/api/java.compiler/javax/lang/model}
 \newcommand{\refModelclass}[2]{\href{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 
 This chapter describes how to create a checker
@@ -286,7 +286,7 @@ class TestHierarchy {
   void testHierarchy(@UnknownSign int us, @NonNegative int nn) {
     @UnknownSign int a = us;
     @UnknownSign int b = nn;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonNegative int c = us; // expected error on this line
     @NonNegative int d = nn;
   }
@@ -562,6 +562,11 @@ Choose good names for the qualifiers, because users will write these in
 their source code.
 The Javadoc of every type qualifier should include a precise English
 description and an example use of the qualifier.
+
+In source code, declaration qualifiers are written on their own line, and
+type qualifiers are written on the same line as the type they apply to.
+Section~\ref{faq-type-annotation-formatting} explains how to configure
+tools to format type annotations properly.
 
 
 \subsectionAndLabel{Declaratively defining the qualifier hierarchy}{creating-declarative-hierarchy}
@@ -1258,7 +1263,7 @@ Put them in a file \<\emph{MyChecker}Visitor.java> that extends
 BaseTypeVisitor performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
-\href{https://docs.oracle.com/en/java/javase/17/docs/api/jdk.compiler/module-summary.html}{jdk.compiler
+\href{https://docs.oracle.com/en/java/javase/25/docs/api/jdk.compiler/module-summary.html}{jdk.compiler
 API},
 and it issues a warning (by calling
 \refmethodterse{framework/source}{SourceChecker}{reportError}{(java.lang.Object,java.lang.String,java.lang.Object...)}
@@ -1419,7 +1424,8 @@ which is the Checker Framework's representation of an annotated type.
   \refclass{framework/type/typeannotator}{TypeAnnotator},
   typically as a private inner class of your \<AnnotatedTypeFactory>.
   There is a method of \<TypeAnnotator> for every kind of type, and the
-  visitor has access to only the type.  In your subclass of
+  visitor has access to only the type (including base type and
+  qualifiers).  In your subclass of
   \<AnnotatedTypeFactory>, override \<createTypeAnnotator> to return a
   \<ListTypeAnnotator> containing that annotator, as in
 
@@ -1431,7 +1437,7 @@ which is the Checker Framework's representation of an annotated type.
 \end{Verbatim}
 
   \noindent
-  (or put your TypeAnnotator last).
+  (or put your TypeAnnotator last, depending on the behavior you want).
 
 \item
   Create a subclass of \refclass{framework/type}{AnnotatedTypeFactory} and
@@ -2050,7 +2056,7 @@ errors and warnings (if any) a checker should emit.  An example is
 class MyNullnessTest {
   void method() {
     Object nullable = null;
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     nullable.toString();
   }
 }
@@ -2092,6 +2098,10 @@ usually not shown.
 rather than full message text when reporting errors or warnings.  This is
 used by the Checker Framework's own tests, so they do not need to be
 changed if the English message is updated.
+
+\item \code{-Aonelinemsg}: print each error message on a single line, with
+logical lines separated by ``/''.  This is useful when using a tool that
+only shows the first line of the error.
 
 \item \code{-AnoPrintErrorStack}: don't print a stack trace when an
 internal Checker Framework error occurs.  Setting this option is rare.  You
@@ -2240,14 +2250,16 @@ for dotfile in *.dot; do dot -Tpdf -o "$dotfile.pdf" "$dotfile"; done
 or (for more verbose output)
 
 \begin{Verbatim}
-javacheck -processor mypackage.MyProcessor -Acfgviz=org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer,outdir=.,verbose MyClass.java
+javacheck -processor mypackage.MyProcessor \
+  -Acfgviz=org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer,outdir=.,verbose \
+  MyClass.java
 for dotfile in *.dot; do dot -Tpdf -o "$dotfile.pdf" "$dotfile"; done
 \end{Verbatim}
 
 \noindent
 where the first command creates file \<MyClass.dot> that
 represents the CFG, and the second command writes the CFG to a PDF file.
-The \<dot> program is part of \href{http://www.graphviz.org}{Graphviz}.
+The \<dot> program is part of \href{https://www.graphviz.org}{Graphviz}.
 
 In the output, conditional basic blocks are represented as octagons with
 two successors.  Special basic blocks are represented as ovals (e.g., the
@@ -2308,22 +2320,6 @@ You can also use \refclass{dataflow/cfg/visualize}{CFGVisualizeLauncher} to gene
 or String representation of the control flow graph of a given method in a given class.
 The CFG is generated and output, but no dataflow analysis is performed.
 
-\begin{itemize}
-
-\item With JDK 8:
-
-\begin{smaller}
-\begin{Verbatim}
-java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
-  -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-  org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher \
-  MyClass.java --class MyClass --method test --pdf
-\end{Verbatim}
-\end{smaller}
-
-
-\item With JDK 11 or later:
-
 \begin{smaller}
 \begin{Verbatim}
 java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
@@ -2332,18 +2328,15 @@ java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
 \end{Verbatim}
 \end{smaller}
 
-\end{itemize}
-
 \noindent
 The above command will generate the corresponding \<.dot> and \<.pdf> files for the
 method \code{test} in the class \code{MyClass} in the project directory.
 To generate a string representation of the graph to standard output,
-remove \<--pdf> but add \<--string>. For example (with JDK 8):
+remove \<--pdf> but add \<--string>. For example:
 
 \begin{smaller}
 \begin{Verbatim}
-java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
-  -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
+java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
   org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher \
   MyClass.java --class MyClass --method test --string
 \end{Verbatim}

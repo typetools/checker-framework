@@ -51,8 +51,8 @@ public class Typing extends TypeConstraint {
    * Creates a typing constraint.
    *
    * @param parent the constraint whose reduction created this constraint
-   * @param S left hand side type
-   * @param t right hand side type
+   * @param S left-hand side type
+   * @param t right-hand side type
    * @param kind the kind of constraint
    */
   public Typing(Constraint parent, AbstractType S, AbstractType t, Kind kind) {
@@ -63,8 +63,8 @@ public class Typing extends TypeConstraint {
    * Creates a typing constraint.
    *
    * @param source a string describing where this constraint came from
-   * @param S left hand side type
-   * @param t right hand side type
+   * @param S left-hand side type
+   * @param t right-hand side type
    * @param kind the kind of constraint
    */
   public Typing(String source, AbstractType S, AbstractType t, Kind kind) {
@@ -76,8 +76,8 @@ public class Typing extends TypeConstraint {
    * Creates a typing constraint.
    *
    * @param parent the constraint whose reduction created this constraint
-   * @param S left hand side type
-   * @param t right hand side type
+   * @param S left-hand side type
+   * @param t right-hand side type
    * @param kind the kind of constraint
    * @param covarTypeArg true if the constraint is for a covariant type argument
    */
@@ -86,13 +86,8 @@ public class Typing extends TypeConstraint {
     super(parent, t);
     assert S != null;
     switch (kind) {
-      case TYPE_COMPATIBILITY:
-      case SUBTYPE:
-      case CONTAINED:
-      case TYPE_EQUALITY:
-        break;
-      default:
-        throw new BugInCF("Unexpected kind: " + kind);
+      case TYPE_COMPATIBILITY, SUBTYPE, CONTAINED, TYPE_EQUALITY -> {} // valid kinds
+      default -> throw new BugInCF("Unexpected kind: " + kind);
     }
     this.S = S;
     this.kind = kind;
@@ -140,18 +135,13 @@ public class Typing extends TypeConstraint {
   @Override
   public ReductionResult reduce(Java8InferenceContext context) {
 
-    switch (getKind()) {
-      case TYPE_COMPATIBILITY:
-        return reduceCompatible();
-      case SUBTYPE:
-        return reduceSubtyping(context);
-      case CONTAINED:
-        return reduceContained();
-      case TYPE_EQUALITY:
-        return reduceEquality();
-      default:
-        throw new BugInCF("Unexpected kind: " + getKind());
-    }
+    return switch (getKind()) {
+      case TYPE_COMPATIBILITY -> reduceCompatible();
+      case SUBTYPE -> reduceSubtyping(context);
+      case CONTAINED -> reduceContained();
+      case TYPE_EQUALITY -> reduceEquality();
+      default -> throw new BugInCF("Unexpected kind: " + getKind());
+    };
   }
 
   /**
@@ -199,19 +189,13 @@ public class Typing extends TypeConstraint {
       return ConstraintSet.TRUE;
     }
 
-    switch (T.getTypeKind()) {
-      case DECLARED:
-        return reduceSubtypeClass(context);
-      case ARRAY:
-        return reduceSubtypeArray();
-      case WILDCARD:
-      case TYPEVAR:
-        return reduceSubtypeTypeVariable();
-      case INTERSECTION:
-        return reduceSubtypingIntersection();
-      default:
-        return ConstraintSet.FALSE;
-    }
+    return switch (T.getTypeKind()) {
+      case DECLARED -> reduceSubtypeClass(context);
+      case ARRAY -> reduceSubtypeArray();
+      case WILDCARD, TYPEVAR -> reduceSubtypeTypeVariable();
+      case INTERSECTION -> reduceSubtypingIntersection();
+      default -> ConstraintSet.FALSE;
+    };
   }
 
   /**
@@ -464,19 +448,16 @@ public class Typing extends TypeConstraint {
 
   @Override
   public String toString() {
-    switch (kind) {
-      case TYPE_COMPATIBILITY:
-        return S + " -> " + T;
-      case SUBTYPE:
-        return S + " <: " + T;
-      case CONTAINED:
-        return S + " <= " + T;
-      case TYPE_EQUALITY:
-        return S + " = " + T;
-      default:
+    return switch (kind) {
+      case TYPE_COMPATIBILITY -> S + " -> " + T;
+      case SUBTYPE -> S + " <: " + T;
+      case CONTAINED -> S + " <= " + T;
+      case TYPE_EQUALITY -> S + " = " + T;
+      default -> {
         assert false;
-        return super.toString();
-    }
+        yield super.toString();
+      }
+    };
   }
 
   @Override

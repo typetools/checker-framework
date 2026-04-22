@@ -97,7 +97,7 @@ LIVE_SITE_URL = "https://checkerframework.org"
 LIVE_SITE_DIR = Path("/cse/www2/types/checker-framework")
 
 # Per-user directory for the temporary files created by the release process.
-# ("USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566.
+# ("USER = os.getlogin()" does not work; see https://github.com/python/cpython/issues/36915.
 # Another alternative is: USER = os.getenv('USER').)
 TMP_DIR = Path("/scratch") / pwd.getpwuid(os.geteuid())[0] / "cf-release"
 

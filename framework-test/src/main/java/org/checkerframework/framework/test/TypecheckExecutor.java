@@ -86,11 +86,7 @@ public class TypecheckExecutor {
       nonJvmOptions.add("-ApermitMissingJdk");
       nonJvmOptions.add("-Anocheckjdk"); // temporary, for backward compatibility
 
-      // -Anomsgtext is needed to ensure expected errors can be matched.
-      // Note: Since "-Anomsgtext" is always added to the non-JVM options,
-      //  we are passing `true` as the `noMsgText` argument to all invocations
-      //  of `TestDiagnosticUtils.fromJavaxDiagnosticList`.
-      nonJvmOptions.add("-Anomsgtext");
+      nonJvmOptions.add("-Aonelinemsg");
 
       options.addAll(nonJvmOptions);
 
@@ -105,7 +101,7 @@ public class TypecheckExecutor {
 
       JavaCompiler.CompilationTask task =
           compiler.getTask(
-              javacOutput, fileManager, diagnostics, options, new ArrayList<String>(), javaFiles);
+              javacOutput, fileManager, diagnostics, options, new ArrayList<>(), javaFiles);
 
       /*
        * In Eclipse, std out and std err for multiple tests appear as one

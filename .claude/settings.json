@@ -1,0 +1,32 @@
+{
+  "enabledPlugins": {
+    "rust-analyzer-lsp@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew:*)",
+      "Bash(./x.py check:*)",
+      "Bash(claude plugins:*)",
+      "Bash(find:*)",
+      "Bash(git -C /home/mernst/research/types/checker-framework-fork-mernst-branch-override-order diff master..override-order --stat)",
+      "Bash(git -C /home/mernst/research/types/checker-framework-fork-mernst-branch-override-order log master..override-order --oneline)",
+      "Bash(grep:*)",
+      "Bash(java:*)",
+      "Bash(javac:*)",
+      "Bash(javap:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(python3 -m json.tool)",
+      "Bash(timeout 300 ./gradlew:*)",
+      "Bash(wc:*)",
+      "Edit(./**)",
+      "Read(//home/mernst/research/types/checker-framework-fork*/**)",
+      "Read(//scratch/**)",
+      "Read(//tmp/**)",
+      "WebFetch(domain:checkerframework.org)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "skipDangerousModePermissionPrompt": false
+}

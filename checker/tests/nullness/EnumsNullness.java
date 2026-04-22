@@ -9,22 +9,22 @@ public class EnumsNullness {
     D
   }
 
-  // :: error: (assignment)
+  // :: error: [assignment]
   MyEnum myEnum = null; // invalid
   @Nullable MyEnum myNullableEnum = null;
 
   void testLocalEnum() {
     // Enums are allowed to be null:  no error here.
     MyEnum myNullableEnum = null;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonNull MyEnum myEnum = null; // invalid
   }
 
   enum EnumBadAnnos {
     A,
-    // :: error: (nullness.on.enum)
+    // :: error: [nullness.on.enum]
     @NonNull B,
-    // :: error: (nullness.on.enum)
+    // :: error: [nullness.on.enum]
     @Nullable C,
     D;
 

@@ -64,6 +64,7 @@ public class ContractsFromMethod {
    */
   public Set<Contract> getContracts(ExecutableElement executableElement) {
     Set<Contract> contracts = new LinkedHashSet<>();
+    // TODO: It is inefficient to call getContractsOfKind three times.
     contracts.addAll(getPreconditions(executableElement));
     contracts.addAll(getPostconditions(executableElement));
     contracts.addAll(getConditionalPostconditions(executableElement));
@@ -274,15 +275,11 @@ public class ContractsFromMethod {
       anno = builder.build();
     }
 
+    anno = factory.canonicalAnnotation(anno);
     if (factory.isSupportedQualifier(anno)) {
       return anno;
     } else {
-      AnnotationMirror aliasedAnno = factory.canonicalAnnotation(anno);
-      if (factory.isSupportedQualifier(aliasedAnno)) {
-        return aliasedAnno;
-      } else {
-        return null;
-      }
+      return null;
     }
   }
 

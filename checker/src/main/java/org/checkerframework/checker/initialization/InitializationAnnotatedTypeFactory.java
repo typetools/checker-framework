@@ -40,6 +40,7 @@ import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.NullnessAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.NullnessChecker;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -347,7 +348,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @return true if {@code anno} has {@link UnderInitialization}
    */
   public boolean isUnderInitialization(AnnotatedTypeMirror anno) {
-    return anno.hasEffectiveAnnotation(UnderInitialization.class);
+    return anno.hasAnnotation(UnderInitialization.class);
   }
 
   /**
@@ -357,7 +358,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @return true if {@code anno} has {@link UnknownInitialization}
    */
   public boolean isUnknownInitialization(AnnotatedTypeMirror anno) {
-    return anno.hasEffectiveAnnotation(UnknownInitialization.class);
+    return anno.hasAnnotation(UnknownInitialization.class);
   }
 
   /**
@@ -367,7 +368,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @return true if {@code anno} has {@link FBCBottom}
    */
   public boolean isFbcBottom(AnnotatedTypeMirror anno) {
-    return anno.hasEffectiveAnnotation(FBCBottom.class);
+    return anno.hasAnnotation(FBCBottom.class);
   }
 
   /**
@@ -377,7 +378,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @return true if {@code anno} has {@link Initialized}
    */
   public boolean isInitialized(AnnotatedTypeMirror anno) {
-    return anno.hasEffectiveAnnotation(Initialized.class);
+    return anno.hasAnnotation(Initialized.class);
   }
 
   /**
@@ -388,10 +389,9 @@ public abstract class InitializationAnnotatedTypeFactory<
    */
   protected boolean areAllFieldsInitializedOnly(ClassTree classTree) {
     for (Tree member : classTree.getMembers()) {
-      if (!(member instanceof VariableTree)) {
+      if (!(member instanceof VariableTree var)) {
         continue;
       }
-      VariableTree var = (VariableTree) member;
       VariableElement varElt = TreeUtils.elementFromDeclaration(var);
       // var is not initialized-only
       if (getDeclAnnotation(varElt, NotOnlyInitialized.class) != null) {
@@ -450,8 +450,7 @@ public abstract class InitializationAnnotatedTypeFactory<
       TreePath topLevelMemberPath = findTopLevelClassMemberForTree(path);
       if (topLevelMemberPath != null && topLevelMemberPath.getLeaf() != null) {
         Tree topLevelMember = topLevelMemberPath.getLeaf();
-        if (!(topLevelMember instanceof MethodTree)
-            || TreeUtils.isConstructor((MethodTree) topLevelMember)) {
+        if (!(topLevelMember instanceof MethodTree tlmMt) || TreeUtils.isConstructor(tlmMt)) {
           setSelfTypeInInitializationCode(tree, enclosing, topLevelMemberPath);
         }
         path = topLevelMemberPath.getParentPath();
@@ -679,8 +678,9 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @return true if the type is initialized for the given frame
    */
   public boolean isInitializedForFrame(AnnotatedTypeMirror type, TypeMirror frame) {
-    AnnotationMirror initializationAnno =
-        type.getEffectiveAnnotationInHierarchy(UNKNOWN_INITIALIZATION);
+    @SuppressWarnings("nullness:assignment") // type should have an annotation in this hierarchy
+    @NonNull AnnotationMirror initializationAnno =
+        type.getAnnotationInHierarchy(UNKNOWN_INITIALIZATION);
     TypeMirror typeFrame = getTypeFrameFromAnnotation(initializationAnno);
     Types types = processingEnv.getTypeUtils();
     return types.isSubtype(typeFrame, types.erasure(frame));
@@ -1008,9 +1008,8 @@ public abstract class InitializationAnnotatedTypeFactory<
       boolean inferTypeArgs) {
     ParameterizedExecutableType x =
         super.methodFromUse(tree, methodElt, receiverType, inferTypeArgs);
-    if (tree instanceof MemberReferenceTree
-        && ((MemberReferenceTree) tree).getMode() == ReferenceMode.NEW) {
-      x.executableType.getReturnType().replaceAnnotation(INITIALIZED);
+    if (tree instanceof MemberReferenceTree mrt && mrt.getMode() == ReferenceMode.NEW) {
+      x.executableType().getReturnType().replaceAnnotation(INITIALIZED);
     }
     return x;
   }

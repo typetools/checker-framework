@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BinaryOperator;
+import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -194,22 +195,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
   }
 
-  /**
-   * Returns true if the given method is side-effect-free as far as the current store is concerned.
-   * In some cases, a store for a checker allows for other mechanisms to specify whether a method is
-   * side-effect-free. For example, unannotated methods may be considered side-effect-free by
-   * default.
-   *
-   * @param atypeFactory the type factory used to retrieve annotations on the method element
-   * @param method the method element
-   * @return true if the method is side-effect-free
-   * @deprecated use {@link org.checkerframework.javacutil.AnnotationProvider#isSideEffectFree}
-   */
-  @Deprecated // 2022-09-27
-  protected boolean isSideEffectFree(AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
-    return atypeFactory.isSideEffectFree(method);
-  }
-
   /* --------------------------------------------------------- */
   /* Handling of fields */
   /* --------------------------------------------------------- */
@@ -253,32 +238,64 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (hasSideEffect) {
 
       boolean sideEffectsUnrefineAliases = gatypeFactory.sideEffectsUnrefineAliases;
+      Node receiver = methodInvocationNode.getTarget().getReceiver();
+      boolean hasDoesNotUnrefineReceiver = atypeFactory.hasDoesNotUnrefineReceiver(method);
 
-      // update local variables
       // TODO: Also remove if any element/argument to the annotation is not
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
+
+      // If @DoesNotUnrefineReceiver is present, compute the receiver as a JavaExpression so
+      // that it can be exempted from unrefinement in all expression categories below.
+      @Nullable JavaExpression receiverJe =
+          hasDoesNotUnrefineReceiver ? JavaExpression.fromNode(receiver) : null;
+      // Returns true if the expression should NOT be unrefined (because the method is
+      // annotated @DoesNotUnrefineReceiver and the expression is the receiver).
+      Predicate<JavaExpression> doNotUnrefine =
+          receiverJe != null ? je -> je.equals(receiverJe) : je -> false;
+
+      // Update local variables.
       if (sideEffectsUnrefineAliases) {
-        localVariableValues.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
+        localVariableValues
+            .entrySet()
+            .removeIf(
+                e -> {
+                  LocalVariable lv = e.getKey();
+                  return lv.isModifiableByOtherCode() && !doNotUnrefine.test(lv);
+                });
       }
 
-      // update this value
-      if (sideEffectsUnrefineAliases) {
+      // Update this value.
+      if (sideEffectsUnrefineAliases
+          && !(receiverJe instanceof ThisReference)
+          && !(receiverJe instanceof SuperReference)) {
         thisValue = null;
       }
 
-      // update field values
+      // Update field values.
       if (sideEffectsUnrefineAliases) {
-        fieldValues.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
+        fieldValues
+            .entrySet()
+            .removeIf(
+                (Map.Entry<FieldAccess, V> e) -> {
+                  FieldAccess fa = e.getKey();
+                  return fa.isModifiableByOtherCode() && !doNotUnrefine.test(fa);
+                });
       } else {
-        // Case 2 (unassignable fields) and case 3 (monotonic fields)
-        updateFieldValuesForMethodCall(gatypeFactory);
+        // Case 2 (unassignable fields) and case 3 (monotonic fields).
+        updateFieldValuesForMethodCall(gatypeFactory, doNotUnrefine::test);
       }
 
       // Update array values.
-      arrayValues.clear();
+      arrayValues.entrySet().removeIf(e -> !doNotUnrefine.test(e.getKey()));
 
       // Update information about method calls.
-      updateMethodCallValues();
+      methodCallExpressions
+          .entrySet()
+          .removeIf(
+              e -> {
+                MethodCall mc = e.getKey();
+                return mc.isModifiableByOtherCode() && !doNotUnrefine.test(mc);
+              });
     }
 
     // Store information about method calls if possible.
@@ -286,18 +303,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     replaceValue(methodCall, val);
   }
 
-  /** Update information about method calls. */
-  private void updateMethodCallValues() {
-    methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
-  }
-
   /**
    * Returns the new value of a field after a method call, or {@code null} if the field should be
    * removed from the store.
    *
-   * <p>In this default implementation, the field's value is preserved if it is either unassignable
-   * (see {@link FieldAccess#isUnassignableByOtherCode()}) or has a monotonic qualifier (see {@link
-   * #newMonotonicFieldValueAfterMethodCall(FieldAccess, GenericAnnotatedTypeFactory,
+   * <p>In this default implementation, the field's value is preserved if it is either not
+   * assignable (see {@link FieldAccess#isAssignableByOtherCode()}) or has a monotonic qualifier
+   * (see {@link #newMonotonicFieldValueAfterMethodCall(FieldAccess, GenericAnnotatedTypeFactory,
    * CFAbstractValue)}). Otherwise, it is removed from the store.
    *
    * @param fieldAccess the field whose value to update
@@ -374,15 +386,23 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * fields that have a monotonic annotation.
    *
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
+   * @param doNotUnrefine if true of a field access, don't unrefine it. This predicate indicates
+   *     exceptions: fields that are not updated by this method.
    */
   private void updateFieldValuesForMethodCall(
-      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory) {
+      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory, Predicate<FieldAccess> doNotUnrefine) {
     Map<FieldAccess, V> newFieldValues = new HashMap<>(MapsP.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
       V previousValue = e.getValue();
 
-      V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
+      V newValue;
+      boolean doNotUnrefineResult = doNotUnrefine.test(fieldAccess);
+      if (doNotUnrefineResult) {
+        newValue = previousValue;
+      } else {
+        newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
+      }
       if (newValue != null) {
         // Keep information for all hierarchies where we had a monotonic annotation.
         newFieldValues.put(fieldAccess, newValue);
@@ -630,15 +650,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return;
     }
 
-    if (expr instanceof LocalVariable) {
-      LocalVariable localVar = (LocalVariable) expr;
+    if (expr instanceof LocalVariable localVar) {
       V oldValue = localVariableValues.get(localVar);
       V newValue = merger.apply(oldValue, value);
       if (newValue != null) {
         localVariableValues.put(localVar, newValue);
       }
-    } else if (expr instanceof FieldAccess) {
-      FieldAccess fieldAcc = (FieldAccess) expr;
+    } else if (expr instanceof FieldAccess fieldAcc) {
       // Only store information about final fields (where the receiver is
       // also fixed) if concurrent semantics are enabled.
       boolean isMonotonic = isMonotonicUpdate(fieldAcc, value);
@@ -649,8 +667,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           fieldValues.put(fieldAcc, newValue);
         }
       }
-    } else if (expr instanceof MethodCall) {
-      MethodCall method = (MethodCall) expr;
+    } else if (expr instanceof MethodCall method) {
       // Don't store any information if concurrent semantics are enabled.
       if (sequentialSemantics) {
         V oldValue = methodCallExpressions.get(method);
@@ -659,8 +676,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           methodCallExpressions.put(method, newValue);
         }
       }
-    } else if (expr instanceof ArrayAccess) {
-      ArrayAccess arrayAccess = (ArrayAccess) expr;
+    } else if (expr instanceof ArrayAccess arrayAccess) {
       if (sequentialSemantics) {
         V oldValue = arrayValues.get(arrayAccess);
         V newValue = merger.apply(oldValue, value);
@@ -676,8 +692,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           thisValue = newValue;
         }
       }
-    } else if (expr instanceof ClassName) {
-      ClassName className = (ClassName) expr;
+    } else if (expr instanceof ClassName className) {
       if (sequentialSemantics || !className.isAssignableByOtherCode()) {
         V oldValue = classValues.get(className);
         V newValue = merger.apply(oldValue, value);
@@ -743,12 +758,30 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Completely replaces the abstract value {@code value} for the expression {@code expr} (correctly
-   * deciding where to store the information depending on the type of the expression {@code expr}).
-   * Any previous information is discarded.
+   * Completely replaces the abstract value for the expression {@code expr} (correctly deciding
+   * where to store the information depending on the type of the expression {@code expr}). Any
+   * previous information is discarded.
    *
    * <p>This method does not take care of removing other information that might be influenced by
    * changes to certain parts of the state.
+   *
+   * @param expr the expression whose value to replace
+   * @param a the new annotation
+   */
+  public void replaceValue(JavaExpression expr, AnnotationMirror a) {
+    replaceValue(expr, analysis.createSingleAnnotationValue(a, expr.getType()));
+  }
+
+  /**
+   * Completely replaces the abstract value for the expression {@code expr} (correctly deciding
+   * where to store the information depending on the type of the expression {@code expr}). Any
+   * previous information is discarded.
+   *
+   * <p>This method does not take care of removing other information that might be influenced by
+   * changes to certain parts of the state.
+   *
+   * @param expr the expression whose value to replace
+   * @param value the new value
    */
   public void replaceValue(JavaExpression expr, @Nullable V value) {
     clearValue(expr);
@@ -764,20 +797,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // Expressions containing unknown expressions are not stored.
       return;
     }
-    if (expr instanceof LocalVariable) {
-      LocalVariable localVar = (LocalVariable) expr;
+    if (expr instanceof LocalVariable localVar) {
       localVariableValues.remove(localVar);
-    } else if (expr instanceof FieldAccess) {
-      FieldAccess fieldAcc = (FieldAccess) expr;
+    } else if (expr instanceof FieldAccess fieldAcc) {
       fieldValues.remove(fieldAcc);
-    } else if (expr instanceof MethodCall) {
-      MethodCall method = (MethodCall) expr;
+    } else if (expr instanceof MethodCall method) {
       methodCallExpressions.remove(method);
-    } else if (expr instanceof ArrayAccess) {
-      ArrayAccess a = (ArrayAccess) expr;
+    } else if (expr instanceof ArrayAccess a) {
       arrayValues.remove(a);
-    } else if (expr instanceof ClassName) {
-      ClassName c = (ClassName) expr;
+    } else if (expr instanceof ClassName c) {
       classValues.remove(c);
     } else if (expr instanceof ThisReference) {
       thisValue = null;
@@ -794,22 +822,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *     available
    */
   public @Nullable V getValue(JavaExpression expr) {
-    if (expr instanceof LocalVariable) {
-      LocalVariable localVar = (LocalVariable) expr;
+    if (expr instanceof LocalVariable localVar) {
       return localVariableValues.get(localVar);
     } else if (expr instanceof ThisReference || expr instanceof SuperReference) {
       return thisValue;
-    } else if (expr instanceof FieldAccess) {
-      FieldAccess fieldAcc = (FieldAccess) expr;
+    } else if (expr instanceof FieldAccess fieldAcc) {
       return fieldValues.get(fieldAcc);
-    } else if (expr instanceof MethodCall) {
-      MethodCall method = (MethodCall) expr;
+    } else if (expr instanceof MethodCall method) {
       return methodCallExpressions.get(method);
-    } else if (expr instanceof ArrayAccess) {
-      ArrayAccess a = (ArrayAccess) expr;
+    } else if (expr instanceof ArrayAccess a) {
       return arrayValues.get(a);
-    } else if (expr instanceof ClassName) {
-      ClassName c = (ClassName) expr;
+    } else if (expr instanceof ClassName c) {
       return classValues.get(c);
     } else {
       throw new BugInCF("Unexpected JavaExpression: " + expr + " (" + expr.getClass() + ")");
@@ -826,10 +849,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   public @Nullable V getValue(FieldAccessNode n) {
     JavaExpression je = JavaExpression.fromNodeFieldAccess(n);
-    if (je instanceof FieldAccess) {
-      return fieldValues.get((FieldAccess) je);
-    } else if (je instanceof ClassName) {
-      return classValues.get((ClassName) je);
+    if (je instanceof FieldAccess fa) {
+      return fieldValues.get(fa);
+    } else if (je instanceof ClassName cn) {
+      return classValues.get(cn);
     } else if (je instanceof ThisReference || je instanceof SuperReference) {
       // "return thisValue" is wrong, because the node refers to an outer this.
       // So, return null for now.  TODO: improve.
@@ -890,12 +913,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   public void updateForAssignment(Node n, @Nullable V val) {
     JavaExpression je = JavaExpression.fromNode(n);
-    if (je instanceof ArrayAccess) {
-      updateForArrayAssignment((ArrayAccess) je, val);
-    } else if (je instanceof FieldAccess) {
-      updateForFieldAccessAssignment((FieldAccess) je, val);
-    } else if (je instanceof LocalVariable) {
-      updateForLocalVariableAssignment((LocalVariable) je, val);
+    if (je instanceof ArrayAccess aa) {
+      updateForArrayAssignment(aa, val);
+    } else if (je instanceof FieldAccess fa) {
+      updateForFieldAccessAssignment(fa, val);
+    } else if (je instanceof LocalVariable lv) {
+      updateForLocalVariableAssignment(lv, val);
     } else {
       throw new BugInCF("Unexpected je of class " + je.getClass());
     }
@@ -903,7 +926,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   /**
    * Update the information in the store by considering a field assignment with target {@code n},
-   * where the right hand side has the abstract value {@code val}.
+   * where the right-hand side has the abstract value {@code val}.
    *
    * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
    *     abstract value is not known)

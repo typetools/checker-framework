@@ -3,13 +3,167 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 3.52.2 (2026-01-03)
+## Version 4.1.0 (2026-05-01)
 
 ### User-visible changes
 
+Removed deprecated script `checker/bin-devel/build.sh`; use `./gradlew assemble`
+instead.
+
+Removed deprecated names "builder", "object.construction", and
+"objectconstruction" for the Called Methods Checker.
+
 ### Implementation details
 
+New method annotation `@DoesNotUnrefineReceiver`.
+`AnnotatedTypeFactory` has a new method `hasDoesNotUnrefineReceiver()`.
+
 ### Closed issues
+
+## Version 4.0.0 (2026-04-07)
+
+### User-visible changes
+
+To run the Checker Framework, you need to use a JDK 17 or later version of
+javac.  That is, you need to use JDK 17 or later when compiling your code.
+
+The Checker Framework can type-check any Java project, including projects that
+compile to Java 8 or 11 bytecodes and run on JRE versions 8 or 11.  That is,
+your code can run under any release of Java, from Java 8 onward.
+
+The type qualifiers and utility libraries in `checker-qual.jar` and
+`checker-util.jar` still use Java 11 bytecode.  Thus, they may be used in
+projects that run under Java 11 or later.
+
+### Changes since version 3.0.0
+
+Since version 3.0.0, 91 authors have made over 4500 commits and closed over 600
+issues.  Thanks to everyone who contributed!
+
+New checkers include:
+
+* The [Index Checker](https://checkerframework.org/manual/#index-checker) warns
+  about out-of-bounds accesses to arrays and strings.
+* The [Initialized Fields
+  Checker](https://checkerframework.org/manual/#initialized-fields-checker)
+  warns if a constructor does not initialize a field.
+* The [Resource Leak
+  Checker](https://checkerframework.org/manual/#resource-leak-checker)
+  guarantees that every resource is closed rather than leaked.  Examples of
+  resources are a channel, executor, `ExecutionControl`, file, `FileLock`,
+  `Formatter`, reader, `Scanner`, socket, stream, writer, etc.
+* The [SQL Quotes
+  Checker](https://checkerframework.org/manual/#sql-quotes-checker) helps
+  prevent SQL injection vulnerabilities.
+
+New command-line arguments include:
+
+* `-AskipFiles`, `-AonlyFiles`
+* `-AassumeSideEffectFree`, `-AassumeDeterministic`, `-AassumePure`, `-AassumePureGetters`
+* `-AuseConservativeDefaultsForUncheckedCode`
+* `-AignoreRawTypeArguments`
+* `-AwarnRedundantAnnotations`
+* `-Ainfer=ajava`, `-AinferOutputDirectory`, `-AinferOutputOriginal`, `-AshowWpiFailedInferences`
+* `-AshowSuppressWarningsStrings`, `-AwarnUnneededSuppressionsExceptions`
+* `-AshowPrefixInWarningMessages`
+* `-AstubNoWarnIfNotFound`, `-AstubWarnNote`, `-AmergeStubsWithSource`
+* `-Aonelinemsg`, `-AdumpOnErrors`, `-AexceptionLineSeparator`
+* `-ApermitMissingJdk`, `-AparseAllJdk`
+* `-AslowTypecheckingSeconds`
+* `-Aversion`, `-AprintGitProperties`
+* You can pass an option to only a particular checker (not all checkers) by
+  using an underscore prefix.
+
+Other improvements include thousands of enhancements and bug fixes -- too many
+to list here.
+
+### Implementation details
+
+All previously-deprecated methods and classes have been removed.  If your
+project builds upon the Checker Framework, we suggest that you upgrade to
+version 3.55.1, resolve all the deprecation warnings, then upgrade to version
+4.0.0.
+
+## Version 3.55.1 (2026-04-03)
+
+No user-visible changes.
+
+## Version 3.55.0 (2026-04-02)
+
+### User-visible changes
+
+The Checker Framework runs under JDK 26 -- that is, it runs on a version 26 JVM.
+
+Removed deprecated command-line option `-AskipDirs`; use `-AskipFiles`.
+
+### Implementation details
+
+In `AnnotatedTypeMirror`:
+
+* Renamed `getEffectiveAnnotation*()` to `getAnnotation*()`.
+* Renamed `hasEffectiveAnnotation*()` to `hasAnnotation*()`.
+
+Removed deprecated method `ObjectCreationNode.getConstructor()`; use
+`getTypeToInstantiate()`.
+
+### Closed issues
+
+\#7079, #7489, #7539.
+
+## Version 3.54.0 (2026-03-02)
+
+### User-visible changes
+
+Command-line arguments:
+
+* Added `-AinferOutputDirectory`.
+* Removed long-deprecated `-Alint=forbidnonnullarraycomponents`.
+
+New command-line argument `-Aonelinemsg` puts error messages on a single line.
+This is useful when using a tool that only shows the first line of the error.
+
+The command-line argument `-Anomsgtext` surrounds the error key with brackets
+instead of parenthesis. This matches Java error messages.
+
+### Implementation details
+
+In `AnnotatedTypeFactory`, `canonicalAnnotation()` returns a non-null value.
+
+In `AnnotationClassLoader`:
+
+* Renamed `hasWellDefinedTargetMetaAnnotation()` to `isTypeQualifierAnnotation()`.
+  The method now returns `true` for annotations bearing `@InvisibleQualifier`
+  or `@SubtypeOf`, in addition to the existing `@Target(TYPE_USE)` check.
+
+In `TestDiagnostic`:
+
+* Renamed field `message` to `key`.
+* Added new nullable field `message` for the full message without the key.
+
+Removed classes and methods that have been deprecated for more than two years.
+
+### Closed issues
+
+\#6874, #7471, #7475, #7486.
+
+## Version 3.53.1 (2026-02-02)
+
+### Closed issues
+
+\#4858, #6141, #6620, #7360, #7388.
+
+## Version 3.53.0 (2026-01-06)
+
+### Implementation details
+
+In `AbstractAnalysis`, added `getStoreBefore(Tree)`, `getStoreBefore(Node)`,
+`getStoreAfter(Tree)`, and `getStoreAfter(Node)`.
+
+In `GenericAnnotatedTypeFactory`, removed `getStoreBefore(Set<Node>)` and `getStoreAfter(Set<Node>)`.
+
+### Closed issues
+
+\#2358.
 
 ## Version 3.52.1 (2025-12-02)
 
@@ -2435,7 +2589,7 @@ Documentation improvements:
 Tool changes:
 
 * The Checker Framework Live Demo webpage lets you try the Checker
-  Framework without installing it:  <http://eisop.uwaterloo.ca/live/>
+  Framework without installing it:  <https://eisop.uwaterloo.ca/live/>
 
 * New command-line arguments -Acfgviz and -Averbosecfg enable better
   debugging of the control-flow-graph generation step of type-checking.
@@ -3703,7 +3857,7 @@ Many bug fixes
 Eclipse support:
   Removed the obsolete Eclipse plug-in from repository.  The new one uses a
   different repository
-  (<http://code.google.com/a/eclipselabs.org/p/checker-plugin/>) but a user
+  (<https://code.google.com/a/eclipselabs.org/p/checker-plugin/>) but a user
   obtains it from the same URL as before:
   <https://checkerframework.org/eclipse/>
 

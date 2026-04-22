@@ -17,7 +17,7 @@ public class MustCallAliasOnReceiver {
     return this;
   }
 
-  // :: warning: (required.method.not.called)
+  // :: warning: [required.method.not.called]
   void testReceiverMCAAnnotation(@Owning InputStream inputStream) throws IOException {
     MustCallAliasOnReceiver mcar = new MustCallAliasOnReceiver(is, false);
     mcar.returnReceiver().close();
@@ -32,7 +32,7 @@ public class MustCallAliasOnReceiver {
     return new MustCallAliasOnReceiver(is, false);
   }
 
-  // :: warning: (required.method.not.called)
+  // :: warning: [required.method.not.called]
   public static void testUse(@Owning InputStream inputStream) throws Exception {
     MustCallAliasOnReceiver mcane = mcaneFactory(inputStream);
     mcane.close();

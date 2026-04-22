@@ -3,19 +3,6 @@ plugins {
   alias(libs.plugins.biz.aqute.bnd.builder)
 }
 
-sourceSets {
-  main {
-    java {
-      exclude("module-info.java")
-    }
-  }
-  module_info {
-    java {
-      srcDirs("src/main")
-    }
-  }
-}
-
 jar {
   doLast {
     copy {
@@ -27,17 +14,6 @@ jar {
       }
     }
   }
-}
-
-tasks.register("compileJava9", JavaCompile) {
-  source = sourceSets.module_info.java
-  destinationDirectory = sourceSets.main.output.classesDirs[0]
-  classpath = configurations.allProjects
-  options.release = 9
-}
-
-compileJava {
-  dependsOn(compileJava9)
 }
 
 javadoc {
@@ -64,7 +40,7 @@ final checkerQualPom(publication) {
     licenses {
       license {
         name = "The MIT License"
-        url = "http://opensource.org/licenses/MIT"
+        url = "https://opensource.org/licenses/MIT"
         distribution = "repo"
       }
     }

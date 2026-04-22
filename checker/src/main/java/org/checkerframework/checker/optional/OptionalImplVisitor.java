@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -51,6 +52,7 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -74,8 +76,8 @@ public class OptionalImplVisitor
   /** The element for java.util.Optional.isPresent(). */
   private final ExecutableElement optionalIsPresent;
 
-  /** The element for java.util.Optional.isEmpty(), or null if running under JDK 8. */
-  private final @Nullable ExecutableElement optionalIsEmpty;
+  /** The element for java.util.Optional.isEmpty(). */
+  private final ExecutableElement optionalIsEmpty;
 
   /** The element for java.util.stream.Stream.filter(). */
   private final ExecutableElement streamFilter;
@@ -97,10 +99,10 @@ public class OptionalImplVisitor
    *   <li>Its body contains a variable or value that is annotated with {@link NonEmpty}
    * </ul>
    *
-   * <p>This set is used to help compute {@link calleesToCallers} whenever a method invocation is
+   * <p>This set is used to help compute {@link #calleesToCallers} whenever a method invocation is
    * visited. The method being invoked is checked for membership in this set. If it is found, then
    * the caller of the method (i.e., the method that encloses the method invocation) is added to the
-   * list of callers of the method being invoked (i.e., the callee) in {@link calleesToCallers}.
+   * list of callers of the method being invoked (i.e., the callee) in {@link #calleesToCallers}.
    */
   private final Set<String> namesOfMethodsToVerifyWithNonEmptyChecker = new HashSet<>();
 
@@ -113,10 +115,10 @@ public class OptionalImplVisitor
    * methods that have programmer-written annotations from the {@link NonEmpty} type system, and
    * their immediate dependents.
    *
-   * <p>This mapping is used to help compute {@link namesOfMethodsToVerifyWithNonEmptyChecker}.
+   * <p>This mapping is used to help compute {@link #namesOfMethodsToVerifyWithNonEmptyChecker}.
    * Whenever a method declaration is visited, its name is checked in the keys (i.e., the set of
    * callees). If it is found, then the corresponding values (i.e., the names of the callers of the
-   * method being visited) are added to {@link namesOfMethodsToVerifyWithNonEmptyChecker}.
+   * method being visited) are added to {@link #namesOfMethodsToVerifyWithNonEmptyChecker}.
    */
   private final Map<String, Set<String>> calleesToCallers = new HashMap<>();
 
@@ -133,7 +135,7 @@ public class OptionalImplVisitor
     ProcessingEnvironment env = checker.getProcessingEnvironment();
     optionalGet = TreeUtils.getMethod("java.util.Optional", "get", 0, env);
     optionalIsPresent = TreeUtils.getMethod("java.util.Optional", "isPresent", 0, env);
-    optionalIsEmpty = TreeUtils.getMethodOrNull("java.util.Optional", "isEmpty", 0, env);
+    optionalIsEmpty = TreeUtils.getMethod("java.util.Optional", "isEmpty", 0, env);
 
     streamFilter = TreeUtils.getMethod("java.util.stream.Stream", "filter", 1, env);
     streamMap = TreeUtils.getMethod("java.util.stream.Stream", "map", 1, env);
@@ -186,24 +188,23 @@ public class OptionalImplVisitor
     boolean negate = false;
     while (true) {
       switch (expression.getKind()) {
-        case PARENTHESIZED:
-          expression = ((ParenthesizedTree) expression).getExpression();
-          break;
-        case LOGICAL_COMPLEMENT:
+        case PARENTHESIZED -> expression = ((ParenthesizedTree) expression).getExpression();
+        case LOGICAL_COMPLEMENT -> {
           expression = ((UnaryTree) expression).getExpression();
           negate = !negate;
-          break;
-        case METHOD_INVOCATION:
+        }
+        case METHOD_INVOCATION -> {
           if (TreeUtils.isMethodInvocation(expression, optionalIsPresent, env)) {
             return IPair.of(!negate, TreeUtils.getReceiverTree(expression));
-          } else if (optionalIsEmpty != null
-              && TreeUtils.isMethodInvocation(expression, optionalIsEmpty, env)) {
+          } else if (TreeUtils.isMethodInvocation(expression, optionalIsEmpty, env)) {
             return IPair.of(negate, TreeUtils.getReceiverTree(expression));
           } else {
             return null;
           }
-        default:
+        }
+        default -> {
           return null;
+        }
       }
     }
   }
@@ -283,23 +284,16 @@ public class OptionalImplVisitor
     if (!isCallToGet(trueReceiver)) {
       return;
     }
+
     ExpressionTree getReceiver = TreeUtils.getReceiverTree(trueReceiver);
-
     ExpressionTree receiver = isPresentCall.second;
-    ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
-    boolean isPure =
-        PurityUtils.isDeterministic(atypeFactory, ele)
-            && PurityUtils.isSideEffectFree(atypeFactory, ele);
-
-    if (sameExpression(receiver, getReceiver) && isPure) {
-
+    if (sameExpression(receiver, getReceiver)) {
+      ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
       checker.reportWarning(
           tree,
           "prefer.map.and.orelse",
           receiver,
-          // The literal "ENCLOSINGCLASS::" is gross.
-          // TODO: add this to the error message.
-          // ElementUtils.getQualifiedClassName(ele);
+          ElementUtils.getQualifiedClassName(ele),
           ele.getSimpleName(),
           falseExpr);
     }
@@ -378,8 +372,8 @@ public class OptionalImplVisitor
     }
 
     ExpressionTree isPresentReceiver = TreeUtils.getReceiverTree(condExpr);
-    if (isPresentReceiver instanceof MethodInvocationTree) {
-      ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) isPresentReceiver);
+    if (isPresentReceiver instanceof MethodInvocationTree iprMit) {
+      ExecutableElement ele = TreeUtils.elementFromUse(iprMit);
       boolean isPure =
           PurityUtils.isDeterministic(atypeFactory, ele)
               && PurityUtils.isSideEffectFree(atypeFactory, ele);
@@ -398,24 +392,22 @@ public class OptionalImplVisitor
       return;
     }
 
-    if (thenStmt != null && thenStmt instanceof VariableTree) {
-      ExpressionTree initializer = ((VariableTree) thenStmt).getInitializer();
-      if (initializer instanceof MethodInvocationTree) {
-        checkConditionalStatementIsPresentGetCall(
-            tree, (MethodInvocationTree) initializer, isPresentCall, "prefer.map.and.orelse");
+    if (thenStmt instanceof VariableTree thenVt) {
+      ExpressionTree initializer = thenVt.getInitializer();
+      if (initializer instanceof MethodInvocationTree initMit) {
+        checkConditionalStatementIsPresentGetCall(tree, initMit, isPresentCall, "prefer.map");
         return;
       }
     }
 
-    if (thenStmt == null || !(thenStmt instanceof ExpressionStatementTree)) {
+    if (!(thenStmt instanceof ExpressionStatementTree thenEst)) {
       return;
     }
-    ExpressionTree thenExpr = ((ExpressionStatementTree) thenStmt).getExpression();
-    if (!(thenExpr instanceof MethodInvocationTree)) {
+    ExpressionTree thenExpr = thenEst.getExpression();
+    if (!(thenExpr instanceof MethodInvocationTree thenMit)) {
       return;
     }
-    checkConditionalStatementIsPresentGetCall(
-        tree, (MethodInvocationTree) thenExpr, isPresentCall, "prefer.ifpresent");
+    checkConditionalStatementIsPresentGetCall(tree, thenMit, isPresentCall, "prefer.ifpresent");
   }
 
   /**
@@ -456,9 +448,7 @@ public class OptionalImplVisitor
             tree,
             "prefer.map.and.orelse",
             trueAssignment.getVariable(),
-            // The literal "ENCLOSINGCLASS::" is gross.
-            // TODO: add this to the error message.
-            // ElementUtils.getQualifiedClassName(ele);
+            ElementUtils.getQualifiedClassName(ele),
             ele.getSimpleName(),
             falseAssignment.getExpression());
       }
@@ -482,7 +472,7 @@ public class OptionalImplVisitor
    * @param invok the entire method invocation statement or the initializer of an assignment
    * @param isPresentCall the pair comprising a boolean (indicating whether the expression is a call
    *     to {@code Optional.isPresent} or to {@code Optional.isEmpty}) and its receiver
-   * @param messageKey the message key, either "prefer.ifPresent" or "prefer.map.and.orelse"
+   * @param messageKey the message key, either "prefer.ifpresent" or "prefer.map"
    */
   private void checkConditionalStatementIsPresentGetCall(
       IfTree tree,
@@ -508,6 +498,9 @@ public class OptionalImplVisitor
     int dotPos = methodString.lastIndexOf('.');
     if (dotPos != -1) {
       methodString = methodString.substring(0, dotPos) + "::" + methodString.substring(dotPos + 1);
+    } else {
+      Element ele = TreeUtils.elementFromUse(method);
+      methodString = ElementUtils.getQualifiedClassName(ele) + "::" + methodString;
     }
 
     checker.reportWarning(tree, messageKey, isPresentReceiver, methodString);
@@ -522,7 +515,7 @@ public class OptionalImplVisitor
   }
 
   /**
-   * Updates {@link calleesToCallers} given a method invocation, if the caller of the method is
+   * Updates {@link #calleesToCallers} given a method invocation, if the caller of the method is
    * known to rely on the {@link NonEmpty} type system.
    *
    * <p>The caller is the method that <i>encloses</i> the given method invocation. The map is
@@ -565,7 +558,7 @@ public class OptionalImplVisitor
   }
 
   /**
-   * Updates {@link namesOfMethodsToVerifyWithNonEmptyChecker}.
+   * Updates {@link #namesOfMethodsToVerifyWithNonEmptyChecker}.
    *
    * @param methodDecl a method declaration that definitely has a precondition regarding
    *     {@code @NonEmpty}
@@ -707,10 +700,9 @@ public class OptionalImplVisitor
         // The receiver can be null if the receiver is the implicit "this.".
         return;
       }
-      if (!(receiver instanceof MethodInvocationTree)) {
+      if (!(receiver instanceof MethodInvocationTree methodCall)) {
         return;
       }
-      MethodInvocationTree methodCall = (MethodInvocationTree) receiver;
       if (isOptionalPropagation(methodCall)) {
         receiver = TreeUtils.getReceiverTree(methodCall);
         continue;
@@ -961,8 +953,7 @@ public class OptionalImplVisitor
     TreePath getParentPath = getPath.getParentPath();
     // "getParent" means "the parent of the node `Optional::get`".
     Tree getParent = getParentPath.getLeaf();
-    if (getParent instanceof MethodInvocationTree) {
-      MethodInvocationTree hasGetAsArgumentTree = (MethodInvocationTree) getParent;
+    if (getParent instanceof MethodInvocationTree hasGetAsArgumentTree) {
       ExecutableElement hasGetAsArgumentElement = TreeUtils.elementFromUse(hasGetAsArgumentTree);
       if (!hasGetAsArgumentElement.equals(streamMap)) {
         // Optional::get is not an argument to stream#map
@@ -971,8 +962,7 @@ public class OptionalImplVisitor
       // hasGetAsArgumentTree is an invocation of Stream#map(...).
       Tree mapReceiverTree = TreeUtils.getReceiverTree(hasGetAsArgumentTree);
       // Will check whether mapParent is the call `Stream.filter(Optional::isPresent)`.
-      if (mapReceiverTree != null && mapReceiverTree instanceof MethodInvocationTree) {
-        MethodInvocationTree fluentToMapTree = (MethodInvocationTree) mapReceiverTree;
+      if (mapReceiverTree instanceof MethodInvocationTree fluentToMapTree) {
         ExecutableElement fluentToMapElement = TreeUtils.elementFromUse(fluentToMapTree);
         if (!fluentToMapElement.equals(streamFilter)) {
           // The receiver of map(Optional::get) is not Stream#filter
@@ -980,9 +970,8 @@ public class OptionalImplVisitor
         }
         MethodInvocationTree filterInvocationTree = fluentToMapTree;
         ExpressionTree filterArgTree = filterInvocationTree.getArguments().get(0);
-        if (filterArgTree instanceof MemberReferenceTree) {
-          ExecutableElement filterArgElement =
-              TreeUtils.elementFromUse((MemberReferenceTree) filterArgTree);
+        if (filterArgTree instanceof MemberReferenceTree faMrt) {
+          ExecutableElement filterArgElement = TreeUtils.elementFromUse(faMrt);
           return filterArgElement.equals(optionalIsPresent);
         }
       }

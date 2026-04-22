@@ -208,14 +208,14 @@ public class NullnessAnnotatedTypeFactory
           // https://github.com/JetBrains/intellij-community/blob/master/platform/annotations/java8/src/org/jetbrains/annotations/NotNull.java
           // https://www.jetbrains.com/help/idea/nullable-and-notnull-annotations.html
           "org.jetbrains.annotations.NotNull",
-          // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/NonNull.java
+          // https://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/NonNull.java
           "org.jmlspecs.annotation.NonNull",
           // https://github.com/jspecify/jspecify/blob/main/src/main/java/org/jspecify/annotations/NonNull.java
           "org.jspecify.annotations.NonNull",
-          // 2022-11-17: Deprecated old package location, remove after some grace period
+          // 2022-11-17: Deprecated old package location, remove after some grace period.
           // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/nullness
           "org.jspecify.nullness.NonNull",
-          // http://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NonNull.html
+          // https://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NonNull.html
           "org.netbeans.api.annotations.common.NonNull",
           // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/NonNull.java
           "org.springframework.lang.NonNull",
@@ -340,19 +340,19 @@ public class NullnessAnnotatedTypeFactory
           "org.jetbrains.annotations.Nullable",
           // https://github.com/JetBrains/java-annotations/blob/master/java8/src/main/java/org/jetbrains/annotations/UnknownNullability.java
           "org.jetbrains.annotations.UnknownNullability",
-          // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
+          // https://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
           "org.jmlspecs.annotation.Nullable",
           // https://github.com/jspecify/jspecify/blob/main/src/main/java/org/jspecify/annotations/Nullable.java
           "org.jspecify.annotations.Nullable",
-          // 2022-11-17: Deprecated old package location, remove after some grace period
+          // 2022-11-17: Deprecated old package location, remove after some grace period.
           // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/nullness
           "org.jspecify.nullness.Nullable",
           "org.jspecify.nullness.NullnessUnspecified",
-          // http://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/CheckForNull.html
+          // https://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/CheckForNull.html
           "org.netbeans.api.annotations.common.CheckForNull",
-          // http://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullAllowed.html
+          // https://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullAllowed.html
           "org.netbeans.api.annotations.common.NullAllowed",
-          // http://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullUnknown.html
+          // https://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullUnknown.html
           "org.netbeans.api.annotations.common.NullUnknown",
           // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/Nullable.java
           "org.springframework.lang.Nullable",
@@ -516,7 +516,7 @@ public class NullnessAnnotatedTypeFactory
   protected ParameterizedExecutableType methodFromUse(
       MethodInvocationTree tree, boolean inferTypeArgs) {
     ParameterizedExecutableType mType = super.methodFromUse(tree, inferTypeArgs);
-    AnnotatedExecutableType method = mType.executableType;
+    AnnotatedExecutableType method = mType.executableType();
 
     // Special cases for method invocations with specific arguments.
     systemGetPropertyHandler.handle(tree, method);
@@ -709,7 +709,7 @@ public class NullnessAnnotatedTypeFactory
       // the most useful element type is @Initialized (which is also accurate).
       AnnotatedArrayType arrayType = (AnnotatedArrayType) type;
       AnnotatedTypeMirror componentType = arrayType.getComponentType();
-      if (componentType.hasEffectiveAnnotation(FBCBOTTOM)) {
+      if (componentType.hasAnnotation(FBCBOTTOM)) {
         componentType.replaceAnnotation(INITIALIZED);
       }
       return null;
@@ -851,6 +851,9 @@ public class NullnessAnnotatedTypeFactory
    * <p>This method ignores aliases of nullness annotations that are declaration annotations,
    * because they may apply to inner types.
    *
+   * <p>This method is used only for issuing an error when a nullness annotation is written in a
+   * place it should not be.
+   *
    * @param annoTrees a list of annotations that the Java parser attached to the variable/method
    *     declaration; null if this type is not from such a location. This is a list of extra
    *     annotations to check, in addition to those on the type.
@@ -871,8 +874,9 @@ public class NullnessAnnotatedTypeFactory
    * <p>This method ignores aliases of nullness annotations that are declaration annotations,
    * because they may apply to inner types.
    *
-   * <p>Clients that are processing a field or variable definition, or a method return type, should
-   * call {@link #containsNullnessAnnotation(List, Tree)} instead.
+   * <p>This method is used only for issuing an error when a nullness annotation is written in a
+   * place it should not be. Clients that are processing a field or variable definition, or a method
+   * return type, should call {@link #containsNullnessAnnotation(List, Tree)} instead.
    *
    * @param annoTrees a list of annotations to check
    * @return true if some annotation is a nullness annotation
@@ -909,10 +913,7 @@ public class NullnessAnnotatedTypeFactory
    * @return true if the given annotation is @NonNull or an alias for it
    */
   protected boolean isNonNullOrAlias(AnnotationMirror am) {
-    AnnotationMirror canonical = canonicalAnnotation(am);
-    if (canonical != null) {
-      am = canonical;
-    }
+    am = canonicalAnnotation(am);
     return AnnotationUtils.areSameByName(am, NONNULL);
   }
 
@@ -923,10 +924,7 @@ public class NullnessAnnotatedTypeFactory
    * @return true if the given annotation is @Nullable or an alias for it
    */
   protected boolean isNullableOrAlias(AnnotationMirror am) {
-    AnnotationMirror canonical = canonicalAnnotation(am);
-    if (canonical != null) {
-      am = canonical;
-    }
+    am = canonicalAnnotation(am);
     return AnnotationUtils.areSameByName(am, NULLABLE);
   }
 

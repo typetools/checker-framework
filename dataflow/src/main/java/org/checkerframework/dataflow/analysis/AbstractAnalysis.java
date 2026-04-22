@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -211,6 +212,139 @@ public abstract class AbstractAnalysis<
   }
 
   /**
+   * Computes and returns a merged store valid immediately before the nodes corresponding to a given
+   * {@link Tree}. If multiple nodes correspond to the tree, this method aggregates their pre-stores
+   * using {@link Store#leastUpperBound}. Only intended for use while the analysis is running.
+   *
+   * @param tree a tree
+   * @param analysisCaches caches of analysis results. If it is not null, this method uses and
+   *     updates it. It is a map from a TransferInput for a Block to an inner map. The inner map is
+   *     from a node within the block to a TransferResult.
+   * @return the store immediately before a given {@link Tree}, or null if the tree does not
+   *     correspond to any nodes
+   */
+  public @Nullable S getStoreBefore(
+      Tree tree,
+      @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
+          analysisCaches) {
+    if (!isRunning()) {
+      throw new BugInCF(
+          "AbstractAnalysis::getStoreBefore() should only be called when the analysis is running.");
+    }
+    Set<Node> nodes = getNodesForTree(tree);
+    if (nodes == null) {
+      return null;
+    }
+    S merge = null;
+    for (Node aNode : nodes) {
+      S s = getStoreBefore(aNode, analysisCaches);
+      if (merge == null) {
+        merge = s;
+      } else if (s != null) {
+        merge = merge.leastUpperBound(s);
+      }
+    }
+    return merge;
+  }
+
+  /**
+   * Returns the store immediately before a given {@link Node}. Only intended for use while the
+   * analysis is running.
+   *
+   * @param node a node whose pre-store to return
+   * @param analysisCaches caches of analysis results. If it is not null, this method uses and
+   *     updates it. It is a map from a TransferInput for a Block to an inner map. The inner map is
+   *     from a node within the block to a TransferResult.
+   * @return the store immediately before {@code node}, or null if the node is not in a block
+   */
+  public @Nullable S getStoreBefore(
+      Node node,
+      @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
+          analysisCaches) {
+    if (!isRunning()) {
+      throw new BugInCF(
+          "AbstractAnalysis::getStoreBefore() should only be called when the analysis is running.");
+    }
+    Block block = node.getBlock();
+    if (block == null) {
+      return null;
+    }
+    TransferInput<V, S> transferInput = getInput(block);
+    if (transferInput == null) {
+      return null;
+    }
+    return runAnalysisFor(
+        node, Analysis.BeforeOrAfter.BEFORE, transferInput, getNodeValues(), analysisCaches);
+  }
+
+  /**
+   * Computes and returns a merged store valid immediately after the nodes corresponding to a given
+   * {@link Tree}. If multiple nodes correspond to the tree, this method aggregates their
+   * post-stores using {@link Store#leastUpperBound}. Only intended for use while the analysis is
+   * running.
+   *
+   * @param tree a tree
+   * @param analysisCaches caches of analysis results. If it is not null, this method uses and
+   *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from a
+   *     node within the block to a TransferResult.
+   * @return the store immediately after a given tree, or null if the tree does not correspond to
+   *     any nodes
+   */
+  public @Nullable S getStoreAfter(
+      Tree tree,
+      @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
+          analysisCaches) {
+    if (!isRunning()) {
+      throw new BugInCF(
+          "AbstractAnalysis::getStoreAfter() should only be called when the analysis is running.");
+    }
+    Set<Node> nodes = getNodesForTree(tree);
+    if (nodes == null) {
+      return null;
+    }
+    S merge = null;
+    for (Node node : nodes) {
+      S s = getStoreAfter(node, analysisCaches);
+      if (merge == null) {
+        merge = s;
+      } else if (s != null) {
+        merge = merge.leastUpperBound(s);
+      }
+    }
+    return merge;
+  }
+
+  /**
+   * Returns the store immediately after a given {@link Node}. Only intended for use while the
+   * analysis is running.
+   *
+   * @param node node after which the store is returned
+   * @param analysisCaches caches of analysis results. If it is not null, this method uses and
+   *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from a
+   *     node within the block to a TransferResult.
+   * @return the store immediately after a given {@link Node}, or null if the node is not in a block
+   */
+  public @Nullable S getStoreAfter(
+      Node node,
+      @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
+          analysisCaches) {
+    if (!isRunning()) {
+      throw new BugInCF(
+          "AbstractAnalysis::getStoreAfter() should only be called when the analysis is running.");
+    }
+    Block block = node.getBlock();
+    if (block == null) {
+      return null;
+    }
+    TransferInput<V, S> transferInput = getInput(block);
+    if (transferInput == null) {
+      return null;
+    }
+    return runAnalysisFor(
+        node, Analysis.BeforeOrAfter.AFTER, transferInput, getNodeValues(), analysisCaches);
+  }
+
+  /**
    * Returns all current node values.
    *
    * @return {@link #nodeValues}
@@ -322,38 +456,12 @@ public abstract class AbstractAnalysis<
    *
    * @param t the given tree
    * @return the contained method tree of the given tree
-   * @deprecated use {@link #getEnclosingMethod}
-   */
-  @Deprecated // 2024-05-01
-  public @Nullable MethodTree getContainingMethod(Tree t) {
-    return getEnclosingMethod(t);
-  }
-
-  /**
-   * Returns the {@link MethodTree} of the current CFG if the argument {@link Tree} maps to a {@link
-   * Node} in the CFG or {@code null} otherwise.
-   *
-   * @param t the given tree
-   * @return the contained method tree of the given tree
    */
   public @Nullable MethodTree getEnclosingMethod(Tree t) {
     if (cfg == null) {
       return null;
     }
     return cfg.getEnclosingMethod(t);
-  }
-
-  /**
-   * Returns the {@link ClassTree} of the current CFG if the argument {@link Tree} maps to a {@link
-   * Node} in the CFG or {@code null} otherwise.
-   *
-   * @param t the given tree
-   * @return the contained class tree of the given tree
-   * @deprecated use {@link #getEnclosingClass}
-   */
-  @Deprecated // 2024-05-01
-  public @Nullable ClassTree getContainingClass(Tree t) {
-    return getEnclosingClass(t);
   }
 
   /**
@@ -392,12 +500,10 @@ public abstract class AbstractAnalysis<
     @SuppressWarnings("nullness") // CF bug: "INFERENCE FAILED"
     TransferResult<V, S> transferResult = node.accept(transferFunction, transferInput);
     setCurrentNode(null);
-    if (node instanceof AssignmentNode) {
+    if (node instanceof AssignmentNode assignment) {
       // store the flow-refined value effectively for final local variables
-      AssignmentNode assignment = (AssignmentNode) node;
       Node lhst = assignment.getTarget();
-      if (lhst instanceof LocalVariableNode) {
-        LocalVariableNode lhs = (LocalVariableNode) lhst;
+      if (lhst instanceof LocalVariableNode lhs) {
         VariableElement elem = lhs.getElement();
         if (ElementUtils.isEffectivelyFinal(elem)) {
           V resval = transferResult.getResultValue();

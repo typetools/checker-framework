@@ -141,7 +141,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * True when the AnnotatedTypeMirror currently being computed is the left hand side of an
+   * True when the AnnotatedTypeMirror currently being computed is the left-hand side of an
    * assignment or pseudo-assignment.
    *
    * @see #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)
@@ -194,29 +194,27 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
       if (treeRange != null) {
         switch (javaType.getKind()) {
-          case BYTE:
-          case CHAR:
+          case BYTE, CHAR -> {
             if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
               type.replaceAnnotation(SIGNED_POSITIVE);
             }
-            break;
-          case SHORT:
+          }
+          case SHORT -> {
             if (treeRange.isWithin(0, Short.MAX_VALUE)) {
               type.replaceAnnotation(SIGNED_POSITIVE);
             }
-            break;
-          case INT:
+          }
+          case INT -> {
             if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
               type.replaceAnnotation(SIGNED_POSITIVE);
             }
-            break;
-          case LONG:
+          }
+          case LONG -> {
             if (treeRange.isWithin(0, Long.MAX_VALUE)) {
               type.replaceAnnotation(SIGNED_POSITIVE);
             }
-            break;
-          default:
-            // Nothing
+          }
+          default -> {} // Nothing
         }
       }
     }
@@ -293,9 +291,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
       switch (tree.getKind()) {
-        case LEFT_SHIFT:
-        case RIGHT_SHIFT:
-        case UNSIGNED_RIGHT_SHIFT:
+        case LEFT_SHIFT, RIGHT_SHIFT, UNSIGNED_RIGHT_SHIFT -> {
           TreePath path = getPath(tree);
           if (path != null
               && (SignednessShifts.isMaskedShiftEitherSignedness(tree, path)
@@ -305,9 +301,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
             type.replaceAnnotations(lht.getPrimaryAnnotations());
           }
-          break;
-        default:
-          // Do nothing
+        }
+        default -> {} // Do nothing
       }
       return null;
     }
@@ -330,7 +325,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (type.getPrimaryAnnotations().isEmpty() && !maybeIntegral(type)) {
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(tree.getExpression());
         if ((type.getKind() != TypeKind.TYPEVAR || exprType.getKind() != TypeKind.TYPEVAR)
-            && !AnnotationUtils.containsSame(exprType.getEffectiveAnnotations(), UNSIGNED)) {
+            && !AnnotationUtils.containsSame(exprType.getAnnotations(), UNSIGNED)) {
           type.addAnnotation(SIGNED);
         }
       }
@@ -351,32 +346,20 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     TypeKind kind = type.getKind();
 
-    switch (kind) {
-      case BOOLEAN:
-        return false;
-      case BYTE:
-      case SHORT:
-      case INT:
-      case LONG:
-      case CHAR:
-        return true;
-      case FLOAT:
-      case DOUBLE:
-        return false;
-
-      case DECLARED:
-      case TYPEVAR:
-      case WILDCARD:
+    return switch (kind) {
+      case BOOLEAN -> false;
+      case BYTE, SHORT, INT, LONG, CHAR -> true;
+      case FLOAT, DOUBLE -> false;
+      case DECLARED, TYPEVAR, WILDCARD -> {
         TypeMirror erasedType = types.erasure(type.getUnderlyingType());
-        return (TypesUtils.isBoxedPrimitive(erasedType)
+        yield (TypesUtils.isBoxedPrimitive(erasedType)
             || TypesUtils.isObject(erasedType)
             || TypesUtils.isErasedSubtype(numberTM, erasedType, types)
             || TypesUtils.isErasedSubtype(serializableTM, erasedType, types)
             || TypesUtils.isErasedSubtype(comparableTM, erasedType, types));
-
-      default:
-        return false;
-    }
+      }
+      default -> false;
+    };
   }
 
   @Override

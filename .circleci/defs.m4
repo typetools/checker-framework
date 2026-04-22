@@ -35,6 +35,21 @@ circleci_boilerplate($1,)
           no_output_timeout: "30m"
 ])dnl
 dnl
+define([junit_jobs], [dnl
+  junit_part1_jdk$1:
+circleci_boilerplate($1,)
+      - run:
+          name: test-cftests-junit.sh part1
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit.sh part1
+          no_output_timeout: "30m"
+  junit_part2_jdk$1:
+circleci_boilerplate($1,)
+      - run:
+          name: test-cftests-junit.sh part2
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit.sh part2
+          no_output_timeout: "30m"
+])dnl
+dnl
 define([nonjunit_job], [dnl
   nonjunit_jdk$1:
 circleci_boilerplate($1,)
@@ -138,7 +153,9 @@ ifelse($1,canary_version,,[:
           requires:
             - canary_jobs
 ifelse($1,canary_version,,[dnl
+ifelse($2$1,misc[]latest_version,,[dnl
             - $2_jdk[]canary_version
+])dnl
 ])dnl
 ])dnl
 ])dnl

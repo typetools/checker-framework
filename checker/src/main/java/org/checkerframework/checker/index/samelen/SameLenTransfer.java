@@ -88,20 +88,19 @@ public class SameLenTransfer extends CFTransfer {
     Node recNode = node.getTarget();
 
     // Handle b = new T[a.length]
-    if (exprNode instanceof ArrayCreationNode) {
-      ArrayCreationNode acNode = (ArrayCreationNode) exprNode;
+    if (exprNode instanceof ArrayCreationNode acNode) {
       if (acNode.getDimensions().size() == 1) {
 
         Node lengthNode = acNode.getDimension(0);
         Node lengthNodeReceiver = getLengthReceiver(lengthNode);
 
         if (lengthNodeReceiver != null) {
-          // "new T[a.length]" or "new T[s.length()]" is the right hand side of the
+          // "new T[a.length]" or "new T[s.length()]" is the right-hand side of the
           // assignment.
           // lengthNode is known to be "lengthNodeReceiver.length" or
           // "lengthNodeReceiver.length()"
 
-          // targetRec is the receiver for the left hand side of the assignment.
+          // targetRec is the receiver for the left-hand side of the assignment.
           JavaExpression targetRec = JavaExpression.fromNode(recNode);
           JavaExpression otherRec = JavaExpression.fromNode(lengthNodeReceiver);
 
@@ -174,9 +173,9 @@ public class SameLenTransfer extends CFTransfer {
 
   /** Returns true if node is of the form "someArray.length". */
   private boolean isArrayLengthAccess(Node node) {
-    return (node instanceof FieldAccessNode
-        && ((FieldAccessNode) node).getFieldName().equals("length")
-        && ((FieldAccessNode) node).getReceiver().getType().getKind() == TypeKind.ARRAY);
+    return (node instanceof FieldAccessNode fan
+        && fan.getFieldName().equals("length")
+        && fan.getReceiver().getType().getKind() == TypeKind.ARRAY);
   }
 
   /**

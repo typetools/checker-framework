@@ -4,8 +4,10 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.value.util.Range;
@@ -27,21 +29,6 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
   /**
    * Creates a ValueQualifierHierarchy from the given classes.
    *
-   * @param atypeFactory a ValueAnnotatedTypeFactory
-   * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
-   * @deprecated use {@link #ValueQualifierHierarchy(Collection, ValueAnnotatedTypeFactory)} which
-   *     has the arguments in the other order
-   */
-  @Deprecated // 2023-05-23
-  ValueQualifierHierarchy(
-      ValueAnnotatedTypeFactory atypeFactory,
-      Collection<Class<? extends Annotation>> qualifierClasses) {
-    this(qualifierClasses, atypeFactory);
-  }
-
-  /**
-   * Creates a ValueQualifierHierarchy from the given classes.
-   *
    * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
    * @param atypeFactory the associated type factory
    */
@@ -59,16 +46,19 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
    * @param otherAnno annotation from the value checker hierarchy
    * @return greatest lower bound of {@code stringValAnno} and {@code otherAnno}
    */
+  @SuppressWarnings(
+      "regex:type.arguments.not.inferred") // AnnotationUtils.getElementValueArray contains @Regex
+  // strings
   private AnnotationMirror glbOfStringVal(
       AnnotationMirror stringValAnno, AnnotationMirror otherAnno) {
     List<String> values = atypeFactory.getStringValues(stringValAnno);
     switch (AnnotationUtils.annotationName(otherAnno)) {
-      case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+      case ValueAnnotatedTypeFactory.STRINGVAL_NAME -> {
         // Intersection of value lists
         List<String> otherValues = atypeFactory.getStringValues(otherAnno);
         values.retainAll(otherValues);
-        break;
-      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
+      }
+      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME -> {
         // Retain strings of correct lengths
         List<Integer> otherLengths = atypeFactory.getArrayLength(otherAnno);
         ArrayList<String> result = new ArrayList<>(values.size());
@@ -78,8 +68,8 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
           }
         }
         values = result;
-        break;
-      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
+      }
+      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME -> {
         // Retain strings of lengths from a range
         Range otherRange = atypeFactory.getRange(otherAnno);
         ArrayList<String> range = new ArrayList<>(values.size());
@@ -89,23 +79,24 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
           }
         }
         values = range;
-        break;
-      case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
+      }
+      case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME -> {
         List<@Regex String> matchesRegexes =
             AnnotationUtils.getElementValueArray(
                 otherAnno, atypeFactory.matchesRegexValueElement, String.class);
         // Retain the @StringVal values such that one of the regexes matches it.
         values = RegexUtil.matchesSomeRegex(values, matchesRegexes);
-        break;
-      case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME:
+      }
+      case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME -> {
         List<@Regex String> doesNotMatchRegexes =
             AnnotationUtils.getElementValueArray(
                 otherAnno, atypeFactory.doesNotMatchRegexValueElement, String.class);
         // Retain the @StringVal values such that none of the regexes matches it.
         values = RegexUtil.matchesNoRegex(values, doesNotMatchRegexes);
-        break;
-      default:
+      }
+      default -> {
         return atypeFactory.BOTTOMVAL;
+      }
     }
 
     return atypeFactory.createStringAnnotation(values);
@@ -160,6 +151,33 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     }
   }
 
+  /** Possible values for the bound of a widened range. */
+  private static final TreeSet<Long> wideningValues = new TreeSet<>();
+
+  static {
+    for (long i :
+        new long[] {
+          // Wraparound for long values is deduplicated by TreeSet.
+          Long.MIN_VALUE,
+          Long.MAX_VALUE,
+          Integer.MIN_VALUE,
+          Integer.MAX_VALUE,
+          Short.MIN_VALUE,
+          Short.MAX_VALUE,
+          Character.MIN_VALUE,
+          Character.MAX_VALUE,
+          Byte.MIN_VALUE,
+          Byte.MAX_VALUE,
+          0L
+        }) {
+      wideningValues.add(i - 2);
+      wideningValues.add(i - 1);
+      wideningValues.add(i);
+      wideningValues.add(i + 1);
+      wideningValues.add(i + 2);
+    }
+  }
+
   /**
    * Determine the widened range from other ranges.
    *
@@ -172,50 +190,29 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     if (newRange == null || oldRange == null || lubRange.equals(oldRange)) {
       return lubRange;
     }
-    // If both bounds of the new range are bigger than the old range, then returned range
-    // should use the lower bound of the new range and a MAX_VALUE.
-    if ((newRange.from >= oldRange.from && newRange.to >= oldRange.to)) {
-      long max = lubRange.to;
-      if (max < Byte.MAX_VALUE) {
-        max = Byte.MAX_VALUE;
-      } else if (max < Short.MAX_VALUE) {
-        max = Short.MAX_VALUE;
-      } else if (max < Integer.MAX_VALUE) {
-        max = Integer.MAX_VALUE;
-      } else {
-        max = Long.MAX_VALUE;
-      }
-      return Range.create(newRange.from, max);
-    }
 
-    // If both bounds of the old range are bigger than the new range, then returned range
-    // should use a MIN_VALUE and the upper bound of the new range.
-    if ((newRange.from <= oldRange.from && newRange.to <= oldRange.to)) {
-      long min = lubRange.from;
-      if (min > Byte.MIN_VALUE) {
-        min = Byte.MIN_VALUE;
-      } else if (min > Short.MIN_VALUE) {
-        min = Short.MIN_VALUE;
-      } else if (min > Integer.MIN_VALUE) {
-        min = Integer.MIN_VALUE;
-      } else {
-        min = Long.MIN_VALUE;
-      }
-      return Range.create(min, newRange.to);
-    }
-
-    if (lubRange.isWithin(Byte.MIN_VALUE + 1, Byte.MAX_VALUE)
-        || lubRange.isWithin(Byte.MIN_VALUE, Byte.MAX_VALUE - 1)) {
-      return Range.BYTE_EVERYTHING;
-    } else if (lubRange.isWithin(Short.MIN_VALUE + 1, Short.MAX_VALUE)
-        || lubRange.isWithin(Short.MIN_VALUE, Short.MAX_VALUE - 1)) {
-      return Range.SHORT_EVERYTHING;
-    } else if (lubRange.isWithin(Long.MIN_VALUE + 1, Long.MAX_VALUE)
-        || lubRange.isWithin(Long.MIN_VALUE, Long.MAX_VALUE - 1)) {
-      return Range.INT_EVERYTHING;
+    long min;
+    // Is the lower bound decreasing?
+    if (newRange.from < oldRange.from) {
+      // Non-null because wideningValues contains Long.MIN_VALUE.
+      @NonNull Long floor = wideningValues.floor(newRange.from);
+      min = floor;
     } else {
-      return Range.EVERYTHING;
+      min = oldRange.from;
     }
+
+    long max;
+    // Is the upper bound increasing?
+    if (newRange.to > oldRange.to) {
+      // Non-null because wideningValues contains Long.MAX_VALUE.
+      @NonNull Long ceiling = wideningValues.ceiling(newRange.to);
+      max = ceiling;
+    } else {
+      max = oldRange.to;
+    }
+
+    Range result = Range.create(min, max);
+    return result;
   }
 
   /**
@@ -225,6 +222,12 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
    * @return the least upper bound of a1 and a2
    */
   @Override
+  @SuppressWarnings({
+    "regex:assignment", // getMatchesRegexValues/getDoesNotMatchRegexValues return valid @Regex
+    // strings
+    "regex:type.arguments.not.inferred" // AnnotationUtils.getElementValueArray contains @Regex
+    // strings
+  })
   public @Nullable AnnotationMirror leastUpperBoundQualifiers(
       AnnotationMirror a1, AnnotationMirror a2) {
     if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
@@ -240,54 +243,62 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     } else if (isSubtypeQualifiers(a2, a1)) {
       return a1;
     }
-    String qual1 = AnnotationUtils.annotationName(a1);
-    String qual2 = AnnotationUtils.annotationName(a2);
+    String qualName1 = AnnotationUtils.annotationName(a1);
+    String qualName2 = AnnotationUtils.annotationName(a2);
 
-    if (qual1.equals(qual2)) {
+    if (qualName1.equals(qualName2)) {
       // If both are the same type, determine the type and merge
-      switch (qual1) {
-        case ValueAnnotatedTypeFactory.INTRANGE_NAME:
+      switch (qualName1) {
+        case ValueAnnotatedTypeFactory.INTRANGE_NAME -> {
           // special handling for IntRange
           Range intrange1 = atypeFactory.getRange(a1);
           Range intrange2 = atypeFactory.getRange(a2);
           return atypeFactory.createIntRangeAnnotation(intrange1.union(intrange2));
-        case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
+        }
+        case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME -> {
           // special handling for ArrayLenRange
           Range range1 = atypeFactory.getRange(a1);
           Range range2 = atypeFactory.getRange(a2);
           return atypeFactory.createArrayLenRangeAnnotation(range1.union(range2));
-        case ValueAnnotatedTypeFactory.INTVAL_NAME:
+        }
+        case ValueAnnotatedTypeFactory.INTVAL_NAME -> {
           List<Long> longs = atypeFactory.getIntValues(a1);
           CollectionsPlume.adjoinAll(longs, atypeFactory.getIntValues(a2));
           return atypeFactory.createIntValAnnotation(longs);
-        case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
+        }
+        case ValueAnnotatedTypeFactory.ARRAYLEN_NAME -> {
           List<Integer> arrayLens = atypeFactory.getArrayLength(a1);
           CollectionsPlume.adjoinAll(arrayLens, atypeFactory.getArrayLength(a2));
           return atypeFactory.createArrayLenAnnotation(arrayLens);
-        case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+        }
+        case ValueAnnotatedTypeFactory.STRINGVAL_NAME -> {
           List<String> strings = atypeFactory.getStringValues(a1);
           CollectionsPlume.adjoinAll(strings, atypeFactory.getStringValues(a2));
           return atypeFactory.createStringAnnotation(strings);
-        case ValueAnnotatedTypeFactory.BOOLVAL_NAME:
+        }
+        case ValueAnnotatedTypeFactory.BOOLVAL_NAME -> {
           List<Boolean> bools = atypeFactory.getBooleanValues(a1);
           CollectionsPlume.adjoinAll(bools, atypeFactory.getBooleanValues(a2));
           return atypeFactory.createBooleanAnnotation(bools);
-        case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
+        }
+        case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME -> {
           List<Double> doubles = atypeFactory.getDoubleValues(a1);
           CollectionsPlume.adjoinAll(doubles, atypeFactory.getDoubleValues(a2));
           return atypeFactory.createDoubleAnnotation(doubles);
-        case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
+        }
+        case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME -> {
           List<@Regex String> regexes = atypeFactory.getMatchesRegexValues(a1);
           CollectionsPlume.adjoinAll(regexes, atypeFactory.getMatchesRegexValues(a2));
           return atypeFactory.createMatchesRegexAnnotation(regexes);
-        case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME:
+        }
+        case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME -> {
           // The LUB is the intersection of the sets.
           List<@Regex String> regexes1 = atypeFactory.getDoesNotMatchRegexValues(a1);
           List<@Regex String> regexes2 = atypeFactory.getDoesNotMatchRegexValues(a2);
           regexes1.retainAll(regexes2);
           return atypeFactory.createDoesNotMatchRegexAnnotation(regexes1);
-        default:
-          throw new TypeSystemError("default case: %s %s %s%n", qual1, a1, a2);
+        }
+        default -> throw new TypeSystemError("default case: %s %s %s%n", qualName1, a1, a2);
       }
     }
 
@@ -304,62 +315,28 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     AnnotationMirror intRangeAnno = null;
     AnnotationMirror doubleValAnno = null;
 
-    switch (qual1) {
-      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
-        arrayLenAnno = a1;
-        break;
-      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
-        arrayLenRangeAnno = a1;
-        break;
-      case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-        stringValAnno = a1;
-        break;
-      case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
-        matchesRegexAnno = a1;
-        break;
-      case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME:
-        doesNotMatchRegexAnno = a1;
-        break;
-      case ValueAnnotatedTypeFactory.INTVAL_NAME:
-        intValAnno = a1;
-        break;
-      case ValueAnnotatedTypeFactory.INTRANGE_NAME:
-        intRangeAnno = a1;
-        break;
-      case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
-        doubleValAnno = a1;
-        break;
-      default:
-        // Do nothing
+    switch (qualName1) {
+      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME -> arrayLenAnno = a1;
+      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME -> arrayLenRangeAnno = a1;
+      case ValueAnnotatedTypeFactory.STRINGVAL_NAME -> stringValAnno = a1;
+      case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME -> matchesRegexAnno = a1;
+      case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME -> doesNotMatchRegexAnno = a1;
+      case ValueAnnotatedTypeFactory.INTVAL_NAME -> intValAnno = a1;
+      case ValueAnnotatedTypeFactory.INTRANGE_NAME -> intRangeAnno = a1;
+      case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME -> doubleValAnno = a1;
+      default -> {} // Do nothing
     }
 
-    switch (qual2) {
-      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
-        arrayLenAnno = a2;
-        break;
-      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
-        arrayLenRangeAnno = a2;
-        break;
-      case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-        stringValAnno = a2;
-        break;
-      case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
-        matchesRegexAnno = a2;
-        break;
-      case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME:
-        doesNotMatchRegexAnno = a2;
-        break;
-      case ValueAnnotatedTypeFactory.INTVAL_NAME:
-        intValAnno = a2;
-        break;
-      case ValueAnnotatedTypeFactory.INTRANGE_NAME:
-        intRangeAnno = a2;
-        break;
-      case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
-        doubleValAnno = a2;
-        break;
-      default:
-        // Do nothing
+    switch (qualName2) {
+      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME -> arrayLenAnno = a2;
+      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME -> arrayLenRangeAnno = a2;
+      case ValueAnnotatedTypeFactory.STRINGVAL_NAME -> stringValAnno = a2;
+      case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME -> matchesRegexAnno = a2;
+      case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME -> doesNotMatchRegexAnno = a2;
+      case ValueAnnotatedTypeFactory.INTVAL_NAME -> intValAnno = a2;
+      case ValueAnnotatedTypeFactory.INTRANGE_NAME -> intRangeAnno = a2;
+      case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME -> doubleValAnno = a2;
+      default -> {} // Do nothing
     }
 
     // Special handling for dealing with the lub of an ArrayLenRange and an ArrayLen,
@@ -449,6 +426,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
    * @return true if subAnno is a subtype of superAnno, false otherwise
    */
   @Override
+  @SuppressWarnings(
+      "regex:argument") // AnnotationUtils.getElementValueArray returns @Regex strings from regex
+  // annotations
   public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
     subAnno = atypeFactory.convertSpecialIntRangeToStandardIntRange(subAnno);
     superAnno = atypeFactory.convertSpecialIntRangeToStandardIntRange(superAnno);
@@ -496,18 +476,21 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
       }
     }
     switch (subQualName + superQualName) {
-      case ValueAnnotatedTypeFactory.INTVAL_NAME + ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
+      case ValueAnnotatedTypeFactory.INTVAL_NAME + ValueAnnotatedTypeFactory.DOUBLEVAL_NAME -> {
         List<Double> superValues = atypeFactory.getDoubleValues(superAnno);
         List<Double> subValues =
             atypeFactory.convertLongListToDoubleList(atypeFactory.getIntValues(subAnno));
         return superValues.containsAll(subValues);
-      case ValueAnnotatedTypeFactory.INTVAL_NAME + ValueAnnotatedTypeFactory.INTRANGE_NAME:
-      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME + ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
+      }
+      case ValueAnnotatedTypeFactory.INTVAL_NAME + ValueAnnotatedTypeFactory.INTRANGE_NAME,
+          ValueAnnotatedTypeFactory.ARRAYLEN_NAME
+              + ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME -> {
         Range superRange = atypeFactory.getRange(superAnno);
         List<Long> subLongValues = atypeFactory.getArrayLenOrIntValue(subAnno);
         Range subLongRange = Range.create(subLongValues);
         return superRange.contains(subLongRange);
-      case ValueAnnotatedTypeFactory.INTRANGE_NAME + ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
+      }
+      case ValueAnnotatedTypeFactory.INTRANGE_NAME + ValueAnnotatedTypeFactory.DOUBLEVAL_NAME -> {
         Range subRange = atypeFactory.getRange(subAnno);
         if (subRange.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
           return false;
@@ -515,8 +498,10 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         List<Double> superDoubleValues = atypeFactory.getDoubleValues(superAnno);
         List<Double> subDoubleValues = ValueCheckerUtils.getValuesFromRange(subRange, Double.class);
         return superDoubleValues.containsAll(subDoubleValues);
-      case ValueAnnotatedTypeFactory.INTRANGE_NAME + ValueAnnotatedTypeFactory.INTVAL_NAME:
-      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME + ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
+      }
+      case ValueAnnotatedTypeFactory.INTRANGE_NAME + ValueAnnotatedTypeFactory.INTVAL_NAME,
+          ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME
+              + ValueAnnotatedTypeFactory.ARRAYLEN_NAME -> {
         Range subRange2 = atypeFactory.getRange(subAnno);
         if (subRange2.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
           return false;
@@ -524,30 +509,30 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         List<Long> superValues2 = atypeFactory.getArrayLenOrIntValue(superAnno);
         List<Long> subValues2 = ValueCheckerUtils.getValuesFromRange(subRange2, Long.class);
         return superValues2.containsAll(subValues2);
-      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-
+      }
+      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME,
+          ValueAnnotatedTypeFactory.ARRAYLEN_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME -> {
         // Allow @ArrayLen(0) to be converted to @StringVal("")
         List<String> superStringValues = atypeFactory.getStringValues(superAnno);
         return superStringValues.contains("") && atypeFactory.getMaxLenValue(subAnno) == 0;
-      case ValueAnnotatedTypeFactory.STRINGVAL_NAME + ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
-        {
-          List<String> strings = atypeFactory.getStringValues(subAnno);
-          List<String> regexes =
-              AnnotationUtils.getElementValueArray(
-                  superAnno, atypeFactory.matchesRegexValueElement, String.class);
-          return RegexUtil.everyStringMatchesSomeRegex(strings, regexes);
-        }
+      }
       case ValueAnnotatedTypeFactory.STRINGVAL_NAME
-          + ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME:
-        {
-          List<String> strings = atypeFactory.getStringValues(subAnno);
-          List<String> regexes =
-              AnnotationUtils.getElementValueArray(
-                  superAnno, atypeFactory.doesNotMatchRegexValueElement, String.class);
-          return RegexUtil.noStringMatchesAnyRegex(strings, regexes);
-        }
-      case ValueAnnotatedTypeFactory.STRINGVAL_NAME + ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
+              + ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME -> {
+        List<String> strings = atypeFactory.getStringValues(subAnno);
+        List<String> regexes =
+            AnnotationUtils.getElementValueArray(
+                superAnno, atypeFactory.matchesRegexValueElement, String.class);
+        return RegexUtil.everyStringMatchesSomeRegex(strings, regexes);
+      }
+      case ValueAnnotatedTypeFactory.STRINGVAL_NAME
+              + ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME -> {
+        List<String> strings = atypeFactory.getStringValues(subAnno);
+        List<String> regexes =
+            AnnotationUtils.getElementValueArray(
+                superAnno, atypeFactory.doesNotMatchRegexValueElement, String.class);
+        return RegexUtil.noStringMatchesAnyRegex(strings, regexes);
+      }
+      case ValueAnnotatedTypeFactory.STRINGVAL_NAME + ValueAnnotatedTypeFactory.ARRAYLEN_NAME -> {
         // StringVal is a subtype of ArrayLen, if all the strings have one of the correct
         // lengths.
         List<Integer> superIntValues = atypeFactory.getArrayLength(superAnno);
@@ -558,7 +543,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
           }
         }
         return true;
-      case ValueAnnotatedTypeFactory.STRINGVAL_NAME + ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
+      }
+      case ValueAnnotatedTypeFactory.STRINGVAL_NAME
+              + ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME -> {
         // StringVal is a subtype of ArrayLenRange, if all the strings have a length in the
         // range.
         Range superRange2 = atypeFactory.getRange(superAnno);
@@ -569,8 +556,10 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
           }
         }
         return true;
-      default:
+      }
+      default -> {
         return false;
+      }
     }
   }
 }

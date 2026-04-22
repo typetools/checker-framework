@@ -31,7 +31,6 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -79,7 +78,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
   protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
-      Tree valueTree,
+      Tree errorLocation,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
 
@@ -90,7 +89,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
       valueType.addAnnotation(getTypeFactory().createIntRangeAnnotation(Range.CHAR_EVERYTHING));
     }
 
-    return super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    return super.commonAssignmentCheck(varType, valueType, errorLocation, errorKey, extraArgs);
   }
 
   /**
@@ -119,7 +118,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
   /**
    * Replaces any {@code IntRangeFromX} annotations with {@code @UnknownVal}. This is used to
-   * prevent these annotations from being required on the left hand side of assignments.
+   * prevent these annotations from being required on the left-hand side of assignments.
    *
    * @param varType an annotated type mirror that may contain IntRangeFromX annotations, which will
    *     be used on the lhs of an assignment or pseudo-assignment
@@ -179,6 +178,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
    * Therefore, some validation is still done in #validateType below.
    */
   @Override
+  @SuppressWarnings(
+      "regex:argument") // strings from annotations are checked by PatternSyntaxException catch
   public Void visitAnnotation(AnnotationTree tree, Void p) {
     List<? extends ExpressionTree> args = tree.getArguments();
 
@@ -189,7 +190,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
     AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(tree);
     switch (AnnotationUtils.annotationName(anno)) {
-      case ValueAnnotatedTypeFactory.INTRANGE_NAME:
+      case ValueAnnotatedTypeFactory.INTRANGE_NAME -> {
         // If there are 2 arguments, issue an error if from.greater.than.to.
         // If there are fewer than 2 arguments, we needn't worry about this problem because
         // the other argument will be defaulted to Long.MIN_VALUE or Long.MAX_VALUE
@@ -202,12 +203,12 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             return null;
           }
         }
-        break;
-      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
-      case ValueAnnotatedTypeFactory.BOOLVAL_NAME:
-      case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
-      case ValueAnnotatedTypeFactory.INTVAL_NAME:
-      case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+      }
+      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME,
+          ValueAnnotatedTypeFactory.BOOLVAL_NAME,
+          ValueAnnotatedTypeFactory.DOUBLEVAL_NAME,
+          ValueAnnotatedTypeFactory.INTVAL_NAME,
+          ValueAnnotatedTypeFactory.STRINGVAL_NAME -> {
         @SuppressWarnings("deprecation") // concrete annotation class is not known
         List<Object> values =
             AnnotationUtils.getElementValueArray(anno, "value", Object.class, false);
@@ -230,8 +231,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             return null;
           }
         }
-        break;
-      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
+      }
+      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME -> {
         long from = getTypeFactory().getArrayLenRangeFromValue(anno);
         long to = getTypeFactory().getArrayLenRangeToValue(anno);
         if (from > to) {
@@ -241,8 +242,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
           checker.reportWarning(tree, "negative.arraylen", from);
           return null;
         }
-        break;
-      case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
+      }
+      case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME -> {
         List<String> matchesRegexes =
             AnnotationUtils.getElementValueArray(
                 anno, atypeFactory.matchesRegexValueElement, String.class);
@@ -253,8 +254,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             checker.reportWarning(tree, "invalid.matches.regex", pse.getMessage());
           }
         }
-        break;
-      case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME:
+      }
+      case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME -> {
         List<String> doesNotMatchRegexes =
             AnnotationUtils.getElementValueArray(
                 anno, atypeFactory.doesNotMatchRegexValueElement, String.class);
@@ -265,9 +266,10 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             checker.reportWarning(tree, "invalid.doesnotmatch.regex", pse.getMessage());
           }
         }
-        break;
-      default:
+      }
+      default -> {
         // Do nothing.
+      }
     }
 
     return super.visitAnnotation(tree, p);
@@ -338,68 +340,99 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
   protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
     TypeKind castTypeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(castType.getUnderlyingType());
     TypeKind exprTypeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(exprType.getUnderlyingType());
-    if (castTypeKind != null
-        && exprTypeKind != null
-        && TypeKindUtils.isIntegral(castTypeKind)
-        && TypeKindUtils.isIntegral(exprTypeKind)) {
-      AnnotationMirrorSet castAnnos = castType.getPrimaryAnnotations();
-      AnnotationMirrorSet exprAnnos = exprType.getPrimaryAnnotations();
-      if (castAnnos.equals(exprAnnos)) {
-        return true;
-      }
-      assert castAnnos.size() == 1;
-      assert exprAnnos.size() == 1;
-      AnnotationMirror castAnno = castAnnos.first();
-      AnnotationMirror exprAnno = exprAnnos.first();
-      boolean castAnnoIsIntVal = atypeFactory.areSameByClass(castAnno, IntVal.class);
-      boolean exprAnnoIsIntVal = atypeFactory.areSameByClass(exprAnno, IntVal.class);
-      if (castAnnoIsIntVal && exprAnnoIsIntVal) {
+
+    if (castTypeKind == null || exprTypeKind == null) {
+      return super.isTypeCastSafe(castType, exprType);
+    }
+
+    // The cast is from a numeric type and is to a numeric type.
+
+    AnnotationMirror castAnno = castType.getPrimaryAnnotation();
+    AnnotationMirror exprAnno = exprType.getPrimaryAnnotation();
+    if (castAnno.equals(exprAnno)) {
+      return true;
+    }
+
+    if (TypeKindUtils.isIntegral(castTypeKind) && TypeKindUtils.isIntegral(exprTypeKind)) {
+      if (atypeFactory.areSameByClass(castAnno, IntVal.class)
+          && atypeFactory.areSameByClass(exprAnno, IntVal.class)) {
         List<Long> castValues = atypeFactory.getIntValues(castAnno);
         List<Long> exprValues = atypeFactory.getIntValues(exprAnno);
         if (castValues.size() == 1 && exprValues.size() == 1) {
           // Special-case singleton sets for speed.
-          switch (castTypeKind) {
-            case BYTE:
-              return castValues.get(0).byteValue() == exprValues.get(0).byteValue();
-            case INT:
-              return castValues.get(0).intValue() == exprValues.get(0).intValue();
-            case SHORT:
-              return castValues.get(0).shortValue() == exprValues.get(0).shortValue();
-            default:
-              return castValues.get(0).longValue() == exprValues.get(0).longValue();
-          }
+          return switch (castTypeKind) {
+            case BYTE -> castValues.get(0).byteValue() == exprValues.get(0).byteValue();
+            case INT -> castValues.get(0).intValue() == exprValues.get(0).intValue();
+            case SHORT -> castValues.get(0).shortValue() == exprValues.get(0).shortValue();
+            default -> castValues.get(0).longValue() == exprValues.get(0).longValue();
+          };
         } else {
           switch (castTypeKind) {
-            case BYTE:
-              {
-                TreeSet<Byte> castValuesTree =
-                    new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, castValues));
-                TreeSet<Byte> exprValuesTree =
-                    new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, exprValues));
-                return CollectionsPlume.sortedSetContainsAll(castValuesTree, exprValuesTree);
-              }
-            case INT:
-              {
-                TreeSet<Integer> castValuesTree =
-                    new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, castValues));
-                TreeSet<Integer> exprValuesTree =
-                    new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, exprValues));
-                return CollectionsPlume.sortedSetContainsAll(castValuesTree, exprValuesTree);
-              }
-            case SHORT:
-              {
-                TreeSet<Short> castValuesTree =
-                    new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, castValues));
-                TreeSet<Short> exprValuesTree =
-                    new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, exprValues));
-                return CollectionsPlume.sortedSetContainsAll(castValuesTree, exprValuesTree);
-              }
-            default:
-              {
-                TreeSet<Long> castValuesTree = new TreeSet<>(castValues);
-                TreeSet<Long> exprValuesTree = new TreeSet<>(exprValues);
-                return CollectionsPlume.sortedSetContainsAll(castValuesTree, exprValuesTree);
-              }
+            case BYTE -> {
+              TreeSet<Byte> castValuesSet =
+                  new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, castValues));
+              TreeSet<Byte> exprValuesSet =
+                  new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, exprValues));
+              return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+            }
+            case INT -> {
+              TreeSet<Integer> castValuesSet =
+                  new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, castValues));
+              TreeSet<Integer> exprValuesSet =
+                  new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, exprValues));
+              return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+            }
+            case SHORT -> {
+              TreeSet<Short> castValuesSet =
+                  new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, castValues));
+              TreeSet<Short> exprValuesSet =
+                  new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, exprValues));
+              return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+            }
+            default -> {
+              TreeSet<Long> castValuesSet = new TreeSet<>(castValues);
+              TreeSet<Long> exprValuesSet = new TreeSet<>(exprValues);
+              return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+            }
+          }
+        }
+      }
+    }
+
+    // Handle floating-point type casts (double <-> float).
+    // When a double is cast to float, precision loss may occur, but this is expected
+    // IEEE 754 behavior and should not be flagged as an unsafe cast if the result
+    // is the correctly-rounded representation.
+    // When a float is cast to double, no precision is lost, so it is always safe.
+    if (TypeKindUtils.isFloatingPoint(castTypeKind)
+        && TypeKindUtils.isFloatingPoint(exprTypeKind)) {
+      if (AnnotationUtils.areSameByName(castAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)
+          && AnnotationUtils.areSameByName(exprAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)) {
+
+        if (castTypeKind == TypeKind.FLOAT && exprTypeKind == TypeKind.DOUBLE) {
+          List<Double> castValues = atypeFactory.getDoubleValues(castAnno);
+          List<Double> exprValues = atypeFactory.getDoubleValues(exprAnno);
+          if (castValues != null && exprValues != null) {
+            // The cast type must contain all the values of the expression type (after rounding).
+            // Convert expression values to what they would be after float cast, then check
+            // containment.
+            TreeSet<Float> castValuesSet =
+                new TreeSet<Float>(CollectionsPlume.mapList(Number::floatValue, castValues));
+            TreeSet<Float> exprValuesSet =
+                new TreeSet<Float>(CollectionsPlume.mapList(Number::floatValue, exprValues));
+            return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+          }
+        }
+
+        if (castTypeKind == TypeKind.DOUBLE && exprTypeKind == TypeKind.FLOAT) {
+          List<Double> castValues = atypeFactory.getDoubleValues(castAnno);
+          List<Double> exprValues = atypeFactory.getDoubleValues(exprAnno);
+          if (castValues != null && exprValues != null) {
+            // The cast type must contain all the values of the expression type.
+            // Float-to-double is lossless, so just check containment directly.
+            TreeSet<Double> castValuesSet = new TreeSet<>(castValues);
+            TreeSet<Double> exprValuesSet = new TreeSet<>(exprValues);
+            return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
           }
         }
       }
@@ -409,13 +442,10 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
   }
 
   /**
-   * Overridden to issue errors at the appropriate place if an {@code IntRange} or {@code
-   * ArrayLenRange} annotation has {@code from > to}. {@code from > to} either indicates a user
-   * error when writing an annotation or an error in the checker's implementation, as {@code from}
-   * should always be {@code <= to}. Note that additional checks are performed in {@link
-   * #visitAnnotation(AnnotationTree, Void)}.
+   * Issue an error if {@code IntRange(from=x, to=y)} has {@code x>y}. Note that additional checks
+   * are performed in {@link #visitAnnotation(AnnotationTree, Void)}.
    *
-   * @see #visitAnnotation(AnnotationTree, Void)
+   * <p>{@inheritDoc}
    */
   @Override
   public boolean validateType(Tree tree, AnnotatedTypeMirror type) {

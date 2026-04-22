@@ -103,7 +103,7 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
     return null;
   }
 
-  /** Transfers annotations to type if the left hand side is a variable declaration. */
+  /** Transfers annotations to type if the left-hand side is a variable declaration. */
   @Override
   public Void visitNewClass(NewClassTree tree, AnnotatedTypeMirror type) {
     keyForPropagator.propagateNewClassTree(tree, type, (KeyForAnnotatedTypeFactory) atypeFactory);
@@ -158,7 +158,7 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
     AnnotatedTypeMirror setElementType = setTypeArgs.get(0);
 
     // Extract KeyFor annotation from the Map's key type.
-    AnnotationMirror mapKeyKeyFor = mapKeyType.getEffectiveAnnotation(KeyFor.class);
+    AnnotationMirror mapKeyKeyFor = mapKeyType.getAnnotation(KeyFor.class);
     if (mapKeyKeyFor == null) {
       return;
     }
@@ -169,7 +169,7 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
             mapKeyKeyFor, factory.keyForValueElement, String.class);
 
     // Extract KeyFor annotation from the Set's element type.
-    AnnotationMirror setElementKeyFor = setElementType.getEffectiveAnnotation(KeyFor.class);
+    AnnotationMirror setElementKeyFor = setElementType.getAnnotation(KeyFor.class);
 
     // Collect all KeyFor values.
     Set<String> mergedKeyForValues = new LinkedHashSet<>(mapKeyForValues);

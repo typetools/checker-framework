@@ -1,11 +1,13 @@
 package org.checkerframework.checker.index.upperbound;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
@@ -46,6 +48,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Contains the transfer functions for the upper bound type system, a part of the Index Checker.
@@ -113,6 +116,15 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   /** The int TypeMirror. */
   private final TypeMirror intTM;
 
+  /** String.startsWith(String) method. */
+  private final ExecutableElement startsWithMethod;
+
+  /** String.endsWith(String) method. */
+  private final ExecutableElement endsWithMethod;
+
+  /** String.length() method. */
+  private final ExecutableElement stringLengthMethod;
+
   /**
    * Creates a new UpperBoundTransfer.
    *
@@ -122,6 +134,13 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     super(analysis);
     atypeFactory = (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
     intTM = atypeFactory.types.getPrimitiveType(TypeKind.INT);
+
+    startsWithMethod =
+        TreeUtils.getMethod("java.lang.String", "startsWith", 1, atypeFactory.getProcessingEnv());
+    endsWithMethod =
+        TreeUtils.getMethod("java.lang.String", "endsWith", 1, atypeFactory.getProcessingEnv());
+    stringLengthMethod =
+        TreeUtils.getMethod("java.lang.String", "length", 0, atypeFactory.getProcessingEnv());
   }
 
   /**
@@ -137,11 +156,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     Node expNode = node.getExpression();
 
     // strip off typecast if any
-    Node expNodeSansCast =
-        (expNode instanceof TypeCastNode) ? ((TypeCastNode) expNode).getOperand() : expNode;
+    Node expNodeSansCast = (expNode instanceof TypeCastNode tcn) ? tcn.getOperand() : expNode;
     // null if right-hand-side is not an array creation expression
-    ArrayCreationNode acNode =
-        (expNodeSansCast instanceof ArrayCreationNode) ? (ArrayCreationNode) expNodeSansCast : null;
+    ArrayCreationNode acNode = (expNodeSansCast instanceof ArrayCreationNode acn2) ? acn2 : null;
 
     if (acNode != null) {
       // Right-hand side of assignment is an array creation expression
@@ -177,17 +194,17 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    */
   private void propagateToOperands(
       LessThanLengthOf typeOfNode, Node node, TransferInput<CFValue, CFStore> in, CFStore store) {
-    if (node instanceof NumericalAdditionNode) {
-      Node right = ((NumericalAdditionNode) node).getRightOperand();
-      Node left = ((NumericalAdditionNode) node).getLeftOperand();
+    if (node instanceof NumericalAdditionNode nan) {
+      Node right = nan.getRightOperand();
+      Node left = nan.getLeftOperand();
       propagateToAdditionOperand(typeOfNode, left, right, in, store);
       propagateToAdditionOperand(typeOfNode, right, left, in, store);
-    } else if (node instanceof NumericalSubtractionNode) {
-      propagateToSubtractionOperands(typeOfNode, (NumericalSubtractionNode) node, in, store);
-    } else if (node instanceof NumericalMultiplicationNode) {
+    } else if (node instanceof NumericalSubtractionNode nsn) {
+      propagateToSubtractionOperands(typeOfNode, nsn, in, store);
+    } else if (node instanceof NumericalMultiplicationNode nmn) {
       if (atypeFactory.hasLowerBoundTypeByClass(node, Positive.class)) {
-        Node right = ((NumericalMultiplicationNode) node).getRightOperand();
-        Node left = ((NumericalMultiplicationNode) node).getLeftOperand();
+        Node right = nmn.getRightOperand();
+        Node left = nmn.getLeftOperand();
         propagateToMultiplicationOperand(typeOfNode, left, right, in, store);
         propagateToMultiplicationOperand(typeOfNode, right, left, in, store);
       }
@@ -361,8 +378,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       boolean offsetAddOne,
       TransferInput<CFValue, CFStore> in,
       CFStore store) {
-    if (gtNode instanceof NumericalSubtractionNode) {
-      NumericalSubtractionNode subtractionNode = (NumericalSubtractionNode) gtNode;
+    if (gtNode instanceof NumericalSubtractionNode subtractionNode) {
 
       Node minuend = subtractionNode.getLeftOperand();
       UBQualifier minuendQual = getUBQualifier(minuend, in);
@@ -439,8 +455,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     // If lengthAccess is "receiver.length - c" where c is an integer constant,
     // then lengthOffset is "c".
     int lengthOffset = 0;
-    if (lengthAccess instanceof NumericalSubtractionNode) {
-      NumericalSubtractionNode subtraction = (NumericalSubtractionNode) lengthAccess;
+    if (lengthAccess instanceof NumericalSubtractionNode subtraction) {
       Node offsetNode = subtraction.getRightOperand();
       Long offsetValue =
           ValueCheckerUtils.getExactValue(
@@ -464,8 +479,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     } else if (atypeFactory.getMethodIdentifier().isLengthOfMethodInvocation(lengthAccess)) {
       JavaExpression ma = JavaExpression.fromNode(lengthAccess);
-      if (ma instanceof MethodCall) {
-        receiver = ((MethodCall) ma).getReceiver();
+      if (ma instanceof MethodCall mc) {
+        receiver = mc.getReceiver();
       }
     }
 
@@ -715,8 +730,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     if (atypeFactory.getMethodIdentifier().isLengthOfMethodInvocation(n)) {
       JavaExpression stringLength = JavaExpression.fromNode(n);
-      if (stringLength instanceof MethodCall) {
-        JavaExpression receiverJe = ((MethodCall) stringLength).getReceiver();
+      if (stringLength instanceof MethodCall mc2) {
+        JavaExpression receiverJe = mc2.getReceiver();
         Tree receiverTree = n.getTarget().getReceiver().getTree();
         // receiverTree is null when the receiver is implicit "this".
         if (receiverTree != null) {
@@ -729,6 +744,56 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       }
     }
     return super.visitMethodInvocation(n, in);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>For {@code String.startsWith(String)} and {@code String.endsWith(String)}, refine the type
+   * of argument.length() to be {@code @LTEqLengthOf(receiver)} in the then-branch.
+   *
+   * <p>When {@code receiver.startsWith(argument)} evaluates to true, we know that {@code
+   * receiver.length() >= argument.length()}. This means {@code argument.length()} is a valid index
+   * for {@code receiver.substring()}.
+   */
+  @Override
+  protected void processConditionalPostconditions(
+      MethodInvocationNode n,
+      ExecutableElement methodElement,
+      ExpressionTree tree,
+      CFStore thenStore,
+      CFStore elseStore) {
+
+    super.processConditionalPostconditions(n, methodElement, tree, thenStore, elseStore);
+
+    // For String.startsWith(String) and String.endsWith(String), refine the type of
+    // argument.length() to be @LTEqLengthOf(receiver) in the then-branch.
+    if (methodElement.equals(startsWithMethod) || methodElement.equals(endsWithMethod)) {
+
+      Node receiverNode = n.getTarget().getReceiver();
+      Node argumentNode = n.getArgument(0);
+
+      JavaExpression receiverExpr = JavaExpression.fromNode(receiverNode);
+      JavaExpression argumentExpr = JavaExpression.fromNode(argumentNode);
+
+      if (!receiverExpr.containsUnknown() && !argumentExpr.containsUnknown()) {
+        // Create @LTEqLengthOf(receiver).
+        // LTLengthOf with offset=0 means "< length", so offset=-1 means "<= length".
+        String receiverString = receiverExpr.toString();
+        LessThanLengthOf lteqReceiver =
+            (LessThanLengthOf) UBQualifier.createUBQualifier(receiverString, "-1");
+
+        // Create a MethodCall expression for argument.length().
+        MethodCall argLengthExpr =
+            new MethodCall(intTM, stringLengthMethod, argumentExpr, Collections.emptyList());
+
+        // Insert the refined type into thenStore when the expression is insertable.
+        if (CFAbstractStore.canInsertJavaExpression(argLengthExpr)) {
+          AnnotationMirror anno = atypeFactory.convertUBQualifierToAnnotation(lteqReceiver);
+          thenStore.insertValue(argLengthExpr, anno);
+        }
+      }
+    }
   }
 
   /**
@@ -842,14 +907,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     int intValue = n.getValue();
     AnnotationMirror newAnno;
     switch (intValue) {
-      case 0:
-        newAnno = atypeFactory.ZERO;
-        break;
-      case -1:
-        newAnno = atypeFactory.NEGATIVEONE;
-        break;
-      default:
+      case 0 -> newAnno = atypeFactory.ZERO;
+      case -1 -> newAnno = atypeFactory.NEGATIVEONE;
+      default -> {
         return result;
+      }
     }
     CFValue c = new CFValue(analysis, AnnotationMirrorSet.singleton(newAnno), intTM);
     return new RegularTransferResult<>(c, result.getRegularStore());

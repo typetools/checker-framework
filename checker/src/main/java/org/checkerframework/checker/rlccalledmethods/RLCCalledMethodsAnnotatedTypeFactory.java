@@ -134,6 +134,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   @Override
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
     return getBundledTypeQualifiers(
+        // These annotations are in the Called Methods Checker, not the Resource Leak Checker.
         CalledMethods.class, CalledMethodsBottom.class, CalledMethodsPredicate.class);
   }
 
@@ -217,10 +218,10 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
         getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType;
-    if (obj instanceof Element) {
-      mustCallAnnotatedType = mustCallAnnotatedTypeFactory.getAnnotatedType((Element) obj);
-    } else if (obj instanceof Tree) {
-      mustCallAnnotatedType = mustCallAnnotatedTypeFactory.getAnnotatedType((Tree) obj);
+    if (obj instanceof Element elem) {
+      mustCallAnnotatedType = mustCallAnnotatedTypeFactory.getAnnotatedType(elem);
+    } else if (obj instanceof Tree tree) {
+      mustCallAnnotatedType = mustCallAnnotatedTypeFactory.getAnnotatedType(tree);
     } else {
       throw new IllegalArgumentException("Unsupported type: " + obj.getClass().getName());
     }

@@ -11,7 +11,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from release_utils import (  # ty: ignore # TODO: limitation in ty
+from release_utils import (
     check_repo,
     check_tools,
     clone_from_scratch_or_update,
@@ -21,7 +21,7 @@ from release_utils import (  # ty: ignore # TODO: limitation in ty
     current_distribution_by_website,
     delete_directory_if_exists,
     delete_if_exists,
-    ensure_group_access,
+    ensure_writeable,
     has_command_line_option,
     increment_version,
     print_step,
@@ -30,7 +30,7 @@ from release_utils import (  # ty: ignore # TODO: limitation in ty
     prompt_yes_no,
     set_umask,
 )
-from release_vars import (  # ty: ignore # TODO: limitation in ty
+from release_vars import (
     CF_VERSION,
     CHECKER_FRAMEWORK,
     CHECKLINK,
@@ -187,7 +187,7 @@ def build_checker_framework_release(
     # Check that updating versions didn't overlook anything.
     print("Here are occurrences of the old version number, " + old_cf_version + ":")
     grep_cmd = f"grep -n -r --exclude-dir=build --exclude-dir=.git -F {old_cf_version}"
-    #
+
     execute_status(grep_cmd, CHECKER_FRAMEWORK)
     continue_or_exit(
         "If any occurrence is not acceptable, then stop the release, update target"
@@ -215,8 +215,29 @@ def build_checker_framework_release(
     build_and_locally_deploy_maven()
 
     dev_website_relative_dir = Path(DEV_SITE_DIR) / "releases" / version
+
+    # The user might not have the permissions to copy over existing files, so
+    # delete them first.
+    # Do not delete DEV_SITE_DIR because it contains dev_website_relative_dir within it (!).
+    print(f"Deleting target files in {DEV_SITE_DIR}")
+    for source in dev_website_relative_dir.iterdir():
+        target = Path(DEV_SITE_DIR) / source.name
+        try:
+            if not target.exists() and not target.is_symlink():
+                continue
+            if target.is_symlink() or target.is_file():
+                target.unlink()
+            else:
+                shutil.rmtree(target)
+        except OSError as e:
+            print(f"Error deleting {target} : {e.strerror}")
+
     print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
-    shutil.copytree(str(dev_website_relative_dir), str(DEV_SITE_DIR))
+    cmd = (
+        "rsync --no-p --no-group --omit-dir-times --recursive --links --quiet"
+        f" {dev_website_relative_dir}/ {DEV_SITE_DIR}"
+    )
+    execute(cmd)
 
 
 def commit_to_interm_projects(cf_version: str) -> None:
@@ -335,12 +356,12 @@ def main(argv: list[str]) -> None:
     # permissions in order for them to be served.
 
     print_step("\n\nBuild Step 8: Add group permissions to repos.")
-    ensure_group_access(CHECKER_FRAMEWORK)
-    ensure_group_access(INTERM_CHECKER_REPO)
+    ensure_writeable(CHECKER_FRAMEWORK)
+    ensure_writeable(INTERM_CHECKER_REPO)
 
     print_step("\n\nBuild Step 9: Add group permissions to websites.")  # AUTO
     ## TODO: This is returning a status of 1, but it runs fine from the command line.
-    # ensure_group_access(DEV_SITE_DIR)
+    # ensure_writeable(DEV_SITE_DIR)
 
     create_empty_file(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 

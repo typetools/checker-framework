@@ -131,10 +131,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
       return;
     }
     Element element = null;
-    if (je instanceof LocalVariable) {
-      element = ((LocalVariable) je).getElement();
-    } else if (je instanceof FieldAccess) {
-      element = ((FieldAccess) je).getField();
+    if (je instanceof LocalVariable lv) {
+      element = lv.getElement();
+    } else if (je instanceof FieldAccess fa) {
+      element = fa.getField();
     } else if (je instanceof ThisReference || je instanceof ValueLiteral) {
       return;
     }
@@ -308,8 +308,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
    * @return true if the assignment is legal based on special Upper Bound rules
    */
   private boolean relaxedCommonAssignment(AnnotatedTypeMirror varType, ExpressionTree valueExp) {
-    if (valueExp instanceof NewArrayTree && varType.getKind() == TypeKind.ARRAY) {
-      List<? extends ExpressionTree> expressions = ((NewArrayTree) valueExp).getInitializers();
+    if (valueExp instanceof NewArrayTree nat && varType.getKind() == TypeKind.ARRAY) {
+      List<? extends ExpressionTree> expressions = nat.getInitializers();
       if (expressions == null || expressions.isEmpty()) {
         return false;
       }
@@ -461,7 +461,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     return true;
   }
 
-  /* Returns the new value of the left hand side after processing the arrays named in the lhs.
+  /* Returns the new value of the left-hand side after processing the arrays named in the lhs.
    * Iff varLtlQual includes LTL(lhsSeq),
    * lhsSeq has HSS, and expQual includes LTL(a, -from), then the LTL(lhsSeq) will be removed from varLtlQual
    */

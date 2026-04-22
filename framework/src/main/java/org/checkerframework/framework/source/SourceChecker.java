@@ -133,7 +133,6 @@ import org.plumelib.util.UtilPlume;
   "onlyDefs",
   "skipFiles",
   "onlyFiles",
-  "skipDirs", // Obsolete as of 2024-03-15, replaced by "skipFiles".
 
   // Unsoundly assume all methods have no side effects, are deterministic, or both.
   "assumeSideEffectFree",
@@ -217,12 +216,18 @@ import org.plumelib.util.UtilPlume;
   "resolveReflection",
 
   // Whether to use whole-program inference. Takes an argument to specify the output format:
-  // "-Ainfer=stubs" or "-Ainfer=jaifs".
+  // "-Ainfer=ajava" or "-Ainfer=stubs" or "-Ainfer=jaifs".
   "infer",
+
+  // The directory into which to write whole-program inference results.
+  "inferOutputDirectory",
 
   // Whether to output a copy of each file for which annotations were inferred, formatted
   // as an ajava file. Can only be used with -Ainfer=ajava
   "inferOutputOriginal",
+
+  // Whether to show diagnostics about failed inference steps during whole-program inference.
+  "showWpiFailedInferences",
 
   // With each warning, in addition to the concrete error key,
   // output the SuppressWarnings strings that can be used to
@@ -321,9 +326,13 @@ import org.plumelib.util.UtilPlume;
   // constraints.
   "noWarnMemoryConstraints",
 
-  // Only output error code, useful for testing framework
+  // Only output the error message key, useful for testing the framework.
   // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
   "nomsgtext",
+
+  // Convert newlines to " / ", so error messages fit on one line.
+  // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
+  "onelinemsg",
 
   // Controls the line separator output in Checker Framework exceptions.
   // org.checkerframework.framework.source.SourceChecker.logBug
@@ -683,8 +692,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         throw new UserError("Must supply an argument to -AwarnUnneededSuppressionsExceptions");
       }
       try {
-        warnUnneededSuppressionsExceptions =
+        @SuppressWarnings(
+            "regex:argument") // user-provided string; validity checked by PatternSyntaxException
+        // catch
+        Pattern warnUnneededSuppressionsExceptionsPattern =
             Pattern.compile(warnUnneededSuppressionsExceptionsString);
+        warnUnneededSuppressionsExceptions = warnUnneededSuppressionsExceptionsPattern;
       } catch (PatternSyntaxException e) {
         throw new UserError(
             "Argument to -AwarnUnneededSuppressionsExceptions is not a regular expression: "
@@ -926,6 +939,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return getPattern(patternName, options, ".");
   }
 
+  /**
+   * Returns a pattern from user-supplied options.
+   *
+   * @param patternName the name of the pattern to look up in the options
+   * @param options the options supplied by the user
+   * @param defaultPattern the pattern to return if the user didn't supply a value
+   * @return the user-supplied pattern for {@code patternName}
+   */
+  @SuppressWarnings(
+      "regex:argument") // pattern string comes from user options; validated by try-catch
   private Pattern getPattern(
       String patternName, Map<String, String> options, String defaultPattern) {
     String pattern;
@@ -1219,7 +1242,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
       immediateSubcheckers = instantiateSubcheckers(checkerMap);
 
-      subcheckers = Collections.unmodifiableList(new ArrayList<>(checkerMap.values()));
+      subcheckers = List.copyOf(checkerMap.values());
     }
 
     return subcheckers;
@@ -1442,7 +1465,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return;
     }
 
-    String defaultFormat = "(" + messageKey + ")";
+    String defaultFormat = "[" + messageKey + "]";
     String prefix;
     String fmtString;
     if (this.processingEnv.getOptions() != null /*nnbug*/
@@ -1464,17 +1487,26 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       messageText = prefix + (fmtString == null ? "" : String.format(fmtString, args));
     } catch (Exception e) {
       throw new BugInCF(
-          "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args), e);
+          String.format(
+              "Invalid format string or number of args for %s: \"%s\" args: %s",
+              messageKey, fmtString, Arrays.toString(args)),
+          e);
     }
 
     if (kind == Diagnostic.Kind.ERROR && warns) {
       kind = Diagnostic.Kind.MANDATORY_WARNING;
     }
 
-    if (source instanceof Element) {
-      messager.printMessage(kind, messageText, (Element) source);
-    } else if (source instanceof Tree) {
-      printOrStoreMessage(kind, messageText, (Tree) source, currentRoot);
+    if (this.processingEnv.getOptions() != null /*nnbug*/
+        && this.processingEnv.getOptions().containsKey("onelinemsg")) {
+      // Use a virgule (/), as indicates a line break in poetry.
+      messageText = messageText.replace(System.lineSeparator(), " / ");
+    }
+
+    if (source instanceof Element elem) {
+      messager.printMessage(kind, messageText, elem);
+    } else if (source instanceof Tree sourceTree) {
+      printOrStoreMessage(kind, messageText, sourceTree, currentRoot);
     } else {
       throw new BugInCF("invalid position source of class " + source.getClass() + ": " + source);
     }
@@ -1650,8 +1682,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   protected Object processErrorMessageArg(Object arg) {
     // Check to see if the argument itself is a property to be expanded
-    if (arg instanceof String) {
-      return messagesProperties.getProperty((String) arg, (String) arg);
+    if (arg instanceof String s) {
+      return messagesProperties.getProperty(s, s);
     } else {
       return arg;
     }
@@ -1665,7 +1697,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @param source the object from which to obtain source position information; may be an Element, a
    *     Tree, or null
-   * @param defaultFormat the message key, in parentheses
+   * @param defaultFormat the message key, in square brackets
    * @param args arguments for interpolation in the string corresponding to the given message key
    * @return the first part of the message format output by {@code -Adetailedmsgtext}
    */
@@ -1747,10 +1779,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return the tree associated with the given source object, or null if none
    */
   private @Nullable Tree sourceToTree(@Nullable Object source) {
-    if (source instanceof Element) {
-      return trees.getTree((Element) source);
-    } else if (source instanceof Tree) {
-      return (Tree) source;
+    if (source instanceof Element elem) {
+      return trees.getTree(elem);
+    } else if (source instanceof Tree sourceTree) {
+      return sourceTree;
     } else if (source == null) {
       return null;
     } else {
@@ -2113,34 +2145,36 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
       String[] split = key.split(OPTION_SEPARATOR);
 
-      splitlengthswitch:
       switch (split.length) {
-        case 1:
+        case 1 -> {
           // No separator, option always active.
           activeOpts.put(key, value);
-          break;
-        case 2:
+        }
+        case 2 -> {
           Class<?> clazz = this.getClass();
-
+          boolean found = false;
           do {
             if (clazz.getCanonicalName().equals(split[0])
                 || clazz.getSimpleName().equals(split[0])) {
               // Valid class-option pair.
               activeOpts.put(split[1], value);
-              break splitlengthswitch;
+              found = true;
+              break;
             }
-
             clazz = clazz.getSuperclass();
           } while (clazz != null
               && !clazz.getName().equals(AbstractTypeProcessor.class.getCanonicalName()));
-          // Didn't find a matching class. Option might be for another processor. Add
-          // option anyways. javac will warn if no processor supports the option.
-          activeOpts.put(key, value);
-          break;
-        default:
+          if (!found) {
+            // Didn't find a matching class. Option might be for another processor. Add
+            // option anyways. javac will warn if no processor supports the option.
+            activeOpts.put(key, value);
+          }
+        }
+        default -> {
           // Too many separators. Option might be for another processor. Add option
           // anyways. javac will warn if no processor supports the option.
           activeOpts.put(key, value);
+        }
       }
     }
     return activeOpts;
@@ -2481,7 +2515,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         for (String prefix : prefixes) {
           if (suppressWarningsString.equals(prefix)
               || (suppressWarningsString.startsWith(prefix + ":")
-                  && !suppressWarningsString.equals(prefix + ":unneeded.suppression"))) {
+                  && !suppressWarningsString.equals(prefix + ":" + UNNEEDED_SUPPRESSION_KEY))) {
             reportUnneededSuppression(tree, suppressWarningsString);
             break; // Don't report the same warning string more than once.
           }
@@ -2520,8 +2554,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     List<? extends AnnotationTree> annotations;
     if (TreeUtils.isClassTree(tree)) {
       annotations = ((ClassTree) tree).getModifiers().getAnnotations();
-    } else if (tree instanceof MethodTree) {
-      annotations = ((MethodTree) tree).getModifiers().getAnnotations();
+    } else if (tree instanceof MethodTree mt) {
+      annotations = mt.getModifiers().getAnnotations();
     } else {
       annotations = ((VariableTree) tree).getModifiers().getAnnotations();
     }
@@ -2547,10 +2581,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @see #shouldSuppressWarnings(Tree, String)
    */
   private boolean shouldSuppressWarnings(@Nullable Object src, String errKey) {
-    if (src instanceof Element) {
-      return shouldSuppressWarnings((Element) src, errKey);
-    } else if (src instanceof Tree) {
-      return shouldSuppressWarnings((Tree) src, errKey);
+    if (src instanceof Element elem) {
+      return shouldSuppressWarnings(elem, errKey);
+    } else if (src instanceof Tree srcTree) {
+      return shouldSuppressWarnings(srcTree, errKey);
     } else if (src == null) {
       return false;
     } else {
@@ -2615,13 +2649,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
       Tree decl = declPath.getLeaf();
 
-      if (decl instanceof VariableTree) {
-        Element elt = TreeUtils.elementFromDeclaration((VariableTree) decl);
+      if (decl instanceof VariableTree vt) {
+        Element elt = TreeUtils.elementFromDeclaration(vt);
         if (shouldSuppressWarnings(elt, errKey)) {
           return true;
         }
-      } else if (decl instanceof MethodTree) {
-        Element elt = TreeUtils.elementFromDeclaration((MethodTree) decl);
+      } else if (decl instanceof MethodTree mt) {
+        Element elt = TreeUtils.elementFromDeclaration(mt);
         if (shouldSuppressWarnings(elt, errKey)) {
           return true;
         }
@@ -3161,8 +3195,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         }
 
         DiagnosticPosition pos = null;
-        if ((ce instanceof BugInCF) && ((BugInCF) ce).getLocation() != null) {
-          pos = (DiagnosticPosition) ((BugInCF) ce).getLocation();
+        if (ce instanceof BugInCF bugInCF && bugInCF.getLocation() != null) {
+          pos = (DiagnosticPosition) bugInCF.getLocation();
         } else if (this.visitor != null) {
           pos = (DiagnosticPosition) this.visitor.lastVisited;
         }
@@ -3400,8 +3434,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       Field field = handler.getClass().getDeclaredField("val$delegateTo");
       field.setAccessible(true);
       Object o = field.get(handler);
-      if (o instanceof ProcessingEnvironment) {
-        return (ProcessingEnvironment) o;
+      if (o instanceof ProcessingEnvironment pe) {
+        return pe;
       }
       return null;
     } catch (NoSuchFieldException | IllegalAccessException e) {
@@ -3423,8 +3457,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       Field field = delegateClass.getDeclaredField("delegate");
       field.setAccessible(true);
       Object o = field.get(env);
-      if (o instanceof ProcessingEnvironment) {
-        return (ProcessingEnvironment) o;
+      if (o instanceof ProcessingEnvironment pe) {
+        return pe;
       }
       return null;
     } catch (NoSuchFieldException | IllegalAccessException e) {

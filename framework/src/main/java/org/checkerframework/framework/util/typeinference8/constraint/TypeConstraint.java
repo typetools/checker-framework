@@ -4,6 +4,7 @@ import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,7 +27,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public abstract class TypeConstraint implements Constraint {
 
-  /** T, the type on the right hand side of the constraint; may contain inference variables. */
+  /** T, the type on the right-hand side of the constraint; may contain inference variables. */
   protected AbstractType T;
 
   /**
@@ -45,7 +46,7 @@ public abstract class TypeConstraint implements Constraint {
    * Creates a type constraint.
    *
    * @param source a string describing where this constraint came from
-   * @param T the type of the right hand side of the constraint
+   * @param T the type of the right-hand side of the constraint
    */
   protected TypeConstraint(String source, AbstractType T) {
     assert T != null : "Can't create a constraint with a null type.";
@@ -58,7 +59,7 @@ public abstract class TypeConstraint implements Constraint {
    * Creates a type constraint.
    *
    * @param parent the constraint whose reduction created this constraint
-   * @param T the type of the right hand side of the constraint
+   * @param T the type of the right-hand side of the constraint
    */
   protected TypeConstraint(Constraint parent, AbstractType T) {
     assert T != null : "Can't create a constraint with a null type.";
@@ -95,9 +96,9 @@ public abstract class TypeConstraint implements Constraint {
   }
 
   /**
-   * Returns T which is the type on the right hand side of the constraint.
+   * Returns T which is the type on the right-hand side of the constraint.
    *
-   * @return t, that is the type on the right hand side of the constraint
+   * @return t, that is the type on the right-hand side of the constraint
    */
   public AbstractType getT() {
     return T;
@@ -144,12 +145,12 @@ public abstract class TypeConstraint implements Constraint {
    * https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.5.2-200
    *
    * @param tree an expression tree
-   * @param T the type of the right hand side of the constraint
+   * @param T the type of the right-hand side of the constraint
    * @return the input variables for this constraint
    */
   protected List<Variable> getInputVariablesForExpression(ExpressionTree tree, AbstractType T) {
     switch (tree.getKind()) {
-      case LAMBDA_EXPRESSION:
+      case LAMBDA_EXPRESSION -> {
         if (T.isUseOfVariable()) {
           return Collections.singletonList(((UseOfVariable) T).getVariable());
         } else {
@@ -175,7 +176,8 @@ public abstract class TypeConstraint implements Constraint {
           }
           return inputs;
         }
-      case MEMBER_REFERENCE:
+      }
+      case MEMBER_REFERENCE -> {
         if (T.isUseOfVariable()) {
           return Collections.singletonList(((UseOfVariable) T).getVariable());
         } else if (TreeUtils.isExactMethodReference((MemberReferenceTree) tree)) {
@@ -192,27 +194,31 @@ public abstract class TypeConstraint implements Constraint {
           }
           return inputs;
         }
-      case PARENTHESIZED:
+      }
+      case PARENTHESIZED -> {
         return getInputVariablesForExpression(TreeUtils.withoutParens(tree), T);
-      case CONDITIONAL_EXPRESSION:
+      }
+      case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) tree;
         List<Variable> inputs = new ArrayList<>();
         inputs.addAll(getInputVariablesForExpression(conditional.getTrueExpression(), T));
         inputs.addAll(getInputVariablesForExpression(conditional.getFalseExpression(), T));
         return inputs;
-      default:
-        if (TreeUtils.isSwitchExpression(tree)) {
-          List<Variable> inputs2 = new ArrayList<>();
+      }
+      case SWITCH_EXPRESSION -> {
+        List<Variable> inputs2 = new ArrayList<>();
 
-          SwitchExpressionScanner<Boolean, Void> scanner =
-              new FunctionalSwitchExpressionScanner<>(
-                  (ExpressionTree exTree, Void unused) ->
-                      inputs2.addAll(getInputVariablesForExpression(exTree, T)),
-                  (r1, r2) -> null);
-          scanner.scanSwitchExpression(tree, null);
-          return inputs2;
-        }
+        SwitchExpressionScanner<Boolean, Void> scanner =
+            new FunctionalSwitchExpressionScanner<>(
+                (ExpressionTree exTree, Void unused) ->
+                    inputs2.addAll(getInputVariablesForExpression(exTree, T)),
+                (r1, r2) -> null);
+        scanner.scanSwitchExpression((SwitchExpressionTree) tree, null);
+        return inputs2;
+      }
+      default -> {
         return Collections.emptyList();
+      }
     }
   }
 
