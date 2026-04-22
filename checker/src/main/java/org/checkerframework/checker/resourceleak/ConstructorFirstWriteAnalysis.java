@@ -57,7 +57,7 @@ final class ConstructorFirstWriteAnalysis {
    *
    * @param assignment the assignment tree being analyzed, which is a statement in the body of
    *     {@code constructor}
-   * @param targetField the non-final field assigned by {@code assignment}; its type is
+   * @param targetField the non-final private field assigned by {@code assignment}; its type is
    *     non-primitive
    * @param constructor the constructor where {@code assignment} appears
    * @param cmAtf the factory used for side-effect reasoning and tree-path lookup
@@ -126,7 +126,7 @@ final class ConstructorFirstWriteAnalysis {
         if (initBlock.isStatic()) {
           continue;
         }
-        if (InitializerAssignmentScanner.mayBeAssigned(initBlock, targetField, cmAtf)) {
+        if (BlockAssignmentScanner.mayBeAssigned(initBlock, targetField, cmAtf)) {
           return true;
         }
       }
@@ -224,7 +224,7 @@ final class ConstructorFirstWriteAnalysis {
 
         // If any catch assigns the field, then initialization is path-dependent (try vs catch).
         // Without control-flow reasoning, conservatively reject.
-        if (catchAssignsField(tryTree, targetField)) {
+        if (catchAssignsField(tryTree, targetField, cmAtf)) {
           return FirstWriteScanResult.REASSIGNMENT;
         }
 
@@ -285,8 +285,7 @@ final class ConstructorFirstWriteAnalysis {
       }
 
       // Any other statement kind requires control-flow-aware reasoning that this helper does not
-      // attempt. Loops and switches can repeat or fall through before the target. Reject all of
-      // them here.
+      // attempt. Conservatively reject all of them.
       return FirstWriteScanResult.REASSIGNMENT;
     }
 
@@ -294,30 +293,20 @@ final class ConstructorFirstWriteAnalysis {
   }
 
   /**
-   * Returns true if any {@code catch} block of {@code tryTree} contains an assignment to {@code
-   * targetField}.
+   * Returns true if any {@code catch} block of {@code tryTree} directly assigns {@code targetField}
+   * or may assign it through a side-effecting method call or object creation.
    *
    * @param tryTree the try statement to inspect
-   * @param targetField the field to check for assignments
-   * @return true if any catch block assigns {@code targetField}
+   * @param targetField the field to check
+   * @param cmAtf the factory used for side-effect reasoning
+   * @return true if any catch block may assign {@code targetField}
    */
   private static boolean catchAssignsField(
-      TryTree tryTree, @FindDistinct VariableElement targetField) {
-    // This scanner is used to check whether a catch block assigns the target field.
-    TreeScanner<Boolean, Void> fieldAssignmentScanner =
-        new BooleanShortCircuitScanner() {
-          @Override
-          public Boolean visitAssignment(AssignmentTree node, Void p) {
-            Element lhsEl = TreeUtils.elementFromUse(node.getVariable());
-            if (targetField.equals(lhsEl)) {
-              return true;
-            }
-            return super.visitAssignment(node, p);
-          }
-        };
+      TryTree tryTree,
+      @FindDistinct VariableElement targetField,
+      RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
     for (CatchTree ct : tryTree.getCatches()) {
-      boolean catchAssignsField = fieldAssignmentScanner.scan(ct.getBlock(), null);
-      if (catchAssignsField) {
+      if (BlockAssignmentScanner.mayBeAssigned(ct.getBlock(), targetField, cmAtf)) {
         return true;
       }
     }
@@ -332,6 +321,9 @@ final class ConstructorFirstWriteAnalysis {
    * @return true if {@code targetAssignment} occurs within {@code tree}
    */
   private static boolean containsTargetAssignment(Tree tree, @FindDistinct Tree targetAssignment) {
+    if (tree == null) {
+      return false;
+    }
     TreeScanner<Boolean, Void> targetScanner =
         new BooleanShortCircuitScanner() {
           @Override
@@ -346,12 +338,12 @@ final class ConstructorFirstWriteAnalysis {
   }
 
   /**
-   * Scanner that checks whether an instance initializer block assigns the target field.
+   * Scanner that checks whether a block may assign the target field.
    *
-   * <p>It returns true if the initializer block either assigns the field directly or may do so
-   * through a side-effecting method call or object creation.
+   * <p>The entry point is {@link #mayBeAssigned}. It returns true if the given block either assigns
+   * the field directly or may do so through a side-effecting method call or object creation.
    */
-  private static final class InitializerAssignmentScanner extends BooleanShortCircuitScanner {
+  private static final class BlockAssignmentScanner extends BooleanShortCircuitScanner {
 
     /** The field being analyzed. */
     private final @InternedDistinct VariableElement targetField;
@@ -360,32 +352,31 @@ final class ConstructorFirstWriteAnalysis {
     private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
 
     /**
-     * Creates a scanner that checks whether an instance initializer block may assign {@code
-     * targetField}.
+     * Creates a scanner that checks whether a block may assign {@code targetField}.
      *
      * @param targetField the field being checked
      * @param cmAtf the type factory for side-effect reasoning
      */
-    private InitializerAssignmentScanner(
+    private BlockAssignmentScanner(
         @FindDistinct VariableElement targetField, RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
       this.targetField = targetField;
       this.cmAtf = cmAtf;
     }
 
     /**
-     * Returns true if {@code initializerBlock} directly assigns {@code targetField} or may assign
-     * it through a side-effecting call or allocation.
+     * Returns true if {@code block} directly assigns {@code targetField} or may assign it through a
+     * side-effecting call or allocation.
      *
-     * @param initializerBlock the initializer block to scan
+     * @param block the block to scan
      * @param targetField the field under analyze
      * @param cmAtf the factory used for side-effect reasoning
-     * @return true if {@code initializerBlock} may assign {@code targetField}
+     * @return true if {@code block} may assign {@code targetField}
      */
     static boolean mayBeAssigned(
-        BlockTree initializerBlock,
+        BlockTree block,
         @FindDistinct VariableElement targetField,
         RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
-      return new InitializerAssignmentScanner(targetField, cmAtf).scan(initializerBlock, null);
+      return new BlockAssignmentScanner(targetField, cmAtf).scan(block, null);
     }
 
     @Override
@@ -399,7 +390,7 @@ final class ConstructorFirstWriteAnalysis {
 
     @Override
     public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
-      // Any side-effecting method call in an initializer block could write to the field.
+      // Any side-effecting method call in a block could write to the field.
       if (!cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))) {
         return true;
       }
@@ -435,7 +426,7 @@ final class ConstructorFirstWriteAnalysis {
     private final @InternedDistinct Tree targetAssignment;
 
     /** The field assigned by {@code targetAssignment}. */
-    private final VariableElement targetField;
+    private final @InternedDistinct VariableElement targetField;
 
     /** The annotated type factory, used to determine whether a method has any side effects. */
     private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
@@ -451,7 +442,7 @@ final class ConstructorFirstWriteAnalysis {
      */
     private ExpressionFirstWriteScanner(
         @FindDistinct Tree targetAssignment,
-        VariableElement targetField,
+        @FindDistinct VariableElement targetField,
         RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
       this.targetAssignment = targetAssignment;
       this.targetField = targetField;
@@ -477,20 +468,20 @@ final class ConstructorFirstWriteAnalysis {
     static FirstWriteScanResult scanExpressionForFirstWrite(
         ExpressionTree root,
         @FindDistinct Tree targetAssignment,
-        VariableElement targetField,
+        @FindDistinct VariableElement targetField,
         RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
-      FirstWriteScanResult r =
-          new ExpressionFirstWriteScanner(targetAssignment, targetField, cmAtf).scan(root, null);
-      return r;
+      return new ExpressionFirstWriteScanner(targetAssignment, targetField, cmAtf).scan(root, null);
     }
 
     @Override
     public FirstWriteScanResult visitAssignment(AssignmentTree node, Void p) {
       Element lhsEl = TreeUtils.elementFromUse(node.getVariable());
-      if (targetField.equals(lhsEl)) {
+      if (targetField == lhsEl) {
         // Found an assignment to the same field:
         //   - current assignment → first write → FIRST_ASSIGNMENT
         //   - earlier assignment → not first → REASSIGNMENT
+        // TODO: Must scan the RHS, to catch a nested assignment to the same field within the RHS,
+        // e.g., this.f = (this.f = new Foo()).
         return node == targetAssignment
             ? FirstWriteScanResult.FIRST_ASSIGNMENT
             : FirstWriteScanResult.REASSIGNMENT;
@@ -544,6 +535,8 @@ final class ConstructorFirstWriteAnalysis {
     @Override
     public FirstWriteScanResult reduce(FirstWriteScanResult r1, FirstWriteScanResult r2) {
       // Preserve the first decisive result found among the children.
+      // In practice r1 and r2 are never null, because the overridden scan() normalizes null to
+      // UNASSIGNED before reduce() is ever called. The null checks are retained for robustness.
       if (r1 != null && r1 != FirstWriteScanResult.UNASSIGNED) {
         return r1;
       }
