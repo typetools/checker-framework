@@ -33,6 +33,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface IndexOrHigh {
-  /** The annotated expression is a valid index for, or is equal to the length of, each sequence. */
+  /**
+   * The annotated expression is a valid index for, or is equal to the length of, each sequence.
+   *
+   * @return sequences that the annotated expression is a valid index for or is equal to the length
+   *     of
+   */
   String[] value();
 }
