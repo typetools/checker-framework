@@ -42,6 +42,11 @@ import org.plumelib.util.IPair;
  */
 public class PurityChecker {
 
+  /** Do not instantiate. */
+  private PurityChecker() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Compute whether the given statement is side-effect-free, deterministic, or both. Returns a
    * result that can be queried.
@@ -339,16 +344,13 @@ public class PurityChecker {
     @Override
     public Void visitUnary(UnaryTree tree, Void ignore) {
       switch (tree.getKind()) {
-        case POSTFIX_DECREMENT:
-        case POSTFIX_INCREMENT:
-        case PREFIX_DECREMENT:
-        case PREFIX_INCREMENT:
+        case POSTFIX_DECREMENT, POSTFIX_INCREMENT, PREFIX_DECREMENT, PREFIX_INCREMENT -> {
           ExpressionTree expression = tree.getExpression();
           assignmentCheck(expression);
-          break;
-        default:
+        }
+        default -> {
           // Nothing to do
-          break;
+        }
       }
       return super.visitUnary(tree, ignore);
     }

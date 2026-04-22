@@ -39,10 +39,9 @@ public class BusyExprValue {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof BusyExprValue)) {
+    if (!(obj instanceof BusyExprValue other)) {
       return false;
     }
-    BusyExprValue other = (BusyExprValue) obj;
     // Use `equals` to check equality rather than using `==`.
     return this.busyExpression.equals(other.busyExpression);
   }

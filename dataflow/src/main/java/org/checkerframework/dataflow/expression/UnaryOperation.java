@@ -85,10 +85,9 @@ public class UnaryOperation extends JavaExpression {
 
   @Override
   public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof UnaryOperation)) {
+    if (!(je instanceof UnaryOperation other)) {
       return false;
     }
-    UnaryOperation other = (UnaryOperation) je;
     return operationKind == other.getOperationKind() && operand.syntacticEquals(other.operand);
   }
 
@@ -109,36 +108,26 @@ public class UnaryOperation extends JavaExpression {
 
   @Override
   public boolean equals(@Nullable Object other) {
-    if (!(other instanceof UnaryOperation)) {
+    if (!(other instanceof UnaryOperation unOp)) {
       return false;
     }
-    UnaryOperation unOp = (UnaryOperation) other;
     return operationKind == unOp.getOperationKind() && operand.equals(unOp.operand);
   }
 
   @Override
   public String toString() {
     String operandString = operand.toString();
-    switch (operationKind) {
-      case BITWISE_COMPLEMENT:
-        return "~" + operandString;
-      case LOGICAL_COMPLEMENT:
-        return "!" + operandString;
-      case POSTFIX_DECREMENT:
-        return operandString + "--";
-      case POSTFIX_INCREMENT:
-        return operandString + "++";
-      case PREFIX_DECREMENT:
-        return "--" + operandString;
-      case PREFIX_INCREMENT:
-        return "++" + operandString;
-      case UNARY_MINUS:
-        return "-" + operandString;
-      case UNARY_PLUS:
-        return "+" + operandString;
-      default:
-        throw new BugInCF("Unrecognized unary operation kind " + operationKind);
-    }
+    return switch (operationKind) {
+      case BITWISE_COMPLEMENT -> "~" + operandString;
+      case LOGICAL_COMPLEMENT -> "!" + operandString;
+      case POSTFIX_DECREMENT -> operandString + "--";
+      case POSTFIX_INCREMENT -> operandString + "++";
+      case PREFIX_DECREMENT -> "--" + operandString;
+      case PREFIX_INCREMENT -> "++" + operandString;
+      case UNARY_MINUS -> "-" + operandString;
+      case UNARY_PLUS -> "+" + operandString;
+      default -> throw new BugInCF("Unrecognized unary operation kind " + operationKind);
+    };
   }
 
   @Override

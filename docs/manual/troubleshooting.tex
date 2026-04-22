@@ -29,10 +29,7 @@ To verify that you are using the compiler you think you are, you can add
 \code{-version} to the command line.  For instance, instead of running
 \code{javac -g MyFile.java}, you can run \code{javac \underline{-version} -g
   MyFile.java}.  Then, javac will print out its version number in addition
-to doing its normal processing.  Note that if you are running under Java 8,
-\<\$CHECKERFRAMEWORK/bin/javac -version> prints ``javac (version info
-not available)'' because it uses the Error Prone compiler which does not
-provide version information.
+to doing its normal processing.
 
 \end{itemize}
 
@@ -149,23 +146,6 @@ If you get the error
 then an annotation is not present at run time that was present at compile
 time.  For example, maybe when you compiled the code, the \<@Nullable>
 annotation was available, but it was not available at run time.
-
-\item
-If you get an error that contains lines like these:
-
-\begin{Verbatim}
-Caused by: java.util.zip.ZipException: error in opening zip file
-    at java.util.zip.ZipFile.open(Native Method)
-    at java.util.zip.ZipFile.<init>(ZipFile.java:131)
-\end{Verbatim}
-
-\noindent
-then one possibility is that you have installed the Checker Framework in a
-directory that contains special characters that Java's ZipFile
-implementation cannot handle.  For instance, if the directory name contains
-``\<+>'', then Java 1.6 throws a ZipException, and Java 1.7 throws a
-FileNotFoundException and prints out the directory name with ``\<+>''
-replaced by blanks.
 
 \item
 The Checker Framework sometimes runs out of memory when processing very
@@ -692,9 +672,6 @@ the Checker Framework, rather than an official release.
 % checkers and of the checker framework.  It may also help you to debug
 % problems more effectively.
 
-The Checker Framework runs under any JDK version 8 or later.
-However, you must build the Checker Framework under JDK 11 or later.
-
 
 \subsectionAndLabel{Install prerequisites}{building-prerequisites}
 
@@ -718,7 +695,7 @@ You may need to log out and log back in for the setting to take effect.
 \item[Ubuntu]
   Run the following commands, which should be the same as those in
   \<checker/bin-devel/Dockerfile-ubuntu-jdk\emph{XX}-plus>, where \emph{XX}
-  is a JDK version such as 8, 11, 17, 21, 25, etc.:
+  is a JDK version such as 17, 21, 25, etc.:
 
 (This list should be the same as in
 \<checker/bin-devel/Dockerfile-ubuntu-jdk25-plus>; if your build fails
@@ -838,7 +815,7 @@ or
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-XX.jdk/Contents/Home/
 \end{Verbatim}
 
-In the command, \emph{XX} is a JDK version such as 17, 21, 24, etc.
+In the command, \emph{XX} is a JDK version such as 17, 21, 25, etc.
 
 \item[Windows]
   To build on Windows 10 or later,

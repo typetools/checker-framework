@@ -56,10 +56,9 @@ public class StringConversionNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof StringConversionNode)) {
+    if (!(obj instanceof StringConversionNode other)) {
       return false;
     }
-    StringConversionNode other = (StringConversionNode) obj;
     return getOperand().equals(other.getOperand());
   }
 
