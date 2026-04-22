@@ -150,22 +150,17 @@ public class Range {
    * @return the range for the given primitive type
    */
   public static Range create(TypeKind typeKind) {
-    switch (typeKind) {
-      case INT:
-        return INT_EVERYTHING;
-      case SHORT:
-        return SHORT_EVERYTHING;
-      case BYTE:
-        return BYTE_EVERYTHING;
-      case CHAR:
-        return CHAR_EVERYTHING;
-      case LONG:
-        return LONG_EVERYTHING;
-      default:
-        throw new IllegalArgumentException(
-            "Invalid TypeKind for Range: expected INT, SHORT, BYTE, CHAR, or LONG, got "
-                + typeKind);
-    }
+    return switch (typeKind) {
+      case INT -> INT_EVERYTHING;
+      case SHORT -> SHORT_EVERYTHING;
+      case BYTE -> BYTE_EVERYTHING;
+      case CHAR -> CHAR_EVERYTHING;
+      case LONG -> LONG_EVERYTHING;
+      default ->
+          throw new IllegalArgumentException(
+              "Invalid TypeKind for Range: expected INT, SHORT, BYTE, CHAR, or LONG, got "
+                  + typeKind);
+    };
   }
 
   /**
@@ -217,13 +212,15 @@ public class Range {
 
   /**
    * Returns a range with its bounds specified by two parameters, {@code from} and {@code to}. If
-   * {@code from} is greater than {@code to}, returns {@link #NOTHING}.
+   * {@code from > to}, returns {@link #NOTHING}.
+   *
+   * <p>Usually, you should use {@link #create(long,long)} rather than this method.
    *
    * @param from the lower bound (inclusive)
    * @param to the upper bound (inclusive)
    * @return newly-created Range or NOTHING
    */
-  private static Range createOrNothing(long from, long to) {
+  public static Range createOrNothing(long from, long to) {
     return createOrElse(from, to, NOTHING);
   }
 
@@ -250,8 +247,8 @@ public class Range {
     if (this == obj) {
       return true;
     }
-    if (obj instanceof Range) {
-      return equalsRange((Range) obj);
+    if (obj instanceof Range r) {
+      return equalsRange(r);
     }
     return false;
   }

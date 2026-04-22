@@ -109,7 +109,7 @@ public class AClass extends ADeclaration {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof AClass && ((AClass) o).equalsClass(this);
+    return o instanceof AClass aClass && aClass.equalsClass(this);
   }
 
   final boolean equalsClass(AClass o) {
