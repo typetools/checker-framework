@@ -14,6 +14,9 @@ class AutoCloseableClose implements AutoCloseable {
   @EnsuresCalledMethods(
       value = {"this.first", "this.second"},
       methods = "close")
+  // This is a false positive warning, because no side effect should unrefine the
+  // "@Closed" type of `first`.
+  // :: error: [contracts.postcondition]
   public void close() {
     try {
       first.close();

@@ -18,6 +18,9 @@ class TwoResourcesECM {
   @EnsuresCalledMethods(
       value = {"this.s1", "this.s2"},
       methods = {"close"})
+  // "contracts.postcondition" is a false positive warning, because no side effect should
+  // unrefine the "@Closed" type of `first`.
+  // :: error: [contracts.postcondition]
   // :: error: [contracts.exceptional.postcondition]
   public void dispose() throws IOException {
     s1.close();
