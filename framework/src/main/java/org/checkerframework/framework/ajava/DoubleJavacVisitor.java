@@ -65,6 +65,7 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.source.tree.YieldTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import java.util.List;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17;
 import org.checkerframework.javacutil.UserError;
@@ -119,36 +120,32 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * annotations may legitimately differ between a Java file and its corresponding {@code .ajava}
    * file. Subclasses may override this method to process annotations.
    *
-   * @param annotations1 annotation list from the first AST, or null
-   * @param annotations2 annotation list from the second AST, or null
+   * @param annotations1 annotation list from the first AST
+   * @param annotations2 annotation list from the second AST
    */
   protected void visitAnnotationList(
-      @Nullable List<? extends AnnotationTree> annotations1,
-      @Nullable List<? extends AnnotationTree> annotations2) {}
+      List<? extends AnnotationTree> annotations1, List<? extends AnnotationTree> annotations2) {}
 
   //
   // Assertion methods
   //
 
   /**
-   * Both trees must be null, or both trees must have the same {@link Tree.Kind}.
+   * Both trees must have the same {@link Tree.Kind}.
    *
    * @param tree1 the first tree to scan, or null
    * @param tree2 the second tree to scan, or null
    */
+  @EnsuresNonNull({"#1", "#2"})
   protected final void assertSameKind(@Nullable Tree tree1, @Nullable Tree tree2) {
-    if (tree1 == null && tree2 == null) {
-      return;
-    }
-
-    Tree.Kind kind1 = tree1 == null ? null : tree1.getKind();
-    Tree.Kind kind2 = tree2 == null ? null : tree2.getKind();
-
     if (tree1 == null || tree2 == null) {
       throw new UserError(
           "%s: one tree is null: tree1=%s [%s] tree2=%s [%s]",
-          this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2);
+          this.getClass().getCanonicalName(), tree1, tree1.getKind(), tree2, tree2.getKind());
     }
+
+    Tree.Kind kind1 = tree1.getKind();
+    Tree.Kind kind2 = tree2.getKind();
     if (kind1 != kind2) {
       throw new UserError(
           "%s: mismatched kinds: tree1=%s [%s] tree2=%s [%s]",
@@ -162,6 +159,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * @param list1 the first list of trees
    * @param list2 the second list of trees
    */
+  @EnsuresNonNull({"#1", "#2"})
   protected final void assertSameLength(@Nullable List<?> list1, @Nullable List<?> list2) {
     if (list1 == null || list2 == null) {
       throw new UserError(
@@ -189,11 +187,11 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * @param tree2 the second tree to scan, or null
    */
   public final void scan(@Nullable Tree tree1, @Nullable Tree tree2) {
-    assertSameKind(tree1, tree2);
-    if (tree1 == null) {
-      assert tree2 == null;
+    if (tree1 == null && tree2 == null) {
       return;
     }
+
+    assertSameKind(tree1, tree2);
 
     // For tree types added after JDK 17, the tree classes do not exist at compile time,
     // so we cannot override the visitXyz methods directly.  Handle them via reflection.
@@ -457,6 +455,8 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
     scan(mtree1.getReturnType(), mtree2.getReturnType());
     // A receiver parameter may be absent in .java and present in .ajava.
+    // It would be an error for the receiver parameter to be only in the .java file, but
+    // it is not the purpose of this code to flag all structural errors.
     if (mtree1.getReceiverParameter() != null && mtree2.getReceiverParameter() != null) {
       scan(mtree1.getReceiverParameter(), mtree2.getReceiverParameter());
     }
@@ -893,9 +893,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     List<? extends List<? extends AnnotationTree>> dimAnnos2 = ntree2.getDimAnnotations();
     assertSameLength(dimAnnos1, dimAnnos2);
     for (int i = 0; i < dimAnnos1.size(); i++) {
-      List<? extends AnnotationTree> annos1 = dimAnnos1.get(i);
-      List<? extends AnnotationTree> annos2 = dimAnnos2.get(i);
-      visitAnnotationList(annos1, annos2);
+      visitAnnotationList(dimAnnos1.get(i), dimAnnos2.get(i));
     }
 
     scanList(ntree1.getInitializers(), ntree2.getInitializers());
@@ -1394,6 +1392,8 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     ErroneousTree etree2 = (ErroneousTree) tree2;
     defaultAction(etree1, etree2);
 
+    // An ErroneousTree is a malformed expression, but it should be malformed in the same way in
+    // both etree1 and etree2.
     scanList(etree1.getErrorTrees(), etree2.getErrorTrees());
     return null;
   }
