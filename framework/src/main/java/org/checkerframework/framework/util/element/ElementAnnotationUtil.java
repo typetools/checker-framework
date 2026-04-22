@@ -400,27 +400,21 @@ public class ElementAnnotationUtil {
       // For other kinds of types, no work is required for an empty type path.
       return type;
     }
-    switch (type.getKind()) {
-      case NULL:
-        return getLocationTypeANT((AnnotatedNullType) type, location);
-      case DECLARED:
-        return getLocationTypeADT(
-            (AnnotatedDeclaredType) type, location, anno, isComponentTypeOfArray);
-      case WILDCARD:
-        return getLocationTypeAWT((AnnotatedWildcardType) type, location);
-      case ARRAY:
-        return getLocationTypeAAT((AnnotatedArrayType) type, location, anno);
-      case UNION:
-        return getLocationTypeAUT((AnnotatedUnionType) type, location);
-      case INTERSECTION:
-        return getLocationTypeAIT((AnnotatedIntersectionType) type, location);
-      default:
-        // Raise an error for all other types below.
-    }
-    throw new UnexpectedAnnotationLocationException(
-        "ElementAnnotationUtil.getTypeAtLocation: "
-            + "unexpected annotation with location found for type: %s (kind: %s) location: ",
-        type, type.getKind(), location);
+    // Raise an error for all other types below.
+    return switch (type.getKind()) {
+      case NULL -> getLocationTypeANT((AnnotatedNullType) type, location);
+      case DECLARED ->
+          getLocationTypeADT((AnnotatedDeclaredType) type, location, anno, isComponentTypeOfArray);
+      case WILDCARD -> getLocationTypeAWT((AnnotatedWildcardType) type, location);
+      case ARRAY -> getLocationTypeAAT((AnnotatedArrayType) type, location, anno);
+      case UNION -> getLocationTypeAUT((AnnotatedUnionType) type, location);
+      case INTERSECTION -> getLocationTypeAIT((AnnotatedIntersectionType) type, location);
+      default ->
+          throw new UnexpectedAnnotationLocationException(
+              "ElementAnnotationUtil.getTypeAtLocation: "
+                  + "unexpected annotation with location found for type: %s (kind: %s) location: ",
+              type, type.getKind(), location);
+    };
   }
 
   /**
@@ -472,20 +466,17 @@ public class ElementAnnotationUtil {
     while (!tailOfLocations.isEmpty()) {
       TypePathEntry currentLocation = tailOfLocations.removeFirst();
       switch (currentLocation.tag) {
-        case INNER_TYPE:
-          outerToInner.removeFirst();
-          break;
-        case TYPE_ARGUMENT:
+        case INNER_TYPE -> outerToInner.removeFirst();
+        case TYPE_ARGUMENT -> {
           AnnotatedDeclaredType innerType = outerToInner.getFirst();
           if (currentLocation.arg < innerType.getTypeArguments().size()) {
             AnnotatedTypeMirror typeArg = innerType.getTypeArguments().get(currentLocation.arg);
             return getTypeAtLocation(typeArg, tailOfLocations);
           } else {
             error = true;
-            break;
           }
-        default:
-          error = true;
+        }
+        default -> error = true;
       }
       if (error) {
         break;

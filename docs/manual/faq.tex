@@ -54,6 +54,7 @@ the answers, or other questions to include here.
 \\ \ref{faq-false-positive}: What is a ``false positive'' warning?
 \\ \ref{faq-false-positive-extend-checker-framework}: How can I improve the Checker Framework to eliminate a false positive warning?
 \\ \ref{faq-infer-fields}: Why doesn't the Checker Framework infer types for fields and method return types?
+\\ \ref{faq-field-initializers}: Why are some operations legal in constructors but not in methods?
 \\ \ref{faq-relationships-between-variables}: Why doesn't the Checker Framework track relationships between variables?
 \\ \ref{faq-path-sensitive}: Why isn't the Checker Framework path-sensitive?
 
@@ -872,6 +873,44 @@ There are several reasons for this design choice.
 
 % In the future, the Checker Framework may infer types for final fields; if
 % programmers see inconsistent results, they should write types explicitly.
+
+
+\subsectionAndLabel{Why are some operations legal in constructors but not in methods?}{faq-field-initializers}
+
+Java permits you to initialize an instance field either in the constructor
+or in a field initializer.  The Checker Framework behaves as if the field
+initializer assignments are performed at the beginning of the constructor
+(after superclass construction), because that is how Java executes the
+program.
+
+Here is an example:
+
+\begin{Verbatim}
+class MyClass1 {
+  @Nullable Object field;
+  MyClass1() {
+    field = new Object();
+    field.toString(); // no possible NullPointerException
+  }
+}
+
+class MyClass2 {
+  @Nullable Object field = new Object(); // Same initialization as for MyClass1
+  MyClass2() {
+    field.toString(); // no possible NullPointerException
+  }
+}
+
+class MyClass3 {
+  @Nullable Object field;
+  void myMethod() {
+    field.toString(); // Nullness Checker warns: possible NullPointerException
+  }
+}
+\end{Verbatim}
+
+For consistency, the Checker Framework treats the \<MyClass1> and
+\<MyClass2> constructors the same.
 
 
 \subsectionAndLabel{Why doesn't the Checker Framework track relationships between variables?}{faq-relationships-between-variables}
@@ -1913,7 +1952,7 @@ escape hatch, ``Semantic Versioning is all about conveying meaning by how
 the version number changes.''  It has not been updated in over a decade
 (since January 2013), has only ever been updated once (from
 1.0.0 to 2.0.0), and has
-% 87 as of 2023-04-07.
+% 87 as of 2023-04-07, 97 as of 2026-03-28.
 about 100 open issues.
 It is a proposal, not a standard nor an official definition.
 Projects that claim to follow it often do so loosely.
@@ -1922,7 +1961,7 @@ Projects that claim to follow it often do so loosely.
 If the Checker Framework strictly used semver.org's definition, every
 release would be a new major version, and the current version string would
 be
-% 213 releases as of: Version 3.33.0 (April 3, 2023)
+% 247 releases as of: Version 3.54.1 (2026-04-01)
 past version 200.0.0.
 Always incrementing the major version number would not convey meaning to
 its users --- for example, it would not indicate major new functionality or

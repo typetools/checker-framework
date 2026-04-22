@@ -170,8 +170,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
    */
   private String incrementedExpression(JavaExpression expr) {
     expr = ValueCheckerUtils.optimize(expr, analysis.getTypeFactory());
-    if (expr instanceof ValueLiteral) {
-      ValueLiteral literal = (ValueLiteral) expr;
+    if (expr instanceof ValueLiteral literal) {
       if (literal.getValue() instanceof Number) {
         long longLiteral = ((Number) literal.getValue()).longValue();
         if (longLiteral != Long.MAX_VALUE) {

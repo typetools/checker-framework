@@ -9,6 +9,12 @@ import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher;
 
 /** Used in busyExpressionTest Gradle task to test the BusyExpression analysis. */
 public class BusyExpression {
+
+  /** Do not instantiate. */
+  private BusyExpression() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * The main method expects to be run in dataflow/tests/busy-expression directory.
    *

@@ -8,8 +8,7 @@ public class AnonymousClassTest {
   /**
    * To build/run outside of the JUnit tests:
    *
-   * <p>Build with $CHECKERFRAMEWOKR/framework/tests/build/ on the classpath. Need to either use
-   * Java 8 or the langtools compiler, because annotations on cast are used.
+   * <p>Build with $CHECKERFRAMEWORK/framework/tests/build/ on the classpath.
    *
    * <p>java AnonymousClassTest MyClass$1.getSib1() MyClass$1.setSib1() MyClass$1.setSib1()
    * MyClass$1.setSib2() MyClass$1.setSib2() MyClass$1.getSib2()

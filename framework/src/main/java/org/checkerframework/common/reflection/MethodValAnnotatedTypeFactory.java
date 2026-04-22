@@ -418,7 +418,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private List<Integer> getNumberOfParameterOneArg(ExpressionTree argument) {
       AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(argument);
       switch (atm.getKind()) {
-        case ARRAY:
+        case ARRAY -> {
           ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
           AnnotatedTypeMirror valueType = valueATF.getAnnotatedType(argument);
           AnnotationMirror arrayLenAnno = valueType.getPrimaryAnnotation(ArrayLen.class);
@@ -431,12 +431,13 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           }
           // the argument is an array with unknown array length
           return UNKNOWN_PARAM_LENGTH_LIST;
-        case NULL:
-          // null is treated as the empty list of parameters, so size is 0.
+        }
+        case NULL -> {
           return ZERO_LIST;
-        default:
-          // The argument is not an array or null, so it must be a class.
+        } // null is treated as the empty list of parameters, so size is 0.
+        default -> {
           return ONE_LIST;
+        } // The argument is not an array or null, so it must be a class.
       }
     }
   }

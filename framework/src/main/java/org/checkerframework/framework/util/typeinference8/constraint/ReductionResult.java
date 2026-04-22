@@ -22,25 +22,14 @@ public interface ReductionResult {
         }
       };
 
-  /** A reduction result that contains a bound set and a constraint set. */
-  class ReductionResultPair implements ReductionResult {
-
-    /** A constraint set. */
-    public final ConstraintSet constraintSet;
-
-    /** A bound set. */
-    public final BoundSet boundSet;
-
-    /**
-     * Creates a reduction result pair.
-     *
-     * @param constraintSet a constraint set
-     * @param boundSet a bound set
-     */
-    private ReductionResultPair(ConstraintSet constraintSet, BoundSet boundSet) {
-      this.constraintSet = constraintSet;
-      this.boundSet = boundSet;
-    }
+  /**
+   * A reduction result that contains a bound set and a constraint set.
+   *
+   * @param constraintSet a constraint set
+   * @param boundSet a bound set
+   */
+  record ReductionResultPair(ConstraintSet constraintSet, BoundSet boundSet)
+      implements ReductionResult {
 
     /**
      * Creates a reduction result pair.
