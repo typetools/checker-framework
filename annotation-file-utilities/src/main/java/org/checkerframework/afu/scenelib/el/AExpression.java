@@ -47,7 +47,7 @@ public class AExpression extends AElement {
       new VivifyingMap<RelativeLocation, AMethod>(new LinkedHashMap<>()) {
         @Override
         public AMethod createValueFor(RelativeLocation k) {
-          return new AMethod("" + k); // FIXME: find generated method name
+          return new AMethod(k.toString()); // FIXME: find generated method name
         }
 
         @Override
@@ -89,7 +89,7 @@ public class AExpression extends AElement {
 
   @Override
   public boolean equals(AElement o) {
-    return o instanceof AExpression && ((AExpression) o).equalsExpression(this);
+    return o instanceof AExpression expr && expr.equalsExpression(this);
   }
 
   protected boolean equalsExpression(AExpression o) {
@@ -208,8 +208,6 @@ public class AExpression extends AElement {
       }
       prev = loc;
     }
-    prev = null;
-    map.clear();
     for (Map.Entry<RelativeLocation, AMethod> em : funs.entrySet()) {
       sb.append("lambda ");
       RelativeLocation loc = em.getKey();
