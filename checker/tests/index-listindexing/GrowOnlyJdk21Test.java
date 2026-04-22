@@ -12,9 +12,9 @@ public class GrowOnlyJdk21Test {
     // SequencedCollection was added in Java 21 and is not yet in the annotated JDK.
     // SequencedCollection<String> sc = list;
     // // :: error: [method.invocation]
-    // sc.removeFirst("hello");
+    // sc.removeFirst();
     // // :: error: [method.invocation]
-    // sc.removeLast("hello");
+    // sc.removeLast();
     // // :: error: [method.invocation]
     // sc.clear();
     // // :: error: [method.invocation]
@@ -28,11 +28,10 @@ public class GrowOnlyJdk21Test {
   }
 
   void testViewCollection(@GrowOnly List<String> list) {
-    // SequencedCollection was added in Java 21 and is not yet in the annotated JDK.
-    // SequencedCollection<String> sc2 = sc.reversed();
+    // SequencedCollection<String> sc2 = list.reversed();
     // // :: error: [method.invocation]
-    // sc2.removeFirst("hello");
+    // sc2.removeFirst();
     // // :: error: [method.invocation]
-    // sc2.removeLast("hello");
+    // sc2.removeLast();
   }
 }

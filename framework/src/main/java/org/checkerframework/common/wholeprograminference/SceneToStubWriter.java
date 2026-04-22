@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -718,8 +717,7 @@ public final class SceneToStubWriter {
     // comes first; within package sort by class name.
     @SuppressWarnings("signature") // scene-lib bytecode lacks signature annotations
     List<@BinaryName String> classes = new ArrayList<>(scene.getAScene().getClasses().keySet());
-    Collections.sort(
-        classes,
+    classes.sort(
         (o1, o2) ->
             ComparisonChain.start()
                 .compare(
@@ -882,11 +880,7 @@ public final class SceneToStubWriter {
    * @return a string containing that many indents
    */
   private static String indents(int n) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < n; i++) {
-      sb.append(INDENT);
-    }
-    return sb.toString();
+    return INDENT.repeat(Math.max(0, n));
   }
 
   /**

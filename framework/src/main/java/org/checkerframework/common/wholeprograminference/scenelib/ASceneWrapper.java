@@ -130,30 +130,26 @@ public class ASceneWrapper {
     AScene scene = theScene.clone();
     removeAnnosFromScene(scene, annosToIgnore);
     scene.prune();
-    String filepath;
-    switch (outputFormat) {
-      case JAIF:
-        filepath = jaifPath;
-        break;
-      case STUB:
-        String astubWithChecker = "-" + checker.getClass().getCanonicalName() + ".astub";
-        filepath = jaifPath.replace(".jaif", astubWithChecker);
-        break;
-      default:
-        throw new BugInCF("Unhandled outputFormat " + outputFormat);
-    }
+    String filepath =
+        switch (outputFormat) {
+          case JAIF -> jaifPath;
+          case STUB -> {
+            String astubWithChecker = "-" + checker.getClass().getCanonicalName() + ".astub";
+            yield jaifPath.replace(".jaif", astubWithChecker);
+          }
+          default -> throw new BugInCF("Unhandled outputFormat " + outputFormat);
+        };
     new File(filepath).delete();
     // Only write non-empty scenes into files.
     if (!scene.isEmpty()) {
       try {
         switch (outputFormat) {
-          case STUB:
-            // For stub files, pass in the checker to compute contracts on the fly;
-            // precomputing yields incorrect annotations, most likely due to nested
-            // classes.
-            SceneToStubWriter.write(this, filepath, checker);
-            break;
-          case JAIF:
+          case STUB ->
+              // For stub files, pass in the checker to compute contracts on the fly;
+              // precomputing yields incorrect annotations, most likely due to nested
+              // classes.
+              SceneToStubWriter.write(this, filepath, checker);
+          case JAIF -> {
             // For .jaif files, precompute contracts because the Annotation File
             // Utilities knows nothing about (and cannot depend on) the Checker
             // Framework.
@@ -173,9 +169,8 @@ public class ASceneWrapper {
             try (Writer fw = Files.newBufferedWriter(Paths.get(filepath), StandardCharsets.UTF_8)) {
               IndexFileWriter.write(scene, fw);
             }
-            break;
-          default:
-            throw new BugInCF("Unhandled outputFormat " + outputFormat);
+          }
+          default -> throw new BugInCF("Unhandled outputFormat " + outputFormat);
         }
       } catch (IOException e) {
         throw new UserError("Problem while writing %s: %s", filepath, e.getMessage());

@@ -29,6 +29,11 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 @AnnotatedFor("nullness")
 public class I18nFormatUtil {
 
+  /** Do not instantiate. */
+  private I18nFormatUtil() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Throws an exception if the format is not syntactically valid.
    *
@@ -60,15 +65,14 @@ public class I18nFormatUtil {
       conv.put(
           indexKey,
           I18nConversionCategory.intersect(
-              c.category,
-              conv.containsKey(indexKey) ? conv.get(indexKey) : I18nConversionCategory.UNUSED));
+              c.category, conv.getOrDefault(indexKey, I18nConversionCategory.UNUSED)));
       maxIndex = Math.max(maxIndex, index);
     }
 
     I18nConversionCategory[] res = new I18nConversionCategory[maxIndex + 1];
     for (int i = 0; i <= maxIndex; i++) {
       Integer indexKey = i;
-      res[i] = conv.containsKey(indexKey) ? conv.get(indexKey) : I18nConversionCategory.UNUSED;
+      res[i] = conv.getOrDefault(indexKey, I18nConversionCategory.UNUSED);
     }
     return res;
   }
