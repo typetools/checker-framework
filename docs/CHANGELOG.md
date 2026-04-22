@@ -15,6 +15,9 @@ Removed deprecated names "builder", "object.construction", and
 
 ### Implementation details
 
+New method annotation `@DoesNotUnrefineReceiver`.
+`AnnotatedTypeFactory` has a new method `hasDoesNotUnrefineReceiver()`.
+
 ### Closed issues
 
 ## Version 4.0.0 (2026-04-07)
