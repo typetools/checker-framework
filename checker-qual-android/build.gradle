@@ -45,7 +45,7 @@ sourceSets {
 }
 
 javadoc {
-    modularity.inferModulePath = false
+  modularity.inferModulePath = false
 }
 
 apply from: rootProject.file("gradle-mvn-push.gradle")
