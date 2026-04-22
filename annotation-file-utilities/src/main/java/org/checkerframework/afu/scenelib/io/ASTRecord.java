@@ -10,6 +10,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Structure bundling an {@link ASTPath} with information about its starting point. Necessary
@@ -78,8 +79,8 @@ public class ASTRecord implements Comparable<ASTRecord> {
   }
 
   @Override
-  public boolean equals(Object o) {
-    return o instanceof ASTRecord && equals((ASTRecord) o);
+  public boolean equals(@Nullable Object o) {
+    return o instanceof ASTRecord astRecord && equals(astRecord);
   }
 
   public boolean equals(ASTRecord astRecord) {
@@ -137,30 +138,28 @@ public class ASTRecord implements Comparable<ASTRecord> {
     while (!stack.isEmpty()) {
       Tree tree = stack.pop();
       switch (tree.getKind()) {
-        case CLASS:
-        case INTERFACE:
-        case ENUM:
-        case ANNOTATION_TYPE:
+        case CLASS, INTERFACE, ENUM, ANNOTATION_TYPE -> {
           clazz = ((ClassTree) tree).getSimpleName().toString();
           meth = null;
           var = null;
           matchVars = true;
-          break;
-        case METHOD:
+        }
+        case METHOD -> {
           assert meth == null;
           meth = ((MethodTree) tree).getName().toString();
           matchVars = false;
-          break;
-        case VARIABLE:
+        }
+        case VARIABLE -> {
           if (matchVars) {
             assert var == null;
             var = ((VariableTree) tree).getName().toString();
             matchVars = false;
           }
-          break;
-        default:
+        }
+        default -> {
           matchVars = false;
           continue;
+        }
       }
     }
     return className.equals(clazz)

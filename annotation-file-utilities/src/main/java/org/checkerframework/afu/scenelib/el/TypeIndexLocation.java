@@ -1,9 +1,13 @@
 package org.checkerframework.afu.scenelib.el;
 
-// Gives an index into a class's set of supertypes (-1 = superclass,
-// non-negative integers for implemented interfaces) or into a
-// method's set of thrown exceptions.
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+/**
+ * Gives an index into a class's set of supertypes (-1 = superclass, non-negative integers for
+ * implemented interfaces) or into a method's set of thrown exceptions.
+ */
 public class TypeIndexLocation {
+  /** The index. */
   public final int typeIndex;
 
   public TypeIndexLocation(int typeIndex) {
@@ -15,8 +19,8 @@ public class TypeIndexLocation {
   }
 
   @Override
-  public boolean equals(Object o) {
-    return o instanceof TypeIndexLocation && equals((TypeIndexLocation) o);
+  public boolean equals(@Nullable Object o) {
+    return o instanceof TypeIndexLocation other && equals(other);
   }
 
   @Override

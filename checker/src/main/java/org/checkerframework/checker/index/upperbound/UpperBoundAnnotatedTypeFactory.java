@@ -554,24 +554,24 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       AnnotationMirrorSet annos = atm.getPrimaryAnnotations();
       for (AnnotationMirror anno : annos) {
         switch (AnnotationUtils.annotationName(anno)) {
-          case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+          case ValueAnnotatedTypeFactory.STRINGVAL_NAME -> {
             List<String> strings = vatf.getStringValues(anno);
             if (strings != null && !strings.contains("")) {
               return true;
             }
-            break;
-          case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
+          }
+          case ValueAnnotatedTypeFactory.ARRAYLEN_NAME -> {
             List<Integer> lengths = vatf.getArrayLength(anno);
             if (lengths != null && !lengths.contains(0)) {
               return true;
             }
-            break;
-          default:
+          }
+          default -> {
             Range range = vatf.getRange(anno);
             if (range != null && range.from > 0) {
               return true;
             }
-            break;
+          }
         }
       }
       return false;
@@ -658,29 +658,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       ExpressionTree left = tree.getLeftOperand();
       ExpressionTree right = tree.getRightOperand();
       switch (tree.getKind()) {
-        case PLUS:
-        case MINUS:
-          // Dataflow refines this type if possible
-          type.addAnnotation(UNKNOWN);
-          break;
-        case MULTIPLY:
-          addAnnotationForMultiply(left, right, type);
-          break;
-        case DIVIDE:
-          addAnnotationForDivide(left, right, type);
-          break;
-        case REMAINDER:
-          addAnnotationForRemainder(left, right, type);
-          break;
-        case AND:
-          addAnnotationForAnd(left, right, type);
-          break;
-        case RIGHT_SHIFT:
-        case UNSIGNED_RIGHT_SHIFT:
-          addAnnotationForRightShift(left, right, type);
-          break;
-        default:
-          break;
+        case PLUS, MINUS -> type.addAnnotation(UNKNOWN); // Dataflow refines this type if possible
+        case MULTIPLY -> addAnnotationForMultiply(left, right, type);
+        case DIVIDE -> addAnnotationForDivide(left, right, type);
+        case REMAINDER -> addAnnotationForRemainder(left, right, type);
+        case AND -> addAnnotationForAnd(left, right, type);
+        case RIGHT_SHIFT, UNSIGNED_RIGHT_SHIFT -> addAnnotationForRightShift(left, right, type);
+        default -> {}
       }
       return super.visitBinary(tree, type);
     }
@@ -867,9 +851,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
       ExpressionTree seqTree = getLengthSequenceTree(seqLenTree);
 
-      if (randTree instanceof MethodInvocationTree && seqTree != null) {
-
-        MethodInvocationTree mitree = (MethodInvocationTree) randTree;
+      if (randTree instanceof MethodInvocationTree mitree && seqTree != null) {
 
         if (imf.isMathRandom(mitree, processingEnv)) {
           // Okay, so this is Math.random() * array.length, which must be NonNegative
@@ -906,18 +888,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    * @return a @{@link UpperBoundLiteral} annotation
    */
   public AnnotationMirror createLiteral(int i) {
-    switch (i) {
-      case -1:
-        return NEGATIVEONE;
-      case 0:
-        return ZERO;
-      case 1:
-        return ONE;
-      default:
-        return new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
-            .setValue("value", i)
-            .build();
-    }
+    return switch (i) {
+      case -1 -> NEGATIVEONE;
+      case 0 -> ZERO;
+      case 1 -> ONE;
+      default ->
+          new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
+              .setValue("value", i)
+              .build();
+    };
   }
 
   /**
