@@ -162,8 +162,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * @param list1 the first list of trees
    * @param list2 the second list of trees
    */
-  protected final void assertSameLength(
-      @Nullable List<? extends Tree> list1, @Nullable List<? extends Tree> list2) {
+  protected final void assertSameLength(@Nullable List<?> list1, @Nullable List<?> list2) {
     if (list1 == null || list2 == null) {
       throw new UserError(
           "%s: one list is null: list1=%s list2=%s",
@@ -483,6 +482,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     VariableTree vtree2 = (VariableTree) tree2;
     defaultAction(vtree1, vtree2);
 
+    scan(vtree1.getNameExpression(), vtree2.getNameExpression());
     scan(vtree1.getModifiers(), vtree2.getModifiers());
     scan(vtree1.getType(), vtree2.getType());
     scan(vtree1.getInitializer(), vtree2.getInitializer());
@@ -888,6 +888,16 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
     scan(ntree1.getType(), ntree2.getType());
     scanList(ntree1.getDimensions(), ntree2.getDimensions());
+
+    List<? extends List<? extends AnnotationTree>> dimAnnos1 = ntree1.getDimAnnotations();
+    List<? extends List<? extends AnnotationTree>> dimAnnos2 = ntree2.getDimAnnotations();
+    assertSameLength(dimAnnos1, dimAnnos2);
+    for (int i = 0; i < dimAnnos1.size(); i++) {
+      List<? extends AnnotationTree> annos1 = dimAnnos1.get(i);
+      List<? extends AnnotationTree> annos2 = dimAnnos2.get(i);
+      visitAnnotationList(annos1, annos2);
+    }
+
     scanList(ntree1.getInitializers(), ntree2.getInitializers());
     visitAnnotationList(ntree1.getAnnotations(), ntree2.getAnnotations());
     return null;
