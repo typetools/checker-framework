@@ -91,17 +91,15 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
    */
   private boolean checkAdd(
       @NotOwningCollection LinkedHashKeyedSet<K, V> this, int behavior, V old) {
-    switch (behavior) {
-      case REPLACE:
+    return switch (behavior) {
+      case REPLACE -> {
         remove(old);
-        return true;
-      case IGNORE:
-        return false;
-      case THROW_EXCEPTION:
-        throw new IllegalStateException();
-      default:
-        throw new IllegalArgumentException();
-    }
+        yield true;
+      }
+      case IGNORE -> false;
+      case THROW_EXCEPTION -> throw new IllegalStateException();
+      default -> throw new IllegalArgumentException();
+    };
   }
 
   private static boolean eq(Object x, Object y) {

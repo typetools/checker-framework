@@ -49,8 +49,7 @@ public class ATypeElementWithType extends ATypeElement {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof ATypeElementWithType
-        && ((ATypeElementWithType) o).equalsTypeElementWithType(this);
+    return o instanceof ATypeElementWithType other && other.equalsTypeElementWithType(this);
   }
 
   /** Returns true if this {@link ATypeElementWithType} equals {@code o}. */

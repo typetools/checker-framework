@@ -134,9 +134,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
     // Don't initialize the type arguments if they are empty. The type arguments might be a
     // diamond which should be inferred.
-    if (result instanceof AnnotatedDeclaredType && !args.isEmpty()) {
-      assert result instanceof AnnotatedDeclaredType : tree + " --> " + result;
-      ((AnnotatedDeclaredType) result).setTypeArguments(args);
+    if (result instanceof AnnotatedDeclaredType adt && !args.isEmpty()) {
+      adt.setTypeArguments(args);
     }
     return result;
   }
@@ -217,15 +216,13 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     result.getLowerBound().addAnnotations(annotations);
 
     switch (bounds.size()) {
-      case 0:
-        break;
-      case 1:
-        result.setUpperBound(bounds.get(0));
-        break;
-      default:
+      case 0 -> {}
+      case 1 -> result.setUpperBound(bounds.get(0));
+      default -> {
         AnnotatedIntersectionType intersection = (AnnotatedIntersectionType) result.getUpperBound();
         intersection.setBounds(bounds);
         intersection.copyIntersectionBoundAnnotations();
+      }
     }
 
     return result;
@@ -267,8 +264,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     TypeVariable typeVar = type.getUnderlyingType();
     TypeParameterElement tpe = (TypeParameterElement) typeVar.asElement();
     Element elt = tpe.getGenericElement();
-    if (elt instanceof TypeElement) {
-      TypeElement typeElt = (TypeElement) elt;
+    if (elt instanceof TypeElement typeElt) {
       int idx = typeElt.getTypeParameters().indexOf(tpe);
       if (idx == -1) {
         idx = findIndex(typeElt.getTypeParameters(), tpe);
@@ -285,8 +281,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
       // of type parameter declarations (`TypeParameterTree`), so this call
       // will return a declaration ATV.  So change it to a use.
       return visitTypeParameter(cls.getTypeParameters().get(idx), f).asUse();
-    } else if (elt instanceof ExecutableElement) {
-      ExecutableElement exElt = (ExecutableElement) elt;
+    } else if (elt instanceof ExecutableElement exElt) {
       int idx = exElt.getTypeParameters().indexOf(tpe);
       if (idx == -1) {
         idx = findIndex(exElt.getTypeParameters(), tpe);

@@ -365,17 +365,17 @@ public final class Criteria {
   public boolean onBoundZero() {
     for (Criterion c : criteria.values()) {
       switch (c.getKind()) {
-        case CLASS_BOUND:
-          if (((ClassBoundCriterion) c).boundLoc.boundIndex != 0) {
-            break;
+        case CLASS_BOUND -> {
+          if (((ClassBoundCriterion) c).boundLoc.boundIndex == 0) {
+            return true;
           }
-          return true;
-        case METHOD_BOUND:
-          if (((MethodBoundCriterion) c).boundLoc.boundIndex != 0) {
-            break;
+        }
+        case METHOD_BOUND -> {
+          if (((MethodBoundCriterion) c).boundLoc.boundIndex == 0) {
+            return true;
           }
-          return true;
-        case AST_PATH:
+        }
+        case AST_PATH -> {
           ASTPath astPath = ((ASTPathCriterion) c).astPath;
           if (!astPath.isEmpty()) {
             ASTPath.ASTEntry entry = astPath.getLast();
@@ -383,9 +383,8 @@ public final class Criteria {
               return true;
             }
           }
-          break;
-        default:
-          break;
+        }
+        default -> {}
       }
     }
     return false;

@@ -343,7 +343,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
-      Tree valueTree,
+      Tree errorLocation,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
 
@@ -357,7 +357,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     boolean result = true;
     if (varType.hasPrimaryAnnotation(GuardSatisfied.class)) {
       if (valueType.hasPrimaryAnnotation(GuardedBy.class)) {
-        return checkLock(valueTree, valueType.getPrimaryAnnotation(GuardedBy.class));
+        return checkLock(errorLocation, valueType.getPrimaryAnnotation(GuardedBy.class));
       } else if (valueType.hasPrimaryAnnotation(GuardSatisfied.class)) {
         // TODO: Find a cleaner, non-abstraction-breaking way to know whether method actual
         // parameters are being assigned to formal parameters.
@@ -373,7 +373,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
           if (varTypeGuardSatisfiedIndex == -1 && valueTypeGuardSatisfiedIndex == -1) {
             checker.reportError(
-                valueTree, "guardsatisfied.assignment.disallowed", varType, valueType);
+                errorLocation, "guardsatisfied.assignment.disallowed", varType, valueType);
             result = false;
           }
         } else {
@@ -402,7 +402,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     result =
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs) && result;
+        super.commonAssignmentCheck(varType, valueType, errorLocation, errorKey, extraArgs)
+            && result;
     return result;
   }
 
@@ -627,7 +628,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     // matches those in corresponding locations on the method call site.
 
     ParameterizedExecutableType mType = atypeFactory.methodFromUse(methodInvocationTree);
-    AnnotatedExecutableType invokedMethod = mType.executableType;
+    AnnotatedExecutableType invokedMethod = mType.executableType();
 
     List<AnnotatedTypeMirror> paramTypes =
         AnnotatedTypes.adaptParameters(
@@ -858,20 +859,21 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       tree = TreeUtils.withoutParens(tree);
 
       switch (tree.getKind()) {
-        case MEMBER_SELECT:
+        case MEMBER_SELECT -> {
           if (!isTreeSymbolEffectivelyFinalOrUnmodifiable(tree)) {
             checker.reportError(tree, "lock.expression.not.final", lockExpressionTree);
             return false;
           }
           tree = ((MemberSelectTree) tree).getExpression();
-          break;
-        case IDENTIFIER:
+        }
+        case IDENTIFIER -> {
           if (!isTreeSymbolEffectivelyFinalOrUnmodifiable(tree)) {
             checker.reportError(tree, "lock.expression.not.final", lockExpressionTree);
             return false;
           }
           return result;
-        case METHOD_INVOCATION:
+        }
+        case METHOD_INVOCATION -> {
           Element elem = TreeUtils.elementFromUse(tree);
           if (atypeFactory.getDeclAnnotationNoAliases(elem, Deterministic.class) == null
               && atypeFactory.getDeclAnnotationNoAliases(elem, Pure.class) == null) {
@@ -886,10 +888,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
           }
 
           tree = methodInvocationTree.getMethodSelect();
-          break;
-        default:
+        }
+        default -> {
           checker.reportError(tree, "lock.expression.possibly.not.final", lockExpressionTree);
           return false;
+        }
       }
     }
   }
@@ -1023,23 +1026,16 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     Tree tree = path.getLeaf();
     Tree.Kind kind = tree.getKind();
 
-    switch (kind) {
-      case ARRAY_TYPE:
-      case VARIABLE:
-      case TYPE_CAST:
-      case INSTANCE_OF:
-      case METHOD:
-      case NEW_ARRAY:
-      case TYPE_PARAMETER:
-        // TODO: visitAnnotation does not currently visit annotations on wildcard bounds.
-        // Address this for the Lock Checker somehow and enable these, as well as the
-        // corresponding test cases in ChapterExamples.java
-        // case EXTENDS_WILDCARD:
-        // case SUPER_WILDCARD:
-        return path;
-      default:
-        return null;
-    }
+    return switch (kind) {
+      case ARRAY_TYPE, VARIABLE, TYPE_CAST, INSTANCE_OF, METHOD, NEW_ARRAY, TYPE_PARAMETER ->
+          // TODO: visitAnnotation does not currently visit annotations on wildcard bounds.
+          // Address this for the Lock Checker somehow and enable these, as well as the
+          // corresponding test cases in ChapterExamples.java
+          // case EXTENDS_WILDCARD:
+          // case SUPER_WILDCARD:
+          path;
+      default -> null;
+    };
   }
 
   /**
@@ -1067,8 +1063,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       Tree parent = getCurrentPath().getParentPath().getLeaf();
       // If the parent is not a member select, or if it is and the field is the expression,
       // then the field is accessed via an implicit this.
-      if ((!(parent instanceof MemberSelectTree)
-              || ((MemberSelectTree) parent).getExpression() == tree)
+      if ((!(parent instanceof MemberSelectTree parentMst) || parentMst.getExpression() == tree)
           && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
         AnnotationMirror guardedBy =
             atypeFactory.getSelfType(tree).getPrimaryAnnotationInHierarchy(atypeFactory.GUARDEDBY);

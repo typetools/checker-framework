@@ -405,13 +405,12 @@ public class IndexFileSpecification {
     Set<IPair<String, Annotation>> elementAnnotations = getElementAnnotations(element);
     if (elementAnnotations.isEmpty()) {
       Criteria criteria = clist.criteria();
-      if (element instanceof ATypeElementWithType) {
+      if (element instanceof ATypeElementWithType atewt) {
         // Still insert even if it's a cast insertion with no outer
         // annotations to just insert a cast, or insert a cast with
         // annotations on the compound types.
         IPair<CastInsertion, CloseParenthesisInsertion> pair =
-            createCastInsertion(
-                ((ATypeElementWithType) element).getType(), null, innerTypeInsertions, criteria);
+            createCastInsertion(atewt.getType(), null, innerTypeInsertions, criteria);
         cast = pair.first;
         closeParen = pair.second;
       } else if (!innerTypeInsertions.isEmpty()) {
@@ -454,14 +453,10 @@ public class IndexFileSpecification {
           newI.getType().addAnnotation(annotationString);
         }
         addInsertionSource(newI, annotation);
-      } else if (element instanceof ATypeElementWithType) {
+      } else if (element instanceof ATypeElementWithType atewt) {
         if (cast == null) {
           IPair<CastInsertion, CloseParenthesisInsertion> insertions =
-              createCastInsertion(
-                  ((ATypeElementWithType) element).getType(),
-                  annotationString,
-                  innerTypeInsertions,
-                  criteria);
+              createCastInsertion(atewt.getType(), annotationString, innerTypeInsertions, criteria);
           cast = insertions.first;
           closeParen = insertions.second;
           elementInsertions.add(cast);

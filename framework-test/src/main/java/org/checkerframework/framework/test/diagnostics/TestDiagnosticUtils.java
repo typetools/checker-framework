@@ -140,7 +140,10 @@ public class TestDiagnosticUtils {
    * @param diagnosticString the string to parse
    * @return a diagnostic parsed from the given string
    */
-  @SuppressWarnings("nullness") // TODO: regular expression group access
+  @SuppressWarnings({
+    "nullness", // TODO: regular expression group access
+    "regex:group.count" // group count varies by pattern; callers ensure correct group counts
+  })
   protected static TestDiagnostic fromPatternMatching(
       Pattern diagnosticPattern,
       Pattern warningPattern,
@@ -297,7 +300,7 @@ public class TestDiagnosticUtils {
 
   /**
    * Given a category string that may be prepended with "fixable-", return the category enum that
-   * corresponds with the category and whether or not it is a isFixable error
+   * corresponds with the category and whether or not it is an isFixable error.
    *
    * @param category a category string that may be prepended with "fixable-"
    * @return a pair of the category and whether it was prepended with "fixable-"

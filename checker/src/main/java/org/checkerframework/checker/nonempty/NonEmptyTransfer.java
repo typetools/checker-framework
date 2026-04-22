@@ -212,7 +212,7 @@ public class NonEmptyTransfer extends CFTransfer {
    * @param store the abstract store to update
    */
   private void refineNotEqual(Node left, Node right, CFStore store) {
-    if (!(right instanceof IntegerLiteralNode)) {
+    if (!(right instanceof IntegerLiteralNode integerLiteralNode)) {
       return;
     }
     Integer emptyValue = emptyValue(left);
@@ -221,7 +221,6 @@ public class NonEmptyTransfer extends CFTransfer {
     }
     // In case of a size() comparison, refine the store if the value is 0
     // In case of a indexOf(Object) check, refine the store if the value is -1
-    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) right;
     if (integerLiteralNode.getValue() == (int) emptyValue) {
       store.insertValue(getReceiverJE(left), aTypeFactory.NON_EMPTY);
     }
@@ -243,7 +242,7 @@ public class NonEmptyTransfer extends CFTransfer {
    * @param store the abstract store to update
    */
   private void refineGT(Node left, Node right, CFStore store) {
-    if (!(right instanceof IntegerLiteralNode)) {
+    if (!(right instanceof IntegerLiteralNode integerLiteralNode)) {
       return;
     }
     Integer emptyValue = emptyValue(left);
@@ -252,7 +251,6 @@ public class NonEmptyTransfer extends CFTransfer {
     }
     // In case of a size() comparison, refine the store if the value is 0
     // In case of a indexOf(Object) check, refine the store if the value is -1
-    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) right;
     if (integerLiteralNode.getValue() >= (int) emptyValue) {
       store.insertValue(getReceiverJE(left), aTypeFactory.NON_EMPTY);
     }
@@ -278,7 +276,7 @@ public class NonEmptyTransfer extends CFTransfer {
    * @param store the abstract store to update
    */
   private void refineGTE(Node left, Node right, CFStore store) {
-    if (!(right instanceof IntegerLiteralNode)) {
+    if (!(right instanceof IntegerLiteralNode integerLiteralNode)) {
       return;
     }
     Integer emptyValue = emptyValue(left);
@@ -287,7 +285,6 @@ public class NonEmptyTransfer extends CFTransfer {
     }
     // In case of a size() comparison, refine the store if the value is 0
     // In case of a indexOf(Object) check, refine the store if the value is -1
-    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) right;
     if (integerLiteralNode.getValue() > (int) emptyValue) {
       store.insertValue(getReceiverJE(left), aTypeFactory.NON_EMPTY);
     }
@@ -314,10 +311,9 @@ public class NonEmptyTransfer extends CFTransfer {
       return;
     }
     for (Node caseOperand : caseOperands) {
-      if (!(caseOperand instanceof IntegerLiteralNode)) {
+      if (!(caseOperand instanceof IntegerLiteralNode caseIntegerLiteral)) {
         continue;
       }
-      IntegerLiteralNode caseIntegerLiteral = (IntegerLiteralNode) caseOperand;
       JavaExpression receiver = getReceiverJE(testNode);
       CFStore storeToUpdate =
           caseIntegerLiteral.getValue() > (int) emptyValue ? thenStore : elseStore;

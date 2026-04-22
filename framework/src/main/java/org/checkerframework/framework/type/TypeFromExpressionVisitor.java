@@ -240,17 +240,17 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
       return f.getAnnotatedType(elt);
     }
     switch (elt.getKind()) {
-      case METHOD:
-      case CONSTRUCTOR: // x0.super() in anoymous classes
-      case PACKAGE: // "java.lang" in new java.lang.Short("2")
-      case CLASS: // o instanceof MyClass.InnerClass
-      case RECORD:
-      case ENUM:
-      case INTERFACE: // o instanceof MyClass.InnerInterface
-      case ANNOTATION_TYPE:
+      case METHOD,
+          CONSTRUCTOR, // x0.super() in anoymous classes
+          PACKAGE, // "java.lang" in new java.lang.Short("2")
+          CLASS, // o instanceof MyClass.InnerClass
+          RECORD,
+          ENUM,
+          INTERFACE, // o instanceof MyClass.InnerInterface
+          ANNOTATION_TYPE -> {
         return f.fromElement(elt);
-      default:
-        // Fall-through.
+      }
+      default -> {} // Fall-through.
     }
 
     if (tree.getIdentifier().contentEquals("this")) {
@@ -275,8 +275,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
       TreePath path = f.getPath(tree);
 
       // Only capture the type if this is not the left-hand side of an assignment.
-      if (path != null && path.getParentPath().getLeaf() instanceof AssignmentTree) {
-        AssignmentTree assignmentTree = (AssignmentTree) path.getParentPath().getLeaf();
+      if (path != null && path.getParentPath().getLeaf() instanceof AssignmentTree assignmentTree) {
         @SuppressWarnings("interning:not.interned") // Looking for exact object.
         boolean leftHandSide = assignmentTree.getExpression() != tree;
         if (leftHandSide) {
@@ -377,7 +376,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
   public AnnotatedTypeMirror visitNewClass(NewClassTree tree, AnnotatedTypeFactory f) {
     // Add annotations that are on the constructor declaration.
     AnnotatedDeclaredType returnType =
-        (AnnotatedDeclaredType) f.constructorFromUse(tree).executableType.getReturnType();
+        (AnnotatedDeclaredType) f.constructorFromUse(tree).executableType().getReturnType();
     // Clear the annotations on the return type, so that the explicit annotations can be added
     // first, then the annotations from the return type are added as needed.
     AnnotationMirrorSet fromReturn = new AnnotationMirrorSet(returnType.getPrimaryAnnotations());
@@ -390,7 +389,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
   @Override
   public AnnotatedTypeMirror visitMethodInvocation(
       MethodInvocationTree tree, AnnotatedTypeFactory f) {
-    AnnotatedExecutableType ex = f.methodFromUse(tree).executableType;
+    AnnotatedExecutableType ex = f.methodFromUse(tree).executableType();
     AnnotatedTypeMirror returnT = ex.getReturnType().asUse();
     if (TypesUtils.isCapturedTypeVariable(returnT.getUnderlyingType())
         && !TypesUtils.isCapturedTypeVariable(TreeUtils.typeOf(tree))) {

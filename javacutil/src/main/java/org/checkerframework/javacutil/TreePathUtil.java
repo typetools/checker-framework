@@ -284,13 +284,11 @@ public final class TreePathUtil {
 
     Tree parent = parentPath.getLeaf();
     switch (parent.getKind()) {
-      case ASSIGNMENT: // See below for CompoundAssignmentTree.
-      case LAMBDA_EXPRESSION:
-      case METHOD_INVOCATION:
-      case NEW_ARRAY:
-      case RETURN:
+      case ASSIGNMENT, LAMBDA_EXPRESSION, METHOD_INVOCATION, NEW_ARRAY, RETURN -> {
+        // See below for CompoundAssignmentTree.
         return parent;
-      case NEW_CLASS:
+      }
+      case NEW_CLASS -> {
         @SuppressWarnings("interning:not.interned") // Checking for exact object.
         boolean enclosingExpr =
             ((NewClassTree) parent).getEnclosingExpression() == treePath.getLeaf();
@@ -298,18 +296,21 @@ public final class TreePathUtil {
           return null;
         }
         return parent;
-      case TYPE_CAST:
+      }
+      case TYPE_CAST -> {
         if (isLambdaOrMethodRef) {
           return parent;
         } else {
           return null;
         }
-      case VARIABLE:
+      }
+      case VARIABLE -> {
         if (TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) parent)) {
           return null;
         }
         return parent;
-      case CONDITIONAL_EXPRESSION:
+      }
+      case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree cet = (ConditionalExpressionTree) parent;
         @SuppressWarnings("interning:not.interned") // AST node comparison
         boolean conditionIsLeaf = (cet.getCondition() == treePath.getLeaf());
@@ -320,10 +321,11 @@ public final class TreePathUtil {
         }
         // Otherwise use the context of the ConditionalExpressionTree.
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
-      case PARENTHESIZED:
-      case CASE:
+      }
+      case PARENTHESIZED, CASE -> {
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
-      case YIELD:
+      }
+      case YIELD -> {
         // A yield statement is only legal within a switch expression. Walk up the path
         // to the case tree instead of the switch expression tree so the code remains
         // backward compatible.
@@ -331,26 +333,29 @@ public final class TreePathUtil {
         assert pathToCase != null
             : "@AssumeAssertion(nullness): yield statements must be enclosed in a CaseTree";
         parentPath = pathToCase.getParentPath();
-        parent = parentPath.getLeaf();
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
-      case SWITCH_EXPRESSION:
+      }
+      case SWITCH_EXPRESSION -> {
         @SuppressWarnings("interning:not.interned") // AST node comparison
         boolean switchIsLeaf =
             ((SwitchExpressionTree) parent).getExpression() == treePath.getLeaf();
         if (switchIsLeaf) {
-          // The assignment context for the switch selector expression is simply boolean. No point
-          // in going on.
+          // The assignment context for the conditional guard is simply
+          // boolean. No point in going on.
           return null;
         }
         // Otherwise use the context of the ConditionalExpressionTree.
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
-      default:
+      }
+      default -> {
+
         // 11 Tree.Kinds are CompoundAssignmentTrees,
         // so use instanceof rather than listing all 11.
         if (parent instanceof CompoundAssignmentTree) {
           return parent;
         }
         return null;
+      }
     }
   }
 
@@ -424,23 +429,15 @@ public final class TreePathUtil {
     for (Iterator<Tree> itor = path.iterator(); itor.hasNext(); ) {
       Tree leaf = itor.next();
       switch (leaf.getKind()) {
-        case CLASS:
-        case ENUM:
-        case PARAMETERIZED_TYPE:
+        case CLASS, ENUM, PARAMETERIZED_TYPE -> {
           return prevLeaf instanceof BlockTree;
-
-        case COMPILATION_UNIT:
-          throw new BugInCF("found COMPILATION_UNIT in " + toString(origPath));
-
-        case DO_WHILE_LOOP:
-        case ENHANCED_FOR_LOOP:
-        case FOR_LOOP:
-        case LAMBDA_EXPRESSION:
-        case METHOD:
+        }
+        case COMPILATION_UNIT ->
+            throw new BugInCF("found COMPILATION_UNIT in " + toString(origPath));
+        case DO_WHILE_LOOP, ENHANCED_FOR_LOOP, FOR_LOOP, LAMBDA_EXPRESSION, METHOD -> {
           return false;
-
-        default:
-          prevLeaf = leaf;
+        }
+        default -> prevLeaf = leaf;
       }
     }
     throw new BugInCF("path did not contain method or class: " + toString(origPath));

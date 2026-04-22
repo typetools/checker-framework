@@ -140,8 +140,7 @@ public class AnnotationMirrorSet
   public boolean contains(
       @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
       @Nullable Object o) {
-    return o instanceof AnnotationMirror
-        && AnnotationUtils.containsSame(shadowSet, (AnnotationMirror) o);
+    return o instanceof AnnotationMirror am && AnnotationUtils.containsSame(shadowSet, am);
   }
 
   @Override
@@ -177,8 +176,8 @@ public class AnnotationMirrorSet
 
   @Override
   public boolean remove(@Nullable Object o) {
-    if (o instanceof AnnotationMirror) {
-      AnnotationMirror found = AnnotationUtils.getSame(shadowSet, (AnnotationMirror) o);
+    if (o instanceof AnnotationMirror am) {
+      AnnotationMirror found = AnnotationUtils.getSame(shadowSet, am);
       return found != null && shadowSet.remove(found);
     }
     return false;
@@ -251,10 +250,9 @@ public class AnnotationMirrorSet
     if (o == this) {
       return true;
     }
-    if (!(o instanceof AnnotationMirrorSet)) {
+    if (!(o instanceof AnnotationMirrorSet s)) {
       return false;
     }
-    AnnotationMirrorSet s = (AnnotationMirrorSet) o;
     if (this.size() != s.size()) {
       return false;
     }
