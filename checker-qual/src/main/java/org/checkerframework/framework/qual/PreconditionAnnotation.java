@@ -27,12 +27,12 @@ import java.lang.annotation.Target;
  * org.checkerframework.common.value.qual.MinLen} qualifier:
  *
  * <pre><code>
- * {@literal @}PreconditionAnnotation(qualifier = MinLen.class)
- * {@literal @}Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
- * public {@literal @}interface RequiresMinLen {
- *   String[] value();
- *   {@literal @}QualifierArgument("value")
- *   int targetValue() default 0;
+ *  {@literal @}PreconditionAnnotation(qualifier = MinLen.class)
+ *  {@literal @}Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+ *  public {@literal @}interface RequiresMinLen {
+ *    String[] value();
+ *    {@literal @}QualifierArgument("value")
+ *    int targetValue() default 0;
  * </code></pre>
  *
  * The {@code value} element holds the expressions to which the qualifier applies and {@code
@@ -43,10 +43,10 @@ import java.lang.annotation.Target;
  * {@code @MinLen(2)} upon entry.
  *
  * <pre><code>
- * {@literal @}RequiresMinLen(value = "field", targetValue = 2")
- * public char getThirdCharacter() {
- *   return field.charAt(2);
- * }
+ *  {@literal @}RequiresMinLen(value = "field", targetValue = 2)
+ *  public char getThirdCharacter() {
+ *    return field.charAt(2);
+ *  }
  * </code></pre>
  *
  * @see RequiresQualifier

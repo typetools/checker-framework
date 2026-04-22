@@ -61,16 +61,14 @@ public final class Annotation {
       Object value = fieldValues.get(fieldname);
       String valueString;
       String classString = value.getClass().toString();
-      if (value instanceof Object[]) {
-        Object[] arr = (Object[]) value;
+      if (value instanceof Object[] arr) {
         valueString = Arrays.toString(arr);
         classString += " {";
         for (Object elt : arr) {
           classString += " " + elt.getClass();
         }
         classString += "}";
-      } else if (value instanceof Collection) {
-        Collection<?> coll = (Collection<?>) value;
+      } else if (value instanceof Collection<?> coll) {
         valueString = Arrays.toString(coll.toArray());
         classString += " {";
         for (Object elt : coll) {
@@ -127,13 +125,12 @@ public final class Annotation {
         if (!aft.isValidValue(val)) {
           if (val instanceof Class[]) {
             Class<?>[] vala = (Class[]) val;
-            List<Class<?>> vall = new ArrayList<Class<?>>(vala.length);
+            List<Class<?>> vall = new ArrayList<>(vala.length);
             for (Class<?> elt : vala) {
               vall.add(elt);
             }
             val = vall;
-          } else if (val instanceof Object[]) {
-            Object[] vala = (Object[]) val;
+          } else if (val instanceof Object[] vala) {
             List<Object> vall = new ArrayList<>(vala.length);
             for (Object elt : vala) {
               vall.add(elt.toString());
@@ -203,7 +200,7 @@ public final class Annotation {
    */
   @Override
   public final boolean equals(Object o) {
-    return o instanceof Annotation && equals((Annotation) o);
+    return o instanceof Annotation annotation && equals(annotation);
   }
 
   /**

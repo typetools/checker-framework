@@ -57,8 +57,7 @@ public class InstanceOfCriterion implements Criterion {
       return false;
     }
 
-    if (parent instanceof InstanceOfTree) {
-      InstanceOfTree instanceOfTree = (InstanceOfTree) parent;
+    if (parent instanceof InstanceOfTree instanceOfTree) {
       @SuppressWarnings("interning:not.interned") // reference equality check
       boolean foundLeaf = leaf == instanceOfTree.getType();
       if (!foundLeaf) {
