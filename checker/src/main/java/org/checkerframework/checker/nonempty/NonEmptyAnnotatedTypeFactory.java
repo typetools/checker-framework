@@ -50,7 +50,7 @@ public class NonEmptyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
-      if (!type.hasEffectiveAnnotation(NON_EMPTY)) {
+      if (!type.hasAnnotation(NON_EMPTY)) {
         List<? extends ExpressionTree> initializers = tree.getInitializers();
         if (initializers != null && !initializers.isEmpty()) {
           type.replaceAnnotation(NON_EMPTY);

@@ -348,13 +348,12 @@ public final class SignednessUtil {
    * @param y the second value to compare
    * @return a negative number iff x {@literal <} y, a positive number iff x {@literal >} y, and
    *     zero iff x == y.
+   * @deprecated use {@link Short#compareUnsigned(short, short)}
    */
-  // TODO: deprecate when we require Java 9, which defines Short.compareUnsigned()
-  // * @deprecated use Short.compareUnsigned
-  // @Deprecated // use Short.compareUnsigned
   @SuppressWarnings("signedness")
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static int compareUnsigned(@Unsigned short x, @Unsigned short y) {
-    return Integer.compareUnsigned(Short.toUnsignedInt(x), Short.toUnsignedInt(y));
+    return Short.compareUnsigned(x, y);
   }
 
   /**
@@ -366,11 +365,10 @@ public final class SignednessUtil {
    * @param y the second value to compare
    * @return a negative number iff x {@literal <} y, a positive number iff x {@literal >} y, and
    *     zero iff x == y.
+   * @deprecated use {@link Byte#compareUnsigned(byte, byte)}
    */
-  // TODO: deprecate when we require Java 9, which defines Byte.compareUnsigned()
-  // * @deprecated use Byte.compareUnsigned
-  // @Deprecated // use Byte.compareUnsigned
   @SuppressWarnings("signedness")
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static int compareUnsigned(@Unsigned byte x, @Unsigned byte y) {
     return Integer.compareUnsigned(Byte.toUnsignedInt(x), Byte.toUnsignedInt(y));
   }
@@ -400,13 +398,15 @@ public final class SignednessUtil {
   }
 
   /**
-   * Creates a BigInteger representing the same value as unsigned long.
+   * Creates a BigInteger representing the same value as an unsigned long.
    *
-   * <p>This is a reimplementation of Java 8's {@link Long#toUnsignedBigInteger(long)}.
+   * <p>Java provides no public method with this functionality, unfortunately.
+   *
+   * @param l a long integer
+   * @return the corresponding BigInteger
    */
   @SuppressWarnings("signedness")
   private static @Unsigned BigInteger toUnsignedBigInteger(@Unsigned long l) {
-    // Java 8 version: return Long.toUnsignedBigInteger(l);
     if (l >= 0L) {
       return BigInteger.valueOf(l);
     } else {

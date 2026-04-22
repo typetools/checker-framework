@@ -9,7 +9,7 @@ ext {
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
-  releaseVersion = "3.54.1-SNAPSHOT"
+  releaseVersion = "4.0.1-SNAPSHOT"
 
   releaseVersionRegex = "\\d\\.\\d+\\.\\d+(?:\\.\\d)?"
 
@@ -116,6 +116,11 @@ tasks.register("copyToWebsite", Copy) {
   from(tasks.named("zip", Zip).get().archiveFile.get().toString())
   from("docs") {
     include("checker-framework-webpage.html", "CHANGELOG.md")
+  }
+  from("docs/manual") {
+    into("manual")
+    include("manual.pdf")
+    rename {"checker-framework-manual.pdf"}
   }
 
   from("docs/logo/Logo/CFLogo.png") {

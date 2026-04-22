@@ -65,6 +65,7 @@ public class CodeOffsetAdapter extends ClassVisitor {
   }
 
   @Override
+  @SuppressWarnings("NotJavadoc") // Error Prone flags Javadoc comments on local class methods.
   public MethodVisitor visitMethod(
       int access, String name, String descriptor, String signature, String[] exceptions) {
     MethodVisitor methodVisitor =
@@ -188,15 +189,6 @@ public class CodeOffsetAdapter extends ClassVisitor {
         offset += 8 - (offset & 3);
         offset += 4 + 8 * readInt(offset);
         assert offset > 0 && methodEnd > codeStart + offset;
-      }
-
-      @Deprecated
-      @Override
-      public void visitMethodInsn(int opcode, String owner, String name, String descriptor) {
-        super.visitMethodInsn(opcode, owner, name, descriptor);
-        debug.debug(
-            "%d visitMethodInsn(%d, %s, %s, %s)%n", offset, opcode, owner, name, descriptor);
-        advance(opcode == Opcodes.INVOKEINTERFACE ? 5 : 3);
       }
 
       @Override

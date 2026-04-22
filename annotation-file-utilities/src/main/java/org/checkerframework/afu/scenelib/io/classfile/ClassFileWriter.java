@@ -19,20 +19,26 @@ import org.plumelib.options.Options;
  */
 public class ClassFileWriter {
 
+  /** Do not instantiate. */
+  private ClassFileWriter() {
+    throw new Error("Do not instantiate");
+  }
+
+  /** Print usage information and exit. */
   @Option("-h print usage information and exit")
   public static boolean help = false;
 
-  @Option("print version information and exit")
-  public static boolean version = false;
-
+  /** Print progress messages. */
   @Option("print progress messages")
   public static boolean verbose = false;
 
+  /** The system-specific line separator. */
   private static String linesep = System.getProperty("line.separator");
 
+  /** The usage message. */
   static String usage =
       "usage: insert-annotations [options] class1 indexfile1 class2 indexfile2 ..."
-          + ""
+          + linesep
           + linesep
           + "For each class/index file pair (a.second.C a.second.C.jaif), read annotations from"
           + linesep
@@ -60,7 +66,6 @@ public class ClassFileWriter {
    *
    * <pre>
    *   -h, --help   print usage information and exit
-   *   --version    print version information and exit
    * </pre>
    *
    * @param args options and classes and index files to analyze;
@@ -83,13 +88,8 @@ public class ClassFileWriter {
       throw new Error("unreachable");
     }
 
-    if (version) {
-      System.out.printf("insert-annotations (%s)", ClassFileReader.INDEX_UTILS_VERSION);
-    }
     if (help) {
       options.printUsage();
-    }
-    if (version || help) {
       System.exit(-1);
     }
 

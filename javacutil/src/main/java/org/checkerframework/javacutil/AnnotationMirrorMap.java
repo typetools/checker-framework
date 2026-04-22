@@ -98,8 +98,8 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
   @SuppressWarnings("keyfor:contracts.conditional.postcondition") // delegation
   @Override
   public boolean containsKey(Object key) {
-    if (key instanceof AnnotationMirror) {
-      return AnnotationUtils.containsSame(shadowMap.keySet(), (AnnotationMirror) key);
+    if (key instanceof AnnotationMirror am) {
+      return AnnotationUtils.containsSame(shadowMap.keySet(), am);
     } else {
       return false;
     }
@@ -113,9 +113,8 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
   @Override
   @Pure
   public @Nullable V get(Object key) {
-    if (key instanceof AnnotationMirror) {
-      AnnotationMirror keyAnno =
-          AnnotationUtils.getSame(shadowMap.keySet(), (AnnotationMirror) key);
+    if (key instanceof AnnotationMirror am) {
+      AnnotationMirror keyAnno = AnnotationUtils.getSame(shadowMap.keySet(), am);
       if (keyAnno != null) {
         return shadowMap.get(keyAnno);
       }
@@ -138,9 +137,8 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
 
   @Override
   public @Nullable V remove(Object key) {
-    if (key instanceof AnnotationMirror) {
-      AnnotationMirror keyAnno =
-          AnnotationUtils.getSame(shadowMap.keySet(), (AnnotationMirror) key);
+    if (key instanceof AnnotationMirror am) {
+      AnnotationMirror keyAnno = AnnotationUtils.getSame(shadowMap.keySet(), am);
       if (keyAnno != null) {
         return shadowMap.remove(keyAnno);
       }
