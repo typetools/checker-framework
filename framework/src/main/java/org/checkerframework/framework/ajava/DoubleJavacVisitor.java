@@ -93,7 +93,8 @@ import org.checkerframework.javacutil.UserError;
  * every {@code visitXyz} method.
  *
  * <p>This base visitor does not compare or traverse annotation lists, since annotations may
- * legitimately differ between a Java file and its corresponding {@code .ajava} file.
+ * legitimately differ between a Java file and its corresponding {@code .ajava} file. Subclasses may
+ * change that behavior.
  */
 public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
@@ -151,13 +152,12 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     if (kind1 != kind2) {
       throw new UserError(
           "%s: mismatched kinds: tree1=%s [%s] tree2=%s [%s]",
-          this.getClass().getCanonicalName(), tree1, tree1.getKind(), tree2, tree2.getKind());
+          this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2);
     }
   }
 
   /**
-   * The two list arguments must have the same length. Corresponding elements of {@code list1} and
-   * {@code list2} must have the same AST structure.
+   * The two list arguments must have the same length.
    *
    * @param list1 the first list of trees
    * @param list2 the second list of trees
@@ -196,7 +196,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
       return;
     }
 
-    // For tree types added after JDK 11, the tree classes do not exist at compile time,
+    // For tree types added after JDK 17, the tree classes do not exist at compile time,
     // so we cannot override the visitXyz methods directly.  Handle them via reflection.
     if (visitReflective(tree1, tree2)) {
       return;
@@ -208,7 +208,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
   /**
    * Traverses two lists of trees in lockstep by scanning corresponding elements. For each pair of
-   * corresponding elements index, this method invokes {@link #scan(Tree, Tree)}.
+   * corresponding elements, this method invokes {@link #scan(Tree, Tree)}.
    *
    * <p>The two list arguments must have the same length. Corresponding elements of {@code list1}
    * and {@code list2} must have the same AST structure.
@@ -396,6 +396,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     defaultAction(ptree1, ptree2);
 
     scan(ptree1.getPackageName(), ptree2.getPackageName());
+    visitAnnotationList(ptree1.getAnnotations(), ptree2.getAnnotations());
     return null;
   }
 
@@ -626,7 +627,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * Visits a case clause and scans its labels, guard expression (JDK 21+), body (rule-case, JDK
    * 12+), and statements (statement-case). Uses {@link TreeUtilsAfterJava17.CaseUtils} to handle
    * JDK 12+ and 21+ API differences. For a given case, exactly one of {@code body} or {@code
-   * statements} will be non-null; the code guards against null before calling {@link #scanList}.
+   * statements} will be non-null; {@link #scanList} handles null.
    *
    * @param ctree1 case tree from the first AST
    * @param tree2 case tree from the second AST
