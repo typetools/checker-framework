@@ -751,8 +751,16 @@ tasks.register("docTags", Exec) {
   commandLine("make", "-C", "docs/manual/", "tags")
 }
 
+tasks.register("buildSrcTags", Exec) {
+  group = "Emacs"
+  description = "Create Emacs TAGS table in buildSrc dir."
+  workingDir("buildSrc")
+  // `ctags -e -f TAGS` used to work in place of `etags`, but apparently no longer.
+  commandLine("bash", "-c", "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs etags")
+}
+
 tasks.register("tags", Exec) {
-  dependsOn(docTags)
+  dependsOn(docTags, buildSrcTags)
   description = "Create Emacs TAGS table"
   group = "Emacs"
   // running this task will also run the tags task in the subprojects, which is defined later in this file.
@@ -778,6 +786,7 @@ subprojects {
 
   if (!project.name.startsWith("checker-qual-android")) {
     tasks.register("tags", Exec) {
+      group = "Emacs"
       description = "Create Emacs TAGS table"
       // `ctags -e -f TAGS` used to work in place of `etags`, but apparently no longer.
       commandLine("bash", "-c", "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs etags")
