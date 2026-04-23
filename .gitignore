@@ -173,9 +173,6 @@ dataflow/tests/busyexpr/*.class
 dataflow/tests/busyexpr/Test-test-int.dot
 dataflow/tests/busyexpr/Test-test-int.dot.pdf
 dataflow/tests/busyexpr/methods.txt
-dataflow/tests/busy-expression/Test-test-int.dot
-dataflow/tests/busy-expression/Test-test-int.dot.pdf
-dataflow/tests/busy-expression/methods.txt
 dataflow/tests/cfgconstruction/*.class
 dataflow/tests/constant-propagation/Out.txt
 dataflow/tests/constant-propagation/*.class
