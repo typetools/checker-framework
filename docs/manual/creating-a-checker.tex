@@ -2320,22 +2320,6 @@ You can also use \refclass{dataflow/cfg/visualize}{CFGVisualizeLauncher} to gene
 or String representation of the control flow graph of a given method in a given class.
 The CFG is generated and output, but no dataflow analysis is performed.
 
-\begin{itemize}
-
-\item With JDK 8:
-
-\begin{smaller}
-\begin{Verbatim}
-java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
-  -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-  org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher \
-  MyClass.java --class MyClass --method test --pdf
-\end{Verbatim}
-\end{smaller}
-
-
-\item With JDK 11 or later:
-
 \begin{smaller}
 \begin{Verbatim}
 java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
@@ -2344,18 +2328,15 @@ java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
 \end{Verbatim}
 \end{smaller}
 
-\end{itemize}
-
 \noindent
 The above command will generate the corresponding \<.dot> and \<.pdf> files for the
 method \code{test} in the class \code{MyClass} in the project directory.
 To generate a string representation of the graph to standard output,
-remove \<--pdf> but add \<--string>. For example (with JDK 8):
+remove \<--pdf> but add \<--string>. For example:
 
 \begin{smaller}
 \begin{Verbatim}
-java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
-  -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
+java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
   org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher \
   MyClass.java --class MyClass --method test --string
 \end{Verbatim}

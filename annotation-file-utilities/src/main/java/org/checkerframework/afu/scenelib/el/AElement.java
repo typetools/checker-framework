@@ -98,7 +98,7 @@ public class AElement implements Cloneable {
    */
   @Override
   public boolean equals(Object o) {
-    return o instanceof AElement && ((AElement) o).equals(this);
+    return o instanceof AElement element && element.equals(this);
   }
 
   /**

@@ -75,11 +75,8 @@ public class CastScanner extends CommonScanner {
    * @param offset the offset to add
    */
   public static void addCastToMethod(String methodName, Integer offset) {
-    List<Integer> offsetList = methodNameToCastOffsets.get(methodName);
-    if (offsetList == null) {
-      offsetList = new ArrayList<>();
-      methodNameToCastOffsets.put(methodName, offsetList);
-    }
+    List<Integer> offsetList =
+        methodNameToCastOffsets.computeIfAbsent(methodName, k -> new ArrayList<>());
     if (methodName.equals(prevMethodName) && offset - prevOffset == 3) {
       // consecutive instructions -> nested casts -> reverse order!
       // TODO: other cases for nested casts?

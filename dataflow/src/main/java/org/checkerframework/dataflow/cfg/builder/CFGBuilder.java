@@ -139,35 +139,28 @@ public abstract class CFGBuilder {
     for (Block b : blocks) {
       System.out.print(b.getUid() + ": " + b);
       switch (b.getType()) {
-        case REGULAR_BLOCK:
-        case SPECIAL_BLOCK:
-          {
-            Block succ = ((SingleSuccessorBlockImpl) b).getSuccessor();
-            System.out.println(" -> " + (succ != null ? succ.getUid() : "||"));
-            break;
+        case REGULAR_BLOCK, SPECIAL_BLOCK -> {
+          Block succ = ((SingleSuccessorBlockImpl) b).getSuccessor();
+          System.out.println(" -> " + (succ != null ? succ.getUid() : "||"));
+        }
+        case EXCEPTION_BLOCK -> {
+          Block succ = ((SingleSuccessorBlockImpl) b).getSuccessor();
+          System.out.print(" -> " + (succ != null ? succ.getUid() : "||") + " {");
+          for (Map.Entry<TypeMirror, Set<Block>> entry :
+              ((ExceptionBlockImpl) b).getExceptionalSuccessors().entrySet()) {
+            System.out.print(entry.getKey() + " : " + entry.getValue() + ", ");
           }
-        case EXCEPTION_BLOCK:
-          {
-            Block succ = ((SingleSuccessorBlockImpl) b).getSuccessor();
-            System.out.print(" -> " + (succ != null ? succ.getUid() : "||") + " {");
-            for (Map.Entry<TypeMirror, Set<Block>> entry :
-                ((ExceptionBlockImpl) b).getExceptionalSuccessors().entrySet()) {
-              System.out.print(entry.getKey() + " : " + entry.getValue() + ", ");
-            }
-            System.out.println("}");
-            break;
-          }
-        case CONDITIONAL_BLOCK:
-          {
-            Block tSucc = ((ConditionalBlockImpl) b).getThenSuccessor();
-            Block eSucc = ((ConditionalBlockImpl) b).getElseSuccessor();
-            System.out.println(
-                " -> T "
-                    + (tSucc != null ? tSucc.getUid() : "||")
-                    + " F "
-                    + (eSucc != null ? eSucc.getUid() : "||"));
-            break;
-          }
+          System.out.println("}");
+        }
+        case CONDITIONAL_BLOCK -> {
+          Block tSucc = ((ConditionalBlockImpl) b).getThenSuccessor();
+          Block eSucc = ((ConditionalBlockImpl) b).getElseSuccessor();
+          System.out.println(
+              " -> T "
+                  + (tSucc != null ? tSucc.getUid() : "||")
+                  + " F "
+                  + (eSucc != null ? eSucc.getUid() : "||"));
+        }
       }
     }
   }

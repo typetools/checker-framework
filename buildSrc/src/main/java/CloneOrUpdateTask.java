@@ -13,7 +13,7 @@ public abstract class CloneOrUpdateTask extends GitTask {
   /**
    * The URL to clone or update.
    *
-   * @return the URL to clone or update.
+   * @return the URL to clone or update
    */
   @Input
   public abstract Property<String> getUrl();

@@ -82,10 +82,10 @@ public final class Source {
       // This seems to require that the file names end in .java
       CompilationTask cTask =
           compiler.getTask(null, fileManager, diagnostics, optsList, null, fileObjs);
-      if (!(cTask instanceof JavacTask)) {
+      if (!(cTask instanceof JavacTask javacTask)) {
         throw new CompilerException("could not get a valid JavacTask: " + cTask.getClass());
       }
-      this.task = (JavacTask) cTask;
+      this.task = javacTask;
       this.types = Types.instance(((JavacTaskImpl) cTask).getContext());
 
       // Read the source file into a buffer.

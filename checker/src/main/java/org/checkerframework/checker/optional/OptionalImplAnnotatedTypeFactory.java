@@ -68,14 +68,13 @@ public class OptionalImplAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     MethodInvocationTree mapTree = (MethodInvocationTree) tree;
     ExpressionTree argTree = mapTree.getArguments().get(0);
-    if (!(argTree instanceof MemberReferenceTree)) {
+    if (!(argTree instanceof MemberReferenceTree memberReferenceTree)) {
       return;
     }
     AnnotatedTypeMirror mapReceiver = getReceiverType(mapTree);
     if (mapReceiver == null || !mapReceiver.hasAnnotation(Present.class)) {
       return;
     }
-    MemberReferenceTree memberReferenceTree = (MemberReferenceTree) argTree;
     if (!isReturnTypeNullable(memberReferenceTree)) {
       // The method still could have a @PolyNull on the return and might return null.
       // If @PolyNull is the primary annotation on the parameter and not on any type
