@@ -433,18 +433,10 @@ workflows:
           requires:
             - canary_jobs
 
-      - daikon_part1_jdk25:
-          requires:
-            - canary_jobs
-
-      - daikon_part2_jdk25:
-          requires:
-            - canary_jobs
-
-      - daikon_part3_jdk25:
-          requires:
-            - canary_jobs
-
+      # TEMPORARILY commented until Daikon release 5.8.24.
+      # job_dependences_not_in_canary(canary_version, daikon_part1)
+      # job_dependences_not_in_canary(canary_version, daikon_part2)
+      # job_dependences_not_in_canary(canary_version, daikon_part3)
       - guava_jdk25:
           requires:
             - canary_jobs
