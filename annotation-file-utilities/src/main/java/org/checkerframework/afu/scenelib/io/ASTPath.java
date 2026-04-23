@@ -1325,6 +1325,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
  *
  * @param <E> type of stack elements
  */
+@SuppressWarnings("resourceleak:required.method.not.known") // Not relevant to resources
 class ImmutableStack<E> {
 
   // The stack is implemented as a linked list:
