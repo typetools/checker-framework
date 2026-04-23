@@ -4172,6 +4172,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return true;
       }
       if (subTypeVars.size() != superTypeVars.size()) {
+        // Arity mismatch between the two methods' type parameters; Java will report an error.
         return true;
       }
 
@@ -4186,7 +4187,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           checker.reportError(
               overriderTree,
               "override.typeparam",
-              Integer.toString(i),
+              subVar.getUnderlyingType().asElement().getSimpleName().toString(),
               pair.found,
               pair.required,
               overriderType,

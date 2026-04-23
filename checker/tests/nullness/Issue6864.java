@@ -9,6 +9,7 @@ class Issue6864_A {
 }
 
 class Issue6864_B extends Issue6864_A {
+  // :: error: [override.typeparam]
   <T extends List<@Nullable Integer>> T m(T x) {
     x.add(null);
     return x;
