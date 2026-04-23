@@ -5,7 +5,6 @@ tasks.register("copySources", Copy) {
   includeEmptyDirs = false
   from(files(project(":checker-qual").sourceSets.main.java))
   include("**/*.java")
-  include("**/module-info.java")
   exclude("**/SignednessUtilExtra.java")
 
   // Types annotated with runtime annotations are always kept in the main dex by the default Android Gradle plugin.
