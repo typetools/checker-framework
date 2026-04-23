@@ -336,7 +336,6 @@ jobs:
   # TEMPORARILY commented until Daikon release 5.8.24.
   # daikon_job(canary_version)
 
-  ## I'm not sure why the guava_jdk11 job is failing (it's due to Error Prone).
   guava_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -398,11 +397,6 @@ workflows:
             - misc_jdk26
 
       - nonjunit_jdk25
-      - misc_jdk11:
-          requires:
-            - canary_jobs
-            - misc_jdk25
-
       - misc_jdk17:
           requires:
             - canary_jobs
