@@ -2,7 +2,6 @@ plugins {
   id("groovy-gradle-plugin")
   id("java")
 }
-apply from: file("src/main/groovy/tags.gradle")
 
 repositories {
   gradlePluginPortal()
