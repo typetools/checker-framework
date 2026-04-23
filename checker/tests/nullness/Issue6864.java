@@ -1,13 +1,14 @@
-import java.util.*;
-import org.checkerframework.checker.nullness.qual.*;
+import java.util.LinkedList;
+import java.util.List;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-class A {
+class Issue6864_A {
   <T extends List<Integer>> T m(T x) {
     return x;
   }
 }
 
-class B extends A {
+class Issue6864_B extends Issue6864_A {
   <T extends List<@Nullable Integer>> T m(T x) {
     x.add(null);
     return x;
@@ -16,7 +17,7 @@ class B extends A {
 
 public class Issue6864 {
   public static void main(String[] args) {
-    A x = new B();
+    Issue6864_A x = new Issue6864_B();
     List<Integer> y = new LinkedList<>();
     x.m(y).get(0).toString();
   }
