@@ -61,6 +61,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
+import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
@@ -1196,6 +1197,23 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * Returns the regular store for a given block.
+   *
+   * @param block a block whose regular store to return
+   * @return the regular store of {@code block}
+   */
+  public Store getRegularStore(Block block) {
+    TransferInput<Value, Store> input;
+    if (!analysis.isRunning()) {
+      input = flowResult.getInput(block);
+    } else {
+      input = analysis.getInput(block);
+    }
+
+    return input.getRegularStore();
+  }
+
+  /**
    * Returns the store immediately before a given node.
    *
    * @param node a node whose pre-store to return
@@ -1496,6 +1514,13 @@ public abstract class GenericAnnotatedTypeFactory<
               /* updateInitializationStore= */ false,
               /* isStatic= */ false,
               capturedStore);
+      if (firstIteration) {
+        // Some checkers need a method-level pass after the method CFG is analyzed once but before
+        // contained lambdas enter fixpoint. This hook was added so such logic does not have to live
+        // inside analyze(); the Resource Leak Checker's old workaround for RLLambda.java (#7316)
+        // was the motivating case.
+        postAnalyzeAfterFirstMethodAnalysis(methodCFG);
+      }
       boolean anyLambdaResultChanged = false;
       while (!lambdaQueueInMethod.isEmpty()) {
         IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueueInMethod.remove();
@@ -1561,6 +1586,17 @@ public abstract class GenericAnnotatedTypeFactory<
     }
     return true;
   }
+
+  /**
+   * Perform any additional operations on a method CFG after its first analysis and before any
+   * contained lambdas are analyzed.
+   *
+   * <p>This hook is invoked once per method CFG. If the method contains no lambdas, then this hook
+   * is called after the first analysis and before {@link #postAnalyze(ControlFlowGraph)}.
+   *
+   * @param cfg the method CFG
+   */
+  protected void postAnalyzeAfterFirstMethodAnalysis(ControlFlowGraph cfg) {}
 
   /** Sorts a list of trees with the variables first. */
   private final Comparator<Tree> sortVariablesFirst =
