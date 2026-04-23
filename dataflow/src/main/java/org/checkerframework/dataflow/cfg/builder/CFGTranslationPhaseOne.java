@@ -1895,6 +1895,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(lengthSelect);
       FieldAccessNode lengthAccessNode = new FieldAccessNode(lengthSelect, arrayNode1);
       lengthAccessNode.setInSource(false);
+      // Attach NPE to length access; element access is safe due to prior bounds check and the
+      // synthetic array temp not being reassigned.
       extendWithNodeWithException(lengthAccessNode, nullPointerExceptionType);
 
       BinaryTree lessThan = treeBuilder.buildLessThan(indexUse1, lengthSelect);
