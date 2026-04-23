@@ -255,15 +255,12 @@ public class NullnessVisitor
           // and the value's corresponding argument may be nullable while the variable's
           // is not, report an assignment error.
           if (va.getKind() != TypeKind.WILDCARD
-              && !aa.hasEffectiveAnnotation(NONNULL)
-              && aa.hasEffectiveAnnotation(NULLABLE)
-              && va.hasEffectiveAnnotation(NONNULL)) {
-            String valueTypeString = valueType.toString();
-            String varTypeString = varType.toString();
+              && aa.hasAnnotation(NULLABLE)
+              && va.hasAnnotation(NONNULL)) {
             checker.reportError(
-                valueTree,
+                errorLocation,
                 errorKey,
-                ArraysPlume.concatenate(extraArgs, valueTypeString, varTypeString));
+                ArraysPlume.concatenate(extraArgs, valueType.toString(), varType.toString()));
             return false;
           }
         }
