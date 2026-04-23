@@ -6,63 +6,62 @@ import java.sql.*;
 
 class JdbcResourceLeak {
 
-    // ========== ResultSet Tests ==========
+  // ========== ResultSet Tests ==========
 
-    void resultSetNotClosed(Statement stmt) throws SQLException {
-        ResultSet rs = stmt.executeQuery("SELECT 1");
-        // :: error: [required.method.not.called]
-    }
+  void resultSetNotClosed(Statement stmt) throws SQLException {
+    ResultSet rs = stmt.executeQuery("SELECT 1");
+    // :: error: [required.method.not.called]
+  }
 
-    void resultSetClosed(Statement stmt) throws SQLException {
-        ResultSet rs = stmt.executeQuery("SELECT 1");
-        rs.close();
-    }
+  void resultSetClosed(Statement stmt) throws SQLException {
+    ResultSet rs = stmt.executeQuery("SELECT 1");
+    rs.close();
+  }
 
-    // ========== Statement Tests ==========
+  // ========== Statement Tests ==========
 
-    void statementNotClosed(Connection conn) throws SQLException {
-        Statement stmt = conn.createStatement();
-        // :: error: [required.method.not.called]
-    }
+  void statementNotClosed(Connection conn) throws SQLException {
+    Statement stmt = conn.createStatement();
+    // :: error: [required.method.not.called]
+  }
 
-    void statementClosed(Connection conn) throws SQLException {
-        Statement stmt = conn.createStatement();
-        stmt.close();
-    }
+  void statementClosed(Connection conn) throws SQLException {
+    Statement stmt = conn.createStatement();
+    stmt.close();
+  }
 
-    // ========== PreparedStatement Tests ==========
+  // ========== PreparedStatement Tests ==========
 
-    void preparedStatementNotClosed(Connection conn) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement("SELECT ?");
-        // :: error: [required.method.not.called]
-    }
+  void preparedStatementNotClosed(Connection conn) throws SQLException {
+    PreparedStatement ps = conn.prepareStatement("SELECT ?");
+    // :: error: [required.method.not.called]
+  }
 
-    void preparedStatementClosed(Connection conn) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement("SELECT ?");
-        ps.close();
-    }
+  void preparedStatementClosed(Connection conn) throws SQLException {
+    PreparedStatement ps = conn.prepareStatement("SELECT ?");
+    ps.close();
+  }
 
-    // ========== Nested Resources ==========
+  // ========== Nested Resources ==========
 
-    void nestedBothClosed(Connection conn) throws SQLException {
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT 1");
-        rs.close();
-        stmt.close();
-    }
+  void nestedBothClosed(Connection conn) throws SQLException {
+    Statement stmt = conn.createStatement();
+    ResultSet rs = stmt.executeQuery("SELECT 1");
+    rs.close();
+    stmt.close();
+  }
 
-    void nestedStatementNotClosed(Connection conn) throws SQLException {
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT 1");
-        rs.close();
-        // :: error: [required.method.not.called]
-    }
+  void nestedStatementNotClosed(Connection conn) throws SQLException {
+    Statement stmt = conn.createStatement();
+    ResultSet rs = stmt.executeQuery("SELECT 1");
+    rs.close();
+    // :: error: [required.method.not.called]
+  }
 
-    void nestedResultSetNotClosed(Connection conn) throws SQLException {
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT 1");
-        stmt.close();
-        // :: error: [required.method.not.called]
-    }
-
+  void nestedResultSetNotClosed(Connection conn) throws SQLException {
+    Statement stmt = conn.createStatement();
+    ResultSet rs = stmt.executeQuery("SELECT 1");
+    stmt.close();
+    // :: error: [required.method.not.called]
+  }
 }
