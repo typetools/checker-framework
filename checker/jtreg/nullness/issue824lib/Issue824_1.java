@@ -1,4 +1,4 @@
-public class Class1<Q> {
+public class Issue824_1<Q> {
   class Gen<S> {}
 
   public <T> T methodTypeParam(T t) {
