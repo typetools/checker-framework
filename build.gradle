@@ -753,9 +753,10 @@ tasks.register("docTags", Exec) {
 
 tasks.register("buildSrcTags", Exec) {
   group = "Emacs"
-  description = "Create Emacs TAGS table"
+  description = "Create Emacs TAGS table in buildSrc dir."
+  workingDir("buildSrc")
   // `ctags -e -f TAGS` used to work in place of `etags`, but apparently no longer.
-  commandLine("bash", "-c","cd", "buildSrc", "&&",  "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs etags")
+  commandLine("bash", "-c", "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs etags")
 }
 
 tasks.register("tags", Exec) {
