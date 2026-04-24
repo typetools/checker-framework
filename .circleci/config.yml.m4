@@ -29,23 +29,41 @@ workflows:
             - junit_part1_jdk[]canary_version
             - junit_part2_jdk[]canary_version
             - nonjunit_jdk[]canary_version
+            - inference_part1_jdk[]canary_version
+            - inference_part2_jdk[]canary_version
             - typecheck_part1_jdk[]canary_version
             - typecheck_part2_jdk[]canary_version
             - misc_jdk[]canary_version
             - misc_jdk[]latest_version
 
+job_dependences(canary_version, junit_part1)
+job_dependences(canary_version, junit_part2)
 job_dependences(canary_version, nonjunit)
+job_dependences(canary_version, inference_part1)
+job_dependences(canary_version, inference_part2)
 job_dependences(17, misc)
 job_dependences(21, misc)
 job_dependences(canary_version, misc)
-job_dependences(latest_version, misc)
+      - misc_jdk[]latest_version
 job_dependences(canary_version, typecheck_part1)
 job_dependences(canary_version, typecheck_part2)
 
 ifelse([The following jobs are not canary jobs, so they run after canary jobs succeed.])dnl
-job_dependences_not_in_canary(latest_version, junit)
-job_dependences_not_in_canary(canary_version, inference_part1)
-job_dependences_not_in_canary(canary_version, inference_part2)
+      - junit_jdk17:
+          requires:
+            - canary_jobs
+            - junit_part1_jdk[]canary_version
+            - junit_part2_jdk[]canary_version
+      - junit_jdk21:
+          requires:
+            - canary_jobs
+            - junit_part1_jdk[]canary_version
+            - junit_part2_jdk[]canary_version
+      - junit_jdk[]latest_version:
+          requires:
+            - canary_jobs
+            - junit_part1_jdk[]canary_version
+            - junit_part2_jdk[]canary_version
       # TEMPORARILY commented until Daikon release 5.8.24.
       # job_dependences_not_in_canary(canary_version, daikon_part1)
       # job_dependences_not_in_canary(canary_version, daikon_part2)
