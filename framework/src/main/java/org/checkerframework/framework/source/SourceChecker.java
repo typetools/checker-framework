@@ -76,6 +76,7 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.framework.qual.AnnotatedFor;
+import org.checkerframework.framework.report.SarifReportGenerator;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.OptionConfiguration;
@@ -442,7 +443,8 @@ import org.plumelib.util.UtilPlume;
   // Converts type argument inference crashes into errors. By default, this option is true.
   // Use "-AconvertTypeArgInferenceCrashToWarning=false" to turn this option off and allow type
   // argument inference crashes to crash the type checker.
-  "convertTypeArgInferenceCrashToWarning"
+  "convertTypeArgInferenceCrashToWarning",
+  "sarifOutput"
 })
 public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
 
@@ -627,6 +629,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   protected @Nullable SourceChecker parentChecker;
 
+  /** True if the -AsarifOutput command-line argument was passed. */
+  private boolean sarifOutputEnabled = false;
+
+  /** Path to SARIF output file. */
+  private @Nullable String sarifOutputPath = null;
+
+  /** SARIF report generator, if enabled. */
+  private @Nullable SarifReportGenerator sarifReportGenerator = null;
+
   /** List of upstream checker names. Includes the current checker. */
   protected @MonotonicNonNull List<@FullyQualifiedName String> upstreamCheckerNames;
 
@@ -747,6 +758,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   public @Nullable SourceChecker getParentChecker() {
     return this.parentChecker;
+  }
+
+  /**
+   * Returns the root (ancestor) checker that has no parent.
+   *
+   * @return the root checker (this checker if it has no parent, otherwise the ultimate ancestor)
+   */
+  protected SourceChecker getRootChecker() {
+    SourceChecker root = this;
+    while (root.parentChecker != null) {
+      root = root.parentChecker;
+    }
+    return root;
   }
 
   /**
@@ -1080,6 +1104,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       checker.typeProcessingOver();
     }
 
+    if (parentChecker == null && sarifReportGenerator != null) {
+      assert sarifOutputPath != null;
+      try {
+        sarifReportGenerator.writeReport(sarifOutputPath);
+        message(Diagnostic.Kind.NOTE, "SARIF report written to: " + sarifOutputPath);
+      } catch (IOException e) {
+        message(Diagnostic.Kind.WARNING, "Failed to write SARIF report: " + e.getMessage());
+      }
+    }
+
     super.typeProcessingOver();
   }
 
@@ -1129,6 +1163,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     requirePrefixInWarningSuppressions = hasOption("requirePrefixInWarningSuppressions");
     showPrefixInWarningMessages = hasOption("showPrefixInWarningMessages");
     warnUnneededSuppressions = hasOption("warnUnneededSuppressions");
+    sarifOutputEnabled = hasOption("sarifOutput");
+    // Only create sarifReportGenerator in root checker (no parentChecker)
+    if (sarifOutputEnabled && parentChecker == null) {
+      sarifOutputPath = getOption("sarifOutput");
+      if (sarifOutputPath == null) {
+        throw new UserError("Must supply an argument to -AsarifOutput");
+      }
+      sarifReportGenerator = new SarifReportGenerator(processingEnv);
+    }
   }
 
   /** Output the warning about source level at most once. */
@@ -1506,7 +1549,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (source instanceof Element elem) {
       messager.printMessage(kind, messageText, elem);
     } else if (source instanceof Tree sourceTree) {
-      printOrStoreMessage(kind, messageText, sourceTree, currentRoot);
+      printOrStoreMessage(kind, messageText, sourceTree, currentRoot, messageKey);
     } else {
       throw new BugInCF("invalid position source of class " + source.getClass() + ": " + source);
     }
@@ -1589,14 +1632,24 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param root the compilation unit
    */
   protected void printOrStoreMessage(
-      javax.tools.Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
+      javax.tools.Diagnostic.Kind kind,
+      String message,
+      Tree source,
+      CompilationUnitTree root,
+      String messageKey) {
     assert this.currentRoot == root;
     StackTraceElement[] trace = Thread.currentThread().getStackTrace();
     if (messageStore == null) {
-      printOrStoreMessage(kind, message, source, root, trace);
+      printOrStoreMessage(kind, message, source, root, trace, messageKey);
     } else {
-      CheckerMessage checkerMessage = new CheckerMessage(kind, message, source, this, trace);
+      CheckerMessage checkerMessage =
+          new CheckerMessage(kind, message, source, this, trace, messageKey);
       messageStore.add(checkerMessage);
+    }
+    // Use root checker's sarifReportGenerator so all subcheckers share the same instance
+    SourceChecker rootChecker = getRootChecker();
+    if (rootChecker.sarifReportGenerator != null) {
+      rootChecker.sarifReportGenerator.addResult(kind, message, messageKey, source, root);
     }
   }
 
@@ -1618,7 +1671,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       String message,
       Tree source,
       CompilationUnitTree root,
-      StackTraceElement[] trace) {
+      StackTraceElement[] trace,
+      String messageKey) {
     Trees.instance(processingEnv).printMessage(kind, message, source, root);
     printStackTrace(trace);
   }
@@ -2015,7 +2069,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * <p>Though each checker is run on a whole compilation unit before the next checker is run, error
    * and warning messages are collected and sorted based on the location in the source file before
    * being printed. (See {@link #printOrStoreMessage(Diagnostic.Kind, String, Tree,
-   * CompilationUnitTree)}.)
+   * CompilationUnitTree, String)}.)
    *
    * <p>WARNING: Circular dependencies are not supported. (In other words, if checker A depends on
    * checker B, checker B cannot depend on checker A.) The Checker Framework does not check for
@@ -2299,7 +2353,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return;
     }
     for (CheckerMessage msg : messageStore) {
-      printOrStoreMessage(msg.kind, msg.message, msg.source, unit, msg.trace);
+      printOrStoreMessage(msg.kind, msg.message, msg.source, unit, msg.trace, msg.messageKey);
     }
   }
 
@@ -3529,6 +3583,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     /** The stack trace when the message was created. */
     final StackTraceElement[] trace;
 
+    /** The message key (rule ID) for this message. */
+    final String messageKey;
+
     /**
      * Create a new CheckerMessage.
      *
@@ -3537,18 +3594,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      * @param source tree node causing the error
      * @param checker the type-checker in use
      * @param trace the stack trace when the message is created
+     * @param messageKey the message key (rule ID)
      */
     protected CheckerMessage(
         Diagnostic.Kind kind,
         String message,
         @FindDistinct Tree source,
         @FindDistinct SourceChecker checker,
-        StackTraceElement[] trace) {
+        StackTraceElement[] trace,
+        String messageKey) {
       this.kind = kind;
       this.message = message;
       this.source = source;
       this.checker = checker;
       this.trace = trace;
+      this.messageKey = messageKey;
     }
 
     @Override
