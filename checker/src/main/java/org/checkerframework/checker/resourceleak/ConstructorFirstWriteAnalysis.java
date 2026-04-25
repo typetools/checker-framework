@@ -475,8 +475,8 @@ final class ConstructorFirstWriteAnalysis {
       Element lhsEl = TreeUtils.elementFromUse(node.getVariable());
       if (targetField == lhsEl) {
         // Found an assignment to the same field:
-        //   - current assignment → first write → FIRST_ASSIGNMENT
-        //   - earlier assignment → not first → REASSIGNMENT
+        //   - current assignment → FIRST_ASSIGNMENT
+        //   - different assignment → REASSIGNMENT
         // TODO: Must scan the RHS, to catch a nested assignment to the same field within the RHS,
         // e.g., this.f = (this.f = new Foo()).
         return node == targetAssignment
@@ -488,8 +488,8 @@ final class ConstructorFirstWriteAnalysis {
 
     @Override
     public FirstWriteScanResult visitMethodInvocation(MethodInvocationTree node, Void p) {
-      // Treat any method call before the target assignment as possibly assigning the field,
-      // unless it is a side-effect-free method. An explicit super(...) call is also allowed,
+      // Treat any side-effecting call before the target assignment as possibly assigning the field.
+      // An explicit super(...) call is also allowed,
       // because Java compiler adds a superclass-constructor call even when it is not written
       // explicitly.
       if (cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))
