@@ -43,8 +43,9 @@ final class ConstructorFirstWriteAnalysis {
 
   /**
    * Returns true if the given assignment is the first write to {@code targetField} on its path in
-   * the constructor. This method is conservative: it returns {@code false} unless it can prove that
-   * the write is the first.
+   * the constructor. A true return value means that <em>if</em> the assignment is executed, then it
+   * is the first assignment to the field. This method is conservative: it returns {@code false}
+   * unless it can prove that the write is the first.
    *
    * <p>It returns {@code true} only if all the following hold:
    *
@@ -184,7 +185,7 @@ final class ConstructorFirstWriteAnalysis {
         }
       } else if (stmt instanceof ExpressionStatementTree est) {
         FirstWriteScanResult res =
-            ExpressionFirstWriteScanner.scanExpressionForFirstWrite(
+            ExpressionFirstWriteScanner.scanForFirstWrite(
                 est.getExpression(), targetAssignment, targetField, cmAtf);
         if (res != FirstWriteScanResult.UNASSIGNED) {
           return res;
@@ -195,7 +196,7 @@ final class ConstructorFirstWriteAnalysis {
         ExpressionTree init = vt.getInitializer();
         if (init != null) {
           FirstWriteScanResult res =
-              ExpressionFirstWriteScanner.scanExpressionForFirstWrite(
+              ExpressionFirstWriteScanner.scanForFirstWrite(
                   init, targetAssignment, targetField, cmAtf);
           if (res != FirstWriteScanResult.UNASSIGNED) {
             return res;
@@ -216,7 +217,7 @@ final class ConstructorFirstWriteAnalysis {
 
         // If any catch assigns the field, then initialization is path-dependent (try vs catch).
         // Without control-flow reasoning, conservatively reject.
-        if (catchAssignsField(tryTree, targetField, cmAtf)) {
+        if (catchMayAssignField(tryTree, targetField, cmAtf)) {
           return FirstWriteScanResult.REASSIGNMENT;
         }
 
@@ -230,7 +231,7 @@ final class ConstructorFirstWriteAnalysis {
       } else if (stmt instanceof IfTree ifTree) {
         // Scan the condition first and return any decisive result
         FirstWriteScanResult condRes =
-            ExpressionFirstWriteScanner.scanExpressionForFirstWrite(
+            ExpressionFirstWriteScanner.scanForFirstWrite(
                 ifTree.getCondition(), targetAssignment, targetField, cmAtf);
         if (condRes != FirstWriteScanResult.UNASSIGNED) {
           return condRes;
@@ -287,7 +288,7 @@ final class ConstructorFirstWriteAnalysis {
    * @param cmAtf the factory used for side-effect reasoning
    * @return true if any catch block may assign {@code targetField}
    */
-  private static boolean catchAssignsField(
+  private static boolean catchMayAssignField(
       TryTree tryTree,
       @FindDistinct VariableElement targetField,
       RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
@@ -395,7 +396,7 @@ final class ConstructorFirstWriteAnalysis {
   /**
    * Scanner that scans an expression to determine whether a given assignment is definitely the
    * first write to its field before any earlier assignment or side-effecting call in that
-   * expression. The entry point is {@link #scanExpressionForFirstWrite}.
+   * expression. The entry point is {@link #scanForFirstWrite}.
    *
    * <p>This scanner is used only on expressions that {@link #scanForFirstWrite(List, Tree,
    * VariableElement, RLCCalledMethodsAnnotatedTypeFactory)} has already decided to scan. It does
@@ -437,13 +438,13 @@ final class ConstructorFirstWriteAnalysis {
 
     /**
      * Scans {@code root} to determine whether {@code targetAssignment} is reached before any
-     * disqualifying event within this tree fragment.
+     * disqualifying event within this expression.
      *
      * <p>It returns {@link FirstWriteScanResult#FIRST_ASSIGNMENT} if the target assignment is
      * encountered before any earlier write to {@code targetField} or any potentially side-effecting
-     * call/allocation. It returns {@link FirstWriteScanResult#REASSIGNMENT} if a disqualifying
-     * event is encountered first. Otherwise, it returns {@link FirstWriteScanResult#UNASSIGNED} if
-     * the target assignment does not appear in {@code root}.
+     * call. It returns {@link FirstWriteScanResult#REASSIGNMENT} if a disqualifying event is
+     * encountered first. Otherwise, it returns {@link FirstWriteScanResult#UNASSIGNED} if the field
+     * cannot be assigned {@code root}.
      *
      * @param root the expression to scan
      * @param targetAssignment the target assignment
@@ -451,7 +452,7 @@ final class ConstructorFirstWriteAnalysis {
      * @param cmAtf the factory for side-effect reasoning
      * @return the scan result for {@code root}
      */
-    static FirstWriteScanResult scanExpressionForFirstWrite(
+    static FirstWriteScanResult scanForFirstWrite(
         ExpressionTree root,
         @FindDistinct Tree targetAssignment,
         @FindDistinct VariableElement targetField,
