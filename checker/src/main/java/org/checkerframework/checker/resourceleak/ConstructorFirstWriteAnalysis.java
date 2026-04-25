@@ -55,6 +55,9 @@ final class ConstructorFirstWriteAnalysis {
    *       field or a disqualifying side effect before reaching the target assignment.
    * </ul>
    *
+   * Don't use this for final fields, because the Java compiler already guarantees they are assigned
+   * exactly once.
+   *
    * @param assignment the assignment tree being analyzed, which is a statement in the body of
    *     {@code constructor}
    * @param targetField the non-final private field assigned by {@code assignment}; its type is
@@ -88,10 +91,9 @@ final class ConstructorFirstWriteAnalysis {
       return false;
     }
 
-    // (3): Single-pass conservative scan of the constructor body in source order.
+    // (3): Single-pass conservative scan of the constructor body.
     FirstWriteScanResult r =
-        scanStatementsForFirstWrite(
-            constructor.getBody().getStatements(), assignment, targetField, cmAtf);
+        scanForFirstWrite(constructor.getBody().getStatements(), assignment, targetField, cmAtf);
     return r == FirstWriteScanResult.FIRST_ASSIGNMENT;
   }
 
@@ -110,7 +112,7 @@ final class ConstructorFirstWriteAnalysis {
       @FindDistinct VariableElement targetField,
       RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
     for (Tree member : classTree.getMembers()) {
-      // Non-null inline initializer on the field declaration.
+      // Look for a non-null inline initializer on the field declaration.
       if (member instanceof VariableTree decl) {
         VariableElement declElement = TreeUtils.elementFromDeclaration(decl);
         if (targetField == declElement
@@ -148,19 +150,18 @@ final class ConstructorFirstWriteAnalysis {
   }
 
   /**
-   * Scans constructor-body statements in {@code stmts} in source order to determine whether {@code
+   * Scans constructor-body statements in {@code stmts} to determine whether {@code
    * targetAssignment} is definitely the first write to {@code targetField} in this constructor
    * fragment.
    *
    * <p>Field initializers and instance initializer blocks are checked separately by {@link
-   * #isFirstWriteToFieldInConstructor(Tree, VariableElement, MethodTree,
-   * RLCCalledMethodsAnnotatedTypeFactory)}.
+   * #mayBeAssignedInInitializer}.
    *
    * <p>This helper is conservative and does not model every statement form. Unsupported constructs
    * are documented inline below and conservatively return {@link
    * FirstWriteScanResult#REASSIGNMENT}.
    *
-   * @param stmts statements to scan in source order
+   * @param stmts statements to scan
    * @param targetAssignment the assignment under test
    * @param targetField the field assigned by {@code targetAssignment}
    * @param cmAtf the factory used for side-effect reasoning
@@ -169,34 +170,28 @@ final class ConstructorFirstWriteAnalysis {
    *     write, disallowed call/allocation, or unsupported statement form prevents proving that;
    *     otherwise {@link FirstWriteScanResult#UNASSIGNED}
    */
-  private static FirstWriteScanResult scanStatementsForFirstWrite(
+  private static FirstWriteScanResult scanForFirstWrite(
       List<? extends StatementTree> stmts,
       Tree targetAssignment,
       VariableElement targetField,
       RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
     for (StatementTree stmt : stmts) {
       if (stmt instanceof BlockTree blockTree) {
-        // Nested blocks preserve source order, so scan them recursively.
         FirstWriteScanResult r =
-            scanStatementsForFirstWrite(
-                blockTree.getStatements(), targetAssignment, targetField, cmAtf);
+            scanForFirstWrite(blockTree.getStatements(), targetAssignment, targetField, cmAtf);
         if (r != FirstWriteScanResult.UNASSIGNED) {
           return r;
         }
-        continue;
-      }
-
-      if (stmt instanceof ExpressionStatementTree est) {
+      } else if (stmt instanceof ExpressionStatementTree est) {
         FirstWriteScanResult res =
             ExpressionFirstWriteScanner.scanExpressionForFirstWrite(
                 est.getExpression(), targetAssignment, targetField, cmAtf);
         if (res != FirstWriteScanResult.UNASSIGNED) {
           return res;
         }
-        continue;
-      }
-
-      if (stmt instanceof VariableTree vt) {
+      } else if (stmt instanceof VariableTree vt) {
+        // The compiler has already desugered a declaration with multiple variables
+        // (e.g., int a = 1, b = 2;) into multiple independent VariableTree nodes.
         ExpressionTree init = vt.getInitializer();
         if (init != null) {
           FirstWriteScanResult res =
@@ -206,10 +201,7 @@ final class ConstructorFirstWriteAnalysis {
             return res;
           }
         }
-        continue;
-      }
-
-      if (stmt instanceof TryTree tryTree) {
+      } else if (stmt instanceof TryTree tryTree) {
 
         // finally introduces ordering across try/catch that requires CFG reasoning
         if (tryTree.getFinallyBlock() != null) {
@@ -230,15 +222,12 @@ final class ConstructorFirstWriteAnalysis {
 
         // Scan the try block body only (catch blocks are handled above).
         FirstWriteScanResult res =
-            scanStatementsForFirstWrite(
+            scanForFirstWrite(
                 tryTree.getBlock().getStatements(), targetAssignment, targetField, cmAtf);
         if (res != FirstWriteScanResult.UNASSIGNED) {
           return res;
         }
-        continue;
-      }
-
-      if (stmt instanceof IfTree ifTree) {
+      } else if (stmt instanceof IfTree ifTree) {
         // Scan the condition first and return any decisive result
         FirstWriteScanResult condRes =
             ExpressionFirstWriteScanner.scanExpressionForFirstWrite(
@@ -256,25 +245,22 @@ final class ConstructorFirstWriteAnalysis {
         // If the target assignment is in one branch, only that branch is on the path to the
         // target assignment. Return the result after scanning that branch.
         if (targetInThen) {
-          return scanStatementsForFirstWrite(
-              List.of(thenStmt), targetAssignment, targetField, cmAtf);
+          return scanForFirstWrite(List.of(thenStmt), targetAssignment, targetField, cmAtf);
         }
         if (targetInElse) {
-          return scanStatementsForFirstWrite(
-              List.of(elseStmt), targetAssignment, targetField, cmAtf);
+          return scanForFirstWrite(List.of(elseStmt), targetAssignment, targetField, cmAtf);
         }
 
         // Otherwise, the target assignment is after the if statement, so either branch may execute
         // before the target assignment.
         FirstWriteScanResult thenRes =
-            scanStatementsForFirstWrite(List.of(thenStmt), targetAssignment, targetField, cmAtf);
+            scanForFirstWrite(List.of(thenStmt), targetAssignment, targetField, cmAtf);
 
         // The else branch may not exist
         FirstWriteScanResult elseRes =
             elseStmt == null
                 ? FirstWriteScanResult.UNASSIGNED
-                : scanStatementsForFirstWrite(
-                    List.of(elseStmt), targetAssignment, targetField, cmAtf);
+                : scanForFirstWrite(List.of(elseStmt), targetAssignment, targetField, cmAtf);
 
         // If both branches are unassigned, then continue scanning after the if statement.
         if (thenRes == FirstWriteScanResult.UNASSIGNED
@@ -282,11 +268,11 @@ final class ConstructorFirstWriteAnalysis {
           continue;
         }
         return FirstWriteScanResult.REASSIGNMENT;
+      } else {
+        // Any other statement kind requires control-flow-aware reasoning that this helper does not
+        // attempt. Conservatively reject all of them.
+        return FirstWriteScanResult.REASSIGNMENT;
       }
-
-      // Any other statement kind requires control-flow-aware reasoning that this helper does not
-      // attempt. Conservatively reject all of them.
-      return FirstWriteScanResult.REASSIGNMENT;
     }
 
     return FirstWriteScanResult.UNASSIGNED;
@@ -411,9 +397,9 @@ final class ConstructorFirstWriteAnalysis {
    * first write to its field before any earlier assignment or side-effecting call in that
    * expression. The entry point is {@link #scanExpressionForFirstWrite}.
    *
-   * <p>This scanner is used only on expressions that {@link #scanStatementsForFirstWrite(List,
-   * Tree, VariableElement, RLCCalledMethodsAnnotatedTypeFactory)} has already decided to scan. It
-   * does not handle field initializers, static or instance initializer blocks, or statement-level
+   * <p>This scanner is used only on expressions that {@link #scanForFirstWrite(List, Tree,
+   * VariableElement, RLCCalledMethodsAnnotatedTypeFactory)} has already decided to scan. It does
+   * not handle field initializers, static or instance initializer blocks, or statement-level
    * control-flow constructs.
    *
    * <p>If it is used on an unsupported fragment, the result is conservative only with respect to
