@@ -35,7 +35,6 @@ workflows:
             - misc_jdk[]latest_version
 
 job_dependences(canary_version, nonjunit)
-job_dependences(11, misc)
 job_dependences(17, misc)
 job_dependences(21, misc)
 job_dependences(canary_version, misc)
@@ -47,9 +46,10 @@ ifelse([The following jobs are not canary jobs, so they run after canary jobs su
 job_dependences_not_in_canary(latest_version, junit)
 job_dependences_not_in_canary(canary_version, inference_part1)
 job_dependences_not_in_canary(canary_version, inference_part2)
-job_dependences_not_in_canary(canary_version, daikon_part1)
-job_dependences_not_in_canary(canary_version, daikon_part2)
-job_dependences_not_in_canary(canary_version, daikon_part3)
+      # TEMPORARILY commented until Daikon release 5.8.24.
+      # job_dependences_not_in_canary(canary_version, daikon_part1)
+      # job_dependences_not_in_canary(canary_version, daikon_part2)
+      # job_dependences_not_in_canary(canary_version, daikon_part3)
 job_dependences_not_in_canary(canary_version, guava)
 job_dependences_not_in_canary(canary_version, plume_lib)
 

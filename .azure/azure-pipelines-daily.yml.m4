@@ -65,10 +65,11 @@ typecheck_job(21)
 typecheck_job(canary_version)
 typecheck_job(latest_version)
 
-daikon_job(17)
-daikon_job(21)
-daikon_job(canary_version)
-daikon_job(latest_version)
+  # TEMPORARILY commented until Daikon release 5.8.24.
+  # daikon_job(17)
+  # daikon_job(21)
+  # daikon_job(canary_version)
+  # daikon_job(latest_version)
 
 guava_job(17)
 guava_job(21)
