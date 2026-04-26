@@ -151,14 +151,14 @@ public class CollectionOwnershipAnnotatedTypeFactory
 
   /**
    * Maps the AST-tree corresponding to the loop condition of a collection-obligation-fulfilling
-   * loop to the loop wrapper.
+   * loop to the loop wrapper. TODO: remove
    */
   private static final Map<Tree, ResolvedPotentiallyFulfillingCollectionLoop>
       conditionToVerifiedFulfillingLoopMap = new HashMap<>();
 
   /**
    * Maps the cfg-block corresponding to the loop conditional block of a
-   * collection-obligation-fulfilling loop to the loop wrapper.
+   * collection-obligation-fulfilling loop to the loop wrapper. TODO: remove
    */
   private static final Map<Block, ResolvedPotentiallyFulfillingCollectionLoop>
       conditionalBlockToVerifiedFulfillingLoopMap = new HashMap<>();
@@ -181,6 +181,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *
    * @param tree a tree that is potentially the condition for a fulfilling loop
    * @return the collection-obligation-fulfilling loop for which the given tree is the condition
+   *     TODO: remove
    */
   public static ResolvedPotentiallyFulfillingCollectionLoop getFulfillingLoopForCondition(
       Tree tree) {
@@ -193,7 +194,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *
    * @param block the block that is potentially the conditional block for a fulfilling loop
    * @return the collection-obligation-fulfilling loop for which the given block is the CFG
-   *     conditional block
+   *     conditional block TODO: remove
    */
   public static ResolvedPotentiallyFulfillingCollectionLoop getFulfillingLoopForConditionalBlock(
       Block block) {
