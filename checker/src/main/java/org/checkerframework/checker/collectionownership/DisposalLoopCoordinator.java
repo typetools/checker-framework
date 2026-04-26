@@ -21,10 +21,10 @@ public final class DisposalLoopCoordinator {
   private final CollectionOwnershipAnnotatedTypeFactory coAtf;
 
   /** Map from a loop-condition {@code Tree} to its corresponding {@link DisposalLoop}. */
-  private final Map<Tree, DisposalLoop> conditionToDisposalLoopMap = new IdentityHashMap<>();
+  private final IdentityHashMap<Tree, DisposalLoop> conditionToDisposalLoopMap = new IdentityHashMap<>();
 
   /** Map from a loop's conditional {@code Block} to its corresponding {@link DisposalLoop} */
-  private final Map<Block, DisposalLoop> conditionalBlockToDisposalLoopMap =
+  private final IdentityHashMap<Block, DisposalLoop> conditionalBlockToDisposalLoopMap =
       new IdentityHashMap<>();
 
   /** Map from a {@link DisposalLoop} to the called-methods proven by MCCA for that loop. */
