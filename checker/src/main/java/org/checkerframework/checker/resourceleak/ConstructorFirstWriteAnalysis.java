@@ -532,13 +532,8 @@ final class ConstructorFirstWriteAnalysis {
     @Override
     public FirstWriteScanResult reduce(FirstWriteScanResult r1, FirstWriteScanResult r2) {
       // Preserve the first decisive result found among the children.
-      // In practice r1 and r2 are never null, because the overridden scan() normalizes null to
-      // UNASSIGNED before reduce() is ever called. The null checks are retained for robustness.
-      if (r1 != null && r1 != FirstWriteScanResult.UNASSIGNED) {
+      if (r1 != FirstWriteScanResult.UNASSIGNED) {
         return r1;
-      }
-      if (r2 == null) {
-        return FirstWriteScanResult.UNASSIGNED;
       }
       return r2;
     }
