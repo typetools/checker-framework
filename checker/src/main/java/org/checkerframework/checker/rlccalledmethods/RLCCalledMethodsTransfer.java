@@ -9,10 +9,12 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
+import org.checkerframework.checker.collectionownership.DisposalLoop;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
+import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -67,25 +69,13 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
   public AccumulationStore initialStore(
       UnderlyingAST underlyingAST, List<LocalVariableNode> parameters) {
     AccumulationStore store = super.initialStore(underlyingAST, parameters);
-    RLCCalledMethodsAnnotatedTypeFactory cmAtf =
-        (RLCCalledMethodsAnnotatedTypeFactory) this.analysis.getTypeFactory();
-    for (RLCCalledMethodsAnnotatedTypeFactory.PotentiallyFulfillingCollectionLoop
-        potentiallyFulfillingCollectionLoop :
-            cmAtf.getPotentiallyFulfillingCollectionLoops(underlyingAST)) {
+    for (DisposalLoop disposalLoop :
+        ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(rlTypeFactory)
+            .getPreparedDisposalLoops(underlyingAST)) {
       IteratedCollectionElement collectionElementJE =
           new IteratedCollectionElement(
-              potentiallyFulfillingCollectionLoop.collectionElementNode,
-              potentiallyFulfillingCollectionLoop.collectionElementTree);
-      store.insertValue(collectionElementJE, cmAtf.top);
-    }
-    for (RLCCalledMethodsAnnotatedTypeFactory.ResolvedPotentiallyFulfillingCollectionLoop
-        resolvedPotentiallyFulfillingLoop :
-            cmAtf.getResolvedPotentiallyFulfillingCollectionLoops(underlyingAST)) {
-      IteratedCollectionElement collectionElementJE =
-          new IteratedCollectionElement(
-              resolvedPotentiallyFulfillingLoop.collectionElementNode,
-              resolvedPotentiallyFulfillingLoop.collectionElementTree);
-      store.insertValue(collectionElementJE, cmAtf.top);
+              disposalLoop.iteratedElementNode, disposalLoop.iteratedElementTree);
+      store.insertValue(collectionElementJE, rlTypeFactory.top);
     }
     return store;
   }

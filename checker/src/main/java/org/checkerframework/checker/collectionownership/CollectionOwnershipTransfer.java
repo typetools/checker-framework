@@ -10,7 +10,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
-import org.checkerframework.checker.collectionownership.DisposalLoopCoordinator.DisposalLoop;
 import org.checkerframework.checker.collectionownership.qual.CollectionFieldDestructor;
 import org.checkerframework.checker.collectionownership.qual.CreatesCollectionObligation;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;

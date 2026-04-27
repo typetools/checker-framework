@@ -43,7 +43,8 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipStore;
-import org.checkerframework.checker.collectionownership.DisposalLoopCoordinator.DisposalLoop;
+import org.checkerframework.checker.collectionownership.CollectionOwnershipUtils;
+import org.checkerframework.checker.collectionownership.DisposalLoop;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -54,7 +55,6 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnalysis;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
-import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory.ResolvedPotentiallyFulfillingCollectionLoop;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsVisitor;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
@@ -801,7 +801,7 @@ public class MustCallConsistencyAnalyzer {
    */
   private Set<Block> computeBlocksThatCanReachRegularExit(ControlFlowGraph cfg) {
     Block entry = cfg.getEntryBlock();
-    Set<Block> reachable = RLCCalledMethodsAnnotatedTypeFactory.reachableFrom(entry);
+    Set<Block> reachable = CollectionOwnershipUtils.reachableFrom(entry);
     Block normalExit = cfg.getRegularExitBlock();
     Set<Block> exitBlocks = new HashSet<>();
     if (reachable.contains(normalExit)) {
@@ -3477,12 +3477,11 @@ public class MustCallConsistencyAnalyzer {
    * @return the called-methods for the loop on the iterated element, or {@code null} if there's no
    *     definite called-methods on the iterated element of the loop
    */
-  public Set<String> analyzeDisposalLoop(
-      ControlFlowGraph cfg, ResolvedPotentiallyFulfillingCollectionLoop disposalLoop) {
+  public Set<String> analyzeDisposalLoop(ControlFlowGraph cfg, DisposalLoop disposalLoop) {
 
     // ensure checked loop is initialized in a valid way
     Objects.requireNonNull(
-        disposalLoop.collectionElementTree,
+        disposalLoop.iteratedElementTree,
         "CollectionElementAccess tree provided to analyze loop body of an"
             + " CFG-resolved potentially fulfilling collection loop is null.");
     Objects.requireNonNull(
@@ -3496,7 +3495,7 @@ public class MustCallConsistencyAnalyzer {
 
     Block loopBodyEntryBlock = disposalLoop.loopBodyEntryBlock;
     Block loopUpdateBlock = disposalLoop.loopUpdateBlock;
-    Tree collectionElement = disposalLoop.collectionElementTree;
+    Tree collectionElement = disposalLoop.iteratedElementTree;
 
     boolean emptyLoopBody = loopBodyEntryBlock.equals(loopUpdateBlock);
     if (emptyLoopBody) {
@@ -3674,7 +3673,7 @@ public class MustCallConsistencyAnalyzer {
    * aliases.
    *
    * @param lastLoopBodyBlock last block of loop body
-   * @param resolvedPotentiallyFulfillingLoop loop wrapper of the loop to analyze
+   * @param disposalLoop loop wrapper of the loop to analyze
    * @param obligations the set of tracked obligations
    * @param loopUpdateBlock block that updates the loop
    * @return the union of methods in the CalledMethods type of the collection element and all its
@@ -3682,7 +3681,7 @@ public class MustCallConsistencyAnalyzer {
    */
   private Set<String> analyzeTypeOfCollectionElement(
       Block lastLoopBodyBlock,
-      ResolvedPotentiallyFulfillingCollectionLoop resolvedPotentiallyFulfillingLoop,
+      DisposalLoop disposalLoop,
       Set<Obligation> obligations,
       Block loopUpdateBlock) {
     AccumulationStore store = null;
@@ -3698,7 +3697,7 @@ public class MustCallConsistencyAnalyzer {
       store = cmAtf.getStoreAfter(lastLoopBodyBlock.getLastNode());
     }
     Obligation collectionElementObligation =
-        getObligationForVar(obligations, resolvedPotentiallyFulfillingLoop.collectionElementTree);
+        getObligationForVar(obligations, disposalLoop.iteratedElementTree);
     if (collectionElementObligation == null) {
       // the loop did something weird. Might have reassigned the collection element.
       // The sound thing to do is return an empty list.
@@ -3714,8 +3713,7 @@ public class MustCallConsistencyAnalyzer {
     // add the called methods of the ICE
     IteratedCollectionElement ice =
         store.getIteratedCollectionElement(
-            resolvedPotentiallyFulfillingLoop.collectionElementNode,
-            resolvedPotentiallyFulfillingLoop.collectionElementTree);
+            disposalLoop.iteratedElementNode, disposalLoop.iteratedElementTree);
     if (ice != null) {
       AccumulationValue cmValOfIce = store.getValue(ice);
       List<String> calledMethods = getCalledMethods(cmValOfIce);

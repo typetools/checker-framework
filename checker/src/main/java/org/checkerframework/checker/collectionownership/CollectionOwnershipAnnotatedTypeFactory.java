@@ -41,7 +41,6 @@ import org.checkerframework.checker.resourceleak.MustCallInference;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
-import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory.ResolvedPotentiallyFulfillingCollectionLoop;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
@@ -82,8 +81,22 @@ public class CollectionOwnershipAnnotatedTypeFactory
    */
   private final MustCallAnnotatedTypeFactory mcAtf;
 
-  /** Stores disposal loops, their metadata and MCCA called-method facts. */
-  private final DisposalLoopCoordinator disposalLoopCoordinator;
+  // TODO: review moved disposal-loop docs in this file.
+  /** Map from a loop-condition {@code Tree} to its corresponding {@link DisposalLoop}. */
+  private final IdentityHashMap<Tree, DisposalLoop> conditionToDisposalLoopMap =
+      new IdentityHashMap<>();
+
+  /** Map from a loop's conditional {@code Block} to its corresponding {@link DisposalLoop}. */
+  private final IdentityHashMap<Block, DisposalLoop> conditionalBlockToDisposalLoopMap =
+      new IdentityHashMap<>();
+
+  /** Map from a {@link DisposalLoop} to the called-methods computed by MCCA for that loop. */
+  private final IdentityHashMap<DisposalLoop, Set<String>> disposalLoopToMCCACalledMethodsMap =
+      new IdentityHashMap<>();
+
+  /** Map from a method to the disposal loops discovered for it before CM analysis. */
+  private final IdentityHashMap<MethodTree, LinkedHashSet<DisposalLoop>>
+      preparedDisposalLoopsByMethod = new IdentityHashMap<>();
 
   /** The {@code @}{@link NotOwningCollection} annotation. */
   public final AnnotationMirror TOP;
@@ -167,64 +180,203 @@ public class CollectionOwnershipAnnotatedTypeFactory
     BOTTOM = AnnotationBuilder.fromClass(elements, OwningCollectionBottom.class);
     POLY = AnnotationBuilder.fromClass(elements, PolyOwningCollection.class);
     mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(checker);
-    disposalLoopCoordinator = new DisposalLoopCoordinator(this);
     this.postInit();
   }
 
   /**
-   * Returns the {@link DisposalLoopCoordinator.DisposalLoop} for the given loop-condition tree, if
-   * one exists.
+   * Returns the {@link DisposalLoop} corresponding to the loop condition {@code tree}, if one
+   * exists.
    *
-   * @param tree the loop-condition tree
-   * @return the disposal loop for {@code tree}, or {@code null} if none exists
+   * @param tree the condition tree
+   * @return the {@link DisposalLoop} for condition {@code tree} if exists, otherwise {@code null}.
    */
-  public DisposalLoopCoordinator.DisposalLoop getDisposalLoopForConditionTree(Tree tree) {
-    return disposalLoopCoordinator.getDisposalLoopForConditionTree(tree);
+  public @Nullable DisposalLoop getDisposalLoopForConditionTree(Tree tree) {
+    return conditionToDisposalLoopMap.get(tree);
   }
 
   /**
-   * Returns the {@link DisposalLoopCoordinator.DisposalLoop} for the given loop-condition block, if
-   * one exists.
+   * Returns the {@link DisposalLoop} corresponding to the loop conditional {@code block}, if one
+   * exists.
    *
    * @param block the loop-condition block
-   * @return the disposal loop for {@code block}, or {@code null} if none exists
+   * @return the {@link DisposalLoop} for conditional {@code block} if exists, otherwise {@code
+   *     null}.
    */
-  public DisposalLoopCoordinator.DisposalLoop getDisposalLoopForConditionBlock(Block block) {
-    return disposalLoopCoordinator.getDisposalLoopForConditionBlock(block);
+  public @Nullable DisposalLoop getDisposalLoopForConditionBlock(Block block) {
+    return conditionalBlockToDisposalLoopMap.get(block);
   }
 
   /**
    * Returns the called-methods computed by MCCA for a disposal loop.
    *
    * @param disposalLoop the disposal loop
-   * @return the MCCA called-methods for {@code disposalLoop}, or {@code null} if none are
-   *     registered
+   * @return the MCCA called-methods for {@code disposalLoop}, or {@code null} if none are populated
    */
-  public @Nullable Set<String> getMccaCalledMethods(
-      DisposalLoopCoordinator.DisposalLoop disposalLoop) {
-    return disposalLoopCoordinator.getMCCACalledMethods(disposalLoop);
+  public @Nullable Set<String> getMccaCalledMethods(DisposalLoop disposalLoop) {
+    return disposalLoopToMCCACalledMethodsMap.get(disposalLoop);
   }
 
   /**
-   * Registers the MCCA called-methods for an RLCC-resolved disposal loop.
+   * Returns true if the checker should ignore exceptional control flow due to the given exception
+   * type.
    *
-   * <p>This bridge exists only until disposal-loop discovery and proof are fully coordinated by CO.
-   *
-   * @param resolvedLoop the RLCC-resolved loop whose MCCA analysis produced called-methods
-   *     TODO:SM:COMEBACK TO THIS
+   * @param exceptionType exception type
+   * @return true if {@code exceptionType} is ignored by collection-ownership flow
    */
-  public void registerCalledMethodsForDisposalLoop(
-      ResolvedPotentiallyFulfillingCollectionLoop resolvedLoop, Set<String> mccaCalledMethods) {
-    DisposalLoopCoordinator.DisposalLoop disposalLoop =
-        new DisposalLoopCoordinator.DisposalLoop(
-            resolvedLoop.collectionTree,
-            resolvedLoop.collectionElementTree,
-            resolvedLoop.collectionElementNode,
-            resolvedLoop.condition,
-            resolvedLoop.loopConditionalBlock,
-            resolvedLoop.loopBodyEntryBlock,
-            resolvedLoop.loopUpdateBlock);
-    disposalLoopCoordinator.registerMCCACalledMethods(disposalLoop, mccaCalledMethods);
+  @Override
+  public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
+    return analysis.isIgnoredExceptionType(exceptionType);
+  }
+
+  /**
+   * Registers a disposal loop together with the called-methods computed by MCCA for it.
+   *
+   * @param disposalLoop the disposal loop
+   * @param MCCACalledMethods the called-methods computed by MCCA for the disposal loop
+   */
+  private void registerMCCACalledMethods(DisposalLoop disposalLoop, Set<String> MCCACalledMethods) {
+    conditionToDisposalLoopMap.put(disposalLoop.loopConditionTree, disposalLoop);
+    conditionalBlockToDisposalLoopMap.put(disposalLoop.loopConditionalBlock, disposalLoop);
+    disposalLoopToMCCACalledMethodsMap.put(
+        disposalLoop, Collections.unmodifiableSet(new LinkedHashSet<>(MCCACalledMethods)));
+  }
+
+  //  /**
+  //   * Registers the MCCA called-methods for an RLCC-resolved disposal loop.
+  //   *
+  //   * <p>This bridge exists only until disposal-loop discovery and proof are fully coordinated by
+  // CO.
+  //   *
+  //   * @param resolvedLoop the RLCC-resolved loop whose MCCA analysis produced called-methods
+  //   */
+  //  public void registerCalledMethodsForDisposalLoop(
+  //      ResolvedPotentiallyFulfillingCollectionLoop resolvedLoop, Set<String> mccaCalledMethods) {
+  //    DisposalLoop disposalLoop =
+  //        new DisposalLoop(
+  //            resolvedLoop.collectionTree,
+  //            resolvedLoop.collectionElementTree,
+  //            resolvedLoop.collectionElementNode,
+  //            resolvedLoop.condition,
+  //            resolvedLoop.loopConditionalBlock,
+  //            resolvedLoop.loopBodyEntryBlock,
+  //            resolvedLoop.loopUpdateBlock);
+  //    registerMCCACalledMethods(disposalLoop, mccaCalledMethods);
+  //  }
+
+  /**
+   * Returns the disposal loops discovered in the given CFG.
+   *
+   * @param cfg the CFG to scan
+   * @return the disposal loops discovered in {@code cfg}
+   */
+  private Set<DisposalLoop> discoverDisposalLoops(ControlFlowGraph cfg) {
+    if (cfg.getUnderlyingAST().getKind() != UnderlyingAST.Kind.METHOD) {
+      return Collections.emptySet();
+    }
+    return new DisposalLoopScanner(
+            this, ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(this), cfg)
+        .scanTree(((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod());
+  }
+
+  /**
+   * Discovers and stores the disposal loops for a method CFG so RLCC transfer can seed its initial
+   * store before called-methods analysis runs.
+   *
+   * @param cfg the method CFG whose disposal loops should be prepared
+   */
+  public void prepareDisposalLoops(ControlFlowGraph cfg) {
+    MethodTree methodTree = getEnclosingMethodTree(cfg.getUnderlyingAST());
+    if (methodTree == null) {
+      return;
+    }
+    preparedDisposalLoopsByMethod.put(methodTree, new LinkedHashSet<>(discoverDisposalLoops(cfg)));
+  }
+
+  /**
+   * Returns the prepared disposal loops for the given underlying AST.
+   *
+   * @param underlyingAST the underlying AST whose prepared loops should be returned
+   * @return the prepared disposal loops for {@code underlyingAST}
+   */
+  public Set<DisposalLoop> getPreparedDisposalLoops(UnderlyingAST underlyingAST) {
+    MethodTree methodTree = getEnclosingMethodTree(underlyingAST);
+    if (methodTree == null) {
+      return Collections.emptySet();
+    }
+    Set<DisposalLoop> preparedDisposalLoops = preparedDisposalLoopsByMethod.get(methodTree);
+    if (preparedDisposalLoops == null) {
+      return Collections.emptySet();
+    }
+    return Collections.unmodifiableSet(new LinkedHashSet<>(preparedDisposalLoops));
+  }
+
+  /**
+   * Removes and returns the prepared disposal loops for the given underlying AST.
+   *
+   * @param underlyingAST the underlying AST whose prepared loops should be removed
+   * @return the removed prepared disposal loops for {@code underlyingAST}
+   */
+  private Set<DisposalLoop> removePreparedDisposalLoops(UnderlyingAST underlyingAST) {
+    MethodTree methodTree = getEnclosingMethodTree(underlyingAST);
+    if (methodTree == null) {
+      return Collections.emptySet();
+    }
+    Set<DisposalLoop> preparedDisposalLoops = preparedDisposalLoopsByMethod.remove(methodTree);
+    if (preparedDisposalLoops == null) {
+      return Collections.emptySet();
+    }
+    return preparedDisposalLoops;
+  }
+
+  /**
+   * Returns the enclosing method tree for the given underlying AST, if it is a method CFG.
+   *
+   * @param underlyingAST the underlying AST
+   * @return the enclosing method tree, or {@code null} if {@code underlyingAST} is not a method
+   */
+  private @Nullable MethodTree getEnclosingMethodTree(UnderlyingAST underlyingAST) {
+    if (underlyingAST.getKind() != UnderlyingAST.Kind.METHOD) {
+      return null;
+    }
+    return ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
+  }
+
+  /**
+   * Certifies prepared disposal loops for a method CFG before collection-ownership analysis runs.
+   *
+   * @param cfg the method CFG
+   * @param ast the CFG's underlying AST
+   */
+  @Override
+  protected void postCFGConstruction(ControlFlowGraph cfg, UnderlyingAST ast) {
+    certifyPreparedDisposalLoops(cfg, ast);
+  }
+
+  /**
+   * Runs MCCA on the prepared disposal loops for a method CFG and registers any certified loops.
+   *
+   * @param cfg the method CFG
+   * @param ast the CFG's underlying AST
+   */
+  private void certifyPreparedDisposalLoops(ControlFlowGraph cfg, UnderlyingAST ast) {
+    if (ast.getKind() != UnderlyingAST.Kind.METHOD) {
+      return;
+    }
+
+    Set<DisposalLoop> preparedDisposalLoops = removePreparedDisposalLoops(ast);
+    if (preparedDisposalLoops.isEmpty()) {
+      return;
+    }
+
+    MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
+        new MustCallConsistencyAnalyzer(ResourceLeakUtils.getResourceLeakChecker(this), true);
+    for (DisposalLoop disposalLoop : preparedDisposalLoops) {
+      Set<String> mccaCalledMethods =
+          mustCallConsistencyAnalyzer.analyzeDisposalLoop(cfg, disposalLoop);
+      if (mccaCalledMethods != null) {
+        registerMCCACalledMethods(disposalLoop, mccaCalledMethods);
+      }
+    }
   }
 
   @Override
