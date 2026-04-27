@@ -1240,8 +1240,12 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
       boolean loopContainedInThisMethod =
           cfg.getNodesCorrespondingToTree(collectionElementTree) != null;
       if (loopContainedInThisMethod) {
-        mustCallConsistencyAnalyzer.analyzeResolvedPotentiallyFulfillingCollectionLoop(
-            cfg, resolvedLoop);
+        Set<String> disposalLoopCalledMethods =
+            mustCallConsistencyAnalyzer.analyzeDisposalLoop(cfg, resolvedLoop);
+        if (disposalLoopCalledMethods != null) {
+          ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(this)
+              .registerCalledMethodsForDisposalLoop(resolvedLoop, disposalLoopCalledMethods);
+        }
         resolvedLoopIterator.remove();
       }
     }

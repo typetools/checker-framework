@@ -214,7 +214,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *     TODO:SM:COMEBACK TO THIS
    */
   public void registerCalledMethodsForDisposalLoop(
-      ResolvedPotentiallyFulfillingCollectionLoop resolvedLoop) {
+      ResolvedPotentiallyFulfillingCollectionLoop resolvedLoop, Set<String> mccaCalledMethods) {
     DisposalLoopCoordinator.DisposalLoop disposalLoop =
         new DisposalLoopCoordinator.DisposalLoop(
             resolvedLoop.collectionTree,
@@ -224,8 +224,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
             resolvedLoop.loopConditionalBlock,
             resolvedLoop.loopBodyEntryBlock,
             resolvedLoop.loopUpdateBlock);
-    disposalLoopCoordinator.registerMCCACalledMethods(
-        disposalLoop, resolvedLoop.getCalledMethods());
+    disposalLoopCoordinator.registerMCCACalledMethods(disposalLoop, mccaCalledMethods);
   }
 
   @Override

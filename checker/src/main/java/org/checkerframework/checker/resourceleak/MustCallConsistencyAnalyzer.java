@@ -3466,54 +3466,44 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Analyze the loop body of a CFG-resolved potentially fulfilling collection loop, as determined
-   * by a pre-pattern-match in the MustCallVisitor (in the case of a normal for-loop) or by a
-   * pre-pattern-match in the RLCCalledMethodsAnnotatedTypeFactory (in the case of an
-   * enhanced-for-loop).
-   *
-   * <p>The analysis uses the CalledMethods type of the collection element iterated over to
-   * determine the methods the loop calls on the collection elements.
+   * Analyze the loop body of a {@link DisposalLoop} to compute the definitely called-methods on
+   * every iterated element on every path.
    *
    * <p>This method should be called after the called-method-analysis is finished (in the {@code
    * postAnalyze(cfg)} method of the {@code RLCCalledMethodsAnnotatedTypeFactory}).
    *
    * @param cfg the cfg of the enclosing method
-   * @param resolvedPotentiallyFulfillingLoop the loop to check
+   * @param disposalLoop the loop to analyze
+   * @return the called-methods for the loop on the iterated element, or {@code null} if there's no
+   *     definite called-methods on the iterated element of the loop
    */
-  public void analyzeResolvedPotentiallyFulfillingCollectionLoop(
-      ControlFlowGraph cfg,
-      ResolvedPotentiallyFulfillingCollectionLoop resolvedPotentiallyFulfillingLoop) {
+  public Set<String> analyzeDisposalLoop(
+      ControlFlowGraph cfg, ResolvedPotentiallyFulfillingCollectionLoop disposalLoop) {
 
     // ensure checked loop is initialized in a valid way
     Objects.requireNonNull(
-        resolvedPotentiallyFulfillingLoop.collectionElementTree,
+        disposalLoop.collectionElementTree,
         "CollectionElementAccess tree provided to analyze loop body of an"
             + " CFG-resolved potentially fulfilling collection loop is null.");
     Objects.requireNonNull(
-        resolvedPotentiallyFulfillingLoop.loopBodyEntryBlock,
+        disposalLoop.loopBodyEntryBlock,
         "Block provided to analyze loop body of a CFG-resolved potentially fulfilling collection"
             + " loop is null.");
     Objects.requireNonNull(
-        resolvedPotentiallyFulfillingLoop.loopUpdateBlock,
+        disposalLoop.loopUpdateBlock,
         "Block provided to analyze loop body of a CFG-resolved potentially fulfilling collection"
             + " loop is null.");
 
-    Block loopBodyEntryBlock = resolvedPotentiallyFulfillingLoop.loopBodyEntryBlock;
-    Block loopUpdateBlock = resolvedPotentiallyFulfillingLoop.loopUpdateBlock;
-    Tree collectionElement = resolvedPotentiallyFulfillingLoop.collectionElementTree;
+    Block loopBodyEntryBlock = disposalLoop.loopBodyEntryBlock;
+    Block loopUpdateBlock = disposalLoop.loopUpdateBlock;
+    Tree collectionElement = disposalLoop.collectionElementTree;
 
     boolean emptyLoopBody = loopBodyEntryBlock.equals(loopUpdateBlock);
     if (emptyLoopBody) {
-      return;
+      return null;
     }
 
-    // The `visited` set contains everything that has been added to the worklist, even if it has
-    // not yet been removed and analyzed.
-    Set<BlockWithObligations> visited = new HashSet<>();
-    Deque<BlockWithObligations> worklist = new ArrayDeque<>();
-
     // Add an obligation for the element of the collection iterated over
-
     Obligation collectionElementObligation = Obligation.fromTree(collectionElement);
     if (collectionElement instanceof VariableTree) {
       VariableElement varElt = TreeUtils.elementFromDeclaration((VariableTree) collectionElement);
@@ -3530,11 +3520,15 @@ public class MustCallConsistencyAnalyzer {
         new BlockWithObligations(
             loopBodyEntryBlock, Collections.singleton(collectionElementObligation));
 
+    // The `visited` set contains everything that has been added to the worklist, even if it has
+    // not yet been removed and analyzed.
+    Set<BlockWithObligations> visited = new HashSet<>();
+    Deque<BlockWithObligations> worklist = new ArrayDeque<>();
     worklist.add(loopBodyEntry);
     visited.add(loopBodyEntry);
-    Set<String> calledMethodsInLoop = null;
-
     Set<Block> loopRegion = computeLoopRegion(loopBodyEntryBlock, loopUpdateBlock);
+
+    Set<String> calledMethodsInLoop = null;
 
     // main loop: propagate obligations block-by-block
     while (!worklist.isEmpty()) {
@@ -3554,12 +3548,12 @@ public class MustCallConsistencyAnalyzer {
         boolean isLastBlockOfBody = successorAndExceptionType.first == loopUpdateBlock;
         boolean staysInLoop = loopRegion.contains(successorAndExceptionType.first);
         if (!isLastBlockOfBody && !staysInLoop) {
-          return;
+          return null;
         }
         if (isLastBlockOfBody) {
           Set<String> calledMethodsAfterBlock =
               analyzeTypeOfCollectionElement(
-                  currentBlock, resolvedPotentiallyFulfillingLoop, obligations, loopUpdateBlock);
+                  currentBlock, disposalLoop, obligations, loopUpdateBlock);
           // intersect the called methods after this block with the accumulated ones so far.
           // This is required because there may be multiple "back edges" of the loop, in which
           // case we must intersect the called methods between those.
@@ -3581,17 +3575,16 @@ public class MustCallConsistencyAnalyzer {
                 worklist);
           } catch (InvalidLoopBodyAnalysisException e) {
             // Expected when analyzing unreachable loop bodies. Safely abort the analysis.
-            return;
+            return null;
           }
         }
       }
     }
 
-    // Record the loop as verified if it calls any methods on the iterated element.
-    if (calledMethodsInLoop != null && !calledMethodsInLoop.isEmpty()) {
-      resolvedPotentiallyFulfillingLoop.addCalledMethods(calledMethodsInLoop);
-      coAtf.registerCalledMethodsForDisposalLoop(resolvedPotentiallyFulfillingLoop);
+    if (calledMethodsInLoop == null || calledMethodsInLoop.isEmpty()) {
+      return null;
     }
+    return new LinkedHashSet<>(calledMethodsInLoop);
   }
 
   /**
