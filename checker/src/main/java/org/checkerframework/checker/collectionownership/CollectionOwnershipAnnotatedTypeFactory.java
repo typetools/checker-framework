@@ -1,6 +1,8 @@
 package org.checkerframework.checker.collectionownership;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -15,6 +17,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -50,6 +53,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -66,6 +70,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 
 /** The annotated type factory for the Collection Ownership Checker. */
 public class CollectionOwnershipAnnotatedTypeFactory
@@ -409,28 +414,46 @@ public class CollectionOwnershipAnnotatedTypeFactory
         : flowResult.getStoreBefore(succBlock);
   }
 
-  /**
-   * Runs resource-leak post-analysis after the first method analysis and before any contained
-   * lambdas are analyzed.
-   *
-   * <p>This override exists because the Collection Ownership Checker currently runs last in the
-   * Resource Leak Checker hierarchy. The last checker in that hierarchy is responsible for
-   * triggering the method-level resource-leak post-analysis for the enclosing method.
-   *
-   * @param cfg the method CFG that has completed its first analysis
-   */
   @Override
-  protected void postAnalyzeAfterFirstMethodAnalysis(ControlFlowGraph cfg) {
-    runResourceLeakPostAnalyze(cfg);
-    preLambdaPostAnalyzedMethods.add(cfg);
+  protected ControlFlowGraph analyze(
+      Queue<IPair<ClassTree, @Nullable CollectionOwnershipStore>> classQueue,
+      Queue<IPair<LambdaExpressionTree, @Nullable CollectionOwnershipStore>> lambdaQueue,
+      UnderlyingAST ast,
+      List<FieldInitialValue<CFValue>> fieldValues,
+      @Nullable ControlFlowGraph cfg,
+      boolean isInitializationCode,
+      boolean updateInitializationStore,
+      boolean isStatic,
+      @Nullable CollectionOwnershipStore capturedStore) {
+    ControlFlowGraph result =
+        super.analyze(
+            classQueue,
+            lambdaQueue,
+            ast,
+            fieldValues,
+            cfg,
+            isInitializationCode,
+            updateInitializationStore,
+            isStatic,
+            capturedStore);
+    if (cfg == null && ast.getKind() == UnderlyingAST.Kind.METHOD) {
+      // This uses the same RLLambda.java workaround pattern that originally lived in RLCC:
+      // run the resource-leak post-analysis immediately after the first method analysis, before
+      // containing lambdas are reanalyzed to fixpoint. CO owns that post-analysis now, so the
+      // workaround lives here.
+      runResourceLeakPostAnalyze(result);
+      preLambdaPostAnalyzedMethods.add(result);
+    }
+    return result;
   }
 
   /**
    * Performs post-analysis for the given CFG.
    *
-   * <p>If resource-leak-specific post-analysis already ran during {@link
-   * #postAnalyzeAfterFirstMethodAnalysis(ControlFlowGraph)}, then this method avoids running it a
-   * second time for the enclosing method.
+   * <p>If resource-leak-specific post-analysis already ran during the first method analysis in
+   * {@link #analyze(Queue, Queue, UnderlyingAST, List, ControlFlowGraph, boolean, boolean, boolean,
+   * CollectionOwnershipStore)}, then this method avoids running it a second time for the enclosing
+   * method.
    *
    * @param cfg the CFG to post-analyze
    */

@@ -506,17 +506,16 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
       boolean updateInitializationStore,
       boolean isStatic,
       @Nullable AccumulationStore capturedStore) {
+    // This is a workaround for a bug that I tried and failed to fix.
+    // See checker/tests/resourceleak/RLLambda.java.
+    // This code really belongs in postAnalyze, but this code only works correctly when called
+    // after a method is analyzed the first time and before any containing lambdas are analyzed.
+    // This workaround means there could be false positives when the type of a method invocation
+    // depends on dataflow in a lambda.
+
     if (cfg != null && ast.getKind() == UnderlyingAST.Kind.METHOD) {
-      // The old RLCC workaround for RLLambda.java (#7316) used to run in analyze(). It was moved
-      // to CollectionOwnershipAnnotatedTypeFactory.postAnalyzeAfterFirstMethodAnalysis(...) so it
-      // executes once at the correct lifecycle point: after the first method analysis and before
-      // lambda fixpoint.
-      //
-      // At this point cfg is the preserved first method analysis result. Keep that result, but
-      // re-enqueue nested classes and lambdas so later fixpoint iterations still analyze them.
-      // Returning cfg without re-enqueuing would incorrectly stop lambda processing; recomputing
-      // the method analysis would discard the preserved first-pass result that the early
-      // resource-leak post-analysis depends on.
+      // The cfg is not null, so the analysis has been run before. Keep that first result, but
+      // re-enqueue the nested classes and lambdas from the existing CFG so fixpoint still runs.
       for (ClassTree cls : cfg.getDeclaredClasses()) {
         classQueue.add(IPair.of(cls, getStoreBefore(cls)));
       }
@@ -1174,24 +1173,6 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   //    public Set<String> getCalledMethods() {
   //      return calledMethods;
   //    }
-  //  }
-
-  //  /**
-  //   * After running the called-methods analysis, call the consistency analyzer to analyze
-  //   * CFG-resolved potentially fulfilling collection loops, as determined by a pre-pattern-match
-  // in
-  //   * the MustCallVisitor.
-  //   *
-  //   * <p>The analysis uses the CalledMethods type of the collection element iterated over to
-  //   * determine the methods the loop calls on the collection elements.
-  //   *
-  //   * @param cfg the cfg of the enclosing method
-  //   */
-  //  @Override
-  //  protected void postAnalyzeAfterFirstMethodAnalysis(ControlFlowGraph cfg) {
-  //    // Disposal-loop certification now runs in
-  //    // CollectionOwnershipAnnotatedTypeFactory.postCFGConstruction(...), after RLCC analysis and
-  //    // before CO analysis.
   //  }
 
   //  @Override
