@@ -43,6 +43,7 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipStore;
+import org.checkerframework.checker.collectionownership.DisposalLoopCoordinator.DisposalLoop;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -2747,17 +2748,16 @@ public class MustCallConsistencyAnalyzer {
       }
     }
 
-    // check whether this corresponds to the else-cfg-edge of a conditional block
-    // corresponding to the loop condition of a collection-obligation-fulfilling
-    // loop. If yes, don't propagate the collection obligations that are fulfilled
-    // inside the loop.
-    boolean isElseEdgeOfVerifiedFulfillingLoop = false;
-    ResolvedPotentiallyFulfillingCollectionLoop verifiedFulfillingLoop =
-        CollectionOwnershipAnnotatedTypeFactory.getFulfillingLoopForConditionalBlock(currentBlock);
-    if ((currentBlock instanceof ConditionalBlock) && verifiedFulfillingLoop != null) {
-      ConditionalBlock conditionalBlock = (ConditionalBlock) currentBlock;
+    // Check whether this corresponds to the else CFG edge of a conditional block for a disposal
+    // loop which fulfills the collections must-call obligation. If so, don't propagate the
+    // collection obligations discharged inside the loop.
+    boolean isElseEdgeOfDisposalLoop = false;
+    DisposalLoop disposalLoop = coAtf.getDisposalLoopForConditionBlock(currentBlock);
+    Set<String> disposalLoopCalledMethods = null;
+    if ((currentBlock instanceof ConditionalBlock conditionalBlock) && disposalLoop != null) {
       if (conditionalBlock.getElseSuccessor().equals(successor)) {
-        isElseEdgeOfVerifiedFulfillingLoop = true;
+        isElseEdgeOfDisposalLoop = true;
+        disposalLoopCalledMethods = coAtf.getMccaCalledMethods(disposalLoop);
       }
     }
 
@@ -2766,12 +2766,12 @@ public class MustCallConsistencyAnalyzer {
 
     for (Obligation obligation : obligations) {
 
-      if (isElseEdgeOfVerifiedFulfillingLoop) {
+      if (isElseEdgeOfDisposalLoop && disposalLoopCalledMethods != null) {
         if (obligation instanceof CollectionObligation) {
           String mustCallMethodOfCo = ((CollectionObligation) obligation).mustCallMethod;
-          if (verifiedFulfillingLoop.getCalledMethods().contains(mustCallMethodOfCo)) {
-            // don't propagate this obligation along this edge, as it was fulfilled
-            // in the loop that the currentBlock is the conditional block of
+          if (disposalLoopCalledMethods.contains(mustCallMethodOfCo)) {
+            // Don't propagate this obligation along this edge, as the called-methods for this
+            // disposal loop already fulfills it.
             continue;
           }
         }
@@ -3590,7 +3590,7 @@ public class MustCallConsistencyAnalyzer {
     // Record the loop as verified if it calls any methods on the iterated element.
     if (calledMethodsInLoop != null && !calledMethodsInLoop.isEmpty()) {
       resolvedPotentiallyFulfillingLoop.addCalledMethods(calledMethodsInLoop);
-      CollectionOwnershipAnnotatedTypeFactory.markFulfillingLoop(resolvedPotentiallyFulfillingLoop);
+      coAtf.registerCalledMethodsForDisposalLoop(resolvedPotentiallyFulfillingLoop);
     }
   }
 

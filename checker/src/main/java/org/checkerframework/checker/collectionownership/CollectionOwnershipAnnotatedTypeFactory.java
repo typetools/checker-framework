@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -83,6 +82,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
    */
   private final MustCallAnnotatedTypeFactory mcAtf;
 
+  /** Stores disposal loops, their metadata and MCCA called-method facts. */
+  private final DisposalLoopCoordinator disposalLoopCoordinator;
+
   /** The {@code @}{@link NotOwningCollection} annotation. */
   public final AnnotationMirror TOP;
 
@@ -150,58 +152,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
   public static final String UNKNOWN_METHOD_NAME = "1UNKNOWN";
 
   /**
-   * Maps the AST-tree corresponding to the loop condition of a collection-obligation-fulfilling
-   * loop to the loop wrapper. TODO: remove
-   */
-  private static final Map<Tree, ResolvedPotentiallyFulfillingCollectionLoop>
-      conditionToVerifiedFulfillingLoopMap = new HashMap<>();
-
-  /**
-   * Maps the cfg-block corresponding to the loop conditional block of a
-   * collection-obligation-fulfilling loop to the loop wrapper. TODO: remove
-   */
-  private static final Map<Block, ResolvedPotentiallyFulfillingCollectionLoop>
-      conditionalBlockToVerifiedFulfillingLoopMap = new HashMap<>();
-
-  /**
-   * Marks the specified loop as fulfilling a collection obligation.
-   *
-   * @param verifiedFulfillingLoop the verified loop wrapper
-   */
-  public static void markFulfillingLoop(
-      ResolvedPotentiallyFulfillingCollectionLoop verifiedFulfillingLoop) {
-    conditionToVerifiedFulfillingLoopMap.put(
-        verifiedFulfillingLoop.condition, verifiedFulfillingLoop);
-    conditionalBlockToVerifiedFulfillingLoopMap.put(
-        verifiedFulfillingLoop.loopConditionalBlock, verifiedFulfillingLoop);
-  }
-
-  /**
-   * Returns the collection-obligation-fulfilling loop for which the given tree is the condition.
-   *
-   * @param tree a tree that is potentially the condition for a fulfilling loop
-   * @return the collection-obligation-fulfilling loop for which the given tree is the condition
-   *     TODO: remove
-   */
-  public static ResolvedPotentiallyFulfillingCollectionLoop getFulfillingLoopForCondition(
-      Tree tree) {
-    return conditionToVerifiedFulfillingLoopMap.get(tree);
-  }
-
-  /**
-   * Returns the collection-obligation-fulfilling loop for which the given block is the CFG
-   * conditional block.
-   *
-   * @param block the block that is potentially the conditional block for a fulfilling loop
-   * @return the collection-obligation-fulfilling loop for which the given block is the CFG
-   *     conditional block TODO: remove
-   */
-  public static ResolvedPotentiallyFulfillingCollectionLoop getFulfillingLoopForConditionalBlock(
-      Block block) {
-    return conditionalBlockToVerifiedFulfillingLoopMap.get(block);
-  }
-
-  /**
    * Creates a CollectionOwnershipAnnotatedTypeFactory.
    *
    * @param checker the checker associated with this type factory
@@ -217,7 +167,65 @@ public class CollectionOwnershipAnnotatedTypeFactory
     BOTTOM = AnnotationBuilder.fromClass(elements, OwningCollectionBottom.class);
     POLY = AnnotationBuilder.fromClass(elements, PolyOwningCollection.class);
     mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(checker);
+    disposalLoopCoordinator = new DisposalLoopCoordinator(this);
     this.postInit();
+  }
+
+  /**
+   * Returns the {@link DisposalLoopCoordinator.DisposalLoop} for the given loop-condition tree, if
+   * one exists.
+   *
+   * @param tree the loop-condition tree
+   * @return the disposal loop for {@code tree}, or {@code null} if none exists
+   */
+  public DisposalLoopCoordinator.DisposalLoop getDisposalLoopForConditionTree(Tree tree) {
+    return disposalLoopCoordinator.getDisposalLoopForConditionTree(tree);
+  }
+
+  /**
+   * Returns the {@link DisposalLoopCoordinator.DisposalLoop} for the given loop-condition block, if
+   * one exists.
+   *
+   * @param block the loop-condition block
+   * @return the disposal loop for {@code block}, or {@code null} if none exists
+   */
+  public DisposalLoopCoordinator.DisposalLoop getDisposalLoopForConditionBlock(Block block) {
+    return disposalLoopCoordinator.getDisposalLoopForConditionBlock(block);
+  }
+
+  /**
+   * Returns the called-methods computed by MCCA for a disposal loop.
+   *
+   * @param disposalLoop the disposal loop
+   * @return the MCCA called-methods for {@code disposalLoop}, or {@code null} if none are
+   *     registered
+   */
+  public @Nullable Set<String> getMccaCalledMethods(
+      DisposalLoopCoordinator.DisposalLoop disposalLoop) {
+    return disposalLoopCoordinator.getMCCACalledMethods(disposalLoop);
+  }
+
+  /**
+   * Registers the MCCA called-methods for an RLCC-resolved disposal loop.
+   *
+   * <p>This bridge exists only until disposal-loop discovery and proof are fully coordinated by CO.
+   *
+   * @param resolvedLoop the RLCC-resolved loop whose MCCA analysis produced called-methods
+   *     TODO:SM:COMEBACK TO THIS
+   */
+  public void registerCalledMethodsForDisposalLoop(
+      ResolvedPotentiallyFulfillingCollectionLoop resolvedLoop) {
+    DisposalLoopCoordinator.DisposalLoop disposalLoop =
+        new DisposalLoopCoordinator.DisposalLoop(
+            resolvedLoop.collectionTree,
+            resolvedLoop.collectionElementTree,
+            resolvedLoop.collectionElementNode,
+            resolvedLoop.condition,
+            resolvedLoop.loopConditionalBlock,
+            resolvedLoop.loopBodyEntryBlock,
+            resolvedLoop.loopUpdateBlock);
+    disposalLoopCoordinator.registerMCCACalledMethods(
+        disposalLoop, resolvedLoop.getCalledMethods());
   }
 
   @Override

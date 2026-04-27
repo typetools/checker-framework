@@ -1,18 +1,20 @@
 package org.checkerframework.checker.collectionownership;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
+import org.checkerframework.checker.collectionownership.DisposalLoopCoordinator.DisposalLoop;
 import org.checkerframework.checker.collectionownership.qual.CollectionFieldDestructor;
 import org.checkerframework.checker.collectionownership.qual.CreatesCollectionObligation;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
-import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory.ResolvedPotentiallyFulfillingCollectionLoop;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -105,30 +107,28 @@ public class CollectionOwnershipTransfer
 
   /**
    * May refine the type of the collection to @OwningCollectionWithoutObligation in the else store
-   * of the incoming transfer result. Does so if the given AST tree is the condition for a
-   * collection-obligation-fulfilling loop that calls all methods in the MustCall type of the
-   * elements of some collection.
+   * of the incoming transfer result. Does so if the given AST tree is the condition for a disposal
+   * loop whose MCCA called-methods cover the MustCall type of the collection's elements.
    *
    * @param res the incoming transfer result
-   * @param tree the AST tree that may represent a verified fulfilling-loop condition
+   * @param tree the AST tree that may represent a disposal-loop condition
    * @return the resulting transfer result
    */
-  private TransferResult<CFValue, CollectionOwnershipStore>
-      updateStoreForVerifiedFulfillingCollectionLoop(
-          TransferResult<CFValue, CollectionOwnershipStore> res, Tree tree) {
-    ResolvedPotentiallyFulfillingCollectionLoop verifiedFulfillingLoop =
-        CollectionOwnershipAnnotatedTypeFactory.getFulfillingLoopForCondition(tree);
-    if (verifiedFulfillingLoop != null) {
+  private TransferResult<CFValue, CollectionOwnershipStore> updateStoreForDisposalLoop(
+      TransferResult<CFValue, CollectionOwnershipStore> res, Tree tree) {
+    DisposalLoop disposalLoop = atypeFactory.getDisposalLoopForConditionTree(tree);
+    if (disposalLoop != null) {
       CollectionOwnershipStore elseStore = res.getElseStore();
-      JavaExpression collectionJE = JavaExpression.fromTree(verifiedFulfillingLoop.collectionTree);
+      ExpressionTree collectionExpression = disposalLoop.expressionTree;
+      JavaExpression collectionJE = JavaExpression.fromTree(collectionExpression);
+      Set<String> disposalLoopCalledMethods = atypeFactory.getMccaCalledMethods(disposalLoop);
 
-      CollectionOwnershipType collectionCoType =
-          atypeFactory.getCoType(verifiedFulfillingLoop.collectionTree);
+      CollectionOwnershipType collectionCoType = atypeFactory.getCoType(collectionExpression);
       if (collectionCoType == CollectionOwnershipType.OwningCollection) {
-        List<String> mustCallValuesOfElements =
-            atypeFactory.getMustCallValuesOfResourceCollectionComponent(
-                verifiedFulfillingLoop.collectionTree);
-        if (verifiedFulfillingLoop.getCalledMethods().containsAll(mustCallValuesOfElements)) {
+        List<String> requiredElementMethods =
+            atypeFactory.getMustCallValuesOfResourceCollectionComponent(collectionExpression);
+        if (disposalLoopCalledMethods != null
+            && disposalLoopCalledMethods.containsAll(requiredElementMethods)) {
           elseStore.clearValue(collectionJE);
           elseStore.insertValue(collectionJE, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION);
           return new ConditionalTransferResult<>(
@@ -151,10 +151,9 @@ public class CollectionOwnershipTransfer
    *     {@code @NotOwningCollection}
    */
   private boolean hasExplicitNotOwningCollectionDeclaration(AssignmentNode node) {
-    if (!(node.getTree() instanceof VariableTree)) {
+    if (!(node.getTree() instanceof VariableTree variableTree)) {
       return false;
     }
-    VariableTree variableTree = (VariableTree) node.getTree();
     VariableElement declaredElement = TreeUtils.elementFromDeclaration(variableTree);
     if (declaredElement == null) {
       return false;
@@ -167,7 +166,7 @@ public class CollectionOwnershipTransfer
   public TransferResult<CFValue, CollectionOwnershipStore> visitLessThan(
       LessThanNode node, TransferInput<CFValue, CollectionOwnershipStore> in) {
     TransferResult<CFValue, CollectionOwnershipStore> res = super.visitLessThan(node, in);
-    return updateStoreForVerifiedFulfillingCollectionLoop(res, node.getTree());
+    return updateStoreForDisposalLoop(res, node.getTree());
   }
 
   @Override
@@ -180,7 +179,7 @@ public class CollectionOwnershipTransfer
     ExecutableElement method = node.getTarget().getMethod();
     List<Node> args = node.getArguments();
     res = transferOwnershipForMethodInvocation(method, node, args, res);
-    res = updateStoreForVerifiedFulfillingCollectionLoop(res, node.getTree());
+    res = updateStoreForDisposalLoop(res, node.getTree());
 
     // Check whether the method is annotated @CreatesCollectionObligation.
     ExecutableElement methodElement = TreeUtils.elementFromUse(node.getTree());
@@ -214,14 +213,14 @@ public class CollectionOwnershipTransfer
   public TransferResult<CFValue, CollectionOwnershipStore> visitConditionalNot(
       ConditionalNotNode node, TransferInput<CFValue, CollectionOwnershipStore> in) {
     TransferResult<CFValue, CollectionOwnershipStore> res = super.visitConditionalNot(node, in);
-    return updateStoreForVerifiedFulfillingCollectionLoop(res, node.getTree());
+    return updateStoreForDisposalLoop(res, node.getTree());
   }
 
   @Override
   public TransferResult<CFValue, CollectionOwnershipStore> visitGreaterThan(
       GreaterThanNode node, TransferInput<CFValue, CollectionOwnershipStore> in) {
     TransferResult<CFValue, CollectionOwnershipStore> res = super.visitGreaterThan(node, in);
-    return updateStoreForVerifiedFulfillingCollectionLoop(res, node.getTree());
+    return updateStoreForDisposalLoop(res, node.getTree());
   }
 
   /**

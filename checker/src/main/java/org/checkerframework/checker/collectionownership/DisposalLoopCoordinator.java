@@ -5,7 +5,6 @@ import com.sun.source.tree.Tree;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -21,14 +20,15 @@ public final class DisposalLoopCoordinator {
   private final CollectionOwnershipAnnotatedTypeFactory coAtf;
 
   /** Map from a loop-condition {@code Tree} to its corresponding {@link DisposalLoop}. */
-  private final IdentityHashMap<Tree, DisposalLoop> conditionToDisposalLoopMap = new IdentityHashMap<>();
+  private final IdentityHashMap<Tree, DisposalLoop> conditionToDisposalLoopMap =
+      new IdentityHashMap<>();
 
   /** Map from a loop's conditional {@code Block} to its corresponding {@link DisposalLoop} */
   private final IdentityHashMap<Block, DisposalLoop> conditionalBlockToDisposalLoopMap =
       new IdentityHashMap<>();
 
-  /** Map from a {@link DisposalLoop} to the called-methods proven by MCCA for that loop. */
-  private final IdentityHashMap<DisposalLoop, Set<String>> disposalLoopToProvenCalledMethodsMap =
+  /** Map from a {@link DisposalLoop} to the called-methods computed by MCCA for that loop. */
+  private final IdentityHashMap<DisposalLoop, Set<String>> disposalLoopToMCCACalledMethodsMap =
       new IdentityHashMap<>();
 
   /**
@@ -105,7 +105,7 @@ public final class DisposalLoopCoordinator {
    * @param tree the condition tree
    * @return the {@link DisposalLoop} for condition {@code tree} if exists, otherwise {@code null}.
    */
-  public @Nullable DisposalLoop getDisposalLoopForConditionTree(Tree tree) {
+  public DisposalLoop getDisposalLoopForConditionTree(Tree tree) {
     return conditionToDisposalLoopMap.get(tree);
   }
 
@@ -117,41 +117,40 @@ public final class DisposalLoopCoordinator {
    * @return the {@link DisposalLoop} for conditional {@code block} if exists, otherwise {@code
    *     null}.
    */
-  public @Nullable DisposalLoop getDisposalLoopForConditionBlock(Block block) {
+  public DisposalLoop getDisposalLoopForConditionBlock(Block block) {
     return conditionalBlockToDisposalLoopMap.get(block);
   }
 
   /**
-   * Returns the called-methods proven by MCCA for a disposal loop.
+   * Returns the called-methods computed by MCCA for a disposal loop.
    *
    * @param disposalLoop the disposal loop
-   * @return the methods proven for {@code disposalLoop}, or {@code null} if none are populated.
+   * @return the MCCA called-methods for {@code disposalLoop}, or {@code null} if none are populated
    */
-  public @Nullable Set<String> getProvenCalledMethods(DisposalLoop disposalLoop) {
-    return disposalLoopToProvenCalledMethodsMap.get(disposalLoop);
+  public @Nullable Set<String> getMCCACalledMethods(DisposalLoop disposalLoop) {
+    return disposalLoopToMCCACalledMethodsMap.get(disposalLoop);
   }
 
   /**
-   * Registers a disposal loop whose proof succeeded.
+   * Registers a disposal loop together with the called-methods computed by MCCA for it.
    *
    * @param disposalLoop the disposal loop
-   * @param provenCalledMethods the methods proven by MCCA for the disposal loop
+   * @param MCCACalledMethods the called-methods computed by MCCA for the disposal loop
    */
-  public void registerProvenDisposalLoop(
-      DisposalLoop disposalLoop, Set<String> provenCalledMethods) {
+  public void registerMCCACalledMethods(DisposalLoop disposalLoop, Set<String> MCCACalledMethods) {
     Objects.requireNonNull(disposalLoop);
-    Objects.requireNonNull(provenCalledMethods);
+    Objects.requireNonNull(MCCACalledMethods);
 
     conditionToDisposalLoopMap.put(disposalLoop.loopConditionTree, disposalLoop);
     conditionalBlockToDisposalLoopMap.put(disposalLoop.loopConditionalBlock, disposalLoop);
-    disposalLoopToProvenCalledMethodsMap.put(
-        disposalLoop, Collections.unmodifiableSet(new LinkedHashSet<>(provenCalledMethods)));
+    disposalLoopToMCCACalledMethodsMap.put(
+        disposalLoop, Collections.unmodifiableSet(new LinkedHashSet<>(MCCACalledMethods)));
   }
 
   /** Clears all disposal loops and MCCA proof results in this coordinator. */
   public void clear() {
     conditionToDisposalLoopMap.clear();
     conditionalBlockToDisposalLoopMap.clear();
-    disposalLoopToProvenCalledMethodsMap.clear();
+    disposalLoopToMCCACalledMethodsMap.clear();
   }
 }
