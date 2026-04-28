@@ -5,7 +5,6 @@ import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -25,39 +24,36 @@ import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.IPair;
 
-/** Utility methods shared by disposal-loop scanning and matcher resolution. */
+/** Utility methods shared by {@link DisposalLoop} scanning and AST matching. */
 public final class CollectionOwnershipUtils {
 
-  private CollectionOwnershipUtils() {}
-
-  /**
-   * Returns the enclosing method for the current loop, or {@code null} if the loop is inside a
-   * lambda expression or a different method.
-   *
-   * @param methodTree the method currently being scanned, or {@code null}
-   * @return the enclosing method for the current loop, or {@code null} if it is not part of the
-   *     scanned method
-   */
-  static @Nullable MethodTree getEnclosingMethodForCollectionLoop(@Nullable MethodTree methodTree) {
-    return methodTree;
+  /** Do not instantiate */
+  private CollectionOwnershipUtils() {
+    throw new BugInCF("CollectionOwnershipUtils is a utility class and should not be instantiated");
   }
 
   /**
-   * Returns the statements in a loop body, regardless of whether the body is a block.
+   * Returns the given statement as a list of statements.
    *
-   * @param statement the loop body statement
-   * @return the loop body statements, or {@code null} if {@code statement} is {@code null}
+   * <p>If {@code statement} is a {@link BlockTree}, returns that block's statements. Otherwise,
+   * returns a singleton list containing {@code statement}. Returns {@code null} if {@code
+   * statement} is {@code null}.
+   *
+   * @param statement a loop-body statement
+   * @return a list of statements for {@code statement}, or {@code null} if {@code statement} is
+   *     {@code null}
    */
-  static @Nullable List<? extends StatementTree> getLoopBodyStatements(
+  static @Nullable List<? extends StatementTree> asStatementList(
       @Nullable StatementTree statement) {
     if (statement == null) {
       return null;
     }
-    return statement instanceof BlockTree
-        ? ((BlockTree) statement).getStatements()
+    return statement instanceof BlockTree blockTree
+        ? blockTree.getStatements()
         : Collections.singletonList(statement);
   }
 
@@ -98,13 +94,14 @@ public final class CollectionOwnershipUtils {
   }
 
   /**
-   * Returns the tree to use as the loop-condition key.
+   * Returns the CFG-associated tree for the given tree, if one exists; otherwise returns the
+   * original tree.
    *
    * @param cfg the CFG containing the tree
-   * @param tree the original condition tree
-   * @return the CFG-associated tree for {@code tree}, if one exists; otherwise {@code tree}
+   * @param tree the original tree
+   * @return the CFG-associated tree for {@code tree}, or {@code tree} if no associated tree exists
    */
-  static Tree treeForLoopCondition(ControlFlowGraph cfg, Tree tree) {
+  static Tree cfgAssociatedTreeFor(ControlFlowGraph cfg, Tree tree) {
     Node node = anyNodeForTree(cfg, tree);
     if (node != null && node.getTree() != null) {
       return node.getTree();
@@ -113,7 +110,7 @@ public final class CollectionOwnershipUtils {
   }
 
   /**
-   * Returns the simple name of the identifier referenced by the given expression, or {@code null}
+   * Returns the {@code Name} of the identifier referenced by the given expression, or {@code null}
    * if the expression does not reference an identifier.
    *
    * @param expr an expression
@@ -124,9 +121,10 @@ public final class CollectionOwnershipUtils {
       return null;
     }
     switch (expr.getKind()) {
-      case IDENTIFIER:
+      case IDENTIFIER -> {
         return ((com.sun.source.tree.IdentifierTree) expr).getName();
-      case MEMBER_SELECT:
+      }
+      case MEMBER_SELECT -> {
         MemberSelectTree mst = (MemberSelectTree) expr;
         Element elt = TreeUtils.elementFromUse(mst);
         if (elt.getKind() == ElementKind.FIELD) {
@@ -136,15 +134,18 @@ public final class CollectionOwnershipUtils {
         } else {
           return null;
         }
-      case METHOD_INVOCATION:
+      }
+      case METHOD_INVOCATION -> {
         return getNameFromExpressionTree(((MethodInvocationTree) expr).getMethodSelect());
-      default:
+      }
+      default -> {
         return null;
+      }
     }
   }
 
   /**
-   * Returns the simple name of the identifier declared or referenced by the given statement, or
+   * Returns the {@code Name} of the identifier declared or referenced by the given statement, or
    * {@code null} if the statement does not declare or reference an identifier.
    *
    * @param expr the {@code StatementTree}
@@ -155,27 +156,29 @@ public final class CollectionOwnershipUtils {
     if (expr == null) {
       return null;
     }
-    switch (expr.getKind()) {
-      case VARIABLE:
-        return ((VariableTree) expr).getName();
-      case EXPRESSION_STATEMENT:
-        return getNameFromExpressionTree(((ExpressionStatementTree) expr).getExpression());
-      default:
-        return null;
-    }
+    return switch (expr.getKind()) {
+      case VARIABLE -> ((VariableTree) expr).getName();
+      case EXPRESSION_STATEMENT ->
+          getNameFromExpressionTree(((ExpressionStatementTree) expr).getExpression());
+      default -> null;
+    };
   }
 
   /**
-   * Returns the ExpressionTree of the collection in the given expression.
+   * Returns the expression that directly identifies the referenced value.
    *
-   * @param expr ExpressionTree
-   * @return the expression evaluates to or null if it doesn't
+   * <p>Identifiers and field accesses are returned unchanged. Method invocations are unwrapped to
+   * their receiver expression. Returns {@code null} for expressions that do not identify a value.
+   *
+   * @param expr an expression
+   * @return the expression that directly identifies the referenced value, or {@code null}
    */
-  static ExpressionTree collectionTreeFromExpression(ExpressionTree expr) {
+  static ExpressionTree baseExpression(ExpressionTree expr) {
     switch (expr.getKind()) {
-      case IDENTIFIER:
+      case IDENTIFIER -> {
         return expr;
-      case MEMBER_SELECT:
+      }
+      case MEMBER_SELECT -> {
         MemberSelectTree mst = (MemberSelectTree) expr;
         Element elt = TreeUtils.elementFromUse(mst);
         if (elt.getKind() == ElementKind.METHOD) {
@@ -185,10 +188,13 @@ public final class CollectionOwnershipUtils {
         } else {
           return null;
         }
-      case METHOD_INVOCATION:
-        return collectionTreeFromExpression(((MethodInvocationTree) expr).getMethodSelect());
-      default:
+      }
+      case METHOD_INVOCATION -> {
+        return baseExpression(((MethodInvocationTree) expr).getMethodSelect());
+      }
+      default -> {
         return null;
+      }
     }
   }
 

@@ -84,8 +84,7 @@ public class CollectionOwnershipTransfer
     // In those cases the rhs keeps its existing ownership information.
     if (rhsType != null) {
       switch (rhsType) {
-        case OwningCollection:
-        case OwningCollectionWithoutObligation:
+        case OwningCollection, OwningCollectionWithoutObligation -> {
           JavaExpression rhsJE = JavaExpression.fromNode(rhs);
           if (node.isDesugaredFromEnhancedArrayForLoop()
               || atypeFactory.isOwningCollectionField(
@@ -97,8 +96,8 @@ public class CollectionOwnershipTransfer
                 hasExplicitNotOwningCollectionDeclaration(node) ? lhsJE : rhsJE,
                 atypeFactory.NOTOWNINGCOLLECTION);
           }
-          break;
-        default:
+        }
+        default -> {}
       }
     }
     return res;
@@ -120,7 +119,7 @@ public class CollectionOwnershipTransfer
       CollectionOwnershipStore elseStore = res.getElseStore();
       ExpressionTree collectionExpression = disposalLoop.expressionTree;
       JavaExpression collectionJE = JavaExpression.fromTree(collectionExpression);
-      Set<String> disposalLoopCalledMethods = atypeFactory.getMccaCalledMethods(disposalLoop);
+      Set<String> disposalLoopCalledMethods = atypeFactory.getCalledMethods(disposalLoop);
 
       CollectionOwnershipType collectionCoType = atypeFactory.getCoType(collectionExpression);
       if (collectionCoType == CollectionOwnershipType.OwningCollection) {
@@ -254,7 +253,7 @@ public class CollectionOwnershipTransfer
       Element argElem = TreeUtils.elementFromTree(arg.getTree());
       boolean transferOwnership = false;
       switch (paramType) {
-        case OwningCollection:
+        case OwningCollection -> {
           switch (argType) {
             case OwningCollection:
             case OwningCollectionWithoutObligation:
@@ -262,16 +261,16 @@ public class CollectionOwnershipTransfer
               break;
             default:
           }
-          break;
-        case OwningCollectionWithoutObligation:
+        }
+        case OwningCollectionWithoutObligation -> {
           switch (argType) {
             case OwningCollectionWithoutObligation:
               transferOwnership = true;
               break;
             default:
           }
-          break;
-        default:
+        }
+        default -> {}
       }
       if (transferOwnership) {
         if (argElem.getKind().isField()) {

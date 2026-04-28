@@ -10,7 +10,6 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
@@ -29,60 +28,48 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** Matches indexed `for` loops that may discharge collection obligations. */
+/** Matches indexed `for` {@link DisposalLoop}'s that iterates over a resource collection. */
 final class IndexedForDisposalLoopMatcher {
 
   /** The CO type factory used for collection-ownership queries. */
-  private final CollectionOwnershipAnnotatedTypeFactory atypeFactory;
+  private final CollectionOwnershipAnnotatedTypeFactory coAtf;
 
   /** The CFG of the method currently being scanned. */
   private final ControlFlowGraph cfg;
 
-  /** The method currently being scanned, or {@code null} if the CFG is not for a method. */
-  private final @Nullable MethodTree methodTree;
-
   /**
    * Creates a matcher for indexed `for` disposal loops.
    *
-   * @param atypeFactory the CO type factory
+   * @param coAtf the CO type factory
    * @param cfg the CFG being scanned
-   * @param methodTree the enclosing method, or {@code null}
    */
   IndexedForDisposalLoopMatcher(
-      CollectionOwnershipAnnotatedTypeFactory atypeFactory,
-      ControlFlowGraph cfg,
-      @Nullable MethodTree methodTree) {
-    this.atypeFactory = atypeFactory;
+      CollectionOwnershipAnnotatedTypeFactory coAtf, ControlFlowGraph cfg) {
+    this.coAtf = coAtf;
     this.cfg = cfg;
-    this.methodTree = methodTree;
   }
 
   /**
-   * Marks the for-loop if it potentially fulfills collection obligations of a collection.
+   * Returns the {@link DisposalLoop} if the `for` loop iterates over a resource collection and
+   * follows a specific loop shape described in {@link #nameOfCollectionThatAllElementsAreCalledOn}.
    *
    * @param tree a `for` loop with exactly one loop variable
    * @return the matched disposal loop, or {@code null} if the loop does not match
    */
   @Nullable DisposalLoop match(ForLoopTree tree) {
-    MethodTree enclosingMethodTree =
-        CollectionOwnershipUtils.getEnclosingMethodForCollectionLoop(methodTree);
-    if (enclosingMethodTree == null) {
-      return null;
-    }
-
     List<? extends StatementTree> loopBodyStatements =
-        CollectionOwnershipUtils.getLoopBodyStatements(tree.getStatement());
+        CollectionOwnershipUtils.asStatementList(tree.getStatement());
     if (loopBodyStatements == null) {
       return null;
     }
     StatementTree init = tree.getInitializer().get(0);
     ExpressionTree condition = TreeUtils.withoutParens(tree.getCondition());
     ExpressionStatementTree update = tree.getUpdate().get(0);
-    if (!(condition instanceof BinaryTree)) {
+    if (!(condition instanceof BinaryTree binaryTreeCondition)) {
       return null;
     }
     Name identifierInHeader =
-        nameOfCollectionThatAllElementsAreCalledOn(init, (BinaryTree) condition, update);
+        nameOfCollectionThatAllElementsAreCalledOn(init, binaryTreeCondition, update);
     Name iterator = CollectionOwnershipUtils.getNameFromStatementTree(init);
     if (identifierInHeader == null || iterator == null) {
       return null;
@@ -101,10 +88,10 @@ final class IndexedForDisposalLoopMatcher {
       Block conditionalBlock = ((SingleSuccessorBlock) loopConditionBlock).getSuccessor();
       Block loopBodyEntryBlock = ((ConditionalBlock) conditionalBlock).getThenSuccessor();
       return new DisposalLoop(
-          CollectionOwnershipUtils.collectionTreeFromExpression(collectionElementTree),
+          CollectionOwnershipUtils.baseExpression(collectionElementTree),
           collectionElementTree,
           nodeForCollectionElt,
-          CollectionOwnershipUtils.treeForLoopCondition(cfg, condition),
+          CollectionOwnershipUtils.cfgAssociatedTreeFor(cfg, condition),
           (ConditionalBlock) conditionalBlock,
           loopBodyEntryBlock,
           loopUpdateBlock);
@@ -141,9 +128,8 @@ final class IndexedForDisposalLoopMatcher {
     if (updateKind == Tree.Kind.PREFIX_INCREMENT || updateKind == Tree.Kind.POSTFIX_INCREMENT) {
       UnaryTree inc = (UnaryTree) update.getExpression();
 
-      if (!(init instanceof VariableTree) || !(inc.getExpression() instanceof IdentifierTree))
-        return null;
-      VariableTree initVar = (VariableTree) init;
+      if (!(init instanceof VariableTree initVar)
+          || !(inc.getExpression() instanceof IdentifierTree)) return null;
 
       if (!(initVar.getInitializer() instanceof LiteralTree)
           || !((LiteralTree) initVar.getInitializer()).getValue().equals(0)) {
@@ -166,10 +152,9 @@ final class IndexedForDisposalLoopMatcher {
           && TreeUtils.isSizeAccess(condition.getRightOperand())) {
         ExpressionTree methodSelect =
             ((MethodInvocationTree) condition.getRightOperand()).getMethodSelect();
-        if (methodSelect instanceof MemberSelectTree) {
-          MemberSelectTree mst = (MemberSelectTree) methodSelect;
+        if (methodSelect instanceof MemberSelectTree mst) {
           Element elt = TreeUtils.elementFromTree(mst.getExpression());
-          if (ResourceLeakUtils.isCollection(elt, atypeFactory)) {
+          if (ResourceLeakUtils.isCollection(elt, coAtf)) {
             return CollectionOwnershipUtils.getNameFromExpressionTree(mst.getExpression());
           }
         }
@@ -201,17 +186,13 @@ final class IndexedForDisposalLoopMatcher {
           @Override
           public Void visitUnary(UnaryTree tree, Void p) {
             switch (tree.getKind()) {
-              case PREFIX_DECREMENT:
-              case POSTFIX_DECREMENT:
-              case PREFIX_INCREMENT:
-              case POSTFIX_INCREMENT:
+              case PREFIX_DECREMENT, POSTFIX_DECREMENT, PREFIX_INCREMENT, POSTFIX_INCREMENT -> {
                 if (CollectionOwnershipUtils.getNameFromExpressionTree(tree.getExpression())
                     == iterator) {
                   blockIsIllegal.set(true);
                 }
-                break;
-              default:
-                break;
+              }
+              default -> {}
             }
             return super.visitUnary(tree, p);
           }
@@ -268,16 +249,14 @@ final class IndexedForDisposalLoopMatcher {
     if (tree == null || index == null) {
       return false;
     }
-    if (tree instanceof MethodInvocationTree
+    if (tree instanceof MethodInvocationTree mit
         && index
             == CollectionOwnershipUtils.getNameFromExpressionTree(
                 TreeUtils.getIdxForGetCall(tree))) {
-      MethodInvocationTree mit = (MethodInvocationTree) tree;
       ExpressionTree methodSelect = mit.getMethodSelect();
-      if (methodSelect instanceof MemberSelectTree) {
-        MemberSelectTree mst = (MemberSelectTree) methodSelect;
+      if (methodSelect instanceof MemberSelectTree mst) {
         Element receiverElt = TreeUtils.elementFromTree(mst.getExpression());
-        return ResourceLeakUtils.isCollection(receiverElt, atypeFactory);
+        return ResourceLeakUtils.isCollection(receiverElt, coAtf);
       }
     }
     return false;

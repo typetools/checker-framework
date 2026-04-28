@@ -3,7 +3,6 @@ package org.checkerframework.checker.collectionownership;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -23,59 +22,47 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.IPair;
 
-/** Resolves enhanced-`for` loops that may discharge collection obligations. */
+/** Resolves enhanced-`for` {@link DisposalLoop} from CFG. */
 final class EnhancedForDisposalLoopResolver {
 
   /** The CO type factory used for collection-ownership queries. */
-  private final CollectionOwnershipAnnotatedTypeFactory atypeFactory;
+  private final CollectionOwnershipAnnotatedTypeFactory coAtf;
 
   /** The CFG of the method currently being scanned. */
   private final ControlFlowGraph cfg;
 
-  /** The method currently being scanned, or {@code null} if the CFG is not for a method. */
-  private final @Nullable MethodTree methodTree;
-
   /**
    * Creates a resolver for enhanced-`for` disposal loops.
    *
-   * @param atypeFactory the CO type factory
+   * @param coAtf the CO type factory
    * @param cfg the CFG being scanned
-   * @param methodTree the enclosing method, or {@code null}
    */
   EnhancedForDisposalLoopResolver(
-      CollectionOwnershipAnnotatedTypeFactory atypeFactory,
-      ControlFlowGraph cfg,
-      @Nullable MethodTree methodTree) {
-    this.atypeFactory = atypeFactory;
+      CollectionOwnershipAnnotatedTypeFactory coAtf, ControlFlowGraph cfg) {
+    this.coAtf = coAtf;
     this.cfg = cfg;
-    this.methodTree = methodTree;
   }
 
   /**
-   * Adds an enhanced-for-loop that fulfills collection obligations.
+   * Returns the {@link DisposalLoop} along with its facts if the enhanced-for-loop iterates over a
+   * resource collection.
    *
    * @param tree the enhanced-for-loop to inspect
    * @return the matched disposal loop, or {@code null} if the loop does not match
    */
   @Nullable DisposalLoop match(EnhancedForLoopTree tree) {
-    MethodTree enclosingMethodTree =
-        CollectionOwnershipUtils.getEnclosingMethodForCollectionLoop(methodTree);
-    if (enclosingMethodTree == null) {
-      return null;
-    }
-    ExpressionTree collectionTree =
-        CollectionOwnershipUtils.collectionTreeFromExpression(tree.getExpression());
+    ExpressionTree collectionTree = CollectionOwnershipUtils.baseExpression(tree.getExpression());
     if (collectionTree == null) {
       return null;
     }
-    if (!atypeFactory.isResourceCollection(collectionTree)) {
+    if (!coAtf.isResourceCollection(collectionTree)) {
       return null;
     }
     return resolveEnhancedForLoop(tree);
   }
 
   /**
-   * Resolves an enhanced-for-loop candidate into a CFG-resolved loop.
+   * Resolves an enhanced-for-loop candidate into a {@link DisposalLoop}.
    *
    * @param tree the enhanced-for-loop to resolve
    * @return the CFG-resolved loop, or {@code null} if it cannot be resolved
@@ -91,8 +78,8 @@ final class EnhancedForDisposalLoopResolver {
       Block currentBlock = worklist.removeFirst();
 
       for (Node node : currentBlock.getNodes()) {
-        if (node instanceof MethodInvocationNode) {
-          DisposalLoop resolvedLoop = resolveEnhancedForLoop((MethodInvocationNode) node, tree);
+        if (node instanceof MethodInvocationNode methodInvocationNode) {
+          DisposalLoop resolvedLoop = resolveEnhancedForLoop(methodInvocationNode, tree);
           if (resolvedLoop != null) {
             return resolvedLoop;
           }
@@ -100,8 +87,7 @@ final class EnhancedForDisposalLoopResolver {
       }
 
       for (IPair<Block, @Nullable TypeMirror> successorAndExceptionType :
-          CollectionOwnershipUtils.getSuccessorsExceptIgnoredExceptions(
-              currentBlock, atypeFactory)) {
+          CollectionOwnershipUtils.getSuccessorsExceptIgnoredExceptions(currentBlock, coAtf)) {
         Block successorBlock = successorAndExceptionType.first;
         if (successorBlock != null && visitedBlocks.add(successorBlock)) {
           worklist.addLast(successorBlock);
@@ -114,7 +100,7 @@ final class EnhancedForDisposalLoopResolver {
 
   /**
    * Returns a resolved collection loop if the given node is desugared from an enhanced-for-loop
-   * over a collection.
+   * over a resource collection.
    *
    * @param methodInvocationNode the node to check
    * @param tree the enhanced-for-loop being resolved
@@ -189,10 +175,11 @@ final class EnhancedForDisposalLoopResolver {
               + blockContainingLoopCondition.getSuccessors().size()
               + " successors instead of 1.");
     }
-    Block conditionalBlock = blockContainingLoopCondition.getSuccessors().iterator().next();
-    if (!(conditionalBlock instanceof ConditionalBlock)) {
+    Block maybeConditionalBlock = blockContainingLoopCondition.getSuccessors().iterator().next();
+    if (!(maybeConditionalBlock instanceof ConditionalBlock conditionalBlock)) {
       throw new BugInCF(
-          "loop condition successor is not ConditionalBlock, but: " + conditionalBlock.getClass());
+          "loop condition successor is not ConditionalBlock, but: "
+              + maybeConditionalBlock.getClass());
     }
     if (loopVariableNode == null || loopVariableNode.getTree() == null || node.getTree() == null) {
       return null;
@@ -203,7 +190,7 @@ final class EnhancedForDisposalLoopResolver {
         loopVariableNode.getTree(),
         loopVariableNode,
         node.getTree(),
-        (ConditionalBlock) conditionalBlock,
+        conditionalBlock,
         loopBodyEntryBlock,
         loopUpdateBlock);
   }

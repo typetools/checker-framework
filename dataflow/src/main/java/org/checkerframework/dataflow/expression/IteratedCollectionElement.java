@@ -34,10 +34,9 @@ public class IteratedCollectionElement extends JavaExpression {
     if (this == obj) {
       return true;
     }
-    if (!(obj instanceof IteratedCollectionElement)) {
+    if (!(obj instanceof IteratedCollectionElement other)) {
       return false;
     }
-    IteratedCollectionElement other = (IteratedCollectionElement) obj;
     return this.tree.equals(other.tree) && this.node.equals(other.node);
   }
 
@@ -59,10 +58,9 @@ public class IteratedCollectionElement extends JavaExpression {
 
   @Override
   public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof IteratedCollectionElement)) {
+    if (!(je instanceof IteratedCollectionElement other)) {
       return false;
     }
-    IteratedCollectionElement other = (IteratedCollectionElement) je;
     return this.equals(other);
   }
 

@@ -20,12 +20,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 public class CollectionOwnershipAnalysis
     extends CFAbstractAnalysis<CFValue, CollectionOwnershipStore, CollectionOwnershipTransfer> {
 
-  /**
-   * Ignored-exception policy used by collection-ownership flow.
-   *
-   * <p>This policy matches the Resource Leak Checker policy except that exact {@link Throwable}
-   * exceptional edges are preserved.
-   */
+  /** Ignored-exception policy used by collection-ownership flow. */
   private final SetOfTypes ignoredExceptions;
 
   /**

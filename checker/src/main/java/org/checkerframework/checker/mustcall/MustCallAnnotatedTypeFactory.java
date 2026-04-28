@@ -154,119 +154,6 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     this.postInit();
   }
 
-  //  /**
-  //   * Records a potentially fulfilling collection loop for the given enclosing method.
-  //   *
-  //   * <p>If this Must Call factory is not running under the Resource Leak Checker hierarchy, then
-  //   * this method does nothing.
-  //   *
-  //   * @param enclosingMethodTree the method containing the loop
-  //   * @param collectionTree the collection iterated over by the loop
-  //   * @param collectionElementTree the tree for the collection element
-  //   * @param conditionTree the loop condition
-  //   * @param loopBodyEntryBlock the CFG block for the loop body entry
-  //   * @param loopConditionalBlock the CFG conditional block for the loop
-  //   * @param collectionElementNode the CFG node for the iterated element
-  //   */
-  //  public void recordPotentiallyFulfillingCollectionLoop(
-  //      MethodTree enclosingMethodTree,
-  //      ExpressionTree collectionTree,
-  //      Tree collectionElementTree,
-  //      Tree conditionTree,
-  //      Block loopBodyEntryBlock,
-  //      ConditionalBlock loopConditionalBlock,
-  //      Node collectionElementNode) {
-  //    RLCCalledMethodsAnnotatedTypeFactory rlccAtf = getRlccAtfIfPartOfHierarchy();
-  //    if (rlccAtf == null) {
-  //      return;
-  //    }
-  //    rlccAtf.recordPotentiallyFulfillingCollectionLoop(
-  //        enclosingMethodTree,
-  //        collectionTree,
-  //        collectionElementTree,
-  //        conditionTree,
-  //        loopBodyEntryBlock,
-  //        loopConditionalBlock,
-  //        collectionElementNode);
-  //  }
-  //
-  //  /**
-  //   * Records a potentially fulfilling enhanced-for-loop for the given enclosing method.
-  //   *
-  //   * <p>If this Must Call factory is not running under the Resource Leak Checker hierarchy, then
-  //   * this method does nothing.
-  //   *
-  //   * @param enclosingMethodTree the method containing the loop
-  //   * @param enhancedForLoopTree the enhanced-for-loop tree
-  //   */
-  //  public void recordPotentiallyFulfillingEnhancedForLoop(
-  //      MethodTree enclosingMethodTree, EnhancedForLoopTree enhancedForLoopTree) {
-  //    RLCCalledMethodsAnnotatedTypeFactory rlccAtf = getRlccAtfIfPartOfHierarchy();
-  //    if (rlccAtf == null) {
-  //      return;
-  //    }
-  //    rlccAtf.recordPotentiallyFulfillingEnhancedForLoop(enclosingMethodTree,
-  // enhancedForLoopTree);
-  //  }
-  //
-  //  /**
-  //   * Records a CFG-resolved potentially fulfilling collection loop for the given enclosing
-  // method.
-  //   *
-  //   * <p>If this Must Call factory is not running under the Resource Leak Checker hierarchy, then
-  //   * this method does nothing.
-  //   *
-  //   * @param enclosingMethodTree the method containing the loop
-  //   * @param collectionTree the collection iterated over by the loop
-  //   * @param collectionElementTree the tree for the collection element
-  //   * @param conditionTree the loop condition
-  //   * @param loopBodyEntryBlock the CFG block for the loop body entry
-  //   * @param loopUpdateBlock the CFG block for the loop update
-  //   * @param loopConditionalBlock the CFG conditional block for the loop
-  //   * @param collectionElementNode the CFG node for the iterated element
-  //   */
-  //  public void recordResolvedPotentiallyFulfillingCollectionLoop(
-  //      MethodTree enclosingMethodTree,
-  //      ExpressionTree collectionTree,
-  //      Tree collectionElementTree,
-  //      Tree conditionTree,
-  //      Block loopBodyEntryBlock,
-  //      Block loopUpdateBlock,
-  //      ConditionalBlock loopConditionalBlock,
-  //      Node collectionElementNode) {
-  //    RLCCalledMethodsAnnotatedTypeFactory rlccAtf = getRlccAtfIfPartOfHierarchy();
-  //    if (rlccAtf == null) {
-  //      return;
-  //    }
-  //    rlccAtf.recordResolvedPotentiallyFulfillingCollectionLoop(
-  //        enclosingMethodTree,
-  //        collectionTree,
-  //        collectionElementTree,
-  //        conditionTree,
-  //        loopBodyEntryBlock,
-  //        loopUpdateBlock,
-  //        loopConditionalBlock,
-  //        collectionElementNode);
-  //  }
-
-  //  /**
-  //   * Returns the RLCC called-methods type factory if this factory is part of the Resource Leak
-  //   * Checker hierarchy, or {@code null} otherwise.
-  //   *
-  //   * @return the RLCC called-methods type factory, or {@code null}
-  //   */
-  //  private @Nullable RLCCalledMethodsAnnotatedTypeFactory getRlccAtfIfPartOfHierarchy() {
-  //    SourceChecker currentChecker = checker;
-  //    while (currentChecker != null) {
-  //      String currentCheckerName = currentChecker.getClass().getCanonicalName();
-  //      if (ResourceLeakUtils.rlcCheckers.contains(currentCheckerName)) {
-  //        return ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(this);
-  //      }
-  //      currentChecker = currentChecker.getParentChecker();
-  //    }
-  //    return null;
-  //  }
-
   @Override
   public void setRoot(@Nullable CompilationUnitTree newRoot) {
     super.setRoot(newRoot);
@@ -293,8 +180,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
           continue;
         }
         if (typeArg.getKind() == TypeKind.WILDCARD || typeArg.getKind() == TypeKind.TYPEVAR) {
-          if (tree != null && tree instanceof NewClassTree) {
-            if (((NewClassTree) tree).getTypeArguments().isEmpty()) {
+          if (tree instanceof NewClassTree newClassTree) {
+            if (newClassTree.getTypeArguments().isEmpty()) {
               // Diamond [new Class()<>]. Not explicit generic type param.
               // This will be inferred later. Don't put it to bottom here.
               continue;
@@ -318,8 +205,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
               if (!ResourceLeakUtils.hasManualMustCallUnknownAnno(extendsBound)) {
                 typeArg.replaceAnnotation(BOTTOM);
               }
-            } else if (typeArg instanceof AnnotatedTypeVariable) {
-              AnnotatedTypeMirror upperBound = ((AnnotatedTypeVariable) typeArg).getUpperBound();
+            } else if (typeArg instanceof AnnotatedTypeVariable annotatedTypeVariable) {
+              AnnotatedTypeMirror upperBound = annotatedTypeVariable.getUpperBound();
               // set back to bottom if the type var is a captured wildcard
               // or if it doesn't have a manual MustCallUnknown anno
               if (typeArg.containsCapturedTypes()

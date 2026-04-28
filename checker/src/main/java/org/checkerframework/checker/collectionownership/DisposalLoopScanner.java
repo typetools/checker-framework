@@ -4,31 +4,25 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreeScanner;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
-import org.checkerframework.dataflow.cfg.UnderlyingAST;
 
-/** Scans one method tree and discovers disposal loops in its CFG. */
+/** Scans one method tree and discovers {@link DisposalLoop}'s in its CFG. */
 public class DisposalLoopScanner extends TreeScanner<Void, Void> {
 
   /** The CO type factory used for collection-ownership queries. */
-  private final CollectionOwnershipAnnotatedTypeFactory atypeFactory;
+  private final CollectionOwnershipAnnotatedTypeFactory coAtf;
 
-  /** The RLCC type factory used for declaration lookup and ignored-exception checks. */
+  /** The RLCC type factory used for declaration lookup. */
   private final RLCCalledMethodsAnnotatedTypeFactory rlccAtf;
 
   /** The CFG of the method currently being scanned. */
   private final ControlFlowGraph cfg;
-
-  /** The method currently being scanned, or {@code null} if the CFG is not for a method. */
-  private final @Nullable MethodTree methodTree;
 
   /** Disposal loops discovered while scanning the current method tree. */
   private final Set<DisposalLoop> disposalLoops = new LinkedHashSet<>();
@@ -45,29 +39,22 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
   /**
    * Creates a scanner for disposal loops in one method CFG.
    *
-   * @param atypeFactory the CO type factory
+   * @param coAtf the CO type factory
    * @param rlccAtf the RLCC type factory
    * @param cfg the CFG to scan
    */
   public DisposalLoopScanner(
-      CollectionOwnershipAnnotatedTypeFactory atypeFactory,
+      CollectionOwnershipAnnotatedTypeFactory coAtf,
       RLCCalledMethodsAnnotatedTypeFactory rlccAtf,
       ControlFlowGraph cfg) {
-    this.atypeFactory = atypeFactory;
+    this.coAtf = coAtf;
     this.rlccAtf = rlccAtf;
     this.cfg = cfg;
-    UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
-    if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
-      this.methodTree = ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
-    } else {
-      this.methodTree = null;
-    }
-    this.indexedForDisposalLoopMatcher =
-        new IndexedForDisposalLoopMatcher(this.atypeFactory, this.cfg, this.methodTree);
+    this.indexedForDisposalLoopMatcher = new IndexedForDisposalLoopMatcher(this.coAtf, this.cfg);
     this.whileDisposalLoopMatcher =
-        new WhileDisposalLoopMatcher(this.atypeFactory, this.rlccAtf, this.cfg, this.methodTree);
+        new WhileDisposalLoopMatcher(this.coAtf, this.rlccAtf, this.cfg);
     this.enhancedForDisposalLoopResolver =
-        new EnhancedForDisposalLoopResolver(this.atypeFactory, this.cfg, this.methodTree);
+        new EnhancedForDisposalLoopResolver(this.coAtf, this.cfg);
   }
 
   /**
@@ -126,8 +113,7 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
   }
 
   /**
-   * Matches while-loops that may fulfill collection obligations and resolves their CFG-local loop
-   * facts.
+   * Matches a {@link DisposalLoop} that uses while-loops and resolves their CFG-local loop facts.
    *
    * @param tree the while-loop to inspect
    * @param p the scan parameter

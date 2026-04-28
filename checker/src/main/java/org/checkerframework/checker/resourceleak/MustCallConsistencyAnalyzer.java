@@ -329,12 +329,12 @@ public class MustCallConsistencyAnalyzer {
     public static Obligation fromTree(Tree tree) {
       JavaExpression jx;
       Element elem;
-      if (tree instanceof ExpressionTree) {
-        jx = JavaExpression.fromTree((ExpressionTree) tree);
-        elem = TreeUtils.elementFromTree((ExpressionTree) tree);
-      } else if (tree instanceof VariableTree) {
-        jx = JavaExpression.fromVariableTree((VariableTree) tree);
-        elem = TreeUtils.elementFromDeclaration((VariableTree) tree);
+      if (tree instanceof ExpressionTree expressionTree) {
+        jx = JavaExpression.fromTree(expressionTree);
+        elem = TreeUtils.elementFromTree(expressionTree);
+      } else if (tree instanceof VariableTree variableTree) {
+        jx = JavaExpression.fromVariableTree(variableTree);
+        elem = TreeUtils.elementFromDeclaration(variableTree);
       } else {
         throw new IllegalArgumentException(
             "Tree must be ExpressionTree or VariableTree but is " + tree.getClass());
@@ -402,9 +402,9 @@ public class MustCallConsistencyAnalyzer {
     private boolean canBeSatisfiedThrough(Tree tree) {
       for (ResourceAlias alias : resourceAliases) {
         if (alias.tree.equals(tree)
-            || ((tree instanceof ExpressionTree)
-                && JavaExpression.fromTree((ExpressionTree) tree) != null
-                && alias.reference.equals(JavaExpression.fromTree((ExpressionTree) tree)))) {
+            || ((tree instanceof ExpressionTree expressionTree)
+                && JavaExpression.fromTree(expressionTree) != null
+                && alias.reference.equals(JavaExpression.fromTree(expressionTree)))) {
           return true;
         }
       }
@@ -599,11 +599,10 @@ public class MustCallConsistencyAnalyzer {
       if (obj == this) {
         return true;
       }
-      if (!(obj instanceof CollectionObligation)) {
+      if (!(obj instanceof CollectionObligation collectionObligation)) {
         return false;
       }
-      return super.equals(obj)
-          && ((CollectionObligation) obj).mustCallMethod.equals(this.mustCallMethod);
+      return super.equals(obj) && collectionObligation.mustCallMethod.equals(this.mustCallMethod);
     }
   }
 
@@ -950,9 +949,7 @@ public class MustCallConsistencyAnalyzer {
         throw new BugInCF("Method receiver not in collection ownership store: " + receiverNode);
       }
       switch (receiverType) {
-        case OwningCollectionWithoutObligation:
-        // fall through
-        case OwningCollection:
+        case OwningCollectionWithoutObligation, OwningCollection -> {
           if (!receiverIsOwningField) {
             List<String> mustCallValues =
                 coAtf.getMustCallValuesOfResourceCollectionComponent(receiverNode.getTree());
@@ -974,8 +971,8 @@ public class MustCallConsistencyAnalyzer {
           }
           // Transfer the inserted element's obligation to the owning collection receiver.
           consumeInsertedArgumentObligationIfSingleElementInsert(obligations, node);
-          break;
-        default:
+        }
+        default -> {}
       }
     }
   }
@@ -1085,8 +1082,8 @@ public class MustCallConsistencyAnalyzer {
 
     addObligationsForOwningCollectionReturn(obligations, node);
 
-    if (node instanceof MethodInvocationNode) {
-      addObligationsForCreatesCollectionObligationAnno(obligations, (MethodInvocationNode) node);
+    if (node instanceof MethodInvocationNode methodInvocationNode) {
+      addObligationsForCreatesCollectionObligationAnno(obligations, methodInvocationNode);
     }
 
     if (!shouldTrackInvocationResult(obligations, node, false)) {
@@ -1715,10 +1712,9 @@ public class MustCallConsistencyAnalyzer {
         break;
       }
       for (ResourceAlias alias : o.resourceAliases) {
-        if ((alias.tree instanceof ExpressionTree)
-            && (rhsExpr.getTree() instanceof ExpressionTree)
-            && TreeUtils.sameTree(
-                (ExpressionTree) alias.tree, (ExpressionTree) rhsExpr.getTree())) {
+        if ((alias.tree instanceof ExpressionTree aliasExprTree)
+            && (rhsExpr.getTree() instanceof ExpressionTree rhsExprTree)
+            && TreeUtils.sameTree(aliasExprTree, rhsExprTree)) {
           Set<ResourceAlias> newResourceAliasesForObligation =
               new LinkedHashSet<>(o.resourceAliases);
           // It is possible to observe assignments to temporary variables, e.g.,
@@ -2110,10 +2106,12 @@ public class MustCallConsistencyAnalyzer {
       }
 
       switch (lhsCoType) {
-        case NotOwningCollection:
+        case NotOwningCollection -> {
           // doesn't own elements. safe to overwrite.
           return;
-        case OwningCollectionWithoutObligation:
+          // doesn't own elements. safe to overwrite.
+        }
+        case OwningCollectionWithoutObligation -> {
           // no obligation. assignment allowed.
           // but if rhs is owning, demand CreatesMustCallFor("this")
           if (rhsCoType == CollectionOwnershipType.OwningCollection
@@ -2127,7 +2125,8 @@ public class MustCallConsistencyAnalyzer {
             }
           }
           return;
-        case OwningCollection:
+        }
+        case OwningCollection -> {
           // assignment not allowed
           checker.reportError(
               node.getTree(),
@@ -2136,7 +2135,8 @@ public class MustCallConsistencyAnalyzer {
               lhs.getTree(),
               "Field assignment might overwrite field's current value");
           return;
-        default:
+        }
+        default -> {}
       }
     }
   }
@@ -2431,10 +2431,8 @@ public class MustCallConsistencyAnalyzer {
     if (receiver instanceof SuperNode) {
       return "super";
     }
-    if (receiver instanceof FieldAccessNode) {
-      return receiverAsString((FieldAccessNode) receiver)
-          + "."
-          + ((FieldAccessNode) receiver).getFieldName();
+    if (receiver instanceof FieldAccessNode fieldAccessReceiver) {
+      return receiverAsString(fieldAccessReceiver) + "." + fieldAccessReceiver.getFieldName();
     }
     throw new TypeSystemError(
         "unexpected receiver of field assignment: " + receiver + " of type " + receiver.getClass());
@@ -2662,8 +2660,8 @@ public class MustCallConsistencyAnalyzer {
           updateObligationsForOwningReturn(obligations, cfg, rn);
         } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
           updateObligationsForInvocation(obligations, node, successorAndExceptionType.second);
-        } else if (node instanceof FieldAccessNode) {
-          checkOwningResourceCollectionFieldAccess((FieldAccessNode) node);
+        } else if (node instanceof FieldAccessNode fieldAccessNode) {
+          checkOwningResourceCollectionFieldAccess(fieldAccessNode);
         }
         // All other types of nodes are ignored. This is safe, because other kinds of
         // nodes cannot create or modify the resource-alias sets that the algorithm is
@@ -2757,7 +2755,7 @@ public class MustCallConsistencyAnalyzer {
     if ((currentBlock instanceof ConditionalBlock conditionalBlock) && disposalLoop != null) {
       if (conditionalBlock.getElseSuccessor().equals(successor)) {
         isElseEdgeOfDisposalLoop = true;
-        disposalLoopCalledMethods = coAtf.getMccaCalledMethods(disposalLoop);
+        disposalLoopCalledMethods = coAtf.getCalledMethods(disposalLoop);
       }
     }
 
@@ -2767,8 +2765,8 @@ public class MustCallConsistencyAnalyzer {
     for (Obligation obligation : obligations) {
 
       if (isElseEdgeOfDisposalLoop && disposalLoopCalledMethods != null) {
-        if (obligation instanceof CollectionObligation) {
-          String mustCallMethodOfCo = ((CollectionObligation) obligation).mustCallMethod;
+        if (obligation instanceof CollectionObligation collectionObligation) {
+          String mustCallMethodOfCo = collectionObligation.mustCallMethod;
           if (disposalLoopCalledMethods.contains(mustCallMethodOfCo)) {
             // Don't propagate this obligation along this edge, as the called-methods for this
             // disposal loop already fulfills it.
@@ -3159,12 +3157,12 @@ public class MustCallConsistencyAnalyzer {
       return;
     }
 
-    if (obligation instanceof CollectionObligation) {
+    if (obligation instanceof CollectionObligation collectionObligation) {
       ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
       if (!reportedErrorAliases.contains(firstAlias)) {
         if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstAlias.tree))) {
           reportedErrorAliases.add(firstAlias);
-          String methodName = ((CollectionObligation) obligation).mustCallMethod;
+          String methodName = collectionObligation.mustCallMethod;
           checker.reportError(
               firstAlias.tree,
               "unfulfilled.collection.obligations",
@@ -3466,11 +3464,8 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Analyze the loop body of a {@link DisposalLoop} to compute the definitely called-methods on
-   * every iterated element on every path.
-   *
-   * <p>This method should be called after the called-method-analysis is finished (in the {@code
-   * postAnalyze(cfg)} method of the {@code RLCCalledMethodsAnnotatedTypeFactory}).
+   * Analyze the loop body of a {@link DisposalLoop} to compute the definitely called-methods on the
+   * iterated element on every path.
    *
    * @param cfg the cfg of the enclosing method
    * @param disposalLoop the loop to analyze
@@ -3504,8 +3499,8 @@ public class MustCallConsistencyAnalyzer {
 
     // Add an obligation for the element of the collection iterated over
     Obligation collectionElementObligation = Obligation.fromTree(collectionElement);
-    if (collectionElement instanceof VariableTree) {
-      VariableElement varElt = TreeUtils.elementFromDeclaration((VariableTree) collectionElement);
+    if (collectionElement instanceof VariableTree variableTree) {
+      VariableElement varElt = TreeUtils.elementFromDeclaration(variableTree);
       boolean hasMustCallAlias = cmAtf.hasMustCallAlias(varElt);
       collectionElementObligation =
           new Obligation(
@@ -3538,8 +3533,8 @@ public class MustCallConsistencyAnalyzer {
           getSuccessorsExceptIgnoredExceptions(currentBlock)) {
         Set<Obligation> obligations = new LinkedHashSet<>(current.obligations);
         for (Node node : currentBlock.getNodes()) {
-          if (node instanceof AssignmentNode) {
-            updateObligationsForAssignment(obligations, cfg, (AssignmentNode) node);
+          if (node instanceof AssignmentNode assignmentNode) {
+            updateObligationsForAssignment(obligations, cfg, assignmentNode);
           }
         }
 

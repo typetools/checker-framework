@@ -63,12 +63,8 @@ public class CollectionOwnershipVisitor
    * Enforces the mutator policy for methods annotated {@code @CreatesCollectionObligation}.
    *
    * <p>A {@code @NotOwningCollection} receiver may only accept an inserted argument that is
-   * definitely non-owning at the call site. Owning receivers are allowed; the resource-leak
-   * analysis models any collection obligation they create.
-   *
-   * <p>This visitor only checks instance mutators on resource-collection receivers. The inserted
-   * argument is identified using the current {@code @CreatesCollectionObligation} heuristic in
-   * {@link CollectionOwnershipAnnotatedTypeFactory#getInsertedArgumentTree(MethodInvocationTree)}.
+   * definitely non-owning at the call site. Owning receivers are allowed; RLC models any collection
+   * obligation they create.
    *
    * @param tree the method invocation tree
    */
@@ -102,7 +98,7 @@ public class CollectionOwnershipVisitor
         atypeFactory.getCollectionMutatorArgumentKind(insertedArgumentTree);
     String methodName = methodElement.getSimpleName().toString();
     switch (receiverType) {
-      case NotOwningCollection:
+      case NotOwningCollection -> {
         if (insertedArgumentKind
             != CollectionOwnershipAnnotatedTypeFactory.CollectionMutatorArgumentKind
                 .DEFINITELY_NON_OWNING) {
@@ -112,10 +108,11 @@ public class CollectionOwnershipVisitor
               methodName,
               TreeUtils.toStringTruncated(insertedArgumentTree, 60));
         }
-        break;
-      default:
+      }
+      default -> {
         // Owning receivers are handled by CO analysis; bottom and other cases are intentionally
         // ignored here.
+      }
     }
   }
 

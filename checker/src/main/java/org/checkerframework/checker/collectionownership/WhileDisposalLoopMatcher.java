@@ -4,9 +4,9 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
@@ -38,20 +38,17 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** Matches `while` loops that may discharge collection obligations. */
+/** Matches `while` {@link DisposalLoop} that iterates over a resource collection. */
 final class WhileDisposalLoopMatcher {
 
   /** The CO type factory used for collection-ownership queries. */
-  private final CollectionOwnershipAnnotatedTypeFactory atypeFactory;
+  private final CollectionOwnershipAnnotatedTypeFactory coAtf;
 
-  /** The RLCC type factory used for declaration lookup and ignored-exception checks. */
+  /** The RLCC type factory used for declaration lookup. */
   private final RLCCalledMethodsAnnotatedTypeFactory rlccAtf;
 
   /** The CFG of the method currently being scanned. */
   private final ControlFlowGraph cfg;
-
-  /** The method currently being scanned, or {@code null} if the CFG is not for a method. */
-  private final @Nullable MethodTree methodTree;
 
   /** Lazily-computed CFG facts for while-loop resolution. */
   private @Nullable WhileLoopResolutionCache whileLoopCache;
@@ -59,20 +56,17 @@ final class WhileDisposalLoopMatcher {
   /**
    * Creates a matcher for `while` disposal loops.
    *
-   * @param atypeFactory the CO type factory
+   * @param coAtf the CO type factory
    * @param rlccAtf the RLCC type factory
    * @param cfg the CFG being scanned
-   * @param methodTree the enclosing method, or {@code null}
    */
   WhileDisposalLoopMatcher(
-      CollectionOwnershipAnnotatedTypeFactory atypeFactory,
+      CollectionOwnershipAnnotatedTypeFactory coAtf,
       RLCCalledMethodsAnnotatedTypeFactory rlccAtf,
-      ControlFlowGraph cfg,
-      @Nullable MethodTree methodTree) {
-    this.atypeFactory = atypeFactory;
+      ControlFlowGraph cfg) {
+    this.coAtf = coAtf;
     this.rlccAtf = rlccAtf;
     this.cfg = cfg;
-    this.methodTree = methodTree;
   }
 
   /** Lazily-computed CFG facts used to resolve potentially fulfilling while loops. */
@@ -257,7 +251,7 @@ final class WhileDisposalLoopMatcher {
   }
 
   /**
-   * Description of an accepted while-loop header form.
+   * Description of a supported while disposal loop header form.
    *
    * <p>Each header form determines which extraction methods are allowed in the loop body.
    */
@@ -297,7 +291,7 @@ final class WhileDisposalLoopMatcher {
    * match when present.
    */
   private static final class WhileHeaderMatch {
-    /** Owning collection expression whose element obligations may be discharged. */
+    /** Collection expression whose element obligations may be discharged. */
     final ExpressionTree collectionTree;
 
     /** Collection variable name whose writes should invalidate the match, if one exists. */
@@ -350,7 +344,7 @@ final class WhileDisposalLoopMatcher {
   }
 
   /**
-   * Matches a while-loop that may fulfill collection obligations.
+   * Matches a {@link DisposalLoop} that uses a while-loop and resolves its CFG-local loop facts.
    *
    * <p>Supported header shapes are iterator loops such as {@code while (it.hasNext())} and
    * non-empty collection loops such as {@code while (!q.isEmpty())}, {@code while (q.size() > 0)},
@@ -360,18 +354,13 @@ final class WhileDisposalLoopMatcher {
    * @return the matched disposal loop, or {@code null} if the loop does not match
    */
   @Nullable DisposalLoop match(WhileLoopTree tree) {
-    MethodTree enclosingMethodTree =
-        CollectionOwnershipUtils.getEnclosingMethodForCollectionLoop(methodTree);
-    if (enclosingMethodTree == null) {
-      return null;
-    }
     ExpressionTree condNoParens = TreeUtils.withoutParens(tree.getCondition());
     WhileHeaderMatch header = matchWhileHeader(condNoParens);
     if (header == null) {
       return null;
     }
     List<? extends StatementTree> bodyStatements =
-        CollectionOwnershipUtils.getLoopBodyStatements(tree.getStatement());
+        CollectionOwnershipUtils.asStatementList(tree.getStatement());
     if (bodyStatements == null) {
       return null;
     }
@@ -413,7 +402,7 @@ final class WhileDisposalLoopMatcher {
           header.collectionTree,
           extraction.extractionCall,
           elementNode,
-          CollectionOwnershipUtils.treeForLoopCondition(cfg, condNoParens),
+          CollectionOwnershipUtils.cfgAssociatedTreeFor(cfg, condNoParens),
           cblock,
           loopBodyEntryBlock,
           loopUpdateBlock);
@@ -431,8 +420,7 @@ final class WhileDisposalLoopMatcher {
    * @return the recovered header facts, or {@code null} if the header is unsupported
    */
   private @Nullable WhileHeaderMatch matchWhileHeader(ExpressionTree cond) {
-    if (cond instanceof MethodInvocationTree) {
-      MethodInvocationTree mit = (MethodInvocationTree) cond;
+    if (cond instanceof MethodInvocationTree mit) {
       if (TreeUtils.isHasNextCall(mit)) {
         ExpressionTree recv = receiverOfInvocation(mit);
         Name itName = CollectionOwnershipUtils.getNameFromExpressionTree(recv);
@@ -448,16 +436,16 @@ final class WhileDisposalLoopMatcher {
       }
     }
 
-    if (cond instanceof UnaryTree && cond.getKind() == Tree.Kind.LOGICAL_COMPLEMENT) {
-      ExpressionTree inner = TreeUtils.withoutParens(((UnaryTree) cond).getExpression());
+    if (cond instanceof UnaryTree unaryTreeCond && cond.getKind() == Tree.Kind.LOGICAL_COMPLEMENT) {
+      ExpressionTree inner = TreeUtils.withoutParens(unaryTreeCond.getExpression());
       WhileHeaderMatch m = matchNonEmptyFromExpr(inner);
       if (m != null) {
         return m;
       }
     }
 
-    if (cond instanceof BinaryTree) {
-      WhileHeaderMatch m = matchNonEmptyFromSize((BinaryTree) cond);
+    if (cond instanceof BinaryTree binaryTreeCond) {
+      WhileHeaderMatch m = matchNonEmptyFromSize(binaryTreeCond);
       if (m != null) {
         return m;
       }
@@ -473,10 +461,9 @@ final class WhileDisposalLoopMatcher {
    * @return the recovered header facts, or {@code null} if the expression does not match
    */
   private @Nullable WhileHeaderMatch matchNonEmptyFromExpr(ExpressionTree inner) {
-    if (!(inner instanceof MethodInvocationTree)) {
+    if (!(inner instanceof MethodInvocationTree mit)) {
       return null;
     }
-    MethodInvocationTree mit = (MethodInvocationTree) inner;
     if (!isIsEmptyCall(mit)) {
       return null;
     }
@@ -489,10 +476,10 @@ final class WhileDisposalLoopMatcher {
       return null;
     }
     Element recvElt = TreeUtils.elementFromTree(recv);
-    if (!ResourceLeakUtils.isCollection(recvElt, atypeFactory)) {
+    if (!ResourceLeakUtils.isCollection(recvElt, coAtf)) {
       return null;
     }
-    ExpressionTree colTree = CollectionOwnershipUtils.collectionTreeFromExpression(recv);
+    ExpressionTree colTree = CollectionOwnershipUtils.baseExpression(recv);
     if (colTree == null) {
       return null;
     }
@@ -516,19 +503,17 @@ final class WhileDisposalLoopMatcher {
     ExpressionTree right = TreeUtils.withoutParens(condition.getRightOperand());
 
     MethodInvocationTree sizeCall = null;
-    com.sun.source.tree.LiteralTree zero = null;
+    LiteralTree zero = null;
 
     if (k == Tree.Kind.GREATER_THAN) {
-      if (left instanceof MethodInvocationTree
-          && right instanceof com.sun.source.tree.LiteralTree) {
-        sizeCall = (MethodInvocationTree) left;
-        zero = (com.sun.source.tree.LiteralTree) right;
+      if (left instanceof MethodInvocationTree mitLeft && right instanceof LiteralTree ltRight) {
+        sizeCall = mitLeft;
+        zero = ltRight;
       }
     } else {
-      if (left instanceof com.sun.source.tree.LiteralTree
-          && right instanceof MethodInvocationTree) {
-        zero = (com.sun.source.tree.LiteralTree) left;
-        sizeCall = (MethodInvocationTree) right;
+      if (left instanceof LiteralTree ltLeft && right instanceof MethodInvocationTree ltRight) {
+        zero = ltLeft;
+        sizeCall = ltRight;
       }
     }
 
@@ -552,11 +537,11 @@ final class WhileDisposalLoopMatcher {
     }
 
     Element recvElt = TreeUtils.elementFromTree(recv);
-    if (!ResourceLeakUtils.isCollection(recvElt, atypeFactory)) {
+    if (!ResourceLeakUtils.isCollection(recvElt, coAtf)) {
       return null;
     }
 
-    ExpressionTree colTree = CollectionOwnershipUtils.collectionTreeFromExpression(recv);
+    ExpressionTree colTree = CollectionOwnershipUtils.baseExpression(recv);
     if (colTree == null) {
       return null;
     }
@@ -572,10 +557,9 @@ final class WhileDisposalLoopMatcher {
    */
   private boolean isIsEmptyCall(MethodInvocationTree invocation) {
     ExpressionTree sel = invocation.getMethodSelect();
-    if (!(sel instanceof MemberSelectTree)) {
+    if (!(sel instanceof MemberSelectTree ms)) {
       return false;
     }
-    MemberSelectTree ms = (MemberSelectTree) sel;
     return ms.getIdentifier().contentEquals("isEmpty") && invocation.getArguments().isEmpty();
   }
 
@@ -587,8 +571,8 @@ final class WhileDisposalLoopMatcher {
    */
   private @Nullable ExpressionTree receiverOfInvocation(MethodInvocationTree invocation) {
     ExpressionTree sel = invocation.getMethodSelect();
-    if (sel instanceof MemberSelectTree) {
-      return ((MemberSelectTree) sel).getExpression();
+    if (sel instanceof MemberSelectTree memberSelectTree) {
+      return memberSelectTree.getExpression();
     }
     return null;
   }
@@ -618,33 +602,31 @@ final class WhileDisposalLoopMatcher {
     }
 
     Tree decl = rlccAtf.declarationFromElement(itElt);
-    if (!(decl instanceof VariableTree)) {
+    if (!(decl instanceof VariableTree variableTreeDecl)) {
       return null;
     }
 
-    ExpressionTree init = ((VariableTree) decl).getInitializer();
-    if (!(init instanceof MethodInvocationTree)) {
+    ExpressionTree init = variableTreeDecl.getInitializer();
+    if (!(init instanceof MethodInvocationTree initCall)) {
       return null;
     }
 
-    MethodInvocationTree initCall = (MethodInvocationTree) init;
     ExpressionTree sel = initCall.getMethodSelect();
-    if (!(sel instanceof MemberSelectTree)) {
+    if (!(sel instanceof MemberSelectTree ms)) {
       return null;
     }
 
-    MemberSelectTree ms = (MemberSelectTree) sel;
     if (!ms.getIdentifier().contentEquals("iterator") || !initCall.getArguments().isEmpty()) {
       return null;
     }
 
     ExpressionTree colExpr = ms.getExpression();
     Element colElt = TreeUtils.elementFromTree(colExpr);
-    if (!ResourceLeakUtils.isCollection(colElt, atypeFactory)) {
+    if (!ResourceLeakUtils.isCollection(colElt, coAtf)) {
       return null;
     }
 
-    return CollectionOwnershipUtils.collectionTreeFromExpression(colExpr);
+    return CollectionOwnershipUtils.baseExpression(colExpr);
   }
 
   /**
@@ -684,11 +666,10 @@ final class WhileDisposalLoopMatcher {
 
           private void recordExtractionIfAny(ExpressionTree expr) {
             expr = TreeUtils.withoutParens(expr);
-            if (!(expr instanceof MethodInvocationTree)) {
+            if (!(expr instanceof MethodInvocationTree mit)) {
               return;
             }
 
-            MethodInvocationTree mit = (MethodInvocationTree) expr;
             if (!isExtractionCallOnHeaderVar(mit, headerVar, allowedExtractMethods)) {
               return;
             }
@@ -726,8 +707,8 @@ final class WhileDisposalLoopMatcher {
           @Override
           public Void visitMethodInvocation(MethodInvocationTree mit, Void p) {
             ExpressionTree sel = mit.getMethodSelect();
-            if (sel instanceof MemberSelectTree) {
-              ExpressionTree recv = ((MemberSelectTree) sel).getExpression();
+            if (sel instanceof MemberSelectTree memberSelect) {
+              ExpressionTree recv = memberSelect.getExpression();
               recordExtractionIfAny(recv);
             }
             return super.visitMethodInvocation(mit, p);
@@ -757,10 +738,9 @@ final class WhileDisposalLoopMatcher {
   private boolean isExtractionCallOnHeaderVar(
       MethodInvocationTree invocation, Name headerVar, Set<String> allowedExtractMethods) {
     ExpressionTree sel = invocation.getMethodSelect();
-    if (!(sel instanceof MemberSelectTree)) {
+    if (!(sel instanceof MemberSelectTree ms)) {
       return false;
     }
-    MemberSelectTree ms = (MemberSelectTree) sel;
     String methodName = ms.getIdentifier().toString();
     if (!allowedExtractMethods.contains(methodName)) {
       return false;
@@ -780,14 +760,14 @@ final class WhileDisposalLoopMatcher {
    */
   private @Nullable ConditionalBlock findConditionalSuccessor(Block block) {
     for (Block succ : block.getSuccessors()) {
-      if (succ instanceof ConditionalBlock) {
-        return (ConditionalBlock) succ;
+      if (succ instanceof ConditionalBlock conditionalBlockSucc) {
+        return conditionalBlockSucc;
       }
     }
-    if (block instanceof SingleSuccessorBlock) {
-      Block succ = ((SingleSuccessorBlock) block).getSuccessor();
-      if (succ instanceof ConditionalBlock) {
-        return (ConditionalBlock) succ;
+    if (block instanceof SingleSuccessorBlock singleSuccessorBlock) {
+      Block succ = singleSuccessorBlock.getSuccessor();
+      if (succ instanceof ConditionalBlock conditionalBlockSucc) {
+        return conditionalBlockSucc;
       }
     }
     return null;

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -81,12 +82,11 @@ public class CollectionOwnershipAnnotatedTypeFactory
         CollectionOwnershipAnalysis> {
 
   /**
-   * The {@code @} {@link MustCallAnnotatedTypeFactory} instance in the checker hierarchy. Used for
-   * getting the {@code @MustCall} type of expressions.
+   * The {@link MustCallAnnotatedTypeFactory} instance in the checker hierarchy. Used for getting
+   * the {@code @MustCall} type of expressions.
    */
   private final MustCallAnnotatedTypeFactory mcAtf;
 
-  // TODO: review moved disposal-loop docs in this file.
   /** Map from a loop-condition {@code Tree} to its corresponding {@link DisposalLoop}. */
   private final IdentityHashMap<Tree, DisposalLoop> conditionToDisposalLoopMap =
       new IdentityHashMap<>();
@@ -95,13 +95,18 @@ public class CollectionOwnershipAnnotatedTypeFactory
   private final IdentityHashMap<Block, DisposalLoop> conditionalBlockToDisposalLoopMap =
       new IdentityHashMap<>();
 
-  /** Map from a {@link DisposalLoop} to the called-methods computed by MCCA for that loop. */
-  private final IdentityHashMap<DisposalLoop, Set<String>> disposalLoopToMCCACalledMethodsMap =
+  /**
+   * Map from a {@link DisposalLoop} to the set of called-methods on the iterated element in its
+   * loop body.
+   */
+  private final IdentityHashMap<DisposalLoop, Set<String>> disposalLoopToCalledMethodsMap =
       new IdentityHashMap<>();
 
-  /** Map from a method to the disposal loops discovered for it before CM analysis. */
-  private final IdentityHashMap<MethodTree, LinkedHashSet<DisposalLoop>>
-      preparedDisposalLoopsByMethod = new IdentityHashMap<>();
+  /**
+   * Map from a {@code MethodTree} to the {@link DisposalLoop}s discovered in that method's body.
+   */
+  private final IdentityHashMap<MethodTree, HashSet<DisposalLoop>> preparedDisposalLoopsByMethod =
+      new IdentityHashMap<>();
 
   /** The {@code @}{@link NotOwningCollection} annotation. */
   public final AnnotationMirror TOP;
@@ -212,13 +217,13 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Returns the called-methods computed by MCCA for a disposal loop.
+   * Returns the called-methods on the iterated element for a {@link DisposalLoop}.
    *
-   * @param disposalLoop the disposal loop
-   * @return the MCCA called-methods for {@code disposalLoop}, or {@code null} if none are populated
+   * @param disposalLoop the {@link DisposalLoop}
+   * @return the called-methods for {@link DisposalLoop}, or {@code null} if no information exits
    */
-  public @Nullable Set<String> getMccaCalledMethods(DisposalLoop disposalLoop) {
-    return disposalLoopToMCCACalledMethodsMap.get(disposalLoop);
+  public @Nullable Set<String> getCalledMethods(DisposalLoop disposalLoop) {
+    return disposalLoopToCalledMethodsMap.get(disposalLoop);
   }
 
   /**
@@ -234,47 +239,27 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Registers a disposal loop together with the called-methods computed by MCCA for it.
+   * Registers a {@link DisposalLoop} together with the called-methods on the iterated element over
+   * that loop's body.
    *
-   * @param disposalLoop the disposal loop
-   * @param MCCACalledMethods the called-methods computed by MCCA for the disposal loop
+   * @param disposalLoop the {@link DisposalLoop}
+   * @param calledMethods the called-methods on the iterated element over {@link DisposalLoop}'s
+   *     body
    */
-  private void registerMCCACalledMethods(DisposalLoop disposalLoop, Set<String> MCCACalledMethods) {
+  private void registerCalledMethods(DisposalLoop disposalLoop, Set<String> calledMethods) {
     conditionToDisposalLoopMap.put(disposalLoop.loopConditionTree, disposalLoop);
     conditionalBlockToDisposalLoopMap.put(disposalLoop.loopConditionalBlock, disposalLoop);
-    disposalLoopToMCCACalledMethodsMap.put(
-        disposalLoop, Collections.unmodifiableSet(new LinkedHashSet<>(MCCACalledMethods)));
+    disposalLoopToCalledMethodsMap.put(
+        disposalLoop, Collections.unmodifiableSet(new LinkedHashSet<>(calledMethods)));
   }
 
-  //  /**
-  //   * Registers the MCCA called-methods for an RLCC-resolved disposal loop.
-  //   *
-  //   * <p>This bridge exists only until disposal-loop discovery and proof are fully coordinated by
-  // CO.
-  //   *
-  //   * @param resolvedLoop the RLCC-resolved loop whose MCCA analysis produced called-methods
-  //   */
-  //  public void registerCalledMethodsForDisposalLoop(
-  //      ResolvedPotentiallyFulfillingCollectionLoop resolvedLoop, Set<String> mccaCalledMethods) {
-  //    DisposalLoop disposalLoop =
-  //        new DisposalLoop(
-  //            resolvedLoop.collectionTree,
-  //            resolvedLoop.collectionElementTree,
-  //            resolvedLoop.collectionElementNode,
-  //            resolvedLoop.condition,
-  //            resolvedLoop.loopConditionalBlock,
-  //            resolvedLoop.loopBodyEntryBlock,
-  //            resolvedLoop.loopUpdateBlock);
-  //    registerMCCACalledMethods(disposalLoop, mccaCalledMethods);
-  //  }
-
   /**
-   * Returns the disposal loops discovered in the given CFG.
+   * Scans a method CFG for {@link DisposalLoop}'s and returns the discovered loops.
    *
    * @param cfg the CFG to scan
-   * @return the disposal loops discovered in {@code cfg}
+   * @return the {@link DisposalLoop}'s discovered in {@code cfg}
    */
-  private Set<DisposalLoop> discoverDisposalLoops(ControlFlowGraph cfg) {
+  private Set<DisposalLoop> scanForDisposalLoops(ControlFlowGraph cfg) {
     if (cfg.getUnderlyingAST().getKind() != UnderlyingAST.Kind.METHOD) {
       return Collections.emptySet();
     }
@@ -284,26 +269,29 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Discovers and stores the disposal loops for a method CFG so RLCC transfer can seed its initial
-   * store before called-methods analysis runs.
+   * Discovers and stores the {@link DisposalLoop}'s for a method {@code cfg}. This discovery must
+   * happen before {@link
+   * org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsTransfer#initialStore(UnderlyingAST,
+   * List)} runs, so that the called-methods initial stores are populated for the loop's iterated
+   * temp elements, e.g., col.get(i), col.pop().
    *
-   * @param cfg the method CFG whose disposal loops should be prepared
+   * @param cfg the method CFG whose disposal loops to be discovered
    */
-  public void prepareDisposalLoops(ControlFlowGraph cfg) {
+  public void discoverDisposalLoops(ControlFlowGraph cfg) {
     MethodTree methodTree = getEnclosingMethodTree(cfg.getUnderlyingAST());
     if (methodTree == null) {
       return;
     }
-    preparedDisposalLoopsByMethod.put(methodTree, new LinkedHashSet<>(discoverDisposalLoops(cfg)));
+    preparedDisposalLoopsByMethod.put(methodTree, new LinkedHashSet<>(scanForDisposalLoops(cfg)));
   }
 
   /**
-   * Returns the prepared disposal loops for the given underlying AST.
+   * Returns the {@link DisposalLoop}'s for the given underlying AST.
    *
-   * @param underlyingAST the underlying AST whose prepared loops should be returned
-   * @return the prepared disposal loops for {@code underlyingAST}
+   * @param underlyingAST the underlying AST whose disposal loops should be returned
+   * @return the set of disposal loops for {@code underlyingAST}
    */
-  public Set<DisposalLoop> getPreparedDisposalLoops(UnderlyingAST underlyingAST) {
+  public Set<DisposalLoop> getDisposalLoops(UnderlyingAST underlyingAST) {
     MethodTree methodTree = getEnclosingMethodTree(underlyingAST);
     if (methodTree == null) {
       return Collections.emptySet();
@@ -316,10 +304,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Removes and returns the prepared disposal loops for the given underlying AST.
+   * Removes and returns the {@link DisposalLoop}'s for the given underlying AST.
    *
-   * @param underlyingAST the underlying AST whose prepared loops should be removed
-   * @return the removed prepared disposal loops for {@code underlyingAST}
+   * @param underlyingAST the underlying AST whose disposal loops should be removed
+   * @return the removed disposal loops for {@code underlyingAST}
    */
   private Set<DisposalLoop> removePreparedDisposalLoops(UnderlyingAST underlyingAST) {
     MethodTree methodTree = getEnclosingMethodTree(underlyingAST);
@@ -346,24 +334,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
     return ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
   }
 
-  /**
-   * Certifies prepared disposal loops for a method CFG before collection-ownership analysis runs.
-   *
-   * @param cfg the method CFG
-   * @param ast the CFG's underlying AST
-   */
   @Override
   protected void postCFGConstruction(ControlFlowGraph cfg, UnderlyingAST ast) {
-    certifyPreparedDisposalLoops(cfg, ast);
-  }
-
-  /**
-   * Runs MCCA on the prepared disposal loops for a method CFG and registers any certified loops.
-   *
-   * @param cfg the method CFG
-   * @param ast the CFG's underlying AST
-   */
-  private void certifyPreparedDisposalLoops(ControlFlowGraph cfg, UnderlyingAST ast) {
+    // Discovers disposal loops in method's CFG, and for each disposal loop store the called-methods
+    // on the iterated element by the  loop's body using MustCallConsistencyAnalyzer.
     if (ast.getKind() != UnderlyingAST.Kind.METHOD) {
       return;
     }
@@ -376,10 +350,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
         new MustCallConsistencyAnalyzer(ResourceLeakUtils.getResourceLeakChecker(this), true);
     for (DisposalLoop disposalLoop : preparedDisposalLoops) {
-      Set<String> mccaCalledMethods =
+      Set<String> calledMethods =
           mustCallConsistencyAnalyzer.analyzeDisposalLoop(cfg, disposalLoop);
-      if (mccaCalledMethods != null) {
-        registerMCCACalledMethods(disposalLoop, mccaCalledMethods);
+      if (calledMethods != null) {
+        registerCalledMethods(disposalLoop, calledMethods);
       }
     }
   }
@@ -393,25 +367,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
             OwningCollection.class,
             OwningCollectionWithoutObligation.class,
             OwningCollectionBottom.class));
-  }
-
-  /**
-   * Fetches the store from the results of dataflow for {@code firstBlock}. If {@code
-   * afterFirstStore} is true, then the store after {@code firstBlock} is returned; if {@code
-   * afterFirstStore} is false, the store before {@code succBlock} is returned.
-   *
-   * @param afterFirstStore if true, use the store after the first block or the store before its
-   *     successor, succBlock
-   * @param firstBlock a block
-   * @param succBlock {@code firstBlock}'s successor
-   * @return the appropriate CollectionOwnershipStore, populated with MustCall annotations, from the
-   *     results of running dataflow
-   */
-  public CollectionOwnershipStore getStoreForBlock(
-      boolean afterFirstStore, Block firstBlock, Block succBlock) {
-    return afterFirstStore
-        ? flowResult.getStoreAfter(firstBlock)
-        : flowResult.getStoreBefore(succBlock);
   }
 
   @Override
@@ -437,26 +392,16 @@ public class CollectionOwnershipAnnotatedTypeFactory
             isStatic,
             capturedStore);
     if (cfg == null && ast.getKind() == UnderlyingAST.Kind.METHOD) {
-      // This uses the same RLLambda.java workaround pattern that originally lived in RLCC:
+      // This uses the same workaround pattern for lambdas that originally lived in
+      // RLCCalledMethodsAnnotatedTypeFactory#analyze:
       // run the resource-leak post-analysis immediately after the first method analysis, before
-      // containing lambdas are reanalyzed to fixpoint. CO owns that post-analysis now, so the
-      // workaround lives here.
+      // containing lambdas are reanalyzed to fixpoint.
       runResourceLeakPostAnalyze(result);
       preLambdaPostAnalyzedMethods.add(result);
     }
     return result;
   }
 
-  /**
-   * Performs post-analysis for the given CFG.
-   *
-   * <p>If resource-leak-specific post-analysis already ran during the first method analysis in
-   * {@link #analyze(Queue, Queue, UnderlyingAST, List, ControlFlowGraph, boolean, boolean, boolean,
-   * CollectionOwnershipStore)}, then this method avoids running it a second time for the enclosing
-   * method.
-   *
-   * @param cfg the CFG to post-analyze
-   */
   @Override
   public void postAnalyze(ControlFlowGraph cfg) {
     if (!preLambdaPostAnalyzedMethods.remove(cfg)) {
@@ -525,13 +470,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
         if (fieldType == null) {
           return false;
         }
-        switch (fieldType) {
-          case OwningCollection:
-          case OwningCollectionWithoutObligation:
-            return true;
-          default:
-            return false;
-        }
+        return switch (fieldType) {
+          case OwningCollection, OwningCollectionWithoutObligation -> true;
+          default -> false;
+        };
       }
     }
     return false;
@@ -545,9 +487,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    */
   public boolean isResourceCollectionField(Element elt) {
     if (elt.getKind().isField()) {
-      if (isResourceCollection(elt.asType())) {
-        return true;
-      }
+      return isResourceCollection(elt.asType());
     }
     return false;
   }
@@ -570,12 +510,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
         if (paramType == null) {
           return false;
         }
-        switch (paramType) {
-          case OwningCollection:
-            return true;
-          default:
-            return false;
-        }
+        return paramType == CollectionOwnershipType.OwningCollection;
       }
     }
     return false;
@@ -609,7 +544,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
   /**
    * Returns true if the given method is annotated {@code @CreatesCollectionObligation}.
    *
-   * @param methodElement a method
+   * @param methodElement the method
    * @return true if the method is annotated {@code @CreatesCollectionObligation}
    */
   public boolean isCreatesCollectionObligationMethod(ExecutableElement methodElement) {
@@ -620,7 +555,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * Returns the argument whose obligation is transferred by a {@code @CreatesCollectionObligation}
    * call, or {@code null} if the call has no such argument.
    *
-   * <p>The current heuristic is that the inserted argument is the last argument at the call site.
+   * <p>The current heuristic is that the inserted element is the last argument at the call site.
+   * TODO: Make @CreatesCollectionObligation accept an index for the inserted elements position.
    *
    * @param tree a method invocation tree
    * @return the inserted argument tree, or null if there is none
@@ -635,8 +571,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
   /**
    * Returns the argument whose obligation is transferred by a {@code @CreatesCollectionObligation}
    * call, or {@code null} if the call has no such argument.
-   *
-   * <p>The current heuristic is that the inserted argument is the last argument at the call site.
    *
    * @param node a method invocation node
    * @return the inserted argument node, or null if there is none
@@ -688,9 +622,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
 
     // If the inserted element is a method call, and the callee has no @Owning annotation, then it's
     // definitely not owning.
-    if (insertedArgumentTree instanceof MethodInvocationTree) {
-      ExecutableElement callee =
-          TreeUtils.elementFromUse((MethodInvocationTree) insertedArgumentTree);
+    if (insertedArgumentTree instanceof MethodInvocationTree mit) {
+      ExecutableElement callee = TreeUtils.elementFromUse(mit);
       if (rlAtf.hasNotOwning(callee)) {
         return CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING;
       }
@@ -822,10 +755,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
    */
   public CollectionOwnershipType getCoType(Tree tree) {
     JavaExpression jx = null;
-    if (tree instanceof ExpressionTree) {
-      jx = JavaExpression.fromTree((ExpressionTree) tree);
-    } else if (tree instanceof VariableTree) {
-      jx = JavaExpression.fromVariableTree((VariableTree) tree);
+    if (tree instanceof ExpressionTree expressionTree) {
+      jx = JavaExpression.fromTree(expressionTree);
+    } else if (tree instanceof VariableTree variableTree) {
+      jx = JavaExpression.fromVariableTree(variableTree);
     }
     try {
       CollectionOwnershipStore coStore = getStoreBefore(tree);
@@ -889,7 +822,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
   public boolean expressionIsFieldAccess(String e, VariableElement field) {
     try {
       JavaExpression je = StringToJavaExpression.atFieldDecl(e, field, this.checker);
-      return je instanceof FieldAccess && ((FieldAccess) je).getField().equals(field);
+      return je instanceof FieldAccess fieldAccess && fieldAccess.getField().equals(field);
     } catch (JavaExpressionParseException ex) {
       // The parsing error will be reported elsewhere, assuming e was derived from an
       // annotation.
@@ -908,9 +841,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
    */
   public JavaExpression stringToJavaExpression(String s, ExecutableElement method) {
     Tree methodTree = declarationFromElement(method);
-    if (methodTree instanceof MethodTree) {
+    if (methodTree instanceof MethodTree mit) {
       try {
-        return StringToJavaExpression.atMethodBody(s, (MethodTree) methodTree, checker);
+        return StringToJavaExpression.atMethodBody(s, mit, checker);
       } catch (JavaExpressionParseException ex) {
         return null;
       }

@@ -62,8 +62,8 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
   }
 
   /**
-   * Add the collection elements iterated over in potentially fulfilling collection loops to the
-   * store.
+   * Add the collection elements iterated over in {@link DisposalLoop}'s to the store so that
+   * temp-vars. e.g., col.get(i), col.pop() are tracked.
    */
   @Override
   public AccumulationStore initialStore(
@@ -71,7 +71,7 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
     AccumulationStore store = super.initialStore(underlyingAST, parameters);
     for (DisposalLoop disposalLoop :
         ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(rlTypeFactory)
-            .getPreparedDisposalLoops(underlyingAST)) {
+            .getDisposalLoops(underlyingAST)) {
       IteratedCollectionElement collectionElementJE =
           new IteratedCollectionElement(
               disposalLoop.iteratedElementNode, disposalLoop.iteratedElementTree);

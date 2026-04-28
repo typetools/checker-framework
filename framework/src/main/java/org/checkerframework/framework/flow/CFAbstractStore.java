@@ -664,8 +664,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       if (newValue != null) {
         localVariableValues.put(localVar, newValue);
       }
-    } else if (expr instanceof IteratedCollectionElement) {
-      IteratedCollectionElement collectionElt = (IteratedCollectionElement) expr;
+    } else if (expr instanceof IteratedCollectionElement collectionElt) {
       V oldValue = iteratedCollectionElements.get(collectionElt);
       V newValue = merger.apply(oldValue, value);
       if (newValue != null) {
@@ -814,8 +813,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
     if (expr instanceof LocalVariable localVar) {
       localVariableValues.remove(localVar);
-    } else if (expr instanceof IteratedCollectionElement) {
-      IteratedCollectionElement collectionElt = (IteratedCollectionElement) expr;
+    } else if (expr instanceof IteratedCollectionElement collectionElt) {
       iteratedCollectionElements.remove(collectionElt);
     } else if (expr instanceof FieldAccess fieldAcc) {
       fieldValues.remove(fieldAcc);
@@ -859,8 +857,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   public @Nullable V getValue(JavaExpression expr) {
     if (expr instanceof LocalVariable localVar) {
       return localVariableValues.get(localVar);
-    } else if (expr instanceof IteratedCollectionElement) {
-      IteratedCollectionElement collectionElt = (IteratedCollectionElement) expr;
+    } else if (expr instanceof IteratedCollectionElement collectionElt) {
       return iteratedCollectionElements.get(collectionElt);
     } else if (expr instanceof ThisReference || expr instanceof SuperReference) {
       return thisValue;

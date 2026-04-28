@@ -7,7 +7,11 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 
-/** Stores the resolved CFG and AST facts for one disposal loop. */
+/**
+ * Stores the resolved CFG and AST facts for a disposal loop. A disposal loop is a loop that
+ * iterates over a resource collection and may call the disposal method, e.g., close() on the
+ * iterated resource.
+ */
 public class DisposalLoop {
 
   /** The {@code ExpressionTree} for collection that this loop iterates over. */
