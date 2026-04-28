@@ -225,15 +225,12 @@ jobs:
       - name: environment
         # git pull does not work here, because we are not on a branch.
         run: printenv | sort
-      - name: ci-info
+      - name: git branches
         # git pull does not work here, because we are not on a branch.
         run: |
-          git rev-parse remotes/origin/setup_github_action_ci || true
-          git rev-parse refs/remotes/origin/setup_github_action_ci || true
           git branch -a
-          git tag -l
-          git rev-parse remotes/origin/setup_github_action_ci || true
-          git rev-parse refs/remotes/origin/setup_github_action_ci || true
+      - name: ci-info
+        run: checker/bin-devel/.plume-scripts/ci-info
       - name: ci-info-debug
         run: checker/bin-devel/.plume-scripts/ci-info --debug
       - name: test-misc.sh
