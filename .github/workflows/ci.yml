@@ -223,11 +223,12 @@ jobs:
           git branch -a
           git rev-parse "refs/remotes/origin/${DEFAULT_BRANCH}"
       - name: ci-info
+        # git pull does not work here, because we are not on a branch.
         run: |
           git rev-parse remotes/origin/setup_github_action_ci || true
           git rev-parse refs/remotes/origin/setup_github_action_ci || true
-          git pull --tags
           git branch -a
+          git tag -l
           git rev-parse remotes/origin/setup_github_action_ci || true
           git rev-parse refs/remotes/origin/setup_github_action_ci || true
       - name: ci-info-debug
