@@ -17,10 +17,8 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
@@ -153,8 +151,7 @@ final class IndexedForDisposalLoopMatcher {
         ExpressionTree methodSelect =
             ((MethodInvocationTree) condition.getRightOperand()).getMethodSelect();
         if (methodSelect instanceof MemberSelectTree mst) {
-          Element elt = TreeUtils.elementFromTree(mst.getExpression());
-          if (ResourceLeakUtils.isCollection(elt, coAtf)) {
+          if (coAtf.isResourceCollection(mst.getExpression())) {
             return CollectionOwnershipUtils.getNameFromExpressionTree(mst.getExpression());
           }
         }
@@ -255,8 +252,7 @@ final class IndexedForDisposalLoopMatcher {
                 TreeUtils.getIdxForGetCall(tree))) {
       ExpressionTree methodSelect = mit.getMethodSelect();
       if (methodSelect instanceof MemberSelectTree mst) {
-        Element receiverElt = TreeUtils.elementFromTree(mst.getExpression());
-        return ResourceLeakUtils.isCollection(receiverElt, coAtf);
+        return coAtf.isResourceCollection(mst.getExpression());
       }
     }
     return false;

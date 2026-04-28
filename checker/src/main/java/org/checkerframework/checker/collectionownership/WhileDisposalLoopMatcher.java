@@ -28,7 +28,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -475,8 +474,7 @@ final class WhileDisposalLoopMatcher {
     if (varName == null) {
       return null;
     }
-    Element recvElt = TreeUtils.elementFromTree(recv);
-    if (!ResourceLeakUtils.isCollection(recvElt, coAtf)) {
+    if (!coAtf.isResourceCollection(recv)) {
       return null;
     }
     ExpressionTree colTree = CollectionOwnershipUtils.baseExpression(recv);
@@ -536,8 +534,7 @@ final class WhileDisposalLoopMatcher {
       return null;
     }
 
-    Element recvElt = TreeUtils.elementFromTree(recv);
-    if (!ResourceLeakUtils.isCollection(recvElt, coAtf)) {
+    if (!coAtf.isResourceCollection(recv)) {
       return null;
     }
 
@@ -621,8 +618,7 @@ final class WhileDisposalLoopMatcher {
     }
 
     ExpressionTree colExpr = ms.getExpression();
-    Element colElt = TreeUtils.elementFromTree(colExpr);
-    if (!ResourceLeakUtils.isCollection(colElt, coAtf)) {
+    if (!coAtf.isResourceCollection(colExpr)) {
       return null;
     }
 

@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -107,7 +108,7 @@ final class EnhancedForDisposalLoopResolver {
    * @return the resolved loop, or {@code null} if the node does not belong to {@code tree}
    */
   private @Nullable DisposalLoop resolveEnhancedForLoop(
-      MethodInvocationNode methodInvocationNode, EnhancedForLoopTree tree) {
+      MethodInvocationNode methodInvocationNode, @FindDistinct EnhancedForLoopTree tree) {
     if (methodInvocationNode.getIterableExpression() == null) {
       return null;
     }
