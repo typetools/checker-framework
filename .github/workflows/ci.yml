@@ -214,18 +214,16 @@ jobs:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - name: get plume-scripts
+        run: ./gradlew getPlumeScripts
+      - name: info
+        run: |
+          git branch -a
+          git rev-parse master
       - name: ci-info
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "25"
-        run: |
-          ./gradlew getPlumeScripts
-          checker/bin-devel/.plume-scripts/ci-info
+        run: checker/bin-devel/.plume-scripts/ci-info
       - name: ci-info-debug
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "25"
-        run: |
-          ./gradlew getPlumeScripts
-          checker/bin-devel/.plume-scripts/ci-info --debug
+        run: checker/bin-devel/.plume-scripts/ci-info --debug
       - name: test-misc.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
