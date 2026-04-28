@@ -222,6 +222,9 @@ jobs:
         run: |
           git branch -a
           git rev-parse "refs/remotes/origin/${DEFAULT_BRANCH}"
+      - name: environment
+        # git pull does not work here, because we are not on a branch.
+        run: printenv | sort
       - name: ci-info
         # git pull does not work here, because we are not on a branch.
         run: |
