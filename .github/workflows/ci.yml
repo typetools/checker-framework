@@ -220,6 +220,12 @@ jobs:
         run: |
           ./gradlew getPlumeScripts
           checker/bin-devel/.plume-scripts/ci-info
+      - name: ci-info-debug
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+        run: |
+          ./gradlew getPlumeScripts
+          checker/bin-devel/.plume-scripts/ci-info --debug
       - name: test-misc.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
