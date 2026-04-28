@@ -219,7 +219,6 @@ jobs:
       - name: info
         run: |
           git branch -a
-          git rev-parse master
       - name: ci-info
         run: checker/bin-devel/.plume-scripts/ci-info
       - name: ci-info-debug
