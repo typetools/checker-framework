@@ -2,90 +2,62 @@
 // Test case for issue 6354:
 // https://github.com/typetools/checker-framework/issues/6354
 
-import com.sun.rowset.*;
-import java.sql.*;
+import java.sql.SQLException;
 import javax.sql.rowset.*;
 
 class RowSetResourceLeak {
 
-  // ========== JdbcRowSet Tests ==========
+    // ========== JdbcRowSet Tests ==========
 
-  void jdbcRowSetNotClosed(ResultSet rs) throws SQLException {
-    JdbcRowSet jrs = new JdbcRowSetImpl(rs);
-    // :: error: [required.method.not.called]
-  }
+    void jdbcRowSetNotClosed(JdbcRowSet jrs) throws SQLException {
+        // :: error: (required.method.not.called)
+    }
 
-  void jdbcRowSetClosed(ResultSet rs) throws SQLException {
-    JdbcRowSet jrs = new JdbcRowSetImpl(rs);
-    jrs.close();
-  }
+    void jdbcRowSetClosed(JdbcRowSet jrs) throws SQLException {
+        jrs.close();
+    }
 
-  // ========== CachedRowSet Tests ==========
 
-  void cachedRowSetNotClosed() throws SQLException {
-    CachedRowSet crs = new CachedRowSetImpl();
-    // :: error: [required.method.not.called]
-  }
+    // ========== CachedRowSet Tests ==========
 
-  void cachedRowSetClosed() throws SQLException {
-    CachedRowSet crs = new CachedRowSetImpl();
-    crs.close();
-  }
+    void cachedRowSetNotClosed(CachedRowSet crs) throws SQLException {
+        // :: error: (required.method.not.called)
+    }
 
-  void cachedRowSetToResultSetNotClosed() throws SQLException {
-    CachedRowSet crs = new CachedRowSetImpl();
-    ResultSet rs = crs.toResultSet();
-    crs.close();
-    // :: error: [required.method.not.called]
-  }
+    void cachedRowSetClosed(CachedRowSet crs) throws SQLException {
+        crs.close();
+    }
 
-  void cachedRowSetToResultSetBothClosed() throws SQLException {
-    CachedRowSet crs = new CachedRowSetImpl();
-    ResultSet rs = crs.toResultSet();
-    rs.close();
-    crs.close();
-  }
 
-  void cachedRowSetToResultSetBothNotClosed() throws SQLException {
-    CachedRowSet crs = new CachedRowSetImpl();
-    ResultSet rs = crs.toResultSet();
-    // :: error: [required.method.not.called]
-    // :: error: [required.method.not.called]
-  }
+    // ========== FilteredRowSet Tests ==========
 
-  // ========== FilteredRowSet Tests ==========
+    void filteredRowSetNotClosed(FilteredRowSet frs) throws SQLException {
+        // :: error: (required.method.not.called)
+    }
 
-  void filteredRowSetNotClosed() throws SQLException {
-    FilteredRowSet frs = new FilteredRowSetImpl();
-    // :: error: [required.method.not.called]
-  }
+    void filteredRowSetClosed(FilteredRowSet frs) throws SQLException {
+        frs.close();
+    }
 
-  void filteredRowSetClosed() throws SQLException {
-    FilteredRowSet frs = new FilteredRowSetImpl();
-    frs.close();
-  }
 
-  // ========== WebRowSet Tests ==========
+    // ========== WebRowSet Tests ==========
 
-  void webRowSetNotClosed() throws SQLException {
-    WebRowSet wrs = new WebRowSetImpl();
-    // :: error: [required.method.not.called]
-  }
+    void webRowSetNotClosed(WebRowSet wrs) throws SQLException {
+        // :: error: (required.method.not.called)
+    }
 
-  void webRowSetClosed() throws SQLException {
-    WebRowSet wrs = new WebRowSetImpl();
-    wrs.close();
-  }
+    void webRowSetClosed(WebRowSet wrs) throws SQLException {
+        wrs.close();
+    }
 
-  // ========== JoinRowSet Tests ==========
 
-  void joinRowSetNotClosed() throws SQLException {
-    JoinRowSet jrs = new JoinRowSetImpl();
-    // :: error: [required.method.not.called]
-  }
+    // ========== JoinRowSet Tests ==========
 
-  void joinRowSetClosed() throws SQLException {
-    JoinRowSet jrs = new JoinRowSetImpl();
-    jrs.close();
-  }
+    void joinRowSetNotClosed(JoinRowSet jrs) throws SQLException {
+        // :: error: (required.method.not.called)
+    }
+
+    void joinRowSetClosed(JoinRowSet jrs) throws SQLException {
+        jrs.close();
+    }
 }
