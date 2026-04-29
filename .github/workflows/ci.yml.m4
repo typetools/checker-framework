@@ -48,4 +48,4 @@ ifelse([
 Local Variables:
 eval: (add-hook 'after-save-hook '(lambda () (run-command nil "make")) nil 'local)
 end:
-])
+])dnl
