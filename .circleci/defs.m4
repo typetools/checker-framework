@@ -149,11 +149,11 @@ dnl
 define([job_dependences], [dnl
 ifelse([This is tricky because whether the ":" should appear depends on whether the subsequent "requires: exists,])dnl
       - $2[]_jdk$1[]dnl
+ifelse($2$1,misc[]latest_version,,[dnl
 ifelse($1,canary_version,,[:
           requires:
             - canary_jobs
 ifelse($1,canary_version,,[dnl
-ifelse($2$1,misc[]latest_version,,[dnl
             - $2_jdk[]canary_version
 ])dnl
 ])dnl
