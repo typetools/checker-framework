@@ -214,25 +214,6 @@ jobs:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
-      - name: get plume-scripts
-        run: ./gradlew getPlumeScripts
-      - name: info
-        env:
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-        run: |
-          git branch -a
-          git rev-parse "refs/remotes/origin/${DEFAULT_BRANCH}"
-      - name: environment
-        # git pull does not work here, because we are not on a branch.
-        run: printenv | sort
-      - name: git branches
-        # git pull does not work here, because we are not on a branch.
-        run: |
-          git branch -a
-      - name: ci-info
-        run: checker/bin-devel/.plume-scripts/ci-info
-      - name: ci-info-debug
-        run: checker/bin-devel/.plume-scripts/ci-info --debug
       - name: test-misc.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
