@@ -225,6 +225,9 @@ ifelse($1,canary_version,,[dnl
   daikon_part2_jdk$1:
     needs:
       - canary_jobs
+ifelse($1,canary_version,,[dnl
+      - daikon_part2_jdk[]canary_version
+])dnl
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
@@ -241,6 +244,9 @@ ifelse($1,canary_version,,[dnl
   daikon_part3_jdk$1:
     needs:
       - canary_jobs
+ifelse($1,canary_version,,[dnl
+      - daikon_part3_jdk[]canary_version
+])dnl
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
