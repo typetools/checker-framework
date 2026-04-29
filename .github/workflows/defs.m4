@@ -164,7 +164,7 @@ ifelse($1,canary_version,[dnl
       - uses: actions/checkout@v6
         with:
           set-safe-directory: true
-          fetch-depth: 1000
+          fetch-depth: 0
       - name: test-typecheck-part1.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
@@ -177,7 +177,7 @@ ifelse($1,canary_version,[dnl
       - uses: actions/checkout@v6
         with:
           set-safe-directory: true
-          fetch-depth: 1000
+          fetch-depth: 0
       - name: test-typecheck-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
@@ -195,7 +195,7 @@ ifelse($1,canary_version,[dnl
       - uses: actions/checkout@v6
         with:
           set-safe-directory: true
-          fetch-depth: 1000
+          fetch-depth: 0
       - name: test-typecheck.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
