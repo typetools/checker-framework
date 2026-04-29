@@ -47,7 +47,7 @@ aws-java-sdk-kms = { module = "com.amazonaws:aws-java-sdk-kms" }
 
 classgraph = "io.github.classgraph:classgraph:4.8.184"
 
-commons-io = "commons-io:commons-io:2.21.0"
+commons-io = "commons-io:commons-io:2.22.0"
 
 error-prone-annotations = { group = "com.google.errorprone", name = "error_prone_annotations", version.ref = "errorprone-version" }
 
