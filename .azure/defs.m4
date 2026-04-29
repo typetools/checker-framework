@@ -129,7 +129,7 @@ ifelse($1,canary_version,[dnl
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     steps:
       - checkout: self
-        fetchDepth: 1000
+        fetchDepth: 0
       - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part1.sh
         displayName: test-typecheck-part1.sh
   - job: typecheck_part2_jdk$1
@@ -138,7 +138,7 @@ ifelse($1,canary_version,[dnl
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     steps:
       - checkout: self
-        fetchDepth: 1000
+        fetchDepth: 0
       - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part2.sh
         displayName: test-typecheck-part2.sh], [dnl
   - job: typecheck_jdk$1
@@ -151,7 +151,7 @@ ifelse($1,canary_version,[dnl
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     steps:
       - checkout: self
-        fetchDepth: 1000
+        fetchDepth: 0
       - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck.sh
         displayName: test-typecheck.sh])])dnl
 dnl
