@@ -49,7 +49,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk17:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -67,7 +67,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk21:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -81,7 +81,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -95,7 +95,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -113,7 +113,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk26:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -127,7 +127,7 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -147,7 +147,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -161,7 +161,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -178,7 +178,7 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk17-plus:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
@@ -195,7 +195,7 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk21-plus:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
@@ -209,7 +209,7 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25-plus:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
@@ -242,7 +242,7 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk26-plus:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
@@ -258,7 +258,7 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           set-safe-directory: true
           fetch-depth: 1000
@@ -271,7 +271,7 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           set-safe-directory: true
           fetch-depth: 1000
@@ -291,7 +291,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -307,7 +307,7 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           set-safe-directory: true
           fetch-depth: 25
