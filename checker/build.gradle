@@ -873,6 +873,8 @@ tasks.register("ainferTest") {
 // Whole-program inference tests
 //
 
+// Currently skipped because dljc is not maintained.
+
 // This is run as part of the inferenceTests task.
 // File checker/tests/wpi-many/testin.txt lists the tests that are run.  To
 // debug one WPI test, comment out all but one line of that file.
