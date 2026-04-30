@@ -3554,7 +3554,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param annoClass an annotation class
    * @return true if the given annotation class is an alias for some other annotation
    */
-  public boolean isAliasedTypeAnnotation(Class<?> annoClass) {
+  protected boolean isAliasedTypeAnnotation(Class<?> annoClass) {
     return aliases.containsKey(annoClass.getCanonicalName());
   }
 

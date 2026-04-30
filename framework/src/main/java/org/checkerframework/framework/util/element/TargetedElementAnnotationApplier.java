@@ -29,11 +29,15 @@ import org.plumelib.util.StringsPlume;
  */
 abstract class TargetedElementAnnotationApplier {
   /**
-   * Three annotation types that may be encountered when calling getRawTypeAttributes. see sift().
+   * Three annotation groups that may be encountered when calling getRawTypeAttributes. See {@link
+   * #sift}.
    */
-  static enum TargetClass {
+  protected static enum TargetClass {
+    /** The annotation that should be applied to the current object. */
     TARGETED,
+    /** The annotation is valid but we will ignore it. */
     VALID,
+    /** The annotation is neither targeted nor valid. */
     INVALID
   }
 
@@ -48,7 +52,7 @@ abstract class TargetedElementAnnotationApplier {
    * annotations that have these target types will be passed to handleTargeted.
    *
    * @return the TargetTypes that identify annotations we wish to apply with this object. Any
-   *     annotations that have these target types will be passed to handleTargeted
+   *     annotations that have these target types will be passed to handleTargeted.
    */
   protected abstract TargetType[] annotatedTargets();
 
