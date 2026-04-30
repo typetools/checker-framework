@@ -16,7 +16,7 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: echo $ORG_GRADLE_PROJECT_jdkTestVersion
+      - bash: echo "ORG_GRADLE_PROJECT_jdkTestVersion=$ORG_GRADLE_PROJECT_jdkTestVersion"
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1
 ifelse(["displayName:" must come after "bash:".])dnl
