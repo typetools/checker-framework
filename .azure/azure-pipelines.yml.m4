@@ -14,7 +14,9 @@ pr:
       - '*'
 
 variables:
-  system.debug: true
+- name: system.debug
+  value: true
+- group: github-token
 
 jobs:
 
