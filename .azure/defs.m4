@@ -19,8 +19,9 @@ ifelse($1,canary_version,,[    dependsOn:
       - bash: echo $ORG_GRADLE_PROJECT_jdkTestVersion
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1
-      - displayName: test-cftests-junit.sh
-        bash: ./checker/bin-devel/test-cftests-junit.sh
+ifelse(["displayName:" must come after "bash:".])dnl
+      - bash: ./checker/bin-devel/test-cftests-junit.sh
+        displayName: test-cftests-junit.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl
@@ -37,8 +38,8 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
-      - displayName: test-cftests-junit.sh part1
-        bash: ./checker/bin-devel/test-cftests-junit.sh part1
+      - bash: ./checker/bin-devel/test-cftests-junit.sh part1
+        displayName: test-cftests-junit.sh part1
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1
   - job: junit_part2_jdk$1
@@ -53,8 +54,8 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
-      - displayName: test-cftests-junit.sh part2
-        bash: ./checker/bin-devel/test-cftests-junit.sh part2
+      - bash: ./checker/bin-devel/test-cftests-junit.sh part2
+        displayName: test-cftests-junit.sh part2
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl
@@ -70,8 +71,8 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
-      - displayName: test-cftests-nonjunit.sh
-        bash: ./checker/bin-devel/test-cftests-nonjunit.sh
+      - bash: ./checker/bin-devel/test-cftests-nonjunit.sh
+        displayName: test-cftests-nonjunit.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl
@@ -86,8 +87,8 @@ ifelse($1,canary_version,[dnl
     steps:
       - checkout: self
         fetchDepth: 25
-      - displayName: test-cftests-inference-part1.sh
-        bash: ./checker/bin-devel/test-cftests-inference-part1.sh
+      - bash: ./checker/bin-devel/test-cftests-inference-part1.sh
+        displayName: test-cftests-inference-part1.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1
   - job: inference_part2_jdk$1
@@ -98,8 +99,8 @@ ifelse($1,canary_version,[dnl
     steps:
       - checkout: self
         fetchDepth: 25
-      - displayName: test-cftests-inference-part2.sh
-        bash: ./checker/bin-devel/test-cftests-inference-part2.sh
+      - bash: ./checker/bin-devel/test-cftests-inference-part2.sh
+        displayName: test-cftests-inference-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1
 ],[dnl
@@ -115,8 +116,8 @@ ifelse($1,canary_version,[dnl
     steps:
       - checkout: self
         fetchDepth: 25
-      - displayName: test-cftests-inference.sh
-        bash: ./checker/bin-devel/test-cftests-inference.sh
+      - bash: ./checker/bin-devel/test-cftests-inference.sh
+        displayName: test-cftests-inference.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1
 ])dnl
@@ -135,8 +136,8 @@ ifelse($1,canary_version,,$1,latest_version,,[    dependsOn:
       - checkout: self
         # Unlimited fetchDepth (0) for misc jobs, because of need to make contributors.tex.
         fetchDepth: 0
-      - displayName: test-misc.sh
-        bash: ./checker/bin-devel/test-misc.sh
+      - bash: ./checker/bin-devel/test-misc.sh
+        displayName: test-misc.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl
@@ -149,8 +150,8 @@ ifelse($1,canary_version,[dnl
     steps:
       - checkout: self
         fetchDepth: 0
-      - displayName: test-typecheck-part1.sh
-        bash: ./checker/bin-devel/test-typecheck-part1.sh
+      - bash: ./checker/bin-devel/test-typecheck-part1.sh
+        displayName: test-typecheck-part1.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1
   - job: typecheck_part2_jdk$1
@@ -160,8 +161,8 @@ ifelse($1,canary_version,[dnl
     steps:
       - checkout: self
         fetchDepth: 0
-      - displayName: test-typecheck-part2.sh
-        bash: ./checker/bin-devel/test-typecheck-part2.sh
+      - bash: ./checker/bin-devel/test-typecheck-part2.sh
+        displayName: test-typecheck-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1], [dnl
   - job: typecheck_jdk$1
@@ -175,8 +176,8 @@ ifelse($1,canary_version,[dnl
     steps:
       - checkout: self
         fetchDepth: 0
-      - displayName: test-typecheck.sh
-        bash: ./checker/bin-devel/test-typecheck.sh
+      - bash: ./checker/bin-devel/test-typecheck.sh
+        displayName: test-typecheck.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1])])dnl
 dnl
@@ -194,8 +195,8 @@ ifelse($1,canary_version,,[dnl
     steps:
       - checkout: self
         fetchDepth: 25
-      - displayName: test-daikon-part1.sh
-        bash: ./checker/bin-devel/test-daikon-part1.sh
+      - bash: ./checker/bin-devel/test-daikon-part1.sh
+        displayName: test-daikon-part1.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1
   - job: daikon_part2_jdk$1
@@ -208,8 +209,8 @@ ifelse($1,canary_version,,[dnl
     steps:
       - checkout: self
         fetchDepth: 25
-      - displayName: test-daikon-part2.sh
-        bash: ./checker/bin-devel/test-daikon-part2.sh
+      - bash: ./checker/bin-devel/test-daikon-part2.sh
+        displayName: test-daikon-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1
   - job: daikon_part3_jdk$1
@@ -222,8 +223,8 @@ ifelse($1,canary_version,,[dnl
     steps:
       - checkout: self
         fetchDepth: 25
-      - displayName: test-daikon-part3.sh]
-        bash: ./checker/bin-devel/test-daikon-part3.sh
+      - bash: ./checker/bin-devel/test-daikon-part3.sh
+        displayName: test-daikon-part3.sh]
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1)dnl
 dnl
@@ -241,8 +242,8 @@ ifelse($1,canary_version,,[dnl
     steps:
       - checkout: self
         fetchDepth: 25
-      - displayName: test-guava.sh]
-        bash: ./checker/bin-devel/test-guava.sh
+      - bash: ./checker/bin-devel/test-guava.sh
+        displayName: test-guava.sh]
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1)dnl
 dnl
@@ -259,8 +260,8 @@ ifelse($1,canary_version,,[dnl
     steps:
       - checkout: self
         fetchDepth: 25
-      - displayName: test-plume-lib.sh
-        bash: ./checker/bin-devel/test-plume-lib.sh
+      - bash: ./checker/bin-devel/test-plume-lib.sh
+        displayName: test-plume-lib.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 ifelse([
