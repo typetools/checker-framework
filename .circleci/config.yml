@@ -33,8 +33,10 @@ jobs:
             - .git
       - run:
           name: test-cftests-junit.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=17 && ./checker/bin-devel/test-cftests-junit.sh
+          command: echo $ORG_GRADLE_PROJECT_jdkTestVersion && ./checker/bin-devel/test-cftests-junit.sh
           no_output_timeout: "30m"
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 17
 
   junit_jdk21:
     docker:
@@ -56,8 +58,10 @@ jobs:
             - .git
       - run:
           name: test-cftests-junit.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-cftests-junit.sh
+          command: echo $ORG_GRADLE_PROJECT_jdkTestVersion && ./checker/bin-devel/test-cftests-junit.sh
           no_output_timeout: "30m"
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 21
 
   junit_part1_jdk25:
     docker:
@@ -79,8 +83,10 @@ jobs:
             - .git
       - run:
           name: test-cftests-junit.sh part1
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit.sh part1
+          command: ./checker/bin-devel/test-cftests-junit.sh part1
           no_output_timeout: "30m"
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
   junit_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -101,8 +107,10 @@ jobs:
             - .git
       - run:
           name: test-cftests-junit.sh part2
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit.sh part2
+          command: ./checker/bin-devel/test-cftests-junit.sh part2
           no_output_timeout: "30m"
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
 
   junit_jdk26:
     docker:
@@ -124,8 +132,10 @@ jobs:
             - .git
       - run:
           name: test-cftests-junit.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=26 && ./checker/bin-devel/test-cftests-junit.sh
+          command: echo $ORG_GRADLE_PROJECT_jdkTestVersion && ./checker/bin-devel/test-cftests-junit.sh
           no_output_timeout: "30m"
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 26
 
   nonjunit_jdk25:
     docker:
@@ -147,7 +157,9 @@ jobs:
             - .git
       - run:
           name: test-cftests-nonjunit.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-nonjunit.sh
+          command: ./checker/bin-devel/test-cftests-nonjunit.sh
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
 
   # Sometimes one of the invocations of wpi-many in `./gradlew wpiManyTest`
   # takes much longer to complete than normal, and this Azure job times out.
@@ -174,7 +186,9 @@ jobs:
             - .git
       - run:
           name: test-cftests-inference-part1.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-inference-part1.sh
+          command: ./checker/bin-devel/test-cftests-inference-part1.sh
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
   inference_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -195,7 +209,9 @@ jobs:
             - .git
       - run:
           name: test-cftests-inference-part2.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-inference-part2.sh
+          command: ./checker/bin-devel/test-cftests-inference-part2.sh
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
 
   misc_jdk17:
     docker:
@@ -218,7 +234,9 @@ jobs:
             - .git
       - run:
           name: test-misc.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=17 && ./checker/bin-devel/test-misc.sh
+          command: ./checker/bin-devel/test-misc.sh
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 17
 
   misc_jdk21:
     docker:
@@ -241,7 +259,9 @@ jobs:
             - .git
       - run:
           name: test-misc.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-misc.sh
+          command: ./checker/bin-devel/test-misc.sh
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 21
 
   misc_jdk25:
     docker:
@@ -264,7 +284,9 @@ jobs:
             - .git
       - run:
           name: test-misc.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-misc.sh
+          command: ./checker/bin-devel/test-misc.sh
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
 
   misc_jdk26:
     docker:
@@ -287,7 +309,9 @@ jobs:
             - .git
       - run:
           name: test-misc.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=26 && ./checker/bin-devel/test-misc.sh
+          command: ./checker/bin-devel/test-misc.sh
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 26
 
   # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk25:
@@ -310,7 +334,9 @@ jobs:
             - .git
       - run:
           name: test-typecheck-part1.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-typecheck-part1.sh
+          command: ./checker/bin-devel/test-typecheck-part1.sh
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
   typecheck_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -331,7 +357,9 @@ jobs:
             - .git
       - run:
           name: test-typecheck-part2.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-typecheck-part2.sh
+          command: ./checker/bin-devel/test-typecheck-part2.sh
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
 
   # TEMPORARILY commented until Daikon release 5.8.24.
   # daikon_job(canary_version)
@@ -356,8 +384,10 @@ jobs:
             - .git
       - run:
           name: test-guava.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-guava.sh
+          command: ./checker/bin-devel/test-guava.sh
           no_output_timeout: "50m"
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
 
   plume_lib_jdk25:
     docker:
@@ -379,7 +409,9 @@ jobs:
             - .git
       - run:
           name: test-plume-lib.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-plume-lib.sh
+          command: ./checker/bin-devel/test-plume-lib.sh
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
 
 # The "workflows" section determines which jobs run and what other jobs they depend on.
 # For an explanation of the dependence logic, see ../.azure/azure-pipelines.yml .

@@ -43,6 +43,7 @@ including people who wish to edit its source code or make pull requests.
       <li><a href="#github-configuration">GitHub configuration</a></li>
       <li><a href="#ci">Continuous Integration</a>
         <ul>
+          <li><a href="#ci-github-actions">GitHub Actions</a></li>
           <li><a href="#ci-circleci">CircleCI</a></li>
           <li><a href="#ci-azure-pipelines">Azure Pipelines</a>
             <ul>
@@ -423,17 +424,34 @@ branches after they are merged</a>.
 
 <p>
 The Checker Framework has continuous integration jobs that run in Azure
-Pipelines, CircleCI, and/or Travis CI on each push to GitHub.
-We recommend Azure Pipelines or CircleCI.
+Pipelines, CircleCI, GitHub Actions, and/or Travis CI on each push to GitHub.
+</p>
+
+
+<h3 id="ci-github-actions">GitHub Actions</h3>
+
+<p>
+  GitHub Actions CI should run automatically, without any setup on your part.
 </p>
 
 
 <h3 id="ci-circleci">CircleCI</h3>
 
 <p>
-  TODO: Document how to set up CircleCI.
+  To enable CircleCI continuous integration for your fork:
 </p>
-
+<ul>
+  <li>Browse to <a href="https://circleci.com/">circleci.com</a></li>
+  <li>Click "Log in"</li>
+  <li>Click "Log in with GitHub"</li>
+  <li>Authorize CircleCI on GitHub</li>
+  <li>Choose the organization; often it is your GitHub username</li>
+  <li>In the left bar, click "Projects"</li>
+  <li>Find "checker-framework" in the list, and click "set up" on the right</li>
+  <li>Choose the default radio button: "Fastest: Use the .circleci/config.yml in my repo"</li>
+  <li>Choose a branch that contains the .circleci/config.yml file, often the master branch</li>
+  <li>Click "Set up project".</li>
+</ul>
 
 <h3 id="ci-azure-pipelines">Azure Pipelines</h3>
 
@@ -465,6 +483,11 @@ We recommend Azure Pipelines or CircleCI.
   <li>Approve and install.</li>
   <li>Click "run".</li>
 </ul>
+
+<!-- TODO: Document how to use with Travis CI.  Note that Travis CI is no longer
+free for open-source projects; you have to apply for an Open Source Sponsorship.
+-->
+
 
 <h4 id="ci-increasing-quota">Increasing quota</h4>
 
