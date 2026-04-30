@@ -391,12 +391,23 @@ workflows:
             - junit_part1_jdk25
             - junit_part2_jdk25
             - nonjunit_jdk25
+            - inference_part1_jdk25
+            - inference_part2_jdk25
             - typecheck_part1_jdk25
             - typecheck_part2_jdk25
             - misc_jdk25
             - misc_jdk26
 
+      - junit_part1_jdk25
+      - junit_part2_jdk25
       - nonjunit_jdk25
+      - misc_jdk25
+      - misc_jdk26
+      - inference_part1_jdk25
+      - inference_part2_jdk25
+      - typecheck_part1_jdk25
+      - typecheck_part2_jdk25
+
       - misc_jdk17:
           requires:
             - canary_jobs
@@ -407,25 +418,23 @@ workflows:
             - canary_jobs
             - misc_jdk25
 
-      - misc_jdk25
-      - misc_jdk26:
+      - junit_jdk17:
           requires:
             - canary_jobs
+            - junit_part1_jdk25
+            - junit_part2_jdk25
 
-      - typecheck_part1_jdk25
-      - typecheck_part2_jdk25
+      - junit_jdk21:
+          requires:
+            - canary_jobs
+            - junit_part1_jdk25
+            - junit_part2_jdk25
 
       - junit_jdk26:
           requires:
             - canary_jobs
-
-      - inference_part1_jdk25:
-          requires:
-            - canary_jobs
-
-      - inference_part2_jdk25:
-          requires:
-            - canary_jobs
+            - junit_part1_jdk25
+            - junit_part2_jdk25
 
       # TEMPORARILY commented until Daikon release 5.8.24.
       # job_dependences_not_in_canary(canary_version, daikon_part1)

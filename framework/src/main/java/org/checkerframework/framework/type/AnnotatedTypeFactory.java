@@ -3583,8 +3583,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       pair = IPair.of(annotationToUse, new HashSet<>());
       declAliases.put(annotationClass, pair);
     }
-    Set<Class<? extends Annotation>> aliases = pair.second;
-    aliases.add(alias);
+    Set<Class<? extends Annotation>> aliasSet = pair.second;
+    aliasSet.add(alias);
   }
 
   /**
@@ -4010,15 +4010,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return null;
     }
     // Look through aliases.
-    IPair<AnnotationMirror, Set<Class<? extends Annotation>>> aliases = declAliases.get(annoClass);
-    if (aliases == null) {
+    IPair<AnnotationMirror, Set<Class<? extends Annotation>>> aliasPair =
+        declAliases.get(annoClass);
+    if (aliasPair == null) {
       return null;
     }
-    for (Class<? extends Annotation> alias : aliases.second) {
+    for (Class<? extends Annotation> alias : aliasPair.second) {
       for (AnnotationMirror am : declAnnos) {
         if (areSameByClass(am, alias)) {
           // TODO: need to copy over elements/fields
-          return aliases.first;
+          return aliasPair.first;
         }
       }
     }
