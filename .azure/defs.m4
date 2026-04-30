@@ -16,11 +16,6 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: |
-          echo "HELLO_WORLD=$HELLO_WORLD"
-          echo "ORG_GRADLE_PROJECT_jdkTestVersion=$ORG_GRADLE_PROJECT_jdkTestVersion"
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: $1
 ifelse(["displayName:" must come after "bash:".])dnl
       - bash: ./checker/bin-devel/test-cftests-junit.sh
         displayName: test-cftests-junit.sh
@@ -40,11 +35,6 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: |
-          echo "HELLO_WORLD=$HELLO_WORLD"
-          echo "ORG_GRADLE_PROJECT_jdkTestVersion=$ORG_GRADLE_PROJECT_jdkTestVersion"
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: $1
       - bash: ./checker/bin-devel/test-cftests-junit.sh part1
         displayName: test-cftests-junit.sh part1
         env:
@@ -61,11 +51,6 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: |
-          echo "HELLO_WORLD=$HELLO_WORLD"
-          echo "ORG_GRADLE_PROJECT_jdkTestVersion=$ORG_GRADLE_PROJECT_jdkTestVersion"
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: $1
       - bash: ./checker/bin-devel/test-cftests-junit.sh part2
         displayName: test-cftests-junit.sh part2
         env:
