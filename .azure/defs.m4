@@ -39,6 +39,9 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
+      - bash: echo "ORG_GRADLE_PROJECT_jdkTestVersion=$ORG_GRADLE_PROJECT_jdkTestVersion"
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1
       - bash: ./checker/bin-devel/test-cftests-junit.sh part1
         displayName: test-cftests-junit.sh part1
         env:
@@ -56,6 +59,9 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
+      - bash: echo "ORG_GRADLE_PROJECT_jdkTestVersion=$ORG_GRADLE_PROJECT_jdkTestVersion"
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1
       - bash: ./checker/bin-devel/test-cftests-junit.sh part2
         displayName: test-cftests-junit.sh part2
         env:
