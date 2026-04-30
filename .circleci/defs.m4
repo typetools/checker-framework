@@ -111,9 +111,9 @@ circleci_boilerplate($1,)
       - run:
           name: test-typecheck-part1.sh
           command: ./checker/bin-devel/test-typecheck-part1.sh
-  typecheck_part2_jdk$1:
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: $1
+  typecheck_part2_jdk$1:
 circleci_boilerplate($1,)
       - run:
           name: test-typecheck-part2.sh

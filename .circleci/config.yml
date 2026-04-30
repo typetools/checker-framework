@@ -335,9 +335,9 @@ jobs:
       - run:
           name: test-typecheck-part1.sh
           command: ./checker/bin-devel/test-typecheck-part1.sh
-  typecheck_part2_jdk25:
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+  typecheck_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
