@@ -31,7 +31,7 @@ define([junit_job], [dnl
 circleci_boilerplate($1,)
       - run:
           name: test-cftests-junit.sh
-          command: echo $ORG_GRADLE_PROJECT_jdkTestVersion && ./checker/bin-devel/test-cftests-junit.sh
+          command: echo "ORG_GRADLE_PROJECT_jdkTestVersion=$ORG_GRADLE_PROJECT_jdkTestVersion" && ./checker/bin-devel/test-cftests-junit.sh
           no_output_timeout: "30m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: $1
@@ -42,7 +42,7 @@ define([junit_jobs], [dnl
 circleci_boilerplate($1,)
       - run:
           name: test-cftests-junit.sh part1
-          command: ./checker/bin-devel/test-cftests-junit.sh part1
+          command: echo "ORG_GRADLE_PROJECT_jdkTestVersion=$ORG_GRADLE_PROJECT_jdkTestVersion" && ./checker/bin-devel/test-cftests-junit.sh part1
           no_output_timeout: "30m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: $1
