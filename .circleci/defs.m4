@@ -25,6 +25,7 @@ define([circleci_boilerplate], [dnl
             - .git])dnl
 dnl
 ifelse([Each macro takes one argument, the JDK version.])dnl
+ifelse([CircleCI does not support interpolation in "environment:" clauses.])dnl
 dnl
 define([junit_job], [dnl
   junit_jdk$1:

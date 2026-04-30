@@ -13,10 +13,13 @@ ifelse($1,canary_version,,[    dependsOn:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 70
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit.sh
+      - bash: echo $ORG_GRADLE_PROJECT_jdkTestVersion
+      - bash: ./checker/bin-devel/test-cftests-junit.sh
         displayName: test-cftests-junit.sh])dnl
 dnl
 define([junit_jobs], [dnl
@@ -29,10 +32,12 @@ ifelse($1,canary_version,,[    dependsOn:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 70
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit.sh part1
+      - bash: ./checker/bin-devel/test-cftests-junit.sh part1
         displayName: test-cftests-junit.sh part1
   - job: junit_part2_jdk$1
 ifelse($1,canary_version,,[    dependsOn:
@@ -43,10 +48,12 @@ ifelse($1,canary_version,,[    dependsOn:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 70
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit.sh part2
+      - bash: ./checker/bin-devel/test-cftests-junit.sh part2
         displayName: test-cftests-junit.sh part2])dnl
 dnl
 define([nonjunit_job], [dnl
@@ -58,10 +65,12 @@ ifelse($1,canary_version,,[    dependsOn:
     pool:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-nonjunit.sh
+      - bash: ./checker/bin-devel/test-cftests-nonjunit.sh
         displayName: test-cftests-nonjunit.sh])dnl
 dnl
 define([inference_job], [dnl
@@ -72,20 +81,24 @@ ifelse($1,canary_version,[dnl
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 90
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference-part1.sh
+      - bash: ./checker/bin-devel/test-cftests-inference-part1.sh
         displayName: test-cftests-inference-part1.sh
   - job: inference_part2_jdk$1
     pool:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 90
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference-part2.sh
+      - bash: ./checker/bin-devel/test-cftests-inference-part2.sh
         displayName: test-cftests-inference-part2.sh
 ],[dnl
   - job: inference_jdk$1
@@ -97,10 +110,12 @@ ifelse($1,canary_version,[dnl
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 90
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference.sh
+      - bash: ./checker/bin-devel/test-cftests-inference.sh
         displayName: test-cftests-inference.sh
 ])dnl
 ])dnl
@@ -114,11 +129,13 @@ ifelse($1,canary_version,,$1,latest_version,,[    dependsOn:
     pool:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1-plus[]docker_testing:latest
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         # Unlimited fetchDepth (0) for misc jobs, because of need to make contributors.tex.
         fetchDepth: 0
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-misc.sh
+      - bash: ./checker/bin-devel/test-misc.sh
         displayName: test-misc.sh])dnl
 dnl
 define([typecheck_job], [dnl
@@ -127,19 +144,23 @@ ifelse($1,canary_version,[dnl
     pool:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
-        fetchDepth: 1000
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part1.sh
+        fetchDepth: 0
+      - bash: ./checker/bin-devel/test-typecheck-part1.sh
         displayName: test-typecheck-part1.sh
   - job: typecheck_part2_jdk$1
     pool:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
-        fetchDepth: 1000
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part2.sh
+        fetchDepth: 0
+      - bash: ./checker/bin-devel/test-typecheck-part2.sh
         displayName: test-typecheck-part2.sh], [dnl
   - job: typecheck_jdk$1
     dependsOn:
@@ -149,10 +170,12 @@ ifelse($1,canary_version,[dnl
     pool:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
-        fetchDepth: 1000
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck.sh
+        fetchDepth: 0
+      - bash: ./checker/bin-devel/test-typecheck.sh
         displayName: test-typecheck.sh])])dnl
 dnl
 define([daikon_job], [dnl
@@ -166,10 +189,12 @@ ifelse($1,canary_version,,[dnl
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 70
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part1.sh
+      - bash: ./checker/bin-devel/test-daikon-part1.sh
         displayName: test-daikon-part1.sh
   - job: daikon_part2_jdk$1
     dependsOn:
@@ -178,10 +203,12 @@ ifelse($1,canary_version,,[dnl
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 80
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part2.sh
+      - bash: ./checker/bin-devel/test-daikon-part2.sh
         displayName: test-daikon-part2.sh
   - job: daikon_part3_jdk$1
     dependsOn:
@@ -190,10 +217,12 @@ ifelse($1,canary_version,,[dnl
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 80
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part3.sh
+      - bash: ./checker/bin-devel/test-daikon-part3.sh
         displayName: test-daikon-part3.sh])dnl
 dnl
 define([guava_job], [dnl
@@ -207,10 +236,12 @@ ifelse($1,canary_version,,[dnl
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 70
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-guava.sh
+      - bash: ./checker/bin-devel/test-guava.sh
         displayName: test-guava.sh])dnl
 dnl
 define([plume_lib_job], [dnl
@@ -223,10 +254,12 @@ ifelse($1,canary_version,,[dnl
     pool:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-plume-lib.sh
+      - bash: ./checker/bin-devel/test-plume-lib.sh
         displayName: test-plume-lib.sh])dnl
 ifelse([
 Local Variables:
