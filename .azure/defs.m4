@@ -1,6 +1,6 @@
 changequote
 changequote(`[',`]')dnl
-ifelse([The built-in "dnl" m4 macro means "discard to next line",])dnl
+ifelse([The built-in "dnl" m4 macro means "discard to next line".])dnl
 dnl
 define([junit_job], [dnl
   - job: junit_jdk$1
@@ -13,14 +13,14 @@ ifelse($1,canary_version,,[    dependsOn:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 70
-    variables:
-      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
       - bash: echo $ORG_GRADLE_PROJECT_jdkTestVersion
-      - bash: ./checker/bin-devel/test-cftests-junit.sh
-        displayName: test-cftests-junit.sh])dnl
+      - displayName: test-cftests-junit.sh
+        bash: ./checker/bin-devel/test-cftests-junit.sh
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl
 define([junit_jobs], [dnl
   - job: junit_part1_jdk$1
@@ -32,13 +32,13 @@ ifelse($1,canary_version,,[    dependsOn:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 70
-    variables:
-      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: ./checker/bin-devel/test-cftests-junit.sh part1
-        displayName: test-cftests-junit.sh part1
+      - displayName: test-cftests-junit.sh part1
+        bash: ./checker/bin-devel/test-cftests-junit.sh part1
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
   - job: junit_part2_jdk$1
 ifelse($1,canary_version,,[    dependsOn:
       - canary_jobs
@@ -48,13 +48,13 @@ ifelse($1,canary_version,,[    dependsOn:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 70
-    variables:
-      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: ./checker/bin-devel/test-cftests-junit.sh part2
-        displayName: test-cftests-junit.sh part2])dnl
+      - displayName: test-cftests-junit.sh part2
+        bash: ./checker/bin-devel/test-cftests-junit.sh part2
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl
 define([nonjunit_job], [dnl
   - job: nonjunit_jdk$1
@@ -65,13 +65,13 @@ ifelse($1,canary_version,,[    dependsOn:
     pool:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    variables:
-      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: ./checker/bin-devel/test-cftests-nonjunit.sh
-        displayName: test-cftests-nonjunit.sh])dnl
+      - displayName: test-cftests-nonjunit.sh
+        bash: ./checker/bin-devel/test-cftests-nonjunit.sh
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl
 define([inference_job], [dnl
 ifelse($1,canary_version,[dnl
@@ -81,25 +81,25 @@ ifelse($1,canary_version,[dnl
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 90
-    variables:
-      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: ./checker/bin-devel/test-cftests-inference-part1.sh
-        displayName: test-cftests-inference-part1.sh
+      - displayName: test-cftests-inference-part1.sh
+        bash: ./checker/bin-devel/test-cftests-inference-part1.sh
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
   - job: inference_part2_jdk$1
     pool:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 90
-    variables:
-      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: ./checker/bin-devel/test-cftests-inference-part2.sh
-        displayName: test-cftests-inference-part2.sh
+      - displayName: test-cftests-inference-part2.sh
+        bash: ./checker/bin-devel/test-cftests-inference-part2.sh
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
 ],[dnl
   - job: inference_jdk$1
     dependsOn:
@@ -110,13 +110,13 @@ ifelse($1,canary_version,[dnl
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 90
-    variables:
-      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: ./checker/bin-devel/test-cftests-inference.sh
-        displayName: test-cftests-inference.sh
+      - displayName: test-cftests-inference.sh
+        bash: ./checker/bin-devel/test-cftests-inference.sh
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
 ])dnl
 ])dnl
 dnl
@@ -129,14 +129,14 @@ ifelse($1,canary_version,,$1,latest_version,,[    dependsOn:
     pool:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1-plus[]docker_testing:latest
-    variables:
-      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         # Unlimited fetchDepth (0) for misc jobs, because of need to make contributors.tex.
         fetchDepth: 0
-      - bash: ./checker/bin-devel/test-misc.sh
-        displayName: test-misc.sh])dnl
+      - displayName: test-misc.sh
+        bash: ./checker/bin-devel/test-misc.sh
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl
 define([typecheck_job], [dnl
 ifelse($1,canary_version,[dnl
@@ -144,24 +144,24 @@ ifelse($1,canary_version,[dnl
     pool:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    variables:
-      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 0
-      - bash: ./checker/bin-devel/test-typecheck-part1.sh
-        displayName: test-typecheck-part1.sh
+      - displayName: test-typecheck-part1.sh
+        bash: ./checker/bin-devel/test-typecheck-part1.sh
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
   - job: typecheck_part2_jdk$1
     pool:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    variables:
-      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 0
-      - bash: ./checker/bin-devel/test-typecheck-part2.sh
-        displayName: test-typecheck-part2.sh], [dnl
+      - displayName: test-typecheck-part2.sh
+        bash: ./checker/bin-devel/test-typecheck-part2.sh
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1], [dnl
   - job: typecheck_jdk$1
     dependsOn:
       - canary_jobs
@@ -170,13 +170,13 @@ ifelse($1,canary_version,[dnl
     pool:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    variables:
-      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 0
-      - bash: ./checker/bin-devel/test-typecheck.sh
-        displayName: test-typecheck.sh])])dnl
+      - displayName: test-typecheck.sh
+        bash: ./checker/bin-devel/test-typecheck.sh
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1])])dnl
 dnl
 define([daikon_job], [dnl
   - job: daikon_part1_jdk$1
@@ -189,13 +189,13 @@ ifelse($1,canary_version,,[dnl
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 70
-    variables:
-      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: ./checker/bin-devel/test-daikon-part1.sh
-        displayName: test-daikon-part1.sh
+      - displayName: test-daikon-part1.sh
+        bash: ./checker/bin-devel/test-daikon-part1.sh
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
   - job: daikon_part2_jdk$1
     dependsOn:
       - canary_jobs
@@ -203,13 +203,13 @@ ifelse($1,canary_version,,[dnl
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 80
-    variables:
-      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: ./checker/bin-devel/test-daikon-part2.sh
-        displayName: test-daikon-part2.sh
+      - displayName: test-daikon-part2.sh
+        bash: ./checker/bin-devel/test-daikon-part2.sh
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1
   - job: daikon_part3_jdk$1
     dependsOn:
       - canary_jobs
@@ -217,13 +217,13 @@ ifelse($1,canary_version,,[dnl
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 80
-    variables:
-      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: ./checker/bin-devel/test-daikon-part3.sh
-        displayName: test-daikon-part3.sh])dnl
+      - displayName: test-daikon-part3.sh]
+        bash: ./checker/bin-devel/test-daikon-part3.sh
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1)dnl
 dnl
 define([guava_job], [dnl
   - job: guava_jdk$1
@@ -236,13 +236,13 @@ ifelse($1,canary_version,,[dnl
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeoutInMinutes: 70
-    variables:
-      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: ./checker/bin-devel/test-guava.sh
-        displayName: test-guava.sh])dnl
+      - displayName: test-guava.sh]
+        bash: ./checker/bin-devel/test-guava.sh
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1)dnl
 dnl
 define([plume_lib_job], [dnl
   - job: plume_lib_jdk$1
@@ -254,13 +254,13 @@ ifelse($1,canary_version,,[dnl
     pool:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    variables:
-      ORG_GRADLE_PROJECT_jdkTestVersion: $1
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: ./checker/bin-devel/test-plume-lib.sh
-        displayName: test-plume-lib.sh])dnl
+      - displayName: test-plume-lib.sh
+        bash: ./checker/bin-devel/test-plume-lib.sh
+    variables:
+      ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 ifelse([
 Local Variables:
 eval: (add-hook 'after-save-hook '(lambda () (run-command nil "make")) nil 'local)
