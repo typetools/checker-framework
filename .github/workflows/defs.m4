@@ -1,6 +1,6 @@
 changequote
 changequote(`[',`]')dnl
-ifelse([The built-in "dnl" macro means "discard to next line".])dnl
+ifelse([The built-in "dnl" m4 macro means "discard to next line".])dnl
 dnl
 define([junit_job], [dnl
   junit_jdk$1:
@@ -19,9 +19,9 @@ ifelse($1,canary_version,,[    needs:
           set-safe-directory: true
           fetch-depth: 25
       - name: test-cftests-junit.sh
+        run: ./checker/bin-devel/test-cftests-junit.sh
         env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-        run: ./checker/bin-devel/test-cftests-junit.sh])dnl
+          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
 dnl
 define([junit_jobs], [dnl
   junit_part1_jdk$1:
@@ -39,9 +39,9 @@ ifelse($1,canary_version,,[    needs:
           set-safe-directory: true
           fetch-depth: 25
       - name: test-cftests-junit.sh part1
+        run: ./checker/bin-devel/test-cftests-junit.sh part1
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-        run: ./checker/bin-devel/test-cftests-junit.sh part1
   junit_part2_jdk$1:
 ifelse($1,canary_version,,[    needs:
       - canary_jobs
@@ -57,9 +57,9 @@ ifelse($1,canary_version,,[    needs:
           set-safe-directory: true
           fetch-depth: 25
       - name: test-cftests-junit.sh part2
+        run: ./checker/bin-devel/test-cftests-junit.sh part2
         env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-        run: ./checker/bin-devel/test-cftests-junit.sh part2])dnl
+          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
 dnl
 define([nonjunit_job], [dnl
   nonjunit_jdk$1:
@@ -76,9 +76,9 @@ ifelse($1,canary_version,,[    needs:
           set-safe-directory: true
           fetch-depth: 25
       - name: test-cftests-nonjunit.sh
+        run: ./checker/bin-devel/test-cftests-nonjunit.sh
         env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-        run: ./checker/bin-devel/test-cftests-nonjunit.sh])dnl
+          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
 dnl
 define([inference_job], [dnl
 ifelse($1,canary_version,[dnl
@@ -94,9 +94,9 @@ ifelse($1,canary_version,[dnl
           set-safe-directory: true
           fetch-depth: 25
       - name: test-cftests-inference-part1.sh
+        run: ./checker/bin-devel/test-cftests-inference-part1.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-        run: ./checker/bin-devel/test-cftests-inference-part1.sh
   inference_part2_jdk$1:
     runs-on: ubuntu-latest
     container:
@@ -108,9 +108,9 @@ ifelse($1,canary_version,[dnl
           set-safe-directory: true
           fetch-depth: 25
       - name: test-cftests-inference-part2.sh
+        run: ./checker/bin-devel/test-cftests-inference-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-        run: ./checker/bin-devel/test-cftests-inference-part2.sh
 ],[dnl
   inference_jdk$1:
     needs:
@@ -127,9 +127,9 @@ ifelse($1,canary_version,[dnl
           set-safe-directory: true
           fetch-depth: 25
       - name: test-cftests-inference.sh
+        run: ./checker/bin-devel/test-cftests-inference.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-        run: ./checker/bin-devel/test-cftests-inference.sh
 ])dnl
 ])dnl
 dnl
@@ -149,9 +149,9 @@ ifelse($1,canary_version,,$1,latest_version,,[    needs:
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
       - name: test-misc.sh
+        run: ./checker/bin-devel/test-misc.sh
         env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-        run: ./checker/bin-devel/test-misc.sh])dnl
+          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
 dnl
 define([typecheck_job], [dnl
 ifelse($1,canary_version,[dnl
@@ -166,9 +166,9 @@ ifelse($1,canary_version,[dnl
           set-safe-directory: true
           fetch-depth: 0
       - name: test-typecheck-part1.sh
+        run: ./checker/bin-devel/test-typecheck-part1.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-        run: ./checker/bin-devel/test-typecheck-part1.sh
   typecheck_part2_jdk$1:
     runs-on: ubuntu-latest
     container:
@@ -179,9 +179,9 @@ ifelse($1,canary_version,[dnl
           set-safe-directory: true
           fetch-depth: 0
       - name: test-typecheck-part2.sh
+        run: ./checker/bin-devel/test-typecheck-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-        run: ./checker/bin-devel/test-typecheck-part2.sh
 ], [dnl
   typecheck_jdk$1:
     needs:
@@ -197,9 +197,9 @@ ifelse($1,canary_version,[dnl
           set-safe-directory: true
           fetch-depth: 0
       - name: test-typecheck.sh
+        run: ./checker/bin-devel/test-typecheck.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-        run: ./checker/bin-devel/test-typecheck.sh
 ])])dnl
 dnl
 define([daikon_job], [dnl
@@ -219,9 +219,9 @@ ifelse($1,canary_version,,[dnl
           set-safe-directory: true
           fetch-depth: 25
       - name: test-daikon-part1.sh
+        run: ./checker/bin-devel/test-daikon-part1.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-        run: ./checker/bin-devel/test-daikon-part1.sh
   daikon_part2_jdk$1:
     needs:
       - canary_jobs
@@ -238,9 +238,9 @@ ifelse($1,canary_version,,[dnl
           set-safe-directory: true
           fetch-depth: 25
       - name: test-daikon-part2.sh
+        run: ./checker/bin-devel/test-daikon-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-        run: ./checker/bin-devel/test-daikon-part2.sh
   daikon_part3_jdk$1:
     needs:
       - canary_jobs
@@ -257,9 +257,9 @@ ifelse($1,canary_version,,[dnl
           set-safe-directory: true
           fetch-depth: 25
       - name: test-daikon-part3.sh
+        run: ./checker/bin-devel/test-daikon-part3.sh
         env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-        run: ./checker/bin-devel/test-daikon-part3.sh])dnl
+          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
 dnl
 define([guava_job], [dnl
   guava_jdk$1:
@@ -278,9 +278,9 @@ ifelse($1,canary_version,,[dnl
           set-safe-directory: true
           fetch-depth: 25
       - name: test-guava.sh
+        run: ./checker/bin-devel/test-guava.sh
         env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-        run: ./checker/bin-devel/test-guava.sh])dnl
+          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
 dnl
 define([plume_lib_job], [dnl
   plume_lib_jdk$1:
@@ -298,9 +298,9 @@ ifelse($1,canary_version,,[dnl
           set-safe-directory: true
           fetch-depth: 25
       - name: test-plume-lib.sh
+        run: ./checker/bin-devel/test-plume-lib.sh
         env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-        run: ./checker/bin-devel/test-plume-lib.sh])dnl
+          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
 dnl
 ifelse([
 Local Variables:

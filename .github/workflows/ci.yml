@@ -58,9 +58,9 @@ jobs:
           set-safe-directory: true
           fetch-depth: 25
       - name: test-cftests-junit.sh
+        run: ./checker/bin-devel/test-cftests-junit.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "17"
-        run: ./checker/bin-devel/test-cftests-junit.sh
   junit_jdk21:
     needs:
       - canary_jobs
@@ -76,9 +76,9 @@ jobs:
           set-safe-directory: true
           fetch-depth: 25
       - name: test-cftests-junit.sh
+        run: ./checker/bin-devel/test-cftests-junit.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "21"
-        run: ./checker/bin-devel/test-cftests-junit.sh
   junit_part1_jdk25:
     runs-on: ubuntu-latest
     container:
@@ -90,9 +90,9 @@ jobs:
           set-safe-directory: true
           fetch-depth: 25
       - name: test-cftests-junit.sh part1
+        run: ./checker/bin-devel/test-cftests-junit.sh part1
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
-        run: ./checker/bin-devel/test-cftests-junit.sh part1
   junit_part2_jdk25:
     runs-on: ubuntu-latest
     container:
@@ -104,9 +104,9 @@ jobs:
           set-safe-directory: true
           fetch-depth: 25
       - name: test-cftests-junit.sh part2
+        run: ./checker/bin-devel/test-cftests-junit.sh part2
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
-        run: ./checker/bin-devel/test-cftests-junit.sh part2
   junit_jdk26:
     needs:
       - canary_jobs
@@ -122,9 +122,9 @@ jobs:
           set-safe-directory: true
           fetch-depth: 25
       - name: test-cftests-junit.sh
+        run: ./checker/bin-devel/test-cftests-junit.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "26"
-        run: ./checker/bin-devel/test-cftests-junit.sh
 
   nonjunit_jdk25:
     runs-on: ubuntu-latest
@@ -136,9 +136,9 @@ jobs:
           set-safe-directory: true
           fetch-depth: 25
       - name: test-cftests-nonjunit.sh
+        run: ./checker/bin-devel/test-cftests-nonjunit.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
-        run: ./checker/bin-devel/test-cftests-nonjunit.sh
 
   # Sometimes one of the invocations of wpi-many in `./gradlew wpiManyTest`
   # takes much longer to complete than normal, and this Azure job times out.
@@ -156,9 +156,9 @@ jobs:
           set-safe-directory: true
           fetch-depth: 25
       - name: test-cftests-inference-part1.sh
+        run: ./checker/bin-devel/test-cftests-inference-part1.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
-        run: ./checker/bin-devel/test-cftests-inference-part1.sh
   inference_part2_jdk25:
     runs-on: ubuntu-latest
     container:
@@ -170,9 +170,9 @@ jobs:
           set-safe-directory: true
           fetch-depth: 25
       - name: test-cftests-inference-part2.sh
+        run: ./checker/bin-devel/test-cftests-inference-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
-        run: ./checker/bin-devel/test-cftests-inference-part2.sh
 
   misc_jdk17:
     needs:
@@ -188,9 +188,9 @@ jobs:
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
       - name: test-misc.sh
+        run: ./checker/bin-devel/test-misc.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "17"
-        run: ./checker/bin-devel/test-misc.sh
   misc_jdk21:
     needs:
       - canary_jobs
@@ -205,9 +205,9 @@ jobs:
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
       - name: test-misc.sh
+        run: ./checker/bin-devel/test-misc.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "21"
-        run: ./checker/bin-devel/test-misc.sh
   misc_jdk25:
     runs-on: ubuntu-latest
     container:
@@ -219,9 +219,9 @@ jobs:
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
       - name: test-misc.sh
+        run: ./checker/bin-devel/test-misc.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
-        run: ./checker/bin-devel/test-misc.sh
   misc_jdk26:
     runs-on: ubuntu-latest
     container:
@@ -233,9 +233,9 @@ jobs:
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
       - name: test-misc.sh
+        run: ./checker/bin-devel/test-misc.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "26"
-        run: ./checker/bin-devel/test-misc.sh
 
   # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk25:
@@ -248,9 +248,9 @@ jobs:
           set-safe-directory: true
           fetch-depth: 0
       - name: test-typecheck-part1.sh
+        run: ./checker/bin-devel/test-typecheck-part1.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
-        run: ./checker/bin-devel/test-typecheck-part1.sh
   typecheck_part2_jdk25:
     runs-on: ubuntu-latest
     container:
@@ -261,9 +261,9 @@ jobs:
           set-safe-directory: true
           fetch-depth: 0
       - name: test-typecheck-part2.sh
+        run: ./checker/bin-devel/test-typecheck-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
-        run: ./checker/bin-devel/test-typecheck-part2.sh
 
   # TEMPORARILY commented until Daikon release 5.8.24.
   # daikon_job(canary_version)
@@ -281,9 +281,9 @@ jobs:
           set-safe-directory: true
           fetch-depth: 25
       - name: test-guava.sh
+        run: ./checker/bin-devel/test-guava.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
-        run: ./checker/bin-devel/test-guava.sh
 
   plume_lib_jdk25:
     needs:
@@ -297,6 +297,6 @@ jobs:
           set-safe-directory: true
           fetch-depth: 25
       - name: test-plume-lib.sh
+        run: ./checker/bin-devel/test-plume-lib.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
-        run: ./checker/bin-devel/test-plume-lib.sh
