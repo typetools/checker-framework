@@ -58,6 +58,7 @@ class UnionAsMemberOf {
     try {
       bar();
     } catch (MyExceptionA | MyExceptionB ex1) {
+      @SuppressWarnings("confidential") // true positive: exception might be UnknownConfidential
       String s = ex1.getT();
     }
   }

@@ -1,0 +1,12 @@
+package io.jsonwebtoken;
+
+import java.security.Key;
+import java.util.Date;
+
+import org.checkerframework.checker.confidential.qual.*;
+
+public interface JwtParser {
+    char SEPARATOR_CHAR = '.';
+
+    Jws<@Confidential Claims> parseClaimsJws(@Confidential String var1) throws ExpiredJwtException, UnsupportedJwtException, MalformedJwtException, SignatureException, IllegalArgumentException;
+}
