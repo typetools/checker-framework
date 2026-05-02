@@ -21,7 +21,7 @@ ifelse(["displayName:" must come after "bash:".])dnl
         displayName: test-cftests-junit.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1
-          GITHUB_PAT: $(GITHUB_PAT)])dnl
+          GITHUB_PAT: $(SECRET_GITHUB_PAT)])dnl
 dnl
 define([junit_jobs], [dnl
   - job: junit_part1_jdk$1
@@ -36,11 +36,11 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: echo "GITHUB_PAT=${GITHUB_PAT}" && echo "2=${{ variables.GITHUB_PAT }}" && ./checker/bin-devel/test-cftests-junit.sh part1
+      - bash: echo "GITHUB_PAT=${GITHUB_PAT}, len=${#${GITHUB_PAT}}" && echo "2=${{ variables.SECREC_GITHUB_PAT }}, len=${#${{ variables.SECREC_GITHUB_PAT }}}" && ./checker/bin-devel/test-cftests-junit.sh part1
         displayName: test-cftests-junit.sh part1
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1
-          GITHUB_PAT: $(GITHUB_PAT)
+          GITHUB_PAT: $(SECRET_GITHUB_PAT)
   - job: junit_part2_jdk$1
 ifelse($1,canary_version,,[    dependsOn:
       - canary_jobs
