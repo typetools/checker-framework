@@ -36,7 +36,7 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: echo ${GITHUB_PAT} && ./checker/bin-devel/test-cftests-junit.sh part1
+      - bash: echo "GITHUB_PAT=${GITHUB_PAT}" && ./checker/bin-devel/test-cftests-junit.sh part1
         displayName: test-cftests-junit.sh part1
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1
