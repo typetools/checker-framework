@@ -179,10 +179,9 @@ public class TreeBuilder {
     // searches all supertypes for the method and avoids the crash.
     for (Type s : javacTypes.closure(((Symbol) exprElement).type)) {
       for (Symbol m : s.tsym.members().getSymbolsByName(closeName)) {
-        if (!(m instanceof Symbol.MethodSymbol)) {
+        if (!(m instanceof Symbol.MethodSymbol msym)) {
           continue;
         }
-        Symbol.MethodSymbol msym = (Symbol.MethodSymbol) m;
         if (!msym.isStatic() && msym.getParameters().isEmpty()) {
           closeMethod = msym;
           break;
@@ -527,164 +526,86 @@ public class TreeBuilder {
 
   /** Map public AST Tree.Kinds to internal javac JCTree.Tags. */
   public JCTree.Tag kindToTag(Tree.Kind kind) {
-    switch (kind) {
-      case AND:
-        return JCTree.Tag.BITAND;
-      case AND_ASSIGNMENT:
-        return JCTree.Tag.BITAND_ASG;
-      case ANNOTATION:
-        return JCTree.Tag.ANNOTATION;
-      case ANNOTATION_TYPE:
-        return JCTree.Tag.TYPE_ANNOTATION;
-      case ARRAY_ACCESS:
-        return JCTree.Tag.INDEXED;
-      case ARRAY_TYPE:
-        return JCTree.Tag.TYPEARRAY;
-      case ASSERT:
-        return JCTree.Tag.ASSERT;
-      case ASSIGNMENT:
-        return JCTree.Tag.ASSIGN;
-      case BITWISE_COMPLEMENT:
-        return JCTree.Tag.COMPL;
-      case BLOCK:
-        return JCTree.Tag.BLOCK;
-      case BREAK:
-        return JCTree.Tag.BREAK;
-      case CASE:
-        return JCTree.Tag.CASE;
-      case CATCH:
-        return JCTree.Tag.CATCH;
-      case CLASS:
-        return JCTree.Tag.CLASSDEF;
-      case CONDITIONAL_AND:
-        return JCTree.Tag.AND;
-      case CONDITIONAL_EXPRESSION:
-        return JCTree.Tag.CONDEXPR;
-      case CONDITIONAL_OR:
-        return JCTree.Tag.OR;
-      case CONTINUE:
-        return JCTree.Tag.CONTINUE;
-      case DIVIDE:
-        return JCTree.Tag.DIV;
-      case DIVIDE_ASSIGNMENT:
-        return JCTree.Tag.DIV_ASG;
-      case DO_WHILE_LOOP:
-        return JCTree.Tag.DOLOOP;
-      case ENHANCED_FOR_LOOP:
-        return JCTree.Tag.FOREACHLOOP;
-      case EQUAL_TO:
-        return JCTree.Tag.EQ;
-      case EXPRESSION_STATEMENT:
-        return JCTree.Tag.EXEC;
-      case FOR_LOOP:
-        return JCTree.Tag.FORLOOP;
-      case GREATER_THAN:
-        return JCTree.Tag.GT;
-      case GREATER_THAN_EQUAL:
-        return JCTree.Tag.GE;
-      case IDENTIFIER:
-        return JCTree.Tag.IDENT;
-      case IF:
-        return JCTree.Tag.IF;
-      case IMPORT:
-        return JCTree.Tag.IMPORT;
-      case INSTANCE_OF:
-        return JCTree.Tag.TYPETEST;
-      case LABELED_STATEMENT:
-        return JCTree.Tag.LABELLED;
-      case LEFT_SHIFT:
-        return JCTree.Tag.SL;
-      case LEFT_SHIFT_ASSIGNMENT:
-        return JCTree.Tag.SL_ASG;
-      case LESS_THAN:
-        return JCTree.Tag.LT;
-      case LESS_THAN_EQUAL:
-        return JCTree.Tag.LE;
-      case LOGICAL_COMPLEMENT:
-        return JCTree.Tag.NOT;
-      case MEMBER_SELECT:
-        return JCTree.Tag.SELECT;
-      case METHOD:
-        return JCTree.Tag.METHODDEF;
-      case METHOD_INVOCATION:
-        return JCTree.Tag.APPLY;
-      case MINUS:
-        return JCTree.Tag.MINUS;
-      case MINUS_ASSIGNMENT:
-        return JCTree.Tag.MINUS_ASG;
-      case MODIFIERS:
-        return JCTree.Tag.MODIFIERS;
-      case MULTIPLY:
-        return JCTree.Tag.MUL;
-      case MULTIPLY_ASSIGNMENT:
-        return JCTree.Tag.MUL_ASG;
-      case NEW_ARRAY:
-        return JCTree.Tag.NEWARRAY;
-      case NEW_CLASS:
-        return JCTree.Tag.NEWCLASS;
-      case NOT_EQUAL_TO:
-        return JCTree.Tag.NE;
-      case OR:
-        return JCTree.Tag.BITOR;
-      case OR_ASSIGNMENT:
-        return JCTree.Tag.BITOR_ASG;
-      case PARENTHESIZED:
-        return JCTree.Tag.PARENS;
-      case PLUS:
-        return JCTree.Tag.PLUS;
-      case PLUS_ASSIGNMENT:
-        return JCTree.Tag.PLUS_ASG;
-      case POSTFIX_DECREMENT:
-        return JCTree.Tag.POSTDEC;
-      case POSTFIX_INCREMENT:
-        return JCTree.Tag.POSTINC;
-      case PREFIX_DECREMENT:
-        return JCTree.Tag.PREDEC;
-      case PREFIX_INCREMENT:
-        return JCTree.Tag.PREINC;
-      case REMAINDER:
-        return JCTree.Tag.MOD;
-      case REMAINDER_ASSIGNMENT:
-        return JCTree.Tag.MOD_ASG;
-      case RETURN:
-        return JCTree.Tag.RETURN;
-      case RIGHT_SHIFT:
-        return JCTree.Tag.SR;
-      case RIGHT_SHIFT_ASSIGNMENT:
-        return JCTree.Tag.SR_ASG;
-      case SWITCH:
-        return JCTree.Tag.SWITCH;
-      case SYNCHRONIZED:
-        return JCTree.Tag.SYNCHRONIZED;
-      case THROW:
-        return JCTree.Tag.THROW;
-      case TRY:
-        return JCTree.Tag.TRY;
-      case TYPE_CAST:
-        return JCTree.Tag.TYPECAST;
-      case TYPE_PARAMETER:
-        return JCTree.Tag.TYPEPARAMETER;
-      case UNARY_MINUS:
-        return JCTree.Tag.NEG;
-      case UNARY_PLUS:
-        return JCTree.Tag.POS;
-      case UNION_TYPE:
-        return JCTree.Tag.TYPEUNION;
-      case UNSIGNED_RIGHT_SHIFT:
-        return JCTree.Tag.USR;
-      case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
-        return JCTree.Tag.USR_ASG;
-      case VARIABLE:
-        return JCTree.Tag.VARDEF;
-      case WHILE_LOOP:
-        return JCTree.Tag.WHILELOOP;
-      case XOR:
-        return JCTree.Tag.BITXOR;
-      case XOR_ASSIGNMENT:
-        return JCTree.Tag.BITXOR_ASG;
-      default:
-        return JCTree.Tag.NO_TAG;
-    }
+    return switch (kind) {
+      case AND -> JCTree.Tag.BITAND;
+      case AND_ASSIGNMENT -> JCTree.Tag.BITAND_ASG;
+      case ANNOTATION -> JCTree.Tag.ANNOTATION;
+      case ANNOTATION_TYPE -> JCTree.Tag.TYPE_ANNOTATION;
+      case ARRAY_ACCESS -> JCTree.Tag.INDEXED;
+      case ARRAY_TYPE -> JCTree.Tag.TYPEARRAY;
+      case ASSERT -> JCTree.Tag.ASSERT;
+      case ASSIGNMENT -> JCTree.Tag.ASSIGN;
+      case BITWISE_COMPLEMENT -> JCTree.Tag.COMPL;
+      case BLOCK -> JCTree.Tag.BLOCK;
+      case BREAK -> JCTree.Tag.BREAK;
+      case CASE -> JCTree.Tag.CASE;
+      case CATCH -> JCTree.Tag.CATCH;
+      case CLASS -> JCTree.Tag.CLASSDEF;
+      case CONDITIONAL_AND -> JCTree.Tag.AND;
+      case CONDITIONAL_EXPRESSION -> JCTree.Tag.CONDEXPR;
+      case CONDITIONAL_OR -> JCTree.Tag.OR;
+      case CONTINUE -> JCTree.Tag.CONTINUE;
+      case DIVIDE -> JCTree.Tag.DIV;
+      case DIVIDE_ASSIGNMENT -> JCTree.Tag.DIV_ASG;
+      case DO_WHILE_LOOP -> JCTree.Tag.DOLOOP;
+      case ENHANCED_FOR_LOOP -> JCTree.Tag.FOREACHLOOP;
+      case EQUAL_TO -> JCTree.Tag.EQ;
+      case EXPRESSION_STATEMENT -> JCTree.Tag.EXEC;
+      case FOR_LOOP -> JCTree.Tag.FORLOOP;
+      case GREATER_THAN -> JCTree.Tag.GT;
+      case GREATER_THAN_EQUAL -> JCTree.Tag.GE;
+      case IDENTIFIER -> JCTree.Tag.IDENT;
+      case IF -> JCTree.Tag.IF;
+      case IMPORT -> JCTree.Tag.IMPORT;
+      case INSTANCE_OF -> JCTree.Tag.TYPETEST;
+      case LABELED_STATEMENT -> JCTree.Tag.LABELLED;
+      case LEFT_SHIFT -> JCTree.Tag.SL;
+      case LEFT_SHIFT_ASSIGNMENT -> JCTree.Tag.SL_ASG;
+      case LESS_THAN -> JCTree.Tag.LT;
+      case LESS_THAN_EQUAL -> JCTree.Tag.LE;
+      case LOGICAL_COMPLEMENT -> JCTree.Tag.NOT;
+      case MEMBER_SELECT -> JCTree.Tag.SELECT;
+      case METHOD -> JCTree.Tag.METHODDEF;
+      case METHOD_INVOCATION -> JCTree.Tag.APPLY;
+      case MINUS -> JCTree.Tag.MINUS;
+      case MINUS_ASSIGNMENT -> JCTree.Tag.MINUS_ASG;
+      case MODIFIERS -> JCTree.Tag.MODIFIERS;
+      case MULTIPLY -> JCTree.Tag.MUL;
+      case MULTIPLY_ASSIGNMENT -> JCTree.Tag.MUL_ASG;
+      case NEW_ARRAY -> JCTree.Tag.NEWARRAY;
+      case NEW_CLASS -> JCTree.Tag.NEWCLASS;
+      case NOT_EQUAL_TO -> JCTree.Tag.NE;
+      case OR -> JCTree.Tag.BITOR;
+      case OR_ASSIGNMENT -> JCTree.Tag.BITOR_ASG;
+      case PARENTHESIZED -> JCTree.Tag.PARENS;
+      case PLUS -> JCTree.Tag.PLUS;
+      case PLUS_ASSIGNMENT -> JCTree.Tag.PLUS_ASG;
+      case POSTFIX_DECREMENT -> JCTree.Tag.POSTDEC;
+      case POSTFIX_INCREMENT -> JCTree.Tag.POSTINC;
+      case PREFIX_DECREMENT -> JCTree.Tag.PREDEC;
+      case PREFIX_INCREMENT -> JCTree.Tag.PREINC;
+      case REMAINDER -> JCTree.Tag.MOD;
+      case REMAINDER_ASSIGNMENT -> JCTree.Tag.MOD_ASG;
+      case RETURN -> JCTree.Tag.RETURN;
+      case RIGHT_SHIFT -> JCTree.Tag.SR;
+      case RIGHT_SHIFT_ASSIGNMENT -> JCTree.Tag.SR_ASG;
+      case SWITCH -> JCTree.Tag.SWITCH;
+      case SYNCHRONIZED -> JCTree.Tag.SYNCHRONIZED;
+      case THROW -> JCTree.Tag.THROW;
+      case TRY -> JCTree.Tag.TRY;
+      case TYPE_CAST -> JCTree.Tag.TYPECAST;
+      case TYPE_PARAMETER -> JCTree.Tag.TYPEPARAMETER;
+      case UNARY_MINUS -> JCTree.Tag.NEG;
+      case UNARY_PLUS -> JCTree.Tag.POS;
+      case UNION_TYPE -> JCTree.Tag.TYPEUNION;
+      case UNSIGNED_RIGHT_SHIFT -> JCTree.Tag.USR;
+      case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT -> JCTree.Tag.USR_ASG;
+      case VARIABLE -> JCTree.Tag.VARDEF;
+      case WHILE_LOOP -> JCTree.Tag.WHILELOOP;
+      case XOR -> JCTree.Tag.BITXOR;
+      case XOR_ASSIGNMENT -> JCTree.Tag.BITXOR_ASG;
+      default -> JCTree.Tag.NO_TAG;
+    };
   }
 
   /**

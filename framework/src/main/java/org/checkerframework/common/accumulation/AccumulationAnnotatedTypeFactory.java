@@ -93,13 +93,13 @@ public abstract class AccumulationAnnotatedTypeFactory
       Class<? extends Annotation> bottom,
       @Nullable Class<? extends Annotation> predicate) {
     super(checker);
-    if (!(checker instanceof AccumulationChecker)) {
+    if (!(checker instanceof AccumulationChecker ac)) {
       throw new TypeSystemError(
           "AccumulationAnnotatedTypeFactory cannot be used with a checker "
               + "class that is not a subtype of AccumulationChecker. Found class: "
               + checker.getClass());
     }
-    this.accumulationChecker = (AccumulationChecker) checker;
+    this.accumulationChecker = ac;
 
     this.accumulator = accumulator;
     // Check that the requirements of the accumulator are met.

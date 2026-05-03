@@ -56,14 +56,14 @@ function create_upload_docker_image {
 }
 
 
-(create_upload_docker_image cf ubuntu jdk11 && \
-create_upload_docker_image cf ubuntu jdk11-plus) && \
 (create_upload_docker_image cf ubuntu jdk17 && \
 create_upload_docker_image cf ubuntu jdk17-plus) && \
 (create_upload_docker_image cf ubuntu jdk21 && \
 create_upload_docker_image cf ubuntu jdk21-plus) && \
 (create_upload_docker_image cf ubuntu jdk25 && \
 create_upload_docker_image cf ubuntu jdk25-plus) && \
+(create_upload_docker_image cf ubuntu jdk26 && \
+create_upload_docker_image cf ubuntu jdk26-plus) && \
 git push && \
 echo "success"
 

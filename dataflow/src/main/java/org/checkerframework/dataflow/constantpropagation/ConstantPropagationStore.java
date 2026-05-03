@@ -98,10 +98,9 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     if (o == null) {
       return false;
     }
-    if (!(o instanceof ConstantPropagationStore)) {
+    if (!(o instanceof ConstantPropagationStore other)) {
       return false;
     }
-    ConstantPropagationStore other = (ConstantPropagationStore) o;
     // go through all of the information of the other object
     for (Map.Entry<Node, Constant> e : other.contents.entrySet()) {
       Node n = e.getKey();

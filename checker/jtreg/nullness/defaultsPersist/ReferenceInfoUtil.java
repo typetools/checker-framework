@@ -54,9 +54,6 @@ public class ReferenceInfoUtil {
       } catch (Exception e) {
         throw new Error(e);
       }
-      // This method, `findAnnotations`, aims to extract annotations from one method.
-      // In JDK 17, constructors are included in ClassFile.methods(); in JDK 11, they are not.
-      // Therefore, this if statement is required in JDK 17, and has no effect in JDK 11.
       if (ignoreConstructors && methodName.equals("<init>")) {
         continue;
       }

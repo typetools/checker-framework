@@ -19,7 +19,7 @@ ifdef RSVG_CONVERT_VERSION
 	rsvg-convert -f pdf -o $@ $<
 else
   ifdef INKSCAPE_VERSION
-	inkscape $< --export-pdf=$@
+	inkscape $< --export-filename=$@
   else
 	convert $< $@
   endif

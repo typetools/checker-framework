@@ -60,8 +60,7 @@ public class RegexTransfer extends CFTransfer {
     MethodAccessNode target = n.getTarget();
     ExecutableElement method = target.getMethod();
     Node receiver = target.getReceiver();
-    if (receiver instanceof ClassNameNode) {
-      ClassNameNode cnn = (ClassNameNode) receiver;
+    if (receiver instanceof ClassNameNode cnn) {
       String receiverName = cnn.getElement().toString();
       if (isRegexUtil(receiverName)) {
         result = handleRegexUtil(n, method, result);
@@ -88,8 +87,7 @@ public class RegexTransfer extends CFTransfer {
       // regex annotation without count otherwise)
       Node count = n.getArgument(1);
       int groupCount;
-      if (count instanceof IntegerLiteralNode) {
-        IntegerLiteralNode iln = (IntegerLiteralNode) count;
+      if (count instanceof IntegerLiteralNode iln) {
         groupCount = iln.getValue();
       } else {
         groupCount = 0;
@@ -107,8 +105,7 @@ public class RegexTransfer extends CFTransfer {
       AnnotationMirror regexAnnotation;
       Node count = n.getArgument(1);
       int groupCount;
-      if (count instanceof IntegerLiteralNode) {
-        IntegerLiteralNode iln = (IntegerLiteralNode) count;
+      if (count instanceof IntegerLiteralNode iln) {
         groupCount = iln.getValue();
       } else {
         groupCount = 0;
@@ -183,10 +180,10 @@ public class RegexTransfer extends CFTransfer {
       Node possibleConstant,
       boolean isGreater,
       TransferResult<CFValue, CFStore> resultIn) {
-    if (!(possibleMatcher instanceof MethodInvocationNode)) {
+    if (!(possibleMatcher instanceof MethodInvocationNode pmMin)) {
       return resultIn;
     }
-    if (!(possibleConstant instanceof IntegerLiteralNode)) {
+    if (!(possibleConstant instanceof IntegerLiteralNode pcIln)) {
       return resultIn;
     }
 
@@ -195,10 +192,10 @@ public class RegexTransfer extends CFTransfer {
       return resultIn;
     }
 
-    MethodAccessNode methodAccessNode = ((MethodInvocationNode) possibleMatcher).getTarget();
+    MethodAccessNode methodAccessNode = pmMin.getTarget();
     JavaExpression matcherReceiver = JavaExpression.fromNode(methodAccessNode.getReceiver());
 
-    int constant = ((IntegerLiteralNode) possibleConstant).getValue();
+    int constant = pcIln.getValue();
     int groupCount = isGreater ? constant + 1 : constant;
 
     CFStore thenStore = resultIn.getRegularStore();

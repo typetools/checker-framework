@@ -89,11 +89,10 @@ public class Subsequence {
    */
   public static @Nullable Subsequence getSubsequenceFromReceiver(
       JavaExpression expr, BaseAnnotatedTypeFactoryForIndexChecker factory) {
-    if (!(expr instanceof FieldAccess)) {
+    if (!(expr instanceof FieldAccess fa)) {
       return null;
     }
 
-    FieldAccess fa = (FieldAccess) expr;
     VariableElement element = fa.getField();
     AnnotationMirror hasSub = factory.getDeclAnnotation(element, HasSubsequence.class);
     if (hasSub == null) {

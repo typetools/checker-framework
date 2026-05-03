@@ -234,8 +234,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
       return Collections.min(possibleValues);
     }
 
-    if (expressionJe instanceof FieldAccess) {
-      FieldAccess fieldAccess = ((FieldAccess) expressionJe);
+    if (expressionJe instanceof FieldAccess fieldAccess) {
       if (fieldAccess.getReceiver().getType().getKind() == TypeKind.ARRAY) {
         // array.length might not be in the store, so check for the length of the array.
         AnnotationMirror arrayRange =

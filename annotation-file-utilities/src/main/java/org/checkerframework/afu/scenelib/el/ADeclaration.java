@@ -58,7 +58,7 @@ public abstract class ADeclaration extends AElement {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof ADeclaration && ((ADeclaration) o).equalsDeclaration(this);
+    return o instanceof ADeclaration decl && decl.equalsDeclaration(this);
   }
 
   private boolean equalsDeclaration(ADeclaration o) {

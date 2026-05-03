@@ -118,19 +118,19 @@ import org.checkerframework.javacutil.TypesUtils;
     // Pp:=ap]} appears in the set; if this results in no proper upper bounds for al (only
     // dependencies), then the bound {@literal al <: Object} also appears in the set.
     switch (upperBound.getKind()) {
-      case INTERSECTION:
+      case INTERSECTION -> {
         Iterator<? extends TypeMirror> iter =
             ((IntersectionType) upperBound).getBounds().iterator();
         for (AnnotatedTypeMirror bound : typeVariable.getUpperBound().directSupertypes()) {
           AbstractType t1 = InferenceType.create(bound, iter.next(), map, context);
           variableBounds.addBound(null, BoundKind.UPPER, t1);
         }
-        break;
-      default:
+      }
+      default -> {
         AbstractType t1 =
             InferenceType.create(typeVariable.getUpperBound(), upperBound, map, context);
         variableBounds.addBound(null, BoundKind.UPPER, t1);
-        break;
+      }
     }
 
     Set<? extends AbstractQualifier> quals =

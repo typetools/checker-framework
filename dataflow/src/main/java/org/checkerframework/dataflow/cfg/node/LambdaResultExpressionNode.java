@@ -65,10 +65,9 @@ public class LambdaResultExpressionNode extends Node {
   public boolean equals(@Nullable Object obj) {
     // No need to compare tree, since in a well-formed LambdaResultExpressionNode, result will
     // be the same only when tree is the same (this is similar to ReturnNode).
-    if (!(obj instanceof LambdaResultExpressionNode)) {
+    if (!(obj instanceof LambdaResultExpressionNode other)) {
       return false;
     }
-    LambdaResultExpressionNode other = (LambdaResultExpressionNode) obj;
     return Objects.equals(result, other.result);
   }
 

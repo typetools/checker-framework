@@ -468,6 +468,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param type the AST Type node to inspect
    * @param elem destination type element
    */
+  @SuppressWarnings("NotJavadoc") // Error Prone flags Javadoc comments on local class methods.
   private static Void visitInnerTypes(Type type, ATypeElement elem) {
     return type.accept(
         new GenericVisitorAdapter<Void, List<TypePathEntry>>() {
@@ -569,26 +570,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
           @Override
           public String visit(PrimitiveType type, Void v) {
-            switch (type.getType()) {
-              case BOOLEAN:
-                return "Z";
-              case BYTE:
-                return "B";
-              case CHAR:
-                return "C";
-              case DOUBLE:
-                return "D";
-              case FLOAT:
-                return "F";
-              case INT:
-                return "I";
-              case LONG:
-                return "J";
-              case SHORT:
-                return "S";
-              default:
-                throw new BugInCF("unknown primitive type " + type);
-            }
+            return switch (type.getType()) {
+              case BOOLEAN -> "Z";
+              case BYTE -> "B";
+              case CHAR -> "C";
+              case DOUBLE -> "D";
+              case FLOAT -> "F";
+              case INT -> "I";
+              case LONG -> "J";
+              case SHORT -> "S";
+              default -> throw new BugInCF("unknown primitive type " + type);
+            };
           }
 
           @Override
@@ -596,9 +588,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             String typeName = type.getElementType().accept(this, null);
             StringBuilder sb = new StringBuilder();
             int n = type.getArrayLevel();
-            for (int i = 0; i < n; i++) {
-              sb.append("[");
-            }
+            sb.append("[".repeat(Math.max(0, n)));
             sb.append(typeName);
             return sb.toString();
           }

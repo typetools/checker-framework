@@ -114,7 +114,7 @@ public class KeyForAnnotatedTypeFactory
   protected ParameterizedExecutableType constructorFromUse(
       NewClassTree tree, boolean inferTypeArgs) {
     ParameterizedExecutableType result = super.constructorFromUse(tree, inferTypeArgs);
-    keyForPropagator.propagateNewClassTree(tree, result.executableType.getReturnType(), this);
+    keyForPropagator.propagateNewClassTree(tree, result.executableType().getReturnType(), this);
     return result;
   }
 
@@ -177,7 +177,7 @@ public class KeyForAnnotatedTypeFactory
     }
     Collection<String> maps = null;
     AnnotatedTypeMirror type = getAnnotatedType(tree);
-    AnnotationMirror keyForAnno = type.getEffectiveAnnotation(KeyFor.class);
+    AnnotationMirror keyForAnno = type.getAnnotation(KeyFor.class);
     if (keyForAnno != null) {
       maps = AnnotationUtils.getElementValueArray(keyForAnno, keyForValueElement, String.class);
     } else {

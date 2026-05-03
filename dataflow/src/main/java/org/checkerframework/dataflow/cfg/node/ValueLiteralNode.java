@@ -54,10 +54,9 @@ public abstract class ValueLiteralNode extends Node {
     if (this == obj) {
       return true;
     }
-    if (!(obj instanceof ValueLiteralNode)) {
+    if (!(obj instanceof ValueLiteralNode other)) {
       return false;
     }
-    ValueLiteralNode other = (ValueLiteralNode) obj;
     Object val = getValue();
     Object otherVal = other.getValue();
     return Objects.equals(val, otherVal);

@@ -51,10 +51,9 @@ public class MarkerNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof MarkerNode)) {
+    if (!(obj instanceof MarkerNode other)) {
       return false;
     }
-    MarkerNode other = (MarkerNode) obj;
     return Objects.equals(getTree(), other.getTree()) && getMessage().equals(other.getMessage());
   }
 

@@ -204,7 +204,7 @@ public class I18nFormatterTreeUtil {
    * @param args arguments to the diagnostic message
    */
   public final void failure(Result<?> res, @CompilerMessageKey String msgKey, Object... args) {
-    checker.reportError(res.location, msgKey, args);
+    checker.reportError(res.location(), msgKey, args);
   }
 
   /**
@@ -215,21 +215,20 @@ public class I18nFormatterTreeUtil {
    * @param args arguments to the diagnostic message
    */
   public final void warning(Result<?> res, @CompilerMessageKey String msgKey, Object... args) {
-    checker.reportWarning(res.location, msgKey, args);
+    checker.reportWarning(res.location(), msgKey, args);
   }
 
   private I18nConversionCategory @Nullable [] asFormatCallCategoriesLowLevel(
       MethodInvocationNode node) {
     Node vararg = node.getArgument(1);
-    if (vararg instanceof ArrayCreationNode) {
-      List<Node> convs = ((ArrayCreationNode) vararg).getInitializers();
+    if (vararg instanceof ArrayCreationNode acn) {
+      List<Node> convs = acn.getInitializers();
       I18nConversionCategory[] res = new I18nConversionCategory[convs.size()];
       for (int i = 0; i < convs.size(); i++) {
         Node conv = convs.get(i);
-        if (conv instanceof FieldAccessNode) {
-          if (typeMirrorToClass(((FieldAccessNode) conv).getType())
-              == I18nConversionCategory.class) {
-            res[i] = I18nConversionCategory.valueOf(((FieldAccessNode) conv).getFieldName());
+        if (conv instanceof FieldAccessNode fan) {
+          if (typeMirrorToClass(fan.getType()) == I18nConversionCategory.class) {
+            res[i] = I18nConversionCategory.valueOf(fan.getFieldName());
             continue; /* avoid returning null */
           }
         }
@@ -251,8 +250,8 @@ public class I18nFormatterTreeUtil {
     Result<I18nConversionCategory[]> ret = new Result<>(null, node.getTree());
 
     // Now only work with a literal string
-    if (firstParam instanceof StringLiteralNode) {
-      String s = ((StringLiteralNode) firstParam).getValue();
+    if (firstParam instanceof StringLiteralNode sln) {
+      String s = sln.getValue();
       if (translations.containsKey(s)) {
         String value = translations.get(s);
         ret = new Result<>(I18nFormatUtil.formatParameterCategories(value), node.getTree());
@@ -525,26 +524,17 @@ public class I18nFormatterTreeUtil {
       extends SimpleTypeVisitor8<Class<? extends Object>, Class<Void>> {
     @Override
     public Class<? extends Object> visitPrimitive(PrimitiveType t, Class<Void> v) {
-      switch (t.getKind()) {
-        case BOOLEAN:
-          return Boolean.class;
-        case BYTE:
-          return Byte.class;
-        case CHAR:
-          return Character.class;
-        case SHORT:
-          return Short.class;
-        case INT:
-          return Integer.class;
-        case LONG:
-          return Long.class;
-        case FLOAT:
-          return Float.class;
-        case DOUBLE:
-          return Double.class;
-        default:
-          throw new BugInCF("unknown primitive type " + t);
-      }
+      return switch (t.getKind()) {
+        case BOOLEAN -> Boolean.class;
+        case BYTE -> Byte.class;
+        case CHAR -> Character.class;
+        case SHORT -> Short.class;
+        case INT -> Integer.class;
+        case LONG -> Long.class;
+        case FLOAT -> Float.class;
+        case DOUBLE -> Double.class;
+        default -> throw new BugInCF("unknown primitive type " + t);
+      };
     }
 
     @Override

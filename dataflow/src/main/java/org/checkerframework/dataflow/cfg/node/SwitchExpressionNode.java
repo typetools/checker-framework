@@ -1,20 +1,18 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.SwitchExpressionTree;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 
 /** A node for a switch expression. */
 public class SwitchExpressionNode extends Node {
 
   /** The {@code SwitchExpressionTree} corresponding to this node. */
-  private final Tree switchExpressionTree;
+  private final SwitchExpressionTree switchExpressionTree;
 
   /**
    * This is a variable created by dataflow to which each result expression of the switch expression
@@ -32,23 +30,17 @@ public class SwitchExpressionNode extends Node {
    *     expression
    */
   public SwitchExpressionNode(
-      TypeMirror type, Tree switchExpressionTree, LocalVariableNode switchExpressionVar) {
+      TypeMirror type,
+      SwitchExpressionTree switchExpressionTree,
+      LocalVariableNode switchExpressionVar) {
     super(type);
-
-    // TODO: use JCP to add version-specific behavior
-    if (SystemUtil.jreVersion < 14
-        || !switchExpressionTree.getKind().name().equals("SWITCH_EXPRESSION")) {
-      throw new BugInCF(
-          "switchExpressionTree is not a SwitchExpressionTree found tree with kind %s instead.",
-          switchExpressionTree.getKind());
-    }
 
     this.switchExpressionTree = switchExpressionTree;
     this.switchExpressionVar = switchExpressionVar;
   }
 
   @Override
-  public Tree getTree() {
+  public SwitchExpressionTree getTree() {
     return switchExpressionTree;
   }
 
@@ -85,10 +77,9 @@ public class SwitchExpressionNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof SwitchExpressionNode)) {
+    if (!(obj instanceof SwitchExpressionNode other)) {
       return false;
     }
-    SwitchExpressionNode other = (SwitchExpressionNode) obj;
     return getTree().equals(other.getTree())
         && getSwitchExpressionVar().equals(other.getSwitchExpressionVar());
   }

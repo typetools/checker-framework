@@ -55,9 +55,7 @@ public class CFCFGBuilder extends CFGBuilder {
 
     // Subcheckers with dataflow share control-flow graph structure to
     // allow a super-checker to query the stores of a subchecker.
-    if (factory instanceof GenericAnnotatedTypeFactory) {
-      GenericAnnotatedTypeFactory<?, ?, ?, ?> asGATF =
-          (GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory;
+    if (factory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> asGATF) {
       if (asGATF.hasOrIsSubchecker) {
         ControlFlowGraph sharedCFG = asGATF.getSharedCFGForTree(underlyingAST.getCode());
         if (sharedCFG != null) {
@@ -73,9 +71,7 @@ public class CFCFGBuilder extends CFGBuilder {
             .process(root, underlyingAST);
     ControlFlowGraph phase2result = CFGTranslationPhaseTwo.process(phase1result);
     ControlFlowGraph phase3result = CFGTranslationPhaseThree.process(phase2result);
-    if (factory instanceof GenericAnnotatedTypeFactory) {
-      GenericAnnotatedTypeFactory<?, ?, ?, ?> asGATF =
-          (GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory;
+    if (factory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> asGATF) {
       if (asGATF.hasOrIsSubchecker) {
         asGATF.addSharedCFGForTree(underlyingAST.getCode(), phase3result);
       }

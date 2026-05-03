@@ -175,8 +175,7 @@ public class TreePathUtil {
     int ctPos = -1;
 
     for (Tree member : ct.getMembers()) {
-      if (member instanceof MethodTree) {
-        MethodTree method = (MethodTree) member;
+      if (member instanceof MethodTree method) {
         if (method.getName().contentEquals("<init>")) {
           // The tree contains the implicit default constructor if the user wrote no constructor,
           // so must check position too. :-(
@@ -226,21 +225,18 @@ public class TreePathUtil {
     String result = "";
     for (Tree t : path) {
       switch (t.getKind()) {
-        case CLASS:
-        case INTERFACE:
-        case ENUM:
-        case ANNOTATION_TYPE:
+        case CLASS, INTERFACE, ENUM, ANNOTATION_TYPE -> {
           ClassTree ct = (ClassTree) t;
           String className = ct.getSimpleName().toString();
           result = result.isEmpty() ? className : className + "$" + result;
-          break;
+        }
 
-        case METHOD:
+        case METHOD -> {
           // Hack that works for the first class defined within a method.
           result = "1" + result;
-          break;
+        }
 
-        case COMPILATION_UNIT:
+        case COMPILATION_UNIT -> {
           CompilationUnitTree cut = (CompilationUnitTree) t;
           ExpressionTree pkgExp = cut.getPackageName();
           if (pkgExp == null) {
@@ -248,9 +244,8 @@ public class TreePathUtil {
           } else {
             return pkgExp.toString() + "." + result;
           }
-
-        default:
-          break;
+        }
+        default -> {}
       }
     }
     throw new Error("unreachable");
@@ -280,7 +275,7 @@ public class TreePathUtil {
   /**
    * Returns the {@link MethodHandle} for retrieving the end position of a {@link JCTree}.
    *
-   * @return the {@link MethodHandle} for retrieving the end position of a {@link JCTree}.
+   * @return the {@link MethodHandle} for retrieving the end position of a {@link JCTree}
    */
   private static MethodHandle getEndPosMethodHandle() {
     MethodHandles.Lookup lookup = MethodHandles.lookup();

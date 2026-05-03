@@ -36,10 +36,25 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class CFGTranslationPhaseThree {
 
+  /** Do not instantiate. */
+  private CFGTranslationPhaseThree() {
+    throw new Error("Do not instantiate");
+  }
+
   /** A simple wrapper object that holds a basic block and allows to set one of its successors. */
-  protected interface PredecessorHolder {
+  protected static interface PredecessorHolder {
+    /**
+     * Sets the successor.
+     *
+     * @param b the new successor
+     */
     void setSuccessor(BlockImpl b);
 
+    /**
+     * Returns the block.
+     *
+     * @return the block
+     */
     BlockImpl getBlock();
   }
 
@@ -249,19 +264,10 @@ public class CFGTranslationPhaseThree {
     for (Block p : cur.getPredecessors()) {
       BlockImpl pred = (BlockImpl) p;
       switch (pred.getType()) {
-        case SPECIAL_BLOCK:
-          // add pred correctly to predecessor list
-          predecessors.add(getPredecessorHolder(pred, cur));
-          break;
-        case CONDITIONAL_BLOCK:
-          // add pred correctly to predecessor list
-          predecessors.add(getPredecessorHolder(pred, cur));
-          break;
-        case EXCEPTION_BLOCK:
-          // add pred correctly to predecessor list
-          predecessors.add(getPredecessorHolder(pred, cur));
-          break;
-        case REGULAR_BLOCK:
+        case SPECIAL_BLOCK, CONDITIONAL_BLOCK, EXCEPTION_BLOCK ->
+            // add pred correctly to predecessor list
+            predecessors.add(getPredecessorHolder(pred, cur));
+        case REGULAR_BLOCK -> {
           RegularBlockImpl r = (RegularBlockImpl) pred;
           if (r.isEmpty()) {
             // recursively look backwards
@@ -272,7 +278,7 @@ public class CFGTranslationPhaseThree {
             // add pred correctly to predecessor list
             predecessors.add(getPredecessorHolder(pred, cur));
           }
-          break;
+        }
       }
     }
   }
@@ -289,10 +295,11 @@ public class CFGTranslationPhaseThree {
   @SuppressWarnings("interning:not.interned") // AST node comparisons
   protected static PredecessorHolder getPredecessorHolder(BlockImpl pred, BlockImpl cur) {
     switch (pred.getType()) {
-      case SPECIAL_BLOCK:
+      case SPECIAL_BLOCK -> {
         SingleSuccessorBlockImpl s = (SingleSuccessorBlockImpl) pred;
         return singleSuccessorHolder(s, cur);
-      case CONDITIONAL_BLOCK:
+      }
+      case CONDITIONAL_BLOCK -> {
         // add pred correctly to predecessor list
         ConditionalBlockImpl c = (ConditionalBlockImpl) pred;
         if (c.getThenSuccessor() == cur) {
@@ -323,7 +330,8 @@ public class CFGTranslationPhaseThree {
             }
           };
         }
-      case EXCEPTION_BLOCK:
+      }
+      case EXCEPTION_BLOCK -> {
         // add pred correctly to predecessor list
         ExceptionBlockImpl e = (ExceptionBlockImpl) pred;
         if (e.getSuccessor() == cur) {
@@ -349,11 +357,12 @@ public class CFGTranslationPhaseThree {
           }
         }
         throw new BugInCF("Unreachable");
-      case REGULAR_BLOCK:
+      }
+      case REGULAR_BLOCK -> {
         RegularBlockImpl r = (RegularBlockImpl) pred;
         return singleSuccessorHolder(r, cur);
-      default:
-        throw new BugInCF("Unexpected block type " + pred.getType());
+      }
+      default -> throw new BugInCF("Unexpected block type " + pred.getType());
     }
   }
 

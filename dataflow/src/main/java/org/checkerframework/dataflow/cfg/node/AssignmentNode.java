@@ -152,10 +152,9 @@ public class AssignmentNode extends Node {
   @Override
   @Pure
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof AssignmentNode)) {
+    if (!(obj instanceof AssignmentNode other)) {
       return false;
     }
-    AssignmentNode other = (AssignmentNode) obj;
     return getTarget().equals(other.getTarget()) && getExpression().equals(other.getExpression());
   }
 

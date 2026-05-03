@@ -161,10 +161,9 @@ public class MethodInvocationNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof MethodInvocationNode)) {
+    if (!(obj instanceof MethodInvocationNode other)) {
       return false;
     }
-    MethodInvocationNode other = (MethodInvocationNode) obj;
 
     return getTarget().equals(other.getTarget()) && getArguments().equals(other.getArguments());
   }

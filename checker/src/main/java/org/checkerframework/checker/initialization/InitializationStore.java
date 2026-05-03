@@ -69,8 +69,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
 
     // Remember fields that have the 'invariant' annotation in the store.
-    if (je instanceof FieldAccess) {
-      FieldAccess fieldAccess = (FieldAccess) je;
+    if (je instanceof FieldAccess fieldAccess) {
       if (!fieldValues.containsKey(je)) {
         AnnotationMirrorSet declaredAnnos =
             atypeFactory.getAnnotatedType(fieldAccess.getField()).getPrimaryAnnotations();
@@ -87,8 +86,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
 
     for (AnnotationMirror a : value.getAnnotations()) {
       if (qualHierarchy.isSubtypeShallow(a, invariantAnno, je.getType())) {
-        if (je instanceof FieldAccess) {
-          FieldAccess fa = (FieldAccess) je;
+        if (je instanceof FieldAccess fa) {
           if (fa.getReceiver() instanceof ThisReference || fa.getReceiver() instanceof ClassName) {
             addInitializedField(fa.getField());
           }

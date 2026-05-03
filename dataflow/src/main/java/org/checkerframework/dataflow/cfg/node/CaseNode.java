@@ -107,10 +107,9 @@ public class CaseNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof CaseNode)) {
+    if (!(obj instanceof CaseNode other)) {
       return false;
     }
-    CaseNode other = (CaseNode) obj;
     return getSwitchOperand().equals(other.getSwitchOperand())
         && getCaseOperands().equals(other.getCaseOperands());
   }

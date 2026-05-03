@@ -292,8 +292,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     Effect targetEffect = atypeFactory.getComputedEffectAtCallsite(tree, receiverType, methodElt);
 
     Effect callerEffect = null;
-    if (callerTree instanceof MethodTree) {
-      ExecutableElement callerElt = TreeUtils.elementFromDeclaration((MethodTree) callerTree);
+    if (callerTree instanceof MethodTree ctMt) {
+      ExecutableElement callerElt = TreeUtils.elementFromDeclaration(ctMt);
       if (debugSpew) {
         System.err.println("callerElt found");
       }
@@ -345,9 +345,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
       // Field initializers inside anonymous inner classes show up with a null current-method
       // --- the traversal goes straight from the class to the initializer.
       assert (currentMethods.peek() == null || callerEffect.equals(effStack.peek()));
-    } else if (callerTree instanceof LambdaExpressionTree) {
-      callerEffect =
-          atypeFactory.getInferedEffectForLambdaExpression((LambdaExpressionTree) callerTree);
+    } else if (callerTree instanceof LambdaExpressionTree ctLet) {
+      callerEffect = atypeFactory.getInferedEffectForLambdaExpression(ctLet);
       // Perform lambda polymorphic effect inference: @PolyUI lambda, calling @UIEffect => @UI
       // lambda
       if (targetEffect.isUI() && callerEffect.isPoly()) {
@@ -484,27 +483,27 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
   private void scanUp(TreePath path) {
     Tree tree = path.getLeaf();
     switch (tree.getKind()) {
-      case ASSIGNMENT:
+      case ASSIGNMENT -> {
         AssignmentTree assignmentTree = (AssignmentTree) tree;
         commonAssignmentCheck(
             atypeFactory.getAnnotatedType(assignmentTree.getVariable()),
             atypeFactory.getAnnotatedType(assignmentTree.getExpression()),
             assignmentTree.getExpression(),
             "assignment");
-        break;
-      case VARIABLE:
+      }
+      case VARIABLE -> {
         VariableTree variableTree = (VariableTree) tree;
         commonAssignmentCheck(
             atypeFactory.getAnnotatedType(variableTree),
             atypeFactory.getAnnotatedType(variableTree.getInitializer()),
             variableTree.getInitializer(),
             "assignment");
-        break;
-      case METHOD_INVOCATION:
+      }
+      case METHOD_INVOCATION -> {
         MethodInvocationTree invocationTree = (MethodInvocationTree) tree;
         List<? extends ExpressionTree> args = invocationTree.getArguments();
         ParameterizedExecutableType mType = atypeFactory.methodFromUse(invocationTree);
-        AnnotatedExecutableType invokedMethod = mType.executableType;
+        AnnotatedExecutableType invokedMethod = mType.executableType();
         ExecutableElement method = invokedMethod.getElement();
         CharSequence methodName = ElementUtils.getSimpleDescription(method);
         List<? extends VariableElement> methodParams = method.getParameters();
@@ -522,15 +521,14 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 methodName);
           }
         }
-        break;
-      case RETURN:
+      }
+      case RETURN -> {
         ReturnTree returnTree = (ReturnTree) tree;
         if (returnTree.getExpression() instanceof NewClassTree
             || returnTree.getExpression() instanceof LambdaExpressionTree) {
           Tree enclosing = TreePathUtil.enclosingMethodOrLambda(path);
           AnnotatedTypeMirror ret = null;
-          if (enclosing instanceof MethodTree) {
-            MethodTree enclosingMethod = (MethodTree) enclosing;
+          if (enclosing instanceof MethodTree enclosingMethod) {
             boolean valid = validateTypeOf(enclosing);
             if (valid) {
               ret = atypeFactory.getMethodReturnType(enclosingMethod, returnTree);
@@ -550,18 +548,20 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 "return");
           }
         }
-        break;
-      case METHOD:
-        // Stop scanning at method boundaries, since the expression can't escape the method
-        // without either being assigned to a field or returned.
+      }
+      case METHOD ->
+      // Stop scanning at method boundaries, since the expression can't escape the method
+      // without either being assigned to a field or returned.
+      {
         return;
-      case CLASS:
+      }
+      case CLASS -> {
         // Can't ever happen, because we stop scanning at either method or field initializer
         // boundaries
         assert false;
         return;
-      default:
-        scanUp(path.getParentPath());
+      }
+      default -> scanUp(path.getParentPath());
     }
   }
 

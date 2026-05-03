@@ -185,7 +185,6 @@ public class AnnotationMirrorToAnnotationExprConversion {
       for (int i = 1; i < components.length; i++) {
         enumName = new FieldAccessExpr(enumName, components[i]);
       }
-
       return new FieldAccessExpr(enumName, value.getSimpleName().toString());
     }
 
@@ -226,7 +225,6 @@ public class AnnotationMirrorToAnnotationExprConversion {
       if (value.getKind() != TypeKind.DECLARED) {
         throw new BugInCF("Unexpected type for class expression: " + value);
       }
-
       DeclaredType type = (DeclaredType) value;
       ClassOrInterfaceType parsedType;
       try {
@@ -257,7 +255,6 @@ public class AnnotationMirrorToAnnotationExprConversion {
         return new UnaryExpr(
             new IntegerLiteralExpr(Integer.toString(-value)), UnaryExpr.Operator.MINUS);
       }
-
       return new IntegerLiteralExpr(Integer.toString(value));
     }
   }
