@@ -2467,8 +2467,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** Pre- and post-condition annotations that take a qualifier as an argument. */
   private TreeSet<String> preAndPostConditionAnnotations =
       new TreeSet<>(
-          // In Java 9+, use `List.of()`.
-          Arrays.asList(
+          List.of(
               PreconditionAnnotation.class.getName(),
               PostconditionAnnotation.class.getName(),
               RequiresQualifier.class.getName(),
