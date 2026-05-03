@@ -680,7 +680,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   public final synchronized void init(ProcessingEnvironment env) {
     ProcessingEnvironment unwrappedEnv = unwrapProcessingEnvironment(env);
     super.init(unwrappedEnv);
-    // Sets processing enviroment and other related fields.
+    // Sets processing environment and other related fields.
     setProcessingEnvironment(unwrappedEnv);
 
     if (!hasOption("warnUnneededSuppressionsExceptions")) {
@@ -2848,7 +2848,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             currentSuppressWarningsInEffect.substring(colonPos + 1);
       }
       // Check if the message key in the warning suppression is part of the message key that
-      // the checker is emiting.
+      // the checker is emitting.
       if (messageKeyMatches(messageKey, messageKeyInSuppressWarningsString)) {
         return true;
       }

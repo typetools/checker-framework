@@ -76,7 +76,7 @@ final class InMethodCriterion implements Criterion {
       path = path.getParentPath();
     } while (path != null && path.getLeaf() != null);
 
-    // We didn't find the method.  Return true if in a varable declarator,
+    // We didn't find the method.  Return true if in a variable declarator,
     // which is initialization code that will go in <init> or <clinit>.
     boolean result = inDecl && (staticDecl ? "<clinit>()V" : "<init>()V").equals(name);
     Criteria.dbug.debug("InMethodCriterion.isSatisfiedBy => %s%n", result);

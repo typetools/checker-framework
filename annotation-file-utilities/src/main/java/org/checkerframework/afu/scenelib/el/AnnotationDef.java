@@ -165,7 +165,7 @@ public final class AnnotationDef extends AElement {
     setFieldTypes(fieldTypes);
   }
 
-  // This ovverride is necessary because AnnotationDef extends AElement, which implements Cloneable.
+  // This override is necessary because AnnotationDef extends AElement, which implements Cloneable.
   @Override
   public AnnotationDef clone() {
     throw new UnsupportedOperationException("Can't duplicate an AnnotationDef");
@@ -296,7 +296,7 @@ public final class AnnotationDef extends AElement {
   @Override
   public int hashCode() {
     return name.hashCode()
-        // Omit tlAnnotationsHere, becase it should be unique and, more
+        // Omit tlAnnotationsHere, because it should be unique and, more
         // importantly, including it causes an infinite loop.
         // + tlAnnotationsHere.hashCode()
         + fieldTypes.hashCode();

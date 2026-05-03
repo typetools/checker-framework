@@ -61,8 +61,8 @@ public class CFGTranslationPhaseThree {
   /**
    * Perform phase three on the control flow graph {@code cfg}.
    *
-   * @param cfg the control flow graph. Ownership is transfered to this method and the caller is not
-   *     allowed to read or modify {@code cfg} after the call to {@code process} any more.
+   * @param cfg the control flow graph. Ownership is transferred to this method and the caller is
+   *     not allowed to read or modify {@code cfg} after the call to {@code process} any more.
    * @return the resulting control flow graph
    */
   @SuppressWarnings("nullness") // TODO: successors

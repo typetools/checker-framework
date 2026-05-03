@@ -71,7 +71,7 @@ public @interface EnsuresNonEmptyIf {
   /**
    * A wrapper annotation that makes the {@link EnsuresNonEmptyIf} annotation repeatable.
    *
-   * <p>Programmers generally do not need to write ths. It is created by Java when a programmer
+   * <p>Programmers generally do not need to write this. It is created by Java when a programmer
    * writes more than one {@link EnsuresNonEmptyIf} annotation at the same location.
    */
   @Retention(RetentionPolicy.RUNTIME)

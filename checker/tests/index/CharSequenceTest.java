@@ -1,4 +1,4 @@
-// Tests suport for index annotations applied to CharSequence and related indices.
+// Tests support for index annotations applied to CharSequence and related indices.
 
 import java.io.IOException;
 import java.io.StringWriter;

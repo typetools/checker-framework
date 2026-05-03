@@ -626,7 +626,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns the array component type fo this type or null if on does not exist.
+   * Returns the array component type of this type or null if one does not exist.
    *
    * @return the array component type of this type or null if one does not exist
    */
