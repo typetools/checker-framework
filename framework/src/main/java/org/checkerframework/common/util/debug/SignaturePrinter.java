@@ -136,8 +136,13 @@ public class SignaturePrinter extends AbstractTypeProcessor {
     /** String used for indentation. */
     private static final String INDENTATION = "    ";
 
+    /** Where to produce output. */
     private final PrintStream out;
+
+    /** The current indentation. */
     private String indent = "";
+
+    /** The type factory. */
     private final AnnotatedTypeFactory factory;
 
     public ElementPrinter(AnnotatedTypeFactory factory, PrintStream out) {

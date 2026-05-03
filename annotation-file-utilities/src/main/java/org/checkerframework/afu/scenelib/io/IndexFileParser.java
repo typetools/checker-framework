@@ -391,6 +391,8 @@ public final class IndexFileParser {
    * }</pre>
    *
    * These use fully-qualified names, i.e. "Object" alone won't work.
+   *
+   * @return the class name that was read, in Class.forName format
    */
   private @ClassGetName String expectClassGetName() throws IOException, ParseException {
     int arrays = 0;
