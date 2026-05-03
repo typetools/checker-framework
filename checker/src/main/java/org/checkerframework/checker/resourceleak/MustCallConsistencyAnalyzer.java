@@ -1346,7 +1346,7 @@ public class MustCallConsistencyAnalyzer {
     // Replacements to eventually perform in Obligations.  This map is kept to avoid a
     // ConcurrentModificationException in the loop below.
     Map<Obligation, Obligation> replacements = new LinkedHashMap<>();
-    // Cache to re-use on subsequent iterations.
+    // Cache to reuse on subsequent iterations.
     ResourceAlias aliasForAssignment = null;
     for (Obligation obligation : obligations) {
       // This is a non-null value iff the resource alias set for obligation needs to
@@ -2248,7 +2248,7 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Gets the Obligation whose resource aliase set contains the given local variable, if one exists
+   * Gets the Obligation whose resource alias set contains the given local variable, if one exists
    * in {@code obligations}.
    *
    * @param obligations a set of Obligations

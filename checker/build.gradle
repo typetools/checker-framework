@@ -917,8 +917,8 @@ tasks.register("wpiManyTest", Exec) {
         println("======== end of contents of ${filename} ========")
       }
       // If any of these files are present, their contents should be an error
-      // message that might indicate what went wrong. Even their presenence,
-      // however, is intereseting (even if they are empty).
+      // message that might indicate what went wrong. Even their presence,
+      // however, is interesting (even if they are empty).
       def cannotRunWpiFiles = fileTree(typecheckFilesDir).matching {
         include("**/.cannot-run-wpi")
       }

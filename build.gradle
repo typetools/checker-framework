@@ -26,7 +26,7 @@ repositories {
 ext {
   // Different JDKs may be used to run Gradle, compile the Checker Framework, and run the CF tests.
 
-  // Ways to specifiy the JDK used by different tasks/Gradle:
+  // Ways to specify the JDK used by different tasks/Gradle:
   //
   // 1. Run Gradle using JDK 21:
   // mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64" >> ~/.gradle/gradle.properties

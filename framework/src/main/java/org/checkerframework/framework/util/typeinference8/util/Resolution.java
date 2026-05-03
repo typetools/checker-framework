@@ -27,7 +27,7 @@ import org.checkerframework.framework.util.typeinference8.types.VariableBounds.B
  * Resolution finds an instantiation for each variable in a given set of variables. It does this
  * using all the bounds on a variable. Because a bound on a variable by be another unresolved
  * variable, the order in which the variables must be computed before resolution. If the set of
- * variables contains any captured variables, then a different resolution algorthim is used. If a
+ * variables contains any captured variables, then a different resolution algorithm is used. If a
  * set of variables does not contain a captured variable, but the resolution fails, then the
  * resolution algorithm for captured variables is used.
  *
@@ -37,7 +37,7 @@ import org.checkerframework.framework.util.typeinference8.types.VariableBounds.B
  *
  * <p>Entry point is two static methods, {@link #resolveSmallestSet(Set, BoundSet)} and {@link
  * #resolve(Variable, BoundSet, Java8InferenceContext)}, which create {@link Resolution} objects
- * that actually preform the resolution.
+ * that actually perform the resolution.
  */
 public class Resolution {
 

@@ -186,7 +186,7 @@ public final class IndexFileWriter {
    * and arg are both integers.
    *
    * @param typePath TypePath to be processed
-   * @param index dentifies the TypePathEntry to convert
+   * @param index identifies the TypePathEntry to convert
    * @return string representing the TypePathEntry
    */
   private String typePathStepToString(TypePath typePath, int index) {
@@ -197,7 +197,7 @@ public final class IndexFileWriter {
   }
 
   /**
-   * Outputs a string representaion of a set of AElements to a PrintWriter.
+   * Outputs a string representation of a set of AElements to a PrintWriter.
    *
    * @param indentation string containing indentation spaces
    * @param descriptor description of Type being printed
@@ -212,7 +212,7 @@ public final class IndexFileWriter {
   }
 
   /**
-   * Outputs a string representaion of an AElement to a PrintWriter.
+   * Outputs a string representation of an AElement to a PrintWriter.
    *
    * @param indentation string containing indentation spaces
    * @param descriptor description of Type being printed
@@ -502,8 +502,8 @@ public final class IndexFileWriter {
   }
 
   /**
-   * Formats a literal argument of an annotation. Public to permit re-use in stub-based
-   * whole-program inference.
+   * Formats a literal argument of an annotation. Public to permit reuse in stub-based whole-program
+   * inference.
    *
    * @param sb where to format the arguments to
    * @param aft the type of the annotation field

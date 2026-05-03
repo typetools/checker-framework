@@ -15,7 +15,7 @@ public class NewInsertion extends TypedInsertion {
   /**
    * Construct a NewInsertion.
    *
-   * <p>If "new" already exists in the initializer, then pass a {@link DeclaredType} thats name is
+   * <p>If "new" already exists in the initializer, then pass a {@link DeclaredType} whose name is
    * the empty String. This will only insert an annotation on the existing type.
    *
    * <p>To insert the annotation along with "new" and the type (for example, {@code @Anno new Type[]

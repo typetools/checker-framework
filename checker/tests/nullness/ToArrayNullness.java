@@ -91,7 +91,7 @@ public class ToArrayNullness {
     for (@NonNull String o : nonnullCol.toArray(new String[nonnullCol.size() + 1])) {}
 
     // cannot handle the following cases for now
-    // new array not size 0 or .size -> complain about cration. TODO: Could allow as result is
+    // new array not size 0 or .size -> complain about creation. TODO: Could allow as result is
     // Nullable.
     // :: error: [new.array] :: warning: [toarray.nullable.elements.mismatched.size]
     for (@Nullable String o : nonnullCol.toArray(new String[nonnullCol.size() - 1])) {}

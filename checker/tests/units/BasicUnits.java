@@ -106,7 +106,7 @@ public class BasicUnits {
     @h int hours = UnitsTools.h;
     @kmPERh int speed = kilometers / hours;
 
-    // Addition/substraction only accepts another @kmPERh value
+    // Addition/subtraction only accepts another @kmPERh value
     // :: error: [assignment]
     speed = speed + 5;
     // :: error: [compound.assignment]

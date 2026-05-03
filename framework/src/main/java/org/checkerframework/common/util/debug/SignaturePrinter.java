@@ -134,7 +134,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
   /** Element printer. */
   static class ElementPrinter extends AbstractElementVisitor8<Void, Void> {
     /** String used for indentation. */
-    private static final String INDENTION = "    ";
+    private static final String INDENTATION = "    ";
 
     private final PrintStream out;
     private String indent = "";
@@ -267,7 +267,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
       printSupers(dt);
       out.println("{");
 
-      indent += INDENTION;
+      indent += INDENTATION;
 
       for (Element enclosed : e.getEnclosedElements()) {
         this.visit(enclosed);
@@ -283,7 +283,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
     /**
      * Print the supertypes.
      *
-     * @param dt the type whos supertypes to print
+     * @param dt the type whose supertypes to print
      */
     private void printSupers(AnnotatedDeclaredType dt) {
       if (dt.directSupertypes().isEmpty()) {

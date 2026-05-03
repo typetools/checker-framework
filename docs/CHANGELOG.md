@@ -3,6 +3,16 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
+## Version 4.2.0 (2026-06-01)
+
+### User-visible changes
+
+Renamed error message key "createsmustcallfor.target.unparseable" to "createsmustcallfor.target.unparsable".
+
+### Implementation details
+
+### Closed issues
+
 ## Version 4.1.0 (2026-05-01)
 
 ### User-visible changes
@@ -1097,7 +1107,7 @@ Method renamings:
 The following methods no longer take a `fieldValues` parameter:
 
 * `GenericAnnotatedTypeFactory#createFlowAnalysis`
-* `CFAnalysis` construtor
+* `CFAnalysis` constructor
 * `CFAbstractAnalysis#performAnalysis`
 * `CFAbstractAnalysis` constructors
 
@@ -2349,7 +2359,7 @@ With the "-target 7" flag, the resulting .class files still run with JDK 7.
 
 The stub file format has changed to be more similar to regular Java syntax.
 Most notably, receiver annotations are written using standard Java 8 syntax
-(a special first formal paramter named "this") and inner classes are written
+(a special first formal parameter named "this") and inner classes are written
 using standard Java syntax (rather than at the top level using a name that
 contains "$". You need to update your stub files to conform to the new syntax.
 
@@ -3059,7 +3069,7 @@ Many more Java expressions can be written as annotation arguments.
 Initialization Checker:
 This new abstract type-checker verifies initialization properties.  It
 needs to be combined with another type system whose proper initialization
-should be checked.  This is the new default initialzation checker for the
+should be checked.  This is the new default initialization checker for the
 Nullness Checker.  It is based on the "Freedom Before Commitment" approach.
 
 Renamed method annotations used by the Nullness Checker:
@@ -4085,7 +4095,7 @@ Functionality
 
 Bug fixes
 
-* Fixed flow erros related to loop controls and break/continue
+* Fixed flow errors related to loop controls and break/continue
 
 Manual
 

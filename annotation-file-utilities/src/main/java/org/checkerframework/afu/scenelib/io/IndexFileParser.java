@@ -390,7 +390,7 @@ public final class IndexFileParser {
    * "java.util.Map"  for Map.class
    * }</pre>
    *
-   * Thes use fully-qualified names, i.e. "Object" alone won't work.
+   * These use fully-qualified names, i.e. "Object" alone won't work.
    */
   private @ClassGetName String expectClassGetName() throws IOException, ParseException {
     int arrays = 0;
