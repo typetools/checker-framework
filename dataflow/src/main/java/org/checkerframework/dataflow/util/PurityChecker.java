@@ -20,6 +20,7 @@ import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -260,7 +261,10 @@ public class PurityChecker {
                 // Avoid computation if not necessary
                 ? detAndSeFree
                 : PurityUtils.getPurityKinds(annoProvider, elt);
-        boolean det = assumeDeterministic || purityKinds.contains(Pure.Kind.DETERMINISTIC);
+        boolean det =
+            assumeDeterministic
+                || purityKinds.contains(Pure.Kind.DETERMINISTIC)
+                || elt.getReturnType().getKind() == TypeKind.VOID;
         boolean seFree = assumeSideEffectFree || purityKinds.contains(Pure.Kind.SIDE_EFFECT_FREE);
         if (!det && !seFree) {
           purityResult.addNotBothReason(tree, "call");
