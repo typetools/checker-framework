@@ -108,8 +108,6 @@ import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.HasQualifierParameter;
-import org.checkerframework.framework.qual.PostconditionAnnotation;
-import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.source.DiagMessage;
@@ -2393,12 +2391,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return null;
     }
 
+    // This logic is not in BaseTypeVisitor#checkContractsAtMethodDeclaration because that method
+    // apears to also check implicit annotations.
     if (isPreOrPostConditionAnnotation(annoName)) {
       AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(tree);
-      // TODO: `getQualifierEnforcedByContractAnnotation` does not work for user-defined contract
-      // annotations defined with @PreconditionAnnotation or @PostconditionAnnotation.  Should I
-      // extend the method to handle that, or should I put the logic here and avoid calling the
-      // method?
       AnnotationMirror qualifier =
           atypeFactory.getContractsFromMethod().getQualifierEnforcedByContractAnnotation(anno);
       if (qualifier != null) {
@@ -2468,8 +2464,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   private TreeSet<String> preAndPostConditionAnnotations =
       new TreeSet<>(
           List.of(
-              PreconditionAnnotation.class.getName(),
-              PostconditionAnnotation.class.getName(),
               RequiresQualifier.class.getName(),
               EnsuresQualifier.class.getName(),
               EnsuresQualifierIf.class.getName()));
@@ -2483,6 +2477,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   private boolean isPreOrPostConditionAnnotation(Name annotationName) {
     String annoName = annotationName.toString();
+    // TODO: This method should also return true for any annotation that is meta-annotated with
+    // @PreconditionAnnotation or @PostconditionAnnotation.
     return preAndPostConditionAnnotations.contains(annoName);
   }
 
