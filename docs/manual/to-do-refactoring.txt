@@ -1,11 +1,6 @@
-
 Checker Framework redesign/refactoring (in priority order):
 
 (Throughout the refactorings, incrementally update the manual.)
-
-* Document the difference between getAnnotation and getEffectiveAnnotation
-
-* rename commonAssignmentCheck to subtypeCheck
 
 * rename asMemberOf or postAsMemberOf to fieldFromUse
 

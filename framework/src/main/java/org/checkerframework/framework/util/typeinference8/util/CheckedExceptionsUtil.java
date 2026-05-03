@@ -104,11 +104,8 @@ public class CheckedExceptionsUtil {
           removeAssignable(altern, thrownExceptionTypes);
         }
       } else {
-        for (TypeMirror thrownType : new ArrayList<>(thrownExceptionTypes)) {
-          if (context.env.getTypeUtils().isAssignable(thrownType, type)) {
-            thrownExceptionTypes.remove(thrownType);
-          }
-        }
+        thrownExceptionTypes.removeIf(
+            thrownType -> context.env.getTypeUtils().isAssignable(thrownType, type));
       }
     }
 
@@ -248,11 +245,9 @@ public class CheckedExceptionsUtil {
           removeAssignable(altern, thrownExceptionTypes);
         }
       } else {
-        for (AnnotatedTypeMirror thrownType : new ArrayList<>(thrownExceptionTypes)) {
-          if (context.env.getTypeUtils().isAssignable(thrownType.getUnderlyingType(), type)) {
-            thrownExceptionTypes.remove(thrownType);
-          }
-        }
+        thrownExceptionTypes.removeIf(
+            thrownType ->
+                context.env.getTypeUtils().isAssignable(thrownType.getUnderlyingType(), type));
       }
     }
 
@@ -275,7 +270,7 @@ public class CheckedExceptionsUtil {
       if (result == null) {
         result = new ArrayList<>();
       }
-      AnnotatedExecutableType method = context.typeFactory.methodFromUse(node).executableType;
+      AnnotatedExecutableType method = context.typeFactory.methodFromUse(node).executableType();
       for (AnnotatedTypeMirror type : method.getThrownTypes()) {
         if (isCheckedException(type, context)) {
           result.add(type);
@@ -290,7 +285,8 @@ public class CheckedExceptionsUtil {
       if (result == null) {
         result = new ArrayList<>();
       }
-      AnnotatedExecutableType method = context.typeFactory.constructorFromUse(node).executableType;
+      AnnotatedExecutableType method =
+          context.typeFactory.constructorFromUse(node).executableType();
 
       for (AnnotatedTypeMirror type : method.getThrownTypes()) {
         if (isCheckedException(type, context)) {

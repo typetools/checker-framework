@@ -47,8 +47,7 @@ public class ConstantPropagationTransfer
     ConstantPropagationStore p = pi.getRegularStore();
     Node target = n.getTarget();
     Constant info = null;
-    if (target instanceof LocalVariableNode) {
-      LocalVariableNode lvn = (LocalVariableNode) target;
+    if (target instanceof LocalVariableNode lvn) {
       info = p.getInformation(n.getExpression());
       p.setInformation(lvn, info);
     }

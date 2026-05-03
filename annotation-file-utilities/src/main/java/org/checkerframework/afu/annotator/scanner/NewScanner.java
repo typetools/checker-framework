@@ -53,8 +53,6 @@ public class NewScanner extends CommonScanner {
   private final Tree tree;
 
   private NewScanner(Tree tree) {
-    this.index = -1;
-    this.done = false;
     this.tree = tree;
   }
 
@@ -92,11 +90,8 @@ public class NewScanner extends CommonScanner {
 
   public static void addNewToMethod(String methodName, Integer offset) {
     debug("adding new to method: " + methodName + " offset: " + offset);
-    List<Integer> offsetList = methodNameToNewOffsets.get(methodName);
-    if (offsetList == null) {
-      offsetList = new ArrayList<Integer>();
-      methodNameToNewOffsets.put(methodName, offsetList);
-    }
+    List<Integer> offsetList =
+        methodNameToNewOffsets.computeIfAbsent(methodName, k -> new ArrayList<>());
     offsetList.add(offset);
   }
 

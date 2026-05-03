@@ -122,7 +122,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     super.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
     if (hasFormatMethodAnno(methodAnnos)) {
       AnnotatedTypeMirror atm = methodAnnos.getParameterType(0);
-      atm.removePrimaryAnnotationByClass(org.checkerframework.checker.formatter.qual.Format.class);
+      atm.removePrimaryAnnotationByClass(Format.class);
     }
   }
 
@@ -153,8 +153,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
     AnnotationMirrorSet declarationAnnos = methodAnnos.getDeclarationAnnotations();
     return !declarationAnnos.isEmpty()
-        && (containsSameByClass(
-                declarationAnnos, org.checkerframework.checker.formatter.qual.FormatMethod.class)
+        && (containsSameByClass(declarationAnnos, FormatMethod.class)
             || AnnotationUtils.containsSameByName(
                 declarationAnnos, "com.google.errorprone.annotations.FormatMethod"));
   }

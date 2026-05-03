@@ -323,21 +323,19 @@ public class DependentTypesHelper {
     }
 
     StringToJavaExpression stringToJavaExpr;
-    if (tree instanceof MethodInvocationTree) {
+    if (tree instanceof MethodInvocationTree mit) {
       stringToJavaExpr =
           stringExpr ->
-              StringToJavaExpression.atMethodInvocation(
-                  stringExpr, (MethodInvocationTree) tree, factory.getChecker());
+              StringToJavaExpression.atMethodInvocation(stringExpr, mit, factory.getChecker());
       if (debugStringToJavaExpression) {
         System.out.printf(
             "atInvocation(%s, %s) 1 created %s%n",
             methodType, TreeUtils.toStringTruncated(tree, 65), stringToJavaExpr);
       }
-    } else if (tree instanceof NewClassTree) {
+    } else if (tree instanceof NewClassTree nct) {
       stringToJavaExpr =
           stringExpr ->
-              StringToJavaExpression.atConstructorInvocation(
-                  stringExpr, (NewClassTree) tree, factory.getChecker());
+              StringToJavaExpression.atConstructorInvocation(stringExpr, nct, factory.getChecker());
       if (debugStringToJavaExpression) {
         System.out.printf(
             "atInvocation(%s, %s) 2 created %s%n",
@@ -439,13 +437,9 @@ public class DependentTypesHelper {
       // If this is a synthetic created by dataflow, the path will be null.
       return;
     }
-    ElementKind variableKind = variableElt.getKind();
-    if (ElementUtils.isBindingVariable(variableElt)) {
-      // Treat binding variables the same as local variables.
-      variableKind = ElementKind.LOCAL_VARIABLE;
-    }
-    switch (variableKind) {
-      case PARAMETER:
+
+    switch (variableElt.getKind()) {
+      case PARAMETER -> {
         TreePath pathTillEnclTree =
             TreePathUtil.pathTillOfKind(pathToVariableDecl, METHOD_OR_LAMBDA);
         if (pathTillEnclTree == null) {
@@ -453,8 +447,7 @@ public class DependentTypesHelper {
         }
         Tree enclTree = pathTillEnclTree.getLeaf();
 
-        if (enclTree instanceof MethodTree) {
-          MethodTree methodDeclTree = (MethodTree) enclTree;
+        if (enclTree instanceof MethodTree methodDeclTree) {
           StringToJavaExpression stringToJavaExpr =
               stringExpr ->
                   StringToJavaExpression.atMethodBody(
@@ -488,11 +481,8 @@ public class DependentTypesHelper {
           }
           convertAnnotatedTypeMirror(stringToJavaExpr, type);
         }
-        break;
-
-      case LOCAL_VARIABLE:
-      case RESOURCE_VARIABLE:
-      case EXCEPTION_PARAMETER:
+      }
+      case BINDING_VARIABLE, LOCAL_VARIABLE, RESOURCE_VARIABLE, EXCEPTION_PARAMETER -> {
         StringToJavaExpression stringToJavaExprVar =
             stringExpr ->
                 StringToJavaExpression.atPath(stringExpr, pathToVariableDecl, factory.getChecker());
@@ -505,10 +495,8 @@ public class DependentTypesHelper {
               stringToJavaExprVar);
         }
         convertAnnotatedTypeMirror(stringToJavaExprVar, type);
-        break;
-
-      case FIELD:
-      case ENUM_CONSTANT:
+      }
+      case FIELD, ENUM_CONSTANT -> {
         StringToJavaExpression stringToJavaExprField =
             stringExpr ->
                 StringToJavaExpression.atFieldDecl(stringExpr, variableElt, factory.getChecker());
@@ -521,11 +509,10 @@ public class DependentTypesHelper {
               stringToJavaExprField);
         }
         convertAnnotatedTypeMirror(stringToJavaExprField, type);
-        break;
-
-      default:
-        throw new BugInCF(
-            "unexpected element kind " + variableElt.getKind() + " for " + variableElt);
+      }
+      default ->
+          throw new BugInCF(
+              "unexpected element kind " + variableElt.getKind() + " for " + variableElt);
     }
   }
 
@@ -574,10 +561,7 @@ public class DependentTypesHelper {
     }
 
     switch (elt.getKind()) {
-      case PARAMETER:
-      case LOCAL_VARIABLE:
-      case RESOURCE_VARIABLE:
-      case EXCEPTION_PARAMETER:
+      case PARAMETER, LOCAL_VARIABLE, RESOURCE_VARIABLE, EXCEPTION_PARAMETER -> {
         Tree declarationTree = factory.declarationFromElement(elt);
         if (declarationTree == null) {
           if (elt.getKind() == ElementKind.PARAMETER) {
@@ -597,11 +581,9 @@ public class DependentTypesHelper {
 
         atVariableDeclaration(type, declarationTree, (VariableElement) elt);
         return;
-
-      default:
-        // It's not a local variable (it might be METHOD, CONSTRUCTOR, CLASS, or INTERFACE,
-        // for example), so there is nothing to do.
-        break;
+      }
+      default -> {} // It's not a local variable (it might be METHOD, CONSTRUCTOR, CLASS, or
+        // INTERFACE, for example), so there is nothing to do.
     }
   }
 

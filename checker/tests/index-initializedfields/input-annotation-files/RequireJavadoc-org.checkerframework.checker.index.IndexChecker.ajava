@@ -228,7 +228,6 @@ public class RequireJavadoc {
     if (require_package_info) {
       for (Path javaFile : javaFiles) {
         Path javaFileParent = javaFile.getParent();
-        // Java 11 has Path.of() instead of creating a new File.
         Path packageInfo = javaFileParent.resolve(new File("package-info.java").toPath());
         if (!javaFiles.contains(packageInfo)) {
           missingPackageInfoFiles.add(packageInfo);

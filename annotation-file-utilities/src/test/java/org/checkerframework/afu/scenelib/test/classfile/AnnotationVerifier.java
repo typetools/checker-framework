@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -187,8 +188,7 @@ public class AnnotationVerifier {
     private void verifyAnns(
         Map<String, AnnotationRecorder> questionableAnns,
         Map<String, AnnotationRecorder> correctAnns) {
-      Set<AnnotationRecorder> unresolvedQuestionableAnns =
-          new HashSet<AnnotationRecorder>(questionableAnns.values());
+      Set<AnnotationRecorder> unresolvedQuestionableAnns = new HashSet<>(questionableAnns.values());
 
       for (Map.Entry<String, AnnotationRecorder> entry : correctAnns.entrySet()) {
         String name = entry.getKey();
@@ -434,8 +434,7 @@ public class AnnotationVerifier {
     private void verifyAnns(
         Map<String, AnnotationRecorder> questionableAnns,
         Map<String, AnnotationRecorder> correctAnns) {
-      Set<AnnotationRecorder> unresolvedQuestionableAnns =
-          new HashSet<AnnotationRecorder>(questionableAnns.values());
+      Set<AnnotationRecorder> unresolvedQuestionableAnns = new HashSet<>(questionableAnns.values());
 
       for (Map.Entry<String, AnnotationRecorder> entry : correctAnns.entrySet()) {
         String name = entry.getKey();
@@ -533,8 +532,7 @@ public class AnnotationVerifier {
     private void verifyAnns(
         Map<String, AnnotationRecorder> questionableAnns,
         Map<String, AnnotationRecorder> correctAnns) {
-      Set<AnnotationRecorder> unresolvedQuestionableAnns =
-          new HashSet<AnnotationRecorder>(questionableAnns.values());
+      Set<AnnotationRecorder> unresolvedQuestionableAnns = new HashSet<>(questionableAnns.values());
 
       for (Map.Entry<String, AnnotationRecorder> entry : correctAnns.entrySet()) {
         String name = entry.getKey();
@@ -639,18 +637,18 @@ public class AnnotationVerifier {
         int[] index) {
       super(api);
       this.description = description;
-      fieldArgsName = new ArrayList<String>();
-      fieldArgsValue = new ArrayList<Object>();
+      fieldArgsName = new ArrayList<>();
+      fieldArgsValue = new ArrayList<>();
 
-      enumArgsName = new ArrayList<String>();
-      enumArgsDesc = new ArrayList<String>();
-      enumArgsValue = new ArrayList<String>();
+      enumArgsName = new ArrayList<>();
+      enumArgsDesc = new ArrayList<>();
+      enumArgsValue = new ArrayList<>();
 
-      innerAnnotationArgsName = new ArrayList<String>();
-      innerAnnotationArgsDesc = new ArrayList<String>();
+      innerAnnotationArgsName = new ArrayList<>();
+      innerAnnotationArgsDesc = new ArrayList<>();
       innerAnnotationMap = new HashMap<>();
 
-      arrayArgs = new ArrayList<String>();
+      arrayArgs = new ArrayList<>();
       arrayMap = new HashMap<>();
 
       if (typeRef != null) {
@@ -821,21 +819,13 @@ public class AnnotationVerifier {
    * A ParameterDescription is a convenient class used to keep information about method parameters.
    * Parameters are equal if they have the same index, regardless of their description.
    */
-  private static class ParameterDescription {
-    public final int parameter;
-    public final String descriptor;
-    public final boolean visible;
+  private record ParameterDescription(int parameter, String descriptor, boolean visible) {
 
-    public ParameterDescription(int parameter, String descriptor, boolean visible) {
-      this.parameter = parameter;
-      this.descriptor = descriptor;
-      this.visible = visible;
-    }
+    // equals() and hashCode() are defined because they ignore two of the record fields.
 
     @Override
     public boolean equals(@Nullable Object o) {
-      if (o instanceof ParameterDescription) {
-        ParameterDescription p = (ParameterDescription) o;
+      if (o instanceof ParameterDescription p) {
         return this.parameter == p.parameter;
       }
       return false;
@@ -843,7 +833,7 @@ public class AnnotationVerifier {
 
     @Override
     public int hashCode() {
-      return parameter * 17;
+      return Objects.hashCode(parameter);
     }
 
     @Override

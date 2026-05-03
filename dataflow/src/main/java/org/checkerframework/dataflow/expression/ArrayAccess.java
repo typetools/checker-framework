@@ -71,10 +71,9 @@ public class ArrayAccess extends JavaExpression {
 
   @Override
   public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof ArrayAccess)) {
+    if (!(je instanceof ArrayAccess other)) {
       return false;
     }
-    ArrayAccess other = (ArrayAccess) je;
     return array.syntacticEquals(other.array) && index.syntacticEquals(other.index);
   }
 
@@ -95,10 +94,9 @@ public class ArrayAccess extends JavaExpression {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ArrayAccess)) {
+    if (!(obj instanceof ArrayAccess other)) {
       return false;
     }
-    ArrayAccess other = (ArrayAccess) obj;
     return array.equals(other.array) && index.equals(other.index);
   }
 

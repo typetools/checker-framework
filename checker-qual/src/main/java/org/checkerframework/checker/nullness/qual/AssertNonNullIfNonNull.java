@@ -15,11 +15,11 @@ import java.lang.annotation.Target;
  * <p>Here is an example use:
  *
  * <pre><code>
- *    {@literal @}AssertNonNullIfNonNull("id")
- *    {@literal @}Pure
- *     public @Nullable Long getId() {
- *         return id;
- *     }
+ *  {@literal @}AssertNonNullIfNonNull("id")
+ *  {@literal @}Pure
+ *  public @Nullable Long getId() {
+ *    return id;
+ *  }
  * </code></pre>
  *
  * Note the direction of the implication. This annotation says that if the result is non-null, then

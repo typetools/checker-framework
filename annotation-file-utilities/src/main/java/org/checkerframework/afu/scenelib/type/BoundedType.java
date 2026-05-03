@@ -66,14 +66,11 @@ public class BoundedType extends Type {
   }
 
   private static BoundKind javacBoundKindToBoundKind(com.sun.tools.javac.code.BoundKind boundKind) {
-    switch (boundKind) {
-      case EXTENDS:
-        return BoundKind.EXTENDS;
-      case SUPER:
-        return BoundKind.SUPER;
-      default:
-        throw new RuntimeException();
-    }
+    return switch (boundKind) {
+      case EXTENDS -> BoundKind.EXTENDS;
+      case SUPER -> BoundKind.SUPER;
+      default -> throw new RuntimeException();
+    };
   }
 
   /**

@@ -12,7 +12,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * A special annotation intended solely for representing an unqualified type in the qualifier
  * hierarchy, as an argument to {@link SubtypeOf#value()}, in a type qualifier declaration.
  *
- * <p>This annotation may not be written in source code; it is an implementation detail of the
+ * <p>This annotation should not be written in source code; it is an implementation detail of the
  * checker.
  *
  * <p>Use this qualifier only when experimenting with very simple type systems. For any more

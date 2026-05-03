@@ -61,8 +61,8 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
       if (atf != null) {
         // Add all the subcheckers so that default values are checked for the subcheckers.
         for (SourceChecker subchecker : atf.getChecker().getSubcheckers()) {
-          if (subchecker instanceof BaseTypeChecker) {
-            defaultValueAtypeFactories.add(((BaseTypeChecker) subchecker).getTypeFactory());
+          if (subchecker instanceof BaseTypeChecker btc) {
+            defaultValueAtypeFactories.add(btc.getTypeFactory());
           }
         }
         defaultValueAtypeFactories.add(atf);

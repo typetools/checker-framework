@@ -339,7 +339,7 @@ public class IndexFileSpecification {
    * @return a list of the {@link AnnotationInsertion}s that are created
    */
   private List<Insertion> parseElement(CriterionList clist, AElement element) {
-    return parseElement(clist, element, new ArrayList<Insertion>(), false);
+    return parseElement(clist, element, new ArrayList<>(), false);
   }
 
   /**
@@ -353,7 +353,7 @@ public class IndexFileSpecification {
    */
   private List<Insertion> parseElement(
       CriterionList clist, AElement element, boolean isCastInsertion) {
-    return parseElement(clist, element, new ArrayList<Insertion>(), isCastInsertion);
+    return parseElement(clist, element, new ArrayList<>(), isCastInsertion);
   }
 
   /**
@@ -405,13 +405,12 @@ public class IndexFileSpecification {
     Set<IPair<String, Annotation>> elementAnnotations = getElementAnnotations(element);
     if (elementAnnotations.isEmpty()) {
       Criteria criteria = clist.criteria();
-      if (element instanceof ATypeElementWithType) {
+      if (element instanceof ATypeElementWithType atewt) {
         // Still insert even if it's a cast insertion with no outer
         // annotations to just insert a cast, or insert a cast with
         // annotations on the compound types.
         IPair<CastInsertion, CloseParenthesisInsertion> pair =
-            createCastInsertion(
-                ((ATypeElementWithType) element).getType(), null, innerTypeInsertions, criteria);
+            createCastInsertion(atewt.getType(), null, innerTypeInsertions, criteria);
         cast = pair.first;
         closeParen = pair.second;
       } else if (!innerTypeInsertions.isEmpty()) {
@@ -454,14 +453,10 @@ public class IndexFileSpecification {
           newI.getType().addAnnotation(annotationString);
         }
         addInsertionSource(newI, annotation);
-      } else if (element instanceof ATypeElementWithType) {
+      } else if (element instanceof ATypeElementWithType atewt) {
         if (cast == null) {
           IPair<CastInsertion, CloseParenthesisInsertion> insertions =
-              createCastInsertion(
-                  ((ATypeElementWithType) element).getType(),
-                  annotationString,
-                  innerTypeInsertions,
-                  criteria);
+              createCastInsertion(atewt.getType(), annotationString, innerTypeInsertions, criteria);
           cast = insertions.first;
           closeParen = insertions.second;
           elementInsertions.add(cast);
@@ -516,9 +511,9 @@ public class IndexFileSpecification {
       if (noTypePath(criteria) && isOnImplicitDefaultConstructor(criteria)) {
 
         if (constructorInsertion == null) {
+          @SuppressWarnings("nullness:argument") // getClassName returns non-null for Criteria
           DeclaredType type = new DeclaredType(criteria.getClassName());
-          constructorInsertion =
-              new ConstructorInsertion(type, criteria, new ArrayList<Insertion>());
+          constructorInsertion = new ConstructorInsertion(type, criteria, new ArrayList<>());
           this.insertions.add(constructorInsertion);
           // debug(
           //     "Added constructorInsertion to this.insertions, which is now %s%n",

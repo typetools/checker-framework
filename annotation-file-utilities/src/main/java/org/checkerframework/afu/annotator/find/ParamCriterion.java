@@ -41,18 +41,12 @@ public class ParamCriterion implements Criterion {
     Tree leaf = path.getLeaf();
     if (leaf instanceof VariableTree) {
       Tree parent = path.getParentPath().getLeaf();
-      List<? extends VariableTree> params;
-      switch (parent.getKind()) {
-        case METHOD:
-          params = ((MethodTree) parent).getParameters();
-          break;
-        case LAMBDA_EXPRESSION:
-          params = ((LambdaExpressionTree) parent).getParameters();
-          break;
-        default:
-          params = null;
-          break;
-      }
+      List<? extends VariableTree> params =
+          switch (parent.getKind()) {
+            case METHOD -> ((MethodTree) parent).getParameters();
+            case LAMBDA_EXPRESSION -> ((LambdaExpressionTree) parent).getParameters();
+            default -> null;
+          };
       return params != null && params.size() > paramPos && params.get(paramPos).equals(leaf);
     }
 

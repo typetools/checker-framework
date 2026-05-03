@@ -263,6 +263,9 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
      * @param theQual the qualifier that a @DefaultFor annotation is written on
      * @param defaultFor the @DefaultFor annotation written on {@code theQual}
      */
+    @SuppressWarnings(
+        "regex:argument") // annotation element values; validity checked by PatternSyntaxException
+    // catch
     void add(AnnotationMirror theQual, DefaultFor defaultFor) {
       if (defaultFor.names().length != 0) {
         NameRegexes thisName = new NameRegexes(theQual);

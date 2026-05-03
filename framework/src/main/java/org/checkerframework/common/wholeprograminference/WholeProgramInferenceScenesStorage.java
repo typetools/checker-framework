@@ -154,29 +154,18 @@ public class WholeProgramInferenceScenesStorage
 
   @Override
   public String getFileForElement(Element elt) {
-    String className;
-    switch (elt.getKind()) {
-      case CONSTRUCTOR:
-      case METHOD:
-        className = ElementUtils.getEnclosingClassName((ExecutableElement) elt);
-        break;
-      case LOCAL_VARIABLE:
-        className = getEnclosingClassName((LocalVariableNode) elt);
-        break;
-      case FIELD:
-      case ENUM_CONSTANT:
-        ClassSymbol enclosingClass = ((VarSymbol) elt).enclClass();
-        className = enclosingClass.flatname.toString();
-        break;
-      case CLASS:
-        className = ElementUtils.getBinaryName((TypeElement) elt);
-        break;
-      case PARAMETER:
-        className = ElementUtils.getEnclosingClassName((VariableElement) elt);
-        break;
-      default:
-        throw new BugInCF("What element? %s %s", elt.getKind(), elt);
-    }
+    String className =
+        switch (elt.getKind()) {
+          case CONSTRUCTOR, METHOD -> ElementUtils.getEnclosingClassName((ExecutableElement) elt);
+          case LOCAL_VARIABLE -> getEnclosingClassName((LocalVariableNode) elt);
+          case FIELD, ENUM_CONSTANT -> {
+            ClassSymbol enclosingClass = ((VarSymbol) elt).enclClass();
+            yield enclosingClass.flatname.toString();
+          }
+          case CLASS -> ElementUtils.getBinaryName((TypeElement) elt);
+          case PARAMETER -> ElementUtils.getEnclosingClassName((VariableElement) elt);
+          default -> throw new BugInCF("What element? %s %s", elt.getKind(), elt);
+        };
     String file = getJaifPath(className);
     return file;
   }
@@ -314,14 +303,13 @@ public class WholeProgramInferenceScenesStorage
       String expression,
       AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
-    switch (preOrPost) {
-      case BEFORE:
-        return getPreconditionsForExpression(className, methodElement, expression, declaredType);
-      case AFTER:
-        return getPostconditionsForExpression(className, methodElement, expression, declaredType);
-      default:
-        throw new BugInCF("Unexpected " + preOrPost);
-    }
+    return switch (preOrPost) {
+      case BEFORE ->
+          getPreconditionsForExpression(className, methodElement, expression, declaredType);
+      case AFTER ->
+          getPostconditionsForExpression(className, methodElement, expression, declaredType);
+      default -> throw new BugInCF("Unexpected " + preOrPost);
+    };
   }
 
   /**
@@ -599,9 +587,8 @@ public class WholeProgramInferenceScenesStorage
     TypeMirror rhsTM = rhsATM.getUnderlyingType();
     AnnotatedTypeMirror atmFromScene = atmFromStorageLocation(rhsTM, type);
     updateAtmWithLub(rhsATM, atmFromScene);
-    if (lhsATM instanceof AnnotatedTypeVariable) {
-      AnnotationMirrorSet upperAnnos =
-          ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
+    if (lhsATM instanceof AnnotatedTypeVariable atv) {
+      AnnotationMirrorSet upperAnnos = atv.getUpperBound().getAnnotations();
       // If the inferred type is a subtype of the upper bounds of the
       // current type on the source code, halt.
       if (upperAnnos.size() == rhsATM.getPrimaryAnnotations().size()
@@ -627,14 +614,14 @@ public class WholeProgramInferenceScenesStorage
   private void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror jaifATM) {
 
     switch (sourceCodeATM.getKind()) {
-      case TYPEVAR:
+      case TYPEVAR -> {
         updateAtmWithLub(
             ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
             ((AnnotatedTypeVariable) jaifATM).getLowerBound());
         updateAtmWithLub(
             ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
             ((AnnotatedTypeVariable) jaifATM).getUpperBound());
-        break;
+      }
       //        case WILDCARD:
       // Because inferring type arguments is not supported, wildcards won't be encoutered
       //            updateAtmWithLub(((AnnotatedWildcardType)
@@ -644,19 +631,15 @@ public class WholeProgramInferenceScenesStorage
       //            updateAtmWithLub(((AnnotatedWildcardType)
       // sourceCodeATM).getSuperBound(),
       //                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
-      //            break;
-      case ARRAY:
-        updateAtmWithLub(
-            ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
-            ((AnnotatedArrayType) jaifATM).getComponentType());
-        break;
+      case ARRAY ->
+          updateAtmWithLub(
+              ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
+              ((AnnotatedArrayType) jaifATM).getComponentType());
       // case DECLARED:
       // inferring annotations on type arguments is not supported, so no need to recur on
       // generic types. If this was every implemented, this method would need VisitHistory
       // object to prevent infinite recursion on types such as T extends List<T>.
-      default:
-        // ATM only has primary annotations
-        break;
+      default -> {} // ATM only has primary annotations
     }
 
     // LUB primary annotations
@@ -935,8 +918,7 @@ public class WholeProgramInferenceScenesStorage
     // Only update the ATypeElement if there are no explicit annotations.
     if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
       for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
-        addAnnotationsToATypeElement(
-            newATM, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
+        addAnnotationsToATypeElement(newATM, typeToUpdate, defLoc, am, curATM.hasAnnotation(am));
       }
     } else if (curATM.getKind() == TypeKind.TYPEVAR) {
       // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
@@ -949,8 +931,7 @@ public class WholeProgramInferenceScenesStorage
           // in the same hierarchy.
           break;
         }
-        addAnnotationsToATypeElement(
-            newATM, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
+        addAnnotationsToATypeElement(newATM, typeToUpdate, defLoc, am, curATM.hasAnnotation(am));
       }
     }
 
@@ -981,11 +962,8 @@ public class WholeProgramInferenceScenesStorage
       // that should not be inserted in source code
       String firstKey = aTypeElementToString(typeToUpdate);
       IPair<String, TypeUseLocation> key = IPair.of(firstKey, defLoc);
-      Set<String> annosIgnored = annosToIgnore.get(key);
-      if (annosIgnored == null) {
-        annosIgnored = new HashSet<>(MapsP.mapCapacity(1));
-        annosToIgnore.put(key, annosIgnored);
-      }
+      Set<String> annosIgnored =
+          annosToIgnore.computeIfAbsent(key, k -> new HashSet<>(MapsP.mapCapacity(1)));
       annosIgnored.add(anno.def().toString());
     }
   }

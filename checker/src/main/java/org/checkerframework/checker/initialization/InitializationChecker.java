@@ -36,8 +36,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
   public static List<VariableTree> getAllFields(ClassTree clazz) {
     List<VariableTree> fields = new ArrayList<>();
     for (Tree t : clazz.getMembers()) {
-      if (t instanceof VariableTree) {
-        VariableTree vt = (VariableTree) t;
+      if (t instanceof VariableTree vt) {
         fields.add(vt);
       }
     }

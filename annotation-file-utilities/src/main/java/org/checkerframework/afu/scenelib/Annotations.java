@@ -87,29 +87,21 @@ public abstract class Annotations {
   }
 
   public static Annotation getRetentionPolicyMetaAnnotation(RetentionPolicy rp) {
-    switch (rp) {
-      case CLASS:
-        return aRetentionClass;
-      case RUNTIME:
-        return aRetentionRuntime;
-      case SOURCE:
-        return aRetentionSource;
-      default:
-        throw new Error("This can't happen");
-    }
+    return switch (rp) {
+      case CLASS -> aRetentionClass;
+      case RUNTIME -> aRetentionRuntime;
+      case SOURCE -> aRetentionSource;
+      default -> throw new Error("This can't happen");
+    };
   }
 
   public static Set<Annotation> getRetentionPolicyMetaAnnotationSet(RetentionPolicy rp) {
-    switch (rp) {
-      case CLASS:
-        return asRetentionClass;
-      case RUNTIME:
-        return asRetentionRuntime;
-      case SOURCE:
-        return asRetentionSource;
-      default:
-        throw new Error("This can't happen");
-    }
+    return switch (rp) {
+      case CLASS -> asRetentionClass;
+      case RUNTIME -> asRetentionRuntime;
+      case SOURCE -> asRetentionSource;
+      default -> throw new Error("This can't happen");
+    };
   }
 
   static {
@@ -163,7 +155,7 @@ public abstract class Annotations {
             createValueAnnotation(adTarget, Arrays.asList("TYPE_USE", "TYPE_PARAMETER")),
             createValueAnnotation(adTarget, Arrays.asList("TYPE_PARAMETER", "TYPE_USE")));
 
-    typeQualifierMetaAnnotations = new HashSet<Annotation>();
+    typeQualifierMetaAnnotations = new HashSet<>();
     typeQualifierMetaAnnotations.add(aRetentionRuntime);
     typeQualifierMetaAnnotations.add(aTargetTypeUse);
 
@@ -175,7 +167,7 @@ public abstract class Annotations {
             "'NonNull' in org/checkerframework/afu/scenelib/annotations/Annotations");
     aNonNull = new Annotation(adNonNull, noFieldValues);
 
-    standardDefs = new LinkedHashSet<AnnotationDef>();
+    standardDefs = new LinkedHashSet<>();
     standardDefs.add(adTarget);
     standardDefs.add(adDocumented);
     standardDefs.add(adRetention);
@@ -220,8 +212,7 @@ public abstract class Annotations {
           throw new IllegalArgumentException("annotation has no field value");
         }
 
-        if (fieldType instanceof ArrayAFT) {
-          ArrayAFT aFieldType = (ArrayAFT) fieldType;
+        if (fieldType instanceof ArrayAFT aFieldType) {
           ArrayBuilder arrb = ab.beginArrayField(fieldName, aFieldType);
           List<? extends Object> l = (List<? extends Object>) fieldValue;
           ScalarAFT nnElementType;

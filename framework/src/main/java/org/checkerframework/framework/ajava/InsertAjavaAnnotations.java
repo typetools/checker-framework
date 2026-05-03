@@ -52,6 +52,7 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.stub.AnnotationFileParser;
@@ -102,12 +103,13 @@ public class InsertAjavaAnnotations {
               Collections.emptyList(),
               null,
               Collections.emptyList());
-      if (!(cTask instanceof JavacTask)) {
+      if (!(cTask instanceof JavacTask javacTask)) {
         System.err.println("Could not get a valid JavacTask: " + cTask.getClass());
         System.exit(1);
+        throw new AssertionError("unreachable");
       }
 
-      return ((JavacTask) cTask).getElements();
+      return javacTask.getElements();
     } catch (IOException e) {
       throw new Error(e);
     }
@@ -199,7 +201,7 @@ public class InsertAjavaAnnotations {
      * @param destFileContents the String the second vistide AST was parsed from
      * @param lineSeparator the line separator that {@code destFileContents} uses
      */
-    public BuildInsertionsVisitor(String destFileContents, String lineSeparator) {
+    public BuildInsertionsVisitor(String destFileContents, @Regex String lineSeparator) {
       allAnnotations = null;
       String[] lines = destFileContents.split(lineSeparator);
       this.lines = Arrays.asList(lines);
@@ -215,10 +217,9 @@ public class InsertAjavaAnnotations {
 
     @Override
     public void defaultAction(Node src, Node dest) {
-      if (!(src instanceof NodeWithAnnotations<?>)) {
+      if (!(src instanceof NodeWithAnnotations<?> srcWithAnnos)) {
         return;
       }
-      NodeWithAnnotations<?> srcWithAnnos = (NodeWithAnnotations<?>) src;
 
       // If `src` is a declaration, its annotations are declaration annotations.
       if (src instanceof MethodDeclaration) {
@@ -231,10 +232,10 @@ public class InsertAjavaAnnotations {
 
       // `src`'s annotations are type annotations.
       Position position;
-      if (dest instanceof ClassOrInterfaceType) {
+      if (dest instanceof ClassOrInterfaceType coit) {
         // In a multi-part name like my.package.MyClass, type annotations go directly in
         // front of MyClass instead of the full name.
-        position = ((ClassOrInterfaceType) dest).getName().getBegin().get();
+        position = coit.getName().getBegin().get();
       } else {
         position = dest.getBegin().get();
       }
@@ -318,12 +319,8 @@ public class InsertAjavaAnnotations {
           lineBreaksBeforeFirstImport = 0;
         }
 
-        String insertionContent = "";
-        // In Java 11, use String::repeat.
-        for (int i = 0; i < lineBreaksBeforeFirstImport; i++) {
-          insertionContent += lineSeparator;
-        }
-        insertionContent += String.join("", newImports);
+        String insertionContent =
+            lineSeparator.repeat(lineBreaksBeforeFirstImport) + String.join("", newImports);
 
         insertions.add(new Insertion(position, insertionContent));
       }
@@ -482,14 +479,15 @@ public class InsertAjavaAnnotations {
    * with contents {@code javaFileContents} that uses the given line separator and returns the
    * resulting String.
    *
-   * @param annotationFile input stream for an ajava file for {@code javaFileContents}
+   * @param annotationFile input stream for an ajava file that corresponds to {@code
+   *     javaFileContents}
    * @param javaFileContents contents of a Java file to insert annotations into
    * @param lineSeparator the line separator {@code javaFileContents} uses
    * @return a modified {@code javaFileContents} with annotations from {@code annotationFile}
    *     inserted
    */
   public String insertAnnotations(
-      InputStream annotationFile, String javaFileContents, String lineSeparator) {
+      InputStream annotationFile, String javaFileContents, @Regex String lineSeparator) {
     CompilationUnit annotationCu = JavaParserUtil.parseCompilationUnit(annotationFile);
     CompilationUnit javaCu = JavaParserUtil.parseCompilationUnit(javaFileContents);
     BuildInsertionsVisitor insertionVisitor =
@@ -545,7 +543,8 @@ public class InsertAjavaAnnotations {
     try {
       File javaFile = new File(javaFileName);
       String fileContents = FilesPlume.readString(Path.of(javaFileName));
-      String lineSeparator = FilesPlume.inferLineSeparator(annotationFileName);
+      @SuppressWarnings("regex") // next release of plume-lib annotates `inferLineSeparator()`
+      @Regex String lineSeparator = FilesPlume.inferLineSeparator(javaFileName);
       try (FileInputStream annotationInputStream = new FileInputStream(annotationFileName)) {
         String result = insertAnnotations(annotationInputStream, fileContents, lineSeparator);
         FilesPlume.writeString(javaFile, result);
