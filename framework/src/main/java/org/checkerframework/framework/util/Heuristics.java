@@ -108,8 +108,7 @@ public class Heuristics {
       assert p.getLeaf() == stmt;
 
       while (p != null && p.getLeaf() instanceof StatementTree) {
-        if (p.getParentPath().getLeaf() instanceof BlockTree) {
-          BlockTree block = (BlockTree) p.getParentPath().getLeaf();
+        if (p.getParentPath().getLeaf() instanceof BlockTree block) {
           for (StatementTree st : block.getStatements()) {
             if (st == p.getLeaf()) {
               break;
@@ -181,8 +180,7 @@ public class Heuristics {
     public boolean match(TreePath path) {
       TreePath prev = path, p = path.getParentPath();
       while (p != null) {
-        if (p.getLeaf() instanceof IfTree) {
-          IfTree ifTree = (IfTree) p.getLeaf();
+        if (p.getLeaf() instanceof IfTree ifTree) {
           ExpressionTree cond = TreeUtils.withoutParens(ifTree.getCondition());
           if (ifTree.getThenStatement() == prev.getLeaf() && matcher.match(new TreePath(p, cond))) {
             return true;

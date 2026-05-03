@@ -108,7 +108,7 @@ public class AField extends ADeclaration {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof AField && equalsField((AField) o);
+    return o instanceof AField aField && equalsField(aField);
   }
 
   /**
@@ -158,7 +158,7 @@ public class AField extends ADeclaration {
     return new VivifyingMap<K, AField>(new LinkedHashMap<>()) {
       @Override
       public AField createValueFor(K k) {
-        return new AField("" + k);
+        return new AField(k.toString());
       }
 
       @Override

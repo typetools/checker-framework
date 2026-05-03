@@ -62,7 +62,7 @@ public class CFGTranslationPhaseTwo {
     int i = 0;
     for (ExtendedNode node : nodeList) {
       switch (node.getType()) {
-        case NODE:
+        case NODE -> {
           if (leaders.contains(i)) {
             RegularBlockImpl b = new RegularBlockImpl();
             block.setSuccessor(b);
@@ -78,58 +78,56 @@ public class CFGTranslationPhaseTwo {
             block.setSuccessor(exceptionalExitBlock);
             block = new RegularBlockImpl();
           }
-          break;
-        case CONDITIONAL_JUMP:
-          {
-            ConditionalJump cj = (ConditionalJump) node;
-            // Exception nodes may fall through to conditional jumps, so we set the
-            // block which is required for the insertion of missing edges.
-            node.setBlock(block);
-            assert block != null;
-            ConditionalBlockImpl cb = new ConditionalBlockImpl();
-            if (cj.getTrueFlowRule() != null) {
-              cb.setThenFlowRule(cj.getTrueFlowRule());
-            }
-            if (cj.getFalseFlowRule() != null) {
-              cb.setElseFlowRule(cj.getFalseFlowRule());
-            }
-            block.setSuccessor(cb);
-            block = new RegularBlockImpl();
-
-            // use two anonymous SingleSuccessorBlockImpl that set the
-            // 'then' and 'else' successor of the conditional block
-            Label thenLabel = cj.getThenLabel();
-            Label elseLabel = cj.getElseLabel();
-            Integer target = bindings.get(thenLabel);
-            assert target != null;
-            missingEdges.add(
-                new MissingEdge(
-                    new RegularBlockImpl() {
-                      @Override
-                      public void setSuccessor(BlockImpl successor) {
-                        cb.setThenSuccessor(successor);
-                      }
-                    },
-                    target));
-            target = bindings.get(elseLabel);
-            if (target == null) {
-              throw new BugInCF(
-                  String.format(
-                      "in conditional jump %s, no binding for elseLabel %s: %s",
-                      cj, elseLabel, bindings));
-            }
-            missingEdges.add(
-                new MissingEdge(
-                    new RegularBlockImpl() {
-                      @Override
-                      public void setSuccessor(BlockImpl successor) {
-                        cb.setElseSuccessor(successor);
-                      }
-                    },
-                    target));
-            break;
+        }
+        case CONDITIONAL_JUMP -> {
+          ConditionalJump cj = (ConditionalJump) node;
+          // Exception nodes may fall through to conditional jumps, so we set the
+          // block which is required for the insertion of missing edges.
+          node.setBlock(block);
+          assert block != null;
+          ConditionalBlockImpl cb = new ConditionalBlockImpl();
+          if (cj.getTrueFlowRule() != null) {
+            cb.setThenFlowRule(cj.getTrueFlowRule());
           }
-        case UNCONDITIONAL_JUMP:
+          if (cj.getFalseFlowRule() != null) {
+            cb.setElseFlowRule(cj.getFalseFlowRule());
+          }
+          block.setSuccessor(cb);
+          block = new RegularBlockImpl();
+
+          // use two anonymous SingleSuccessorBlockImpl that set the
+          // 'then' and 'else' successor of the conditional block
+          Label thenLabel = cj.getThenLabel();
+          Label elseLabel = cj.getElseLabel();
+          Integer target = bindings.get(thenLabel);
+          assert target != null;
+          missingEdges.add(
+              new MissingEdge(
+                  new RegularBlockImpl() {
+                    @Override
+                    public void setSuccessor(BlockImpl successor) {
+                      cb.setThenSuccessor(successor);
+                    }
+                  },
+                  target));
+          target = bindings.get(elseLabel);
+          if (target == null) {
+            throw new BugInCF(
+                String.format(
+                    "in conditional jump %s, no binding for elseLabel %s: %s",
+                    cj, elseLabel, bindings));
+          }
+          missingEdges.add(
+              new MissingEdge(
+                  new RegularBlockImpl() {
+                    @Override
+                    public void setSuccessor(BlockImpl successor) {
+                      cb.setElseSuccessor(successor);
+                    }
+                  },
+                  target));
+        }
+        case UNCONDITIONAL_JUMP -> {
           UnconditionalJump uj = (UnconditionalJump) node;
           if (leaders.contains(i)) {
             RegularBlockImpl b = new RegularBlockImpl();
@@ -148,8 +146,8 @@ public class CFGTranslationPhaseTwo {
             missingEdges.add(new MissingEdge(block, target, uj.getFlowRule()));
           }
           block = new RegularBlockImpl();
-          break;
-        case EXCEPTION_NODE:
+        }
+        case EXCEPTION_NODE -> {
           NodeWithExceptionsHolder en = (NodeWithExceptionsHolder) node;
           // create new exception block and link with previous block
           ExceptionBlockImpl e = new ExceptionBlockImpl();
@@ -176,7 +174,7 @@ public class CFGTranslationPhaseTwo {
               missingExceptionalEdges.add(new MissingEdge(e, target, cause));
             }
           }
-          break;
+        }
       }
       i++;
     }
@@ -208,8 +206,8 @@ public class CFGTranslationPhaseTwo {
         BlockImpl target = extendedNode.getBlock();
         List<Node> targetNodes = target.getNodes();
         Node firstNode = targetNodes.isEmpty() ? null : targetNodes.get(0);
-        if (firstNode instanceof CatchMarkerNode) {
-          TypeMirror catchType = ((CatchMarkerNode) firstNode).getCatchType();
+        if (firstNode instanceof CatchMarkerNode catchMarkerNode) {
+          TypeMirror catchType = catchMarkerNode.getCatchType();
           if (in.types.isSubtype(catchType, cause)) {
             cause = catchType;
           }

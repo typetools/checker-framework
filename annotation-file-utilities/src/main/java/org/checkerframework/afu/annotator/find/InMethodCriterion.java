@@ -63,8 +63,7 @@ final class InMethodCriterion implements Criterion {
         Criteria.dbug.debug("InMethodCriterion.isSatisfiedBy => %s%n", b);
         return b;
       }
-      if (leaf instanceof VariableTree) { // variable declaration
-        VariableTree varDecl = (VariableTree) leaf;
+      if (leaf instanceof VariableTree varDecl) { // variable declaration
         @SuppressWarnings("interning:not.interned") // reference equality check
         boolean found = childPath != null && childPath.getLeaf() == varDecl.getInitializer();
         if (found) {

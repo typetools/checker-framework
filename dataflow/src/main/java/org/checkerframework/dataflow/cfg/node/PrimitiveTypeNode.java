@@ -44,10 +44,9 @@ public class PrimitiveTypeNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof PrimitiveTypeNode)) {
+    if (!(obj instanceof PrimitiveTypeNode other)) {
       return false;
     }
-    PrimitiveTypeNode other = (PrimitiveTypeNode) obj;
     return types.isSameType(getType(), other.getType());
   }
 

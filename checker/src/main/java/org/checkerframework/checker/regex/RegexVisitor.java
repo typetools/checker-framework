@@ -72,8 +72,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
     ProcessingEnvironment env = checker.getProcessingEnvironment();
     if (TreeUtils.isMethodInvocation(tree, patternCompile, env)) {
       ExpressionTree flagParam = tree.getArguments().get(1);
-      if (flagParam instanceof MemberSelectTree) {
-        MemberSelectTree memSelect = (MemberSelectTree) flagParam;
+      if (flagParam instanceof MemberSelectTree memSelect) {
         if (TreeUtils.isSpecificFieldAccess(memSelect, patternLiteral)) {
           // This is a call to Pattern.compile with the Pattern.LITERAL flag so the first
           // parameter doesn't need to be a @Regex String. Don't call the super method to

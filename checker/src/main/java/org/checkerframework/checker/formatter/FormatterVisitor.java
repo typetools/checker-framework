@@ -45,7 +45,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
   public void processMethodTree(String className, MethodTree tree) {
     ExecutableElement methodElement = TreeUtils.elementFromDeclaration(tree);
     if (atypeFactory.getDeclAnnotation(methodElement, FormatMethod.class) != null) {
-      int formatStringIndex = FormatterVisitor.formatStringIndex(methodElement);
+      int formatStringIndex = formatStringIndex(methodElement);
       if (formatStringIndex == -1) {
         checker.reportError(tree, "format.method", methodElement.getSimpleName());
       }
@@ -127,7 +127,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             if (!isWrappedFormatCall(fc, enclosingMethod)) {
               ftu.warning(invc, "format.indirect.arguments");
             }
-          // TODO:  If it is explict array construction, such as "new Object[] {
+          // TODO:  If it is explicit array construction, such as "new Object[] {
           // ... }", then we could treat it like the VARARGS case, analyzing each
           // argument.  "new array" is probably rare, in the varargs position.
           // fall through
@@ -223,11 +223,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     }
     while (paramIndex < params.size()) {
       ExpressionTree argTree = args.get(callIndex);
-      if (!(argTree instanceof IdentifierTree)) {
+      if (!(argTree instanceof IdentifierTree argIt)) {
         return false;
       }
       VariableTree param = params.get(paramIndex);
-      if (param.getName() != ((IdentifierTree) argTree).getName()) {
+      if (param.getName() != argIt.getName()) {
         return false;
       }
       paramIndex++;
@@ -260,11 +260,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
   protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
-      Tree valueTree,
+      Tree errorLocation,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
     boolean result =
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+        super.commonAssignmentCheck(varType, valueType, errorLocation, errorKey, extraArgs);
 
     AnnotationMirror rhs = valueType.getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
     AnnotationMirror lhs = varType.getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
@@ -282,7 +282,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
 
       if (rhsArgTypes.length < lhsArgTypes.length) {
         checker.reportWarning(
-            valueTree, "format.missing.arguments", varType.toString(), valueType.toString());
+            errorLocation, "format.missing.arguments", varType.toString(), valueType.toString());
         result = false;
       }
     }

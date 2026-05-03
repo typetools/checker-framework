@@ -109,7 +109,7 @@ public class AClass extends ADeclaration {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof AClass && ((AClass) o).equalsClass(this);
+    return o instanceof AClass aClass && aClass.equalsClass(this);
   }
 
   final boolean equalsClass(AClass o) {
@@ -229,7 +229,7 @@ public class AClass extends ADeclaration {
     return new VivifyingMap<Integer, ABlock>(new LinkedHashMap<>()) {
       @Override
       public ABlock createValueFor(Integer k) {
-        return new ABlock("" + k);
+        return new ABlock(String.valueOf(k));
       }
 
       @Override

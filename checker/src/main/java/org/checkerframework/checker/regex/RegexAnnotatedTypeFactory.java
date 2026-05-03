@@ -492,13 +492,13 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       AnnotationMirror primaryRegexAnno = type.getPrimaryAnnotation(Regex.class);
       if (primaryRegexAnno == null) {
         switch (type.getKind()) {
-          case TYPEVAR:
+          case TYPEVAR -> {
             return getMinimumRegexCount(((AnnotatedTypeVariable) type).getUpperBound());
-
-          case WILDCARD:
+          }
+          case WILDCARD -> {
             return getMinimumRegexCount(((AnnotatedWildcardType) type).getExtendsBound());
-
-          case INTERSECTION:
+          }
+          case INTERSECTION -> {
             Integer maxBound = null;
             for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) type).getBounds()) {
               Integer boundRegexNum = getMinimumRegexCount(bound);
@@ -509,8 +509,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
               }
             }
             return maxBound;
-          default:
-            // Nothing to do for other cases.
+          }
+          default -> {} // Nothing to do for other cases.
         }
 
         return null;

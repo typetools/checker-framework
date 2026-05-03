@@ -57,10 +57,9 @@ public class SynchronizedNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof SynchronizedNode)) {
+    if (!(obj instanceof SynchronizedNode other)) {
       return false;
     }
-    SynchronizedNode other = (SynchronizedNode) obj;
     return Objects.equals(getTree(), other.getTree())
         && getExpression().equals(other.getExpression())
         && startOfBlock == other.startOfBlock;

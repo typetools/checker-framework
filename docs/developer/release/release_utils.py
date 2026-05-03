@@ -19,7 +19,7 @@ import subprocess
 import urllib.request
 from pathlib import Path
 
-from release_vars import (  # ty: ignore # TODO: limitation in ty
+from release_vars import (
     execute,
     execute_output,
     execute_status,
@@ -476,16 +476,11 @@ def read_first_line(file_path: Path) -> str:
     return first_line
 
 
-def ensure_group_access(path: Path) -> None:
-    """Give group access to all files and directories under the specified path."""
-    # Errs for any file not owned by this user.
+def ensure_writeable(path: Path) -> None:
+    """Permit user and group to read/write everything under the specified path."""
+    # Ignore errors.  It errs for any file not owned by this user.
     # But, the point is to set group writeability of any *new* files.
-    execute(f"chmod -f -R g+rw {path}")
-
-
-def ensure_user_access(path: Path) -> None:
-    """Give the user access to all files and directories under the specified path."""
-    execute(f"chmod -f -R u+rwx {path}")
+    execute_status(f"chmod -f -R ug+rw {path}")
 
 
 def set_umask() -> None:
@@ -506,7 +501,7 @@ def delete_if_exists(file_to_delete: Path) -> None:
 
 def delete_directory(path: Path) -> None:
     """Delete all files and directories under the specified path."""
-    ensure_group_access(path)
+    ensure_writeable(path)
     shutil.rmtree(path)
 
 

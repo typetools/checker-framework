@@ -38,10 +38,9 @@ public class NumericalAdditionNode extends BinaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof NumericalAdditionNode)) {
+    if (!(obj instanceof NumericalAdditionNode other)) {
       return false;
     }
-    NumericalAdditionNode other = (NumericalAdditionNode) obj;
     return getLeftOperand().equals(other.getLeftOperand())
         && getRightOperand().equals(other.getRightOperand());
   }

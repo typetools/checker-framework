@@ -3,19 +3,6 @@ plugins {
   id("base")
 }
 
-
-java {
-  // This test is for whether the Checker Framework runs under Java 8.
-  // Currently, the Checker Framework does run under Java 8.
-  if (true /* runs under Java 8 */) {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-  } else {
-    sourceCompatibility = 11
-    targetCompatibility = 11
-  }
-}
-
 dependencies {
   // Annotations in checker-qual.jar are used, but no checkers are (currently) run on the code.
   compileOnly(project(":checker-qual"))

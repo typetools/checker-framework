@@ -145,8 +145,7 @@ public abstract class DoubleAnnotatedTypeScanner<R>
     visitedNodes.put(type, null);
 
     R r;
-    if (p instanceof AnnotatedTypeVariable) {
-      AnnotatedTypeVariable tv = (AnnotatedTypeVariable) p;
+    if (p instanceof AnnotatedTypeVariable tv) {
       r = scan(type.getLowerBound(), tv.getLowerBound());
       visitedNodes.put(type, r);
       r = scanAndReduce(type.getUpperBound(), tv.getUpperBound(), r);
@@ -168,8 +167,7 @@ public abstract class DoubleAnnotatedTypeScanner<R>
     visitedNodes.put(type, null);
 
     R r;
-    if (p instanceof AnnotatedWildcardType) {
-      AnnotatedWildcardType w = (AnnotatedWildcardType) p;
+    if (p instanceof AnnotatedWildcardType w) {
       r = scan(type.getExtendsBound(), w.getExtendsBound());
       visitedNodes.put(type, r);
       r = scanAndReduce(type.getSuperBound(), w.getSuperBound(), r);
