@@ -693,6 +693,7 @@ You may need to log out and log back in for the setting to take effect.
 
 \begin{description}
 \item[Ubuntu]
+\label{building-prerequisites-ubuntu}
   Run the following commands, which should be the same as those in
   \<checker/bin-devel/Dockerfile-ubuntu-jdk\emph{XX}-plus>, where \emph{XX}
   is a JDK version such as 17, 21, 25, etc.:
@@ -780,6 +781,7 @@ In a startup file, write:
 %END LATEX
 
 \item[macOS]
+\label{building-prerequisites-macos}
   If you employ \href{https://brew.sh}{homebrew} to install packages, run
   the following commands:
 
@@ -798,7 +800,7 @@ Make a \<latex> directory and copy \<hevea.sty> file into it.
 
 \begin{Verbatim}
 mkdir -p $HOME/Library/texmf/tex/latex
-cp -p /opt/homebrew/Cellar/hevea/2.36/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
+cp -p /opt/homebrew/Cellar/hevea/2.38/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
 \end{Verbatim}
 
 Note: If copy permission is denied, try \<sudo>.

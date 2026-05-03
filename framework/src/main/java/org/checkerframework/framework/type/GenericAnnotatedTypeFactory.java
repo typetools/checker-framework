@@ -1396,6 +1396,7 @@ public abstract class GenericAnnotatedTypeFactory<
               methods.add(method);
             }
             case VARIABLE -> {
+              // A top-level variable is a field.
               VariableTree vt = (VariableTree) m;
               ExpressionTree initializer = vt.getInitializer();
               AnnotatedTypeMirror declaredType = getAnnotatedTypeLhs(vt);
@@ -1412,8 +1413,8 @@ public abstract class GenericAnnotatedTypeFactory<
                         new CFGStatement(vt, ct),
                         fieldValues,
                         null,
-                        true,
-                        true,
+                        /* isInitializationCode= */ true,
+                        /* updateInitializationStore= */ true,
                         isStatic,
                         capturedStore);
                 postAnalyze(cfg);
