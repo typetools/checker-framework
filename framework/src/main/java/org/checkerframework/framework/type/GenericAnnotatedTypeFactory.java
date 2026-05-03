@@ -196,7 +196,8 @@ public abstract class GenericAnnotatedTypeFactory<
   public final @Nullable Set<TypeMirror> relevantJavaTypes;
 
   /**
-   * The fully-qualified names <b>and</b> simple names of the types in {@link #relevantJavaTypes}.
+   * True if users may write type annotations on arrays. Ignored unless {@link #relevantJavaTypes}
+   * is non-null.
    */
   public final @Nullable Set<String> relevantJavaTypeNames;
 
