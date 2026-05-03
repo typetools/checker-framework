@@ -43,10 +43,9 @@ public class AnnotatedTypeParameterBounds {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof AnnotatedTypeParameterBounds)) {
+    if (!(obj instanceof AnnotatedTypeParameterBounds other)) {
       return false;
     }
-    AnnotatedTypeParameterBounds other = (AnnotatedTypeParameterBounds) obj;
     return this.upper == null
         ? other.upper == null
         : (this.upper.equals(other.upper) && this.lower == null)

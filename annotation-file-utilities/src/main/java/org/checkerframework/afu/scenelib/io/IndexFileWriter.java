@@ -128,8 +128,8 @@ public final class IndexFileWriter {
    */
   private void printAnnotations(AElement e) {
     printAnnotations(e.tlAnnotationsHere);
-    if (e instanceof AMethod) {
-      printAnnotations(((AMethod) e).contracts);
+    if (e instanceof AMethod aMethod) {
+      printAnnotations(aMethod.contracts);
     }
   }
 
@@ -332,20 +332,20 @@ public final class IndexFileWriter {
 
   private void printType(Type type) {
     switch (type.getKind()) {
-      case ARRAY:
+      case ARRAY -> {
         ArrayType a = (ArrayType) type;
         printType(a.getComponentType());
         pw.print("[]");
-        break;
-      case BOUNDED:
+      }
+      case BOUNDED -> {
         BoundedType b = (BoundedType) type;
         printType(b.getName());
         pw.print(" ");
         pw.print(b.getBoundKind());
         pw.print(" ");
         printType(b.getBound());
-        break;
-      case DECLARED:
+      }
+      case DECLARED -> {
         DeclaredType d = (DeclaredType) type;
         pw.print(d.getName());
         if (!d.isWildcard()) {
@@ -368,7 +368,7 @@ public final class IndexFileWriter {
             printType(inner);
           }
         }
-        break;
+      }
     }
   }
 
@@ -501,22 +501,6 @@ public final class IndexFileWriter {
     sb.append(")");
   }
 
-  // TODO: Why isn't this just aft.format(o)??
-  /**
-   * Formats a literal argument of an annotation. Public to permit re-use in stub-based
-   * whole-program inference.
-   *
-   * @param aft the type of the annotation field
-   * @param o the value or values to format
-   * @return the String representation of the value
-   */
-  @Deprecated // TEMPORORY
-  public static String formatAnnotationValue(AnnotationFieldType aft, Object o) {
-    StringBuilder sb = new StringBuilder();
-    formatAnnotationValue(sb, aft, o);
-    return sb.toString();
-  }
-
   /**
    * Formats a literal argument of an annotation. Public to permit re-use in stub-based
    * whole-program inference.
@@ -528,8 +512,7 @@ public final class IndexFileWriter {
   public static void formatAnnotationValue(StringBuilder sb, AnnotationFieldType aft, Object o) {
     if (aft instanceof AnnotationAFT) {
       formatAnnotation(sb, (Annotation) o);
-    } else if (aft instanceof ArrayAFT) {
-      ArrayAFT aaft = (ArrayAFT) aft;
+    } else if (aft instanceof ArrayAFT aaft) {
       List<?> l = (List<?>) o;
       sb.append("{");
       if (aaft.elementType == null) {
@@ -550,8 +533,8 @@ public final class IndexFileWriter {
       sb.append("}");
     } else if (aft instanceof ClassTokenAFT) {
       aft.format(sb, o);
-    } else if (aft instanceof BasicAFT && o instanceof String) {
-      sb.append(Strings.escape((String) o));
+    } else if (aft instanceof BasicAFT && o instanceof String s) {
+      sb.append(Strings.escape(s));
     } else if (aft instanceof BasicAFT && o instanceof Long) {
       sb.append(o.toString());
       sb.append("L");

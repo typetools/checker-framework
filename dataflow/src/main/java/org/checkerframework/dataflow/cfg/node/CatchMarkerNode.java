@@ -50,10 +50,9 @@ public class CatchMarkerNode extends MarkerNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof CatchMarkerNode)) {
+    if (!(obj instanceof CatchMarkerNode other)) {
       return false;
     }
-    CatchMarkerNode other = (CatchMarkerNode) obj;
     return types.isSameType(getCatchType(), other.getCatchType()) && super.equals(other);
   }
 

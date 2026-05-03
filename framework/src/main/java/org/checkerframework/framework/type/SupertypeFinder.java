@@ -2,6 +2,7 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -325,7 +326,7 @@ final class SupertypeFinder {
                 atypeFactory.getAnnotatedTypeFromTypeTree(classTree.getExtendsClause());
         supertypes.add(adt);
       } else if (!ElementUtils.isObject(TreeUtils.elementFromDeclaration(classTree))) {
-        if (classTree.getKind().name().contentEquals("RECORD")) {
+        if (classTree.getKind() == Kind.RECORD) {
           supertypes.add(AnnotatedTypeMirror.createTypeOfRecord(atypeFactory));
         } else {
           supertypes.add(AnnotatedTypeMirror.createTypeOfObject(atypeFactory));

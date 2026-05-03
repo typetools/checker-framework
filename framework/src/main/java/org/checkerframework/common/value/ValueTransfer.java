@@ -35,6 +35,7 @@ import org.checkerframework.dataflow.cfg.node.FloatingRemainderNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.IntegerDivisionNode;
+import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.IntegerRemainderNode;
 import org.checkerframework.dataflow.cfg.node.LeftShiftNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
@@ -137,8 +138,8 @@ public class ValueTransfer extends CFTransfer {
     TypeKind subNodeTypeKind = subNode.getType().getKind();
 
     // handle values converted to string (ints, longs, longs with @IntRange)
-    if (subNode instanceof StringConversionNode) {
-      return getStringLengthRange(((StringConversionNode) subNode).getOperand(), p);
+    if (subNode instanceof StringConversionNode scn) {
+      return getStringLengthRange(scn.getOperand(), p);
     } else if (isIntRange(subNode, p)) {
       return getIntRangeStringLengthRange(subNode, p);
     } else if (subNodeTypeKind == TypeKind.INT) {
@@ -175,8 +176,8 @@ public class ValueTransfer extends CFTransfer {
     TypeKind subNodeTypeKind = subNode.getType().getKind();
 
     // handle values converted to string (characters, bytes, shorts, ints with @IntRange)
-    if (subNode instanceof StringConversionNode) {
-      return getStringLengths(((StringConversionNode) subNode).getOperand(), p);
+    if (subNode instanceof StringConversionNode scn) {
+      return getStringLengths(scn.getOperand(), p);
     } else if (subNodeTypeKind == TypeKind.CHAR) {
       // characters always have length 1
       return Collections.singletonList(1);
@@ -214,14 +215,18 @@ public class ValueTransfer extends CFTransfer {
     }
     String annoName = AnnotationUtils.annotationName(anno);
     switch (annoName) {
-      case ValueAnnotatedTypeFactory.UNKNOWN_NAME:
+      case ValueAnnotatedTypeFactory.UNKNOWN_NAME -> {
         return null;
-      case ValueAnnotatedTypeFactory.BOTTOMVAL_NAME:
+      }
+      case ValueAnnotatedTypeFactory.BOTTOMVAL_NAME -> {
         return Collections.emptyList();
-      case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+      }
+      case ValueAnnotatedTypeFactory.STRINGVAL_NAME -> {
         return atypeFactory.getStringValues(anno);
-      default:
+      }
+      default -> {
         // Do nothing.
+      }
     }
 
     // @IntVal, @IntRange, @DoubleVal, @BoolVal (have to be converted to string)
@@ -230,8 +235,8 @@ public class ValueTransfer extends CFTransfer {
       values = getBooleanValues(subNode, p);
     } else if (subNode.getType().getKind() == TypeKind.CHAR) {
       values = getCharValues(subNode, p);
-    } else if (subNode instanceof StringConversionNode) {
-      return getStringValues(((StringConversionNode) subNode).getOperand(), p);
+    } else if (subNode instanceof StringConversionNode scn) {
+      return getStringValues(scn.getOperand(), p);
     } else if (isIntRange(subNode, p)) {
       Range range = getIntRange(subNode, p);
       List<Long> longValues = ValueCheckerUtils.getValuesFromRange(range, Long.class);
@@ -331,10 +336,19 @@ public class ValueTransfer extends CFTransfer {
   /**
    * Returns a list of possible values, or null if no estimate is available and any value is
    * possible.
+   *
+   * @param subNode the node whose value to look up
+   * @param p where to look up
+   * @return the possible values for the node
    */
   private @Nullable List<? extends Number> getNumericalValues(
       Node subNode, TransferInput<CFValue, CFStore> p) {
-    AnnotationMirror valueAnno = getValueAnnotation(subNode, p);
+    CFValue value = p.getValueOfSubNode(subNode);
+    // Because of crash when using `-Acfgviz=...,verbose`. TODO: fix.
+    if (value == null) {
+      return null;
+    }
+    AnnotationMirror valueAnno = getValueAnnotation(value);
     return getNumericalValues(subNode, valueAnno);
   }
 
@@ -409,7 +423,12 @@ public class ValueTransfer extends CFTransfer {
    */
   private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
     CFValue value = p.getValueOfSubNode(subNode);
-    return atypeFactory.isIntRange(value.getAnnotations());
+    try {
+      return atypeFactory.isIntRange(value.getAnnotations());
+    } catch (Exception e) {
+      // Because of crash when using `-Acfgviz=...,verbose`. TODO: fix.
+      return false;
+    }
   }
 
   /**
@@ -435,7 +454,12 @@ public class ValueTransfer extends CFTransfer {
     if (isIntRange(node, p)) {
       return true;
     }
-    return isIntegralUnknownVal(node, getValueAnnotation(p.getValueOfSubNode(node)));
+    CFValue cfValue = p.getValueOfSubNode(node);
+    // Because of crash when using `-Acfgviz=...,verbose`. TODO: fix.
+    if (cfValue == null) {
+      return false;
+    }
+    return isIntegralUnknownVal(node, getValueAnnotation(cfValue));
   }
 
   /**
@@ -637,8 +661,8 @@ public class ValueTransfer extends CFTransfer {
    *     null, or if this method is not precise enough
    */
   private boolean isNullable(Node node) {
-    if (node instanceof StringConversionNode) {
-      if (((StringConversionNode) node).getOperand().getType().getKind().isPrimitive()) {
+    if (node instanceof StringConversionNode scn) {
+      if (scn.getOperand().getType().getKind().isPrimitive()) {
         return false;
       }
     } else if (node instanceof StringLiteralNode) {
@@ -669,17 +693,13 @@ public class ValueTransfer extends CFTransfer {
           rightValues = CollectionsPlume.append(rightValues, "null");
         }
       } else {
-        if (leftOperand instanceof StringConversionNode) {
-          if (((StringConversionNode) leftOperand).getOperand().getType().getKind()
-              == TypeKind.NULL) {
-            leftValues = CollectionsPlume.append(leftValues, "null");
-          }
+        if (leftOperand instanceof StringConversionNode scn
+            && scn.getOperand().getType().getKind() == TypeKind.NULL) {
+          leftValues = CollectionsPlume.append(leftValues, "null");
         }
-        if (rightOperand instanceof StringConversionNode) {
-          if (((StringConversionNode) rightOperand).getOperand().getType().getKind()
-              == TypeKind.NULL) {
-            rightValues = CollectionsPlume.append(rightValues, "null");
-          }
+        if (rightOperand instanceof StringConversionNode scn
+            && scn.getOperand().getType().getKind() == TypeKind.NULL) {
+          rightValues = CollectionsPlume.append(rightValues, "null");
         }
       }
 
@@ -798,44 +818,21 @@ public class ValueTransfer extends CFTransfer {
         && TypesUtils.isIntegralPrimitive(rightNode.getType())) {
       Range leftRange = getIntRange(leftNode, p);
       Range rightRange = getIntRange(rightNode, p);
-      Range resultRange;
-      switch (op) {
-        case ADDITION:
-          resultRange = leftRange.plus(rightRange);
-          break;
-        case SUBTRACTION:
-          resultRange = leftRange.minus(rightRange);
-          break;
-        case MULTIPLICATION:
-          resultRange = leftRange.times(rightRange);
-          break;
-        case DIVISION:
-          resultRange = leftRange.divide(rightRange);
-          break;
-        case REMAINDER:
-          resultRange = leftRange.remainder(rightRange);
-          break;
-        case SHIFT_LEFT:
-          resultRange = leftRange.shiftLeft(rightRange);
-          break;
-        case SIGNED_SHIFT_RIGHT:
-          resultRange = leftRange.signedShiftRight(rightRange);
-          break;
-        case UNSIGNED_SHIFT_RIGHT:
-          resultRange = leftRange.unsignedShiftRight(rightRange);
-          break;
-        case BITWISE_AND:
-          resultRange = leftRange.bitwiseAnd(rightRange);
-          break;
-        case BITWISE_OR:
-          resultRange = leftRange.bitwiseOr(rightRange);
-          break;
-        case BITWISE_XOR:
-          resultRange = leftRange.bitwiseXor(rightRange);
-          break;
-        default:
-          throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
-      }
+      Range resultRange =
+          switch (op) {
+            case ADDITION -> leftRange.plus(rightRange);
+            case SUBTRACTION -> leftRange.minus(rightRange);
+            case MULTIPLICATION -> leftRange.times(rightRange);
+            case DIVISION -> leftRange.divide(rightRange);
+            case REMAINDER -> leftRange.remainder(rightRange);
+            case SHIFT_LEFT -> leftRange.shiftLeft(rightRange);
+            case SIGNED_SHIFT_RIGHT -> leftRange.signedShiftRight(rightRange);
+            case UNSIGNED_SHIFT_RIGHT -> leftRange.unsignedShiftRight(rightRange);
+            case BITWISE_AND -> leftRange.bitwiseAnd(rightRange);
+            case BITWISE_OR -> leftRange.bitwiseOr(rightRange);
+            case BITWISE_XOR -> leftRange.bitwiseXor(rightRange);
+            default -> throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
+          };
       // Any integral type with less than 32 bits would be promoted to 32-bit int type during
       // operations.
       return leftNode.getType().getKind() == TypeKind.LONG
@@ -860,47 +857,28 @@ public class ValueTransfer extends CFTransfer {
       NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
       for (Number right : rights) {
         switch (op) {
-          case ADDITION:
-            resultValues.add(nmLeft.plus(right));
-            break;
-          case DIVISION:
+          case ADDITION -> resultValues.add(nmLeft.plus(right));
+          case DIVISION -> {
             Number result = nmLeft.divide(right);
             if (result != null) {
               resultValues.add(result);
             }
-            break;
-          case MULTIPLICATION:
-            resultValues.add(nmLeft.times(right));
-            break;
-          case REMAINDER:
+          }
+          case MULTIPLICATION -> resultValues.add(nmLeft.times(right));
+          case REMAINDER -> {
             Number resultR = nmLeft.remainder(right);
             if (resultR != null) {
               resultValues.add(resultR);
             }
-            break;
-          case SUBTRACTION:
-            resultValues.add(nmLeft.minus(right));
-            break;
-          case SHIFT_LEFT:
-            resultValues.add(nmLeft.shiftLeft(right));
-            break;
-          case SIGNED_SHIFT_RIGHT:
-            resultValues.add(nmLeft.signedShiftRight(right));
-            break;
-          case UNSIGNED_SHIFT_RIGHT:
-            resultValues.add(nmLeft.unsignedShiftRight(right));
-            break;
-          case BITWISE_AND:
-            resultValues.add(nmLeft.bitwiseAnd(right));
-            break;
-          case BITWISE_OR:
-            resultValues.add(nmLeft.bitwiseOr(right));
-            break;
-          case BITWISE_XOR:
-            resultValues.add(nmLeft.bitwiseXor(right));
-            break;
-          default:
-            throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
+          }
+          case SUBTRACTION -> resultValues.add(nmLeft.minus(right));
+          case SHIFT_LEFT -> resultValues.add(nmLeft.shiftLeft(right));
+          case SIGNED_SHIFT_RIGHT -> resultValues.add(nmLeft.signedShiftRight(right));
+          case UNSIGNED_SHIFT_RIGHT -> resultValues.add(nmLeft.unsignedShiftRight(right));
+          case BITWISE_AND -> resultValues.add(nmLeft.bitwiseAnd(right));
+          case BITWISE_OR -> resultValues.add(nmLeft.bitwiseOr(right));
+          case BITWISE_XOR -> resultValues.add(nmLeft.bitwiseXor(right));
+          default -> throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
         }
       }
     }
@@ -1075,20 +1053,13 @@ public class ValueTransfer extends CFTransfer {
       Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
     if (TypesUtils.isIntegralPrimitive(operand.getType())) {
       Range range = getIntRange(operand, p);
-      Range resultRange;
-      switch (op) {
-        case PLUS:
-          resultRange = range.unaryPlus();
-          break;
-        case MINUS:
-          resultRange = range.unaryMinus();
-          break;
-        case BITWISE_COMPLEMENT:
-          resultRange = range.bitwiseComplement();
-          break;
-        default:
-          throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
-      }
+      Range resultRange =
+          switch (op) {
+            case PLUS -> range.unaryPlus();
+            case MINUS -> range.unaryMinus();
+            case BITWISE_COMPLEMENT -> range.bitwiseComplement();
+            default -> throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
+          };
       // Any integral type with less than 32 bits would be promoted to 32-bit int type during
       // operations.
       return operand.getType().getKind() == TypeKind.LONG ? resultRange : resultRange.intRange();
@@ -1108,17 +1079,10 @@ public class ValueTransfer extends CFTransfer {
     for (Number left : lefts) {
       NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
       switch (op) {
-        case PLUS:
-          resultValues.add(nmLeft.unaryPlus());
-          break;
-        case MINUS:
-          resultValues.add(nmLeft.unaryMinus());
-          break;
-        case BITWISE_COMPLEMENT:
-          resultValues.add(nmLeft.bitwiseComplement());
-          break;
-        default:
-          throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
+        case PLUS -> resultValues.add(nmLeft.unaryPlus());
+        case MINUS -> resultValues.add(nmLeft.unaryMinus());
+        case BITWISE_COMPLEMENT -> resultValues.add(nmLeft.bitwiseComplement());
+        default -> throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
       }
     }
     return resultValues;
@@ -1167,19 +1131,33 @@ public class ValueTransfer extends CFTransfer {
       CFValue rightValue,
       ComparisonOperators op,
       CFStore thenStore,
-      CFStore elseStore) {
-    AnnotationMirror leftAnno = getValueAnnotation(leftValue);
-    AnnotationMirror rightAnno = getValueAnnotation(rightValue);
+      CFStore elseStore,
+      boolean isLoopCondition) {
+
+    AnnotationMirror leftAnno;
+    AnnotationMirror rightAnno;
+    try {
+      leftAnno = getValueAnnotation(leftValue);
+      rightAnno = getValueAnnotation(rightValue);
+    } catch (Exception e) {
+      // Because of crash when using `-Acfgviz=...,verbose`. TODO: fix.
+      return null;
+    }
 
     if (atypeFactory.isIntRange(leftAnno)
         || atypeFactory.isIntRange(rightAnno)
+        || (isLoopCondition
+            && (AnnotationUtils.areSameByName(leftAnno, ValueAnnotatedTypeFactory.INTVAL_NAME)
+                || AnnotationUtils.areSameByName(rightAnno, ValueAnnotatedTypeFactory.INTVAL_NAME)))
         || isIntegralUnknownVal(rightNode, rightAnno)
         || isIntegralUnknownVal(leftNode, leftAnno)) {
       // If either is @UnknownVal, then refineIntRanges will treat it as the max range and
-      // thus refine it if possible.  Also, if either is an @IntVal, then it will be converted
-      // to a range.  This is less precise in some cases, but avoids the complexity of
+      // thus refine it if possible.
+      // If one is a range and the other is an @IntVal, then `refineIntRanges` will convert the
+      // @IntVal to a range.  This is less precise in some cases, but avoids the complexity of
       // comparing a list of values to a range. (This could be implemented in the future.)
-      return refineIntRanges(leftNode, leftAnno, rightNode, rightAnno, op, thenStore, elseStore);
+      return refineIntRanges(
+          leftNode, leftAnno, rightNode, rightAnno, op, thenStore, elseStore, isLoopCondition);
     }
 
     List<? extends Number> lefts = getNumericalValues(leftNode, leftAnno);
@@ -1208,29 +1186,16 @@ public class ValueTransfer extends CFTransfer {
     for (Number left : lefts) {
       NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
       for (Number right : rights) {
-        Boolean result;
-        switch (op) {
-          case EQUAL:
-            result = nmLeft.equalTo(right);
-            break;
-          case GREATER_THAN:
-            result = nmLeft.greaterThan(right);
-            break;
-          case GREATER_THAN_EQ:
-            result = nmLeft.greaterThanEq(right);
-            break;
-          case LESS_THAN:
-            result = nmLeft.lessThan(right);
-            break;
-          case LESS_THAN_EQ:
-            result = nmLeft.lessThanEq(right);
-            break;
-          case NOT_EQUAL:
-            result = nmLeft.notEqualTo(right);
-            break;
-          default:
-            throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
-        }
+        Boolean result =
+            switch (op) {
+              case EQUAL -> nmLeft.equalTo(right);
+              case GREATER_THAN -> nmLeft.greaterThan(right);
+              case GREATER_THAN_EQ -> nmLeft.greaterThanEq(right);
+              case LESS_THAN -> nmLeft.lessThan(right);
+              case LESS_THAN_EQ -> nmLeft.lessThanEq(right);
+              case NOT_EQUAL -> nmLeft.notEqualTo(right);
+              default -> throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
+            };
         resultValues.add(result);
         if (result) {
           thenLeftVals.add(left);
@@ -1261,61 +1226,101 @@ public class ValueTransfer extends CFTransfer {
       AnnotationMirror rightAnno,
       ComparisonOperators op,
       CFStore thenStore,
-      CFStore elseStore) {
+      CFStore elseStore,
+      boolean isLoopCondition) {
 
+    // Convert @IntVal into a range.
     Range leftRange = getIntRangeFromAnnotation(leftNode, leftAnno);
     Range rightRange = getIntRangeFromAnnotation(rightNode, rightAnno);
 
-    final Range thenRightRange;
+    // Special case for loop conditions:  If inequality against a constant, then widen to the entire
+    // range permitted by the constant.  The fixed-point loop is likely to get to that value
+    // eventually, and this is both more efficient and more precise than leaving it to the usual
+    // widening operation.
+
+    // TODO: This does not handle comparisons when the lhs is the integer literal, as in "0 < i" or
+    // "10 > i".  I think that those are quite rare, but if they are important, support them.
+    JavaExpression leftJe = JavaExpression.fromNode(leftNode);
+    boolean rightIsLoopBoundLiteral =
+        isLoopCondition
+            && rightNode instanceof IntegerLiteralNode
+            && CFAbstractStore.canInsertJavaExpression(leftJe);
+
     final Range thenLeftRange;
-    final Range elseRightRange;
+    final Range thenRightRange;
     final Range elseLeftRange;
+    final Range elseRightRange;
 
     switch (op) {
-      case EQUAL:
-        thenRightRange = rightRange.refineEqualTo(leftRange);
-        thenLeftRange = thenRightRange; // Only needs to be computed once.
-        elseRightRange = rightRange.refineNotEqualTo(leftRange);
+      case EQUAL -> {
+        thenLeftRange = leftRange.refineEqualTo(rightRange);
+        thenRightRange = thenLeftRange; // Equality only needs to be computed once.
         elseLeftRange = leftRange.refineNotEqualTo(rightRange);
-        break;
-      case GREATER_THAN:
-        thenLeftRange = leftRange.refineGreaterThan(rightRange);
-        thenRightRange = rightRange.refineLessThan(leftRange);
-        elseRightRange = rightRange.refineGreaterThanEq(leftRange);
+        elseRightRange = rightRange.refineNotEqualTo(leftRange);
+      }
+      case GREATER_THAN -> {
+        if (rightIsLoopBoundLiteral) {
+          thenLeftRange = Range.createOrNothing(rightRange.from + 1, leftRange.to);
+          thenRightRange = rightRange;
+        } else {
+          thenLeftRange = leftRange.refineGreaterThan(rightRange);
+          thenRightRange = rightRange.refineLessThan(leftRange);
+        }
         elseLeftRange = leftRange.refineLessThanEq(rightRange);
-        break;
-      case GREATER_THAN_EQ:
-        thenRightRange = rightRange.refineLessThanEq(leftRange);
-        thenLeftRange = leftRange.refineGreaterThanEq(rightRange);
+        elseRightRange = rightRange.refineGreaterThanEq(leftRange);
+      }
+      case GREATER_THAN_EQ -> {
+        if (rightIsLoopBoundLiteral) {
+          thenLeftRange = Range.createOrNothing(rightRange.from, leftRange.to);
+          thenRightRange = rightRange;
+        } else {
+          thenLeftRange = leftRange.refineGreaterThanEq(rightRange);
+          thenRightRange = rightRange.refineLessThanEq(leftRange);
+        }
         elseLeftRange = leftRange.refineLessThan(rightRange);
         elseRightRange = rightRange.refineGreaterThan(leftRange);
-        break;
-      case LESS_THAN:
-        thenLeftRange = leftRange.refineLessThan(rightRange);
-        thenRightRange = rightRange.refineGreaterThan(leftRange);
-        elseRightRange = rightRange.refineLessThanEq(leftRange);
+      }
+      case LESS_THAN -> {
+        if (rightIsLoopBoundLiteral) {
+          thenLeftRange = Range.createOrNothing(leftRange.from, rightRange.to - 1);
+          thenRightRange = rightRange;
+        } else {
+          thenLeftRange = leftRange.refineLessThan(rightRange);
+          thenRightRange = rightRange.refineGreaterThan(leftRange);
+        }
         elseLeftRange = leftRange.refineGreaterThanEq(rightRange);
-        break;
-      case LESS_THAN_EQ:
-        thenRightRange = rightRange.refineGreaterThanEq(leftRange);
-        thenLeftRange = leftRange.refineLessThanEq(rightRange);
+        elseRightRange = rightRange.refineLessThanEq(leftRange);
+      }
+      case LESS_THAN_EQ -> {
+        if (rightIsLoopBoundLiteral) {
+          thenLeftRange = Range.createOrNothing(leftRange.from, rightRange.to);
+          thenRightRange = rightRange;
+        } else {
+          thenLeftRange = leftRange.refineLessThanEq(rightRange);
+          thenRightRange = rightRange.refineGreaterThanEq(leftRange);
+        }
         elseLeftRange = leftRange.refineGreaterThan(rightRange);
         elseRightRange = rightRange.refineLessThan(leftRange);
-        break;
-      case NOT_EQUAL:
-        thenRightRange = rightRange.refineNotEqualTo(leftRange);
+      }
+      case NOT_EQUAL -> {
         thenLeftRange = leftRange.refineNotEqualTo(rightRange);
-        elseRightRange = rightRange.refineEqualTo(leftRange);
-        elseLeftRange = elseRightRange; // Equality only needs to be computed once.
-        break;
-      default:
-        throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
+        thenRightRange = rightRange.refineNotEqualTo(leftRange);
+        elseLeftRange = leftRange.refineEqualTo(rightRange);
+        elseRightRange = elseLeftRange; // Equality only needs to be computed once.
+      }
+      default -> throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
     }
 
+    if (rightIsLoopBoundLiteral) {
+      // Replace current annotation in store, don't LUB.
+      AnnotationMirror thenLeftAnno = atypeFactory.createIntRangeAnnotation(thenLeftRange);
+      thenStore.replaceValue(leftJe, thenLeftAnno);
+    } else {
+      createAnnotationFromRangeAndAddToStore(thenStore, thenLeftRange, leftNode);
+    }
     createAnnotationFromRangeAndAddToStore(thenStore, thenRightRange, rightNode);
-    createAnnotationFromRangeAndAddToStore(thenStore, thenLeftRange, leftNode);
-    createAnnotationFromRangeAndAddToStore(elseStore, elseRightRange, rightNode);
     createAnnotationFromRangeAndAddToStore(elseStore, elseLeftRange, leftNode);
+    createAnnotationFromRangeAndAddToStore(elseStore, elseRightRange, rightNode);
 
     // TODO: Refine the type of the comparison.
     return null;
@@ -1348,6 +1353,14 @@ public class ValueTransfer extends CFTransfer {
     addAnnotationToStore(store, anno, node);
   }
 
+  /**
+   * Adds an annotation to the store, by computing its GLB with the current value. That is, both the
+   * current value and the new one are simultaneously true after this method call.
+   *
+   * @param store the store to side-effect
+   * @param anno the new value for the node
+   * @param node the node whose value to update in the store
+   */
   private void addAnnotationToStore(CFStore store, AnnotationMirror anno, Node node) {
     // If node is assignment, iterate over lhs and rhs; otherwise, iterator contains just node.
     for (Node internal : splitAssignments(node)) {
@@ -1371,8 +1384,7 @@ public class ValueTransfer extends CFTransfer {
 
       if (node instanceof FieldAccessNode) {
         refineArrayAtLengthAccess((FieldAccessNode) internal, store);
-      } else if (node instanceof MethodInvocationNode) {
-        MethodInvocationNode miNode = (MethodInvocationNode) node;
+      } else if (node instanceof MethodInvocationNode miNode) {
         refineAtLengthInvocation(miNode, store);
       }
     }
@@ -1392,7 +1404,8 @@ public class ValueTransfer extends CFTransfer {
             p.getValueOfSubNode(n.getRightOperand()),
             ComparisonOperators.LESS_THAN,
             thenStore,
-            elseStore);
+            elseStore,
+            n.getIsLoopCondition());
     TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
     return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
   }
@@ -1411,7 +1424,8 @@ public class ValueTransfer extends CFTransfer {
             p.getValueOfSubNode(n.getRightOperand()),
             ComparisonOperators.LESS_THAN_EQ,
             thenStore,
-            elseStore);
+            elseStore,
+            n.getIsLoopCondition());
     TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
     return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
   }
@@ -1430,7 +1444,8 @@ public class ValueTransfer extends CFTransfer {
             p.getValueOfSubNode(n.getRightOperand()),
             ComparisonOperators.GREATER_THAN,
             thenStore,
-            elseStore);
+            elseStore,
+            n.getIsLoopCondition());
     TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
     return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
   }
@@ -1449,7 +1464,8 @@ public class ValueTransfer extends CFTransfer {
             p.getValueOfSubNode(n.getRightOperand()),
             ComparisonOperators.GREATER_THAN_EQ,
             thenStore,
-            elseStore);
+            elseStore,
+            n.getIsLoopCondition());
     TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
     return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
   }
@@ -1477,7 +1493,8 @@ public class ValueTransfer extends CFTransfer {
               secondValue,
               notEqualTo ? ComparisonOperators.NOT_EQUAL : ComparisonOperators.EQUAL,
               thenStore,
-              elseStore);
+              elseStore,
+              false);
       if (transferResult.getResultValue() == null) {
         // Happens for case labels
         return transferResult;
@@ -1551,25 +1568,25 @@ public class ValueTransfer extends CFTransfer {
     }
     // This list can contain duplicates.  It is deduplicated later by createBooleanAnnotation.
     List<Boolean> resultValues = new ArrayList<>(2);
-    switch (op) {
-      case NOT:
-        return CollectionsPlume.mapList((Boolean left) -> !left, lefts);
-      case OR:
+    return switch (op) {
+      case NOT -> CollectionsPlume.mapList((Boolean left) -> !left, lefts);
+      case OR -> {
         for (Boolean left : lefts) {
           for (Boolean right : rights) {
             resultValues.add(left || right);
           }
         }
-        return resultValues;
-      case AND:
+        yield resultValues;
+      }
+      case AND -> {
         for (Boolean left : lefts) {
           for (Boolean right : rights) {
             resultValues.add(left && right);
           }
         }
-        return resultValues;
-    }
-    throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
+        yield resultValues;
+      }
+    };
   }
 
   @Override

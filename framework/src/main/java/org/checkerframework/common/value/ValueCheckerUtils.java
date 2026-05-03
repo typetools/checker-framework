@@ -61,30 +61,24 @@ public class ValueCheckerUtils {
     Class<?> castType = TypesUtils.getClassFromType(castTo);
     List<?> values;
     switch (AnnotationUtils.annotationName(anno)) {
-      case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
-        values = convertDoubleVal(anno, castType, castTo, atypeFactory);
-        break;
-      case ValueAnnotatedTypeFactory.INTVAL_NAME:
+      case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME ->
+          values = convertDoubleVal(anno, castType, castTo, atypeFactory);
+      case ValueAnnotatedTypeFactory.INTVAL_NAME -> {
         List<Long> longs = atypeFactory.getIntValues(anno);
         values = convertIntVal(longs, castType, castTo, isUnsigned);
-        break;
-      case ValueAnnotatedTypeFactory.INTRANGE_NAME:
+      }
+      case ValueAnnotatedTypeFactory.INTRANGE_NAME -> {
         Range range = atypeFactory.getRange(anno);
         List<Long> rangeValues = getValuesFromRange(range, Long.class);
         values = convertIntVal(rangeValues, castType, castTo, isUnsigned);
-        break;
-      case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-        values = convertStringVal(anno, castType, atypeFactory);
-        break;
-      case ValueAnnotatedTypeFactory.BOOLVAL_NAME:
-        values = convertBoolVal(anno, castType, atypeFactory);
-        break;
-      case ValueAnnotatedTypeFactory.BOTTOMVAL_NAME:
-      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
-        values = Collections.emptyList();
-        break;
-      default:
-        values = null;
+      }
+      case ValueAnnotatedTypeFactory.STRINGVAL_NAME ->
+          values = convertStringVal(anno, castType, atypeFactory);
+      case ValueAnnotatedTypeFactory.BOOLVAL_NAME ->
+          values = convertBoolVal(anno, castType, atypeFactory);
+      case ValueAnnotatedTypeFactory.BOTTOMVAL_NAME, ValueAnnotatedTypeFactory.ARRAYLEN_NAME ->
+          values = Collections.emptyList();
+      default -> values = null;
     }
     return values;
   }

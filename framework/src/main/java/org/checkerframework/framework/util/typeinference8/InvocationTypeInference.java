@@ -6,6 +6,7 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
@@ -150,8 +151,8 @@ public class InvocationTypeInference {
     InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
     ProperType target = context.inferenceTypeFactory.getTargetType();
     List<? extends ExpressionTree> args;
-    if (invocation instanceof MethodInvocationTree) {
-      args = ((MethodInvocationTree) invocation).getArguments();
+    if (invocation instanceof MethodInvocationTree mit) {
+      args = mit.getArguments();
     } else {
       args = ((NewClassTree) invocation).getArguments();
     }
@@ -500,42 +501,37 @@ public class InvocationTypeInference {
     ConstraintSet c = new ConstraintSet();
 
     switch (ei.getKind()) {
-      case MEMBER_REFERENCE:
-        c.add(new CheckedExceptionConstraint(ei, fi, map));
-        break;
-      case LAMBDA_EXPRESSION:
+      case MEMBER_REFERENCE -> c.add(new CheckedExceptionConstraint(ei, fi, map));
+      case LAMBDA_EXPRESSION -> {
         c.add(new CheckedExceptionConstraint(ei, fi, map));
         LambdaExpressionTree lambda = (LambdaExpressionTree) ei;
         for (ExpressionTree expression : TreeUtils.getReturnedExpressions(lambda)) {
           c.addAll(createAdditionalArgConstraintsNoLambda(expression));
         }
-        break;
-      case METHOD_INVOCATION:
-      case NEW_CLASS:
+      }
+      case METHOD_INVOCATION, NEW_CLASS -> {
         if (TreeUtils.isPolyExpression(ei)) {
           c.addAll(new AdditionalArgument(ei).reduce(context));
         }
-        break;
-      case PARENTHESIZED:
-        c.addAll(createAdditionalArgConstraints(TreeUtils.withoutParens(ei), fi, map));
-        break;
-      case CONDITIONAL_EXPRESSION:
+      }
+      case PARENTHESIZED ->
+          c.addAll(createAdditionalArgConstraints(TreeUtils.withoutParens(ei), fi, map));
+      case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) ei;
         c.addAll(createAdditionalArgConstraints(conditional.getTrueExpression(), fi, map));
         c.addAll(createAdditionalArgConstraints(conditional.getFalseExpression(), fi, map));
-        break;
-      default:
-        if (TreeUtils.isSwitchExpression(ei)) {
-          SwitchExpressionScanner<Void, Void> scanner =
-              new FunctionalSwitchExpressionScanner<>(
-                  (ExpressionTree tree, Void unused) -> {
-                    c.addAll(createAdditionalArgConstraints(tree, fi, map));
-                    return null;
-                  },
-                  (c1, c2) -> null);
-          scanner.scanSwitchExpression(ei, null);
-        }
-        // no constraints
+      }
+      case SWITCH_EXPRESSION -> {
+        SwitchExpressionScanner<Void, Void> scanner =
+            new FunctionalSwitchExpressionScanner<>(
+                (ExpressionTree tree, Void unused) -> {
+                  c.addAll(createAdditionalArgConstraints(tree, fi, map));
+                  return null;
+                },
+                (c1, c2) -> null);
+        scanner.scanSwitchExpression((SwitchExpressionTree) ei, null);
+      }
+      default -> {} // no constraints
     }
 
     return c;
@@ -555,14 +551,13 @@ public class InvocationTypeInference {
     ConstraintSet c = new ConstraintSet();
 
     switch (expression.getKind()) {
-      case LAMBDA_EXPRESSION:
+      case LAMBDA_EXPRESSION -> {
         LambdaExpressionTree lambda = (LambdaExpressionTree) expression;
         for (ExpressionTree returnedExpression : TreeUtils.getReturnedExpressions(lambda)) {
           c.addAll(createAdditionalArgConstraintsNoLambda(returnedExpression));
         }
-        break;
-      case METHOD_INVOCATION:
-      case NEW_CLASS:
+      }
+      case METHOD_INVOCATION, NEW_CLASS -> {
         if (TreeUtils.isPolyExpression(expression)) {
           try {
             c.addAll(new AdditionalArgument(expression).reduce(context));
@@ -574,27 +569,25 @@ public class InvocationTypeInference {
             c.add(new AdditionalArgument(expression));
           }
         }
-        break;
-      case PARENTHESIZED:
-        c.addAll(createAdditionalArgConstraintsNoLambda(TreeUtils.withoutParens(expression)));
-        break;
-      case CONDITIONAL_EXPRESSION:
+      }
+      case PARENTHESIZED ->
+          c.addAll(createAdditionalArgConstraintsNoLambda(TreeUtils.withoutParens(expression)));
+      case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) expression;
         c.addAll(createAdditionalArgConstraintsNoLambda(conditional.getTrueExpression()));
         c.addAll(createAdditionalArgConstraintsNoLambda(conditional.getFalseExpression()));
-        break;
-      default:
-        if (TreeUtils.isSwitchExpression(expression)) {
-          SwitchExpressionScanner<Void, Void> scanner =
-              new FunctionalSwitchExpressionScanner<>(
-                  (ExpressionTree tree, Void unused) -> {
-                    c.addAll(createAdditionalArgConstraintsNoLambda(tree));
-                    return null;
-                  },
-                  (c1, c2) -> null);
-          scanner.scanSwitchExpression(expression, null);
-        }
-        // no constraints
+      }
+      case SWITCH_EXPRESSION -> {
+        SwitchExpressionScanner<Void, Void> scanner =
+            new FunctionalSwitchExpressionScanner<>(
+                (ExpressionTree tree, Void unused) -> {
+                  c.addAll(createAdditionalArgConstraintsNoLambda(tree));
+                  return null;
+                },
+                (c1, c2) -> null);
+        scanner.scanSwitchExpression((SwitchExpressionTree) expression, null);
+      }
+      default -> {} // no constraints
     }
 
     return c;
@@ -612,7 +605,7 @@ public class InvocationTypeInference {
   private boolean notPertinentToApplicability(
       ExpressionTree expressionTree, AbstractType formalParameterType) {
     switch (expressionTree.getKind()) {
-      case LAMBDA_EXPRESSION:
+      case LAMBDA_EXPRESSION -> {
         LambdaExpressionTree lambda = (LambdaExpressionTree) expressionTree;
         if (TreeUtils.isImplicitlyTypedLambda(lambda) || formalParameterType.isUseOfVariable()) {
           // An implicitly typed lambda expression.
@@ -630,32 +623,36 @@ public class InvocationTypeInference {
           }
           return false;
         }
-      case MEMBER_REFERENCE:
+      }
+      case MEMBER_REFERENCE -> {
         // An inexact method reference expression.
         return formalParameterType.isUseOfVariable()
             || !TreeUtils.isExactMethodReference((MemberReferenceTree) expressionTree);
-      case PARENTHESIZED:
+      }
+      case PARENTHESIZED -> {
         // A parenthesized expression whose contained expression is not pertinent to
         // applicability.
         return notPertinentToApplicability(
             TreeUtils.withoutParens(expressionTree), formalParameterType);
-      case CONDITIONAL_EXPRESSION:
+      }
+      case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) expressionTree;
         // A conditional expression whose second or third operand is not pertinent to
         // applicability.
         return notPertinentToApplicability(conditional.getTrueExpression(), formalParameterType)
             || notPertinentToApplicability(conditional.getFalseExpression(), formalParameterType);
-      default:
-        if (TreeUtils.isSwitchExpression(expressionTree)) {
-          SwitchExpressionScanner<Boolean, Void> scanner =
-              new FunctionalSwitchExpressionScanner<>(
-                  (ExpressionTree tree, Void unused) ->
-                      notPertinentToApplicability(tree, formalParameterType),
-                  (r1, r2) -> (r1 != null && r1) || (r2 != null && r2));
-          ;
-          return scanner.scanSwitchExpression(expressionTree, null);
-        }
+      }
+      case SWITCH_EXPRESSION -> {
+        SwitchExpressionScanner<Boolean, Void> scanner =
+            new FunctionalSwitchExpressionScanner<>(
+                (ExpressionTree tree, Void unused) ->
+                    notPertinentToApplicability(tree, formalParameterType),
+                (r1, r2) -> (r1 != null && r1) || (r2 != null && r2));
+        return scanner.scanSwitchExpression((SwitchExpressionTree) expressionTree, null);
+      }
+      default -> {
         return false;
+      }
     }
   }
 

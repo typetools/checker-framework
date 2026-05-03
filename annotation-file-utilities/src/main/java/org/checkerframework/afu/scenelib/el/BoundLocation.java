@@ -46,7 +46,7 @@ public final class BoundLocation {
    */
   @Override
   public boolean equals(Object o) {
-    return o instanceof BoundLocation && equals((BoundLocation) o);
+    return o instanceof BoundLocation other && equals(other);
   }
 
   @Override

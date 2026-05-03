@@ -38,10 +38,9 @@ public class IntegerDivisionNode extends BinaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof IntegerDivisionNode)) {
+    if (!(obj instanceof IntegerDivisionNode other)) {
       return false;
     }
-    IntegerDivisionNode other = (IntegerDivisionNode) obj;
     return getLeftOperand().equals(other.getLeftOperand())
         && getRightOperand().equals(other.getRightOperand());
   }

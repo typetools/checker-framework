@@ -38,10 +38,9 @@ public class FloatingDivisionNode extends BinaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof FloatingDivisionNode)) {
+    if (!(obj instanceof FloatingDivisionNode other)) {
       return false;
     }
-    FloatingDivisionNode other = (FloatingDivisionNode) obj;
     return getLeftOperand().equals(other.getLeftOperand())
         && getRightOperand().equals(other.getRightOperand());
   }

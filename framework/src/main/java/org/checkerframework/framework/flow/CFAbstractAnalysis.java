@@ -68,32 +68,12 @@ public abstract class CFAbstractAnalysis<
    * initializer. The value of the initializer is {@code null} if the field does not have one.
    *
    * @param <V> type of value
+   * @param fieldDecl a field access that corresponds to the declaration of a field
+   * @param declared the value corresponding to the annotations on the declared type of the field
+   * @param initializer the value of the initializer of the field, or null if no initializer exists
    */
-  public static class FieldInitialValue<V extends CFAbstractValue<V>> {
-
-    /** A field access that corresponds to the declaration of a field. */
-    public final FieldAccess fieldDecl;
-
-    /** The value corresponding to the annotations on the declared type of the field. */
-    public final V declared;
-
-    /** The value of the initializer of the field, or null if no initializer exists. */
-    public final @Nullable V initializer;
-
-    /**
-     * Creates a new FieldInitialValue.
-     *
-     * @param fieldDecl a field access that corresponds to the declaration of a field
-     * @param declared value corresponding to the annotations on the declared type of {@code field}
-     * @param initializer value of the initializer of {@code field}, or null if no initializer
-     *     exists
-     */
-    public FieldInitialValue(FieldAccess fieldDecl, V declared, @Nullable V initializer) {
-      this.fieldDecl = fieldDecl;
-      this.declared = declared;
-      this.initializer = initializer;
-    }
-  }
+  public record FieldInitialValue<V extends CFAbstractValue<V>>(
+      FieldAccess fieldDecl, V declared, @Nullable V initializer) {}
 
   /** Initial abstract types for fields. */
   protected final List<FieldInitialValue<V>> fieldValues;

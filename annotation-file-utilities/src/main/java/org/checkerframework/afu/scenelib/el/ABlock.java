@@ -35,7 +35,7 @@ public class ABlock extends AExpression {
 
   @Override
   public boolean equals(AElement o) {
-    return o instanceof ABlock && ((ABlock) o).equalsBlock(this);
+    return o instanceof ABlock aBlock && aBlock.equalsBlock(this);
   }
 
   protected boolean equalsBlock(ABlock o) {

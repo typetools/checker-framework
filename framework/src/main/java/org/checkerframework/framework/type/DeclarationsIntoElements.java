@@ -38,8 +38,8 @@ public final class DeclarationsIntoElements {
   public static void store(
       ProcessingEnvironment env, AnnotatedTypeFactory atypeFactory, ClassTree tree) {
     for (Tree mem : tree.getMembers()) {
-      if (mem instanceof MethodTree) {
-        storeMethod(env, atypeFactory, (MethodTree) mem);
+      if (mem instanceof MethodTree mt) {
+        storeMethod(env, atypeFactory, mt);
       }
     }
   }

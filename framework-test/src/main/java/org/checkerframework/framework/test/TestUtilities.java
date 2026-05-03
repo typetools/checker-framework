@@ -37,6 +37,11 @@ import org.plumelib.util.SystemPlume;
 /** Utilities for testing. */
 public class TestUtilities {
 
+  /** Do not instantiate. */
+  private TestUtilities() {
+    throw new Error("Do not instantiate");
+  }
+
   /** True if the JVM is version 9 or above. */
   public static final boolean IS_AT_LEAST_9_JVM = SystemUtil.jreVersion >= 9;
 
@@ -63,6 +68,9 @@ public class TestUtilities {
 
   /** True if the JVM is version 22 or above. */
   public static final boolean IS_AT_LEAST_22_JVM = SystemUtil.jreVersion >= 22;
+
+  /** True if the JVM is version 25 or above. */
+  public static final boolean IS_AT_LEAST_25_JVM = SystemUtil.jreVersion >= 25;
 
   static {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -265,7 +273,8 @@ public class TestUtilities {
             || (!IS_AT_LEAST_18_JVM && nextLine.contains("@below-java18-jdk-skip-test"))
             || (!IS_AT_MOST_18_JVM && nextLine.contains("@above-java18-jdk-skip-test"))
             || (!IS_AT_LEAST_21_JVM && nextLine.contains("@below-java21-jdk-skip-test"))
-            || (!IS_AT_LEAST_22_JVM && nextLine.contains("@below-java22-jdk-skip-test"))) {
+            || (!IS_AT_LEAST_22_JVM && nextLine.contains("@below-java22-jdk-skip-test"))
+            || (!IS_AT_LEAST_25_JVM && nextLine.contains("@below-java25-jdk-skip-test"))) {
 
           return false;
         }
@@ -316,7 +325,7 @@ public class TestUtilities {
       Iterable<Diagnostic<? extends JavaFileObject>> actualDiagnostics, boolean usingAnomsgtxt) {
     Set<String> actualDiagnosticsStr = new LinkedHashSet<>();
     for (Diagnostic<? extends JavaFileObject> diagnostic : actualDiagnostics) {
-      String diagnosticStr = TestUtilities.diagnosticToString(diagnostic, usingAnomsgtxt);
+      String diagnosticStr = diagnosticToString(diagnostic, usingAnomsgtxt);
       if (diagnosticStr != null) {
         actualDiagnosticsStr.add(diagnosticStr);
       }

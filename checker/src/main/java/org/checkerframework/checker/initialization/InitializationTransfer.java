@@ -152,8 +152,7 @@ public class InitializationTransfer<
     JavaExpression lhs = JavaExpression.fromNode(n.getTarget());
 
     // If this is an assignment to a field of 'this', then mark the field as initialized.
-    if (!lhs.containsUnknown() && lhs instanceof FieldAccess) {
-      FieldAccess fa = (FieldAccess) lhs;
+    if (!lhs.containsUnknown() && lhs instanceof FieldAccess fa) {
       // Only a ternary expression may cause a conditional transfer result, e.g.
       //      condExpr#num0 = (obj instanceof List)
       // In such cases, the LHS is never a FieldAccess, so we can assert that result

@@ -192,8 +192,8 @@ public final class ElementAnnotationApplier {
 
     if (paramDecl != null) {
       Tree parentTree = typeFactory.getPath(paramDecl).getParentPath().getLeaf();
-      if (parentTree != null && parentTree instanceof LambdaExpressionTree) {
-        return IPair.of(paramDecl, (LambdaExpressionTree) parentTree);
+      if (parentTree instanceof LambdaExpressionTree let) {
+        return IPair.of(paramDecl, let);
       }
     }
 

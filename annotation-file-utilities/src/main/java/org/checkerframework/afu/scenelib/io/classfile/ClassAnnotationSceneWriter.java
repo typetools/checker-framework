@@ -792,25 +792,11 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
       boolean visible = isRuntimeRetention(tla);
 
       switch (typeSort) {
-        case TypeReference.INSTANCEOF:
-          {
+        case TypeReference.INSTANCEOF, TypeReference.NEW ->
             typeReference = TypeReference.newTypeReference(typeSort);
-            break;
-          }
-
-        case TypeReference.NEW:
-          {
-            typeReference = TypeReference.newTypeReference(typeSort);
-            break;
-          }
-
-        case TypeReference.CAST:
-          {
+        case TypeReference.CAST ->
             typeReference = TypeReference.newTypeArgumentReference(typeSort, typeIndex);
-            break;
-          }
-        default:
-          throw new IllegalArgumentException();
+        default -> throw new IllegalArgumentException();
       }
 
       return super.visitInsnAnnotation(typeReference.getValue(), typePath, desc, visible);
@@ -1281,16 +1267,8 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
     public MethodVisitor visitMethod(
         int access, String name, String descriptor, String signature, String[] exceptions) {
       String methodDescription = name + descriptor;
-      constrs = dynamicConstructors.get(methodDescription);
-      if (constrs == null) {
-        constrs = new TreeSet<>();
-        dynamicConstructors.put(methodDescription, constrs);
-      }
-      lambdas = lambdaExpressions.get(methodDescription);
-      if (lambdas == null) {
-        lambdas = new TreeSet<>();
-        lambdaExpressions.put(methodDescription, lambdas);
-      }
+      constrs = dynamicConstructors.computeIfAbsent(methodDescription, k -> new TreeSet<>());
+      lambdas = lambdaExpressions.computeIfAbsent(methodDescription, k -> new TreeSet<>());
 
       return new MethodCodeOffsetAdapter(classReader, null, codeStart) {
         @Override

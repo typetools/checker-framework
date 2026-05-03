@@ -90,10 +90,9 @@ public class ArrayCreationNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ArrayCreationNode)) {
+    if (!(obj instanceof ArrayCreationNode other)) {
       return false;
     }
-    ArrayCreationNode other = (ArrayCreationNode) obj;
 
     return getDimensions().equals(other.getDimensions())
         && getInitializers().equals(other.getInitializers());

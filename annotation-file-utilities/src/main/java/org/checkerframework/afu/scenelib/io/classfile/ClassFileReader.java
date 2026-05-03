@@ -16,20 +16,25 @@ import org.plumelib.options.Options;
  * {@link AScene}.
  */
 public class ClassFileReader {
-  public static final String INDEX_UTILS_VERSION = "Annotation File Utilities v3.9.14";
 
+  /** Do not instantiate. */
+  private ClassFileReader() {
+    throw new Error("Do not instantiate");
+  }
+
+  /** Omit annotations from bridge (compiler-created) methods. */
   @Option("-b omit annotations from bridge (compiler-created) methods")
   public static boolean ignore_bridge_methods = false;
 
+  /** Print usage information and exit. */
   @Option("-h print usage information and exit")
   public static boolean help = false;
 
-  @Option("print version information and exit")
-  public static boolean version = false;
-
+  /** Print progress messages. */
   @Option("print progress messages")
   public static boolean verbose = false;
 
+  /** The system-specific line separator. */
   private static String linesep = System.lineSeparator();
 
   static String usage =
@@ -79,13 +84,8 @@ public class ClassFileReader {
       System.exit(1);
     }
 
-    if (version) {
-      System.out.printf("extract-annotations (%s)", INDEX_UTILS_VERSION);
-    }
     if (help) {
       options.printUsage();
-    }
-    if (version || help) {
       System.exit(-1);
     }
 

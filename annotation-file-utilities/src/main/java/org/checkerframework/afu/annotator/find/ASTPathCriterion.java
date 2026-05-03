@@ -291,480 +291,439 @@ public class ASTPathCriterion implements Criterion {
     }
   }
 
-  private Tree getNext(Tree actualNode, ASTPath astPath, int ix) {
+  private @Nullable Tree getNext(Tree actualNode, ASTPath astPath, int ix) {
     try {
       ASTPath.ASTEntry astNode = astPath.get(ix);
       switch (actualNode.getKind()) {
-        case ANNOTATED_TYPE:
-          {
-            AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.ANNOTATION)) {
-              int arg = astNode.getArgument();
-              List<? extends AnnotationTree> annos = annotatedType.getAnnotations();
-              if (arg >= annos.size()) {
-                return null;
-              }
-              return annos.get(arg);
-            } else {
-              return annotatedType.getUnderlyingType();
-            }
-          }
-        case ARRAY_ACCESS:
-          {
-            ArrayAccessTree arrayAccess = (ArrayAccessTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
-              return arrayAccess.getExpression();
-            } else {
-              return arrayAccess.getIndex();
-            }
-          }
-        case ARRAY_TYPE:
-          {
-            ArrayTypeTree arrayType = (ArrayTypeTree) actualNode;
-            return arrayType.getType();
-          }
-        case ASSERT:
-          {
-            AssertTree azzert = (AssertTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.CONDITION)) {
-              return azzert.getCondition();
-            } else {
-              return azzert.getDetail();
-            }
-          }
-        case ASSIGNMENT:
-          {
-            AssignmentTree assignment = (AssignmentTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.VARIABLE)) {
-              return assignment.getVariable();
-            } else {
-              return assignment.getExpression();
-            }
-          }
-        case BLOCK:
-          {
-            BlockTree block = (BlockTree) actualNode;
+        case ANNOTATED_TYPE -> {
+          AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.ANNOTATION)) {
             int arg = astNode.getArgument();
-            List<? extends StatementTree> statements = block.getStatements();
-            if (arg >= block.getStatements().size()) {
+            List<? extends AnnotationTree> annos = annotatedType.getAnnotations();
+            if (arg >= annos.size()) {
+              return null;
+            }
+            return annos.get(arg);
+          } else {
+            return annotatedType.getUnderlyingType();
+          }
+        }
+        case ARRAY_ACCESS -> {
+          ArrayAccessTree arrayAccess = (ArrayAccessTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
+            return arrayAccess.getExpression();
+          } else {
+            return arrayAccess.getIndex();
+          }
+        }
+        case ARRAY_TYPE -> {
+          ArrayTypeTree arrayType = (ArrayTypeTree) actualNode;
+          return arrayType.getType();
+        }
+        case ASSERT -> {
+          AssertTree azzert = (AssertTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.CONDITION)) {
+            return azzert.getCondition();
+          } else {
+            return azzert.getDetail();
+          }
+        }
+        case ASSIGNMENT -> {
+          AssignmentTree assignment = (AssignmentTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.VARIABLE)) {
+            return assignment.getVariable();
+          } else {
+            return assignment.getExpression();
+          }
+        }
+        case BLOCK -> {
+          BlockTree block = (BlockTree) actualNode;
+          int arg = astNode.getArgument();
+          List<? extends StatementTree> statements = block.getStatements();
+          if (arg >= block.getStatements().size()) {
+            return null;
+          }
+          return statements.get(arg);
+        }
+        case CASE -> {
+          CaseTree caze = (CaseTree) actualNode;
+          int arg = astNode.getArgument();
+          if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
+            List<? extends ExpressionTree> expressions = caze.getExpressions();
+            if (arg >= expressions.size()) {
+              return null;
+            }
+            return expressions.get(arg);
+          } else {
+            List<? extends StatementTree> statements = caze.getStatements();
+            if (arg >= statements.size()) {
               return null;
             }
             return statements.get(arg);
           }
-        case CASE:
-          {
-            CaseTree caze = (CaseTree) actualNode;
+        }
+        case CATCH -> {
+          CatchTree cach = (CatchTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.PARAMETER)) {
+            return cach.getParameter();
+          } else {
+            return cach.getBlock();
+          }
+        }
+        case ANNOTATION_TYPE, CLASS, ENUM, INTERFACE -> {
+          ClassTree clazz = (ClassTree) actualNode;
+          int arg = astNode.getArgument();
+          if (astNode.childSelectorIs(ASTPath.TYPE_PARAMETER)) {
+            return clazz.getTypeParameters().get(arg);
+          } else if (astNode.childSelectorIs(ASTPath.INITIALIZER)) {
+            int i = 0;
+            for (Tree member : clazz.getMembers()) {
+              if (member instanceof BlockTree && arg == i++) {
+                return member;
+              }
+            }
+            return null;
+          } else if (astNode.childSelectorIs(ASTPath.BOUND)) {
+            return arg < 0 ? clazz.getExtendsClause() : clazz.getImplementsClause().get(arg);
+          } else {
+            return null;
+          }
+        }
+        case CONDITIONAL_EXPRESSION -> {
+          ConditionalExpressionTree conditionalExpression = (ConditionalExpressionTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.CONDITION)) {
+            return conditionalExpression.getCondition();
+          } else if (astNode.childSelectorIs(ASTPath.TRUE_EXPRESSION)) {
+            return conditionalExpression.getTrueExpression();
+          } else {
+            return conditionalExpression.getFalseExpression();
+          }
+        }
+        case DO_WHILE_LOOP -> {
+          DoWhileLoopTree doWhileLoop = (DoWhileLoopTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.CONDITION)) {
+            return doWhileLoop.getCondition();
+          } else {
+            return doWhileLoop.getStatement();
+          }
+        }
+        case ENHANCED_FOR_LOOP -> {
+          EnhancedForLoopTree enhancedForLoop = (EnhancedForLoopTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.VARIABLE)) {
+            return enhancedForLoop.getVariable();
+          } else if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
+            return enhancedForLoop.getExpression();
+          } else {
+            return enhancedForLoop.getStatement();
+          }
+        }
+        case EXPRESSION_STATEMENT -> {
+          ExpressionStatementTree expressionStatement = (ExpressionStatementTree) actualNode;
+          return expressionStatement.getExpression();
+        }
+        case FOR_LOOP -> {
+          ForLoopTree forLoop = (ForLoopTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.INITIALIZER)) {
             int arg = astNode.getArgument();
-            if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
-              List<? extends ExpressionTree> expressions = CaseUtils.caseTreeGetExpressions(caze);
-              if (arg >= expressions.size()) {
+            List<? extends StatementTree> inits = forLoop.getInitializer();
+            if (arg >= inits.size()) {
+              return null;
+            }
+            return inits.get(arg);
+          } else if (astNode.childSelectorIs(ASTPath.CONDITION)) {
+            return forLoop.getCondition();
+          } else if (astNode.childSelectorIs(ASTPath.UPDATE)) {
+            int arg = astNode.getArgument();
+            List<? extends ExpressionStatementTree> updates = forLoop.getUpdate();
+            if (arg >= updates.size()) {
+              return null;
+            }
+            return updates.get(arg);
+          } else {
+            return forLoop.getStatement();
+          }
+        }
+        case IF -> {
+          IfTree iff = (IfTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.CONDITION)) {
+            return iff.getCondition();
+          } else if (astNode.childSelectorIs(ASTPath.THEN_STATEMENT)) {
+            return iff.getThenStatement();
+          } else {
+            return iff.getElseStatement();
+          }
+        }
+        case INSTANCE_OF -> {
+          InstanceOfTree instanceOf = (InstanceOfTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
+            return instanceOf.getExpression();
+          } else {
+            return instanceOf.getType();
+          }
+        }
+        case LABELED_STATEMENT -> {
+          LabeledStatementTree labeledStatement = (LabeledStatementTree) actualNode;
+          return labeledStatement.getStatement();
+        }
+        case LAMBDA_EXPRESSION -> {
+          LambdaExpressionTree lambdaExpression = (LambdaExpressionTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.PARAMETER)) {
+            int arg = astNode.getArgument();
+            List<? extends VariableTree> params = lambdaExpression.getParameters();
+            if (arg >= params.size()) {
+              return null;
+            }
+            return params.get(arg);
+          } else {
+            return lambdaExpression.getBody();
+          }
+        }
+        case MEMBER_REFERENCE -> {
+          MemberReferenceTree memberReference = (MemberReferenceTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.QUALIFIER_EXPRESSION)) {
+            return memberReference.getQualifierExpression();
+          } else {
+            int arg = astNode.getArgument();
+            List<? extends ExpressionTree> typeArgs = memberReference.getTypeArguments();
+            if (arg >= typeArgs.size()) {
+              return null;
+            }
+            return typeArgs.get(arg);
+          }
+        }
+        case MEMBER_SELECT -> {
+          MemberSelectTree memberSelect = (MemberSelectTree) actualNode;
+          return memberSelect.getExpression();
+        }
+        case METHOD -> {
+          MethodTree method = (MethodTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.TYPE)) {
+            return method.getReturnType();
+          } else if (astNode.childSelectorIs(ASTPath.PARAMETER)) {
+            int arg = astNode.getArgument();
+            List<? extends VariableTree> params = method.getParameters();
+            return arg < 0
+                ? method.getReceiverParameter()
+                : arg < params.size() ? params.get(arg) : null;
+          } else if (astNode.childSelectorIs(ASTPath.TYPE_PARAMETER)) {
+            int arg = astNode.getArgument();
+            return method.getTypeParameters().get(arg);
+          } else { // BODY
+            return method.getBody();
+          }
+        }
+        case METHOD_INVOCATION -> {
+          MethodInvocationTree methodInvocation = (MethodInvocationTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.TYPE_ARGUMENT)) {
+            int arg = astNode.getArgument();
+            List<? extends Tree> typeArgs = methodInvocation.getTypeArguments();
+            if (arg >= typeArgs.size()) {
+              return null;
+            }
+            return typeArgs.get(arg);
+          } else if (astNode.childSelectorIs(ASTPath.METHOD_SELECT)) {
+            return methodInvocation.getMethodSelect();
+          } else {
+            int arg = astNode.getArgument();
+            List<? extends ExpressionTree> args = methodInvocation.getArguments();
+            if (arg >= args.size()) {
+              return null;
+            }
+            return args.get(arg);
+          }
+        }
+        case NEW_ARRAY -> {
+          NewArrayTree newArray = (NewArrayTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.TYPE)) {
+            Type type = ((JCTree.JCNewArray) newArray).type;
+            Tree typeTree = Insertions.TypeTree.fromJavacType(type);
+            int arg = astNode.getArgument();
+            if (arg == 0 && astPath.size() == ix + 1) {
+              return newArray;
+              // if (astPath.size() != ix+1) { return null; }
+              // return typeTree;
+              // return ((ArrayTypeTree) typeTree).getType();
+              // return newArray;
+            }
+            typeTree = ((NewArrayTree) typeTree).getType();
+            while (--arg > 0) {
+              if (!(typeTree instanceof ArrayTypeTree)) {
                 return null;
               }
-              return expressions.get(arg);
-            } else {
-              List<? extends StatementTree> statements = caze.getStatements();
-              if (arg >= statements.size()) {
-                return null;
-              }
-              return statements.get(arg);
+              typeTree = ((ArrayTypeTree) typeTree).getType();
             }
-          }
-        case CATCH:
-          {
-            CatchTree cach = (CatchTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.PARAMETER)) {
-              return cach.getParameter();
-            } else {
-              return cach.getBlock();
-            }
-          }
-        case ANNOTATION:
-        case CLASS:
-        case ENUM:
-        case INTERFACE:
-          {
-            ClassTree clazz = (ClassTree) actualNode;
+            return typeTree;
+          } else if (astNode.childSelectorIs(ASTPath.DIMENSION)) {
             int arg = astNode.getArgument();
-            if (astNode.childSelectorIs(ASTPath.TYPE_PARAMETER)) {
-              return clazz.getTypeParameters().get(arg);
-            } else if (astNode.childSelectorIs(ASTPath.INITIALIZER)) {
-              int i = 0;
-              for (Tree member : clazz.getMembers()) {
-                if (member instanceof BlockTree && arg == i++) {
-                  return member;
-                }
-              }
+            List<? extends ExpressionTree> dims = newArray.getDimensions();
+            return arg < dims.size() ? dims.get(arg) : null;
+          } else {
+            int arg = astNode.getArgument();
+            List<? extends ExpressionTree> inits = newArray.getInitializers();
+            return arg < inits.size() ? inits.get(arg) : null;
+          }
+        }
+        case NEW_CLASS -> {
+          NewClassTree newClass = (NewClassTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.ENCLOSING_EXPRESSION)) {
+            return newClass.getEnclosingExpression();
+          } else if (astNode.childSelectorIs(ASTPath.TYPE_ARGUMENT)) {
+            int arg = astNode.getArgument();
+            List<? extends Tree> typeArgs = newClass.getTypeArguments();
+            if (arg >= typeArgs.size()) {
               return null;
-            } else if (astNode.childSelectorIs(ASTPath.BOUND)) {
-              return arg < 0 ? clazz.getExtendsClause() : clazz.getImplementsClause().get(arg);
-            } else {
+            }
+            return typeArgs.get(arg);
+          } else if (astNode.childSelectorIs(ASTPath.IDENTIFIER)) {
+            return newClass.getIdentifier();
+          } else if (astNode.childSelectorIs(ASTPath.ARGUMENT)) {
+            int arg = astNode.getArgument();
+            List<? extends ExpressionTree> args = newClass.getArguments();
+            if (arg >= args.size()) {
               return null;
             }
+            return args.get(arg);
+          } else {
+            return newClass.getClassBody(); // For anonymous classes
           }
-        case CONDITIONAL_EXPRESSION:
-          {
-            ConditionalExpressionTree conditionalExpression =
-                (ConditionalExpressionTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.CONDITION)) {
-              return conditionalExpression.getCondition();
-            } else if (astNode.childSelectorIs(ASTPath.TRUE_EXPRESSION)) {
-              return conditionalExpression.getTrueExpression();
-            } else {
-              return conditionalExpression.getFalseExpression();
+        }
+        case PARAMETERIZED_TYPE -> {
+          ParameterizedTypeTree parameterizedType = (ParameterizedTypeTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.TYPE)) {
+            return parameterizedType.getType();
+          } else {
+            int arg = astNode.getArgument();
+            List<? extends Tree> typeArgs = parameterizedType.getTypeArguments();
+            if (arg >= typeArgs.size()) {
+              return null;
             }
+            return typeArgs.get(arg);
           }
-        case DO_WHILE_LOOP:
-          {
-            DoWhileLoopTree doWhileLoop = (DoWhileLoopTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.CONDITION)) {
-              return doWhileLoop.getCondition();
-            } else {
-              return doWhileLoop.getStatement();
+        }
+        case PARENTHESIZED -> {
+          ParenthesizedTree parenthesized = (ParenthesizedTree) actualNode;
+          return parenthesized.getExpression();
+        }
+        case RETURN -> {
+          ReturnTree returnn = (ReturnTree) actualNode;
+          return returnn.getExpression();
+        }
+        case SWITCH -> {
+          SwitchTree zwitch = (SwitchTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
+            return zwitch.getExpression();
+          } else {
+            int arg = astNode.getArgument();
+            List<? extends CaseTree> cases = zwitch.getCases();
+            if (arg >= cases.size()) {
+              return null;
             }
+            return cases.get(arg);
           }
-        case ENHANCED_FOR_LOOP:
-          {
-            EnhancedForLoopTree enhancedForLoop = (EnhancedForLoopTree) actualNode;
+        }
+        case SYNCHRONIZED -> {
+          SynchronizedTree synchronizzed = (SynchronizedTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
+            return synchronizzed.getExpression();
+          } else {
+            return synchronizzed.getBlock();
+          }
+        }
+        case THROW -> {
+          ThrowTree throww = (ThrowTree) actualNode;
+          return throww.getExpression();
+        }
+        case TRY -> {
+          TryTree tryy = (TryTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.BLOCK)) {
+            return tryy.getBlock();
+          } else if (astNode.childSelectorIs(ASTPath.CATCH)) {
+            int arg = astNode.getArgument();
+            List<? extends CatchTree> catches = tryy.getCatches();
+            if (arg >= catches.size()) {
+              return null;
+            }
+            return catches.get(arg);
+          } else if (astNode.childSelectorIs(ASTPath.FINALLY_BLOCK)) {
+            return tryy.getFinallyBlock();
+          } else {
+            int arg = astNode.getArgument();
+            List<? extends Tree> resources = tryy.getResources();
+            if (arg >= resources.size()) {
+              return null;
+            }
+            return resources.get(arg);
+          }
+        }
+        case TYPE_CAST -> {
+          TypeCastTree typeCast = (TypeCastTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.TYPE)) {
+            return typeCast.getType();
+          } else {
+            return typeCast.getExpression();
+          }
+        }
+        case TYPE_PARAMETER -> {
+          TypeParameterTree typeParam = (TypeParameterTree) actualNode;
+          List<? extends Tree> bounds = typeParam.getBounds();
+          int arg = astNode.getArgument();
+          return bounds.get(arg);
+        }
+        case UNION_TYPE -> {
+          UnionTypeTree unionType = (UnionTypeTree) actualNode;
+          int arg = astNode.getArgument();
+          List<? extends Tree> typeAlts = unionType.getTypeAlternatives();
+          if (arg >= typeAlts.size()) {
+            return null;
+          }
+          return typeAlts.get(arg);
+        }
+        case VARIABLE -> {
+          // A VariableTree can have modifiers, but we only look at
+          // the initializer and type because modifiers can't be
+          // annotated. Any annotations on the LHS must be on the type.
+          VariableTree var = (VariableTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.INITIALIZER)) {
+            return var.getInitializer();
+          } else if (astNode.childSelectorIs(ASTPath.TYPE)) {
+            return var.getType();
+          } else {
+            return null;
+          }
+        }
+        case WHILE_LOOP -> {
+          WhileLoopTree whileLoop = (WhileLoopTree) actualNode;
+          if (astNode.childSelectorIs(ASTPath.CONDITION)) {
+            return whileLoop.getCondition();
+          } else {
+            return whileLoop.getStatement();
+          }
+        }
+        default -> {
+          if (ASTPath.isBinaryOperator(actualNode.getKind())) {
+            BinaryTree binary = (BinaryTree) actualNode;
+            if (astNode.childSelectorIs(ASTPath.LEFT_OPERAND)) {
+              return binary.getLeftOperand();
+            } else {
+              return binary.getRightOperand();
+            }
+          } else if (ASTPath.isCompoundAssignment(actualNode.getKind())) {
+            CompoundAssignmentTree compoundAssignment = (CompoundAssignmentTree) actualNode;
             if (astNode.childSelectorIs(ASTPath.VARIABLE)) {
-              return enhancedForLoop.getVariable();
-            } else if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
-              return enhancedForLoop.getExpression();
+              return compoundAssignment.getVariable();
             } else {
-              return enhancedForLoop.getStatement();
+              return compoundAssignment.getExpression();
             }
+          } else if (ASTPath.isUnaryOperator(actualNode.getKind())) {
+            UnaryTree unary = (UnaryTree) actualNode;
+            return unary.getExpression();
+          } else if (isWildcard(actualNode.getKind())) {
+            WildcardTree wildcard = (WildcardTree) actualNode;
+            return wildcard.getBound();
+          } else {
+            throw new IllegalArgumentException("Illegal kind: " + actualNode.getKind());
           }
-        case EXPRESSION_STATEMENT:
-          {
-            ExpressionStatementTree expressionStatement = (ExpressionStatementTree) actualNode;
-            return expressionStatement.getExpression();
-          }
-        case FOR_LOOP:
-          {
-            ForLoopTree forLoop = (ForLoopTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.INITIALIZER)) {
-              int arg = astNode.getArgument();
-              List<? extends StatementTree> inits = forLoop.getInitializer();
-              if (arg >= inits.size()) {
-                return null;
-              }
-              return inits.get(arg);
-            } else if (astNode.childSelectorIs(ASTPath.CONDITION)) {
-              return forLoop.getCondition();
-            } else if (astNode.childSelectorIs(ASTPath.UPDATE)) {
-              int arg = astNode.getArgument();
-              List<? extends ExpressionStatementTree> updates = forLoop.getUpdate();
-              if (arg >= updates.size()) {
-                return null;
-              }
-              return updates.get(arg);
-            } else {
-              return forLoop.getStatement();
-            }
-          }
-        case IF:
-          {
-            IfTree iff = (IfTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.CONDITION)) {
-              return iff.getCondition();
-            } else if (astNode.childSelectorIs(ASTPath.THEN_STATEMENT)) {
-              return iff.getThenStatement();
-            } else {
-              return iff.getElseStatement();
-            }
-          }
-        case INSTANCE_OF:
-          {
-            InstanceOfTree instanceOf = (InstanceOfTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
-              return instanceOf.getExpression();
-            } else {
-              return instanceOf.getType();
-            }
-          }
-        case LABELED_STATEMENT:
-          {
-            LabeledStatementTree labeledStatement = (LabeledStatementTree) actualNode;
-            return labeledStatement.getStatement();
-          }
-        case LAMBDA_EXPRESSION:
-          {
-            LambdaExpressionTree lambdaExpression = (LambdaExpressionTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.PARAMETER)) {
-              int arg = astNode.getArgument();
-              List<? extends VariableTree> params = lambdaExpression.getParameters();
-              if (arg >= params.size()) {
-                return null;
-              }
-              return params.get(arg);
-            } else {
-              return lambdaExpression.getBody();
-            }
-          }
-        case MEMBER_REFERENCE:
-          {
-            MemberReferenceTree memberReference = (MemberReferenceTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.QUALIFIER_EXPRESSION)) {
-              return memberReference.getQualifierExpression();
-            } else {
-              int arg = astNode.getArgument();
-              List<? extends ExpressionTree> typeArgs = memberReference.getTypeArguments();
-              if (arg >= typeArgs.size()) {
-                return null;
-              }
-              return typeArgs.get(arg);
-            }
-          }
-        case MEMBER_SELECT:
-          {
-            MemberSelectTree memberSelect = (MemberSelectTree) actualNode;
-            return memberSelect.getExpression();
-          }
-        case METHOD:
-          {
-            MethodTree method = (MethodTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.TYPE)) {
-              return method.getReturnType();
-            } else if (astNode.childSelectorIs(ASTPath.PARAMETER)) {
-              int arg = astNode.getArgument();
-              List<? extends VariableTree> params = method.getParameters();
-              return arg < 0
-                  ? method.getReceiverParameter()
-                  : arg < params.size() ? params.get(arg) : null;
-            } else if (astNode.childSelectorIs(ASTPath.TYPE_PARAMETER)) {
-              int arg = astNode.getArgument();
-              return method.getTypeParameters().get(arg);
-            } else { // BODY
-              return method.getBody();
-            }
-          }
-        case METHOD_INVOCATION:
-          {
-            MethodInvocationTree methodInvocation = (MethodInvocationTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.TYPE_ARGUMENT)) {
-              int arg = astNode.getArgument();
-              List<? extends Tree> typeArgs = methodInvocation.getTypeArguments();
-              if (arg >= typeArgs.size()) {
-                return null;
-              }
-              return typeArgs.get(arg);
-            } else if (astNode.childSelectorIs(ASTPath.METHOD_SELECT)) {
-              return methodInvocation.getMethodSelect();
-            } else {
-              int arg = astNode.getArgument();
-              List<? extends ExpressionTree> args = methodInvocation.getArguments();
-              if (arg >= args.size()) {
-                return null;
-              }
-              return args.get(arg);
-            }
-          }
-        case NEW_ARRAY:
-          {
-            NewArrayTree newArray = (NewArrayTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.TYPE)) {
-              Type type = ((JCTree.JCNewArray) newArray).type;
-              Tree typeTree = Insertions.TypeTree.fromJavacType(type);
-              int arg = astNode.getArgument();
-              if (arg == 0 && astPath.size() == ix + 1) {
-                return newArray;
-                // if (astPath.size() != ix+1) { return null; }
-                // return typeTree;
-                // return ((ArrayTypeTree) typeTree).getType();
-                // return newArray;
-              }
-              typeTree = ((NewArrayTree) typeTree).getType();
-              while (--arg > 0) {
-                if (!(typeTree instanceof ArrayTypeTree)) {
-                  return null;
-                }
-                typeTree = ((ArrayTypeTree) typeTree).getType();
-              }
-              return typeTree;
-            } else if (astNode.childSelectorIs(ASTPath.DIMENSION)) {
-              int arg = astNode.getArgument();
-              List<? extends ExpressionTree> dims = newArray.getDimensions();
-              return arg < dims.size() ? dims.get(arg) : null;
-            } else {
-              int arg = astNode.getArgument();
-              List<? extends ExpressionTree> inits = newArray.getInitializers();
-              return arg < inits.size() ? inits.get(arg) : null;
-            }
-          }
-        case NEW_CLASS:
-          {
-            NewClassTree newClass = (NewClassTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.ENCLOSING_EXPRESSION)) {
-              return newClass.getEnclosingExpression();
-            } else if (astNode.childSelectorIs(ASTPath.TYPE_ARGUMENT)) {
-              int arg = astNode.getArgument();
-              List<? extends Tree> typeArgs = newClass.getTypeArguments();
-              if (arg >= typeArgs.size()) {
-                return null;
-              }
-              return typeArgs.get(arg);
-            } else if (astNode.childSelectorIs(ASTPath.IDENTIFIER)) {
-              return newClass.getIdentifier();
-            } else if (astNode.childSelectorIs(ASTPath.ARGUMENT)) {
-              int arg = astNode.getArgument();
-              List<? extends ExpressionTree> args = newClass.getArguments();
-              if (arg >= args.size()) {
-                return null;
-              }
-              return args.get(arg);
-            } else {
-              return newClass.getClassBody(); // For anonymous classes
-            }
-          }
-        case PARAMETERIZED_TYPE:
-          {
-            ParameterizedTypeTree parameterizedType = (ParameterizedTypeTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.TYPE)) {
-              return parameterizedType.getType();
-            } else {
-              int arg = astNode.getArgument();
-              List<? extends Tree> typeArgs = parameterizedType.getTypeArguments();
-              if (arg >= typeArgs.size()) {
-                return null;
-              }
-              return typeArgs.get(arg);
-            }
-          }
-        case PARENTHESIZED:
-          {
-            ParenthesizedTree parenthesized = (ParenthesizedTree) actualNode;
-            return parenthesized.getExpression();
-          }
-        case RETURN:
-          {
-            ReturnTree returnn = (ReturnTree) actualNode;
-            return returnn.getExpression();
-          }
-        case SWITCH:
-          {
-            SwitchTree zwitch = (SwitchTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
-              return zwitch.getExpression();
-            } else {
-              int arg = astNode.getArgument();
-              List<? extends CaseTree> cases = zwitch.getCases();
-              if (arg >= cases.size()) {
-                return null;
-              }
-              return cases.get(arg);
-            }
-          }
-        case SYNCHRONIZED:
-          {
-            SynchronizedTree synchronizzed = (SynchronizedTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
-              return synchronizzed.getExpression();
-            } else {
-              return synchronizzed.getBlock();
-            }
-          }
-        case THROW:
-          {
-            ThrowTree throww = (ThrowTree) actualNode;
-            return throww.getExpression();
-          }
-        case TRY:
-          {
-            TryTree tryy = (TryTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.BLOCK)) {
-              return tryy.getBlock();
-            } else if (astNode.childSelectorIs(ASTPath.CATCH)) {
-              int arg = astNode.getArgument();
-              List<? extends CatchTree> catches = tryy.getCatches();
-              if (arg >= catches.size()) {
-                return null;
-              }
-              return catches.get(arg);
-            } else if (astNode.childSelectorIs(ASTPath.FINALLY_BLOCK)) {
-              return tryy.getFinallyBlock();
-            } else {
-              int arg = astNode.getArgument();
-              List<? extends Tree> resources = tryy.getResources();
-              if (arg >= resources.size()) {
-                return null;
-              }
-              return resources.get(arg);
-            }
-          }
-        case TYPE_CAST:
-          {
-            TypeCastTree typeCast = (TypeCastTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.TYPE)) {
-              return typeCast.getType();
-            } else {
-              return typeCast.getExpression();
-            }
-          }
-        case TYPE_PARAMETER:
-          {
-            TypeParameterTree typeParam = (TypeParameterTree) actualNode;
-            List<? extends Tree> bounds = typeParam.getBounds();
-            int arg = astNode.getArgument();
-            return bounds.get(arg);
-          }
-        case UNION_TYPE:
-          {
-            UnionTypeTree unionType = (UnionTypeTree) actualNode;
-            int arg = astNode.getArgument();
-            List<? extends Tree> typeAlts = unionType.getTypeAlternatives();
-            if (arg >= typeAlts.size()) {
-              return null;
-            }
-            return typeAlts.get(arg);
-          }
-        case VARIABLE:
-          {
-            // A VariableTree can have modifiers, but we only look at
-            // the initializer and type because modifiers can't be
-            // annotated. Any annotations on the LHS must be on the type.
-            VariableTree var = (VariableTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.INITIALIZER)) {
-              return var.getInitializer();
-            } else if (astNode.childSelectorIs(ASTPath.TYPE)) {
-              return var.getType();
-            } else {
-              return null;
-            }
-          }
-        case WHILE_LOOP:
-          {
-            WhileLoopTree whileLoop = (WhileLoopTree) actualNode;
-            if (astNode.childSelectorIs(ASTPath.CONDITION)) {
-              return whileLoop.getCondition();
-            } else {
-              return whileLoop.getStatement();
-            }
-          }
-        default:
-          {
-            if (ASTPath.isBinaryOperator(actualNode.getKind())) {
-              BinaryTree binary = (BinaryTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.LEFT_OPERAND)) {
-                return binary.getLeftOperand();
-              } else {
-                return binary.getRightOperand();
-              }
-            } else if (ASTPath.isCompoundAssignment(actualNode.getKind())) {
-              CompoundAssignmentTree compoundAssignment = (CompoundAssignmentTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.VARIABLE)) {
-                return compoundAssignment.getVariable();
-              } else {
-                return compoundAssignment.getExpression();
-              }
-            } else if (ASTPath.isUnaryOperator(actualNode.getKind())) {
-              UnaryTree unary = (UnaryTree) actualNode;
-              return unary.getExpression();
-            } else if (isWildcard(actualNode.getKind())) {
-              WildcardTree wildcard = (WildcardTree) actualNode;
-              return wildcard.getBound();
-            } else {
-              throw new IllegalArgumentException("Illegal kind: " + actualNode.getKind());
-            }
-          }
+        }
       }
     } catch (RuntimeException ex) {
       return null;
@@ -780,21 +739,22 @@ public class ASTPathCriterion implements Criterion {
     switch (kind) {
       // case ANNOTATION:
       // case INTERFACE:
-      case CLASS: // "extends" clause?
+      case CLASS -> { // "extends" clause?
         return ASTPath.isClassEquiv(kind)
             && ix == last
             && entry.getArgument() == -1
             && entry.childSelectorIs(ASTPath.BOUND);
-      case TYPE_PARAMETER:
+      }
+      case TYPE_PARAMETER -> {
         return node instanceof TypeParameterTree
             && ix == last
             && entry.getArgument() == 0
             && entry.childSelectorIs(ASTPath.BOUND);
-      case METHOD: // nullary constructor? receiver?
-        if (!(node instanceof MethodTree)) {
+      }
+      case METHOD -> { // nullary constructor? receiver?
+        if (!(node instanceof MethodTree method)) {
           return false;
         }
-        MethodTree method = (MethodTree) node;
         List<? extends VariableTree> params = method.getParameters();
         if ("<init>".equals(method.getName().toString())) {
           if (ix == last) {
@@ -823,11 +783,11 @@ public class ASTPathCriterion implements Criterion {
           }
         }
         return false;
-      case NEW_ARRAY:
-        if (!(node instanceof NewArrayTree)) {
+      }
+      case NEW_ARRAY -> {
+        if (!(node instanceof NewArrayTree newArray)) {
           return false;
         }
-        NewArrayTree newArray = (NewArrayTree) node;
         int arg = entry.getArgument();
         if (entry.childSelectorIs(ASTPath.TYPE)) {
           if (ix == last) {
@@ -849,10 +809,13 @@ public class ASTPathCriterion implements Criterion {
               && arg < typeTrees.size()
               && checkTypePath(ix + 1, typeTrees.get(arg));
         }
-      case UNBOUNDED_WILDCARD:
+      }
+      case UNBOUNDED_WILDCARD -> {
         return isBoundableWildcard(path, path.size() - 1);
-      default: // TODO: casts?
+      }
+      default -> { // TODO: casts?
         return false;
+      }
     }
   }
 
@@ -863,8 +826,7 @@ public class ASTPathCriterion implements Criterion {
    * @return the array depth of the given tree
    */
   private static int arrayDepth(Tree tree) {
-    if (tree instanceof NewArrayTree) {
-      NewArrayTree newArray = (NewArrayTree) tree;
+    if (tree instanceof NewArrayTree newArray) {
       Tree type = newArray.getType();
       if (type != null) {
         return type.accept(
@@ -889,10 +851,10 @@ public class ASTPathCriterion implements Criterion {
         }
       }
       return depth;
-    } else if (tree instanceof AnnotatedTypeTree) {
-      return arrayDepth(((AnnotatedTypeTree) tree).getUnderlyingType());
-    } else if (tree instanceof ArrayTypeTree) {
-      return 1 + arrayDepth(((ArrayTypeTree) tree).getType());
+    } else if (tree instanceof AnnotatedTypeTree annotatedTypeTree) {
+      return arrayDepth(annotatedTypeTree.getUnderlyingType());
+    } else if (tree instanceof ArrayTypeTree arrayTypeTree) {
+      return 1 + arrayDepth(arrayTypeTree.getType());
     } else {
       return 0;
     }
@@ -906,28 +868,26 @@ public class ASTPathCriterion implements Criterion {
         ASTPath.ASTEntry entry = astPath.get(i);
         Tree.Kind kind = entry.getTreeKind();
         switch (kind) {
-          case ANNOTATED_TYPE:
+          case ANNOTATED_TYPE -> {
             typeTree = ((AnnotatedTypeTree) typeTree).getUnderlyingType();
             continue;
-          case ARRAY_TYPE:
-            typeTree = ((ArrayTypeTree) typeTree).getType();
-            break;
-          case MEMBER_SELECT:
-            typeTree = ((MemberSelectTree) typeTree).getExpression();
-            break;
-          case PARAMETERIZED_TYPE:
+          }
+          case ARRAY_TYPE -> typeTree = ((ArrayTypeTree) typeTree).getType();
+          case MEMBER_SELECT -> typeTree = ((MemberSelectTree) typeTree).getExpression();
+          case PARAMETERIZED_TYPE -> {
             if (entry.childSelectorIs(ASTPath.TYPE_ARGUMENT)) {
               int arg = entry.getArgument();
               typeTree = ((ParameterizedTypeTree) typeTree).getTypeArguments().get(arg);
             } else { // TYPE
               typeTree = ((ParameterizedTypeTree) typeTree).getType();
             }
-            break;
-          default:
+          }
+          default -> {
             if (isWildcard(kind)) {
               return ++i == astPath.size(); // ???
             }
             break loop;
+          }
         }
         ++i;
       }
@@ -998,71 +958,70 @@ public class ASTPathCriterion implements Criterion {
   }
 
   public boolean isExpression(Tree.Kind kind) {
-    switch (kind) {
-      case ARRAY_ACCESS:
-      case ASSIGNMENT:
-      case CONDITIONAL_EXPRESSION:
-      case EXPRESSION_STATEMENT:
-      case MEMBER_SELECT:
-      case MEMBER_REFERENCE:
-      case IDENTIFIER:
-      case INSTANCE_OF:
-      case METHOD_INVOCATION:
-      case NEW_ARRAY:
-      case NEW_CLASS:
-      case LAMBDA_EXPRESSION:
-      case PARENTHESIZED:
-      case TYPE_CAST:
-      case POSTFIX_INCREMENT:
-      case POSTFIX_DECREMENT:
-      case PREFIX_INCREMENT:
-      case PREFIX_DECREMENT:
-      case UNARY_PLUS:
-      case UNARY_MINUS:
-      case BITWISE_COMPLEMENT:
-      case LOGICAL_COMPLEMENT:
-      case MULTIPLY:
-      case DIVIDE:
-      case REMAINDER:
-      case PLUS:
-      case MINUS:
-      case LEFT_SHIFT:
-      case RIGHT_SHIFT:
-      case UNSIGNED_RIGHT_SHIFT:
-      case LESS_THAN:
-      case GREATER_THAN:
-      case LESS_THAN_EQUAL:
-      case GREATER_THAN_EQUAL:
-      case EQUAL_TO:
-      case NOT_EQUAL_TO:
-      case AND:
-      case XOR:
-      case OR:
-      case CONDITIONAL_AND:
-      case CONDITIONAL_OR:
-      case MULTIPLY_ASSIGNMENT:
-      case DIVIDE_ASSIGNMENT:
-      case REMAINDER_ASSIGNMENT:
-      case PLUS_ASSIGNMENT:
-      case MINUS_ASSIGNMENT:
-      case LEFT_SHIFT_ASSIGNMENT:
-      case RIGHT_SHIFT_ASSIGNMENT:
-      case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
-      case AND_ASSIGNMENT:
-      case XOR_ASSIGNMENT:
-      case OR_ASSIGNMENT:
-      case INT_LITERAL:
-      case LONG_LITERAL:
-      case FLOAT_LITERAL:
-      case DOUBLE_LITERAL:
-      case BOOLEAN_LITERAL:
-      case CHAR_LITERAL:
-      case STRING_LITERAL:
-      case NULL_LITERAL:
-        return true;
-      default:
-        return false;
-    }
+    return switch (kind) {
+      case ARRAY_ACCESS,
+          ASSIGNMENT,
+          CONDITIONAL_EXPRESSION,
+          EXPRESSION_STATEMENT,
+          MEMBER_SELECT,
+          MEMBER_REFERENCE,
+          IDENTIFIER,
+          INSTANCE_OF,
+          METHOD_INVOCATION,
+          NEW_ARRAY,
+          NEW_CLASS,
+          LAMBDA_EXPRESSION,
+          PARENTHESIZED,
+          TYPE_CAST,
+          POSTFIX_INCREMENT,
+          POSTFIX_DECREMENT,
+          PREFIX_INCREMENT,
+          PREFIX_DECREMENT,
+          UNARY_PLUS,
+          UNARY_MINUS,
+          BITWISE_COMPLEMENT,
+          LOGICAL_COMPLEMENT,
+          MULTIPLY,
+          DIVIDE,
+          REMAINDER,
+          PLUS,
+          MINUS,
+          LEFT_SHIFT,
+          RIGHT_SHIFT,
+          UNSIGNED_RIGHT_SHIFT,
+          LESS_THAN,
+          GREATER_THAN,
+          LESS_THAN_EQUAL,
+          GREATER_THAN_EQUAL,
+          EQUAL_TO,
+          NOT_EQUAL_TO,
+          AND,
+          XOR,
+          OR,
+          CONDITIONAL_AND,
+          CONDITIONAL_OR,
+          MULTIPLY_ASSIGNMENT,
+          DIVIDE_ASSIGNMENT,
+          REMAINDER_ASSIGNMENT,
+          PLUS_ASSIGNMENT,
+          MINUS_ASSIGNMENT,
+          LEFT_SHIFT_ASSIGNMENT,
+          RIGHT_SHIFT_ASSIGNMENT,
+          UNSIGNED_RIGHT_SHIFT_ASSIGNMENT,
+          AND_ASSIGNMENT,
+          XOR_ASSIGNMENT,
+          OR_ASSIGNMENT,
+          INT_LITERAL,
+          LONG_LITERAL,
+          FLOAT_LITERAL,
+          DOUBLE_LITERAL,
+          BOOLEAN_LITERAL,
+          CHAR_LITERAL,
+          STRING_LITERAL,
+          NULL_LITERAL ->
+          true;
+      default -> false;
+    };
   }
 
   /**
