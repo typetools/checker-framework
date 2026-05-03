@@ -12,8 +12,8 @@ public class ContractsOverridingSubtyping {
     @RequiresQualifier(expression = "f", qualifier = Odd.class)
     void requiresOdd() {}
 
-    @RequiresQualifier(expression = "f", qualifier = Unqualified.class)
     // :: warning: [contracts.toptype]
+    @RequiresQualifier(expression = "f", qualifier = Unqualified.class)
     void requiresUnqual() {}
 
     @EnsuresQualifier(expression = "f", qualifier = Odd.class)
@@ -21,8 +21,8 @@ public class ContractsOverridingSubtyping {
       f = g;
     }
 
-    @EnsuresQualifier(expression = "f", qualifier = Unqualified.class)
     // :: warning: [contracts.toptype]
+    @EnsuresQualifier(expression = "f", qualifier = Unqualified.class)
     void ensuresUnqual() {}
 
     @EnsuresQualifierIf(expression = "f", result = true, qualifier = Odd.class)
@@ -31,8 +31,8 @@ public class ContractsOverridingSubtyping {
       return true;
     }
 
-    @EnsuresQualifierIf(expression = "f", result = true, qualifier = Unqualified.class)
     // :: warning: [contracts.toptype]
+    @EnsuresQualifierIf(expression = "f", result = true, qualifier = Unqualified.class)
     boolean ensuresIfUnqual() {
       return true;
     }
@@ -41,8 +41,8 @@ public class ContractsOverridingSubtyping {
   static class Derived extends Base {
 
     @Override
-    @RequiresQualifier(expression = "f", qualifier = Unqualified.class)
     // :: warning: [contracts.toptype]
+    @RequiresQualifier(expression = "f", qualifier = Unqualified.class)
     void requiresOdd() {}
 
     @Override
@@ -51,8 +51,8 @@ public class ContractsOverridingSubtyping {
     void requiresUnqual() {}
 
     @Override
-    @EnsuresQualifier(expression = "f", qualifier = Unqualified.class)
     // :: warning: [contracts.toptype]
+    @EnsuresQualifier(expression = "f", qualifier = Unqualified.class)
     // :: error: [contracts.postcondition.override]
     void ensuresOdd() {
       f = g;
@@ -65,8 +65,8 @@ public class ContractsOverridingSubtyping {
     }
 
     @Override
-    @EnsuresQualifierIf(expression = "f", result = true, qualifier = Unqualified.class)
     // :: warning: [contracts.toptype]
+    @EnsuresQualifierIf(expression = "f", result = true, qualifier = Unqualified.class)
     // :: error: [contracts.conditional.postcondition.true.override]
     boolean ensuresIfOdd() {
       f = g;
