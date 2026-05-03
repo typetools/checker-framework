@@ -398,7 +398,7 @@ public final class SignednessUtil {
   }
 
   /**
-   * Creates a BigInteger representing the same value as unsigned long.
+   * Creates a BigInteger representing the same value as an unsigned long.
    *
    * <p>Java provides no public method with this functionality, unfortunately.
    *
@@ -406,7 +406,6 @@ public final class SignednessUtil {
    * @return the corresponding BigInteger
    */
   @SuppressWarnings("signedness")
-  @Deprecated(forRemoval = true, since = "4.0.0")
   private static @Unsigned BigInteger toUnsignedBigInteger(@Unsigned long l) {
     if (l >= 0L) {
       return BigInteger.valueOf(l);

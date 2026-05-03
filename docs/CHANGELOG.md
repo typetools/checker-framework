@@ -3,13 +3,28 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 4.0.1 (2026-05-01)
+## Version 4.1.0 (2026-05-01)
 
 ### User-visible changes
 
+Removed deprecated script `checker/bin-devel/build.sh`; use `./gradlew assemble`
+instead.
+
+Removed deprecated names "builder", "object.construction", and
+"objectconstruction" for the Called Methods Checker.
+
 ### Implementation details
 
+New method annotation `@DoesNotUnrefineReceiver`.
+
+In `AnnotatedTypeFactory`:
+
+* new method `hasDoesNotUnrefineReceiver()`.
+* `isAliasedTypeAnnotation()` is now protected rather than public.
+
 ### Closed issues
+
+\#6890, #7364, #7488.
 
 ## Version 4.0.0 (2026-04-07)
 

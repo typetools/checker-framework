@@ -328,6 +328,10 @@ For example, here is one set of guidelines that you could check manually:
 \item The class is final, so that subclasses cannot violate these properties.
 \end{itemize}
 
+The result of a constructor call (that is, \<new MyClass(...)>) is not
+necessarily \<@InternedDistinct> because the \<equals()> method of
+\<MyClass> might return true for two distinct objects.
+
 
 \sectionAndLabel{What the Interning Checker checks}{interning-checks}
 

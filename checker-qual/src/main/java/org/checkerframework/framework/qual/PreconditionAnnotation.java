@@ -43,7 +43,7 @@ import java.lang.annotation.Target;
  * {@code @MinLen(2)} upon entry.
  *
  * <pre><code>
- *  {@literal @}RequiresMinLen(value = "field", targetValue = 2")
+ *  {@literal @}RequiresMinLen(value = "field", targetValue = 2)
  *  public char getThirdCharacter() {
  *    return field.charAt(2);
  *  }

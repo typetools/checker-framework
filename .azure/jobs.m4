@@ -18,9 +18,9 @@ misc_job(latest_version)
 
 typecheck_job(canary_version)
 
-daikon_job(canary_version)
+  # TEMPORARILY commented until Daikon release 5.8.24.
+  # daikon_job(canary_version)
 
-  ## I'm not sure why the guava_jdk11 job is failing (it's due to Error Prone).
 guava_job(canary_version)
 
 plume_lib_job(canary_version)
