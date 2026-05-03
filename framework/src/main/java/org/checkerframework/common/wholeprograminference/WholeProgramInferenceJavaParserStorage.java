@@ -1125,8 +1125,7 @@ public class WholeProgramInferenceJavaParserStorage
     if (parentNode instanceof ArrayType) {
       return gatf.arraysAreRelevant();
     }
-    if (parentNode instanceof ClassOrInterfaceType) {
-      ClassOrInterfaceType classType = (ClassOrInterfaceType) parentNode;
+    if (parentNode instanceof ClassOrInterfaceType classType) {
       String simpleName = classType.getName().toString();
       String scopedName = classType.getNameWithScope();
       // TODO: Do I need to remove type parameters?
@@ -1135,8 +1134,7 @@ public class WholeProgramInferenceJavaParserStorage
     if (parentNode instanceof IntersectionType) {
       return true; // TODO
     }
-    if (parentNode instanceof Parameter) {
-      Parameter param = (Parameter) parentNode;
+    if (parentNode instanceof Parameter param) {
       if (param.isVarArgs()) {
         return gatf.arraysAreRelevant();
       } else {
