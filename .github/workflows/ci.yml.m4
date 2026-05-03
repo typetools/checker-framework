@@ -5,7 +5,7 @@ include([../../.azure/defs-common.m4])dnl
 include([defs.m4])dnl
 name: CI
 
-on:
+on:  # yamllint disable-line rule:truthy
   push:
     branches:
       - "**"

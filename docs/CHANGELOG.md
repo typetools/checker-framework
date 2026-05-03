@@ -24,6 +24,8 @@ In `AnnotatedTypeFactory`:
 
 ### Closed issues
 
+\#6890, #7364, #7488.
+
 ## Version 4.0.0 (2026-04-07)
 
 ### User-visible changes

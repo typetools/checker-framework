@@ -15,7 +15,8 @@ schedules:
         - master
 
 variables:
-  system.debug: true
+  - name: system.debug
+    value: true
 
 jobs:
 

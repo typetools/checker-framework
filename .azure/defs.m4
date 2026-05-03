@@ -16,9 +16,6 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: echo $ORG_GRADLE_PROJECT_jdkTestVersion
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: $1
 ifelse(["displayName:" must come after "bash:".])dnl
       - bash: ./checker/bin-devel/test-cftests-junit.sh
         displayName: test-cftests-junit.sh
@@ -224,9 +221,9 @@ ifelse($1,canary_version,,[dnl
       - checkout: self
         fetchDepth: 25
       - bash: ./checker/bin-devel/test-daikon-part3.sh
-        displayName: test-daikon-part3.sh]
+        displayName: test-daikon-part3.sh
         env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: $1)dnl
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl
 define([guava_job], [dnl
   - job: guava_jdk$1
@@ -243,9 +240,9 @@ ifelse($1,canary_version,,[dnl
       - checkout: self
         fetchDepth: 25
       - bash: ./checker/bin-devel/test-guava.sh
-        displayName: test-guava.sh]
+        displayName: test-guava.sh
         env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: $1)dnl
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl
 define([plume_lib_job], [dnl
   - job: plume_lib_jdk$1
