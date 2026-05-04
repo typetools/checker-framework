@@ -79,7 +79,6 @@ import org.checkerframework.afu.scenelib.el.ATypeElement;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.interning.qual.FindDistinct;
-import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -3364,18 +3363,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns true if the given annotation is a part of the type system under which this type factory
-   * operates. Null is never a supported qualifier; the parameter is nullable to allow the result of
-   * canonicalAnnotation to be passed in directly.
+   * operates.
    *
    * @param a any annotation
    * @return true if that annotation is part of the type system under which this type factory
    *     operates, false otherwise
    */
-  @EnsuresNonNullIf(expression = "#1", result = true)
-  public boolean isSupportedQualifier(@Nullable AnnotationMirror a) {
-    if (a == null) {
-      return false;
-    }
+  public boolean isSupportedQualifier(AnnotationMirror a) {
     return isSupportedQualifier(AnnotationUtils.annotationName(a));
   }
 
