@@ -161,23 +161,22 @@ public class TypecheckResult {
 
     if (numUnexpected != 0) {
       summaryBuilder.add(
-          StringsPlume.nvPlural(numExpected, "unexpected diagnostic", "was") + " found:");
+          StringsPlume.nvPlural(numUnexpected, "unexpected diagnostic", "was") + " found:");
       for (TestDiagnostic unexpected : unexpectedDiagnostics) {
         summaryBuilder.add("  " + unexpected.toString());
       }
     }
 
-    // If there were unexpected diagnostics and every expected diagnostic is missing, then don't
-    // print the expected diagnostics.
-    if (numUnexpected != 0 && numMissing == expectedDiagnostics.size()) {
-      return summaryBuilder.toString();
-    }
-
     if (numMissing != 0) {
-      summaryBuilder.add(
-          StringsPlume.nvPlural(numMissing, "expected diagnostic", "was") + " not found:");
-      for (TestDiagnostic missing : missingDiagnostics) {
-        summaryBuilder.add("  " + missing.toString());
+      String msg = StringsPlume.nvPlural(numMissing, "expected diagnostic", "was") + " not found";
+      if (numUnexpected != 0 && numMissing == expectedDiagnostics.size()) {
+        // There were unexpected diagnostics and every expected diagnostic is missing.
+        summaryBuilder.add("All " + msg + ".");
+      } else {
+        summaryBuilder.add(msg + ":");
+        for (TestDiagnostic missing : missingDiagnostics) {
+          summaryBuilder.add("  " + missing.toString());
+        }
       }
     }
     return summaryBuilder.toString();
