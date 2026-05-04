@@ -122,7 +122,6 @@ public class TypecheckResult {
   public List<String> getErrorHeaders() {
     List<String> errorHeaders = new ArrayList<>();
 
-    // none of these should be true if the test didn't fail
     if (didTestFail()) {
       if (compilationResult.compiledWithoutError() && !expectedDiagnostics.isEmpty()) {
         errorHeaders.add("The test run was expected to issue errors/warnings, but it did not.");
@@ -157,24 +156,26 @@ public class TypecheckResult {
     StringJoiner summaryBuilder = new StringJoiner(System.lineSeparator());
     summaryBuilder.add(StringsPlume.joinLines(getErrorHeaders()));
 
-    if (!unexpectedDiagnostics.isEmpty()) {
-      int numUnexpected = unexpectedDiagnostics.size();
-      if (numUnexpected == 1) {
-        summaryBuilder.add("1 unexpected diagnostic was found:");
-      } else {
-        summaryBuilder.add(numUnexpected + " unexpected diagnostics were found:");
-      }
+    int numUnexpected = unexpectedDiagnostics.size();
+    int numMissing = missingDiagnostics.size();
 
+    if (numUnexpected != 0) {
+      summaryBuilder.add(
+          StringsPlume.nvPlural(numExpected, "unexpected diagnostic", "was") + " found:");
       for (TestDiagnostic unexpected : unexpectedDiagnostics) {
         summaryBuilder.add("  " + unexpected.toString());
       }
     }
 
-    if (!missingDiagnostics.isEmpty()) {
-      int numMissing = missingDiagnostics.size();
+    // If there were unexpected diagnostics and every expected diagnostic is missing, then don't
+    // print the expected diagnostics.
+    if (numUnexpected != 0 && numMissing == expectedDiagnostics.size()) {
+      return summaryBuilder.toString();
+    }
+
+    if (numMissing != 0) {
       summaryBuilder.add(
           StringsPlume.nvPlural(numMissing, "expected diagnostic", "was") + " not found:");
-
       for (TestDiagnostic missing : missingDiagnostics) {
         summaryBuilder.add("  " + missing.toString());
       }
