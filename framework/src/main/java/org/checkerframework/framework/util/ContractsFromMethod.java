@@ -296,7 +296,7 @@ public class ContractsFromMethod {
   private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno,
       @Nullable AnnotationMirror argumentAnno,
-      @Nullable Map<String, String> argumentRenaming,
+      Map<String, String> argumentRenaming,
       @Nullable TypeMirror type) {
 
     @SuppressWarnings("deprecation") // permitted for use in the framework
