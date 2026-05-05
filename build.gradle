@@ -72,28 +72,29 @@ ext {
 
   javadocMemberLevel = JavadocMemberLevel.PROTECTED
 
-  // The local git repository, typically in the .git directory, but not for worktrees.
+  // Path to git hooks for this checkout (works for normal repos, worktrees, and submodules).
   // This value is always overwritten, but Gradle needs the variable to be initialized.
-  localRepo = ".git"
+  localHooksDir = ".git/hooks"
 }
 
-tasks.register("setLocalRepo", Exec) {
-  commandLine("git", "worktree", "list")
+tasks.register("setLocalHooksDir", Exec) {
+  onlyIf { rootProject.file(".git").exists() }
+  commandLine("git", "rev-parse", "--git-path", "hooks")
   standardOutput = new ByteArrayOutputStream()
 
   doLast {
-    String worktreeList = standardOutput.toString()
-    localRepo = worktreeList.substring(0, worktreeList.indexOf(" ")) + "/.git"
+    localHooksDir = standardOutput.toString().trim()
   }
 }
 
 // No group so it does not show up in the output of `gradlew tasks`
 tasks.register("installGitHooks", Copy) {
-  dependsOn("setLocalRepo")
-  description = "Copies git hooks to .git directory"
+  onlyIf { rootProject.file(".git").exists() }
+  dependsOn("setLocalHooksDir")
+  description = "Copies git hooks to the local git hooks directory"
   from(files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit"))
   rename("git\\.(.*)", "\$1")
-  into(localRepo + "/hooks")
+  into({ localHooksDir })
 }
 subprojects { subProject ->
   if (subProject.name.equals("checker")
