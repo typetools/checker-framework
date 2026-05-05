@@ -126,7 +126,7 @@ public class ContractsFromMethod {
   private <T extends Contract> Set<T> getContractsOfKind(
       ExecutableElement executableElement, Contract.Kind kind, Class<T> clazz) {
     MethodTree methodDecl;
-    if (executableElement.getSimpleName().toString().equals("<init>")) {
+    if (executableElement.getKind() == ElementKind.CONSTRUCTOR) {
       // It's a constructor, not a method.
       methodDecl = null;
     } else {
