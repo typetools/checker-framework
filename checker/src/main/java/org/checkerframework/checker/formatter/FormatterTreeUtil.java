@@ -98,7 +98,7 @@ public class FormatterTreeUtil {
     ARRAY,
 
     /**
-     * A null array is passed to the format method. This happens seldomly.
+     * A null array is passed to the format method. This happens seldom.
      *
      * <blockquote>
      *

@@ -288,7 +288,7 @@ public class PurityChecker {
       //    @SideEffectFree and the args are pure, and forbid all enclosing try statements
       //    that have a catch clause.
       // More precise rule:
-      //  * permit other non-deterministic expresssions within throw (at which time move this
+      //  * permit other non-deterministic expressions within throw (at which time move this
       //    logic to visitThrow()).
       //  * the only bad try statements are those with a catch block that is:
       //     * unchecked exceptions
@@ -319,7 +319,7 @@ public class PurityChecker {
       boolean sideEffectFree =
           assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, ctorElement);
       // This does not use "addNotBothReason" because the reasons are different:  one is
-      // because the constructor is called at all, and the other is because the constuctor is
+      // because the constructor is called at all, and the other is because the constructor is
       // not side-effect-free.
       if (!deterministic) {
         purityResult.addNotDetReason(tree, "object.creation");

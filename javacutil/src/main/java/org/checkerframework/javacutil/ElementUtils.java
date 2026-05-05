@@ -98,7 +98,7 @@ public class ElementUtils {
   /**
    * Returns the top-level type element that contains {@code element}.
    *
-   * @param element the element whose enclosing tye element to find
+   * @param element the element whose enclosing type element to find
    * @return a type element containing {@code element} that isn't contained in another class
    */
   public static TypeElement toplevelEnclosingTypeElement(Element element) {

@@ -54,7 +54,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * <p>1. Inference creates an inference variable for each method type argument for a given method
  * invocation. Each inference variable may have zero or more upper, lower, and equal bounds. The
  * bounds of an inference variable are initially the bounds on the type argument. More bounds may be
- * infered in later steps.
+ * inferred in later steps.
  *
  * <p>Bounds are between an inference variable and an abstract type. {@link AbstractType}s are
  * type-like structures that might include inference variables. Abstract types might also be an
@@ -117,7 +117,7 @@ public class InvocationTypeInference {
    * Creates an inference problem.
    *
    * @param factory the annotated type factory to use
-   * @param pathToExpression path to the expression for which inference is preformed
+   * @param pathToExpression path to the expression for which inference is performed
    */
   @SuppressWarnings("this-escape")
   public InvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {

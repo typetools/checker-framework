@@ -16,7 +16,7 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 
 /**
- * The entry point for the RLCCalledMethodsChecker. This checker is a modifed {@link
+ * The entry point for the RLCCalledMethodsChecker. This checker is a modified {@link
  * CalledMethodsChecker} used as a subchecker in the ResourceLeakChecker, and never independently.
  * Runs the MustCallChecker as a subchecker in order to share the CFG.
  */
