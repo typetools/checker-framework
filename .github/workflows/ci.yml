@@ -296,6 +296,12 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+      - name: ci-info
+        run: |
+          ./gradlew --console=plain getPlumeScripts
+          checker/bin-devel/.plume-scripts/ci-info typetools
+          echo "----------------"
+          checker/bin-devel/.plume-scripts/ci-info --debug typetools
       - name: test-plume-lib.sh
         run: ./checker/bin-devel/test-plume-lib.sh
         env:
