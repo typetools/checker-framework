@@ -296,13 +296,23 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
-      - name: ci-info
-        run: |
-          ./gradlew --console=plain getPlumeScripts
-          checker/bin-devel/.plume-scripts/ci-info typetools
-          echo "----------------"
-          checker/bin-devel/.plume-scripts/ci-info --debug typetools
       - name: test-plume-lib.sh
         run: ./checker/bin-devel/test-plume-lib.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+
+  ci_info:
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk25:latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+      - name: ci-info
+        run: |
+          ./gradlew --console=plain getPlumeScripts getGitScripts
+          checker/bin-devel/.plume-scripts/ci-info --debug typetools
+          echo "----------------"
+          checker/bin-devel/.git-scripts/git-clone-related" --debug plume-lib plume-util /tmp/plume-util
