@@ -191,7 +191,7 @@ final class ConstructorFirstWriteAnalysis {
           return res;
         }
       } else if (stmt instanceof VariableTree vt) {
-        // The compiler has already desugered a declaration with multiple variables
+        // The compiler has already desugared a declaration with multiple variables
         // (e.g., int a = 1, b = 2;) into multiple independent VariableTree nodes.
         ExpressionTree init = vt.getInitializer();
         if (init != null) {
@@ -203,30 +203,62 @@ final class ConstructorFirstWriteAnalysis {
           }
         }
       } else if (stmt instanceof TryTree tryTree) {
-
-        // finally introduces ordering across try/catch that requires CFG reasoning
-        if (tryTree.getFinallyBlock() != null) {
-          return FirstWriteScanResult.REASSIGNMENT;
+        // Evaluate resource initializers before the try block.
+        for (Tree resource : tryTree.getResources()) {
+          FirstWriteScanResult res;
+          if (resource instanceof VariableTree resourceVar) {
+            ExpressionTree init = resourceVar.getInitializer();
+            if (init == null) {
+              continue;
+            }
+            res =
+                ExpressionFirstWriteScanner.scanForFirstWrite(
+                    init, targetAssignment, targetField, cmAtf);
+          } else {
+            res =
+                ExpressionFirstWriteScanner.scanForFirstWrite(
+                    (ExpressionTree) resource, targetAssignment, targetField, cmAtf);
+          }
+          if (res != FirstWriteScanResult.UNASSIGNED) {
+            return res;
+          }
         }
 
-        // try-with-resources evaluates resource initializers before the try body. Modeling those
-        // effects would require extra handling, so reject.
-        if (!tryTree.getResources().isEmpty()) {
-          return FirstWriteScanResult.REASSIGNMENT;
-        }
-
-        // If any catch assigns the field, then initialization is path-dependent (try vs catch).
-        // Without control-flow reasoning, conservatively reject.
-        if (catchMayAssignField(tryTree, targetField, cmAtf)) {
-          return FirstWriteScanResult.REASSIGNMENT;
-        }
-
-        // Scan the try block body only (catch blocks are handled above).
+        // Scan the try block before any catch or finally block.
         FirstWriteScanResult res =
             scanForFirstWrite(
                 tryTree.getBlock().getStatements(), targetAssignment, targetField, cmAtf);
         if (res != FirstWriteScanResult.UNASSIGNED) {
           return res;
+        }
+
+        // Catch blocks are alternative paths after the try block. Merge them the same way as the
+        // branches of an if statement.
+        FirstWriteScanResult catchesRes = FirstWriteScanResult.UNASSIGNED;
+        for (CatchTree catchTree : tryTree.getCatches()) {
+          FirstWriteScanResult catchRes =
+              scanForFirstWrite(
+                  catchTree.getBlock().getStatements(), targetAssignment, targetField, cmAtf);
+          if (catchRes == FirstWriteScanResult.FIRST_ASSIGNMENT) {
+            catchesRes = FirstWriteScanResult.FIRST_ASSIGNMENT;
+            break;
+          }
+          if (catchRes == FirstWriteScanResult.REASSIGNMENT) {
+            catchesRes = FirstWriteScanResult.REASSIGNMENT;
+          }
+        }
+        if (catchesRes != FirstWriteScanResult.UNASSIGNED) {
+          return catchesRes;
+        }
+
+        // The finally block executes after the try block or any catch block.
+        BlockTree finallyBlock = tryTree.getFinallyBlock();
+        if (finallyBlock != null) {
+          FirstWriteScanResult finallyRes =
+              scanForFirstWrite(finallyBlock.getStatements(), targetAssignment, targetField, cmAtf);
+          if (finallyRes != FirstWriteScanResult.UNASSIGNED) {
+            return finallyRes;
+          }
         }
       } else if (stmt instanceof IfTree ifTree) {
         // Scan the condition first and return any decisive result
@@ -240,88 +272,35 @@ final class ConstructorFirstWriteAnalysis {
         StatementTree thenStmt = ifTree.getThenStatement();
         StatementTree elseStmt = ifTree.getElseStatement();
 
-        boolean targetInThen = containsTargetAssignment(thenStmt, targetAssignment);
-        boolean targetInElse = containsTargetAssignment(elseStmt, targetAssignment);
-
-        // If the target assignment is in one branch, only that branch is on the path to the
-        // target assignment. Return the result after scanning that branch.
-        if (targetInThen) {
-          return scanForFirstWrite(List.of(thenStmt), targetAssignment, targetField, cmAtf);
-        }
-        if (targetInElse) {
-          return scanForFirstWrite(List.of(elseStmt), targetAssignment, targetField, cmAtf);
-        }
-
-        // Otherwise, the target assignment is after the if statement, so either branch may execute
-        // before the target assignment.
+        // Scan the `then` and the `else` branch independently to merge their results.
         FirstWriteScanResult thenRes =
             scanForFirstWrite(List.of(thenStmt), targetAssignment, targetField, cmAtf);
-
         // The else branch may not exist
         FirstWriteScanResult elseRes =
             elseStmt == null
                 ? FirstWriteScanResult.UNASSIGNED
                 : scanForFirstWrite(List.of(elseStmt), targetAssignment, targetField, cmAtf);
 
-        // If both branches are unassigned, then continue scanning after the if statement.
-        if (thenRes == FirstWriteScanResult.UNASSIGNED
-            && elseRes == FirstWriteScanResult.UNASSIGNED) {
-          continue;
+        // A FIRST_ASSIGNMENT in either branch means the target assignment is the first write for
+        // the if statement.
+        if (thenRes == FirstWriteScanResult.FIRST_ASSIGNMENT
+            || elseRes == FirstWriteScanResult.FIRST_ASSIGNMENT) {
+          return FirstWriteScanResult.FIRST_ASSIGNMENT;
         }
-        return FirstWriteScanResult.REASSIGNMENT;
+        // If neither branch yields FIRST_ASSIGNMENT, then a REASSIGNMENT in either branch is
+        // the result of the if statement.
+        if (thenRes == FirstWriteScanResult.REASSIGNMENT
+            || elseRes == FirstWriteScanResult.REASSIGNMENT) {
+          return FirstWriteScanResult.REASSIGNMENT;
+        }
+        // Both branches are UNASSIGNED, continue scanning after the if statement.
       } else {
-        // Any other statement kind requires control-flow-aware reasoning that this helper does not
-        // attempt. Conservatively reject all of them.
+        // Conservatively reject unmodeled statement kinds.
         return FirstWriteScanResult.REASSIGNMENT;
       }
     }
 
     return FirstWriteScanResult.UNASSIGNED;
-  }
-
-  /**
-   * Returns true if any {@code catch} block of {@code tryTree} directly assigns {@code targetField}
-   * or may assign it through a side-effecting method call or object creation.
-   *
-   * @param tryTree the try statement to inspect
-   * @param targetField the field to check
-   * @param cmAtf the factory used for side-effect reasoning
-   * @return true if any catch block may assign {@code targetField}
-   */
-  private static boolean catchMayAssignField(
-      TryTree tryTree,
-      @FindDistinct VariableElement targetField,
-      RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
-    for (CatchTree ct : tryTree.getCatches()) {
-      if (BlockAssignmentScanner.mayBeAssigned(ct.getBlock(), targetField, cmAtf)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Returns true if {@code tree} contains {@code targetAssignment}.
-   *
-   * @param tree the tree to scan
-   * @param targetAssignment the assignment to look for
-   * @return true if {@code targetAssignment} occurs within {@code tree}
-   */
-  private static boolean containsTargetAssignment(Tree tree, @FindDistinct Tree targetAssignment) {
-    if (tree == null) {
-      return false;
-    }
-    TreeScanner<Boolean, Void> targetScanner =
-        new BooleanShortCircuitScanner() {
-          @Override
-          public Boolean visitAssignment(AssignmentTree node, Void p) {
-            if (node == targetAssignment) {
-              return true;
-            }
-            return super.visitAssignment(node, p);
-          }
-        };
-    return targetScanner.scan(tree, null);
   }
 
   /**
@@ -352,7 +331,7 @@ final class ConstructorFirstWriteAnalysis {
 
     /**
      * Returns true if {@code block} directly assigns {@code targetField} or may assign it through a
-     * side-effecting call or allocation.
+     * side-effecting call or object creation.
      *
      * @param block the block to scan
      * @param targetField the field under analyze
@@ -477,8 +456,6 @@ final class ConstructorFirstWriteAnalysis {
         // Found an assignment to the same field:
         //   - current assignment → FIRST_ASSIGNMENT
         //   - different assignment → REASSIGNMENT
-        // TODO: Must scan the RHS, to catch a nested assignment to the same field within the RHS,
-        // e.g., this.f = (this.f = new Foo()).
         return node == targetAssignment
             ? FirstWriteScanResult.FIRST_ASSIGNMENT
             : FirstWriteScanResult.REASSIGNMENT;
@@ -489,9 +466,10 @@ final class ConstructorFirstWriteAnalysis {
     @Override
     public FirstWriteScanResult visitMethodInvocation(MethodInvocationTree node, Void p) {
       // Treat any side-effecting call before the target assignment as possibly assigning the field.
-      // An explicit super(...) call is also allowed,
-      // because Java compiler adds a superclass-constructor call even when it is not written
-      // explicitly.
+      // An explicit super(...) call is also allowed. This is unsound, because a superclass
+      // constructor can invoke overridable code that writes the field. The special case keeps
+      // explicit super(...) consistent with the implicit superclass-constructor call, which does
+      // not appear in the AST.
       if (cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))
           || TreeUtils.isSuperConstructorCall(node)) {
         return super.visitMethodInvocation(node, p);
@@ -549,7 +527,7 @@ final class ConstructorFirstWriteAnalysis {
    */
   private abstract static class BooleanShortCircuitScanner extends TreeScanner<Boolean, Void> {
 
-    /** Do not instantiate. */
+    /** Creates a {@link BooleanShortCircuitScanner}. */
     private BooleanShortCircuitScanner() {}
 
     @Override

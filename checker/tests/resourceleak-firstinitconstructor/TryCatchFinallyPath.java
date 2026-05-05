@@ -17,7 +17,6 @@ class TryCatchFinallyPath {
   TryCatchFinallyPath(boolean fail) {
     try {
       if (!fail) {
-        // ::error: [required.method.not.called]
         s = a; // falsely reported: a CFG-aware analysis would not warn here
       } else {
         throw new RuntimeException();
