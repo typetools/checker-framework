@@ -316,3 +316,4 @@ jobs:
           checker/bin-devel/.plume-scripts/ci-info --debug typetools
           echo "----------------"
           checker/bin-devel/.git-scripts/git-clone-related --debug plume-lib plume-util /tmp/plume-util
+          false
