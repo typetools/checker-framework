@@ -95,6 +95,9 @@ public class InitializationTransfer<
   protected List<VariableElement> initializedFieldsAfterCall(MethodInvocationNode node) {
     List<VariableElement> result = new ArrayList<>();
     MethodInvocationTree tree = node.getTree();
+    if (tree == null) {
+      return result;
+    }
     ExecutableElement method = TreeUtils.elementFromUse(tree);
     boolean isConstructor = method.getKind() == ElementKind.CONSTRUCTOR;
     Node receiver = node.getTarget().getReceiver();
