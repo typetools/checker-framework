@@ -1,3 +1,6 @@
+// Test: A side-effect-free call before the assignment does not disqualify the first write.
+// Expected: No warning in the constructor.
+
 import java.io.FileInputStream;
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;

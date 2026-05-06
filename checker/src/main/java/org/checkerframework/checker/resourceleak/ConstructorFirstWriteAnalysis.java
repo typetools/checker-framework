@@ -1,22 +1,24 @@
 package org.checkerframework.checker.resourceleak;
 
+import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.EmptyStatementTree;
 import com.sun.source.tree.ExpressionStatementTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
-import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
@@ -93,8 +95,8 @@ final class ConstructorFirstWriteAnalysis {
     }
 
     // (3): Single-pass conservative scan of the constructor body.
-    FirstWriteScanResult r =
-        scanForFirstWrite(constructor.getBody().getStatements(), assignment, targetField, cmAtf);
+    FirstWriteScanner scanner = new FirstWriteScanner(assignment, targetField, cmAtf);
+    FirstWriteScanResult r = scanner.scan(constructor.getBody(), null);
     return r == FirstWriteScanResult.FIRST_ASSIGNMENT;
   }
 
@@ -137,7 +139,7 @@ final class ConstructorFirstWriteAnalysis {
     return false;
   }
 
-  /** Result of scanning the constructor for the target assignment. */
+  /** Result of scanning a tree region for the target assignment. */
   private enum FirstWriteScanResult {
     /** The target assignment is definitely the first assignment in the scanned region. */
     FIRST_ASSIGNMENT,
@@ -148,159 +150,6 @@ final class ConstructorFirstWriteAnalysis {
     REASSIGNMENT,
     /** No assignment to the target field occurs in the scanned region. */
     UNASSIGNED
-  }
-
-  /**
-   * Scans constructor-body statements in {@code stmts} to determine whether {@code
-   * targetAssignment} is definitely the first write to {@code targetField} in this constructor
-   * fragment.
-   *
-   * <p>Field initializers and instance initializer blocks are checked separately by {@link
-   * #mayBeAssignedInInitializer}.
-   *
-   * <p>This helper is conservative and does not model every statement form. Unsupported constructs
-   * are documented inline below and conservatively return {@link
-   * FirstWriteScanResult#REASSIGNMENT}.
-   *
-   * @param stmts statements to scan
-   * @param targetAssignment the assignment under test
-   * @param targetField the field assigned by {@code targetAssignment}
-   * @param cmAtf the factory used for side-effect reasoning
-   * @return {@link FirstWriteScanResult#FIRST_ASSIGNMENT} if {@code targetAssignment} is reached
-   *     before any disqualifying event; {@link FirstWriteScanResult#REASSIGNMENT} if an earlier
-   *     write, disallowed call/allocation, or unsupported statement form prevents proving that;
-   *     otherwise {@link FirstWriteScanResult#UNASSIGNED}
-   */
-  private static FirstWriteScanResult scanForFirstWrite(
-      List<? extends StatementTree> stmts,
-      Tree targetAssignment,
-      VariableElement targetField,
-      RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
-    for (StatementTree stmt : stmts) {
-      if (stmt instanceof BlockTree blockTree) {
-        FirstWriteScanResult r =
-            scanForFirstWrite(blockTree.getStatements(), targetAssignment, targetField, cmAtf);
-        if (r != FirstWriteScanResult.UNASSIGNED) {
-          return r;
-        }
-      } else if (stmt instanceof ExpressionStatementTree est) {
-        FirstWriteScanResult res =
-            ExpressionFirstWriteScanner.scanForFirstWrite(
-                est.getExpression(), targetAssignment, targetField, cmAtf);
-        if (res != FirstWriteScanResult.UNASSIGNED) {
-          return res;
-        }
-      } else if (stmt instanceof VariableTree vt) {
-        // The compiler has already desugared a declaration with multiple variables
-        // (e.g., int a = 1, b = 2;) into multiple independent VariableTree nodes.
-        ExpressionTree init = vt.getInitializer();
-        if (init != null) {
-          FirstWriteScanResult res =
-              ExpressionFirstWriteScanner.scanForFirstWrite(
-                  init, targetAssignment, targetField, cmAtf);
-          if (res != FirstWriteScanResult.UNASSIGNED) {
-            return res;
-          }
-        }
-      } else if (stmt instanceof TryTree tryTree) {
-        // Evaluate resource initializers before the try block.
-        for (Tree resource : tryTree.getResources()) {
-          FirstWriteScanResult res;
-          if (resource instanceof VariableTree resourceVar) {
-            ExpressionTree init = resourceVar.getInitializer();
-            if (init == null) {
-              continue;
-            }
-            res =
-                ExpressionFirstWriteScanner.scanForFirstWrite(
-                    init, targetAssignment, targetField, cmAtf);
-          } else {
-            res =
-                ExpressionFirstWriteScanner.scanForFirstWrite(
-                    (ExpressionTree) resource, targetAssignment, targetField, cmAtf);
-          }
-          if (res != FirstWriteScanResult.UNASSIGNED) {
-            return res;
-          }
-        }
-
-        // Scan the try block before any catch or finally block.
-        FirstWriteScanResult res =
-            scanForFirstWrite(
-                tryTree.getBlock().getStatements(), targetAssignment, targetField, cmAtf);
-        if (res != FirstWriteScanResult.UNASSIGNED) {
-          return res;
-        }
-
-        // Catch blocks are alternative paths after the try block. Merge them the same way as the
-        // branches of an if statement.
-        FirstWriteScanResult catchesRes = FirstWriteScanResult.UNASSIGNED;
-        for (CatchTree catchTree : tryTree.getCatches()) {
-          FirstWriteScanResult catchRes =
-              scanForFirstWrite(
-                  catchTree.getBlock().getStatements(), targetAssignment, targetField, cmAtf);
-          if (catchRes == FirstWriteScanResult.FIRST_ASSIGNMENT) {
-            catchesRes = FirstWriteScanResult.FIRST_ASSIGNMENT;
-            break;
-          }
-          if (catchRes == FirstWriteScanResult.REASSIGNMENT) {
-            catchesRes = FirstWriteScanResult.REASSIGNMENT;
-          }
-        }
-        if (catchesRes != FirstWriteScanResult.UNASSIGNED) {
-          return catchesRes;
-        }
-
-        // The finally block executes after the try block or any catch block.
-        BlockTree finallyBlock = tryTree.getFinallyBlock();
-        if (finallyBlock != null) {
-          FirstWriteScanResult finallyRes =
-              scanForFirstWrite(finallyBlock.getStatements(), targetAssignment, targetField, cmAtf);
-          if (finallyRes != FirstWriteScanResult.UNASSIGNED) {
-            return finallyRes;
-          }
-        }
-      } else if (stmt instanceof IfTree ifTree) {
-        // Scan the condition first and return any decisive result
-        FirstWriteScanResult condRes =
-            ExpressionFirstWriteScanner.scanForFirstWrite(
-                ifTree.getCondition(), targetAssignment, targetField, cmAtf);
-        if (condRes != FirstWriteScanResult.UNASSIGNED) {
-          return condRes;
-        }
-
-        StatementTree thenStmt = ifTree.getThenStatement();
-        StatementTree elseStmt = ifTree.getElseStatement();
-
-        // Scan the `then` and the `else` branch independently to merge their results.
-        FirstWriteScanResult thenRes =
-            scanForFirstWrite(List.of(thenStmt), targetAssignment, targetField, cmAtf);
-        // The else branch may not exist
-        FirstWriteScanResult elseRes =
-            elseStmt == null
-                ? FirstWriteScanResult.UNASSIGNED
-                : scanForFirstWrite(List.of(elseStmt), targetAssignment, targetField, cmAtf);
-
-        // A FIRST_ASSIGNMENT in either branch means the target assignment is the first write for
-        // the if statement.
-        if (thenRes == FirstWriteScanResult.FIRST_ASSIGNMENT
-            || elseRes == FirstWriteScanResult.FIRST_ASSIGNMENT) {
-          return FirstWriteScanResult.FIRST_ASSIGNMENT;
-        }
-        // If neither branch yields FIRST_ASSIGNMENT, then a REASSIGNMENT in either branch is
-        // the result of the if statement.
-        if (thenRes == FirstWriteScanResult.REASSIGNMENT
-            || elseRes == FirstWriteScanResult.REASSIGNMENT) {
-          return FirstWriteScanResult.REASSIGNMENT;
-        }
-        // Both branches are UNASSIGNED, continue scanning after the if statement.
-      } else {
-        // Conservatively reject unmodeled statement kinds.
-        return FirstWriteScanResult.REASSIGNMENT;
-      }
-    }
-
-    return FirstWriteScanResult.UNASSIGNED;
   }
 
   /**
@@ -373,20 +222,18 @@ final class ConstructorFirstWriteAnalysis {
   }
 
   /**
-   * Scanner that scans an expression to determine whether a given assignment is definitely the
-   * first write to its field before any earlier assignment or side-effecting call in that
-   * expression. The entry point is {@link #scanForFirstWrite}.
+   * Scanner that scans a tree fragment to determine whether a given assignment is definitely the
+   * first write to its field before any earlier assignment or side-effecting call in that fragment.
    *
-   * <p>This scanner is used only on expressions that {@link #scanForFirstWrite(List, Tree,
-   * VariableElement, RLCCalledMethodsAnnotatedTypeFactory)} has already decided to scan. It does
-   * not handle field initializers, static or instance initializer blocks, or statement-level
-   * control-flow constructs.
+   * <p>This scanner reasons only about the scanned tree fragment. It does not handle field
+   * initializers or instance initializer blocks, which are checked separately by {@link
+   * #mayBeAssignedInInitializer(ClassTree, VariableElement, RLCCalledMethodsAnnotatedTypeFactory)}.
    *
-   * <p>If it is used on an unsupported fragment, the result is conservative only with respect to
-   * the scanned expression; it does not account for surrounding control flow.
+   * <p>This scanner is conservative and does not model every tree kind. Supported statement kinds
+   * are documented in {@link FirstWriteScanner#isModeledStatementKind(Tree.Kind)}. Unmodelled
+   * statement kinds conservatively return {@link FirstWriteScanResult#REASSIGNMENT}.
    */
-  private static final class ExpressionFirstWriteScanner
-      extends TreeScanner<FirstWriteScanResult, Void> {
+  private static final class FirstWriteScanner extends TreeScanner<FirstWriteScanResult, Void> {
 
     /** The assignment being analyzed. */
     private final @InternedDistinct Tree targetAssignment;
@@ -399,14 +246,13 @@ final class ConstructorFirstWriteAnalysis {
 
     /**
      * Creates a scanner that checks if {@code targetAssignment} is the first write to {@code
-     * targetField} in the scanned expression. The scan stops as soon as a decisive result is
-     * encountered.
+     * targetField} in the scanned tree. The scan stops as soon as a decisive result is encountered.
      *
      * @param targetAssignment the assignment being analyzed
      * @param targetField the field written by that assignment
      * @param cmAtf the type factory for side-effect reasoning
      */
-    private ExpressionFirstWriteScanner(
+    private FirstWriteScanner(
         @FindDistinct Tree targetAssignment,
         @FindDistinct VariableElement targetField,
         RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
@@ -416,27 +262,121 @@ final class ConstructorFirstWriteAnalysis {
     }
 
     /**
-     * Scans {@code root} to determine whether {@code targetAssignment} is reached before any
-     * disqualifying event within this expression.
+     * Returns true if this scanner explicitly models statement kind {@code kind}.
      *
-     * <p>It returns {@link FirstWriteScanResult#FIRST_ASSIGNMENT} if the target assignment is
-     * encountered before any earlier write to {@code targetField} or any potentially side-effecting
-     * call. It returns {@link FirstWriteScanResult#REASSIGNMENT} if a disqualifying event is
-     * encountered first. Otherwise, it returns {@link FirstWriteScanResult#UNASSIGNED} if the field
-     * cannot be assigned {@code root}.
-     *
-     * @param root the expression to scan
-     * @param targetAssignment the target assignment
-     * @param targetField the field assigned by {@code targetAssignment}
-     * @param cmAtf the factory for side-effect reasoning
-     * @return the scan result for {@code root}
+     * @param kind the statement kind
+     * @return {@code true} if this scanner models {@code kind}, or {@code false} if it
+     *     conservatively treats it as {@link FirstWriteScanResult#REASSIGNMENT}
      */
-    static FirstWriteScanResult scanForFirstWrite(
-        ExpressionTree root,
-        @FindDistinct Tree targetAssignment,
-        @FindDistinct VariableElement targetField,
-        RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
-      return new ExpressionFirstWriteScanner(targetAssignment, targetField, cmAtf).scan(root, null);
+    private static boolean isModeledStatementKind(Tree.Kind kind) {
+      return switch (kind) {
+        case BLOCK,
+            EXPRESSION_STATEMENT,
+            VARIABLE,
+            TRY,
+            IF,
+            ASSERT,
+            EMPTY_STATEMENT,
+            LABELED_STATEMENT,
+            RETURN ->
+            true;
+        default -> false;
+      };
+    }
+
+    @Override
+    public FirstWriteScanResult visitBlock(BlockTree node, Void p) {
+      return scan(node.getStatements(), p);
+    }
+
+    @Override
+    public FirstWriteScanResult visitExpressionStatement(ExpressionStatementTree node, Void p) {
+      return scan(node.getExpression(), p);
+    }
+
+    @Override
+    public FirstWriteScanResult visitVariable(VariableTree node, Void p) {
+      // The compiler has already desugared a declaration with multiple variables
+      // (e.g., int a = 1, b = 2;) into multiple independent VariableTree nodes.
+      return scan(node.getInitializer(), p);
+    }
+
+    @Override
+    public FirstWriteScanResult visitTry(TryTree node, Void p) {
+      // Evaluate resource initializers before the try block. This is not sound as the implicit
+      // close() calls are not represented in the AST.
+      for (Tree resource : node.getResources()) {
+        FirstWriteScanResult res = scan(resource, p);
+        if (res != FirstWriteScanResult.UNASSIGNED) {
+          return res;
+        }
+      }
+
+      // Scan the try block first before any catch or finally block.
+      FirstWriteScanResult res = scan(node.getBlock(), p);
+      if (res != FirstWriteScanResult.UNASSIGNED) {
+        return res;
+      }
+
+      // Scan the catch blocks one by one, and merge their results as only one catch block can
+      // execute.
+      // If any catch block results to FIRST_ASSIGNMENT, then the target assignment is the first
+      // write for the try tree.
+      // Otherwise, if any catch block results to REASSIGNMENT, then the try tree results to
+      // REASSIGNMENT.
+      FirstWriteScanResult catchesRes = FirstWriteScanResult.UNASSIGNED;
+      for (CatchTree catchTree : node.getCatches()) {
+        FirstWriteScanResult catchRes = scan(catchTree.getBlock(), p);
+        if (catchRes == FirstWriteScanResult.FIRST_ASSIGNMENT) {
+          return FirstWriteScanResult.FIRST_ASSIGNMENT;
+        }
+        if (catchRes == FirstWriteScanResult.REASSIGNMENT) {
+          catchesRes = FirstWriteScanResult.REASSIGNMENT;
+        }
+      }
+      if (catchesRes != FirstWriteScanResult.UNASSIGNED) {
+        return catchesRes;
+      }
+
+      // If catch blocks are UNASSIGNED, then continue to scan the finally block.
+      BlockTree finallyBlock = node.getFinallyBlock();
+      if (finallyBlock != null) {
+        return scan(finallyBlock, p);
+      }
+
+      return FirstWriteScanResult.UNASSIGNED;
+    }
+
+    @Override
+    public FirstWriteScanResult visitIf(IfTree node, Void p) {
+      // Scan the condition first and return any decisive result
+      FirstWriteScanResult condRes = scan(node.getCondition(), p);
+      if (condRes != FirstWriteScanResult.UNASSIGNED) {
+        return condRes;
+      }
+
+      StatementTree thenStmt = node.getThenStatement();
+      StatementTree elseStmt = node.getElseStatement();
+
+      // Scan the `then` and the `else` branch independently to merge their results.
+      FirstWriteScanResult thenRes = scan(thenStmt, p);
+      // The else branch may not exist
+      FirstWriteScanResult elseRes =
+          elseStmt == null ? FirstWriteScanResult.UNASSIGNED : scan(elseStmt, p);
+
+      // A FIRST_ASSIGNMENT in either branch means the target assignment is the first write for
+      // the if statement.
+      if (thenRes == FirstWriteScanResult.FIRST_ASSIGNMENT
+          || elseRes == FirstWriteScanResult.FIRST_ASSIGNMENT) {
+        return FirstWriteScanResult.FIRST_ASSIGNMENT;
+      }
+      // If neither branch yields FIRST_ASSIGNMENT, then a REASSIGNMENT in either branch is
+      // the result of the if statement.
+      if (thenRes == FirstWriteScanResult.REASSIGNMENT
+          || elseRes == FirstWriteScanResult.REASSIGNMENT) {
+        return FirstWriteScanResult.REASSIGNMENT;
+      }
+      return FirstWriteScanResult.UNASSIGNED;
     }
 
     @Override
@@ -460,7 +400,7 @@ final class ConstructorFirstWriteAnalysis {
             ? FirstWriteScanResult.FIRST_ASSIGNMENT
             : FirstWriteScanResult.REASSIGNMENT;
       }
-      return super.visitAssignment(node, p);
+      return FirstWriteScanResult.UNASSIGNED;
     }
 
     @Override
@@ -488,9 +428,37 @@ final class ConstructorFirstWriteAnalysis {
     }
 
     @Override
+    public FirstWriteScanResult visitAssert(AssertTree node, Void p) {
+      FirstWriteScanResult condRes = scan(node.getCondition(), p);
+      if (condRes != FirstWriteScanResult.UNASSIGNED) {
+        return condRes;
+      }
+      return scan(node.getDetail(), p);
+    }
+
+    @Override
+    public FirstWriteScanResult visitEmptyStatement(EmptyStatementTree node, Void p) {
+      return FirstWriteScanResult.UNASSIGNED;
+    }
+
+    @Override
+    public FirstWriteScanResult visitLabeledStatement(LabeledStatementTree node, Void p) {
+      return scan(node.getStatement(), p);
+    }
+
+    @Override
+    public FirstWriteScanResult visitReturn(ReturnTree node, Void p) {
+      return scan(node.getExpression(), p);
+    }
+
+    @Override
     public FirstWriteScanResult scan(Tree tree, Void p) {
       if (tree == null) {
         return FirstWriteScanResult.UNASSIGNED;
+      }
+      if (tree instanceof StatementTree && !isModeledStatementKind(tree.getKind())) {
+        // Conservatively reject unmodeled statement kinds.
+        return FirstWriteScanResult.REASSIGNMENT;
       }
       FirstWriteScanResult result = super.scan(tree, p);
       return result == null ? FirstWriteScanResult.UNASSIGNED : result;
@@ -524,6 +492,9 @@ final class ConstructorFirstWriteAnalysis {
    *
    * <p>Subclasses define the matching condition in visit methods and return {@code true} when they
    * find a match.
+   *
+   * <p>This scanner is only used in {@link BlockAssignmentScanner}, but keeping it separate to
+   * allow it to be reused for other similar checks in the future.
    */
   private abstract static class BooleanShortCircuitScanner extends TreeScanner<Boolean, Void> {
 

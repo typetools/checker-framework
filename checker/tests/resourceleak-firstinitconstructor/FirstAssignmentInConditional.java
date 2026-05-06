@@ -1,6 +1,5 @@
 // Test for a field's reassignment within a constructor, where the assignments are within the
-// brances
-// of a conditional.
+// brances of a conditional.
 
 import java.io.FileInputStream;
 import org.checkerframework.checker.calledmethods.qual.*;

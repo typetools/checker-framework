@@ -1,9 +1,6 @@
-// Shows a limitation of the conservative (AST-only) first-write check.
-//
-// Without control-flow info, the analysis can’t tell that the `finally` block
-// always runs after both `try` and `catch`. As a result, it flags both the write
-// inside `try` and the one inside `finally`, even though only the latter should
-// be reported. A CFG-aware analysis would warn only on the `finally` write.
+// Test for field assignment in try-catch-finally paths.
+// The field is assigned in all three paths, but only the finally path should warn,
+// as it is always executed after field's initial assignment in either try/catch.
 
 import java.io.FileInputStream;
 import org.checkerframework.checker.calledmethods.qual.*;
@@ -17,7 +14,7 @@ class TryCatchFinallyPath {
   TryCatchFinallyPath(boolean fail) {
     try {
       if (!fail) {
-        s = a; // falsely reported: a CFG-aware analysis would not warn here
+        s = a; // OK on non-failing path
       } else {
         throw new RuntimeException();
       }

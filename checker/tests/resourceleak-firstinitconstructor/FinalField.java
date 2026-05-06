@@ -1,3 +1,6 @@
+// Test: Final fields bypass the constructor first-write analysis.
+// Expected: No warning on the final-field assignment, even though an earlier method call appears.
+
 import java.io.FileInputStream;
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
