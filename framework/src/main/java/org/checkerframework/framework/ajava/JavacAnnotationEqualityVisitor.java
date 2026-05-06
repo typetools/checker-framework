@@ -19,25 +19,21 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * <p>To use this class, call {@link #scan} with the roots of the two ASTs. Then, check {@link
  * #getAnnotationsMatch}.
- *
- * <p>This is the javac-based replacement for {@link AnnotationEqualityVisitor}.
  */
 public class JavacAnnotationEqualityVisitor extends DoubleJavacVisitor {
 
   /** True if no node with mismatched annotations has been seen. */
-  private boolean annotationsMatch;
+  private boolean annotationsMatch = true;
 
   /** If a node with mismatched annotations has been seen, stores the node from the first AST. */
-  private @MonotonicNonNull Tree mismatchedNode1;
+  private @MonotonicNonNull Tree mismatchedNode1 = null;
 
   /** If a node with mismatched annotations has been seen, stores the node from the second AST. */
-  private @MonotonicNonNull Tree mismatchedNode2;
+  private @MonotonicNonNull Tree mismatchedNode2 = null;
 
   /** Constructs a {@code JavacAnnotationEqualityVisitor}. */
   public JavacAnnotationEqualityVisitor() {
     annotationsMatch = true;
-    mismatchedNode1 = null;
-    mismatchedNode2 = null;
   }
 
   /**
