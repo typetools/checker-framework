@@ -42,7 +42,7 @@ class CreatesMustCallForIndirect {
     CreatesMustCallForIndirect r = new CreatesMustCallForIndirect();
     // Ideally, we'd issue a reset.not.owning error on the next line instead, but not being able
     // to parse the case and requiring it to be in a local var is okay too.
-    // :: error: [createsmustcallfor.target.unparseable]
+    // :: error: [createsmustcallfor.target.unparsable]
     ((CreatesMustCallForIndirect) r).reset();
   }
 

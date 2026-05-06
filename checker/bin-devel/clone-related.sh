@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo Entering checker/bin-devel/clone-related.sh in "$(pwd)"
+echo "Entering checker/bin-devel/clone-related.sh $* in $(pwd)"
 
 # Fail the whole script if any command fails
 set -e
@@ -103,4 +103,4 @@ if [ -z "$CIRCLECI" ]; then
   fi
 fi
 
-echo Exiting checker/bin-devel/clone-related.sh in "$(pwd)"
+echo "Exiting checker/bin-devel/clone-related.sh $* in $(pwd)"

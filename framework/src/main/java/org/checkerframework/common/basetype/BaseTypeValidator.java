@@ -73,7 +73,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   /** AnnotatedTypeFactory. */
   protected final AnnotatedTypeFactory atypeFactory;
 
-  /** The qualifer hierarchy. */
+  /** The qualifier hierarchy. */
   protected final QualifierHierarchy qualHierarchy;
 
   // TODO: clean up coupling between components

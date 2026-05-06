@@ -1208,12 +1208,12 @@ public abstract class UBQualifier {
     }
 
     /**
-     * Generates a new UBQualifer without the given (sequence, offset) pair. Other occurrences of
+     * Generates a new UBQualifier without the given (sequence, offset) pair. Other occurrences of
      * the sequence and the offset may remain in the result, but not together.
      *
      * @param sequence a Java expression representing a string
      * @param offset an integral offset
-     * @return a new UBQualifer without the given sequence and offset
+     * @return a new UBQualifier without the given sequence and offset
      */
     public UBQualifier removeOffset(String sequence, int offset) {
       OffsetEquation offsetEq = OffsetEquation.createOffsetForInt(offset);

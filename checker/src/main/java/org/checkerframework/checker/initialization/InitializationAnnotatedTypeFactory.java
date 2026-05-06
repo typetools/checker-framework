@@ -889,8 +889,8 @@ public abstract class InitializationAnnotatedTypeFactory<
 
     /**
      * Compute the least upper bound of two initialization qualifiers. Returns null if one of the
-     * qualifiers is not in the initialization hierarachy. Subclasses should override
-     * leastUpperBound and call this method for initialization qualifiers.
+     * qualifiers is not in the initialization hierarchy. Subclasses should override leastUpperBound
+     * and call this method for initialization qualifiers.
      *
      * @param anno1 an initialization qualifier
      * @param qual1 a qualifier kind
@@ -952,7 +952,7 @@ public abstract class InitializationAnnotatedTypeFactory<
 
     /**
      * Compute the greatest lower bound of two initialization qualifiers. Returns null if one of the
-     * qualifiers is not in the initialization hierarachy. Subclasses should override
+     * qualifiers is not in the initialization hierarchy. Subclasses should override
      * greatestLowerBound and call this method for initialization qualifiers.
      *
      * @param anno1 an initialization qualifier

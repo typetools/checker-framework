@@ -10,7 +10,7 @@ public class CollectorsToList {
 
   // See checker/tests/i18n-formatter/I18nFormatCollectorsToList.java
   @SuppressWarnings({
-    "i18n:methodref.param", // true postive, see
+    "i18n:methodref.param", // true positive, see
     // checker/tests/i18n-formatter/I18nFormatCollectorsToList.java
     "lock:methodref.receiver.bound"
   })

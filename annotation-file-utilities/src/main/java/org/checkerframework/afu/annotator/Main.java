@@ -795,7 +795,7 @@ public class Main {
               // of the line being inserted onto. This puts the annotation on its own line aligned
               // with the contents of the next line.
 
-              // Number of whitespace characters preceeding the insertion position on the same line
+              // Number of whitespace characters preceding the insertion position on the same line
               // (tabs count as one).
               int indentation = 0;
               while ((pos - indentation != 0)

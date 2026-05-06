@@ -7,6 +7,7 @@ import com.sun.tools.javac.code.Symbol;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -95,7 +96,7 @@ public class InitializationTransfer<
     List<VariableElement> result = new ArrayList<>();
     MethodInvocationTree tree = node.getTree();
     ExecutableElement method = TreeUtils.elementFromUse(tree);
-    boolean isConstructor = method.getSimpleName().contentEquals("<init>");
+    boolean isConstructor = method.getKind() == ElementKind.CONSTRUCTOR;
     Node receiver = node.getTarget().getReceiver();
     String methodString = tree.getMethodSelect().toString();
 
