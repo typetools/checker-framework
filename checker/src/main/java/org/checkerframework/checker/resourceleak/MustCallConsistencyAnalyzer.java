@@ -1057,7 +1057,7 @@ public class MustCallConsistencyAnalyzer {
   private void updateObligationsForOwningReturn(
       Set<Obligation> obligations, ControlFlowGraph cfg, ReturnNode node) {
     if (isTransferOwnershipAtReturn(cfg)) {
-      @SuppressWarnings("nullness:argument") // the return node has an expression
+      @SuppressWarnings("nullness:assignment") // the return node has an expression
       @NonNull Node returnExpr = node.getResult();
       returnExpr = getTempVarOrNode(returnExpr);
       if (returnExpr instanceof LocalVariableNode lvn) {
@@ -1496,6 +1496,7 @@ public class MustCallConsistencyAnalyzer {
         return;
       }
     } else if (permitInitializationLeak && TreeUtils.isConstructor(enclosingMethodTree)) {
+      @SuppressWarnings("nullness:dereference.of.nullable") // a constructor has an enclosing class
       Element enclosingClassElement =
           TreeUtils.elementFromDeclaration(enclosingMethodTree).getEnclosingElement();
       if (ElementUtils.isTypeElement(enclosingClassElement)) {
@@ -1510,6 +1511,7 @@ public class MustCallConsistencyAnalyzer {
       // (If the field is not private, conservatively throw the owning file reassignment error.)
       ExecutableElement elementFromDeclaration =
           TreeUtils.elementFromDeclaration(enclosingMethodTree);
+      @SuppressWarnings("nullness:dereference.of.nullable") // a constructor has an enclosing class
       Element enclosingClassElement = elementFromDeclaration.getEnclosingElement();
       Element receiverTypeElement = TypesUtils.getTypeElement(receiver.getType());
       if (Objects.equals(enclosingClassElement, receiverTypeElement)) {
