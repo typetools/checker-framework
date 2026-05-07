@@ -101,12 +101,9 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
    */
   @Override
   public Void visitForLoop(ForLoopTree tree, Void p) {
-    boolean singleLoopVariable = tree.getUpdate().size() == 1 && tree.getInitializer().size() == 1;
-    if (singleLoopVariable) {
-      DisposalLoopInfo disposalLoopInfo = indexedForDisposalLoopMatcher.match(tree);
-      if (disposalLoopInfo != null) {
-        disposalLoopInfos.add(disposalLoopInfo);
-      }
+    DisposalLoopInfo disposalLoopInfo = indexedForDisposalLoopMatcher.match(tree);
+    if (disposalLoopInfo != null) {
+      disposalLoopInfos.add(disposalLoopInfo);
     }
     return super.visitForLoop(tree, p);
   }

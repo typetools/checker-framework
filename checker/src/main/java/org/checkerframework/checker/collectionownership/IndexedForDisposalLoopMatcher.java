@@ -2,12 +2,13 @@ package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -16,8 +17,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Name;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -27,7 +26,7 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** Matches indexed `for` {@link DisposalLoopInfo}'s that iterates over a resource collection. */
+/** Matches indexed `for` {@link DisposalLoopInfo}s that iterate over a resource collection. */
 final class IndexedForDisposalLoopMatcher {
 
   /** The CO type factory used for collection-ownership queries. */
@@ -49,220 +48,310 @@ final class IndexedForDisposalLoopMatcher {
   }
 
   /**
-   * Returns the {@link DisposalLoopInfo} if the `for` loop iterates over a resource collection and
-   * follows a specific loop shape described in {@link #nameOfCollectionThatAllElementsAreCalledOn}.
+   * Returns the {@link DisposalLoopInfo} if the {@code for} loop {@code tree} iterates over a
+   * resource collection satisfying the following rules:
    *
-   * @param tree a `for` loop with exactly one loop variable
-   * @return the matched disposal loop, or {@code null} if the loop does not match
+   * <ul>
+   *   <li>exactly one loop initializer statement and one update expression
+   *   <li>initialization must be of the form {@code int i = 0}
+   *   <li>condition must be of the form {@code i < collection.size()}
+   *   <li>update must be prefix or postfix {@code ++}
+   *   <li>no overwrite of the index variable or collection variable in the loop body
+   *   <li>at least one access of the iterated collection element consistent with the loop header
+   *       (e.g., {@code collection.get(i)}) in the loop body
+   * </ul>
+   *
+   * <p>For example:
+   *
+   * <pre>{@code
+   * for (int i = 0; i < collection.size(); i++) {
+   *   Resource resource = collection.get(i);
+   *   resource.close();
+   * }
+   * }</pre>
+   *
+   * @param tree the `for` loop to inspect
+   * @return the matched disposal loop info, or {@code null} if the loop does not match
    */
   @Nullable DisposalLoopInfo match(ForLoopTree tree) {
-    StatementTree loopBodyStatement = tree.getStatement();
-    List<? extends StatementTree> loopBodyStatements =
-        loopBodyStatement instanceof BlockTree blockTree
-            ? blockTree.getStatements()
-            : List.of(loopBodyStatement);
-    if (loopBodyStatements == null) {
+    // Reject the loop if it doesn't have exactly one initializer and one update.
+    if (tree.getInitializer().size() != 1 || tree.getUpdate().size() != 1) {
       return null;
     }
-    StatementTree init = tree.getInitializer().get(0);
+
+    StatementTree initializer = tree.getInitializer().get(0);
+    ExpressionStatementTree update = tree.getUpdate().get(0);
     ExpressionTree rawCondition = tree.getCondition();
     if (rawCondition == null) {
       return null;
     }
     ExpressionTree condition = TreeUtils.withoutParens(rawCondition);
-    ExpressionStatementTree update = tree.getUpdate().get(0);
     if (!(condition instanceof BinaryTree binaryTreeCondition)) {
       return null;
     }
-    Name identifierInHeader =
-        nameOfCollectionThatAllElementsAreCalledOn(init, binaryTreeCondition, update);
-    Name iterator = CollectionOwnershipUtils.getNameFromStatementTree(init);
-    if (identifierInHeader == null || iterator == null) {
+
+    Name indexVariableName = indexVariableNameIfCanonicalIndexLoop(initializer, update);
+    if (indexVariableName == null) {
       return null;
     }
+
+    Name collectionName =
+        resourceCollectionNameIfConditionMatches(binaryTreeCondition, indexVariableName);
+    if (collectionName == null) {
+      return null;
+    }
+
+    // Validate the loop body and recover the last `collection.get(i)` access that represents the
+    // iterated element for this loop.
     ExpressionTree collectionElementTree =
-        getLastElementAccessIfLoopValid(loopBodyStatements, identifierInHeader, iterator);
-    if (collectionElementTree != null) {
-      Block loopConditionBlock = CollectionOwnershipUtils.firstBlockForTree(cfg, condition);
-      Block loopUpdateBlock =
-          CollectionOwnershipUtils.firstBlockForTree(cfg, update.getExpression());
-      Node nodeForCollectionElt =
-          CollectionOwnershipUtils.anyNodeForTree(cfg, collectionElementTree);
-      if (loopUpdateBlock == null || loopConditionBlock == null || nodeForCollectionElt == null) {
-        return null;
-      }
-      Block conditionalBlock = ((SingleSuccessorBlock) loopConditionBlock).getSuccessor();
-      Block loopBodyEntryBlock = ((ConditionalBlock) conditionalBlock).getThenSuccessor();
-      return new DisposalLoopInfo(
-          CollectionOwnershipUtils.baseExpression(collectionElementTree),
-          collectionElementTree,
-          nodeForCollectionElt,
-          CollectionOwnershipUtils.cfgAssociatedTreeFor(cfg, condition),
-          (ConditionalBlock) conditionalBlock,
-          loopBodyEntryBlock,
-          loopUpdateBlock);
+        new LoopBodyScanner(collectionName, indexVariableName).scanLoopBody(tree.getStatement());
+    if (collectionElementTree == null) {
+      return null;
     }
-    return null;
+
+    ExpressionTree collectionExpression =
+        CollectionOwnershipUtils.baseExpression(collectionElementTree);
+    if (collectionExpression == null) {
+      return null;
+    }
+
+    // After the tree match succeeds, recover the CFG blocks corresponding to the loop condition,
+    // body entry, and loop update.
+    Block loopConditionBlock = CollectionOwnershipUtils.firstBlockForTree(cfg, condition);
+    Block loopUpdateBlock = CollectionOwnershipUtils.firstBlockForTree(cfg, update.getExpression());
+    Node iteratedElementNode = CollectionOwnershipUtils.anyNodeForTree(cfg, collectionElementTree);
+    if (loopConditionBlock == null || loopUpdateBlock == null || iteratedElementNode == null) {
+      return null;
+    }
+    if (!(loopConditionBlock instanceof SingleSuccessorBlock singleSuccessorLoopConditionBlock)) {
+      return null;
+    }
+    Block conditionalBlockCandidate = singleSuccessorLoopConditionBlock.getSuccessor();
+    if (!(conditionalBlockCandidate instanceof ConditionalBlock conditionalBlock)) {
+      return null;
+    }
+    // The then-successor is the body-entry block for the matching indexed loop.
+    Block loopBodyEntryBlock = conditionalBlock.getThenSuccessor();
+
+    return new DisposalLoopInfo(
+        collectionExpression,
+        collectionElementTree,
+        iteratedElementNode,
+        CollectionOwnershipUtils.cfgAssociatedTreeFor(cfg, condition),
+        conditionalBlock,
+        loopBodyEntryBlock,
+        loopUpdateBlock);
   }
 
   /**
-   * Conservatively decides whether a loop iterates over all elements of some collection, using the
-   * following rules:
-   *
-   * <ul>
-   *   <li>only one loop variable
-   *   <li>initialization must be of the form i = 0
-   *   <li>condition must be of the form (i &lt; col.size())
-   *   <li>update must be prefix or postfix {@code ++}
-   * </ul>
-   *
-   * Returns:
-   *
-   * <ul>
-   *   <li>null, if any of the above rules is violated
-   *   <li>the name of the collection if the loop condition is of the form (i &lt; col.size())
-   * </ul>
-   *
-   * @param init the initializer of the loop
-   * @param condition the loop condition
-   * @param update the loop update
-   * @return the name of the collection that the loop iterates over all elements of, or null
-   */
-  Name nameOfCollectionThatAllElementsAreCalledOn(
-      StatementTree init, BinaryTree condition, ExpressionStatementTree update) {
-    Tree.Kind updateKind = update.getExpression().getKind();
-    if (updateKind == Tree.Kind.PREFIX_INCREMENT || updateKind == Tree.Kind.POSTFIX_INCREMENT) {
-      UnaryTree inc = (UnaryTree) update.getExpression();
-
-      if (!(init instanceof VariableTree initVar)
-          || !(inc.getExpression() instanceof IdentifierTree)) return null;
-
-      if (!(initVar.getInitializer() instanceof LiteralTree)
-          || !((LiteralTree) initVar.getInitializer()).getValue().equals(0)) {
-        return null;
-      }
-
-      if (!(condition.getLeftOperand() instanceof IdentifierTree)) {
-        return null;
-      }
-
-      Name initVarName = initVar.getName();
-      if (initVarName != ((IdentifierTree) condition.getLeftOperand()).getName()) {
-        return null;
-      }
-      if (initVarName != ((IdentifierTree) inc.getExpression()).getName()) {
-        return null;
-      }
-
-      if ((condition.getRightOperand() instanceof MethodInvocationTree)
-          && TreeUtils.isSizeAccess(condition.getRightOperand())) {
-        ExpressionTree methodSelect =
-            ((MethodInvocationTree) condition.getRightOperand()).getMethodSelect();
-        if (methodSelect instanceof MemberSelectTree mst) {
-          if (coAtf.isResourceCollection(mst.getExpression())) {
-            return CollectionOwnershipUtils.getNameFromExpressionTree(mst.getExpression());
-          }
-        }
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Check that the loop does not contain any writes to the loop iterator variable or to the
-   * collection variable itself. Extract the collection access tree ({@code arr[i]} or {@code
-   * collection.get(i)} where {@code i} is the iterator variable and {@code collection/arr} is
-   * consistent with the loop header) and return the last encountered such tree.
-   *
-   * @param statements list of statements of the loop body
-   * @param identifierInHeader collection name if loop condition is {@code i < collection.size()} or
-   *     {@code i < arr.length} and {@code n} if loop condition is {@code i < n}
-   * @param iterator the name of the loop iterator variable
-   * @return {@code null} if the loop body writes to the iterator or collection variable; otherwise
-   *     the last collection element access tree consistent with the loop header, if one exists
-   */
-  private @Nullable ExpressionTree getLastElementAccessIfLoopValid(
-      List<? extends StatementTree> statements, Name identifierInHeader, Name iterator) {
-    AtomicBoolean blockIsIllegal = new AtomicBoolean(false);
-    final ExpressionTree[] collectionElementTree = {null};
-
-    TreeScanner<Void, Void> scanner =
-        new TreeScanner<Void, Void>() {
-          @Override
-          public Void visitUnary(UnaryTree tree, Void p) {
-            switch (tree.getKind()) {
-              case PREFIX_DECREMENT, POSTFIX_DECREMENT, PREFIX_INCREMENT, POSTFIX_INCREMENT -> {
-                if (CollectionOwnershipUtils.getNameFromExpressionTree(tree.getExpression())
-                    == iterator) {
-                  blockIsIllegal.set(true);
-                }
-              }
-              default -> {}
-            }
-            return super.visitUnary(tree, p);
-          }
-
-          @Override
-          public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
-            if (CollectionOwnershipUtils.getNameFromExpressionTree(tree.getVariable())
-                == iterator) {
-              blockIsIllegal.set(true);
-            }
-            return super.visitCompoundAssignment(tree, p);
-          }
-
-          @Override
-          public Void visitAssignment(AssignmentTree tree, Void p) {
-            Name assignedVariable =
-                CollectionOwnershipUtils.getNameFromExpressionTree(tree.getVariable());
-            if (assignedVariable == iterator || assignedVariable == identifierInHeader) {
-              blockIsIllegal.set(true);
-            }
-
-            return super.visitAssignment(tree, p);
-          }
-
-          @Override
-          public Void visitMethodInvocation(MethodInvocationTree mit, Void p) {
-            if (isIthCollectionElement(mit, iterator)
-                && identifierInHeader == CollectionOwnershipUtils.getNameFromExpressionTree(mit)
-                && identifierInHeader != null) {
-              collectionElementTree[0] = mit;
-            }
-            return super.visitMethodInvocation(mit, p);
-          }
-        };
-
-    for (StatementTree stmt : statements) {
-      scanner.scan(stmt, null);
-    }
-    if (!blockIsIllegal.get() && collectionElementTree[0] != null) {
-      return collectionElementTree[0];
-    }
-    return null;
-  }
-
-  /**
-   * Returns true if the given tree is of the form collection.get(i), where i is the given index
-   * name.
+   * Returns true if the given tree is of the form {@code collection.get(i)}, where {@code i} is the
+   * given index variable name.
    *
    * @param tree the tree to check
-   * @param index the index variable name
-   * @return true if the given tree is of the form collection.get(index)
+   * @param indexVariableName the index variable name
+   * @return true if the tree is of the form {@code collection.get(i)}
    */
-  private boolean isIthCollectionElement(Tree tree, Name index) {
-    if (tree == null || index == null) {
-      return false;
-    }
-    if (tree instanceof MethodInvocationTree mit
-        && index
+  private boolean isIthCollectionElement(Tree tree, Name indexVariableName) {
+    if (tree instanceof MethodInvocationTree methodInvocationTree
+        && indexVariableName
             == CollectionOwnershipUtils.getNameFromExpressionTree(
                 TreeUtils.getIdxForGetCall(tree))) {
-      ExpressionTree methodSelect = mit.getMethodSelect();
-      if (methodSelect instanceof MemberSelectTree mst) {
-        return coAtf.isResourceCollection(mst.getExpression());
+      ExpressionTree methodSelect = methodInvocationTree.getMethodSelect();
+      if (methodSelect instanceof MemberSelectTree memberSelectTree) {
+        return coAtf.isResourceCollection(memberSelectTree.getExpression());
       }
     }
     return false;
+  }
+
+  /**
+   * Returns the index variable name if the initializer and update form a canonical zero-based index
+   * loop.
+   *
+   * <p>This checks the {@code int i = 0} and {@code i++}/{@code ++i} parts of the loop header.
+   *
+   * @param initializer the loop initializer
+   * @param update the loop update
+   * @return the index variable name, or {@code null} if the initializer/update do not match
+   */
+  private @Nullable Name indexVariableNameIfCanonicalIndexLoop(
+      StatementTree initializer, ExpressionStatementTree update) {
+    Tree.Kind updateKind = update.getExpression().getKind();
+    if (updateKind != Tree.Kind.PREFIX_INCREMENT && updateKind != Tree.Kind.POSTFIX_INCREMENT) {
+      return null;
+    }
+
+    if (!(initializer instanceof VariableTree initVariable)) {
+      return null;
+    }
+    if (!(update.getExpression() instanceof UnaryTree incrementExpression)) {
+      return null;
+    }
+    if (!(incrementExpression.getExpression() instanceof IdentifierTree updateIdentifier)) {
+      return null;
+    }
+
+    ExpressionTree initializerValue = initVariable.getInitializer();
+    if (!(initializerValue instanceof LiteralTree literalTree)
+        || !literalTree.getValue().equals(0)) {
+      return null;
+    }
+
+    Name indexVariableName = initVariable.getName();
+    return indexVariableName == updateIdentifier.getName() ? indexVariableName : null;
+  }
+
+  /**
+   * Returns the collection name if the loop condition is of the form {@code i < collection.size()}
+   * for the given index variable and the receiver {@code collection} is a resource collection.
+   *
+   * @param condition the loop condition
+   * @param indexVariableName the validated loop index variable
+   * @return the collection name, or {@code null} if the condition does not match
+   */
+  private @Nullable Name resourceCollectionNameIfConditionMatches(
+      BinaryTree condition, Name indexVariableName) {
+    if (condition.getKind() != Tree.Kind.LESS_THAN) {
+      return null;
+    }
+    if (!(condition.getLeftOperand() instanceof IdentifierTree conditionIdentifier)) {
+      return null;
+    }
+    if (conditionIdentifier.getName() != indexVariableName) {
+      return null;
+    }
+    if (!(condition.getRightOperand() instanceof MethodInvocationTree)
+        || !TreeUtils.isSizeAccess(condition.getRightOperand())) {
+      return null;
+    }
+
+    ExpressionTree methodSelect =
+        ((MethodInvocationTree) condition.getRightOperand()).getMethodSelect();
+    if (!(methodSelect instanceof MemberSelectTree memberSelectTree)) {
+      return null;
+    }
+    if (!coAtf.isResourceCollection(memberSelectTree.getExpression())) {
+      return null;
+    }
+    return CollectionOwnershipUtils.getNameFromExpressionTree(memberSelectTree.getExpression());
+  }
+
+  /**
+   * Scans an indexed {@code for} loop body, rejecting writes that invalidate the simple
+   * indexed-loop model and remembers the last matching {@code collection.get(i)} access.
+   */
+  private final class LoopBodyScanner extends TreeScanner<Void, Void> {
+
+    /** The collection named in the loop header. */
+    private final Name collectionName;
+
+    /** The index variable named in the loop header. */
+    private final Name indexVariableName;
+
+    /** Whether the loop body mutates the collection or index variable. */
+    private boolean bodyIsIllegal = false;
+
+    /** The last matching {@code collection.get(i)} access found in the body. */
+    private @Nullable ExpressionTree lastCollectionElementAccess = null;
+
+    /**
+     * Creates the {@link LoopBodyScanner}.
+     *
+     * @param collectionName the collection name from the loop header
+     * @param indexVariableName the index variable name from the loop header
+     */
+    private LoopBodyScanner(Name collectionName, Name indexVariableName) {
+      this.collectionName = collectionName;
+      this.indexVariableName = indexVariableName;
+    }
+
+    /**
+     * Scans the loop body once and returns the last matching element access if the body remains
+     * compatible with indexed disposal-loop matching.
+     *
+     * @param loopBody the loop body to scan
+     * @return the last matching {@code collection.get(i)} access, or {@code null} if the body
+     *     writes to the collection or index variable, or if no matching element access is found
+     */
+    private @Nullable ExpressionTree scanLoopBody(StatementTree loopBody) {
+      super.scan(loopBody, null);
+      return bodyIsIllegal ? null : lastCollectionElementAccess;
+    }
+
+    @Override
+    public Void visitUnary(UnaryTree tree, Void p) {
+      switch (tree.getKind()) {
+        case PREFIX_DECREMENT, POSTFIX_DECREMENT, PREFIX_INCREMENT, POSTFIX_INCREMENT -> {
+          if (CollectionOwnershipUtils.getNameFromExpressionTree(tree.getExpression())
+              == indexVariableName) {
+            bodyIsIllegal = true;
+            return null;
+          }
+        }
+        default -> {}
+      }
+      return super.visitUnary(tree, p);
+    }
+
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
+      if (CollectionOwnershipUtils.getNameFromExpressionTree(tree.getVariable())
+          == indexVariableName) {
+        bodyIsIllegal = true;
+        return null;
+      }
+      return super.visitCompoundAssignment(tree, p);
+    }
+
+    @Override
+    public Void visitAssignment(AssignmentTree tree, Void p) {
+      Name assignedVariable =
+          CollectionOwnershipUtils.getNameFromExpressionTree(tree.getVariable());
+      // Invalidate if writes to the collection or the loop index variable.
+      if (assignedVariable == indexVariableName || assignedVariable == collectionName) {
+        bodyIsIllegal = true;
+        return null;
+      }
+      return super.visitAssignment(tree, p);
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
+      if (isIthCollectionElement(tree, indexVariableName)
+          && collectionName == CollectionOwnershipUtils.getNameFromExpressionTree(tree)) {
+        // The last matching access represents the iterated element for this loop.
+        lastCollectionElementAccess = tree;
+      }
+      return super.visitMethodInvocation(tree, p);
+    }
+
+    @Override
+    public Void visitLambdaExpression(LambdaExpressionTree tree, Void p) {
+      // A lambda body is not executed as part of the enclosing loop body.
+      return null;
+    }
+
+    @Override
+    public Void visitClass(ClassTree tree, Void p) {
+      // Skip local and anonymous class bodies for the same reason as lambdas.
+      return null;
+    }
+
+    @Override
+    public @Nullable Void scan(@Nullable Tree tree, Void p) {
+      // Short-circuit the scanner if the collection/index variable is mutated.
+      if (bodyIsIllegal || tree == null) {
+        return null;
+      }
+      return super.scan(tree, p);
+    }
+
+    @Override
+    public @Nullable Void scan(@Nullable Iterable<? extends Tree> trees, Void p) {
+      if (bodyIsIllegal || trees == null) {
+        return null;
+      }
+      return super.scan(trees, p);
+    }
   }
 }
