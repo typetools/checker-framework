@@ -577,6 +577,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       AnnotatedDeclaredType supertype,
       boolean subtypeRaw,
       boolean supertypeRaw) {
+    if (TypesUtils.isClassType(subtype.getUnderlyingType())) {
+      return true;
+    }
     AnnotatedTypeFactory typeFactory = subtype.atypeFactory;
 
     // JLS 11: 4.10.2. Subtyping among Class and Interface Types
