@@ -152,7 +152,7 @@ final class EnhancedForDisposalLoopResolver {
           && (candidateNode.getTree() instanceof VariableTree iteratorVariableDeclaration)) {
         loopVariableNode = ((AssignmentNode) candidateNode).getTarget();
         isAssignmentOfLoopVariable =
-            iteratorVariableDeclaration.getName().equals(loopVariable.getName());
+            iteratorVariableDeclaration.getName() == loopVariable.getName();
       }
     } while (!isAssignmentOfLoopVariable);
     Block loopBodyEntryBlock = singleSuccessorBlock.getSuccessor();
