@@ -17,8 +17,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * the receiver.
  *
  * <p>This annotation should only be used on method declarations of collections, as defined by the
- * CollectionOwnershipChecker, that is, {@code java.lang.Iterable} and {@code java.util.Iterator}
- * implementations.
+ * CollectionOwnershipChecker, that is, {@code java.lang.Iterable} implementations.
  *
  * @checker_framework.manual #resource-leak-checker Resource Leak Checker
  */

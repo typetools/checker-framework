@@ -2,6 +2,7 @@ package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
@@ -37,7 +38,7 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** Matches `while` {@link DisposalLoop} that iterates over a resource collection. */
+/** Matches `while` {@link DisposalLoopInfo} that iterates over a resource collection. */
 final class WhileDisposalLoopMatcher {
 
   /** The CO type factory used for collection-ownership queries. */
@@ -343,7 +344,8 @@ final class WhileDisposalLoopMatcher {
   }
 
   /**
-   * Matches a {@link DisposalLoop} that uses a while-loop and resolves its CFG-local loop facts.
+   * Matches a {@link DisposalLoopInfo} that uses a while-loop and resolves its CFG-local loop
+   * facts.
    *
    * <p>Supported header shapes are iterator loops such as {@code while (it.hasNext())} and
    * non-empty collection loops such as {@code while (!q.isEmpty())}, {@code while (q.size() > 0)},
@@ -352,14 +354,17 @@ final class WhileDisposalLoopMatcher {
    * @param tree the while-loop to inspect
    * @return the matched disposal loop, or {@code null} if the loop does not match
    */
-  @Nullable DisposalLoop match(WhileLoopTree tree) {
+  @Nullable DisposalLoopInfo match(WhileLoopTree tree) {
     ExpressionTree condNoParens = TreeUtils.withoutParens(tree.getCondition());
     WhileHeaderMatch header = matchWhileHeader(condNoParens);
     if (header == null) {
       return null;
     }
+    StatementTree loopBodyStatement = tree.getStatement();
     List<? extends StatementTree> bodyStatements =
-        CollectionOwnershipUtils.asStatementList(tree.getStatement());
+        loopBodyStatement instanceof BlockTree blockTree
+            ? blockTree.getStatements()
+            : List.of(loopBodyStatement);
     if (bodyStatements == null) {
       return null;
     }
@@ -397,7 +402,7 @@ final class WhileDisposalLoopMatcher {
         chooseLoopUpdateBlockForPotentiallyFulfillingLoop(
             loopBodyEntryBlock, cblock, getOrCreateWhileLoopCache());
     if (loopUpdateBlock != null) {
-      return new DisposalLoop(
+      return new DisposalLoopInfo(
           header.collectionTree,
           extraction.extractionCall,
           elementNode,

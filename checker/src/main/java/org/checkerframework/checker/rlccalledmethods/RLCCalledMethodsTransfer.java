@@ -9,7 +9,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
-import org.checkerframework.checker.collectionownership.DisposalLoop;
+import org.checkerframework.checker.collectionownership.DisposalLoopInfo;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -62,19 +62,19 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
   }
 
   /**
-   * Add the collection elements iterated over in {@link DisposalLoop}'s to the store so that
+   * Add the collection elements iterated over in {@link DisposalLoopInfo}'s to the store so that
    * temp-vars. e.g., col.get(i), col.pop() are tracked.
    */
   @Override
   public AccumulationStore initialStore(
       UnderlyingAST underlyingAST, List<LocalVariableNode> parameters) {
     AccumulationStore store = super.initialStore(underlyingAST, parameters);
-    for (DisposalLoop disposalLoop :
+    for (DisposalLoopInfo disposalLoopInfo :
         ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(rlTypeFactory)
-            .getDisposalLoops(underlyingAST)) {
+            .getDisposalLoopInfos(underlyingAST)) {
       IteratedCollectionElement collectionElementJE =
           new IteratedCollectionElement(
-              disposalLoop.iteratedElementNode, disposalLoop.iteratedElementTree);
+              disposalLoopInfo.iteratedElementNode(), disposalLoopInfo.iteratedElementTree());
       store.insertValue(collectionElementJE, rlTypeFactory.top);
     }
     return store;

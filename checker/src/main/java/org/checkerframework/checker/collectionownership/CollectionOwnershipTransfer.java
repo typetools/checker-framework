@@ -34,9 +34,15 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Transfer function for the collection ownership type system. Its primary purpose is to create
- * temporary variables for expressions (which allow those expressions to have refined information in
- * the store, which the consistency checker can use).
+ * Transfer function for the collection ownership type system.
+ *
+ * <p>This class implements the transfer rules for collection ownership. In particular, it handles
+ * ownership transfer through assignments, method invocations, and object creation. It refines
+ * collections to {@code @OwningCollectionWithoutObligation} when a disposal loop discharges the
+ * required must-call obligations of the iterated elements.
+ *
+ * <p>This class also creates temporary variables for expressions so their collection ownership
+ * types can be refined in the store and later queried by the consistency checker.
  */
 public class CollectionOwnershipTransfer
     extends CFAbstractTransfer<CFValue, CollectionOwnershipStore, CollectionOwnershipTransfer> {
@@ -91,6 +97,9 @@ public class CollectionOwnershipTransfer
                   TreeUtils.elementFromTree(node.getExpression().getTree()))) {
             replaceInStores(res, lhsJE, atypeFactory.NOTOWNINGCOLLECTION);
           } else {
+            // Make the RHS @NotOwningCollection to reflect the ownership transfer, unless there is
+            // a @NotOwningCollection annotation, in which case there is no transfer and the lhs
+            // should be @NotOwningCollection
             replaceInStores(
                 res,
                 hasExplicitNotOwningCollectionDeclaration(node) ? lhsJE : rhsJE,
@@ -114,12 +123,12 @@ public class CollectionOwnershipTransfer
    */
   private TransferResult<CFValue, CollectionOwnershipStore> updateStoreForDisposalLoop(
       TransferResult<CFValue, CollectionOwnershipStore> res, Tree tree) {
-    DisposalLoop disposalLoop = atypeFactory.getDisposalLoopForConditionTree(tree);
-    if (disposalLoop != null) {
+    DisposalLoopInfo disposalLoopInfo = atypeFactory.getDisposalLoopInfoForConditionTree(tree);
+    if (disposalLoopInfo != null) {
       CollectionOwnershipStore elseStore = res.getElseStore();
-      ExpressionTree collectionExpression = disposalLoop.expressionTree;
+      ExpressionTree collectionExpression = disposalLoopInfo.expressionTree();
       JavaExpression collectionJE = JavaExpression.fromTree(collectionExpression);
-      Set<String> disposalLoopCalledMethods = atypeFactory.getCalledMethods(disposalLoop);
+      Set<String> disposalLoopCalledMethods = atypeFactory.getCalledMethods(disposalLoopInfo);
 
       CollectionOwnershipType collectionCoType = atypeFactory.getCoType(collectionExpression);
       if (collectionCoType == CollectionOwnershipType.OwningCollection) {

@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
-import org.checkerframework.checker.mustcall.qual.Owning;
 
 /**
  * A simple implementation of {@link KeyedSet} backed by an insertion-order {@link
@@ -67,7 +66,8 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
   }
 
   @Override
-  public Iterator<V> iterator(@PolyOwningCollection LinkedHashKeyedSet<K, V> this) {
+  public @PolyOwningCollection Iterator<V> iterator(
+      @PolyOwningCollection LinkedHashKeyedSet<K, V> this) {
     return new KeyedSetIterator();
   }
 
@@ -121,7 +121,7 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
   }
 
   @Override
-  public boolean add(@Owning V o) {
+  public boolean add(V o) {
     return add(o, THROW_EXCEPTION, IGNORE) == null;
   }
 

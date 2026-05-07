@@ -2,6 +2,7 @@ package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
@@ -26,7 +27,7 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** Matches indexed `for` {@link DisposalLoop}'s that iterates over a resource collection. */
+/** Matches indexed `for` {@link DisposalLoopInfo}'s that iterates over a resource collection. */
 final class IndexedForDisposalLoopMatcher {
 
   /** The CO type factory used for collection-ownership queries. */
@@ -48,20 +49,27 @@ final class IndexedForDisposalLoopMatcher {
   }
 
   /**
-   * Returns the {@link DisposalLoop} if the `for` loop iterates over a resource collection and
+   * Returns the {@link DisposalLoopInfo} if the `for` loop iterates over a resource collection and
    * follows a specific loop shape described in {@link #nameOfCollectionThatAllElementsAreCalledOn}.
    *
    * @param tree a `for` loop with exactly one loop variable
    * @return the matched disposal loop, or {@code null} if the loop does not match
    */
-  @Nullable DisposalLoop match(ForLoopTree tree) {
+  @Nullable DisposalLoopInfo match(ForLoopTree tree) {
+    StatementTree loopBodyStatement = tree.getStatement();
     List<? extends StatementTree> loopBodyStatements =
-        CollectionOwnershipUtils.asStatementList(tree.getStatement());
+        loopBodyStatement instanceof BlockTree blockTree
+            ? blockTree.getStatements()
+            : List.of(loopBodyStatement);
     if (loopBodyStatements == null) {
       return null;
     }
     StatementTree init = tree.getInitializer().get(0);
-    ExpressionTree condition = TreeUtils.withoutParens(tree.getCondition());
+    ExpressionTree rawCondition = tree.getCondition();
+    if (rawCondition == null) {
+      return null;
+    }
+    ExpressionTree condition = TreeUtils.withoutParens(rawCondition);
     ExpressionStatementTree update = tree.getUpdate().get(0);
     if (!(condition instanceof BinaryTree binaryTreeCondition)) {
       return null;
@@ -85,7 +93,7 @@ final class IndexedForDisposalLoopMatcher {
       }
       Block conditionalBlock = ((SingleSuccessorBlock) loopConditionBlock).getSuccessor();
       Block loopBodyEntryBlock = ((ConditionalBlock) conditionalBlock).getThenSuccessor();
-      return new DisposalLoop(
+      return new DisposalLoopInfo(
           CollectionOwnershipUtils.baseExpression(collectionElementTree),
           collectionElementTree,
           nodeForCollectionElt,

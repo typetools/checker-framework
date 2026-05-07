@@ -1,6 +1,5 @@
 package org.checkerframework.checker.collectionownership;
 
-import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -9,10 +8,8 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayDeque;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -28,33 +25,12 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.IPair;
 
-/** Utility methods shared by {@link DisposalLoop} scanning and AST matching. */
+/** Utility methods shared by {@link DisposalLoopInfo} scanning and AST matching. */
 public final class CollectionOwnershipUtils {
 
   /** Do not instantiate */
   private CollectionOwnershipUtils() {
     throw new BugInCF("CollectionOwnershipUtils is a utility class and should not be instantiated");
-  }
-
-  /**
-   * Returns the given statement as a list of statements.
-   *
-   * <p>If {@code statement} is a {@link BlockTree}, returns that block's statements. Otherwise,
-   * returns a singleton list containing {@code statement}. Returns {@code null} if {@code
-   * statement} is {@code null}.
-   *
-   * @param statement a loop-body statement
-   * @return a list of statements for {@code statement}, or {@code null} if {@code statement} is
-   *     {@code null}
-   */
-  static @Nullable List<? extends StatementTree> asStatementList(
-      @Nullable StatementTree statement) {
-    if (statement == null) {
-      return null;
-    }
-    return statement instanceof BlockTree blockTree
-        ? blockTree.getStatements()
-        : Collections.singletonList(statement);
   }
 
   /**
@@ -116,7 +92,7 @@ public final class CollectionOwnershipUtils {
    * @param expr an expression
    * @return the name of the referenced identifier, or {@code null} if none
    */
-  static Name getNameFromExpressionTree(ExpressionTree expr) {
+  static @Nullable Name getNameFromExpressionTree(@Nullable ExpressionTree expr) {
     if (expr == null) {
       return null;
     }

@@ -38,8 +38,9 @@ public class CollectionOwnershipAnalysis
   /**
    * Creates the ignored-exception policy used by collection-ownership flow.
    *
-   * <p>The policy follows the Resource Leak Checker configuration, but keeps exact{@link Throwable}
-   * exceptional edges because broad catch/fallback paths affect collection-obligation reasoning.
+   * <p>The policy follows the Resource Leak Checker configuration, but keeps exact {@link
+   * Throwable} exceptional edges because broad catch/fallback paths affect collection-obligation
+   * reasoning.
    *
    * @param checker the enclosing checker
    * @return the ignored-exception policy for collection-ownership flow

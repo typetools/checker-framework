@@ -187,7 +187,8 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     // col.get(i) in order for the called-method analysis to properly track must-call obligations
     // on them.
     if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
-      ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(this).discoverDisposalLoops(cfg);
+      ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(this)
+          .discoverDisposalLoopInfos(cfg);
     }
   }
 

@@ -44,7 +44,7 @@ import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnot
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipStore;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipUtils;
-import org.checkerframework.checker.collectionownership.DisposalLoop;
+import org.checkerframework.checker.collectionownership.DisposalLoopInfo;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -2750,12 +2750,12 @@ public class MustCallConsistencyAnalyzer {
     // loop which fulfills the collections must-call obligation. If so, don't propagate the
     // collection obligations discharged inside the loop.
     boolean isElseEdgeOfDisposalLoop = false;
-    DisposalLoop disposalLoop = coAtf.getDisposalLoopForConditionBlock(currentBlock);
+    DisposalLoopInfo disposalLoopInfo = coAtf.getDisposalLoopInfoForConditionBlock(currentBlock);
     Set<String> disposalLoopCalledMethods = null;
-    if ((currentBlock instanceof ConditionalBlock conditionalBlock) && disposalLoop != null) {
+    if ((currentBlock instanceof ConditionalBlock conditionalBlock) && disposalLoopInfo != null) {
       if (conditionalBlock.getElseSuccessor().equals(successor)) {
         isElseEdgeOfDisposalLoop = true;
-        disposalLoopCalledMethods = coAtf.getCalledMethods(disposalLoop);
+        disposalLoopCalledMethods = coAtf.getCalledMethods(disposalLoopInfo);
       }
     }
 
@@ -3464,33 +3464,33 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Analyze the loop body of a {@link DisposalLoop} to compute the definitely called-methods on the
-   * iterated element on every path.
+   * Analyze the loop body of a {@link DisposalLoopInfo} to compute the definitely called-methods on
+   * the iterated element on every path.
    *
    * @param cfg the cfg of the enclosing method
-   * @param disposalLoop the loop to analyze
+   * @param disposalLoopInfo the loop to analyze
    * @return the called-methods for the loop on the iterated element, or {@code null} if there's no
    *     definite called-methods on the iterated element of the loop
    */
-  public Set<String> analyzeDisposalLoop(ControlFlowGraph cfg, DisposalLoop disposalLoop) {
+  public Set<String> analyzeDisposalLoop(ControlFlowGraph cfg, DisposalLoopInfo disposalLoopInfo) {
 
     // ensure checked loop is initialized in a valid way
     Objects.requireNonNull(
-        disposalLoop.iteratedElementTree,
+        disposalLoopInfo.iteratedElementTree(),
         "CollectionElementAccess tree provided to analyze loop body of an"
             + " CFG-resolved potentially fulfilling collection loop is null.");
     Objects.requireNonNull(
-        disposalLoop.loopBodyEntryBlock,
+        disposalLoopInfo.loopBodyEntryBlock(),
         "Block provided to analyze loop body of a CFG-resolved potentially fulfilling collection"
             + " loop is null.");
     Objects.requireNonNull(
-        disposalLoop.loopUpdateBlock,
+        disposalLoopInfo.loopUpdateBlock(),
         "Block provided to analyze loop body of a CFG-resolved potentially fulfilling collection"
             + " loop is null.");
 
-    Block loopBodyEntryBlock = disposalLoop.loopBodyEntryBlock;
-    Block loopUpdateBlock = disposalLoop.loopUpdateBlock;
-    Tree collectionElement = disposalLoop.iteratedElementTree;
+    Block loopBodyEntryBlock = disposalLoopInfo.loopBodyEntryBlock();
+    Block loopUpdateBlock = disposalLoopInfo.loopUpdateBlock();
+    Tree collectionElement = disposalLoopInfo.iteratedElementTree();
 
     boolean emptyLoopBody = loopBodyEntryBlock.equals(loopUpdateBlock);
     if (emptyLoopBody) {
@@ -3547,7 +3547,7 @@ public class MustCallConsistencyAnalyzer {
         if (isLastBlockOfBody) {
           Set<String> calledMethodsAfterBlock =
               analyzeTypeOfCollectionElement(
-                  currentBlock, disposalLoop, obligations, loopUpdateBlock);
+                  currentBlock, disposalLoopInfo, obligations, loopUpdateBlock);
           // intersect the called methods after this block with the accumulated ones so far.
           // This is required because there may be multiple "back edges" of the loop, in which
           // case we must intersect the called methods between those.
@@ -3668,7 +3668,7 @@ public class MustCallConsistencyAnalyzer {
    * aliases.
    *
    * @param lastLoopBodyBlock last block of loop body
-   * @param disposalLoop loop wrapper of the loop to analyze
+   * @param disposalLoopInfo loop wrapper of the loop to analyze
    * @param obligations the set of tracked obligations
    * @param loopUpdateBlock block that updates the loop
    * @return the union of methods in the CalledMethods type of the collection element and all its
@@ -3676,7 +3676,7 @@ public class MustCallConsistencyAnalyzer {
    */
   private Set<String> analyzeTypeOfCollectionElement(
       Block lastLoopBodyBlock,
-      DisposalLoop disposalLoop,
+      DisposalLoopInfo disposalLoopInfo,
       Set<Obligation> obligations,
       Block loopUpdateBlock) {
     AccumulationStore store = null;
@@ -3692,7 +3692,7 @@ public class MustCallConsistencyAnalyzer {
       store = cmAtf.getStoreAfter(lastLoopBodyBlock.getLastNode());
     }
     Obligation collectionElementObligation =
-        getObligationForVar(obligations, disposalLoop.iteratedElementTree);
+        getObligationForVar(obligations, disposalLoopInfo.iteratedElementTree());
     if (collectionElementObligation == null) {
       // the loop did something weird. Might have reassigned the collection element.
       // The sound thing to do is return an empty list.
@@ -3708,7 +3708,7 @@ public class MustCallConsistencyAnalyzer {
     // add the called methods of the ICE
     IteratedCollectionElement ice =
         store.getIteratedCollectionElement(
-            disposalLoop.iteratedElementNode, disposalLoop.iteratedElementTree);
+            disposalLoopInfo.iteratedElementNode(), disposalLoopInfo.iteratedElementTree());
     if (ice != null) {
       AccumulationValue cmValOfIce = store.getValue(ice);
       List<String> calledMethods = getCalledMethods(cmValOfIce);

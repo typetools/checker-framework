@@ -23,7 +23,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.IPair;
 
-/** Resolves enhanced-`for` {@link DisposalLoop} from CFG. */
+/** Resolves enhanced-`for` {@link DisposalLoopInfo} from CFG. */
 final class EnhancedForDisposalLoopResolver {
 
   /** The CO type factory used for collection-ownership queries. */
@@ -45,13 +45,13 @@ final class EnhancedForDisposalLoopResolver {
   }
 
   /**
-   * Returns the {@link DisposalLoop} along with its facts if the enhanced-for-loop iterates over a
-   * resource collection.
+   * Returns the {@link DisposalLoopInfo} if the enhanced-for-loop iterates over a resource
+   * collection.
    *
    * @param tree the enhanced-for-loop to inspect
-   * @return the matched disposal loop, or {@code null} if the loop does not match
+   * @return the matched disposal loop info, or {@code null} if the loop does not match
    */
-  @Nullable DisposalLoop match(EnhancedForLoopTree tree) {
+  @Nullable DisposalLoopInfo match(EnhancedForLoopTree tree) {
     ExpressionTree collectionTree = CollectionOwnershipUtils.baseExpression(tree.getExpression());
     if (collectionTree == null) {
       return null;
@@ -63,12 +63,16 @@ final class EnhancedForDisposalLoopResolver {
   }
 
   /**
-   * Resolves an enhanced-for-loop candidate into a {@link DisposalLoop}.
+   * Searches the method CFG for the first occurrence of {@code tree} and resolves it to {@link
+   * DisposalLoopInfo}.
+   *
+   * <p>This performs a CFG traversal, looking for a desugared iterator {@code hasNext()} node
+   * tagged with the target enhanced-for-loop.
    *
    * @param tree the enhanced-for-loop to resolve
-   * @return the CFG-resolved loop, or {@code null} if it cannot be resolved
+   * @return the CFG-resolved loop info, or {@code null} if it cannot be resolved
    */
-  private @Nullable DisposalLoop resolveEnhancedForLoop(EnhancedForLoopTree tree) {
+  private @Nullable DisposalLoopInfo resolveEnhancedForLoop(EnhancedForLoopTree tree) {
     Block entryBlock = cfg.getEntryBlock();
     Set<Block> visitedBlocks = new HashSet<>();
     Deque<Block> worklist = new ArrayDeque<>();
@@ -77,16 +81,19 @@ final class EnhancedForDisposalLoopResolver {
 
     while (!worklist.isEmpty()) {
       Block currentBlock = worklist.removeFirst();
-
       for (Node node : currentBlock.getNodes()) {
         if (node instanceof MethodInvocationNode methodInvocationNode) {
-          DisposalLoop resolvedLoop = resolveEnhancedForLoop(methodInvocationNode, tree);
+          DisposalLoopInfo resolvedLoop = resolveEnhancedForLoop(methodInvocationNode, tree);
           if (resolvedLoop != null) {
             return resolvedLoop;
           }
         }
       }
 
+      // One AST enhanced-for can have multiple CFG occurrences (for example around duplicated
+      // finally paths for normal and exceptional flow). This resolver returns the first matching
+      // occurrence it finds, so avoid traversing ignored exceptional successors here; otherwise
+      // the search can bind to an exceptional clone before the normal one.
       for (IPair<Block, @Nullable TypeMirror> successorAndExceptionType :
           CollectionOwnershipUtils.getSuccessorsExceptIgnoredExceptions(currentBlock, coAtf)) {
         Block successorBlock = successorAndExceptionType.first;
@@ -100,55 +107,61 @@ final class EnhancedForDisposalLoopResolver {
   }
 
   /**
-   * Returns a resolved collection loop if the given node is desugared from an enhanced-for-loop
-   * over a resource collection.
+   * Returns resolved disposal loop info if the given node is desugared from the target
+   * enhanced-for-loop {@code tree} over a resource collection.
+   *
+   * <p>Starting from the desugared iterator {@code hasNext()} node, this walks forward to recover
+   * the loop-variable assignment and body-entry block, then walks backward to recover the loop
+   * condition and update block.
    *
    * @param methodInvocationNode the node to check
    * @param tree the enhanced-for-loop being resolved
-   * @return the resolved loop, or {@code null} if the node does not belong to {@code tree}
+   * @return the resolved loop info, or {@code null} if the node does not belong to {@code tree}
    */
-  private @Nullable DisposalLoop resolveEnhancedForLoop(
+  private @Nullable DisposalLoopInfo resolveEnhancedForLoop(
       MethodInvocationNode methodInvocationNode, @FindDistinct EnhancedForLoopTree tree) {
-    if (methodInvocationNode.getIterableExpression() == null) {
+    if (!isTargetEnhancedForInvocation(methodInvocationNode, tree)) {
       return null;
     }
 
-    EnhancedForLoopTree loop = methodInvocationNode.getEnhancedForLoop();
-    if (loop == null) {
-      throw new BugInCF(
-          "MethodInvocationNode.iterableExpression should be non-null iff"
-              + " MethodInvocationNode.enhancedForLoop is non-null");
-    }
-    if (loop != tree) {
+    VariableTree loopVariable = tree.getVariable();
+
+    // Walk forward from the iterator `hasNext()` node to find the assignment that initializes the
+    // loop variable from `next()`. The successor after that assignment is the loop-body entry
+    // block.
+    Block blockContainingHasNext = methodInvocationNode.getBlock();
+    if (!(blockContainingHasNext instanceof SingleSuccessorBlock singleSuccessorBlock)) {
       return null;
     }
-
-    VariableTree loopVariable = loop.getVariable();
-
-    SingleSuccessorBlock singleSuccessorBlock =
-        (SingleSuccessorBlock) methodInvocationNode.getBlock();
     Iterator<Node> nodeIterator = singleSuccessorBlock.getNodes().iterator();
     Node loopVariableNode = null;
-    Node node;
+    Node candidateNode;
     boolean isAssignmentOfLoopVariable;
     do {
       while (!nodeIterator.hasNext()) {
-        singleSuccessorBlock = (SingleSuccessorBlock) singleSuccessorBlock.getSuccessor();
+        Block successor = singleSuccessorBlock.getSuccessor();
+        if (!(successor instanceof SingleSuccessorBlock nextBlock)) {
+          return null;
+        }
+        singleSuccessorBlock = nextBlock;
         nodeIterator = singleSuccessorBlock.getNodes().iterator();
       }
-      node = nodeIterator.next();
+      candidateNode = nodeIterator.next();
       isAssignmentOfLoopVariable = false;
-      if ((node instanceof AssignmentNode)
-          && (node.getTree() instanceof VariableTree iteratorVariableDeclaration)) {
-        loopVariableNode = ((AssignmentNode) node).getTarget();
+      if ((candidateNode instanceof AssignmentNode)
+          && (candidateNode.getTree() instanceof VariableTree iteratorVariableDeclaration)) {
+        loopVariableNode = ((AssignmentNode) candidateNode).getTarget();
         isAssignmentOfLoopVariable =
-            iteratorVariableDeclaration.getName() == loopVariable.getName();
+            iteratorVariableDeclaration.getName().equals(loopVariable.getName());
       }
     } while (!isAssignmentOfLoopVariable);
     Block loopBodyEntryBlock = singleSuccessorBlock.getSuccessor();
 
+    // Walk backward from the iterator `hasNext()` node to recover the loop-condition node and the
+    // loop-update/back-edge block for this desugared enhanced-for.
     Block loopUpdateBlock = methodInvocationNode.getBlock();
     nodeIterator = loopUpdateBlock.getNodes().iterator();
+    Node loopConditionNode;
     boolean isLoopCondition;
     do {
       while (!nodeIterator.hasNext()) {
@@ -160,16 +173,17 @@ final class EnhancedForDisposalLoopResolver {
           return null;
         }
       }
-      node = nodeIterator.next();
+      loopConditionNode = nodeIterator.next();
       isLoopCondition = false;
-      if (node instanceof MethodInvocationNode) {
-        MethodInvocationTree methodInvocationTree = ((MethodInvocationNode) node).getTree();
+      if (loopConditionNode instanceof MethodInvocationNode) {
+        MethodInvocationTree methodInvocationTree =
+            ((MethodInvocationNode) loopConditionNode).getTree();
         isLoopCondition =
             methodInvocationTree != null && TreeUtils.isHasNextCall(methodInvocationTree);
       }
     } while (!isLoopCondition);
 
-    Block blockContainingLoopCondition = node.getBlock();
+    Block blockContainingLoopCondition = loopConditionNode.getBlock();
     if (blockContainingLoopCondition.getSuccessors().size() != 1) {
       throw new BugInCF(
           "loop condition has: "
@@ -182,17 +196,43 @@ final class EnhancedForDisposalLoopResolver {
           "loop condition successor is not ConditionalBlock, but: "
               + maybeConditionalBlock.getClass());
     }
-    if (loopVariableNode == null || loopVariableNode.getTree() == null || node.getTree() == null) {
+    if (loopVariableNode == null
+        || loopVariableNode.getTree() == null
+        || loopConditionNode.getTree() == null) {
       return null;
     }
 
-    return new DisposalLoop(
-        loop.getExpression(),
+    return new DisposalLoopInfo(
+        tree.getExpression(),
         loopVariableNode.getTree(),
         loopVariableNode,
-        node.getTree(),
+        loopConditionNode.getTree(),
         conditionalBlock,
         loopBodyEntryBlock,
         loopUpdateBlock);
+  }
+
+  /**
+   * Returns whether {@code methodInvocationNode} is the iterator {@code hasNext()} invocation for
+   * the target enhanced-for-loop {@code tree}.
+   *
+   * @param methodInvocationNode the node to check
+   * @param tree the target enhanced-for-loop
+   * @return true if the node belongs to {@code tree}
+   */
+  private boolean isTargetEnhancedForInvocation(
+      MethodInvocationNode methodInvocationNode, @FindDistinct EnhancedForLoopTree tree) {
+    if (methodInvocationNode.getIterableExpression() == null) {
+      return false;
+    }
+
+    EnhancedForLoopTree loop = methodInvocationNode.getEnhancedForLoop();
+    if (loop == null) {
+      throw new BugInCF(
+          "MethodInvocationNode.iterableExpression should be non-null iff"
+              + " MethodInvocationNode.enhancedForLoop is non-null");
+    }
+
+    return loop == tree;
   }
 }

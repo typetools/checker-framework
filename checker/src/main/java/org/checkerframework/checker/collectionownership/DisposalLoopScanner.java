@@ -12,7 +12,7 @@ import java.util.Set;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 
-/** Scans one method tree and discovers {@link DisposalLoop}'s in its CFG. */
+/** Scans one method tree and discovers {@link DisposalLoopInfo}'s in it. */
 public class DisposalLoopScanner extends TreeScanner<Void, Void> {
 
   /** The CO type factory used for collection-ownership queries. */
@@ -25,7 +25,7 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
   private final ControlFlowGraph cfg;
 
   /** Disposal loops discovered while scanning the current method tree. */
-  private final Set<DisposalLoop> disposalLoops = new LinkedHashSet<>();
+  private final Set<DisposalLoopInfo> disposalLoopInfos = new LinkedHashSet<>();
 
   /** Matcher for indexed `for` disposal loops. */
   private final IndexedForDisposalLoopMatcher indexedForDisposalLoopMatcher;
@@ -63,10 +63,9 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
    * @param tree the tree to scan
    * @return the disposal loops discovered in {@code tree}
    */
-  public Set<DisposalLoop> scanTree(Tree tree) {
-    disposalLoops.clear();
+  public Set<DisposalLoopInfo> scanTree(Tree tree) {
     scan(tree, null);
-    return new LinkedHashSet<>(disposalLoops);
+    return disposalLoopInfos;
   }
 
   /**
@@ -104,16 +103,17 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
   public Void visitForLoop(ForLoopTree tree, Void p) {
     boolean singleLoopVariable = tree.getUpdate().size() == 1 && tree.getInitializer().size() == 1;
     if (singleLoopVariable) {
-      DisposalLoop disposalLoop = indexedForDisposalLoopMatcher.match(tree);
-      if (disposalLoop != null) {
-        disposalLoops.add(disposalLoop);
+      DisposalLoopInfo disposalLoopInfo = indexedForDisposalLoopMatcher.match(tree);
+      if (disposalLoopInfo != null) {
+        disposalLoopInfos.add(disposalLoopInfo);
       }
     }
     return super.visitForLoop(tree, p);
   }
 
   /**
-   * Matches a {@link DisposalLoop} that uses while-loops and resolves their CFG-local loop facts.
+   * Matches a {@link DisposalLoopInfo} that uses while-loops and resolves their CFG-local loop
+   * facts.
    *
    * @param tree the while-loop to inspect
    * @param p the scan parameter
@@ -121,9 +121,9 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
    */
   @Override
   public Void visitWhileLoop(WhileLoopTree tree, Void p) {
-    DisposalLoop disposalLoop = whileDisposalLoopMatcher.match(tree);
-    if (disposalLoop != null) {
-      disposalLoops.add(disposalLoop);
+    DisposalLoopInfo disposalLoopInfo = whileDisposalLoopMatcher.match(tree);
+    if (disposalLoopInfo != null) {
+      disposalLoopInfos.add(disposalLoopInfo);
     }
     return super.visitWhileLoop(tree, p);
   }
@@ -138,9 +138,9 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
    */
   @Override
   public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
-    DisposalLoop disposalLoop = enhancedForDisposalLoopResolver.match(tree);
-    if (disposalLoop != null) {
-      disposalLoops.add(disposalLoop);
+    DisposalLoopInfo disposalLoopInfo = enhancedForDisposalLoopResolver.match(tree);
+    if (disposalLoopInfo != null) {
+      disposalLoopInfos.add(disposalLoopInfo);
     }
     return super.visitEnhancedForLoop(tree, p);
   }
