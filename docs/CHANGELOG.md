@@ -11,6 +11,10 @@ Renamed error message key "createsmustcallfor.target.unparseable" to "createsmus
 
 ### Implementation details
 
+In `AnnotatedTypeFactory`:
+
+* new overload `canonicalAnnotation(AnnotationMirror, TypeMirror)`
+
 ### Closed issues
 
 ## Version 4.1.0 (2026-05-01)
