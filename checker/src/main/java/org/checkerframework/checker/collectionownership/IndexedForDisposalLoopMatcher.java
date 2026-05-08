@@ -340,7 +340,7 @@ final class IndexedForDisposalLoopMatcher {
     @Override
     public @Nullable Void scan(@Nullable Tree tree, Void p) {
       // Short-circuit the scanner if the collection/index variable is mutated.
-      if (bodyIsIllegal || tree == null) {
+      if (bodyIsIllegal) {
         return null;
       }
       return super.scan(tree, p);
@@ -348,7 +348,7 @@ final class IndexedForDisposalLoopMatcher {
 
     @Override
     public @Nullable Void scan(@Nullable Iterable<? extends Tree> trees, Void p) {
-      if (bodyIsIllegal || trees == null) {
+      if (bodyIsIllegal) {
         return null;
       }
       return super.scan(trees, p);

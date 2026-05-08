@@ -73,6 +73,7 @@ public class CollectionOwnershipTransfer
   @Override
   public TransferResult<CFValue, CollectionOwnershipStore> visitAssignment(
       AssignmentNode node, TransferInput<CFValue, CollectionOwnershipStore> in) {
+    // Transfer ownership from the rhs to the lhs.
     TransferResult<CFValue, CollectionOwnershipStore> res = super.visitAssignment(node, in);
 
     Node lhs = getNodeOrTempVar(node.getTarget());
@@ -135,6 +136,7 @@ public class CollectionOwnershipTransfer
         List<String> requiredElementMethods =
             atypeFactory.getMustCallValuesOfResourceCollectionComponent(collectionExpression);
         if (disposalLoopCalledMethods != null
+            && requiredElementMethods != null
             && disposalLoopCalledMethods.containsAll(requiredElementMethods)) {
           elseStore.clearValue(collectionJE);
           elseStore.insertValue(collectionJE, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION);

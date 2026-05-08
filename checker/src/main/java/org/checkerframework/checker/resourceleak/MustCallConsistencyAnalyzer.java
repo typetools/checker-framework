@@ -179,7 +179,7 @@ public class MustCallConsistencyAnalyzer {
    * True if currently executing a loop body analysis and false if executing a normal consistency
    * analysis.
    */
-  private boolean isLoopBodyAnalysis;
+  private final boolean isLoopBodyAnalysis;
 
   /**
    * A cache for the result of calling {@code RLCCalledMethodsAnnotatedTypeFactory.getStoreAfter()}
@@ -221,7 +221,7 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * CFG currently being analyzed by {@link #analyze(ControlFlowGraph)}.
+   * The CFG currently being analyzed by {@link #analyze(ControlFlowGraph)}.
    *
    * <p>This field is initialized at the start of {@code analyze} and is only used by helpers that
    * reason about whether newly-created obligations can still reach the regular exit.
@@ -239,7 +239,7 @@ public class MustCallConsistencyAnalyzer {
   private @Nullable Set<Block> blocksThatCanReachRegularExit = null;
 
   /**
-   * Trees for which collection.obligation.never.enforced has already been reported in the current
+   * Trees for which `collection.obligation.never.enforced` has already been reported in the current
    * CFG analysis.
    *
    * <p>This suppresses duplicate diagnostics when the same invocation is visited on multiple

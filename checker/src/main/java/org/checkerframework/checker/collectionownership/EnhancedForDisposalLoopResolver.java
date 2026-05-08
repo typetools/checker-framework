@@ -227,12 +227,6 @@ final class EnhancedForDisposalLoopResolver {
     }
 
     EnhancedForLoopTree loop = methodInvocationNode.getEnhancedForLoop();
-    if (loop == null) {
-      throw new BugInCF(
-          "MethodInvocationNode.iterableExpression should be non-null iff"
-              + " MethodInvocationNode.enhancedForLoop is non-null");
-    }
-
     return loop == tree;
   }
 }
