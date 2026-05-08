@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -296,7 +297,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     // have information inferred about their receivers.
     if (receiver != null
         && atypeFactory.wpiShouldInferTypesForReceivers()
-        && !methodElt.getSimpleName().contentEquals("<init>")) {
+        && methodElt.getKind() != ElementKind.CONSTRUCTOR) {
       AnnotatedTypeMirror receiverArgATM = atypeFactory.getReceiverType(invocationTree);
       AnnotatedExecutableType methodDeclType = atypeFactory.getAnnotatedType(methodElt);
       AnnotatedTypeMirror receiverParamATM = methodDeclType.getReceiverType();

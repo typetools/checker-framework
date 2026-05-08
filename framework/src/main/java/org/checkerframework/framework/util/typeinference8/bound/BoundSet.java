@@ -177,7 +177,7 @@ public class BoundSet implements ReductionResult {
    * Does the bound set contain a bound of the form {@code G<..., ai, ...> = capture(G<...>)} for
    * any variable in {@code as}?
    *
-   * @param as a collection of varialbes
+   * @param as a collection of variables
    * @return true if the bound set contain a bound of the form {@code G<..., ai, ...> =
    *     capture(G<...>)} for any variable in {@code as}
    */

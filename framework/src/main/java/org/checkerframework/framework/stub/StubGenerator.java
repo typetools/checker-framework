@@ -40,13 +40,13 @@ import org.plumelib.util.StringsPlume;
  */
 public class StubGenerator {
   /** The indentation for the class. */
-  private static final String INDENTION = "    ";
+  private static final String INDENTATION = "    ";
 
   /** The output stream. */
   private final PrintStream out;
 
   /** the current indentation for the line being processed. */
-  private String currentIndention = "";
+  private String currentIndentation = "";
 
   /** the package of the class being processed. */
   private String currentPackage = null;
@@ -83,7 +83,7 @@ public class StubGenerator {
     String pkg = ElementUtils.getQualifiedName(ElementUtils.enclosingPackage(elt));
     if (!"".equals(pkg)) {
       currentPackage = pkg;
-      currentIndention = "    ";
+      currentIndentation = "    ";
       indent();
     }
     VariableElement field = (VariableElement) elt;
@@ -120,7 +120,7 @@ public class StubGenerator {
     String newPackage = ElementUtils.getQualifiedName(ElementUtils.enclosingPackage(elt));
     if (!newPackage.equals("")) {
       currentPackage = newPackage;
-      currentIndention = "    ";
+      currentIndentation = "    ";
       indent();
     }
 
@@ -236,16 +236,16 @@ public class StubGenerator {
     }
 
     out.println(" {");
-    String tempIndention = currentIndention;
+    String tempIndentation = currentIndentation;
 
-    currentIndention = currentIndention + INDENTION;
+    currentIndentation = currentIndentation + INDENTATION;
 
     // Inner classes, which the stub generator prints later.
     List<TypeElement> innerClass = new ArrayList<>();
     // side-effects innerClass
     printTypeMembers(typeElement.getEnclosedElements(), innerClass);
 
-    currentIndention = tempIndention;
+    currentIndentation = tempIndentation;
     indent();
     out.println("}");
 
@@ -381,7 +381,7 @@ public class StubGenerator {
 
   /** Indent the current line. */
   private void indent() {
-    out.print(currentIndention);
+    out.print(currentIndentation);
   }
 
   /**

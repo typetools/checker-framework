@@ -521,9 +521,9 @@ public class TestUtilities {
   public static void assertTestDidNotFail(TypecheckResult testResult) {
     if (testResult.didTestFail()) {
       if (getShouldEmitDebugInfo()) {
-        System.out.println("---------------- start of javac ouput ----------------");
+        System.out.println("---------------- start of javac output ----------------");
         System.out.println(testResult.getCompilationResult().getJavacOutput());
-        System.out.println("---------------- end of javac ouput ----------------");
+        System.out.println("---------------- end of javac output ----------------");
       } else {
         System.out.println("To see the javac command line and output, run with: -Pemit.test.debug");
       }

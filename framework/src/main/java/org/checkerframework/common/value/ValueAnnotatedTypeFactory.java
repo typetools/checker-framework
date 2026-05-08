@@ -524,7 +524,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Clients should call {@link #getToValueFromIntRange} if it might not exist.
    *
    * @param intRangeAnno an IntRange annotation
-   * @param defaultValue the value to retur if there is no to() element/field
+   * @param defaultValue the value to return if there is no to() element/field
    * @return its to() element/field
    */
   protected long getIntRangeToValue(AnnotationMirror intRangeAnno, long defaultValue) {

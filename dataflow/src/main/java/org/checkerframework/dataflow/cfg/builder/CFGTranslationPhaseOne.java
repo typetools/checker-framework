@@ -3462,7 +3462,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // `tree` has an explicit receiver.
       return scan(mtree.getExpression(), null);
     } else {
-      // `tree` lacks an explicit reciever.
+      // `tree` lacks an explicit receiver.
       Element ele = TreeUtils.elementFromUse(tree);
       TypeElement declaringClass = ElementUtils.enclosingTypeElement(ele);
       TypeMirror typeOfDeclaringClass = ElementUtils.getType(declaringClass);
