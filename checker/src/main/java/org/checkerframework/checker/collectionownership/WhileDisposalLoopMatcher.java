@@ -2,9 +2,10 @@ package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -15,15 +16,13 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreeScanner;
 import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
@@ -34,12 +33,33 @@ import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
-import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** Matches `while` {@link DisposalLoopInfo} that iterates over a resource collection. */
+/**
+ * Matches {@code while} loops that iterate over elements of a resource collection and produce
+ * {@link DisposalLoopInfo}.
+ *
+ * <p>Supported forms include iterator loops such as {@code while (it.hasNext())} and non-empty
+ * collection loops such as {@code while (!queue.isEmpty())}, {@code while (queue.size() > 0)}, and
+ * {@code while (0 < queue.size())}. A match requires exactly one extraction call in the loop body,
+ * such as {@code it.next()}, {@code queue.poll()}, or {@code queue.removeFirst()}.
+ */
 final class WhileDisposalLoopMatcher {
+
+  /**
+   * Methods that may extract an element in an iterator-header loop like {@code while (it.hasNext())
+   * { ... it.next() ... }}.
+   */
+  private static final Set<String> ITERATOR_EXTRACT_METHODS = Set.of("next");
+
+  /**
+   * Methods that may extract an element in a non-empty-collection loop such as {@code while
+   * (!c.isEmpty()) { ... c.poll()/pop/removeFirst/... ...}}, including {@code size() > 0} and
+   * {@code 0 < size()} variants.
+   */
+  private static final Set<String> NONEMPTY_EXTRACT_METHODS =
+      Set.of("poll", "pollFirst", "pollLast", "remove", "removeFirst", "removeLast", "pop");
 
   /** The CO type factory used for collection-ownership queries. */
   private final CollectionOwnershipAnnotatedTypeFactory coAtf;
@@ -54,7 +74,7 @@ final class WhileDisposalLoopMatcher {
   private @Nullable WhileLoopResolutionCache whileLoopCache;
 
   /**
-   * Creates a matcher for `while` disposal loops.
+   * Creates a matcher for {@code while} disposal loops.
    *
    * @param coAtf the CO type factory
    * @param rlccAtf the RLCC type factory
@@ -69,41 +89,706 @@ final class WhileDisposalLoopMatcher {
     this.cfg = cfg;
   }
 
-  /** Lazily-computed CFG facts used to resolve potentially fulfilling while loops. */
+  /**
+   * Returns the {@link DisposalLoopInfo} if the {@code while} loop {@code tree} matches one of the
+   * supported header forms and has exactly one compatible extraction in its body.
+   *
+   * <p>For example:
+   *
+   * <pre>{@code
+   * while (it.hasNext()) {
+   *   Resource resource = it.next();
+   *   resource.close();
+   * }
+   * }</pre>
+   *
+   * and:
+   *
+   * <pre>{@code
+   * while (!queue.isEmpty()) {
+   *   queue.removeFirst().close();
+   * }
+   * }</pre>
+   *
+   * @param tree the while-loop to inspect
+   * @return the matched disposal loop info, or {@code null} if the loop does not match
+   */
+  @Nullable DisposalLoopInfo match(WhileLoopTree tree) {
+    ExpressionTree conditionWithoutParens = TreeUtils.withoutParens(tree.getCondition());
+    WhileHeaderInfo headerMatch = matchWhileHeader(conditionWithoutParens);
+    if (headerMatch == null) {
+      return null;
+    }
+
+    // Validate the loop body and recover the unique extraction call that represents the iterated
+    // element for this loop.
+    MethodInvocationTree extractionCall =
+        new WhileBodyScanner(
+                headerMatch.headerVarName,
+                headerMatch.collectionVarNameForInvalidation,
+                headerMatch.allowedExtractMethods)
+            .scanLoopBody(tree.getStatement());
+    if (extractionCall == null) {
+      return null;
+    }
+
+    // After the tree match succeeds, recover the CFG blocks corresponding to the loop condition,
+    // body entry, and loop back edge.
+    Block conditionBlock = CollectionOwnershipUtils.firstBlockForTree(cfg, conditionWithoutParens);
+    if (conditionBlock == null) {
+      return null;
+    }
+
+    ConditionalBlock conditionalBlock = findImmediateConditionalSuccessor(conditionBlock);
+    if (conditionalBlock == null) {
+      // Some while-loop conditions are represented through exception blocks before reaching the
+      // actual conditional branch. Retry from the peeled predecessor.
+      Block peeledPredecessor = peelExceptionBlocksToPredecessor(conditionBlock);
+      if (peeledPredecessor != null) {
+        conditionalBlock = findImmediateConditionalSuccessor(peeledPredecessor);
+      }
+    }
+    if (conditionalBlock == null) {
+      return null;
+    }
+
+    Block loopBodyEntryBlock = conditionalBlock.getThenSuccessor();
+    Node iteratedElementNode = CollectionOwnershipUtils.anyNodeForTree(cfg, extractionCall);
+    if (iteratedElementNode == null) {
+      return null;
+    }
+
+    Block loopUpdateBlock =
+        chooseLoopUpdateBlock(loopBodyEntryBlock, conditionalBlock, getOrCreateWhileLoopCache());
+    if (loopUpdateBlock == null) {
+      return null;
+    }
+
+    return new DisposalLoopInfo(
+        headerMatch.collectionTree,
+        extractionCall,
+        iteratedElementNode,
+        CollectionOwnershipUtils.cfgAssociatedTreeFor(cfg, conditionWithoutParens),
+        conditionalBlock,
+        loopBodyEntryBlock,
+        loopUpdateBlock);
+  }
+
+  /**
+   * Matches supported {@code while} header forms and returns the recovered {@link WhileHeaderInfo}.
+   *
+   * <p>Supported header shapes are:
+   *
+   * <ul>
+   *   <li>{@code it.hasNext()}
+   *   <li>{@code !collection.isEmpty()}
+   *   <li>{@code collection.size() > 0}
+   *   <li>{@code 0 < collection.size()}
+   * </ul>
+   *
+   * @param condition the while-loop condition with parentheses removed
+   * @return the recovered header facts, or {@code null} if the header is unsupported
+   */
+  private @Nullable WhileHeaderInfo matchWhileHeader(ExpressionTree condition) {
+    if (condition instanceof MethodInvocationTree methodInvocationTree) {
+      return matchIteratorHeaderInfo(methodInvocationTree);
+    }
+
+    if (condition instanceof UnaryTree unaryTree
+        && condition.getKind() == Tree.Kind.LOGICAL_COMPLEMENT) {
+      ExpressionTree inner = TreeUtils.withoutParens(unaryTree.getExpression());
+      WhileHeaderInfo headerMatch = matchNonEmptyFromExpr(inner);
+      if (headerMatch != null) {
+        return headerMatch;
+      }
+    }
+
+    if (condition instanceof BinaryTree binaryTree) {
+      return matchNonEmptyFromSize(binaryTree);
+    }
+
+    return null;
+  }
+
+  /**
+   * Matches an iterator header of the form {@code while (it.hasNext())} and extracts corresponding
+   * {@link WhileHeaderInfo}.
+   *
+   * @param invocation the candidate header invocation
+   * @return the recovered header facts, or {@code null} if the header does not match
+   */
+  private @Nullable WhileHeaderInfo matchIteratorHeaderInfo(MethodInvocationTree invocation) {
+    if (!TreeUtils.isHasNextCall(invocation)) {
+      return null;
+    }
+    ExpressionTree receiver = receiverOfInvocation(invocation);
+    if (receiver == null) {
+      return null;
+    }
+
+    Name iteratorVarName = CollectionOwnershipUtils.getNameFromExpressionTree(receiver);
+    if (iteratorVarName == null) {
+      return null;
+    }
+
+    ExpressionTree collectionTree = recoverCollectionFromIteratorReceiver(receiver);
+    if (collectionTree == null) {
+      return null;
+    }
+
+    Name collectionVarName = CollectionOwnershipUtils.getNameFromExpressionTree(collectionTree);
+    return new WhileHeaderInfo(
+        collectionTree, collectionVarName, iteratorVarName, ITERATOR_EXTRACT_METHODS);
+  }
+
+  /**
+   * Matches a non-empty {@code while} condition of the form {@code !collection.isEmpty()} and
+   * extracts corresponding {@link WhileHeaderInfo}.
+   *
+   * @param expression the expression under the logical complement
+   * @return the recovered header facts, or {@code null} if the expression does not match
+   */
+  private @Nullable WhileHeaderInfo matchNonEmptyFromExpr(ExpressionTree expression) {
+    if (!(expression instanceof MethodInvocationTree methodInvocationTree)) {
+      return null;
+    }
+    if (!isIsEmptyCall(methodInvocationTree)) {
+      return null;
+    }
+
+    ExpressionTree receiver = receiverOfInvocation(methodInvocationTree);
+    if (receiver == null) {
+      return null;
+    }
+    return nonEmptyHeaderMatch(receiver);
+  }
+
+  /**
+   * Matches a non-empty collection condition of the form {@code collection.size() > 0} or {@code 0
+   * < collection.size()} and returns corresponding {@link WhileHeaderInfo}.
+   *
+   * @param condition the binary condition
+   * @return the recovered header facts, or {@code null} if the expression does not match
+   */
+  private @Nullable WhileHeaderInfo matchNonEmptyFromSize(BinaryTree condition) {
+    Tree.Kind kind = condition.getKind();
+    if (kind != Tree.Kind.GREATER_THAN && kind != Tree.Kind.LESS_THAN) {
+      return null;
+    }
+
+    ExpressionTree left = TreeUtils.withoutParens(condition.getLeftOperand());
+    ExpressionTree right = TreeUtils.withoutParens(condition.getRightOperand());
+
+    @Nullable MethodInvocationTree sizeCall = null;
+    @Nullable LiteralTree zeroLiteral = null;
+
+    if (kind == Tree.Kind.GREATER_THAN) {
+      if (left instanceof MethodInvocationTree leftInvocation
+          && right instanceof LiteralTree rightLiteral) {
+        sizeCall = leftInvocation;
+        zeroLiteral = rightLiteral;
+      }
+    } else {
+      if (left instanceof LiteralTree leftLiteral
+          && right instanceof MethodInvocationTree rightInvocation) {
+        sizeCall = rightInvocation;
+        zeroLiteral = leftLiteral;
+      }
+    }
+
+    if (sizeCall == null) {
+      return null;
+    }
+
+    Object zeroValue = zeroLiteral.getValue();
+    if (!(zeroValue instanceof Integer intZeroVal) || intZeroVal != 0) {
+      return null;
+    }
+    if (!TreeUtils.isSizeAccess(sizeCall)) {
+      return null;
+    }
+
+    ExpressionTree receiver = receiverOfInvocation(sizeCall);
+    if (receiver == null) {
+      return null;
+    }
+    return nonEmptyHeaderMatch(receiver);
+  }
+
+  /**
+   * Builds a {@link WhileHeaderInfo} for a non-empty collection header once the receiver expression
+   * has already been recovered.
+   *
+   * @param receiver the receiver checked by the non-empty header
+   * @return the recovered header facts, or {@code null} if the receiver is not a resource
+   *     collection
+   */
+  private @Nullable WhileHeaderInfo nonEmptyHeaderMatch(ExpressionTree receiver) {
+    Name collectionVarName = CollectionOwnershipUtils.getNameFromExpressionTree(receiver);
+    if (collectionVarName == null) {
+      return null;
+    }
+    if (!coAtf.isResourceCollection(receiver)) {
+      return null;
+    }
+
+    ExpressionTree collectionTree = CollectionOwnershipUtils.baseExpression(receiver);
+    if (collectionTree == null) {
+      return null;
+    }
+
+    return new WhileHeaderInfo(
+        collectionTree, collectionVarName, collectionVarName, NONEMPTY_EXTRACT_METHODS);
+  }
+
+  /**
+   * Returns whether the given invocation is an {@code isEmpty()} call with no arguments.
+   *
+   * @param invocation a method invocation
+   * @return true if {@code invocation} is an {@code isEmpty()} call with no arguments
+   */
+  private boolean isIsEmptyCall(MethodInvocationTree invocation) {
+    ExpressionTree methodSelect = invocation.getMethodSelect();
+    if (!(methodSelect instanceof MemberSelectTree memberSelectTree)) {
+      return false;
+    }
+    return memberSelectTree.getIdentifier().contentEquals("isEmpty")
+        && invocation.getArguments().isEmpty();
+  }
+
+  /**
+   * Returns the explicit receiver of the given invocation, if present.
+   *
+   * @param invocation a method invocation
+   * @return the explicit receiver, or {@code null} if none exists
+   */
+  private @Nullable ExpressionTree receiverOfInvocation(MethodInvocationTree invocation) {
+    ExpressionTree methodSelect = invocation.getMethodSelect();
+    if (methodSelect instanceof MemberSelectTree memberSelectTree) {
+      return memberSelectTree.getExpression();
+    }
+    return null;
+  }
+
+  /**
+   * Recovers the collection expression from an iterator receiver in a header such as {@code while
+   * (it.hasNext())}.
+   *
+   * <p>This only recognizes local iterator variables initialized directly by {@code
+   * collection.iterator()}.
+   *
+   * @param iteratorReceiver the iterator receiver expression
+   * @return the collection expression, or {@code null} if it cannot be recovered
+   */
+  private @Nullable ExpressionTree recoverCollectionFromIteratorReceiver(
+      ExpressionTree iteratorReceiver) {
+    Element iteratorElement = TreeUtils.elementFromTree(iteratorReceiver);
+    if (!(iteratorElement instanceof VariableElement)) {
+      return null;
+    }
+    if (iteratorElement.getKind() != ElementKind.LOCAL_VARIABLE) {
+      return null;
+    }
+
+    Tree declaration = rlccAtf.declarationFromElement(iteratorElement);
+    if (!(declaration instanceof VariableTree variableTreeDeclaration)) {
+      return null;
+    }
+
+    ExpressionTree initializer = variableTreeDeclaration.getInitializer();
+    if (!(initializer instanceof MethodInvocationTree initializerCall)) {
+      return null;
+    }
+
+    ExpressionTree methodSelect = initializerCall.getMethodSelect();
+    if (!(methodSelect instanceof MemberSelectTree memberSelectTree)) {
+      return null;
+    }
+    if (!memberSelectTree.getIdentifier().contentEquals("iterator")
+        || !initializerCall.getArguments().isEmpty()) {
+      return null;
+    }
+
+    ExpressionTree collectionExpression = memberSelectTree.getExpression();
+    if (!coAtf.isResourceCollection(collectionExpression)) {
+      return null;
+    }
+    return CollectionOwnershipUtils.baseExpression(collectionExpression);
+  }
+
+  /**
+   * Returns whether the given invocation is an allowed extraction call on the matched header
+   * variable.
+   *
+   * @param invocation a method invocation
+   * @param headerVarName the iterator or collection variable constrained by the header
+   * @param allowedExtractMethods extraction methods permitted by the matched header form
+   * @return true if {@code invocation} is an allowed extraction call on {@code headerVarName}
+   */
+  private boolean isExtractionCallOnHeaderVar(
+      MethodInvocationTree invocation, Name headerVarName, Set<String> allowedExtractMethods) {
+    ExpressionTree methodSelect = invocation.getMethodSelect();
+    if (!(methodSelect instanceof MemberSelectTree memberSelectTree)) {
+      return false;
+    }
+
+    String methodName = memberSelectTree.getIdentifier().toString();
+    if (!allowedExtractMethods.contains(methodName)) {
+      return false;
+    }
+    if (!invocation.getArguments().isEmpty()) {
+      return false;
+    }
+
+    Name receiverName =
+        CollectionOwnershipUtils.getNameFromExpressionTree(memberSelectTree.getExpression());
+    return receiverName != null && receiverName == headerVarName;
+  }
+
+  /**
+   * Scans the body of a matched {@code while} loop and checks whether the body is consistent with
+   * the loop header.
+   *
+   * <p>The body is accepted only if it:
+   *
+   * <ul>
+   *   <li>does not overwrite the header variable or the matched collection variable
+   *   <li>contains exactly one allowed extraction call on the header/collection variable
+   * </ul>
+   */
+  private final class WhileBodyScanner extends TreeScanner<Void, Void> {
+
+    /** Iterator or collection variable constrained by the loop header. */
+    private final Name headerVarName;
+
+    /** Collection variable whose writes should invalidate the match, if one exists. */
+    private final @Nullable Name collectionVarNameForInvalidation;
+
+    /** Extraction methods allowed by the matched header form. */
+    private final Set<String> allowedExtractMethods;
+
+    /**
+     * Whether the loop body has been rejected. The loop is rejected if it overwrites the
+     * header/collection variable, or does zero/more than one extraction call.
+     */
+    private boolean illegal = false;
+
+    /** Number of extraction calls found so far. */
+    private int extractionCount = 0;
+
+    /** The unique extraction call, if one has been found so far. */
+    private @Nullable MethodInvocationTree extractionCall = null;
+
+    /**
+     * Creates a {@link WhileBodyScanner}.
+     *
+     * @param headerVarName iterator or collection variable constrained by the header
+     * @param collectionVarNameForInvalidation collection variable whose writes invalidate the match
+     * @param allowedExtractMethods extraction methods allowed by the matched header form
+     */
+    private WhileBodyScanner(
+        Name headerVarName,
+        @Nullable Name collectionVarNameForInvalidation,
+        Set<String> allowedExtractMethods) {
+      this.headerVarName = headerVarName;
+      this.collectionVarNameForInvalidation = collectionVarNameForInvalidation;
+      this.allowedExtractMethods = allowedExtractMethods;
+    }
+
+    /**
+     * Scans the loop body once and returns the unique extraction call as the iterated element.
+     *
+     * @param loopBody the loop body to scan
+     * @return the unique allowed extraction call, or {@code null} if the body writes to the header
+     *     variable or matched collection variable, contains no extraction, or contains more than
+     *     one extraction
+     */
+    private @Nullable MethodInvocationTree scanLoopBody(StatementTree loopBody) {
+      super.scan(loopBody, null);
+      if (illegal || extractionCount != 1) {
+        return null;
+      }
+      return extractionCall;
+    }
+
+    /**
+     * Rejects a loop body that writes to the variable constrained by the header/collection
+     * variable.
+     *
+     * @param lhs the assignment target
+     */
+    private void markWriteIfTargetsHeaderOrCollection(ExpressionTree lhs) {
+      Name assignedVariable = CollectionOwnershipUtils.getNameFromExpressionTree(lhs);
+      if (assignedVariable == null) {
+        return;
+      }
+      if (assignedVariable == headerVarName) {
+        illegal = true;
+      }
+      if (collectionVarNameForInvalidation != null
+          && assignedVariable == collectionVarNameForInvalidation) {
+        illegal = true;
+      }
+    }
+
+    /**
+     * Records one allowed extraction call found in the given expression.
+     *
+     * @param expression the candidate extraction expression
+     */
+    private void recordExtractionIfAny(ExpressionTree expression) {
+      ExpressionTree expressionWithoutParens = TreeUtils.withoutParens(expression);
+      if (!(expressionWithoutParens instanceof MethodInvocationTree methodInvocationTree)) {
+        return;
+      }
+      if (!isExtractionCallOnHeaderVar(
+          methodInvocationTree, headerVarName, allowedExtractMethods)) {
+        return;
+      }
+
+      extractionCount++;
+      if (extractionCount > 1) {
+        // More than one extraction means this iteration can advance through more than one element,
+        // so the loop no longer corresponds to a single iterated element.
+        illegal = true;
+        return;
+      }
+      extractionCall = methodInvocationTree;
+    }
+
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
+      markWriteIfTargetsHeaderOrCollection(tree.getVariable());
+      if (illegal) {
+        return null;
+      }
+      return super.visitCompoundAssignment(tree, p);
+    }
+
+    @Override
+    public Void visitAssignment(AssignmentTree tree, Void p) {
+      // Reassigning the header/collection variable breaks the link between the loop header and the
+      // extraction expected in the body.
+      markWriteIfTargetsHeaderOrCollection(tree.getVariable());
+      if (illegal) {
+        return null;
+      }
+      recordExtractionIfAny(tree.getExpression());
+      return super.visitAssignment(tree, p);
+    }
+
+    @Override
+    public Void visitVariable(VariableTree tree, Void p) {
+      ExpressionTree initializer = tree.getInitializer();
+      if (initializer != null) {
+        recordExtractionIfAny(initializer);
+      }
+      return super.visitVariable(tree, p);
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
+      ExpressionTree receiver = receiverOfInvocation(tree);
+      if (receiver != null) {
+        // For chained calls such as `it.next().close()` or `queue.poll().close()`, the extraction
+        // call appears as the receiver of an outer invocation.
+        recordExtractionIfAny(receiver);
+      }
+      return super.visitMethodInvocation(tree, p);
+    }
+
+    @Override
+    public Void visitUnary(UnaryTree tree, Void p) {
+      switch (tree.getKind()) {
+        case PREFIX_DECREMENT, POSTFIX_DECREMENT, PREFIX_INCREMENT, POSTFIX_INCREMENT -> {
+          Name mutatedVariable =
+              CollectionOwnershipUtils.getNameFromExpressionTree(tree.getExpression());
+          if (mutatedVariable == headerVarName) {
+            illegal = true;
+            return null;
+          }
+        }
+        default -> {}
+      }
+      return super.visitUnary(tree, p);
+    }
+
+    @Override
+    public Void visitLambdaExpression(LambdaExpressionTree tree, Void p) {
+      // A lambda body is not executed as part of the enclosing loop body.
+      return null;
+    }
+
+    @Override
+    public Void visitClass(ClassTree tree, Void p) {
+      // Skip local and anonymous class bodies for the same reason as lambdas.
+      return null;
+    }
+
+    @Override
+    public @Nullable Void scan(@Nullable Tree tree, Void p) {
+      // Short-circuit if the body has been rejected.
+      if (illegal || tree == null) {
+        return null;
+      }
+      return super.scan(tree, p);
+    }
+
+    @Override
+    public @Nullable Void scan(@Nullable Iterable<? extends Tree> trees, Void p) {
+      if (illegal || trees == null) {
+        return null;
+      }
+      return super.scan(trees, p);
+    }
+  }
+
+  /**
+   * Returns the conditional successor reached immediately from the given block, if one is visible.
+   *
+   * @param block a CFG block
+   * @return the immediate conditional successor of {@code block}, or {@code null} if none is found
+   */
+  private @Nullable ConditionalBlock findImmediateConditionalSuccessor(Block block) {
+    for (Block successor : block.getSuccessors()) {
+      if (successor instanceof ConditionalBlock conditionalBlock) {
+        return conditionalBlock;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Walks backward through exception blocks amd returns the predecessor block that is not an {@link
+   * ExceptionBlock}.
+   *
+   * @param block a CFG block
+   * @return a predecessor block to retry from, or {@code null} if no such block is found
+   */
+  private @Nullable Block peelExceptionBlocksToPredecessor(Block block) {
+    Block currentBlock = block;
+    Set<Block> visitedBlocks = new HashSet<>();
+    while (currentBlock instanceof ExceptionBlock && visitedBlocks.add(currentBlock)) {
+      Set<Block> predecessors = currentBlock.getPredecessors();
+      if (predecessors.size() != 1) {
+        break;
+      }
+      Block predecessor = predecessors.iterator().next();
+      if (predecessor == null) {
+        break;
+      }
+      currentBlock = predecessor;
+    }
+    return currentBlock;
+  }
+
+  /**
+   * Chooses the loop-update block for a matched while loop by selecting the smallest natural loop
+   * that contains both the body entry and the loop conditional.
+   *
+   * @param bodyEntryBlock the loop body entry block
+   * @param conditionalBlock the loop conditional block
+   * @param whileLoopCache cached CFG facts for while-loop resolution
+   * @return the chosen loop-update block, or {@code null} if none is found
+   */
+  private @Nullable Block chooseLoopUpdateBlock(
+      Block bodyEntryBlock,
+      ConditionalBlock conditionalBlock,
+      WhileLoopResolutionCache whileLoopCache) {
+    Block bestLoopUpdateBlock = null;
+    int bestLoopSize = Integer.MAX_VALUE;
+
+    for (WhileLoopResolutionCache.BackEdge backEdge : whileLoopCache.getBackEdges()) {
+      Set<Block> naturalLoop = whileLoopCache.getNaturalLoopForBackEdge(backEdge);
+
+      if (!naturalLoop.contains(bodyEntryBlock)) {
+        continue;
+      }
+      if (!naturalLoop.contains(conditionalBlock)) {
+        continue;
+      }
+
+      // Prefer the smallest natural loop containing both the body entry and the conditional block,
+      // which most closely matches the while loop being resolved.
+      if (naturalLoop.size() < bestLoopSize) {
+        bestLoopSize = naturalLoop.size();
+        bestLoopUpdateBlock = backEdge.targetBlock;
+      }
+    }
+
+    return bestLoopUpdateBlock;
+  }
+
+  /**
+   * Returns the cached CFG facts for while-loop resolution, creating them lazily if needed.
+   *
+   * @return cached CFG facts for while-loop resolution
+   */
+  private WhileLoopResolutionCache getOrCreateWhileLoopCache() {
+    if (whileLoopCache == null) {
+      whileLoopCache = new WhileLoopResolutionCache(cfg);
+    }
+    return whileLoopCache;
+  }
+
+  /**
+   * Facts recovered from a matched {@code while} loop header.
+   *
+   * @param collectionTree collection expression whose element obligations may be discharged.
+   * @param collectionVarNameForInvalidation collection variable whose writes should invalidate the
+   *     match, if one exists.
+   * @param headerVarName iterator variable or collection variable constrained by the loop header.
+   * @param allowedExtractMethods extraction methods accepted for this matched header.
+   */
+  private record WhileHeaderInfo(
+      ExpressionTree collectionTree,
+      @Nullable Name collectionVarNameForInvalidation,
+      Name headerVarName,
+      Set<String> allowedExtractMethods) {
+
+    /**
+     * Creates a summary of the facts recovered from a matched while-loop header.
+     *
+     * @param collectionTree the owning collection expression to mark
+     * @param collectionVarNameForInvalidation collection variable whose writes invalidate the match
+     * @param headerVarName iterator or collection variable constrained by the header
+     * @param allowedExtractMethods extraction methods accepted for this matched header
+     */
+    private WhileHeaderInfo {}
+  }
+
+  /** Lazily-computed CFG facts used to resolve matched while loops. */
   private static final class WhileLoopResolutionCache {
 
-    /** A back edge in the CFG. */
-    private static final class BlockEdge {
-      /** Source block of the back edge. */
-      final Block sourceBlock;
-
-      /** Target block of the back edge. */
-      final Block targetBlock;
+    /**
+     * A back edge from {@code sourceBlock} to {@code targetBlock}.
+     *
+     * @param sourceBlock Source block of the back edge.
+     * @param targetBlock Target block of the back edge.
+     */
+    private record BackEdge(Block sourceBlock, Block targetBlock) {
 
       /**
-       * Creates a CFG back edge description.
+       * Creates a CFG back-edge description.
        *
        * @param sourceBlock source block of the back edge
        * @param targetBlock target block of the back edge
        */
-      BlockEdge(Block sourceBlock, Block targetBlock) {
-        this.sourceBlock = sourceBlock;
-        this.targetBlock = targetBlock;
-      }
+      private BackEdge {}
     }
 
     /** Reachable CFG blocks in the current method. */
     private final Set<Block> reachableBlocks;
 
     /** Back edges among {@link #reachableBlocks}. */
-    private final List<BlockEdge> backEdges;
+    private final List<BackEdge> backEdges;
 
     /** Natural loops for back edges, computed lazily. */
-    private final IdentityHashMap<BlockEdge, Set<Block>> naturalLoopsByBackEdge =
+    private final IdentityHashMap<BackEdge, Set<Block>> naturalLoopsByBackEdge =
         new IdentityHashMap<>();
 
     /**
-     * Creates CFG facts for resolving potentially fulfilling while loops in the given CFG.
+     * Creates CFG facts for resolving matched while loops in the given CFG.
      *
      * @param cfg the enclosing method CFG
      */
@@ -119,7 +804,7 @@ final class WhileDisposalLoopMatcher {
      *
      * @return the CFG back edges
      */
-    private List<BlockEdge> getBackEdges() {
+    private List<BackEdge> getBackEdges() {
       return backEdges;
     }
 
@@ -129,7 +814,7 @@ final class WhileDisposalLoopMatcher {
      * @param backEdge the back edge
      * @return the natural loop induced by the given back edge
      */
-    private Set<Block> getNaturalLoopForBackEdge(BlockEdge backEdge) {
+    private Set<Block> getNaturalLoopForBackEdge(BackEdge backEdge) {
       return naturalLoopsByBackEdge.computeIfAbsent(
           backEdge,
           ignored -> naturalLoop(backEdge.sourceBlock, backEdge.targetBlock, reachableBlocks));
@@ -148,7 +833,7 @@ final class WhileDisposalLoopMatcher {
 
       for (Block block : reachableBlocks) {
         if (block.equals(entryBlock)) {
-          dominators.put(block, new HashSet<>(Collections.singleton(entryBlock)));
+          dominators.put(block, new HashSet<>(Set.of(entryBlock)));
         } else {
           dominators.put(block, new HashSet<>(reachableBlocks));
         }
@@ -194,15 +879,16 @@ final class WhileDisposalLoopMatcher {
     }
 
     /**
-     * Returns the back edges among the reachable blocks in the current CFG.
+     * Returns the back edges among the reachable blocks in the current CFG. The edge A -> B is a
+     * back edge if B dominates A.
      *
      * @param reachableBlocks reachable blocks in the CFG
      * @param dominators dominators for each reachable block
      * @return the CFG back edges
      */
-    private static List<BlockEdge> findBackEdges(
+    private static List<BackEdge> findBackEdges(
         Set<Block> reachableBlocks, Map<Block, Set<Block>> dominators) {
-      java.util.List<BlockEdge> backEdges = new java.util.ArrayList<>();
+      List<BackEdge> backEdges = new ArrayList<>();
       for (Block sourceBlock : reachableBlocks) {
         for (Block targetBlock : sourceBlock.getSuccessors()) {
           if (targetBlock == null || !reachableBlocks.contains(targetBlock)) {
@@ -210,7 +896,7 @@ final class WhileDisposalLoopMatcher {
           }
           Set<Block> sourceDominators = dominators.get(sourceBlock);
           if (sourceDominators != null && sourceDominators.contains(targetBlock)) {
-            backEdges.add(new BlockEdge(sourceBlock, targetBlock));
+            backEdges.add(new BackEdge(sourceBlock, targetBlock));
           }
         }
       }
@@ -248,604 +934,5 @@ final class WhileDisposalLoopMatcher {
       }
       return loopBlocks;
     }
-  }
-
-  /**
-   * Description of a supported while disposal loop header form.
-   *
-   * <p>Each header form determines which extraction methods are allowed in the loop body.
-   */
-  private static final class WhileSpec {
-    /** Methods that may extract an element when this header form is used. */
-    final Set<String> extractMethods;
-
-    /**
-     * Creates a while-loop header specification.
-     *
-     * @param extractMethods methods that may extract an element from the looped collection
-     */
-    WhileSpec(Set<String> extractMethods) {
-      this.extractMethods = extractMethods;
-    }
-  }
-
-  /** Iterator form: {@code while (it.hasNext()) { ... it.next() ... }}. */
-  private static final WhileSpec ITERATOR_SPEC = new WhileSpec(Collections.singleton("next"));
-
-  /**
-   * Non-empty collection form: {@code while (!c.isEmpty()) { ... c.poll()/pop/removeFirst/... ...
-   * }}, including {@code size() > 0} and {@code 0 < size()} variants.
-   */
-  private static final WhileSpec NONEMPTY_SPEC =
-      new WhileSpec(
-          new HashSet<>(
-              Arrays.asList(
-                  "poll", "pollFirst", "pollLast", "remove", "removeFirst", "removeLast", "pop")));
-
-  /**
-   * AST facts recovered from a matched while-loop header.
-   *
-   * <p>{@link #collectionTree} is the collection whose element obligations may be discharged.
-   * {@link #headerVar} is the iterator or collection variable constrained by the header. {@link
-   * #collectionVarNameForBailout} names the collection variable whose writes should invalidate the
-   * match when present.
-   */
-  private static final class WhileHeaderMatch {
-    /** Collection expression whose element obligations may be discharged. */
-    final ExpressionTree collectionTree;
-
-    /** Collection variable name whose writes should invalidate the match, if one exists. */
-    final @Nullable Name collectionVarNameForBailout;
-
-    /** Iterator variable or collection variable constrained by the loop header. */
-    final Name headerVar;
-
-    /** Accepted extraction shape for the matched loop header. */
-    final WhileSpec spec;
-
-    /**
-     * Creates a summary of the AST facts recovered from a matched while-loop header.
-     *
-     * @param collectionTree the owning collection expression to mark
-     * @param collectionVarNameForBailout collection variable whose writes invalidate the match
-     * @param headerVar iterator or collection variable constrained by the header
-     * @param spec accepted extraction shape for the matched loop header
-     */
-    WhileHeaderMatch(
-        ExpressionTree collectionTree,
-        @Nullable Name collectionVarNameForBailout,
-        Name headerVar,
-        WhileSpec spec) {
-      this.collectionTree = collectionTree;
-      this.collectionVarNameForBailout = collectionVarNameForBailout;
-      this.headerVar = headerVar;
-      this.spec = spec;
-    }
-  }
-
-  /**
-   * One extracted element use recovered from a while-loop body.
-   *
-   * <p>The extraction call is the expression that removes or advances to the next element, such as
-   * {@code it.next()}, {@code q.poll()}, or {@code s.pop()}.
-   */
-  private static final class BodyExtraction {
-    /** Extraction call such as {@code it.next()}, {@code q.poll()}, or {@code s.pop()}. */
-    final MethodInvocationTree extractionCall;
-
-    /**
-     * Creates a body extraction summary.
-     *
-     * @param extractionCall extraction call found in the loop body
-     */
-    BodyExtraction(MethodInvocationTree extractionCall) {
-      this.extractionCall = extractionCall;
-    }
-  }
-
-  /**
-   * Matches a {@link DisposalLoopInfo} that uses a while-loop and resolves its CFG-local loop
-   * facts.
-   *
-   * <p>Supported header shapes are iterator loops such as {@code while (it.hasNext())} and
-   * non-empty collection loops such as {@code while (!q.isEmpty())}, {@code while (q.size() > 0)},
-   * and {@code while (0 < q.size())}.
-   *
-   * @param tree the while-loop to inspect
-   * @return the matched disposal loop, or {@code null} if the loop does not match
-   */
-  @Nullable DisposalLoopInfo match(WhileLoopTree tree) {
-    ExpressionTree condNoParens = TreeUtils.withoutParens(tree.getCondition());
-    WhileHeaderMatch header = matchWhileHeader(condNoParens);
-    if (header == null) {
-      return null;
-    }
-    StatementTree loopBodyStatement = tree.getStatement();
-    List<? extends StatementTree> bodyStatements =
-        loopBodyStatement instanceof BlockTree blockTree
-            ? blockTree.getStatements()
-            : List.of(loopBodyStatement);
-    if (bodyStatements == null) {
-      return null;
-    }
-    BodyExtraction extraction =
-        findSingleExtractionInWhileBody(
-            bodyStatements,
-            header.headerVar,
-            header.collectionVarNameForBailout,
-            header.spec.extractMethods);
-    if (extraction == null) {
-      return null;
-    }
-    Block condBlock = CollectionOwnershipUtils.firstBlockForTree(cfg, condNoParens);
-    if (condBlock == null) {
-      return null;
-    }
-    ConditionalBlock cblock = findConditionalSuccessor(condBlock);
-    if (cblock == null) {
-      Block peeled = peelExceptionBlocksToPred(condBlock);
-      if (peeled != null) {
-        cblock = findConditionalSuccessor(peeled);
-      }
-    }
-    if (cblock == null) {
-      return null;
-    }
-
-    Block loopBodyEntryBlock = cblock.getThenSuccessor();
-    Node elementNode = CollectionOwnershipUtils.anyNodeForTree(cfg, extraction.extractionCall);
-    if (elementNode == null) {
-      return null;
-    }
-
-    Block loopUpdateBlock =
-        chooseLoopUpdateBlockForPotentiallyFulfillingLoop(
-            loopBodyEntryBlock, cblock, getOrCreateWhileLoopCache());
-    if (loopUpdateBlock != null) {
-      return new DisposalLoopInfo(
-          header.collectionTree,
-          extraction.extractionCall,
-          elementNode,
-          CollectionOwnershipUtils.cfgAssociatedTreeFor(cfg, condNoParens),
-          cblock,
-          loopBodyEntryBlock,
-          loopUpdateBlock);
-    }
-    return null;
-  }
-
-  /**
-   * Matches supported while-loop header forms and returns the recovered loop facts.
-   *
-   * <p>Supported forms are: {@code while (it.hasNext())}, {@code while (!c.isEmpty())}, {@code
-   * while (c.size() > 0)}, and {@code while (0 < c.size())}.
-   *
-   * @param cond the while-loop condition with parentheses removed
-   * @return the recovered header facts, or {@code null} if the header is unsupported
-   */
-  private @Nullable WhileHeaderMatch matchWhileHeader(ExpressionTree cond) {
-    if (cond instanceof MethodInvocationTree mit) {
-      if (TreeUtils.isHasNextCall(mit)) {
-        ExpressionTree recv = receiverOfInvocation(mit);
-        Name itName = CollectionOwnershipUtils.getNameFromExpressionTree(recv);
-        if (itName == null) {
-          return null;
-        }
-        ExpressionTree colExpr = recoverCollectionFromIteratorReceiver(recv);
-        if (colExpr == null) {
-          return null;
-        }
-        Name colName = CollectionOwnershipUtils.getNameFromExpressionTree(colExpr);
-        return new WhileHeaderMatch(colExpr, colName, itName, ITERATOR_SPEC);
-      }
-    }
-
-    if (cond instanceof UnaryTree unaryTreeCond && cond.getKind() == Tree.Kind.LOGICAL_COMPLEMENT) {
-      ExpressionTree inner = TreeUtils.withoutParens(unaryTreeCond.getExpression());
-      WhileHeaderMatch m = matchNonEmptyFromExpr(inner);
-      if (m != null) {
-        return m;
-      }
-    }
-
-    if (cond instanceof BinaryTree binaryTreeCond) {
-      WhileHeaderMatch m = matchNonEmptyFromSize(binaryTreeCond);
-      if (m != null) {
-        return m;
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Matches a non-empty collection condition of the form {@code !c.isEmpty()}.
-   *
-   * @param inner the expression under the logical complement
-   * @return the recovered header facts, or {@code null} if the expression does not match
-   */
-  private @Nullable WhileHeaderMatch matchNonEmptyFromExpr(ExpressionTree inner) {
-    if (!(inner instanceof MethodInvocationTree mit)) {
-      return null;
-    }
-    if (!isIsEmptyCall(mit)) {
-      return null;
-    }
-    ExpressionTree recv = receiverOfInvocation(mit);
-    if (recv == null) {
-      return null;
-    }
-    Name varName = CollectionOwnershipUtils.getNameFromExpressionTree(recv);
-    if (varName == null) {
-      return null;
-    }
-    if (!coAtf.isResourceCollection(recv)) {
-      return null;
-    }
-    ExpressionTree colTree = CollectionOwnershipUtils.baseExpression(recv);
-    if (colTree == null) {
-      return null;
-    }
-    return new WhileHeaderMatch(colTree, varName, varName, NONEMPTY_SPEC);
-  }
-
-  /**
-   * Matches a non-empty collection condition of the form {@code c.size() > 0} or {@code 0 <
-   * c.size()}.
-   *
-   * @param condition the binary condition
-   * @return the recovered header facts, or {@code null} if the expression does not match
-   */
-  private @Nullable WhileHeaderMatch matchNonEmptyFromSize(BinaryTree condition) {
-    Tree.Kind k = condition.getKind();
-    if (k != Tree.Kind.GREATER_THAN && k != Tree.Kind.LESS_THAN) {
-      return null;
-    }
-
-    ExpressionTree left = TreeUtils.withoutParens(condition.getLeftOperand());
-    ExpressionTree right = TreeUtils.withoutParens(condition.getRightOperand());
-
-    MethodInvocationTree sizeCall = null;
-    LiteralTree zero = null;
-
-    if (k == Tree.Kind.GREATER_THAN) {
-      if (left instanceof MethodInvocationTree mitLeft && right instanceof LiteralTree ltRight) {
-        sizeCall = mitLeft;
-        zero = ltRight;
-      }
-    } else {
-      if (left instanceof LiteralTree ltLeft && right instanceof MethodInvocationTree ltRight) {
-        zero = ltLeft;
-        sizeCall = ltRight;
-      }
-    }
-
-    if (sizeCall == null
-        || !(zero.getValue() instanceof Integer)
-        || (Integer) zero.getValue() != 0) {
-      return null;
-    }
-    if (!TreeUtils.isSizeAccess(sizeCall)) {
-      return null;
-    }
-
-    ExpressionTree recv = receiverOfInvocation(sizeCall);
-    if (recv == null) {
-      return null;
-    }
-
-    Name varName = CollectionOwnershipUtils.getNameFromExpressionTree(recv);
-    if (varName == null) {
-      return null;
-    }
-
-    if (!coAtf.isResourceCollection(recv)) {
-      return null;
-    }
-
-    ExpressionTree colTree = CollectionOwnershipUtils.baseExpression(recv);
-    if (colTree == null) {
-      return null;
-    }
-
-    return new WhileHeaderMatch(colTree, varName, varName, NONEMPTY_SPEC);
-  }
-
-  /**
-   * Returns whether the given invocation is an {@code isEmpty()} call with no arguments.
-   *
-   * @param invocation a method invocation
-   * @return true if {@code invocation} is an {@code isEmpty()} call with no arguments
-   */
-  private boolean isIsEmptyCall(MethodInvocationTree invocation) {
-    ExpressionTree sel = invocation.getMethodSelect();
-    if (!(sel instanceof MemberSelectTree ms)) {
-      return false;
-    }
-    return ms.getIdentifier().contentEquals("isEmpty") && invocation.getArguments().isEmpty();
-  }
-
-  /**
-   * Returns the explicit receiver of the given invocation, if present.
-   *
-   * @param invocation a method invocation
-   * @return the explicit receiver, or {@code null} if none exists
-   */
-  private @Nullable ExpressionTree receiverOfInvocation(MethodInvocationTree invocation) {
-    ExpressionTree sel = invocation.getMethodSelect();
-    if (sel instanceof MemberSelectTree memberSelectTree) {
-      return memberSelectTree.getExpression();
-    }
-    return null;
-  }
-
-  /**
-   * Recovers the collection expression from an iterator receiver in a header such as {@code while
-   * (it.hasNext())}.
-   *
-   * <p>This only recognizes local iterator variables initialized by {@code col.iterator()}.
-   *
-   * @param iteratorExpr the iterator receiver expression
-   * @return the collection expression, or {@code null} if it cannot be recovered
-   */
-  private @Nullable ExpressionTree recoverCollectionFromIteratorReceiver(
-      ExpressionTree iteratorExpr) {
-    if (iteratorExpr == null) {
-      return null;
-    }
-
-    Element itElt = TreeUtils.elementFromTree(iteratorExpr);
-    if (!(itElt instanceof VariableElement)) {
-      return null;
-    }
-
-    if (itElt.getKind() != ElementKind.LOCAL_VARIABLE) {
-      return null;
-    }
-
-    Tree decl = rlccAtf.declarationFromElement(itElt);
-    if (!(decl instanceof VariableTree variableTreeDecl)) {
-      return null;
-    }
-
-    ExpressionTree init = variableTreeDecl.getInitializer();
-    if (!(init instanceof MethodInvocationTree initCall)) {
-      return null;
-    }
-
-    ExpressionTree sel = initCall.getMethodSelect();
-    if (!(sel instanceof MemberSelectTree ms)) {
-      return null;
-    }
-
-    if (!ms.getIdentifier().contentEquals("iterator") || !initCall.getArguments().isEmpty()) {
-      return null;
-    }
-
-    ExpressionTree colExpr = ms.getExpression();
-    if (!coAtf.isResourceCollection(colExpr)) {
-      return null;
-    }
-
-    return CollectionOwnershipUtils.baseExpression(colExpr);
-  }
-
-  /**
-   * Finds exactly one extraction in the loop body. If 0 or >1 extractions occur, returns {@code
-   * null}.
-   *
-   * <p>This matcher rejects writes to the iterator/header variable and, when present, to the
-   * collection variable itself, because such writes invalidate the header/body correspondence used
-   * by later CFG verification.
-   *
-   * @param statements the loop body statements
-   * @param headerVar the iterator or collection variable constrained by the header
-   * @param collectionVarName the collection variable to protect from writes, if any
-   * @param allowedExtractMethods the extraction methods allowed by the matched header
-   * @return the unique extraction in the loop body, or {@code null} if the body is unsupported
-   */
-  private @Nullable BodyExtraction findSingleExtractionInWhileBody(
-      List<? extends StatementTree> statements,
-      Name headerVar,
-      @Nullable Name collectionVarName,
-      Set<String> allowedExtractMethods) {
-
-    AtomicBoolean illegal = new AtomicBoolean(false);
-    final MethodInvocationTree[] extraction = new MethodInvocationTree[] {null};
-    final int[] extractionCount = new int[] {0};
-
-    TreeScanner<Void, Void> scanner =
-        new TreeScanner<Void, Void>() {
-
-          private void markWriteIfTargetsHeaderOrCollection(ExpressionTree lhs) {
-            Name assigned = CollectionOwnershipUtils.getNameFromExpressionTree(lhs);
-            if (assigned != null) {
-              if (assigned == headerVar) illegal.set(true);
-              if (collectionVarName != null && assigned == collectionVarName) illegal.set(true);
-            }
-          }
-
-          private void recordExtractionIfAny(ExpressionTree expr) {
-            expr = TreeUtils.withoutParens(expr);
-            if (!(expr instanceof MethodInvocationTree mit)) {
-              return;
-            }
-
-            if (!isExtractionCallOnHeaderVar(mit, headerVar, allowedExtractMethods)) {
-              return;
-            }
-
-            extractionCount[0]++;
-            if (extractionCount[0] > 1) {
-              illegal.set(true);
-              return;
-            }
-            extraction[0] = mit;
-          }
-
-          @Override
-          public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-            markWriteIfTargetsHeaderOrCollection(node.getVariable());
-            return super.visitCompoundAssignment(node, p);
-          }
-
-          @Override
-          public Void visitAssignment(AssignmentTree node, Void p) {
-            markWriteIfTargetsHeaderOrCollection(node.getVariable());
-            recordExtractionIfAny(node.getExpression());
-            return super.visitAssignment(node, p);
-          }
-
-          @Override
-          public Void visitVariable(VariableTree vt, Void p) {
-            ExpressionTree init = vt.getInitializer();
-            if (init != null) {
-              recordExtractionIfAny(init);
-            }
-            return super.visitVariable(vt, p);
-          }
-
-          @Override
-          public Void visitMethodInvocation(MethodInvocationTree mit, Void p) {
-            ExpressionTree sel = mit.getMethodSelect();
-            if (sel instanceof MemberSelectTree memberSelect) {
-              ExpressionTree recv = memberSelect.getExpression();
-              recordExtractionIfAny(recv);
-            }
-            return super.visitMethodInvocation(mit, p);
-          }
-        };
-
-    for (StatementTree st : statements) {
-      scanner.scan(st, null);
-      if (illegal.get()) break;
-    }
-
-    if (illegal.get() || extraction[0] == null || extractionCount[0] != 1) {
-      return null;
-    }
-    return new BodyExtraction(extraction[0]);
-  }
-
-  /**
-   * Returns whether the given invocation is an allowed extraction call on the matched header
-   * variable.
-   *
-   * @param invocation a method invocation
-   * @param headerVar the iterator or collection variable constrained by the header
-   * @param allowedExtractMethods extraction methods permitted by the matched header form
-   * @return true if {@code invocation} is an allowed extraction call on {@code headerVar}
-   */
-  private boolean isExtractionCallOnHeaderVar(
-      MethodInvocationTree invocation, Name headerVar, Set<String> allowedExtractMethods) {
-    ExpressionTree sel = invocation.getMethodSelect();
-    if (!(sel instanceof MemberSelectTree ms)) {
-      return false;
-    }
-    String methodName = ms.getIdentifier().toString();
-    if (!allowedExtractMethods.contains(methodName)) {
-      return false;
-    }
-    if (!invocation.getArguments().isEmpty()) {
-      return false;
-    }
-    Name recv = CollectionOwnershipUtils.getNameFromExpressionTree(ms.getExpression());
-    return recv != null && recv == headerVar;
-  }
-
-  /**
-   * Returns the conditional successor reached from the given block, if one is immediately visible.
-   *
-   * @param block a CFG block
-   * @return the conditional successor of {@code block}, or {@code null} if none is found
-   */
-  private @Nullable ConditionalBlock findConditionalSuccessor(Block block) {
-    for (Block succ : block.getSuccessors()) {
-      if (succ instanceof ConditionalBlock conditionalBlockSucc) {
-        return conditionalBlockSucc;
-      }
-    }
-    if (block instanceof SingleSuccessorBlock singleSuccessorBlock) {
-      Block succ = singleSuccessorBlock.getSuccessor();
-      if (succ instanceof ConditionalBlock conditionalBlockSucc) {
-        return conditionalBlockSucc;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Walks backward through exception blocks to recover the predecessor block that leads to the
-   * actual loop conditional.
-   *
-   * <p>This is needed because loop conditions such as {@code iterator.hasNext()} may be represented
-   * by exception blocks before reaching the conditional branch.
-   *
-   * @param block a CFG block
-   * @return a predecessor block to retry from, or {@code null} if no such block is found
-   */
-  private @Nullable Block peelExceptionBlocksToPred(Block block) {
-    Block cur = block;
-    Set<Block> visitedBlocks = new HashSet<>();
-    while (cur instanceof ExceptionBlock && visitedBlocks.add(cur)) {
-      Set<Block> preds = cur.getPredecessors();
-      if (preds.size() != 1) {
-        break;
-      }
-      Block p = preds.iterator().next();
-      if (p == null) {
-        break;
-      }
-      cur = p;
-    }
-    return cur;
-  }
-
-  /**
-   * Chooses the best loop update block for a potentially fulfilling while loop by matching it to
-   * the tightest natural loop that contains both the body entry and the loop condition.
-   *
-   * @param bodyEntryBlock the loop body entry block
-   * @param conditionalBlock the loop conditional block
-   * @param whileLoopCache cached CFG facts for while-loop resolution
-   * @return the chosen loop update block, or {@code null} if none is found
-   */
-  private @Nullable Block chooseLoopUpdateBlockForPotentiallyFulfillingLoop(
-      Block bodyEntryBlock,
-      ConditionalBlock conditionalBlock,
-      WhileLoopResolutionCache whileLoopCache) {
-
-    Block bestLoopUpdateBlock = null;
-    int bestLoopSize = Integer.MAX_VALUE;
-
-    for (WhileLoopResolutionCache.BlockEdge backEdge : whileLoopCache.getBackEdges()) {
-      Set<Block> naturalLoop = whileLoopCache.getNaturalLoopForBackEdge(backEdge);
-
-      if (!naturalLoop.contains(bodyEntryBlock)) {
-        continue;
-      }
-      if (!naturalLoop.contains(conditionalBlock)) {
-        continue;
-      }
-
-      if (naturalLoop.size() < bestLoopSize) {
-        bestLoopSize = naturalLoop.size();
-        bestLoopUpdateBlock = backEdge.targetBlock;
-      }
-    }
-
-    return bestLoopUpdateBlock;
-  }
-
-  /**
-   * Returns the cached CFG facts for while-loop resolution, creating them lazily if needed.
-   *
-   * @return cached CFG facts for while-loop resolution
-   */
-  private WhileLoopResolutionCache getOrCreateWhileLoopCache() {
-    if (whileLoopCache == null) {
-      whileLoopCache = new WhileLoopResolutionCache(cfg);
-    }
-    return whileLoopCache;
   }
 }
