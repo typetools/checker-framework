@@ -578,6 +578,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       boolean subtypeRaw,
       boolean supertypeRaw) {
     if (TypesUtils.isClass(subtype.getUnderlyingType())) {
+      // Ignore type arguments in classes. Their qualifiers never matter.
       return true;
     }
     AnnotatedTypeFactory typeFactory = subtype.atypeFactory;

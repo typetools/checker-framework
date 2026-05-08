@@ -11,6 +11,7 @@ public class Issue1098 {
   @SuppressWarnings("keyfor:argument")
   void use() {
     opt(Optional.empty(), null);
+    // TODO: (#7708) This is a false positive.
     // :: error: [argument]
     cls(this.getClass(), null);
   }

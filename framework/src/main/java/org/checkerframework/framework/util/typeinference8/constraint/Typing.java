@@ -314,7 +314,8 @@ public class Typing extends TypeConstraint {
       // }
       // However, this causes new false positives.  For example,
       // checker/tests/tainting/CovariantError.java
-      // TODO: Need to mark this bound as equal for java types, but subtype for qualifiers.
+      // TODO: (#7708) Need to mark this bound as equal for java types, but subtype for qualifiers.
+      // isCovarTypeArg is ignored when reducing this constraint.
       return new Typing(this, S, T, Kind.TYPE_EQUALITY, isCovarTypeArg);
 
     } else if (T.isUnboundWildcard()) {
