@@ -1,6 +1,5 @@
 package org.checkerframework.framework.util;
 
-import com.sun.source.tree.MethodTree;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -9,14 +8,10 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
@@ -126,21 +121,13 @@ public class ContractsFromMethod {
    */
   private <T extends Contract> Set<T> getContractsOfKind(
       ExecutableElement executableElement, Contract.Kind kind, Class<T> clazz) {
-    MethodTree methodDecl;
-    if (executableElement.getKind() == ElementKind.CONSTRUCTOR) {
-      // It's a constructor, not a method.
-      methodDecl = null;
-    } else {
-      methodDecl = (MethodTree) factory.declarationFromElement(executableElement);
-    }
-
     Set<T> result = new LinkedHashSet<>();
     // Check for a single framework-defined contract annotation.
     // The result is RequiresQualifier, EnsuresQualifier, EnsuresQualifierIf, or null.
     AnnotationMirror frameworkContractAnno =
         factory.getDeclAnnotation(executableElement, kind.frameworkContractClass);
     if (frameworkContractAnno != null) {
-      result.addAll(getContract(kind, frameworkContractAnno, clazz, methodDecl));
+      result.addAll(getContract(kind, frameworkContractAnno, clazz));
     }
 
     // Check for a framework-defined wrapper around contract annotations.
@@ -152,7 +139,7 @@ public class ContractsFromMethod {
       List<AnnotationMirror> frameworkContractAnnoList =
           factory.getContractListValues(frameworkContractListAnno);
       for (AnnotationMirror a : frameworkContractAnnoList) {
-        result.addAll(getContract(kind, a, clazz, methodDecl));
+        result.addAll(getContract(kind, a, clazz));
       }
     }
 
@@ -166,18 +153,16 @@ public class ContractsFromMethod {
       // contractAnno is the meta-annotation on anno, such as PreconditionAnnotation,
       // PostconditionAnnotation, or ConditionalPostconditionAnnotation.
       AnnotationMirror contractAnno = r.second;
+      AnnotationMirror enforcedQualifier =
+          getQualifierEnforcedByContractAnnotation(contractAnno, anno);
+      if (enforcedQualifier == null) {
+        continue;
+      }
       List<String> expressions = factory.getContractExpressions(kind, anno);
       Collections.sort(expressions);
       Boolean ensuresQualifierIfResult = factory.getEnsuresQualifierIfResult(kind, anno);
 
       for (String expr : expressions) {
-        TypeMirror exprType = getExprType(expr, methodDecl);
-        AnnotationMirror enforcedQualifier =
-            getQualifierEnforcedByContractAnnotation(contractAnno, anno, exprType);
-        if (enforcedQualifier == null) {
-          continue;
-        }
-
         T contract =
             clazz.cast(
                 Contract.create(kind, expr, enforcedQualifier, anno, ensuresQualifierIfResult));
@@ -188,27 +173,6 @@ public class ContractsFromMethod {
   }
 
   /**
-   * Returns the type of the given expression.
-   *
-   * @param expr an expression
-   * @param methodDecl the method at which to interpret the expression
-   * @return the type of the given expression
-   */
-  private @Nullable TypeMirror getExprType(String expr, @Nullable MethodTree methodDecl) {
-    if (methodDecl == null) {
-      return null;
-    } else {
-      try {
-        JavaExpression jExpr =
-            StringToJavaExpression.atMethodBody(expr, methodDecl, factory.getChecker());
-        return jExpr.getType();
-      } catch (JavaExpressionParseException e) {
-        return null;
-      }
-    }
-  }
-
-  /**
    * Returns the contracts expressed by the given framework contract annotation.
    *
    * @param <T> the type of {@link Contract} to return
@@ -216,16 +180,18 @@ public class ContractsFromMethod {
    * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, or {@link
    *     EnsuresQualifierIf}
    * @param clazz the class to determine the return type
-   * @param methodDecl the method on which the contract is written
    * @return the contracts expressed by the given annotation, or the empty set if the argument is
    *     null
    */
   private <T extends Contract> Set<T> getContract(
-      Contract.Kind kind,
-      AnnotationMirror contractAnnotation,
-      Class<T> clazz,
-      @Nullable MethodTree methodDecl) {
+      Contract.Kind kind, AnnotationMirror contractAnnotation, Class<T> clazz) {
     if (contractAnnotation == null) {
+      return Collections.emptySet();
+    }
+
+    AnnotationMirror enforcedQualifier =
+        getQualifierEnforcedByContractAnnotation(contractAnnotation);
+    if (enforcedQualifier == null) {
       return Collections.emptySet();
     }
 
@@ -237,13 +203,6 @@ public class ContractsFromMethod {
 
     Set<T> result = new LinkedHashSet<>();
     for (String expr : expressions) {
-      TypeMirror exprType = getExprType(expr, methodDecl);
-      AnnotationMirror enforcedQualifier =
-          getQualifierEnforcedByContractAnnotation(contractAnnotation, null, exprType);
-      if (enforcedQualifier == null) {
-        continue;
-      }
-
       T contract =
           clazz.cast(
               Contract.create(
@@ -255,24 +214,30 @@ public class ContractsFromMethod {
 
   /**
    * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
+   * contractAnno}. May return null.
+   *
+   * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
+   * @return the type annotation specified in {@code contractAnno.qualifier}
+   */
+  private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
+      AnnotationMirror contractAnno) {
+    return getQualifierEnforcedByContractAnnotation(contractAnno, null, null);
+  }
+
+  /**
+   * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
    * contractAnno}, with elements/arguments taken from {@code argumentAnno}. May return null.
    *
    * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
    * @param argumentAnno supplies the elements/fields in the return value
-   * @param type the type to which the annotation applies
    * @return the type annotation specified in {@code contractAnno.qualifier}
    */
   private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
-      AnnotationMirror contractAnno,
-      @Nullable AnnotationMirror argumentAnno,
-      @Nullable TypeMirror type) {
+      AnnotationMirror contractAnno, AnnotationMirror argumentAnno) {
 
     Map<String, String> argumentRenaming =
-        argumentAnno == null
-            ? Collections.emptyMap()
-            : makeArgumentRenaming(argumentAnno.getAnnotationType().asElement());
-    return getQualifierEnforcedByContractAnnotation(
-        contractAnno, argumentAnno, argumentRenaming, type);
+        makeArgumentRenaming(argumentAnno.getAnnotationType().asElement());
+    return getQualifierEnforcedByContractAnnotation(contractAnno, argumentAnno, argumentRenaming);
   }
 
   /**
@@ -289,15 +254,13 @@ public class ContractsFromMethod {
    * @param argumentAnno annotation containing the element {@code values}, or {@code null}
    * @param argumentRenaming renaming of argument names, which maps from names in {@code
    *     argumentAnno} to names used in the returned annotation, or {@code null}
-   * @param type the type to which the annotation applies
    * @return a qualifier whose type is that of {@code contractAnno.qualifier}, or an alias for it,
    *     or null if it is not a supported qualifier of the type system
    */
   private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno,
       @Nullable AnnotationMirror argumentAnno,
-      Map<String, String> argumentRenaming,
-      @Nullable TypeMirror type) {
+      @Nullable Map<String, String> argumentRenaming) {
 
     @SuppressWarnings("deprecation") // permitted for use in the framework
     Name c = AnnotationUtils.getElementValueClassName(contractAnno, "qualifier", false);
@@ -312,7 +275,7 @@ public class ContractsFromMethod {
       anno = builder.build();
     }
 
-    anno = factory.canonicalAnnotation(anno, type);
+    anno = factory.canonicalAnnotation(anno);
     if (factory.isSupportedQualifier(anno)) {
       return anno;
     } else {
