@@ -124,9 +124,9 @@ public class Issue1218 {
   void testConstructorCallTypeInferred() {
     // :: error: [varargs]
     new ForEnum<>(MyEnum.A);
-    // :: error: [type.arguments.not.inferred]]
+    // :: error: [type.arguments.not.inferred]
     new ForEnum<>(MyEnum.A, MyEnum.B);
-    // :: error: [type.arguments.not.inferred]]
+    // :: error: [type.arguments.not.inferred]
     new ForEnum<>(MyEnum.A, MyEnum.B, MyEnum.C);
   }
 
