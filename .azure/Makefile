@@ -8,7 +8,7 @@ PLUME_SCRIPTS=../checker/bin-devel/.plume-scripts
 	${PLUME_SCRIPTS}/squeeze-blank-lines $@
 	@chmod -w $@
 
-${PLUME-SCRIPTS}:
+${PLUME_SCRIPTS}:
 	make -C .. get-plume-scripts
 
 clean:

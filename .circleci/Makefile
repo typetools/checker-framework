@@ -12,7 +12,7 @@ PLUME_SCRIPTS=../checker/bin-devel/.plume-scripts
 validate: config.yml
 	cd .. && circleci config validate
 
-${PLUME-SCRIPTS}:
+${PLUME_SCRIPTS}:
 	make -C .. get-plume-scripts
 
 clean:
