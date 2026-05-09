@@ -80,4 +80,4 @@ reflection-util = "org.plumelib:reflection-util:1.1.6"
 
 require-javadoc = "org.plumelib:require-javadoc:2.0.0"
 
-stubparser = "org.checkerframework:stubparser:3.28.0"
+stubparser = "org.checkerframework:stubparser:3.28.1-SNAPSHOT"
