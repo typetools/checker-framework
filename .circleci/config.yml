@@ -213,31 +213,6 @@ jobs:
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
 
-  misc_jdk17:
-    docker:
-      - image: 'mdernst/cf-ubuntu-jdk17-plus'
-    resource_class: large
-    environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
-      TERM: dumb
-    steps:
-      - restore_cache:
-          keys:
-            - &sourcefull-cache source-v1full-{{ .Branch }}-{{ .Revision }}
-            - 'source-v1full-{{ .Branch }}-'
-            - source-v1full-
-      - checkout:
-          method: full
-      - save_cache:
-          key: *sourcefull-cache
-          paths:
-            - .git
-      - run:
-          name: test-misc.sh
-          command: ./checker/bin-devel/test-misc.sh
-          environment:
-            ORG_GRADLE_PROJECT_jdkTestVersion: 17
-
   misc_jdk21:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk21-plus'
