@@ -70,7 +70,7 @@ public class Issue1218 {
 
   // Inferred enumval types are incompatible with <E extends Enum<E>>. Similar code
   // works if the type is a specific enum; see the test file Enums.java for an example.
-  @SuppressWarnings("type.argument")
+  @SuppressWarnings({"type.argument", "type.arguments.not.inferred"})
   void testMethodCallTypeInferred() {
     // :: error: [varargs]
     enums();
@@ -124,7 +124,9 @@ public class Issue1218 {
   void testConstructorCallTypeInferred() {
     // :: error: [varargs]
     new ForEnum<>(MyEnum.A);
+    // :: error: [type.arguments.not.inferred]
     new ForEnum<>(MyEnum.A, MyEnum.B);
+    // :: error: [type.arguments.not.inferred]
     new ForEnum<>(MyEnum.A, MyEnum.B, MyEnum.C);
   }
 

@@ -3,12 +3,14 @@
 
 all default: style-check
 
+PLUME_SCRIPTS=checker/bin-devel/.plume-scripts
+
 # Code style; defines `style-check` and `style-fix`.
-CODE_STYLE_EXCLUSIONS_USER := --exclude=manual.html --exclude=annotation-file-format.html
-ifeq (,$(wildcard .plume-scripts))
-ifeq (,$(wildcard checker/bin-devel/.plume-scripts))
+CODE_STYLE_EXCLUSIONS_USER := --exclude=manual.html --exclude=annotation-file-format.html --exclude-dir .git-scripts --exclude-dir .html-tools --exclude-dir .plume-scripts
+ifeq (,$(wildcard ${PLUME_SCRIPTS}))
 dummy := $(shell ./gradlew -q getPlumeScripts)
 endif
-dummy := $(shell ln -s checker/bin-devel/.plume-scripts .plume-scripts)
-endif
-include .plume-scripts/code-style.mak
+include ${PLUME_SCRIPTS}/code-style.mak
+
+.PHONY: get-plume-scripts
+get-plume-scripts:
