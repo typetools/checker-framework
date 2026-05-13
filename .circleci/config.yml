@@ -204,37 +204,6 @@ jobs:
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
 
-  misc_jdk17:
-    docker:
-      - image: 'mdernst/cf-ubuntu-jdk17-plus'
-    resource_class: large
-    environment:
-      TERM: dumb
-    steps:
-      - restore_cache:
-          keys:
-            - &sourcefull-cache source-v1full-{{ .Branch }}-{{ .Revision }}
-            - 'source-v1full-{{ .Branch }}-'
-            - source-v1full-
-      - checkout:
-          method: full
-      - save_cache:
-          key: *sourcefull-cache
-          paths:
-            - .git
-      - run:
-          name: ci-info
-          command: |
-            ./gradlew -q getPlumeScripts
-            ./checker/bin-devel/.plume-scripts/ci-info --debug
-          environment:
-            ORG_GRADLE_PROJECT_jdkTestVersion: 17
-      - run:
-          name: test-misc.sh
-          command: ./checker/bin-devel/test-misc.sh
-          environment:
-            ORG_GRADLE_PROJECT_jdkTestVersion: 17
-
   misc_jdk21:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk21-plus'
