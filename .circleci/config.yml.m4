@@ -12,7 +12,6 @@ jobs:
       - image: 'cimg/base:2026.04'
     resource_class: small
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - run: /bin/true
