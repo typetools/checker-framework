@@ -110,7 +110,7 @@ final class IndexedForDisposalLoopMatcher {
     }
 
     ExpressionTree collectionExpression =
-        CollectionOwnershipUtils.baseExpression(collectionElementTree);
+        CollectionOwnershipUtils.referenceExpression(collectionElementTree);
     if (collectionExpression == null) {
       return null;
     }
@@ -238,7 +238,7 @@ final class IndexedForDisposalLoopMatcher {
 
   /**
    * Scans an indexed {@code for} loop body, rejecting writes that invalidate the simple
-   * indexed-loop model and remembers the last matching {@code collection.get(i)} access.
+   * indexed-loop model and remembering the last matching {@code collection.get(i)} access.
    */
   private final class LoopBodyScanner extends TreeScanner<Void, Void> {
 

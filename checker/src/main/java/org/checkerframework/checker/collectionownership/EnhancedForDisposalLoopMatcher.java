@@ -23,8 +23,8 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.IPair;
 
-/** Resolves enhanced-`for` {@link DisposalLoopInfo} from CFG. */
-final class EnhancedForDisposalLoopResolver {
+/** Matches enhanced-`for` {@link DisposalLoopInfo} from CFG. */
+final class EnhancedForDisposalLoopMatcher {
 
   /** The CO type factory used for collection-ownership queries. */
   private final CollectionOwnershipAnnotatedTypeFactory coAtf;
@@ -33,12 +33,12 @@ final class EnhancedForDisposalLoopResolver {
   private final ControlFlowGraph cfg;
 
   /**
-   * Creates a resolver for enhanced-`for` disposal loops.
+   * Creates a matcher for enhanced-`for` disposal loops.
    *
    * @param coAtf the CO type factory
    * @param cfg the CFG being scanned
    */
-  EnhancedForDisposalLoopResolver(
+  EnhancedForDisposalLoopMatcher(
       CollectionOwnershipAnnotatedTypeFactory coAtf, ControlFlowGraph cfg) {
     this.coAtf = coAtf;
     this.cfg = cfg;
@@ -52,7 +52,8 @@ final class EnhancedForDisposalLoopResolver {
    * @return the matched disposal loop info, or {@code null} if the loop does not match
    */
   @Nullable DisposalLoopInfo match(EnhancedForLoopTree tree) {
-    ExpressionTree collectionTree = CollectionOwnershipUtils.baseExpression(tree.getExpression());
+    ExpressionTree collectionTree =
+        CollectionOwnershipUtils.referenceExpression(tree.getExpression());
     if (collectionTree == null) {
       return null;
     }

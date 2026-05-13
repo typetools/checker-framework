@@ -27,6 +27,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -71,7 +72,7 @@ final class WhileDisposalLoopMatcher {
   private final ControlFlowGraph cfg;
 
   /** Lazily-computed CFG facts for while-loop resolution. */
-  private @Nullable WhileLoopResolutionCache whileLoopCache;
+  private @MonotonicNonNull WhileLoopResolutionCache whileLoopCache;
 
   /**
    * Creates a matcher for {@code while} disposal loops.
@@ -332,7 +333,7 @@ final class WhileDisposalLoopMatcher {
       return null;
     }
 
-    ExpressionTree collectionTree = CollectionOwnershipUtils.baseExpression(receiver);
+    ExpressionTree collectionTree = CollectionOwnershipUtils.referenceExpression(receiver);
     if (collectionTree == null) {
       return null;
     }
@@ -413,7 +414,7 @@ final class WhileDisposalLoopMatcher {
     if (!coAtf.isResourceCollection(collectionExpression)) {
       return null;
     }
-    return CollectionOwnershipUtils.baseExpression(collectionExpression);
+    return CollectionOwnershipUtils.referenceExpression(collectionExpression);
   }
 
   /**
@@ -744,18 +745,7 @@ final class WhileDisposalLoopMatcher {
       ExpressionTree collectionTree,
       @Nullable Name collectionVarNameForInvalidation,
       Name headerVarName,
-      Set<String> allowedExtractMethods) {
-
-    /**
-     * Creates a summary of the facts recovered from a matched while-loop header.
-     *
-     * @param collectionTree the owning collection expression to mark
-     * @param collectionVarNameForInvalidation collection variable whose writes invalidate the match
-     * @param headerVarName iterator or collection variable constrained by the header
-     * @param allowedExtractMethods extraction methods accepted for this matched header
-     */
-    private WhileHeaderInfo {}
-  }
+      Set<String> allowedExtractMethods) {}
 
   /** Lazily-computed CFG facts used to resolve matched while loops. */
   private static final class WhileLoopResolutionCache {
@@ -766,16 +756,7 @@ final class WhileDisposalLoopMatcher {
      * @param sourceBlock Source block of the back edge.
      * @param targetBlock Target block of the back edge.
      */
-    private record BackEdge(Block sourceBlock, Block targetBlock) {
-
-      /**
-       * Creates a CFG back-edge description.
-       *
-       * @param sourceBlock source block of the back edge
-       * @param targetBlock target block of the back edge
-       */
-      private BackEdge {}
-    }
+    private record BackEdge(Block sourceBlock, Block targetBlock) {}
 
     /** Reachable CFG blocks in the current method. */
     private final Set<Block> reachableBlocks;

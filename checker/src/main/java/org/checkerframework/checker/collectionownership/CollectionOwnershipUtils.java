@@ -149,7 +149,7 @@ public final class CollectionOwnershipUtils {
    * @param expr an expression
    * @return the expression that directly identifies the referenced value, or {@code null}
    */
-  static ExpressionTree baseExpression(ExpressionTree expr) {
+  static ExpressionTree referenceExpression(ExpressionTree expr) {
     switch (expr.getKind()) {
       case IDENTIFIER -> {
         return expr;
@@ -166,7 +166,7 @@ public final class CollectionOwnershipUtils {
         }
       }
       case METHOD_INVOCATION -> {
-        return baseExpression(((MethodInvocationTree) expr).getMethodSelect());
+        return referenceExpression(((MethodInvocationTree) expr).getMethodSelect());
       }
       default -> {
         return null;

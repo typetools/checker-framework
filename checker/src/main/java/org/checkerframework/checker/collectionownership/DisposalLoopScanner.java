@@ -4,7 +4,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreeScanner;
 import java.util.LinkedHashSet;
@@ -12,7 +12,10 @@ import java.util.Set;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 
-/** Scans one method tree and discovers {@link DisposalLoopInfo}'s in it. */
+/**
+ * Scans one method tree and discovers potential disposal loops (represented with {@link
+ * DisposalLoopInfo} objects) in it.
+ */
 public class DisposalLoopScanner extends TreeScanner<Void, Void> {
 
   /** The CO type factory used for collection-ownership queries. */
@@ -33,8 +36,8 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
   /** Matcher for `while` disposal loops. */
   private final WhileDisposalLoopMatcher whileDisposalLoopMatcher;
 
-  /** Resolver for enhanced-`for` disposal loops. */
-  private final EnhancedForDisposalLoopResolver enhancedForDisposalLoopResolver;
+  /** Matcher for enhanced-`for` disposal loops. */
+  private final EnhancedForDisposalLoopMatcher enhancedForDisposalLoopMatcher;
 
   /**
    * Creates a scanner for disposal loops in one method CFG.
@@ -53,17 +56,16 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
     this.indexedForDisposalLoopMatcher = new IndexedForDisposalLoopMatcher(this.coAtf, this.cfg);
     this.whileDisposalLoopMatcher =
         new WhileDisposalLoopMatcher(this.coAtf, this.rlccAtf, this.cfg);
-    this.enhancedForDisposalLoopResolver =
-        new EnhancedForDisposalLoopResolver(this.coAtf, this.cfg);
+    this.enhancedForDisposalLoopMatcher = new EnhancedForDisposalLoopMatcher(this.coAtf, this.cfg);
   }
 
   /**
-   * Scans a tree and returns the disposal loops discovered in it.
+   * Scans a method tree and returns the disposal loops discovered in it.
    *
-   * @param tree the tree to scan
+   * @param tree the method tree to scan
    * @return the disposal loops discovered in {@code tree}
    */
-  public Set<DisposalLoopInfo> scanTree(Tree tree) {
+  public Set<DisposalLoopInfo> scanTree(MethodTree tree) {
     scan(tree, null);
     return disposalLoopInfos;
   }
@@ -135,7 +137,7 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
    */
   @Override
   public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
-    DisposalLoopInfo disposalLoopInfo = enhancedForDisposalLoopResolver.match(tree);
+    DisposalLoopInfo disposalLoopInfo = enhancedForDisposalLoopMatcher.match(tree);
     if (disposalLoopInfo != null) {
       disposalLoopInfos.add(disposalLoopInfo);
     }
