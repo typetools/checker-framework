@@ -9,6 +9,7 @@ echo "SHELLOPTS=${SHELLOPTS}"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 # This script tests that the CF builds using the installed JDK, so don't add the following:
 # export ORG_GRADLE_PROJECT_useJdk21Compiler=true
+# That means that this script cannot be run under Java 17.
 
 source "$SCRIPT_DIR"/clone-related.sh
 
