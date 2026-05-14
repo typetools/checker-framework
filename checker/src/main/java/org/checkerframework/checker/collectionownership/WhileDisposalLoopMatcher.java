@@ -317,8 +317,9 @@ final class WhileDisposalLoopMatcher {
   }
 
   /**
-   * Builds a {@link WhileHeaderInfo} for a non-empty collection header once the receiver expression
-   * has already been recovered.
+   * Builds a {@link WhileHeaderInfo} once {@link #matchNonEmptyFromExpr(ExpressionTree)} or {@link
+   * #matchNonEmptyFromSize(BinaryTree)} has already matched a non-empty collection header condition
+   * such as {@code !c.isEmpty()}, {@code c.size() > 0}, or {@code 0 < c.size()}.
    *
    * @param receiver the receiver checked by the non-empty header
    * @return the recovered header facts, or {@code null} if the receiver is not a resource
@@ -802,7 +803,13 @@ final class WhileDisposalLoopMatcher {
     }
 
     /**
-     * Computes dominators for the reachable blocks in the current CFG.
+     * Computes dominators for the reachable blocks in the current CFG using the standard iterative
+     * dataflow equations:
+     *
+     * <pre>
+     *  Dom(entry) = {entry}
+     *  Dom(n) = {n} ∪ ⋂ Dom(p)    for each other reachable block n
+     * </pre>
      *
      * @param entryBlock the CFG entry block
      * @param reachableBlocks reachable blocks in the CFG

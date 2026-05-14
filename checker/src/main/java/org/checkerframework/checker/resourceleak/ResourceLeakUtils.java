@@ -1,7 +1,6 @@
 package org.checkerframework.checker.resourceleak;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -44,16 +43,6 @@ public class ResourceLeakUtils {
     throw new Error("Do not instantiate");
   }
 
-  /** List of checker names associated with the Resource Leak Checker. */
-  public static List<String> rlcCheckers =
-      new ArrayList<>(
-          Arrays.asList(
-              ResourceLeakChecker.class.getCanonicalName(),
-              CollectionOwnershipChecker.class.getCanonicalName(),
-              RLCCalledMethodsChecker.class.getCanonicalName(),
-              MustCallChecker.class.getCanonicalName(),
-              MustCallNoCreatesMustCallForChecker.class.getCanonicalName()));
-
   /**
    * Given a type factory that is part of the resource leak checker hierarchy, returns the {@link
    * ResourceLeakChecker} in the checker hierarchy.
@@ -85,22 +74,6 @@ public class ResourceLeakUtils {
       throw new TypeSystemError(
           "Bad argument to ResourceLeakUtils#getResourceLeakChecker(): "
               + (referenceChecker == null ? "null" : referenceChecker.getClass().getSimpleName()));
-    }
-  }
-
-  /**
-   * Given a type factory part of the resource leak ecosystem, returns the {@link
-   * MustCallAnnotatedTypeFactory} in the checker hierarchy.
-   *
-   * @param referenceAtf the type factory to retrieve the {@link MustCallAnnotatedTypeFactory} from
-   * @return the {@link MustCallAnnotatedTypeFactory} in the checker hierarchy
-   */
-  public static MustCallAnnotatedTypeFactory getMustCallAnnotatedTypeFactory(
-      AnnotatedTypeFactory referenceAtf) {
-    if (referenceAtf == null) {
-      throw new IllegalArgumentException("Argument referenceAtf cannot be null");
-    } else {
-      return getMustCallAnnotatedTypeFactory(referenceAtf.getChecker());
     }
   }
 
@@ -254,11 +227,7 @@ public class ResourceLeakUtils {
    */
   public static CollectionOwnershipAnnotatedTypeFactory getCollectionOwnershipAnnotatedTypeFactory(
       AnnotatedTypeFactory referenceAtf) {
-    if (referenceAtf == null) {
-      throw new IllegalArgumentException("Argument referenceAtf cannot be null");
-    } else {
-      return getCollectionOwnershipAnnotatedTypeFactory(referenceAtf.getChecker());
-    }
+    return getCollectionOwnershipAnnotatedTypeFactory(referenceAtf.getChecker());
   }
 
   /**

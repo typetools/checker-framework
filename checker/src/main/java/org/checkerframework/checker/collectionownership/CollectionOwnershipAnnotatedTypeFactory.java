@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -106,7 +105,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * Map from a {@code MethodTree} to the {@link DisposalLoopInfo}s discovered in that method's
    * body.
    */
-  private final IdentityHashMap<MethodTree, HashSet<DisposalLoopInfo>>
+  private final IdentityHashMap<MethodTree, Set<DisposalLoopInfo>>
       preparedDisposalLoopInfosByMethod = new IdentityHashMap<>();
 
   /** The {@code @}{@link NotOwningCollection} annotation. */
@@ -121,10 +120,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
   /** The {@code @}{@link OwningCollectionWithoutObligation} annotation. */
   public final AnnotationMirror OWNINGCOLLECTIONWITHOUTOBLIGATION;
 
-  /**
-   * The {@code @}{@link OwningCollectionBottom}{@code ()} annotation. It is the default in
-   * unannotated code.
-   */
+  /** The {@code @}{@link OwningCollectionBottom}{@code ()} annotation. */
   public final AnnotationMirror BOTTOM;
 
   /** The {@code @}{@link PolyOwningCollection}{@code ()} polymorphic annotation. */

@@ -429,18 +429,6 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   /**
-   * Fetches the store from the results of dataflow for {@code block}. The store after {@code block}
-   * is returned.
-   *
-   * @param block a block
-   * @return the appropriate CFStore, populated with CalledMethods annotations, from the results of
-   *     running dataflow
-   */
-  public AccumulationStore getStoreAfterBlock(Block block) {
-    return flowResult.getStoreAfter(block);
-  }
-
-  /**
    * Returns the then or else store after {@code block} depending on the value of {@code then} is
    * returned.
    *
