@@ -9,7 +9,6 @@ define([circleci_boilerplate], [dnl
       - image: 'mdernst/cf-ubuntu-jdk$1[]$2[]docker_testing'
     resource_class: large
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - restore_cache:
