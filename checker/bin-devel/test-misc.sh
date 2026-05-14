@@ -15,13 +15,12 @@ source "$SCRIPT_DIR"/clone-related.sh
 
 PLUME_SCRIPTS="$SCRIPT_DIR/.plume-scripts"
 
-status=0
-
 ## Code style and formatting
 JAVA_VER=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
 if [ "${JAVA_VER}" != "8" ] && [ "${JAVA_VER}" != "11" ]; then
   # spotlessGroovy often fails with: "java.io.IOException: Failed to provision P2 dependencies"
-  ./gradlew spotlessGroovy > /dev/null 2>&1 || (sleep 60 && true)
+  echo "Starting: ./gradlew spotlessGroovy"
+  ./gradlew spotlessGroovy > /dev/null 2>&1 || (echo "spotlessGroovy failed" && sleep 60 && true)
   ./gradlew spotlessCheck --warning-mode=all
 fi
 if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --exclude-dir=tests --exclude="*.astub" --exclude="*.tex" '^\(import static \|import .*\*;$\)'; then
@@ -37,22 +36,28 @@ else
 fi
 make style-check --jobs="${num_jobs}"
 
+declare -a failures=()
+
 ## Javadoc documentation
 # Try twice in case of network lossage.
-(./gradlew javadoc --warning-mode=all || (sleep 60 && ./gradlew javadoc --warning-mode=all)) || status=1
-./gradlew javadocPrivate --warning-mode=all || status=1
-./gradlew buildSrc:javadoc --warning-mode=all || status=1
+(./gradlew javadoc --warning-mode=all || (sleep 60 && ./gradlew javadoc --warning-mode=all)) || failures+=("gradlew javadoc")
+./gradlew javadocPrivate --warning-mode=all || failures+=("gradlew javadocPrivate")
+./gradlew buildSrc:javadoc --warning-mode=all || failures+=("gradlew buildSrc:javadoc")
 # For refactorings that touch a lot of code that you don't understand, create
 # top-level file SKIP-REQUIRE-JAVADOC.  Delete it after the pull request is merged.
 if [ -f SKIP-REQUIRE-JAVADOC ]; then
   echo "Skipping requireJavadoc because file SKIP-REQUIRE-JAVADOC exists."
 else
   (./gradlew requireJavadoc --warning-mode=all > /tmp/warnings-requireJavadoc.txt 2>&1) || true
-  "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-requireJavadoc.txt || status=1
+  "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-requireJavadoc.txt || failures+=("ci-lint-diff /tmp/warnings-requireJavadoc.txt")
   (./gradlew javadocDoclintAll --warning-mode=all > /tmp/warnings-javadocDoclintAll.txt 2>&1) || true
-  "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-javadocDoclintAll.txt || status=1
+  "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-javadocDoclintAll.txt || failures+=("ci-lint-diff /tmp/warnings-javadocDoclintAll.txt")
 fi
-if [ $status -ne 0 ]; then exit $status; fi
+if [ ${#failures[@]} -gt 0 ]; then
+  echo "Failures:"
+  printf '%s\n' "${failures[@]}"
+  exit 1
+fi
 
 ## User documentation
 ./gradlew manual
