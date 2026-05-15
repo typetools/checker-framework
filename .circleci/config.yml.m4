@@ -46,7 +46,6 @@ job_dependences(canary_version, typecheck_part1)
 job_dependences(canary_version, typecheck_part2)
 
 ifelse([The following jobs are not canary jobs, so they run after canary jobs succeed.])dnl
-job_dependences(17, misc)
 job_dependences(21, misc)
 job_dependences(17, junit)
 job_dependences(21, junit)
