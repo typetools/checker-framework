@@ -420,11 +420,6 @@ workflows:
       - typecheck_part1_jdk25
       - typecheck_part2_jdk25
 
-      - misc_jdk17:
-          requires:
-            - canary_jobs
-            - misc_jdk25
-
       - misc_jdk21:
           requires:
             - canary_jobs
