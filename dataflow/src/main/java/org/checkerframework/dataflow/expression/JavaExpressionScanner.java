@@ -77,6 +77,12 @@ public abstract class JavaExpressionScanner<P> extends JavaExpressionVisitor<Voi
   }
 
   @Override
+  protected Void visitIteratedCollectionElement(
+      IteratedCollectionElement iteratedCollectionElement, P p) {
+    return null;
+  }
+
+  @Override
   protected Void visitMethodCall(MethodCall methodCallExpr, P p) {
     visit(methodCallExpr.getReceiver(), p);
     scan(methodCallExpr.getArguments(), p);

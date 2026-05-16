@@ -61,6 +61,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
+import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
@@ -1196,6 +1197,23 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * Returns the regular store for a given block.
+   *
+   * @param block a block whose regular store to return
+   * @return the regular store of {@code block}
+   */
+  public Store getRegularStore(Block block) {
+    TransferInput<Value, Store> input;
+    if (!analysis.isRunning()) {
+      input = flowResult.getInput(block);
+    } else {
+      input = analysis.getInput(block);
+    }
+
+    return input.getRegularStore();
+  }
+
+  /**
    * Returns the store immediately before a given node.
    *
    * @param node a node whose pre-store to return
@@ -1562,6 +1580,20 @@ public abstract class GenericAnnotatedTypeFactory<
     return true;
   }
 
+  /**
+   * Perform any additional operations after CFG construction, but before dataflow analysis runs on
+   * the CFG.
+   *
+   * <p>This hook is intended for checker-specific setup that needs the CFG before {@link
+   * CFAbstractAnalysis#performAnalysis(ControlFlowGraph, List)} is invoked from {@link
+   * #analyze(Queue, Queue, UnderlyingAST, List, ControlFlowGraph, boolean, boolean, boolean,
+   * CFAbstractStore)}.
+   *
+   * @param cfg the constructed CFG
+   * @param ast the underlying AST for the CFG
+   */
+  protected void postCFGConstruction(ControlFlowGraph cfg, UnderlyingAST ast) {}
+
   /** Sorts a list of trees with the variables first. */
   private final Comparator<Tree> sortVariablesFirst =
       (t1, t2) -> {
@@ -1611,6 +1643,7 @@ public abstract class GenericAnnotatedTypeFactory<
                   reachableNodes.add(node.getTree());
                 }
               });
+      postCFGConstruction(cfg, ast);
     }
     if (isInitializationCode) {
       Store initStore = !isStatic ? initializationStore : initializationStaticStore;

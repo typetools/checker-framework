@@ -14,6 +14,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.IteratedCollectionElement;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 
@@ -101,6 +102,16 @@ public interface CFGVisualizer<
    * @return the String representation of the local variable
    */
   String visualizeStoreLocalVar(LocalVariable localVar, V value);
+
+  /**
+   * Called by {@code CFAbstractStore#internalVisualize()} to visualize an iterated collection
+   * element.
+   *
+   * @param ice the iterated collection element
+   * @param value the value associated with {@code ice}
+   * @return the String representation of this entry
+   */
+  String visualizeStoreIteratedCollectionElt(IteratedCollectionElement ice, V value);
 
   /**
    * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of the current

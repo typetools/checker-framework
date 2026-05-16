@@ -69,8 +69,7 @@ public class IndexMode {
   }
 
   // This variant uses an InputStream (which has a MustCall type by default) as the
-  // value type in the map.
-  // :: error: type.argument
+  // value type in the map. The values are permitted to have any @MustCall type.
   public static Object getModeIS(Map<String, InputStream> indexOptions) {
     try {
       // :: error: required.method.not.called

@@ -37,6 +37,7 @@ import org.checkerframework.dataflow.cfg.visualize.AbstractCFGVisualizer.Visuali
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.IteratedCollectionElement;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.javacutil.BugInCF;
@@ -298,6 +299,11 @@ public class DOTCFGVisualizer<
   @Override
   public String visualizeStoreLocalVar(LocalVariable localVar, V value) {
     return storeEntryIndent + localVar + " > " + escapeString(value);
+  }
+
+  @Override
+  public String visualizeStoreIteratedCollectionElt(IteratedCollectionElement ice, V value) {
+    return storeEntryIndent + ice + " > " + escapeString(value);
   }
 
   @Override
