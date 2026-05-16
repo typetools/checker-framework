@@ -15,6 +15,15 @@ jobs:
       TERM: dumb
     steps:
       - run: /bin/true
+  ci_info:
+    docker:
+      - image: 'cimg/base:2026.04'
+    resource_class: small
+    environment:
+      TERM: dumb
+    steps:
+      - run: git -C /tmp clone https://github.com/plume-lib/plume-scripts.git
+      - run: /tmp/plume-scripts/ci-info --debug
 
 include([../.azure/jobs.m4])dnl
 
@@ -34,6 +43,7 @@ workflows:
             - typecheck_part2_jdk[]canary_version
             - misc_jdk[]canary_version
             - misc_jdk[]latest_version
+      - ci_info
 
 job_dependences(canary_version, junit_part1)
 job_dependences(canary_version, junit_part2)
