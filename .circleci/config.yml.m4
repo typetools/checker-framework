@@ -22,6 +22,7 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - checkout
       - run: git -C /tmp clone https://github.com/plume-lib/plume-scripts.git
       - run: /tmp/plume-scripts/ci-info --debug
 
