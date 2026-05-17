@@ -45,6 +45,13 @@ jobs:
     steps:
       - name: canary_jobs
         run: true
+  ci_info:
+    runs-on: ubuntu-latest
+    steps:
+      - name: clone_plume_scripts
+        run: git clone https://github.com/plume-lib/plume-scripts.git /tmp/plume-scripts
+      - name: ci_info
+        run: /tmp/plume-scripts/ci-info --debug
 
 include([../../.azure/jobs.m4])dnl
 
