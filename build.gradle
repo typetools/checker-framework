@@ -999,18 +999,13 @@ subprojects {
           System.getenv("GITHUB_ACTIONS") != null ||
           System.getenv("CI") != null) {
         // Running under CI.
-
-        // Under CI, parallelism seems to lead to flaky failures.
         maxParallelForks = 1
-
         // Fork the test to try to improve performance.
         // https://docs.gradle.org/current/userguide/performance.html#b_fork_tests_into_multiple_processes
-        tasks.withType(Test) {
-          forkEvery = 25
-        }
+        forkEvery = 25
       } else {
         // Not running under CI.
-        maxParallelForks = Runtime.runtime.availableProcessors() ?: 1
+        maxParallelForks = Runtime.getRuntime().availableProcessors() ?: 1
       }
 
       if (project.name.is("checker")) {
