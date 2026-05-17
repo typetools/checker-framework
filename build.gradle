@@ -996,7 +996,7 @@ subprojects {
       // Run tests in parallel, except on CI where it seems to lead to flaky failures.
       if (System.getenv("TF_BUILD") != null ||
           System.getenv("CIRCLECI") != null ||
-          System.getenv("GITHUB_ACTION") != null ||
+          System.getenv("GITHUB_ACTIONS") != null ||
           System.getenv("CI") != null) {
         // Running under CI.
 
