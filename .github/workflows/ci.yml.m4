@@ -48,6 +48,11 @@ jobs:
   ci_info:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v6
+        with:
+          set-safe-directory: true
+          # Unlimited history for contributors.tex generation.
+          fetch-depth: 0
       - name: clone_plume_scripts
         run: git clone https://github.com/plume-lib/plume-scripts.git /tmp/plume-scripts
       - name: ci_info
