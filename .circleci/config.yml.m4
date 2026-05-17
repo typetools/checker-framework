@@ -34,7 +34,6 @@ workflows:
             - typecheck_part2_jdk[]canary_version
             - misc_jdk[]canary_version
             - misc_jdk[]latest_version
-      - ci_info
 
 job_dependences(canary_version, junit_part1)
 job_dependences(canary_version, junit_part2)

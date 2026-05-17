@@ -409,7 +409,6 @@ workflows:
             - typecheck_part2_jdk25
             - misc_jdk25
             - misc_jdk26
-      - ci_info
 
       - junit_part1_jdk25
       - junit_part2_jdk25
