@@ -44,6 +44,7 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnalysis;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
@@ -1050,17 +1051,18 @@ public class MustCallConsistencyAnalyzer {
    * @param obligations the current set of tracked Obligations. If ownership is transferred, it is
    *     side-effected to remove any Obligations that are resource-aliased to the return node.
    * @param cfg the CFG of the enclosing method
-   * @param node a return node
+   * @param node a return node, which must have an expression
    */
   private void updateObligationsForOwningReturn(
       Set<Obligation> obligations, ControlFlowGraph cfg, ReturnNode node) {
     if (isTransferOwnershipAtReturn(cfg)) {
-      Node returnExpr = node.getResult();
+      @SuppressWarnings("nullness:assignment") // the return node has an expression
+      @NonNull Node returnExpr = node.getResult();
       returnExpr = getTempVarOrNode(returnExpr);
-      if (returnExpr instanceof LocalVariableNode) {
+      if (returnExpr instanceof LocalVariableNode lvn) {
         removeObligationsContainingVar(
             obligations,
-            (LocalVariableNode) returnExpr,
+            lvn,
             MustCallAliasHandling.NO_SPECIAL_HANDLING,
             MethodExitKind.ONLY_NORMAL_RETURN);
       }
@@ -1493,11 +1495,12 @@ public class MustCallConsistencyAnalyzer {
         return;
       }
     } else if (permitInitializationLeak && TreeUtils.isConstructor(enclosingMethodTree)) {
+      @SuppressWarnings("nullness:dereference.of.nullable") // a constructor has an enclosing class
       Element enclosingClassElement =
           TreeUtils.elementFromDeclaration(enclosingMethodTree).getEnclosingElement();
       if (ElementUtils.isTypeElement(enclosingClassElement)) {
-        Element receiverElement = TypesUtils.getTypeElement(receiver.getType());
-        if (Objects.equals(enclosingClassElement, receiverElement)) {
+        Element receiverTypeElement = TypesUtils.getTypeElement(receiver.getType());
+        if (Objects.equals(enclosingClassElement, receiverTypeElement)) {
           return;
         }
       }
