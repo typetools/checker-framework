@@ -717,7 +717,7 @@ public class InferenceFactory {
               .constructorFromUseWithoutTypeArgInference((NewClassTree) invocation)
               .executableType();
     }
-    return new InvocationType(
+    return new MethodType(
         executableType, getTypeOfMethodAdaptedToUse(invocation, context), invocation, context);
   }
 
@@ -798,8 +798,8 @@ public class InferenceFactory {
       compileTimeType.setReceiverType((AnnotatedDeclaredType) enclosingType);
     }
 
-    return new InvocationType(
-        compileTimeType, compileTimeType.getUnderlyingType(), memRef, context);
+    return new MethodReferenceType(
+        compileTimeType, compileTimeType.getUnderlyingType(), memRef, enclosingType, context);
   }
 
   /**

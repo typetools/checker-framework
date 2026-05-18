@@ -30,6 +30,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
+import org.checkerframework.framework.util.typeinference8.types.MethodType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -148,7 +149,7 @@ public class InvocationTypeInference {
   public InferenceResult infer(ExpressionTree invocation, AnnotatedExecutableType methodType)
       throws FalseBoundException {
     ExecutableType e = methodType.getUnderlyingType();
-    InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
+    InvocationType invocationType = new MethodType(methodType, e, invocation, context);
     ProperType target = context.inferenceTypeFactory.getTargetType();
     List<? extends ExpressionTree> args;
     if (invocation instanceof MethodInvocationTree mit) {

@@ -2,14 +2,11 @@ package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
-import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
-import com.sun.source.tree.MethodInvocationTree;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
@@ -25,30 +22,29 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 
-/** A method type for an invocation of a method or constructor. */
-public class InvocationType {
+/** A method type for an invocation of a method or constructor or a method reference. */
+public abstract class InvocationType {
 
-  /** A method or constructor invocation. */
-  private final ExpressionTree invocation;
+  /** A method or constructor invocation or method reference. */
+  protected final ExpressionTree invocation;
 
   /** The annotated method type. */
-  private final AnnotatedExecutableType annotatedExecutableType;
+  protected final AnnotatedExecutableType annotatedExecutableType;
 
   /** The Java method type. */
-  private final ExecutableType methodType;
+  protected final ExecutableType methodType;
 
   /** The context. */
-  private final Java8InferenceContext context;
+  protected final Java8InferenceContext context;
 
   /** The annotated type factory. */
-  private final AnnotatedTypeFactory typeFactory;
+  protected final AnnotatedTypeFactory typeFactory;
 
   /** A mapping from polymorphic annotation to {@link QualifierVar}. */
-  private final AnnotationMirrorMap<QualifierVar> qualifierVars;
+  protected final AnnotationMirrorMap<QualifierVar> qualifierVars;
 
   /**
    * Creates an invocation type.
@@ -58,7 +54,7 @@ public class InvocationType {
    * @param invocation a method or constructor invocation
    * @param context the context
    */
-  public InvocationType(
+  protected InvocationType(
       AnnotatedExecutableType annotatedExecutableType,
       ExecutableType methodType,
       ExpressionTree invocation,
@@ -90,9 +86,9 @@ public class InvocationType {
   }
 
   /**
-   * Returns the method or constructor invocation.
+   * Returns the method or constructor invocation or method reference.
    *
-   * @return the method or constructor invocation
+   * @return the method or constructor invocation or method reference
    */
   public ExpressionTree getInvocation() {
     return invocation;
@@ -128,36 +124,7 @@ public class InvocationType {
    * @param map a mapping from type variable to inference variable
    * @return the return type
    */
-  public AbstractType getReturnType(Theta map) {
-    TypeMirror returnTypeJava;
-    AnnotatedTypeMirror returnType;
-
-    if (TreeUtils.isDiamondTree(invocation)) {
-      Element e = ElementUtils.enclosingTypeElement(TreeUtils.elementFromUse(invocation));
-      returnTypeJava = e.asType();
-      returnType = typeFactory.getAnnotatedType(e);
-    } else if (invocation instanceof MethodInvocationTree
-        || invocation instanceof MemberReferenceTree) {
-      if (invocation instanceof MemberReferenceTree mrt && mrt.getMode() == ReferenceMode.NEW) {
-        returnType =
-            context.typeFactory.getResultingTypeOfConstructorMemberReference(
-                mrt, annotatedExecutableType);
-        returnTypeJava = returnType.getUnderlyingType();
-      } else {
-        returnTypeJava = methodType.getReturnType();
-        returnType = annotatedExecutableType.getReturnType();
-      }
-
-    } else {
-      returnTypeJava = TreeUtils.typeOf(invocation);
-      returnType = typeFactory.getAnnotatedType(invocation);
-    }
-
-    if (map == null) {
-      return new ProperType(returnType, returnTypeJava, context);
-    }
-    return InferenceType.create(returnType, returnTypeJava, map, context);
-  }
+  public abstract AbstractType getReturnType(Theta map);
 
   /**
    * Returns a list of the parameter types of {@code InvocationType} where the vararg parameter has
