@@ -223,6 +223,13 @@ jobs:
           paths:
             - .git
       - run:
+          name: ci-info
+          command: |
+            ./gradlew -q getPlumeScripts
+            ./checker/bin-devel/.plume-scripts/ci-info --debug
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 21
+      - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
           environment:
@@ -247,6 +254,13 @@ jobs:
           paths:
             - .git
       - run:
+          name: ci-info
+          command: |
+            ./gradlew -q getPlumeScripts
+            ./checker/bin-devel/.plume-scripts/ci-info --debug
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
           environment:
@@ -270,6 +284,13 @@ jobs:
           key: *sourcefull-cache
           paths:
             - .git
+      - run:
+          name: ci-info
+          command: |
+            ./gradlew -q getPlumeScripts
+            ./checker/bin-devel/.plume-scripts/ci-info --debug
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 26
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
@@ -398,11 +419,6 @@ workflows:
       - inference_part2_jdk25
       - typecheck_part1_jdk25
       - typecheck_part2_jdk25
-
-      - misc_jdk17:
-          requires:
-            - canary_jobs
-            - misc_jdk25
 
       - misc_jdk21:
           requires:
