@@ -30,8 +30,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Utility class for the conservative check that determines whether a constructor assignment is the
- * first write to its field.
+ * Conservatively check whether a constructor assignment is the first write to its field.
  *
  * <p>The entry point is {@link #isFirstWriteToFieldInConstructor(Tree, VariableElement, MethodTree,
  * RLCCalledMethodsAnnotatedTypeFactory)}.
