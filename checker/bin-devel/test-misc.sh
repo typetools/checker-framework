@@ -18,12 +18,13 @@ PLUME_SCRIPTS="$SCRIPT_DIR/.plume-scripts"
 ## Code style and formatting
 JAVA_VER=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
 if [ "${JAVA_VER}" != "8" ] && [ "${JAVA_VER}" != "11" ]; then
-  # # spotlessGroovy sometimes hangs and sometimes fails with:
-  # # "java.io.IOException: Failed to provision P2 dependencies".
+  # # Under CI (especially CircleCI) spotlessGroovy sometimes hangs and
+  # # sometimes fails with:  "java.io.IOException: Failed to provision P2
+  # # dependencies".
   # echo "Starting: ./gradlew spotlessGroovy"
   # ./gradlew spotlessGroovy > /dev/null 2>&1 || (echo "spotlessGroovy failed" && sleep 60 && true)
   # echo "Finished: ./gradlew spotlessGroovy"
-  ./gradlew spotlessCheck --warning-mode=all -x spotlessGroovy
+  ./gradlew spotlessCheck --warning-mode=all -x spotlessGroovy -x spotlessGroovyGradle
 fi
 if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --exclude-dir=tests --exclude="*.astub" --exclude="*.tex" '^\(import static \|import .*\*;$\)'; then
   echo "Don't use static import or wildcard import"
