@@ -15,11 +15,12 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 
-/** A type for a method reference */
+/** A type for a method reference. */
 public class MethodReferenceType extends InvocationType {
 
   /**
-   * Type of the receiver. This may be different than {@code annotatedExecutableType.getReceiver()}
+   * The type of the receiver. This may be different than {@code
+   * annotatedExecutableType.getReceiver()}.
    */
   AnnotatedTypeMirror receiver;
 
@@ -72,22 +73,22 @@ public class MethodReferenceType extends InvocationType {
 
   @Override
   public AbstractType getReturnType(Theta map) {
-    TypeMirror returnTypeJava;
-    AnnotatedTypeMirror returnType;
+    TypeMirror returnType;
+    AnnotatedTypeMirror annotatedReturnType;
 
     if (invocation instanceof MemberReferenceTree mrt && mrt.getMode() == ReferenceMode.NEW) {
-      returnType =
+      annotatedReturnType =
           context.typeFactory.getResultingTypeOfConstructorMemberReference(
               mrt, annotatedExecutableType);
-      returnTypeJava = returnType.getUnderlyingType();
+      returnType = annotatedReturnType.getUnderlyingType();
     } else {
-      returnTypeJava = methodType.getReturnType();
-      returnType = annotatedExecutableType.getReturnType();
+      returnType = methodType.getReturnType();
+      annotatedReturnType = annotatedExecutableType.getReturnType();
     }
 
     if (map == null) {
-      return new ProperType(returnType, returnTypeJava, context);
+      return new ProperType(annotatedReturnType, returnType, context);
     }
-    return InferenceType.create(returnType, returnTypeJava, map, context);
+    return InferenceType.create(annotatedReturnType, returnType, map, context);
   }
 }

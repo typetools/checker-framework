@@ -34,31 +34,31 @@ public class MethodType extends InvocationType {
   }
 
   /**
-   * Returns the return type.
+   * Returns the return type of this.
    *
    * @param map a mapping from type variable to inference variable
-   * @return the return type
+   * @return the return type of this
    */
   @Override
   public AbstractType getReturnType(Theta map) {
-    TypeMirror returnTypeJava;
-    AnnotatedTypeMirror returnType;
+    TypeMirror returnType;
+    AnnotatedTypeMirror annotatedReturnType;
 
     if (TreeUtils.isDiamondTree(invocation)) {
       Element e = ElementUtils.enclosingTypeElement(TreeUtils.elementFromUse(invocation));
-      returnTypeJava = e.asType();
-      returnType = typeFactory.getAnnotatedType(e);
+      returnType = e.asType();
+      annotatedReturnType = typeFactory.getAnnotatedType(e);
     } else if (invocation instanceof MethodInvocationTree) {
-      returnTypeJava = methodType.getReturnType();
-      returnType = annotatedExecutableType.getReturnType();
+      returnType = methodType.getReturnType();
+      annotatedReturnType = annotatedExecutableType.getReturnType();
     } else {
-      returnTypeJava = TreeUtils.typeOf(invocation);
-      returnType = typeFactory.getAnnotatedType(invocation);
+      returnType = TreeUtils.typeOf(invocation);
+      annotatedReturnType = typeFactory.getAnnotatedType(invocation);
     }
 
     if (map == null) {
-      return new ProperType(returnType, returnTypeJava, context);
+      return new ProperType(annotatedReturnType, returnTypeJava, context);
     }
-    return InferenceType.create(returnType, returnTypeJava, map, context);
+    return InferenceType.create(annotatedReturnType, returnTypeJava, map, context);
   }
 }
