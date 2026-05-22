@@ -17,7 +17,7 @@ public class UnitsExtensionDemo {
     @SuppressWarnings("units")
     @Hz int d1 = 9;
 
-    // specifically suppress warnings related to any frequency units for the d2 assigment
+    // specifically suppress warnings related to any frequency units for the d2 assignment
     // statement
     @SuppressWarnings("frequency")
     @Hz int d2 = 10;

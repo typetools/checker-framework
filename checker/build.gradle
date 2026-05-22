@@ -86,8 +86,13 @@ dependencies {
 //   https://docs.gradle.org/7.1/userguide/validation_problems.html#implicit_dependency for more
 //   details about this problem.
 generateGitProperties.dependsOn(":installGitHooks")
+def resolvedGitDir = providers.exec {
+  workingDir = rootProject.projectDir
+  commandLine("git", "rev-parse", "--absolute-git-dir")
+}.standardOutput.asText.map { rootProject.file(it.trim()) }
+
 gitProperties {
-  dotGitDirectory = project.rootProject.layout.projectDirectory.dir(".git")
+  dotGitDirectory.set(rootProject.layout.dir(resolvedGitDir))
 }
 
 jar {
@@ -917,8 +922,8 @@ tasks.register("wpiManyTest", Exec) {
         println("======== end of contents of ${filename} ========")
       }
       // If any of these files are present, their contents should be an error
-      // message that might indicate what went wrong. Even their presenence,
-      // however, is intereseting (even if they are empty).
+      // message that might indicate what went wrong. Even their presence,
+      // however, is interesting (even if they are empty).
       def cannotRunWpiFiles = fileTree(typecheckFilesDir).matching {
         include("**/.cannot-run-wpi")
       }

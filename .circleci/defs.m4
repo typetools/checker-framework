@@ -9,7 +9,6 @@ define([circleci_boilerplate], [dnl
       - image: 'mdernst/cf-ubuntu-jdk$1[]$2[]docker_testing'
     resource_class: large
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - restore_cache:
@@ -96,6 +95,13 @@ dnl
 define([misc_job], [dnl
   misc_jdk$1:
 circleci_boilerplate($1,-plus,full)
+      - run:
+          name: ci-info
+          command: |
+            ./gradlew -q getPlumeScripts
+            ./checker/bin-devel/.plume-scripts/ci-info --debug
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: $1
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh

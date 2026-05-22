@@ -75,10 +75,10 @@ public abstract class QualifierHierarchy {
   public abstract AnnotationMirrorSet getTopAnnotations();
 
   /**
-   * Returns true if the given qualifer is one of the top annotations for this qualifer hierarchy.
+   * Returns true if the given qualifier is one of the top annotations for this qualifier hierarchy.
    *
    * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
-   * @return true if the given qualifer is one of the top annotations for this qualifer hierarchy
+   * @return true if the given qualifier is one of the top annotations for this qualifier hierarchy
    */
   public boolean isTop(AnnotationMirror qualifier) {
     return AnnotationUtils.containsSame(getTopAnnotations(), qualifier);

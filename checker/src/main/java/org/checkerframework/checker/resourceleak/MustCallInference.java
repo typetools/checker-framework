@@ -571,7 +571,7 @@ public class MustCallInference {
    * Possibly adds an InheritableMustCall annotation on the enclosing class.
    *
    * <p>Let the enclosing class be C. If C already has a non-empty MustCall type (that is written or
-   * inherited from one of its superclasses), this method preserves the exising must-call type to
+   * inherited from one of its superclasses), this method preserves the existing must-call type to
    * avoid infinite iteration. Otherwise, if the current method is not private and satisfies the
    * must-call obligations of all the owning fields in C, it adds an InheritableMustCall annotation
    * to C.

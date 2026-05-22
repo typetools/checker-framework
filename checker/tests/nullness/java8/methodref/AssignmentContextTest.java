@@ -20,23 +20,23 @@ public class AssignmentContextTest {
   Object o2 = (Object) (FunctionAC2) String::toString;
 
   void take(FunctionAC f) {
-    // Test argument assingment
+    // Test argument assignment
     take(String::toString);
   }
 
   void take2(FunctionAC2 f) {
-    // Test argument assingment
+    // Test argument assignment
     // :: error: [methodref.receiver]
     take2(String::toString);
   }
 
   FunctionAC supply() {
-    // Test return assingment
+    // Test return assignment
     return String::toString;
   }
 
   FunctionAC2 supply2() {
-    // Test return assingment
+    // Test return assignment
     // :: error: [methodref.receiver]
     return String::toString;
   }

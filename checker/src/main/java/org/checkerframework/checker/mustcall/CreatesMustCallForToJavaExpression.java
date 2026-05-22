@@ -32,7 +32,7 @@ public class CreatesMustCallForToJavaExpression {
    * JavaExpressions. Returns the empty set if the given method has no @CreatesMustCallFor
    * annotation.
    *
-   * <p>If any expression is unparseable, this method reports an error and returns the empty set.
+   * <p>If any expression is unparsable, this method reports an error and returns the empty set.
    *
    * @param n a method invocation
    * @param atypeFactory the type factory to report errors and parse the expression string
@@ -70,7 +70,7 @@ public class CreatesMustCallForToJavaExpression {
    * JavaExpressions. Returns the empty set if the given method has no @CreatesMustCallFor
    * annotation.
    *
-   * <p>If any expression is unparseable, this method reports an error and returns the empty set.
+   * <p>If any expression is unparsable, this method reports an error and returns the empty set.
    *
    * @param tree a method declaration
    * @param atypeFactory the type factory to report errors and parse the expression string
@@ -148,7 +148,7 @@ public class CreatesMustCallForToJavaExpression {
    *     again. The arguments are different so that the given type factory's adherence to both
    *     protocols are checked by the type system.
    * @param converter function to be used to create JavaExpression
-   * @return the Java expression representing the target, or null if the target is unparseable
+   * @return the Java expression representing the target, or null if the target is unparsable
    */
   private static @Nullable JavaExpression getCreatesMustCallForExpression(
       AnnotationMirror createsMustCallFor,
@@ -169,31 +169,31 @@ public class CreatesMustCallForToJavaExpression {
     try {
       targetExpr = converter.toJavaExpression(targetStrWithoutAdaptation);
       if (targetExpr instanceof Unknown) {
-        issueUnparseableError(tree, methodName, atypeFactory, targetStrWithoutAdaptation);
+        issueUnparsableError(tree, methodName, atypeFactory, targetStrWithoutAdaptation);
         return null;
       }
     } catch (JavaExpressionParseException e) {
-      issueUnparseableError(tree, methodName, atypeFactory, targetStrWithoutAdaptation);
+      issueUnparsableError(tree, methodName, atypeFactory, targetStrWithoutAdaptation);
       return null;
     }
     return targetExpr;
   }
 
   /**
-   * Issues a createsmustcallfor.target.unparseable error.
+   * Issues a createsmustcallfor.target.unparsable error.
    *
    * @param tree the tree on which to report the error
    * @param methodName method name to use in error message
    * @param atypeFactory the type factory to use to issue the error
-   * @param unparseable the unparseable string
+   * @param unparsable the unparsable string
    */
-  private static void issueUnparseableError(
+  private static void issueUnparsableError(
       Tree tree,
       Name methodName,
       GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory,
-      String unparseable) {
+      String unparsable) {
     atypeFactory
         .getChecker()
-        .reportError(tree, "createsmustcallfor.target.unparseable", methodName, unparseable);
+        .reportError(tree, "createsmustcallfor.target.unparsable", methodName, unparsable);
   }
 }
