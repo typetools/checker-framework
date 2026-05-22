@@ -101,7 +101,7 @@ public class ArrayCreationNullable {
   }
 
   /* Test case for Issue 153.
-  // toArray re-uses the passed array, if it is of appropriate size.
+  // toArray reuses the passed array, if it is of appropriate size.
   // It is only guaranteed to be non-null, if it is at most the same size.
   void testToArray(java.util.Set<Object> nns) {
       @NonNull Object [] nna = nns.toArray(new Object[nns.size()]);

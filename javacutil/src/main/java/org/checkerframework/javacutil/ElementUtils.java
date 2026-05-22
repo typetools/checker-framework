@@ -98,7 +98,7 @@ public class ElementUtils {
   /**
    * Returns the top-level type element that contains {@code element}.
    *
-   * @param element the element whose enclosing tye element to find
+   * @param element the element whose enclosing type element to find
    * @return a type element containing {@code element} that isn't contained in another class
    */
   public static TypeElement toplevelEnclosingTypeElement(Element element) {
@@ -322,8 +322,8 @@ public class ElementUtils {
 
   /**
    * Returns a user-friendly name for the given method, which includes the name of the enclosing
-   * type. Does not return {@code "<init>"} or {@code "<clinit>"} as
-   * ExecutableElement.getSimpleName() does.
+   * type. Does not return {@code "<init>"} or {@code "<clinit>"} as {@link
+   * ExecutableElement#getSimpleName()} does.
    *
    * @param element a method declaration
    * @return a user-friendly name for the method

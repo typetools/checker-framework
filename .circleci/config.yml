@@ -8,7 +8,6 @@ jobs:
       - image: 'cimg/base:2026.04'
     resource_class: small
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - run: /bin/true
@@ -18,7 +17,6 @@ jobs:
       - image: 'mdernst/cf-ubuntu-jdk17'
     resource_class: large
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - restore_cache:
@@ -43,7 +41,6 @@ jobs:
       - image: 'mdernst/cf-ubuntu-jdk21'
     resource_class: large
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - restore_cache:
@@ -68,7 +65,6 @@ jobs:
       - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - restore_cache:
@@ -92,7 +88,6 @@ jobs:
       - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - restore_cache:
@@ -117,7 +112,6 @@ jobs:
       - image: 'mdernst/cf-ubuntu-jdk26'
     resource_class: large
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - restore_cache:
@@ -142,7 +136,6 @@ jobs:
       - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - restore_cache:
@@ -171,7 +164,6 @@ jobs:
       - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - restore_cache:
@@ -194,7 +186,6 @@ jobs:
       - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - restore_cache:
@@ -213,12 +204,11 @@ jobs:
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
 
-  misc_jdk17:
+  misc_jdk21:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk17-plus'
+      - image: 'mdernst/cf-ubuntu-jdk21-plus'
     resource_class: large
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - restore_cache:
@@ -233,30 +223,12 @@ jobs:
           paths:
             - .git
       - run:
-          name: test-misc.sh
-          command: ./checker/bin-devel/test-misc.sh
+          name: ci-info
+          command: |
+            ./gradlew -q getPlumeScripts
+            ./checker/bin-devel/.plume-scripts/ci-info --debug
           environment:
-            ORG_GRADLE_PROJECT_jdkTestVersion: 17
-
-  misc_jdk21:
-    docker:
-      - image: 'mdernst/cf-ubuntu-jdk21-plus'
-    resource_class: large
-    environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
-      TERM: dumb
-    steps:
-      - restore_cache:
-          keys:
-            - &sourcefull-cache source-v1full-{{ .Branch }}-{{ .Revision }}
-            - 'source-v1full-{{ .Branch }}-'
-            - source-v1full-
-      - checkout:
-          method: full
-      - save_cache:
-          key: *sourcefull-cache
-          paths:
-            - .git
+            ORG_GRADLE_PROJECT_jdkTestVersion: 21
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
@@ -268,7 +240,6 @@ jobs:
       - image: 'mdernst/cf-ubuntu-jdk25-plus'
     resource_class: large
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - restore_cache:
@@ -283,6 +254,13 @@ jobs:
           paths:
             - .git
       - run:
+          name: ci-info
+          command: |
+            ./gradlew -q getPlumeScripts
+            ./checker/bin-devel/.plume-scripts/ci-info --debug
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
           environment:
@@ -293,7 +271,6 @@ jobs:
       - image: 'mdernst/cf-ubuntu-jdk26-plus'
     resource_class: large
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - restore_cache:
@@ -307,6 +284,13 @@ jobs:
           key: *sourcefull-cache
           paths:
             - .git
+      - run:
+          name: ci-info
+          command: |
+            ./gradlew -q getPlumeScripts
+            ./checker/bin-devel/.plume-scripts/ci-info --debug
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 26
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
@@ -319,7 +303,6 @@ jobs:
       - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - restore_cache:
@@ -342,7 +325,6 @@ jobs:
       - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - restore_cache:
@@ -369,7 +351,6 @@ jobs:
       - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - restore_cache:
@@ -394,7 +375,6 @@ jobs:
       - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - restore_cache:
@@ -439,11 +419,6 @@ workflows:
       - inference_part2_jdk25
       - typecheck_part1_jdk25
       - typecheck_part2_jdk25
-
-      - misc_jdk17:
-          requires:
-            - canary_jobs
-            - misc_jdk25
 
       - misc_jdk21:
           requires:

@@ -12,7 +12,6 @@ jobs:
       - image: 'cimg/base:2026.04'
     resource_class: small
     environment:
-      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       TERM: dumb
     steps:
       - run: /bin/true
@@ -47,7 +46,6 @@ job_dependences(canary_version, typecheck_part1)
 job_dependences(canary_version, typecheck_part2)
 
 ifelse([The following jobs are not canary jobs, so they run after canary jobs succeed.])dnl
-job_dependences(17, misc)
 job_dependences(21, misc)
 job_dependences(17, junit)
 job_dependences(21, junit)

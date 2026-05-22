@@ -174,23 +174,6 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
-  misc_jdk17:
-    needs:
-      - canary_jobs
-      - misc_jdk25
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk17-plus:latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          set-safe-directory: true
-          # Unlimited history for contributors.tex generation.
-          fetch-depth: 0
-      - name: test-misc.sh
-        run: ./checker/bin-devel/test-misc.sh
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "17"
   misc_jdk21:
     needs:
       - canary_jobs

@@ -6,7 +6,7 @@ import org.checkerframework.checker.index.qual.SameLenBottom;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.common.value.qual.BottomVal;
 
-/** This class tests that errors are issued in order of postion. */
+/** This class tests that errors are issued in order of position. */
 public class ErrorOrders {
 
   void test2(int i, int[] a) {

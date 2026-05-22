@@ -3548,7 +3548,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Checks that the array initializers are consistent with the array type.
    *
-   * @param type the array elemen type
+   * @param type the array element type
    * @param initializers the initializers
    * @return true if the check succeeds, false if an error message was issued
    */
@@ -4286,7 +4286,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Issue a "methodref.receiver" or "methodref.receiver.bound" error if the receiver for the
-     * method reference does not satify overriding rules.
+     * method reference does not satisfy overriding rules.
      *
      * @return true if the override is legal
      */

@@ -170,6 +170,13 @@ public class InvocationType {
    */
   public List<AbstractType> getParameterTypes(Theta map, int size) {
     List<AnnotatedTypeMirror> params = new ArrayList<>(annotatedExecutableType.getParameterTypes());
+    List<TypeMirror> paramsJava = new ArrayList<>(methodType.getParameterTypes());
+
+    if (invocation instanceof MemberReferenceTree mrt
+        && MemberReferenceKind.getMemberReferenceKind(mrt).isUnbound()) {
+      params.add(0, annotatedExecutableType.getReceiverType());
+      paramsJava.add(0, annotatedExecutableType.getReceiverType().getUnderlyingType());
+    }
 
     if (TreeUtils.isVarargsCall(invocation)) {
       AnnotatedArrayType vararg = (AnnotatedArrayType) params.remove(params.size() - 1);
@@ -178,19 +185,13 @@ public class InvocationType {
       }
     }
 
-    List<TypeMirror> paramsJava = new ArrayList<>(methodType.getParameterTypes());
-
     if (TreeUtils.isVarargsCall(invocation)) {
       ArrayType vararg = (ArrayType) paramsJava.remove(paramsJava.size() - 1);
       for (int i = paramsJava.size(); i < size; i++) {
         paramsJava.add(vararg.getComponentType());
       }
     }
-    if (invocation instanceof MemberReferenceTree mrt
-        && MemberReferenceKind.getMemberReferenceKind(mrt).isUnbound()) {
-      params.add(0, annotatedExecutableType.getReceiverType());
-      paramsJava.add(0, annotatedExecutableType.getReceiverType().getUnderlyingType());
-    }
+
     return InferenceType.create(params, paramsJava, map, qualifierVars, context);
   }
 

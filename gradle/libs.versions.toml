@@ -6,7 +6,7 @@ de-undercouch-download = { id = "de.undercouch.download", version = "5.7.0" }
 
 net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "5.1.0" }
 
-com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.4.0" }
+com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.5.1" }
 
 com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.7" }
 
@@ -29,9 +29,10 @@ jgit-version = "7.6.0.202603022253-r"
 # This line might need to be updated by hand, because sometimes the artifact
 # name itself changes (independently of the version number), such as from
 # org.apache.spark:spark-sql_2.12 to org.apache.spark:spark-sql_2.13.
+# See https://mvnrepository.com/artifact/org.apache.spark/spark-sql .
 spark-sql = "org.apache.spark:spark-sql_2.13:4.1.1"
 
-asm = "org.ow2.asm:asm:9.9.1"
+asm = "org.ow2.asm:asm:9.10"
 
 auto-value = "com.google.auto.value:auto-value:1.11.1"
 
@@ -79,4 +80,4 @@ reflection-util = "org.plumelib:reflection-util:1.1.6"
 
 require-javadoc = "org.plumelib:require-javadoc:2.0.0"
 
-stubparser = "org.checkerframework:stubparser:3.28.0"
+stubparser = "org.checkerframework:stubparser:3.28.1"

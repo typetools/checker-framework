@@ -26,7 +26,7 @@ repositories {
 ext {
   // Different JDKs may be used to run Gradle, compile the Checker Framework, and run the CF tests.
 
-  // Ways to specifiy the JDK used by different tasks/Gradle:
+  // Ways to specify the JDK used by different tasks/Gradle:
   //
   // 1. Run Gradle using JDK 21:
   // mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64" >> ~/.gradle/gradle.properties
@@ -72,28 +72,29 @@ ext {
 
   javadocMemberLevel = JavadocMemberLevel.PROTECTED
 
-  // The local git repository, typically in the .git directory, but not for worktrees.
+  // Path to git hooks for this checkout (works for normal repos, worktrees, and submodules).
   // This value is always overwritten, but Gradle needs the variable to be initialized.
-  localRepo = ".git"
+  localHooksDir = ".git/hooks"
 }
 
-tasks.register("setLocalRepo", Exec) {
-  commandLine("git", "worktree", "list")
+tasks.register("setLocalHooksDir", Exec) {
+  onlyIf { rootProject.file(".git").exists() }
+  commandLine("git", "rev-parse", "--git-path", "hooks")
   standardOutput = new ByteArrayOutputStream()
 
   doLast {
-    String worktreeList = standardOutput.toString()
-    localRepo = worktreeList.substring(0, worktreeList.indexOf(" ")) + "/.git"
+    localHooksDir = standardOutput.toString().trim()
   }
 }
 
 // No group so it does not show up in the output of `gradlew tasks`
 tasks.register("installGitHooks", Copy) {
-  dependsOn("setLocalRepo")
-  description = "Copies git hooks to .git directory"
+  onlyIf { rootProject.file(".git").exists() }
+  dependsOn("setLocalHooksDir")
+  description = "Copies git hooks to the local git hooks directory"
   from(files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit"))
   rename("git\\.(.*)", "\$1")
-  into(localRepo + "/hooks")
+  into({ localHooksDir })
 }
 subprojects { subProject ->
   if (subProject.name.equals("checker")
@@ -989,27 +990,23 @@ subprojects {
     tasks.withType(Test) {
       jvmArgs += compilerArgsForRunningCF
 
-      // // maxParallelForks controls the parallelism of a single Test task.
-      // // --parallel controls parallelism for the entire build.
+      // `maxParallelForks` controls the parallelism of a single Test task.
+      // `--parallel` controls parallelism for the entire build.
 
-      // // Run tests in parallel, except on CI where it seems to lead to flaky failures.
-      // // The TF_BUILD environment variable is set to "True" for jobs running on Azure Pipelines.
-      // if (!System.getenv("TF_BUILD")?.equals("True")) {
-      //   // Not running under Azure Pipelines CI.
-
-      //   maxParallelForks = Runtime.runtime.availableProcessors() ?: 1
-      // } else {
-      //   // Running under Azure Pipelines CI.
-
-      //   // Per Manu's comment above, on CI, parallelism seems to lead to flaky failures.
-      //   maxParallelForks = 1
-
-      //   // Fork the test to try to improve performance.
-      //   // https://docs.gradle.org/current/userguide/performance.html#fork_tests_into_multiple_processes
-      //   tasks.withType(Test) {
-      //     forkEvery = 25
-      //   }
-      // }
+      // Run tests in parallel, except on CI where it seems to lead to flaky failures.
+      if (System.getenv("TF_BUILD") != null ||
+          System.getenv("CIRCLECI") != null ||
+          System.getenv("GITHUB_ACTIONS") != null ||
+          System.getenv("CI") != null) {
+        // Running under CI.
+        maxParallelForks = 1
+        // Fork the test to try to improve performance.
+        // https://docs.gradle.org/current/userguide/performance.html#b_fork_tests_into_multiple_processes
+        forkEvery = 25
+      } else {
+        // Not running under CI.
+        maxParallelForks = Runtime.getRuntime().availableProcessors() ?: 1
+      }
 
       if (project.name.is("checker")) {
         dependsOn("assembleForJavac")

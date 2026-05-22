@@ -65,9 +65,9 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
   }
 
   /**
-   * Returns true if this value contans {@code @NonNull} or {@code @PolyNull}.
+   * Returns true if this value contains {@code @NonNull} or {@code @PolyNull}.
    *
-   * @return true if this value contans {@code @NonNull} or {@code @PolyNull}
+   * @return true if this value contains {@code @NonNull} or {@code @PolyNull}
    */
   @Pure
   private boolean containsNonNullOrPolyNull() {
@@ -76,9 +76,9 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
   }
 
   /**
-   * Returns true if this value contans {@code @Nullable} or {@code @PolyNull}.
+   * Returns true if this value contains {@code @Nullable} or {@code @PolyNull}.
    *
-   * @return true if this value contans {@code @Nullable} or {@code @PolyNull}
+   * @return true if this value contains {@code @Nullable} or {@code @PolyNull}
    */
   @Pure
   private boolean containsNullableOrPolyNull() {
