@@ -690,7 +690,14 @@ public class InvocationTypeInference {
         c.applyInstantiations();
       }
       c.remove(subset);
-      BoundSet newBounds = subset.reduceAdditionalArgOnce(context);
+      BoundSet newBounds;
+      try {
+        newBounds = subset.reduceAdditionalArgOnce(context);
+      } catch (FalseBoundException ex) {
+        // Inference failed for this additional argument constraint. Skip it rather than
+        // crashing. See https://github.com/typetools/checker-framework/issues/7681
+        continue;
+      }
       if (!subset.isEmpty()) {
         // The subset is not empty at this point if an additional argument constraint was
         // found.  In this case, a new subset needs to be picked so that dependencies of

@@ -215,10 +215,12 @@ public class Typing extends TypeConstraint {
 
       // Capturing is not in the JLS, but otherwise wildcards appear in the constraints
       // against the type arguments, which causes crashes.
-      AbstractType sAsSuper = S.asSuper(T.getJavaType()).capture(context);
-      if (sAsSuper == null) {
+      AbstractType sAsSuperRaw = S.asSuper(T.getJavaType());
+      if (sAsSuperRaw == null) {
         return ConstraintSet.FALSE;
-      } else if (sAsSuper.isRaw() || T.isRaw()) {
+      }
+      AbstractType sAsSuper = sAsSuperRaw.capture(context);
+      if (sAsSuper.isRaw() || T.isRaw()) {
         return ReductionResult.UNCHECKED_CONVERSION;
       }
 
