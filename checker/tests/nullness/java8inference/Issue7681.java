@@ -10,8 +10,7 @@ public class Issue7681 {
    * @param function the function to apply
    * @return the transformed value
    */
-  static <I, O> Generic<O> transform(
-      Generic<I> input, Function<? super I, ? extends O> function) {
+  static <I, O> Generic<O> transform(Generic<I> input, Function<? super I, ? extends O> function) {
     throw new UnsupportedOperationException();
   }
 
