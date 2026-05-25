@@ -152,10 +152,8 @@ ifelse($1,canary_version,,$1,latest_version,,[    needs:
         run: ./gradlew -q getPlumeScripts
       - name: ci-org-and-branch
         run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
-      - name: git-change-info
-        run: ./checker/bin-devel/.plume-scripts/git-change-info --debug
-      - name: ci-info
-        run: ./checker/bin-devel/.plume-scripts/ci-info --debug
+      - name: git-changes
+        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:
