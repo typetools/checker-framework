@@ -2170,9 +2170,9 @@ in LSP (Language Server Protocol) format.
 This can be useful for determining that a long compilation job is making
 progress.
 
-This option can also help to keep a Travis CI job alive (since Travis CI
+This option can also help to keep a CI job alive (for example, Travis CI
 terminates any job that does not produce output for 10 minutes).
-This does not work if you are using Maven, because it does not print
+This does not work if you are using Maven, because Maven does not print
 the full output of the Java compiler (see \url{https://github.com/codehaus-plexus/plexus-compiler/issues/149}).
 % Also, with forked compilation,
 % the maven-compiler-plugin queues up all the output and then prints it at the end.
