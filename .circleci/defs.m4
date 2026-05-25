@@ -96,12 +96,14 @@ define([misc_job], [dnl
   misc_jdk$1:
 circleci_boilerplate($1,-plus,full)
       - run:
-          name: ci-info
-          command: |
-            ./gradlew -q getPlumeScripts
-            ./checker/bin-devel/.plume-scripts/ci-info --debug
-          environment:
-            ORG_GRADLE_PROJECT_jdkTestVersion: $1
+          name: getPlumeScripts
+          command: ./gradlew -q getPlumeScripts
+      - run:
+          name: ci-org-and-branch
+          command: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+      - run:
+          name: git-changes
+          command: ./checker/bin-devel/.plume-scripts/git-changes --debug
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
