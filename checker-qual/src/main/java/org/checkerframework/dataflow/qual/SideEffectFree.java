@@ -12,8 +12,8 @@ import java.lang.annotation.Target;
  *
  * <p>Only the visible side effects are important. The method is allowed to cache the answer to a
  * computationally expensive query, for instance. It is also allowed to modify newly-created
- * objects. A constructor is side-effect-free if it does not modify any objects, that existed before
- * it was called, in ways that are externally visible.
+ * objects. A constructor is side-effect-free if it does not modify any objects that existed before
+ * it was called in ways that are externally visible.
  *
  * <p>This annotation is important to pluggable type-checking because if some fact about an object
  * is known before a call to such a method, then the fact is still known afterwards, even if the
