@@ -166,12 +166,12 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
   /**
    * Returns the formatted representation of a collection of {@link TypeCompound}s.
    *
-   * @param tc a collection of TypeCompounds
+   * @param tcs a collection of TypeCompounds
    * @return its string representation
    */
-  public static String toString(Iterable<TypeCompound> targeted) {
+  public static String toString(Iterable<TypeCompound> tcs) {
     StringJoiner sj = new StringJoiner(", ", "[", "]");
-    for (TypeCompound tc : targeted) {
+    for (TypeCompound tc : tcs) {
       sj.add(toString(tc));
     }
     return sj.toString();
