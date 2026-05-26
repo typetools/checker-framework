@@ -9,51 +9,81 @@ class RowSetResourceLeak {
 
   // ========== JdbcRowSet Tests ==========
 
-  void jdbcRowSetNotClosed(JdbcRowSet jrs) throws SQLException {
+  void jdbcRowSetNotClosed() throws SQLException {
+    JdbcRowSet jrs =
+        RowSetProvider.newFactory().createJdbcRowSet();
+
     // :: error: [required.method.not.called]
   }
 
-  void jdbcRowSetClosed(JdbcRowSet jrs) throws SQLException {
+  void jdbcRowSetClosed() throws SQLException {
+    JdbcRowSet jrs =
+        RowSetProvider.newFactory().createJdbcRowSet();
+
     jrs.close();
   }
 
   // ========== CachedRowSet Tests ==========
 
-  void cachedRowSetNotClosed(CachedRowSet crs) throws SQLException {
+  void cachedRowSetNotClosed() throws SQLException {
+    CachedRowSet crs =
+        RowSetProvider.newFactory().createCachedRowSet();
+
     // :: error: [required.method.not.called]
   }
 
-  void cachedRowSetClosed(CachedRowSet crs) throws SQLException {
+  void cachedRowSetClosed() throws SQLException {
+    CachedRowSet crs =
+        RowSetProvider.newFactory().createCachedRowSet();
+
     crs.close();
   }
 
   // ========== FilteredRowSet Tests ==========
 
-  void filteredRowSetNotClosed(FilteredRowSet frs) throws SQLException {
+  void filteredRowSetNotClosed() throws SQLException {
+    FilteredRowSet frs =
+        RowSetProvider.newFactory().createFilteredRowSet();
+
     // :: error: [required.method.not.called]
   }
 
-  void filteredRowSetClosed(FilteredRowSet frs) throws SQLException {
+  void filteredRowSetClosed() throws SQLException {
+    FilteredRowSet frs =
+        RowSetProvider.newFactory().createFilteredRowSet();
+
     frs.close();
   }
 
   // ========== WebRowSet Tests ==========
 
-  void webRowSetNotClosed(WebRowSet wrs) throws SQLException {
+  void webRowSetNotClosed() throws SQLException {
+    WebRowSet wrs =
+        RowSetProvider.newFactory().createWebRowSet();
+
     // :: error: [required.method.not.called]
   }
 
-  void webRowSetClosed(WebRowSet wrs) throws SQLException {
+  void webRowSetClosed() throws SQLException {
+    WebRowSet wrs =
+        RowSetProvider.newFactory().createWebRowSet();
+
     wrs.close();
   }
 
   // ========== JoinRowSet Tests ==========
 
-  void joinRowSetNotClosed(JoinRowSet jrs) throws SQLException {
+  void joinRowSetNotClosed() throws SQLException {
+    JoinRowSet jrs =
+        RowSetProvider.newFactory().createJoinRowSet();
+
     // :: error: [required.method.not.called]
   }
 
-  void joinRowSetClosed(JoinRowSet jrs) throws SQLException {
+  void joinRowSetClosed() throws SQLException {
+    JoinRowSet jrs =
+        RowSetProvider.newFactory().createJoinRowSet();
+
     jrs.close();
   }
 }
