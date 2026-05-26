@@ -13,8 +13,12 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** A method type for an invocation of a method or constructor. */
-public class MethodType extends InvocationType {
+/**
+ * An inference type for a method or constructor. This is a wrapper around {@link
+ * AnnotatedExecutableType} that returns {@link AbstractType}s for the types in the {@link
+ * AnnotatedExecutableType}
+ */
+public class InferenceMethodType extends InferenceExecutableType {
 
   /**
    * Creates an invocation type for a method or constructor invocation.
@@ -24,7 +28,7 @@ public class MethodType extends InvocationType {
    * @param invocation a method or constructor invocation
    * @param context the context
    */
-  public MethodType(
+  public InferenceMethodType(
       AnnotatedExecutableType annotatedExecutableType,
       ExecutableType methodType,
       ExpressionTree invocation,

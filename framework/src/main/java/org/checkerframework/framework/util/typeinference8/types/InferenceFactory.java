@@ -520,7 +520,9 @@ public class InferenceFactory {
    * @return a mapping of the type variables of {@code methodType} to inference variables
    */
   public Theta createThetaForInvocation(
-      ExpressionTree invocation, InvocationType methodType, Java8InferenceContext context) {
+      ExpressionTree invocation,
+      InferenceExecutableType methodType,
+      Java8InferenceContext context) {
     if (context.maps.containsKey(invocation)) {
       return context.maps.get(invocation);
     }
@@ -585,7 +587,9 @@ public class InferenceFactory {
    * @return a mapping of the type variables of {@code compileTimeDecl} to inference variables
    */
   public Theta createThetaForMethodReference(
-      MemberReferenceTree memRef, InvocationType compileTimeDecl, Java8InferenceContext context) {
+      MemberReferenceTree memRef,
+      InferenceExecutableType compileTimeDecl,
+      Java8InferenceContext context) {
     if (context.maps.containsKey(memRef)) {
       return context.maps.get(memRef);
     }
@@ -707,7 +711,7 @@ public class InferenceFactory {
    * @param invocation method or constructor invocation
    * @return the type of the method or constructor invocation adapted to its arguments
    */
-  public InvocationType getTypeOfMethodAdaptedToUse(ExpressionTree invocation) {
+  public InferenceExecutableType getTypeOfMethodAdaptedToUse(ExpressionTree invocation) {
     AnnotatedExecutableType executableType;
     if (invocation instanceof MethodInvocationTree mit) {
       executableType = typeFactory.methodFromUseWithoutTypeArgInference(mit).executableType();
@@ -717,7 +721,7 @@ public class InferenceFactory {
               .constructorFromUseWithoutTypeArgInference((NewClassTree) invocation)
               .executableType();
     }
-    return new MethodType(
+    return new InferenceMethodType(
         executableType, getTypeOfMethodAdaptedToUse(invocation, context), invocation, context);
   }
 
@@ -748,7 +752,7 @@ public class InferenceFactory {
    * @param memRef method reference tree
    * @return the compile-time declaration of the method reference
    */
-  public InvocationType compileTimeDeclarationType(MemberReferenceTree memRef) {
+  public InferenceExecutableType compileTimeDeclarationType(MemberReferenceTree memRef) {
     // The tree before :: is an expression or type use.
     final ExpressionTree preColonTree = memRef.getQualifierExpression();
     final MemberReferenceKind memRefKind = MemberReferenceKind.getMemberReferenceKind(memRef);
@@ -798,7 +802,7 @@ public class InferenceFactory {
       compileTimeType.setReceiverType((AnnotatedDeclaredType) enclosingType);
     }
 
-    return new MethodReferenceType(
+    return new CompileTimeDeclarationType(
         compileTimeType, compileTimeType.getUnderlyingType(), memRef, enclosingType, context);
   }
 

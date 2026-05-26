@@ -36,10 +36,10 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.IPair;
 
 /**
- * As explained in <a
- * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.1">section 18.1</a>,
- * the JLS Chapter on type inference use the term "type" to "include type-like syntax that contains
- * inference variables". This class represents this types. Three subclasses of this class are:
+ * This class represents "types" that "include type-like syntax that contains inference variables".
+ * (This matches the JLS; see <a
+ * href="https://docs.oracle.com/javase/specs/jls/se26/html/jls-18.html#jls-18.1.1">Section
+ * 18.1</a>.) Three subclasses of this class are:
  *
  * <ul>
  *   <li>{@link ProperType}: types that do not contain inference variables

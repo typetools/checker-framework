@@ -25,8 +25,12 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 
-/** A method type for an invocation of a method or constructor or a method reference. */
-public abstract class InvocationType {
+/**
+ * An inference type for a method, constructor, or method reference. This is a wrapper around {@link
+ * AnnotatedExecutableType} that returns {@link AbstractType}s for the types in the {@link
+ * AnnotatedExecutableType}
+ */
+public abstract class InferenceExecutableType {
 
   /** A method or constructor invocation or method reference. */
   protected final ExpressionTree invocation;
@@ -54,7 +58,7 @@ public abstract class InvocationType {
    * @param invocation a method or constructor invocation
    * @param context the context
    */
-  protected InvocationType(
+  protected InferenceExecutableType(
       AnnotatedExecutableType annotatedExecutableType,
       ExecutableType methodType,
       ExpressionTree invocation,
@@ -127,13 +131,13 @@ public abstract class InvocationType {
   public abstract AbstractType getReturnType(Theta map);
 
   /**
-   * Returns a list of the parameter types of {@code InvocationType} where the vararg parameter has
-   * been modified to match the arguments in {@code expression}.
+   * Returns a list of the parameter types of {@code InferenceExecutableType} where the vararg
+   * parameter has been modified to match the arguments in {@code expression}.
    *
    * @param map a mapping from type variable to inference variable
    * @param size the number of parameters to return; used to expand the vararg
-   * @return a list of the parameter types of {@code InvocationType} where the vararg parameter has
-   *     been modified to match the arguments in {@code expression}
+   * @return a list of the parameter types of {@code InferenceExecutableType} where the vararg
+   *     parameter has been modified to match the arguments in {@code expression}
    */
   public List<AbstractType> getParameterTypes(Theta map, int size) {
     List<AnnotatedTypeMirror> params = new ArrayList<>(annotatedExecutableType.getParameterTypes());
