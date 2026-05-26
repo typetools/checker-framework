@@ -57,8 +57,8 @@ public class MethodType extends InvocationType {
     }
 
     if (map == null) {
-      return new ProperType(annotatedReturnType, returnTypeJava, context);
+      return new ProperType(annotatedReturnType, returnType, context);
     }
-    return InferenceType.create(annotatedReturnType, returnTypeJava, map, context);
+    return InferenceType.create(annotatedReturnType, returnType, map, context);
   }
 }
