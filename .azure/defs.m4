@@ -136,10 +136,8 @@ ifelse($1,canary_version,,$1,latest_version,,[    dependsOn:
       - bash: mkdir -p /tmp && git -C /tmp clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git
       - bash: /tmp/plume-scripts/ci-org-and-branch --debug
         displayName: ci-org-and-branch
-      - bash: /tmp/plume-scripts/git-change-info --debug
-        displayName: git-change-info
-      - bash: /tmp/plume-scripts/ci-info --debug
-        displayName: ci-info
+      - bash: /tmp/plume-scripts/git-changes --debug
+        displayName: git-changes
       - bash: ./checker/bin-devel/test-misc.sh
         displayName: test-misc.sh
         env:
