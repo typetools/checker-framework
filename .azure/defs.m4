@@ -133,6 +133,11 @@ ifelse($1,canary_version,,$1,latest_version,,[    dependsOn:
       - checkout: self
         # Unlimited fetchDepth (0) for misc jobs, because of need to make contributors.tex.
         fetchDepth: 0
+      - bash: mkdir -p /tmp && git -C /tmp clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git
+      - bash: /tmp/plume-scripts/ci-org-and-branch --debug
+        displayName: ci-org-and-branch
+      - bash: /tmp/plume-scripts/git-changes --debug
+        displayName: git-changes
       - bash: ./checker/bin-devel/test-misc.sh
         displayName: test-misc.sh
         env:

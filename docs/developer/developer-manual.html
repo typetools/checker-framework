@@ -50,7 +50,6 @@ including people who wish to edit its source code or make pull requests.
               <li><a href="#ci-increasing-quota">Increasing quota</a></li>
               <li><a href="#project-visibility">How to change project visibility settings</a></li>
             </ul></li>
-          <li><a href="#ci-travis">Travis CI</a></li>
           <li><a href="#ci-related-projects">Continuous Integration failures in related projects (daikon, plume-lib, etc.)</a></li>
           <li><a href="#ci-failure">Reproducing Continuous Integration build failures</a></li>
         </ul></li>
@@ -424,7 +423,7 @@ branches after they are merged</a>.
 
 <p>
 The Checker Framework has continuous integration jobs that run in Azure
-Pipelines, CircleCI, GitHub Actions, and/or Travis CI on each push to GitHub.
+Pipelines, CircleCI, and/or GitHub Actions on each push to GitHub.
 </p>
 
 
@@ -484,11 +483,6 @@ Pipelines, CircleCI, GitHub Actions, and/or Travis CI on each push to GitHub.
   <li>Click "run".</li>
 </ul>
 
-<!-- TODO: Document how to use with Travis CI.  Note that Travis CI is no longer
-free for open-source projects; you have to apply for an Open Source Sponsorship.
--->
-
-
 <h4 id="ci-increasing-quota">Increasing quota</h4>
 
 <p>
@@ -534,7 +528,11 @@ To change your project's visibility settings (usually to "Public" to enable CI):
 </ul>
 
 
-<h3 id="ci-travis">Travis CI</h3>
+<!-- Travis CI is not currently supported. -->
+<!-- Note that Travis CI is no longer
+free for open-source projects; you have to apply for an Open Source Sponsorship.
+-->
+<!-- <h3 id="ci-travis">Travis CI</h3>
 
 <p>
   To enable Travis CI continuous integration for your fork:
@@ -545,7 +543,7 @@ To change your project's visibility settings (usually to "Public" to enable CI):
   <li>Click settings</li>
   <li>Find "checker-framework" in the list, and click the slider to enable it.</li>
 </ul>
-
+-->
 
 <h3 id="ci-related-projects">Continuous Integration failures in related projects (daikon, plume-lib, etc.)</h3>
 
