@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -128,7 +129,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
   public void extractAndApply() throws UnexpectedAnnotationLocationException {
     methodType.setElement(methodSymbol); // Preserves previous behavior
 
-    // Add declaration annotations to the return type if
+    // Add declaration annotations to the return type.
     if (methodType.getReturnType() instanceof AnnotatedTypeVariable) {
       applyTypeVarUseOnReturnType();
     }
@@ -150,6 +151,30 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         methodType.getParameterTypes(), methodSymbol.getParameters(), typeFactory);
     ElementAnnotationUtil.applyAllElementAnnotations(
         methodType.getTypeVariables(), methodSymbol.getTypeParameters(), typeFactory);
+  }
+
+  /**
+   * Returns the formatted representation of a {@link TypeCompound}.
+   *
+   * @param tc a TypeCompound
+   * @return its string representation
+   */
+  public static String toString(TypeCompound tc) {
+    return tc + "@" + tc.getPosition();
+  }
+
+  /**
+   * Returns the formatted representation of a collection of {@link TypeCompound}s.
+   *
+   * @param tc a collection of TypeCompounds
+   * @return its string representation
+   */
+  public static String toString(Iterable<TypeCompound> targeted) {
+    StringJoiner sj = new StringJoiner(", ", "[", "]");
+    for (TypeCompound tc : targeted) {
+      sj.add(toString(tc));
+    }
+    return sj.toString();
   }
 
   // NOTE that these are the only locations not handled elsewhere, otherwise we call apply
