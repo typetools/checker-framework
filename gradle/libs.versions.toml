@@ -30,7 +30,7 @@ jgit-version = "7.6.0.202603022253-r"
 # name itself changes (independently of the version number), such as from
 # org.apache.spark:spark-sql_2.12 to org.apache.spark:spark-sql_2.13.
 # See https://mvnrepository.com/artifact/org.apache.spark/spark-sql .
-spark-sql = "org.apache.spark:spark-sql_2.13:4.1.1"
+spark-sql = "org.apache.spark:spark-sql_2.13:4.1.2"
 
 asm = "org.ow2.asm:asm:9.10"
 
