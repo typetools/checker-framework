@@ -71,9 +71,9 @@ public class CompileTimeDeclarationType extends InferenceExecutableType {
   }
 
   /**
-   * Returns the method reference for with this a compile time declaration.
+   * Returns the method reference for which this a compile-time declaration.
    *
-   * @return the method reference for with this a compile time declaration
+   * @return the method reference for which this a compile-time declaration
    */
   public MemberReferenceTree getMethodRef() {
     return methodRef;
