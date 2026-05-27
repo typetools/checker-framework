@@ -70,6 +70,15 @@ public class CompileTimeDeclarationType extends InferenceExecutableType {
     this.methodRef = methodRef;
   }
 
+  /**
+   * Returns the method reference for with this a compile time declaration.
+   *
+   * @return the method reference for with this a compile time declaration
+   */
+  public MemberReferenceTree getMethodRef() {
+    return methodRef;
+  }
+
   @Override
   public List<AbstractType> getParameterTypes(Theta map, int size) {
     List<AnnotatedTypeMirror> params = new ArrayList<>(annotatedExecutableType.getParameterTypes());
@@ -99,10 +108,10 @@ public class CompileTimeDeclarationType extends InferenceExecutableType {
     TypeMirror returnType;
     AnnotatedTypeMirror annotatedReturnType;
 
-    if (invocation instanceof MemberReferenceTree mrt && mrt.getMode() == ReferenceMode.NEW) {
+    if (methodRef.getMode() == ReferenceMode.NEW) {
       annotatedReturnType =
           context.typeFactory.getResultingTypeOfConstructorMemberReference(
-              mrt, annotatedExecutableType);
+              methodRef, annotatedExecutableType);
       returnType = annotatedReturnType.getUnderlyingType();
     } else {
       returnType = methodType.getReturnType();

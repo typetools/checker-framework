@@ -28,6 +28,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.Expression;
 import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.CompileTimeDeclarationType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceExecutableType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceMethodType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
@@ -203,7 +204,7 @@ public class InvocationTypeInference {
       throw new BugInCF("Target of method reference should not be null: %s", invocation);
     }
 
-    InferenceExecutableType compileTimeDecl =
+    CompileTimeDeclarationType compileTimeDecl =
         context.inferenceTypeFactory.compileTimeDeclarationType(invocation);
     Theta map =
         context.inferenceTypeFactory.createThetaForMethodReference(
@@ -292,7 +293,7 @@ public class InvocationTypeInference {
    * @return bound set used to determine whether a method is applicable
    */
   public BoundSet createB2MethodRef(
-      InferenceExecutableType methodType, List<AbstractType> args, Theta map) {
+      CompileTimeDeclarationType methodType, List<AbstractType> args, Theta map) {
     BoundSet b0 = BoundSet.initialBounds(map, context);
 
     // For all i (1 <= i <= p), if Pi appears in the throws clause of m, then the bound throws
@@ -307,7 +308,7 @@ public class InvocationTypeInference {
     BoundSet b1 = b0;
     ConstraintSet c = new ConstraintSet();
     List<AbstractType> formals = methodType.getParameterTypes(map, args.size());
-    if (TreeUtils.isLikeDiamondMemberReference(methodType.getInvocation())) {
+    if (TreeUtils.isLikeDiamondMemberReference(methodType.getMethodRef())) {
       // https://docs.oracle.com/javase/specs/jls/se19/html/jls-15.html#jls-15.13.1
       //  If ReferenceType is a raw type, and there exists a parameterization of this type,
       // G<...>, that is a supertype of P1, the type to search is the result of capture
@@ -324,7 +325,7 @@ public class InvocationTypeInference {
       String source =
           String.format(
               "Method reference: %s, constraint against arguments, index %s.",
-              methodType.getInvocation(), i);
+              methodType.getMethodRef(), i);
       c.add(new Typing(source, ei, fi, Kind.TYPE_COMPATIBILITY));
     }
 

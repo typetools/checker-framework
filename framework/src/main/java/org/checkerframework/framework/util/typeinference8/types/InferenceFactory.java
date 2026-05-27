@@ -588,7 +588,7 @@ public class InferenceFactory {
    */
   public Theta createThetaForMethodReference(
       MemberReferenceTree memRef,
-      InferenceExecutableType compileTimeDecl,
+      CompileTimeDeclarationType compileTimeDecl,
       Java8InferenceContext context) {
     if (context.maps.containsKey(memRef)) {
       return context.maps.get(memRef);
@@ -752,7 +752,7 @@ public class InferenceFactory {
    * @param memRef method reference tree
    * @return the compile-time declaration of the method reference
    */
-  public InferenceExecutableType compileTimeDeclarationType(MemberReferenceTree memRef) {
+  public CompileTimeDeclarationType compileTimeDeclarationType(MemberReferenceTree memRef) {
     // The tree before :: is an expression or type use.
     final ExpressionTree preColonTree = memRef.getQualifierExpression();
     final MemberReferenceKind memRefKind = MemberReferenceKind.getMemberReferenceKind(memRef);
