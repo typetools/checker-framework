@@ -2,7 +2,6 @@ package org.checkerframework.framework.test;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.processing.AbstractProcessor;
@@ -82,7 +81,8 @@ public abstract class CheckerFrameworkPerFileTest extends CheckerFrameworkRooted
     this.testFile = testFile;
     this.checker = checker;
     this.testDir = testDir;
-    this.checkerOptions = new ArrayList<>(Arrays.asList(checkerOptions));
+    this.checkerOptions = new ArrayList<>(checkerOptions);
+    this.checkerOptions.add("-AwarnUnneededSuppressions");
   }
 
   @Test
