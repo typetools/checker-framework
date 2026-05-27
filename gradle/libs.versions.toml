@@ -8,7 +8,7 @@ net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "5.1.0" }
 
 com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.5.1" }
 
-com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.7" }
+com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "3.0.3" }
 
 biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.2.3" }
 
@@ -30,9 +30,9 @@ jgit-version = "7.6.0.202603022253-r"
 # name itself changes (independently of the version number), such as from
 # org.apache.spark:spark-sql_2.12 to org.apache.spark:spark-sql_2.13.
 # See https://mvnrepository.com/artifact/org.apache.spark/spark-sql .
-spark-sql = "org.apache.spark:spark-sql_2.13:4.1.1"
+spark-sql = "org.apache.spark:spark-sql_2.13:4.1.2"
 
-asm = "org.ow2.asm:asm:9.10"
+asm = "org.ow2.asm:asm:9.10.1"
 
 auto-value = "com.google.auto.value:auto-value:1.11.1"
 
