@@ -128,7 +128,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
   public void extractAndApply() throws UnexpectedAnnotationLocationException {
     methodType.setElement(methodSymbol); // Preserves previous behavior
 
-    // Add declaration annotations to the return type if
+    // Add declaration annotations to the return type.
     if (methodType.getReturnType() instanceof AnnotatedTypeVariable) {
       applyTypeVarUseOnReturnType();
     }
@@ -152,7 +152,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         methodType.getTypeVariables(), methodSymbol.getTypeParameters(), typeFactory);
   }
 
-  // NOTE that these are the only locations not handled elsewhere, otherwise we call apply
+  // NOTE that these are the only locations not handled elsewhere, otherwise we call apply.
   @Override
   protected void handleTargeted(List<TypeCompound> targeted)
       throws UnexpectedAnnotationLocationException {
