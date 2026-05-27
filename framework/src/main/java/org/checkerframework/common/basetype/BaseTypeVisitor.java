@@ -3712,21 +3712,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (explicitAnnos.isEmpty()) {
       return;
     }
+    AnnotatedTypeMirror retType = constructor.getReturnType();
     for (AnnotationMirror explicit : explicitAnnos) {
       // The return type of the constructor (resultAnnos) must be comparable to the
       // annotations on the constructor invocation (explicitAnnos).
       boolean resultIsSubtypeOfExplicit =
-          typeHierarchy.isSubtypeShallowEffective(constructor.getReturnType(), explicit);
-      if (!(typeHierarchy.isSubtypeShallowEffective(explicit, constructor.getReturnType())
+          typeHierarchy.isSubtypeShallowEffective(retType, explicit);
+      if (!(typeHierarchy.isSubtypeShallowEffective(explicit, retType)
           || resultIsSubtypeOfExplicit)) {
-        AnnotationMirror resultAnno =
-            constructor.getReturnType().getPrimaryAnnotationInHierarchy(explicit);
+        AnnotationMirror resultAnno = retType.getPrimaryAnnotationInHierarchy(explicit);
         checker.reportError(
             newClassTree, "constructor.invocation", constructor.toString(), explicit, resultAnno);
         return;
       } else if (!resultIsSubtypeOfExplicit) {
-        AnnotationMirror resultAnno =
-            constructor.getReturnType().getPrimaryAnnotationInHierarchy(explicit);
+        AnnotationMirror resultAnno = retType.getPrimaryAnnotationInHierarchy(explicit);
         // Issue a warning if the annotations on the constructor invocation is a subtype of
         // the constructor result type. This is equivalent to down-casting.
         checker.reportWarning(
@@ -4354,11 +4353,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (!typeHierarchy.isSubtypeShallowEffective(overriddenReceiver, overriderReceiver)) {
         AnnotationMirrorSet declaredAnnos =
             atypeFactory.getTypeDeclarationBounds(overriderType.getUnderlyingType());
+        // All the type of an object must be no higher than its upper bound. If the
+        // receiver is annotated with the upper bound qualifiers, and that is a subtype of the type
+        // in the supertype, then the override is
+        // safe.
         if (typeHierarchy.isSubtypeShallowEffective(overriderReceiver, declaredAnnos)
             && typeHierarchy.isSubtypeShallowEffective(declaredAnnos, overriderReceiver)) {
-          // All the type of an object must be no higher than its upper bound. So if the
-          // receiver is annotated with the upper bound qualifiers, then the override is
-          // safe.
           return true;
         }
         FoundRequired pair = FoundRequired.of(overriderReceiver, overriddenReceiver);
