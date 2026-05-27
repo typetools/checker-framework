@@ -619,7 +619,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           AnnotatedTypeMirror superBound = wildcard.getSuperBound();
           if (!hierarchy.equalsShallowEffective(superBound, extendsBound)) {
             checker.reportError(
-                tree.getTypeArguments().get(i), "super.wildcard", extendsBound, superBound);
+                tree.getTypeArguments().get(i), "super.wildcard", superBound, extendsBound);
           }
         }
       }
