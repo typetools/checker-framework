@@ -15,8 +15,8 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.InferenceExecutableType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
-import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -172,7 +172,7 @@ public class Expression extends TypeConstraint {
       args = methodInvocationTree.getArguments();
     }
 
-    InvocationType methodType =
+    InferenceExecutableType methodType =
         context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(expressionTree);
     Theta map =
         context.inferenceTypeFactory.createThetaForInvocation(expressionTree, methodType, context);
@@ -190,7 +190,7 @@ public class Expression extends TypeConstraint {
   private ReductionResult reduceMethodRef(Java8InferenceContext context) {
     MemberReferenceTree memRef = (MemberReferenceTree) expression;
     if (TreeUtils.isExactMethodReference(memRef)) {
-      InvocationType typeOfPoAppMethod =
+      InferenceExecutableType typeOfPoAppMethod =
           context.inferenceTypeFactory.compileTimeDeclarationType(memRef);
 
       ConstraintSet constraintSet = new ConstraintSet();
@@ -229,7 +229,7 @@ public class Expression extends TypeConstraint {
     // else the method reference is inexact.
 
     // Compile-time declaration of the member reference expression
-    InvocationType compileTimeDecl =
+    InferenceExecutableType compileTimeDecl =
         context.inferenceTypeFactory.compileTimeDeclarationType(memRef);
     if (compileTimeDecl.isVoid()) {
       return ConstraintSet.TRUE;
