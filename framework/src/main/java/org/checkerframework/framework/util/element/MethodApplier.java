@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -153,31 +152,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         methodType.getTypeVariables(), methodSymbol.getTypeParameters(), typeFactory);
   }
 
-  /**
-   * Returns the formatted representation of a {@link TypeCompound}.
-   *
-   * @param tc a TypeCompound
-   * @return its string representation
-   */
-  public static String toString(TypeCompound tc) {
-    return tc + "@" + tc.getPosition();
-  }
-
-  /**
-   * Returns the formatted representation of a collection of {@link TypeCompound}s.
-   *
-   * @param tcs a collection of TypeCompounds
-   * @return its string representation
-   */
-  public static String toString(Iterable<TypeCompound> tcs) {
-    StringJoiner sj = new StringJoiner(", ", "[", "]");
-    for (TypeCompound tc : tcs) {
-      sj.add(toString(tc));
-    }
-    return sj.toString();
-  }
-
-  // NOTE that these are the only locations not handled elsewhere, otherwise we call apply
+  // NOTE that these are the only locations not handled elsewhere, otherwise we call apply.
   @Override
   protected void handleTargeted(List<TypeCompound> targeted)
       throws UnexpectedAnnotationLocationException {
