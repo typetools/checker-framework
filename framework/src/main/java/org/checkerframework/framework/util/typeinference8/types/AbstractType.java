@@ -245,7 +245,7 @@ public abstract class AbstractType {
    * function type. Otherwise, {@code functionType} is null. Initialized by {@link
    * #getFunctionType()}.
    */
-  private IPair<AnnotatedExecutableType, ExecutableType> functionType = null;
+  protected IPair<AnnotatedExecutableType, ExecutableType> functionType = null;
 
   /**
    * If this {@link AbstractType} is a functional interface type, then its function type is

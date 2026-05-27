@@ -31,9 +31,6 @@ import org.checkerframework.javacutil.TreeUtils;
 /** Implementation of type argument inference. */
 public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
-  /** Current inference problem that is being solved. */
-  private InvocationTypeInference java8Inference = null;
-
   /** Stack of all inference problems currently being solved. */
   private final ArrayDeque<InvocationTypeInference> java8InferenceStack = new ArrayDeque<>();
 
@@ -96,11 +93,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     } else {
       outerMethodType = methodType;
     }
-    if (java8Inference != null) {
-      java8InferenceStack.push(java8Inference);
-    }
     try {
-      java8Inference = new InvocationTypeInference(typeFactory, pathToExpression);
+      InvocationTypeInference java8Inference =
+          new InvocationTypeInference(typeFactory, pathToExpression);
+      java8InferenceStack.push(java8Inference);
+
       if (outerTree instanceof MemberReferenceTree mrt) {
         return java8Inference.infer(mrt);
       } else {
@@ -129,9 +126,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       throw BugInCF.addLocation(outerTree, ex);
     } finally {
       if (!java8InferenceStack.isEmpty()) {
-        java8Inference = java8InferenceStack.pop();
-      } else {
-        java8Inference = null;
+        java8InferenceStack.pop();
       }
     }
   }

@@ -9,12 +9,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
@@ -22,6 +24,7 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 
 /**
  * A type-like structure that contains at least one inference variable, but is not an inference
@@ -306,6 +309,14 @@ public class InferenceType extends AbstractType {
     }
     if (map.isEmpty()) {
       return this;
+    }
+
+    // Also apply instantiations to function type.
+    IPair<AnnotatedExecutableType, ExecutableType> unsubedFunctionType = getFunctionType();
+    if (unsubedFunctionType != null) {
+      AnnotatedTypeMirror newType =
+          typeFactory.getTypeVarSubstitutor().substitute(mapping, unsubedFunctionType.first);
+      functionType = IPair.of((AnnotatedExecutableType) newType, unsubedFunctionType.second);
     }
 
     AnnotatedTypeMirror newType = typeFactory.getTypeVarSubstitutor().substitute(mapping, type);
