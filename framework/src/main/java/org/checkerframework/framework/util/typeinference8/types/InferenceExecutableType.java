@@ -1,20 +1,17 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberReferenceTree;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
@@ -22,8 +19,6 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 
 /**
  * An inference type for a method, constructor, or method reference. This is a wrapper around {@link
@@ -31,9 +26,6 @@ import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
  * AnnotatedExecutableType}
  */
 public abstract class InferenceExecutableType {
-
-  /** A method or constructor invocation or method reference. */
-  protected final ExpressionTree invocation;
 
   /** The annotated method type. */
   protected final AnnotatedExecutableType annotatedExecutableType;
@@ -66,7 +58,6 @@ public abstract class InferenceExecutableType {
     assert annotatedExecutableType != null && methodType != null;
     this.annotatedExecutableType = annotatedExecutableType;
     this.methodType = methodType;
-    this.invocation = invocation;
     this.context = context;
     this.typeFactory = context.typeFactory;
 
@@ -87,15 +78,6 @@ public abstract class InferenceExecutableType {
       qualifierVars.put(poly, new QualifierVar(invocation, poly, context));
     }
     this.qualifierVars = qualifierVars;
-  }
-
-  /**
-   * Returns the method or constructor invocation or method reference.
-   *
-   * @return the method or constructor invocation or method reference
-   */
-  public ExpressionTree getInvocation() {
-    return invocation;
   }
 
   /**
@@ -139,32 +121,7 @@ public abstract class InferenceExecutableType {
    * @return a list of the parameter types of {@code InferenceExecutableType} where the vararg
    *     parameter has been modified to match the arguments in {@code expression}
    */
-  public List<AbstractType> getParameterTypes(Theta map, int size) {
-    List<AnnotatedTypeMirror> params = new ArrayList<>(annotatedExecutableType.getParameterTypes());
-    List<TypeMirror> paramsJava = new ArrayList<>(methodType.getParameterTypes());
-
-    if (invocation instanceof MemberReferenceTree mrt
-        && MemberReferenceKind.getMemberReferenceKind(mrt).isUnbound()) {
-      params.add(0, annotatedExecutableType.getReceiverType());
-      paramsJava.add(0, annotatedExecutableType.getReceiverType().getUnderlyingType());
-    }
-
-    if (TreeUtils.isVarargsCall(invocation)) {
-      AnnotatedArrayType vararg = (AnnotatedArrayType) params.remove(params.size() - 1);
-      for (int i = params.size(); i < size; i++) {
-        params.add(vararg.getComponentType());
-      }
-    }
-
-    if (TreeUtils.isVarargsCall(invocation)) {
-      ArrayType vararg = (ArrayType) paramsJava.remove(paramsJava.size() - 1);
-      for (int i = paramsJava.size(); i < size; i++) {
-        paramsJava.add(vararg.getComponentType());
-      }
-    }
-
-    return InferenceType.create(params, paramsJava, map, qualifierVars, context);
-  }
+  public abstract List<AbstractType> getParameterTypes(Theta map, int size);
 
   /**
    * Returns the parameter types. (Varags are not expanded.)

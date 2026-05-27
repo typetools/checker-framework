@@ -15,6 +15,7 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.CompileTimeDeclarationType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceExecutableType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
@@ -190,7 +191,7 @@ public class Expression extends TypeConstraint {
   private ReductionResult reduceMethodRef(Java8InferenceContext context) {
     MemberReferenceTree memRef = (MemberReferenceTree) expression;
     if (TreeUtils.isExactMethodReference(memRef)) {
-      InferenceExecutableType typeOfPoAppMethod =
+      CompileTimeDeclarationType typeOfPoAppMethod =
           context.inferenceTypeFactory.compileTimeDeclarationType(memRef);
 
       ConstraintSet constraintSet = new ConstraintSet();
@@ -229,7 +230,7 @@ public class Expression extends TypeConstraint {
     // else the method reference is inexact.
 
     // Compile-time declaration of the member reference expression
-    InferenceExecutableType compileTimeDecl =
+    CompileTimeDeclarationType compileTimeDecl =
         context.inferenceTypeFactory.compileTimeDeclarationType(memRef);
     if (compileTimeDecl.isVoid()) {
       return ConstraintSet.TRUE;
