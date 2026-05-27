@@ -10,9 +10,14 @@ on:  # yamllint disable-line rule:truthy
     branches:
       - "**"
 
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
+#   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+# Cancel in-progress jobs that originate from a fork.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.fork && github.event.pull_request.head.ref || github.ref }}
+  cancel-in-progress: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
 
 permissions:
   contents: read

@@ -123,6 +123,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     return result;
   }
 
+  // This method has no effect on the result of ((MethodSymbol) elt).getRawTypeAttributes().  That
+  // is affected elsewhere.
   @Override
   public AnnotatedTypeMirror visitMethod(MethodTree tree, AnnotatedTypeFactory f) {
     ExecutableElement elt = TreeUtils.elementFromDeclaration(tree);
