@@ -3718,19 +3718,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // annotations on the constructor invocation (explicitAnnos).
       boolean resultIsSubtypeOfExplicit =
           typeHierarchy.isSubtypeShallowEffective(retType, explicit);
-      if (!(typeHierarchy.isSubtypeShallowEffective(explicit, retType)
-          || resultIsSubtypeOfExplicit)) {
-        AnnotationMirror resultAnno = retType.getPrimaryAnnotationInHierarchy(explicit);
-        checker.reportError(
-            newClassTree, "constructor.invocation", constructor.toString(), explicit, resultAnno);
-        return;
-      } else if (!resultIsSubtypeOfExplicit) {
-        AnnotationMirror resultAnno = retType.getPrimaryAnnotationInHierarchy(explicit);
-        // Issue a warning if the annotations on the constructor invocation is a subtype of
-        // the constructor result type. This is equivalent to down-casting.
-        checker.reportWarning(
-            newClassTree, "cast.unsafe.constructor.invocation", resultAnno, explicit);
-        return;
+      if (!resultIsSubtypeOfExplicit) {
+        if (!typeHierarchy.isSubtypeShallowEffective(explicit, retType)) {
+          AnnotationMirror resultAnno = retType.getPrimaryAnnotationInHierarchy(explicit);
+          checker.reportError(
+              newClassTree, "constructor.invocation", constructor.toString(), explicit, resultAnno);
+          return;
+        } else {
+          AnnotationMirror resultAnno = retType.getPrimaryAnnotationInHierarchy(explicit);
+          // Issue a warning if the annotations on the constructor invocation is a subtype of
+          // the constructor result type. This is equivalent to down-casting.
+          checker.reportWarning(
+              newClassTree, "cast.unsafe.constructor.invocation", resultAnno, explicit);
+          return;
+        }
       }
     }
 
@@ -4353,11 +4354,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (!typeHierarchy.isSubtypeShallowEffective(overriddenReceiver, overriderReceiver)) {
         AnnotationMirrorSet declaredAnnos =
             atypeFactory.getTypeDeclarationBounds(overriderType.getUnderlyingType());
-        if (typeHierarchy.isSubtypeShallowEffective(overriderReceiver, declaredAnnos)
-            && typeHierarchy.isSubtypeShallowEffective(declaredAnnos, overriderReceiver)) {
-          // All the type of an object must be no higher than its upper bound. So if the
-          // receiver is annotated with the upper bound qualifiers, then the override is
-          // safe.
+        if (typeHierarchy.equalsShallowEffective(overriderReceiver, declaredAnnos)) {
+          // The type of an object must be no higher than its upper bound. So if the receiver
+          // is annotated with the upper-bound qualifiers, then the override is safe.
           return true;
         }
         FoundRequired pair = FoundRequired.of(overriderReceiver, overriddenReceiver);
