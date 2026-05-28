@@ -2498,9 +2498,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       // `tree` has a @SuppressWarnings annotation that didn't suppress any warnings.
       SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
       String[] suppressWarningsStrings = suppressAnno.value();
-      System.out.printf(
-          "checkerPrefixes = %s%nsuppressWarningsStrings = %s%n",
-          checkerPrefixes, Arrays.toString(suppressWarningsStrings));
       for (String suppressWarningsString : suppressWarningsStrings) {
         if (warnUnneededSuppressionsExceptions != null
             && warnUnneededSuppressionsExceptions.matcher(suppressWarningsString).find(0)) {
