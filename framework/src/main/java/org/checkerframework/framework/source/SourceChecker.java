@@ -2483,9 +2483,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Issues a warning about any {@code @SuppressWarnings} string that didn't suppress a warning, but
-   * starts with one of the given prefixes (checker names). Does nothing if the string doesn't start
-   * with a checker name.
+   * Issues a warning about any {@code @SuppressWarnings} string that didn't suppress a warning. Has
+   * an effect only if the string is one of the given prefixes (checker names) or starts with one
+   * followed by a colon.
    *
    * @param elementsSuppress elements with a {@code @SuppressWarnings} that actually suppressed a
    *     warning
