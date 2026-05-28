@@ -7,6 +7,7 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.TypeTag;
+import com.sun.tools.javac.code.Types.FunctionDescriptorLookupError;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -1347,13 +1348,22 @@ public final class TypesUtils {
    * @param functionalInterfaceType a functional interface type
    * @param env the processing environment
    * @return the single abstract method declared by the type
+   * @throws BugInCF if {@code functionalInterfaceType} is not a functional interface type.
    */
   public static ExecutableElement findFunction(
       TypeMirror functionalInterfaceType, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-    return (ExecutableElement)
-        javacTypes.findDescriptorSymbol(((Type) functionalInterfaceType).asElement());
+    try {
+      return (ExecutableElement)
+          javacTypes.findDescriptorSymbol(((Type) functionalInterfaceType).asElement());
+    } catch (FunctionDescriptorLookupError ex) {
+      // FunctionDescriptorLookupError does not have a stack trace, so catch it here and throw a
+      // BugInCF.
+      throw new BugInCF(
+          "%s is not a functional interface. Call TypesUtils.isFunctionalInterface() before calling TypesUtils.findFunction.",
+          functionalInterfaceType);
+    }
   }
 
   /**

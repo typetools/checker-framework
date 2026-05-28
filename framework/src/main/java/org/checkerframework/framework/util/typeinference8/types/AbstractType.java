@@ -20,6 +20,7 @@ import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -252,8 +253,8 @@ public abstract class AbstractType {
    * @return this {@link AbstractType} is a functional interface type, then its function type is
    *     returned; otherwise, returns null
    */
-  AnnotatedExecutableType getFunctionType() {
-    if (functionType == null) {
+  @Nullable AnnotatedExecutableType getFunctionType() {
+    if (functionType == null && TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
       ExecutableElement element = TypesUtils.findFunction(getJavaType(), context.env);
       AnnotatedDeclaredType groundType =
           makeGround((AnnotatedDeclaredType) getAnnotatedType(), typeFactory);

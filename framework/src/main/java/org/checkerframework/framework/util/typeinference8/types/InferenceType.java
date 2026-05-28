@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Types.FunctionDescriptorLookupError;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -310,16 +309,12 @@ public class InferenceType extends AbstractType {
       return this;
     }
 
-    try {
-      // Also apply instantiations to function type.
-      AnnotatedExecutableType unsubedFunctionType = getFunctionType();
-      if (unsubedFunctionType != null) {
-        functionType =
-            (AnnotatedExecutableType)
-                typeFactory.getTypeVarSubstitutor().substitute(mapping, unsubedFunctionType);
-      }
-    } catch (FunctionDescriptorLookupError ex) {
-      // ignore.
+    // Also apply instantiations to function type.
+    AnnotatedExecutableType unsubedFunctionType = getFunctionType();
+    if (unsubedFunctionType != null) {
+      functionType =
+          (AnnotatedExecutableType)
+              typeFactory.getTypeVarSubstitutor().substitute(mapping, unsubedFunctionType);
     }
 
     AnnotatedTypeMirror newType = typeFactory.getTypeVarSubstitutor().substitute(mapping, type);
