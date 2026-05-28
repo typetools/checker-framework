@@ -2829,8 +2829,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           // A prefix is required, but this SuppressWarnings string does not have a
           // prefix.
           continue;
-        } else if (currentSuppressWarningsInEffect.equals("all")) {
-          // Prefixes aren't required and the SuppressWarnings string is "all".
+        } else if (currentSuppressWarningsInEffect.equals("all")
+            || currentSuppressWarningsInEffect.equals("allcheckers")) {
+          // Prefixes aren't required and the SuppressWarnings string is "all" or "allcheckers".
           // Suppress the warning unless its message key is "unneeded.suppression".
           boolean result = !messageKey.equals("unneeded.suppression");
           return result;
@@ -2842,9 +2843,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         // The SuppressWarnings string has a colon; that is, it has a prefix.
         String currentSuppressWarningsPrefix =
             currentSuppressWarningsInEffect.substring(0, colonPos);
-        if (!prefixes.contains(currentSuppressWarningsPrefix)) {
-          // The prefix of this SuppressWarnings string is a not a prefix supported by
-          // this checker. Proceed to the next SuppressWarnings string.
+        if (currentSuppressWarningsPrefix.equals("allcheckers")
+            || !prefixes.contains(currentSuppressWarningsPrefix)) {
+          // The prefix of this SuppressWarnings string is "allcheckers" or is not a prefix
+          // supported by this checker. Proceed to the next SuppressWarnings string.
           continue;
         }
         messageKeyInEffect = currentSuppressWarningsInEffect.substring(colonPos + 1);
