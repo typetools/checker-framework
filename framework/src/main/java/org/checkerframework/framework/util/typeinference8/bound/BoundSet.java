@@ -23,8 +23,7 @@ public class BoundSet implements ReductionResult {
    * Max number of incorporation loops. Use same constant as {@link
    * com.sun.tools.javac.comp.Infer#MAX_INCORPORATION_STEPS}
    */
-  // TODO: revert to com.sun.tools.javac.comp.Infer#MAX_INCORPORATION_STEPS
-  public static final int MAX_INCORPORATION_STEPS = 1000;
+  public static final int MAX_INCORPORATION_STEPS = 10000;
 
   /** All inference variables in this bound set. */
   private final LinkedHashSet<Variable> variables;
