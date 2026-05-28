@@ -3723,14 +3723,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           AnnotationMirror resultAnno = retType.getPrimaryAnnotationInHierarchy(explicit);
           checker.reportError(
               newClassTree, "constructor.invocation", constructor.toString(), explicit, resultAnno);
-          return;
         } else {
           AnnotationMirror resultAnno = retType.getPrimaryAnnotationInHierarchy(explicit);
           // Issue a warning if the annotations on the constructor invocation is a subtype of
           // the constructor result type. This is equivalent to down-casting.
           checker.reportWarning(
               newClassTree, "cast.unsafe.constructor.invocation", resultAnno, explicit);
-          return;
         }
       }
     }
@@ -4355,9 +4353,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotationMirrorSet declaredAnnos =
             atypeFactory.getTypeDeclarationBounds(overriderType.getUnderlyingType());
         if (typeHierarchy.equalsShallowEffective(overriderReceiver, declaredAnnos)) {
-          // All the type of an object must be no higher than its upper bound. So if the
-          // receiver is annotated with the upper bound qualifiers, then the override is
-          // safe.
+          // The type of an object must be no higher than its upper bound. So if the receiver
+          // is annotated with the upper-bound qualifiers, then the override is safe.
           return true;
         }
         FoundRequired pair = FoundRequired.of(overriderReceiver, overriddenReceiver);
