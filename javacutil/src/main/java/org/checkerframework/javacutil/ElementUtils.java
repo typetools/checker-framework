@@ -1021,7 +1021,7 @@ public class ElementUtils {
    * @deprecated use {@link TypeElement#getRecordComponents}
    */
   @Deprecated(forRemoval = true, since = "4.0.0")
-  @SuppressWarnings({"unchecked", "nullness"}) // because of cast from reflection
+  @SuppressWarnings("unchecked")
   public static List<? extends Element> getRecordComponents(TypeElement element) {
     return element.getRecordComponents();
   }

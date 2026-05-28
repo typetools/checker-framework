@@ -65,7 +65,6 @@ public class CFGTranslationPhaseThree {
    *     not allowed to read or modify {@code cfg} after the call to {@code process} any more.
    * @return the resulting control flow graph
    */
-  @SuppressWarnings("nullness") // TODO: successors
   public static ControlFlowGraph process(ControlFlowGraph cfg) {
     Set<Block> blocks = cfg.getAllBlocks();
     Set<Block> removedBlocks = new HashSet<>();
