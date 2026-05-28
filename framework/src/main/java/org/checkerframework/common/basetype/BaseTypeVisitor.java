@@ -3723,12 +3723,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           AnnotationMirror resultAnno = retType.getPrimaryAnnotationInHierarchy(explicit);
           checker.reportError(
               newClassTree, "constructor.invocation", constructor.toString(), explicit, resultAnno);
+          return;
         } else {
           AnnotationMirror resultAnno = retType.getPrimaryAnnotationInHierarchy(explicit);
           // Issue a warning if the annotations on the constructor invocation is a subtype of
           // the constructor result type. This is equivalent to down-casting.
           checker.reportWarning(
               newClassTree, "cast.unsafe.constructor.invocation", resultAnno, explicit);
+          return;
         }
       }
     }
