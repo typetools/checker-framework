@@ -2842,7 +2842,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         String currentSuppressWarningsPrefix =
             currentSuppressWarningsInEffect.substring(0, colonPos);
         if (!prefixes.contains(currentSuppressWarningsPrefix)) {
-          // The prefix of this SuppressWarnings string is is not a prefix supported
+          // The prefix of this SuppressWarnings string is not a prefix supported
           // by this checker. Proceed to the next SuppressWarnings string.
           continue;
         }
