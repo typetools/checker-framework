@@ -2607,7 +2607,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *     otherwise
    */
   public boolean shouldSuppressWarnings(Tree tree, String errKey) {
-
     Collection<String> prefixes = getSuppressWarningsPrefixes();
     if (prefixes.isEmpty() || (prefixes.contains(SUPPRESS_ALL_PREFIX) && prefixes.size() == 1)) {
       throw new BugInCF(
@@ -2842,10 +2841,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         // The SuppressWarnings string has a colon; that is, it has a prefix.
         String currentSuppressWarningsPrefix =
             currentSuppressWarningsInEffect.substring(0, colonPos);
-        if (currentSuppressWarningsPrefix.equals("allcheckers")
-            || !prefixes.contains(currentSuppressWarningsPrefix)) {
-          // The prefix of this SuppressWarnings string is "allcheckers" or is not a prefix
-          // supported by this checker. Proceed to the next SuppressWarnings string.
+        if (!prefixes.contains(currentSuppressWarningsPrefix)) {
+          // The prefix of this SuppressWarnings string is is not a prefix supported
+          // by this checker. Proceed to the next SuppressWarnings string.
           continue;
         }
         messageKeyInEffect = currentSuppressWarningsInEffect.substring(colonPos + 1);
