@@ -4354,11 +4354,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (!typeHierarchy.isSubtypeShallowEffective(overriddenReceiver, overriderReceiver)) {
         AnnotationMirrorSet declaredAnnos =
             atypeFactory.getTypeDeclarationBounds(overriderType.getUnderlyingType());
-        if (typeHierarchy.isSubtypeShallowEffective(overriderReceiver, declaredAnnos)
-            && typeHierarchy.isSubtypeShallowEffective(declaredAnnos, overriderReceiver)) {
-          // All the type of an object must be no higher than its upper bound. So if the
-          // receiver is annotated with the upper bound qualifiers, then the override is
-          // safe.
+        if (typeHierarchy.equalsShallowEffective(overriderReceiver, declaredAnnos)) {
+          // The type of an object must be no higher than its upper bound. So if the receiver
+          // is annotated with the upper-bound qualifiers, then the override is safe.
           return true;
         }
         FoundRequired pair = FoundRequired.of(overriderReceiver, overriddenReceiver);
