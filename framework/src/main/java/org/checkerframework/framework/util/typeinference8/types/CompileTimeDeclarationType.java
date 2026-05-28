@@ -85,6 +85,8 @@ public class CompileTimeDeclarationType extends InferenceExecutableType {
     List<TypeMirror> paramsJava = new ArrayList<>(methodType.getParameterTypes());
 
     if (MemberReferenceKind.getMemberReferenceKind(methodRef).isUnbound()) {
+      // For unbound method references, i.e. Type::instanceMethod, the receiver is treated as the
+      // first parameter.
       params.add(0, receiver);
       paramsJava.add(0, receiver.getUnderlyingType());
     }
