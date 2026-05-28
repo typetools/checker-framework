@@ -2503,13 +2503,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             && warnUnneededSuppressionsExceptions.matcher(suppressWarningsString).find(0)) {
           continue;
         }
-        if (checkerPrefixes.contains(suppressWarningsString)) {
+        if (suppressWarningsString.equals("allcheckers")) {
+          // Do nothing.
+        } else if (checkerPrefixes.contains(suppressWarningsString)) {
           reportUnneededSuppression(tree, suppressWarningsString);
         } else {
           int colonPos = suppressWarningsString.indexOf(":");
           if (colonPos != -1) {
             String warningPrefix = suppressWarningsString.substring(0, colonPos);
-            if (checkerPrefixes.contains(warningPrefix)) {
+            if (!warningPrefix.equals("allcheckers") && checkerPrefixes.contains(warningPrefix)) {
               // Test whether the error key is "unneeded.suppression", without creating a String.
               boolean isUnneededSuppression =
                   suppressWarningsString.length() == colonPos + 1 + "unneeded.suppression".length()
