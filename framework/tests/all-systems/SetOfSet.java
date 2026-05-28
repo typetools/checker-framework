@@ -1,9 +1,6 @@
 package wildcards;
 
-@SuppressWarnings({
-  "initialization",
-  "initializedfields:contracts.postcondition"
-}) // field isn't set
+@SuppressWarnings("initialization")
 public class SetOfSet<E> {
 
   public void addAll(SetOfSet<? extends E> s) {

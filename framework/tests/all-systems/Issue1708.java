@@ -8,7 +8,6 @@ import java.util.List;
 @SuppressWarnings({
   "unchecked",
   "ainfertest",
-  "value"
 }) // Don't issue warnings during ainfer tests, because more than one round of inference is required
 // for the value checker
 public class Issue1708 {
