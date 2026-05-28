@@ -1,4 +1,4 @@
-public class WildCardCrash {}
+public class WildcardCrash {}
 
 abstract class AbstractTransfer123<
         IndexStore extends CFAbstractStore123<CFValue123, IndexStore>,
