@@ -32,6 +32,7 @@ public class Enums {
     }
 
     public <SSS extends Object> SSS firstNonNull(SSS first, SSS second) {
+      @SuppressWarnings("nullness:nulltest.redundant")
       SSS res = first != null ? first : checkNotNull(second);
       return res;
     }
