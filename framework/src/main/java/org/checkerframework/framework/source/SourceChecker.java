@@ -449,9 +449,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   // TODO A checker should export itself through a separate interface, and maybe have an interface
   // for all the methods for which it's safe to override.
 
-  /** The message key that will suppress all warnings (it matches any message key). */
-  public static final String SUPPRESS_ALL_MESSAGE_KEY = "all";
-
   /** The SuppressWarnings prefix that will suppress warnings for all checkers. */
   public static final String SUPPRESS_ALL_PREFIX = "allcheckers";
 
@@ -2469,31 +2466,28 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     this.elementsWithSuppressedWarnings.clear();
 
     Set<String> prefixes = new HashSet<>(getSuppressWarningsPrefixes());
-    Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
     for (SourceChecker subChecker : subcheckers) {
       allElementsWithSuppressedWarnings.addAll(subChecker.elementsWithSuppressedWarnings);
       subChecker.elementsWithSuppressedWarnings.clear();
       prefixes.addAll(subChecker.getSuppressWarningsPrefixes());
-      errorKeys.addAll(subChecker.messagesProperties.stringPropertyNames());
       subChecker.getVisitor().treesWithSuppressWarnings.clear();
     }
-    warnUnneededSuppressions(allElementsWithSuppressedWarnings, prefixes, errorKeys);
+    warnUnneededSuppressions(allElementsWithSuppressedWarnings, prefixes);
 
     getVisitor().treesWithSuppressWarnings.clear();
   }
 
   /**
-   * Issues a warning about any {@code @SuppressWarnings} string that didn't suppress a warning, but
-   * starts with one of the given prefixes (checker names). Does nothing if the string doesn't start
-   * with a checker name.
+   * Issues a warning about any {@code @SuppressWarnings} string that didn't suppress a warning. Has
+   * an effect only if the string is one of the given prefixes (checker names) or starts with one
+   * followed by a colon.
    *
    * @param elementsSuppress elements with a {@code @SuppressWarnings} that actually suppressed a
    *     warning
    * @param checkerPrefixes the SuppressWarnings prefixes associated with this checker
-   * @param allErrorKeys all error keys that can be issued by this checker
    */
   protected void warnUnneededSuppressions(
-      Set<Element> elementsSuppress, Set<String> checkerPrefixes, Set<String> allErrorKeys) {
+      Set<Element> elementsSuppress, Set<String> checkerPrefixes) {
     for (Tree tree : getVisitor().treesWithSuppressWarnings) {
       Element elt = TreeUtils.elementFromTree(tree);
       // TODO: This test is too coarse.  The fact that this @SuppressWarnings suppressed
@@ -2518,10 +2512,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           int colonPos = suppressWarningsString.indexOf(":");
           if (colonPos != -1) {
             String warningPrefix = suppressWarningsString.substring(0, colonPos);
-            if (checkerPrefixes.contains(warningPrefix)
-                && !suppressWarningsString.regionMatches(
-                    colonPos, ":unneeded.suppression", 0, ":unneeded.suppression".length())) {
-              reportUnneededSuppression(tree, suppressWarningsString);
+            if (checkerPrefixes.contains(warningPrefix)) {
+              // Test whether the error key is "unneeded.suppression", without creating a String.
+              boolean isUnneededSuppression =
+                  suppressWarningsString.length() == colonPos + 1 + "unneeded.suppression".length()
+                      && suppressWarningsString.endsWith("unneeded.suppression");
+              if (!isUnneededSuppression) {
+                reportUnneededSuppression(tree, suppressWarningsString);
+              }
             }
           }
         }
@@ -2818,28 +2816,28 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
     for (String currentSuppressWarningsInEffect : suppressWarningsInEffect) {
       int colonPos = currentSuppressWarningsInEffect.indexOf(':');
-      String messageKeyInSuppressWarningsString;
+      String messageKeyInEffect;
       if (colonPos == -1) {
-        // The SuppressWarnings string has no colon, so it is not of the form
+        // `currentSuppressWarningsInEffect` has no colon, so it is not of the form
         // prefix:partial-message-key.
         if (prefixes.contains(currentSuppressWarningsInEffect)) {
           // The value in the @SuppressWarnings is exactly a prefix.
           // Suppress the warning unless its message key is "unneeded.suppression".
-          boolean result = !currentSuppressWarningsInEffect.equals("unneeded.suppression");
+          boolean result = !messageKey.equals("unneeded.suppression");
           return result;
         } else if (requirePrefixInWarningSuppressions) {
           // A prefix is required, but this SuppressWarnings string does not have a
-          // prefix; check the next SuppressWarnings string.
+          // prefix.
           continue;
-        } else if (currentSuppressWarningsInEffect.equals(SUPPRESS_ALL_MESSAGE_KEY)) {
+        } else if (currentSuppressWarningsInEffect.equals("all")) {
           // Prefixes aren't required and the SuppressWarnings string is "all".
           // Suppress the warning unless its message key is "unneeded.suppression".
-          boolean result = !currentSuppressWarningsInEffect.equals("unneeded.suppression");
+          boolean result = !messageKey.equals("unneeded.suppression");
           return result;
         }
-        // The currentSuppressWarningsInEffect is not a prefix or a prefix:message-key, so
+        // The currentSuppressWarningsInEffect is not a checker name, so
         // it might be a message key.
-        messageKeyInSuppressWarningsString = currentSuppressWarningsInEffect;
+        messageKeyInEffect = currentSuppressWarningsInEffect;
       } else {
         // The SuppressWarnings string has a colon; that is, it has a prefix.
         String currentSuppressWarningsPrefix =
@@ -2849,12 +2847,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           // this checker. Proceed to the next SuppressWarnings string.
           continue;
         }
-        messageKeyInSuppressWarningsString =
-            currentSuppressWarningsInEffect.substring(colonPos + 1);
+        messageKeyInEffect = currentSuppressWarningsInEffect.substring(colonPos + 1);
       }
       // Check if the message key in the warning suppression is part of the message key that
       // the checker is emitting.
-      if (messageKeyMatches(messageKey, messageKeyInSuppressWarningsString)) {
+      if (messageKeyMatches(messageKey, messageKeyInEffect)) {
         return true;
       }
     }
@@ -2869,16 +2866,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @param messageKey the message key of the error that is being emitted, without any "checker:"
    *     prefix
-   * @param messageKeyInSuppressWarningsString the message key in a {@code @SuppressWarnings}
-   *     annotation
+   * @param messageKeyInEffect the message key in a {@code @SuppressWarnings} annotation that is
+   *     currently in effect
    * @return true if the arguments match
    */
-  protected boolean messageKeyMatches(
-      String messageKey, String messageKeyInSuppressWarningsString) {
-    return messageKey.equals(messageKeyInSuppressWarningsString)
-        || messageKey.startsWith(messageKeyInSuppressWarningsString + ".")
-        || messageKey.endsWith("." + messageKeyInSuppressWarningsString)
-        || messageKey.contains("." + messageKeyInSuppressWarningsString + ".");
+  protected boolean messageKeyMatches(String messageKey, String messageKeyInEffect) {
+    return messageKey.equals(messageKeyInEffect)
+        || messageKey.startsWith(messageKeyInEffect + ".")
+        || messageKey.endsWith("." + messageKeyInEffect)
+        || messageKey.contains("." + messageKeyInEffect + ".");
   }
 
   /**
