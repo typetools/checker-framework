@@ -2520,6 +2520,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                 reportUnneededSuppression(tree, suppressWarningsString);
               }
             }
+          } else {
+            // The annotation might be of the form `@SuppressWarnings("generic.argument")`.
+            // However, per the manual, "This only warns about @SuppressWarnings strings that
+            // contain a checker name".  Thus, `@SuppressWarnings("generic.argument")` is treated
+            // the same as `@SuppressWarnings("allcheckers:generic.argument")` in that no warning is
+            // ever issued about it.
           }
         }
       }
@@ -2778,8 +2784,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *       with a message key that contains "generic.argument".
    * </ol>
    *
-   * {@code "allcheckers"} is a prefix that suppresses a warning from any checker. {@code "all"} is
-   * a partial-message-key that suppresses a warning with any message key.
+   * {@code "allcheckers"} is a prefix/checkername that suppresses a warning from any checker.
+   * {@code "all"} is a partial-message-key that suppresses a warning with any message key.
    *
    * <p>If the {@code -ArequirePrefixInWarningSuppressions} command-line argument was supplied, then
    * {@code "partial-message-key"} has no effect; {@code "prefix"} and {@code
@@ -2829,7 +2835,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           continue;
         } else if (currentSuppressWarningsInEffect.equals("all")
             || currentSuppressWarningsInEffect.equals("allcheckers")) {
-          // Prefixes aren't required and the SuppressWarnings string is "all" or "allcheckers".
+          // Prefixes aren't required and the whole SuppressWarnings string is
+          // the messagekey "all" or the checkername "allcheckers".
           // Suppress the warning unless its message key is "unneeded.suppression".
           boolean result = !messageKey.equals("unneeded.suppression");
           return result;
