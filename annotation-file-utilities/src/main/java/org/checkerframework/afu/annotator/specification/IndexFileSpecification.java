@@ -599,7 +599,7 @@ public class IndexFileSpecification {
    * returns false.
    *
    * @param criteria the Criteria
-   * @return true if the Criteria is on a synthethic constructor
+   * @return true if the Criteria is on an implicit default constructor
    */
   private static boolean isOnImplicitDefaultConstructor(Criteria criteria) {
     if (!criteria.isOnMethod("<init>()V")) {

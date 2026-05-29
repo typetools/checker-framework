@@ -1,14 +1,14 @@
 [plugins]
 
-com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.4.1" }
+com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.4.2" }
 
 de-undercouch-download = { id = "de.undercouch.download", version = "5.7.0" }
 
 net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "5.1.0" }
 
-com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.4.0" }
+com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.6.0" }
 
-com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.7" }
+com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "3.0.3" }
 
 biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.2.3" }
 
@@ -29,9 +29,10 @@ jgit-version = "7.6.0.202603022253-r"
 # This line might need to be updated by hand, because sometimes the artifact
 # name itself changes (independently of the version number), such as from
 # org.apache.spark:spark-sql_2.12 to org.apache.spark:spark-sql_2.13.
-spark-sql = "org.apache.spark:spark-sql_2.13:4.1.1"
+# See https://mvnrepository.com/artifact/org.apache.spark/spark-sql .
+spark-sql = "org.apache.spark:spark-sql_2.13:4.1.2"
 
-asm = "org.ow2.asm:asm:9.9.1"
+asm = "org.ow2.asm:asm:9.10.1"
 
 auto-value = "com.google.auto.value:auto-value:1.11.1"
 
@@ -47,7 +48,7 @@ aws-java-sdk-kms = { module = "com.amazonaws:aws-java-sdk-kms" }
 
 classgraph = "io.github.classgraph:classgraph:4.8.184"
 
-commons-io = "commons-io:commons-io:2.21.0"
+commons-io = "commons-io:commons-io:2.22.0"
 
 error-prone-annotations = { group = "com.google.errorprone", name = "error_prone_annotations", version.ref = "errorprone-version" }
 
@@ -69,7 +70,7 @@ jgit-ssh-apache = { group = "org.eclipse.jgit", name = "org.eclipse.jgit.ssh.apa
 
 junit = { group = "junit", name = "junit", version.ref = "junit-junit" }
 
-lombok = "org.projectlombok:lombok:1.18.44"
+lombok = "org.projectlombok:lombok:1.18.46"
 
 options = "org.plumelib:options:2.0.3"
 
@@ -79,4 +80,4 @@ reflection-util = "org.plumelib:reflection-util:1.1.6"
 
 require-javadoc = "org.plumelib:require-javadoc:2.0.0"
 
-stubparser = "org.checkerframework:stubparser:3.28.0"
+stubparser = "org.checkerframework:stubparser:3.28.1"

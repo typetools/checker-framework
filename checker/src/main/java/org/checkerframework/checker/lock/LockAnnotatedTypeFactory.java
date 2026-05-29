@@ -369,7 +369,7 @@ public class LockAnnotatedTypeFactory
           a1, qualifierKind1, a2, qualifierKind2, lubKind);
     }
 
-    // GLB never returns @NewObject unless one of the argumetns is @NewObject; it returns
+    // GLB never returns @NewObject unless one of the arguments is @NewObject; it returns
     // @GuardedByBottom instead, to prevent showing users the unexpected @NewObject type.
     @Override
     protected AnnotationMirror greatestLowerBoundWithElements(

@@ -69,7 +69,7 @@ public class AnnotationVerifier {
    * visited a class.
    *
    * @throws AnnotationMismatchException if the two visitors have not visited two versions of the
-   *     same class that contain idential annotations
+   *     same class that contain identical annotations
    */
   public void verify() {
     if (!newVisitor.name.equals(originalVisitor.name)) {

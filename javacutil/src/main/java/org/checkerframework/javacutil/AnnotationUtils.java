@@ -471,8 +471,8 @@ public class AnnotationUtils {
         return list1.size() - list2.size();
       }
       // Don't compare setwise, because order can matter. These mean different things:
-      //   @LTLengthOf(value={"a1","a2"}, offest={"0", "1"})
-      //   @LTLengthOf(value={"a2","a1"}, offest={"0", "1"})
+      //   @LTLengthOf(value={"a1","a2"}, offset={"0", "1"})
+      //   @LTLengthOf(value={"a2","a1"}, offset={"0", "1"})
       for (int i = 0; i < list1.size(); i++) {
         Object v1 = list1.get(i);
         Object v2 = list2.get(i);

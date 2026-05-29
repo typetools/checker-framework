@@ -1895,6 +1895,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(lengthSelect);
       FieldAccessNode lengthAccessNode = new FieldAccessNode(lengthSelect, arrayNode1);
       lengthAccessNode.setInSource(false);
+      // Attach NPE to length access; element access is safe due to prior bounds check and the
+      // synthetic array temp not being reassigned.
       extendWithNodeWithException(lengthAccessNode, nullPointerExceptionType);
 
       BinaryTree lessThan = treeBuilder.buildLessThan(indexUse1, lengthSelect);
@@ -3460,7 +3462,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // `tree` has an explicit receiver.
       return scan(mtree.getExpression(), null);
     } else {
-      // `tree` lacks an explicit reciever.
+      // `tree` lacks an explicit receiver.
       Element ele = TreeUtils.elementFromUse(tree);
       TypeElement declaringClass = ElementUtils.enclosingTypeElement(ele);
       TypeMirror typeOfDeclaringClass = ElementUtils.getType(declaringClass);

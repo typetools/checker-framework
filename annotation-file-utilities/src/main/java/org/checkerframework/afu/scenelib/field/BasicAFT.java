@@ -90,11 +90,11 @@ public final class BasicAFT extends ScalarAFT {
       sb.append(o.toString());
       sb.append("L");
     } else if (type == double.class && Double.isNaN((double) o)) {
-      // Don't use "Double.NaN" because it is not parseable if the code imports a `Double` class
+      // Don't use "Double.NaN" because it is not parsable if the code imports a `Double` class
       // other than `java.lang.Double`.
       sb.append("0.0/0.0");
     } else if (type == float.class && Float.isNaN((float) o)) {
-      // Don't use "Float.NaN" because it is not parseable if the code imports a `Float` class
+      // Don't use "Float.NaN" because it is not parsable if the code imports a `Float` class
       // other than `java.lang.Float`.
       sb.append("0.0f/0.0f");
     } else {

@@ -1320,7 +1320,7 @@ public final class TypesUtils {
    * @param collection a collection of type variables
    * @param types types
    * @return the first TypeVariable in {@code collection} that does not contain any other type in
-   *     the collection, but maybe itsself
+   *     the collection, but maybe itself
    */
   @SuppressWarnings("interning:not.interned") // must be the same object from collection
   private static TypeVariable doesNotContainOthers(

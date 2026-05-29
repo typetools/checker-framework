@@ -297,6 +297,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
                     " the glb of `matches` for \"" + string + "\" is " + res,
                     " which is a subtype of " + sam,
                     " whose pattern does not match \"" + string + "\".",
+                    "  patterns = " + stringPatterns,
                     "  matches = " + matchesOnePerLine,
                     "  nonMatches = " + nonMatches));
           }

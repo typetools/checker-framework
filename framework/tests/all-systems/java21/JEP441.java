@@ -9,7 +9,7 @@
 // These are examples copied from:
 // https://openjdk.org/jeps/441
 
-@SuppressWarnings("i18n") // true postives.
+@SuppressWarnings("i18n") // true positives.
 public class JEP441 {
 
   // JEP 441 enhances switch statements and expressions in four ways:

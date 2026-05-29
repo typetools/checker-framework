@@ -1,6 +1,6 @@
 changequote
 changequote(`[',`]')dnl
-ifelse([The built-in "dnl" m4 macro means "discard to next line",])dnl
+ifelse([The built-in "dnl" m4 macro means "discard to next line".])dnl
 dnl
 define([junit_job], [dnl
   - job: junit_jdk$1
@@ -16,8 +16,11 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit.sh
-        displayName: test-cftests-junit.sh])dnl
+ifelse(["displayName:" must come after "bash:".])dnl
+      - bash: ./checker/bin-devel/test-cftests-junit.sh
+        displayName: test-cftests-junit.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl
 define([junit_jobs], [dnl
   - job: junit_part1_jdk$1
@@ -32,8 +35,10 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit.sh part1
+      - bash: ./checker/bin-devel/test-cftests-junit.sh part1
         displayName: test-cftests-junit.sh part1
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1
   - job: junit_part2_jdk$1
 ifelse($1,canary_version,,[    dependsOn:
       - canary_jobs
@@ -46,8 +51,10 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit.sh part2
-        displayName: test-cftests-junit.sh part2])dnl
+      - bash: ./checker/bin-devel/test-cftests-junit.sh part2
+        displayName: test-cftests-junit.sh part2
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl
 define([nonjunit_job], [dnl
   - job: nonjunit_jdk$1
@@ -61,8 +68,10 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-nonjunit.sh
-        displayName: test-cftests-nonjunit.sh])dnl
+      - bash: ./checker/bin-devel/test-cftests-nonjunit.sh
+        displayName: test-cftests-nonjunit.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl
 define([inference_job], [dnl
 ifelse($1,canary_version,[dnl
@@ -75,8 +84,10 @@ ifelse($1,canary_version,[dnl
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference-part1.sh
+      - bash: ./checker/bin-devel/test-cftests-inference-part1.sh
         displayName: test-cftests-inference-part1.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1
   - job: inference_part2_jdk$1
     pool:
       vmImage: 'ubuntu-latest'
@@ -85,8 +96,10 @@ ifelse($1,canary_version,[dnl
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference-part2.sh
+      - bash: ./checker/bin-devel/test-cftests-inference-part2.sh
         displayName: test-cftests-inference-part2.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1
 ],[dnl
   - job: inference_jdk$1
     dependsOn:
@@ -100,8 +113,10 @@ ifelse($1,canary_version,[dnl
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference.sh
+      - bash: ./checker/bin-devel/test-cftests-inference.sh
         displayName: test-cftests-inference.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1
 ])dnl
 ])dnl
 dnl
@@ -118,8 +133,15 @@ ifelse($1,canary_version,,$1,latest_version,,[    dependsOn:
       - checkout: self
         # Unlimited fetchDepth (0) for misc jobs, because of need to make contributors.tex.
         fetchDepth: 0
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-misc.sh
-        displayName: test-misc.sh])dnl
+      - bash: mkdir -p /tmp && git -C /tmp clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git
+      - bash: /tmp/plume-scripts/ci-org-and-branch --debug
+        displayName: ci-org-and-branch
+      - bash: /tmp/plume-scripts/git-changes --debug
+        displayName: git-changes
+      - bash: ./checker/bin-devel/test-misc.sh
+        displayName: test-misc.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl
 define([typecheck_job], [dnl
 ifelse($1,canary_version,[dnl
@@ -129,18 +151,22 @@ ifelse($1,canary_version,[dnl
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     steps:
       - checkout: self
-        fetchDepth: 1000
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part1.sh
+        fetchDepth: 0
+      - bash: ./checker/bin-devel/test-typecheck-part1.sh
         displayName: test-typecheck-part1.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1
   - job: typecheck_part2_jdk$1
     pool:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     steps:
       - checkout: self
-        fetchDepth: 1000
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part2.sh
-        displayName: test-typecheck-part2.sh], [dnl
+        fetchDepth: 0
+      - bash: ./checker/bin-devel/test-typecheck-part2.sh
+        displayName: test-typecheck-part2.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1], [dnl
   - job: typecheck_jdk$1
     dependsOn:
       - canary_jobs
@@ -151,9 +177,11 @@ ifelse($1,canary_version,[dnl
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     steps:
       - checkout: self
-        fetchDepth: 1000
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck.sh
-        displayName: test-typecheck.sh])])dnl
+        fetchDepth: 0
+      - bash: ./checker/bin-devel/test-typecheck.sh
+        displayName: test-typecheck.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1])])dnl
 dnl
 define([daikon_job], [dnl
   - job: daikon_part1_jdk$1
@@ -169,8 +197,10 @@ ifelse($1,canary_version,,[dnl
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part1.sh
+      - bash: ./checker/bin-devel/test-daikon-part1.sh
         displayName: test-daikon-part1.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1
   - job: daikon_part2_jdk$1
     dependsOn:
       - canary_jobs
@@ -181,8 +211,10 @@ ifelse($1,canary_version,,[dnl
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part2.sh
+      - bash: ./checker/bin-devel/test-daikon-part2.sh
         displayName: test-daikon-part2.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1
   - job: daikon_part3_jdk$1
     dependsOn:
       - canary_jobs
@@ -193,8 +225,10 @@ ifelse($1,canary_version,,[dnl
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part3.sh
-        displayName: test-daikon-part3.sh])dnl
+      - bash: ./checker/bin-devel/test-daikon-part3.sh
+        displayName: test-daikon-part3.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl
 define([guava_job], [dnl
   - job: guava_jdk$1
@@ -210,8 +244,10 @@ ifelse($1,canary_version,,[dnl
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-guava.sh
-        displayName: test-guava.sh])dnl
+      - bash: ./checker/bin-devel/test-guava.sh
+        displayName: test-guava.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl
 define([plume_lib_job], [dnl
   - job: plume_lib_jdk$1
@@ -226,8 +262,10 @@ ifelse($1,canary_version,,[dnl
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-plume-lib.sh
-        displayName: test-plume-lib.sh])dnl
+      - bash: ./checker/bin-devel/test-plume-lib.sh
+        displayName: test-plume-lib.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 ifelse([
 Local Variables:
 eval: (add-hook 'after-save-hook '(lambda () (run-command nil "make")) nil 'local)
