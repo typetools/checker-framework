@@ -671,7 +671,7 @@ The goal of this project is to build a tool to check uses of Optional and run it
 <ul>
   <li>Is it possible to build a tool that enforces good style in using Optional?
   </li>
-  <li>How much effort is is for programmers to use such a tool?
+  <li>How much effort is it for programmers to use such a tool?
   </li>
   <li>Does real-world code obey the rules about use of Optional, or not?
   </li>
