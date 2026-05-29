@@ -53,7 +53,8 @@ public class AdditionalArgument implements Constraint {
           context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(newClassTree);
 
       Theta newMap =
-          context.inferenceTypeFactory.createThetaForInvocation(newClassTree, executableType, context);
+          context.inferenceTypeFactory.createThetaForInvocation(
+              newClassTree, executableType, context);
       ConstraintSet set =
           context.inference.createC(executableType, newClassTree.getArguments(), newMap);
       set.applyInstantiations();
