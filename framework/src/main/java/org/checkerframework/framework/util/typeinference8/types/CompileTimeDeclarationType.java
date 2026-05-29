@@ -16,15 +16,15 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 
 /**
- * Represents the compile-time declaration of the method reference that is the method to which the
- * expression refers. See <a
+ * Represents the compile-time declaration type of the method reference that is the method to which
+ * the expression refers. See <a
  * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.13.1">JLS section
  * 15.13.1</a> for a complete definition.
  *
  * <p>The type of a member reference is a functional interface. The function type of a member
  * reference is the type of the single abstract method declared by the functional interface. The
  * compile-time declaration type is the type of the actual method referenced by the method
- * reference, i.e. the method that is actually being referenced.
+ * reference.
  *
  * <p>For example,
  *
@@ -53,19 +53,19 @@ public class CompileTimeDeclarationType extends InferenceExecutableType {
   /**
    * Creates an invocation type for a method reference.
    *
-   * @param annotatedExecutableType annotated method type
-   * @param methodType java method type
+   * @param annotatedExecutableType annotated method or constructor type
+   * @param executableType a Java method or constructor type
    * @param methodRef a method reference
    * @param receiver the type of the receiver for this method reference
    * @param context the context
    */
   public CompileTimeDeclarationType(
       AnnotatedExecutableType annotatedExecutableType,
-      ExecutableType methodType,
+      ExecutableType executableType,
       MemberReferenceTree methodRef,
       AnnotatedTypeMirror receiver,
       Java8InferenceContext context) {
-    super(annotatedExecutableType, methodType, methodRef, context);
+    super(annotatedExecutableType, executableType, methodRef, context);
     this.receiver = receiver;
     this.methodRef = methodRef;
   }
@@ -81,15 +81,17 @@ public class CompileTimeDeclarationType extends InferenceExecutableType {
 
   @Override
   public List<AbstractType> getParameterTypes(Theta map, int size) {
-    List<AnnotatedTypeMirror> params = new ArrayList<>(annotatedExecutableType.getParameterTypes());
-    List<TypeMirror> paramsJava = new ArrayList<>(methodType.getParameterTypes());
+    List<AnnotatedTypeMirror> params = new ArrayList<>();
+    List<TypeMirror> paramsJava = new ArrayList<>();
 
     if (MemberReferenceKind.getMemberReferenceKind(methodRef).isUnbound()) {
       // For unbound method references, i.e. Type::instanceMethod, the receiver is treated as the
       // first parameter.
-      params.add(0, receiver);
-      paramsJava.add(0, receiver.getUnderlyingType());
+      params.add(receiver);
+      paramsJava.add(receiver.getUnderlyingType());
     }
+    params.addAll(annotatedExecutableType.getParameterTypes());
+    paramsJava.addAll(executableType.getParameterTypes());
 
     if (TreeUtils.isVarargsCall(methodRef)) {
       AnnotatedArrayType vararg = (AnnotatedArrayType) params.remove(params.size() - 1);
@@ -107,8 +109,8 @@ public class CompileTimeDeclarationType extends InferenceExecutableType {
 
   @Override
   public AbstractType getReturnType(Theta map) {
-    TypeMirror returnType;
     AnnotatedTypeMirror annotatedReturnType;
+    TypeMirror returnType;
 
     if (methodRef.getMode() == ReferenceMode.NEW) {
       annotatedReturnType =
@@ -116,13 +118,14 @@ public class CompileTimeDeclarationType extends InferenceExecutableType {
               methodRef, annotatedExecutableType);
       returnType = annotatedReturnType.getUnderlyingType();
     } else {
-      returnType = methodType.getReturnType();
       annotatedReturnType = annotatedExecutableType.getReturnType();
+      returnType = executableType.getReturnType();
     }
 
     if (map == null) {
       return new ProperType(annotatedReturnType, returnType, context);
+    } else {
+      return InferenceType.create(annotatedReturnType, returnType, map, context);
     }
-    return InferenceType.create(annotatedReturnType, returnType, map, context);
   }
 }

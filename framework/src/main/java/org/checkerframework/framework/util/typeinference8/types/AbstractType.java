@@ -36,15 +36,14 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.IPair;
 
 /**
- * This class represents "types" that "include type-like syntax that contains inference variables".
- * (This matches the JLS; see <a
- * href="https://docs.oracle.com/javase/specs/jls/se26/html/jls-18.html#jls-18.1.1">Section
- * 18.1</a>.) Three subclasses of this class are:
+ * This class represents "types" that "include type-like syntax that contains inference variables"
+ * (see <a href="https://docs.oracle.com/javase/specs/jls/se26/html/jls-18.html#jls-18.1.1">Section
+ * 18.1</a>). Three subclasses of this class are:
  *
  * <ul>
  *   <li>{@link ProperType}: types that do not contain inference variables
  *   <li>{@link Variable}: inference variables
- *   <li>{@link InferenceType}: type-like syntax that contain at least one inference variable
+ *   <li>{@link InferenceType}: type-like syntax that contains at least one inference variable
  * </ul>
  */
 public abstract class AbstractType {

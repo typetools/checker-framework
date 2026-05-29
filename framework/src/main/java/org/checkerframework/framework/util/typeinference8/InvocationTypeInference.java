@@ -30,7 +30,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.CompileTimeDeclarationType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceExecutableType;
-import org.checkerframework.framework.util.typeinference8.types.InferenceMethodType;
+import org.checkerframework.framework.util.typeinference8.types.InferenceInvocationType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
@@ -143,15 +143,15 @@ public class InvocationTypeInference {
    * 18.5.2</a>.
    *
    * @param invocation invocation which needs inference
-   * @param methodType type of the method invocation
+   * @param executableType type of the method invocation
    * @return the result of inference
    * @throws FalseBoundException if inference fails because of the java types
    */
-  public InferenceResult infer(ExpressionTree invocation, AnnotatedExecutableType methodType)
+  public InferenceResult infer(ExpressionTree invocation, AnnotatedExecutableType executableType)
       throws FalseBoundException {
-    ExecutableType e = methodType.getUnderlyingType();
+    ExecutableType e = executableType.getUnderlyingType();
     InferenceExecutableType inferenceExectuableType =
-        new InferenceMethodType(methodType, e, invocation, context);
+        new InferenceInvocationType(executableType, e, invocation, context);
     ProperType target = context.inferenceTypeFactory.getTargetType();
     List<? extends ExpressionTree> args;
     if (invocation instanceof MethodInvocationTree mit) {
@@ -234,7 +234,7 @@ public class InvocationTypeInference {
    * <ol>
    *   <li value="1">Creating the inference variables and initializing their bounds based on the
    *       type parameter declaration.
-   *   <li value="2">Adding any bounds implied by the throws clause of {@code methodType}.
+   *   <li value="2">Adding any bounds implied by the throws clause of {@code executableType}.
    *   <li value="3">Constructing constraints between formal parameters and arguments that are
    *       "pertinent to applicability" (See <a
    *       href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.12.2.2">JLS
@@ -244,19 +244,19 @@ public class InvocationTypeInference {
    *   <li value="4">Reducing and incorporating those constraints which finally produces B2.
    * </ol>
    *
-   * @param methodType the type of the method or constructor invoked
+   * @param executableType the type of the method or constructor invoked
    * @param args argument expression tress
    * @param map map of type variables to (inference) variables
    * @return bound set used to determine whether a method is applicable
    */
   public BoundSet createB2(
-      InferenceExecutableType methodType, List<? extends ExpressionTree> args, Theta map) {
+      InferenceExecutableType executableType, List<? extends ExpressionTree> args, Theta map) {
     BoundSet b0 = BoundSet.initialBounds(map, context);
 
     // For all i (1 <= i <= p), if Pi appears in the throws clause of m, then the bound throws
     // alphai is implied. These bounds, if any, are incorporated with B0 to produce a new bound
     // set, B1.
-    for (AbstractType thrownType : methodType.getThrownTypes(map)) {
+    for (AbstractType thrownType : executableType.getThrownTypes(map)) {
       if (thrownType.isUseOfVariable()) {
         ((UseOfVariable) thrownType).setHasThrowsBound(true);
       }
@@ -264,7 +264,7 @@ public class InvocationTypeInference {
 
     BoundSet b1 = b0;
     ConstraintSet c = new ConstraintSet();
-    List<AbstractType> formals = methodType.getParameterTypes(map, args.size());
+    List<AbstractType> formals = executableType.getParameterTypes(map, args.size());
 
     for (int i = 0; i < formals.size(); i++) {
       ExpressionTree ei = args.get(i);
@@ -287,19 +287,19 @@ public class InvocationTypeInference {
    * list of types is used instead of a list of arguments. These types are the types of the formal
    * parameters of function type of target type of the method reference.
    *
-   * @param methodType the type of the method or constructor invoked
+   * @param executableType the type of the method or constructor invoked
    * @param args types to use as arguments
    * @param map map of type variables to (inference) variables
    * @return bound set used to determine whether a method is applicable
    */
   public BoundSet createB2MethodRef(
-      CompileTimeDeclarationType methodType, List<AbstractType> args, Theta map) {
+      CompileTimeDeclarationType executableType, List<AbstractType> args, Theta map) {
     BoundSet b0 = BoundSet.initialBounds(map, context);
 
     // For all i (1 <= i <= p), if Pi appears in the throws clause of m, then the bound throws
     // alphai is implied. These bounds, if any, are incorporated with B0 to produce a new bound
     // set, B1.
-    for (AbstractType thrownType : methodType.getThrownTypes(map)) {
+    for (AbstractType thrownType : executableType.getThrownTypes(map)) {
       if (thrownType.isUseOfVariable()) {
         ((UseOfVariable) thrownType).setHasThrowsBound(true);
       }
@@ -307,8 +307,8 @@ public class InvocationTypeInference {
 
     BoundSet b1 = b0;
     ConstraintSet c = new ConstraintSet();
-    List<AbstractType> formals = methodType.getParameterTypes(map, args.size());
-    if (TreeUtils.isLikeDiamondMemberReference(methodType.getMethodRef())) {
+    List<AbstractType> formals = executableType.getParameterTypes(map, args.size());
+    if (TreeUtils.isLikeDiamondMemberReference(executableType.getMethodRef())) {
       // https://docs.oracle.com/javase/specs/jls/se19/html/jls-15.html#jls-15.13.1
       //  If ReferenceType is a raw type, and there exists a parameterization of this type,
       // G<...>, that is a supertype of P1, the type to search is the result of capture
@@ -325,7 +325,7 @@ public class InvocationTypeInference {
       String source =
           String.format(
               "Method reference: %s, constraint against arguments, index %s.",
-              methodType.getMethodRef(), i);
+              executableType.getMethodRef(), i);
       c.add(new Typing(source, ei, fi, Kind.TYPE_COMPATIBILITY));
     }
 
@@ -344,7 +344,7 @@ public class InvocationTypeInference {
    *
    * @param b2 BoundSet created by {@link #createB2(InferenceExecutableType, List, Theta)}
    * @param invocation a method or constructor invocation
-   * @param methodType the type of the method or constructor invoked by expression
+   * @param executableType the type of the method or constructor invoked by expression
    * @param target target type of the invocation
    * @param map map of type variables to (inference) variables
    * @return bound set created by constraints against the target type of the invocation
@@ -352,10 +352,10 @@ public class InvocationTypeInference {
   public BoundSet createB3(
       BoundSet b2,
       ExpressionTree invocation,
-      InferenceExecutableType methodType,
+      InferenceExecutableType executableType,
       AbstractType target,
       Theta map) {
-    AbstractType r = methodType.getReturnType(map);
+    AbstractType r = executableType.getReturnType(map);
     if (b2.isUncheckedConversion()) {
       // If unchecked conversion was necessary for the method to be applicable during
       // constraint set reduction in 18.5.1, the constraint formula <|R| -> T> is reduced and
@@ -448,16 +448,16 @@ public class InvocationTypeInference {
    * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS
    * 18.5.2.2</a>.)
    *
-   * @param methodType type of method invoked
+   * @param executableType type of method invoked
    * @param args argument expression trees
    * @param map map from type variable to inference variable
    * @return the constraints between the formal parameters and arguments that are not pertinent to
    *     applicability
    */
   public ConstraintSet createC(
-      InferenceExecutableType methodType, List<? extends ExpressionTree> args, Theta map) {
+      InferenceExecutableType executableType, List<? extends ExpressionTree> args, Theta map) {
     ConstraintSet c = new ConstraintSet();
-    List<AbstractType> formals = methodType.getParameterTypes(map, args.size());
+    List<AbstractType> formals = executableType.getParameterTypes(map, args.size());
 
     for (int i = 0; i < formals.size(); i++) {
       ExpressionTree ei = args.get(i);

@@ -127,12 +127,12 @@ public class InferenceFactory {
       case METHOD_INVOCATION -> {
         MethodInvocationTree methodInvocation = (MethodInvocationTree) context;
 
-        AnnotatedExecutableType methodType =
+        AnnotatedExecutableType executableType =
             factory.methodFromUseWithoutTypeArgInference(methodInvocation).executableType();
 
         AnnotatedTypeMirror paramType =
             assignedToExecutable(
-                path, methodInvocation, methodInvocation.getArguments(), methodType);
+                path, methodInvocation, methodInvocation.getArguments(), executableType);
         return new ProperType(
             paramType,
             assignedToExecutable(
@@ -271,15 +271,15 @@ public class InferenceFactory {
       }
     }
 
-    ExecutableType methodType = getTypeOfMethodAdaptedToUse(invocation, context);
-    if (treeIndex >= methodType.getParameterTypes().size() - 1
+    ExecutableType executableType = getTypeOfMethodAdaptedToUse(invocation, context);
+    if (treeIndex >= executableType.getParameterTypes().size() - 1
         && TreeUtils.isVarargsCall(invocation)) {
-      treeIndex = methodType.getParameterTypes().size() - 1;
-      TypeMirror typeMirror = methodType.getParameterTypes().get(treeIndex);
+      treeIndex = executableType.getParameterTypes().size() - 1;
+      TypeMirror typeMirror = executableType.getParameterTypes().get(treeIndex);
       return ((ArrayType) typeMirror).getComponentType();
     }
 
-    return methodType.getParameterTypes().get(treeIndex);
+    return executableType.getParameterTypes().get(treeIndex);
   }
 
   /**
@@ -288,14 +288,14 @@ public class InferenceFactory {
    * @param path path to the argument
    * @param invocation a method or constructor invocation
    * @param arguments the argument expression tress
-   * @param methodType the type of the method or constructor
+   * @param executableType the type of the method or constructor
    * @return the rhs of the assignment of an argument and its formal parameter
    */
   private static AnnotatedTypeMirror assignedToExecutable(
       TreePath path,
       ExpressionTree invocation,
       List<? extends ExpressionTree> arguments,
-      AnnotatedExecutableType methodType) {
+      AnnotatedExecutableType executableType) {
     int treeIndex = -1;
     for (int i = 0; i < arguments.size(); ++i) {
       ExpressionTree argumentTree = arguments.get(i);
@@ -305,14 +305,14 @@ public class InferenceFactory {
       }
     }
 
-    if (treeIndex >= methodType.getParameterTypes().size() - 1
+    if (treeIndex >= executableType.getParameterTypes().size() - 1
         && TreeUtils.isVarargsCall(invocation)) {
-      treeIndex = methodType.getParameterTypes().size() - 1;
-      AnnotatedTypeMirror typeMirror = methodType.getParameterTypes().get(treeIndex);
+      treeIndex = executableType.getParameterTypes().size() - 1;
+      AnnotatedTypeMirror typeMirror = executableType.getParameterTypes().get(treeIndex);
       return ((AnnotatedArrayType) typeMirror).getComponentType();
     }
 
-    return methodType.getParameterTypes().get(treeIndex);
+    return executableType.getParameterTypes().get(treeIndex);
   }
 
   /**
@@ -508,29 +508,29 @@ public class InferenceFactory {
   /**
    * If a mapping, theta, for {@code invocation} doesn't exist create it by:
    *
-   * <p>Creates inference variables for the type parameters to {@code methodType} for a particular
-   * {@code invocation}. Initializes the bounds of the variables. Returns a mapping from type
-   * variables to newly created variables.
+   * <p>Creates inference variables for the type parameters to {@code executableType} for a
+   * particular {@code invocation}. Initializes the bounds of the variables. Returns a mapping from
+   * type variables to newly created variables.
    *
    * <p>Otherwise, returns the previously created mapping.
    *
    * @param invocation method or constructor invocation
-   * @param methodType type of generic method
+   * @param executableType type of generic method
    * @param context Java8InferenceContext
-   * @return a mapping of the type variables of {@code methodType} to inference variables
+   * @return a mapping of the type variables of {@code executableType} to inference variables
    */
   public Theta createThetaForInvocation(
       ExpressionTree invocation,
-      InferenceExecutableType methodType,
+      InferenceExecutableType executableType,
       Java8InferenceContext context) {
     if (context.maps.containsKey(invocation)) {
       return context.maps.get(invocation);
     }
     Theta map = new Theta();
 
-    // Create inference variables for the type parameters to methodType
+    // Create inference variables for the type parameters to executableType
 
-    for (AnnotatedTypeVariable pl : methodType.getAnnotatedTypeVariables()) {
+    for (AnnotatedTypeVariable pl : executableType.getAnnotatedTypeVariables()) {
       @SuppressWarnings("interning:interned.object.creation")
       Variable al = new @Interned Variable(pl, pl.getUnderlyingType(), invocation, context, map);
       map.put(pl.getUnderlyingType(), al);
@@ -721,7 +721,7 @@ public class InferenceFactory {
               .constructorFromUseWithoutTypeArgInference((NewClassTree) invocation)
               .executableType();
     }
-    return new InferenceMethodType(
+    return new InferenceInvocationType(
         executableType, getTypeOfMethodAdaptedToUse(invocation, context), invocation, context);
   }
 

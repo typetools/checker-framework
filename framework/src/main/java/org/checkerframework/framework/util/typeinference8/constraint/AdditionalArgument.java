@@ -38,24 +38,24 @@ public class AdditionalArgument implements Constraint {
   @Override
   public ConstraintSet reduce(Java8InferenceContext context) {
     if (methodOrConstructorInvocation instanceof MethodInvocationTree methodInvocation) {
-      InferenceExecutableType methodType =
+      InferenceExecutableType executableType =
           context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(methodInvocation);
       Theta newMap =
           context.inferenceTypeFactory.createThetaForInvocation(
-              methodInvocation, methodType, context);
+              methodInvocation, executableType, context);
       ConstraintSet set =
-          context.inference.createC(methodType, methodInvocation.getArguments(), newMap);
+          context.inference.createC(executableType, methodInvocation.getArguments(), newMap);
       set.applyInstantiations();
       return set;
     } else {
       NewClassTree newClassTree = (NewClassTree) methodOrConstructorInvocation;
-      InferenceExecutableType methodType =
+      InferenceExecutableType executableType =
           context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(newClassTree);
 
       Theta newMap =
-          context.inferenceTypeFactory.createThetaForInvocation(newClassTree, methodType, context);
+          context.inferenceTypeFactory.createThetaForInvocation(newClassTree, executableType, context);
       ConstraintSet set =
-          context.inference.createC(methodType, newClassTree.getArguments(), newMap);
+          context.inference.createC(executableType, newClassTree.getArguments(), newMap);
       set.applyInstantiations();
       return set;
     }

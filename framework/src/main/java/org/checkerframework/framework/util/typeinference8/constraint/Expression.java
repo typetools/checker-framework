@@ -173,12 +173,12 @@ public class Expression extends TypeConstraint {
       args = methodInvocationTree.getArguments();
     }
 
-    InferenceExecutableType methodType =
+    InferenceExecutableType executableType =
         context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(expressionTree);
     Theta map =
-        context.inferenceTypeFactory.createThetaForInvocation(expressionTree, methodType, context);
-    BoundSet b2 = context.inference.createB2(methodType, args, map);
-    return context.inference.createB3(b2, expressionTree, methodType, T, map);
+        context.inferenceTypeFactory.createThetaForInvocation(expressionTree, executableType, context);
+    BoundSet b2 = context.inference.createB2(executableType, args, map);
+    return context.inference.createB3(b2, expressionTree, executableType, T, map);
   }
 
   /**
