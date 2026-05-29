@@ -14,9 +14,9 @@ import java.util.List;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
+import org.checkerframework.framework.util.typeinference8.types.AbstractExecutableType;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.CompileTimeDeclarationType;
-import org.checkerframework.framework.util.typeinference8.types.InferenceExecutableType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -173,7 +173,7 @@ public class Expression extends TypeConstraint {
       args = methodInvocationTree.getArguments();
     }
 
-    InferenceExecutableType executableType =
+    AbstractExecutableType executableType =
         context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(expressionTree);
     Theta map =
         context.inferenceTypeFactory.createThetaForInvocation(

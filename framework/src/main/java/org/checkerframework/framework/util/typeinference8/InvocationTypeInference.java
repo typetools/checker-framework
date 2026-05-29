@@ -27,10 +27,10 @@ import org.checkerframework.framework.util.typeinference8.constraint.ConstraintS
 import org.checkerframework.framework.util.typeinference8.constraint.Expression;
 import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
+import org.checkerframework.framework.util.typeinference8.types.AbstractExecutableType;
+import org.checkerframework.framework.util.typeinference8.types.AbstractInvocationType;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.CompileTimeDeclarationType;
-import org.checkerframework.framework.util.typeinference8.types.InferenceExecutableType;
-import org.checkerframework.framework.util.typeinference8.types.InferenceInvocationType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
@@ -150,8 +150,8 @@ public class InvocationTypeInference {
   public InferenceResult infer(ExpressionTree invocation, AnnotatedExecutableType executableType)
       throws FalseBoundException {
     ExecutableType e = executableType.getUnderlyingType();
-    InferenceExecutableType inferenceExectuableType =
-        new InferenceInvocationType(executableType, e, invocation, context);
+    AbstractExecutableType inferenceExectuableType =
+        new AbstractInvocationType(executableType, e, invocation, context);
     ProperType target = context.inferenceTypeFactory.getTargetType();
     List<? extends ExpressionTree> args;
     if (invocation instanceof MethodInvocationTree mit) {
@@ -250,7 +250,7 @@ public class InvocationTypeInference {
    * @return bound set used to determine whether a method is applicable
    */
   public BoundSet createB2(
-      InferenceExecutableType executableType, List<? extends ExpressionTree> args, Theta map) {
+      AbstractExecutableType executableType, List<? extends ExpressionTree> args, Theta map) {
     BoundSet b0 = BoundSet.initialBounds(map, context);
 
     // For all i (1 <= i <= p), if Pi appears in the throws clause of m, then the bound throws
@@ -283,7 +283,7 @@ public class InvocationTypeInference {
   }
 
   /**
-   * Same as {@link #createB2(InferenceExecutableType, List, Theta)}, but for method references. A
+   * Same as {@link #createB2(AbstractExecutableType, List, Theta)}, but for method references. A
    * list of types is used instead of a list of arguments. These types are the types of the formal
    * parameters of function type of target type of the method reference.
    *
@@ -342,7 +342,7 @@ public class InvocationTypeInference {
    * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.1">JLS
    * 18.5.2.1</a>.)
    *
-   * @param b2 BoundSet created by {@link #createB2(InferenceExecutableType, List, Theta)}
+   * @param b2 BoundSet created by {@link #createB2(AbstractExecutableType, List, Theta)}
    * @param invocation a method or constructor invocation
    * @param executableType the type of the method or constructor invoked by expression
    * @param target target type of the invocation
@@ -352,7 +352,7 @@ public class InvocationTypeInference {
   public BoundSet createB3(
       BoundSet b2,
       ExpressionTree invocation,
-      InferenceExecutableType executableType,
+      AbstractExecutableType executableType,
       AbstractType target,
       Theta map) {
     AbstractType r = executableType.getReturnType(map);
@@ -455,7 +455,7 @@ public class InvocationTypeInference {
    *     applicability
    */
   public ConstraintSet createC(
-      InferenceExecutableType executableType, List<? extends ExpressionTree> args, Theta map) {
+      AbstractExecutableType executableType, List<? extends ExpressionTree> args, Theta map) {
     ConstraintSet c = new ConstraintSet();
     List<AbstractType> formals = executableType.getParameterTypes(map, args.size());
 
@@ -480,7 +480,7 @@ public class InvocationTypeInference {
 
   /**
    * Adds argument constraints for the argument {@code ei} and its subexpressions. These are in
-   * addition to the constraints added in {@link #createC(InferenceExecutableType, List, Theta)}.
+   * addition to the constraints added in {@link #createC(AbstractExecutableType, List, Theta)}.
    *
    * <p>It does this by traversing {@code ei} if it is a method reference, lambda, method
    * invocation, new class tree, conditional expression, switch expression, or parenthesized

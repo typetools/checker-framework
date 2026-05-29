@@ -17,7 +17,7 @@ import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 
 /**
  * Represents the compile-time declaration type of the method reference that is the method to which
- * the expression refers. See <a
+ * the method reference refers. See <a
  * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.13.1">JLS section
  * 15.13.1</a> for a complete definition.
  *
@@ -29,17 +29,17 @@ import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
  * <p>For example,
  *
  * <pre>{@code
- * static class MyClass {
- *   String field;
- *   public static int compareByField(MyClass a, MyClass b) { ... }
- * }
- * Comparator<MyClass> func = MyClass::compareByField;
+ * class MyClass {
+ *    public int compareByField(MyClass other) { ... }
+ *  }
+ *  Comparator<MyClass> func = MyClass::compareByField;
  * }</pre>
  *
- * <p>The function type is {@code compare(Comparator<MyClass> this, MyClass o1, MyClass o2)} where
- * as the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}.
+ * <p>The function type is {@code int compare(Comparator<MyClass> this, MyClass o1, MyClass o2)}
+ * where as the compile-time declaration type is {@code int compareByField(MyClass this, MyClass
+ * other)}.
  */
-public class CompileTimeDeclarationType extends InferenceExecutableType {
+public class CompileTimeDeclarationType extends AbstractExecutableType {
 
   /**
    * The type of the receiver. This may be different than {@code
@@ -51,7 +51,7 @@ public class CompileTimeDeclarationType extends InferenceExecutableType {
   MemberReferenceTree methodRef;
 
   /**
-   * Creates an invocation type for a method reference.
+   * Creates a compile-time declaration type for a method reference.
    *
    * @param annotatedExecutableType annotated method or constructor type
    * @param executableType a Java method or constructor type

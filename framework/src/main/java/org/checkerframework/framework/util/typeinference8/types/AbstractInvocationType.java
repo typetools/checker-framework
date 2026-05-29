@@ -22,7 +22,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * AnnotatedExecutableType} that returns {@link AbstractType}s for the types in the {@link
  * AnnotatedExecutableType}.
  */
-public class InferenceInvocationType extends InferenceExecutableType {
+public class AbstractInvocationType extends AbstractExecutableType {
 
   /** The {@code NewClassTree} or {@code MethodInvocationTree} whose type this is. */
   private final ExpressionTree invocation;
@@ -35,7 +35,7 @@ public class InferenceInvocationType extends InferenceExecutableType {
    * @param invocation a method or constructor invocation
    * @param context the context
    */
-  public InferenceInvocationType(
+  public AbstractInvocationType(
       AnnotatedExecutableType annotatedExecutableType,
       ExecutableType executableType,
       ExpressionTree invocation,
