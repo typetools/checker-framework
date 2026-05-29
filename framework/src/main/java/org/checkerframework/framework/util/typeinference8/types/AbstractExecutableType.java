@@ -41,7 +41,7 @@ public abstract class AbstractExecutableType {
 
   /**
    * A mapping from polymorphic annotation to {@link QualifierVar}. It keeps track of which
-   * annotation mirror should be represented by with {@code QualifierVar}.
+   * annotation mirror should be represented by which {@code QualifierVar}.
    */
   protected final AnnotationMirrorMap<QualifierVar> qualifierVars;
 
