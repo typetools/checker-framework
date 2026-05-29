@@ -9,7 +9,7 @@ import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeOptions;
 
 /**
- * Run busy expression analysis on a file and create a PDF of the CFG.
+ * Run the busy-expression analysis on a file and create a PDF of the CFG.
  *
  * <p>As an example, try {@code dataflow/manual/examples/BusyExprSimple.java}.
  */
@@ -21,7 +21,7 @@ public class BusyExpressionPdf {
   }
 
   /**
-   * Run busy expression analysis on a file and create a PDF of the CFG.
+   * Run the busy-expression analysis on a file and create a PDF of the CFG.
    *
    * @param args command-line arguments
    */

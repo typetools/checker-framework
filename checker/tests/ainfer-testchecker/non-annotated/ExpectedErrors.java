@@ -34,7 +34,7 @@ public class ExpectedErrors {
   private @AinferBottom int privateDeclaredField2;
   public @AinferBottom int publicDeclaredField2;
 
-  // The refinement cannot happen and an assignemnt type incompatible error occurs.
+  // The refinement cannot happen and an assignment type incompatible error occurs.
   void assignFieldsToAinferTop() {
     // :: warning: [assignment]
     privateDeclaredField2 = getAinferTop();

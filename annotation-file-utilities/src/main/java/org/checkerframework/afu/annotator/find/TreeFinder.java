@@ -423,7 +423,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
     // For style 3, we need to count the brackets and get to the right one.
     //
     // The AST depth of the initializer is correct unless all arrays are
-    // empty, in which case it is arbitary.  This is legal:
+    // empty, in which case it is arbitrary.  This is legal:
     // String[][][][][] names4 = new String[][][][][] { { {} } };
     //
     // Array initializers can also be multi-dimensional, but this is not
@@ -1179,7 +1179,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
       // created) receiver.
       Map<Tree, ASTRecord> astIndex = ASTIndex.indexOf(tree);
       ASTRecord insertRecord = astIndex.get(node);
-      dbug.debug("TreeFinder.scan: node=%s%n  critera=%s%n", node, i.getCriteria());
+      dbug.debug("TreeFinder.scan: node=%s%n  criteria=%s%n", node, i.getCriteria());
 
       if (TreePathUtil.hasClassKind(node)
           && i.getCriteria().isOnTypeDeclarationExtendsClause()

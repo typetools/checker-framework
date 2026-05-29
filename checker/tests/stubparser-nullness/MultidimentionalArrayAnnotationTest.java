@@ -2,17 +2,17 @@ import org.checkerframework.checker.nullness.qual.*;
 
 /*
  * The test checks annotations in multidimention arrays.
- * Each array dimention is beeing annotated with eather @Nullable or @NonNull
- * to check error is thrown if assignment type is incompatible on eather
+ * Each array dimension is being annotated with either @Nullable or @NonNull
+ * to check error is thrown if assignment type is incompatible on either
  * array level.
- * Tests uses 3 dimentional arrays. Each annotaion combination is used once starting
+ * Tests uses 3 dimensional arrays. Each annotation combination is used once starting
  * with @Nullable [] @Nullable [] @Nullable [] and
  * ends with @NonNull [] @NonNull [] @NonNull [].
  *
- * Test has 8 methods that returns 3-dimentional arrays where each dimention is annotated
- * with eather @Nullable or @NonNull.
+ * Test has 8 methods that returns 3-dimentional arrays where each dimension is annotated
+ * with either @Nullable or @NonNull.
  *
- * Test containg 8 methods where all variables are beeing assign with one of arrays from
+ * Test containing 8 methods where all variables are being assign with one of arrays from
  * method that returns annotated arrays.
  *
  * Errors are expected if one or more array levels in a declaration are annotated with @NonNull, but

@@ -298,7 +298,7 @@ public class NullnessVisitor
    * "new Object[0][0];". Also true for empty dimensions, as in "new Object[] {...}".
    *
    * @param tree the constructor invocation to check
-   * @return true if every array dimention has a size of zero
+   * @return true if every array dimension has a size of zero
    */
   private static boolean isNewArrayAllZeroDims(NewArrayTree tree) {
     boolean isAllZeros = true;

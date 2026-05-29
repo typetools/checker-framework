@@ -258,7 +258,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     if (primaryAnnotations.isEmpty()) {
       return null;
     }
-    annotation = atypeFactory.canonicalAnnotation(annotation);
+    annotation = atypeFactory.canonicalAnnotation(annotation, underlyingType);
     if (!atypeFactory.isSupportedQualifier(annotation)) {
       // This can happen if the annotation is unrelated to this AnnotatedTypeMirror.
       return null;
@@ -285,7 +285,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * @return an annotation from the same hierarchy as {@code annotation} if present
    */
   public @Nullable AnnotationMirror getAnnotationInHierarchy(AnnotationMirror annotation) {
-    annotation = atypeFactory.canonicalAnnotation(annotation);
+    annotation = atypeFactory.canonicalAnnotation(annotation, underlyingType);
     if (atypeFactory.isSupportedQualifier(annotation)) {
       QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
       AnnotationMirror anno =
@@ -613,9 +613,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * Adds the canonical version of {@code annotation} as a primary annotation of this type and, in
    * the case of {@link AnnotatedTypeVariable}s, {@link AnnotatedWildcardType}s, and {@link
    * AnnotatedIntersectionType}s, adds it to all bounds. (The canonical version is found via {@link
-   * AnnotatedTypeFactory#canonicalAnnotation}.) If the canonical version of {@code annotation} is
-   * not a supported qualifier, then no annotation is added. If this type already has annotation in
-   * the same hierarchy as {@code annotation}, the behavior of this method is undefined.
+   * AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)} or {@link
+   * AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror,TypeMirror)}.) If the canonical
+   * version of {@code annotation} is not a supported qualifier, then no annotation is added. If
+   * this type already has annotation in the same hierarchy as {@code annotation}, the behavior of
+   * this method is undefined.
    *
    * @param annotation the annotation to add
    */
@@ -623,7 +625,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     if (annotation == null) {
       throw new BugInCF("AnnotatedTypeMirror.addAnnotation: null argument.");
     }
-    annotation = atypeFactory.canonicalAnnotation(annotation);
+    annotation = atypeFactory.canonicalAnnotation(annotation, underlyingType);
     if (atypeFactory.isSupportedQualifier(annotation)) {
       this.primaryAnnotations.add(annotation);
     }
@@ -644,10 +646,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * Adds the canonical version of all {@code annotations} as primary annotations of this type and,
    * in the case of {@link AnnotatedTypeVariable}s, {@link AnnotatedWildcardType}s, and {@link
    * AnnotatedIntersectionType}s, adds them to all bounds. (The canonical version is found via
-   * {@link AnnotatedTypeFactory#canonicalAnnotation}.) If the canonical version of an {@code
-   * annotation} is not a supported qualifier, then that annotation is not add added. If this type
-   * already has annotation in the same hierarchy as any of the {@code annotations}, the behavior of
-   * this method is undefined.
+   * {@link AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)} or {@link
+   * AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror,TypeMirror)}.) If the canonical
+   * version of an annotation is not a supported qualifier, then that annotation is not added. If
+   * this type already has annotation in the same hierarchy as any of the {@code annotations}, the
+   * behavior of this method is undefined.
    *
    * @param annotations the annotations to add
    */
@@ -664,8 +667,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * <p>The canonical version of the {@code annotations} are added as primary annotations of this
    * type and, in the case of {@link AnnotatedTypeVariable}s, {@link AnnotatedWildcardType}s, and
    * {@link AnnotatedIntersectionType}s, adds them to all bounds. (The canonical version is found
-   * via {@link AnnotatedTypeFactory#canonicalAnnotation}.) If the canonical version of an
-   * annotation is not a supported qualifier, then that annotation is not add added.
+   * via {@link AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)} or {@link
+   * AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror,TypeMirror)}.) If the canonical
+   * version of an annotation is not a supported qualifier, then that annotation is not add added.
    *
    * @param annotations the annotations to add
    */
@@ -682,8 +686,10 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * <p>The canonical version of the {@code annotation} is added as a primary annotation of this
    * type and (in the case of {@link AnnotatedTypeVariable}s, {@link AnnotatedWildcardType}s, and
    * {@link AnnotatedIntersectionType}s) added to all bounds. (The canonical version is found via
-   * {@link AnnotatedTypeFactory#canonicalAnnotation}.) If the canonical version of an {@code
-   * annotation} is not a supported qualifier, then that annotation is not add added.
+   * {@link AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)} or {@link
+   * AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror,TypeMirror)}.) If the canonical
+   * version of an {@code annotation} is not a supported qualifier, then that annotation is not add
+   * added.
    *
    * @param annotation the annotations to add
    */

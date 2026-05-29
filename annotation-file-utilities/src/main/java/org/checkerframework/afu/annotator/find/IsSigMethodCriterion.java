@@ -125,7 +125,7 @@ public class IsSigMethodCriterion implements Criterion {
       if (!typeParamToClassMap.isEmpty()) {
         for (Map.Entry<String, String> p : typeParamToClassMap.entrySet()) {
           @SuppressWarnings(
-              "regex:assignment") // a type parameter name is an identifer, which is a valid regex
+              "regex:assignment") // a type parameter name is an identifier, which is a valid regex
           @Regex String typeParamName = p.getKey();
           // Pattern.quote() is gratuitous because key is a type parameter name, which is an
           // identifier with no special characters.  Matcher.quoteReplacement is gratuitous because

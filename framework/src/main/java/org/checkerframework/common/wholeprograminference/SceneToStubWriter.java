@@ -418,7 +418,7 @@ public final class SceneToStubWriter {
    * printed using the name of the class as {@code basetypeToPrint} instead of the javac type. The
    * other version of this method should be preferred in every other case.
    *
-   * @param sb where to formate the type to
+   * @param sb where to format the type to
    * @param aType the scene-lib representation of the type, or null if only the unannotated type is
    *     to be printed
    * @param javacType the javac representation of the type, or null if this is a receiver parameter

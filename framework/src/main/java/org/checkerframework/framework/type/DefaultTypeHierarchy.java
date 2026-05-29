@@ -184,6 +184,28 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   @Override
+  public boolean equalsShallowEffective(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+    ShallowType shallowType1 = ShallowType.create(type1);
+    ShallowType shallowType2 = ShallowType.create(type2);
+    Collection<? extends AnnotationMirror> annos1 = shallowType1.annos;
+    TypeMirror tm1 = shallowType1.typeMirror;
+    Collection<? extends AnnotationMirror> annos2 = shallowType2.annos;
+    TypeMirror tm2 = shallowType2.typeMirror;
+    return qualHierarchy.isSubtypeShallow(annos1, tm1, annos2, tm2)
+        && qualHierarchy.isSubtypeShallow(annos2, tm2, annos1, tm1);
+  }
+
+  @Override
+  public boolean equalsShallowEffective(
+      AnnotatedTypeMirror type1, Collection<? extends AnnotationMirror> qualifiers2) {
+    ShallowType shallowType1 = ShallowType.create(type1);
+    TypeMirror tm = shallowType1.typeMirror;
+    Collection<? extends AnnotationMirror> qualifiers1 = shallowType1.annos;
+    return qualHierarchy.isSubtypeShallow(qualifiers1, tm, qualifiers2, tm)
+        && qualHierarchy.isSubtypeShallow(qualifiers2, tm, qualifiers1, tm);
+  }
+
+  @Override
   public boolean isSubtypeShallowEffective(
       AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
     ShallowType subShallowType = ShallowType.create(subtype);
@@ -462,7 +484,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       // calls isSubtype(inside.getUpperBound(), outsideUpper). This is slightly different
       // from the algorithm in the JLS.  Only one of the Java type bounds can be specified,
       // but there can be annotations on both the upper and lower bound of a wildcard.
-      return isSubtype(outsideLower, inside) && isSubtype(inside, outsideUpper);
+      return isSubtype(outsideLower, inside, currentTop)
+          && isSubtype(inside, outsideUpper, currentTop);
     } catch (Throwable ex) {
       // Work around:
       // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=JDK-8265255
@@ -576,6 +599,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       AnnotatedDeclaredType supertype,
       boolean subtypeRaw,
       boolean supertypeRaw) {
+    if (TypesUtils.isClass(subtype.getUnderlyingType())) {
+      // Ignore type arguments in classes. Their qualifiers never matter.
+      return true;
+    }
     AnnotatedTypeFactory typeFactory = subtype.atypeFactory;
 
     // JLS 11: 4.10.2. Subtyping among Class and Interface Types

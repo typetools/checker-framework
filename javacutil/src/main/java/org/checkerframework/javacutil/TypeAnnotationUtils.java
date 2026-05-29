@@ -408,7 +408,7 @@ public class TypeAnnotationUtils {
   /**
    * Create an unknown TypeAnnotationPosition.
    *
-   * @return an unkown TypeAnnotationPosition
+   * @return an unknown TypeAnnotationPosition
    */
   public static TypeAnnotationPosition unknownTAPosition() {
     return TypeAnnotationPosition.unknown;

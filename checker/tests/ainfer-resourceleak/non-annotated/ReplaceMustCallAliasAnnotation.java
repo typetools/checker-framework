@@ -1,4 +1,4 @@
-// This test corrects the wrong @MustCallAlias annotation written on the constrcutor when there are
+// This test corrects the wrong @MustCallAlias annotation written on the constructor when there are
 // more than one owning field.
 
 import org.checkerframework.checker.calledmethods.qual.*;

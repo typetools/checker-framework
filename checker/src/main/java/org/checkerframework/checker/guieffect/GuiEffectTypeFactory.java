@@ -292,7 +292,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (methodSelect instanceof IdentifierTree) {
         // Tree.Kind.IDENTIFIER, e.g. a direct call like "super()"
         if (callerReceiver == null) {
-          // Not enought information provided to instantiate this type-polymorphic effects
+          // Not enough information provided to instantiate this type-polymorphic effects
           return targetEffect;
         }
         srcType = callerReceiver;

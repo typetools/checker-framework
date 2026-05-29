@@ -170,7 +170,7 @@ public class UseOfVariable extends AbstractType {
       // If the use has a primary annotation, then mark the bound so that the annotations will be
       // ignored. Also, set to bottom or top, unless the bound is a type variable. This way if all
       // the bounds of a variable have annotations to be ignored, the instantiation of that variable
-      // is as flexable as possible.
+      // is as flexible as possible.
       AnnotatedTypeMirror boundCopyATM = bound.getAnnotatedType().deepCopy();
       AbstractType boundCopy = bound.create(boundCopyATM, bound.getJavaType(), true);
       if (boundCopyATM.getKind() == TypeKind.TYPEVAR && kind == BoundKind.EQUAL) {

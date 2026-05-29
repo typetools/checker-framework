@@ -241,7 +241,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     }
     switch (elt.getKind()) {
       case METHOD,
-          CONSTRUCTOR, // x0.super() in anoymous classes
+          CONSTRUCTOR, // x0.super() in anonymous classes
           PACKAGE, // "java.lang" in new java.lang.Short("2")
           CLASS, // o instanceof MyClass.InnerClass
           RECORD,

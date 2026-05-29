@@ -497,7 +497,6 @@ public abstract class AbstractAnalysis<
     }
     transferInput.node = node;
     setCurrentNode(node);
-    @SuppressWarnings("nullness") // CF bug: "INFERENCE FAILED"
     TransferResult<V, S> transferResult = node.accept(transferFunction, transferInput);
     setCurrentNode(null);
     if (node instanceof AssignmentNode assignment) {

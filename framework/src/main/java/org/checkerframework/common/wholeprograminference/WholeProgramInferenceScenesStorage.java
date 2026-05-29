@@ -623,7 +623,7 @@ public class WholeProgramInferenceScenesStorage
             ((AnnotatedTypeVariable) jaifATM).getUpperBound());
       }
       //        case WILDCARD:
-      // Because inferring type arguments is not supported, wildcards won't be encoutered
+      // Because inferring type arguments is not supported, wildcards won't be encountered
       //            updateAtmWithLub(((AnnotatedWildcardType)
       // sourceCodeATM).getExtendsBound(),
       //                              ((AnnotatedWildcardType)
@@ -818,7 +818,7 @@ public class WholeProgramInferenceScenesStorage
   //
 
   // The prepare*ForWriting hooks are needed in addition to the postProcessClassTree hook because
-  // a scene may be modifed and written at any time, including before or after
+  // a scene may be modified and written at any time, including before or after
   // postProcessClassTree is called.
 
   /**

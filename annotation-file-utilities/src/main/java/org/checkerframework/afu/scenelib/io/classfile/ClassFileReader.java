@@ -196,7 +196,7 @@ public class ClassFileReader {
    * {@code scene}.
    *
    * @param scene the scene into which the annotations should be inserted
-   * @param classReader the ClassReader for the class thet the annotations should be read from
+   * @param classReader the ClassReader for the class that the annotations should be read from
    */
   public static void read(AScene scene, ClassReader classReader) {
     ClassAnnotationSceneReader ca =

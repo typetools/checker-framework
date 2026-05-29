@@ -8,9 +8,11 @@ public class Issue1098 {
 
   <T> void cls(Class<T> p1, T p2) {}
 
-  @SuppressWarnings("keyfor:type.argument")
+  @SuppressWarnings("keyfor:argument")
   void use() {
     opt(Optional.empty(), null);
+    // TODO: (#7708) This is a false positive.
+    // :: error: [argument]
     cls(this.getClass(), null);
   }
 }

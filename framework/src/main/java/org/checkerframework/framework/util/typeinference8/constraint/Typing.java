@@ -307,10 +307,16 @@ public class Typing extends TypeConstraint {
       if (S.getTypeKind() == TypeKind.WILDCARD) {
         return ConstraintSet.FALSE;
       }
-      if (isCovarTypeArg) {
-        return new Typing(this, S, T, Kind.SUBTYPE);
-      }
-      return new Typing(this, S, T, Kind.TYPE_EQUALITY);
+      // This code is incorrect because the java types must be equal, but the qualifiers can
+      // be covariant.
+      // if (isCovarTypeArg) {
+      // return new Typing(this, S, T, Kind.SUBTYPE);
+      // }
+      // However, this causes new false positives.  For example,
+      // checker/tests/tainting/CovariantError.java
+      // TODO: (#7708) Need to mark this bound as equal for java types, but subtype for qualifiers.
+      // isCovarTypeArg is ignored when reducing this constraint.
+      return new Typing(this, S, T, Kind.TYPE_EQUALITY, isCovarTypeArg);
 
     } else if (T.isUnboundWildcard()) {
       return ConstraintSet.TRUE;
