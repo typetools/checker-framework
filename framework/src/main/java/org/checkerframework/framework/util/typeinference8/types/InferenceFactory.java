@@ -521,7 +521,7 @@ public class InferenceFactory {
    */
   public Theta createThetaForInvocation(
       ExpressionTree invocation,
-      InferenceExecutableType executableType,
+      AbstractExecutableType executableType,
       Java8InferenceContext context) {
     if (context.maps.containsKey(invocation)) {
       return context.maps.get(invocation);
@@ -711,7 +711,7 @@ public class InferenceFactory {
    * @param invocation method or constructor invocation
    * @return the type of the method or constructor invocation adapted to its arguments
    */
-  public InferenceExecutableType getTypeOfMethodAdaptedToUse(ExpressionTree invocation) {
+  public AbstractExecutableType getTypeOfMethodAdaptedToUse(ExpressionTree invocation) {
     AnnotatedExecutableType executableType;
     if (invocation instanceof MethodInvocationTree mit) {
       executableType = typeFactory.methodFromUseWithoutTypeArgInference(mit).executableType();
@@ -721,7 +721,7 @@ public class InferenceFactory {
               .constructorFromUseWithoutTypeArgInference((NewClassTree) invocation)
               .executableType();
     }
-    return new InferenceInvocationType(
+    return new AbstractInvocationType(
         executableType, getTypeOfMethodAdaptedToUse(invocation, context), invocation, context);
   }
 

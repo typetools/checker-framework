@@ -26,7 +26,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
  * An inference type for a method, constructor, or method reference. This is a wrapper around {@link
  * AnnotatedExecutableType} whose methods return {@link AbstractType}.
  */
-public abstract class InferenceExecutableType {
+public abstract class AbstractExecutableType {
 
   /** The underlying annotated method or constructor type. */
   protected final AnnotatedExecutableType annotatedExecutableType;
@@ -40,11 +40,14 @@ public abstract class InferenceExecutableType {
   /** The annotated type factory. */
   protected final AnnotatedTypeFactory typeFactory;
 
-  /** A mapping from polymorphic annotation to {@link QualifierVar}. */
+  /**
+   * A mapping from polymorphic annotation to {@link QualifierVar}. It keeps track of which
+   * annotation mirror should be represented by which {@code QualifierVar}.
+   */
   protected final AnnotationMirrorMap<QualifierVar> qualifierVars;
 
   /**
-   * Fills in fields of abstract class InferenceExecutableType.
+   * Fills in fields of abstract class AbstractExecutableType.
    *
    * @param annotatedExecutableType the underlying annotated method or constructor type
    * @param executableType the underlying Java method or constructor type. This must be an argument
@@ -53,7 +56,7 @@ public abstract class InferenceExecutableType {
    * @param invocation a method or constructor invocation
    * @param context the context
    */
-  protected InferenceExecutableType(
+  protected AbstractExecutableType(
       AnnotatedExecutableType annotatedExecutableType,
       ExecutableType executableType,
       ExpressionTree invocation,
@@ -116,13 +119,12 @@ public abstract class InferenceExecutableType {
   public abstract AbstractType getReturnType(Theta map);
 
   /**
-   * Returns a list of the parameter types of {@code InferenceExecutableType} where the vararg
+   * Returns a list of the parameter types of {@code AbstractExecutableType} where the vararg
    * parameter has been replaced by individual parameters so the result has length {@code size}.
    *
    * @param map a mapping from type variable to inference variable
    * @param size the number of parameters to return; used to expand the vararg
-   * @return a list of the parameter types of {@code InferenceExecutableType}, of length {@code
-   *     size}
+   * @return a list of the parameter types of {@code AbstractExecutableType}, of length {@code size}
    */
   public abstract List<AbstractType> getParameterTypes(Theta map, int size);
 
