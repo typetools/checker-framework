@@ -2,13 +2,10 @@ package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
-import java.util.ArrayList;
 import java.util.List;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
@@ -36,14 +33,14 @@ import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
  * Comparator<MyClass> func = MyClass::compareByField;
  * }</pre>
  *
- * <p>The function type is {@code compare(Comparator<MyClass> this, MyClass o1, MyClass o2)} where
- * as the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}.
+ * <p>The function type is {@code compare(Comparator<MyClass> this, MyClass o1, MyClass o2)} whereas
+ * the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}.
  */
 public class CompileTimeDeclarationType extends InferenceExecutableType {
 
   /**
-   * The type of the receiver. This may be different than {@code
-   * annotatedExecutableType.getReceiver()}.
+   * The type of the receiver. Its value may be different than {@code
+   * this.annotatedExecutableType.getReceiver()}.
    */
   AnnotatedTypeMirror receiver;
 
@@ -80,34 +77,6 @@ public class CompileTimeDeclarationType extends InferenceExecutableType {
   }
 
   @Override
-  public List<AbstractType> getParameterTypes(Theta map, int size) {
-    List<AnnotatedTypeMirror> params = new ArrayList<>();
-    List<TypeMirror> paramsJava = new ArrayList<>();
-
-    if (MemberReferenceKind.getMemberReferenceKind(methodRef).isUnbound()) {
-      // For unbound method references, i.e. Type::instanceMethod, the receiver is treated as the
-      // first parameter.
-      params.add(receiver);
-      paramsJava.add(receiver.getUnderlyingType());
-    }
-    params.addAll(annotatedExecutableType.getParameterTypes());
-    paramsJava.addAll(executableType.getParameterTypes());
-
-    if (TreeUtils.isVarargsCall(methodRef)) {
-      AnnotatedArrayType vararg = (AnnotatedArrayType) params.remove(params.size() - 1);
-      for (int i = params.size(); i < size; i++) {
-        params.add(vararg.getComponentType());
-      }
-      ArrayType varargTM = (ArrayType) paramsJava.remove(paramsJava.size() - 1);
-      for (int i = paramsJava.size(); i < size; i++) {
-        paramsJava.add(varargTM.getComponentType());
-      }
-    }
-
-    return InferenceType.create(params, paramsJava, map, qualifierVars, context);
-  }
-
-  @Override
   public AbstractType getReturnType(Theta map) {
     AnnotatedTypeMirror annotatedReturnType;
     TypeMirror returnType;
@@ -127,5 +96,19 @@ public class CompileTimeDeclarationType extends InferenceExecutableType {
     } else {
       return InferenceType.create(annotatedReturnType, returnType, map, context);
     }
+  }
+
+  @Override
+  public List<AbstractType> getParameterTypes(Theta map, int size) {
+    AnnotatedTypeMirror receiverTM;
+    if (MemberReferenceKind.getMemberReferenceKind(methodRef).isUnbound()) {
+      // For unbound method references, i.e. Type::instanceMethod, the receiver is treated as the
+      // first parameter.
+      receiverTM = receiver;
+    } else {
+      receiverTM = null;
+    }
+
+    return getParameterTypes(map, size, receiverTM, TreeUtils.isVarargsCall(methodRef));
   }
 }

@@ -6,12 +6,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
@@ -22,18 +24,17 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 /**
  * An inference type for a method, constructor, or method reference. This is a wrapper around {@link
- * AnnotatedExecutableType} that returns {@link AbstractType}s for the types in the {@link
- * AnnotatedExecutableType}.
+ * AnnotatedExecutableType} whose methods return {@link AbstractType}.
  */
 public abstract class InferenceExecutableType {
 
-  /** The annotated method or constructor type. */
+  /** The underlying annotated method or constructor type. */
   protected final AnnotatedExecutableType annotatedExecutableType;
 
-  /** The Java method or constructor type. */
+  /** The underlying Java method or constructor type. */
   protected final ExecutableType executableType;
 
-  /** The context. */
+  /** The inference context. */
   protected final Java8InferenceContext context;
 
   /** The annotated type factory. */
@@ -43,10 +44,12 @@ public abstract class InferenceExecutableType {
   protected final AnnotationMirrorMap<QualifierVar> qualifierVars;
 
   /**
-   * Creates an InferenceExecutableType.
+   * Fills in fields of abstract class InferenceExecutableType.
    *
-   * @param annotatedExecutableType annotated method or constructor type
-   * @param executableType the Java method or constructor type
+   * @param annotatedExecutableType the underlying annotated method or constructor type
+   * @param executableType the underlying Java method or constructor type. This must be an argument
+   *     to the constructor, because it is not always equal to {@code
+   *     annotatedExecutableType.getUnderlyingType()}.
    * @param invocation a method or constructor invocation
    * @param context the context
    */
@@ -61,7 +64,7 @@ public abstract class InferenceExecutableType {
     this.context = context;
     this.typeFactory = context.typeFactory;
 
-    SimpleAnnotatedTypeScanner<Void, Set<AnnotationMirror>> s =
+    SimpleAnnotatedTypeScanner<Void, Set<AnnotationMirror>> polymorphicQualifierCollector =
         new SimpleAnnotatedTypeScanner<>(
             (type, polys) -> {
               for (AnnotationMirror a : type.getPrimaryAnnotations()) {
@@ -72,7 +75,7 @@ public abstract class InferenceExecutableType {
               return null;
             });
     Set<AnnotationMirror> polys = new AnnotationMirrorSet();
-    s.visit(annotatedExecutableType, polys);
+    polymorphicQualifierCollector.visit(annotatedExecutableType, polys);
     AnnotationMirrorMap<QualifierVar> qualifierVars = new AnnotationMirrorMap<>();
     for (AnnotationMirror poly : polys) {
       qualifierVars.put(poly, new QualifierVar(invocation, poly, context));
@@ -134,6 +137,46 @@ public abstract class InferenceExecutableType {
   }
 
   /**
+   * Returns a list of the parameter types of {@code InferenceExecutableType} where the vararg
+   * parameter has been replaced by individual parameters so the result has length {@code size}.
+   *
+   * <p>This is a helper method for {@link #getParameterTypes(Theta, int)}.
+   *
+   * @param map a mapping from type variable to inference variable
+   * @param size the number of parameters to return; used to expand the vararg
+   * @param firstParam an extra first parameter to add at the beginning of the returned list, or
+   *     null
+   * @param isVarargsCall true if this invocation is uses varargs
+   * @return a list of the parameter types of {@code InferenceExecutableType}, of length {@code
+   *     size}
+   */
+  protected final List<AbstractType> getParameterTypes(
+      Theta map, int size, AnnotatedTypeMirror firstParam, boolean isVarargsCall) {
+    List<AnnotatedTypeMirror> params = new ArrayList<>(size);
+    List<TypeMirror> paramsJava = new ArrayList<>(size);
+
+    if (firstParam != null) {
+      params.add(firstParam);
+      paramsJava.add(firstParam.getUnderlyingType());
+    }
+
+    params.addAll(annotatedExecutableType.getParameterTypes());
+    paramsJava.addAll(executableType.getParameterTypes());
+
+    if (isVarargsCall) {
+      AnnotatedTypeMirror eltATM =
+          ((AnnotatedArrayType) params.remove(params.size() - 1)).getComponentType();
+      TypeMirror eltTM = ((ArrayType) paramsJava.remove(paramsJava.size() - 1)).getComponentType();
+      for (int i = params.size(); i < size; i++) {
+        params.add(eltATM);
+        paramsJava.add(eltTM);
+      }
+    }
+
+    return InferenceType.create(params, paramsJava, map, qualifierVars, context);
+  }
+
+  /**
    * Returns true if this type has type variables.
    *
    * @return true if this type has type variables
@@ -161,18 +204,18 @@ public abstract class InferenceExecutableType {
   }
 
   /**
-   * Returns true if this method has void return type.
+   * Returns true if this method or constructor has void return type.
    *
-   * @return true if this method has void return type
+   * @return true if this method or constructor has void return type
    */
   public boolean isVoid() {
     return annotatedExecutableType.getReturnType().getKind() == TypeKind.VOID;
   }
 
   /**
-   * Returns the underlying annotated method type.
+   * Returns the underlying annotated method or constructor type.
    *
-   * @return the underlying annotated method type
+   * @return the underlying annotated method or constructor type
    */
   public AnnotatedExecutableType getAnnotatedType() {
     return annotatedExecutableType;
