@@ -707,9 +707,11 @@ Type-checking modes:  enable/disable functionality
 \item \<-AshowSuppressWarningsStrings>
   With each warning, show all possible strings to suppress that warning.
 \item \<-AwarnUnneededSuppressions>
-  Issue a warning if a \<@SuppressWarnings> did not suppress a warning
+  Issue a \<unneeded.suppression> warning for each \<@SuppressWarnings>
+  that did not suppress a warning
   issued by the checker.  This only warns about
   \<@SuppressWarnings> strings that contain a checker name
+  other than \<"allcheckers">
   (for syntax, Section~\ref{suppresswarnings-annotation-syntax}).  The
   \<-ArequirePrefixInWarningSuppressions> command-line argument ensures
   that all \<@SuppressWarnings> strings contain a checker name.

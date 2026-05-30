@@ -10,9 +10,14 @@ on:  # yamllint disable-line rule:truthy
     branches:
       - "**"
 
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
+#   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+# Cancel in-progress jobs that originate from a fork.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.fork && github.event.pull_request.head.ref || github.ref }}
+  cancel-in-progress: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
 
 permissions:
   contents: read
@@ -199,6 +204,12 @@ jobs:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - name: getPlumeScripts
+        run: ./gradlew -q getPlumeScripts
+      - name: ci-org-and-branch
+        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+      - name: git-changes
+        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:
@@ -213,6 +224,12 @@ jobs:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - name: getPlumeScripts
+        run: ./gradlew -q getPlumeScripts
+      - name: ci-org-and-branch
+        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+      - name: git-changes
+        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:
@@ -227,6 +244,12 @@ jobs:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - name: getPlumeScripts
+        run: ./gradlew -q getPlumeScripts
+      - name: ci-org-and-branch
+        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+      - name: git-changes
+        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:

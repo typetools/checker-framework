@@ -249,16 +249,16 @@ def git_repo_exists_at_path(repo_root: Path) -> bool:
 def push_changes_prompt_if_fail(repo_root: Path) -> None:
     """Attempt to push changes, including tags, for the repository at the given filesystem path.
 
-    In case of failure, ask the user
-    if they would like to try again. Loop until pushing changes succeeds or the
-    user answers opts to not try again.
+    In case of failure, ask the user if they would like to try again.
+    Loop until pushing changes succeeds or the user answers opts to not try again.
     """
     while True:
-        cmd = f"(cd {repo_root} && git push --tags)"
-        result = os.system(cmd)
-        cmd = f"(cd {repo_root} && git push origin master)"
-        result = os.system(cmd)
-        if result == 0:
+        cmd = f"git -C {repo_root} push --tags"
+        subprocess.run([cmd], shell=False, check=False)
+        cmd = f"git -C {repo_root} push origin master"
+        result = subprocess.run([cmd], shell=False, check=False)
+        # Only check the second command, on the theory that both will succeed or both will fail.
+        if result.returncode == 0:
             break
         print(
             f"Could not push from: {repo_root}; result={result} for command: `{cmd}`"

@@ -15,6 +15,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
@@ -617,5 +618,29 @@ public class ElementAnnotationUtil {
     public ErrorTypeKindException(String format, Object... args) {
       super(String.format(format, args));
     }
+  }
+
+  /**
+   * Returns the formatted representation of a {@link TypeCompound}.
+   *
+   * @param tc a TypeCompound
+   * @return its string representation
+   */
+  public static String toString(TypeCompound tc) {
+    return tc + "@" + tc.getPosition();
+  }
+
+  /**
+   * Returns the formatted representation of a collection of {@link TypeCompound}s.
+   *
+   * @param tcs a collection of TypeCompounds
+   * @return its string representation
+   */
+  public static String toString(Iterable<TypeCompound> tcs) {
+    StringJoiner sj = new StringJoiner(", ", "[", "]");
+    for (TypeCompound tc : tcs) {
+      sj.add(toString(tc));
+    }
+    return sj.toString();
   }
 }
