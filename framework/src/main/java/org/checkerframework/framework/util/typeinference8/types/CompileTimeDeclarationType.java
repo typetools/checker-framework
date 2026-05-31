@@ -32,18 +32,9 @@ import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
  *  Comparator<MyClass> func = MyClass::compareByField;
  * }</pre>
  *
- * <<<<<<< HEAD
- *
- * <p>The function type is {@code compare(Comparator<MyClass> this, MyClass o1, MyClass o2)} whereas
- * the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}. ||||||| merged
- * common ancestors
- *
- * <p>The function type is {@code compare(Comparator<MyClass> this, MyClass o1, MyClass o2)} whereas
- * the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}. =======
- *
  * <p>The function type is {@code int compare(Comparator<MyClass> this, MyClass o1, MyClass o2)}
  * whereas the compile-time declaration type is {@code int compareByField(MyClass this, MyClass
- * other)}. >>>>>>> 1e838926387800e91af6613158f955363b9cf233
+ * other)}.
  */
 public class CompileTimeDeclarationType extends AbstractExecutableType {
 
