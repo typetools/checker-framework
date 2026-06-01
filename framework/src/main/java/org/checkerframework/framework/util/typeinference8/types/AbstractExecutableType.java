@@ -23,8 +23,9 @@ import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 /**
- * An inference type for a method, constructor, or method reference. This is a wrapper around {@link
- * AnnotatedExecutableType} whose methods return {@link AbstractType}.
+ * An inference type for a method call, a constructor invocation, or a compile-time declaration of a
+ * method reference. This is a wrapper around {@link AnnotatedExecutableType} whose methods return
+ * {@link AbstractType}.
  */
 public abstract class AbstractExecutableType {
 
@@ -42,7 +43,7 @@ public abstract class AbstractExecutableType {
 
   /**
    * A mapping from polymorphic annotation to {@link QualifierVar}. It keeps track of which
-   * annotation mirror should be represented by which {@code QualifierVar}.
+   * annotation mirror is be represented by which {@code QualifierVar}.
    */
   protected final AnnotationMirrorMap<QualifierVar> qualifierVars;
 
