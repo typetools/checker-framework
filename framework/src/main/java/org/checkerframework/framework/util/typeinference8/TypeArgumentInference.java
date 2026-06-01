@@ -32,15 +32,15 @@ public interface TypeArgumentInference {
   /**
    * Infer the type arguments for the method or constructor invocation given by invocation.
    *
-   * @param typeFactory the type factory used to create methodType
+   * @param typeFactory the type factory used to create executableType
    * @param invocation a tree representing the method or constructor invocation for which we are
    *     inferring type arguments
-   * @param methodType the declaration type of method elem
+   * @param executableType the declaration type of method elem
    * @return the result which includes the inferred type arguments or an error message if they were
    *     not inferred
    */
   InferenceResult inferTypeArgs(
       AnnotatedTypeFactory typeFactory,
       ExpressionTree invocation,
-      AnnotatedExecutableType methodType);
+      AnnotatedExecutableType executableType);
 }
