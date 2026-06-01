@@ -696,7 +696,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Issues an "invalid.polymorphic.qualifier" error for all polymorphic annotations written on the
-   * type parameters declaration.
+   * type parameter's declaration.
    *
    * @param typeParameterTrees the type parameters to check
    */
