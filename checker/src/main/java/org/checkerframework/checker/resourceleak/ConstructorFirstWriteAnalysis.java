@@ -109,6 +109,8 @@ final class ConstructorFirstWriteAnalysis {
    * @return true if {@code targetField} may be assigned in a field initializer or instance
    *     initializer block in {@code classTree}
    */
+  // TODO: If this implementation is too slow, it could use memoization with a cache of weak
+  // references.
   private static boolean mayBeAssignedInInitializer(
       ClassTree classTree,
       @FindDistinct VariableElement targetField,
@@ -144,7 +146,7 @@ final class ConstructorFirstWriteAnalysis {
     FIRST_ASSIGNMENT,
     /**
      * The target assignment might be a reassignment. It is disqualified by an earlier write,
-     * disallowed call, or unsupported statement form.
+     * side-effecting call, or unsupported statement form.
      */
     REASSIGNMENT,
     /** No assignment to the target field occurs in the scanned region. */
@@ -155,14 +157,14 @@ final class ConstructorFirstWriteAnalysis {
    * Scanner that checks whether a block may assign the target field.
    *
    * <p>The entry point is {@link #mayBeAssigned}. It returns true if the given block either assigns
-   * the field directly or may do so through a side-effecting method call or object creation.
+   * the field directly or may do so through a side-effecting call.
    */
   private static final class BlockAssignmentScanner extends BooleanShortCircuitScanner {
 
     /** The field being analyzed. */
     private final @InternedDistinct VariableElement targetField;
 
-    /** The annotated type factory, used to determine whether a method has any side effects. */
+    /** The annotated type factory, used to determine whether a method has side effects. */
     private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
 
     /**
@@ -179,7 +181,7 @@ final class ConstructorFirstWriteAnalysis {
 
     /**
      * Returns true if {@code block} directly assigns {@code targetField} or may assign it through a
-     * side-effecting call or object creation.
+     * side-effecting call to a method or constructor.
      *
      * @param block the block to scan
      * @param targetField the field under analyze
@@ -296,14 +298,13 @@ final class ConstructorFirstWriteAnalysis {
     @Override
     public FirstWriteScanResult visitVariable(VariableTree node, Void p) {
       // The compiler has already desugared a declaration with multiple variables
-      // (e.g., int a = 1, b = 2;) into multiple independent VariableTree nodes.
+      // (e.g., `int a = 1, b = 2;`) into multiple independent VariableTree nodes.
       return scan(node.getInitializer(), p);
     }
 
     @Override
     public FirstWriteScanResult visitTry(TryTree node, Void p) {
-      // Evaluate resource initializers before the try block. This is not sound as the implicit
-      // close() calls are not represented in the AST.
+      // Evaluate resource initializers before the try block.
       for (Tree resource : node.getResources()) {
         FirstWriteScanResult res = scan(resource, p);
         if (res != FirstWriteScanResult.UNASSIGNED) {
@@ -328,8 +329,8 @@ final class ConstructorFirstWriteAnalysis {
         FirstWriteScanResult catchRes = scan(catchTree.getBlock(), p);
         if (catchRes == FirstWriteScanResult.FIRST_ASSIGNMENT) {
           return FirstWriteScanResult.FIRST_ASSIGNMENT;
-        }
-        if (catchRes == FirstWriteScanResult.REASSIGNMENT) {
+        } else if (catchRes == FirstWriteScanResult.REASSIGNMENT) {
+          // Don't return yet because some other catch might be FIRST_ASSIGNMENT.
           catchesRes = FirstWriteScanResult.REASSIGNMENT;
         }
       }
@@ -337,7 +338,10 @@ final class ConstructorFirstWriteAnalysis {
         return catchesRes;
       }
 
-      // If catch blocks are UNASSIGNED, then continue to scan the finally block.
+      // If there were any resources, then soundness would require scanning the implicit `close()`
+      // calls.  We unsoundly assume they do not set any variables.
+
+      // If all catch blocks are UNASSIGNED, then continue to scan the finally block.
       BlockTree finallyBlock = node.getFinallyBlock();
       if (finallyBlock != null) {
         return scan(finallyBlock, p);
@@ -418,8 +422,8 @@ final class ConstructorFirstWriteAnalysis {
 
     @Override
     public FirstWriteScanResult visitNewClass(NewClassTree node, Void p) {
-      // An object creation with side effects can modify the target field (e.g., via Helper(this),
-      // where `Helper` can mutate `this`).
+      // An object creation with side effects can modify the target field (e.g., via `new
+      // Helper(this)`, where the Helper constructor can mutate `this`).
       if (cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))) {
         return super.visitNewClass(node, p);
       }
