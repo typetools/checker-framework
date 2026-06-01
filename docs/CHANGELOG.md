@@ -21,6 +21,8 @@ In `TypeHierarchy`:
 
 ### Closed issues
 
+\#7676, #7679, #7680, #7695, #7697, #7699, #7700, #7727.
+
 ## Version 4.1.0 (2026-05-01)
 
 ### User-visible changes
