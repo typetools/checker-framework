@@ -50,9 +50,10 @@ import org.plumelib.util.IPair;
  * safe initialization should be tracked. For an example, see the {@link NullnessChecker}.
  */
 public class InitializationVisitor<
-        Factory extends InitializationAnnotatedTypeFactory<Value, @MustCall({}) Store, ?, ?>,
-        Value extends CFAbstractValue<Value>,
-        Store extends InitializationStore<Value, @MustCall({}) Store>>
+        Factory extends
+            InitializationAnnotatedTypeFactory<@MustCall({}) Value, @MustCall({}) Store, ?, ?>,
+        Value extends CFAbstractValue<@MustCall({}) Value>,
+        Store extends InitializationStore<@MustCall({}) Value, @MustCall({}) Store>>
     extends BaseTypeVisitor<Factory> {
 
   /** The annotation formatter. */
