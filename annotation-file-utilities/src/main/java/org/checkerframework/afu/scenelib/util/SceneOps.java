@@ -294,7 +294,7 @@ class DiffVisitor implements ElementVisitor<Void, Pair<AElement, AElement>> {
    * @param difference side-effected to add elements that are in {@code minuend} but not in {@code
    *     subtrahend}
    * @param <K> the type of keys
-   * @param <K> the type of values
+   * @param <V> the type of values
    */
   @SuppressWarnings("resourceleak:required.method.not.known") // Not relevant to resources
   private <K, V extends AElement> void visitElements(
