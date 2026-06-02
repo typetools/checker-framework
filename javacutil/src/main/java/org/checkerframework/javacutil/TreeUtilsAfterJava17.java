@@ -110,6 +110,7 @@ public final class TreeUtilsAfterJava17 {
     private static List<? extends Tree> getLabels(
         CaseTree caseTree, boolean useDefaultCaseLabelTree) {
       if (sourceVersionNumber >= 21) {
+        assert GET_LABELS != null : "@AssumeAssertion: non-null under Java 21+";
         @SuppressWarnings("unchecked")
         List<? extends Tree> caseLabelTrees =
             (List<? extends Tree>) invokeNonNullResult(GET_LABELS, caseTree);
@@ -141,6 +142,7 @@ public final class TreeUtilsAfterJava17 {
       if (sourceVersionNumber < 21) {
         return null;
       }
+      assert GET_GUARD != null : "@AssumeAssertion: non-null under Java 21+";
       return (ExpressionTree) invoke(GET_GUARD, caseTree);
     }
   }
