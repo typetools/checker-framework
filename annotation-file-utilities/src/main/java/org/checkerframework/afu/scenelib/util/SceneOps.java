@@ -34,6 +34,7 @@ import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
  * the command line.
  */
 public final class SceneOps {
+  /** Creates a new SceneOps. */
   private SceneOps() {}
 
   /**

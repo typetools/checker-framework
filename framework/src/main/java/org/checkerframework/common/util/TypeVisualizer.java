@@ -266,6 +266,9 @@ public class TypeVisualizer {
      */
     private final class ConnectionDrawer implements AnnotatedTypeVisitor<Void, Void> {
 
+      /** Creates a new ConnectionDrawer. */
+      ConnectionDrawer() {}
+
       @Override
       public Void visit(AnnotatedTypeMirror type) {
         type.accept(this, null);

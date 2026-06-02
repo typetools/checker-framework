@@ -23,6 +23,7 @@ import org.plumelib.util.ArraySet;
 @SuppressWarnings("nullness") // TODO
 public final class CFGTranslationPhaseTwo {
 
+  /** Creates a new CFGTranslationPhaseTwo. */
   private CFGTranslationPhaseTwo() {}
 
   /**

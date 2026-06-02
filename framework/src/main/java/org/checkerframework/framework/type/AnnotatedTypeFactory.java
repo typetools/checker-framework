@@ -5116,6 +5116,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   private final class NonWildcardTypeArgCopier extends AnnotatedTypeCopier {
 
+    /** Creates a new NonWildcardTypeArgCopier. */
+    NonWildcardTypeArgCopier() {}
+
     /**
      * Copy the non-wildcard type args from {@code uncapturedType} to {@code capturedType}. Also,
      * ensure that type variables {@code capturedType} are the same object when they are refer to

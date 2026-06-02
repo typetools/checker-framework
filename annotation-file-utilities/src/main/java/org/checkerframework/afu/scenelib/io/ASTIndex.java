@@ -179,8 +179,14 @@ public final class ASTIndex extends WrapperMap<Tree, ASTRecord> {
   // better to save the current node's entry first, at a small cost to
   // the clarity of the code.)
   private final class AstIndexVisitor extends SimpleTreeVisitor<Void, ASTRecord> {
+    /** Tracks entry into and exit from classes. */
     private final Deque<Integer> counters = new ArrayDeque<>();
+
+    /** True if currently visiting within a method. */
     private @Nullable String inMethod = null;
+
+    /** Creates a new AstIndexVisitor. */
+    AstIndexVisitor() {}
 
     private void save(Tree node, ASTRecord rec, Kind kind, String sel) {
       if (node != null) {
@@ -410,7 +416,7 @@ public final class ASTIndex extends WrapperMap<Tree, ASTRecord> {
       VariableTree rcvr = node.getReceiverParameter();
       ModifiersTree mods = node.getModifiers();
       List<? extends VariableTree> params = node.getParameters();
-      String outMethod = inMethod;
+      String oldInMethod = inMethod;
       inMethod = JVMNames.getJVMMethodSignature(node);
       rec = new ASTRecord(cut, rec.className, inMethod, null, ASTPath.empty());
       if (mods != null) {
@@ -437,7 +443,7 @@ public final class ASTIndex extends WrapperMap<Tree, ASTRecord> {
       // saveAll(node.getParameters(), rec, kind, ASTPath.PARAMETER);
       saveAll(node.getThrows(), rec, kind, ASTPath.THROWS);
       save(node.getBody(), rec, kind, ASTPath.BODY);
-      inMethod = outMethod;
+      inMethod = oldInMethod;
       return defaultAction(node, rec);
     }
 
@@ -495,7 +501,7 @@ public final class ASTIndex extends WrapperMap<Tree, ASTRecord> {
     @Override
     public Void visitLambdaExpression(LambdaExpressionTree node, ASTRecord rec) {
       Kind kind = node.getKind();
-      String outMethod = inMethod;
+      String oldInMethod = inMethod;
       List<? extends VariableTree> params = node.getParameters();
       if (params != null) {
         int i = 0;
@@ -507,7 +513,7 @@ public final class ASTIndex extends WrapperMap<Tree, ASTRecord> {
         }
       }
       save(node.getBody(), rec, kind, ASTPath.BODY);
-      inMethod = outMethod;
+      inMethod = oldInMethod;
       return defaultAction(node, rec);
     }
 

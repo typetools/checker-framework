@@ -259,6 +259,7 @@ public final class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>,
     return codec.createTestDiagnosticLine(filename, currentLine, currentLineNumber);
   }
 
+  /** Read the next line. */
   @RequiresNonNull("reader")
   /*package-private*/ void advance(@UnknownInitialization JavaDiagnosticReader this)
       throws IOException {

@@ -924,6 +924,9 @@ public class DependentTypesHelper {
   private static final class AnnotatedTypeReplacer
       extends AnnotatedTypeScanner<Void, Function<AnnotationMirror, AnnotationMirror>> {
 
+    /** Creates a new AnnotatedTypeReplacer. */
+    AnnotatedTypeReplacer() {}
+
     @Override
     public Void visitTypeVariable(
         AnnotatedTypeMirror.AnnotatedTypeVariable type,

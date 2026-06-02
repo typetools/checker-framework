@@ -1562,6 +1562,12 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    */
   public static final class AnnotatedArrayType extends AnnotatedTypeMirror {
 
+    /**
+     * Creates a new AnnotatedArrayType.
+     *
+     * @param type the underlying array type
+     * @param factory the annotated type factory
+     */
     private AnnotatedArrayType(ArrayType type, AnnotatedTypeFactory factory) {
       super(type, factory);
     }
@@ -1663,19 +1669,27 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    */
   public static final class AnnotatedTypeVariable extends AnnotatedTypeMirror {
 
-    private AnnotatedTypeVariable(
-        TypeVariable type, AnnotatedTypeFactory atypeFactory, boolean declaration) {
-      super(type, atypeFactory);
-      this.declaration = declaration;
-    }
-
     /** The lower bound of the type variable. */
     private AnnotatedTypeMirror lowerBound;
 
     /** The upper bound of the type variable. */
     private AnnotatedTypeMirror upperBound;
 
+    /** True if this is a declaration, false if this is a use. */
     private boolean declaration;
+
+    /**
+     * Creates a new AnnotatedTypeVariable.
+     *
+     * @param type the underlying type variable
+     * @param atypeFactory the annotated type factory
+     * @parame declaration true if representing a declaration, false if representing a use
+     */
+    private AnnotatedTypeVariable(
+        TypeVariable type, AnnotatedTypeFactory atypeFactory, boolean declaration) {
+      super(type, atypeFactory);
+      this.declaration = declaration;
+    }
 
     @Override
     public boolean isDeclaration() {
@@ -1899,6 +1913,12 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    */
   public static final class AnnotatedNoType extends AnnotatedTypeMirror {
 
+    /**
+     * Creates a new AnnotatedNoType
+     *
+     * @param type the underlying {@code NoType}
+     * @param factory the annotated type factory
+     */
     private AnnotatedNoType(NoType type, AnnotatedTypeFactory factory) {
       super(type, factory);
     }
@@ -1945,6 +1965,12 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   /** Represents the null type. This is the type of the expression {@code null}. */
   public static final class AnnotatedNullType extends AnnotatedTypeMirror {
 
+    /**
+     * Creates a new AnnotatedNullType.
+     *
+     * @param type the underlying {@code NullType}
+     * @param factory the annotated type factory
+     */
     private AnnotatedNullType(NullType type, AnnotatedTypeFactory factory) {
       super(type, factory);
     }
@@ -1990,6 +2016,12 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    */
   public static final class AnnotatedPrimitiveType extends AnnotatedTypeMirror {
 
+    /**
+     * Creates a new AnnotatedPrimitiveType.
+     *
+     * @param type the underlying primitive type
+     * @param factory the annotated type factory
+     */
     private AnnotatedPrimitiveType(PrimitiveType type, AnnotatedTypeFactory factory) {
       super(type, factory);
     }
@@ -2387,6 +2419,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
   }
 
+  /** Represents a union type. */
   // TODO: Ensure union types are handled everywhere.
   // TODO: Should field "annotations" contain anything?
   public static final class AnnotatedUnionType extends AnnotatedTypeMirror {

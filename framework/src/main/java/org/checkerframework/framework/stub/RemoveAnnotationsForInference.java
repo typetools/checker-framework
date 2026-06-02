@@ -200,6 +200,9 @@ public final class RemoveAnnotationsForInference {
     /** The visitor instance. */
     private final RemoveAnnotationsVisitor rav = new RemoveAnnotationsVisitor();
 
+    /** Creates a new RemoveAnnotationsCallback. */
+    RemoveAnnotationsCallback() {}
+
     @Override
     public Result process(Path localPath, Path absolutePath, ParseResult<CompilationUnit> result) {
       Optional<CompilationUnit> opt = result.getResult();
@@ -306,6 +309,9 @@ public final class RemoveAnnotationsForInference {
    */
   private static final class RemoveAnnotationsVisitor
       extends GenericListVisitorAdapter<AnnotationExpr, Void> {
+
+    /** Creates a new RemoveAnnotationsVisitor. */
+    RemoveAnnotationsVisitor() {}
 
     /**
      * Returns annotations that should be removed from source code.

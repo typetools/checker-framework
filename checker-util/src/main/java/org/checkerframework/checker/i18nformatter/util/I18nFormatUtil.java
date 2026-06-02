@@ -50,6 +50,7 @@ public final class I18nFormatUtil {
    * Returns a {@link I18nConversionCategory} for every conversion found in the format string.
    *
    * @param format the format string to parse
+   * @return a {@link I18nConversionCategory} for every conversion found in the format string
    * @throws IllegalFormatException if the format is not syntactically valid
    */
   public static I18nConversionCategory[] formatParameterCategories(String format) {
@@ -136,8 +137,10 @@ public final class I18nFormatUtil {
     }
   }
 
+  /** Parser for I18n message format strings. */
   private static final class MessageFormatParser {
 
+    /** The maximum offset into the format arguments observed so far. */
     public static int maxOffset;
 
     /** The locale to use for formatting numbers and dates. Is set in {@link #parse}. */
@@ -184,6 +187,15 @@ public final class I18nFormatUtil {
       "", "short", "medium", "long", "full"
     };
 
+    /** Creates a new MessageFormatParser. */
+    MessageFormatParser() {}
+
+    /**
+     * Given a format string, returns the conversion categories in it.
+     *
+     * @param pattern a format string
+     * @return the conversion categories in the format string
+     */
     @EnsuresNonNull({"categories", "argumentIndices", "locale"})
     public static I18nConversion[] parse(String pattern) {
       categories = new ArrayList<>();

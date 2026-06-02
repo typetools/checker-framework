@@ -217,6 +217,10 @@ public final class ElementAnnotationApplier {
    */
   private static final class TypeVarAnnotator
       extends AnnotatedTypeScanner<Void, AnnotatedTypeFactory> {
+
+    /** Creates a new TypeVarAnnotator. */
+    TypeVarAnnotator() {}
+
     @Override
     public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeFactory factory) {
       TypeParameterElement tpelt = (TypeParameterElement) type.getUnderlyingType().asElement();

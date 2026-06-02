@@ -3102,6 +3102,9 @@ public final class AnnotationFileParser {
    * #processField}.
    */
   private final class AjavaAnnotationCollectorVisitor extends DefaultJointVisitor {
+    /** Creates a new AjavaAnnotationCollectorVisitor. */
+    AjavaAnnotationCollectorVisitor() {}
+
     @Override
     public Void visitClass(ClassTree javacTree, Node javaParserNode) {
       List<AnnotatedTypeVariable> typeDeclTypeParameters = null;

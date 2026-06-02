@@ -257,6 +257,10 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
    * annotations for a declaration should be placed before the type rather than the variable name.
    */
   private final class TypePositionFinder extends TreeScanner<IPair<ASTRecord, Integer>, Insertion> {
+
+    /** Creates a new TypePositionFinder. */
+    TypePositionFinder() {}
+
     private IPair<ASTRecord, Integer> pathAndPos(JCTree t) {
       return IPair.of(astRecord(t), t.pos);
     }
@@ -856,6 +860,9 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
    * method declaration annotations should be placed before all the other modifiers and annotations.
    */
   private static final class DeclarationPositionFinder extends TreeScanner<Integer, Void> {
+
+    /** Creates a new DeclarationPositionFinder. */
+    DeclarationPositionFinder() {}
 
     @Override
     public Integer visitCompilationUnit(CompilationUnitTree node, Void p) {

@@ -953,7 +953,12 @@ public final class TreeUtils {
     return (tree.getKind() == Tree.Kind.PLUS && TypesUtils.isString(typeOf(tree)));
   }
 
-  /** Returns true if the compound assignment tree is a string concatenation. */
+  /**
+   * Returns true if the compound assignment tree is a string concatenation.
+   *
+   * @param tree a compound assignment tree
+   * @return true if the compound assignment tree is a string concatenation
+   */
   public static boolean isStringCompoundConcatenation(CompoundAssignmentTree tree) {
     return (tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT && TypesUtils.isString(typeOf(tree)));
   }

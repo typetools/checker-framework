@@ -303,6 +303,10 @@ public final class JavaParserUtil {
 
   /** A visitor that clears all annotations from a JavaParser AST. */
   private static final class ClearAnnotationsVisitor extends VoidVisitorWithDefaultAction {
+
+    /** Creates a new ClearAnnotationsVisitor. */
+    ClearAnnotationsVisitor() {}
+
     @Override
     public void defaultAction(Node node) {
       for (Node child : new ArrayList<>(node.getChildNodes())) {

@@ -256,6 +256,9 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
 
     static final long serialVersionUID = 20200218L;
 
+    /** Creates a new ListOfNameRegexes. */
+    ListOfNameRegexes() {}
+
     /**
      * Update this list from the {@code names} and {@code namesExceptions} fields of a @DefaultFor
      * annotation.

@@ -383,6 +383,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
   private final class PolyCollector
       extends EquivalentAtmComboScanner<AnnotationMirrorMap<AnnotationMirror>, Void> {
 
+    /** Creates a new PolyCollector. */
+    PolyCollector() {}
+
     /**
      * Set of {@link AnnotatedTypeVariable} or {@link AnnotatedWildcardType} that have been visited.
      * Used to prevent infinite recursion on recursive types.

@@ -2,6 +2,7 @@ package org.checkerframework.afu.scenelib.io;
 
 /** {@code IOUtils} has some static methods useful to scene I/O code. */
 final class IOUtils {
+  /** Creates a new IOUtils. */
   private IOUtils() {}
 
   static String packagePart(String className) {

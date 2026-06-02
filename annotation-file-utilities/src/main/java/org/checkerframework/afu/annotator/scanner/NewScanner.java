@@ -15,6 +15,7 @@ import org.plumelib.util.IPair;
  * corresponds to the i^th new, using 0-based indexing.
  */
 public final class NewScanner extends CommonScanner {
+  /** If true, output diagnostic messages. */
   private static boolean debug = false;
 
   static Map<IPair<TreePath, Tree>, Integer> cache = new HashMap<>();

@@ -132,6 +132,10 @@ public class AnnotationMirrorToAnnotationExprConversion {
    */
   private static final class AnnotationValueConverterVisitor
       implements AnnotationValueVisitor<Expression, Void> {
+
+    /** Creates a new AnnotationValueConverterVisitor. */
+    AnnotationValueConverterVisitor() {}
+
     @Override
     public Expression visit(AnnotationValue value, Void p) {
       // This is called only if the value couldn't be dispatched to any known type, which

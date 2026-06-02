@@ -370,6 +370,7 @@ public final class CFGTranslationPhaseThree {
    * Returns a {@link PredecessorHolder} that sets the successor of a single successor block {@code
    * s}.
    *
+   * @param s a block whose single successor to set
    * @return a {@link PredecessorHolder} that sets the successor of a single successor block {@code
    *     s}
    */
