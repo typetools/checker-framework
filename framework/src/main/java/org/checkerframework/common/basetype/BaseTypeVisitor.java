@@ -2,6 +2,7 @@ package org.checkerframework.common.basetype;
 
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -524,16 +525,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     AnnotationEqualityVisitor visitor = new AnnotationEqualityVisitor();
     originalAst.accept(visitor, modifiedAst);
     if (!visitor.getAnnotationsMatch()) {
+      NodeWithAnnotations<?> node1 = visitor.getMismatchedNode1();
+      NodeWithAnnotations<?> node2 = visitor.getMismatchedNode2();
       throw new BugInCF(
           String.join(
               System.lineSeparator(),
               "Sanity check of erasing then reinserting annotations produced a different AST.",
               "File: " + root.getSourceFile(),
-              "Node class: " + visitor.getMismatchedNode1().getClass().getSimpleName(),
-              "Original node: " + oneLine(visitor.getMismatchedNode1()),
-              "Node with annotations re-inserted: " + oneLine(visitor.getMismatchedNode2()),
-              "Original annotations: " + visitor.getMismatchedNode1().getAnnotations(),
-              "Re-inserted annotations: " + visitor.getMismatchedNode2().getAnnotations(),
+              "Node class: " + node1.getClass().getSimpleName(),
+              "Original node: " + oneLine(node1),
+              "Node with annotations re-inserted: " + oneLine(node2),
+              "Original annotations: " + node1.getAnnotations(),
+              "Re-inserted annotations: " + node2.getAnnotations(),
               "Original AST:",
               originalAst.toString(),
               "Ast with annotations re-inserted: " + modifiedAst));
@@ -696,7 +699,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Issues an "invalid.polymorphic.qualifier" error for all polymorphic annotations written on the
-   * type parameters declaration.
+   * type parameter's declaration.
    *
    * @param typeParameterTrees the type parameters to check
    */
@@ -1027,16 +1030,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     methodTree = tree;
     ExecutableElement methodElement = TreeUtils.elementFromDeclaration(tree);
 
-    warnAboutTypeAnnotationsTooEarly(tree, tree.getModifiers());
+    ModifiersTree modifiers = tree.getModifiers();
+    warnAboutTypeAnnotationsTooEarly(tree, modifiers);
 
-    if (tree.getReturnType() != null) {
-      visitAnnotatedType(tree.getModifiers().getAnnotations(), tree.getReturnType());
-      warnRedundantAnnotations(tree.getReturnType(), methodType.getReturnType());
+    Tree returnType = tree.getReturnType();
+    if (returnType != null) {
+      visitAnnotatedType(modifiers.getAnnotations(), returnType);
+      warnRedundantAnnotations(returnType, methodType.getReturnType());
     } else if (TreeUtils.isConstructor(tree)) {
       maybeReportAnnoOnIrrelevant(
-          tree.getModifiers(),
-          methodType.getReturnType().getUnderlyingType(),
-          tree.getModifiers().getAnnotations());
+          modifiers, methodType.getReturnType().getUnderlyingType(), modifiers.getAnnotations());
     }
 
     try {
@@ -1507,12 +1510,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       inferredAnno = qualHierarchy.findAnnotationInSameHierarchy(annos, annotation);
     }
     if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
+      String expressionString = expression.toString();
       checker.reportError(
           methodTree,
           "contracts.postcondition",
           methodTree.getName(),
-          contractExpressionAndType(expression.toString(), inferredAnno),
-          contractExpressionAndType(expression.toString(), annotation));
+          contractExpressionAndType(expressionString, inferredAnno),
+          contractExpressionAndType(expressionString, annotation));
     }
   }
 

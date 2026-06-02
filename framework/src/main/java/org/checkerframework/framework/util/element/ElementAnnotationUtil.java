@@ -327,7 +327,7 @@ public class ElementAnnotationUtil {
    * Returns true if the typeCompound is a primary annotation for the type it targets (or lower
    * bound if this is a type variable or wildcard ). If you think of a type as a tree-like structure
    * then a nested type any type that is not the root. E.g. {@code @T List< @N String>}, @T is on a
-   * top-level NON-nested type where as the annotation @N is on a nested type.
+   * top-level NON-nested type whereas the annotation @N is on a nested type.
    *
    * @param typeCompound the type compound to inspect
    * @return true if typeCompound is placed on a nested type, false otherwise

@@ -17,6 +17,8 @@ sourceSets {
 }
 
 sourcesJar {
+  dependsOn(generateGitProperties) // uses file `git.properties`
+
   // The resources duplicate content from the src directory.
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

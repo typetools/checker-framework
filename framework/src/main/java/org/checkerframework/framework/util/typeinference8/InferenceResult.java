@@ -171,17 +171,17 @@ public class InferenceResult {
 
   /**
    * Switch the {@link TypeVariable}s in {@code results} with the {@code TypeVariable}s in {@code
-   * methodType} so that the {@code TypeVariable}s in the result are {@code .equals}. {@link
+   * executableType} so that the {@code TypeVariable}s in the result are {@code .equals}. {@link
    * TypesUtils#areSame(TypeVariable, TypeVariable)} is used to decide which type variables to swap.
    *
-   * @param methodType annotated method type
+   * @param executableType annotated method type
    * @param tree method invocation tree
    * @return this
    */
   /* package-private */ InferenceResult swapTypeVariables(
-      AnnotatedExecutableType methodType, ExpressionTree tree) {
+      AnnotatedExecutableType executableType, ExpressionTree tree) {
     Map<TypeVariable, AnnotatedTypeMirror> map = results.get(tree);
-    for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
+    for (AnnotatedTypeVariable tv : executableType.getTypeVariables()) {
       TypeVariable typeVariable = tv.getUnderlyingType();
       for (TypeVariable t : new HashSet<>(map.keySet())) {
         if (TypesUtils.areSame(t, typeVariable)) {
