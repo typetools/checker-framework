@@ -199,6 +199,10 @@ public class Main {
   @Option("Print error stack")
   public static boolean print_error_stack = false;
 
+  /** Debugging flag. */
+  // TODO: remove this.
+  public static boolean temporaryDebug = false;
+
   /** Does the work of {@link #filteredScene}. */
   @SuppressWarnings("resourceleak:required.method.not.known") // Not relevant to resources
   private static ElementVisitor<Void, AElement> classFilter =
@@ -582,6 +586,12 @@ public class Main {
       IndexFileSpecification spec = new IndexFileSpecification(jaifFile);
       try {
         List<Insertion> parsedSpec = spec.parse();
+        if (temporaryDebug) {
+          System.out.printf("parsedSpec (size %d):%n", parsedSpec.size());
+          for (Insertion insertion : parsedSpec) {
+            System.out.printf("  %s, isInserted=%s%n", insertion, insertion.isInserted());
+          }
+        }
         AScene scene = spec.getScene();
         parsedSpec.sort(
             (Insertion i1, Insertion i2) -> {
