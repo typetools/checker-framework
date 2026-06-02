@@ -286,8 +286,15 @@ class DiffVisitor implements ElementVisitor<Void, Pair<AElement, AElement>> {
   }
 
   /**
-   * Calculates difference between {@code minuend} and first component of {@code eltPair}, adding
-   * results to second component of {@code eltPair}.
+   * Calculates difference between {@code minuend} and {@code subtrahend}, adding results to {@code
+   * difference}.
+   *
+   * @param minuend the first argument to diff
+   * @param subtrahend the second argument
+   * @param difference side-effected to add elements that are in {@code minuend} but not in {@code
+   *     subtrahend}
+   * @param <K> the type of keys
+   * @param <V> the type of values
    */
   private <K, V extends AElement> void visitElements(
       VivifyingMap<K, V> minuend, VivifyingMap<K, V> subtrahend, VivifyingMap<K, V> difference) {
