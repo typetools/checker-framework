@@ -511,9 +511,9 @@ public final class AnnotatedTypes {
     while (enclosingType != null) {
       TypeElement enclosingTypeElement = (TypeElement) enclosingType.asElement();
       addTypeVarMappings(types, atypeFactory, receiverType, enclosingTypeElement, mappings);
-      if (enclosingType.getEnclosingType() != null
-          && enclosingType.getEnclosingType().getKind() == TypeKind.DECLARED) {
-        enclosingType = (DeclaredType) enclosingType.getEnclosingType();
+      TypeMirror enclosingOfEnclosing = enclosingType.getEnclosingType();
+      if (enclosingOfEnclosing != null && enclosingOfEnclosing.getKind() == TypeKind.DECLARED) {
+        enclosingType = (DeclaredType) enclosingOfEnclosing;
       } else {
         enclosingType = null;
       }
@@ -1025,15 +1025,16 @@ public final class AnnotatedTypes {
 
     // Handle anonymous constructors that extend a class with an enclosing type,
     // as in `new MyClass() { ... }`.
-    if (method.getElement().getKind() == ElementKind.CONSTRUCTOR
-        && method.getElement().getEnclosingElement().getSimpleName().contentEquals("")) {
+    ExecutableElement methodElement = method.getElement();
+    if (methodElement.getKind() == ElementKind.CONSTRUCTOR
+        && methodElement.getEnclosingElement().getSimpleName().contentEquals("")) {
       DeclaredType t =
           TypesUtils.getSuperClassOrInterface(
-              method.getElement().getEnclosingElement().asType(), atypeFactory.types);
-      if (t.getEnclosingType() != null) {
+              methodElement.getEnclosingElement().asType(), atypeFactory.types);
+      TypeMirror enclosingType = t.getEnclosingType();
+      if (enclosingType != null) {
         if (!parameters.isEmpty()) {
-          if (atypeFactory.types.isSameType(
-              t.getEnclosingType(), parameters.get(0).getUnderlyingType())) {
+          if (atypeFactory.types.isSameType(enclosingType, parameters.get(0).getUnderlyingType())) {
             if (args.isEmpty()
                 || !atypeFactory.types.isSameType(
                     TreeUtils.typeOf(args.get(0)), parameters.get(0).getUnderlyingType())) {
@@ -1189,7 +1190,8 @@ public final class AnnotatedTypes {
     visited.add(type);
 
     if (!found && !vis) {
-      if (type.getKind() == TypeKind.DECLARED) {
+      TypeKind kind = type.getKind();
+      if (kind == TypeKind.DECLARED) {
         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
         for (AnnotatedTypeMirror typeMirror : declaredType.getTypeArguments()) {
           found |= containsModifierImpl(typeMirror, modifier, visited);
@@ -1197,21 +1199,23 @@ public final class AnnotatedTypes {
             break;
           }
         }
-      } else if (type.getKind() == TypeKind.ARRAY) {
+      } else if (kind == TypeKind.ARRAY) {
         AnnotatedArrayType arrayType = (AnnotatedArrayType) type;
         found = containsModifierImpl(arrayType.getComponentType(), modifier, visited);
-      } else if (type.getKind() == TypeKind.TYPEVAR) {
+      } else if (kind == TypeKind.TYPEVAR) {
         AnnotatedTypeVariable atv = (AnnotatedTypeVariable) type;
-        if (atv.getUpperBound() != null) {
-          found = containsModifierImpl(atv.getUpperBound(), modifier, visited);
+        AnnotatedTypeMirror upperBound = atv.getUpperBound();
+        if (upperBound != null) {
+          found = containsModifierImpl(upperBound, modifier, visited);
         }
         if (!found && atv.getLowerBound() != null) {
           found = containsModifierImpl(atv.getLowerBound(), modifier, visited);
         }
-      } else if (type.getKind() == TypeKind.WILDCARD) {
+      } else if (kind == TypeKind.WILDCARD) {
         AnnotatedWildcardType awc = (AnnotatedWildcardType) type;
-        if (awc.getExtendsBound() != null) {
-          found = containsModifierImpl(awc.getExtendsBound(), modifier, visited);
+        AnnotatedTypeMirror extendsBound = awc.getExtendsBound();
+        if (extendsBound != null) {
+          found = containsModifierImpl(extendsBound, modifier, visited);
         }
         if (!found && awc.getSuperBound() != null) {
           found = containsModifierImpl(awc.getSuperBound(), modifier, visited);

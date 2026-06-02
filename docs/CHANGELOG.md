@@ -3,6 +3,14 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
+## Version 4.2.1 (2026-07-01)
+
+### User-visible changes
+
+### Implementation details
+
+### Closed issues
+
 ## Version 4.2.0 (2026-06-01)
 
 ### User-visible changes
@@ -20,6 +28,8 @@ In `TypeHierarchy`:
 * new methods `equalsShallowEffective()`.
 
 ### Closed issues
+
+\#7676, #7679, #7680, #7695, #7697, #7699, #7700, #7727.
 
 ## Version 4.1.0 (2026-05-01)
 
