@@ -5114,7 +5114,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>To use, call {@link NonWildcardTypeArgCopier#copy} rather than a visit method.
    */
-  private class NonWildcardTypeArgCopier extends AnnotatedTypeCopier {
+  private final class NonWildcardTypeArgCopier extends AnnotatedTypeCopier {
+
+    /** Creates a new NonWildcardTypeArgCopier. */
+    NonWildcardTypeArgCopier() {}
 
     /**
      * Copy the non-wildcard type args from {@code uncapturedType} to {@code capturedType}. Also,

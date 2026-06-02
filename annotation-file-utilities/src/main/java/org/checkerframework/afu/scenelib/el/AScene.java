@@ -403,11 +403,11 @@ public class AScene implements Cloneable {
     int status = 0;
     checkClones = true;
 
-    for (int i = 0; i < args.length; i++) {
+    for (String arg : args) {
       AScene s0 = new AScene();
-      System.out.print(args[i] + ": ");
+      System.out.print(arg + ": ");
       try {
-        IndexFileParser.parseFile(args[i], s0);
+        IndexFileParser.parseFile(arg, s0);
         @SuppressWarnings({
           "UnusedVariable",
           "PMD.UnusedLocalVariable"

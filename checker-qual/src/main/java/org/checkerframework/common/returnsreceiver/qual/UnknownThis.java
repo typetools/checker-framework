@@ -23,6 +23,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
 @QualifierForLiterals(LiteralKind.NULL)
-@DefaultFor(value = TypeUseLocation.LOWER_BOUND)
+@DefaultFor(TypeUseLocation.LOWER_BOUND)
 @InvisibleQualifier
 public @interface UnknownThis {}

@@ -55,7 +55,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
         continue;
       }
       formatAnnotationMirror(obj, sb);
-      sb.append(" ");
+      sb.append(' ');
     }
     return sb.toString();
   }
@@ -76,13 +76,18 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
     return sb.toString();
   }
 
-  /** A helper method to output a single AnnotationMirror, without showing full package names. */
+  /**
+   * A helper method to output a single AnnotationMirror, without showing full package names.
+   *
+   * @param am the annotation to formate
+   * @param sb where to output the annotation's formatted representation
+   */
   protected void formatAnnotationMirror(AnnotationMirror am, StringBuilder sb) {
-    sb.append("@");
+    sb.append('@');
     sb.append(am.getAnnotationType().asElement().getSimpleName());
     Map<ExecutableElement, AnnotationValue> args = removeDefaultValues(am.getElementValues());
     if (!args.isEmpty()) {
-      sb.append("(");
+      sb.append('(');
       boolean oneValue = false;
       if (args.size() == 1) {
         Map.Entry<ExecutableElement, AnnotationValue> first = args.entrySet().iterator().next();
@@ -99,12 +104,13 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
               sb.append(", ");
             }
             notfirst = true;
-            sb.append(arg.getKey().getSimpleName() + "=");
+            sb.append(arg.getKey().getSimpleName());
+            sb.append('=');
             formatAnnotationMirrorArg(arg.getValue(), sb);
           }
         }
       }
-      sb.append(")");
+      sb.append(')');
     }
   }
 
@@ -152,7 +158,9 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
       }
     } else if (VariableElement.class.isAssignableFrom(val.getClass())) {
       VariableElement ve = (VariableElement) val;
-      sb.append(ve.getEnclosingElement().getSimpleName() + "." + ve.getSimpleName());
+      sb.append(ve.getEnclosingElement().getSimpleName());
+      sb.append('.');
+      sb.append(ve.getSimpleName());
     } else {
       sb.append(av.toString());
     }

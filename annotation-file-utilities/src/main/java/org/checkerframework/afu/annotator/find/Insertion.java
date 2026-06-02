@@ -360,7 +360,7 @@ public abstract class Insertion {
     for (String annotation : type.getAnnotations()) {
       AnnotationInsertion ins = new AnnotationInsertion(annotation);
       result.append(ins.getText(abbreviate));
-      result.append(" ");
+      result.append(' ');
       if (abbreviate) {
         packageNames.addAll(ins.getPackageNames());
       }

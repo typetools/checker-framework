@@ -34,7 +34,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  *
  * @see AnnotationUtils
  */
-public class TypeAnnotationUtils {
+public final class TypeAnnotationUtils {
 
   // Class cannot be instantiated.
   private TypeAnnotationUtils() {

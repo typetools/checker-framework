@@ -48,7 +48,7 @@ import org.plumelib.util.CollectionsPlume;
  *
  * <p>Note: {@code AnnotationMirror}s are immutable.
  */
-public class AnnotationUtils {
+public final class AnnotationUtils {
 
   // Class cannot be instantiated.
   private AnnotationUtils() {
@@ -281,7 +281,7 @@ public class AnnotationUtils {
   public static @Nullable AnnotationMirror getSame(
       Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
     for (AnnotationMirror an : c) {
-      if (AnnotationUtils.areSame(an, anno)) {
+      if (areSame(an, anno)) {
         return an;
       }
     }
@@ -318,7 +318,7 @@ public class AnnotationUtils {
   public static @Nullable AnnotationMirror getAnnotationByClass(
       Collection<? extends AnnotationMirror> c, Class<? extends Annotation> anno) {
     for (AnnotationMirror an : c) {
-      if (AnnotationUtils.areSameByClass(an, anno)) {
+      if (areSameByClass(an, anno)) {
         return an;
       }
     }
@@ -348,7 +348,7 @@ public class AnnotationUtils {
   public static @Nullable AnnotationMirror getAnnotationByName(
       Collection<? extends AnnotationMirror> c, String anno) {
     for (AnnotationMirror an : c) {
-      if (AnnotationUtils.areSameByName(an, anno)) {
+      if (areSameByName(an, anno)) {
         return an;
       }
     }
@@ -380,7 +380,7 @@ public class AnnotationUtils {
   public static @Nullable AnnotationMirror getSameByName(
       Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
     for (AnnotationMirror an : c) {
-      if (AnnotationUtils.areSameByName(an, anno)) {
+      if (areSameByName(an, anno)) {
         return an;
       }
     }
@@ -1021,7 +1021,7 @@ public class AnnotationUtils {
     if (av == null) {
       throw new BugInCF("getElementValueEnumArray(%s, %s, ...)", anno, element);
     }
-    return AnnotationUtils.annotationValueListToEnumArray(av, expectedType);
+    return annotationValueListToEnumArray(av, expectedType);
   }
 
   /**
@@ -1041,7 +1041,7 @@ public class AnnotationUtils {
     if (av == null) {
       return defaultValue;
     } else {
-      return AnnotationUtils.annotationValueListToEnumArray(av, expectedType);
+      return annotationValueListToEnumArray(av, expectedType);
     }
   }
 
@@ -1486,7 +1486,7 @@ public class AnnotationUtils {
    */
   public static Class<?> annotationMirrorToClass(AnnotationMirror am) {
     try {
-      return Class.forName(AnnotationUtils.annotationBinaryName(am));
+      return Class.forName(annotationBinaryName(am));
     } catch (ClassNotFoundException e) {
       throw new BugInCF(e);
     }

@@ -91,9 +91,9 @@ public class ATypeElement extends AElement {
     sb.append(" : ");
     for (Annotation a : tlAnnotationsHere) {
       sb.append(a.toString());
-      sb.append(" ");
+      sb.append(' ');
     }
-    sb.append("{");
+    sb.append('{');
     String linePrefix = "  ";
     for (Map.Entry<List<TypePathEntry>, ATypeElement> entry : innerTypes.entrySet()) {
       sb.append(linePrefix);
@@ -102,7 +102,7 @@ public class ATypeElement extends AElement {
       sb.append(entry.getValue().toString());
       sb.append(lineSep);
     }
-    sb.append("}");
+    sb.append('}');
     return sb.toString();
   }
 

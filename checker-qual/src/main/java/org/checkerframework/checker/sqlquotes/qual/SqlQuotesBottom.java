@@ -23,5 +23,5 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 @InvisibleQualifier
 @SubtypeOf({SqlEvenQuotes.class, SqlOddQuotes.class})
-@DefaultFor(value = {TypeUseLocation.LOWER_BOUND})
+@DefaultFor({TypeUseLocation.LOWER_BOUND})
 public @interface SqlQuotesBottom {}

@@ -186,7 +186,11 @@ public class KeyForPropagator {
    * types to the second type, if the second type is annotated with @UnknownKeyFor or has no
    * annotation in the KeyFor hierarchy.
    */
-  private class KeyForPropagationReplacer extends AnnotatedTypeReplacer {
+  private final class KeyForPropagationReplacer extends AnnotatedTypeReplacer {
+
+    /** Creates a new KeyForPropagationReplacer. */
+    KeyForPropagationReplacer() {}
+
     @Override
     protected void replaceAnnotations(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
       AnnotationMirror fromKeyFor = from.getPrimaryAnnotationInHierarchy(UNKNOWN_KEYFOR);

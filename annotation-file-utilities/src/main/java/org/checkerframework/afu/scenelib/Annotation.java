@@ -248,7 +248,7 @@ public final class Annotation {
 
     // TODO: figure out how to consider abbreviated annotation names.
     // See org.checkerframework.afu.annotator.find.AnnotationInsertion.getText(boolean, boolean)
-    sb.append("@");
+    sb.append('@');
     sb.append(def.name);
     if (fieldValues.size() == 1 && fieldValues.containsKey("value")) {
       @SuppressWarnings("nullness:assignment") // just checked containsKey
@@ -268,7 +268,8 @@ public final class Annotation {
         } else {
           notfirst = true;
         }
-        sb.append(field.getKey() + "=");
+        sb.append(field.getKey());
+        sb.append('=');
         AnnotationFieldType fieldType = def.fieldTypes.get(field.getKey());
         fieldType.format(sb, field.getValue());
       }

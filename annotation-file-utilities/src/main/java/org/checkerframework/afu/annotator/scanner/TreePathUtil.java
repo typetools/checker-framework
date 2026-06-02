@@ -19,7 +19,7 @@ import java.lang.invoke.MethodType;
 import java.lang.invoke.VarHandle;
 
 /** Utility methods relating to TreePaths. */
-public class TreePathUtil {
+public final class TreePathUtil {
 
   /** Do not instantiate this class. */
   private TreePathUtil() {

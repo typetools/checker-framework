@@ -21,7 +21,7 @@ import org.plumelib.util.StringsPlume;
  * @checker_framework.manual #dependent-types Annotations whose argument is a Java expression
  *     (dependent type annotations)
  */
-public class JavaExpressionParseUtil {
+public final class JavaExpressionParseUtil {
 
   /** Do not instantiate. */
   private JavaExpressionParseUtil() {

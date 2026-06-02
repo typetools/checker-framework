@@ -12,8 +12,8 @@ import java.util.Map;
  *   <li>{@link #prune} removes empty values
  * </ul>
  *
- * @param <K> the type of keys
- * @param <V> the type of values
+ * @param <K> the type of the map keys
+ * @param <V> the type of the map values
  */
 public abstract class VivifyingMap<K, V> extends WrapperMap<K, V> {
   /**

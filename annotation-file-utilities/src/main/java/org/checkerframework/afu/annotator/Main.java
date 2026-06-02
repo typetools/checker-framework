@@ -134,7 +134,8 @@ import org.plumelib.util.IPair;
  *
  * <!-- end options doc -->
  */
-public class Main {
+@SuppressWarnings("PMD.ShortClassName")
+public final class Main {
 
   /** Do not instantiate. */
   private Main() {
@@ -403,7 +404,7 @@ public class Main {
           } catch (NumberFormatException e) {
             TreePath path = ASTIndex.getTreePath(tree, rec);
             JCTree.JCVariableDecl varTree = null;
-            JCTree.JCMethodDecl methTree = null;
+            JCTree.JCMethodDecl methTree;
             loop:
             while (path != null) {
               Tree leaf = path.getLeaf();
@@ -1018,13 +1019,9 @@ public class Main {
           if (pkg.isEmpty()) {
             outfile = new File(outdir, javafile.getName());
           } else {
-            @SuppressWarnings("StringSplitter") // false positive because pkg is non-empty
-            String[] pkgPath = pkg.split("\\.");
-            StringBuilder sb = new StringBuilder(outdir);
-            for (int i = 0; i < pkgPath.length; i++) {
-              sb.append(File.separator).append(pkgPath[i]);
-            }
-            outfile = new File(sb.toString(), javafile.getName());
+            // `pkg` is non-empty.
+            String path = outdir + File.separator + pkg.replace(".", File.separator);
+            outfile = new File(path, javafile.getName());
           }
           outfile.getParentFile().mkdirs();
         }

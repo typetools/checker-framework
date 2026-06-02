@@ -39,7 +39,7 @@ import org.checkerframework.framework.util.typeinference8.types.VariableBounds.B
  * #resolve(Variable, BoundSet, Java8InferenceContext)}, which create {@link Resolution} objects
  * that actually perform the resolution.
  */
-public class Resolution {
+public final class Resolution {
 
   /**
    * Instantiates a set of variables, {@code as}.

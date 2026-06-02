@@ -16,7 +16,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * <p>{@code Range} is immutable.
  */
-public class Range {
+public final class Range {
 
   /** The lower bound of the interval, inclusive. */
   public final long from;
