@@ -254,6 +254,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
    */
   private static final class ListOfNameRegexes extends ArrayList<NameRegexes> {
 
+    /** The serial version UID. */
     static final long serialVersionUID = 20200218L;
 
     /** Creates a new ListOfNameRegexes. */

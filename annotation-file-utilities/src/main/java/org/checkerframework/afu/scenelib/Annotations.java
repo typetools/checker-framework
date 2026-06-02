@@ -21,7 +21,7 @@ import org.checkerframework.checker.signature.qual.BinaryName;
  * convention of {@link java.util.Collections}.
  */
 public final class Annotations {
-  /* Do not instantiate. */
+  /** Do not instantiate. */
   private Annotations() {
     throw new Error("Do not instantiate");
   }

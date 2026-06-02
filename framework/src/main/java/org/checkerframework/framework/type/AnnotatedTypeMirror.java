@@ -1683,7 +1683,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      *
      * @param type the underlying type variable
      * @param atypeFactory the annotated type factory
-     * @parame declaration true if representing a declaration, false if representing a use
+     * @param declaration true if representing a declaration, false if representing a use
      */
     private AnnotatedTypeVariable(
         TypeVariable type, AnnotatedTypeFactory atypeFactory, boolean declaration) {

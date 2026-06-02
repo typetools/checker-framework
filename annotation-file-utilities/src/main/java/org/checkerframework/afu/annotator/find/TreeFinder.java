@@ -261,10 +261,23 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
     /** Creates a new TypePositionFinder. */
     TypePositionFinder() {}
 
+    /**
+     * Returns the path and insertion position for a type annotation on the given tree.
+     *
+     * @param t a tree
+     * @return the path and insertion position for a type annotation on the given tree
+     */
     private IPair<ASTRecord, Integer> pathAndPos(JCTree t) {
       return IPair.of(astRecord(t), t.pos);
     }
 
+    /**
+     * Returns the path and the given insertion position for a type annotation on the given tree.
+     *
+     * @param t a tree
+     * @param i the value to return as the insertion position
+     * @return the path and the given insertion position for a type annotation on the given tree
+     */
     private IPair<ASTRecord, Integer> pathAndPos(JCTree t, int i) {
       return IPair.of(astRecord(t), i);
     }
