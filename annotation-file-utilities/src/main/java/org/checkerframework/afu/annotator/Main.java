@@ -199,6 +199,7 @@ public class Main {
   // TODO: remove this.
   public static boolean temporaryDebug = false;
 
+  /** Does the work of {@link #filteredScene}. */
   @SuppressWarnings("resourceleak:required.method.not.known") // Not relevant to resources
   private static ElementVisitor<Void, AElement> classFilter =
       new ElementVisitor<Void, AElement>() {

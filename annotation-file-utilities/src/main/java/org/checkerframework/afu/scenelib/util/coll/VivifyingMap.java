@@ -12,6 +12,9 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
  *       empty value and returns that.
  *   <li>{@link #prune} removes empty values
  * </ul>
+ *
+ * @param <K> the type of keys
+ * @param <V> the type of values
  */
 public abstract class VivifyingMap<K, V> extends WrapperMap<K, @MustCall({}) V> {
   /**
