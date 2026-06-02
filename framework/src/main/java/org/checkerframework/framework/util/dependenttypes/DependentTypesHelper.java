@@ -37,6 +37,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
@@ -52,7 +53,6 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.DoubleAnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -108,7 +108,7 @@ import org.plumelib.util.CollectionsPlume;
  */
 public class DependentTypesHelper {
 
-  /** AnnotatedTypeFactory */
+  /** AnnotatedTypeFactory. */
   protected final AnnotatedTypeFactory factory;
 
   /**
@@ -323,21 +323,19 @@ public class DependentTypesHelper {
     }
 
     StringToJavaExpression stringToJavaExpr;
-    if (tree instanceof MethodInvocationTree) {
+    if (tree instanceof MethodInvocationTree mit) {
       stringToJavaExpr =
           stringExpr ->
-              StringToJavaExpression.atMethodInvocation(
-                  stringExpr, (MethodInvocationTree) tree, factory.getChecker());
+              StringToJavaExpression.atMethodInvocation(stringExpr, mit, factory.getChecker());
       if (debugStringToJavaExpression) {
         System.out.printf(
             "atInvocation(%s, %s) 1 created %s%n",
             methodType, TreeUtils.toStringTruncated(tree, 65), stringToJavaExpr);
       }
-    } else if (tree instanceof NewClassTree) {
+    } else if (tree instanceof NewClassTree nct) {
       stringToJavaExpr =
           stringExpr ->
-              StringToJavaExpression.atConstructorInvocation(
-                  stringExpr, (NewClassTree) tree, factory.getChecker());
+              StringToJavaExpression.atConstructorInvocation(stringExpr, nct, factory.getChecker());
       if (debugStringToJavaExpression) {
         System.out.printf(
             "atInvocation(%s, %s) 2 created %s%n",
@@ -439,13 +437,9 @@ public class DependentTypesHelper {
       // If this is a synthetic created by dataflow, the path will be null.
       return;
     }
-    ElementKind variableKind = variableElt.getKind();
-    if (ElementUtils.isBindingVariable(variableElt)) {
-      // Treat binding variables the same as local variables.
-      variableKind = ElementKind.LOCAL_VARIABLE;
-    }
-    switch (variableKind) {
-      case PARAMETER:
+
+    switch (variableElt.getKind()) {
+      case PARAMETER -> {
         TreePath pathTillEnclTree =
             TreePathUtil.pathTillOfKind(pathToVariableDecl, METHOD_OR_LAMBDA);
         if (pathTillEnclTree == null) {
@@ -453,8 +447,7 @@ public class DependentTypesHelper {
         }
         Tree enclTree = pathTillEnclTree.getLeaf();
 
-        if (enclTree instanceof MethodTree) {
-          MethodTree methodDeclTree = (MethodTree) enclTree;
+        if (enclTree instanceof MethodTree methodDeclTree) {
           StringToJavaExpression stringToJavaExpr =
               stringExpr ->
                   StringToJavaExpression.atMethodBody(
@@ -488,11 +481,8 @@ public class DependentTypesHelper {
           }
           convertAnnotatedTypeMirror(stringToJavaExpr, type);
         }
-        break;
-
-      case LOCAL_VARIABLE:
-      case RESOURCE_VARIABLE:
-      case EXCEPTION_PARAMETER:
+      }
+      case BINDING_VARIABLE, LOCAL_VARIABLE, RESOURCE_VARIABLE, EXCEPTION_PARAMETER -> {
         StringToJavaExpression stringToJavaExprVar =
             stringExpr ->
                 StringToJavaExpression.atPath(stringExpr, pathToVariableDecl, factory.getChecker());
@@ -505,10 +495,8 @@ public class DependentTypesHelper {
               stringToJavaExprVar);
         }
         convertAnnotatedTypeMirror(stringToJavaExprVar, type);
-        break;
-
-      case FIELD:
-      case ENUM_CONSTANT:
+      }
+      case FIELD, ENUM_CONSTANT -> {
         StringToJavaExpression stringToJavaExprField =
             stringExpr ->
                 StringToJavaExpression.atFieldDecl(stringExpr, variableElt, factory.getChecker());
@@ -521,11 +509,10 @@ public class DependentTypesHelper {
               stringToJavaExprField);
         }
         convertAnnotatedTypeMirror(stringToJavaExprField, type);
-        break;
-
-      default:
-        throw new BugInCF(
-            "unexpected element kind " + variableElt.getKind() + " for " + variableElt);
+      }
+      default ->
+          throw new BugInCF(
+              "unexpected element kind " + variableElt.getKind() + " for " + variableElt);
     }
   }
 
@@ -574,10 +561,7 @@ public class DependentTypesHelper {
     }
 
     switch (elt.getKind()) {
-      case PARAMETER:
-      case LOCAL_VARIABLE:
-      case RESOURCE_VARIABLE:
-      case EXCEPTION_PARAMETER:
+      case PARAMETER, LOCAL_VARIABLE, RESOURCE_VARIABLE, EXCEPTION_PARAMETER -> {
         Tree declarationTree = factory.declarationFromElement(elt);
         if (declarationTree == null) {
           if (elt.getKind() == ElementKind.PARAMETER) {
@@ -597,11 +581,9 @@ public class DependentTypesHelper {
 
         atVariableDeclaration(type, declarationTree, (VariableElement) elt);
         return;
-
-      default:
-        // It's not a local variable (it might be METHOD, CONSTRUCTOR, CLASS, or INTERFACE,
-        // for example), so there is nothing to do.
-        break;
+      }
+      default -> {} // It's not a local variable (it might be METHOD, CONSTRUCTOR, CLASS, or
+        // INTERFACE, for example), so there is nothing to do.
     }
   }
 
@@ -847,7 +829,7 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Whether or not {@code expression} should be passed to the new annotation unchanged. If this
+   * Returns true if {@code expression} should be passed to the new annotation unchanged. If this
    * method returns true, the {@code expression} is not parsed.
    *
    * <p>The default implementation returns true if the {@code expression} is an expression error
@@ -855,8 +837,7 @@ public class DependentTypesHelper {
    * this method to add additional logic.
    *
    * @param expression an expression string in a dependent types annotation
-   * @return whether or not {@code expression} should be passed through unchanged to the new
-   *     annotation
+   * @return true if {@code expression} should be passed through unchanged to the new annotation
    */
   protected boolean shouldPassThroughExpression(String expression) {
     return DependentTypesError.isExpressionError(expression);
@@ -1018,7 +999,7 @@ public class DependentTypesHelper {
     if (errorTree instanceof VariableTree) {
       Tree typeTree = ((VariableTree) errorTree).getType();
       // Don't report the error at the type if the type is not present in source code.
-      if (((JCTree) typeTree).getPreferredPosition() != -1) {
+      if (typeTree != null && ((JCTree) typeTree).getPreferredPosition() != -1) {
         ModifiersTree modifiers = ((VariableTree) errorTree).getModifiers();
         errorTree = typeTree;
         for (AnnotationTree annoTree : modifiers.getAnnotations()) {

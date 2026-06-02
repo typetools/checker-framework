@@ -11,6 +11,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
@@ -80,7 +81,7 @@ public class InferenceFactory {
   private Java8InferenceContext context;
 
   /**
-   * Creates an inference factory
+   * Creates an inference factory.
    *
    * @param context the context
    */
@@ -108,64 +109,68 @@ public class InferenceFactory {
     }
 
     switch (context.getKind()) {
-      case ASSIGNMENT:
+      case ASSIGNMENT -> {
         ExpressionTree variable = ((AssignmentTree) context).getVariable();
         AnnotatedTypeMirror atm = factory.getAnnotatedTypeLhs(variable);
         return new ProperType(atm, TreeUtils.typeOf(variable), this.context);
-      case TYPE_CAST:
+      }
+      case TYPE_CAST -> {
         Tree cast = ((TypeCastTree) context).getType();
         AnnotatedTypeMirror castType = factory.getAnnotatedTypeFromTypeTree(cast);
         return new ProperType(castType, TreeUtils.typeOf(cast), this.context);
-      case VARIABLE:
+      }
+      case VARIABLE -> {
         VariableTree variableTree = (VariableTree) context;
         AnnotatedTypeMirror variableAtm = assignedToVariable(factory, context);
         return new ProperType(variableAtm, TreeUtils.typeOf(variableTree.getType()), this.context);
-      case METHOD_INVOCATION:
+      }
+      case METHOD_INVOCATION -> {
         MethodInvocationTree methodInvocation = (MethodInvocationTree) context;
 
-        AnnotatedExecutableType methodType =
-            factory.methodFromUseWithoutTypeArgInference(methodInvocation).executableType;
+        AnnotatedExecutableType executableType =
+            factory.methodFromUseWithoutTypeArgInference(methodInvocation).executableType();
 
         AnnotatedTypeMirror paramType =
             assignedToExecutable(
-                path, methodInvocation, methodInvocation.getArguments(), methodType);
+                path, methodInvocation, methodInvocation.getArguments(), executableType);
         return new ProperType(
             paramType,
             assignedToExecutable(
                 path, methodInvocation, methodInvocation.getArguments(), this.context),
             this.context);
-      case NEW_CLASS:
+      }
+      case NEW_CLASS -> {
         NewClassTree newClassTree = (NewClassTree) context;
         AnnotatedExecutableType constructorType =
-            factory.constructorFromUseWithoutTypeArgInference(newClassTree).executableType;
+            factory.constructorFromUseWithoutTypeArgInference(newClassTree).executableType();
         AnnotatedTypeMirror constATM =
             assignedToExecutable(path, newClassTree, newClassTree.getArguments(), constructorType);
         return new ProperType(
             constATM,
             assignedToExecutable(path, newClassTree, newClassTree.getArguments(), this.context),
             this.context);
-      case NEW_ARRAY:
+      }
+      case NEW_ARRAY -> {
         NewArrayTree newArrayTree = (NewArrayTree) context;
         ArrayType arrayType = (ArrayType) TreeUtils.typeOf(newArrayTree);
         AnnotatedArrayType type = factory.getAnnotatedType((NewArrayTree) context);
         AnnotatedTypeMirror component = type.getComponentType();
         return new ProperType(component, arrayType.getComponentType(), this.context);
-      case LAMBDA_EXPRESSION:
-        {
-          LambdaExpressionTree lambdaTree = (LambdaExpressionTree) context;
-          AnnotatedExecutableType fninf = factory.getFunctionTypeFromTree(lambdaTree);
-          AnnotatedTypeMirror res = fninf.getReturnType();
-          if (res.getKind() == TypeKind.VOID) {
-            return null;
-          }
-          return new ProperType(res, res.getUnderlyingType(), this.context);
+      }
+      case LAMBDA_EXPRESSION -> {
+        LambdaExpressionTree lambdaTree = (LambdaExpressionTree) context;
+        AnnotatedExecutableType fninf = factory.getFunctionTypeFromTree(lambdaTree);
+        AnnotatedTypeMirror res = fninf.getReturnType();
+        if (res.getKind() == TypeKind.VOID) {
+          return null;
         }
-      case RETURN:
+        return new ProperType(res, res.getUnderlyingType(), this.context);
+      }
+      case RETURN -> {
         HashSet<Kind> kinds =
             new HashSet<>(Arrays.asList(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD));
         Tree enclosing = TreePathUtil.enclosingOfKind(path, kinds);
-        if (enclosing instanceof MethodTree) {
-          MethodTree methodTree = (MethodTree) enclosing;
+        if (enclosing instanceof MethodTree methodTree) {
           AnnotatedTypeMirror res = factory.getMethodReturnType(methodTree);
           return new ProperType(res, TreeUtils.typeOf(methodTree.getReturnType()), this.context);
         } else {
@@ -174,7 +179,8 @@ public class InferenceFactory {
           AnnotatedTypeMirror res = fninf.getReturnType();
           return new ProperType(res, res.getUnderlyingType(), this.context);
         }
-      default:
+      }
+      default -> {
         if (context.getKind().asInterface() == CompoundAssignmentTree.class) {
           // 11 Tree kinds are compound assignments, so don't use it in the switch
           ExpressionTree var = ((CompoundAssignmentTree) context).getVariable();
@@ -185,6 +191,7 @@ public class InferenceFactory {
           throw new BugInCF(
               "Unexpected assignment context.%nKind: %s%nTree: %s", context.getKind(), context);
         }
+      }
     }
   }
 
@@ -234,9 +241,7 @@ public class InferenceFactory {
    */
   public static AnnotatedTypeMirror assignedToVariable(
       AnnotatedTypeFactory atypeFactory, Tree assignmentContext) {
-    if (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>) {
-      final GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
-          ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory);
+    if (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf) {
       return gatf.getAnnotatedTypeLhsNoTypeVarDefault(assignmentContext);
     } else {
       return atypeFactory.getAnnotatedType(assignmentContext);
@@ -244,7 +249,7 @@ public class InferenceFactory {
   }
 
   /**
-   * Return the rhs of the assignment of an argument and its formal parameter.
+   * Returns the rhs of the assignment of an argument and its formal parameter.
    *
    * @param path path to the argument
    * @param invocation a method or constructor invocation
@@ -266,31 +271,31 @@ public class InferenceFactory {
       }
     }
 
-    ExecutableType methodType = getTypeOfMethodAdaptedToUse(invocation, context);
-    if (treeIndex >= methodType.getParameterTypes().size() - 1
+    ExecutableType executableType = getTypeOfMethodAdaptedToUse(invocation, context);
+    if (treeIndex >= executableType.getParameterTypes().size() - 1
         && TreeUtils.isVarargsCall(invocation)) {
-      treeIndex = methodType.getParameterTypes().size() - 1;
-      TypeMirror typeMirror = methodType.getParameterTypes().get(treeIndex);
+      treeIndex = executableType.getParameterTypes().size() - 1;
+      TypeMirror typeMirror = executableType.getParameterTypes().get(treeIndex);
       return ((ArrayType) typeMirror).getComponentType();
     }
 
-    return methodType.getParameterTypes().get(treeIndex);
+    return executableType.getParameterTypes().get(treeIndex);
   }
 
   /**
-   * Return the rhs of the assignment of an argument and its formal parameter.
+   * Returns the rhs of the assignment of an argument and its formal parameter.
    *
    * @param path path to the argument
    * @param invocation a method or constructor invocation
    * @param arguments the argument expression tress
-   * @param methodType the type of the method or constructor
+   * @param executableType the type of the method or constructor
    * @return the rhs of the assignment of an argument and its formal parameter
    */
   private static AnnotatedTypeMirror assignedToExecutable(
       TreePath path,
       ExpressionTree invocation,
       List<? extends ExpressionTree> arguments,
-      AnnotatedExecutableType methodType) {
+      AnnotatedExecutableType executableType) {
     int treeIndex = -1;
     for (int i = 0; i < arguments.size(); ++i) {
       ExpressionTree argumentTree = arguments.get(i);
@@ -300,41 +305,39 @@ public class InferenceFactory {
       }
     }
 
-    if (treeIndex >= methodType.getParameterTypes().size() - 1
+    if (treeIndex >= executableType.getParameterTypes().size() - 1
         && TreeUtils.isVarargsCall(invocation)) {
-      treeIndex = methodType.getParameterTypes().size() - 1;
-      AnnotatedTypeMirror typeMirror = methodType.getParameterTypes().get(treeIndex);
+      treeIndex = executableType.getParameterTypes().size() - 1;
+      AnnotatedTypeMirror typeMirror = executableType.getParameterTypes().get(treeIndex);
       return ((AnnotatedArrayType) typeMirror).getComponentType();
     }
 
-    return methodType.getParameterTypes().get(treeIndex);
+    return executableType.getParameterTypes().get(treeIndex);
   }
 
   /**
-   * Returns whether argumentTree is the tree at the leaf of path. If tree is a conditional
+   * Returns true if argumentTree is the tree at the leaf of path. If tree is a conditional
    * expression, isArgument is called recursively on the true and false expressions. If tree is a
    * switch expression isArgument is called recursively on all yielded expressions.
    *
    * @param path tree path might contain {@code argumentTree}
    * @param argumentTree an expression tree that might be in {@code path}
-   * @return whether argumentTree is the tree at the leaf of path
+   * @return true if argumentTree is the tree at the leaf of path
    */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   private static boolean isArgument(TreePath path, ExpressionTree argumentTree) {
     argumentTree = TreeUtils.withoutParens(argumentTree);
     if (argumentTree == path.getLeaf()) {
       return true;
-    } else if (argumentTree instanceof ConditionalExpressionTree) {
-      ConditionalExpressionTree conditionalExpressionTree =
-          (ConditionalExpressionTree) argumentTree;
+    } else if (argumentTree instanceof ConditionalExpressionTree conditionalExpressionTree) {
       return isArgument(path, conditionalExpressionTree.getTrueExpression())
           || isArgument(path, conditionalExpressionTree.getFalseExpression());
-    } else if (TreeUtils.isSwitchExpression(argumentTree)) {
+    } else if (argumentTree instanceof SwitchExpressionTree switchExpressionTree) {
       SwitchExpressionScanner<Boolean, Void> scanner =
           new FunctionalSwitchExpressionScanner<>(
               (tree, unused) -> isArgument(path, tree),
               (r1, r2) -> (r1 != null && r1) || (r2 != null && r2));
-      return scanner.scanSwitchExpression(argumentTree, null);
+      return scanner.scanSwitchExpression(switchExpressionTree, null);
     }
     return false;
   }
@@ -349,12 +352,12 @@ public class InferenceFactory {
    */
   private static @Nullable DeclaredType getReceiverType(ExpressionTree tree) {
     Tree receiverTree;
-    if (tree instanceof NewClassTree) {
-      receiverTree = ((NewClassTree) tree).getEnclosingExpression();
-      if (receiverTree == null && ((NewClassTree) tree).getClassBody() == null) {
-        TypeMirror t = TreeUtils.elementFromUse((NewClassTree) tree).getReceiverType();
-        if (t instanceof DeclaredType) {
-          return (DeclaredType) t;
+    if (tree instanceof NewClassTree nct) {
+      receiverTree = nct.getEnclosingExpression();
+      if (receiverTree == null && nct.getClassBody() == null) {
+        TypeMirror t = TreeUtils.elementFromUse(nct).getReceiverType();
+        if (t instanceof DeclaredType dt) {
+          return dt;
         }
         return null;
       }
@@ -373,7 +376,7 @@ public class InferenceFactory {
   }
 
   /**
-   * Return ExecutableType of the method invocation or new class tree adapted to the call site.
+   * Returns ExecutableType of the method invocation or new class tree adapted to the call site.
    *
    * @param expressionTree a method invocation or new class tree
    * @param context the context
@@ -420,8 +423,8 @@ public class InferenceFactory {
     }
 
     // Adapt to class type arguments.
-    if (expressionTree instanceof NewClassTree && !TreeUtils.isDiamondTree(expressionTree)) {
-      NewClassTree newClassTree = (NewClassTree) expressionTree;
+    if (expressionTree instanceof NewClassTree newClassTree
+        && !TreeUtils.isDiamondTree(expressionTree)) {
       List<? extends Tree> typeArgs = TreeUtils.getTypeArgumentsToNewClassTree(newClassTree);
       if (!typeArgs.isEmpty()) {
         ExecutableElement e = TreeUtils.elementFromUse(newClassTree);
@@ -444,8 +447,8 @@ public class InferenceFactory {
     }
     // Adapt to explicit method type arguments.
     List<? extends Tree> typeArgs;
-    if (expressionTree instanceof MethodInvocationTree) {
-      typeArgs = ((MethodInvocationTree) expressionTree).getTypeArguments();
+    if (expressionTree instanceof MethodInvocationTree mit) {
+      typeArgs = mit.getTypeArguments();
     } else {
       typeArgs = ((NewClassTree) expressionTree).getTypeArguments();
     }
@@ -505,27 +508,29 @@ public class InferenceFactory {
   /**
    * If a mapping, theta, for {@code invocation} doesn't exist create it by:
    *
-   * <p>Creates inference variables for the type parameters to {@code methodType} for a particular
-   * {@code invocation}. Initializes the bounds of the variables. Returns a mapping from type
-   * variables to newly created variables.
+   * <p>Creates inference variables for the type parameters to {@code executableType} for a
+   * particular {@code invocation}. Initializes the bounds of the variables. Returns a mapping from
+   * type variables to newly created variables.
    *
    * <p>Otherwise, returns the previously created mapping.
    *
    * @param invocation method or constructor invocation
-   * @param methodType type of generic method
+   * @param executableType type of generic method
    * @param context Java8InferenceContext
-   * @return a mapping of the type variables of {@code methodType} to inference variables
+   * @return a mapping of the type variables of {@code executableType} to inference variables
    */
   public Theta createThetaForInvocation(
-      ExpressionTree invocation, InvocationType methodType, Java8InferenceContext context) {
+      ExpressionTree invocation,
+      AbstractExecutableType executableType,
+      Java8InferenceContext context) {
     if (context.maps.containsKey(invocation)) {
       return context.maps.get(invocation);
     }
     Theta map = new Theta();
 
-    // Create inference variables for the type parameters to methodType
+    // Create inference variables for the type parameters to executableType
 
-    for (AnnotatedTypeVariable pl : methodType.getAnnotatedTypeVariables()) {
+    for (AnnotatedTypeVariable pl : executableType.getAnnotatedTypeVariables()) {
       @SuppressWarnings("interning:interned.object.creation")
       Variable al = new @Interned Variable(pl, pl.getUnderlyingType(), invocation, context, map);
       map.put(pl.getUnderlyingType(), al);
@@ -582,7 +587,9 @@ public class InferenceFactory {
    * @return a mapping of the type variables of {@code compileTimeDecl} to inference variables
    */
   public Theta createThetaForMethodReference(
-      MemberReferenceTree memRef, InvocationType compileTimeDecl, Java8InferenceContext context) {
+      MemberReferenceTree memRef,
+      CompileTimeDeclarationType compileTimeDecl,
+      Java8InferenceContext context) {
     if (context.maps.containsKey(memRef)) {
       return context.maps.get(memRef);
     }
@@ -704,18 +711,17 @@ public class InferenceFactory {
    * @param invocation method or constructor invocation
    * @return the type of the method or constructor invocation adapted to its arguments
    */
-  public InvocationType getTypeOfMethodAdaptedToUse(ExpressionTree invocation) {
+  public AbstractExecutableType getTypeOfMethodAdaptedToUse(ExpressionTree invocation) {
     AnnotatedExecutableType executableType;
-    if (invocation instanceof MethodInvocationTree) {
-      executableType =
-          typeFactory.methodFromUseWithoutTypeArgInference((MethodInvocationTree) invocation)
-              .executableType;
+    if (invocation instanceof MethodInvocationTree mit) {
+      executableType = typeFactory.methodFromUseWithoutTypeArgInference(mit).executableType();
     } else {
       executableType =
-          typeFactory.constructorFromUseWithoutTypeArgInference((NewClassTree) invocation)
-              .executableType;
+          typeFactory
+              .constructorFromUseWithoutTypeArgInference((NewClassTree) invocation)
+              .executableType();
     }
-    return new InvocationType(
+    return new AbstractInvocationType(
         executableType, getTypeOfMethodAdaptedToUse(invocation, context), invocation, context);
   }
 
@@ -746,7 +752,7 @@ public class InferenceFactory {
    * @param memRef method reference tree
    * @return the compile-time declaration of the method reference
    */
-  public InvocationType compileTimeDeclarationType(MemberReferenceTree memRef) {
+  public CompileTimeDeclarationType compileTimeDeclarationType(MemberReferenceTree memRef) {
     // The tree before :: is an expression or type use.
     final ExpressionTree preColonTree = memRef.getQualifierExpression();
     final MemberReferenceKind memRefKind = MemberReferenceKind.getMemberReferenceKind(memRef);
@@ -786,12 +792,18 @@ public class InferenceFactory {
     // The type of the compileTimeDeclaration if it were invoked with a receiver expression
     // of type {@code type}
     AnnotatedExecutableType compileTimeType =
-        typeFactory.methodFromUseWithoutTypeArgInference(
-                memRef, compileTimeDeclaration, enclosingType)
-            .executableType;
+        typeFactory
+            .methodFromUseWithoutTypeArgInference(memRef, compileTimeDeclaration, enclosingType)
+            .executableType();
 
-    return new InvocationType(
-        compileTimeType, compileTimeType.getUnderlyingType(), memRef, context);
+    if (enclosingType.getKind() == TypeKind.DECLARED && memRefKind.isUnbound()) {
+      // If compileTimeDeclaration is declared in a super class, then the receiver type is changed
+      // to that super type. For method references, it should remain the given enclosing type.
+      compileTimeType.setReceiverType((AnnotatedDeclaredType) enclosingType);
+    }
+
+    return new CompileTimeDeclarationType(
+        compileTimeType, compileTimeType.getUnderlyingType(), memRef, enclosingType, context);
   }
 
   /**
@@ -846,7 +858,7 @@ public class InferenceFactory {
   }
 
   /**
-   * Return the proper type for object.
+   * Returns the proper type for object.
    *
    * @return the proper type for object
    */
@@ -860,7 +872,7 @@ public class InferenceFactory {
   }
 
   /**
-   * Return the least upper bounds of {@code properTypes}.
+   * Returns the least upper bounds of {@code properTypes}.
    *
    * @param properTypes types to lub
    * @return the least upper bounds of {@code properTypes}
@@ -958,7 +970,7 @@ public class InferenceFactory {
   }
 
   /**
-   * Return the proper type for RuntimeException.
+   * Returns the proper type for RuntimeException.
    *
    * @return the proper type for RuntimeException
    */
@@ -1007,12 +1019,9 @@ public class InferenceFactory {
     }
     List<? extends AnnotatedTypeMirror> thrownTypes;
     List<? extends TypeMirror> thrownTypeMirrors;
-    if (expression instanceof LambdaExpressionTree) {
-      thrownTypeMirrors =
-          CheckedExceptionsUtil.thrownCheckedExceptions((LambdaExpressionTree) expression, context);
-      thrownTypes =
-          CheckedExceptionsUtil.thrownCheckedExceptionsATM(
-              (LambdaExpressionTree) expression, context);
+    if (expression instanceof LambdaExpressionTree let) {
+      thrownTypeMirrors = CheckedExceptionsUtil.thrownCheckedExceptions(let, context);
+      thrownTypes = CheckedExceptionsUtil.thrownCheckedExceptionsATM(let, context);
     } else {
       thrownTypeMirrors =
           TypesUtils.findFunctionType(TreeUtils.typeOf(expression), context.env).getThrownTypes();

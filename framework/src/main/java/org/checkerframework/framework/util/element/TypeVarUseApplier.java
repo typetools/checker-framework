@@ -182,38 +182,27 @@ public class TypeVarUseApplier {
   /**
    * Depending on what element type the annotations are stored on, the relevant annotations might be
    * stored with different annotation positions. getPrimaryAnnotations finds the correct annotations
-   * by annotation position and element kind and returns them
+   * by annotation position and element kind and returns them.
    */
   private static List<Attribute.TypeCompound> getAnnotations(
       Element useElem, Element declarationElem) {
-    final List<Attribute.TypeCompound> annotations;
-    switch (useElem.getKind()) {
-      case METHOD:
-        annotations = getReturnAnnos(useElem);
-        break;
-
-      case PARAMETER:
-        annotations = getParameterAnnos(useElem);
-        break;
-
-      case FIELD:
-      case LOCAL_VARIABLE:
-      case RESOURCE_VARIABLE:
-        annotations = getVariableAnnos(useElem);
-        break;
-
-      default:
-        throw new BugInCF(
-            "TypeVarUseApplier::extractAndApply : "
-                + "Unhandled element kind "
-                + useElem.getKind()
-                + "useElem ( "
-                + useElem
-                + " ) "
-                + "declarationElem ( "
-                + declarationElem
-                + " ) ");
-    }
+    final List<Attribute.TypeCompound> annotations =
+        switch (useElem.getKind()) {
+          case METHOD -> getReturnAnnos(useElem);
+          case PARAMETER -> getParameterAnnos(useElem);
+          case FIELD, LOCAL_VARIABLE, RESOURCE_VARIABLE -> getVariableAnnos(useElem);
+          default ->
+              throw new BugInCF(
+                  "TypeVarUseApplier::extractAndApply : "
+                      + "Unhandled element kind "
+                      + useElem.getKind()
+                      + "useElem ( "
+                      + useElem
+                      + " ) "
+                      + "declarationElem ( "
+                      + declarationElem
+                      + " ) ");
+        };
 
     return annotations;
   }
@@ -232,14 +221,8 @@ public class TypeVarUseApplier {
 
       TypeAnnotationPosition pos = anno.position;
       switch (pos.type) {
-        case FIELD:
-        case LOCAL_VARIABLE:
-        case RESOURCE_VARIABLE:
-        case EXCEPTION_PARAMETER:
-          annotations.add(anno);
-          break;
-
-        default:
+        case FIELD, LOCAL_VARIABLE, RESOURCE_VARIABLE, EXCEPTION_PARAMETER -> annotations.add(anno);
+        default -> {}
       }
     }
 

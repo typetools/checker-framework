@@ -37,10 +37,9 @@ public class NumericalMinusNode extends UnaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof NumericalMinusNode)) {
+    if (!(obj instanceof NumericalMinusNode other)) {
       return false;
     }
-    NumericalMinusNode other = (NumericalMinusNode) obj;
     return getOperand().equals(other.getOperand());
   }
 

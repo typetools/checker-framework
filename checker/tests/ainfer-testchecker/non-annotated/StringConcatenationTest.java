@@ -16,7 +16,7 @@ public class StringConcatenationTest {
   }
 
   void test() {
-    // :: warning: (argument)
+    // :: warning: [argument]
     expectsAinferSibling1(options_str);
   }
 

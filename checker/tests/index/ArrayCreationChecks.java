@@ -23,28 +23,28 @@ public class ArrayCreationChecks {
   }
 
   void test4(@GTENegativeOne int x, @NonNegative int y) {
-    // :: error: (array.length.negative)
+    // :: error: [array.length.negative]
     int[] newArray = new int[x + y];
     @LTEqLengthOf("newArray") int i = x;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @IndexOrHigh("newArray") int j = y;
   }
 
   void test5(@GTENegativeOne int x, @GTENegativeOne int y) {
-    // :: error: (array.length.negative)
+    // :: error: [array.length.negative]
     int[] newArray = new int[x + y];
-    // :: error: (assignment)
+    // :: error: [assignment]
     @IndexOrHigh("newArray") int i = x;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @IndexOrHigh("newArray") int j = y;
   }
 
   void test6(int x, int y) {
-    // :: error: (array.length.negative)
+    // :: error: [array.length.negative]
     int[] newArray = new int[x + y];
-    // :: error: (assignment)
+    // :: error: [assignment]
     @IndexFor("newArray") int i = x;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @IndexOrHigh("newArray") int j = y;
   }
 }

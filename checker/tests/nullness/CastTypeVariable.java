@@ -10,7 +10,7 @@ public class CastTypeVariable {
   public static <K extends MyAnnotatedTypeMirror, V extends MyAnnotatedTypeMirror> V mapGetHelper(
       Map<K, V> mappings, MyAnnotatedTypeVariable key) {
     V possValue = (V) mappings.get(key);
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     possValue.addAnnotations();
     return possValue;
   }

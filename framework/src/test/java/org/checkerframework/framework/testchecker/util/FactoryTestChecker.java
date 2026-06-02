@@ -11,7 +11,6 @@ import java.io.LineNumberReader;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,7 +19,6 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.tools.JavaFileObject;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.SourceChecker;
@@ -214,27 +212,11 @@ public class FactoryTestChecker extends BaseTypeChecker {
    * A data structure that encapsulate a string and the line number that string appears in the
    * buffer
    */
-  private static class TreeSpec {
-    public final String treeString;
-    public final long lineNumber;
+  private record TreeSpec(String treeString, long lineNumber) {
 
-    public TreeSpec(String treeString, long lineNumber) {
+    private TreeSpec(String treeString, long lineNumber) {
       this.treeString = canonizeTreeString(treeString);
       this.lineNumber = lineNumber;
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(treeString, lineNumber);
-    }
-
-    @Override
-    public boolean equals(@Nullable Object o) {
-      if (o instanceof TreeSpec) {
-        TreeSpec other = (TreeSpec) o;
-        return treeString.equals(other.treeString) && lineNumber == other.lineNumber;
-      }
-      return false;
     }
 
     @Override

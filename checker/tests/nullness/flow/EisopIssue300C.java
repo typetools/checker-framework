@@ -25,7 +25,7 @@ public final class EisopIssue300C {
 
     if (r.getF() != null) {
       r.getF().m2();
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       r.getF().toString();
     }
   }

@@ -31,7 +31,7 @@ public class ImmutableTestConfiguration implements TestConfiguration {
 
   /**
    * These files contain diagnostics that should be returned by Javac. If this list is empty, the
-   * diagnostics are instead read from comments in the Java file itself
+   * diagnostics are instead read from comments in the Java file itself.
    */
   private final List<File> diagnosticFiles;
 
@@ -64,10 +64,9 @@ public class ImmutableTestConfiguration implements TestConfiguration {
       Map<String, @Nullable String> options,
       boolean shouldEmitDebugInfo) {
     this.diagnosticFiles = Collections.unmodifiableList(diagnosticFiles);
-    this.testSourceFiles = Collections.unmodifiableList(new ArrayList<>(testSourceFiles));
+    this.testSourceFiles = List.copyOf(testSourceFiles);
     this.processors = new ArrayList<>(processors);
-    this.options =
-        Collections.unmodifiableMap(new LinkedHashMap<String, @Nullable String>(options));
+    this.options = Collections.unmodifiableMap(new LinkedHashMap<>(options));
     this.shouldEmitDebugInfo = shouldEmitDebugInfo;
   }
 

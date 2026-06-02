@@ -7,7 +7,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 public class AnnotatedTypeCopierWithReplacement {
 
   /**
-   * Return a copy of type after making the specified replacements.
+   * Returns a copy of type after making the specified replacements.
    *
    * @param type the type that will be copied with replaced components
    * @param replacementMap a mapping of {@literal referenceToReplace => referenceOfReplacement}

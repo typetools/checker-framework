@@ -26,24 +26,24 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 
   // Static field
 
-  // :: error: (required.method.not.called)
+  // :: error: [required.method.not.called]
   private static @Owning @MustCall("close") PrintStream ps_static;
 
-  // :: error: (missing.creates.mustcall.for)
+  // :: error: [missing.creates.mustcall.for]
   static void m_static() throws IOException {
     ps_static.close();
     ps_static = new PrintStream("filename.txt");
   }
 
-  // :: error: (required.method.not.called)
+  // :: error: [required.method.not.called]
   private static @Owning @MustCall("close") PrintStream ps_static_initialized1 =
       newPrintStreamWithoutExceptions();
 
-  // :: error: (required.method.not.called)
+  // :: error: [required.method.not.called]
   private static @Owning @MustCall("close") PrintStream ps_static_initialized2;
 
   static {
-    // :: error: (required.method.not.called)
+    // :: error: [required.method.not.called]
     ps_static_initialized2 = newPrintStreamWithoutExceptions();
   }
 

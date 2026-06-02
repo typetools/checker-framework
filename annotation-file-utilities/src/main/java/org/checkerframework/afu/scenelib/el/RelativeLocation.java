@@ -1,6 +1,7 @@
 package org.checkerframework.afu.scenelib.el;
 
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A {@link RelativeLocation} holds location information for a instanceof, cast, or new: either the
@@ -18,7 +19,7 @@ public final class RelativeLocation implements Comparable<RelativeLocation> {
 
   /**
    * Constructs a new {@link RelativeLocation}; the arguments are assigned to the fields of the same
-   * names. Use -1 for the relative location that you're not using
+   * names. Use -1 for the relative location that you're not using.
    */
   private RelativeLocation(int offset, int index, int type_index) {
     this.offset = offset;
@@ -59,22 +60,22 @@ public final class RelativeLocation implements Comparable<RelativeLocation> {
   }
 
   /**
-   * Returns whether this {@link RelativeLocation} equals <code>o</code>; a slightly faster variant
-   * of {@link #equals(Object)} for when the argument is statically known to be another nonnull
-   * {@link RelativeLocation}.
+   * Returns true if this {@link RelativeLocation} equals {@code o}; a slightly faster variant of
+   * {@link #equals(Object)} for when the argument is statically known to be another nonnull {@link
+   * RelativeLocation}.
    */
   public boolean equals(RelativeLocation l) {
     return compareTo(l) == 0;
   }
 
   /**
-   * This {@link RelativeLocation} equals <code>o</code> if and only if <code>o</code> is another
-   * nonnull {@link RelativeLocation} and <code>this</code> and <code>o</code> have equal {@link
-   * #offset} and {@link #index}.
+   * This {@link RelativeLocation} equals {@code o} if and only if {@code o} is another nonnull
+   * {@link RelativeLocation} and {@code this} and {@code o} have equal {@link #offset} and {@link
+   * #index}.
    */
   @Override
-  public boolean equals(Object o) {
-    return o instanceof RelativeLocation && equals((RelativeLocation) o);
+  public boolean equals(@Nullable Object o) {
+    return o instanceof RelativeLocation other && equals(other);
   }
 
   @Override

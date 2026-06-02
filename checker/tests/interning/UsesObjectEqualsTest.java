@@ -12,7 +12,7 @@ public class UsesObjectEqualsTest {
   @UsesObjectEquals
   class B extends A {}
 
-  // :: error: (overrides.equals)
+  // :: error: [overrides.equals]
   class B2 extends A {
     @Override
     public boolean equals(Object o) {
@@ -42,11 +42,11 @@ public class UsesObjectEqualsTest {
   class D {}
 
   @UsesObjectEquals
-  // :: error: (superclass.notannotated)
+  // :: error: [superclass.notannotated]
   class E extends D {}
 
   @UsesObjectEquals
-  // :: error: (overrides.equals)
+  // :: error: [overrides.equals]
   class TestEquals {
 
     @org.checkerframework.dataflow.qual.Pure

@@ -4,7 +4,7 @@ public class Varargs {
   public void testVarargsInvocation() {
     @Odd String s = null;
     aVarargsMethod(s);
-    // :: error: (argument)
+    // :: error: [argument]
     aVarargsMethod(s, "");
     aVarargsMethod(s, s);
 
@@ -12,15 +12,15 @@ public class Varargs {
     // The assignment context infers @Odd for the component type.  With invariant array
     // subtyping, this will fail, as the main type is a subtype.
     moreVarargs(new String @Odd [1]);
-    // :: warning: (cast.unsafe.constructor.invocation)
+    // :: warning: [cast.unsafe.constructor.invocation]
     moreVarargs(new @Odd String(), new @Odd String());
-    // :: error: (argument)
-    // :: warning: (cast.unsafe.constructor.invocation)
+    // :: error: [argument]
+    // :: warning: [cast.unsafe.constructor.invocation]
     moreVarargs(new String(), new @Odd String());
     moreVarargs(
-        // :: error: (argument)
+        // :: error: [argument]
         new String(),
-        // :: error: (argument)
+        // :: error: [argument]
         new String());
   }
 

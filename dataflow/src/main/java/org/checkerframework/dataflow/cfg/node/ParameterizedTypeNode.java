@@ -45,10 +45,9 @@ public class ParameterizedTypeNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ParameterizedTypeNode)) {
+    if (!(obj instanceof ParameterizedTypeNode other)) {
       return false;
     }
-    ParameterizedTypeNode other = (ParameterizedTypeNode) obj;
     return getTree().equals(other.getTree());
   }
 

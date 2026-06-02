@@ -5,10 +5,10 @@ import org.checkerframework.framework.qual.DefaultQualifier;
 @DefaultQualifier(Nullable.class)
 public class RedundantAnnoWithDefaultQualifier {
 
-  // :: warning: (redundant.anno)
+  // :: warning: [redundant.anno]
   void foo(@Nullable String message) {}
 
-  // :: warning: (redundant.anno)
+  // :: warning: [redundant.anno]
   @Nullable Integer foo() {
     return 5;
   }

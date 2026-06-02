@@ -12,12 +12,12 @@ public class Issue3033 {
       if (obj1 instanceof Test) {
         Test obj2 = new Test();
 
-        // :: error: (instanceof.nullable)
+        // :: error: [instanceof.nullable]
         if (obj1 instanceof @Nullable Test) {
           obj1 = null;
         }
 
-        // :: warning: (instanceof.nonnull.redundant)
+        // :: warning: [instanceof.nonnull.redundant]
         if (obj2 instanceof @NonNull Test) {
           obj2 = obj1;
         }

@@ -52,10 +52,9 @@ public class VariableDeclarationNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof VariableDeclarationNode)) {
+    if (!(obj instanceof VariableDeclarationNode other)) {
       return false;
     }
-    VariableDeclarationNode other = (VariableDeclarationNode) obj;
     return getName().equals(other.getName());
   }
 

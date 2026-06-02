@@ -5,7 +5,7 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.Owning;
 
 @InheritableMustCall({})
-// :: error: (inconsistent.mustcall.subtype)
+// :: error: [inconsistent.mustcall.subtype]
 public class OwningMustCallNothing implements Closeable {
 
   protected @Owning AnnotationClassLoader loader;
@@ -25,7 +25,7 @@ public class OwningMustCallNothing implements Closeable {
   public void close() {}
 }
 
-// :: error: (inconsistent.mustcall.subtype)
+// :: error: [inconsistent.mustcall.subtype]
 @MustCall({}) class OwningMustCallNothing2 implements Closeable {
 
   protected @Owning AnnotationClassLoader loader;
@@ -46,21 +46,21 @@ public class OwningMustCallNothing implements Closeable {
 }
 
 @InheritableMustCall("close")
-// :: error: (declaration.inconsistent.with.extends.clause)
+// :: error: [declaration.inconsistent.with.extends.clause]
 class SubclassMustCallClose1 extends OwningMustCallNothing {}
 
-// :: error: (declaration.inconsistent.with.extends.clause)
+// :: error: [declaration.inconsistent.with.extends.clause]
 @MustCall("close") class SubclassMustCallClose2 extends OwningMustCallNothing {}
 
 @InheritableMustCall("close")
-// :: error: (declaration.inconsistent.with.extends.clause)
+// :: error: [declaration.inconsistent.with.extends.clause]
 class SubclassMustCallClose3 extends OwningMustCallNothing2 {}
 
-// :: error: (declaration.inconsistent.with.extends.clause)
+// :: error: [declaration.inconsistent.with.extends.clause]
 @MustCall("close") class SubclassMustCallClose4 extends OwningMustCallNothing2 {}
 
 @InheritableMustCall({}) // Don't check whether AnnotationClassLoaders are closed.
-// :: error: (inconsistent.mustcall.subtype)
+// :: error: [inconsistent.mustcall.subtype]
 class AnnotationClassLoader implements Closeable {
   public void close() {}
 }

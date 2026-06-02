@@ -62,7 +62,7 @@ public class SizeInIsEmpty<E extends Object> extends AbstractSet<E> {
     if (!container.isEmpty()) {
       container.iterator().next();
     } else {
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       container.iterator().next();
     }
   }
@@ -71,7 +71,7 @@ public class SizeInIsEmpty<E extends Object> extends AbstractSet<E> {
     if (!container.isEmpty2()) {
       container.iterator().next();
     } else {
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       container.iterator().next();
     }
   }
@@ -80,7 +80,7 @@ public class SizeInIsEmpty<E extends Object> extends AbstractSet<E> {
     if (!container.isEmpty3()) {
       container.iterator().next();
     } else {
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       container.iterator().next();
     }
   }

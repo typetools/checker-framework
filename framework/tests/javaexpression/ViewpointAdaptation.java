@@ -23,19 +23,19 @@ public class ViewpointAdaptation {
     @FlowExp("this.myClass1.field") Object o2 = myClass1.annotatedField2;
 
     @FlowExp("field")
-    // :: error: (assignment)
+    // :: error: [assignment]
     Object o3 = myClass1.annotatedField1;
 
     @FlowExp("this.field")
-    // :: error: (assignment)
+    // :: error: [assignment]
     Object o4 = myClass1.annotatedField2;
 
     @FlowExp("field")
-    // :: error: (assignment)
+    // :: error: [assignment]
     Object oM2 = myClass1.getAnnotatedField1();
 
     @FlowExp("this.field")
-    // :: error: (assignment)
+    // :: error: [assignment]
     Object oM3 = myClass1.getAnnotatedField1();
   }
 }

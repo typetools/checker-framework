@@ -28,9 +28,9 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 /**
- * Process Java source files in a directory to produce, in-place, minimal stub files.
+ * Rewrites Java source files into minimal stub files.
  *
- * <p>To process a file means to remove:
+ * <p>To convert a file into a stub file means to remove:
  *
  * <ol>
  *   <li>everything that is private or package-private,
@@ -147,7 +147,7 @@ public class JavaStubifier {
 
   /** Visitor to process one compilation unit; see class documentation for details. */
   private static class MinimizerVisitor extends ModifierVisitor<Void> {
-    /** Whether to consider members implicitly public. */
+    /** True if to consider members implicitly public. */
     private boolean implicitlyPublic = false;
 
     @Override

@@ -38,7 +38,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
    * terminated by a space character, obeying the printInvisible parameter.
    *
    * @param annos a collection of annotations to print
-   * @param printInvisible whether or not to print "invisible" annotation mirrors
+   * @param printInvisible if true, print "invisible" annotation mirrors
    * @return the list of annotations converted to a String
    */
   @Override

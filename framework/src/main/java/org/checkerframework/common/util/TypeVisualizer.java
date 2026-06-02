@@ -191,8 +191,8 @@ public class TypeVisualizer {
       if (obj == null) {
         return false;
       }
-      if (obj instanceof Node) {
-        return ((Node) obj).type == this.type;
+      if (obj instanceof Node n) {
+        return n.type == this.type;
       }
 
       return false;

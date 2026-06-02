@@ -9,7 +9,7 @@ class PolyVarargs {
   }
 
   void testVarargsNoFormalsInvalid() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Untainted String tainted = varArgsNoFormals();
   }
 
@@ -20,20 +20,20 @@ class PolyVarargs {
   }
 
   void testVarargsWithFormalsInvalid() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Untainted String tainted = varArgsWithFormals(1);
   }
 
   void testVarargsWithPolyFormals() {
     @Tainted String tainted = varArgsWithPolyFormals(1);
 
-    // :: warning: (cast.unsafe)
+    // :: warning: [cast.unsafe]
     @Untainted int safeInt = (@Untainted int) 1;
     @Untainted String untainted = varArgsWithPolyFormals(safeInt, "a");
   }
 
   void testVarargsWithPolyFormalsInvalid() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Untainted String tainted = varArgsWithPolyFormals(1);
   }
 

@@ -31,7 +31,7 @@ public class MethodOverloadingContractsKeyFor {
     map.get(name(classA)).toString();
 
     put(classB);
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     map.get(name(classB)).toString();
   }
 

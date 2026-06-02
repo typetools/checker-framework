@@ -96,7 +96,7 @@ public enum ConversionCategory {
 
   /**
    * Use if no object of any type can be passed as parameter. In this case, the only legal value is
-   * null. This is seldomly needed, and indicates an error in most cases. For example:
+   * null. This is seldom needed, and indicates an error in most cases. For example:
    *
    * <pre>
    *   format("Test %1$f %1$d", null);
@@ -107,8 +107,8 @@ public enum ConversionCategory {
   NULL(null),
 
   /**
-   * Use if a parameter is not used by the formatter. This is seldomly needed, and indicates an
-   * error in most cases. For example:
+   * Use if a parameter is not used by the formatter. This is seldom needed, and indicates an error
+   * in most cases. For example:
    *
    * <pre>
    *   format("Test %1$s %3$s", "a","unused","b");
@@ -223,7 +223,7 @@ public enum ConversionCategory {
       new ConversionCategory[] {CHAR, INT, FLOAT, TIME, CHAR_AND_INT, INT_AND_TIME, NULL};
 
   /**
-   * Returns the intersection of two categories. This is seldomly needed.
+   * Returns the intersection of two categories. This is seldom needed.
    *
    * <blockquote>
    *
@@ -274,7 +274,7 @@ public enum ConversionCategory {
       new ConversionCategory[] {NULL, CHAR_AND_INT, INT_AND_TIME, CHAR, INT, FLOAT, TIME};
 
   /**
-   * Returns the union of two categories. This is seldomly needed.
+   * Returns the union of two categories. This is seldom needed.
    *
    * <blockquote>
    *

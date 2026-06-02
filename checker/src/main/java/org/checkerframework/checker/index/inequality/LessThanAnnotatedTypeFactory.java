@@ -30,10 +30,10 @@ import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -234,8 +234,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
       return Collections.min(possibleValues);
     }
 
-    if (expressionJe instanceof FieldAccess) {
-      FieldAccess fieldAccess = ((FieldAccess) expressionJe);
+    if (expressionJe instanceof FieldAccess fieldAccess) {
       if (fieldAccess.getReceiver().getType().getKind() == TypeKind.ARRAY) {
         // array.length might not be in the store, so check for the length of the array.
         AnnotationMirror arrayRange =

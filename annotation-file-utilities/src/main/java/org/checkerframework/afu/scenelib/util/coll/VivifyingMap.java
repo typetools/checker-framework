@@ -12,6 +12,9 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
  *       empty value and returns that.
  *   <li>{@link #prune} removes empty values
  * </ul>
+ *
+ * @param <K> the type of keys
+ * @param <V> the type of values
  */
 public abstract class VivifyingMap<K, V> extends WrapperMap<K, @MustCall({}) V> {
   /**
@@ -41,7 +44,7 @@ public abstract class VivifyingMap<K, V> extends WrapperMap<K, @MustCall({}) V> 
   }
 
   /**
-   * Returns a new, "empty" value to which the key <code>k</code> can be mapped; subclasses must
+   * Returns a new, "empty" value to which the key {@code k} can be mapped; subclasses must
    * implement.
    */
   protected abstract V createValueFor(K k);
@@ -53,8 +56,8 @@ public abstract class VivifyingMap<K, V> extends WrapperMap<K, @MustCall({}) V> 
     // but using an iterator affords efficient deletion.
     for (Iterator<Map.Entry<K, V>> ei = entrySet().iterator(); ei.hasNext(); ) {
       V value = ei.next().getValue();
-      if (value instanceof VivifyingMap) {
-        ((VivifyingMap) value).prune();
+      if (value instanceof VivifyingMap<?, ?> vm) {
+        vm.prune();
       }
       if (isEmptyValue(value)) {
         ei.remove();
@@ -63,7 +66,7 @@ public abstract class VivifyingMap<K, V> extends WrapperMap<K, @MustCall({}) V> 
   }
 
   /**
-   * Returns whether the given value is "empty" -- that is, it is the same as what {@link
+   * Returns true if the given value is "empty" -- that is, it is the same as what {@link
    * #getVivify} would create.
    *
    * <p>This method does not recursively prune its argument, and it does not need to.

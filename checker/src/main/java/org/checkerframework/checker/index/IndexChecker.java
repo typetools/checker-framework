@@ -42,10 +42,10 @@ import org.checkerframework.checker.index.upperbound.UpperBoundChecker;
  * <ul>
  *   <li>When computing offsets, the UBC replaces compile-time constants with their known values
  *       (though it also keeps an offset with the variable's name, if applicable).
- *   <li>The UBC has relaxed assignment rules: it allows assignments where the right hand side is a
- *       value known at compile time and the type of the left hand side is annotated with
+ *   <li>The UBC has relaxed assignment rules: it allows assignments where the right-hand side is a
+ *       value known at compile time and the type of the left-hand side is annotated with
  *       LT*LengthOf("a"). If the minimum length of a is in the correct relationship with the value
- *       on the right hand side, then the assignment is legal.
+ *       on the right-hand side, then the assignment is legal.
  *   <li>When checking whether an array access is legal, the UBC first checks the upper bound type
  *       of the index. If that fails, it checks if the index is a compile-time constant. If it is,
  *       then it queries the Value Checker to determine if the array is guaranteed to be longer than

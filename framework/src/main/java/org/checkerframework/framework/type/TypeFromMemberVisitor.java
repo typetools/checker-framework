@@ -123,6 +123,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     return result;
   }
 
+  // This method has no effect on the result of ((MethodSymbol) elt).getRawTypeAttributes().  That
+  // is affected elsewhere.
   @Override
   public AnnotatedTypeMirror visitMethod(MethodTree tree, AnnotatedTypeFactory f) {
     ExecutableElement elt = TreeUtils.elementFromDeclaration(tree);
@@ -162,9 +164,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     }
     Tree declaredInTree =
         f.getPath(f.declarationFromElement(paramElement)).getParentPath().getLeaf();
-    if (declaredInTree instanceof LambdaExpressionTree
+    if (declaredInTree instanceof LambdaExpressionTree lambdaDecl
         && TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
-      LambdaExpressionTree lambdaDecl = (LambdaExpressionTree) declaredInTree;
       int index = lambdaDecl.getParameters().indexOf(f.declarationFromElement(paramElement));
       AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
       AnnotatedTypeMirror funcTypeParam = functionType.getParameterTypes().get(index);

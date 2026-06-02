@@ -51,7 +51,7 @@ public interface WholeProgramInferenceStorage<T> {
   public boolean hasStorageLocationForMethod(ExecutableElement methodElt);
 
   /**
-   * Get the annotations for a formal parameter type.
+   * Returns the annotations for a formal parameter type.
    *
    * @param methodElt the method or constructor Element
    * @param index_1based the parameter index (1-based)
@@ -68,7 +68,7 @@ public interface WholeProgramInferenceStorage<T> {
       AnnotatedTypeFactory atypeFactory);
 
   /**
-   * Get the annotations for the receiver type.
+   * Returns the annotations for the receiver type.
    *
    * @param methodElt the method or constructor Element
    * @param paramATM the receiver type
@@ -79,7 +79,7 @@ public interface WholeProgramInferenceStorage<T> {
       ExecutableElement methodElt, AnnotatedTypeMirror paramATM, AnnotatedTypeFactory atypeFactory);
 
   /**
-   * Get the annotations for the return type.
+   * Returns the annotations for the return type.
    *
    * @param methodElt the method or constructor Element
    * @param atm the return type
@@ -90,7 +90,7 @@ public interface WholeProgramInferenceStorage<T> {
       ExecutableElement methodElt, AnnotatedTypeMirror atm, AnnotatedTypeFactory atypeFactory);
 
   /**
-   * Get the annotations for a field type.
+   * Returns the annotations for a field type.
    *
    * @param element the element for the field
    * @param fieldName the simple field name
@@ -116,7 +116,7 @@ public interface WholeProgramInferenceStorage<T> {
    * postconditions only).
    *
    * @param className the class that contains the method, for diagnostics only
-   * @param preOrPost whether to get the precondition or postcondition
+   * @param preOrPost true if to get the precondition or postcondition
    * @param methodElement the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
@@ -175,8 +175,8 @@ public interface WholeProgramInferenceStorage<T> {
   public boolean addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno);
 
   /**
-   * Return the list of declaration annotations inferred on the given method so far in this round of
-   * WPI.
+   * Returns the list of declaration annotations inferred on the given method so far in this round
+   * of WPI.
    *
    * @param elt a method
    * @return the declaration annotations inferred on elt so far (may be empty)

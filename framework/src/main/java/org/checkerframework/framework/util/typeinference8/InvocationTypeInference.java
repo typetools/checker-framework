@@ -6,6 +6,7 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
@@ -26,9 +27,11 @@ import org.checkerframework.framework.util.typeinference8.constraint.ConstraintS
 import org.checkerframework.framework.util.typeinference8.constraint.Expression;
 import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
+import org.checkerframework.framework.util.typeinference8.types.AbstractExecutableType;
+import org.checkerframework.framework.util.typeinference8.types.AbstractInvocationType;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.CompileTimeDeclarationType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
-import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -53,7 +56,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * <p>1. Inference creates an inference variable for each method type argument for a given method
  * invocation. Each inference variable may have zero or more upper, lower, and equal bounds. The
  * bounds of an inference variable are initially the bounds on the type argument. More bounds may be
- * infered in later steps.
+ * inferred in later steps.
  *
  * <p>Bounds are between an inference variable and an abstract type. {@link AbstractType}s are
  * type-like structures that might include inference variables. Abstract types might also be an
@@ -116,7 +119,7 @@ public class InvocationTypeInference {
    * Creates an inference problem.
    *
    * @param factory the annotated type factory to use
-   * @param pathToExpression path to the expression for which inference is preformed
+   * @param pathToExpression path to the expression for which inference is performed
    */
   @SuppressWarnings("this-escape")
   public InvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {
@@ -140,32 +143,34 @@ public class InvocationTypeInference {
    * 18.5.2</a>.
    *
    * @param invocation invocation which needs inference
-   * @param methodType type of the method invocation
+   * @param executableType type of the method invocation
    * @return the result of inference
    * @throws FalseBoundException if inference fails because of the java types
    */
-  public InferenceResult infer(ExpressionTree invocation, AnnotatedExecutableType methodType)
+  public InferenceResult infer(ExpressionTree invocation, AnnotatedExecutableType executableType)
       throws FalseBoundException {
-    ExecutableType e = methodType.getUnderlyingType();
-    InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
+    ExecutableType e = executableType.getUnderlyingType();
+    AbstractExecutableType inferenceExectuableType =
+        new AbstractInvocationType(executableType, e, invocation, context);
     ProperType target = context.inferenceTypeFactory.getTargetType();
     List<? extends ExpressionTree> args;
-    if (invocation instanceof MethodInvocationTree) {
-      args = ((MethodInvocationTree) invocation).getArguments();
+    if (invocation instanceof MethodInvocationTree mit) {
+      args = mit.getArguments();
     } else {
       args = ((NewClassTree) invocation).getArguments();
     }
 
     Theta map =
-        context.inferenceTypeFactory.createThetaForInvocation(invocation, invocationType, context);
-    BoundSet b2 = createB2(invocationType, args, map);
+        context.inferenceTypeFactory.createThetaForInvocation(
+            invocation, inferenceExectuableType, context);
+    BoundSet b2 = createB2(inferenceExectuableType, args, map);
     BoundSet b3;
     if (target != null && TreeUtils.isPolyExpression(invocation)) {
-      b3 = createB3(b2, invocation, invocationType, target, map);
+      b3 = createB3(b2, invocation, inferenceExectuableType, target, map);
     } else {
       b3 = b2;
     }
-    ConstraintSet c = createC(invocationType, args, map);
+    ConstraintSet c = createC(inferenceExectuableType, args, map);
 
     BoundSet b4 = getB4(b3, c);
     b4.resolve();
@@ -199,7 +204,7 @@ public class InvocationTypeInference {
       throw new BugInCF("Target of method reference should not be null: %s", invocation);
     }
 
-    InvocationType compileTimeDecl =
+    CompileTimeDeclarationType compileTimeDecl =
         context.inferenceTypeFactory.compileTimeDeclarationType(invocation);
     Theta map =
         context.inferenceTypeFactory.createThetaForMethodReference(
@@ -229,7 +234,7 @@ public class InvocationTypeInference {
    * <ol>
    *   <li value="1">Creating the inference variables and initializing their bounds based on the
    *       type parameter declaration.
-   *   <li value="2">Adding any bounds implied by the throws clause of {@code methodType}.
+   *   <li value="2">Adding any bounds implied by the throws clause of {@code executableType}.
    *   <li value="3">Constructing constraints between formal parameters and arguments that are
    *       "pertinent to applicability" (See <a
    *       href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.12.2.2">JLS
@@ -239,19 +244,19 @@ public class InvocationTypeInference {
    *   <li value="4">Reducing and incorporating those constraints which finally produces B2.
    * </ol>
    *
-   * @param methodType the type of the method or constructor invoked
+   * @param executableType the type of the method or constructor invoked
    * @param args argument expression tress
    * @param map map of type variables to (inference) variables
    * @return bound set used to determine whether a method is applicable
    */
   public BoundSet createB2(
-      InvocationType methodType, List<? extends ExpressionTree> args, Theta map) {
+      AbstractExecutableType executableType, List<? extends ExpressionTree> args, Theta map) {
     BoundSet b0 = BoundSet.initialBounds(map, context);
 
     // For all i (1 <= i <= p), if Pi appears in the throws clause of m, then the bound throws
     // alphai is implied. These bounds, if any, are incorporated with B0 to produce a new bound
     // set, B1.
-    for (AbstractType thrownType : methodType.getThrownTypes(map)) {
+    for (AbstractType thrownType : executableType.getThrownTypes(map)) {
       if (thrownType.isUseOfVariable()) {
         ((UseOfVariable) thrownType).setHasThrowsBound(true);
       }
@@ -259,7 +264,7 @@ public class InvocationTypeInference {
 
     BoundSet b1 = b0;
     ConstraintSet c = new ConstraintSet();
-    List<AbstractType> formals = methodType.getParameterTypes(map, args.size());
+    List<AbstractType> formals = executableType.getParameterTypes(map, args.size());
 
     for (int i = 0; i < formals.size(); i++) {
       ExpressionTree ei = args.get(i);
@@ -278,22 +283,23 @@ public class InvocationTypeInference {
   }
 
   /**
-   * Same as {@link #createB2(InvocationType, List, Theta)}, but for method references. A list of
-   * types is used instead of a list of arguments. These types are the types of the formal
+   * Same as {@link #createB2(AbstractExecutableType, List, Theta)}, but for method references. A
+   * list of types is used instead of a list of arguments. These types are the types of the formal
    * parameters of function type of target type of the method reference.
    *
-   * @param methodType the type of the method or constructor invoked
+   * @param executableType the type of the method or constructor invoked
    * @param args types to use as arguments
    * @param map map of type variables to (inference) variables
    * @return bound set used to determine whether a method is applicable
    */
-  public BoundSet createB2MethodRef(InvocationType methodType, List<AbstractType> args, Theta map) {
+  public BoundSet createB2MethodRef(
+      CompileTimeDeclarationType executableType, List<AbstractType> args, Theta map) {
     BoundSet b0 = BoundSet.initialBounds(map, context);
 
     // For all i (1 <= i <= p), if Pi appears in the throws clause of m, then the bound throws
     // alphai is implied. These bounds, if any, are incorporated with B0 to produce a new bound
     // set, B1.
-    for (AbstractType thrownType : methodType.getThrownTypes(map)) {
+    for (AbstractType thrownType : executableType.getThrownTypes(map)) {
       if (thrownType.isUseOfVariable()) {
         ((UseOfVariable) thrownType).setHasThrowsBound(true);
       }
@@ -301,8 +307,8 @@ public class InvocationTypeInference {
 
     BoundSet b1 = b0;
     ConstraintSet c = new ConstraintSet();
-    List<AbstractType> formals = methodType.getParameterTypes(map, args.size());
-    if (TreeUtils.isLikeDiamondMemberReference(methodType.getInvocation())) {
+    List<AbstractType> formals = executableType.getParameterTypes(map, args.size());
+    if (TreeUtils.isLikeDiamondMemberReference(executableType.getMethodRef())) {
       // https://docs.oracle.com/javase/specs/jls/se19/html/jls-15.html#jls-15.13.1
       //  If ReferenceType is a raw type, and there exists a parameterization of this type,
       // G<...>, that is a supertype of P1, the type to search is the result of capture
@@ -319,7 +325,7 @@ public class InvocationTypeInference {
       String source =
           String.format(
               "Method reference: %s, constraint against arguments, index %s.",
-              methodType.getInvocation(), i);
+              executableType.getMethodRef(), i);
       c.add(new Typing(source, ei, fi, Kind.TYPE_COMPATIBILITY));
     }
 
@@ -336,9 +342,9 @@ public class InvocationTypeInference {
    * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.1">JLS
    * 18.5.2.1</a>.)
    *
-   * @param b2 BoundSet created by {@link #createB2(InvocationType, List, Theta)}
+   * @param b2 BoundSet created by {@link #createB2(AbstractExecutableType, List, Theta)}
    * @param invocation a method or constructor invocation
-   * @param methodType the type of the method or constructor invoked by expression
+   * @param executableType the type of the method or constructor invoked by expression
    * @param target target type of the invocation
    * @param map map of type variables to (inference) variables
    * @return bound set created by constraints against the target type of the invocation
@@ -346,10 +352,10 @@ public class InvocationTypeInference {
   public BoundSet createB3(
       BoundSet b2,
       ExpressionTree invocation,
-      InvocationType methodType,
+      AbstractExecutableType executableType,
       AbstractType target,
       Theta map) {
-    AbstractType r = methodType.getReturnType(map);
+    AbstractType r = executableType.getReturnType(map);
     if (b2.isUncheckedConversion()) {
       // If unchecked conversion was necessary for the method to be applicable during
       // constraint set reduction in 18.5.1, the constraint formula <|R| -> T> is reduced and
@@ -442,16 +448,16 @@ public class InvocationTypeInference {
    * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS
    * 18.5.2.2</a>.)
    *
-   * @param methodType type of method invoked
+   * @param executableType type of method invoked
    * @param args argument expression trees
    * @param map map from type variable to inference variable
    * @return the constraints between the formal parameters and arguments that are not pertinent to
    *     applicability
    */
   public ConstraintSet createC(
-      InvocationType methodType, List<? extends ExpressionTree> args, Theta map) {
+      AbstractExecutableType executableType, List<? extends ExpressionTree> args, Theta map) {
     ConstraintSet c = new ConstraintSet();
-    List<AbstractType> formals = methodType.getParameterTypes(map, args.size());
+    List<AbstractType> formals = executableType.getParameterTypes(map, args.size());
 
     for (int i = 0; i < formals.size(); i++) {
       ExpressionTree ei = args.get(i);
@@ -474,7 +480,7 @@ public class InvocationTypeInference {
 
   /**
    * Adds argument constraints for the argument {@code ei} and its subexpressions. These are in
-   * addition to the constraints added in {@link #createC(InvocationType, List, Theta)}.
+   * addition to the constraints added in {@link #createC(AbstractExecutableType, List, Theta)}.
    *
    * <p>It does this by traversing {@code ei} if it is a method reference, lambda, method
    * invocation, new class tree, conditional expression, switch expression, or parenthesized
@@ -500,42 +506,37 @@ public class InvocationTypeInference {
     ConstraintSet c = new ConstraintSet();
 
     switch (ei.getKind()) {
-      case MEMBER_REFERENCE:
-        c.add(new CheckedExceptionConstraint(ei, fi, map));
-        break;
-      case LAMBDA_EXPRESSION:
+      case MEMBER_REFERENCE -> c.add(new CheckedExceptionConstraint(ei, fi, map));
+      case LAMBDA_EXPRESSION -> {
         c.add(new CheckedExceptionConstraint(ei, fi, map));
         LambdaExpressionTree lambda = (LambdaExpressionTree) ei;
         for (ExpressionTree expression : TreeUtils.getReturnedExpressions(lambda)) {
           c.addAll(createAdditionalArgConstraintsNoLambda(expression));
         }
-        break;
-      case METHOD_INVOCATION:
-      case NEW_CLASS:
+      }
+      case METHOD_INVOCATION, NEW_CLASS -> {
         if (TreeUtils.isPolyExpression(ei)) {
           c.addAll(new AdditionalArgument(ei).reduce(context));
         }
-        break;
-      case PARENTHESIZED:
-        c.addAll(createAdditionalArgConstraints(TreeUtils.withoutParens(ei), fi, map));
-        break;
-      case CONDITIONAL_EXPRESSION:
+      }
+      case PARENTHESIZED ->
+          c.addAll(createAdditionalArgConstraints(TreeUtils.withoutParens(ei), fi, map));
+      case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) ei;
         c.addAll(createAdditionalArgConstraints(conditional.getTrueExpression(), fi, map));
         c.addAll(createAdditionalArgConstraints(conditional.getFalseExpression(), fi, map));
-        break;
-      default:
-        if (TreeUtils.isSwitchExpression(ei)) {
-          SwitchExpressionScanner<Void, Void> scanner =
-              new FunctionalSwitchExpressionScanner<>(
-                  (ExpressionTree tree, Void unused) -> {
-                    c.addAll(createAdditionalArgConstraints(tree, fi, map));
-                    return null;
-                  },
-                  (c1, c2) -> null);
-          scanner.scanSwitchExpression(ei, null);
-        }
-        // no constraints
+      }
+      case SWITCH_EXPRESSION -> {
+        SwitchExpressionScanner<Void, Void> scanner =
+            new FunctionalSwitchExpressionScanner<>(
+                (ExpressionTree tree, Void unused) -> {
+                  c.addAll(createAdditionalArgConstraints(tree, fi, map));
+                  return null;
+                },
+                (c1, c2) -> null);
+        scanner.scanSwitchExpression((SwitchExpressionTree) ei, null);
+      }
+      default -> {} // no constraints
     }
 
     return c;
@@ -555,14 +556,13 @@ public class InvocationTypeInference {
     ConstraintSet c = new ConstraintSet();
 
     switch (expression.getKind()) {
-      case LAMBDA_EXPRESSION:
+      case LAMBDA_EXPRESSION -> {
         LambdaExpressionTree lambda = (LambdaExpressionTree) expression;
         for (ExpressionTree returnedExpression : TreeUtils.getReturnedExpressions(lambda)) {
           c.addAll(createAdditionalArgConstraintsNoLambda(returnedExpression));
         }
-        break;
-      case METHOD_INVOCATION:
-      case NEW_CLASS:
+      }
+      case METHOD_INVOCATION, NEW_CLASS -> {
         if (TreeUtils.isPolyExpression(expression)) {
           try {
             c.addAll(new AdditionalArgument(expression).reduce(context));
@@ -574,27 +574,25 @@ public class InvocationTypeInference {
             c.add(new AdditionalArgument(expression));
           }
         }
-        break;
-      case PARENTHESIZED:
-        c.addAll(createAdditionalArgConstraintsNoLambda(TreeUtils.withoutParens(expression)));
-        break;
-      case CONDITIONAL_EXPRESSION:
+      }
+      case PARENTHESIZED ->
+          c.addAll(createAdditionalArgConstraintsNoLambda(TreeUtils.withoutParens(expression)));
+      case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) expression;
         c.addAll(createAdditionalArgConstraintsNoLambda(conditional.getTrueExpression()));
         c.addAll(createAdditionalArgConstraintsNoLambda(conditional.getFalseExpression()));
-        break;
-      default:
-        if (TreeUtils.isSwitchExpression(expression)) {
-          SwitchExpressionScanner<Void, Void> scanner =
-              new FunctionalSwitchExpressionScanner<>(
-                  (ExpressionTree tree, Void unused) -> {
-                    c.addAll(createAdditionalArgConstraintsNoLambda(tree));
-                    return null;
-                  },
-                  (c1, c2) -> null);
-          scanner.scanSwitchExpression(expression, null);
-        }
-        // no constraints
+      }
+      case SWITCH_EXPRESSION -> {
+        SwitchExpressionScanner<Void, Void> scanner =
+            new FunctionalSwitchExpressionScanner<>(
+                (ExpressionTree tree, Void unused) -> {
+                  c.addAll(createAdditionalArgConstraintsNoLambda(tree));
+                  return null;
+                },
+                (c1, c2) -> null);
+        scanner.scanSwitchExpression((SwitchExpressionTree) expression, null);
+      }
+      default -> {} // no constraints
     }
 
     return c;
@@ -607,12 +605,12 @@ public class InvocationTypeInference {
    *
    * @param expressionTree expression tree
    * @param formalParameterType the formal parameter type of the method invocation
-   * @return whether {@code expressionTree} is pertinent to applicability
+   * @return true if {@code expressionTree} is pertinent to applicability
    */
   private boolean notPertinentToApplicability(
       ExpressionTree expressionTree, AbstractType formalParameterType) {
     switch (expressionTree.getKind()) {
-      case LAMBDA_EXPRESSION:
+      case LAMBDA_EXPRESSION -> {
         LambdaExpressionTree lambda = (LambdaExpressionTree) expressionTree;
         if (TreeUtils.isImplicitlyTypedLambda(lambda) || formalParameterType.isUseOfVariable()) {
           // An implicitly typed lambda expression.
@@ -630,32 +628,36 @@ public class InvocationTypeInference {
           }
           return false;
         }
-      case MEMBER_REFERENCE:
+      }
+      case MEMBER_REFERENCE -> {
         // An inexact method reference expression.
         return formalParameterType.isUseOfVariable()
             || !TreeUtils.isExactMethodReference((MemberReferenceTree) expressionTree);
-      case PARENTHESIZED:
+      }
+      case PARENTHESIZED -> {
         // A parenthesized expression whose contained expression is not pertinent to
         // applicability.
         return notPertinentToApplicability(
             TreeUtils.withoutParens(expressionTree), formalParameterType);
-      case CONDITIONAL_EXPRESSION:
+      }
+      case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) expressionTree;
         // A conditional expression whose second or third operand is not pertinent to
         // applicability.
         return notPertinentToApplicability(conditional.getTrueExpression(), formalParameterType)
             || notPertinentToApplicability(conditional.getFalseExpression(), formalParameterType);
-      default:
-        if (TreeUtils.isSwitchExpression(expressionTree)) {
-          SwitchExpressionScanner<Boolean, Void> scanner =
-              new FunctionalSwitchExpressionScanner<>(
-                  (ExpressionTree tree, Void unused) ->
-                      notPertinentToApplicability(tree, formalParameterType),
-                  (r1, r2) -> (r1 != null && r1) || (r2 != null && r2));
-          ;
-          return scanner.scanSwitchExpression(expressionTree, null);
-        }
+      }
+      case SWITCH_EXPRESSION -> {
+        SwitchExpressionScanner<Boolean, Void> scanner =
+            new FunctionalSwitchExpressionScanner<>(
+                (ExpressionTree tree, Void unused) ->
+                    notPertinentToApplicability(tree, formalParameterType),
+                (r1, r2) -> (r1 != null && r1) || (r2 != null && r2));
+        return scanner.scanSwitchExpression((SwitchExpressionTree) expressionTree, null);
+      }
+      default -> {
         return false;
+      }
     }
   }
 

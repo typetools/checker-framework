@@ -49,8 +49,7 @@ public class ATypeElementWithType extends ATypeElement {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof ATypeElementWithType
-        && ((ATypeElementWithType) o).equalsTypeElementWithType(this);
+    return o instanceof ATypeElementWithType other && other.equalsTypeElementWithType(this);
   }
 
   /** Returns true if this {@link ATypeElementWithType} equals {@code o}. */
@@ -104,7 +103,7 @@ public class ATypeElementWithType extends ATypeElement {
     return new VivifyingMap<K, ATypeElementWithType>(new LinkedHashMap<>()) {
       @Override
       public ATypeElementWithType createValueFor(K k) {
-        return new ATypeElementWithType("" + k);
+        return new ATypeElementWithType(k.toString());
       }
 
       @Override

@@ -15,8 +15,8 @@ public final class ArrayAFT extends AnnotationFieldType {
 
   /**
    * Constructs a new {@link ArrayAFT} representing an array type with the given element type.
-   * <code>elementType</code> may be <code>null</code> to indicate that the element type is unknown
-   * (see {@link AnnotationBuilder#addEmptyArrayField}).
+   * {@code elementType} may be {@code null} to indicate that the element type is unknown (see
+   * {@link AnnotationBuilder#addEmptyArrayField}).
    *
    * @param elementType the element type of the array, or {@code null} if it is unknown
    */
@@ -26,12 +26,11 @@ public final class ArrayAFT extends AnnotationFieldType {
 
   @Override
   public boolean isValidValue(Object o) {
-    if (!(o instanceof Collection)) {
+    if (!(o instanceof Collection<?> asCollection)) {
       return false;
     }
-    Collection<?> asCollection = (Collection<?>) o;
     if (elementType == null) {
-      return (asCollection.size() == 0);
+      return asCollection.isEmpty();
     }
     for (Object elt : asCollection) {
       if (!elementType.isValidValue(elt)) {

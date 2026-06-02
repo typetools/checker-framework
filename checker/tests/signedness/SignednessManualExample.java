@@ -12,7 +12,7 @@ public class SignednessManualExample {
 
   void m() {
     int w = s1 / s2; // OK: result is 2, which is correct for -2 / -1
-    // :: error: (operation.unsignedlhs)
+    // :: error: [operation.unsignedlhs]
     int x = u1 / u2; // ERROR: result is 2, which is incorrect for (2^32 - 2) / (2^32 - 1)
   }
 
@@ -24,7 +24,7 @@ public class SignednessManualExample {
 
   void m2() {
     int y = s3 % s4; // OK: result is -1, which is correct for -1 % 5
-    // :: error: (operation.unsignedlhs)
+    // :: error: [operation.unsignedlhs]
     int z = u3 % u4; // ERROR: result is -1, which is incorrect for (2^32 - 1) % 5 = 2
   }
 

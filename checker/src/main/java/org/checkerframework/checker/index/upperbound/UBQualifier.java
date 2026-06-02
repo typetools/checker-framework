@@ -21,9 +21,10 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
+import org.plumelib.util.MapsP;
 
 /**
  * Abstraction for Upper Bound annotations. This abstract class has 4 subclasses, each of which is a
@@ -58,29 +59,29 @@ public abstract class UBQualifier {
    */
   public static UBQualifier createUBQualifier(
       AnnotationMirror am, @Nullable String offset, UpperBoundChecker ubChecker) {
-    switch (AnnotationUtils.annotationName(am)) {
-      case "org.checkerframework.checker.index.qual.UpperBoundUnknown":
-        return UpperBoundUnknownQualifier.UNKNOWN;
-      case "org.checkerframework.checker.index.qual.UpperBoundBottom":
-        return UpperBoundBottomQualifier.BOTTOM;
-      case "org.checkerframework.checker.index.qual.UpperBoundLiteral":
+    return switch (AnnotationUtils.annotationName(am)) {
+      case "org.checkerframework.checker.index.qual.UpperBoundUnknown" ->
+          UpperBoundUnknownQualifier.UNKNOWN;
+      case "org.checkerframework.checker.index.qual.UpperBoundBottom" ->
+          UpperBoundBottomQualifier.BOTTOM;
+      case "org.checkerframework.checker.index.qual.UpperBoundLiteral" -> {
         int intValue =
             AnnotationUtils.getElementValueInt(am, ubChecker.upperBoundLiteralValueElement);
-        return UpperBoundLiteralQualifier.create(intValue);
-      case "org.checkerframework.checker.index.qual.LTLengthOf":
-        return parseLTLengthOf(am, offset, ubChecker);
-      case "org.checkerframework.checker.index.qual.SubstringIndexFor":
-        return parseSubstringIndexFor(am, offset, ubChecker);
-      case "org.checkerframework.checker.index.qual.LTEqLengthOf":
-        return parseLTEqLengthOf(am, offset, ubChecker);
-      case "org.checkerframework.checker.index.qual.LTOMLengthOf":
-        return parseLTOMLengthOf(am, offset, ubChecker);
-      case "org.checkerframework.checker.index.qual.PolyUpperBound":
-        // TODO:  Ignores offset.  Should we check that offset is not set?
-        return PolyQualifier.POLY;
-      default:
-        throw new TypeSystemError("createUBQualifier(%s, %s, ...)", am, offset);
-    }
+        yield UpperBoundLiteralQualifier.create(intValue);
+      }
+      case "org.checkerframework.checker.index.qual.LTLengthOf" ->
+          parseLTLengthOf(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.SubstringIndexFor" ->
+          parseSubstringIndexFor(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.LTEqLengthOf" ->
+          parseLTEqLengthOf(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.LTOMLengthOf" ->
+          parseLTOMLengthOf(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.PolyUpperBound" ->
+          // TODO:  Ignores offset.  Should we check that offset is not set?
+          PolyQualifier.POLY;
+      default -> throw new TypeSystemError("createUBQualifier(%s, %s, ...)", am, offset);
+    };
   }
 
   /** A cache for the {@link #nCopiesEmptyStringCache} method. */
@@ -224,7 +225,11 @@ public abstract class UBQualifier {
    */
   public static UBQualifier createUBQualifier(
       AnnotatedTypeMirror type, AnnotationMirror top, UpperBoundChecker ubChecker) {
-    return createUBQualifier(type.getEffectiveAnnotationInHierarchy(top), ubChecker);
+    AnnotationMirror anno = type.getAnnotationInHierarchy(top);
+    if (anno == null) {
+      throw new BugInCF("no annotation for " + type);
+    }
+    return createUBQualifier(anno, ubChecker);
   }
 
   /**
@@ -325,7 +330,7 @@ public abstract class UBQualifier {
   }
 
   /**
-   * Return true if this is UBQualifier.PolyQualifier.
+   * Returns true if this is UBQualifier.PolyQualifier.
    *
    * @return true if this is UBQualifier.PolyQualifier
    */
@@ -348,7 +353,7 @@ public abstract class UBQualifier {
    * Is the value with this qualifier less than the length of sequence?
    *
    * @param sequence a String sequence
-   * @return whether or not the value with this qualifier is less than the length of sequence
+   * @return true if the value with this qualifier is less than the length of sequence
    */
   public boolean isLessThanLengthOf(String sequence) {
     return false;
@@ -358,30 +363,29 @@ public abstract class UBQualifier {
    * Is the value with this qualifier less than the length of any of the sequences?
    *
    * @param sequences list of sequences
-   * @return whether or not the value with this qualifier is less than the length of any of the
-   *     sequences
+   * @return true if the value with this qualifier is less than the length of any of the sequences
    */
   public boolean isLessThanLengthOfAny(List<String> sequences) {
     return false;
   }
 
   /**
-   * Returns whether or not this qualifier has sequence with the specified offset.
+   * Returns true if this qualifier has sequence with the specified offset.
    *
    * @param sequence sequence expression
    * @param offset the offset being looked for
-   * @return whether or not this qualifier has sequence with the specified offset
+   * @return true if this qualifier has sequence with the specified offset
    */
   public boolean hasSequenceWithOffset(String sequence, int offset) {
     return false;
   }
 
   /**
-   * Returns whether or not this qualifier has sequence with the specified offset.
+   * Returns true if this qualifier has sequence with the specified offset.
    *
    * @param sequence sequence expression
    * @param offset the offset being looked for
-   * @return whether or not this qualifier has sequence with the specified offset
+   * @return true if this qualifier has sequence with the specified offset
    */
   public boolean hasSequenceWithOffset(String sequence, String offset) {
     return false;
@@ -391,8 +395,7 @@ public abstract class UBQualifier {
    * Is the value with this qualifier less than or equal to the length of sequence?
    *
    * @param sequence a String sequence
-   * @return whether or not the value with this qualifier is less than or equal to the length of
-   *     sequence
+   * @return true if the value with this qualifier is less than or equal to the length of sequence
    */
   public boolean isLessThanOrEqualTo(String sequence) {
     return false;
@@ -417,11 +420,10 @@ public abstract class UBQualifier {
      * @return a copy of the map
      */
     private Map<String, Set<OffsetEquation>> copyMap() {
-      Map<String, Set<OffsetEquation>> result = new HashMap<>(CollectionsPlume.mapCapacity(map));
+      Map<String, Set<OffsetEquation>> result = new HashMap<>(MapsP.mapCapacity(map));
       for (String sequenceName : map.keySet()) {
         Set<OffsetEquation> oldEquations = map.get(sequenceName);
-        Set<OffsetEquation> newEquations =
-            new HashSet<>(CollectionsPlume.mapCapacity(oldEquations));
+        Set<OffsetEquation> newEquations = new HashSet<>(MapsP.mapCapacity(oldEquations));
         for (OffsetEquation offsetEquation : oldEquations) {
           newEquations.add(new OffsetEquation(offsetEquation));
         }
@@ -463,7 +465,7 @@ public abstract class UBQualifier {
     private static @Nullable Map<String, Set<OffsetEquation>> sequencesAndOffsetsToMap(
         List<String> sequences, List<String> offsets, @Nullable OffsetEquation extraEq) {
 
-      Map<String, Set<OffsetEquation>> map = new HashMap<>(CollectionsPlume.mapCapacity(sequences));
+      Map<String, Set<OffsetEquation>> map = new HashMap<>(MapsP.mapCapacity(sequences));
       if (offsets.isEmpty()) {
         for (String sequence : sequences) {
           // Not `Collections.singleton(extraEq)` because the values get modified
@@ -488,32 +490,15 @@ public abstract class UBQualifier {
       return map;
     }
 
-    /** A triple that is the return type of {@link #mapToSequencesAndOffsets}. */
-    private static class SequencesOffsetsAndClass {
-      /** List of sequences. */
-      public final List<String> sequences;
-
-      /** List of offsets. */
-      public final List<String> offsets;
-
-      /** The class of the annotation to be built. */
-      public final Class<? extends Annotation> annoClass;
-
-      /**
-       * Creates a new SequencesOffsetsAndClass.
-       *
-       * @param sequences list of sequences
-       * @param offsets list of offsets
-       * @param annoClass the class of the annotation to be built
-       */
-      public SequencesOffsetsAndClass(
-          List<String> sequences, List<String> offsets, Class<? extends Annotation> annoClass) {
-
-        this.sequences = sequences;
-        this.offsets = offsets;
-        this.annoClass = annoClass;
-      }
-    }
+    /**
+     * A triple that is the return type of {@link #mapToSequencesAndOffsets}.
+     *
+     * @param sequences list of sequences
+     * @param offsets list of offsets
+     * @param annoClass the class of the annotation to be built
+     */
+    private record SequencesOffsetsAndClass(
+        List<String> sequences, List<String> offsets, Class<? extends Annotation> annoClass) {}
 
     /**
      * Given the map representation, returns parallel-arrays representation.
@@ -760,7 +745,7 @@ public abstract class UBQualifier {
      * the sequence that is greater than or equal to the super offset.
      *
      * @param superType other qualifier
-     * @return whether this qualifier is a subtype of superType
+     * @return true if this qualifier is a subtype of superType
      */
     @Override
     public boolean isSubtype(UBQualifier superType) {
@@ -840,8 +825,7 @@ public abstract class UBQualifier {
       Set<String> sequences = new HashSet<>(map.keySet());
       sequences.retainAll(otherLtl.map.keySet());
 
-      Map<String, Set<OffsetEquation>> lubMap =
-          new HashMap<>(CollectionsPlume.mapCapacity(sequences));
+      Map<String, Set<OffsetEquation>> lubMap = new HashMap<>(MapsP.mapCapacity(sequences));
       for (String sequence : sequences) {
         Set<OffsetEquation> offsets1 = map.get(sequence);
         Set<OffsetEquation> offsets2 = otherLtl.map.get(sequence);
@@ -1198,7 +1182,7 @@ public abstract class UBQualifier {
     }
 
     /**
-     * Checks whether replacing sequence with replacementSequence in this qualifier creates
+     * Returns true if replacing sequence with replacementSequence in this qualifier creates
      * replacementSequence entry in other.
      */
     public boolean isValidReplacement(
@@ -1224,12 +1208,12 @@ public abstract class UBQualifier {
     }
 
     /**
-     * Generates a new UBQualifer without the given (sequence, offset) pair. Other occurrences of
+     * Generates a new UBQualifier without the given (sequence, offset) pair. Other occurrences of
      * the sequence and the offset may remain in the result, but not together.
      *
      * @param sequence a Java expression representing a string
      * @param offset an integral offset
-     * @return a new UBQualifer without the given sequence and offset
+     * @return a new UBQualifier without the given sequence and offset
      */
     public UBQualifier removeOffset(String sequence, int offset) {
       OffsetEquation offsetEq = OffsetEquation.createOffsetForInt(offset);
@@ -1322,16 +1306,12 @@ public abstract class UBQualifier {
      * @return an UpperBoundLiteralQualifier
      */
     public static UpperBoundLiteralQualifier create(int value) {
-      switch (value) {
-        case -1:
-          return NEGATIVEONE;
-        case 0:
-          return ZERO;
-        case 1:
-          return ONE;
-        default:
-          return new UpperBoundLiteralQualifier(value);
-      }
+      return switch (value) {
+        case -1 -> NEGATIVEONE;
+        case 0 -> ZERO;
+        case 1 -> ONE;
+        default -> new UpperBoundLiteralQualifier(value);
+      };
     }
 
     /** The integer value. */

@@ -29,9 +29,9 @@ public class NTDConstructorReceiverTest {
     // takes on the default receiver for inner class constructor methods
     InnerDefaultReceiver(NTDConstructorReceiverTest NTDConstructorReceiverTest.this) {
       // The type of NTDConstructorReceiverTest.this should be @NTDTop.
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NTDMiddle NTDConstructorReceiverTest that = NTDConstructorReceiverTest.this;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NTDMiddle NTDConstructorReceiverTest.@NTDTop InnerDefaultReceiver thatInner = this;
     }
 
@@ -39,14 +39,14 @@ public class NTDConstructorReceiverTest {
       // The TypeUseLocation.RECEIVER only applies to the outermost type, so
       // NTDConstructorReceiverTest.this is given the
       @NTDMiddle NTDConstructorReceiverTest that = NTDConstructorReceiverTest.this;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NTDMiddle InnerDefaultReceiver thatInner = this;
     }
 
     void explicit(@NTDTop NTDConstructorReceiverTest.@NTDTop InnerDefaultReceiver this) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NTDMiddle NTDConstructorReceiverTest that = NTDConstructorReceiverTest.this;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NTDMiddle NTDConstructorReceiverTest.@NTDTop InnerDefaultReceiver thatInner = this;
     }
   }
@@ -54,7 +54,7 @@ public class NTDConstructorReceiverTest {
   class InnerExplicitReceiver {
     // explicitly set the receiver to be @NTDTop
     InnerExplicitReceiver(@NTDTop NTDConstructorReceiverTest NTDConstructorReceiverTest.this) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NTDMiddle NTDConstructorReceiverTest that = NTDConstructorReceiverTest.this;
     }
 

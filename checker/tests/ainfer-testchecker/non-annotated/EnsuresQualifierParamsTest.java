@@ -112,73 +112,73 @@ class EnsuresQualifierParamsTest {
 
   void client1(Object arg) {
     argIsParent(arg);
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     @AinferParent Object p = arg;
   }
 
   void client2(Object arg) {
     argIsParent_2(arg, true);
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     @AinferParent Object p = arg;
   }
 
   void client3(Object arg) {
     argIsAinferSibling2(arg);
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     @AinferSibling2 Object x = arg;
   }
 
   void client4(Object arg) {
     argIsAinferSibling2_2(arg, true);
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     @AinferSibling2 Object x = arg;
   }
 
   void clientThis1() {
     thisIsParent();
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     @AinferParent Object o = this;
   }
 
   void clientThis2() {
     thisIsParent_2(true);
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     @AinferParent Object o = this;
   }
 
   void clientThis2_2() {
     thisIsParent_2(false);
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     @AinferParent Object o = this;
   }
 
   void clientThis2_3() {
     thisIsParent_3(false);
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     @AinferParent Object o = this;
   }
 
   void clientThis3() {
     thisIsAinferSibling2();
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     @AinferSibling2 Object o = this;
   }
 
   void clientThis4() {
     thisIsAinferSibling2_2(true);
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     @AinferSibling2 Object o = this;
   }
 
   void clientThis5() {
     thisIsAinferSibling2_2_2(true);
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     @AinferSibling2 Object o = this;
   }
 
   void clientThis6() {
     thisIsParent_2_2(true);
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     @AinferParent Object o = this;
   }
 }

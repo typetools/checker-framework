@@ -499,16 +499,15 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
           return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
         }
 
-        switch (polyType.getKind()) {
-          case WILDCARD:
+        return switch (polyType.getKind()) {
+          case WILDCARD -> {
             AnnotatedTypeMirror asSuper =
                 AnnotatedTypes.asSuper(atypeFactory, wildcardType, polyType);
-            return visit(asSuper, polyType, null);
-          case TYPEVAR:
-            return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
-          default:
-            return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
-        }
+            yield visit(asSuper, polyType, null);
+          }
+          case TYPEVAR -> mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
+          default -> mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
+        };
       }
 
       AnnotatedTypeMirror asSuper = AnnotatedTypes.asSuper(atypeFactory, type, polyType);

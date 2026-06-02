@@ -11,7 +11,7 @@ public class ReferencesDefaults {
   class Use {
     Decl d = new Decl();
     // here the default for f is NonNull -> error
-    // :: error: (assignment)
+    // :: error: [assignment]
     Object f = d.test();
   }
 }

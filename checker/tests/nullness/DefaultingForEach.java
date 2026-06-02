@@ -13,7 +13,7 @@ class DefaultForEach {
 
   void bar() {
     for (Object p : foo()) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       p.toString();
     }
   }
@@ -25,7 +25,7 @@ class DefaultForEach {
 
   void bar2() {
     for (Object p : foo2()) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       p.toString();
     }
   }

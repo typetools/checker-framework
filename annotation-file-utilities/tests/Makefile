@@ -91,13 +91,13 @@ bin/annotator/tests/%.class: %.java
 	mkdir -p bin
 # Added "-Xlint:-options" to see if it permits Jenkins job to succeed, due to
 # problem "target value 1.8 is obsolete and will be removed in a future release"
-	$(JAVAC) -Xlint:-options -g -cp bin:../annotation-file-utilities-all.jar -d bin -sourcepath . $*.java
+	$(JAVAC) -Xlint:-options -g -cp bin:../dist/annotation-file-utilities-all.jar -d bin -sourcepath . $*.java
 
 # Actually runs the annotator to create the annotated java file.
 .PRECIOUS: %.output
-%.output: %.jaif %.java bin/annotator/tests/%.class ../build/classes/java/main ../annotation-file-utilities-all.jar
+%.output: %.jaif %.java bin/annotator/tests/%.class ../build/classes/java/main ../dist/annotation-file-utilities-all.jar
 	$(JAVA) \
-	-cp ../annotation-file-utilities-all.jar:bin \
+	-cp ../dist/annotation-file-utilities-all.jar:bin \
 	org.checkerframework.afu.annotator.Main \
 	${DEBUG} \
 	--abbreviate=false \

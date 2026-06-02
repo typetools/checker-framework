@@ -9,7 +9,7 @@ class EnsuresCalledMethodsTest {
 
   @InheritableMustCall("close")
   class ECM {
-    // :: warning: (required.method.not.called)
+    // :: warning: [required.method.not.called]
     @Owning Foo foo;
 
     private void closePrivate() {

@@ -36,22 +36,21 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.IPair;
 
 /**
- * As explained in <a
- * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.1">section 18.1</a>,
- * the JLS Chapter on type inference use the term "type" to "include type-like syntax that contains
- * inference variables". This class represents this types. Three subclasses of this class are:
+ * This class represents "types" that "include type-like syntax that contains inference variables"
+ * (see <a href="https://docs.oracle.com/javase/specs/jls/se26/html/jls-18.html#jls-18.1.1">Section
+ * 18.1</a>). Three subclasses of this class are:
  *
  * <ul>
  *   <li>{@link ProperType}: types that do not contain inference variables
  *   <li>{@link Variable}: inference variables
- *   <li>{@link InferenceType}: type-like syntax that contain at least one inference variable
+ *   <li>{@link InferenceType}: type-like syntax that contains at least one inference variable
  * </ul>
  */
 public abstract class AbstractType {
 
   /** The kind of {@link AbstractType}. */
   public enum Kind {
-    /** {@link ProperType},a type that contains no inference variables* */
+    /** {@link ProperType}, a type that contains no inference variables. */
     PROPER,
     /** {@link UseOfVariable}, a use of an inference variable. */
     USE_OF_VARIABLE,
@@ -68,14 +67,14 @@ public abstract class AbstractType {
   /** The {@link AnnotatedTypeFactory}. */
   protected final AnnotatedTypeFactory typeFactory;
 
-  /** Whether the annotations on this type should be ignored. */
+  /** True if the annotations on this type should be ignored. */
   public final boolean ignoreAnnotations;
 
   /**
    * Creates an {@link AbstractType}.
    *
    * @param context the context object
-   * @param ignoreAnnotations whether the annotations on this type should be ignored
+   * @param ignoreAnnotations true if the annotations on this type should be ignored
    */
   protected AbstractType(Java8InferenceContext context, boolean ignoreAnnotations) {
     this.context = context;
@@ -91,7 +90,7 @@ public abstract class AbstractType {
   public abstract Kind getKind();
 
   /**
-   * Return true if this type is a proper type.
+   * Returns true if this type is a proper type.
    *
    * @return true if this type is a proper type
    */
@@ -100,7 +99,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return true if this type is a use of an inference variable.
+   * Returns true if this type is a use of an inference variable.
    *
    * @return true if this type is a use of an inference variable
    */
@@ -109,7 +108,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return true if this type contains inference variables, but is not an inference variable.
+   * Returns true if this type contains inference variables, but is not an inference variable.
    *
    * @return true if this type contains inference variables, but is not an inference variable
    */
@@ -131,35 +130,35 @@ public abstract class AbstractType {
    *
    * @param atm annotated type mirror
    * @param type type mirror
-   * @param ignoreAnnotations whether the annotations on this type should be ignored
+   * @param ignoreAnnotations true if the annotations on this type should be ignored
    * @return the new type
    */
   public abstract AbstractType create(
       AnnotatedTypeMirror atm, TypeMirror type, boolean ignoreAnnotations);
 
   /**
-   * Return the underlying Java type without inference variables.
+   * Returns the underlying Java type without inference variables.
    *
    * @return the underlying Java type without inference variables
    */
   public abstract TypeMirror getJavaType();
 
   /**
-   * Return the underlying Java type without inference variables.
+   * Returns the underlying Java type without inference variables.
    *
    * @return the underlying Java type without inference variables
    */
   public abstract AnnotatedTypeMirror getAnnotatedType();
 
   /**
-   * Return a collection of all inference variables referenced by this type.
+   * Returns a collection of all inference variables referenced by this type.
    *
    * @return a collection of all inference variables referenced by this type
    */
   public abstract Collection<Variable> getInferenceVariables();
 
   /**
-   * Return a new type that is the same as this one except the variables in {@code instantiations}
+   * Returns a new type that is the same as this one except the variables in {@code instantiations}
    * have been replaced by their instantiation.
    *
    * @return a new type that is the same as this one except the variables in {@code instantiations}
@@ -168,7 +167,7 @@ public abstract class AbstractType {
   public abstract AbstractType applyInstantiations();
 
   /**
-   * Return true if this type is java.lang.Object.
+   * Returns true if this type is java.lang.Object.
    *
    * @return true if this type is java.lang.Object
    */
@@ -198,7 +197,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return a new type that is the capture of this type.
+   * Returns a new type that is the capture of this type.
    *
    * @param context the context object
    * @return a new type that is the capture of this type
@@ -357,7 +356,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return true if the type is a raw type.
+   * Returns true if the type is a raw type.
    *
    * @return true if the type is a raw type
    */
@@ -369,7 +368,8 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return a new type that is the same type as this one, but whose type arguments are {@code args}.
+   * Returns a new type that is the same type as this one, but whose type arguments are {@code
+   * args}.
    *
    * @param args a list of type arguments
    * @return a new type that is the same type as this one, but whose type arguments are {@code args}
@@ -398,10 +398,10 @@ public abstract class AbstractType {
   }
 
   /**
-   * Whether the proper type is a parameterized class or interface type, or an inner class type of a
-   * parameterized class or interface type (directly or indirectly)
+   * Returns true if the proper type is a parameterized class or interface type, or an inner class
+   * type of a parameterized class or interface type (directly or indirectly)
    *
-   * @return whether T is a parameterized type
+   * @return true if T is a parameterized type
    */
   public boolean isParameterizedType() {
     // TODO this isn't matching the JavaDoc.
@@ -409,7 +409,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return the most specific array type that is a super type of this type or null if one doesn't
+   * Returns the most specific array type that is a super type of this type or null if one doesn't
    * exist.
    *
    * @return the most specific array type that is a super type of this type or null if one doesn't
@@ -432,7 +432,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return the most specific array type, that is the first super type of {@code type} that is not
+   * Returns the most specific array type, that is the first super type of {@code type} that is not
    * an array.
    *
    * @param type annotated type mirror
@@ -455,7 +455,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return true if this type is a primitive array.
+   * Returns true if this type is a primitive array.
    *
    * @return true if this type is a primitive array
    */
@@ -465,7 +465,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return assuming type is an intersection type, this method returns the bounds in this type.
+   * Returns assuming type is an intersection type, this method returns the bounds in this type.
    *
    * @return assuming type is an intersection type, this method returns the bounds in this type
    */
@@ -481,7 +481,8 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return assuming this type is a type variable, this method returns the upper bound of this type.
+   * Returns assuming this type is a type variable, this method returns the upper bound of this
+   * type.
    *
    * @return assuming this type is a type variable, this method returns the upper bound of this type
    */
@@ -494,7 +495,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return assuming this type is a type variable that has a lower bound, this method returns the
+   * Returns assuming this type is a type variable that has a lower bound, this method returns the
    * lower bound of this type.
    *
    * @return assuming this type is a type variable that has a lower bound, this method returns the
@@ -509,7 +510,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return true if this type is a type variable with a lower bound.
+   * Returns true if this type is a type variable with a lower bound.
    *
    * @return true if this type is a type variable with a lower bound
    */
@@ -518,7 +519,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return true if this type is a parameterized type whose has at least one wildcard as a type
+   * Returns true if this type is a parameterized type whose has at least one wildcard as a type
    * argument.
    *
    * @return true if this type is a parameterized type whose has at least one wildcard as a type
@@ -529,7 +530,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return this type's type arguments or null if this type isn't a declared type.
+   * Returns this type's type arguments or null if this type isn't a declared type.
    *
    * @return this type's type arguments or null this type isn't a declared type
    */
@@ -551,7 +552,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return true if the type is an unbound wildcard.
+   * Returns true if the type is an unbound wildcard.
    *
    * @return true if the type is an unbound wildcard
    */
@@ -560,7 +561,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return true if the type is a wildcard with an upper bound.
+   * Returns true if the type is a wildcard with an upper bound.
    *
    * @return true if the type is a wildcard with an upper bound
    */
@@ -569,7 +570,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return true if the type is a wildcard with a lower bound.
+   * Returns true if the type is a wildcard with a lower bound.
    *
    * @return true if the type is a wildcard with a lower bound
    */
@@ -578,7 +579,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return if this type is a wildcard return its lower bound; otherwise, return null.
+   * Returns if this type is a wildcard return its lower bound; otherwise, return null.
    *
    * @return if this type is a wildcard return its lower bound; otherwise, return null
    */
@@ -594,7 +595,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return if this type is a wildcard return its upper bound; otherwise, return null.
+   * Returns if this type is a wildcard return its upper bound; otherwise, return null.
    *
    * @return if this type is a wildcard return its upper bound; otherwise, return null
    */
@@ -614,7 +615,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return new type whose Java type is the erasure of this type.
+   * Returns new type whose Java type is the erasure of this type.
    *
    * @return a new type whose Java type is the erasure of this type
    */
@@ -624,7 +625,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return the array component type fo this type or null if on does not exist.
+   * Returns the array component type of this type or null if one does not exist.
    *
    * @return the array component type of this type or null if one does not exist
    */

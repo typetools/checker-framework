@@ -106,7 +106,7 @@ These qualifiers are part of the Interning type system:
   values).
 
 \item[\refqualclass{checker/interning/qual}{InternedDistinct}]
-  indicates a type such that each value is not \<equals()> to any other
+  indicates that the value is not \<equals()> to any other
   Java value.  This is a stronger (more restrictive) property than
   \<@Interned>, but is a weaker property than writing \<@Interned> on a
   class declaration.  For
@@ -328,6 +328,10 @@ For example, here is one set of guidelines that you could check manually:
 \item The class is final, so that subclasses cannot violate these properties.
 \end{itemize}
 
+The result of a constructor call (that is, \<new MyClass(...)>) is not
+necessarily \<@InternedDistinct> because the \<equals()> method of
+\<MyClass> might return true for two distinct objects.
+
 
 \sectionAndLabel{What the Interning Checker checks}{interning-checks}
 
@@ -443,7 +447,7 @@ The compiler will issue an error regarding violation of the semantics of
 
 
 The Daikon invariant detector
-(\myurl{http://plse.cs.washington.edu/daikon/}) is also annotated with
+(\myurl{https://plse.cs.washington.edu/daikon/}) is also annotated with
 \refqualclass{checker/interning/qual}{Interned}.  From directory \code{java/},
 run \code{make check-interning}.
 

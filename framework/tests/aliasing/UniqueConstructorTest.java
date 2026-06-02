@@ -15,7 +15,7 @@ public class UniqueConstructorTest {
 
   class ChildUniqueClass extends ParentClass {
 
-    // ::error: (unique.leaked)
+    // ::error: [unique.leaked]
     @Unique ChildUniqueClass() {
       // Raises unique.leaked error since the parent constructor is not unique
     }

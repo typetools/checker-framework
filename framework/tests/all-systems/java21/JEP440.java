@@ -10,7 +10,7 @@
 // These are examples copied from:
 // https://openjdk.org/jeps/440
 
-@SuppressWarnings("i18n") // true postives.
+@SuppressWarnings("i18n") // true positives.
 public class JEP440 {
 
   record Point(int x, int y) {}

@@ -20,8 +20,8 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.plumelib.util.StringsPlume;
 
 /**
- * Adds annotations from element to the return type, formal parameter types, type parameters, and
- * throws clauses of the AnnotatedExecutableType type.
+ * Adds annotations from an element to the return type, formal parameter types, type parameters, and
+ * throws clauses of an AnnotatedExecutableType type.
  */
 public class MethodApplier extends TargetedElementAnnotationApplier {
 
@@ -121,14 +121,14 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
   }
 
   /**
-   * Sets the method's element, annotates its return type, parameters, type parameters, and throws
-   * annotations.
+   * Sets the method's element, and annotates its return type, parameters, type parameters, and
+   * throws clauses.
    */
   @Override
   public void extractAndApply() throws UnexpectedAnnotationLocationException {
     methodType.setElement(methodSymbol); // Preserves previous behavior
 
-    // Add declaration annotations to the return type if
+    // Add declaration annotations to the return type.
     if (methodType.getReturnType() instanceof AnnotatedTypeVariable) {
       applyTypeVarUseOnReturnType();
     }
@@ -152,7 +152,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         methodType.getTypeVariables(), methodSymbol.getTypeParameters(), typeFactory);
   }
 
-  // NOTE that these are the only locations not handled elsewhere, otherwise we call apply
+  // NOTE that these are the only locations not handled elsewhere, otherwise we call apply.
   @Override
   protected void handleTargeted(List<TypeCompound> targeted)
       throws UnexpectedAnnotationLocationException {
@@ -221,8 +221,10 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
   }
 
   /**
-   * If the return type is a use of a type variable first apply the bound annotations from the type
-   * variables declaration.
+   * If the return type is a use of a type variable, first apply the bound annotations from the type
+   * variable's declaration.
+   *
+   * @throws UnexpectedAnnotationLocationException if a location is invalid
    */
   private void applyTypeVarUseOnReturnType() throws UnexpectedAnnotationLocationException {
     new TypeVarUseApplier(methodType.getReturnType(), methodSymbol, typeFactory).extractAndApply();

@@ -57,7 +57,7 @@ public class VariableBounds {
   /** Constraints implied by complementary pairs of bounds found during incorporation. */
   public final ConstraintSet constraints = new ConstraintSet();
 
-  /** Whether this variable has a throws bounds. */
+  /** True if this variable has a throws bounds. */
   public boolean hasThrowsBound = false;
 
   /** Saved bounds used in the event the first attempt at resolution fails. */
@@ -126,7 +126,7 @@ public class VariableBounds {
   }
 
   /**
-   * Return true if this has a throws bound.
+   * Returns true if this has a throws bound.
    *
    * @return true if this has a throws bound
    */
@@ -135,7 +135,7 @@ public class VariableBounds {
   }
 
   /**
-   * Set has throws bound
+   * Set has throws bound.
    *
    * @param b has thrown bound
    */
@@ -191,23 +191,23 @@ public class VariableBounds {
       BoundKind kind, Set<? extends AbstractQualifier> qualifiers) {
     Set<AbstractQualifier> equalBounds = qualifierBounds.get(BoundKind.EQUAL);
     switch (kind) {
-      case EQUAL:
+      case EQUAL -> {
         addQualifierConstraint(qualifiers, equalBounds, Kind.QUALIFIER_EQUALITY);
         addQualifierConstraint(
             qualifierBounds.get(BoundKind.LOWER), qualifiers, Kind.QUALIFIER_SUBTYPE);
         addQualifierConstraint(
             qualifiers, qualifierBounds.get(BoundKind.UPPER), Kind.QUALIFIER_SUBTYPE);
-        break;
-      case LOWER:
+      }
+      case LOWER -> {
         addQualifierConstraint(qualifiers, equalBounds, Kind.QUALIFIER_SUBTYPE);
         addQualifierConstraint(
             qualifiers, qualifierBounds.get(BoundKind.UPPER), Kind.QUALIFIER_SUBTYPE);
-        break;
-      default: // UPPER
+      }
+      default -> { // UPPER
         addQualifierConstraint(equalBounds, qualifiers, Kind.QUALIFIER_SUBTYPE);
         addQualifierConstraint(
             qualifierBounds.get(BoundKind.LOWER), qualifiers, Kind.QUALIFIER_SUBTYPE);
-        break;
+      }
     }
   }
 
@@ -241,11 +241,11 @@ public class VariableBounds {
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public void addConstraintsFromComplementaryBounds(
       Constraint parent, BoundKind kind, AbstractType boundType) {
-    if (parent instanceof TypeConstraint) {
-      ((TypeConstraint) parent).source = "From complementary bound.";
+    if (parent instanceof TypeConstraint tc) {
+      tc.source = "From complementary bound.";
     }
     switch (kind) {
-      case EQUAL:
+      case EQUAL -> {
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
             constraints.add(new Typing(parent, boundType, t, Kind.TYPE_EQUALITY));
@@ -261,8 +261,8 @@ public class VariableBounds {
             constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
           }
         }
-        break;
-      case LOWER:
+      }
+      case LOWER -> {
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
             constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
@@ -273,8 +273,8 @@ public class VariableBounds {
             constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
           }
         }
-        break;
-      case UPPER:
+      }
+      case UPPER -> {
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
             constraints.add(new Typing(parent, t, boundType, Kind.SUBTYPE));
@@ -285,7 +285,7 @@ public class VariableBounds {
             constraints.add(new Typing(parent, t, boundType, Kind.SUBTYPE));
           }
         }
-        break;
+      }
     }
 
     if (kind == BoundKind.UPPER) {
@@ -305,19 +305,19 @@ public class VariableBounds {
     if (boundType.isUseOfVariable() && !boundType.ignoreAnnotations) {
       UseOfVariable boundVar = (UseOfVariable) boundType;
       switch (kind) {
-        case EQUAL:
+        case EQUAL -> {
           boundVar.addQualifierBound(BoundKind.EQUAL, qualifierBounds.get(BoundKind.EQUAL));
           boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.LOWER));
           boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.UPPER));
-          break;
-        case LOWER:
+        }
+        case LOWER -> {
           boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.EQUAL));
           boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.LOWER));
-          break;
-        case UPPER:
+        }
+        case UPPER -> {
           boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.EQUAL));
           boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.UPPER));
-          break;
+        }
       }
     }
   }
@@ -395,9 +395,9 @@ public class VariableBounds {
   }
 
   /**
-   * Returns whether this variable only has bounds against proper types.
+   * Returns true if this variable only has bounds against proper types.
    *
-   * @return whether this variable only has bounds against proper types
+   * @return true if this variable only has bounds against proper types
    */
   public boolean onlyProperBounds() {
     for (BoundKind k : BoundKind.values()) {
@@ -411,7 +411,7 @@ public class VariableBounds {
   }
 
   /**
-   * Return all lower bounds that are proper types.
+   * Returns all lower bounds that are proper types.
    *
    * @return all lower bounds that are proper types
    */
@@ -458,7 +458,7 @@ public class VariableBounds {
   /**
    * Apply instantiations to all bounds and constraints of this variable.
    *
-   * @return whether any of the bounds changed
+   * @return true if any of the bounds changed
    */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public boolean applyInstantiationsToBounds() {
@@ -488,7 +488,7 @@ public class VariableBounds {
   }
 
   /**
-   * Return all variables mentioned in a bound against this variable.
+   * Returns all variables mentioned in a bound against this variable.
    *
    * @return all variables mentioned in a bound against this variable
    */
@@ -512,7 +512,7 @@ public class VariableBounds {
   }
 
   /**
-   * Return true if this has an instantiation.
+   * Returns true if this has an instantiation.
    *
    * @return true if this has an instantiation
    */
@@ -562,7 +562,7 @@ public class VariableBounds {
    * where S1 and S2 have supertypes that are two different parameterizations of the same generic
    * class or interface?
    *
-   * @return whether this bound set contain two bounds of the forms {@code S1 <: var} and {@code S2
+   * @return true if this bound set contain two bounds of the forms {@code S1 <: var} and {@code S2
    *     <: var}, where S1 and S2 have supertypes that are two different parameterizations of the
    *     same generic class or interface
    */
@@ -603,7 +603,7 @@ public class VariableBounds {
    * @return true if there exists an equal or lower bound against a type, S, such that S is not a
    *     subtype of {@code G<...>}, but S is a subtype of the raw type {@code |G<...>|}, where
    *     {@code G} a generic class or interface for which the parameter of this method, {@code t},
-   *     is a parameterization.
+   *     is a parameterization
    */
   public boolean hasRawTypeLowerOrEqualBound(AbstractType t) {
     for (AbstractType type : bounds.get(BoundKind.LOWER)) {

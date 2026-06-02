@@ -27,7 +27,7 @@ public class AnnotatedTypeParameterBounds {
   }
 
   /**
-   * Return a possibly-verbose string representation of this.
+   * Returns a possibly-verbose string representation of this.
    *
    * @param verbose if true, returned representation is verbose
    * @return a possibly-verbose string representation of this
@@ -43,10 +43,9 @@ public class AnnotatedTypeParameterBounds {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof AnnotatedTypeParameterBounds)) {
+    if (!(obj instanceof AnnotatedTypeParameterBounds other)) {
       return false;
     }
-    AnnotatedTypeParameterBounds other = (AnnotatedTypeParameterBounds) obj;
     return this.upper == null
         ? other.upper == null
         : (this.upper.equals(other.upper) && this.lower == null)

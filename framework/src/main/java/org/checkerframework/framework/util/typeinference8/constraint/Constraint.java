@@ -9,7 +9,7 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 public interface Constraint extends ReductionResult {
 
   /**
-   * Return the kind of constraint.
+   * Returns the kind of constraint.
    *
    * @return the kind of constraint
    */
@@ -32,12 +32,12 @@ public interface Constraint extends ReductionResult {
   enum Kind {
     /**
      * {@code < Expression -> T >}: An expression is compatible in a loose invocation context with
-     * type T
+     * type T.
      */
     EXPRESSION,
-    /** {@code < S -> T >}: A type S is compatible in a loose invocation context with type T */
+    /** {@code < S -> T >}: A type S is compatible in a loose invocation context with type T. */
     TYPE_COMPATIBILITY,
-    /** {@code < S <: T >}: A reference type S is a subtype of a reference type T */
+    /** {@code < S <: T >}: A reference type S is a subtype of a reference type T. */
     SUBTYPE,
     /** {@code < S <= T >}: A type argument S is contained by a type argument T. */
     CONTAINED,

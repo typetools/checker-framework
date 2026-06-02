@@ -40,51 +40,51 @@ public class TestVariableNameDefault {
 
     @VariableNameDefaultMiddle int m;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     m = top;
 
     m = middle;
     m = middlevar;
     m = mymiddle;
-    // :: error: (assignment)
+    // :: error: [assignment]
     m = notmiddle;
-    // :: error: (assignment)
+    // :: error: [assignment]
     m = notmiddlevar;
     m = namedbottombutnot;
 
     m = bottom;
     m = bottomvar;
     m = mybottom;
-    // :: error: (assignment)
+    // :: error: [assignment]
     m = notbottom;
-    // :: error: (assignment)
+    // :: error: [assignment]
     m = notbottomvar;
     m = namedmiddlebutnot;
 
     @VariableNameDefaultBottom int b;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = top;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = middle;
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = middlevar;
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = mymiddle;
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = notmiddle;
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = notmiddlevar;
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = namedbottombutnot;
 
     b = bottom;
     b = bottomvar;
     b = mybottom;
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = notbottom;
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = notbottomvar;
     b = namedmiddlebutnot;
   }
@@ -101,30 +101,30 @@ public class TestVariableNameDefault {
     @VariableNameDefaultMiddle int m;
 
     m = middle;
-    // :: error: (assignment)
+    // :: error: [assignment]
     m = notmiddle;
     m = bottom;
-    // :: error: (assignment)
+    // :: error: [assignment]
     m = notbottom;
 
     @VariableNameDefaultBottom int b;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = middle;
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = notmiddle;
     b = bottom;
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = notbottom;
   }
 
   int middlemethod() {
-    // :: error: (return)
+    // :: error: [return]
     return 0;
   }
 
   int mymiddlemethod() {
-    // :: error: (return)
+    // :: error: [return]
     return 0;
   }
 
@@ -137,12 +137,12 @@ public class TestVariableNameDefault {
   }
 
   int bottommethod() {
-    // :: error: (return)
+    // :: error: [return]
     return 0;
   }
 
   int mybottommethod() {
-    // :: error: (return)
+    // :: error: [return]
     return 0;
   }
 
@@ -172,34 +172,34 @@ public class TestVariableNameDefault {
 
     m = middlemethod();
     m = mymiddlemethod();
-    // :: error: (assignment)
+    // :: error: [assignment]
     m = notmiddlemethod();
-    // :: error: (assignment)
+    // :: error: [assignment]
     m = mynotmiddlemethod();
 
     m = bottommethod();
     m = mybottommethod();
-    // :: error: (assignment)
+    // :: error: [assignment]
     m = notbottommethod();
-    // :: error: (assignment)
+    // :: error: [assignment]
     m = mynotbottommethod();
 
     @VariableNameDefaultBottom int b;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = middlemethod();
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = mymiddlemethod();
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = notmiddlemethod();
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = mynotmiddlemethod();
 
     b = bottommethod();
     b = mybottommethod();
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = notbottommethod();
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = mynotbottommethod();
   }
 }

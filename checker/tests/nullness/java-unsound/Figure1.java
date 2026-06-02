@@ -1,5 +1,4 @@
-// Unsound only in Java 8, Java 9+ already gives an error
-// @skip-test no need to test for the javac error.
+// @skip-test javac gives an error; there is no need to test for the javac error.
 
 public class Figure1 {
   static class Constrain<A, B extends A> {}

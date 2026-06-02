@@ -8,20 +8,20 @@ public class Initializer {
   public String a;
   public String b = "abc";
 
-  // :: error: (assignment)
+  // :: error: [assignment]
   public String c = null;
 
   public String d = ("");
 
-  // :: error: (initialization.fields.uninitialized)
+  // :: error: [initialization.fields.uninitialized]
   public Initializer() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     a = null;
     a = "";
     c = "";
   }
 
-  // :: error: (initialization.fields.uninitialized)
+  // :: error: [initialization.fields.uninitialized]
   public Initializer(boolean foo) {}
 
   public Initializer(int foo) {
@@ -44,7 +44,7 @@ public class Initializer {
     f = "";
   }
 
-  // :: error: (initialization.fields.uninitialized)
+  // :: error: [initialization.fields.uninitialized]
   public Initializer(double foo, boolean t) {
     if (!setFieldMaybe()) {
       // on this path, 'a' is not initialized
@@ -66,7 +66,7 @@ public class Initializer {
   String f;
 
   void t1(@UnknownInitialization Initializer this) {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     this.f.toString();
   }
 
@@ -75,22 +75,22 @@ public class Initializer {
 
 class SubInitializer extends Initializer {
 
-  // :: error: (initialization.field.uninitialized)
+  // :: error: [initialization.field.uninitialized]
   String f;
 
   void subt1(@UnknownInitialization(Initializer.class) SubInitializer this) {
     fieldF.toString();
     super.f.toString();
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     this.f.toString();
   }
 
   void subt2(@UnknownInitialization SubInitializer this) {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     fieldF.toString();
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     super.f.toString();
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     this.f.toString();
   }
 }

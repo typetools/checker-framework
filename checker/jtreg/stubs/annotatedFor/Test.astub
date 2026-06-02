@@ -5,9 +5,9 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 
 public class Test<T> {
     @AnnotatedFor("tainting")
-    public void method1(@Nullable T t){}
+    public void method1(@Nullable T t) {}
     @AnnotatedFor("nullness")
-    public void method2(T t){}
+    public void method2(T t) {}
     @AnnotatedFor("nullness")
     public Object method3() {}
 }

@@ -5,14 +5,14 @@ import org.checkerframework.checker.nonempty.qual.NonEmpty;
 class IteratorOperations {
 
   void testPolyNonEmptyIterator(List<Integer> nums) {
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     nums.iterator().next();
 
     if (!nums.isEmpty()) {
       @NonEmpty Iterator<Integer> nonEmptyIterator = nums.iterator();
       nonEmptyIterator.next();
     } else {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonEmpty Iterator<Integer> unknownEmptyIterator = nums.iterator();
     }
   }
@@ -20,7 +20,7 @@ class IteratorOperations {
   void testSwitchRefinementNoFallthrough(List<Integer> nums) {
     switch (nums.size()) {
       case 0:
-        // :: error: (method.invocation)
+        // :: error: [method.invocation]
         nums.iterator().next();
         break;
       case 1:
@@ -34,13 +34,13 @@ class IteratorOperations {
   void testSwitchRefinementWithFallthrough(List<Integer> nums) {
     switch (nums.size()) {
       case 0:
-        // :: error: (method.invocation)
+        // :: error: [method.invocation]
         nums.iterator().next();
       case 1:
-        // :: error: (assignment)
+        // :: error: [assignment]
         @NonEmpty List<Integer> nums2 = nums;
       default:
-        // :: error: (assignment)
+        // :: error: [assignment]
         @NonEmpty List<Integer> nums3 = nums;
     }
   }
@@ -51,7 +51,7 @@ class IteratorOperations {
         nums.iterator().next();
         break;
       default:
-        // :: error: (assignment)
+        // :: error: [assignment]
         @NonEmpty List<Integer> nums3 = nums;
     }
   }
@@ -59,7 +59,7 @@ class IteratorOperations {
   void testSwitchRefinementIndexOf(List<String> strs, String s) {
     switch (strs.indexOf(s)) {
       case -1:
-        // :: error: (method.invocation)
+        // :: error: [method.invocation]
         strs.iterator().next();
         break;
       case 0:

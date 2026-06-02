@@ -4,12 +4,12 @@ import org.checkerframework.dataflow.qual.Pure;
 // @below-java17-jdk-skip-test
 record RecordPurity(@Nullable String first, @Nullable String second) {
   public String checkNullnessOfFields() {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     return first.toString() + " " + second.toString();
   }
 
   public String checkNullnessOfAccessors() {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     return first().toString() + " " + second().toString();
   }
 
@@ -80,7 +80,7 @@ record RecordPurity(@Nullable String first, @Nullable String second) {
     java.util.List<String> ss = java.util.List.of();
     if (first(ss) == null) return "";
     else
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       return "" + "".length() + first(ss).length();
   }
 

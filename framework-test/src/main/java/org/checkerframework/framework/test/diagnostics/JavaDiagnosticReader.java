@@ -42,15 +42,14 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
   public static List<TestDiagnostic> readJavaSourceFiles(Iterable<? extends Object> files) {
     List<TestDiagnostic> result = new ArrayList<>();
     for (Object file : files) {
-      if (file instanceof JavaFileObject) {
+      if (file instanceof JavaFileObject jfo) {
         try (JavaDiagnosticReader reader =
-            new JavaDiagnosticReader(
-                (JavaFileObject) file, TestDiagnosticUtils::fromJavaSourceLine)) {
+            new JavaDiagnosticReader(jfo, TestDiagnosticUtils::fromJavaSourceLine)) {
           readDiagnostics(result, reader);
         }
-      } else if (file instanceof File) {
+      } else if (file instanceof File f) {
         try (JavaDiagnosticReader reader =
-            new JavaDiagnosticReader((File) file, TestDiagnosticUtils::fromJavaSourceLine)) {
+            new JavaDiagnosticReader(f, TestDiagnosticUtils::fromJavaSourceLine)) {
           readDiagnostics(result, reader);
         }
       } else {

@@ -29,7 +29,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * may be types or wildcards and may mention inference variables).
  */
 public class CaptureBound {
-  /** {@code G<A1, ..., An>} sometimes called the right hand side */
+  /** {@code G<A1, ..., An>} sometimes called the right-hand side. */
   private final AbstractType capturedType;
 
   /**
@@ -157,7 +157,7 @@ public class CaptureBound {
   }
 
   /**
-   * Return all variables on the left-hand side of this capture.
+   * Returns all variables on the left-hand side of this capture.
    *
    * @return all variables on the left-hand side of this capture
    */
@@ -166,7 +166,7 @@ public class CaptureBound {
   }
 
   /**
-   * Return all variables on the right-hand side of this capture.
+   * Returns all variables on the right-hand side of this capture.
    *
    * @return all variables on the right-hand side of this capture
    */
@@ -175,10 +175,10 @@ public class CaptureBound {
   }
 
   /**
-   * Returns whether this bound contains any {@code variables}.
+   * Returns true if this bound contains any {@code variables}.
    *
    * @param variables inference variables
-   * @return whether this bound contains any {@code variables}
+   * @return true if this bound contains any {@code variables}
    */
   public boolean isCaptureMentionsAny(Collection<Variable> variables) {
     for (Variable a : variables) {
@@ -192,40 +192,17 @@ public class CaptureBound {
   /**
    * For a capture of the form: {@code G<a1, ..., an> = capture(G<A1, ..., An>)}, a capture tuple
    * groups ai, Ai, and the upper bound of the corresponding type variable.
+   *
+   * @param alpha fresh inference variable (in the left-hand side of the capture). (Also referred to
+   *     as beta in the some places in the JLS.) For example {@code a1} in {@code G<a1, ..., an> =
+   *     capture(G<A1, ..., An>)}.
+   * @param capturedTypeArg type argument in the right-hand side for the capture. For example {@code
+   *     A1} in {@code G<a1, ..., an> = capture(G<A1, ..., An>)}.
+   * @param bound upper bound of one of the type parameters of G that has been substituted using the
+   *     fresh inference variables
    */
-  private static class CaptureTuple {
-
-    /**
-     * Fresh inference variable (in the left hand side of the capture). (Also referred to as beta in
-     * the some places in the JLS.) For example {@code a1} in {@code G<a1, ..., an> = capture(G<A1,
-     * ..., An>)}.
-     */
-    public final CaptureVariable alpha;
-
-    /**
-     * Type argument in the right hand side for the capture. For example {@code A1} in {@code G<a1,
-     * ..., an> = capture(G<A1, ..., An>)}.
-     */
-    public final AbstractType capturedTypeArg;
-
-    /**
-     * Upper bound of one of the type parameters of G that has been substituted using the fresh
-     * inference variables.
-     */
-    public final AbstractType bound;
-
-    /**
-     * Creates a tuple.
-     *
-     * @param alpha capture variable
-     * @param capturedTypeArg captured type argument
-     * @param bound the bound of the type parameter
-     */
-    private CaptureTuple(CaptureVariable alpha, AbstractType capturedTypeArg, AbstractType bound) {
-      this.alpha = alpha;
-      this.capturedTypeArg = capturedTypeArg;
-      this.bound = bound;
-    }
+  private record CaptureTuple(
+      CaptureVariable alpha, AbstractType capturedTypeArg, AbstractType bound) {
 
     /**
      * Creates a tuple.

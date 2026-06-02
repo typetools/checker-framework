@@ -79,7 +79,6 @@ import org.checkerframework.afu.scenelib.el.ATypeElement;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.interning.qual.FindDistinct;
-import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -98,6 +97,7 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJa
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.AnnotatedFor;
+import org.checkerframework.framework.qual.DoesNotUnrefineReceiver;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.FieldInvariant;
@@ -146,6 +146,7 @@ import org.checkerframework.javacutil.trees.DetachedVarSymbol;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
 import org.plumelib.util.ImmutableTypes;
+import org.plumelib.util.MapsP;
 import org.plumelib.util.StringsPlume;
 import org.plumelib.util.SystemPlume;
 
@@ -182,10 +183,10 @@ import org.plumelib.util.SystemPlume;
  */
 public class AnnotatedTypeFactory implements AnnotationProvider {
 
-  /** Whether to output verbose, low-level debugging messages about {@link #getAnnotatedType}. */
+  /** If true, output verbose, low-level debugging messages about {@link #getAnnotatedType}. */
   private static final boolean debugGat = false;
 
-  /** Whether to print verbose debugging messages about stub files. */
+  /** If true, print verbose debugging messages about stub files. */
   private final boolean debugStubParser;
 
   /** The {@link Trees} instance to use for tree node path finding. */
@@ -216,6 +217,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   // These variables cannot be static because they depend on the ProcessingEnvironment.
   /** The AnnotatedFor.value argument/element. */
   protected final ExecutableElement annotatedForValueElement;
+
+  /** The DoesNotUnrefineReceiver.value argument/element. */
+  protected final ExecutableElement doesNotUnrefineReceiverValueElement;
 
   /** The EnsuresQualifier.expression field/element. */
   protected final ExecutableElement ensuresQualifierExpressionElement;
@@ -408,7 +412,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** The canonical annotation (or null if copyElements == true). */
     final AnnotationMirror canonical;
 
-    /** Whether elements should be copied over when translating to the canonical annotation. */
+    /** True if elements should be copied over when translating to the canonical annotation. */
     final boolean copyElements;
 
     /** The canonical annotation name (or null if copyElements == false). */
@@ -422,7 +426,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param aliasName the alias name; only used for debugging
      * @param canonical the canonical annotation
-     * @param copyElements whether elements should be copied over when translating to the canonical
+     * @param copyElements true if elements should be copied over when translating to the canonical
      *     annotation
      * @param canonicalName the canonical annotation name (or null if copyElements == false)
      * @param ignorableElements elements that should not be copied over
@@ -538,7 +542,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /** Mapping from CFG-generated trees to their enclosing elements. */
   protected final Map<Tree, Element> artificialTreeToEnclosingElementMap;
 
-  /** Whether to ignore type arguments from raw types. */
+  /** If true, ignore type arguments from raw types. */
   public final boolean ignoreRawTypeArguments;
 
   /** The Object.getClass method. */
@@ -596,14 +600,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     this.shouldCache = !checker.hasOption("atfDoNotCache");
     if (shouldCache) {
       int cacheSize = getCacheSize();
-      this.classAndMethodTreeCache = CollectionsPlume.createLruCache(cacheSize);
-      this.fromExpressionTreeCache = CollectionsPlume.createLruCache(cacheSize);
-      this.fromMemberTreeCache = CollectionsPlume.createLruCache(cacheSize);
-      this.fromTypeTreeCache = CollectionsPlume.createLruCache(cacheSize);
-      this.elementCache = CollectionsPlume.createLruCache(cacheSize);
-      this.elementToTreeCache = CollectionsPlume.createLruCache(cacheSize);
+      this.classAndMethodTreeCache = MapsP.createLruCache(cacheSize);
+      this.fromExpressionTreeCache = MapsP.createLruCache(cacheSize);
+      this.fromMemberTreeCache = MapsP.createLruCache(cacheSize);
+      this.fromTypeTreeCache = MapsP.createLruCache(cacheSize);
+      this.elementCache = MapsP.createLruCache(cacheSize);
+      this.elementToTreeCache = MapsP.createLruCache(cacheSize);
       this.annotationClassNames =
-          Collections.synchronizedMap(CollectionsPlume.createLruCache(ANNOTATION_CACHE_SIZE));
+          Collections.synchronizedMap(MapsP.createLruCache(ANNOTATION_CACHE_SIZE));
     } else {
       this.classAndMethodTreeCache = null;
       this.fromExpressionTreeCache = null;
@@ -618,7 +622,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     this.annotationFormatter = createAnnotationFormatter();
     this.typeInformationPresenter = createTypeInformationPresenter();
 
-    if (checker.hasOption("infer")) {
+    if (!checker.hasOption("infer")) {
+      wholeProgramInference = null;
+    } else {
       checkInvalidOptionsInferSignatures();
       String inferArg = checker.getOption("infer");
       // No argument means "jaifs", for (temporary) backwards compatibility.
@@ -626,22 +632,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         inferArg = "jaifs";
       }
       switch (inferArg) {
-        case "stubs":
-          wpiOutputFormat = WholeProgramInference.OutputFormat.STUB;
-          break;
-        case "jaifs":
-          wpiOutputFormat = WholeProgramInference.OutputFormat.JAIF;
-          break;
-        case "ajava":
-          wpiOutputFormat = WholeProgramInference.OutputFormat.AJAVA;
-          break;
-        default:
-          throw new UserError(
-              "Bad argument -Ainfer="
-                  + inferArg
-                  + " should be one of: -Ainfer=jaifs, -Ainfer=stubs, -Ainfer=ajava");
+        case "stubs" -> wpiOutputFormat = WholeProgramInference.OutputFormat.STUB;
+        case "jaifs" -> wpiOutputFormat = WholeProgramInference.OutputFormat.JAIF;
+        case "ajava" -> wpiOutputFormat = WholeProgramInference.OutputFormat.AJAVA;
+        default ->
+            throw new UserError(
+                "Bad argument -Ainfer="
+                    + inferArg
+                    + " should be one of: -Ainfer=jaifs, -Ainfer=stubs, -Ainfer=ajava");
       }
       boolean showWpiFailedInferences = checker.hasOption("showWpiFailedInferences");
+      String inferOutputDirectory =
+          checker.getOption("inferOutputDirectory", "build/whole-program-inference");
       boolean inferOutputOriginal = checker.hasOption("inferOutputOriginal");
       if (inferOutputOriginal && wpiOutputFormat != WholeProgramInference.OutputFormat.AJAVA) {
         checker.message(
@@ -652,20 +654,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         wholeProgramInference =
             new WholeProgramInferenceImplementation<AnnotatedTypeMirror>(
                 this,
-                new WholeProgramInferenceJavaParserStorage(this, inferOutputOriginal),
+                new WholeProgramInferenceJavaParserStorage(
+                    this, inferOutputDirectory, inferOutputOriginal),
                 showWpiFailedInferences);
       } else {
         wholeProgramInference =
             new WholeProgramInferenceImplementation<ATypeElement>(
-                this, new WholeProgramInferenceScenesStorage(this), showWpiFailedInferences);
+                this,
+                new WholeProgramInferenceScenesStorage(this, inferOutputDirectory),
+                showWpiFailedInferences);
       }
       if (!checker.hasOption("warns")) {
         // Without -Awarns, the inference output may be incomplete, because javac halts
         // after issuing an error.
         checker.message(Diagnostic.Kind.ERROR, "Do not supply -Ainfer without -Awarns");
       }
-    } else {
-      wholeProgramInference = null;
     }
     ignoreRawTypeArguments = checker.getBooleanOption("ignoreRawTypeArguments", true);
 
@@ -674,6 +677,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     this.debugStubParser = checker.hasOption("stubDebug");
 
     annotatedForValueElement = TreeUtils.getMethod(AnnotatedFor.class, "value", 0, processingEnv);
+    doesNotUnrefineReceiverValueElement =
+        TreeUtils.getMethod(DoesNotUnrefineReceiver.class, "value", 0, processingEnv);
     ensuresQualifierExpressionElement =
         TreeUtils.getMethod(EnsuresQualifier.class, "expression", 0, processingEnv);
     ensuresQualifierListValueElement =
@@ -720,7 +725,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Requires that supportedQuals is non-null and non-empty and each element is a type qualifier.
    * That is, no element has a {@code @Target} meta-annotation that contains something besides
-   * TYPE_USE or TYPE_PARAMETER. (@Target({}) is allowed.) @
+   * TYPE_USE or TYPE_PARAMETER. ({@code @Target({})} is allowed.)
    *
    * @throws BugInCF If supportedQuals is empty or contaions a non-type qualifier
    */
@@ -868,7 +873,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Return {@link QualifierUpperBounds} for this type factory.
+   * Returns {@link QualifierUpperBounds} for this type factory.
    *
    * @return {@link QualifierUpperBounds} for this type factory
    */
@@ -1059,10 +1064,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns true if the given qualifer is one of the top annotations for the qualifer hierarchy.
+   * Returns true if the given qualifier is one of the top annotations for the qualifier hierarchy.
    *
    * @param qualifier a type qualifier
-   * @return true if the given qualifer is one of the top annotations for the qualifer hierarchy
+   * @return true if the given qualifier is one of the top annotations for the qualifier hierarchy
    */
   public final boolean isTop(AnnotationMirror qualifier) {
     return qualHierarchy.isTop(qualifier);
@@ -1084,6 +1089,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         checker.hasOption("invariantArrays"));
   }
 
+  /**
+   * Returns the type hierarchy.
+   *
+   * @return the type hierarchy
+   */
   public final TypeHierarchy getTypeHierarchy() {
     return typeHierarchy;
   }
@@ -1137,7 +1147,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>To support a different set of annotations than those in the {@literal qual} subdirectory, or
    * that have other {@code ElementType} values, see examples below.
    *
-   * <p>In total, there are 5 ways to indicate annotations that are supported by a checker:
+   * <p>In total, there are 3 ways to indicate annotations that are supported by a checker:
    *
    * <ol>
    *   <li>Only support annotations located in a checker's {@literal qual} directory:
@@ -1149,22 +1159,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *       #createSupportedTypeQualifiers()} by calling {@link #getBundledTypeQualifiers(Class...)}
    *       with a varargs parameter list of the other annotations. Code example:
    *       <pre>
-   * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-   *      return getBundledTypeQualifiers(Regex.class, PartialRegex.class, RegexBottom.class, UnknownRegex.class);
-   *  } }
+   * {@code @Override
+   * protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+   *   return getBundledTypeQualifiers(
+   *     // These annotations are in the Called Methods Checker, not the Resource Leak Checker.
+   *     CalledMethods.class, CalledMethodsBottom.class, CalledMethodsPredicate.class);
+   * } }
    * </pre>
-   *   <li>Supporting only annotations that are explicitly listed: Override {@link
+   *   <li>Support only annotations that are explicitly listed. This is common when a single
+   *       directory holds qualifiers for multiple qualifier hierarchies. Override {@link
    *       #createSupportedTypeQualifiers()} and return a mutable set of the supported annotations.
    *       Code example:
    *       <pre>
-   * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-   *      return new HashSet<Class<? extends Annotation>>(
-   *              Arrays.asList(A.class, B.class));
-   *  } }
+   * {@code @Override
+   * protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+   *   return new HashSet<Class<? extends Annotation>>(
+   *       Arrays.asList(A.class, B.class));
+   * } }
    * </pre>
    *       The set of qualifiers returned by {@link #createSupportedTypeQualifiers()} must be a
    *       fresh, mutable set. The methods {@link #getBundledTypeQualifiers(Class...)} must return a
-   *       fresh, mutable set
+   *       fresh, mutable set.
    * </ol>
    *
    * @return the type qualifiers supported this processor, or an empty set if none
@@ -1174,15 +1189,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Loads all annotations contained in the qual directory of a checker via reflection; if a
-   * polymorphic type qualifier exists, and an explicit array of annotations to the set of
-   * annotation classes.
+   * Loads, via reflection, all bundled qualifiers. A bundled qualifier is one that is shipped with
+   * the Checker Framework, in the qual directory of a checker. Returns the bundled annotations and
+   * the annotations passed as arguments.
    *
    * <p>This method can be called in the overridden versions of {@link
    * #createSupportedTypeQualifiers()} in each checker.
    *
    * @param explicitlyListedAnnotations a varargs array of explicitly listed annotation classes to
-   *     be added to the returned set. For example, it is used frequently to add Bottom qualifiers.
+   *     be added to the returned set
    * @return a mutable set of the loaded and listed annotation classes
    */
   @SafeVarargs
@@ -1192,14 +1207,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Instantiates the AnnotationClassLoader and loads all annotations contained in the qual
-   * directory of a checker via reflection, and has the option to include an explicitly stated list
-   * of annotations (eg ones found in a different directory than qual).
+   * Instantiates the AnnotationClassLoader and loads, by reflection, all bundled annotations --
+   * those contained in the qual directory of a checker. Also includes the annotations passed as
+   * arguments (e.g., ones found in a different directory than qual).
    *
-   * <p>The annotations that are automatically loaded must have the {@link
-   * java.lang.annotation.Target Target} meta-annotation with the value of {@link
-   * ElementType#TYPE_USE} (and optionally {@link ElementType#TYPE_PARAMETER}). If it has other
-   * {@link ElementType} values, it won't be loaded. Other annotation classes must be explicitly
+   * <p>Only type qualifier annotations are loaded (as defined by {@link
+   * AnnotationClassLoader#isTypeQualifierAnnotation}). Other annotation classes must be explicitly
    * listed even if they are in the same directory as the checker's qual directory.
    *
    * @param explicitlyListedAnnotations a set of explicitly listed annotation classes to be added to
@@ -1217,7 +1230,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     Set<Class<? extends Annotation>> annotations = loader.getBundledAnnotationClasses();
 
-    // add in all explicitly Listed qualifiers
+    // This works because this method (`loadTypeAnnotationsFromQualDir`) is called in `postInit()`,
+    // but `addAliasedTypeAnnotation` is called before `postInit()`.
+    annotations.removeIf(this::isAliasedTypeAnnotation);
+
+    // Add in all explicitly listed qualifiers.
     if (explicitlyListedAnnotations != null) {
       annotations.addAll(Arrays.asList(explicitlyListedAnnotations));
     }
@@ -1242,7 +1259,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Return the current {@link AnnotatedTypeFormatter}.
+   * Returns the current {@link AnnotatedTypeFormatter}.
    *
    * @return the current {@link AnnotatedTypeFormatter}
    */
@@ -1260,7 +1277,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Return the current {@link AnnotationFormatter}.
+   * Returns the current {@link AnnotationFormatter}.
    *
    * @return the current {@link AnnotationFormatter}
    */
@@ -1340,9 +1357,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return DEFAULT_CACHE_SIZE;
     }
     try {
-      return Integer.valueOf(option);
+      int parsed = Integer.parseInt(option);
+      if (parsed <= 0) {
+        throw new UserError("atfCacheSize must be a positive integer: " + option);
+      }
+      return parsed;
     } catch (NumberFormatException ex) {
-      throw new UserError("atfCacheSize was not an integer: " + option);
+      throw new UserError("atfCacheSize must be a positive integer: " + option);
     }
   }
 
@@ -1448,6 +1469,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>The default implementation uses this to store the defaulted AnnotatedTypeMirrors and
    * inherited declaration annotations back into the corresponding Elements. Subclasses might want
    * to override this method if storing defaulted types is not desirable.
+   *
+   * @param tree the class to postprocess
    */
   public void postProcessClassTree(ClassTree tree) {
     TypesIntoElements.store(processingEnv, this, tree);
@@ -1566,8 +1589,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
         ElementAnnotationApplier.apply(type, elt, this);
       }
-    } else if (decl instanceof ClassTree) {
-      type = fromClass((ClassTree) decl);
+    } else if (decl instanceof ClassTree ct) {
+      type = fromClass(ct);
     } else if (decl instanceof VariableTree) {
       type = fromMember(decl);
     } else if (decl instanceof MethodTree) {
@@ -1681,7 +1704,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * A scanner used to combine annotations from two AnnotatedTypeMirrors. The scanner requires
-   * {@link #qualHierarchy}, which is set in {@link #postInit()} rather than the construtor, so
+   * {@link #qualHierarchy}, which is set in {@link #postInit()} rather than the constructor, so
    * lazily initialize this field before use.
    */
   private @MonotonicNonNull AnnotatedTypeCombiner annotatedTypeCombiner = null;
@@ -1840,9 +1863,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       AnnotatedTypeMirror type, List<? extends AnnotatedTypeMirror> supertypes) {
     // Use the effective annotations here to get the correct annotations
     // for type variables and wildcards.
-    AnnotationMirrorSet annotations = type.getEffectiveAnnotations();
+    AnnotationMirrorSet annotations = type.getAnnotations();
     for (AnnotatedTypeMirror supertype : supertypes) {
-      if (!annotations.equals(supertype.getEffectiveAnnotations())) {
+      if (!annotations.equals(supertype.getAnnotations())) {
         supertype.clearPrimaryAnnotations();
         // TODO: is this correct for type variables and wildcards?
         supertype.addAnnotations(annotations);
@@ -2086,7 +2109,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   // **********************************************************************
 
   /**
-   * Return the implicit receiver type of an expression tree.
+   * Returns the implicit receiver type of an expression tree.
    *
    * <p>The result is null for expressions that don't have a receiver, e.g. for a local variable or
    * method parameter access. The result is also null for expressions that have an explicit
@@ -2166,8 +2189,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     if (enclosingTree == null) {
       // tree is inside an annotation, where "this" is not allowed. So, no self type exists.
       return null;
-    } else if (enclosingTree instanceof MethodTree) {
-      MethodTree enclosingMethod = (MethodTree) enclosingTree;
+    } else if (enclosingTree instanceof MethodTree enclosingMethod) {
       if (TreeUtils.isConstructor(enclosingMethod)) {
         return (AnnotatedDeclaredType) getAnnotatedType(enclosingMethod).getReturnType();
       } else {
@@ -2306,20 +2328,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
   }
 
-  /** The type for an instantiated generic method or constructor. */
-  public static class ParameterizedExecutableType {
-    /** The method's/constructor's type. */
-    public final AnnotatedExecutableType executableType;
-
-    /** The types of the generic type arguments. */
-    public final List<AnnotatedTypeMirror> typeArgs;
+  /**
+   * The type for an instantiated generic method or constructor.
+   *
+   * @param executableType the method's/constructor's type.
+   * @param typeArgs the types of the generic type arguments
+   */
+  public record ParameterizedExecutableType(
+      AnnotatedExecutableType executableType, List<AnnotatedTypeMirror> typeArgs) {
 
     /** Create a ParameterizedExecutableType. */
-    public ParameterizedExecutableType(
-        AnnotatedExecutableType executableType, List<AnnotatedTypeMirror> typeArgs) {
-      this.executableType = executableType;
-      this.typeArgs = typeArgs;
-    }
+    public ParameterizedExecutableType {}
 
     @Override
     public String toString() {
@@ -2360,7 +2379,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * expression.
    *
    * @param tree the method invocation tree
-   * @return the type of the invoked method and any (explict or inferred) type arguments
+   * @return the type of the invoked method and any (explicit or inferred) type arguments
    */
   public final ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
     return methodFromUse(tree, true);
@@ -2383,7 +2402,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * #methodFromUseWithoutTypeArgInference(MethodInvocationTree)}.
    *
    * @param tree a method invocation tree
-   * @param inferTypeArgs whether type arguments should be inferred
+   * @param inferTypeArgs true if type arguments should be inferred
    * @return the type of the invoked method, any explicit type arguments, and if {@code
    *     inferTypeArgs} is true, any inferred type arguments
    */
@@ -2466,7 +2485,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param tree either a MethodInvocationTree or a MemberReferenceTree
    * @param methodElt the element of the referenced method
    * @param receiverType the type of the receiver
-   * @param inferTypeArgs whether type arguments should be inferred
+   * @param inferTypeArgs true if type arguments should be inferred
    * @return the type of the invoked method
    */
   protected ParameterizedExecutableType methodFromUse(
@@ -2487,7 +2506,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     TypeArguments typeArguments =
         AnnotatedTypes.findTypeArguments(this, tree, methodElt, methodType, inferTypeArgs);
-    Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg = typeArguments.typeArguments;
+    Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg = typeArguments.typeArguments();
     if (!typeParamToTypeArg.isEmpty()) {
       for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
         typeargs.add(typeParamToTypeArg.get(tv.getUnderlyingType()));
@@ -2496,7 +2515,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeParamToTypeArg, methodType);
     }
 
-    if (typeArguments.inferenceCrash && tree instanceof MethodInvocationTree) {
+    if (typeArguments.inferenceCrash() && tree instanceof MethodInvocationTree) {
       // If inference crashed, then the return type will not be the correct Java type.  This
       // can cause crashes elsewhere in the framework.  To avoid those crashes, create an ATM
       // with the correct Java type and default annotations.  (If inference crashes an error
@@ -2505,7 +2524,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       AnnotatedTypeMirror returnType = AnnotatedTypeMirror.createType(type, this, false);
       addDefaultAnnotations(returnType);
       methodType.setReturnType(returnType);
-    } else if (typeArguments.uncheckedConversion) {
+    } else if (typeArguments.uncheckedConversion()) {
       methodType.setReturnType(methodType.getReturnType().getErased());
     }
 
@@ -2567,7 +2586,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param tree either a method invocation or a member reference tree
    * @param type declared method type before type variable substitution
-   * @param resolvePolyQuals whether to resolve polymorphic qualifiers
+   * @param resolvePolyQuals if true, resolve polymorphic qualifiers
    */
   protected void methodFromUsePreSubstitution(
       ExpressionTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
@@ -2617,7 +2636,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotationMirrorSet newAnnos = new AnnotationMirrorSet();
     AnnotationMirrorSet receiverTypeBoundAnnos =
         getTypeDeclarationBounds(receiverType.getErased().getUnderlyingType());
-    AnnotationMirrorSet wildcardBoundAnnos = classWildcardArg.getEffectiveAnnotations();
+    AnnotationMirrorSet wildcardBoundAnnos = classWildcardArg.getAnnotations();
     for (AnnotationMirror receiverTypeBoundAnno : receiverTypeBoundAnnos) {
       AnnotationMirror wildcardAnno =
           qualHierarchy.findAnnotationInSameHierarchy(wildcardBoundAnnos, receiverTypeBoundAnno);
@@ -2633,40 +2652,43 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Return the element type of {@code expression}. This is usually the type of {@code
+   * Returns the element type of {@code expression}. This is usually the type of {@code
    * expression.itertor().next()}. If {@code expression} is an array, it is the component type of
    * the array.
    *
    * @param expression an expression whose type is an array or implements {@link Iterable}
    * @return the type of {@code expression.itertor().next()} or if {@code expression} is an array,
-   *     the component type of the array.
+   *     the component type of the array
    */
   public AnnotatedTypeMirror getIterableElementType(ExpressionTree expression) {
     return getIterableElementType(expression, getAnnotatedType(expression));
   }
 
   /**
-   * Return the element type of {@code iterableType}. This is usually the type of {@code
+   * Returns the element type of {@code iterableType}. This is usually the type of {@code
    * expression.itertor().next()}. If {@code expression} is an array, it is the component type of
    * the array.
    *
    * @param expression an expression whose type is an array or implements {@link Iterable}
    * @param iterableType the type of the expression
    * @return the type of {@code expression.itertor().next()} or if {@code expression} is an array,
-   *     the component type of the array.
+   *     the component type of the array
    */
   protected AnnotatedTypeMirror getIterableElementType(
       ExpressionTree expression, AnnotatedTypeMirror iterableType) {
     switch (iterableType.getKind()) {
-      case ARRAY:
+      case ARRAY -> {
         return ((AnnotatedArrayType) iterableType).getComponentType();
-      case WILDCARD:
+      }
+      case WILDCARD -> {
         return getIterableElementType(
             expression, ((AnnotatedWildcardType) iterableType).getExtendsBound().deepCopy());
-      case TYPEVAR:
+      }
+      case TYPEVAR -> {
         return getIterableElementType(
             expression, ((AnnotatedTypeVariable) iterableType).getUpperBound());
-      case DECLARED:
+      }
+      case DECLARED -> {
         AnnotatedDeclaredType dt =
             AnnotatedTypes.asSuper(this, iterableType, this.iterableDeclType);
         if (dt.getTypeArguments().isEmpty()) {
@@ -2675,27 +2697,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } else {
           return dt.getTypeArguments().get(0);
         }
-
-      // TODO: Properly desugar Iterator.next(), which is needed if an annotated JDK has
-      // annotations on Iterator#next.
-      // The below doesn't work because methodFromUse() assumes that the expression tree
-      // matches the method element.
-      // TypeElement iteratorElement =
-      //         ElementUtils.getTypeElement(processingEnv, Iterator.class);
-      // AnnotatedTypeMirror iteratorType =
-      //         AnnotatedTypeMirror.createType(iteratorElement.asType(), this, false);
-      // Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
-      // mapping.put(
-      //         (TypeVariable) iteratorElement.getTypeParameters().get(0).asType(),
-      //          typeArg);
-      // iteratorType = typeVarSubstitutor.substitute(mapping, iteratorType);
-      // ExecutableElement next =
-      //         TreeUtils.getMethod("java.util.Iterator", "next", 0, processingEnv);
-      // ParameterizedExecutableType m = methodFromUse(expression, next, iteratorType);
-      // return m.executableType.getReturnType();
-      default:
-        throw new BugInCF(
-            "AnnotatedTypeFactory.getIterableElementType: not iterable type: " + iterableType);
+        // TODO: Properly desugar Iterator.next(), which is needed if an annotated JDK has
+        // annotations on Iterator#next.
+        // The below doesn't work because methodFromUse() assumes that the expression tree
+        // matches the method element.
+        // TypeElement iteratorElement =
+        //         ElementUtils.getTypeElement(processingEnv, Iterator.class);
+        // AnnotatedTypeMirror iteratorType =
+        //         AnnotatedTypeMirror.createType(iteratorElement.asType(), this, false);
+        // Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
+        // mapping.put(
+        //         (TypeVariable) iteratorElement.getTypeParameters().get(0).asType(),
+        //          typeArg);
+        // iteratorType = typeVarSubstitutor.substitute(mapping, iteratorType);
+        // ExecutableElement next =
+        //         TreeUtils.getMethod("java.util.Iterator", "next", 0, processingEnv);
+        // ParameterizedExecutableType m = methodFromUse(expression, next, iteratorType);
+        // return m.executableType.getReturnType();
+      }
+      default ->
+          throw new BugInCF(
+              "AnnotatedTypeFactory.getIterableElementType: not iterable type: " + iterableType);
     }
   }
 
@@ -2785,7 +2807,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * #constructorFromUseWithoutTypeArgInference(NewClassTree)}.
    *
    * @param tree the constructor invocation tree
-   * @param inferTypeArgs whether the type arguments should be inferred
+   * @param inferTypeArgs true if the type arguments should be inferred
    * @return the annotated type of the invoked constructor (as an executable type) and the type
    *     arguments
    */
@@ -2837,7 +2859,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // If the super class of the anonymous class has an enclosing type, then it is the
         // first parameter of the anonymous constructor. For example,
         // class Outer { class Inner {} }
-        //  new Inner(){};
+        //  new Inner() {};
         // Then javac creates the following constructor:
         //  (.Outer x0) {
         //   x0.super();
@@ -2872,7 +2894,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     TypeArguments typeArguments =
         AnnotatedTypes.findTypeArguments(this, tree, ctor, con, inferTypeArgs);
     Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg =
-        new HashMap<>(typeArguments.typeArguments);
+        new HashMap<>(typeArguments.typeArguments());
     List<AnnotatedTypeMirror> typeargs;
     if (typeParamToTypeArg.isEmpty()) {
       typeargs = Collections.emptyList();
@@ -2887,7 +2909,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     stubTypes.injectRecordComponentType(types, ctor, con);
 
-    if (typeArguments.inferenceCrash) {
+    if (typeArguments.inferenceCrash()) {
       // If inference crashed, then the return type will not be the correct Java type.  This
       // can cause crashes elsewhere in the framework.  To avoid those crashes, create an ATM
       // with the correct Java type and default annotations.  (If inference crashes an error
@@ -2950,7 +2972,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns the partially-annotated explicit class type arguments of the new class tree. The {@code
-   * AnnotatedTypeMirror} only include the annotations explicitly written on the explict type
+   * AnnotatedTypeMirror} only include the annotations explicitly written on the explicit type
    * arguments. (If {@code newClass} use a diamond operator, this method returns the empty list.)
    * For example, when called with {@code new MyClass<@HERE String>()} this method would return a
    * list containing {@code @HERE String}.
@@ -2972,7 +2994,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param tree a NewClassTree from constructorFromUse()
    * @param type declared method type before type variable substitution
-   * @param resolvePolyQuals whether to resolve polymorphic qualifiers
+   * @param resolvePolyQuals if true, resolve polymorphic qualifiers
    */
   protected void constructorFromUsePreSubstitution(
       NewClassTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {}
@@ -3019,7 +3041,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Return a primitive type: either the argument, or the result of unboxing it (which might affect
+   * Returns a primitive type: either the argument, or the result of unboxing it (which might affect
    * its annotations).
    *
    * <p>Subclasses should override {@link #getUnboxedType} rather than this method.
@@ -3073,7 +3095,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotatedDeclaredType stringATM =
         (AnnotatedDeclaredType)
             AnnotatedTypeMirror.createType(stringTypeMirror, this, type.isDeclaration());
-    stringATM.addAnnotations(type.getEffectiveAnnotations());
+    stringATM.addAnnotations(type.getAnnotations());
     return stringATM;
   }
 
@@ -3106,17 +3128,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return exprType;
     }
 
-    switch (TypeKindUtils.getPrimitiveConversionKind(
+    return switch (TypeKindUtils.getPrimitiveConversionKind(
         exprPrimitiveType.getKind(), widenedType.getKind())) {
-      case WIDENING:
-        return getWidenedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
-      case NARROWING:
-        return getNarrowedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
-      case SAME:
-        return exprType;
-      default:
-        throw new BugInCF("unhandled PrimitiveConversionKind");
-    }
+      case WIDENING -> getWidenedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
+      case NARROWING -> getNarrowedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
+      case SAME -> exprType;
+      default -> throw new BugInCF("unhandled PrimitiveConversionKind");
+    };
   }
 
   /**
@@ -3163,7 +3181,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param annos annotations to narrow, from a primitive or boxed primitive
    * @param typeKind primitive type to narrow
    * @param narrowedTypeKind target for the returned annotations; a primitive type that is narrower
-   *     than {@code typeKind} (in the sense of JLS 5.1.3).
+   *     than {@code typeKind} (in the sense of JLS 5.1.3)
    * @return result of converting {@code annos} from {@code typeKind} to {@code narrowedTypeKind}
    */
   public AnnotationMirrorSet getNarrowedAnnotations(
@@ -3345,18 +3363,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns true if the given annotation is a part of the type system under which this type factory
-   * operates. Null is never a supported qualifier; the parameter is nullable to allow the result of
-   * canonicalAnnotation to be passed in directly.
+   * operates.
    *
    * @param a any annotation
    * @return true if that annotation is part of the type system under which this type factory
    *     operates, false otherwise
    */
-  @EnsuresNonNullIf(expression = "#1", result = true)
-  public boolean isSupportedQualifier(@Nullable AnnotationMirror a) {
-    if (a == null) {
-      return false;
-    }
+  public boolean isSupportedQualifier(AnnotationMirror a) {
     return isSupportedQualifier(AnnotationUtils.annotationName(a));
   }
 
@@ -3393,6 +3406,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * want the elements to be copied over as well, use {@link #addAliasedTypeAnnotation(Class, Class,
    * boolean, String...)}.
    *
+   * <p>This method must be called before {@link #postInit}.
+   *
    * @param aliasClass the class of the aliased annotation
    * @param canonicalAnno the canonical annotation
    */
@@ -3418,7 +3433,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param canonicalAnno the canonical annotation
    */
   // aliasName is annotated as @FullyQualifiedName because there is no way to confirm that the
-  // name of an external annotation is a canoncal name.
+  // name of an external annotation is a canonical name.
   protected void addAliasedTypeAnnotation(
       @FullyQualifiedName String aliasName, AnnotationMirror canonicalAnno) {
 
@@ -3483,7 +3498,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     being copied over
    */
   // aliasName is annotated as @FullyQualifiedName because there is no way to confirm that the
-  // name of an external annotation is a canoncal name.
+  // name of an external annotation is a canonical name.
   protected void addAliasedTypeAnnotation(
       @FullyQualifiedName String aliasName,
       Class<?> canonicalAnno,
@@ -3500,21 +3515,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns the canonical annotation for the passed annotation. Returns null if the passed
-   * annotation is not an alias of a canonical one in the framework.
+   * Returns the canonical annotation for the passed annotation. May return its argument.
    *
-   * <p>A canonical annotation is the internal annotation that will be used by the Checker Framework
-   * in the aliased annotation's place.
+   * <p>This method {@code canonicalAnnotation} is called by {@link
+   * AnnotatedTypeMirror#addAnnotation}, so it is called for every annotation added to a type.
    *
-   * @param a the qualifier to check for an alias
-   * @return the canonical annotation, or null if none exists
+   * <p>This implementation handles when the passed annotation is an alias of another annotation.
+   * Subclasses can do additional work.
+   *
+   * @param a the qualifier to canonicalize
+   * @return the canonical annotation, which may be the given annotation
    */
-  public @Nullable AnnotationMirror canonicalAnnotation(AnnotationMirror a) {
+  public AnnotationMirror canonicalAnnotation(AnnotationMirror a) {
     TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
     String qualName = elem.getQualifiedName().toString();
     Alias alias = aliases.get(qualName);
     if (alias == null) {
-      return null;
+      return a;
     }
     if (alias.copyElements) {
       AnnotationBuilder builder = new AnnotationBuilder(processingEnv, alias.canonicalName);
@@ -3523,6 +3540,37 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     } else {
       return alias.canonical;
     }
+  }
+
+  /**
+   * Returns the canonical annotation for the passed annotation, when applied to the given type. May
+   * return its argument.
+   *
+   * <p>This method {@code canonicalAnnotation} is called by {@link
+   * AnnotatedTypeMirror#addAnnotation}, so it is called for every annotation added to a type.
+   *
+   * <p>This implementation handles when the passed annotation is an alias of another annotation.
+   * Subclasses can do additional work.
+   *
+   * <p>If the canonicalization does not depend on the {@code TypeMirror}, then you may override
+   * {@link #canonicalAnnotation(AnnotationMirror)} instead.
+   *
+   * @param a the qualifier to canonicalize
+   * @param tm the type the qualifier is applied to, or null
+   * @return the canonical annotation, which may be the given annotation
+   */
+  public AnnotationMirror canonicalAnnotation(AnnotationMirror a, @Nullable TypeMirror tm) {
+    return canonicalAnnotation(a);
+  }
+
+  /**
+   * Returns true if the given annotation class is an alias for some other annotation.
+   *
+   * @param annoClass an annotation class
+   * @return true if the given annotation class is an alias for some other annotation
+   */
+  protected boolean isAliasedTypeAnnotation(Class<?> annoClass) {
+    return aliases.containsKey(annoClass.getCanonicalName());
   }
 
   /**
@@ -3550,8 +3598,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       pair = IPair.of(annotationToUse, new HashSet<>());
       declAliases.put(annotationClass, pair);
     }
-    Set<Class<? extends Annotation>> aliases = pair.second;
-    aliases.add(alias);
+    Set<Class<? extends Annotation>> aliasSet = pair.second;
+    aliasSet.add(alias);
   }
 
   /**
@@ -3626,31 +3674,29 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     // Check for new declarations, outside of the AST.
-    if (elt instanceof DetachedVarSymbol) {
-      return ((DetachedVarSymbol) elt).getDeclaration();
+    if (elt instanceof DetachedVarSymbol dvs) {
+      return dvs.getDeclaration();
     }
 
-    // TODO: handle type parameter declarations?
-    Tree fromElt;
     // Prevent calling declarationFor on elements we know we don't have the tree for.
+    // TODO: handle type parameter declarations?
+    Tree fromElt =
+        switch (elt.getKind()) {
+          case CLASS,
+              RECORD,
+              ENUM,
+              INTERFACE,
+              ANNOTATION_TYPE,
+              FIELD,
+              ENUM_CONSTANT,
+              METHOD,
+              CONSTRUCTOR ->
+              trees.getTree(elt);
+          default ->
+              com.sun.tools.javac.tree.TreeInfo.declarationFor(
+                  (com.sun.tools.javac.code.Symbol) elt, (com.sun.tools.javac.tree.JCTree) root);
+        };
 
-    switch (ElementUtils.getKindRecordAsClass(elt)) {
-      case CLASS: // Including RECORD
-      case ENUM:
-      case INTERFACE:
-      case ANNOTATION_TYPE:
-      case FIELD:
-      case ENUM_CONSTANT:
-      case METHOD:
-      case CONSTRUCTOR:
-        fromElt = trees.getTree(elt);
-        break;
-      default:
-        fromElt =
-            com.sun.tools.javac.tree.TreeInfo.declarationFor(
-                (com.sun.tools.javac.code.Symbol) elt, (com.sun.tools.javac.tree.JCTree) root);
-        break;
-    }
     if (shouldCache) {
       elementToTreeCache.put(elt, fromElt);
     }
@@ -3803,7 +3849,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>See {@code
    * org.checkerframework.framework.flow.CFCFGBuilder.CFCFGTranslationPhaseOne.handleArtificialTree(Tree)}.
    *
-   * @param tree artifical tree
+   * @param tree artificial tree
    * @param enclosing element that encloses {@code tree}
    */
   public final void setEnclosingElementForArtificialTree(Tree tree, Element enclosing) {
@@ -3832,14 +3878,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     if (type == null) {
       return false;
     }
-    switch (type.getKind()) {
-      case ERROR:
-      case OTHER:
-      case PACKAGE:
-        return false;
-      default:
-        return true;
-    }
+    return switch (type.getKind()) {
+      case ERROR, OTHER, PACKAGE -> false;
+      default -> true;
+    };
   }
 
   /**
@@ -3944,7 +3986,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>For most type systems the default behavior of returning true is correct. For subcheckers,
    * redundancy in one of the type hierarchies can be ok. Such implementations should return false.
    *
-   * @return whether to warn about redundancy between a stub file and bytecode
+   * @return true if to warn about redundancy between a stub file and bytecode
    */
   public boolean shouldWarnIfStubRedundantWithBytecode() {
     return true;
@@ -3966,8 +4008,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param elt the element to retrieve the annotation from
    * @param annoClass the class of the annotation to retrieve
-   * @param checkAliases whether to return an annotation mirror for an alias of the requested
-   *     annotation class name
+   * @param checkAliases if true, the metnhod may return an annotation mirror for an alias of the
+   *     requested annotation class name
    * @return the annotation mirror for the requested annotation, or null if not found
    */
   private @Nullable AnnotationMirror getDeclAnnotation(
@@ -3983,15 +4025,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return null;
     }
     // Look through aliases.
-    IPair<AnnotationMirror, Set<Class<? extends Annotation>>> aliases = declAliases.get(annoClass);
-    if (aliases == null) {
+    IPair<AnnotationMirror, Set<Class<? extends Annotation>>> aliasPair =
+        declAliases.get(annoClass);
+    if (aliasPair == null) {
       return null;
     }
-    for (Class<? extends Annotation> alias : aliases.second) {
+    for (Class<? extends Annotation> alias : aliasPair.second) {
       for (AnnotationMirror am : declAnnos) {
         if (areSameByClass(am, alias)) {
           // TODO: need to copy over elements/fields
-          return aliases.first;
+          return aliasPair.first;
         }
       }
     }
@@ -4301,7 +4344,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Whether or not the {@code annotatedTypeMirror} has a qualifier parameter.
+   * Returns true if the {@code annotatedTypeMirror} has a qualifier parameter.
    *
    * @param annotatedTypeMirror the type to check
    * @param top the top of the hierarchy to check
@@ -4313,7 +4356,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Whether or not the {@code element} has a qualifier parameter.
+   * Returns true if the {@code element} has a qualifier parameter.
    *
    * @param element element to check
    * @param top the top of the hierarchy to check
@@ -4327,12 +4370,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns whether the {@code HasQualifierParameter} annotation was explicitly written on {@code
+   * Returns true if the {@code HasQualifierParameter} annotation was explicitly written on {@code
    * element} for the hierarchy given by {@code top}.
    *
    * @param element the Element to check
    * @param top the top qualifier for the hierarchy to check
-   * @return whether the class given by {@code element} has been explicitly annotated with {@code
+   * @return true if the class given by {@code element} has been explicitly annotated with {@code
    *     HasQualifierParameter} for the given hierarchy
    */
   public boolean hasExplicitQualifierParameterInHierarchy(Element element, AnnotationMirror top) {
@@ -4343,12 +4386,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns whether the {@code NoQualifierParameter} annotation was explicitly written on {@code
+   * Returns true if the {@code NoQualifierParameter} annotation was explicitly written on {@code
    * element} for the hierarchy given by {@code top}.
    *
    * @param element the Element to check
    * @param top the top qualifier for the hierarchy to check
-   * @return whether the class given by {@code element} has been explicitly annotated with {@code
+   * @return true if the class given by {@code element} has been explicitly annotated with {@code
    *     NoQualifierParameter} for the given hierarchy
    */
   public boolean hasExplicitNoQualifierParameterInHierarchy(Element element, AnnotationMirror top) {
@@ -4586,8 +4629,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Get the AnnotatedDeclaredType for the FunctionalInterface from assignment context of the method
-   * reference or lambda expression which may be a variable assignment, a method call, or a cast.
+   * Returns the AnnotatedDeclaredType for the FunctionalInterface from assignment context of the
+   * method reference or lambda expression which may be a variable assignment, a method call, or a
+   * cast.
    *
    * <p>The assignment context is not always correct, so we must search up the AST. It will
    * recursively search for lambdas nested in lambdas.
@@ -4599,10 +4643,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     TreePath parentPath = getPath(tree).getParentPath();
     Tree parentTree = parentPath.getLeaf();
     switch (parentTree.getKind()) {
-      case PARENTHESIZED:
+      case PARENTHESIZED -> {
         return getFunctionalInterfaceType(parentTree);
-
-      case TYPE_CAST:
+      }
+      case TYPE_CAST -> {
         TypeCastTree cast = (TypeCastTree) parentTree;
         assertIsFunctionalInterface(trees.getTypeMirror(getPath(cast.getType())), parentTree, tree);
         AnnotatedTypeMirror castATM = getAnnotatedType(cast.getType());
@@ -4622,8 +4666,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
               castATM, cast, tree);
         }
         return castATM;
-
-      case NEW_CLASS:
+      }
+      case NEW_CLASS -> {
         NewClassTree newClass = (NewClassTree) parentTree;
         int indexOfLambda = newClass.getArguments().indexOf(tree);
         ParameterizedExecutableType con = this.constructorFromUse(newClass);
@@ -4631,15 +4675,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(con.executableType, indexOfLambda);
         assertIsFunctionalInterface(constructorParam.getUnderlyingType(), parentTree, tree);
         return constructorParam;
-
-      case NEW_ARRAY:
+      }
+      case NEW_ARRAY -> {
         NewArrayTree newArray = (NewArrayTree) parentTree;
         AnnotatedArrayType newArrayATM = getAnnotatedType(newArray);
         AnnotatedTypeMirror elementATM = newArrayATM.getComponentType();
         assertIsFunctionalInterface(elementATM.getUnderlyingType(), parentTree, tree);
         return elementATM;
-
-      case METHOD_INVOCATION:
+      }
+      case METHOD_INVOCATION -> {
         MethodInvocationTree method = (MethodInvocationTree) parentTree;
         int index = method.getArguments().indexOf(tree);
         ParameterizedExecutableType exe = this.methodFromUse(method);
@@ -4647,45 +4691,42 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(exe.executableType, index);
         assertIsFunctionalInterface(param.getUnderlyingType(), parentTree, tree);
         return param;
-
-      case VARIABLE:
+      }
+      case VARIABLE -> {
         VariableTree varTree = (VariableTree) parentTree;
         assertIsFunctionalInterface(TreeUtils.typeOf(varTree), parentTree, tree);
         return getAnnotatedTypeFromTypeTree(varTree.getType());
-
-      case ASSIGNMENT:
+      }
+      case ASSIGNMENT -> {
         AssignmentTree assignmentTree = (AssignmentTree) parentTree;
         assertIsFunctionalInterface(TreeUtils.typeOf(assignmentTree), parentTree, tree);
         return getAnnotatedType(assignmentTree.getVariable());
-
-      case RETURN:
+      }
+      case RETURN -> {
         Tree enclosing =
             TreePathUtil.enclosingOfKind(
                 getPath(parentTree),
                 new HashSet<>(Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION)));
-
-        if (enclosing instanceof MethodTree) {
-          MethodTree enclosingMethod = (MethodTree) enclosing;
+        if (enclosing instanceof MethodTree enclosingMethod) {
           return getAnnotatedType(enclosingMethod.getReturnType());
         } else {
           LambdaExpressionTree enclosingLambda = (LambdaExpressionTree) enclosing;
           AnnotatedExecutableType methodExe = getFunctionTypeFromTree(enclosingLambda);
           return methodExe.getReturnType();
         }
-
-      case LAMBDA_EXPRESSION:
+      }
+      case LAMBDA_EXPRESSION -> {
         LambdaExpressionTree enclosingLambda = (LambdaExpressionTree) parentTree;
         AnnotatedExecutableType methodExe = getFunctionTypeFromTree(enclosingLambda);
         return methodExe.getReturnType();
-
-      case CONDITIONAL_EXPRESSION:
+      }
+      case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree conditionalExpressionTree =
             (ConditionalExpressionTree) parentTree;
         AnnotatedTypeMirror trueType =
             getAnnotatedType(conditionalExpressionTree.getTrueExpression());
         AnnotatedTypeMirror falseType =
             getAnnotatedType(conditionalExpressionTree.getFalseExpression());
-
         // Known cases where we must use LUB because falseType/trueType will not be equal:
         // a) when one of the types is a type variable that extends a functional interface
         //    or extends a type variable that extends a functional interface
@@ -4702,29 +4743,30 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             AnnotatedTypes.leastUpperBound(this, trueType, falseType);
         assertIsFunctionalInterface(conditionalType.getUnderlyingType(), parentTree, tree);
         return conditionalType;
-      case CASE:
+      }
+      case CASE -> {
         // Get the functional interface type of the whole switch expression.
         Tree switchTree = parentPath.getParentPath().getLeaf();
         return getFunctionalInterfaceType(switchTree);
-
-      default:
-        if (parentTree.getKind().toString().equals("YIELD")) {
-          TreePath pathToCase = TreePathUtil.pathTillOfKind(parentPath, Kind.CASE);
-          return getFunctionalInterfaceType(pathToCase.getParentPath().getLeaf());
-        }
-        throw new BugInCF(
-            "Could not find functional interface from assignment context. "
-                + "Unexpected tree type: "
-                + parentTree.getKind()
-                + " For lambda tree: "
-                + tree);
+      }
+      case YIELD -> {
+        TreePath pathToCase = TreePathUtil.pathTillOfKind(parentPath, Kind.CASE);
+        return getFunctionalInterfaceType(pathToCase.getParentPath().getLeaf());
+      }
+      default ->
+          throw new BugInCF(
+              "Could not find functional interface from assignment context. "
+                  + "Unexpected tree type: "
+                  + parentTree.getKind()
+                  + " For lambda tree: "
+                  + tree);
     }
   }
 
   /**
-   * Throws an exception if the type is not a funtional interface.
+   * Throws an exception if the type is not a functional interface.
    *
-   * @param typeMirror a type that must be a funtional interface
+   * @param typeMirror a type that must be a functional interface
    * @param contextTree the tree that has the given type; used only for diagnostic messages
    * @param tree a labmba tree that encloses {@code contextTree}; used only for diagnostic messages
    */
@@ -4853,7 +4895,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Return true if {@code type} should be captured.
+   * Returns true if {@code type} should be captured.
    *
    * <p>{@code type} should be captured if all of the following are true:
    *
@@ -5404,7 +5446,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param expression an expression to remove a constant offset from
    * @return a sub-expression and a constant offset. The offset is "0" if this routine is unable to
-   *     splite the given expression
+   *     split the given expression
    */
   // TODO: generalize.  There is no reason this couldn't handle arbitrary addition and subtraction
   // expressions, given the Index Checker's support for OffsetEquation.  That might even make its
@@ -5465,16 +5507,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>If {@code null} is returned, inference proceeds normally.
    *
-   * <p>If a type is returned, then inference assumes that {@code expressionTree} was asigned to it.
-   * This biases the inference algorithm toward the annotations in the returned type. In particular,
-   * if the annotations on type variables in invariant positions are a super type of the annotations
-   * inferred, the super type annotations are chosen.
+   * <p>If a type is returned, then inference assumes that {@code expressionTree} was assigned to
+   * it. This biases the inference algorithm toward the annotations in the returned type. In
+   * particular, if the annotations on type variables in invariant positions are a super type of the
+   * annotations inferred, the super type annotations are chosen.
    *
    * <p>This implementation returns null, but subclasses may override this method to return a type.
    *
    * @param expressionTree an expression which has no assignment context and for which type
    *     arguments need to be inferred
-   * @return {@code null} or an annotated type mirror that inferrence should pretend {@code
+   * @return {@code null} or an annotated type mirror that inference should pretend {@code
    *     expressionTree} is assigned to
    */
   public @Nullable AnnotatedTypeMirror getDummyAssignedTo(ExpressionTree expressionTree) {
@@ -5564,7 +5606,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {}
 
   /**
-   * Returns whether whole-program inference should infer types for receiver expressions. For some
+   * Returns true if whole-program inference should infer types for receiver expressions. For some
    * type systems, such as nullness, it doesn't make sense for WPI to do inference on receivers.
    *
    * @return true if WPI should infer types for method receiver parameters, false otherwise
@@ -5684,8 +5726,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     for (Map.Entry<String, InferredDeclared> entry : conditionMap.entrySet()) {
       String expr = entry.getKey();
       InferredDeclared pair = entry.getValue();
-      AnnotatedTypeMirror inferredType = pair.inferred;
-      AnnotatedTypeMirror declaredType = pair.declared;
+      AnnotatedTypeMirror inferredType = pair.inferred();
+      AnnotatedTypeMirror declaredType = pair.declared();
       if (otherIsSupertype ? isPrecondition : !isPrecondition) {
         // other is a supertype & compare preconditions, or
         // other is a subtype & compare postconditions.
@@ -5720,7 +5762,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * org.checkerframework.framework.qual.AnnotatedFor} annotation, apply to this checker?
    *
    * @param annotatedForAnno an {@link AnnotatedFor} annotation
-   * @return whether {@code annotatedForAnno} applies to this checker
+   * @return true if {@code annotatedForAnno} applies to this checker
    */
   public boolean doesAnnotatedForApplyToThisChecker(AnnotationMirror annotatedForAnno) {
     List<String> annotatedForCheckers =
@@ -5737,7 +5779,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Get the {@code expression} field/element of the given contract annotation.
+   * Returns the {@code expression} field/element of the given contract annotation.
    *
    * @param contractAnno a {@link RequiresQualifier}, {@link EnsuresQualifier}, or {@link
    *     EnsuresQualifier}
@@ -5760,7 +5802,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Get the {@code value} field/element of the given contract list annotation.
+   * Returns the {@code value} field/element of the given contract list annotation.
    *
    * @param contractListAnno a {@link org.checkerframework.framework.qual.RequiresQualifier.List
    *     RequiresQualifier.List}, {@link org.checkerframework.framework.qual.EnsuresQualifier.List
@@ -5837,6 +5879,29 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Returns true if the given method may have side effects but does not unrefine its receiver.
+   *
+   * @param methodElement a method
+   * @return true if the method does not unrefine its receiver
+   */
+  public boolean hasDoesNotUnrefineReceiver(ExecutableElement methodElement) {
+    for (AnnotationMirror am : getDeclAnnotations(methodElement)) {
+      if (areSameByClass(am, org.checkerframework.framework.qual.DoesNotUnrefineReceiver.class)) {
+        List<String> typeSystems =
+            AnnotationUtils.getElementValueArray(
+                am, doesNotUnrefineReceiverValueElement, String.class);
+        for (String prefix : checker.getSuppressWarningsPrefixes()) {
+          if (typeSystems.contains(prefix)) {
+            return true;
+          }
+        }
+        return false;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Output a message about {@link #getAnnotatedType}, if logging is on.
    *
    * <p>Set the value of {@link #debugGat} to {@literal true} to enable logging.
@@ -5855,8 +5920,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // Shorten tree arguments to keep the output readable.
       for (int i = 0; i < args.length; ++i) {
         Object arg = args[i];
-        if (arg instanceof Tree) {
-          args[i] = TreeUtils.toStringTruncated((Tree) arg, 60);
+        if (arg instanceof Tree argTree) {
+          args[i] = TreeUtils.toStringTruncated(argTree, 60);
         }
       }
 

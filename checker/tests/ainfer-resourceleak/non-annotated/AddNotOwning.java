@@ -15,7 +15,7 @@ class AddNotOwning {
     final Foo f; // expect owning annotation for this field
 
     NonEmptyMustCallFinalField() {
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       f = new Foo();
     }
 
@@ -32,12 +32,12 @@ class AddNotOwning {
     }
 
     void testNotOwningOnFinal() {
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       Foo f = getField();
     }
 
     void testNotOwningOnGetFieldOnSomePath() {
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       Foo f = getFieldOnSomePath();
     }
 
@@ -56,7 +56,7 @@ class AddNotOwning {
     @SuppressWarnings("missing.creates.mustcall.for")
     void initialyzeFoo() {
       f.a();
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       f = new Foo();
     }
 
@@ -73,12 +73,12 @@ class AddNotOwning {
     }
 
     void testNotOwningOnNonFinal() {
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       Foo f = getField();
     }
 
     void testNotOwningOnGetFieldOnSomePath() {
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       Foo f = getFieldOnSomePath();
     }
 

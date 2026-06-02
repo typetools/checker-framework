@@ -10,6 +10,7 @@ import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.StringsPlume;
 
 /** JavaExpression for literals. */
 public class ValueLiteral extends JavaExpression {
@@ -65,23 +66,23 @@ public class ValueLiteral extends JavaExpression {
    * @return a boxed primitive that is the negation of the argument
    */
   private Object negateBoxedPrimitive(Object o) {
-    if (value instanceof Byte) {
-      return (byte) -(Byte) value;
+    if (value instanceof Byte b) {
+      return (byte) -b;
     }
-    if (value instanceof Short) {
-      return (short) -(Short) value;
+    if (value instanceof Short s) {
+      return (short) -s;
     }
-    if (value instanceof Integer) {
-      return -(Integer) value;
+    if (value instanceof Integer i) {
+      return -i;
     }
-    if (value instanceof Long) {
-      return -(Long) value;
+    if (value instanceof Long l) {
+      return -l;
     }
-    if (value instanceof Float) {
-      return -(Float) value;
+    if (value instanceof Float f) {
+      return -f;
     }
-    if (value instanceof Double) {
-      return -(Double) value;
+    if (value instanceof Double d) {
+      return -d;
     }
     if (value instanceof BigInteger) {
       assert value.equals(NEGATIVE_LONG_MIN_VALUE);
@@ -139,10 +140,9 @@ public class ValueLiteral extends JavaExpression {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ValueLiteral)) {
+    if (!(obj instanceof ValueLiteral other)) {
       return false;
     }
-    ValueLiteral other = (ValueLiteral) obj;
     // TODO:  Can this string comparison be cleaned up?
     // Cannot use Types.isSameType(type, other.type) because we don't have a Types object.
     return type.toString().equals(other.type.toString()) && Objects.equals(value, other.value);
@@ -150,15 +150,16 @@ public class ValueLiteral extends JavaExpression {
 
   @Override
   public String toString() {
-    if (TypesUtils.isString(type)) {
-      return "\"" + value + "\"";
+    if (value == null) {
+      return "null";
+    } else if (TypesUtils.isString(type)) {
+      return "\"" + StringsPlume.escapeJava((String) value) + "\"";
     } else if (type.getKind() == TypeKind.LONG) {
-      assert value != null : "@AssumeAssertion(nullness): invariant";
       return value.toString() + "L";
     } else if (type.getKind() == TypeKind.CHAR) {
-      return "\'" + value + "\'";
+      return StringsPlume.charLiteral((Character) value);
     }
-    return value == null ? "null" : value.toString();
+    return value.toString();
   }
 
   @Override

@@ -22,7 +22,7 @@ public class OwningEnsuresCalledMethods {
   @Owning Socket con;
 
   @EnsuresCalledMethods(value = "this.con", methods = "close")
-  // ::error: (contracts.postcondition)
+  // ::error: [contracts.postcondition]
   void dispose() {
     closeCon(con);
   }

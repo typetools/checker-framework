@@ -15,14 +15,14 @@ public class UpperBoundDefaulting {
 
   public <UAL extends String> void explicitUpperBoundTypeVar() {
     MyArrayList<@UbBottom ? extends @UbBottom Object> eubBottomToBottom =
-        // :: error: (assignment)
+        // :: error: [assignment]
         new MyArrayList<UAL>();
 
     MyArrayList<@UbBottom ? extends @UbExplicit Object> eubExplicitToBottom =
         new MyArrayList<UAL>();
 
     MyArrayList<@UbBottom ? extends @UbImplicit Object> eubImplicitToBottom =
-        // :: error: (assignment)
+        // :: error: [assignment]
         new MyArrayList<UAL>();
   }
 
@@ -33,7 +33,7 @@ public class UpperBoundDefaulting {
     @UbTop MyArrayList<@UbBottom ? extends @UbExplicit CharSequence> iwLowerBoundCompatible = myArrayList;
 
     @UbTop MyArrayList<@UbBottom ? extends @UbImplicit CharSequence> iwLowerBoundStillCompatible =
-        // :: error: (assignment)
+        // :: error: [assignment]
         myArrayList;
   }
 
@@ -43,7 +43,7 @@ public class UpperBoundDefaulting {
 
     MyArrayList<@UbBottom ? extends @UbExplicit Object> eubExplicitToBottom = iebList;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     MyArrayList<@UbBottom ? extends @UbImplicit Object> eubImplicitToBottom = iebList;
   }
 
@@ -51,7 +51,7 @@ public class UpperBoundDefaulting {
     @UbTop MyArrayList<@UbTop ? super @UbBottom String> iebLowerBoundIncompatible = elbList;
 
     // Upper bound: GLB(@UbExplicit, @UbImplicit), Lower bound: @UbBottom.
-    // :: error: (assignment)
+    // :: error: [assignment]
     @UbTop MyArrayList<@UbImplicit ? super @UbBottom String> iebLowerBoundStillIncompatible = elbList;
 
     @UbTop MyArrayList<@UbExplicit ? super @UbBottom String> iebLowerBoundCompatible = elbList;

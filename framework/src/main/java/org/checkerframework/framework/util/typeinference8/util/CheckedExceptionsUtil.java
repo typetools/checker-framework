@@ -69,6 +69,47 @@ public class CheckedExceptionsUtil {
     }
 
     @Override
+    public List<TypeMirror> visitTry(TryTree node, Void aVoid) {
+      List<TypeMirror> results = scan(node.getBlock(), aVoid);
+      if (results == null) {
+        results = new ArrayList<>();
+      }
+
+      if (!results.isEmpty()) {
+        for (CatchTree catchTree : node.getCatches()) {
+          // Remove any type that would be caught.
+          removeAssignable(TreeUtils.typeOf(catchTree.getParameter()), results);
+        }
+      }
+      results.addAll(scan(node.getResources(), aVoid));
+      results.addAll(scan(node.getCatches(), aVoid));
+      results.addAll(scan(node.getFinallyBlock(), aVoid));
+
+      return results;
+    }
+
+    /**
+     * If any type in {@code thrownExceptionTypes} is assignable to {@code type}, then remove it
+     * from the list.
+     *
+     * @param type a type
+     * @param thrownExceptionTypes the type of the exceptions
+     */
+    private void removeAssignable(TypeMirror type, List<TypeMirror> thrownExceptionTypes) {
+      if (thrownExceptionTypes.isEmpty()) {
+        return;
+      }
+      if (type.getKind() == TypeKind.UNION) {
+        for (TypeMirror altern : ((UnionType) type).getAlternatives()) {
+          removeAssignable(altern, thrownExceptionTypes);
+        }
+      } else {
+        thrownExceptionTypes.removeIf(
+            thrownType -> context.env.getTypeUtils().isAssignable(thrownType, type));
+      }
+    }
+
+    @Override
     public List<TypeMirror> visitThrow(ThrowTree node, Void aVoid) {
       List<TypeMirror> result = super.visitThrow(node, aVoid);
       if (result == null) {
@@ -107,50 +148,6 @@ public class CheckedExceptionsUtil {
         }
       }
       return result;
-    }
-
-    @Override
-    public List<TypeMirror> visitTry(TryTree node, Void aVoid) {
-      List<TypeMirror> results = scan(node.getBlock(), aVoid);
-      if (results == null) {
-        results = new ArrayList<>();
-      }
-
-      if (!results.isEmpty()) {
-        for (CatchTree catchTree : node.getCatches()) {
-          // Remove any type that would be caught.
-          removeAssignable(TreeUtils.typeOf(catchTree.getParameter()), results);
-        }
-      }
-      results.addAll(scan(node.getResources(), aVoid));
-      results.addAll(scan(node.getCatches(), aVoid));
-      results.addAll(scan(node.getFinallyBlock(), aVoid));
-
-      return results;
-    }
-
-    /**
-     * If any type in {@code thrownExceptionTypes} is assignable to {@code type}, then remove it
-     * from the list.
-     *
-     * @param type a type
-     * @param thrownExceptionTypes the type of the exceptions
-     */
-    private void removeAssignable(TypeMirror type, List<TypeMirror> thrownExceptionTypes) {
-      if (thrownExceptionTypes.isEmpty()) {
-        return;
-      }
-      if (type.getKind() == TypeKind.UNION) {
-        for (TypeMirror altern : ((UnionType) type).getAlternatives()) {
-          removeAssignable(altern, thrownExceptionTypes);
-        }
-      } else {
-        for (TypeMirror thrownType : new ArrayList<>(thrownExceptionTypes)) {
-          if (context.env.getTypeUtils().isAssignable(thrownType, type)) {
-            thrownExceptionTypes.remove(thrownType);
-          }
-        }
-      }
     }
   }
 
@@ -213,50 +210,6 @@ public class CheckedExceptionsUtil {
     }
 
     @Override
-    public List<AnnotatedTypeMirror> visitThrow(ThrowTree node, Void aVoid) {
-      List<AnnotatedTypeMirror> result = super.visitThrow(node, aVoid);
-      if (result == null) {
-        result = new ArrayList<>();
-      }
-      AnnotatedTypeMirror type = context.typeFactory.getAnnotatedType(node.getExpression());
-      if (isCheckedException(type, context)) {
-        result.add(type);
-      }
-      return result;
-    }
-
-    @Override
-    public List<AnnotatedTypeMirror> visitMethodInvocation(MethodInvocationTree node, Void aVoid) {
-      List<AnnotatedTypeMirror> result = super.visitMethodInvocation(node, aVoid);
-      if (result == null) {
-        result = new ArrayList<>();
-      }
-      AnnotatedExecutableType method = context.typeFactory.methodFromUse(node).executableType;
-      for (AnnotatedTypeMirror type : method.getThrownTypes()) {
-        if (isCheckedException(type, context)) {
-          result.add(type);
-        }
-      }
-      return result;
-    }
-
-    @Override
-    public List<AnnotatedTypeMirror> visitNewClass(NewClassTree node, Void aVoid) {
-      List<AnnotatedTypeMirror> result = super.visitNewClass(node, aVoid);
-      if (result == null) {
-        result = new ArrayList<>();
-      }
-      AnnotatedExecutableType method = context.typeFactory.constructorFromUse(node).executableType;
-
-      for (AnnotatedTypeMirror type : method.getThrownTypes()) {
-        if (isCheckedException(type, context)) {
-          result.add(type);
-        }
-      }
-      return result;
-    }
-
-    @Override
     public List<AnnotatedTypeMirror> visitTry(TryTree node, Void aVoid) {
       List<AnnotatedTypeMirror> results = scan(node.getBlock(), aVoid);
       if (results == null) {
@@ -292,12 +245,55 @@ public class CheckedExceptionsUtil {
           removeAssignable(altern, thrownExceptionTypes);
         }
       } else {
-        for (AnnotatedTypeMirror thrownType : new ArrayList<>(thrownExceptionTypes)) {
-          if (context.env.getTypeUtils().isAssignable(thrownType.getUnderlyingType(), type)) {
-            thrownExceptionTypes.remove(thrownType);
-          }
+        thrownExceptionTypes.removeIf(
+            thrownType ->
+                context.env.getTypeUtils().isAssignable(thrownType.getUnderlyingType(), type));
+      }
+    }
+
+    @Override
+    public List<AnnotatedTypeMirror> visitThrow(ThrowTree node, Void aVoid) {
+      List<AnnotatedTypeMirror> result = super.visitThrow(node, aVoid);
+      if (result == null) {
+        result = new ArrayList<>();
+      }
+      AnnotatedTypeMirror type = context.typeFactory.getAnnotatedType(node.getExpression());
+      if (isCheckedException(type, context)) {
+        result.add(type);
+      }
+      return result;
+    }
+
+    @Override
+    public List<AnnotatedTypeMirror> visitMethodInvocation(MethodInvocationTree node, Void aVoid) {
+      List<AnnotatedTypeMirror> result = super.visitMethodInvocation(node, aVoid);
+      if (result == null) {
+        result = new ArrayList<>();
+      }
+      AnnotatedExecutableType method = context.typeFactory.methodFromUse(node).executableType();
+      for (AnnotatedTypeMirror type : method.getThrownTypes()) {
+        if (isCheckedException(type, context)) {
+          result.add(type);
         }
       }
+      return result;
+    }
+
+    @Override
+    public List<AnnotatedTypeMirror> visitNewClass(NewClassTree node, Void aVoid) {
+      List<AnnotatedTypeMirror> result = super.visitNewClass(node, aVoid);
+      if (result == null) {
+        result = new ArrayList<>();
+      }
+      AnnotatedExecutableType method =
+          context.typeFactory.constructorFromUse(node).executableType();
+
+      for (AnnotatedTypeMirror type : method.getThrownTypes()) {
+        if (isCheckedException(type, context)) {
+          result.add(type);
+        }
+      }
+      return result;
     }
   }
 

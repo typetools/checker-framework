@@ -12,24 +12,29 @@ import org.plumelib.options.Option;
 import org.plumelib.options.Options;
 
 /**
- * A <code> ClassFileReader </code> provides methods for reading in annotations from a class file
- * into an {@link AScene}.
+ * A {@code ClassFileReader } provides methods for reading in annotations from a class file into an
+ * {@link AScene}.
  */
 public class ClassFileReader {
-  public static final String INDEX_UTILS_VERSION = "Annotation File Utilities v3.9.14";
 
+  /** Do not instantiate. */
+  private ClassFileReader() {
+    throw new Error("Do not instantiate");
+  }
+
+  /** Omit annotations from bridge (compiler-created) methods. */
   @Option("-b omit annotations from bridge (compiler-created) methods")
   public static boolean ignore_bridge_methods = false;
 
+  /** Print usage information and exit. */
   @Option("-h print usage information and exit")
   public static boolean help = false;
 
-  @Option("print version information and exit")
-  public static boolean version = false;
-
+  /** Print progress messages. */
   @Option("print progress messages")
   public static boolean verbose = false;
 
+  /** The system-specific line separator. */
   private static String linesep = System.lineSeparator();
 
   static String usage =
@@ -79,13 +84,8 @@ public class ClassFileReader {
       System.exit(1);
     }
 
-    if (version) {
-      System.out.printf("extract-annotations (%s)", INDEX_UTILS_VERSION);
-    }
     if (help) {
       options.printUsage();
-    }
-    if (version || help) {
       System.exit(-1);
     }
 
@@ -132,7 +132,7 @@ public class ClassFileReader {
         System.out.println(e.getMessage());
         e.printStackTrace();
         System.out.println("Please submit a bug report at");
-        System.out.println("  https://github.com/typetools/annotation-tools/issues");
+        System.out.println("  https://github.com/typetools/checker-framework/issues");
         System.out.println("Be sure to include a copy of the output trace, instructions on how");
         System.out.println("to reproduce this error, and all input files.  Thanks!");
         return;
@@ -153,13 +153,13 @@ public class ClassFileReader {
   }
 
   /**
-   * Reads the annotations from the class file <code> fileName </code> and inserts them into <code>
-   *  scene </code>. <code> fileName </code> should be a file name that can be resolved from the
-   * current working directory, which means it should end in ".class" for standard Java class files.
+   * Reads the annotations from the class file {@code fileName} and inserts them into {@code scene}.
+   * {@code fileName} should be a file name that can be resolved from the current working directory,
+   * which means it should end in ".class" for standard Java class files.
    *
    * @param scene the scene into which the annotations should be inserted
    * @param fileName the file name of the class the annotations should be read from
-   * @throws IOException if there is a problem reading from <code> fileName </code>
+   * @throws IOException if there is a problem reading from {@code fileName}
    */
   public static void read(AScene scene, String fileName) throws IOException {
     try (FileInputStream fis = new FileInputStream(fileName)) {
@@ -168,12 +168,12 @@ public class ClassFileReader {
   }
 
   /**
-   * Reads the annotations from the class <code> className </code>, assumed to be in your classpath,
-   * and inserts them into <code> scene </code>.
+   * Reads the annotations from the class {@code className}, assumed to be in your classpath, and
+   * inserts them into {@code scene}.
    *
    * @param scene the scene into which the annotations should be inserted
    * @param className the name of the class to read in
-   * @throws IOException if there is a problem reading <code> className </code>
+   * @throws IOException if there is a problem reading {@code className}
    */
   public static void readFromClass(AScene scene, String className) throws IOException {
     read(scene, new ClassReader(className));
@@ -185,7 +185,7 @@ public class ClassFileReader {
    *
    * @param scene the scene into which the annotations should be inserted
    * @param input an input stream containing the class that the annotations should be read from
-   * @throws IOException if there is a problem reading from <code> in </code>
+   * @throws IOException if there is a problem reading from {@code in}
    */
   public static void read(AScene scene, InputStream input) throws IOException {
     read(scene, new ClassReader(input));
@@ -196,7 +196,7 @@ public class ClassFileReader {
    * {@code scene}.
    *
    * @param scene the scene into which the annotations should be inserted
-   * @param classReader the ClassReader for the class thet the annotations should be read from
+   * @param classReader the ClassReader for the class that the annotations should be read from
    */
   public static void read(AScene scene, ClassReader classReader) {
     ClassAnnotationSceneReader ca =

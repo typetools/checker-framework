@@ -83,10 +83,9 @@ public class AssertionErrorNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof AssertionErrorNode)) {
+    if (!(obj instanceof AssertionErrorNode other)) {
       return false;
     }
-    AssertionErrorNode other = (AssertionErrorNode) obj;
     return Objects.equals(getCondition(), other.getCondition())
         && Objects.equals(getDetail(), other.getDetail());
   }

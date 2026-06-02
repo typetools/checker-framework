@@ -158,7 +158,7 @@ public final class LocalLocation {
   }
 
   /**
-   * Returns whether this {@link LocalLocation} equals {@code o}; a slightly faster variant of
+   * Returns true if this {@link LocalLocation} equals {@code o}; a slightly faster variant of
    * {@link #equals(Object)} for when the argument is statically known to be another nonnull {@link
    * LocalLocation}.
    *
@@ -173,8 +173,8 @@ public final class LocalLocation {
   }
 
   @Override
-  public boolean equals(/*@ReadOnly*/ Object o) {
-    return o instanceof LocalLocation && equals((LocalLocation) o);
+  public boolean equals(@Nullable Object o) {
+    return o instanceof LocalLocation localLocation && equals(localLocation);
   }
 
   @Override

@@ -30,7 +30,7 @@ public class AField extends ADeclaration {
   }
 
   /**
-   * Create an AField of the given name and type
+   * Create an AField of the given name and type.
    *
    * @param name the name of the field or formal parameter
    * @param typeMirror javac's representation of the type of the wrapped field
@@ -55,7 +55,7 @@ public class AField extends ADeclaration {
   }
 
   /**
-   * Return the name of this field or formal parameter.
+   * Returns the name of this field or formal parameter.
    *
    * @return the name of this field or formal parameter
    */
@@ -84,7 +84,7 @@ public class AField extends ADeclaration {
   }
 
   /**
-   * Return javac's representation of the type of this.
+   * Returns javac's representation of the type of this.
    *
    * @return javac's representation of the type of this
    */
@@ -108,7 +108,7 @@ public class AField extends ADeclaration {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof AField && equalsField((AField) o);
+    return o instanceof AField aField && equalsField(aField);
   }
 
   /**
@@ -131,7 +131,7 @@ public class AField extends ADeclaration {
   // }
 
   /**
-   * Return a printed representation of this.
+   * Returns a printed representation of this.
    *
    * @return a printed representation of this
    */
@@ -158,7 +158,7 @@ public class AField extends ADeclaration {
     return new VivifyingMap<K, AField>(new LinkedHashMap<>()) {
       @Override
       public AField createValueFor(K k) {
-        return new AField("" + k);
+        return new AField(k.toString());
       }
 
       @Override

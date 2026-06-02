@@ -29,13 +29,13 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.plumelib.util.FileIOException;
 
 /**
- * <code>JavapParser</code> provides a static method that parses a class dump in the form produced
- * by <code>xjavap -s -verbose -annotations</code> and adds the annotations to an {@link AScene},
- * using the scene's {@link AnnotationFactory} to build individual annotations. If the scene's
- * {@link AnnotationFactory} announces that it does not want an annotation found in the javap
- * output, that annotation is skipped. Annotations from the javap output are merged into the scene;
- * it is an error if both the scene and the javap output contain annotations of the same type on the
- * same element.
+ * {@code JavapParser} provides a static method that parses a class dump in the form produced by
+ * {@code xjavap -s -verbose -annotations} and adds the annotations to an {@link AScene}, using the
+ * scene's {@link AnnotationFactory} to build individual annotations. If the scene's {@link
+ * AnnotationFactory} announces that it does not want an annotation found in the javap output, that
+ * annotation is skipped. Annotations from the javap output are merged into the scene; it is an
+ * error if both the scene and the javap output contain annotations of the same type on the same
+ * element.
  *
  * <p>THIS CLASS IS NOT FINISHED YET!
  *
@@ -135,14 +135,7 @@ public final class JavapParser {
       nextLine();
       char tag = line.charAt(line.indexOf(tagHead) + tagHead.length());
       switch (tag) {
-        case '[':
-          break;
-        case '@':
-          break;
-        case 'c':
-          break;
-        case 'e':
-          break;
+        case '[', '@', 'c', 'e' -> {}
       }
       // FINISH
     }
@@ -188,18 +181,18 @@ public final class JavapParser {
   private AElement chooseSubElement(AElement member, AnnotationSection sec)
       throws IOException, ParseException {
     switch (sec.locMode) {
-      case ORIGINAL:
+      case ORIGINAL -> {
         // There can be no location information.
         return member;
-      case PARAMETER:
-        {
-          // should have a "parameter = "
-          int paramIdx =
-              Integer.parseInt(line.substring(line.indexOf(paramIdxHead) + paramIdxHead.length()));
-          nextLine();
-          return ((AMethod) member).parameters.getVivify(paramIdx);
-        }
-      case EXTENDED:
+      }
+      case PARAMETER -> {
+        // should have a "parameter = "
+        int paramIdx =
+            Integer.parseInt(line.substring(line.indexOf(paramIdxHead) + paramIdxHead.length()));
+        nextLine();
+        return ((AMethod) member).parameters.getVivify(paramIdx);
+      }
+      case EXTENDED -> {
         // should have a "target = "
         String targetTypeName = line.substring(line.indexOf("//") + "//".length());
         TargetType targetType;
@@ -213,22 +206,16 @@ public final class JavapParser {
         ATypeElement subOuterType;
         AElement subElement;
         switch (targetType) {
-          case FIELD:
-          case METHOD_RETURN:
-            subOuterType = (ATypeElement) member;
-            break;
-          case METHOD_RECEIVER:
-            subOuterType = ((AMethod) member).receiver.type;
-            break;
-          case METHOD_FORMAL_PARAMETER:
+          case FIELD, METHOD_RETURN -> subOuterType = (ATypeElement) member;
+          case METHOD_RECEIVER -> subOuterType = ((AMethod) member).receiver.type;
+          case METHOD_FORMAL_PARAMETER -> {
             int paramIdx =
                 Integer.parseInt(
                     line.substring(line.indexOf(paramIdxHead) + paramIdxHead.length()));
             nextLine();
             subOuterType = ((AMethod) member).parameters.getVivify(paramIdx).type;
-            break;
-          case LOCAL_VARIABLE:
-          case RESOURCE_VARIABLE:
+          }
+          case LOCAL_VARIABLE, RESOURCE_VARIABLE -> {
             int index, scopeStart, scopeLength;
             Matcher m = localLocRegex.matcher(line);
             m.matches();
@@ -238,33 +225,26 @@ public final class JavapParser {
             LocalLocation ll = new LocalLocation(scopeStart, scopeLength, index);
             nextLine();
             subOuterType = ((AMethod) member).body.locals.getVivify(ll).type;
-            break;
-          case CAST:
-            {
-              int offset = parseOffset();
-              int typeIndex = parseTypeIndex();
-              subOuterType =
-                  ((AMethod) member)
-                      .body.typecasts.getVivify(RelativeLocation.createOffset(offset, typeIndex));
-              break;
-            }
-          case INSTANCEOF:
-            {
-              int offset = parseOffset();
-              subOuterType =
-                  ((AMethod) member)
-                      .body.instanceofs.getVivify(RelativeLocation.createOffset(offset, 0));
-              break;
-            }
-          case NEW:
-            {
-              int offset = parseOffset();
-              subOuterType =
-                  ((AMethod) member).body.news.getVivify(RelativeLocation.createOffset(offset, 0));
-              break;
-            }
-          default:
-            throw new AssertionError();
+          }
+          case CAST -> {
+            int offset = parseOffset();
+            int typeIndex = parseTypeIndex();
+            subOuterType =
+                ((AMethod) member)
+                    .body.typecasts.getVivify(RelativeLocation.createOffset(offset, typeIndex));
+          }
+          case INSTANCEOF -> {
+            int offset = parseOffset();
+            subOuterType =
+                ((AMethod) member)
+                    .body.instanceofs.getVivify(RelativeLocation.createOffset(offset, 0));
+          }
+          case NEW -> {
+            int offset = parseOffset();
+            subOuterType =
+                ((AMethod) member).body.news.getVivify(RelativeLocation.createOffset(offset, 0));
+          }
+          default -> throw new AssertionError();
         }
         // TODO: update location representation
         // if (targetType.) {
@@ -274,8 +254,8 @@ public final class JavapParser {
         // } else
         //    subElement = subOuterType;
         return subElement;
-      default:
-        throw new AssertionError();
+      }
+      default -> throw new AssertionError();
     }
   }
 
@@ -410,7 +390,7 @@ public final class JavapParser {
     this.scene = scene;
   }
 
-  /** Transfers annotations from <code>in</code> to <code>scene</code>. */
+  /** Transfers annotations from {@code in} to {@code scene}. */
   public static void parse(Reader in, AScene scene) throws IOException, ParseException {
     new JavapParser(in, scene).parse();
   }

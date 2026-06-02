@@ -53,14 +53,14 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  *
  * <pre>
  * {@code class CountTypeVariable extends AnnotatedTypeScanner<Integer, Void>} {
- *    public CountTypeVariable() {
- *        super(Integer::sum, 0);
- *    }
+ *  public CountTypeVariable() {
+ *    super(Integer::sum, 0);
+ *  }
  *
- *    {@literal @}Override
- *     public Integer visitTypeVariable(AnnotatedTypeVariable type, Void p) {
- *         return reduce(super.visitTypeVariable(type, p), 1);
- *     }
+ *  {@literal @}Override
+ *  public Integer visitTypeVariable(AnnotatedTypeVariable type, Void p) {
+ *    return reduce(super.visitTypeVariable(type, p), 1);
+ *  }
  * }
  * </pre>
  *

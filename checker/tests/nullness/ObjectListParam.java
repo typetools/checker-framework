@@ -3,11 +3,11 @@ import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 
 class ObjectListParam {
-  // :: error: (type.argument)
+  // :: error: [type.argument]
   void test(List<@UnknownInitialization Object> args) {
     for (Object obj : args) {
       boolean isClass = obj instanceof Class<?>;
-      // :: warning: (cast.unsafe)
+      // :: warning: [cast.unsafe]
       @Initialized Class<?> clazz = (isClass ? (@Initialized Class<?>) obj : obj.getClass());
     }
   }

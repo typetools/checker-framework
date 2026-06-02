@@ -40,7 +40,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
  * </pre>
  *
  * <p>By default, this utility displays annotation locations only, but not the annotations
- * themselves. Further, the ouput includes all annotations (including {@code @Override}, etc.),
+ * themselves. Further, the output includes all annotations (including {@code @Override}, etc.),
  * which is not very useful.
  *
  * <p>The following options may be used to adjust the output:
@@ -134,13 +134,13 @@ public class AnnotationStatistics extends SourceChecker {
 
   class Visitor extends SourceVisitor<Void, Void> {
 
-    /** Whether annotation locations should be printed. */
+    /** True if annotation locations should be printed. */
     private final boolean locations;
 
-    /** Whether annotation details should be printed. */
+    /** True if annotation details should be printed. */
     private final boolean annotations;
 
-    /** Whether only a summary should be printed. */
+    /** True if only a summary should be printed. */
     private final boolean annotationsummaryonly;
 
     /**

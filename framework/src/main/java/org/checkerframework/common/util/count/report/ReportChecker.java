@@ -24,9 +24,9 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  * <p>Options:
  *
  * <ul>
- *   <li><code>-AreportTreeKinds</code>: comma-separated list of <code>Tree.Kind</code>s that should
- *       be reported
- *   <li><code>-AreportModifiers</code>: comma-separated list of modifiers that should be reported
+ *   <li>{@code -AreportTreeKinds}: comma-separated list of {@code Tree.Kind}s that should be
+ *       reported
+ *   <li>{@code -AreportModifiers}: comma-separated list of modifiers that should be reported
  * </ul>
  *
  * @see org.checkerframework.common.util.count.AnnotationStatistics

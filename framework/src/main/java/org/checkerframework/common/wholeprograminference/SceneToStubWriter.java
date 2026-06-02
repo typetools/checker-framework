@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -419,7 +418,7 @@ public final class SceneToStubWriter {
    * printed using the name of the class as {@code basetypeToPrint} instead of the javac type. The
    * other version of this method should be preferred in every other case.
    *
-   * @param sb where to formate the type to
+   * @param sb where to format the type to
    * @param aType the scene-lib representation of the type, or null if only the unannotated type is
    *     to be printed
    * @param javacType the javac representation of the type, or null if this is a receiver parameter
@@ -503,7 +502,7 @@ public final class SceneToStubWriter {
   }
 
   /**
-   * Return true if the given annotation is an internal JDK annotation, whose name includes '+'.
+   * Returns true if the given annotation is an internal JDK annotation, whose name includes '+'.
    *
    * @param annotationName the name of the annotation
    * @return true iff this is an internal JDK annotation
@@ -718,8 +717,7 @@ public final class SceneToStubWriter {
     // comes first; within package sort by class name.
     @SuppressWarnings("signature") // scene-lib bytecode lacks signature annotations
     List<@BinaryName String> classes = new ArrayList<>(scene.getAScene().getClasses().keySet());
-    Collections.sort(
-        classes,
+    classes.sort(
         (o1, o2) ->
             ComparisonChain.start()
                 .compare(
@@ -790,7 +788,7 @@ public final class SceneToStubWriter {
    *
    * @param classname the class name
    * @param aClass the representation of the class
-   * @return whether the class is printable, by the definition above
+   * @return true if the class is printable, by the definition above
    */
   private static boolean isPrintable(@BinaryName String classname, AClass aClass) {
     String basename = basenamePart(classname);
@@ -876,17 +874,13 @@ public final class SceneToStubWriter {
   }
 
   /**
-   * Return a string containing n indents.
+   * Returns a string containing n indents.
    *
    * @param n the number of indents
    * @return a string containing that many indents
    */
   private static String indents(int n) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < n; i++) {
-      sb.append(INDENT);
-    }
-    return sb.toString();
+    return INDENT.repeat(Math.max(0, n));
   }
 
   /**

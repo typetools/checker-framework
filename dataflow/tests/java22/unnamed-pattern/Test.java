@@ -7,15 +7,15 @@ public class Test {
   public record WrappedBoolean(boolean b) implements IntOrBool {}
 
   public int test(IntOrBool i) {
-    int x = 0;
+    int to_increment = 0;
     switch (i) {
       case WrappedInt(_) -> {
-        x = x + 1;
+        to_increment = to_increment + 1;
       }
       case WrappedBoolean(_) -> {
-        x = x + 2;
+        to_increment = to_increment + 2;
       }
     }
-    return x;
+    return to_increment;
   }
 }

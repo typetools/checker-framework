@@ -47,8 +47,7 @@ public class CFGProcessor extends BasicTypeProcessor {
   /**
    * Create a CFG processor.
    *
-   * @param className the qualified name of class which includes the specified method to generate
-   *     the CFG for
+   * @param className the qualified name of class that defines the method
    * @param methodName the name of the method to generate the CFG for
    */
   public CFGProcessor(String className, String methodName) {
@@ -57,7 +56,7 @@ public class CFGProcessor extends BasicTypeProcessor {
   }
 
   /**
-   * Get the CFG process result.
+   * Returns the CFG process result.
    *
    * @return result of cfg process
    */

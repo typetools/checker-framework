@@ -30,13 +30,13 @@ public class NegatingConditionalNullness {
 
   // False tests
   static void testFalse(NegatingConditionalNullness ppt) {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     ppt.splitters.toString(); // error
   }
 
   static void testFalseNoAssertion(NegatingConditionalNullness ppt) {
     ppt.has_splitters();
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     ppt.splitters.toString(); // error
   }
 
@@ -44,13 +44,13 @@ public class NegatingConditionalNullness {
     if (ppt.has_splitters()) {
       return;
     }
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     ppt.splitters.toString(); // error
   }
 
   //    static void testFalseIfBody(NegatingConditionalNullness ppt) {
   //        if (!ppt.has_splitters()) {
-  //            // :: error: (dereference.of.nullable)
+  //            // :: error: [dereference.of.nullable]
   //            ppt.splitters.toString();   // error
   //        }
   //    }

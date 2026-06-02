@@ -40,7 +40,7 @@ public class Java8Lambdas {
 
     // Needs to be @UIEffect, because the functional interface method is @UIEffect
     public void unsafeDoUI(UIFunctionalInterface<UIElement> func) {
-      // :: error: (call.ui)
+      // :: error: [call.ui]
       func.executeUI(this.arg);
     }
 
@@ -90,11 +90,11 @@ public class Java8Lambdas {
   public static void safeContextTestCases(UIElement elem) {
     LambdaRunner runner = new LambdaRunner(elem);
     runner.doSafe(e -> e.repaint());
-    // :: error: (call.ui)
+    // :: error: [call.ui]
     runner.doSafe(e -> e.dangerous()); // Not allowed in doSafe
-    // :: error: (call.ui)
+    // :: error: [call.ui]
     runner.doUI(e -> e.repaint()); // Not allowed in safe context
-    // :: error: (call.ui)
+    // :: error: [call.ui]
     runner.doUI(e -> e.dangerous()); // Not allowed in safe context
     runner.doEither(e -> e.repaint());
     runner.doEither(e -> e.dangerous());
@@ -109,16 +109,16 @@ public class Java8Lambdas {
           }
         });
     @UI PolymorphicLambdaRunner uiPolymorphicLambdaRunner = new @UI PolymorphicLambdaRunner(elem);
-    // :: error: (call.ui)
+    // :: error: [call.ui]
     uiPolymorphicLambdaRunner.doEither(
         e -> e.repaint()); // Safe at runtime, but not by the type system!
-    // :: error: (call.ui)
+    // :: error: [call.ui]
     uiPolymorphicLambdaRunner.doEither(e -> e.dangerous());
     PolymorphicFunctionalInterface<UIElement> func1 = e -> e.repaint();
-    // :: error: (assignment)
+    // :: error: [assignment]
     PolymorphicFunctionalInterface<UIElement> func2 = e -> e.dangerous(); // Incompatible types!
     PolymorphicFunctionalInterface<UIElement> func2p =
-        // :: error: (assignment)
+        // :: error: [assignment]
         (new @UI PolymorphicFunctionalInterface<UIElement>() {
           public void executePolymorphic(UIElement arg) {
             arg.dangerous();
@@ -127,18 +127,18 @@ public class Java8Lambdas {
     @UI PolymorphicFunctionalInterface<UIElement> func3 = e -> e.dangerous();
     safePolymorphicLambdaRunner.doEither(func1);
     safePolymorphicLambdaRunner.doEither(func2);
-    // :: error: (call.ui)
+    // :: error: [call.ui]
     uiPolymorphicLambdaRunner.doEither(func1);
-    // :: error: (call.ui)
+    // :: error: [call.ui]
     uiPolymorphicLambdaRunner.doEither(func2);
-    // :: error: (call.ui)
+    // :: error: [call.ui]
     uiPolymorphicLambdaRunner.doEither(func3);
   }
 
   @UIEffect
   public static void uiContextTestCases(UIElement elem) {
     LambdaRunner runner = new LambdaRunner(elem);
-    // :: error: (call.ui)
+    // :: error: [call.ui]
     runner.doSafe(e -> e.dangerous());
     runner.doUI(e -> e.repaint());
     runner.doUI(e -> e.dangerous());
@@ -154,7 +154,7 @@ public class Java8Lambdas {
 
   // This should be an error without an @UI annotation on the return type. No?
   public PolymorphicFunctionalInterface<UIElement> returnLambdasTest2() {
-    // :: error: (return)
+    // :: error: [return]
     return e -> {
       e.dangerous();
     };
@@ -162,7 +162,7 @@ public class Java8Lambdas {
 
   // Just to check
   public PolymorphicFunctionalInterface<UIElement> returnLambdasTest3() {
-    // :: error: (return)
+    // :: error: [return]
     return (new @UI PolymorphicFunctionalInterface<UIElement>() {
       public void executePolymorphic(UIElement arg) {
         arg.dangerous();

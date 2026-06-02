@@ -134,9 +134,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
     // Don't initialize the type arguments if they are empty. The type arguments might be a
     // diamond which should be inferred.
-    if (result instanceof AnnotatedDeclaredType && !args.isEmpty()) {
-      assert result instanceof AnnotatedDeclaredType : tree + " --> " + result;
-      ((AnnotatedDeclaredType) result).setTypeArguments(args);
+    if (result instanceof AnnotatedDeclaredType adt && !args.isEmpty()) {
+      adt.setTypeArguments(args);
     }
     return result;
   }
@@ -149,8 +148,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
    * <p>Sets each wildcard type argument's bound from typeArgs to the corresponding type parameter
    * from typeParams.
    *
-   * <p>If typeArgs.size() == 0 the method does nothing and returns. Otherwise, typeArgs.size() has
-   * to be equal to typeParams.size().
+   * <p>If typeArgs.isEmpty() the method does nothing and returns. Otherwise, typeArgs.size() has to
+   * be equal to typeParams.size().
    *
    * <p>For each wildcard type argument and corresponding type parameter, sets the
    * WildcardType.bound field to the corresponding type parameter, if and only if the owners of the
@@ -217,15 +216,13 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     result.getLowerBound().addAnnotations(annotations);
 
     switch (bounds.size()) {
-      case 0:
-        break;
-      case 1:
-        result.setUpperBound(bounds.get(0));
-        break;
-      default:
+      case 0 -> {}
+      case 1 -> result.setUpperBound(bounds.get(0));
+      default -> {
         AnnotatedIntersectionType intersection = (AnnotatedIntersectionType) result.getUpperBound();
         intersection.setBounds(bounds);
         intersection.copyIntersectionBoundAnnotations();
+      }
     }
 
     return result;
@@ -260,15 +257,14 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
    * @param type type variable used to find declaration tree
    * @param f annotated type factory
    * @return the AnnotatedTypeVariable from the declaration of {@code type} or {@code type} if no
-   *     tree is found.
+   *     tree is found
    */
   private AnnotatedTypeVariable getTypeVariableFromDeclaration(
       AnnotatedTypeVariable type, AnnotatedTypeFactory f) {
     TypeVariable typeVar = type.getUnderlyingType();
     TypeParameterElement tpe = (TypeParameterElement) typeVar.asElement();
     Element elt = tpe.getGenericElement();
-    if (elt instanceof TypeElement) {
-      TypeElement typeElt = (TypeElement) elt;
+    if (elt instanceof TypeElement typeElt) {
       int idx = typeElt.getTypeParameters().indexOf(tpe);
       if (idx == -1) {
         idx = findIndex(typeElt.getTypeParameters(), tpe);
@@ -285,8 +281,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
       // of type parameter declarations (`TypeParameterTree`), so this call
       // will return a declaration ATV.  So change it to a use.
       return visitTypeParameter(cls.getTypeParameters().get(idx), f).asUse();
-    } else if (elt instanceof ExecutableElement) {
-      ExecutableElement exElt = (ExecutableElement) elt;
+    } else if (elt instanceof ExecutableElement exElt) {
       int idx = exElt.getTypeParameters().indexOf(tpe);
       if (idx == -1) {
         idx = findIndex(exElt.getTypeParameters(), tpe);

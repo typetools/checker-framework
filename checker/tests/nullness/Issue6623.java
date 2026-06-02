@@ -4,13 +4,11 @@ import java.util.List;
 public class Issue6623 {
 
   public List<TargetOuter> getUserData(List<SrcOuter> input) {
-    // Fixing issue #6623 will eliminate this warning.
     return input.stream()
         .map(
             c ->
                 new TargetOuter(
                     c.data().stream()
-                        // :: warning: (slow.typechecking)
                         .map(
                             inner ->
                                 new TargetInner(

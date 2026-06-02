@@ -33,7 +33,7 @@ import org.objectweb.asm.TypePath;
  */
 public class GenericArrayLocationCriterion implements Criterion {
 
-  /** Whether or not to output debug information. */
+  /** If true, output debug information. */
   private static final boolean debug = false;
 
   /** The location as a list of TypePathEntrys. */
@@ -49,7 +49,7 @@ public class GenericArrayLocationCriterion implements Criterion {
 
   /**
    * Creates a new GenericArrayLocationCriterion specifying that the element is an outer type, such
-   * as: <code>@A List&lt;Integer&gt;</code> or <code>Integer @A []</code>
+   * as: {@code @A List<Integer>} or {@code Integer @A []}
    */
   public GenericArrayLocationCriterion() {
     this(null, null);
@@ -100,7 +100,7 @@ public class GenericArrayLocationCriterion implements Criterion {
    *
    * @param location the list to check
    * @return {@code true} if the list only contains {@link TypePath#ARRAY_ELEMENT}, {@code false}
-   *     otherwise.
+   *     otherwise
    */
   private boolean containsOnlyArray(List<TypePathEntry> location) {
     for (TypePathEntry tpe : location) {
@@ -145,7 +145,7 @@ public class GenericArrayLocationCriterion implements Criterion {
     } else if (leaf instanceof NewArrayTree && typePath != null) {
       child = ((NewArrayTree) leaf).getType();
     }
-    if (child != null && child instanceof MemberSelectTree) {
+    if (child instanceof MemberSelectTree) {
       JCExpression exp = ((JCFieldAccess) child).getExpression();
       if ((exp.type != null && exp.type.getKind() == TypeKind.PACKAGE)
           || typePath == null
@@ -244,7 +244,7 @@ public class GenericArrayLocationCriterion implements Criterion {
 
     List<TypePathEntry> locationRemaining = new ArrayList<>(location);
 
-    while (locationRemaining.size() != 0) {
+    while (!locationRemaining.isEmpty()) {
       // annotating an inner type
       leaf = pathRemaining.getLeaf();
       if ((leaf instanceof NewArrayTree) && containsOnlyArray(locationRemaining)) {
@@ -283,7 +283,6 @@ public class GenericArrayLocationCriterion implements Criterion {
         if (leaf instanceof ParameterizedTypeTree) {
           leaf = parent;
           parentPath = parentPath.getParentPath();
-          parent = parentPath.getLeaf();
         }
         if (!(leaf instanceof MemberSelectTree)) {
           return false;
@@ -294,14 +293,13 @@ public class GenericArrayLocationCriterion implements Criterion {
           return false;
         }
         locationRemaining.remove(locationRemaining.size() - 1);
-        leaf = fieldAccess.selected;
         pathRemaining = parentPath;
         // TreePath.getPath(pathRemaining.getCompilationUnit(), leaf);
       } else if (loc.step == TypePath.WILDCARD_BOUND
           && leaf.getKind() == Tree.Kind.UNBOUNDED_WILDCARD) {
         // Check if the leaf is an unbounded wildcard instead of the parent, since unbounded
         // wildcard has no members so it can't be the parent of anything.
-        if (locationRemaining.size() == 0) {
+        if (locationRemaining.isEmpty()) {
           return false;
         }
 
@@ -448,7 +446,7 @@ public class GenericArrayLocationCriterion implements Criterion {
         // System.out.printf("parent instanceof ArrayTypeTree: %s loc=%d%n",
         //                   parent, loc);
         Tree elt = ((ArrayTypeTree) parent).getType();
-        while (locationRemaining.size() > 0
+        while (!locationRemaining.isEmpty()
             && locationRemaining.get(locationRemaining.size() - 1).step == TypePath.ARRAY_ELEMENT) {
           if (!(elt instanceof ArrayTypeTree)) {
             if (debug) {
@@ -523,6 +521,8 @@ public class GenericArrayLocationCriterion implements Criterion {
   }
 
   /**
+   * Returns true if the field is static.
+   *
    * @param fieldAccess a field access expression
    * @return true if the field is static
    */
@@ -543,8 +543,7 @@ public class GenericArrayLocationCriterion implements Criterion {
         || (t instanceof ArrayTypeTree)
         || (t.getKind() == Tree.Kind.EXTENDS_WILDCARD)
         || (t.getKind() == Tree.Kind.SUPER_WILDCARD)
-        || (t instanceof AnnotatedTypeTree
-            && isGenericOrArray(((AnnotatedTypeTree) t).getUnderlyingType()))
+        || (t instanceof AnnotatedTypeTree att && isGenericOrArray(att.getUnderlyingType()))
     // Monolithic:  one node for entire "new".  So, handle specially.
     // || (t.getKind() == Tree.Kind.NEW_ARRAY)
     );

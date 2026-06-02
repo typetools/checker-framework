@@ -17,7 +17,7 @@ public class EisopIssue300B {
     }
 
     r.m(r.f);
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     r.f.toString();
   }
 }

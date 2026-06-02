@@ -44,8 +44,8 @@ import org.checkerframework.afu.scenelib.util.Strings;
 import org.objectweb.asm.TypePath;
 
 /**
- * IndexFileWriter provides two static methods named <code>write</code> that write a given {@link
- * AScene} to a given {@link Writer} or filename, in index file format.
+ * IndexFileWriter provides two static methods named {@code write} that write a given {@link AScene}
+ * to a given {@link Writer} or filename, in index file format.
  */
 public final class IndexFileWriter {
   final AScene scene;
@@ -128,8 +128,8 @@ public final class IndexFileWriter {
    */
   private void printAnnotations(AElement e) {
     printAnnotations(e.tlAnnotationsHere);
-    if (e instanceof AMethod) {
-      printAnnotations(((AMethod) e).contracts);
+    if (e instanceof AMethod aMethod) {
+      printAnnotations(aMethod.contracts);
     }
   }
 
@@ -186,8 +186,8 @@ public final class IndexFileWriter {
    * and arg are both integers.
    *
    * @param typePath TypePath to be processed
-   * @param index dentifies the TypePathEntry to convert
-   * @return String representing the TypePathEntry
+   * @param index identifies the TypePathEntry to convert
+   * @return string representing the TypePathEntry
    */
   private String typePathStepToString(TypePath typePath, int index) {
     int typePathStep = typePath.getStep(index);
@@ -197,7 +197,7 @@ public final class IndexFileWriter {
   }
 
   /**
-   * Outputs a string representaion of a set of AElements to a PrintWriter.
+   * Outputs a string representation of a set of AElements to a PrintWriter.
    *
    * @param indentation string containing indentation spaces
    * @param descriptor description of Type being printed
@@ -212,7 +212,7 @@ public final class IndexFileWriter {
   }
 
   /**
-   * Outputs a string representaion of an AElement to a PrintWriter.
+   * Outputs a string representation of an AElement to a PrintWriter.
    *
    * @param indentation string containing indentation spaces
    * @param descriptor description of Type being printed
@@ -332,20 +332,20 @@ public final class IndexFileWriter {
 
   private void printType(Type type) {
     switch (type.getKind()) {
-      case ARRAY:
+      case ARRAY -> {
         ArrayType a = (ArrayType) type;
         printType(a.getComponentType());
         pw.print("[]");
-        break;
-      case BOUNDED:
+      }
+      case BOUNDED -> {
         BoundedType b = (BoundedType) type;
         printType(b.getName());
         pw.print(" ");
         pw.print(b.getBoundKind());
         pw.print(" ");
         printType(b.getBound());
-        break;
-      case DECLARED:
+      }
+      case DECLARED -> {
         DeclaredType d = (DeclaredType) type;
         pw.print(d.getName());
         if (!d.isWildcard()) {
@@ -368,7 +368,7 @@ public final class IndexFileWriter {
             printType(inner);
           }
         }
-        break;
+      }
     }
   }
 
@@ -501,25 +501,9 @@ public final class IndexFileWriter {
     sb.append(")");
   }
 
-  // TODO: Why isn't this just aft.format(o)??
   /**
-   * Formats a literal argument of an annotation. Public to permit re-use in stub-based
-   * whole-program inference.
-   *
-   * @param aft the type of the annotation field
-   * @param o the value or values to format
-   * @return the String representation of the value
-   */
-  @Deprecated // TEMPORORY
-  public static String formatAnnotationValue(AnnotationFieldType aft, Object o) {
-    StringBuilder sb = new StringBuilder();
-    formatAnnotationValue(sb, aft, o);
-    return sb.toString();
-  }
-
-  /**
-   * Formats a literal argument of an annotation. Public to permit re-use in stub-based
-   * whole-program inference.
+   * Formats a literal argument of an annotation. Public to permit reuse in stub-based whole-program
+   * inference.
    *
    * @param sb where to format the arguments to
    * @param aft the type of the annotation field
@@ -528,12 +512,11 @@ public final class IndexFileWriter {
   public static void formatAnnotationValue(StringBuilder sb, AnnotationFieldType aft, Object o) {
     if (aft instanceof AnnotationAFT) {
       formatAnnotation(sb, (Annotation) o);
-    } else if (aft instanceof ArrayAFT) {
-      ArrayAFT aaft = (ArrayAFT) aft;
+    } else if (aft instanceof ArrayAFT aaft) {
       List<?> l = (List<?>) o;
       sb.append("{");
       if (aaft.elementType == null) {
-        if (l.size() != 0) {
+        if (!l.isEmpty()) {
           throw new AssertionError("nonempty array of unknown type");
         }
       } else {
@@ -550,8 +533,8 @@ public final class IndexFileWriter {
       sb.append("}");
     } else if (aft instanceof ClassTokenAFT) {
       aft.format(sb, o);
-    } else if (aft instanceof BasicAFT && o instanceof String) {
-      sb.append(Strings.escape((String) o));
+    } else if (aft instanceof BasicAFT && o instanceof String s) {
+      sb.append(Strings.escape(s));
     } else if (aft instanceof BasicAFT && o instanceof Long) {
       sb.append(o.toString());
       sb.append("L");
@@ -564,8 +547,8 @@ public final class IndexFileWriter {
   }
 
   /**
-   * Writes the annotations in <code>scene</code> and their definitions to <code>out</code> in index
-   * file format.
+   * Writes the annotations in {@code scene} and their definitions to {@code out} in index file
+   * format.
    *
    * <p>An {@link AScene} can contain several annotations of the same type but different
    * definitions, while an index file can accommodate only a single definition for each annotation
@@ -590,8 +573,8 @@ public final class IndexFileWriter {
   }
 
   /**
-   * Writes the annotations in <code>scene</code> and their definitions to the file <code>filename
-   * </code> in index file format; see {@link #write(AScene, Writer)}.
+   * Writes the annotations in {@code scene} and their definitions to the file {@code filename} in
+   * index file format; see {@link #write(AScene, Writer)}.
    */
   public static void write(AScene scene, String filename) throws IOException, DefException {
     try (Writer w = Files.newBufferedWriter(Paths.get(filename), StandardCharsets.UTF_8)) {

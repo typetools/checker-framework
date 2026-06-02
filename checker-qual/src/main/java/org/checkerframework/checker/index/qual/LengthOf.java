@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * detail that may change in the future, when this type may be used to implement more precise
  * refinements.
  *
- * <p>The usual use case for the {@code LengthOf} annotation is in the defintions of custom
+ * <p>The usual use case for the {@code LengthOf} annotation is in the definitions of custom
  * collections. Consider the signature of java.lang.String#length():
  *
  * <pre>

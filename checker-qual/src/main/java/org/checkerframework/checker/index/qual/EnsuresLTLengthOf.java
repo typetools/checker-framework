@@ -20,9 +20,11 @@ import org.checkerframework.framework.qual.QualifierArgument;
  * <pre>
  * {@code @EnsuresLTLengthOf(value = "end", targetValue = "array", offset = "#1 - 1")
  *  public void shiftIndex(@NonNegative int x) {
- *      int newEnd = end - x;
- *      if (newEnd < 0) throw new RuntimeException();
- *      end = newEnd;
+ *    int newEnd = end - x;
+ *    if (newEnd < 0) {
+ *      throw new RuntimeException();
+ *    }
+ *    end = newEnd;
  *  }
  * }
  * </pre>
@@ -34,7 +36,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
  *
  * <pre>{@code
  * public void useShiftIndex(@NonNegative int x) {
- *    // :: error: (argument)
+ *    // :: error: [argument]
  *    Arrays.fill(array, end, end + x, null);
  *    shiftIndex(x);
  *    Arrays.fill(array, end, end + x, null);
@@ -97,7 +99,7 @@ public @interface EnsuresLTLengthOf {
   @InheritedAnnotation
   public static @interface List {
     /**
-     * Return the repeatable annotations.
+     * Returns the repeatable annotations.
      *
      * @return the repeatable annotations
      */

@@ -6,7 +6,7 @@ public class MethodInvocation {
   String s;
 
   public MethodInvocation() {
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     a();
     b();
     c();
@@ -14,7 +14,7 @@ public class MethodInvocation {
   }
 
   public MethodInvocation(boolean p) {
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     a(); // still not okay to be initialized
     s = "abc";
   }
@@ -22,12 +22,12 @@ public class MethodInvocation {
   public void a() {}
 
   public void b(@UnderInitialization MethodInvocation this) {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     s.hashCode();
   }
 
   public void c(@UnknownInitialization MethodInvocation this) {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     s.hashCode();
   }
 }

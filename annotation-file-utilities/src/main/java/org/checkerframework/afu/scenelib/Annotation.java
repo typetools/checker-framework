@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.checkerframework.afu.scenelib.el.AnnotationDef;
 import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * A very simple annotation representation constructed with a map of field names to values. See the
@@ -60,16 +61,14 @@ public final class Annotation {
       Object value = fieldValues.get(fieldname);
       String valueString;
       String classString = value.getClass().toString();
-      if (value instanceof Object[]) {
-        Object[] arr = (Object[]) value;
+      if (value instanceof Object[] arr) {
         valueString = Arrays.toString(arr);
         classString += " {";
         for (Object elt : arr) {
           classString += " " + elt.getClass();
         }
         classString += "}";
-      } else if (value instanceof Collection) {
-        Collection<?> coll = (Collection<?>) value;
+      } else if (value instanceof Collection<?> coll) {
         valueString = Arrays.toString(coll.toArray());
         classString += " {";
         for (Object elt : coll) {
@@ -126,13 +125,12 @@ public final class Annotation {
         if (!aft.isValidValue(val)) {
           if (val instanceof Class[]) {
             Class<?>[] vala = (Class[]) val;
-            List<Class<?>> vall = new ArrayList<Class<?>>(vala.length);
+            List<Class<?>> vall = new ArrayList<>(vala.length);
             for (Class<?> elt : vala) {
               vall.add(elt);
             }
             val = vall;
-          } else if (val instanceof Object[]) {
-            Object[] vala = (Object[]) val;
+          } else if (val instanceof Object[] vala) {
             List<Object> vall = new ArrayList<>(vala.length);
             for (Object elt : vala) {
               vall.add(elt.toString());
@@ -170,10 +168,10 @@ public final class Annotation {
    * <ul>
    *   <li>Primitive value: wrapper object, such as {@link Integer}.
    *   <li>{@link String}: {@link String}.
-   *   <li>Class token: name of the type as a {@link String}, using the source code notation <code>
-   *       int[]</code> for arrays.
+   *   <li>Class token: name of the type as a {@link String}, using the source code notation {@code
+   *       int[]} for arrays.
    *   <li>Enumeration constant: name of the constant as a {@link String}.
-   *   <li>Subannotation: <code>Annotation</code> object.
+   *   <li>Subannotation: {@code Annotation} object.
    *   <li>Array: {@link List} of elements in the formats defined here. If the element type is
    *       unknown (see {@link AnnotationBuilder#addEmptyArrayField}), the array must have zero
    *       elements.
@@ -196,17 +194,17 @@ public final class Annotation {
   }
 
   /**
-   * This {@link Annotation} equals <code>o</code> if and only if <code>o</code> is a nonnull {@link
-   * Annotation} and <code>this</code> and <code>o</code> have recursively equal definitions and
-   * field values, even if they were created by different {@link AnnotationFactory}s.
+   * This {@link Annotation} equals {@code o} if and only if {@code o} is a nonnull {@link
+   * Annotation} and {@code this} and {@code o} have recursively equal definitions and field values,
+   * even if they were created by different {@link AnnotationFactory}s.
    */
   @Override
   public final boolean equals(Object o) {
-    return o instanceof Annotation && equals((Annotation) o);
+    return o instanceof Annotation annotation && equals(annotation);
   }
 
   /**
-   * Returns whether this annotation equals <code>o</code>; a slightly faster variant of {@link
+   * Returns true if this annotation equals {@code o}; a slightly faster variant of {@link
    * #equals(Object)} for when the argument is statically known to be another nonnull {@link
    * Annotation}. Subclasses may wish to override this with a hard-coded "&amp;&amp;" of field
    * comparisons to improve performance.
@@ -253,11 +251,14 @@ public final class Annotation {
     sb.append("@");
     sb.append(def.name);
     if (fieldValues.size() == 1 && fieldValues.containsKey("value")) {
-      AnnotationFieldType fieldType = def.fieldTypes.get("value");
+      @SuppressWarnings("nullness:assignment") // just checked containsKey
+      @NonNull Object fieldValue = fieldValues.get("value");
+      @SuppressWarnings("nullness:assignment") // same keyset
+      @NonNull AnnotationFieldType fieldType = def.fieldTypes.get("value");
       sb.append('(');
-      fieldType.format(sb, fieldValues.get("value"));
+      fieldType.format(sb, fieldValue);
       sb.append(')');
-    } else if (fieldValues.size() > 0) {
+    } else if (!fieldValues.isEmpty()) {
       sb.append('(');
       boolean notfirst = false;
       for (Entry<String, Object> field : fieldValues.entrySet()) {

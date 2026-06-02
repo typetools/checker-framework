@@ -16,6 +16,32 @@ import java.util.Map;
  */
 public class InstanceOfScanner extends CommonScanner {
 
+  private int index = -1;
+  private boolean done = false;
+  private final Tree tree;
+
+  /**
+   * Creates an InstanceOfScanner that will scan the source tree for the given node representing the
+   * instanceof check to find.
+   *
+   * @param tree the given instanceof check to search for
+   */
+  private InstanceOfScanner(Tree tree) {
+    this.tree = tree;
+  }
+
+  @Override
+  @SuppressWarnings("interning:not.interned") // reference equality check
+  public Void visitInstanceOf(InstanceOfTree node, Void p) {
+    if (!done) {
+      index++;
+    }
+    if (tree == node) {
+      done = true;
+    }
+    return super.visitInstanceOf(node, null);
+  }
+
   /**
    * Computes the index of the given instanceof tree amongst all instanceof tree inside its method,
    * using 0-based indexing.
@@ -35,34 +61,6 @@ public class InstanceOfScanner extends CommonScanner {
     return ios.index;
   }
 
-  private int index = -1;
-  private boolean done = false;
-  private final Tree tree;
-
-  /**
-   * Creates an InstanceOfScanner that will scan the source tree for the given node representing the
-   * instanceof check to find.
-   *
-   * @param tree the given instanceof check to search for
-   */
-  private InstanceOfScanner(Tree tree) {
-    this.index = -1;
-    this.done = false;
-    this.tree = tree;
-  }
-
-  @Override
-  @SuppressWarnings("interning:not.interned") // reference equality check
-  public Void visitInstanceOf(InstanceOfTree node, Void p) {
-    if (!done) {
-      index++;
-    }
-    if (tree == node) {
-      done = true;
-    }
-    return super.visitInstanceOf(node, null);
-  }
-
   // Map from name of a method to a list of bytecode offsets of all
   // instanceof checks in that method.
   private static Map<String, List<Integer>> methodNameToInstanceOfOffsets = new HashMap<>();
@@ -75,11 +73,8 @@ public class InstanceOfScanner extends CommonScanner {
    * @param offset the offset to add
    */
   public static void addInstanceOfToMethod(String methodName, Integer offset) {
-    List<Integer> offsetList = methodNameToInstanceOfOffsets.get(methodName);
-    if (offsetList == null) {
-      offsetList = new ArrayList<Integer>();
-      methodNameToInstanceOfOffsets.put(methodName, offsetList);
-    }
+    List<Integer> offsetList =
+        methodNameToInstanceOfOffsets.computeIfAbsent(methodName, k -> new ArrayList<>());
     offsetList.add(offset);
   }
 

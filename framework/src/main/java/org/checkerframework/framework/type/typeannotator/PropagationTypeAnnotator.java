@@ -20,16 +20,17 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
 
 /**
- * {@link PropagationTypeAnnotator} adds qualifiers to types where the qualifier to add should be
+ * {@link PropagationTypeAnnotator} adds qualifiers to types, where the qualifier to add should be
  * transferred from one or more other types.
  *
  * <p>At the moment, the only function PropagationTypeAnnotator provides, is the propagation of
  * generic type parameter annotations to unannotated wildcards with missing bounds annotations.
  *
+ * <p>PropagationTypeAnnotator traverses trees deeply by default.
+ *
  * @see
  *     #visitWildcard(org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType,
  *     Object)
- *     <p>PropagationTypeAnnotator traverses trees deeply by default.
  */
 public class PropagationTypeAnnotator extends TypeAnnotator {
 
@@ -160,14 +161,22 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
       AnnotatedWildcardType wildcard,
       AnnotatedTypeVariable typeParam,
       Set<? extends AnnotationMirror> tops) {
-    applyAnnosFromBound(wildcard.getSuperBound(), typeParam.getLowerBound(), tops);
+    AnnotatedTypeMirror typeParamBound = typeParam.getLowerBound();
+    while (typeParamBound.getKind() == TypeKind.TYPEVAR) {
+      typeParamBound = ((AnnotatedTypeVariable) typeParamBound).getLowerBound();
+    }
+    applyAnnosFromBound(wildcard.getSuperBound(), typeParamBound, tops);
   }
 
   private void propagateExtendsBound(
       AnnotatedWildcardType wildcard,
       AnnotatedTypeVariable typeParam,
       Set<? extends AnnotationMirror> tops) {
-    applyAnnosFromBound(wildcard.getExtendsBound(), typeParam.getUpperBound(), tops);
+    AnnotatedTypeMirror typeParamBound = typeParam.getUpperBound();
+    while (typeParamBound.getKind() == TypeKind.TYPEVAR) {
+      typeParamBound = ((AnnotatedTypeVariable) typeParamBound).getUpperBound();
+    }
+    applyAnnosFromBound(wildcard.getExtendsBound(), typeParamBound, tops);
   }
 
   /**
@@ -181,8 +190,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     // Type variables do not need primary annotations.
     // The type variable will have annotations placed on its
     // bounds via its declaration or defaulting rules
-    if (wildcardBound.getKind() == TypeKind.TYPEVAR
-        || typeParamBound.getKind() == TypeKind.TYPEVAR) {
+    if (wildcardBound.getKind() == TypeKind.TYPEVAR) {
       return;
     }
 

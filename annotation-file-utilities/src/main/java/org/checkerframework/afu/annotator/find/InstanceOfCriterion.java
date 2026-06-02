@@ -15,7 +15,7 @@ public class InstanceOfCriterion implements Criterion {
   private final RelativeLocation loc;
 
   public InstanceOfCriterion(String methodName, RelativeLocation loc) {
-    this.methodName = methodName.substring(0, methodName.lastIndexOf(")") + 1);
+    this.methodName = methodName.substring(0, methodName.lastIndexOf(')') + 1);
     this.loc = loc;
   }
 
@@ -57,8 +57,7 @@ public class InstanceOfCriterion implements Criterion {
       return false;
     }
 
-    if (parent instanceof InstanceOfTree) {
-      InstanceOfTree instanceOfTree = (InstanceOfTree) parent;
+    if (parent instanceof InstanceOfTree instanceOfTree) {
       @SuppressWarnings("interning:not.interned") // reference equality check
       boolean foundLeaf = leaf == instanceOfTree.getType();
       if (!foundLeaf) {

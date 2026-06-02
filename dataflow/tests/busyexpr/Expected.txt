@@ -50,7 +50,7 @@ a   [ LocalVariable ]
 b   [ LocalVariable ]
 (a != b)   [ NotEqual ]
 ~~~~~~~~~
-TransferInput#80
+TransferInput#79
 After:   busy expressions = (b >> a)
 
 4:
@@ -75,7 +75,7 @@ a   [ LocalVariable ]
 b   [ LocalVariable ]
 (a - b)   [ NumericalSubtraction ]
 ~~~~~~~~~
-TransferInput#68
+TransferInput#67
 After:   busy expressions = none
 
 14:
@@ -99,7 +99,7 @@ a   [ LocalVariable ]
 b   [ LocalVariable ]
 (a - b)   [ NumericalSubtraction ]
 ~~~~~~~~~
-TransferInput#40
+TransferInput#39
 After:   busy expressions = (a - b)
 
 9:
@@ -146,7 +146,7 @@ Before:   busy expressions = none
 ~~~~~~~~~
 expression statement test(a - b)   [ ExpressionStatement ]
 ~~~~~~~~~
-TransferInput#35
+TransferInput#34
 After:   busy expressions = none
 
 12:
@@ -162,7 +162,7 @@ b   [ LocalVariable ]
 y = (a + b)   [ Assignment ]
 expression statement y = a + b   [ ExpressionStatement ]
 ~~~~~~~~~
-TransferInput#36
+TransferInput#35
 After:   busy expressions = none
 
 17:
@@ -177,17 +177,17 @@ d   [ LocalVariable ]
 y   [ LocalVariable ]
 x   [ LocalVariable ]
 ~~~~~~~~~
-TransferInput#27
+TransferInput#26
 After:   busy expressions = none
 
 18:
 Process order: 12
 AnalysisResult#0
-Before:   busy expressions = (y / x)
+Before:   busy expressions = none
 ~~~~~~~~~
 (y / x)   [ IntegerDivision ]
 ~~~~~~~~~
-TransferInput#25
+TransferInput#24
 After:   busy expressions = (y / x)
 
 19:
@@ -195,7 +195,6 @@ Process order: 13
 AnalysisResult#0
 Before:   busy expressions = (y / x)
 ~~~~~~~~~
-(y / x)   [ IntegerDivision ]
 d = (y / x)   [ Assignment ]
 expression statement d = y / x   [ ExpressionStatement ]
 marker (end of try block #0)   [ Marker ]

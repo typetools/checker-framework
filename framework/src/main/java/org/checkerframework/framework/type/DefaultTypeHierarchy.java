@@ -61,10 +61,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   /** The equality comparer. */
   protected final StructuralEqualityComparer equalityComparer;
 
-  /** Whether to ignore raw types. */
+  /** If true, ignore raw types. */
   protected final boolean ignoreRawTypes;
 
-  /** Whether to make array subtyping invariant with respect to array component types. */
+  /** If true, make array subtyping invariant with respect to array component types. */
   protected final boolean invariantArrayComponents;
 
   /** The top annotation of the hierarchy currently being checked. */
@@ -88,8 +88,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *
    * @param checker the type-checker that is associated with this
    * @param qualHierarchy the qualifier hierarchy that is associated with this
-   * @param ignoreRawTypes whether to ignore raw types
-   * @param invariantArrayComponents whether to make array subtyping invariant with respect to array
+   * @param ignoreRawTypes if true, ignore raw types
+   * @param invariantArrayComponents if true, make array subtyping invariant with respect to array
    *     component types
    */
   @SuppressWarnings("this-escape")
@@ -181,6 +181,28 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       // The effective annotations are the primary annotations on the erased type.
       return new ShallowType(erasedType.getPrimaryAnnotations(), typeMirror);
     }
+  }
+
+  @Override
+  public boolean equalsShallowEffective(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+    ShallowType shallowType1 = ShallowType.create(type1);
+    ShallowType shallowType2 = ShallowType.create(type2);
+    Collection<? extends AnnotationMirror> annos1 = shallowType1.annos;
+    TypeMirror tm1 = shallowType1.typeMirror;
+    Collection<? extends AnnotationMirror> annos2 = shallowType2.annos;
+    TypeMirror tm2 = shallowType2.typeMirror;
+    return qualHierarchy.isSubtypeShallow(annos1, tm1, annos2, tm2)
+        && qualHierarchy.isSubtypeShallow(annos2, tm2, annos1, tm1);
+  }
+
+  @Override
+  public boolean equalsShallowEffective(
+      AnnotatedTypeMirror type1, Collection<? extends AnnotationMirror> qualifiers2) {
+    ShallowType shallowType1 = ShallowType.create(type1);
+    TypeMirror tm = shallowType1.typeMirror;
+    Collection<? extends AnnotationMirror> qualifiers1 = shallowType1.annos;
+    return qualHierarchy.isSubtypeShallow(qualifiers1, tm, qualifiers2, tm)
+        && qualHierarchy.isSubtypeShallow(qualifiers2, tm, qualifiers1, tm);
   }
 
   @Override
@@ -358,7 +380,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *     underlying type
    * @param outside a possibly-containing type; its underlying type contains {@code inside}'s
    *     underlying type
-   * @param canBeCovariant whether or not type arguments are allowed to be covariant
+   * @param canBeCovariant true if type arguments are allowed to be covariant
    * @return true if inside is contained by outside, or if canBeCovariant == true and {@code inside
    *     <: outside}
    */
@@ -440,7 +462,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * @param inside a possibly-contained type
    * @param outsideLower the lower bound of the possibly-containing type
    * @param outsideUpper the upper bound of the possibly-containing type
-   * @param canBeCovariant whether or not type arguments are allowed to be covariant
+   * @param canBeCovariant true if type arguments are allowed to be covariant
    * @return true if inside is contained by outside, or if canBeCovariant == true and {@code inside
    *     <: outside}
    */
@@ -462,7 +484,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       // calls isSubtype(inside.getUpperBound(), outsideUpper). This is slightly different
       // from the algorithm in the JLS.  Only one of the Java type bounds can be specified,
       // but there can be annotations on both the upper and lower bound of a wildcard.
-      return isSubtype(outsideLower, inside) && isSubtype(inside, outsideUpper);
+      return isSubtype(outsideLower, inside, currentTop)
+          && isSubtype(inside, outsideUpper, currentTop);
     } catch (Throwable ex) {
       // Work around:
       // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=JDK-8265255
@@ -479,7 +502,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *
    * @param type type to check
    * @return true if {@code type} is a type argument from a raw type and if the checker should not
-   *     issue warnings about such type arguments.
+   *     issue warnings about such type arguments
    */
   private boolean shouldIgnoreRawTypeArgs(AnnotatedTypeMirror type) {
     return this.ignoreRawTypes && AnnotatedTypes.isTypeArgOfRawType(type);
@@ -566,8 +589,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *
    * @param subtype a possible subtype
    * @param supertype a possible supertype
-   * @param subtypeRaw whether {@code subtype} is a raw type
-   * @param supertypeRaw whether {@code supertype} is a raw type
+   * @param subtypeRaw true if {@code subtype} is a raw type
+   * @param supertypeRaw true if {@code supertype} is a raw type
    * @return true if the type arguments in {@code supertype} contain the type arguments in {@code
    *     subtype} and false otherwise
    */
@@ -576,6 +599,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       AnnotatedDeclaredType supertype,
       boolean subtypeRaw,
       boolean supertypeRaw) {
+    if (TypesUtils.isClass(subtype.getUnderlyingType())) {
+      // Ignore type arguments in classes. Their qualifiers never matter.
+      return true;
+    }
     AnnotatedTypeFactory typeFactory = subtype.atypeFactory;
 
     // JLS 11: 4.10.2. Subtyping among Class and Interface Types
@@ -646,7 +673,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * @param supertypeTypeArgs supertype arguments
    * @param covariantArgIndexes indexes into the type arguments list which correspond to the type
    *     arguments that are marked @{@link Covariant}.
-   * @return whether {@code supertypeTypeArgs} contain {@code subtypeTypeArgs}
+   * @return true if {@code supertypeTypeArgs} contain {@code subtypeTypeArgs}
    */
   protected boolean isContainedMany(
       List<? extends AnnotatedTypeMirror> subtypeTypeArgs,
@@ -994,7 +1021,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       } else if (!subtypeHasAnno && supertypeHasAnno) {
         // This is the case "T <: @A T" where T is a type variable.
         return qualHierarchy.isSubtypeShallow(
-            subtype.getEffectiveAnnotationInHierarchy(currentTop),
+            subtype.getAnnotationInHierarchy(currentTop),
             subTM,
             supertype.getPrimaryAnnotationInHierarchy(currentTop),
             superTM);
@@ -1129,7 +1156,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *
    * @param subtype an intersection type
    * @param supertype an annotated type
-   * @return whether {@code subtype} is a subtype of {@code supertype}
+   * @return true if {@code subtype} is a subtype of {@code supertype}
    */
   protected boolean visitIntersection_Type(
       AnnotatedIntersectionType subtype, AnnotatedTypeMirror supertype) {
@@ -1238,7 +1265,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *
    * @param subtype the potential subtype to check
    * @param supertype the supertype to check
-   * @return whether all the alternatives of subtype are subtypes of supertype
+   * @return true if all the alternatives of subtype are subtypes of supertype
    */
   protected boolean visitUnion_Type(AnnotatedUnionType subtype, AnnotatedTypeMirror supertype) {
     return areAllSubtypes(subtype.getAlternatives(), supertype);
@@ -1249,7 +1276,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *
    * @param subtype the potential subtype to check
    * @param supertype the wildcard supertype to check
-   * @return whether the subtype is a subtype of the supertype's super bound
+   * @return true if the subtype is a subtype of the supertype's super bound
    */
   protected boolean visitType_Wildcard(
       AnnotatedTypeMirror subtype, AnnotatedWildcardType supertype) {
@@ -1264,7 +1291,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *
    * @param subtype the potential wildcard subtype to check
    * @param supertype the supertype to check
-   * @return whether the subtype's extends bound is a subtype of the supertype
+   * @return true if the subtype's extends bound is a subtype of the supertype
    */
   protected boolean visitWildcard_Type(
       AnnotatedWildcardType subtype, AnnotatedTypeMirror supertype) {

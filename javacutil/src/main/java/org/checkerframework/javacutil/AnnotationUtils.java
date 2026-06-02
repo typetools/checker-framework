@@ -72,8 +72,8 @@ public class AnnotationUtils {
    * @return the fully-qualified name of an annotation as a String
    */
   public static final @CanonicalName String annotationName(AnnotationMirror annotation) {
-    if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror) {
-      return ((AnnotationBuilder.CheckerFrameworkAnnotationMirror) annotation).annotationName;
+    if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror cfam) {
+      return cfam.annotationName;
     }
     DeclaredType annoType = annotation.getAnnotationType();
     TypeElement elm = (TypeElement) annoType.asElement();
@@ -85,7 +85,7 @@ public class AnnotationUtils {
   /**
    * Returns the fully-qualified name of an annotation as a String.
    *
-   * <p>This is more efficient than calling {@link annotationName} and {@link
+   * <p>This is more efficient than calling {@link #annotationName} and {@link
    * java.lang.String#intern}.
    *
    * @param annotation the annotation whose name to return
@@ -93,8 +93,8 @@ public class AnnotationUtils {
    */
   public static final @CanonicalName @Interned String annotationNameInterned(
       AnnotationMirror annotation) {
-    if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror) {
-      return ((AnnotationBuilder.CheckerFrameworkAnnotationMirror) annotation).annotationName;
+    if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror cfam) {
+      return cfam.annotationName;
     }
     DeclaredType annoType = annotation.getAnnotationType();
     TypeElement elm = (TypeElement) annoType.asElement();
@@ -140,7 +140,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Return -1, 0, or 1 depending on whether the name of a1 is less, equal to, or greater than that
+   * Returns -1, 0, or 1 depending on whether the name of a1 is less, equal to, or greater than that
    * of a2 (lexicographically).
    *
    * @param a1 the first AnnotationMirror to compare
@@ -159,10 +159,10 @@ public class AnnotationUtils {
 
     // This is largely duplicated code.  The point of this block is that
     // the `if (name1 == name2)` test is very fast.
-    if (a1 instanceof CheckerFrameworkAnnotationMirror
-        && a2 instanceof CheckerFrameworkAnnotationMirror) {
-      @Interned @CanonicalName String name1 = ((CheckerFrameworkAnnotationMirror) a1).annotationName;
-      @Interned @CanonicalName String name2 = ((CheckerFrameworkAnnotationMirror) a2).annotationName;
+    if (a1 instanceof CheckerFrameworkAnnotationMirror cfam1
+        && a2 instanceof CheckerFrameworkAnnotationMirror cfam2) {
+      @Interned @CanonicalName String name1 = cfam1.annotationName;
+      @Interned @CanonicalName String name2 = cfam2.annotationName;
       if (name1 == name2) {
         return 0;
       } else {
@@ -174,7 +174,10 @@ public class AnnotationUtils {
   }
 
   /**
-   * Return true iff a1 and a2 have the same annotation type.
+   * Returns true iff a1 and a2 have the same annotation type. Does not check annotation
+   * element/field values. One reason to that clients may call this is that it is slightly faster
+   * than {@link #areSame} when the annotation is known to have no elements/fields. (TODO: Is that
+   * considered to be good style?)
    *
    * @param a1 the first AnnotationMirror to compare
    * @param a2 the second AnnotationMirror to compare
@@ -183,12 +186,15 @@ public class AnnotationUtils {
    */
   @EqualsMethod
   public static boolean areSameByName(AnnotationMirror a1, AnnotationMirror a2) {
+    if (a1 == a2) {
+      return true;
+    }
     return compareByName(a1, a2) == 0;
   }
 
   /**
    * Checks that the annotation {@code am} has the name {@code aname} (a fully-qualified type name).
-   * Values are ignored.
+   * Does not check annotation element/field values.
    *
    * @param am the AnnotationMirror whose name to compare
    * @param aname the string to compare
@@ -460,15 +466,13 @@ public class AnnotationUtils {
     // Can't use deepEquals() to compare val1 and val2, because they might have mismatched
     // AnnotationValue vs. CheckerFrameworkAnnotationValue, and AnnotationValue doesn't override
     // equals().  So, write my own version of deepEquals().
-    if ((val1 instanceof List<?>) && (val2 instanceof List<?>)) {
-      List<?> list1 = (List<?>) val1;
-      List<?> list2 = (List<?>) val2;
+    if ((val1 instanceof List<?> list1) && (val2 instanceof List<?> list2)) {
       if (list1.size() != list2.size()) {
         return list1.size() - list2.size();
       }
       // Don't compare setwise, because order can matter. These mean different things:
-      //   @LTLengthOf(value={"a1","a2"}, offest={"0", "1"})
-      //   @LTLengthOf(value={"a2","a1"}, offest={"0", "1"})
+      //   @LTLengthOf(value={"a1","a2"}, offset={"0", "1"})
+      //   @LTLengthOf(value={"a2","a1"}, offset={"0", "1"})
       for (int i = 0; i < list1.size(); i++) {
         Object v1 = list1.get(i);
         Object v2 = list2.get(i);
@@ -478,17 +482,17 @@ public class AnnotationUtils {
         }
       }
       return 0;
-    } else if ((val1 instanceof AnnotationMirror) && (val2 instanceof AnnotationMirror)) {
-      return compareAnnotationMirrors((AnnotationMirror) val1, (AnnotationMirror) val2);
-    } else if ((val1 instanceof AnnotationValue) && (val2 instanceof AnnotationValue)) {
+    } else if (val1 instanceof AnnotationMirror am1 && val2 instanceof AnnotationMirror am2) {
+      return compareAnnotationMirrors(am1, am2);
+    } else if (val1 instanceof AnnotationValue av1 && val2 instanceof AnnotationValue av2) {
       // This case occurs because of the recursive call when comparing arrays of annotation
       // values.
-      return compareAnnotationValue((AnnotationValue) val1, (AnnotationValue) val2);
+      return compareAnnotationValue(av1, av2);
     }
 
-    if ((val1 instanceof Type.ClassType) && (val2 instanceof Type.ClassType)) {
+    if (val1 instanceof Type.ClassType ct1 && val2 instanceof Type.ClassType ct2) {
       // Type.ClassType does not override equals
-      if (TypesUtils.areSameDeclaredTypes((Type.ClassType) val1, (Type.ClassType) val2)) {
+      if (TypesUtils.areSameDeclaredTypes(ct1, ct2)) {
         return 0;
       }
     }
@@ -539,41 +543,25 @@ public class AnnotationUtils {
    * @return the set of {@link ElementKind}s corresponding to {@code elementType}
    */
   public static EnumSet<ElementKind> getElementKindsForElementType(ElementType elementType) {
-    switch (elementType) {
-      case TYPE:
-        return EnumSet.copyOf(ElementUtils.typeElementKinds());
-      case FIELD:
-        return EnumSet.of(ElementKind.FIELD, ElementKind.ENUM_CONSTANT);
-      case METHOD:
-        return EnumSet.of(ElementKind.METHOD);
-      case PARAMETER:
-        return EnumSet.of(ElementKind.PARAMETER);
-      case CONSTRUCTOR:
-        return EnumSet.of(ElementKind.CONSTRUCTOR);
-      case LOCAL_VARIABLE:
-        return EnumSet.of(
-            ElementKind.LOCAL_VARIABLE,
-            ElementKind.RESOURCE_VARIABLE,
-            ElementKind.EXCEPTION_PARAMETER);
-      case ANNOTATION_TYPE:
-        return EnumSet.of(ElementKind.ANNOTATION_TYPE);
-      case PACKAGE:
-        return EnumSet.of(ElementKind.PACKAGE);
-      case TYPE_PARAMETER:
-        return EnumSet.of(ElementKind.TYPE_PARAMETER);
-      case TYPE_USE:
-        return EnumSet.noneOf(ElementKind.class);
-      default:
-        // TODO: Use MODULE enum constants directly instead of looking them up by name.
-        // (Java 11)
-        if (elementType.name().equals("MODULE")) {
-          return EnumSet.of(ElementKind.valueOf("MODULE"));
-        }
-        if (elementType.name().equals("RECORD_COMPONENT")) {
-          return EnumSet.of(ElementKind.valueOf("RECORD_COMPONENT"));
-        }
-        throw new BugInCF("Unrecognized ElementType: " + elementType);
-    }
+    return switch (elementType) {
+      case TYPE -> EnumSet.copyOf(ElementUtils.typeElementKinds());
+      case FIELD -> EnumSet.of(ElementKind.FIELD, ElementKind.ENUM_CONSTANT);
+      case METHOD -> EnumSet.of(ElementKind.METHOD);
+      case PARAMETER -> EnumSet.of(ElementKind.PARAMETER);
+      case CONSTRUCTOR -> EnumSet.of(ElementKind.CONSTRUCTOR);
+      case LOCAL_VARIABLE ->
+          EnumSet.of(
+              ElementKind.LOCAL_VARIABLE,
+              ElementKind.RESOURCE_VARIABLE,
+              ElementKind.EXCEPTION_PARAMETER);
+      case ANNOTATION_TYPE -> EnumSet.of(ElementKind.ANNOTATION_TYPE);
+      case PACKAGE -> EnumSet.of(ElementKind.PACKAGE);
+      case TYPE_PARAMETER -> EnumSet.of(ElementKind.TYPE_PARAMETER);
+      case TYPE_USE -> EnumSet.noneOf(ElementKind.class);
+      case MODULE -> EnumSet.of(ElementKind.MODULE);
+      case RECORD_COMPONENT -> EnumSet.of(ElementKind.RECORD_COMPONENT);
+      default -> throw new BugInCF("Unrecognized ElementType: " + elementType);
+    };
   }
 
   // **********************************************************************
@@ -581,8 +569,8 @@ public class AnnotationUtils {
   // **********************************************************************
 
   /**
-   * Get the element with the name {@code elementName} of the annotation {@code anno}. The result
-   * has type {@code expectedType}. If there is no value for {@code elementName}, {@code
+   * Returns the element with the name {@code elementName} of the annotation {@code anno}. The
+   * result has type {@code expectedType}. If there is no value for {@code elementName}, {@code
    * defaultValue} is returned
    *
    * <p>This method is intended only for use when the class of the annotation is not on the user's
@@ -650,8 +638,8 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the element with the name {@code elementName} of the annotation {@code anno}. The result
-   * has type {@code expectedType}.
+   * Returns the element with the name {@code elementName} of the annotation {@code anno}. The
+   * result has type {@code expectedType}.
    *
    * <p>If the return type is an array, use {@link #getElementValueArray} instead.
    *
@@ -665,7 +653,7 @@ public class AnnotationUtils {
    * @param elementName the name of the element to access
    * @param expectedType the type of the element and the return value
    * @param <T> the class of the type
-   * @param useDefaults whether to apply default values to the element
+   * @param useDefaults if true, apply default values to the element
    * @return the value of the element with the given name
    * @deprecated use {@link #getElementValue(AnnotationMirror, ExecutableElement, Class)} or {@link
    *     #getElementValue(AnnotationMirror, ExecutableElement, Class, Object)}
@@ -722,7 +710,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the element with the name {@code elementName} of the annotation {@code anno}, or return
+   * Returns the element with the name {@code elementName} of the annotation {@code anno}, or return
    * null if no such element exists.
    *
    * <p>This method is intended only for use by the framework. A checker implementation should use
@@ -732,7 +720,7 @@ public class AnnotationUtils {
    * @param elementName the name of the element to access
    * @param expectedType the type of the element and the return value
    * @param <T> the class of the type
-   * @param useDefaults whether to apply default values to the element
+   * @param useDefaults if true, apply default values to the element
    * @return the value of the element with the given name, or null
    */
   public static <T> @Nullable T getElementValueOrNull(
@@ -747,7 +735,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the element with the name {@code elementName} of the annotation {@code anno}, or return
+   * Returns the element with the name {@code elementName} of the annotation {@code anno}, or return
    * null if no such element exists. One element of the result has type {@code expectedType}.
    *
    * <p>This method is intended only for use by the framework. A checker implementation should use
@@ -757,7 +745,7 @@ public class AnnotationUtils {
    * @param elementName the name of the element to access
    * @param expectedType the component type of the element and of the return value
    * @param <T> the class of the component type
-   * @param useDefaults whether to apply default values to the element
+   * @param useDefaults if true, apply default values to the element
    * @return the value of the element with the given name, or null
    */
   public static <T> @Nullable List<T> getElementValueArrayOrNull(
@@ -772,7 +760,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the element with the name {@code elementName} of the annotation {@code anno}, where the
+   * Returns the element with the name {@code elementName} of the annotation {@code anno}, where the
    * element has an array type. One element of the result has type {@code expectedType}.
    *
    * <p>Parameter useDefaults is used to determine whether default values should be used for
@@ -787,7 +775,7 @@ public class AnnotationUtils {
    * @param elementName the name of the element to access
    * @param expectedType the component type of the element and of the return type
    * @param <T> the class of the type
-   * @param useDefaults whether to apply default values to the element
+   * @param useDefaults if true, apply default values to the element
    * @return the value of the element with the given name; it is a new list, so it is safe for
    *     clients to side-effect
    * @deprecated use {@code #getElementValueArray(AnnotationMirror, ExecutableElement, Class)} or
@@ -822,7 +810,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the Name of the class that is referenced by element {@code elementName}.
+   * Returns the Name of the class that is referenced by element {@code elementName}.
    *
    * <p>This is a convenience method for the most common use-case. It is like {@code
    * getElementValue(anno, elementName, ClassType.class).getQualifiedName()}, but this method
@@ -833,12 +821,12 @@ public class AnnotationUtils {
    *
    * @param anno the annotation to disassemble
    * @param elementName the name of the element to access; it must be present in the annotation
-   * @param useDefaults whether to apply default values to the element
+   * @param useDefaults if true, apply default values to the element
    * @return the name of the class that is referenced by element with the given name; may be an
    *     empty name, for a local or anonymous class
    * @deprecated use an ExecutableElement
    */
-  @Deprecated // permitted for use by the framework
+  @Deprecated // for use only by the framework
   public static @CanonicalName Name getElementValueClassName(
       AnnotationMirror anno, CharSequence elementName, boolean useDefaults) {
     Type.ClassType ct = getElementValue(anno, elementName, Type.ClassType.class, useDefaults);
@@ -852,7 +840,8 @@ public class AnnotationUtils {
   // **********************************************************************
 
   /**
-   * Get the given element of the annotation {@code anno}. The result has type {@code expectedType}.
+   * Returns the given element of the annotation {@code anno}. The result has type {@code
+   * expectedType}.
    *
    * <p>If the return type is primitive, use {@link #getElementValueInt} or {@link
    * #getElementValueLong} instead.
@@ -877,7 +866,8 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the given element of the annotation {@code anno}. The result has type {@code expectedType}.
+   * Returns the given element of the annotation {@code anno}. The result has type {@code
+   * expectedType}.
    *
    * <p>If the return type is primitive, use {@link #getElementValueInt} or {@link
    * #getElementValueLong} instead.
@@ -904,7 +894,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the given boolean element of the annotation {@code anno}.
+   * Returns the given boolean element of the annotation {@code anno}.
    *
    * @param anno the annotation whose element to access
    * @param element the element to access
@@ -922,7 +912,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the given integer element of the annotation {@code anno}.
+   * Returns the given integer element of the annotation {@code anno}.
    *
    * @param anno the annotation whose element to access
    * @param element the element to access
@@ -938,7 +928,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the given integer element of the annotation {@code anno}.
+   * Returns the given integer element of the annotation {@code anno}.
    *
    * @param anno the annotation whose element to access
    * @param element the element to access
@@ -956,7 +946,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the given long element of the annotation {@code anno}.
+   * Returns the given long element of the annotation {@code anno}.
    *
    * @param anno the annotation whose element to access
    * @param element the element to access
@@ -974,7 +964,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the element with the name {@code name} of the annotation {@code anno}. The result is an
+   * Returns the element with the name {@code name} of the annotation {@code anno}. The result is an
    * enum of type {@code T}.
    *
    * @param anno the annotation to disassemble
@@ -994,7 +984,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the element with the name {@code name} of the annotation {@code anno}. The result is an
+   * Returns the element with the name {@code name} of the annotation {@code anno}. The result is an
    * enum of type {@code T}.
    *
    * @param anno the annotation to disassemble
@@ -1016,7 +1006,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the element with the name {@code name} of the annotation {@code anno}. The result is an
+   * Returns the element with the name {@code name} of the annotation {@code anno}. The result is an
    * array of type {@code T}.
    *
    * @param anno the annotation to disassemble
@@ -1035,7 +1025,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the element with the name {@code name} of the annotation {@code anno}. The result is an
+   * Returns the element with the name {@code name} of the annotation {@code anno}. The result is an
    * array of type {@code T}.
    *
    * @param anno the annotation to disassemble
@@ -1056,8 +1046,8 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the given element of the annotation {@code anno}, where the element has an array type. One
-   * element of the result has type {@code expectedType}.
+   * Returns the given element of the annotation {@code anno}, where the element has an array type.
+   * One element of the result has type {@code expectedType}.
    *
    * @param anno the annotation to disassemble
    * @param element the element to access; it must be present in the annotation
@@ -1076,8 +1066,8 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the given element of the annotation {@code anno}, where the element has an array type. One
-   * element of the result has type {@code expectedType}.
+   * Returns the given element of the annotation {@code anno}, where the element has an array type.
+   * One element of the result has type {@code expectedType}.
    *
    * @param anno the annotation to disassemble
    * @param element the element to access
@@ -1137,7 +1127,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the Name of the class that is referenced by element {@code element}.
+   * Returns the Name of the class that is referenced by element {@code element}.
    *
    * <p>This is a convenience method for the most common use-case. It is like {@code
    * getElementValue(anno, element, ClassType.class).getQualifiedName()}, but this method ensures
@@ -1163,8 +1153,8 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the list of Names of the classes that are referenced by element {@code element}. It fails
-   * if the class wasn't found.
+   * Returns the list of Names of the classes that are referenced by element {@code element}. It
+   * fails if the class wasn't found.
    *
    * @param anno the annotation whose field to access; it must be present in the annotation
    * @param element the element/field of {@code anno} whose content is a list of classes
@@ -1186,19 +1176,24 @@ public class AnnotationUtils {
    * and {@code am2} must be the same type of annotation.
    *
    * @param am1 the first AnnotationMirror to compare
-   * @param am2 the second AnnotationMirror to compare
+   * @param am2 the second AnnotationMirror to compare; the same type of annotation as {@code am1}
    * @return true if the two annotations have the same elements (fields)
    */
   @EqualsMethod
-  public static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
-    if (am1 == am2) {
+  private static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
+
+    // Same elts for both annotations, because am1.getAnnotationType() == am2.getAnnotationType().
+    List<ExecutableElement> elts =
+        ElementFilter.methodsIn(am1.getAnnotationType().asElement().getEnclosedElements());
+    if (elts.isEmpty()) {
       return true;
     }
 
+    // This method might return true even if these maps differ, because of default values.
     Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = am1.getElementValues();
     Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = am2.getElementValues();
-    for (ExecutableElement meth :
-        ElementFilter.methodsIn(am1.getAnnotationType().asElement().getEnclosedElements())) {
+
+    for (ExecutableElement meth : elts) {
       AnnotationValue aval1 = vals1.get(meth);
       AnnotationValue aval2 = vals2.get(meth);
       @SuppressWarnings("interning:not.interned") // optimization via equality test
@@ -1221,7 +1216,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Return true iff the two AnnotationValue objects are the same. Use this instead of
+   * Returns true iff the two AnnotationValue objects are the same. Use this instead of
    * CheckerFrameworkAnnotationValue.equals, which wouldn't get called if the receiver is some
    * AnnotationValue other than CheckerFrameworkAnnotationValue.
    *
@@ -1363,7 +1358,7 @@ public class AnnotationUtils {
   // Other methods
   // **********************************************************************
 
-  // The Javadoc doesn't use @link because framework is a different project than this one
+  // The Javadoc doesn't use `@link` because framework is a different project than this one
   // (javacutil).
   /**
    * Update a map, to add {@code newQual} to the set that {@code key} maps to. The mapped-to element

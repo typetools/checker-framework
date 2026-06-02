@@ -12,13 +12,15 @@ public class StructuralEqualityVisitHistory {
 
   /**
    * Types in this history are structurally equal. (Use {@link SubtypeVisitHistory} because it
-   * implements a {@code Map<IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>, AnnotationMirrorSet>})
+   * implements a {@code Map<IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>,
+   * AnnotationMirrorSet>}).
    */
   private final SubtypeVisitHistory trueHistory;
 
   /**
    * Types in this history are not structurally equal. (Use {@link SubtypeVisitHistory} because it
-   * implements a {@code Map<IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>, AnnotationMirrorSet>})
+   * implements a {@code Map<IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>,
+   * AnnotationMirrorSet>}).
    */
   private final SubtypeVisitHistory falseHistory;
 
@@ -36,7 +38,7 @@ public class StructuralEqualityVisitHistory {
    * @param type2 the second type
    * @param hierarchy the top of the relevant type hierarchy; only annotations from that hierarchy
    *     are considered
-   * @param result whether {@code type1} is structurally equal to {@code type2}
+   * @param result true if {@code type1} is structurally equal to {@code type2}
    */
   public void put(
       AnnotatedTypeMirror type1,
@@ -53,15 +55,15 @@ public class StructuralEqualityVisitHistory {
   }
 
   /**
-   * Return whether or not the two types are structurally equal for the given hierarchy or {@code
-   * null} if the types have not been visited for the given hierarchy.
+   * Returns true if the two types are structurally equal for the given hierarchy or {@code null} if
+   * the types have not been visited for the given hierarchy.
    *
    * @param type1 the first type
    * @param type2 the second type
    * @param hierarchy the top of the relevant type hierarchy; only annotations from that hierarchy
    *     are considered
-   * @return whether or not the two types are structurally equal for the given hierarchy or {@code
-   *     null} if the types have not been visited for the given hierarchy
+   * @return true if the two types are structurally equal for the given hierarchy or {@code null} if
+   *     the types have not been visited for the given hierarchy
    */
   public @Nullable Boolean get(
       AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, AnnotationMirror hierarchy) {

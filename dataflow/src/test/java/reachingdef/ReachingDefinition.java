@@ -10,6 +10,11 @@ import org.checkerframework.dataflow.reachingdef.ReachingDefinitionTransfer;
 /** Used in reachingDefinitionsTest Gradle task to test the ReachingDefinition analysis. */
 public class ReachingDefinition {
 
+  /** Do not instantiate. */
+  private ReachingDefinition() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * The main method expects to be run in dataflow/tests/reaching-definitions directory.
    *

@@ -7,7 +7,9 @@ import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
 
 /** A declaration, as opposed to an expression. Base class for AClass, AMethod, and AField. */
 public abstract class ADeclaration extends AElement {
-  /** The element's insert-annotation invocations; map key is the AST path to the insertion place */
+  /**
+   * The element's insert-annotation invocations; map key is the AST path to the insertion place.
+   */
   public final VivifyingMap<ASTPath, ATypeElement> insertAnnotations =
       new VivifyingMap<ASTPath, ATypeElement>(new TreeMap<>()) {
         @Override
@@ -56,7 +58,7 @@ public abstract class ADeclaration extends AElement {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof ADeclaration && ((ADeclaration) o).equalsDeclaration(this);
+    return o instanceof ADeclaration decl && decl.equalsDeclaration(this);
   }
 
   private boolean equalsDeclaration(ADeclaration o) {
@@ -82,8 +84,12 @@ public abstract class ADeclaration extends AElement {
   @Override
   public void prune() {
     super.prune();
-    if (insertAnnotations != null) insertAnnotations.prune();
-    if (insertTypecasts != null) insertTypecasts.prune();
+    if (insertAnnotations != null) {
+      insertAnnotations.prune();
+    }
+    if (insertTypecasts != null) {
+      insertTypecasts.prune();
+    }
   }
 
   @Override

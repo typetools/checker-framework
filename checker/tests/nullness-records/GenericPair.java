@@ -5,7 +5,7 @@ public record GenericPair<K, V>(K key, V value) {
 
   public static void foo() {
     GenericPair<String, @Nullable Integer> p = new GenericPair<>("k", null);
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     p.value().toString();
   }
 }

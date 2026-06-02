@@ -68,32 +68,12 @@ public abstract class CFAbstractAnalysis<
    * initializer. The value of the initializer is {@code null} if the field does not have one.
    *
    * @param <V> type of value
+   * @param fieldDecl a field access that corresponds to the declaration of a field
+   * @param declared the value corresponding to the annotations on the declared type of the field
+   * @param initializer the value of the initializer of the field, or null if no initializer exists
    */
-  public static class FieldInitialValue<V extends CFAbstractValue<V>> {
-
-    /** A field access that corresponds to the declaration of a field. */
-    public final FieldAccess fieldDecl;
-
-    /** The value corresponding to the annotations on the declared type of the field. */
-    public final V declared;
-
-    /** The value of the initializer of the field, or null if no initializer exists. */
-    public final @Nullable V initializer;
-
-    /**
-     * Creates a new FieldInitialValue.
-     *
-     * @param fieldDecl a field access that corresponds to the declaration of a field
-     * @param declared value corresponding to the annotations on the declared type of {@code field}
-     * @param initializer value of the initializer of {@code field}, or null if no initializer
-     *     exists
-     */
-    public FieldInitialValue(FieldAccess fieldDecl, V declared, @Nullable V initializer) {
-      this.fieldDecl = fieldDecl;
-      this.declared = declared;
-      this.initializer = initializer;
-    }
-  }
+  public record FieldInitialValue<V extends CFAbstractValue<V>>(
+      FieldAccess fieldDecl, V declared, @Nullable V initializer) {}
 
   /** Initial abstract types for fields. */
   protected final List<FieldInitialValue<V>> fieldValues;
@@ -216,8 +196,16 @@ public abstract class CFAbstractAnalysis<
   public abstract @Nullable V createAbstractValue(
       AnnotationMirrorSet annotations, TypeMirror underlyingType);
 
-  /** Default implementation for {@link #createAbstractValue(AnnotationMirrorSet, TypeMirror)}. */
-  public @Nullable CFValue defaultCreateAbstractValue(
+  // This cannot be inlined into `createAbstractValue()`, because the Java type system forbids it.
+  /**
+   * Default implementation for {@link #createAbstractValue(AnnotationMirrorSet, TypeMirror)}.
+   *
+   * @param analysis the analysis
+   * @param annotations the annotations for the result annotated type
+   * @param underlyingType the unannotated type for the result annotated type
+   * @return an abstract value containing the given {@code annotations} and {@code underlyingType}
+   */
+  public final @Nullable CFValue getCfValue(
       CFAbstractAnalysis<CFValue, ?, ?> analysis,
       AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {
@@ -227,6 +215,11 @@ public abstract class CFAbstractAnalysis<
     return new CFValue(analysis, annotations, underlyingType);
   }
 
+  /**
+   * Returns the type hierarchy.
+   *
+   * @return the type hierarchy
+   */
   public TypeHierarchy getTypeHierarchy() {
     return typeHierarchy;
   }
@@ -266,7 +259,7 @@ public abstract class CFAbstractAnalysis<
   }
 
   /**
-   * Get the types utility.
+   * Returns the types utility.
    *
    * @return {@link #types}
    */
@@ -275,7 +268,7 @@ public abstract class CFAbstractAnalysis<
   }
 
   /**
-   * Get the processing environment.
+   * Returns the processing environment.
    *
    * @return {@link #env}
    */

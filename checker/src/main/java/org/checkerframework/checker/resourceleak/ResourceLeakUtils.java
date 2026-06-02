@@ -51,8 +51,8 @@ public class ResourceLeakUtils {
    * @return the {@link ResourceLeakChecker} in the checker hierarchy
    */
   public static ResourceLeakChecker getResourceLeakChecker(SourceChecker referenceChecker) {
-    if (referenceChecker instanceof ResourceLeakChecker) {
-      return (ResourceLeakChecker) referenceChecker;
+    if (referenceChecker instanceof ResourceLeakChecker rlc) {
+      return rlc;
     } else if (referenceChecker instanceof RLCCalledMethodsChecker
         || referenceChecker instanceof MustCallChecker) {
       return getResourceLeakChecker(referenceChecker.getParentChecker());
@@ -85,8 +85,8 @@ public class ResourceLeakUtils {
    * @return the {@link RLCCalledMethodsChecker} in the checker hierarchy
    */
   public static RLCCalledMethodsChecker getRLCCalledMethodsChecker(SourceChecker referenceChecker) {
-    if (referenceChecker instanceof RLCCalledMethodsChecker) {
-      return (RLCCalledMethodsChecker) referenceChecker;
+    if (referenceChecker instanceof RLCCalledMethodsChecker rlccmc) {
+      return rlccmc;
     } else if (referenceChecker instanceof ResourceLeakChecker) {
       return getRLCCalledMethodsChecker(
           referenceChecker.getSubchecker(RLCCalledMethodsChecker.class));

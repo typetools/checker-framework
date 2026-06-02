@@ -54,6 +54,8 @@ import org.checkerframework.afu.scenelib.type.BoundedType.BoundKind;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.Identifier;
@@ -125,7 +127,7 @@ public final class IndexFileParser {
   }
 
   /**
-   * Return true if the next thing to be read from st is the given string. In that case, also read
+   * Returns true if the next thing to be read from st is the given string. In that case, also read
    * past the given string. If the result is false, reads nothing from st.
    */
   private boolean matchChar(char c) throws IOException {
@@ -138,7 +140,7 @@ public final class IndexFileParser {
   }
 
   /**
-   * Return true if the next thing to be read from st is the given string. In that case, also read
+   * Returns true if the next thing to be read from st is the given string. In that case, also read
    * past the given string. If the result is false, reads nothing from st.
    */
   private boolean matchKeyword(String s) throws IOException {
@@ -154,24 +156,14 @@ public final class IndexFileParser {
   private void expectChar(char c) throws IOException, ParseException {
     if (!matchChar(c)) {
       // Alternately, could use st.toString().
-      String found;
-      switch (st.ttype) {
-        case StreamTokenizer.TT_WORD:
-          found = st.sval;
-          break;
-        case StreamTokenizer.TT_NUMBER:
-          found = "" + st.nval;
-          break;
-        case StreamTokenizer.TT_EOL:
-          found = "end of line";
-          break;
-        case StreamTokenizer.TT_EOF:
-          found = "end of file";
-          break;
-        default:
-          found = "'" + ((char) st.ttype) + "'";
-          break;
-      }
+      String found =
+          switch (st.ttype) {
+            case StreamTokenizer.TT_WORD -> st.sval;
+            case StreamTokenizer.TT_NUMBER -> String.valueOf(st.nval);
+            case StreamTokenizer.TT_EOL -> "end of line";
+            case StreamTokenizer.TT_EOF -> "end of file";
+            default -> "'" + String.valueOf((char) st.ttype) + "'";
+          };
       throw new ParseException("Expected '" + c + "', found " + found);
     }
   }
@@ -241,7 +233,7 @@ public final class IndexFileParser {
       "volatile",
       "while",
     };
-    knownKeywords = new LinkedHashSet<String>();
+    knownKeywords = new LinkedHashSet<>();
     Collections.addAll(knownKeywords, knownKeywords_array);
   }
 
@@ -256,7 +248,9 @@ public final class IndexFileParser {
   private boolean isValidIdentifier(String x) {
     if (x.length() == 0
         || !Character.isJavaIdentifierStart(x.charAt(0))
-        || knownKeywords.contains(x)) return false;
+        || knownKeywords.contains(x)) {
+      return false;
+    }
     for (int i = 1; i < x.length(); i++) {
       if (!Character.isJavaIdentifierPart(x.charAt(i))) {
         return false;
@@ -270,7 +264,7 @@ public final class IndexFileParser {
    *
    * @return the next token, so long as it is an identifier; otherwise, returns null
    */
-  private @Identifier String checkIdentifier() {
+  private @Identifier @Nullable String checkIdentifier() {
     if (st.sval == null) {
       return null;
     } else {
@@ -349,8 +343,10 @@ public final class IndexFileParser {
   private int checkNNInteger() {
     if (st.ttype == StreamTokenizer.TT_NUMBER) {
       int x = (int) st.nval;
-      if (x == st.nval && x >= -1) // shouldn't give us a huge number
-      return x;
+      if (x == st.nval && x >= -1) {
+        // shouldn't give us a huge number
+        return x;
+      }
     }
     return -1;
   }
@@ -394,7 +390,11 @@ public final class IndexFileParser {
    * "java.util.Map"  for Map.class
    * }</pre>
    *
-   * Thes use fully-qualified names, i.e. "Object" alone won't work.
+   * These use fully-qualified names, i.e. "Object" alone won't work.
+   *
+   * @return the class name that was read, in Class.forName format
+   * @throws IOException if there is trouble reading
+   * @throws ParseException if there is trouble parsing
    */
   private @ClassGetName String expectClassGetName() throws IOException, ParseException {
     int arrays = 0;
@@ -431,9 +431,8 @@ public final class IndexFileParser {
   /** Parse scalar annotation value. */
   // HMMM can a (readonly) Integer be casted to a writable Object?
   private Object parseScalarAFV(ScalarAFT aft) throws IOException, ParseException {
-    if (aft instanceof BasicAFT) {
+    if (aft instanceof BasicAFT baft) {
       Object val;
-      BasicAFT baft = (BasicAFT) aft;
       Class<?> type = baft.type;
       if (type == boolean.class) {
         if (matchKeyword("true")) {
@@ -512,8 +511,7 @@ public final class IndexFileParser {
       String name = expectQualifiedName();
       assert aft.isValidValue(name);
       return name;
-    } else if (aft instanceof AnnotationAFT) {
-      AnnotationAFT aaft = (AnnotationAFT) aft;
+    } else if (aft instanceof AnnotationAFT aaft) {
       AnnotationDef d = parseAnnotationHead();
       if (!d.name.equals(aaft.annotationDef.name)) {
         throw new ParseException(
@@ -580,8 +578,7 @@ public final class IndexFileParser {
           "The annotation type " + d.name + " has no field called " + fieldName);
     }
     AnnotationFieldType aft = aft1;
-    if (aft instanceof ArrayAFT) {
-      ArrayAFT aaft = (ArrayAFT) aft;
+    if (aft instanceof ArrayAFT aaft) {
       if (aaft.elementType == null) {
         // Array of unknown element type--must be zero-length
         expectChar('{');
@@ -590,8 +587,7 @@ public final class IndexFileParser {
       } else {
         parseAndAddArrayAFV(aaft, ab.beginArrayField(fieldName, aaft));
       }
-    } else if (aft instanceof ScalarAFT) {
-      ScalarAFT saft = (ScalarAFT) aft;
+    } else if (aft instanceof ScalarAFT saft) {
       Object value = parseScalarAFV(saft);
       ab.addScalarField(fieldName, saft, value);
     } else {
@@ -672,7 +668,7 @@ public final class IndexFileParser {
   }
 
   /**
-   * Get the {@link ScalarAFT} for the annotation currenttly being parsed.
+   * Returns the {@link ScalarAFT} for the annotation currenttly being parsed.
    *
    * @param annotationFullyQualifiedName the fully-qualified name of current parsing annotation
    * @return the {@link ScalarAFT} of current parsing annotation
@@ -692,11 +688,8 @@ public final class IndexFileParser {
       if (abbreviate) {
         int i = name.lastIndexOf('.');
         if (i >= 0) {
-          Set<String> importSet = scene.imports.get(annotationFullyQualifiedName);
-          if (importSet == null) {
-            importSet = new TreeSet<String>();
-            scene.imports.put(annotationFullyQualifiedName, importSet);
-          }
+          Set<String> importSet =
+              scene.imports.computeIfAbsent(annotationFullyQualifiedName, k -> new TreeSet<>());
           importSet.add(name);
           String baseName = name.substring(i + 1);
           name = baseName;
@@ -934,12 +927,15 @@ public final class IndexFileParser {
       key = "<" + basename + ">";
     } else {
       key = expectIdentifier();
-      // too bad className is private in AClass and thus must be
-      // extracted from what toString() returns
-      if (Pattern.matches("AClass: (?:[^. ]+\\.)*" + key, c.toString())) { // ugh
+      // TODO: className is no longer private in AClass.
+      // It's too bad that className is private in AClass and thus must be
+      // extracted from what toString() returns.
+      @Regex String aclassRegex = "AClass: (?:[^. ]+\\.)*" + Pattern.quote(key);
+      if (Pattern.matches(aclassRegex, c.toString())) { // ugh
         key = "<init>";
       }
     }
+    // `key` is now a Java identifier or "<init>" or "<clinit>".
 
     expectChar('(');
     key += '(';
@@ -1814,9 +1810,9 @@ public final class IndexFileParser {
   }
 
   /**
-   * Reads annotations from <code>in</code> in index file format and merges them into <code>scene
-   * </code>. Annotations from the input are merged into the scene; it is an error if both the scene
-   * and the input contain annotations of the same type on the same element.
+   * Reads annotations from {@code in} in index file format and merges them into {@code scene}.
+   * Annotations from the input are merged into the scene; it is an error if both the scene and the
+   * input contain annotations of the same type on the same element.
    *
    * <p>Since each annotation in a scene carries its own definition and the scene as a whole no
    * longer has a set of definitions, annotation definitions that are given in the input but never
@@ -1834,8 +1830,8 @@ public final class IndexFileParser {
   }
 
   /**
-   * Reads annotations from the index file <code>filename</code> and merges them into <code>scene
-   * </code>; see {@link #parse(LineNumberReader, String, AScene)}.
+   * Reads annotations from the index file {@code filename} and merges them into {@code scene}; see
+   * {@link #parse(LineNumberReader, String, AScene)}.
    */
   public static Map<String, AnnotationDef> parseFile(String filename, AScene scene)
       throws IOException {
@@ -1848,8 +1844,8 @@ public final class IndexFileParser {
   }
 
   /**
-   * Reads annotations from the string (in index file format) and merges them into <code>scene
-   * </code>; see {@link #parse(LineNumberReader, String, AScene)}. Primarily for testing.
+   * Reads annotations from the string (in index file format) and merges them into {@code scene};
+   * see {@link #parse(LineNumberReader, String, AScene)}. Primarily for testing.
    */
   public static Map<String, AnnotationDef> parseString(
       String fileContents, String source, AScene scene) throws IOException {

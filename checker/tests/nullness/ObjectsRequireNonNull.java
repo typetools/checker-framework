@@ -6,9 +6,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class ObjectsRequireNonNull {
   void foo(@Nullable Object nble, @NonNull Object nn) {
-    // :: error: (argument)
+    // :: error: [argument]
     Objects.requireNonNull(null);
-    // :: error: (argument)
+    // :: error: [argument]
     Objects.requireNonNull(nble);
     Objects.requireNonNull("hello");
     Objects.requireNonNull(nn);

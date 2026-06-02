@@ -25,23 +25,23 @@ public class ViewpointAdaptation2 {
 
     @GuardedBy("lockExample1.myLock") Object o2 = lockExample1.locked2;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     @GuardedBy("myLock") Object o3 = lockExample1.locked;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     @GuardedBy("this.myLock") Object o4 = lockExample1.locked2;
 
     @GuardedBy("lockExample1.myLock") Object oM1 = lockExample1.getLocked();
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     @GuardedBy("myLock") Object oM2 = lockExample1.getLocked();
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     @GuardedBy("this.myLock") Object oM3 = lockExample1.getLocked();
 
     void uses() {
       lockExample1.locked = o1;
-      // :: error: (assignment)
+      // :: error: [assignment]
       lockExample1.locked = o3;
     }
   }

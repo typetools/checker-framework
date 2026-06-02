@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -20,9 +21,8 @@ import org.objectweb.asm.TypeReference;
 import org.plumelib.util.CollectionsPlume;
 
 /**
- * An <code>AnnotationVerifier</code> provides a way to check to see if two versions of the same
- * class (from two different <code>.class</code> files), have the same annotations on the same
- * elements.
+ * An {@code AnnotationVerifier} provides a way to check to see if two versions of the same class
+ * (from two different {@code .class} files), have the same annotations on the same elements.
  */
 public class AnnotationVerifier {
 
@@ -35,8 +35,8 @@ public class AnnotationVerifier {
   private ClassRecorder newVisitor;
 
   /**
-   * Constructs a new <code>AnnotationVerifier</code> that does not yet have any information about
-   * the class.
+   * Constructs a new {@code AnnotationVerifier} that does not yet have any information about the
+   * class.
    */
   public AnnotationVerifier() {
     originalVisitor = new ClassRecorder(Opcodes.ASM8);
@@ -44,8 +44,8 @@ public class AnnotationVerifier {
   }
 
   /**
-   * Returns the <code>ClassVisitor</code> which should be made to visit the version of the class
-   * known to be correct.
+   * Returns the {@code ClassVisitor} which should be made to visit the version of the class known
+   * to be correct.
    *
    * @return a visitor for the good version of the class
    */
@@ -54,8 +54,8 @@ public class AnnotationVerifier {
   }
 
   /**
-   * Returns the <code>ClassVisitor</code> which should be made to visit the version of the class
-   * being tested.
+   * Returns the {@code ClassVisitor} which should be made to visit the version of the class being
+   * tested.
    *
    * @return a visitor for the experimental version of the class
    */
@@ -69,7 +69,7 @@ public class AnnotationVerifier {
    * visited a class.
    *
    * @throws AnnotationMismatchException if the two visitors have not visited two versions of the
-   *     same class that contain idential annotations
+   *     same class that contain identical annotations
    */
   public void verify() {
     if (!newVisitor.name.equals(originalVisitor.name)) {
@@ -188,8 +188,7 @@ public class AnnotationVerifier {
     private void verifyAnns(
         Map<String, AnnotationRecorder> questionableAnns,
         Map<String, AnnotationRecorder> correctAnns) {
-      Set<AnnotationRecorder> unresolvedQuestionableAnns =
-          new HashSet<AnnotationRecorder>(questionableAnns.values());
+      Set<AnnotationRecorder> unresolvedQuestionableAnns = new HashSet<>(questionableAnns.values());
 
       for (Map.Entry<String, AnnotationRecorder> entry : correctAnns.entrySet()) {
         String name = entry.getKey();
@@ -435,8 +434,7 @@ public class AnnotationVerifier {
     private void verifyAnns(
         Map<String, AnnotationRecorder> questionableAnns,
         Map<String, AnnotationRecorder> correctAnns) {
-      Set<AnnotationRecorder> unresolvedQuestionableAnns =
-          new HashSet<AnnotationRecorder>(questionableAnns.values());
+      Set<AnnotationRecorder> unresolvedQuestionableAnns = new HashSet<>(questionableAnns.values());
 
       for (Map.Entry<String, AnnotationRecorder> entry : correctAnns.entrySet()) {
         String name = entry.getKey();
@@ -534,8 +532,7 @@ public class AnnotationVerifier {
     private void verifyAnns(
         Map<String, AnnotationRecorder> questionableAnns,
         Map<String, AnnotationRecorder> correctAnns) {
-      Set<AnnotationRecorder> unresolvedQuestionableAnns =
-          new HashSet<AnnotationRecorder>(questionableAnns.values());
+      Set<AnnotationRecorder> unresolvedQuestionableAnns = new HashSet<>(questionableAnns.values());
 
       for (Map.Entry<String, AnnotationRecorder> entry : correctAnns.entrySet()) {
         String name = entry.getKey();
@@ -640,18 +637,18 @@ public class AnnotationVerifier {
         int[] index) {
       super(api);
       this.description = description;
-      fieldArgsName = new ArrayList<String>();
-      fieldArgsValue = new ArrayList<Object>();
+      fieldArgsName = new ArrayList<>();
+      fieldArgsValue = new ArrayList<>();
 
-      enumArgsName = new ArrayList<String>();
-      enumArgsDesc = new ArrayList<String>();
-      enumArgsValue = new ArrayList<String>();
+      enumArgsName = new ArrayList<>();
+      enumArgsDesc = new ArrayList<>();
+      enumArgsValue = new ArrayList<>();
 
-      innerAnnotationArgsName = new ArrayList<String>();
-      innerAnnotationArgsDesc = new ArrayList<String>();
+      innerAnnotationArgsName = new ArrayList<>();
+      innerAnnotationArgsDesc = new ArrayList<>();
       innerAnnotationMap = new HashMap<>();
 
-      arrayArgs = new ArrayList<String>();
+      arrayArgs = new ArrayList<>();
       arrayMap = new HashMap<>();
 
       if (typeRef != null) {
@@ -822,21 +819,13 @@ public class AnnotationVerifier {
    * A ParameterDescription is a convenient class used to keep information about method parameters.
    * Parameters are equal if they have the same index, regardless of their description.
    */
-  private static class ParameterDescription {
-    public final int parameter;
-    public final String descriptor;
-    public final boolean visible;
+  private record ParameterDescription(int parameter, String descriptor, boolean visible) {
 
-    public ParameterDescription(int parameter, String descriptor, boolean visible) {
-      this.parameter = parameter;
-      this.descriptor = descriptor;
-      this.visible = visible;
-    }
+    // equals() and hashCode() are defined because they ignore two of the record fields.
 
     @Override
     public boolean equals(@Nullable Object o) {
-      if (o instanceof ParameterDescription) {
-        ParameterDescription p = (ParameterDescription) o;
+      if (o instanceof ParameterDescription p) {
         return this.parameter == p.parameter;
       }
       return false;
@@ -844,7 +833,7 @@ public class AnnotationVerifier {
 
     @Override
     public int hashCode() {
-      return parameter * 17;
+      return Objects.hashCode(parameter);
     }
 
     @Override

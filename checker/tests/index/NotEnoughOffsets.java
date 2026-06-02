@@ -7,14 +7,14 @@ public class NotEnoughOffsets {
   int c, d;
 
   void badParam(
-      // :: error: (different.length.sequences.offsets)
+      // :: error: [different.length.sequences.offsets]
       @LTLengthOf(
               value = {"a", "b"},
               offset = {"c"})
           int x) {}
 
   void badParam2(
-      // :: error: (different.length.sequences.offsets)
+      // :: error: [different.length.sequences.offsets]
       @LTLengthOf(
               value = {"a"},
               offset = {"c", "d"})

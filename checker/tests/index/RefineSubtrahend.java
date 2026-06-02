@@ -12,7 +12,7 @@ public class RefineSubtrahend {
       int x = a[l + 10];
     }
     if (a.length - l >= 10) {
-      // :: error: (array.access.unsafe.high)
+      // :: error: [array.access.unsafe.high]
       int x = a[l + 10];
       int x1 = a[l + 9];
     }
@@ -31,9 +31,9 @@ public class RefineSubtrahend {
     }
     if (a.length - j >= l) {
       if (k <= j) {
-        // :: error: (array.access.unsafe.high)
+        // :: error: [array.access.unsafe.high]
         int x = a[l + k];
-        // :: error: (array.access.unsafe.low)
+        // :: error: [array.access.unsafe.low]
         int x1 = a[l + k - 1];
       }
     }

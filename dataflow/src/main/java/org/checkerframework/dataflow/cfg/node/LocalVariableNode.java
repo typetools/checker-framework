@@ -63,8 +63,7 @@ public class LocalVariableNode extends Node {
   @SuppressWarnings("nullness:return") // non-null if a LocalVariableNode was created
   public VariableElement getElement() {
     VariableElement el;
-    if (tree instanceof IdentifierTree) {
-      IdentifierTree itree = (IdentifierTree) tree;
+    if (tree instanceof IdentifierTree itree) {
       assert TreeUtils.isUseOfElement(itree) : "@AssumeAssertion(nullness): tree kind";
       el = TreeUtils.variableElementFromUse(itree);
     } else {
@@ -80,8 +79,8 @@ public class LocalVariableNode extends Node {
   }
 
   public String getName() {
-    if (tree instanceof IdentifierTree) {
-      return ((IdentifierTree) tree).getName().toString();
+    if (tree instanceof IdentifierTree itree) {
+      return itree.getName().toString();
     }
     return ((VariableTree) tree).getName().toString();
   }
@@ -103,10 +102,9 @@ public class LocalVariableNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof LocalVariableNode)) {
+    if (!(obj instanceof LocalVariableNode other)) {
       return false;
     }
-    LocalVariableNode other = (LocalVariableNode) obj;
     return getName().equals(other.getName());
   }
 

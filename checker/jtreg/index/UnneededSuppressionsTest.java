@@ -16,7 +16,7 @@ public class UnneededSuppressionsTest {
 
   void method2() {
     @SuppressWarnings("fallthrough")
-    int x = 0;
+    int x2 = 0;
   }
 
   @SuppressWarnings({"tainting", "lowerbound"})

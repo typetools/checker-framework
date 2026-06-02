@@ -19,7 +19,7 @@ public class RepeatMinLenIf {
       result = true)
   @EnsuresMinLenIf(expression = "c", targetValue = 4, result = true)
   public boolean client1() {
-    return withcondpostconditionsfunc1();
+    return withCondPostconditionsFunc1();
   }
 
   @EnsuresMinLenIf.List({
@@ -28,7 +28,7 @@ public class RepeatMinLenIf {
   })
   @EnsuresMinLenIf(expression = "c", targetValue = 4, result = true)
   public boolean client2() {
-    return withcondpostconditionfunc1();
+    return withCondPostconditionFunc1();
   }
 
   @EnsuresMinLenIf(
@@ -36,7 +36,7 @@ public class RepeatMinLenIf {
       targetValue = 6,
       result = true)
   @EnsuresMinLenIf(expression = "c", targetValue = 4, result = true)
-  public boolean withcondpostconditionsfunc1() {
+  public boolean withCondPostconditionsFunc1() {
     a = "checker";
     c = "framework";
     b = "opensource";
@@ -48,7 +48,7 @@ public class RepeatMinLenIf {
     @EnsuresMinLenIf(expression = "b", targetValue = 6, result = true)
   })
   @EnsuresMinLenIf(expression = "c", targetValue = 4, result = true)
-  public boolean withcondpostconditionfunc1() {
+  public boolean withCondPostconditionFunc1() {
     a = "checker";
     c = "framework";
     b = "opensource";

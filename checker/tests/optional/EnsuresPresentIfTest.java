@@ -6,7 +6,7 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
 
 public class EnsuresPresentIfTest {
 
-  // :: warning: (optional.field)
+  // :: warning: [optional.field]
   private Optional<String> optId = Optional.of("abc");
 
   @Pure
@@ -79,7 +79,7 @@ public class EnsuresPresentIfTest {
     if (hasPresentId8()) {
       optId.get();
     }
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     optId.get();
   }
 }

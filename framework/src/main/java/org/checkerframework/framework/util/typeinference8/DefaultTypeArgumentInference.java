@@ -6,6 +6,7 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import org.checkerframework.framework.util.typeinference8.types.ContainsInferenc
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Implementation of type argument inference. */
@@ -43,7 +45,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
   public InferenceResult inferTypeArgs(
       AnnotatedTypeFactory typeFactory,
       ExpressionTree expressionTree,
-      AnnotatedExecutableType methodType) {
+      AnnotatedExecutableType executableType) {
     TreePath pathToExpression = typeFactory.getPath(expressionTree);
 
     // In order to find the type arguments for expressionTree, type arguments for outer method
@@ -77,16 +79,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
     AnnotatedExecutableType outerMethodType;
     if (outerTree != expressionTree) {
-      if (outerTree instanceof MethodInvocationTree) {
+      if (outerTree instanceof MethodInvocationTree mit) {
+        pathToExpression = typeFactory.getPath(outerTree);
+        outerMethodType = typeFactory.methodFromUseWithoutTypeArgInference(mit).executableType();
+      } else if (outerTree instanceof NewClassTree nct) {
         pathToExpression = typeFactory.getPath(outerTree);
         outerMethodType =
-            typeFactory.methodFromUseWithoutTypeArgInference((MethodInvocationTree) outerTree)
-                .executableType;
-      } else if (outerTree instanceof NewClassTree) {
-        pathToExpression = typeFactory.getPath(outerTree);
-        outerMethodType =
-            typeFactory.constructorFromUseWithoutTypeArgInference((NewClassTree) outerTree)
-                .executableType;
+            typeFactory.constructorFromUseWithoutTypeArgInference(nct).executableType();
       } else if (outerTree instanceof MemberReferenceTree) {
         pathToExpression = typeFactory.getPath(outerTree);
         outerMethodType = null;
@@ -95,23 +94,23 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             "Unexpected kind of outer expression to infer type arguments: %s", outerTree.getKind());
       }
     } else {
-      outerMethodType = methodType;
+      outerMethodType = executableType;
     }
     if (java8Inference != null) {
       java8InferenceStack.push(java8Inference);
     }
     try {
       java8Inference = new InvocationTypeInference(typeFactory, pathToExpression);
-      if (outerTree instanceof MemberReferenceTree) {
-        return java8Inference.infer((MemberReferenceTree) outerTree);
+      if (outerTree instanceof MemberReferenceTree mrt) {
+        return java8Inference.infer(mrt);
       } else {
         InferenceResult result = java8Inference.infer(outerTree, outerMethodType);
         if (!result.getResults().containsKey(expressionTree)
-            && expressionTree instanceof MemberReferenceTree) {
+            && expressionTree instanceof MemberReferenceTree mrt2) {
           java8Inference.context.pathToExpression = typeFactory.getPath(expressionTree);
-          return java8Inference.infer((MemberReferenceTree) expressionTree);
+          return java8Inference.infer(mrt2);
         }
-        return result.swapTypeVariables(methodType, expressionTree);
+        return result.swapTypeVariables(executableType, expressionTree);
       }
     } catch (Exception ex) {
       if (typeFactory
@@ -194,22 +193,20 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
               (ExpressionTree) parentParentPath.getLeaf(), parentParentPath.getParentPath());
         }
         return tree;
+      case CASE:
+      case YIELD:
+        parentPath = TreePathUtil.pathTillOfKind(parentPath, Kind.SWITCH_EXPRESSION);
+        parentTree = parentPath.getLeaf();
+      // parentTree is a switch expression, so fall through
+      case SWITCH_EXPRESSION:
+        ExpressionTree outerTree =
+            outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
+        if (outerTree == parentTree) {
+          return tree;
+        }
+        return outerTree;
+
       default:
-        if (TreeUtils.isYield(parentTree)) {
-          parentPath = parentPath.getParentPath();
-          // The first parent is a case statement.
-          parentPath = parentPath.getParentPath();
-          parentTree = parentPath.getLeaf();
-        }
-        if (TreeUtils.isSwitchExpression(parentTree)) {
-          // case SWITCH_EXPRESSION:
-          ExpressionTree outerTree =
-              outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
-          if (outerTree == parentTree) {
-            return tree;
-          }
-          return outerTree;
-        }
         return tree;
     }
   }
@@ -223,7 +220,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * @param argTree the argument of interest
    * @param newClassTree the new class tree or {@code null} if {@code executableElement} is a method
    * @return true if {@code argTree} is pseudo-assigned to a parameter in {@code executableElement}
-   *     that contains a type variable that needs to be inferred.
+   *     that contains a type variable that needs to be inferred
    */
   private static boolean argumentNeedsInference(
       ExecutableElement executableElement,

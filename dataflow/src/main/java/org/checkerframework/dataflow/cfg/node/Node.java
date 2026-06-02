@@ -65,6 +65,13 @@ public abstract class Node implements UniqueId {
   protected boolean inSource = true;
 
   /**
+   * True if this node represents a tree in the condition of a loop that is always evaluated.
+   *
+   * <p>Is set by {@link #setIsLoopCondition}.
+   */
+  protected boolean isLoopCondition = false;
+
+  /**
    * The type of this node. For {@link Node}s with {@link Tree}s, this type is the type of the
    * {@link Tree}. Otherwise, it is the type is set by the {@link CFGBuilder}.
    */
@@ -151,18 +158,48 @@ public abstract class Node implements UniqueId {
   }
 
   /**
-   * Return whether this node represents a tree that appears in the source code (true) or one that
+   * Returns true if this node represents a tree that appears in the source code (true) or one that
    * the CFG or builder added while desugaring (false).
    *
-   * @return whether this node represents a tree that appears in the source code
+   * @return true if this node represents a tree that appears in the source code
    */
   @Pure
   public boolean getInSource() {
     return inSource;
   }
 
-  public void setInSource(boolean inSrc) {
-    inSource = inSrc;
+  /**
+   * Sets whether this node represents a tree in source code.
+   *
+   * @param inSource true if this node represents a tree that appears in the source code
+   */
+  public void setInSource(boolean inSource) {
+    this.inSource = inSource;
+  }
+
+  /**
+   * Returns true if this node represents a tree that is the condition of a loop.
+   *
+   * @return true if this node represents a tree that is the condition of a loop
+   */
+  @Pure
+  public boolean getIsLoopCondition() {
+    return isLoopCondition;
+  }
+
+  /**
+   * Marks this node as being the condition of a loop.
+   *
+   * @param isLoopCondition true if this node is the condition of a loop
+   */
+  public void setIsLoopCondition(boolean isLoopCondition) {
+    this.isLoopCondition = isLoopCondition;
+    if (isLoopCondition) {
+      if (this instanceof ConditionalAndNode || this instanceof ConditionalOrNode) {
+        // Only the LHS of a binary operation is guaranteed to be executed.
+        ((BinaryOperationNode) this).left.setIsLoopCondition(isLoopCondition);
+      }
+    }
   }
 
   /**

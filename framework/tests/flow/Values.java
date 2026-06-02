@@ -10,23 +10,23 @@ public class Values {
     foo1(o1);
     foo2(o2);
 
-    // :: error: (argument)
+    // :: error: [argument]
     foo1(o);
-    // :: error: (argument)
+    // :: error: [argument]
     foo2(o1);
-    // :: error: (argument)
+    // :: error: [argument]
     foo1(o2);
-    // :: error: (argument)
+    // :: error: [argument]
     foo(o2);
 
     o1 = o2;
     foo2(o1);
-    // :: error: (argument)
+    // :: error: [argument]
     foo1(o1);
 
     o2 = get1();
     foo1(o2);
-    // :: error: (argument)
+    // :: error: [argument]
     foo2(o2);
   }
 

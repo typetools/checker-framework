@@ -17,7 +17,7 @@ public class DisjointRangeTest {
     }
     {
       Optional<String> opt = baz();
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       opt.get();
     }
   }

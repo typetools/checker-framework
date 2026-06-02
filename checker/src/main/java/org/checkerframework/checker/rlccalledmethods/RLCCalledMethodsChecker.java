@@ -11,21 +11,23 @@ import org.checkerframework.checker.resourceleak.SetOfTypes;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
+import org.checkerframework.framework.source.SuppressWarningsPrefix;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 
 /**
- * The entry point for the RLCCalledMethodsChecker. This checker is a modifed {@link
+ * The entry point for the RLCCalledMethodsChecker. This checker is a modified {@link
  * CalledMethodsChecker} used as a subchecker in the ResourceLeakChecker, and never independently.
  * Runs the MustCallChecker as a subchecker in order to share the CFG.
  */
-@StubFiles("IOUtils.astub")
+@StubFiles({"IOUtils.astub", "log4j.astub"})
+@SuppressWarningsPrefix({"calledmethods", "rlccalledmethods", "resourceleak"})
 public class RLCCalledMethodsChecker extends CalledMethodsChecker {
 
   /** Creates a RLCCalledMethodsChecker. */
   public RLCCalledMethodsChecker() {}
 
-  /** The parent resource leak checker */
+  /** The parent resource leak checker. */
   private @MonotonicNonNull ResourceLeakChecker rlc;
 
   @Override
@@ -34,7 +36,7 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
   }
 
   /**
-   * Get the set of exceptions that should be ignored. This set comes from the {@link
+   * Returns the set of exceptions that should be ignored. This set comes from the {@link
    * ResourceLeakChecker#IGNORED_EXCEPTIONS} option if it was provided, or {@link
    * ResourceLeakChecker#DEFAULT_IGNORED_EXCEPTIONS} if not.
    *
@@ -79,7 +81,10 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
         this.rlc = ResourceLeakUtils.getResourceLeakChecker(this);
       } catch (TypeSystemError e) {
         throw new UserError(
-            "Cannot find ResourceLeakChecker in checker hierarchy. The RLCCalledMethods checker shouldn't be invoked directly, it is only a subchecker of the ResourceLeakChecker. Use the ResourceLeakChecker or the CalledMethodsChecker instead.");
+            "Cannot find ResourceLeakChecker in checker hierarchy. The RLCCalledMethods checker"
+                + " shouldn't be invoked directly, it is only a subchecker of the"
+                + " ResourceLeakChecker. Use the ResourceLeakChecker or the CalledMethodsChecker"
+                + " instead.");
       }
     }
 

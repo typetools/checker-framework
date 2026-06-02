@@ -5,7 +5,7 @@ public class Simple2 {
   @NonNull String f;
 
   public Simple2() {
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     test();
 
     f = "abc";
@@ -17,7 +17,7 @@ public class Simple2 {
 
   public void a(Simple2 arg) {
     @Nullable String s = null;
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     s.hashCode();
   }
 

@@ -14,25 +14,31 @@ import org.plumelib.options.Option;
 import org.plumelib.options.Options;
 
 /**
- * A <code> ClassFileWriter </code> provides methods for inserting annotations from an {@link
- * AScene} into a class file.
+ * A {@code ClassFileWriter} provides methods for inserting annotations from an {@link AScene} into
+ * a class file.
  */
 public class ClassFileWriter {
 
+  /** Do not instantiate. */
+  private ClassFileWriter() {
+    throw new Error("Do not instantiate");
+  }
+
+  /** Print usage information and exit. */
   @Option("-h print usage information and exit")
   public static boolean help = false;
 
-  @Option("print version information and exit")
-  public static boolean version = false;
-
+  /** Print progress messages. */
   @Option("print progress messages")
   public static boolean verbose = false;
 
+  /** The system-specific line separator. */
   private static String linesep = System.getProperty("line.separator");
 
+  /** The usage message. */
   static String usage =
       "usage: insert-annotations [options] class1 indexfile1 class2 indexfile2 ..."
-          + ""
+          + linesep
           + linesep
           + "For each class/index file pair (a.second.C a.second.C.jaif), read annotations from"
           + linesep
@@ -60,7 +66,6 @@ public class ClassFileWriter {
    *
    * <pre>
    *   -h, --help   print usage information and exit
-   *   --version    print version information and exit
    * </pre>
    *
    * @param args options and classes and index files to analyze;
@@ -83,13 +88,8 @@ public class ClassFileWriter {
       throw new Error("unreachable");
     }
 
-    if (version) {
-      System.out.printf("insert-annotations (%s)", ClassFileReader.INDEX_UTILS_VERSION);
-    }
     if (help) {
       options.printUsage();
-    }
-    if (version || help) {
       System.exit(-1);
     }
 
@@ -156,7 +156,7 @@ public class ClassFileWriter {
         e.printStackTrace();
         System.out.flush();
         System.out.println("Please submit a bug report at");
-        System.out.println("  https://github.com/typetools/annotation-tools/issues");
+        System.out.println("  https://github.com/typetools/checker-framework/issues");
         System.out.println(
             "Be sure to include a copy of the following output trace, instructions on how");
         System.out.println("to reproduce this error, and all input files.  Thanks!");
@@ -166,8 +166,8 @@ public class ClassFileWriter {
   }
 
   /**
-   * Inserts the annotations contained in <code> scene </code> into the class file contained in
-   * <code> fileName </code>, and write the result back into <code> fileName </code>.
+   * Inserts the annotations contained in {@code scene} into the class file contained in {@code
+   * fileName }, and write the result back into {@code fileName}.
    *
    * @param scene the scene containing the annotations to insert into a class
    * @param fileName the file name of the class the annotations should be inserted into. Should be a
@@ -176,7 +176,7 @@ public class ClassFileWriter {
    * @param overwrite controls behavior when an annotation exists on a particular element in both
    *     the scene and the class file. If true, then the one from the scene is used; else the
    *     existing annotation in the class file is retained.
-   * @throws IOException if there is a problem reading from or writing to <code> fileName </code>
+   * @throws IOException if there is a problem reading from or writing to {@code fileName}
    */
   public static void insert(AScene scene, String fileName, boolean overwrite) throws IOException {
     assert fileName.endsWith(".class");
@@ -197,11 +197,10 @@ public class ClassFileWriter {
   }
 
   /**
-   * Inserts the annotations contained in <code> scene </code> into the class file read from <code>
-   *  in </code>, and writes the resulting class file into <code> out </code>. <code> in </code>
-   * should be a stream of bytes that specify a valid Java class file, and <code> out </code> will
-   * contain a stream of bytes in the same format, and will also contain the annotations from <code>
-   *  scene </code>.
+   * Inserts the annotations contained in {@code scene } into the class file read from {@code in},
+   * and writes the resulting class file into {@code out }. {@code in } should be a stream of bytes
+   * that specify a valid Java class file, and {@code out} will contain a stream of bytes in the
+   * same format, and will also contain the annotations from {@code scene}.
    *
    * @param scene the scene containing the annotations to insert into a class
    * @param input the input stream from which to read a class
@@ -209,8 +208,7 @@ public class ClassFileWriter {
    * @param overwrite controls behavior when an annotation exists on a particular element in both
    *     the scene and the class file. If true, then the one from the scene is used; else the
    *     existing annotation in the class file is retained.
-   * @throws IOException if there is a problem reading from <code> in </code> or writing to <code>
-   *      out </code>
+   * @throws IOException if there is a problem reading from {@code in } or writing to {@code out}
    */
   public static void insert(AScene scene, InputStream input, OutputStream out, boolean overwrite)
       throws IOException {
@@ -225,10 +223,9 @@ public class ClassFileWriter {
   }
 
   /**
-   * Inserts the annotations contained in <code> scene </code> into the class <code> in </code>, and
-   * writes the resulting class file into <code> out </code>. <code> in </code> should be the name
-   * of a fully-qualified class, and <code> out </code> should be the name of a file to output the
-   * resulting class file to.
+   * Inserts the annotations contained in {@code scene } into the class {@code in}, and writes the
+   * resulting class file into {@code out }. {@code in} should be the name of a fully-qualified
+   * class, and {@code out} should be the name of a file to output the resulting class file to.
    *
    * @param scene the scene containing the annotations to insert into a class
    * @param className the fully qualified class to read
@@ -236,8 +233,7 @@ public class ClassFileWriter {
    * @param overwrite controls behavior when an annotation exists on a particular element in both
    *     the scene and the class file. If true, then the one from the scene is used; else the
    *     existing annotation in the class file is retained.
-   * @throws IOException if there is a problem reading from <code> in </code> or writing to <code>
-   *      out </code>
+   * @throws IOException if there is a problem reading from {@code in } or writing to {@code out}
    */
   public static void insert(
       AScene scene, String className, String outputFileName, boolean overwrite) throws IOException {

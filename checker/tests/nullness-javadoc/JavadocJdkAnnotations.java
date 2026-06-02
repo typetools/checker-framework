@@ -15,7 +15,7 @@ public class JavadocJdkAnnotations {
     d.isIncluded();
     @NonNull Object x = f;
     d.tags();
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonNull Object y = f;
   }
 }

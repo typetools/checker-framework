@@ -18,6 +18,7 @@ import org.checkerframework.afu.annotator.scanner.LocalClassScanner;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 
 // If there are dollar signs in a name, then there are two
@@ -70,11 +71,14 @@ public final class InClassCriterion implements Criterion {
 
   @Override
   public boolean isSatisfiedBy(@Nullable TreePath path) {
-    return InClassCriterion.isSatisfiedBy(path, className, exactMatch);
+    return isSatisfiedBy(path, className, exactMatch);
   }
 
-  static Pattern anonclassPattern;
-  static Pattern localClassPattern;
+  /** Pattern that matches an anonymous class name. */
+  static @Regex(3) Pattern anonclassPattern;
+
+  /** Pattern that matches a local class name. */
+  static @Regex(4) Pattern localClassPattern;
 
   static {
     // for JDK 7: anonclassPattern = Pattern.compile("^(?<num>[0-9]+)(\\$(?<remaining>.*))?$");
@@ -106,7 +110,7 @@ public final class InClassCriterion implements Criterion {
       boolean checkLocal = false;
 
       switch (tree.getKind()) {
-        case COMPILATION_UNIT:
+        case COMPILATION_UNIT -> {
           debug("InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
           ExpressionTree packageTree = ((CompilationUnitTree) tree).getPackageName();
           if (packageTree == null) {
@@ -123,11 +127,8 @@ public final class InClassCriterion implements Criterion {
               return false;
             }
           }
-          break;
-        case CLASS:
-        case INTERFACE:
-        case ENUM:
-        case ANNOTATION_TYPE:
+        }
+        case CLASS, INTERFACE, ENUM, ANNOTATION_TYPE -> {
           if (i > 0 && trees.get(i - 1) instanceof NewClassTree) {
             // For an anonymous class, the CLASS tree is always directly inside of
             // a NEW_CLASS tree. If that's the case here then skip this iteration
@@ -175,8 +176,8 @@ public final class InClassCriterion implements Criterion {
             debug("false InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
             return false;
           }
-          break;
-        case NEW_CLASS:
+        }
+        case NEW_CLASS -> {
           // When matching the "new Class() { ... }" expression itself, we
           // should not use the anonymous class name.  But when matching
           // within the braces, we should.
@@ -187,19 +188,18 @@ public final class InClassCriterion implements Criterion {
             NewClassTree nc = (NewClassTree) tree;
             checkAnon = nc.getClassBody() != null;
           }
-          break;
-        case METHOD:
-        case VARIABLE:
+        }
+        case METHOD, VARIABLE -> {
           // Avoid searching inside inner classes of the matching class,
           // lest a homographic inner class lead to a spurious match.
           if (insideMatch) {
             debug("false InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
             return false;
           }
-          break;
-        default:
+        }
+        default -> {
           // nothing to do
-          break;
+        }
       }
 
       if (checkAnon) {

@@ -86,10 +86,6 @@ import org.plumelib.util.CollectionsPlume;
  *
  * <p>See {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC} for an explanation of the meaning of the
  * flags {@code -Ainfer} and {@code -AenableWpiForRlc}.
- *
- * @see <a
- *     href="https://checkerframework.org/manual/#resource-leak-checker-inference-algo">Automatic
- *     Inference of Resource Leak Specifications</a>
  */
 public class MustCallInference {
 
@@ -256,10 +252,10 @@ public class MustCallInference {
             mcca.updateObligationsWithInvocationResult(obligations, node);
           }
           inferOwningFromInvocation(obligations, node);
-        } else if (node instanceof AssignmentNode) {
-          analyzeAssignmentNode(obligations, (AssignmentNode) node);
-        } else if (node instanceof ReturnNode) {
-          analyzeReturnNode(obligations, (ReturnNode) node);
+        } else if (node instanceof AssignmentNode an) {
+          analyzeAssignmentNode(obligations, an);
+        } else if (node instanceof ReturnNode rn) {
+          analyzeReturnNode(obligations, rn);
         }
       }
 
@@ -460,11 +456,10 @@ public class MustCallInference {
     // Use the temporary variable for the rhs if it exists.
     Node rhs = mcca.removeCastsAndGetTmpVarIfPresent(assignmentNode.getExpression());
 
-    if (!(rhs instanceof LocalVariableNode)) {
+    if (!(rhs instanceof LocalVariableNode rhsLvn)) {
       return;
     }
-    Obligation rhsObligation =
-        MustCallConsistencyAnalyzer.getObligationForVar(obligations, (LocalVariableNode) rhs);
+    Obligation rhsObligation = MustCallConsistencyAnalyzer.getObligationForVar(obligations, rhsLvn);
     if (rhsObligation == null) {
       return;
     }
@@ -495,27 +490,26 @@ public class MustCallInference {
       if (TreeUtils.isConstructor(methodTree) && getOwningFields().size() == 1) {
         // case 1 is satisfied.
         addMustCallAliasToFormalParameter(paramIndex);
-        mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
+        mcca.removeObligationsContainingVar(obligations, rhsLvn);
       } else {
         // case 2 is satisfied.
         addOwningToParam(paramIndex);
-        mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
+        mcca.removeObligationsContainingVar(obligations, rhsLvn);
       }
 
-    } else if (lhs instanceof LocalVariableNode) {
+    } else if (lhs instanceof LocalVariableNode lhsVar) {
       // Updates the set of tracked obligations. (case 4)
-      LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       mcca.updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
     }
   }
 
   /**
-   * Return the (1-based) index of the method parameter that exist in the set of aliases of the
+   * Returns the (1-based) index of the method parameter that exist in the set of aliases of the
    * given {@code obligation}, if one exists; otherwise, return -1.
    *
    * @param obligation the obligation
    * @return the index of the current method parameter that exist in the set of aliases of the given
-   *     obligation, if one exists; otherwise, return -1.
+   *     obligation, if one exists; otherwise, return -1
    */
   private int getIndexOfParam(Obligation obligation) {
     Set<ResourceAlias> resourceAliases = obligation.resourceAliases;
@@ -577,7 +571,7 @@ public class MustCallInference {
    * Possibly adds an InheritableMustCall annotation on the enclosing class.
    *
    * <p>Let the enclosing class be C. If C already has a non-empty MustCall type (that is written or
-   * inherited from one of its superclasses), this method preserves the exising must-call type to
+   * inherited from one of its superclasses), this method preserves the existing must-call type to
    * avoid infinite iteration. Otherwise, if the current method is not private and satisfies the
    * must-call obligations of all the owning fields in C, it adds an InheritableMustCall annotation
    * to C.
@@ -670,7 +664,7 @@ public class MustCallInference {
   }
 
   /**
-   * Checks whether the given element is a resource alias of the given node in the provided set of
+   * Returns true if the given element is a resource alias of the given node in the provided set of
    * obligations.
    *
    * @param obligations the current set of tracked Obligations
@@ -711,8 +705,7 @@ public class MustCallInference {
       // In the CFG, explicit passing of multiple arguments in the varargs position is
       // represented via an ArrayCreationNode. In this case, it checks the called methods
       // set of each argument passed in this position.
-      if (arg instanceof ArrayCreationNode) {
-        ArrayCreationNode varArgsNode = (ArrayCreationNode) arg;
+      if (arg instanceof ArrayCreationNode varArgsNode) {
         for (Node varArgNode : varArgsNode.getInitializers()) {
           inferOwningForParamOrField(obligations, invocation, varArgNode);
         }
@@ -778,12 +771,12 @@ public class MustCallInference {
    */
   private Set<ResourceAlias> getResourceAliasOfNode(Set<Obligation> obligations, Node node) {
     Node tempVar = mcca.getTempVarOrNode(node);
-    if (!(tempVar instanceof LocalVariableNode)) {
+    if (!(tempVar instanceof LocalVariableNode tempVarLvn)) {
       return Collections.emptySet();
     }
 
     Obligation argumentObligation =
-        MustCallConsistencyAnalyzer.getObligationForVar(obligations, (LocalVariableNode) tempVar);
+        MustCallConsistencyAnalyzer.getObligationForVar(obligations, tempVarLvn);
     if (argumentObligation == null) {
       return Collections.emptySet();
     }
@@ -814,11 +807,10 @@ public class MustCallInference {
       // do not handle @EnsuresCalledMethods annotations on constructors as we have not
       // observed them in practice.
       inferOwningParamsViaOwnershipTransfer(obligations, invocation);
-    } else if (invocation instanceof MethodInvocationNode) {
-      inferMustCallAliasFromThisOrSuperCall(obligations, (MethodInvocationNode) invocation);
+    } else if (invocation instanceof MethodInvocationNode invMin) {
+      inferMustCallAliasFromThisOrSuperCall(obligations, invMin);
       inferOwningParamsViaOwnershipTransfer(obligations, invocation);
-      inferOwningForRecieverOrFormalParamPassedToCall(
-          obligations, (MethodInvocationNode) invocation);
+      inferOwningForRecieverOrFormalParamPassedToCall(obligations, invMin);
     }
   }
 
@@ -843,11 +835,11 @@ public class MustCallInference {
       }
 
       Node arg = mcca.removeCastsAndGetTmpVarIfPresent(arguments.get(i));
-      if (!(arg instanceof LocalVariableNode)) {
+      if (!(arg instanceof LocalVariableNode argLvn)) {
         continue;
       }
       Obligation argObligation =
-          MustCallConsistencyAnalyzer.getObligationForVar(obligations, (LocalVariableNode) arg);
+          MustCallConsistencyAnalyzer.getObligationForVar(obligations, argLvn);
       if (argObligation == null) {
         continue;
       }
@@ -931,11 +923,11 @@ public class MustCallInference {
       ConditionalBlock ccur = (ConditionalBlock) cur;
       return Arrays.asList(ccur.getThenSuccessor(), ccur.getElseSuccessor());
     }
-    if (!(cur instanceof SingleSuccessorBlock)) {
+    if (!(cur instanceof SingleSuccessorBlock ssb)) {
       throw new BugInCF("Not a conditional block nor a SingleSuccessorBlock: " + cur);
     }
 
-    Block successor = ((SingleSuccessorBlock) cur).getSuccessor();
+    Block successor = ssb.getSuccessor();
     if (successor != null) {
       return Collections.singletonList(successor);
     }

@@ -43,7 +43,7 @@ public class SubtypeVisitHistory {
    * @param type2 the second type
    * @param currentTop the top of the relevant type hierarchy; only annotations from that hierarchy
    *     are considered
-   * @param isSubtype whether {@code type1} is a subtype of {@code type2}; if false, this method
+   * @param isSubtype true if {@code type1} is a subtype of {@code type2}; if false, this method
    *     does nothing
    */
   public void put(

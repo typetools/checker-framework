@@ -6,7 +6,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class Issue3267 {
   void m1(@Nullable Object obj) {
     if (true) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       obj.toString();
     }
   }
@@ -14,7 +14,7 @@ public class Issue3267 {
   void m2(@Nullable Object obj) {
     if (obj != null) {}
     if (true) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       obj.toString();
     }
   }
@@ -24,7 +24,7 @@ public class Issue3267 {
     } else {
     }
     if (true) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       obj.toString();
     }
   }
@@ -32,7 +32,7 @@ public class Issue3267 {
   void m4(@Nullable Object obj) {
     boolean bool = obj != null;
     if (true) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       obj.toString();
     }
   }

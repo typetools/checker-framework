@@ -13,11 +13,11 @@ public class PublicFieldTest {
   }
 
   void testPublicInference() {
-    // :: warning: (argument)
+    // :: warning: [argument]
     expectsAinferSibling2(field2);
-    // :: warning: (argument)
+    // :: warning: [argument]
     expectsParent(field1);
-    // :: warning: (argument)
+    // :: warning: [argument]
     expectsParent(field2);
   }
 
@@ -46,7 +46,7 @@ public class PublicFieldTest {
     }
 
     void innerFieldTest() {
-      // :: warning: (argument)
+      // :: warning: [argument]
       expectsAinferSibling2(innerField);
     }
 

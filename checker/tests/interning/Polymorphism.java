@@ -15,7 +15,7 @@ public class Polymorphism {
     @Interned String interned = "interned";
 
     interned = identity(interned);
-    // :: error: (assignment)
+    // :: error: [assignment]
     interned = identity(notInterned); // invalid
   }
 
@@ -29,19 +29,19 @@ public class Polymorphism {
     @Interned Polymorphism interned = null;
 
     interned = interned.getSelf();
-    // :: error: (assignment)
+    // :: error: [assignment]
     interned = notInterned.getSelf(); // invalid
   }
 
-  // Test assinging interned to PolyInterned
+  // Test assigning interned to PolyInterned
   public @PolyInterned String always(@PolyInterned String s) {
     if (s.equals("n")) {
       // This code type-checkd when the hierarchy contained just @UnknownInterned and
       // @Interned, but no longer does because of @InternedDistinct.
-      // :: error: (return)
+      // :: error: [return]
       return "m";
     } else {
-      // :: error: (return)
+      // :: error: [return]
       return new String("m"); // invalid
     }
   }

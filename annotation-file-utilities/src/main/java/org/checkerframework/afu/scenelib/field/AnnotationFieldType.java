@@ -21,19 +21,6 @@ public abstract class AnnotationFieldType extends EqualByStringRepresentation {
   /**
    * Formats an annotation field value.
    *
-   * @param o the value to format
-   * @return the formatted annotation field value
-   */
-  @Deprecated // TEMPORARY
-  public final String format(Object o) {
-    StringBuilder sb = new StringBuilder();
-    format(sb, o);
-    return sb.toString();
-  }
-
-  /**
-   * Formats an annotation field value.
-   *
    * @param sb where to format the value to
    * @param o the value to format
    */
@@ -64,7 +51,7 @@ public abstract class AnnotationFieldType extends EqualByStringRepresentation {
 
   /**
    * Returns an {@link AnnotationFieldType} containing all the information from both arguments, or
-   * <code>null</code> if the two arguments contradict each other.
+   * {@code null} if the two arguments contradict each other.
    *
    * <p>Currently this just merges the {@link ArrayAFT#elementType} field, so that if both arguments
    * are {@link ArrayAFT}s, one of known element type and the other of unknown element type, an
@@ -76,18 +63,16 @@ public abstract class AnnotationFieldType extends EqualByStringRepresentation {
       AnnotationFieldType aft1, AnnotationFieldType aft2) {
     if (aft1.equals(aft2)) {
       return aft1;
-    } else if (aft1 instanceof ArrayAFT && aft2 instanceof ArrayAFT) {
-      if (((ArrayAFT) aft1).elementType == null) {
+    } else if (aft1 instanceof ArrayAFT aaft1 && aft2 instanceof ArrayAFT aaft2) {
+      if (aaft1.elementType == null) {
         return aft2;
-      } else if (((ArrayAFT) aft2).elementType == null) {
+      } else if (aaft2.elementType == null) {
         return aft1;
       } else {
         return null;
       }
-    } else if (aft1 instanceof AnnotationAFT && aft2 instanceof AnnotationAFT) {
-      AnnotationDef ud =
-          AnnotationDef.unify(
-              ((AnnotationAFT) aft1).annotationDef, ((AnnotationAFT) aft2).annotationDef);
+    } else if (aft1 instanceof AnnotationAFT aaft1 && aft2 instanceof AnnotationAFT aaft2) {
+      AnnotationDef ud = AnnotationDef.unify(aaft1.annotationDef, aaft2.annotationDef);
       if (ud == null) {
         return null;
       } else {

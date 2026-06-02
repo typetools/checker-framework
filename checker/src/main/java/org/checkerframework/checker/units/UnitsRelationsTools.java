@@ -22,6 +22,11 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class UnitsRelationsTools {
 
+  /** Do not instantiate. */
+  private UnitsRelationsTools() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Creates an AnnotationMirror representing a unit defined by annoClass, with the specific Prefix
    * p.

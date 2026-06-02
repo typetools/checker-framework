@@ -66,6 +66,7 @@ import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.qual.Pure;
@@ -73,6 +74,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
+import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -84,7 +86,6 @@ import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
 import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
@@ -137,7 +138,7 @@ public abstract class CFAbstractTransfer<
    * CFAbstractTransfer.
    *
    * @param analysis the analysis used by this transfer function
-   * @param forceConcurrentSemantics whether concurrent semantics should be forced to be on. If
+   * @param forceConcurrentSemantics true if concurrent semantics should be forced to be on. If
    *     false, concurrent semantics are turned off by default, but the user can still turn them on
    *     via {@code -AconcurrentSemantics}. If true, the user cannot turn off concurrent semantics.
    */
@@ -209,13 +210,11 @@ public abstract class CFAbstractTransfer<
     analysis.setCurrentTree(tree);
     AnnotatedTypeMirror at;
     try {
-      if (node instanceof MethodInvocationNode
-          && ((MethodInvocationNode) node).getIterableExpression() != null) {
-        ExpressionTree iter = ((MethodInvocationNode) node).getIterableExpression();
+      if (node instanceof MethodInvocationNode min && min.getIterableExpression() != null) {
+        ExpressionTree iter = min.getIterableExpression();
         at = factory.getIterableElementType(iter);
-      } else if (node instanceof ArrayAccessNode
-          && ((ArrayAccessNode) node).getArrayExpression() != null) {
-        ExpressionTree array = ((ArrayAccessNode) node).getArrayExpression();
+      } else if (node instanceof ArrayAccessNode aan && aan.getArrayExpression() != null) {
+        ExpressionTree array = aan.getArrayExpression();
         at = factory.getIterableElementType(array);
       } else {
         at = factory.getAnnotatedType(tree);
@@ -347,9 +346,9 @@ public abstract class CFAbstractTransfer<
               atypeFactory.getPath(lambda.getLambdaTree()), TreeUtils.classAndMethodTreeKinds());
 
       Element enclosingElement = null;
-      if (enclosingTree instanceof MethodTree) {
+      if (enclosingTree instanceof MethodTree enclosingMt) {
         // If it is in an initializer, we need to use locals from the initializer.
-        enclosingElement = TreeUtils.elementFromDeclaration((MethodTree) enclosingTree);
+        enclosingElement = TreeUtils.elementFromDeclaration(enclosingMt);
 
       } else if (TreeUtils.isClassTree(enclosingTree)) {
 
@@ -400,8 +399,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Determines whether a given lambda expression may be leaked outside the method in which it
-   * appears.
+   * Returns true if a given lambda expression may be leaked outside the method in which it appears.
    *
    * <p>Currently, a lambda is considered leaked unless it is an argument to a method whose
    * corresponding formal parameter is annotated as @{@link NonLeaked}. The @{@link NonLeaked}
@@ -409,15 +407,15 @@ public abstract class CFAbstractTransfer<
    *
    * <p>For example, given the following code:
    *
-   * <pre><code>
-   *   void operateOver(Container container) {
-   *      container.forEach(item -&gt; {...});
-   *   }
+   * <pre>{@code
+   * void operateOver(Container container) {
+   *    container.forEach(item -> {...});
+   * }
    *
-   *   class Container {
-   *     void forEach(@NonLeaked Consumer&lt;T&gt;)
-   *   }
-   * </code></pre>
+   * class Container {
+   *   void forEach(@NonLeaked Consumer<T>)
+   * }
+   * }</pre>
    *
    * The lambda passed to {@code Container.forEach} is not leaked, as the parameter is annotated
    * with @{@link NonLeaked}.
@@ -429,8 +427,7 @@ public abstract class CFAbstractTransfer<
   private boolean doesLambdaLeak(CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
     LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
     Tree lambdaParent = aTypeFactory.getPath(lambdaTree).getParentPath().getLeaf();
-    if (lambdaParent instanceof MethodInvocationTree) {
-      MethodInvocationTree invok = (MethodInvocationTree) lambdaParent;
+    if (lambdaParent instanceof MethodInvocationTree invok) {
       ExecutableElement methodElt = TreeUtils.elementFromUse(invok);
       AliasingAnnotatedTypeFactory aliasingAtf =
           analysis
@@ -440,8 +437,7 @@ public abstract class CFAbstractTransfer<
       if (aliasingAtf != null) {
         int indexOfLambdaActual = invok.getArguments().indexOf(lambdaTree);
         VariableElement lambdaFormal = methodElt.getParameters().get(indexOfLambdaActual);
-        return aliasingAtf.getAnnotatedType(lambdaFormal).getEffectiveAnnotation(NonLeaked.class)
-            == null;
+        return aliasingAtf.getAnnotatedType(lambdaFormal).getAnnotation(NonLeaked.class) == null;
       }
     }
     return true;
@@ -506,13 +502,13 @@ public abstract class CFAbstractTransfer<
     boolean isConstructor = TreeUtils.isConstructor(methodTree);
     TypeElement classEle = TreeUtils.elementFromDeclaration(classTree);
     for (FieldInitialValue<V> fieldInitialValue : analysis.getFieldInitialValues()) {
-      VariableElement varEle = fieldInitialValue.fieldDecl.getField();
+      VariableElement varEle = fieldInitialValue.fieldDecl().getField();
       // TODO: should field visibility matter? An access from outside the class might observe
       // the declared type instead of a refined type. Issue a warning to alert users?
-      if (fieldInitialValue.initializer != null
+      if (fieldInitialValue.initializer() != null
           && ElementUtils.isFinal(varEle)
           && analysis.atypeFactory.isImmutable(ElementUtils.getType(varEle))) {
-        store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.initializer);
+        store.insertValue(fieldInitialValue.fieldDecl(), fieldInitialValue.initializer());
       }
 
       // Maybe insert the declared type:
@@ -521,14 +517,14 @@ public abstract class CFAbstractTransfer<
         // fully initialized.
         boolean isInitializedReceiver = !isNotFullyInitializedReceiver(methodTree);
         if (isInitializedReceiver && varEle.getEnclosingElement().equals(classEle)) {
-          store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
+          store.insertValue(fieldInitialValue.fieldDecl(), fieldInitialValue.declared());
         }
       } else {
         // If it is a constructor, then only use the declared type if the field has been
         // initialized.
-        if (fieldInitialValue.initializer != null
+        if (fieldInitialValue.initializer() != null
             && varEle.getEnclosingElement().equals(classEle)) {
-          store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
+          store.insertValue(fieldInitialValue.fieldDecl(), fieldInitialValue.declared());
         }
       }
     }
@@ -910,7 +906,7 @@ public abstract class CFAbstractTransfer<
    * @param secondValue the abstract value that might be less precise
    * @param res the previous result
    * @param notEqualTo if true, indicates that the logic is flipped (i.e., the information is added
-   *     to the {@code elseStore} instead of the {@code thenStore}) for a not-equal comparison.
+   *     to the {@code elseStore} instead of the {@code thenStore}) for a not-equal comparison
    * @return the conditional transfer result (if information has been added), or {@code res}
    */
   protected TransferResult<V, S> strengthenAnnotationOfEqualTo(
@@ -938,7 +934,7 @@ public abstract class CFAbstractTransfer<
               thenStore.insertValue(secondInternal, firstValue);
             }
             // To handle `(a = b = c) == x`, repeat for all insertable receivers of
-            // splitted assignments instead of returning.
+            // split assignments instead of returning.
             res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
           }
         }
@@ -959,9 +955,8 @@ public abstract class CFAbstractTransfer<
    */
   @SideEffectFree
   protected List<Node> splitAssignments(Node node) {
-    if (node instanceof AssignmentNode) {
+    if (node instanceof AssignmentNode a) {
       List<Node> result = new ArrayList<>(2);
-      AssignmentNode a = (AssignmentNode) node;
       result.add(a.getTarget());
       result.addAll(splitAssignments(a.getExpression()));
       return result;
@@ -980,14 +975,14 @@ public abstract class CFAbstractTransfer<
     if (shouldPerformWholeProgramInference(n.getTree(), lhs.getTree())) {
       // Fields defined in interfaces are LocalVariableNodes with ElementKind of FIELD.
       if (lhs instanceof FieldAccessNode
-          || (lhs instanceof LocalVariableNode
-              && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.FIELD)) {
+          || (lhs instanceof LocalVariableNode lhsLvn
+              && lhsLvn.getElement().getKind() == ElementKind.FIELD)) {
         // Updates inferred field type
         analysis.atypeFactory.getWholeProgramInference().updateFromFieldAssignment(lhs, rhs);
-      } else if (lhs instanceof LocalVariableNode
-          && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.PARAMETER) {
+      } else if (lhs instanceof LocalVariableNode lhsLvn2
+          && lhsLvn2.getElement().getKind() == ElementKind.PARAMETER) {
         // lhs is a formal parameter of some method
-        VariableElement param = ((LocalVariableNode) lhs).getElement();
+        VariableElement param = lhsLvn2.getElement();
         analysis
             .atypeFactory
             .getWholeProgramInference()
@@ -1176,7 +1171,7 @@ public abstract class CFAbstractTransfer<
    * a @SuppressWarnings, then this method returns false.
    *
    * @param tree a tree
-   * @return whether to perform whole-program inference on the tree
+   * @return true if to perform whole-program inference on the tree
    */
   protected boolean shouldPerformWholeProgramInference(Tree tree) {
     TreePath path = this.analysis.atypeFactory.getPath(tree);
@@ -1189,7 +1184,7 @@ public abstract class CFAbstractTransfer<
    *
    * @param expressionTree the right-hand side of an assignment
    * @param lhsTree the left-hand side of an assignment
-   * @return whether to perform whole-program inference
+   * @return true if to perform whole-program inference
    */
   protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
     // Check that infer is true and the tree isn't in scope of a @SuppressWarnings
@@ -1207,7 +1202,7 @@ public abstract class CFAbstractTransfer<
    *
    * @param tree a tree
    * @param elt its element
-   * @return whether to perform whole-program inference
+   * @return true if to perform whole-program inference
    */
   private boolean shouldPerformWholeProgramInference(Tree tree, Element elt) {
     return shouldPerformWholeProgramInference(tree)
@@ -1274,11 +1269,10 @@ public abstract class CFAbstractTransfer<
       Set<? extends Contract> postconditions) {
 
     StringToJavaExpression stringToJavaExpr = null;
-    if (invocationNode instanceof MethodInvocationNode) {
+    if (invocationNode instanceof MethodInvocationNode min) {
       stringToJavaExpr =
           stringExpr ->
-              StringToJavaExpression.atMethodInvocation(
-                  stringExpr, (MethodInvocationNode) invocationNode, analysis.checker);
+              StringToJavaExpression.atMethodInvocation(stringExpr, min, analysis.checker);
     } else if (invocationNode instanceof ObjectCreationNode) {
       stringToJavaExpr =
           stringExpr ->
@@ -1323,7 +1317,7 @@ public abstract class CFAbstractTransfer<
           System.arraycopy(e.args, 0, args, 1, e.args.length);
           analysis.checker.reportError(invocationTree, "flowexpr.parse.error.postcondition", args);
         } else {
-          analysis.checker.report(invocationTree, e.getDiagMessage());
+          analysis.checker.report(invocationTree, new DiagMessage(e));
         }
       }
     }

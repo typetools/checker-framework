@@ -71,13 +71,13 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
   //  methods; for those three, use a special visitor that does all the work
   //  and inserts the annotations correctly into the specified AElement
 
-  /** Whether to output tracing information. */
+  /** If true, output tracing information. */
   private static final boolean trace = false;
 
-  /** Whether to output error messages for unsupported cases. */
+  /** If true, output error messages for unsupported cases. */
   private static final boolean strict = false;
 
-  /** Whether to include annotations on compiler-generated methods. */
+  /** If true, include annotations on compiler-generated methods. */
   private final boolean ignoreBridgeMethods;
 
   /** The scene into which this class will insert annotations. */
@@ -116,7 +116,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
    * @param api the ASM API version to use
    * @param classReader the {@link ClassReader} that visits this {@code ClassAnnotationSceneReader}
    * @param scene the annotation scene into which annotations this visits will be inserted
-   * @param ignoreBridgeMethods whether to omit annotations on compiler-generated methods
+   * @param ignoreBridgeMethods if true, omit annotations on compiler-generated methods
    */
   public ClassAnnotationSceneReader(
       int api, ClassReader classReader, AScene scene, boolean ignoreBridgeMethods) {
@@ -247,7 +247,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
     /** The AElement into which the annotation visited should be inserted. */
     protected AElement aElement;
 
-    /** Whether or not this annotation is visible at run time. */
+    /** True if this annotation is visible at run time. */
     protected boolean visible;
 
     /** The AnnotationBuilder used to create this annotation. */
@@ -300,7 +300,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
      *
      * @param api the ASM API version to use
      * @param descriptor the class descriptor of the enumeration class
-     * @param visible whether or not this annotation is visible at run time
+     * @param visible true if this annotation is visible at run time
      * @param aElement the AElement into which the annotation visited should be inserted
      * @param annotationWriter the AnnotationWriter passed by the caller
      */
@@ -488,8 +488,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
       annotationWriter.visitEnd();
       Annotation a = makeAnnotation();
 
-      if (a.def.isTypeAnnotation() && (aElement instanceof AMethod)) {
-        AMethod m = (AMethod) aElement;
+      if (a.def.isTypeAnnotation() && (aElement instanceof AMethod m)) {
         m.returnType.tlAnnotationsHere.add(a);
 
         // There is not currently a separate location for field/parameter
@@ -580,19 +579,19 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
      *
      * @param api the ASM API version to use
      * @param descriptor the descriptor of the reader
-     * @param visible whether or not this annotation is visible at run time
+     * @param visible true if this annotation is visible at run time
      * @param aElement the AElement into which the annotation visited should be inserted
      * @param annotationWriter the AnnotationWriter passed by the caller
-     * @param typeRef A reference to the annotated type. This has information about the target type,
+     * @param typeRef a reference to the annotated type. This has information about the target type,
      *     param index and bound index for the type annotation. @see org.objectweb.asm.TypeReference
-     * @param typePath The path to the annotated type argument, wildcard bound, array element type,
+     * @param typePath the path to the annotated type argument, wildcard bound, array element type,
      *     or static inner type within 'typeRef'. May be null if the annotation targets 'typeRef' as
      *     a whole.
      * @param start the start of the scopes of the element being visited. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
      * @param end the end of the scopes of the element being visited. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
-     * @param index The indices of the element being visited in the classfile. Used only for
+     * @param index the indices of the element being visited in the classfile. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
      */
     TypeAnnotationSceneReader(
@@ -626,19 +625,19 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
      *
      * @param api the ASM API version to use
      * @param descriptor the descriptor of the reader
-     * @param visible whether or not this annotation is visible at run time
+     * @param visible true if this annotation is visible at run time
      * @param aElement the AElement into which the annotation visited should be inserted
      * @param annotationWriter the AnnotationWriter passed by the caller
-     * @param typeRef A reference to the annotated type. This has information about the target type,
+     * @param typeRef a reference to the annotated type. This has information about the target type,
      *     param index and bound index for the type annotation. @see org.objectweb.asm.TypeReference
-     * @param typePath The path to the annotated type argument, wildcard bound, array element type,
+     * @param typePath the path to the annotated type argument, wildcard bound, array element type,
      *     or static inner type within 'typeRef'. May be null if the annotation targets 'typeRef' as
      *     a whole.
      * @param start the start of the scopes of the element being visited. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
      * @param end the end of the scopes of the element being visited. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
-     * @param index The indices of the element being visited in the classfile. Used only for
+     * @param index the indices of the element being visited in the classfile. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
      * @param localVariableName the name of the local variable being visited; may be null
      */
@@ -691,20 +690,12 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
       // aElement is a field, skip the annotation for now to avoid crashing.
       try {
         switch (typeReference.getSort()) {
-          case TypeReference.CLASS_TYPE_PARAMETER_BOUND:
-            handleClassTypeParameterBound((AClass) aElement);
-            break;
-          case TypeReference.CLASS_TYPE_PARAMETER:
-            handleClassTypeParameter((AClass) aElement);
-            break;
-          case TypeReference.CLASS_EXTENDS:
-            handleClassExtends((AClass) aElement);
-            break;
-          case TypeReference.FIELD:
-            handleField(aElement);
-            break;
-          case TypeReference.LOCAL_VARIABLE:
-          case TypeReference.RESOURCE_VARIABLE:
+          case TypeReference.CLASS_TYPE_PARAMETER_BOUND ->
+              handleClassTypeParameterBound((AClass) aElement);
+          case TypeReference.CLASS_TYPE_PARAMETER -> handleClassTypeParameter((AClass) aElement);
+          case TypeReference.CLASS_EXTENDS -> handleClassExtends((AClass) aElement);
+          case TypeReference.FIELD -> handleField(aElement);
+          case TypeReference.LOCAL_VARIABLE, TypeReference.RESOURCE_VARIABLE -> {
             if (aElement instanceof AMethod) {
               handleMethodLocalVariable((AMethod) aElement);
             } else {
@@ -713,8 +704,8 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
                 System.err.println("Unhandled local variable annotation for " + aElement);
               }
             }
-            break;
-          case TypeReference.NEW:
+          }
+          case TypeReference.NEW -> {
             if (aElement instanceof AMethod) {
               handleMethodObjectCreation((AMethod) aElement);
             } else {
@@ -723,14 +714,11 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
                 System.err.println("Unhandled NEW annotation for " + aElement);
               }
             }
-            break;
-          case TypeReference.METHOD_FORMAL_PARAMETER:
-            handleMethodFormalParameter((AMethod) aElement);
-            break;
-          case TypeReference.METHOD_RECEIVER:
-            handleMethodReceiver((AMethod) aElement);
-            break;
-          case TypeReference.CAST:
+          }
+          case TypeReference.METHOD_FORMAL_PARAMETER ->
+              handleMethodFormalParameter((AMethod) aElement);
+          case TypeReference.METHOD_RECEIVER -> handleMethodReceiver((AMethod) aElement);
+          case TypeReference.CAST -> {
             if (aElement instanceof AMethod) {
               handleMethodTypecast((AMethod) aElement);
             } else {
@@ -739,11 +727,9 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
                 System.err.println("Unhandled TYPECAST annotation for " + aElement);
               }
             }
-            break;
-          case TypeReference.METHOD_RETURN:
-            handleMethodReturnType((AMethod) aElement);
-            break;
-          case TypeReference.INSTANCEOF:
+          }
+          case TypeReference.METHOD_RETURN -> handleMethodReturnType((AMethod) aElement);
+          case TypeReference.INSTANCEOF -> {
             if (aElement instanceof AMethod) {
               handleMethodInstanceOf((AMethod) aElement);
             } else {
@@ -752,33 +738,24 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
                 System.err.println("Unhandled INSTANCEOF annotation for " + aElement);
               }
             }
-            break;
-          case TypeReference.METHOD_TYPE_PARAMETER_BOUND:
-            handleMethodTypeParameterBound((AMethod) aElement);
-            break;
-          case TypeReference.THROWS:
-            handleThrows((AMethod) aElement);
-            break;
-          case TypeReference.CONSTRUCTOR_REFERENCE: // TODO
-          case TypeReference.METHOD_REFERENCE:
-            handleMethodReference((AMethod) aElement);
-            break;
-          case TypeReference.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT: // TODO
-          case TypeReference.METHOD_REFERENCE_TYPE_ARGUMENT:
-            handleReferenceTypeArgument((AMethod) aElement);
-            break;
-          case TypeReference.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT: // TODO
-          case TypeReference.METHOD_INVOCATION_TYPE_ARGUMENT:
-            handleInvocationTypeArgument((AMethod) aElement);
-            break;
-          case TypeReference.METHOD_TYPE_PARAMETER:
-            handleMethodTypeParameter((AMethod) aElement);
-            break;
-          case TypeReference.EXCEPTION_PARAMETER: // TODO: Change if this error is ever thrown.
-            throw new Error("EXCEPTION_PARAMETER TypeReference case.");
+          }
+          case TypeReference.METHOD_TYPE_PARAMETER_BOUND ->
+              handleMethodTypeParameterBound((AMethod) aElement);
+          case TypeReference.THROWS -> handleThrows((AMethod) aElement);
+          case TypeReference.CONSTRUCTOR_REFERENCE, TypeReference.METHOD_REFERENCE -> // TODO
+              handleMethodReference((AMethod) aElement);
+          case TypeReference.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT, // TODO
+              TypeReference.METHOD_REFERENCE_TYPE_ARGUMENT ->
+              handleReferenceTypeArgument((AMethod) aElement);
+          case TypeReference.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT, // TODO
+              TypeReference.METHOD_INVOCATION_TYPE_ARGUMENT ->
+              handleInvocationTypeArgument((AMethod) aElement);
+          case TypeReference.METHOD_TYPE_PARAMETER -> handleMethodTypeParameter((AMethod) aElement);
+          case TypeReference.EXCEPTION_PARAMETER -> // TODO: Change if this error is ever thrown.
+              throw new Error("EXCEPTION_PARAMETER TypeReference case.");
           // TODO: ensure all cases covered.
-          default:
-            throw new RuntimeException("Unknown TypeReference: " + typeReference.getSort());
+          default ->
+              throw new RuntimeException("Unknown TypeReference: " + typeReference.getSort());
         }
       } catch (ClassCastException e) {
         System.err.println("Exception trace: " + e.getMessage());
@@ -857,8 +834,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
         if (strict) {
           System.err.println("Unhandled FIELD_COMPONENT annotation for " + aElement);
         }
-      } else if (aElement instanceof ATypeElement) {
-        ATypeElement aTypeElement = (ATypeElement) aElement;
+      } else if (aElement instanceof ATypeElement aTypeElement) {
         if (typePath == null) {
           aTypeElement.tlAnnotationsHere.add(makeAnnotation());
         } else {

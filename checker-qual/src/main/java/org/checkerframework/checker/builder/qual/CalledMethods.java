@@ -21,7 +21,7 @@ public @interface CalledMethods {
   /**
    * The names of methods that have definitely been called.
    *
-   * @return the names of methods that have definetely been called
+   * @return the names of methods that have definitely been called
    */
   String[] value();
 }

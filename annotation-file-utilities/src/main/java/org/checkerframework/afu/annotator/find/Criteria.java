@@ -1,6 +1,5 @@
 package org.checkerframework.afu.annotator.find;
 
-import com.google.errorprone.annotations.InlineMe;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
@@ -58,8 +57,8 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether or not the program element at the leaf of the specified path is satisfied by
-   * these criteria.
+   * Returns true if the program element at the leaf of the specified path is satisfied by these
+   * criteria.
    *
    * @param path the tree path to check against
    * @param leaf the tree at the leaf of the path; only relevant when the path is null, in which
@@ -93,8 +92,8 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether or not the program element at the leaf of the specified path is satisfied by
-   * these criteria.
+   * Returns true if the program element at the leaf of the specified path is satisfied by these
+   * criteria.
    *
    * @param path the tree path to check against
    * @return true if all of these criteria are satisfied by the given path, false otherwise
@@ -149,7 +148,7 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether this is the criteria on a receiver.
+   * Returns true if this is the criteria on a receiver.
    *
    * @return true iff this is the criteria on a receiver
    */
@@ -158,7 +157,7 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether this is the criteria on a package.
+   * Returns true if this is the criteria on a package.
    *
    * @return true iff this is the criteria on a package
    */
@@ -167,7 +166,7 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether this is the criteria on a return type.
+   * Returns true if this is the criteria on a return type.
    *
    * @return true iff this is the criteria on a return type
    */
@@ -176,7 +175,7 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether this is the criteria on a local variable.
+   * Returns true if this is the criteria on a local variable.
    *
    * @return true iff this is the criteria on a local variable
    */
@@ -185,7 +184,7 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether this is the criteria on the RHS of an occurrence of 'instanceof'.
+   * Returns true if this is the criteria on the RHS of an occurrence of 'instanceof'.
    *
    * @return true if this is the criteria on the RHS of an occurrence of 'instanceof'
    */
@@ -194,7 +193,7 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether this is the criteria on an object initializer.
+   * Returns true if this is the criteria on an object initializer.
    *
    * @return true if this is the criteria on an object initializer
    */
@@ -202,7 +201,7 @@ public final class Criteria {
     return criteria.containsKey(Criterion.Kind.NEW);
   }
 
-  /** Determines whether this is the criteria on a class {@code extends} bound. */
+  /** Returns true if this is the criteria on a class {@code extends} bound. */
   public boolean isOnTypeDeclarationExtendsClause() {
     for (Criterion c : criteria.values()) {
       if (c.getKind() == Criterion.Kind.EXTIMPLS_LOCATION) {
@@ -234,7 +233,7 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether this is the criteria on a variable declaration: a local variable or a field
+   * Returns true if this is the criteria on a variable declaration: a local variable or a field
    * declaration, but not a formal parameter declaration.
    *
    * @return true iff this is the criteria on a local variable
@@ -366,17 +365,17 @@ public final class Criteria {
   public boolean onBoundZero() {
     for (Criterion c : criteria.values()) {
       switch (c.getKind()) {
-        case CLASS_BOUND:
-          if (((ClassBoundCriterion) c).boundLoc.boundIndex != 0) {
-            break;
+        case CLASS_BOUND -> {
+          if (((ClassBoundCriterion) c).boundLoc.boundIndex == 0) {
+            return true;
           }
-          return true;
-        case METHOD_BOUND:
-          if (((MethodBoundCriterion) c).boundLoc.boundIndex != 0) {
-            break;
+        }
+        case METHOD_BOUND -> {
+          if (((MethodBoundCriterion) c).boundLoc.boundIndex == 0) {
+            return true;
           }
-          return true;
-        case AST_PATH:
+        }
+        case AST_PATH -> {
           ASTPath astPath = ((ASTPathCriterion) c).astPath;
           if (!astPath.isEmpty()) {
             ASTPath.ASTEntry entry = astPath.getLast();
@@ -384,9 +383,8 @@ public final class Criteria {
               return true;
             }
           }
-          break;
-        default:
-          break;
+        }
+        default -> {}
       }
     }
     return false;
@@ -437,7 +435,7 @@ public final class Criteria {
    * Creates an "in class" criterion: that a program element is enclosed by the specified class.
    *
    * @param name the name of the enclosing class
-   * @param exactMatch whether to match only in the class itself, not in its inner classes
+   * @param exactMatch if true, match only in the class itself, not in its inner classes
    * @return an "in class" criterion
    */
   // TODO: Should `name` be `@BinaryName`??
@@ -480,20 +478,6 @@ public final class Criteria {
    */
   public static final Criterion atLocation(TypePath loc) {
     return new GenericArrayLocationCriterion(loc);
-  }
-
-  /**
-   * Creates a GenericArrayLocationCriterion for a field.
-   *
-   * @param varName location of the field
-   * @return a GenericArrayLocationCriterion for the given field
-   */
-  @Deprecated
-  @InlineMe(
-      replacement = "new FieldCriterion(varName)",
-      imports = "org.checkerframework.afu.annotator.find.FieldCriterion")
-  public static final Criterion field(String varName) {
-    return new FieldCriterion(varName);
   }
 
   public static final Criterion field(String varName, boolean isOnDeclaration) {

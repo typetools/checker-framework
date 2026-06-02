@@ -17,7 +17,7 @@ public class AliasingConstructorTest {
     new AliasingConstructorTest(o2, 1);
     AliasingConstructorTest ct = new AliasingConstructorTest(o2, 1);
     @Unique Object o3 = new Object();
-    // ::error: (unique.leaked)
+    // ::error: [unique.leaked]
     new AliasingConstructorTest(o3, "someString");
   }
 }

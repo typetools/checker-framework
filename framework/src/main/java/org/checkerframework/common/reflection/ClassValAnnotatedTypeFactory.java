@@ -286,7 +286,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Return true if this is an invocation of a method annotated with @ForName. An example of such
+     * Returns true if this is an invocation of a method annotated with @ForName. An example of such
      * a method is {@link Class#forName}.
      *
      * @param tree a method invocation
@@ -297,8 +297,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Return true if this is an invocation of a method annotated with @GetClass. An example of such
-     * a method is {@link Object#getClass}.
+     * Returns true if this is an invocation of a method annotated with @GetClass. An example of
+     * such a method is {@link Object#getClass}.
      *
      * @param tree a method invocation
      * @return true if this is an invocation of a method annotated with @GetClass
@@ -320,19 +320,20 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // TODO: This looks like it returns a @BinaryName. Verify that fact and add a type
     // qualifier.
     /**
-     * Return String representation of class name. This will not return the correct name for
+     * Returns String representation of class name. This will not return the correct name for
      * anonymous classes.
      */
     private String getClassNameFromType(Type classType) {
       switch (classType.getKind()) {
-        case ARRAY:
+        case ARRAY -> {
           String array = "";
           while (classType.getKind() == TypeKind.ARRAY) {
             classType = ((ArrayType) classType).getComponentType();
             array += "[]";
           }
           return getClassNameFromType(classType) + array;
-        case DECLARED:
+        }
+        case DECLARED -> {
           StringBuilder className =
               new StringBuilder(TypesUtils.getQualifiedName((DeclaredType) classType));
           if (classType.getEnclosingType() != null) {
@@ -345,39 +346,51 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
           }
           return className.toString();
-        case INTERSECTION:
-          // This could be more precise
+        }
+        case INTERSECTION -> {
           return "java.lang.Object";
-        case NULL:
+        } // This could be more precise
+        case NULL -> {
           return "java.lang.Object";
-        case UNION:
+        }
+        case UNION -> {
           classType = ((UnionClassType) classType).getLub();
           return getClassNameFromType(classType);
-        case TYPEVAR:
-        case WILDCARD:
+        }
+        case TYPEVAR, WILDCARD -> {
           classType = classType.getUpperBound();
           return getClassNameFromType(classType);
-        case INT:
+        }
+        case INT -> {
           return int.class.getCanonicalName();
-        case LONG:
+        }
+        case LONG -> {
           return long.class.getCanonicalName();
-        case SHORT:
+        }
+        case SHORT -> {
           return short.class.getCanonicalName();
-        case BYTE:
+        }
+        case BYTE -> {
           return byte.class.getCanonicalName();
-        case CHAR:
+        }
+        case CHAR -> {
           return char.class.getCanonicalName();
-        case DOUBLE:
+        }
+        case DOUBLE -> {
           return double.class.getCanonicalName();
-        case FLOAT:
+        }
+        case FLOAT -> {
           return float.class.getCanonicalName();
-        case BOOLEAN:
+        }
+        case BOOLEAN -> {
           return boolean.class.getCanonicalName();
-        case VOID:
+        }
+        case VOID -> {
           return "void";
-        default:
-          throw new BugInCF(
-              "ClassValAnnotatedTypeFactory.getClassname: did not expect " + classType.getKind());
+        }
+        default ->
+            throw new BugInCF(
+                "ClassValAnnotatedTypeFactory.getClassname: did not expect " + classType.getKind());
       }
     }
   }

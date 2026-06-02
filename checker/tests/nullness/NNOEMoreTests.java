@@ -12,20 +12,20 @@ public class NNOEMoreTests {
     }
 
     @RequiresNonNull("xxx")
-    // :: error: (flowexpr.parse.error)
+    // :: error: [flowexpr.parse.error]
     void test2() {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       nullable.toString();
     }
   }
 
   class NNOESeparate {
     void call1(NNOEMain p) {
-      // :: error: (contracts.precondition)
+      // :: error: [contracts.precondition]
       p.test1();
 
       Object xxx = new Object();
-      // :: error: (flowexpr.parse.error)
+      // :: error: [flowexpr.parse.error]
       p.test2();
     }
 

@@ -12,7 +12,7 @@ public class DefaultsSignedness {
 
     conByte = testByte;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     botByte = testByte;
 
     // Test shorts with literal values
@@ -23,7 +23,7 @@ public class DefaultsSignedness {
 
     conShort = testShort;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     botShort = testShort;
 
     // Test ints with literal values
@@ -34,7 +34,7 @@ public class DefaultsSignedness {
 
     conInt = testInt;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     botInt = testInt;
 
     // Test longs with literal values
@@ -45,7 +45,7 @@ public class DefaultsSignedness {
 
     conLong = testLong;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     botLong = testLong;
   }
 
@@ -69,7 +69,7 @@ public class DefaultsSignedness {
 
     sinByte = testByte;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     conByte = testByte;
 
     // Test shorts
@@ -78,7 +78,7 @@ public class DefaultsSignedness {
 
     sinShort = testShort;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     conShort = testShort;
 
     // Test ints
@@ -87,7 +87,7 @@ public class DefaultsSignedness {
 
     sinInt = testInt;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     conInt = testInt;
 
     // Test longs
@@ -96,17 +96,17 @@ public class DefaultsSignedness {
 
     sinLong = testLong;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     conLong = testLong;
 
     // Test floats
-    // :: error: (anno.on.irrelevant)
+    // :: error: [anno.on.irrelevant]
     @Signed float sinFloat;
 
     sinFloat = testFloat;
 
     // Test doubles
-    // :: error: (anno.on.irrelevant)
+    // :: error: [anno.on.irrelevant]
     @Signed double sinDouble;
 
     sinDouble = testDouble;
@@ -118,7 +118,7 @@ public class DefaultsSignedness {
 
     sinBoxedByte = testBoxedByte;
 
-    // // :: error: (assignment)
+    // // :: error: [assignment]
     conBoxedByte = testBoxedByte;
 
     // Test boxed shorts
@@ -127,7 +127,7 @@ public class DefaultsSignedness {
 
     sinBoxedShort = testBoxedShort;
 
-    // // :: error: (assignment)
+    // // :: error: [assignment]
     conBoxedShort = testBoxedShort;
 
     // Test boxed Integers
@@ -136,7 +136,7 @@ public class DefaultsSignedness {
 
     sinBoxedInteger = testBoxedInteger;
 
-    // // :: error: (assignment)
+    // // :: error: [assignment]
     conBoxedInteger = testBoxedInteger;
 
     // Test boxed Longs
@@ -145,7 +145,7 @@ public class DefaultsSignedness {
 
     sinBoxedLong = testBoxedLong;
 
-    // // :: error: (assignment)
+    // // :: error: [assignment]
     conBoxedLong = testBoxedLong;
     */
   }
@@ -166,7 +166,7 @@ public class DefaultsSignedness {
 
     unkObj = testObj;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     unsinObj = testObj;
   }
 

@@ -13,6 +13,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersec
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AtmCombo;
@@ -100,7 +101,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   }
 
   /**
-   * Return true if type1 and type2 have the same set of annotations.
+   * Returns true if type1 and type2 have the same set of annotations.
    *
    * @param type1 a type
    * @param type2 a type
@@ -157,7 +158,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
    *
    * @param type1 the first type
    * @param type2 the second type
-   * @return whether the two types are equal
+   * @return true if the two types are equal
    */
   protected boolean checkOrAreEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
     Boolean pastResult = visitHistory.get(type1, type2, currentTop);
@@ -318,6 +319,17 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     Boolean result =
         areEqual(type1.getUpperBound(), type2.getUpperBound())
             && areEqual(type1.getLowerBound(), type2.getLowerBound());
+    visitHistory.put(type1, type2, currentTop, result);
+    return result;
+  }
+
+  @Override
+  public Boolean visitUnion_Union(AnnotatedUnionType type1, AnnotatedUnionType type2, Void unused) {
+    if (!arePrimaryAnnosEqual(type1, type2)) {
+      return false;
+    }
+
+    boolean result = areAllEqual(type1.getAlternatives(), type2.getAlternatives());
     visitHistory.put(type1, type2, currentTop, result);
     return result;
   }

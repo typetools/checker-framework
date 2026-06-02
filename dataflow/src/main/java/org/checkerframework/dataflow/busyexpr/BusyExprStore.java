@@ -43,7 +43,7 @@ public class BusyExprStore implements Store<BusyExprStore> {
   }
 
   /**
-   * Return true if the expression contains variable var. Note that {@code .equals} is used in the
+   * Returns true if the expression contains variable var. Note that {@code .equals} is used in the
    * return statement to verify value equality, as the statement decides whether the two nodes have
    * the same value, not represent the same CFG node.
    *
@@ -52,8 +52,7 @@ public class BusyExprStore implements Store<BusyExprStore> {
    * @return true if the expression contains the variable
    */
   public boolean exprContainsVariable(Node expr, Node var) {
-    if (expr instanceof BinaryOperationNode) {
-      BinaryOperationNode binaryNode = (BinaryOperationNode) expr;
+    if (expr instanceof BinaryOperationNode binaryNode) {
       return exprContainsVariable(binaryNode.getLeftOperand(), var)
           || exprContainsVariable(binaryNode.getRightOperand(), var);
     }
@@ -71,13 +70,12 @@ public class BusyExprStore implements Store<BusyExprStore> {
   }
 
   /**
-   * Add expressions to the store, add sub-expressions to the store recursively
+   * Add expressions to the store, add sub-expressions to the store recursively.
    *
    * @param e the expression to be added
    */
   public void addUseInExpression(Node e) {
-    if (e instanceof BinaryOperationNode) {
-      BinaryOperationNode binaryNode = (BinaryOperationNode) e;
+    if (e instanceof BinaryOperationNode binaryNode) {
       putBusyExpr(new BusyExprValue(binaryNode));
       // recursively add expressions
       addUseInExpression(binaryNode.getLeftOperand());
@@ -128,10 +126,9 @@ public class BusyExprStore implements Store<BusyExprStore> {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof BusyExprStore)) {
+    if (!(obj instanceof BusyExprStore other)) {
       return false;
     }
-    BusyExprStore other = (BusyExprStore) obj;
     return other.busyExprValueSet.equals(this.busyExprValueSet);
   }
 

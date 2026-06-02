@@ -50,18 +50,18 @@ public class FenumDemo {
       // ok
     }
 
-    // :: error: (binary)
+    // :: error: [binary]
     if (TestStatic.ACONST1 < TestStatic.BCONST2) {}
-    // :: error: (binary)
+    // :: error: [binary]
     if (TestStatic.ACONST1 == TestStatic.BCONST2) {}
-    // :: error: (binary)
+    // :: error: [binary]
     if (TestStatic.ACONST1 >= TestStatic.CCONST2) {}
 
-    // :: error: (binary)
+    // :: error: [binary]
     if (TestStatic.ACONST1 < 5) {}
-    // :: error: (binary)
+    // :: error: [binary]
     if (TestStatic.BCONST1 > 5) {}
-    // :: error: (binary)
+    // :: error: [binary]
     if (TestStatic.CCONST1 == 5) {}
   }
 }

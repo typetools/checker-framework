@@ -13,8 +13,8 @@ import org.checkerframework.framework.util.typeinference8.types.VariableBounds.B
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 
 /**
- * A {@code QualifierVar} is a variable for a polymorphic qualifier that needs to be viewpoint
- * adapted at a call site.
+ * A {@code QualifierVar} is a variable for a polymorphic qualifier that needs to be
+ * viewpoint-adapted at a call site.
  */
 public class QualifierVar extends AbstractQualifier {
 
@@ -80,7 +80,7 @@ public class QualifierVar extends AbstractQualifier {
   }
 
   /**
-   * Add a bound for this qualifier variable
+   * Add a bound for this qualifier variable.
    *
    * @param kind a bound kind
    * @param otherQual the bound to add
@@ -91,8 +91,8 @@ public class QualifierVar extends AbstractQualifier {
     if (otherQual == this) {
       return ConstraintSet.TRUE;
     }
-    if (kind == BoundKind.EQUAL && otherQual instanceof Qualifier) {
-      instantiation = ((Qualifier) otherQual).getAnnotation();
+    if (kind == BoundKind.EQUAL && otherQual instanceof Qualifier q) {
+      instantiation = q.getAnnotation();
     }
     if (qualifierBounds.get(kind).add(otherQual)) {
       return addConstraintsFromComplementaryBounds(kind, otherQual);
@@ -111,27 +111,27 @@ public class QualifierVar extends AbstractQualifier {
   private ConstraintSet addConstraintsFromComplementaryBounds(BoundKind kind, AbstractQualifier s) {
     ConstraintSet constraints = new ConstraintSet();
     switch (kind) {
-      case EQUAL:
+      case EQUAL -> {
         for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
           if (s != t) {
             constraints.add(new QualifierTyping(s, t, Kind.TYPE_EQUALITY));
           }
         }
-        break;
-      case LOWER:
+      }
+      case LOWER -> {
         for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
           if (s != t) {
             constraints.add(new QualifierTyping(s, t, Kind.SUBTYPE));
           }
         }
-        break;
-      case UPPER:
+      }
+      case UPPER -> {
         for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
           if (s != t) {
             constraints.add(new QualifierTyping(t, s, Kind.SUBTYPE));
           }
         }
-        break;
+      }
     }
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
@@ -157,15 +157,15 @@ public class QualifierVar extends AbstractQualifier {
     if (instantiation == null) {
       AnnotationMirror lub = null;
       for (AbstractQualifier lower : qualifierBounds.get(BoundKind.LOWER)) {
-        if (lower instanceof Qualifier) {
+        if (lower instanceof Qualifier ql) {
           if (lub != null) {
             lub =
                 context
                     .typeFactory
                     .getQualifierHierarchy()
-                    .leastUpperBoundQualifiersOnly(lub, ((Qualifier) lower).getAnnotation());
+                    .leastUpperBoundQualifiersOnly(lub, ql.getAnnotation());
           } else {
-            lub = ((Qualifier) lower).getAnnotation();
+            lub = ql.getAnnotation();
           }
         }
       }
@@ -175,15 +175,15 @@ public class QualifierVar extends AbstractQualifier {
       }
       AnnotationMirror glb = null;
       for (AbstractQualifier upper : qualifierBounds.get(BoundKind.UPPER)) {
-        if (upper instanceof Qualifier) {
+        if (upper instanceof Qualifier qu) {
           if (glb != null) {
             glb =
                 context
                     .typeFactory
                     .getQualifierHierarchy()
-                    .greatestLowerBoundQualifiersOnly(glb, ((Qualifier) upper).getAnnotation());
+                    .greatestLowerBoundQualifiersOnly(glb, qu.getAnnotation());
           } else {
-            glb = ((Qualifier) upper).getAnnotation();
+            glb = qu.getAnnotation();
           }
         }
       }

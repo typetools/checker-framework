@@ -9,13 +9,13 @@ public @Interned class InternedClass2 {
   // @UnknownInterned is the default annotation on constructor results even for @Interned classes.
   private InternedClass2(int i) {
     // Type of "this" inside a constructor of an @Interned class is @UnknownInterned.
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Interned InternedClass2 that = this;
     this.i = i;
   }
 
   InternedClass2 factory(int i) {
-    // :: error: (interned.object.creation) :: error: (method.invocation)
+    // :: error: [interned.object.creation] :: error: [method.invocation]
     new InternedClass2(i).someMethod(); // error, call to constructor on for @Interned class.
     (new InternedClass2(i)).intern(); // ok, call to constructor receiver to @InternMethod
     ((((new InternedClass2(i))))).intern(); // ok, call to constructor receiver to @InternMethod
@@ -33,7 +33,7 @@ public @Interned class InternedClass2 {
   @InternMethod
   public InternedClass2 intern() {
     // Type of "this" inside an @InternMethod is @UnknownInterned
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Interned InternedClass2 that = this;
     if (!pool.containsKey(this.i)) {
       // The above check proves "this" is interned.

@@ -35,7 +35,7 @@ import org.junit.runners.model.TestClass;
  */
 public class PerDirectorySuite extends RootedSuite {
 
-  /** Name */
+  /** Name. */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
   public @interface Name {}
@@ -114,21 +114,21 @@ public class PerDirectorySuite extends RootedSuite {
     Class<?> returnType = method.getReturnType();
     String methodName = method.getName();
     switch (methodName) {
-      case "getTestDirs":
+      case "getTestDirs" -> {
         if (!(returnType.isArray() && returnType.getComponentType() == String.class)) {
           throw new RuntimeException("getTestDirs should return String[], found " + returnType);
         }
-        break;
+      }
 
-      default:
-        throw new RuntimeException(
-            requiredFormsMessage
-                + "%n"
-                + "testClass="
-                + testClass.getName()
-                + "%n"
-                + "parameterMethods="
-                + method);
+      default ->
+          throw new RuntimeException(
+              requiredFormsMessage
+                  + "%n"
+                  + "testClass="
+                  + testClass.getName()
+                  + "%n"
+                  + "parameterMethods="
+                  + method);
     }
 
     int modifiers = method.getMethod().getModifiers();

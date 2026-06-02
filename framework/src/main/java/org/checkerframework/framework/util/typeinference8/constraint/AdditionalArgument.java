@@ -3,8 +3,7 @@ package org.checkerframework.framework.util.typeinference8.constraint;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree.Kind;
-import org.checkerframework.framework.util.typeinference8.types.InvocationType;
+import org.checkerframework.framework.util.typeinference8.types.AbstractExecutableType;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 
@@ -38,26 +37,26 @@ public class AdditionalArgument implements Constraint {
 
   @Override
   public ConstraintSet reduce(Java8InferenceContext context) {
-    if (methodOrConstructorInvocation instanceof MethodInvocationTree) {
-      MethodInvocationTree methodInvocation = (MethodInvocationTree) methodOrConstructorInvocation;
-      InvocationType methodType =
+    if (methodOrConstructorInvocation instanceof MethodInvocationTree methodInvocation) {
+      AbstractExecutableType executableType =
           context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(methodInvocation);
       Theta newMap =
           context.inferenceTypeFactory.createThetaForInvocation(
-              methodInvocation, methodType, context);
+              methodInvocation, executableType, context);
       ConstraintSet set =
-          context.inference.createC(methodType, methodInvocation.getArguments(), newMap);
+          context.inference.createC(executableType, methodInvocation.getArguments(), newMap);
       set.applyInstantiations();
       return set;
     } else {
       NewClassTree newClassTree = (NewClassTree) methodOrConstructorInvocation;
-      InvocationType methodType =
+      AbstractExecutableType executableType =
           context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(newClassTree);
 
       Theta newMap =
-          context.inferenceTypeFactory.createThetaForInvocation(newClassTree, methodType, context);
+          context.inferenceTypeFactory.createThetaForInvocation(
+              newClassTree, executableType, context);
       ConstraintSet set =
-          context.inference.createC(methodType, newClassTree.getArguments(), newMap);
+          context.inference.createC(executableType, newClassTree.getArguments(), newMap);
       set.applyInstantiations();
       return set;
     }
