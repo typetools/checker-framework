@@ -2920,7 +2920,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   private void maybeReportAnnoOnIrrelevant(
       Tree errorLocation, TypeMirror type, List<? extends AnnotationTree> annos) {
-    List<AnnotationTree> supportedAnnoTrees = supportedAnnoTrees(annos);
+    if (annos.isEmpty()) {
+      return;
+    }
+    List<AnnotationTree> supportedAnnoTrees = supportedAnnoTrees(annos, type);
     if (!supportedAnnoTrees.isEmpty() && !atypeFactory.isRelevant(type)) {
       String extraInfo = atypeFactory.irrelevantExtraMessage();
       checker.reportError(errorLocation, "anno.on.irrelevant", annos, type, extraInfo);
@@ -2944,14 +2947,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * because they may apply to inner types.
    *
    * @param annoTrees annotation trees
+   * @param type type of {@code annoTrees}
    * @return a new list containing only the supported annotations from its argument
    */
-  private List<AnnotationTree> supportedAnnoTrees(List<? extends AnnotationTree> annoTrees) {
+  private List<AnnotationTree> supportedAnnoTrees(
+      List<? extends AnnotationTree> annoTrees, TypeMirror type) {
     List<AnnotationTree> result = new ArrayList<>(1);
     for (AnnotationTree at : annoTrees) {
       AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(at);
       if (!AnnotationUtils.isDeclarationAnnotation(anno)
-          && atypeFactory.isSupportedQualifier(anno)) {
+          && atypeFactory.isSupportedQualifier(atypeFactory.canonicalAnnotation(anno, type))) {
         result.add(at);
       }
     }
