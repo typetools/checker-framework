@@ -2918,13 +2918,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * If the given Java basetype is not relevant, report an "anno.on.irrelevant" if it is annotated.
    * This method does not necessarily issue an error, but it might.
    *
-   * @param errorLocation where to repor the error
+   * @param errorLocation where to report the error
    * @param type the Java basetype
    * @param annos the annotation on the type
    */
   private void maybeReportAnnoOnIrrelevant(
       Tree errorLocation, TypeMirror type, List<? extends AnnotationTree> annos) {
-    List<AnnotationTree> supportedAnnoTrees = supportedAnnoTrees(annos);
+    if (annos.isEmpty()) {
+      return;
+    }
+    List<AnnotationTree> supportedAnnoTrees = supportedAnnoTrees(annos, type);
     if (!supportedAnnoTrees.isEmpty() && !atypeFactory.isRelevant(type)) {
       String extraInfo = atypeFactory.irrelevantExtraMessage();
       checker.reportError(errorLocation, "anno.on.irrelevant", annos, type, extraInfo);
@@ -2948,14 +2951,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * because they may apply to inner types.
    *
    * @param annoTrees annotation trees
+   * @param type on which {@code annoTrees} were written
    * @return a new list containing only the supported annotations from its argument
    */
-  private List<AnnotationTree> supportedAnnoTrees(List<? extends AnnotationTree> annoTrees) {
+  private List<AnnotationTree> supportedAnnoTrees(
+      List<? extends AnnotationTree> annoTrees, TypeMirror type) {
     List<AnnotationTree> result = new ArrayList<>(1);
     for (AnnotationTree at : annoTrees) {
       AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(at);
       if (!AnnotationUtils.isDeclarationAnnotation(anno)
-          && atypeFactory.isSupportedQualifier(anno)) {
+          && atypeFactory.isSupportedQualifier(atypeFactory.canonicalAnnotation(anno, type))) {
         result.add(at);
       }
     }
