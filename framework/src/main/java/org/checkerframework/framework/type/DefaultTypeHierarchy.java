@@ -145,7 +145,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
   /** A set of annotations and a {@link TypeMirror}. */
   @AnnotatedFor("nullness")
-  private static class ShallowType {
+  private static final class ShallowType {
 
     /** A set of annotations. */
     AnnotationMirrorSet annos;

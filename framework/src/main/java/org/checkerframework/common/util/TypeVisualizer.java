@@ -168,7 +168,7 @@ public class TypeVisualizer {
    * hierarchical order. However, since there is no LinkedIdentityHashMap, it was easiest to just
    * create a wrapper that performed referential equality on types and use a LinkedHashMap.
    */
-  private static class Node {
+  private static final class Node {
     /** The delegate; that is, the wrapped value. */
     private final @InternedDistinct AnnotatedTypeMirror type;
 
@@ -264,7 +264,10 @@ public class TypeVisualizer {
      * Connection drawer is used to add the connections between all the nodes created by the
      * NodeDrawer. It is not a scanner and is called on every node in the nodes map.
      */
-    private class ConnectionDrawer implements AnnotatedTypeVisitor<Void, Void> {
+    private final class ConnectionDrawer implements AnnotatedTypeVisitor<Void, Void> {
+
+      /** Creates a new ConnectionDrawer. */
+      ConnectionDrawer() {}
 
       @Override
       public Void visit(AnnotatedTypeMirror type) {

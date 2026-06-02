@@ -713,7 +713,7 @@ public class AnnotationBuilder {
         return toStringVal;
       }
       StringBuilder buf = new StringBuilder();
-      buf.append("@");
+      buf.append('@');
       buf.append(annotationName);
       int len = elementValues.size();
       if (len > 0) {

@@ -27,7 +27,7 @@ public abstract class BasicTypeProcessor extends AbstractTypeProcessor {
   public void typeProcess(TypeElement e, TreePath p) {
     currentRoot = p.getCompilationUnit();
 
-    TreePathScanner<?, ?> scanner = null;
+    TreePathScanner<?, ?> scanner;
     try {
       scanner = createTreePathScanner(currentRoot);
       scanner.scan(p, null);

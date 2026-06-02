@@ -677,13 +677,13 @@ public class IndexFileSpecification {
         new LinkedHashSet<IPair<String, Annotation>>(element.tlAnnotationsHere.size());
     for (Annotation a : element.tlAnnotationsHere) {
       StringBuilder sb = new StringBuilder();
-      sb.append("@");
+      sb.append('@');
       sb.append(a.def.name);
 
       if (a.fieldValues.isEmpty()) {
         // nothing to do
       } else {
-        sb.append("(");
+        sb.append('(');
         if (a.fieldValues.size() == 1 && a.fieldValues.containsKey("value")) {
           formatFieldValue(sb, a, "value");
         } else {
@@ -696,11 +696,11 @@ public class IndexFileSpecification {
               first = false;
             }
             sb.append(field);
-            sb.append("=");
+            sb.append('=');
             formatFieldValue(sb, a, field);
           }
         }
-        sb.append(")");
+        sb.append(')');
       }
 
       result.add(IPair.of(sb.toString(), a));

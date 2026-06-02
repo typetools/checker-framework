@@ -205,7 +205,7 @@ public class FormatterTreeUtil {
   }
 
   /** Represents a format method invocation in the syntax tree. */
-  public class FormatCall {
+  public final class FormatCall {
     /** The call itself. */
     /*package-private*/ final MethodInvocationTree invocationTree;
 

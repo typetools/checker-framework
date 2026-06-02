@@ -54,7 +54,7 @@ public final class ArrayAFT extends AnnotationFieldType {
       elementType.format(sb, elt);
       return;
     }
-    sb.append("{");
+    sb.append('{');
     boolean notfirst = false;
     for (Object elt : asCollection) {
       if (notfirst) {
@@ -64,7 +64,7 @@ public final class ArrayAFT extends AnnotationFieldType {
       }
       elementType.format(sb, elt);
     }
-    sb.append("}");
+    sb.append('}');
   }
 
   @Override

@@ -25,5 +25,5 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(Interned.class)
-@DefaultFor(value = {TypeUseLocation.LOWER_BOUND})
+@DefaultFor({TypeUseLocation.LOWER_BOUND})
 public @interface InternedDistinct {}

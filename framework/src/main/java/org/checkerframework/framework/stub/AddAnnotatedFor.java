@@ -43,7 +43,7 @@ import org.plumelib.util.ArraySet;
  * Utility that generates {@code @AnnotatedFor} class annotations. The {@link #main} method acts as
  * a filter: it reads a JAIF from standard input and writes an augmented JAIF to standard output.
  */
-public class AddAnnotatedFor {
+public final class AddAnnotatedFor {
   /** Definition of {@code @AnnotatedFor} annotation. */
   private static final AnnotationDef adAnnotatedFor;
 
