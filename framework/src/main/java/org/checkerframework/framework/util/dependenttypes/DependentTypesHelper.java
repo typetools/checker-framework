@@ -921,7 +921,7 @@ public class DependentTypesHelper {
    * function returns a non-null annotation, then the original annotation is replaced with the
    * result. If the function returns null, the original annotation is retained.
    */
-  private static class AnnotatedTypeReplacer
+  private static final class AnnotatedTypeReplacer
       extends AnnotatedTypeScanner<Void, Function<AnnotationMirror, AnnotationMirror>> {
 
     @Override
@@ -1166,7 +1166,7 @@ public class DependentTypesHelper {
    * annotated type has any errors, then a non-empty list of {@link DependentTypesError} is
    * returned.
    */
-  private class ExpressionErrorCollector
+  private final class ExpressionErrorCollector
       extends SimpleAnnotatedTypeScanner<List<DependentTypesError>, Void> {
 
     /** Create ExpressionErrorCollector. */
@@ -1190,7 +1190,7 @@ public class DependentTypesHelper {
    * Replaces a dependent type annotation with a parser error with the top qualifier in the
    * hierarchy.
    */
-  protected class ErrorAnnoReplacer extends SimpleAnnotatedTypeScanner<Void, Void> {
+  protected final class ErrorAnnoReplacer extends SimpleAnnotatedTypeScanner<Void, Void> {
 
     /**
      * Create an ErrorAnnoReplacer.
@@ -1246,7 +1246,7 @@ public class DependentTypesHelper {
    * visited type to the second formal parameter except for annotations on types that have been
    * substituted.
    */
-  protected class ViewpointAdaptedCopier extends DoubleAnnotatedTypeScanner<Void> {
+  protected final class ViewpointAdaptedCopier extends DoubleAnnotatedTypeScanner<Void> {
 
     /** Create a ViewpointAdaptedCopier. */
     private ViewpointAdaptedCopier() {}

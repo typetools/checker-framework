@@ -2048,7 +2048,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Helper class for handling switch statements and switch expressions, including all their
    * substatements such as case labels.
    */
-  private class SwitchBuilder {
+  private final class SwitchBuilder {
 
     /**
      * The tree for the switch statement or switch expression. Its type may be {@link SwitchTree}

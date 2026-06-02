@@ -256,7 +256,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
    * Determines the insertion position for type annotations on various elements. For instance, type
    * annotations for a declaration should be placed before the type rather than the variable name.
    */
-  private class TypePositionFinder extends TreeScanner<IPair<ASTRecord, Integer>, Insertion> {
+  private final class TypePositionFinder extends TreeScanner<IPair<ASTRecord, Integer>, Insertion> {
     private IPair<ASTRecord, Integer> pathAndPos(JCTree t) {
       return IPair.of(astRecord(t), t.pos);
     }
@@ -855,7 +855,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
    * Determine the insertion position for declaration annotations on various elements. For instance,
    * method declaration annotations should be placed before all the other modifiers and annotations.
    */
-  private static class DeclarationPositionFinder extends TreeScanner<Integer, Void> {
+  private static final class DeclarationPositionFinder extends TreeScanner<Integer, Void> {
 
     @Override
     public Integer visitCompilationUnit(CompilationUnitTree node, Void p) {

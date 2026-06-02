@@ -796,7 +796,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * A scanner that given a set of polymorphic qualifiers, returns a list of errors reporting a use
    * of one of the polymorphic qualifiers.
    */
-  static class HasInvalidPolyScanner
+  static final class HasInvalidPolyScanner
       extends SimpleAnnotatedTypeScanner<List<DiagMessage>, AnnotationMirrorSet> {
 
     /** Create HasInvalidPolyScanner. */
@@ -3386,7 +3386,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Class that creates string representations of {@link AnnotatedTypeMirror}s which are only
    * verbose if required to differentiate the two types.
    */
-  private static class FoundRequired {
+  private static final class FoundRequired {
     public final String found;
     public final String required;
 

@@ -263,9 +263,9 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
     public String toString() {
       StringBuilder b = new StringBuilder();
       b.append(treeKind.asInterface().getSimpleName().replace("Tree", ""));
-      b.append(".").append(childSelector);
+      b.append('.').append(childSelector);
       if (argument != null) {
-        b.append(" ").append(argument);
+        b.append(' ').append(argument);
       }
       return b.toString();
     }

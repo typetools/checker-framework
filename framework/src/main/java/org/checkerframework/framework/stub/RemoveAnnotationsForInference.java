@@ -79,7 +79,7 @@ import org.plumelib.util.StringsPlume;
  * -Alint:cast} (or {@code -Alint:all} which implies it) is passed to javac. You can suppress the
  * warning by passing {@code -Alint:-cast} to javac.
  */
-public class RemoveAnnotationsForInference {
+public final class RemoveAnnotationsForInference {
 
   /**
    * Do not instantiate. This is a standalone program whose entry point is {@link #main(String[])}.
@@ -196,7 +196,7 @@ public class RemoveAnnotationsForInference {
    * Callback to process each Java file; see the {@link RemoveAnnotationsForInference class
    * documentation} for details.
    */
-  private static class RemoveAnnotationsCallback implements SourceRoot.Callback {
+  private static final class RemoveAnnotationsCallback implements SourceRoot.Callback {
     /** The visitor instance. */
     private final RemoveAnnotationsVisitor rav = new RemoveAnnotationsVisitor();
 
@@ -304,7 +304,7 @@ public class RemoveAnnotationsForInference {
    * <p>The annotations will be removed from the source code by the {@link #removeAnnotations}
    * method.
    */
-  private static class RemoveAnnotationsVisitor
+  private static final class RemoveAnnotationsVisitor
       extends GenericListVisitorAdapter<AnnotationExpr, Void> {
 
     /**

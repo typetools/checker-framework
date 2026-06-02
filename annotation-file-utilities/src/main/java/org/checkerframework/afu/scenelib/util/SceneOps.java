@@ -33,7 +33,7 @@ import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
  * <p>Also includes a {@link #main(String[])} method that lets these operations be performed from
  * the command line.
  */
-public class SceneOps {
+public final class SceneOps {
   private SceneOps() {}
 
   /**

@@ -62,7 +62,7 @@ import org.plumelib.util.StringsPlume;
  * Utility methods for operating on {@code AnnotatedTypeMirror}. This class mimics the class {@link
  * Types}.
  */
-public class AnnotatedTypes {
+public final class AnnotatedTypes {
   /** Class cannot be instantiated. */
   private AnnotatedTypes() {
     throw new AssertionError("Class AnnotatedTypes cannot be instantiated.");

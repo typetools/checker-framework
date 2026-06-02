@@ -130,7 +130,7 @@ public class AnnotationMirrorToAnnotationExprConversion {
    * A visitor that converts an annotation value from an {@code AnnotationMirror} to a JavaParser
    * node that can appear in an {@code AnnotationExpr}.
    */
-  private static class AnnotationValueConverterVisitor
+  private static final class AnnotationValueConverterVisitor
       implements AnnotationValueVisitor<Expression, Void> {
     @Override
     public Expression visit(AnnotationValue value, Void p) {

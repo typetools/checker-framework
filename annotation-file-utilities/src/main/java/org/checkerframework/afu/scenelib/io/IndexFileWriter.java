@@ -479,26 +479,26 @@ public final class IndexFileWriter {
    * @param a the annotation to format
    */
   private static void formatAnnotation(StringBuilder sb, Annotation a) {
-    sb.append("@");
+    sb.append('@');
     sb.append(a.def().name);
     if (a.fieldValues.isEmpty()) {
       return;
     }
 
-    sb.append("(");
+    sb.append('(');
     boolean notfirst = false;
     for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
       if (notfirst) {
-        sb.append(",");
+        sb.append(',');
       } else {
         notfirst = true;
       }
       AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
       sb.append(f.getKey());
-      sb.append("=");
+      sb.append('=');
       formatAnnotationValue(sb, aft, f.getValue());
     }
-    sb.append(")");
+    sb.append(')');
   }
 
   /**
@@ -514,7 +514,7 @@ public final class IndexFileWriter {
       formatAnnotation(sb, (Annotation) o);
     } else if (aft instanceof ArrayAFT aaft) {
       List<?> l = (List<?>) o;
-      sb.append("{");
+      sb.append('{');
       if (aaft.elementType == null) {
         if (!l.isEmpty()) {
           throw new AssertionError("nonempty array of unknown type");
@@ -523,21 +523,21 @@ public final class IndexFileWriter {
         boolean notfirst = false;
         for (Object o2 : l) {
           if (notfirst) {
-            sb.append(",");
+            sb.append(',');
           } else {
             notfirst = true;
           }
           formatAnnotationValue(sb, aaft.elementType, o2);
         }
       }
-      sb.append("}");
+      sb.append('}');
     } else if (aft instanceof ClassTokenAFT) {
       aft.format(sb, o);
     } else if (aft instanceof BasicAFT && o instanceof String s) {
       sb.append(Strings.escape(s));
     } else if (aft instanceof BasicAFT && o instanceof Long) {
       sb.append(o.toString());
-      sb.append("L");
+      sb.append('L');
       // This causes assertion failures.  I'm not sure why.
       // else if (aft instanceof EnumAFT) {
       //     aft.format(sb, o);

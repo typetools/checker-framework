@@ -21,7 +21,7 @@ import org.plumelib.util.ArraySet;
 
 /** Class that performs phase two of the translation process. */
 @SuppressWarnings("nullness") // TODO
-public class CFGTranslationPhaseTwo {
+public final class CFGTranslationPhaseTwo {
 
   private CFGTranslationPhaseTwo() {}
 

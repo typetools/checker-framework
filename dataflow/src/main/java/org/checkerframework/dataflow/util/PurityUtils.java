@@ -20,7 +20,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * @see Deterministic
  * @see Pure
  */
-public class PurityUtils {
+public final class PurityUtils {
 
   /** Do not instantiate. */
   private PurityUtils() {

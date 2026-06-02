@@ -65,7 +65,7 @@ import org.checkerframework.afu.scenelib.util.coll.WrapperMap;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** Cache of {@code ASTPath} data for the nodes of a compilation unit tree. */
-public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
+public final class ASTIndex extends WrapperMap<Tree, ASTRecord> {
   // single-item cache
   private static Tree cachedRoot = null;
   private static Map<Tree, ASTRecord> cachedIndex = null;
@@ -120,7 +120,7 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
   public static String getParameterName(
       CompilationUnitTree cut, String className, String methodName, int index) {
     try {
-      ASTIndex ai = (ASTIndex) ASTIndex.indexOf(cut);
+      ASTIndex ai = (ASTIndex) indexOf(cut);
       return ai.formals.get(className).get(methodName).get(index);
     } catch (NullPointerException ex) {
       return null;
@@ -139,7 +139,7 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
       }
       // otherwise, look through parameter list for string
       try {
-        ASTIndex ai = (ASTIndex) ASTIndex.indexOf(cut);
+        ASTIndex ai = (ASTIndex) indexOf(cut);
         List<String> names = ai.formals.get(className).get(methodName);
         int i = 0;
         for (String name : names) {
@@ -164,7 +164,7 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
       sb.append(entry.getKey().toString().replaceAll("\\s+", " "))
           .append(" # ")
           .append(entry.getValue())
-          .append("\n");
+          .append('\n');
     }
     return sb.toString();
   }
@@ -178,7 +178,7 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
   // (If the JVM could take advantage of tail recursion, it would be
   // better to save the current node's entry first, at a small cost to
   // the clarity of the code.)
-  private class AstIndexVisitor extends SimpleTreeVisitor<Void, ASTRecord> {
+  private final class AstIndexVisitor extends SimpleTreeVisitor<Void, ASTRecord> {
     private final Deque<Integer> counters = new ArrayDeque<>();
     private @Nullable String inMethod = null;
 

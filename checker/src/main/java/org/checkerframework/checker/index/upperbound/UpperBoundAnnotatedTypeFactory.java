@@ -288,7 +288,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    * Performs pre-processing on annotations written by users, replacing illegal annotations by legal
    * ones.
    */
-  private class UpperBoundTypeAnnotator extends TypeAnnotator {
+  private final class UpperBoundTypeAnnotator extends TypeAnnotator {
 
     private UpperBoundTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
       super(atypeFactory);

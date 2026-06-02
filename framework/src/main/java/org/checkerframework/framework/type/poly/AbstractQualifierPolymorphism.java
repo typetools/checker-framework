@@ -380,7 +380,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
    * A helper class that resolves the polymorphic qualifiers with the most restrictive qualifier. It
    * returns a mapping from the polymorphic qualifier to the substitution for that qualifier.
    */
-  private class PolyCollector
+  private final class PolyCollector
       extends EquivalentAtmComboScanner<AnnotationMirrorMap<AnnotationMirror>, Void> {
 
     /**

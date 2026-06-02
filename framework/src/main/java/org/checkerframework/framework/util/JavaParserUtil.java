@@ -32,7 +32,7 @@ import org.checkerframework.javacutil.BugInCF;
  * com.github.javaparser.StaticJavaParser} that does not leak memory, and it provides some other
  * methods.
  */
-public class JavaParserUtil {
+public final class JavaParserUtil {
 
   /** Do not instantiate. */
   private JavaParserUtil() {
@@ -302,7 +302,7 @@ public class JavaParserUtil {
   }
 
   /** A visitor that clears all annotations from a JavaParser AST. */
-  private static class ClearAnnotationsVisitor extends VoidVisitorWithDefaultAction {
+  private static final class ClearAnnotationsVisitor extends VoidVisitorWithDefaultAction {
     @Override
     public void defaultAction(Node node) {
       for (Node child : new ArrayList<>(node.getChildNodes())) {

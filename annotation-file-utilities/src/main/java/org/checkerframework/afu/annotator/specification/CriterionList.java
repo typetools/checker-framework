@@ -1,5 +1,6 @@
 package org.checkerframework.afu.annotator.specification;
 
+import java.util.StringJoiner;
 import org.checkerframework.afu.annotator.find.Criteria;
 import org.checkerframework.afu.annotator.find.Criterion;
 
@@ -84,10 +85,11 @@ public class CriterionList {
     if (current == null) {
       return "[]";
     }
-    StringBuilder sb = new StringBuilder("[").append(current);
+    StringJoiner sj = new StringJoiner(", ", "[", "]");
+    sj.add(current.toString());
     for (CriterionList n = next; n.next != null; n = n.next) {
-      sb.append(", ").append(n.current);
+      sj.add(current.toString());
     }
-    return sb.append("]").toString();
+    return sj.toString();
   }
 }

@@ -14,7 +14,7 @@ import org.plumelib.util.IPair;
  * NewScanner scans the source tree and determines the index of a given new, where the i^th index
  * corresponds to the i^th new, using 0-based indexing.
  */
-public class NewScanner extends CommonScanner {
+public final class NewScanner extends CommonScanner {
   private static boolean debug = false;
 
   static Map<IPair<TreePath, Tree>, Integer> cache = new HashMap<>();

@@ -24,7 +24,7 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 
 /** Utility methods for the Value Checker. */
-public class ValueCheckerUtils {
+public final class ValueCheckerUtils {
 
   /** Do not instantiate. */
   private ValueCheckerUtils() {

@@ -41,7 +41,7 @@ import org.plumelib.util.IPair;
  * @see Deterministic
  * @see Pure
  */
-public class PurityChecker {
+public final class PurityChecker {
 
   /** Do not instantiate. */
   private PurityChecker() {

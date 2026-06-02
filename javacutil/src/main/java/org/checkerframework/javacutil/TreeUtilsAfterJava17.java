@@ -15,7 +15,8 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
  * This class contains utility methods for reflectively accessing Tree classes and methods that were
  * added after Java 17.
  */
-public class TreeUtilsAfterJava17 {
+@SuppressWarnings("PMD.MissingStaticMethodInNonInstantiatableClass")
+public final class TreeUtilsAfterJava17 {
 
   /** Don't use. */
   private TreeUtilsAfterJava17() {
@@ -27,7 +28,7 @@ public class TreeUtilsAfterJava17 {
       Integer.parseInt(SourceVersion.latest().toString().substring("RELEASE_".length()));
 
   /** Utility methods for accessing {@code CaseTree} methods. */
-  public static class CaseUtils {
+  public static final class CaseUtils {
 
     /** Don't use. */
     private CaseUtils() {
@@ -35,10 +36,12 @@ public class TreeUtilsAfterJava17 {
     }
 
     /** The {@code CaseTree.getLabels} method for Java 21 and higher; null otherwise. */
-    private static @Nullable Method GET_LABELS = null;
+    private static @Nullable Method GET_LABELS =
+        sourceVersionNumber >= 21 ? getMethod(CaseTree.class, "getLabels") : null;
 
     /** The {@code CaseTree.getGuard} method for Java 21 and higher; null otherwise. */
-    private static @Nullable Method GET_GUARD = null;
+    private static @Nullable Method GET_GUARD =
+        sourceVersionNumber >= 21 ? getMethod(CaseTree.class, "getGuard") : null;
 
     /**
      * Returns true if this is the default case for a switch statement or expression. (Also, returns
@@ -107,9 +110,6 @@ public class TreeUtilsAfterJava17 {
     private static List<? extends Tree> getLabels(
         CaseTree caseTree, boolean useDefaultCaseLabelTree) {
       if (sourceVersionNumber >= 21) {
-        if (GET_LABELS == null) {
-          GET_LABELS = getMethod(CaseTree.class, "getLabels");
-        }
         @SuppressWarnings("unchecked")
         List<? extends Tree> caseLabelTrees =
             (List<? extends Tree>) invokeNonNullResult(GET_LABELS, caseTree);
@@ -141,15 +141,12 @@ public class TreeUtilsAfterJava17 {
       if (sourceVersionNumber < 21) {
         return null;
       }
-      if (GET_GUARD == null) {
-        GET_GUARD = getMethod(CaseTree.class, "getGuard");
-      }
       return (ExpressionTree) invoke(GET_GUARD, caseTree);
     }
   }
 
   /** Utility methods for accessing {@code ConstantCaseLabelTree} methods. */
-  public static class ConstantCaseLabelUtils {
+  public static final class ConstantCaseLabelUtils {
 
     /** Don't use. */
     private ConstantCaseLabelUtils() {
@@ -190,7 +187,7 @@ public class TreeUtilsAfterJava17 {
   }
 
   /** Utility methods for accessing {@code DeconstructionPatternTree} methods. */
-  public static class DeconstructionPatternUtils {
+  public static final class DeconstructionPatternUtils {
 
     /** Don't use. */
     private DeconstructionPatternUtils() {
@@ -245,7 +242,7 @@ public class TreeUtilsAfterJava17 {
   }
 
   /** Utility methods for accessing {@code PatternCaseLabelTree} methods. */
-  public static class PatternCaseLabelUtils {
+  public static final class PatternCaseLabelUtils {
 
     /** Don't use. */
     private PatternCaseLabelUtils() {

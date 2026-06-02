@@ -15,7 +15,7 @@ import java.util.Map;
  * with a given name, so that the i^th index corresponds to the i^th declaration of a local variable
  * with that name, using 0-based indexing.
  */
-public class LocalVariableScanner extends CommonScanner {
+public final class LocalVariableScanner extends CommonScanner {
   /**
    * Computes the index i of the given tree along the given tree path such that it is the i^th
    * declaration of the local variable with the given var name, using 0-based indexing.
