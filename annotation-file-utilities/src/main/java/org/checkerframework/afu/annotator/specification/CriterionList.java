@@ -82,13 +82,9 @@ public class CriterionList {
 
   @Override
   public String toString() {
-    if (current == null) {
-      return "[]";
-    }
     StringJoiner sj = new StringJoiner(", ", "[", "]");
-    sj.add(current.toString());
-    for (CriterionList n = next; n.next != null; n = n.next) {
-      sj.add(current.toString());
+    for (CriterionList n = this; n != null; n = n.next) {
+      sj.add(n.current.toString());
     }
     return sj.toString();
   }
