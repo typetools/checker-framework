@@ -137,6 +137,8 @@ public final class SceneOps {
  * returning one because an {@link AElement} can be created only inside an {@link AScene}.
  */
 class DiffVisitor implements ElementVisitor<Void, Pair<AElement, AElement>> {
+  /** Creates a DiffVisitor. */
+  public DiffVisitor() {}
 
   /**
    * Adds all annotations that are in {@code minuend} but not in {@code subtrahend} to {@code

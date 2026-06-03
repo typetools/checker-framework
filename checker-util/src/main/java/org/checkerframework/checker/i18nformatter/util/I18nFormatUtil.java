@@ -187,8 +187,10 @@ public final class I18nFormatUtil {
       "", "short", "medium", "long", "full"
     };
 
-    /** Creates a new MessageFormatParser. */
-    MessageFormatParser() {}
+    /** Do not instantiate. */
+    private MessageFormatParser() {
+      throw new Error("Do not instantiate");
+    }
 
     /**
      * Given a format string, returns the conversion categories in it.

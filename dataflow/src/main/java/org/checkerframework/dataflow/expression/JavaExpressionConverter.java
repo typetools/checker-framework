@@ -16,6 +16,8 @@ import org.plumelib.util.CollectionsPlume;
  * should override the visit method of kinds of JavaExpressions to convert.
  */
 public abstract class JavaExpressionConverter extends JavaExpressionVisitor<JavaExpression, Void> {
+  /** Creates a JavaExpressionConverter. */
+  public JavaExpressionConverter() {}
 
   /**
    * Converts {@code javaExpr} and returns the resulting {@code JavaExpression}.

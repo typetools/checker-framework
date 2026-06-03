@@ -411,7 +411,10 @@ public final class Main {
               switch (leaf.getKind()) {
                 // TODO: Is this an infinite loop if leaf is a VARIABLE or METHOD?
                 case VARIABLE -> varTree = (JCTree.JCVariableDecl) leaf;
-                case METHOD -> methTree = (JCTree.JCMethodDecl) leaf;
+                case METHOD -> {
+                  // This assignment is not used.
+                  // methTree = (JCTree.JCMethodDecl) leaf;
+                }
                 case ANNOTATION_TYPE, CLASS, ENUM, INTERFACE -> {
                   break loop;
                 }

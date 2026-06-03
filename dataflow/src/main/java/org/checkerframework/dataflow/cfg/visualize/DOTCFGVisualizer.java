@@ -62,6 +62,9 @@ public class DOTCFGVisualizer<
   /** Terminator for lines that are left-justified. */
   protected static final String leftJustifiedTerminator = "\\l";
 
+  /** Creates a DOTCFGVisualizer. */
+  public DOTCFGVisualizer() {}
+
   @Override
   @SuppressWarnings("nullness") // assume arguments are set correctly
   public void init(Map<String, Object> args) {
