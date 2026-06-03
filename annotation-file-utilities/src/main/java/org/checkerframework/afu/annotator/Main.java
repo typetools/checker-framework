@@ -765,7 +765,7 @@ public final class Main {
 
         Set<IPair<Integer, ASTPath>> positionKeysUnsorted = positions.keySet();
         Set<IPair<Integer, ASTPath>> positionKeysSorted =
-            new TreeSet<IPair<Integer, ASTPath>>(
+            new TreeSet<>(
                 (p1, p2) -> {
                   int c = Integer.compare(p2.first, p1.first);
                   if (c != 0) {

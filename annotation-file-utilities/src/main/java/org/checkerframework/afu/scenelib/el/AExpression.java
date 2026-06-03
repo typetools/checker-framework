@@ -44,7 +44,7 @@ public class AExpression extends AElement {
    * The method's annotated lambda expressions; map key is the offset of the invokedynamic bytecode
    */
   public final VivifyingMap<RelativeLocation, AMethod> funs =
-      new VivifyingMap<RelativeLocation, AMethod>(new LinkedHashMap<>()) {
+      new VivifyingMap<>(new LinkedHashMap<>()) {
         @Override
         public AMethod createValueFor(RelativeLocation k) {
           return new AMethod(k.toString()); // FIXME: find generated method name

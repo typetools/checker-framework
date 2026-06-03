@@ -155,7 +155,7 @@ public class AField extends ADeclaration {
   }
 
   static <K extends Object> VivifyingMap<K, AField> newVivifyingLHMap_AF() {
-    return new VivifyingMap<K, AField>(new LinkedHashMap<>()) {
+    return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public AField createValueFor(K k) {
         return new AField(k.toString());

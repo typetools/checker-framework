@@ -433,7 +433,7 @@ public class I18nFormatterTreeUtil {
         // figure out if argType is an array
         type =
             argType.accept(
-                new SimpleTypeVisitor8<InvocationType, Class<Void>>() {
+                new SimpleTypeVisitor8<>() {
                   @Override
                   protected InvocationType defaultAction(TypeMirror e, Class<Void> p) {
                     // not an array
@@ -545,7 +545,7 @@ public class I18nFormatterTreeUtil {
     public Class<? extends Object> visitDeclared(DeclaredType dt, Class<Void> v) {
       return dt.asElement()
           .accept(
-              new SimpleElementVisitor8<Class<? extends Object>, Class<Void>>() {
+              new SimpleElementVisitor8<>() {
                 @Override
                 public Class<? extends Object> visitType(TypeElement te, Class<Void> v) {
                   try {

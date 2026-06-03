@@ -395,7 +395,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * IPair<?,?>} may be equal, but they both should be visited.
      */
     private final Set<AnnotatedTypeMirror> visitedTypes =
-        Collections.newSetFromMap(new IdentityHashMap<AnnotatedTypeMirror, Boolean>());
+        Collections.newSetFromMap(new IdentityHashMap<>());
 
     /**
      * Returns true if the {@link AnnotatedTypeMirror} has been visited. If it has not, then it is

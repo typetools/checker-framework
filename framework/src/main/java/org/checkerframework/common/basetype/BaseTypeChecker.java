@@ -104,7 +104,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     }
 
     // If a visitor couldn't be loaded reflectively, return the default.
-    return new BaseTypeVisitor<BaseAnnotatedTypeFactory>(this);
+    return new BaseTypeVisitor<>(this);
   }
 
   /**

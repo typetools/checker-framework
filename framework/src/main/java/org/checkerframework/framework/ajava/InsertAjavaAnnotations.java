@@ -88,7 +88,7 @@ public class InsertAjavaAnnotations {
       System.exit(1);
     }
 
-    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
     try (JavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null)) {
       if (fileManager == null) {
         System.err.println("Could not get file manager");
@@ -587,7 +587,7 @@ public class InsertAjavaAnnotations {
     InsertAjavaAnnotations inserter = new InsertAjavaAnnotations(createElements());
     // For each Java file, this visitor inserts annotations into it.
     FileVisitor<Path> insertionVisitor =
-        new SimpleFileVisitor<Path>() {
+        new SimpleFileVisitor<>() {
           @Override
           public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
             if (!path.getFileName().toString().endsWith(".java")) {
