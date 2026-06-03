@@ -74,6 +74,7 @@ public final class Annotation {
         valueString.append(Arrays.toString(coll.toArray()));
         classString.append(" {");
         for (Object elt : coll) {
+          assert elt != null : "@AssumeAssertion(nullness): annotation fields are non-null";
           classString.append(" ");
           classString.append(elt.getClass());
         }
@@ -265,11 +266,13 @@ public final class Annotation {
       StringJoiner sj = new StringJoiner(", ", "(", ")");
       for (Entry<String, Object> field : fieldValues.entrySet()) {
         // parameters of the annotation
+        String key = field.getKey();
+        Object value = field.getValue();
         StringBuilder fieldSb = new StringBuilder();
-        fieldSb.append(field.getKey());
+        fieldSb.append(key);
         fieldSb.append('=');
         AnnotationFieldType fieldType = def.fieldTypes.get(field.getKey());
-        fieldType.format(fieldSb, field.getValue());
+        fieldType.format(fieldSb, value);
         sj.add(fieldSb);
       }
       sb.append(sj);

@@ -52,13 +52,21 @@ public final class ArrayAFT extends AnnotationFieldType {
     int size = asCollection.size();
     if (size == 1) {
       Object elt = asCollection.iterator().next();
-      elementType.format(sb, elt);
+      if (elementType == null) {
+        sb.append("null");
+      } else {
+        elementType.format(sb, elt);
+      }
       return;
     }
     StringJoiner sj = new StringJoiner(", ", "{", "}");
     for (Object elt : asCollection) {
       StringBuilder eltSb = new StringBuilder();
-      elementType.format(eltSb, elt);
+      if (elementType == null) {
+        sb.append("null");
+      } else {
+        elementType.format(eltSb, elt);
+      }
       sj.add(eltSb);
     }
     sb.append(sj);
