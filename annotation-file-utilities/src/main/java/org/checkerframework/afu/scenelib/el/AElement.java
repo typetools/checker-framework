@@ -176,6 +176,11 @@ public class AElement implements Cloneable {
     return null;
   }
 
+  /**
+   * Append the top-level annotations on this element, to {@code sb}.
+   *
+   * @param sb where to output the formatted annotations
+   */
   public void tlAnnotationsHereFormatted(StringBuilder sb) {
     StringJoiner sj = new StringJoiner(", ");
     for (Annotation aElement : tlAnnotationsHere) {
