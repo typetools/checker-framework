@@ -6,6 +6,7 @@ import com.sun.tools.javac.util.Context;
 import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.util.List;
+import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
@@ -33,6 +34,7 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Outputs the method signatures of a class with fully annotated types.
@@ -155,16 +157,9 @@ public class SignaturePrinter extends AbstractTypeProcessor {
         return;
       }
 
-      out.print("<");
-      boolean isntFirst = false;
-      for (AnnotatedTypeMirror param : params) {
-        if (isntFirst) {
-          out.print(", ");
-        }
-        isntFirst = true;
-        out.print(param);
-      }
-      out.print("> ");
+      out.print('<');
+      out.print(StringsPlume.join(", ", params));
+      out.print('>');
     }
 
     public void printParameters(AnnotatedExecutableType type) {
@@ -185,16 +180,11 @@ public class SignaturePrinter extends AbstractTypeProcessor {
         return;
       }
 
-      out.print(" throws ");
-
-      boolean isntFirst = false;
+      StringJoiner result = new StringJoiner(", ", " throws ", "");
       for (AnnotatedTypeMirror thrown : type.getThrownTypes()) {
-        if (isntFirst) {
-          out.print(", ");
-        }
-        isntFirst = true;
-        out.print(thrown);
+        result.add(thrown.toString());
       }
+      out.print(result.toString());
     }
 
     /**
@@ -295,17 +285,11 @@ public class SignaturePrinter extends AbstractTypeProcessor {
         return;
       }
 
-      out.print("extends ");
-
-      boolean isntFirst = false;
+      StringJoiner result = new StringJoiner(", ", "extends ", " ");
       for (AnnotatedDeclaredType st : dt.directSupertypes()) {
-        if (isntFirst) {
-          out.print(", ");
-        }
-        isntFirst = true;
-        out.print(st);
+        result.add(st.toString());
       }
-      out.print(' ');
+      out.print(result.toString());
     }
 
     @Override

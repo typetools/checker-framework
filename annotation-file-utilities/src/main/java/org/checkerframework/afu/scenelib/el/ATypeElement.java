@@ -94,9 +94,8 @@ public class ATypeElement extends AElement {
       sb.append(' ');
     }
     sb.append('{');
-    String linePrefix = "  ";
     for (Map.Entry<List<TypePathEntry>, ATypeElement> entry : innerTypes.entrySet()) {
-      sb.append(linePrefix);
+      sb.append("  ");
       sb.append(entry.getKey().toString());
       sb.append(" => ");
       sb.append(entry.getValue().toString());

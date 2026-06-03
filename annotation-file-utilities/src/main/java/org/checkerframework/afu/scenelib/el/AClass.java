@@ -164,6 +164,7 @@ public class AClass extends ADeclaration {
   }
 
   public String unparse(String linePrefix) {
+    // Cannot use StringJoiner because MapsP.mapToStringMultiLine side-effects a StringBuffer.
     StringBuilder sb = new StringBuilder();
     sb.append(linePrefix);
     sb.append(toString());

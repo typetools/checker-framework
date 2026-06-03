@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.StringJoiner;
 import org.checkerframework.afu.scenelib.el.AnnotationDef;
 import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -59,24 +60,26 @@ public final class Annotation {
     for (String fieldname : fieldValues.keySet()) {
       AnnotationFieldType aft = def.fieldTypes.get(fieldname);
       Object value = fieldValues.get(fieldname);
-      String valueString;
-      String classString = value.getClass().toString();
+      StringBuilder valueString = new StringBuilder();
+      StringBuilder classString = new StringBuilder();
+      classString.append(value.getClass().toString());
       if (value instanceof Object[] arr) {
-        valueString = Arrays.toString(arr);
-        classString += " {";
+        valueString.append(Arrays.toString(arr));
+        classString.append(" {");
         for (Object elt : arr) {
-          classString += " " + elt.getClass();
+          classString.append(" " + elt.getClass());
         }
-        classString += "}";
+        classString.append("}");
       } else if (value instanceof Collection<?> coll) {
-        valueString = Arrays.toString(coll.toArray());
-        classString += " {";
+        valueString.append(Arrays.toString(coll.toArray()));
+        classString.append(" {");
         for (Object elt : coll) {
-          classString += " " + elt.getClass();
+          classString.append(" ");
+          classString.append(elt.getClass());
         }
-        classString += " }";
+        classString.append(" }");
       } else {
-        valueString = value.toString();
+        valueString.append(value.toString());
         // No need to modify valueString.
       }
       assert aft.isValidValue(value)
@@ -259,21 +262,17 @@ public final class Annotation {
       fieldType.format(sb, fieldValue);
       sb.append(')');
     } else if (!fieldValues.isEmpty()) {
-      sb.append('(');
-      boolean notfirst = false;
+      StringJoiner sj = new StringJoiner(", ", "(", ")");
       for (Entry<String, Object> field : fieldValues.entrySet()) {
         // parameters of the annotation
-        if (notfirst) {
-          sb.append(", ");
-        } else {
-          notfirst = true;
-        }
-        sb.append(field.getKey());
-        sb.append('=');
+        StringBuilder fieldSb = new StringBuilder();
+        fieldSb.append(field.getKey());
+        fieldSb.append('=');
         AnnotationFieldType fieldType = def.fieldTypes.get(field.getKey());
-        fieldType.format(sb, field.getValue());
+        fieldType.format(fieldSb, field.getValue());
+        sj.add(fieldSb);
       }
-      sb.append(')');
+      sb.append(sj);
     }
   }
 }

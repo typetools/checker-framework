@@ -60,6 +60,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.StringJoiner;
 import org.plumelib.util.ArraysPlume;
 
 /** A path through the AST. */
@@ -1309,12 +1310,11 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
     if (isEmpty()) {
       return "";
     }
-    Iterator<ASTEntry> iter = iterator();
-    StringBuilder sb = new StringBuilder().append(iter.next());
-    while (iter.hasNext()) {
-      sb = sb.append(", ").append(iter.next());
+    StringJoiner sj = new StringJoiner(", ");
+    for (ASTEntry entry : this) {
+      sj.add(entry.toString());
     }
-    return sb.toString();
+    return sj.toString();
   }
 } // end of class ASTPath
 

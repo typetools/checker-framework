@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.TreeSet;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeKind;
@@ -1391,15 +1392,11 @@ public class Insertions implements Iterable<Insertion> {
 
       @Override
       public String toString() {
-        StringBuilder sb = new StringBuilder(base.toString());
-        String s = "<";
+        StringJoiner sj = new StringJoiner(", ", base.toString() + "<", ">");
         for (Tree t : typeArgs) {
-          sb.append(s);
-          sb.append(t.toString());
-          s = ", ";
+          sj.add(t.toString());
         }
-        sb.append('>');
-        return sb.toString();
+        return sj.toString();
       }
     }
 

@@ -1,6 +1,7 @@
 package org.checkerframework.afu.scenelib.field;
 
 import java.util.Collection;
+import java.util.StringJoiner;
 import org.checkerframework.afu.scenelib.AnnotationBuilder;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -54,17 +55,13 @@ public final class ArrayAFT extends AnnotationFieldType {
       elementType.format(sb, elt);
       return;
     }
-    sb.append('{');
-    boolean notfirst = false;
+    StringJoiner sj = new StringJoiner(", ", "{", "}");
     for (Object elt : asCollection) {
-      if (notfirst) {
-        sb.append(", ");
-      } else {
-        notfirst = true;
-      }
-      elementType.format(sb, elt);
+      StringBuilder eltSb = new StringBuilder();
+      elementType.format(eltSb, elt);
+      sj.add(eltSb);
     }
-    sb.append('}');
+    sb.append(sj);
   }
 
   @Override

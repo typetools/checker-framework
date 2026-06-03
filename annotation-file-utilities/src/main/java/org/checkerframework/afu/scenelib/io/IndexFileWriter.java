@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.AnnotationBuilder;
 import org.checkerframework.afu.scenelib.el.AClass;
@@ -228,15 +229,13 @@ public final class IndexFileWriter {
       TypePath typePath = TypePathEntry.listToTypePath(ite.getKey());
       AElement it = ite.getValue();
       pw.print(indentation + INDENT + INDENT + "inner-type");
-      boolean first = true;
-      for (int index = 0; index < typePath.getLength(); index++) {
-        if (first) {
-          pw.print(' ');
-        } else {
-          pw.print(',');
+      if (typePath.getLength() > 0) {
+        StringJoiner sj = new StringJoiner(",");
+        for (int index = 0; index < typePath.getLength(); index++) {
+          sj.add(typePathStepToString(typePath, index));
         }
-        pw.print(typePathStepToString(typePath, index));
-        first = false;
+        pw.print(' ');
+        pw.print(sj);
       }
       pw.print(':');
       printAnnotations(it);
