@@ -159,7 +159,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
       out.print('<');
       out.print(StringsPlume.join(", ", params));
-      out.print('>');
+      out.print("> ");
     }
 
     public void printParameters(AnnotatedExecutableType type) {

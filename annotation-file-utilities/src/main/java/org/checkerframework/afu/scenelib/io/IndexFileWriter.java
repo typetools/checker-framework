@@ -229,7 +229,7 @@ public final class IndexFileWriter {
       TypePath typePath = TypePathEntry.listToTypePath(ite.getKey());
       AElement it = ite.getValue();
       pw.print(indentation + INDENT + INDENT + "inner-type");
-      if (typePath.getLength() > 0) {
+      if (typePath != null && typePath.getLength() > 0) {
         StringJoiner sj = new StringJoiner(",");
         for (int index = 0; index < typePath.getLength(); index++) {
           sj.add(typePathStepToString(typePath, index));
