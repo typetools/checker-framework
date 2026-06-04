@@ -3,6 +3,7 @@ package org.checkerframework.afu.scenelib.field;
 import java.util.Collection;
 import java.util.StringJoiner;
 import org.checkerframework.afu.scenelib.AnnotationBuilder;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** An {@link ArrayAFT} represents an annotation field type that is an array. */
@@ -48,22 +49,22 @@ public final class ArrayAFT extends AnnotationFieldType {
 
   @Override
   public void format(StringBuilder sb, Object o) {
-    Collection<?> asCollection = (Collection<?>) o;
+    Collection<? extends @NonNull Object> asCollection = (Collection<? extends @NonNull Object>) o;
     int size = asCollection.size();
     if (size == 1) {
-      Object elt = asCollection.iterator().next();
       if (elementType == null) {
         sb.append("null");
       } else {
+        @NonNull Object elt = asCollection.iterator().next();
         elementType.format(sb, elt);
       }
       return;
     }
     StringJoiner sj = new StringJoiner(", ", "{", "}");
-    for (Object elt : asCollection) {
+    for (@NonNull Object elt : asCollection) {
       StringBuilder eltSb = new StringBuilder();
       if (elementType == null) {
-        sb.append("null");
+        eltSb.append("null");
       } else {
         elementType.format(eltSb, elt);
       }

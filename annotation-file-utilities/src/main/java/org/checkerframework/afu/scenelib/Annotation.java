@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import java.util.StringJoiner;
 import org.checkerframework.afu.scenelib.el.AnnotationDef;
 import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
@@ -266,12 +267,13 @@ public final class Annotation {
       StringJoiner sj = new StringJoiner(", ", "(", ")");
       for (Entry<String, Object> field : fieldValues.entrySet()) {
         // parameters of the annotation
-        String key = field.getKey();
+        @KeyFor({"fieldValues", "def.fieldTypes"}) String key = field.getKey();
         Object value = field.getValue();
+        AnnotationFieldType fieldType = def.fieldTypes.get(key);
+
         StringBuilder fieldSb = new StringBuilder();
         fieldSb.append(key);
         fieldSb.append('=');
-        AnnotationFieldType fieldType = def.fieldTypes.get(field.getKey());
         fieldType.format(fieldSb, value);
         sj.add(fieldSb);
       }
