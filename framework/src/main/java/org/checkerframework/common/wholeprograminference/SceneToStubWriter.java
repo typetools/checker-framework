@@ -154,15 +154,16 @@ public final class SceneToStubWriter {
         AnnotationFieldType aft = a.def().fieldTypes.get("value");
         aft.format(sb, a.fieldValues.get("value"));
       } else {
-        // This simulates: new StringJoiner(", ", "@" + simpleAnnoName + "(", ")")
+        StringJoiner sj = new StringJoiner(", ");
         for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
           AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
-          sb.append(f.getKey());
-          sb.append("=");
-          aft.format(sb, f.getValue());
-          sb.append(", ");
+          StringBuilder fsb = new StringBuilder();
+          fsb.append(f.getKey());
+          fsb.append("=");
+          aft.format(fsb, f.getValue());
+          sj.add(fsb);
         }
-        sb.delete(sb.length() - 2, sb.length());
+        sb.append(sj);
       }
       sb.append(")");
     }

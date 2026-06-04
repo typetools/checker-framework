@@ -163,7 +163,14 @@ public class AClass extends ADeclaration {
     return unparse("");
   }
 
+  /**
+   * Format this class, indenting each line with {@code linePrefix}.
+   *
+   * @param linePrefix the indentation to use on each line
+   * @return a formatted version of this class
+   */
   public String unparse(String linePrefix) {
+    // Cannot use StringJoiner because MapsP.mapToStringMultiLine side-effects a StringBuffer.
     StringBuilder sb = new StringBuilder();
     sb.append(linePrefix);
     sb.append(toString());
