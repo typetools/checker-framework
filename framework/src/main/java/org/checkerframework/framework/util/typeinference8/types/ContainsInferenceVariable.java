@@ -20,7 +20,7 @@ import javax.lang.model.type.WildcardType;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** Helper class for determining if a type contains an inference variable. */
-public class ContainsInferenceVariable {
+public final class ContainsInferenceVariable {
 
   /** Don't use. */
   private ContainsInferenceVariable() {}

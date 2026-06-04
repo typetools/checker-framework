@@ -34,8 +34,10 @@ import org.plumelib.util.CollectionsPlume;
  */
 public class AnnotationConverter {
 
-  /** Creates a new AnnotationConverter. */
-  AnnotationConverter() {}
+  /** Do not instantiate. */
+  private AnnotationConverter() {
+    throw new Error("Do not instantiate");
+  }
 
   /**
    * Converts an {@link javax.lang.model.element.AnnotationMirror} into an {@link Annotation}.

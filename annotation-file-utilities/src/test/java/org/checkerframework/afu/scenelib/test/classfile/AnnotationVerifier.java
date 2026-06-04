@@ -280,7 +280,12 @@ public class AnnotationVerifier {
       return sb.toString();
     }
 
-    // pretty-prints this into the given list of lines
+    /**
+     * Pretty-prints this into the given StringBuilder.
+     *
+     * @param sb the destination for the pretty-printed output
+     * @param indent a prefix for each line of the output
+     */
     public void prettyPrint(StringBuilder sb, String indent) {
 
       // avoid boilerplate of adding indent and lineSep every time

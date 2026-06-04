@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.afu.annotator.Main;
 import org.checkerframework.afu.scenelib.el.TypePathEntry;
 import org.checkerframework.afu.scenelib.io.ASTPath;
@@ -309,13 +310,11 @@ public abstract class Insertion {
         if (!declaredType.isWildcard()) {
           List<Type> typeArguments = declaredType.getTypeParameters();
           if (!typeArguments.isEmpty()) {
-            result.append('<');
-            result.append(typeToString(typeArguments.get(0), abbreviate));
-            for (int i = 1; i < typeArguments.size(); i++) {
-              result.append(", ");
-              result.append(typeToString(typeArguments.get(i), abbreviate));
+            StringJoiner sj = new StringJoiner(", ", "<", ">");
+            for (Type typeArgument : typeArguments) {
+              sj.add(typeToString(typeArgument, abbreviate));
             }
-            result.append('>');
+            result.append(sj);
           }
           Type innerType = declaredType.getInnerType();
           if (innerType != null) {
@@ -360,7 +359,7 @@ public abstract class Insertion {
     for (String annotation : type.getAnnotations()) {
       AnnotationInsertion ins = new AnnotationInsertion(annotation);
       result.append(ins.getText(abbreviate));
-      result.append(" ");
+      result.append(' ');
       if (abbreviate) {
         packageNames.addAll(ins.getPackageNames());
       }

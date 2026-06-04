@@ -28,7 +28,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * represent the result of capture conversion applied to {@code G<A1, ..., An>} (where A1, ..., An
  * may be types or wildcards and may mention inference variables).
  */
-public class CaptureBound {
+public final class CaptureBound {
   /** {@code G<A1, ..., An>} sometimes called the right-hand side. */
   private final AbstractType capturedType;
 

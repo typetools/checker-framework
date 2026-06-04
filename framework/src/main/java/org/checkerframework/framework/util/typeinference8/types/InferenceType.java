@@ -27,7 +27,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * A type-like structure that contains at least one inference variable, but is not an inference
  * variable.
  */
-public class InferenceType extends AbstractType {
+public final class InferenceType extends AbstractType {
 
   /**
    * The underlying Java type. It contains type variables that are mapped to inference variables in

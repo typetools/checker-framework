@@ -617,10 +617,9 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           // So, issue a warning if the annotations on the extends bound are not the
           // same as the annotations on the super bound.
           AnnotatedTypeMirror superBound = wildcard.getSuperBound();
-          if (!(hierarchy.isSubtypeShallowEffective(superBound, extendsBound)
-              && hierarchy.isSubtypeShallowEffective(extendsBound, superBound))) {
+          if (!hierarchy.equalsShallowEffective(superBound, extendsBound)) {
             checker.reportError(
-                tree.getTypeArguments().get(i), "super.wildcard", extendsBound, superBound);
+                tree.getTypeArguments().get(i), "super.wildcard", superBound, extendsBound);
           }
         }
       }

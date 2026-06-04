@@ -3,6 +3,12 @@ plugins {
   alias(libs.plugins.biz.aqute.bnd.builder)
 }
 
+/*
+ tasks.named("pmdMain").configure {
+ dependsOn("jar")
+ }
+ */
+
 jar {
   doLast {
     copy {

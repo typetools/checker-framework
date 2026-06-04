@@ -215,7 +215,12 @@ public final class ElementAnnotationApplier {
    * Annotates uses of type variables with annotation written explicitly on the type parameter
    * declaration and/or its upper bound.
    */
-  private static class TypeVarAnnotator extends AnnotatedTypeScanner<Void, AnnotatedTypeFactory> {
+  private static final class TypeVarAnnotator
+      extends AnnotatedTypeScanner<Void, AnnotatedTypeFactory> {
+
+    /** Creates a new TypeVarAnnotator. */
+    TypeVarAnnotator() {}
+
     @Override
     public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeFactory factory) {
       TypeParameterElement tpelt = (TypeParameterElement) type.getUnderlyingType().asElement();

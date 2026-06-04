@@ -21,6 +21,11 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class Heuristics {
 
+  /** Do not instantiate. */
+  private Heuristics() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Returns true if a tree has a particular set of direct parents, ignoring blocks and parentheses.
    *
