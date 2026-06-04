@@ -215,12 +215,12 @@ public final class TreeUtils {
    */
   public static boolean isSelfAccess(ExpressionTree tree) {
     ExpressionTree tr = withoutParens(tree);
-    // If method invocation check the method select
+    // If method invocation, check the method select.
     if (tr instanceof ArrayAccessTree) {
       return false;
     }
 
-    if (tree instanceof MethodInvocationTree mit) {
+    if (tr instanceof MethodInvocationTree mit) {
       tr = mit.getMethodSelect();
     }
     tr = withoutParens(tr);
