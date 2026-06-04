@@ -267,6 +267,7 @@ public final class Annotation {
       StringJoiner sj = new StringJoiner(", ", "(", ")");
       for (Entry<String, Object> field : fieldValues.entrySet()) {
         // parameters of the annotation
+        @SuppressWarnings("keyfor:assignment") // the two maps have the same keys
         @KeyFor({"fieldValues", "def.fieldTypes"}) String key = field.getKey();
         Object value = field.getValue();
         AnnotationFieldType fieldType = def.fieldTypes.get(key);
