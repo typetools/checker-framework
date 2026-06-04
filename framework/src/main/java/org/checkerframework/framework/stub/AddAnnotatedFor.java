@@ -127,7 +127,7 @@ public final class AddAnnotatedFor {
    * of the given type systems are run.
    */
   private static final ElementVisitor<Void, Set<String>> annotatedForVisitor =
-      new ElementVisitor<Void, Set<String>>() {
+      new ElementVisitor<>() {
         @Override
         public Void visitAnnotationDef(AnnotationDef el, Set<String> annotatedFor) {
           return null;

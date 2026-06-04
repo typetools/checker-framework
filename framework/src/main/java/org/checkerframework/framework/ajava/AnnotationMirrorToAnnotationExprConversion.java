@@ -45,6 +45,12 @@ import org.checkerframework.javacutil.TypesUtils;
  * namely {@code annotationMirrorToAnnotationExpr}.
  */
 public class AnnotationMirrorToAnnotationExprConversion {
+
+  /** Do not instantiate. */
+  private AnnotationMirrorToAnnotationExprConversion() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Converts an AnnotationMirror into a JavaParser {@code AnnotationExpr}.
    *

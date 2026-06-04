@@ -53,6 +53,11 @@ import org.plumelib.util.StringsPlume;
  */
 public class TypeVisualizer {
 
+  /** Do not instantiate. */
+  private TypeVisualizer() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Creates a dot file at dest that contains a digraph for the structure of {@code type}.
    *

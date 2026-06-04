@@ -276,7 +276,7 @@ public class FormatterTreeUtil {
         // figure out if argType is an array
         type =
             argType.accept(
-                new SimpleTypeVisitor8<InvocationType, Class<Void>>() {
+                new SimpleTypeVisitor8<>() {
                   @Override
                   protected InvocationType defaultAction(TypeMirror e, Class<Void> p) {
                     // not an array
@@ -386,7 +386,7 @@ public class FormatterTreeUtil {
 
       // is it the null literal
       return type.accept(
-          new SimpleTypeVisitor8<Boolean, Class<Void>>() {
+          new SimpleTypeVisitor8<>() {
             @Override
             protected Boolean defaultAction(TypeMirror e, Class<Void> p) {
               // it's not the null literal

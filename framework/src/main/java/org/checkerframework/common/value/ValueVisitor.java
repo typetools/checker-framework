@@ -125,7 +125,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
    */
   private void replaceSpecialIntRangeAnnotations(AnnotatedTypeMirror varType) {
     AnnotatedTypeScanner<Void, Void> replaceSpecialIntRangeAnnotations =
-        new AnnotatedTypeScanner<Void, Void>() {
+        new AnnotatedTypeScanner<>() {
           @Override
           protected Void scan(AnnotatedTypeMirror type, Void p) {
             if (type.hasPrimaryAnnotation(IntRangeFromPositive.class)
@@ -370,23 +370,23 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
           switch (castTypeKind) {
             case BYTE -> {
               TreeSet<Byte> castValuesSet =
-                  new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, castValues));
+                  new TreeSet<>(CollectionsPlume.mapList(Number::byteValue, castValues));
               TreeSet<Byte> exprValuesSet =
-                  new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, exprValues));
+                  new TreeSet<>(CollectionsPlume.mapList(Number::byteValue, exprValues));
               return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
             }
             case INT -> {
               TreeSet<Integer> castValuesSet =
-                  new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, castValues));
+                  new TreeSet<>(CollectionsPlume.mapList(Number::intValue, castValues));
               TreeSet<Integer> exprValuesSet =
-                  new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, exprValues));
+                  new TreeSet<>(CollectionsPlume.mapList(Number::intValue, exprValues));
               return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
             }
             case SHORT -> {
               TreeSet<Short> castValuesSet =
-                  new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, castValues));
+                  new TreeSet<>(CollectionsPlume.mapList(Number::shortValue, castValues));
               TreeSet<Short> exprValuesSet =
-                  new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, exprValues));
+                  new TreeSet<>(CollectionsPlume.mapList(Number::shortValue, exprValues));
               return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
             }
             default -> {
@@ -417,9 +417,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             // Convert expression values to what they would be after float cast, then check
             // containment.
             TreeSet<Float> castValuesSet =
-                new TreeSet<Float>(CollectionsPlume.mapList(Number::floatValue, castValues));
+                new TreeSet<>(CollectionsPlume.mapList(Number::floatValue, castValues));
             TreeSet<Float> exprValuesSet =
-                new TreeSet<Float>(CollectionsPlume.mapList(Number::floatValue, exprValues));
+                new TreeSet<>(CollectionsPlume.mapList(Number::floatValue, exprValues));
             return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
           }
         }

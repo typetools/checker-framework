@@ -188,7 +188,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
    */
   // It is a bit wasteful that this is recomputed for each constructor.
   private String[] fieldsToInitialize(TypeElement type) {
-    List<String> result = new ArrayList<String>();
+    List<String> result = new ArrayList<>();
 
     for (Element member : type.getEnclosedElements()) {
 

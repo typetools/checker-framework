@@ -205,6 +205,7 @@ public final class Main {
   public static boolean temporaryDebug = false;
 
   /** Does the work of {@link #filteredScene}. */
+  @SuppressWarnings("PMD.UseDiamondOperator")
   private static ElementVisitor<Void, AElement> classFilter =
       new ElementVisitor<Void, AElement>() {
         <K, V extends AElement> Void filter(VivifyingMap<K, V> vm0, VivifyingMap<K, V> vm1) {
@@ -411,7 +412,10 @@ public final class Main {
               switch (leaf.getKind()) {
                 // TODO: Is this an infinite loop if leaf is a VARIABLE or METHOD?
                 case VARIABLE -> varTree = (JCTree.JCVariableDecl) leaf;
-                case METHOD -> methTree = (JCTree.JCMethodDecl) leaf;
+                case METHOD -> {
+                  // This assignment is not used.
+                  // methTree = (JCTree.JCMethodDecl) leaf;
+                }
                 case ANNOTATION_TYPE, CLASS, ENUM, INTERFACE -> {
                   break loop;
                 }
@@ -762,7 +766,7 @@ public final class Main {
 
         Set<IPair<Integer, ASTPath>> positionKeysUnsorted = positions.keySet();
         Set<IPair<Integer, ASTPath>> positionKeysSorted =
-            new TreeSet<IPair<Integer, ASTPath>>(
+            new TreeSet<>(
                 (p1, p2) -> {
                   int c = Integer.compare(p2.first, p1.first);
                   if (c != 0) {

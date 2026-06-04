@@ -100,7 +100,7 @@ public class ATypeElementWithType extends ATypeElement {
    */
   /*package-private*/ static <K extends Object>
       VivifyingMap<K, ATypeElementWithType> newVivifyingLHMap_ATEWT() {
-    return new VivifyingMap<K, ATypeElementWithType>(new LinkedHashMap<>()) {
+    return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public ATypeElementWithType createValueFor(K k) {
         return new ATypeElementWithType(k.toString());

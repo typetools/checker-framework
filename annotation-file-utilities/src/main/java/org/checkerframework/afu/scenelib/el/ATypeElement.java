@@ -112,7 +112,7 @@ public class ATypeElement extends AElement {
   }
 
   static <K extends Object> VivifyingMap<K, ATypeElement> newVivifyingLHMap_ATE() {
-    return new VivifyingMap<K, ATypeElement>(new LinkedHashMap<>()) {
+    return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public ATypeElement createValueFor(K k) {
         return new ATypeElement(k.toString());
