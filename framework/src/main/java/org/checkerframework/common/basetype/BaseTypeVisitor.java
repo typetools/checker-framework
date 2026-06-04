@@ -1452,7 +1452,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * passed set.
    */
   private final JavaExpressionScanner<Set<Element>> findParameters =
-      new JavaExpressionScanner<Set<Element>>() {
+      new JavaExpressionScanner<>() {
         @Override
         protected Void visitLocalVariable(LocalVariable localVarExpr, Set<Element> parameters) {
           if (localVarExpr.getElement().getKind() == ElementKind.PARAMETER) {

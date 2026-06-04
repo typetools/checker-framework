@@ -673,8 +673,7 @@ public class IndexFileSpecification {
 
   // Returns a string representation of the annotations at the element.
   private Set<IPair<String, Annotation>> getElementAnnotations(AElement element) {
-    Set<IPair<String, Annotation>> result =
-        new LinkedHashSet<IPair<String, Annotation>>(element.tlAnnotationsHere.size());
+    Set<IPair<String, Annotation>> result = new LinkedHashSet<>(element.tlAnnotationsHere.size());
     for (Annotation a : element.tlAnnotationsHere) {
       StringBuilder sb = new StringBuilder();
       sb.append('@');

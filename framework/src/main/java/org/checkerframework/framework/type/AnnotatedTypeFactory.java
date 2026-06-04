@@ -75,7 +75,6 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import org.checkerframework.afu.scenelib.el.AMethod;
-import org.checkerframework.afu.scenelib.el.ATypeElement;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.interning.qual.FindDistinct;
@@ -652,14 +651,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
       if (wpiOutputFormat == WholeProgramInference.OutputFormat.AJAVA) {
         wholeProgramInference =
-            new WholeProgramInferenceImplementation<AnnotatedTypeMirror>(
+            new WholeProgramInferenceImplementation<>(
                 this,
                 new WholeProgramInferenceJavaParserStorage(
                     this, inferOutputDirectory, inferOutputOriginal),
                 showWpiFailedInferences);
       } else {
         wholeProgramInference =
-            new WholeProgramInferenceImplementation<ATypeElement>(
+            new WholeProgramInferenceImplementation<>(
                 this,
                 new WholeProgramInferenceScenesStorage(this, inferOutputDirectory),
                 showWpiFailedInferences);

@@ -57,7 +57,7 @@ public class AScene implements Cloneable {
 
   /** This scene's annotated classes; map key is class name. */
   public final VivifyingMap</*@BinaryName*/ String, AClass> classes =
-      new VivifyingMap<String, AClass>(new LinkedHashMap<>()) {
+      new VivifyingMap<>(new LinkedHashMap<>()) {
         @Override
         public AClass createValueFor(String k) {
           return new AClass(k);
@@ -291,7 +291,7 @@ public class AScene implements Cloneable {
    * AScene)} for explanation.)
    */
   private static ElementVisitor<Void, AElement> checkVisitor =
-      new ElementVisitor<Void, AElement>() {
+      new ElementVisitor<>() {
         @Override
         public Void visitAnnotationDef(AnnotationDef el, AElement arg) {
           return null;

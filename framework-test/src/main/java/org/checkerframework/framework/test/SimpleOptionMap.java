@@ -24,8 +24,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * needed to make this class usable from the command line.
  */
 public class SimpleOptionMap {
+
   /** A Map from optionName to arg, where arg is null if the option doesn't require any args. */
   private final Map<String, @Nullable String> options = new LinkedHashMap<>();
+
+  /** Creates a SimpleOptionMap. */
+  public SimpleOptionMap() {}
 
   /**
    * Clears the current set of options and copies the input options to this map.

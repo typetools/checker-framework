@@ -25,6 +25,11 @@ class TypeFromTree {
   private static final TypeFromExpressionVisitor expressionVisitor =
       new TypeFromExpressionVisitor();
 
+  /** Do not instantiate. */
+  private TypeFromTree() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Returns an AnnotatedTypeMirror representing the input expression tree.
    *
