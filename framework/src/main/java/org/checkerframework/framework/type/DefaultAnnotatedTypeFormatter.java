@@ -348,17 +348,18 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
       if (type.paramTypes == null) {
         sb.append("/*Parameters not initialized*/");
       } else if (!type.paramTypes.isEmpty()) {
+        // If a receiver was printed, a leading separator is needed before the first parameter.
+        if (rcv != null) {
+          sb.append(", ");
+        }
+        StringJoiner sj = new StringJoiner(", ");
         int p = 0;
         for (AnnotatedTypeMirror atm : type.paramTypes) {
-          if (rcv != null || p > 0) {
-            sb.append(", ");
-          }
-          sb.append(visit(atm, visiting));
           // Output some parameter names to make it look more like a method.
           // TODO: go to the element and look up real parameter names, maybe.
-          sb.append(" p");
-          sb.append(p++);
+          sj.add(visit(atm, visiting) + " p" + p++);
         }
+        sb.append(sj);
       }
       sb.append(')');
       if (type.thrownTypes == null) {

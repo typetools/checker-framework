@@ -17,7 +17,7 @@ import org.plumelib.options.Options;
  * A {@code ClassFileWriter} provides methods for inserting annotations from an {@link AScene} into
  * a class file.
  */
-public class ClassFileWriter {
+public final class ClassFileWriter {
 
   /** Do not instantiate. */
   private ClassFileWriter() {

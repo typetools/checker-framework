@@ -134,7 +134,8 @@ import org.plumelib.util.IPair;
  *
  * <!-- end options doc -->
  */
-public class Main {
+@SuppressWarnings("PMD.ShortClassName")
+public final class Main {
 
   /** Do not instantiate. */
   private Main() {
@@ -186,19 +187,25 @@ public class Main {
 
   // Debugging options go below here.
 
+  /** Print progress information. */
   @OptionGroup("Debugging options")
   @Option("-v Verbose (print progress information)")
   public static boolean verbose = false;
 
+  /** Print debug information. */
   @Option("Debug (print debug information)")
   public static boolean debug = false;
 
+  /** Print the stack if an error is thrown. */
   @Option("Print error stack")
   public static boolean print_error_stack = false;
 
+  /** Debugging flag. */
   // TODO: remove this.
   public static boolean temporaryDebug = false;
 
+  /** Does the work of {@link #filteredScene}. */
+  @SuppressWarnings("PMD.UseDiamondOperator")
   private static ElementVisitor<Void, AElement> classFilter =
       new ElementVisitor<Void, AElement>() {
         <K, V extends AElement> Void filter(VivifyingMap<K, V> vm0, VivifyingMap<K, V> vm1) {
@@ -398,14 +405,17 @@ public class Main {
           } catch (NumberFormatException e) {
             TreePath path = ASTIndex.getTreePath(tree, rec);
             JCTree.JCVariableDecl varTree = null;
-            JCTree.JCMethodDecl methTree = null;
+            JCTree.JCMethodDecl methTree;
             loop:
             while (path != null) {
               Tree leaf = path.getLeaf();
               switch (leaf.getKind()) {
                 // TODO: Is this an infinite loop if leaf is a VARIABLE or METHOD?
                 case VARIABLE -> varTree = (JCTree.JCVariableDecl) leaf;
-                case METHOD -> methTree = (JCTree.JCMethodDecl) leaf;
+                case METHOD -> {
+                  // This assignment is not used.
+                  // methTree = (JCTree.JCMethodDecl) leaf;
+                }
                 case ANNOTATION_TYPE, CLASS, ENUM, INTERFACE -> {
                   break loop;
                 }
@@ -756,7 +766,7 @@ public class Main {
 
         Set<IPair<Integer, ASTPath>> positionKeysUnsorted = positions.keySet();
         Set<IPair<Integer, ASTPath>> positionKeysSorted =
-            new TreeSet<IPair<Integer, ASTPath>>(
+            new TreeSet<>(
                 (p1, p2) -> {
                   int c = Integer.compare(p2.first, p1.first);
                   if (c != 0) {
@@ -1013,13 +1023,9 @@ public class Main {
           if (pkg.isEmpty()) {
             outfile = new File(outdir, javafile.getName());
           } else {
-            @SuppressWarnings("StringSplitter") // false positive because pkg is non-empty
-            String[] pkgPath = pkg.split("\\.");
-            StringBuilder sb = new StringBuilder(outdir);
-            for (int i = 0; i < pkgPath.length; i++) {
-              sb.append(File.separator).append(pkgPath[i]);
-            }
-            outfile = new File(sb.toString(), javafile.getName());
+            // `pkg` is non-empty.
+            String path = outdir + File.separator + pkg.replace(".", File.separator);
+            outfile = new File(path, javafile.getName());
           }
           outfile.getParentFile().mkdirs();
         }

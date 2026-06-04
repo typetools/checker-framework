@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -46,7 +45,7 @@ import org.plumelib.util.CollectionsPlume;
  * Utility methods for analyzing {@code Element}s. This complements {@link Elements}, providing
  * functionality that it does not.
  */
-public class ElementUtils {
+public final class ElementUtils {
 
   // Class cannot be instantiated.
   private ElementUtils() {
@@ -287,7 +286,7 @@ public class ElementUtils {
     if (enclosing == null) { // is this possible?
       return simpleName;
     }
-    if (ElementUtils.isTypeElement(enclosing)) {
+    if (isTypeElement(enclosing)) {
       return getBinaryName((TypeElement) enclosing) + "$" + simpleName;
     } else if (enclosing.getKind() == ElementKind.PACKAGE) {
       PackageElement pe = (PackageElement) enclosing;
@@ -313,9 +312,8 @@ public class ElementUtils {
   public static String getSimpleSignature(ExecutableElement element) {
     // note: constructor simple name is <init>
     StringJoiner sj = new StringJoiner(",", element.getSimpleName() + "(", ")");
-    for (Iterator<? extends VariableElement> i = element.getParameters().iterator();
-        i.hasNext(); ) {
-      sj.add(TypesUtils.simpleTypeName(i.next().asType()));
+    for (VariableElement paramElt : element.getParameters()) {
+      sj.add(TypesUtils.simpleTypeName(paramElt.asType()));
     }
     return sj.toString();
   }
@@ -561,7 +559,7 @@ public class ElementUtils {
       TypeMirror t = element.getEnclosingElement().asType();
       return TypesUtils.hasEnclosingType(t);
     } else if (element.getKind() == ElementKind.FIELD) {
-      if (ElementUtils.isStatic(element)
+      if (isStatic(element)
           // Artificial fields in interfaces are not marked as static, so check that
           // the field is not declared in an interface.
           || element.getEnclosingElement().getKind().isInterface()) {
@@ -572,7 +570,7 @@ public class ElementUtils {
         return !element.getSimpleName().contentEquals("this");
       }
     }
-    return element.getKind() == ElementKind.METHOD && !ElementUtils.isStatic(element);
+    return element.getKind() == ElementKind.METHOD && !isStatic(element);
   }
 
   /**
@@ -628,7 +626,7 @@ public class ElementUtils {
       // For each direct supertype of the current type element, if it
       // hasn't already been visited, push it onto the stack and
       // add it to our superElems set.
-      TypeElement supercls = ElementUtils.getSuperClass(current);
+      TypeElement supercls = getSuperClass(current);
       if (supercls != null) {
         if (!superElems.contains(supercls)) {
           stack.push(supercls);
@@ -665,7 +663,7 @@ public class ElementUtils {
   public static List<TypeElement> getDirectSuperTypeElements(TypeElement type, Elements elements) {
     TypeMirror superclass = type.getSuperclass();
     List<? extends TypeMirror> interfaces = type.getInterfaces();
-    List<TypeElement> result = new ArrayList<TypeElement>(interfaces.size() + 1);
+    List<TypeElement> result = new ArrayList<>(interfaces.size() + 1);
     if (superclass.getKind() != TypeKind.NONE) {
       @SuppressWarnings("nullness:assignment") // Not null because the TypeKind is not NONE.
       @NonNull TypeElement superclassElement = TypesUtils.getTypeElement(superclass);

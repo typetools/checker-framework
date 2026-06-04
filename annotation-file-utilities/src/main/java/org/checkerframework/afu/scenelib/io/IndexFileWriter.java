@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.AnnotationBuilder;
 import org.checkerframework.afu.scenelib.el.AClass;
@@ -228,15 +229,13 @@ public final class IndexFileWriter {
       TypePath typePath = TypePathEntry.listToTypePath(ite.getKey());
       AElement it = ite.getValue();
       pw.print(indentation + INDENT + INDENT + "inner-type");
-      boolean first = true;
-      for (int index = 0; index < typePath.getLength(); index++) {
-        if (first) {
-          pw.print(' ');
-        } else {
-          pw.print(',');
+      if (typePath != null && typePath.getLength() > 0) {
+        StringJoiner sj = new StringJoiner(",");
+        for (int index = 0; index < typePath.getLength(); index++) {
+          sj.add(typePathStepToString(typePath, index));
         }
-        pw.print(typePathStepToString(typePath, index));
-        first = false;
+        pw.print(' ');
+        pw.print(sj);
       }
       pw.print(':');
       printAnnotations(it);
@@ -479,26 +478,26 @@ public final class IndexFileWriter {
    * @param a the annotation to format
    */
   private static void formatAnnotation(StringBuilder sb, Annotation a) {
-    sb.append("@");
+    sb.append('@');
     sb.append(a.def().name);
     if (a.fieldValues.isEmpty()) {
       return;
     }
 
-    sb.append("(");
+    sb.append('(');
     boolean notfirst = false;
     for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
       if (notfirst) {
-        sb.append(",");
+        sb.append(',');
       } else {
         notfirst = true;
       }
       AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
       sb.append(f.getKey());
-      sb.append("=");
+      sb.append('=');
       formatAnnotationValue(sb, aft, f.getValue());
     }
-    sb.append(")");
+    sb.append(')');
   }
 
   /**
@@ -514,7 +513,7 @@ public final class IndexFileWriter {
       formatAnnotation(sb, (Annotation) o);
     } else if (aft instanceof ArrayAFT aaft) {
       List<?> l = (List<?>) o;
-      sb.append("{");
+      sb.append('{');
       if (aaft.elementType == null) {
         if (!l.isEmpty()) {
           throw new AssertionError("nonempty array of unknown type");
@@ -523,21 +522,21 @@ public final class IndexFileWriter {
         boolean notfirst = false;
         for (Object o2 : l) {
           if (notfirst) {
-            sb.append(",");
+            sb.append(',');
           } else {
             notfirst = true;
           }
           formatAnnotationValue(sb, aaft.elementType, o2);
         }
       }
-      sb.append("}");
+      sb.append('}');
     } else if (aft instanceof ClassTokenAFT) {
       aft.format(sb, o);
     } else if (aft instanceof BasicAFT && o instanceof String s) {
       sb.append(Strings.escape(s));
     } else if (aft instanceof BasicAFT && o instanceof Long) {
       sb.append(o.toString());
-      sb.append("L");
+      sb.append('L');
       // This causes assertion failures.  I'm not sure why.
       // else if (aft instanceof EnumAFT) {
       //     aft.format(sb, o);

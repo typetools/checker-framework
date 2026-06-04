@@ -38,7 +38,7 @@ public class WrapperMap<K, V> implements Map<K, V> {
 
   @SuppressWarnings("keyfor") // use of delegate object
   @Override
-  public Set<java.util.Map.Entry<K, V>> entrySet() {
+  public Set<Map.Entry<K, V>> entrySet() {
     return back.entrySet();
   }
 

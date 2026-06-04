@@ -61,6 +61,11 @@ import org.plumelib.util.IPair;
  */
 public class TypeArgumentMapper {
 
+  /** Do not instantiate. */
+  private TypeArgumentMapper() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Returns a mapping from subtype's type parameter indices to the indices of corresponding type
    * parameters in supertype.

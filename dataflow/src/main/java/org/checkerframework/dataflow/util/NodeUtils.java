@@ -19,7 +19,7 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 
 /** A utility class to operate on a given {@link Node}. */
-public class NodeUtils {
+public final class NodeUtils {
 
   /** Do not instantiate. */
   private NodeUtils() {

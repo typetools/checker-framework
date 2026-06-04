@@ -15,7 +15,7 @@ import org.plumelib.options.Options;
  * A {@code ClassFileReader } provides methods for reading in annotations from a class file into an
  * {@link AScene}.
  */
-public class ClassFileReader {
+public final class ClassFileReader {
 
   /** Do not instantiate. */
   private ClassFileReader() {

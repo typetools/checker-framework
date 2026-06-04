@@ -286,10 +286,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
         // Verify that res is not a subtype of any type in nonMatches
         for (Set<? extends AnnotationMirror> sam : nonMatches) {
           if (qualHierarchy.isSubtypeShallow(res, sam, tm)) {
-            String matchesOnePerLine = "";
-            for (Set<? extends AnnotationMirror> match : matches) {
-              matchesOnePerLine += System.lineSeparator() + "     " + match;
-            }
+            String matchesOnePerLine = StringsPlume.join(System.lineSeparator() + "     ", matches);
             throw new BugInCF(
                 StringsPlume.joinLines(
                     "Bug in @QualifierForLiterals(stringpatterns=...) in type"
