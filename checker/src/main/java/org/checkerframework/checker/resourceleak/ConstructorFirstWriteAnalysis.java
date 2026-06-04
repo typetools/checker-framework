@@ -480,7 +480,11 @@ final class ConstructorFirstWriteAnalysis {
 
     @Override
     public FirstWriteScanResult reduce(FirstWriteScanResult r1, FirstWriteScanResult r2) {
-      // Preserve the first decisive result found among the children.
+      // Preserve the first decisive result found among sequential child nodes, such as the
+      // arguments in foo(this.f = new FileInputStream("A"), this.f = new FileInputStream("B")).
+      // For branch merging, FIRST_ASSIGNMENT takes precedence over REASSIGNMENT, as a reassignment
+      // in one branch does not occur before a first assignment in another branch. Branching
+      // constructs must be modeled explicitly, as visitIf does for if/else.
       if (r1 != FirstWriteScanResult.UNASSIGNED) {
         return r1;
       }
