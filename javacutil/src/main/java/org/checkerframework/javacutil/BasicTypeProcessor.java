@@ -14,6 +14,9 @@ public abstract class BasicTypeProcessor extends AbstractTypeProcessor {
   /** The source tree that's being scanned. */
   protected @MonotonicNonNull CompilationUnitTree currentRoot;
 
+  /** Creates a BasicTypeProcessor. */
+  public BasicTypeProcessor() {}
+
   /**
    * Create a TreePathScanner at the given root.
    *

@@ -58,6 +58,9 @@ public abstract class AbstractCFGVisualizer<
   /** The indentation for elements of the store. */
   protected static final String storeEntryIndent = "  ";
 
+  /** Creates an AbstractCFGVisualizer. */
+  public AbstractCFGVisualizer() {}
+
   @Override
   public void init(Map<String, Object> args) {
     this.verbose = toBoolean(args.get("verbose"));

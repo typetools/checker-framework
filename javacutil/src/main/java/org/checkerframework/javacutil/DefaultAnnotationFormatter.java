@@ -15,6 +15,8 @@ import org.plumelib.util.ArrayMap;
 
 /** A utility for converting AnnotationMirrors to Strings. It omits full package names. */
 public class DefaultAnnotationFormatter implements AnnotationFormatter {
+  /** Creates a DefaultAnnotationFormatter. */
+  public DefaultAnnotationFormatter() {}
 
   /**
    * Returns true if, by default, anno should not be printed.

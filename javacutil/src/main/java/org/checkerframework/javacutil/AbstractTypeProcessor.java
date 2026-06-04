@@ -160,6 +160,8 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
 
   /** A task listener that invokes the processor whenever a class is fully analyzed. */
   private final class AttributionTaskListener implements TaskListener {
+    /** Creates a AttributionTaskListener. */
+    public AttributionTaskListener() {}
 
     @Override
     public void finished(TaskEvent e) {

@@ -179,7 +179,7 @@ public class Insertions implements Iterable<Insertion> {
 
   @Override
   public Iterator<Insertion> iterator() {
-    return new Iterator<Insertion>() {
+    return new Iterator<>() {
       private Iterator<Map<String, Set<Insertion>>> miter = store.values().iterator();
       // These two fields are initially empty iterators, but are set the first time that hasNext is
       // called.
@@ -447,7 +447,7 @@ public class Insertions implements Iterable<Insertion> {
       }
 
       // First find the relevant "top-level" insertion, if any.
-      Deque<ASTPath> astack = new ArrayDeque<ASTPath>(localTypePath.size());
+      Deque<ASTPath> astack = new ArrayDeque<>(localTypePath.size());
       ASTPath topLevelTypePath = localTypePath;
       do {
         astack.push(topLevelTypePath);
