@@ -3,8 +3,7 @@
 @SuppressWarnings({
   "nullness",
   "unchecked",
-  "ainfertest",
-  "value"
+  "ainfertest"
 }) // See checker/test/nullness/Issue759.java; ainfertest and value are suppressed because WPI
 // errors shouldn't be issued here, just checked for crashes
 public class Issue759 {
@@ -28,7 +27,7 @@ class Gen<T extends Gen<T>> {
   }
 }
 
-@SuppressWarnings("nullness")
+// @SuppressWarnings("nullness")
 class IncompatibleTypes {
   void possibleValues(final Gen<?> genType) {
     lowercase(genType.getConstants());

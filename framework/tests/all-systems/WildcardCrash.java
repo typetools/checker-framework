@@ -16,7 +16,7 @@ class SomeGen<IndexStore extends Store123<IndexStore>> {
 
 class CFValue123 extends CFAbstractValue123<CFValue123> {}
 
-@SuppressWarnings({"initialization", "initializedfields:contracts.postcondition"})
+@SuppressWarnings("initialization")
 class CFAbstractTransfer123<
         V extends CFAbstractValue123<V>,
         S extends CFAbstractStore123<V, S>,
