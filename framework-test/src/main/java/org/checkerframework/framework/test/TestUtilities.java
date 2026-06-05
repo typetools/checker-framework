@@ -35,7 +35,7 @@ import org.plumelib.util.StringsPlume;
 import org.plumelib.util.SystemPlume;
 
 /** Utilities for testing. */
-public class TestUtilities {
+public final class TestUtilities {
 
   /** Do not instantiate. */
   private TestUtilities() {

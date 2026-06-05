@@ -599,7 +599,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
     Set<Node> existing = treeToCfgNodes.get(tree);
     if (existing == null) {
-      Set<Node> newSet = new IdentityArraySet<Node>(1);
+      Set<Node> newSet = new IdentityArraySet<>(1);
       newSet.add(node);
       treeToCfgNodes.put(tree, newSet);
     } else {
@@ -2048,7 +2048,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Helper class for handling switch statements and switch expressions, including all their
    * substatements such as case labels.
    */
-  private class SwitchBuilder {
+  private final class SwitchBuilder {
 
     /**
      * The tree for the switch statement or switch expression. Its type may be {@link SwitchTree}

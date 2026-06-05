@@ -18,7 +18,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.plumelib.util.FileIOException;
 
 /** Concatenates multiple descriptions of annotations into a single one. */
-public class Anncat {
+public final class Anncat {
 
   /** Do not instantiate. */
   private Anncat() {

@@ -33,7 +33,8 @@ import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
  * <p>Also includes a {@link #main(String[])} method that lets these operations be performed from
  * the command line.
  */
-public class SceneOps {
+public final class SceneOps {
+  /** Creates a new SceneOps. */
   private SceneOps() {}
 
   /**
@@ -136,6 +137,8 @@ public class SceneOps {
  * returning one because an {@link AElement} can be created only inside an {@link AScene}.
  */
 class DiffVisitor implements ElementVisitor<Void, Pair<AElement, AElement>> {
+  /** Creates a DiffVisitor. */
+  public DiffVisitor() {}
 
   /**
    * Adds all annotations that are in {@code minuend} but not in {@code subtrahend} to {@code

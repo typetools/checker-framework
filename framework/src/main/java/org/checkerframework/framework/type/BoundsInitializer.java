@@ -42,7 +42,7 @@ import org.plumelib.util.CollectionsPlume;
  * called for a particular bound, the entirety of that bound, including circular references, is
  * created.
  */
-public class BoundsInitializer {
+public final class BoundsInitializer {
 
   /** Class cannot be instantiated. */
   private BoundsInitializer() {

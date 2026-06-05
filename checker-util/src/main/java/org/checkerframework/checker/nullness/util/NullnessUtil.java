@@ -278,11 +278,11 @@ public final class NullnessUtil {
     assert arr != null
         : "Misuse of castNonNullArray: called with a null array argument"
             + ((message == null) ? "" : (": " + message));
-    for (int i = 0; i < arr.length; ++i) {
-      assert arr[i] != null
+    for (T elt : arr) {
+      assert elt != null
           : "Misuse of castNonNull: called with a null array element"
               + ((message == null) ? "" : (": " + message));
-      checkIfArray(arr[i], message);
+      checkIfArray(elt, message);
     }
     return (@NonNull T[]) arr;
   }

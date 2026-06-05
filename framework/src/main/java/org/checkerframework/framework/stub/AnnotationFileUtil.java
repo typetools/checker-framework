@@ -38,13 +38,19 @@ import org.plumelib.util.IPair;
 
 /** Utility class for annotation files (stub files and ajava files). */
 public class AnnotationFileUtil {
+
+  /** Do not instantiate. */
+  private AnnotationFileUtil() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * The types of files that can contain annotations. Also indicates the file's source, such as from
    * the JDK, built in, or from the command line.
    *
    * <p>Stub files have extension ".astub". Ajava files have extension ".ajava".
    */
-  public enum AnnotationFileType {
+  public static enum AnnotationFileType {
     /** Stub file in the annotated JDK. */
     JDK_STUB,
     /** Stub file built into a checker. */

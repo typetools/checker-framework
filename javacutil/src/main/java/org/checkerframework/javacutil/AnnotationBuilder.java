@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -713,26 +714,22 @@ public class AnnotationBuilder {
         return toStringVal;
       }
       StringBuilder buf = new StringBuilder();
-      buf.append("@");
+      buf.append('@');
       buf.append(annotationName);
       int len = elementValues.size();
       if (len > 0) {
-        buf.append('(');
-        boolean first = true;
+        StringJoiner sj = new StringJoiner(", ", "(", ")");
         for (Map.Entry<ExecutableElement, AnnotationValue> pair : elementValues.entrySet()) {
-          if (!first) {
-            buf.append(", ");
-          }
-          first = false;
-
+          StringBuilder element = new StringBuilder();
           String name = pair.getKey().getSimpleName().toString();
           if (len > 1 || !name.equals("value")) {
-            buf.append(name);
-            buf.append('=');
+            element.append(name);
+            element.append('=');
           }
-          buf.append(pair.getValue());
+          element.append(pair.getValue());
+          sj.add(element);
         }
-        buf.append(')');
+        buf.append(sj);
       }
       toStringVal = buf.toString().intern();
       return toStringVal;

@@ -37,7 +37,7 @@ public final class EnumAFT extends ScalarAFT {
     if (!fieldValue.contains(".")) {
       // If fieldValue is not qualified, prepend the typeName
       sb.append(typeName);
-      sb.append(".");
+      sb.append('.');
     }
     sb.append(fieldValue);
   }

@@ -1,8 +1,11 @@
 package org.checkerframework.afu.scenelib.util;
 
 /** {@link Strings} provides useful static methods related to strings. */
-public abstract class Strings {
-  private Strings() {}
+public final class Strings {
+  /** Do not instantiate. */
+  private Strings() {
+    throw new Error("Do not instantiate");
+  }
 
   /**
    * Returns the given string, escaped and quoted according to Java conventions. Currently, only

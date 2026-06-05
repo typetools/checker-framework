@@ -43,6 +43,11 @@ import org.plumelib.util.StringsPlume;
  */
 public class ElementAnnotationUtil {
 
+  /** Do not instantiate. */
+  private ElementAnnotationUtil() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * For each type/element pair, add all of the annotations stored in Element to type. See apply for
    * more details.
@@ -590,7 +595,7 @@ public class ElementAnnotationUtil {
 
   /** Exception indicating an invalid location for an annotation was found. */
   @SuppressWarnings("serial")
-  public static class UnexpectedAnnotationLocationException extends Exception {
+  public static final class UnexpectedAnnotationLocationException extends Exception {
 
     /**
      * Creates an UnexpectedAnnotationLocationException.

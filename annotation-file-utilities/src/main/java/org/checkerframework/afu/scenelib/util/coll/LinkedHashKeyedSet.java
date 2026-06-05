@@ -107,8 +107,9 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
     K key = keyer.getKeyFor(o);
     V old = theMap.get(key);
     if (old == null
-        || (eq(o, old) ? checkAdd(equalBehavior, old) : checkAdd(conflictBehavior, old)))
+        || (eq(o, old) ? checkAdd(equalBehavior, old) : checkAdd(conflictBehavior, old))) {
       theMap.put(key, o);
+    }
     return old;
   }
 

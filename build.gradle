@@ -143,6 +143,7 @@ allprojects { currentProj ->
   apply plugin: "eclipse"
   apply plugin: "de.undercouch.download"
   apply plugin: "net.ltgt.errorprone"
+  // apply plugin: "pmd"
 
   group = "org.checkerframework"
 
@@ -235,6 +236,14 @@ allprojects { currentProj ->
   dependencies {
     checkerFatJar(project(path: ":checker", configuration: "fatJar"))
   }
+
+  /*
+   pmd {
+   toolVersion = "7.25.0"
+   consoleOutput = true
+   ruleSetFiles = files("${rootDir}/.pmd-ruleset.xml")
+   }
+   */
 
   // After all the tasks have been created, modify some of them.
   afterEvaluate {

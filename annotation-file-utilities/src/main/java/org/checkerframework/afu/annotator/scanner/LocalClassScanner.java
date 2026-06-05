@@ -13,7 +13,7 @@ import org.checkerframework.checker.interning.qual.FindDistinct;
  * ith local class with the class name in the file. Thus, if i = 2, it will have a name of the form
  * OuterClass$2InnerClass.
  */
-public class LocalClassScanner extends TreePathScanner<Void, Integer> {
+public final class LocalClassScanner extends TreePathScanner<Void, Integer> {
 
   /**
    * Given a local class, computes and returns its 1-based index in the given tree representing a

@@ -8,7 +8,7 @@ import org.checkerframework.javacutil.TypeKindUtils;
 import org.plumelib.util.CollectionsPlume;
 
 /** Utility routines for manipulating numbers. */
-public class NumberUtils {
+public final class NumberUtils {
 
   /** Do not instantiate. */
   private NumberUtils() {

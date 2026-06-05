@@ -137,7 +137,7 @@ import org.plumelib.util.SystemPlume;
  *
  * <p>The other entry point is {@link #parseJdkFileAsStub}.
  */
-public class AnnotationFileParser {
+public final class AnnotationFileParser {
 
   /**
    * The type of file being parsed: stub file or ajava file. Also indicates its source, such as from
@@ -3101,7 +3101,10 @@ public class AnnotationFileParser {
    * corresponding to that construct, such as {@link #processCallableDeclaration} or {@link
    * #processField}.
    */
-  private class AjavaAnnotationCollectorVisitor extends DefaultJointVisitor {
+  private final class AjavaAnnotationCollectorVisitor extends DefaultJointVisitor {
+    /** Creates a new AjavaAnnotationCollectorVisitor. */
+    AjavaAnnotationCollectorVisitor() {}
+
     @Override
     public Void visitClass(ClassTree javacTree, Node javaParserNode) {
       List<AnnotatedTypeVariable> typeDeclTypeParameters = null;
