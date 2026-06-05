@@ -205,8 +205,10 @@ public final class Main {
   public static boolean temporaryDebug = false;
 
   /** Does the work of {@link #filteredScene}. */
-  @SuppressWarnings({"resourceleak:required.method.not.known", // Not relevant to resources
-    "PMD.UseDiamondOperator"})
+  @SuppressWarnings({
+    "resourceleak:required.method.not.known", // Not relevant to resources
+    "PMD.UseDiamondOperator"
+  })
   private static ElementVisitor<Void, AElement> classFilter =
       new ElementVisitor<Void, AElement>() {
         <K, V extends AElement> Void filter(VivifyingMap<K, V> vm0, VivifyingMap<K, V> vm1) {
