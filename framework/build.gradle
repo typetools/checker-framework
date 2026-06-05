@@ -53,6 +53,8 @@ dependencies {
   implementation(libs.plume.util)
   implementation(libs.reflection.util)
   implementation(libs.classgraph)
+  implementation "com.fasterxml.jackson.core:jackson-databind:2.15.0"
+  implementation "com.contrastsecurity:java-sarif:2.0"
 
   testImplementation(libs.junit)
   testImplementation(project(":framework-test"))
