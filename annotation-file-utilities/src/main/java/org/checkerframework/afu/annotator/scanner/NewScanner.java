@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.plumelib.util.IPair;
 
 /**
@@ -89,6 +90,7 @@ public final class NewScanner extends CommonScanner {
    * @param fmt a format string
    * @param args the arguments to the format string
    */
+  @FormatMethod
   public static void debug(String fmt, Object... args) {
     if (debug) {
       System.out.printf(fmt, args);
