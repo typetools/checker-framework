@@ -226,7 +226,8 @@ public abstract class AbstractCFGVisualizer<
           if (!sbBlock.toString().endsWith(separator)) {
             sbBlock.append(separator);
           }
-          sbBlock.append(visualizeBlockTransferInputAfter(bb, analysis) + separator);
+          sbBlock.append(visualizeBlockTransferInputAfter(bb, analysis));
+          sbBlock.append(separator);
         }
       }
     }
@@ -361,14 +362,16 @@ public abstract class AbstractCFGVisualizer<
       }
     }
 
-    StringBuilder sbStore = new StringBuilder();
+    StringBuilder sbStore = new StringBuilder(64);
     if (verbose) {
-      sbStore.append((storesFromId == null ? "null" : storesFromId.getClassAndUid()) + separator);
+      sbStore.append((storesFromId == null ? "null" : storesFromId.getClassAndUid()));
+      sbStore.append(separator);
     }
     sbStore.append(where == VisualizeWhere.BEFORE ? "Before: " : "After: ");
 
     if (verbose && resultValue != null) {
-      sbStore.append("resultValue=" + resultValue);
+      sbStore.append("resultValue=");
+      sbStore.append(resultValue);
       sbStore.append(separator);
     }
 
@@ -381,13 +384,14 @@ public abstract class AbstractCFGVisualizer<
       assert elseStore != null : "@AssumeAssertion(nullness): invariant";
       sbStore.append("then=");
       sbStore.append(visualizeStore(thenStore));
-      sbStore.append(",");
+      sbStore.append(',');
       sbStore.append(separator);
       sbStore.append("else=");
       sbStore.append(visualizeStore(elseStore));
     }
     if (where == VisualizeWhere.BEFORE) {
-      sbStore.append(separator + "~~~~~~~~~");
+      sbStore.append(separator);
+      sbStore.append("~~~~~~~~~");
     } else {
       sbStore.insert(0, "~~~~~~~~~" + separator);
     }

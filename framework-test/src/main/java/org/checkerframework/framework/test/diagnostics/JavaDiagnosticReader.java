@@ -158,7 +158,7 @@ public final class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>,
   private final String filename;
 
   /** The reader for the file. */
-  private final @Owning LineNumberReader reader;
+  @Owning private final LineNumberReader reader;
 
   /** The next line to be read, or null. */
   private @Nullable String nextLine = null;

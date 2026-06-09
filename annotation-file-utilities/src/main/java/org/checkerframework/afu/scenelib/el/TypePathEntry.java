@@ -124,7 +124,7 @@ public final class TypePathEntry {
       case TypePath.ARRAY_ELEMENT -> "[";
       case TypePath.INNER_TYPE -> ".";
       case TypePath.WILDCARD_BOUND -> "*";
-      case TypePath.TYPE_ARGUMENT -> String.valueOf(argument) + ";";
+      case TypePath.TYPE_ARGUMENT -> argument + ";";
       default -> throw new Error("Bad step " + step);
     };
   }

@@ -155,9 +155,9 @@ public class TypeVisualizer {
 
     if (typeVarNames.contains(varName)) {
       if (png) {
-        TypeVisualizer.drawToPng(dirPath + varName + ".png", typeVariable);
+        drawToPng(dirPath + varName + ".png", typeVariable);
       } else {
-        TypeVisualizer.drawToDot(dirPath + varName + ".dot", typeVariable);
+        drawToDot(dirPath + varName + ".dot", typeVariable);
       }
       return true;
     }
@@ -599,9 +599,9 @@ public class TypeVisualizer {
 
         builder.append(methodElem.getSimpleName().toString());
 
-        builder.append("(");
+        builder.append('(');
         builder.append(StringsPlume.join(",", methodElem.getParameters()));
-        builder.append(")");
+        builder.append(')');
         return builder.toString();
       }
     }

@@ -94,9 +94,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     while (checkerClass != BaseTypeChecker.class) {
       BaseTypeVisitor<?> result =
           invokeConstructorFor(
-              BaseTypeChecker.getRelatedClassName(checkerClass, "Visitor"),
-              baseTypeCheckerClassArray,
-              thisArray);
+              getRelatedClassName(checkerClass, "Visitor"), baseTypeCheckerClassArray, thisArray);
       if (result != null) {
         return result;
       }

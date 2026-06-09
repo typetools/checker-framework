@@ -1,12 +1,14 @@
 package org.checkerframework.afu.scenelib.tools;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import org.checkerframework.afu.scenelib.el.AScene;
 import org.checkerframework.afu.scenelib.el.DefException;
 import org.checkerframework.afu.scenelib.io.IndexFileParser;
@@ -131,7 +133,7 @@ public final class Anncat {
             usageAssert(idx == args.length);
             System.err.println("Reading original class file " + origfile);
             System.err.println("and writing annotated version to " + outfile + "...");
-            try (FileInputStream fis = new FileInputStream(origfile);
+            try (InputStream fis = Files.newInputStream(Paths.get(origfile));
                 FileOutputStream fos = new FileOutputStream(outfile)) {
               ClassFileWriter.insert(theScene, fis, fos, overwrite);
             }

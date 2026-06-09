@@ -1055,7 +1055,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
           TypeMirror wildcard =
               BoundsInitializer.getUpperBoundAsWildcard(typeParameterVar, atypeFactory.types);
           AnnotatedWildcardType atmWild =
-              (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wildcard, atypeFactory, false);
+              (AnnotatedWildcardType) createType(wildcard, atypeFactory, false);
           atmWild.setTypeArgOfRawType();
           BoundsInitializer.initializeBounds(atmWild);
           typeArgs.add(atmWild);
@@ -1071,14 +1071,12 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       } else if (isDeclaration()) {
         for (TypeMirror javaTypeArg : t.getTypeArguments()) {
           AnnotatedTypeVariable tv =
-              (AnnotatedTypeVariable)
-                  AnnotatedTypeMirror.createType(javaTypeArg, atypeFactory, true);
+              (AnnotatedTypeVariable) createType(javaTypeArg, atypeFactory, true);
           typeArgs.add(tv);
         }
       } else {
         for (TypeMirror javaTypeArg : t.getTypeArguments()) {
-          AnnotatedTypeMirror typeArg =
-              AnnotatedTypeMirror.createType(javaTypeArg, atypeFactory, false);
+          AnnotatedTypeMirror typeArg = createType(javaTypeArg, atypeFactory, false);
           typeArgs.add(typeArg);
         }
       }
@@ -1140,8 +1138,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     public AnnotatedDeclaredType getErased() {
       AnnotatedDeclaredType erased =
           (AnnotatedDeclaredType)
-              AnnotatedTypeMirror.createType(
-                  atypeFactory.types.erasure(underlyingType), atypeFactory, false);
+              createType(atypeFactory.types.erasure(underlyingType), atypeFactory, false);
       erased.addAnnotations(this.getPrimaryAnnotations());
       AnnotatedDeclaredType erasedEnclosing = erased.getEnclosingType();
       AnnotatedDeclaredType thisEnclosing = this.getEnclosingType();

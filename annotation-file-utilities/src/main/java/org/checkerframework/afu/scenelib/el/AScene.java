@@ -152,11 +152,17 @@ public class AScene implements Cloneable {
     StringBuilder sb = new StringBuilder();
     sb.append("packages:\n");
     for (Map.Entry<String, AElement> entry : packages.entrySet()) {
-      sb.append("  " + entry.getKey() + " => " + entry.getValue() + "\n");
+      sb.append("  " + entry.getKey());
+      sb.append(" => ");
+      sb.append(entry.getValue());
+      sb.append("\n");
     }
     sb.append("classes:\n");
     for (Map.Entry<String, AClass> entry : classes.entrySet()) {
-      sb.append("  " + entry.getKey() + " => " + "\n");
+      sb.append("  ");
+      sb.append(entry.getKey());
+      sb.append(" => ");
+      sb.append("\n");
       sb.append(entry.getValue().unparse("    "));
     }
     return sb.toString();

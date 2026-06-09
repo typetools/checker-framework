@@ -4,7 +4,6 @@ import com.sun.source.tree.CompilationUnitTree;
 import io.github.classgraph.ClassGraph;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ProcessBuilder.Redirect;
@@ -272,7 +271,7 @@ public class AnnotationFileElementTypes {
     parsing = true;
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-    try (InputStream in = new FileInputStream(ajavaPath)) {
+    try (InputStream in = Files.newInputStream(Paths.get(ajavaPath))) {
       if (stubDebug) {
         AnnotationFileParser.stubDebugStatic(
             processingEnv,
@@ -734,7 +733,7 @@ public class AnnotationFileElementTypes {
    */
   private void parseJdkStubFile(Path path) {
     parsing = true;
-    try (FileInputStream jdkStub = new FileInputStream(path.toFile())) {
+    try (InputStream jdkStub = Files.newInputStream(path)) {
       AnnotationFileParser.parseJdkFileAsStub(
           path.toFile().getName(),
           jdkStub,

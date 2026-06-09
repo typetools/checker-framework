@@ -117,7 +117,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
 
   @Override
   protected boolean isAccepted() {
-    return MethodApplier.accepts(type, element);
+    return accepts(type, element);
   }
 
   /**

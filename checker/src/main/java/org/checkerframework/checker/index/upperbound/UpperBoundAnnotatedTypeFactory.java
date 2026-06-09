@@ -973,7 +973,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         UBQualifier newUBQ =
             UBQualifier.createUBQualifier(
                 qualHierarchy.findAnnotationInHierarchy(value.getAnnotations(), UNKNOWN),
-                AnnotatedTypeFactory.negateConstant(offset),
+                negateConstant(offset),
                 (IndexChecker) checker);
         if (ubQualifier == null) {
           ubQualifier = newUBQ;

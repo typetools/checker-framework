@@ -77,7 +77,7 @@ public class StubGenerator {
 
   /** Generate the stub file for all the classes within the provided package. */
   public void stubFromField(Element elt) {
-    if (!(elt.getKind() == ElementKind.FIELD)) {
+    if (elt.getKind() != ElementKind.FIELD) {
       return;
     }
 

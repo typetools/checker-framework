@@ -21,7 +21,6 @@ import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.github.javaparser.utils.Pair;
 import com.sun.source.util.JavacTask;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileVisitResult;
@@ -392,7 +391,7 @@ public class InsertAjavaAnnotations {
       StringBuilder insertionContent = new StringBuilder();
       for (AnnotationExpr annotation : annotations) {
         insertionContent.append(printer.print(annotation));
-        insertionContent.append(" ");
+        insertionContent.append(' ');
       }
 
       // Can't test `annotations.isEmpty()` earlier because `annotations` has type `Iterable`.
@@ -545,7 +544,8 @@ public class InsertAjavaAnnotations {
       String fileContents = FilesPlume.readString(Path.of(javaFileName));
       @SuppressWarnings("regex") // next release of plume-lib annotates `inferLineSeparator()`
       @Regex String lineSeparator = FilesPlume.inferLineSeparator(javaFileName);
-      try (FileInputStream annotationInputStream = new FileInputStream(annotationFileName)) {
+      try (InputStream annotationInputStream =
+          Files.newInputStream(Paths.get(annotationFileName))) {
         String result = insertAnnotations(annotationInputStream, fileContents, lineSeparator);
         FilesPlume.writeString(javaFile, result);
       }

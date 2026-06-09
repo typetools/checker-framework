@@ -551,6 +551,7 @@ public final class TestUtilities {
    *
    * @return the value of system property "emit.test.debug"
    */
+  @SuppressWarnings("PMD.BooleanGetMethodName")
   public static boolean getShouldEmitDebugInfo() {
     return SystemPlume.getBooleanSystemProperty("emit.test.debug");
   }

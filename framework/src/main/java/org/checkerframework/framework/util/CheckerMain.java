@@ -3,8 +3,8 @@ package org.checkerframework.framework.util;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -222,7 +222,7 @@ public class CheckerMain {
     Iterator<String> argsIterator = args.iterator();
     while (argsIterator.hasNext()) {
       String arg = argsIterator.next();
-      Matcher matcher = CheckerMain.JVM_OPTS_REGEX.matcher(arg);
+      Matcher matcher = JVM_OPTS_REGEX.matcher(arg);
       if (matcher.matches()) {
         jvmArgs.add(arg);
         argsIterator.remove();
@@ -627,7 +627,7 @@ public class CheckerMain {
    */
   private List<@FullyQualifiedName String> getAllCheckerClassNames() {
     ArrayList<@FullyQualifiedName String> checkerClassNames = new ArrayList<>();
-    try (FileInputStream fis = new FileInputStream(checkerJar);
+    try (InputStream fis = Files.newInputStream(checkerJar.toPath());
         JarInputStream checkerJarIs = new JarInputStream(fis)) {
       ZipEntry entry;
       while ((entry = checkerJarIs.getNextEntry()) != null) {

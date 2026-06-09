@@ -33,9 +33,11 @@ final class PackageCriterion implements Criterion {
   @Override
   public boolean isSatisfiedBy(@Nullable TreePath path) {
     Tree tree = path.getLeaf();
-    Criteria.dbug.debug(
-        "PackageCriterion.isSatisfiedBy(%s, %s); this=%s%n",
-        Main.leafString(path), tree, this.toString());
+    if (Criteria.dbug.isEnabled()) {
+      Criteria.dbug.debug(
+          "PackageCriterion.isSatisfiedBy(%s, %s); this=%s%n",
+          Main.leafString(path), tree, this.toString());
+    }
 
     if (tree instanceof CompilationUnitTree cu) {
       if (cu.getSourceFile().getName().endsWith("package-info.java")) {
@@ -46,7 +48,9 @@ final class PackageCriterion implements Criterion {
         }
       }
     }
-    Criteria.dbug.debug("PackageCriterion.isSatisfiedBy => false%n");
+    if (Criteria.dbug.isEnabled()) {
+      Criteria.dbug.debug("PackageCriterion.isSatisfiedBy => false%n");
+    }
     return false;
   }
 

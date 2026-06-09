@@ -30,7 +30,9 @@ public final class NewScanner extends CommonScanner {
    * @return the index of the given cast tree
    */
   public static int indexOfNewTree(TreePath origpath, Tree tree) {
-    debug("indexOfNewTree: " + origpath.getLeaf());
+    if (debug) {
+      debug("indexOfNewTree: " + origpath.getLeaf());
+    }
 
     IPair<TreePath, Tree> args = IPair.of(origpath, tree);
     if (cache.containsKey(args)) {
@@ -90,7 +92,9 @@ public final class NewScanner extends CommonScanner {
   private static Map<String, List<Integer>> methodNameToNewOffsets = new HashMap<>();
 
   public static void addNewToMethod(String methodName, Integer offset) {
-    debug("adding new to method: " + methodName + " offset: " + offset);
+    if (debug) {
+      debug("adding new to method: " + methodName + " offset: " + offset);
+    }
     List<Integer> offsetList =
         methodNameToNewOffsets.computeIfAbsent(methodName, k -> new ArrayList<>());
     offsetList.add(offset);

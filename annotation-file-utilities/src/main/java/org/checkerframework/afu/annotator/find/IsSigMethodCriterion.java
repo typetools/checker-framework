@@ -136,10 +136,12 @@ public class IsSigMethodCriterion implements Criterion {
                   Matcher.quoteReplacement(p.getValue()));
           haveMatch = matchSimpleType(goalType, simpleType, context);
           if (!haveMatch) {
-            Criteria.dbug.debug("matchTypeParam() => false:%n");
-            Criteria.dbug.debug("  type = %s%n", type);
-            Criteria.dbug.debug("  simpleType = %s%n", simpleType);
-            Criteria.dbug.debug("  goalType = %s%n", goalType);
+            if (Criteria.dbug.isEnabled()) {
+              Criteria.dbug.debug("matchTypeParam() => false:%n");
+              Criteria.dbug.debug("  type = %s%n", type);
+              Criteria.dbug.debug("  simpleType = %s%n", simpleType);
+              Criteria.dbug.debug("  goalType = %s%n", goalType);
+            }
           }
         }
       }
@@ -165,8 +167,10 @@ public class IsSigMethodCriterion implements Criterion {
       VariableTree vt = sourceParams.get(i);
       Tree vtType = vt.getType();
       if (!matchTypeParam(fullType, vtType, typeParamToClassMap, context)) {
-        Criteria.dbug.debug(
-            "matchTypeParam() => false:%n  i=%d vt = %s%n  fullType = %s%n", i, vt, fullType);
+        if (Criteria.dbug.isEnabled()) {
+          Criteria.dbug.debug(
+              "matchTypeParam() => false:%n  i=%d vt = %s%n  fullType = %s%n", i, vt, fullType);
+        }
         return false;
       }
     }
@@ -177,7 +181,9 @@ public class IsSigMethodCriterion implements Criterion {
   // fullType is fully-qualified.
   // Both are in Java, not JVML, format.
   private boolean matchSimpleType(String fullType, String simpleType, Context context) {
-    Criteria.dbug.debug("matchSimpleType(%s, %s, %s)%n", fullType, simpleType, context);
+    if (Criteria.dbug.isEnabled()) {
+      Criteria.dbug.debug("matchSimpleType(%s, %s, %s)%n", fullType, simpleType, context);
+    }
 
     // must strip off generics, is all of this necessary, though?
     // do you ever have generics anywhere but at the end?
@@ -288,7 +294,9 @@ public class IsSigMethodCriterion implements Criterion {
             || (fullType.startsWith(prefix)
                 && (fullType.endsWith("$" + simpleType2)
                     || fullType2.endsWith("." + simpleType2))));
-    Criteria.dbug.debug("matchWithPrefix(%s, %s, %s) => %b)%n", fullType2, simpleType, prefix, b);
+    if (Criteria.dbug.isEnabled()) {
+      Criteria.dbug.debug("matchWithPrefix(%s, %s, %s) => %b)%n", fullType2, simpleType, prefix, b);
+    }
     return b;
   }
 
@@ -312,9 +320,11 @@ public class IsSigMethodCriterion implements Criterion {
     Tree leaf = path.getLeaf();
 
     if (!(leaf instanceof MethodTree mt)) {
-      Criteria.dbug.debug(
-          "IsSigMethodCriterion.isSatisfiedBy(%s) => false: not a METHOD tree%n",
-          Main.leafString(path));
+      if (Criteria.dbug.isEnabled()) {
+        Criteria.dbug.debug(
+            "IsSigMethodCriterion.isSatisfiedBy(%s) => false: not a METHOD tree%n",
+            Main.leafString(path));
+      }
       return false;
     }
     // else if ((((JCMethodDecl) leaf).mods.flags & Flags.GENERATEDCONSTR) != 0) {
@@ -325,14 +335,18 @@ public class IsSigMethodCriterion implements Criterion {
     // }
 
     if (!simpleMethodName.equals(mt.getName().toString())) {
-      Criteria.dbug.debug("IsSigMethodCriterion.isSatisfiedBy => false: Names don't match%n");
+      if (Criteria.dbug.isEnabled()) {
+        Criteria.dbug.debug("IsSigMethodCriterion.isSatisfiedBy => false: Names don't match%n");
+      }
       return false;
     }
 
     List<? extends VariableTree> sourceParams = mt.getParameters();
     if (fullyQualifiedParams.size() != sourceParams.size()) {
-      Criteria.dbug.debug(
-          "IsSigMethodCriterion.isSatisfiedBy => false: Number of parameters don't match%n");
+      if (Criteria.dbug.isEnabled()) {
+        Criteria.dbug.debug(
+            "IsSigMethodCriterion.isSatisfiedBy => false: Number of parameters don't match%n");
+      }
       return false;
     }
 
@@ -391,18 +405,24 @@ public class IsSigMethodCriterion implements Criterion {
     }
 
     if (!matchTypeParams(sourceParams, typeParamToClassMap, context)) {
-      Criteria.dbug.debug("IsSigMethodCriterion => false: Parameter types don't match%n");
+      if (Criteria.dbug.isEnabled()) {
+        Criteria.dbug.debug("IsSigMethodCriterion => false: Parameter types don't match%n");
+      }
       return false;
     }
 
     if (mt.getReturnType() != null // must be a constructor
         && returnType != null
         && !matchTypeParam(returnType, mt.getReturnType(), typeParamToClassMap, context)) {
-      Criteria.dbug.debug("IsSigMethodCriterion => false: Return types don't match%n");
+      if (Criteria.dbug.isEnabled()) {
+        Criteria.dbug.debug("IsSigMethodCriterion => false: Return types don't match%n");
+      }
       return false;
     }
 
-    Criteria.dbug.debug("IsSigMethodCriterion.isSatisfiedBy => true%n");
+    if (Criteria.dbug.isEnabled()) {
+      Criteria.dbug.debug("IsSigMethodCriterion.isSatisfiedBy => true%n");
+    }
     return true;
   }
 
