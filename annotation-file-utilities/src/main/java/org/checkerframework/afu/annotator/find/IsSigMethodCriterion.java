@@ -177,9 +177,13 @@ public class IsSigMethodCriterion implements Criterion {
     return true;
   }
 
-  // simpleType is the name as it appeared in the source code.
-  // fullType is fully-qualified.
-  // Both are in Java, not JVML, format.
+  /**
+   * Matches simple types.
+   *
+   * @param fullType the fully-qualified type, in Java (not JVML) format
+   * @param simpleType the name as it appeared in the source code, in Java (not JVML) format
+   * @param context the context
+   */
   private boolean matchSimpleType(String fullType, String simpleType, Context context) {
     if (Criteria.dbug.isEnabled()) {
       Criteria.dbug.debug("matchSimpleType(%s, %s, %s)%n", fullType, simpleType, context);

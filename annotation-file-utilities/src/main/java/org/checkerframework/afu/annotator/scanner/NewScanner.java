@@ -89,8 +89,15 @@ public final class NewScanner extends CommonScanner {
     }
   }
 
+  /** For each method, all the locations where {@code new} instructions exist. */
   private static Map<String, List<Integer>> methodNameToNewOffsets = new HashMap<>();
 
+  /**
+   * Register the location of a {@code new} instruction.
+   *
+   * @param methodName the name of the method that contains the {@code new} instruction
+   * @param offset the offset of the {@code new} instruction
+   */
   public static void addNewToMethod(String methodName, Integer offset) {
     if (debug) {
       debug("adding new to method: " + methodName + " offset: " + offset);

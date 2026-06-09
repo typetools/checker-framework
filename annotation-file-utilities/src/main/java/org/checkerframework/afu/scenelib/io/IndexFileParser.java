@@ -1876,6 +1876,7 @@ public final class IndexFileParser {
    * Parse the given text into a {@link Type}.
    *
    * @param text the text to parse
+   * @param filename the filename for the IndexFileParser
    * @return the type
    */
   public static Type parseType(String text, String filename) {
