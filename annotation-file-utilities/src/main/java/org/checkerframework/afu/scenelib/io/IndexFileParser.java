@@ -1881,6 +1881,7 @@ public final class IndexFileParser {
    */
   public static Type parseType(String text, String filename) {
     try (StringReader in = new StringReader(text)) {
+      @SuppressWarnings("nullness:argument") // null value is not used by callee
       IndexFileParser parser = new IndexFileParser(in, filename, null);
       try {
         parser.st.nextToken();

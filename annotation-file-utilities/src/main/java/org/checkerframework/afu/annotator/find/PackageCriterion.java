@@ -32,6 +32,9 @@ final class PackageCriterion implements Criterion {
 
   @Override
   public boolean isSatisfiedBy(@Nullable TreePath path) {
+    if (path == null) {
+      return false;
+    }
     Tree tree = path.getLeaf();
     if (Criteria.dbug.isEnabled()) {
       Criteria.dbug.debug(

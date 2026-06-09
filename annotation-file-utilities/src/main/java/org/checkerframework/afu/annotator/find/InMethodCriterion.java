@@ -49,7 +49,8 @@ final class InMethodCriterion implements Criterion {
   public boolean isSatisfiedBy(@Nullable TreePath path) {
     if (Criteria.dbug.isEnabled()) {
       Criteria.dbug.debug(
-          "InMethodCriterion.isSatisfiedBy(%s); this=%s%n", Main.leafString(path), this.toString());
+          "InMethodCriterion.isSatisfiedBy(%s); this=%s%n",
+          path == null ? "null" : Main.leafString(path), this.toString());
     }
 
     // true if the argument is within a variable declaration's initializer expression.
