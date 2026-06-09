@@ -31,7 +31,7 @@ public final class NewScanner extends CommonScanner {
    */
   public static int indexOfNewTree(TreePath origpath, Tree tree) {
     if (debug) {
-      debug("indexOfNewTree: " + origpath.getLeaf());
+      debug("indexOfNewTree: %s%n", origpath.getLeaf());
     }
 
     IPair<TreePath, Tree> args = IPair.of(origpath, tree);
@@ -83,9 +83,15 @@ public final class NewScanner extends CommonScanner {
     return super.visitNewArray(node, null);
   }
 
-  public static void debug(String s) {
+  /**
+   * Output debugging information, if debugging is enabled.
+   *
+   * @param fmt a format string
+   * @param args the arguments to the format string
+   */
+  public static void debug(String fmt, Object... args) {
     if (debug) {
-      System.out.println(s);
+      System.out.printf(fmt, args);
     }
   }
 
@@ -100,7 +106,7 @@ public final class NewScanner extends CommonScanner {
    */
   public static void addNewToMethod(String methodName, Integer offset) {
     if (debug) {
-      debug("adding new to method: " + methodName + " offset: " + offset);
+      debug("adding new to method: %s offset: %s%n", methodName, offset);
     }
     List<Integer> offsetList =
         methodNameToNewOffsets.computeIfAbsent(methodName, k -> new ArrayList<>());
