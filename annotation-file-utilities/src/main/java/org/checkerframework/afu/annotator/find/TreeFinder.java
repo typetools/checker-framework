@@ -1347,10 +1347,16 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
     }
   }
 
-  // Find insertion position for Insertion whose criteria (including one
-  // for the ASTPath) matched the given TreePath.
-  // If no position is found, report an error and return null.
-  Integer findPositionByASTPath(ASTPath astPath, TreePath path, Insertion i) {
+  /**
+   * Find insertion position for Insertion whose criteria (including one for the ASTPath) matched
+   * the given TreePath.
+   *
+   * @param astPath an AST path
+   * @param path a tree path
+   * @param i an insertion that matches the path
+   * @return the insertion position, or null (in which case an error is also logged)
+   */
+  @Nullable Integer findPositionByASTPath(ASTPath astPath, TreePath path, Insertion i) {
     Tree node = path.getLeaf();
     try {
       ASTPath.ASTEntry entry = astPath.getLast();
