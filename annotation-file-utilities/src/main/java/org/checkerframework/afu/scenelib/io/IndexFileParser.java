@@ -162,7 +162,7 @@ public final class IndexFileParser {
             case StreamTokenizer.TT_NUMBER -> String.valueOf(st.nval);
             case StreamTokenizer.TT_EOL -> "end of line";
             case StreamTokenizer.TT_EOF -> "end of file";
-            default -> "'" + String.valueOf((char) st.ttype) + "'";
+            default -> "'" + (char) st.ttype + "'";
           };
       throw new ParseException("Expected '" + c + "', found " + found);
     }
@@ -1876,16 +1876,19 @@ public final class IndexFileParser {
    * Parse the given text into a {@link Type}.
    *
    * @param text the text to parse
+   * @param filename the filename for the IndexFileParser
    * @return the type
    */
   public static Type parseType(String text, String filename) {
-    StringReader in = new StringReader(text);
-    IndexFileParser parser = new IndexFileParser(in, filename, null);
-    try {
-      parser.st.nextToken();
-      return parser.parseType();
-    } catch (Exception e) {
-      throw new RuntimeException("Error parsing type from: '" + text + "'", e);
+    try (StringReader in = new StringReader(text)) {
+      @SuppressWarnings("nullness:argument") // null value is not used by callee
+      IndexFileParser parser = new IndexFileParser(in, filename, null);
+      try {
+        parser.st.nextToken();
+        return parser.parseType();
+      } catch (Exception e) {
+        throw new RuntimeException("Error parsing type from: '" + text + "'", e);
+      }
     }
   }
 }

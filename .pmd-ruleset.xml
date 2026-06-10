@@ -21,7 +21,13 @@
     <rule ref="category/java/bestpractices.xml/DoubleBraceInitialization" />
     <rule ref="category/java/bestpractices.xml/ForLoopCanBeForeach" />
     <rule ref="category/java/bestpractices.xml/ForLoopVariableCount" />
-    <rule ref="category/java/bestpractices.xml/GuardLogStatement" />
+    <rule ref="category/java/bestpractices.xml/GuardLogStatement">
+        <properties>
+            <property name="logLevels" value="trace,debug,info,warn,error,log,finest,finer,fine,info,warning,severe" />
+            <!-- Adds "isEnabled" to the default list. -->
+            <property name="guardsMethods" value="isTraceEnabled,isDebugEnabled,isInfoEnabled,isWarnEnabled,isErrorEnabled,isLoggable,isEnabled" />
+        </properties>
+    </rule>
     <rule ref="category/java/bestpractices.xml/ImplicitFunctionalInterface" />
     <rule ref="category/java/bestpractices.xml/JUnit4SuitesShouldUseSuiteAnnotation" />
     <rule ref="category/java/bestpractices.xml/JUnitJupiterTestShouldBePackagePrivate" />
@@ -160,7 +166,6 @@
     <rule ref="category/java/design.xml/SimplifiedTernary" />
     <rule ref="category/java/design.xml/SimplifyBooleanExpressions" />
     <rule ref="category/java/design.xml/SimplifyConditional" />
-    <rule ref="category/java/design.xml/SwitchDensity" />
     <rule ref="category/java/design.xml/TooManyFields" />
     <rule ref="category/java/design.xml/UselessOverridingMethod" />
     <rule ref="category/java/design.xml/UseObjectForClearerAPI" />
@@ -193,6 +198,7 @@
     <rule ref="category/java/design.xml/NcssCount" />
     <rule ref="category/java/design.xml/NPathComplexity" />
     <rule ref="category/java/design.xml/SimplifyBooleanReturns" />
+    <rule ref="category/java/design.xml/SwitchDensity" />
     <rule ref="category/java/design.xml/TooManyMethods" />
     -->
 

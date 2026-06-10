@@ -5,6 +5,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Performs output to System.out. Has a flag {@code enabled} that controls whether output is
@@ -53,7 +54,7 @@ public class DebugWriter {
    * @param args the format string arguments
    */
   @FormatMethod
-  public void debug(String format, Object... args) {
+  public void debug(String format, @Nullable Object... args) {
     if (isEnabled()) {
       out.print(String.format(format, args));
       out.flush();

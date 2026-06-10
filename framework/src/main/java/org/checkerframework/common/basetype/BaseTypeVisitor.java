@@ -218,7 +218,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected final AnnotationMirror TARGET =
       AnnotationBuilder.fromClass(
           elements,
-          java.lang.annotation.Target.class,
+          Target.class,
           AnnotationBuilder.elementNamesValues("value", new ElementType[0]));
 
   /** The @{@link Deterministic} annotation. */
@@ -3383,9 +3383,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     long valuePos = positions.getStartPosition(root, tree);
     LineMap lineMap = root.getLineMap();
     if (valuePos != -1 && lineMap != null) {
-      result.append(":");
+      result.append(':');
       result.append(lineMap.getLineNumber(valuePos));
-      result.append(":");
+      result.append(':');
       result.append(lineMap.getColumnNumber(valuePos));
     }
     return result.toString();

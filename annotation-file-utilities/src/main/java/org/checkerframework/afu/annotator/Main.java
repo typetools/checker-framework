@@ -613,7 +613,9 @@ public final class Main {
           }
           insertionIndex.get(jaifFile).putAll(spec.insertionSources());
         }
-        verb.debug("Read %d annotations from %s%n", parsedSpec.size(), jaifFile);
+        if (verb.isEnabled()) {
+          verb.debug("Read %d annotations from %s%n", parsedSpec.size(), jaifFile);
+        }
         if (omit_annotation != null) {
           List<Insertion> filtered = new ArrayList<>(parsedSpec.size());
           for (Insertion insertion : parsedSpec) {
@@ -625,7 +627,9 @@ public final class Main {
             }
           }
           parsedSpec = filtered;
-          verb.debug("After filtering: %d annotations from %s%n", parsedSpec.size(), jaifFile);
+          if (verb.isEnabled()) {
+            verb.debug("After filtering: %d annotations from %s%n", parsedSpec.size(), jaifFile);
+          }
         }
         // if (dbug.isEnabled()) {
         //   dbug.debug("parsedSpec:%n");
@@ -682,7 +686,9 @@ public final class Main {
     }
 
     for (String javafilename : javafiles) {
-      verb.debug("Processing %s%n", javafilename);
+      if (verb.isEnabled()) {
+        verb.debug("Processing %s%n", javafilename);
+      }
 
       File javafile = new File(javafilename);
       File unannotated = new File(javafilename + ".unannotated");
@@ -692,7 +698,9 @@ public final class Main {
         // A user can rename that file back to just .java to cause the
         // .java file to be read.
         if (unannotated.exists()) {
-          verb.debug("Renaming %s to %s%n", unannotated, javafile);
+          if (verb.isEnabled()) {
+            verb.debug("Renaming %s to %s%n", unannotated, javafile);
+          }
           boolean success = unannotated.renameTo(javafile);
           if (!success) {
             throw new Error(String.format("Failed renaming %s to %s", unannotated, javafile));
@@ -704,7 +712,9 @@ public final class Main {
       if (src == null) {
         return;
       } else {
-        verb.debug("Parsed %s%n", javafilename);
+        if (verb.isEnabled()) {
+          verb.debug("Parsed %s%n", javafilename);
+        }
       }
       String fileLineSep;
       try {
@@ -761,8 +771,11 @@ public final class Main {
         }
 
         // Apply the positions to the source file.
-        verb.debug(
-            "getPositions returned %d positions in tree for %s%n", positions.size(), javafilename);
+        if (verb.isEnabled()) {
+          verb.debug(
+              "getPositions returned %d positions in tree for %s%n",
+              positions.size(), javafilename);
+        }
 
         Set<IPair<Integer, ASTPath>> positionKeysUnsorted = positions.keySet();
         Set<IPair<Integer, ASTPath>> positionKeysSorted =

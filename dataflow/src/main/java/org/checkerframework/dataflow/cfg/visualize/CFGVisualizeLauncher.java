@@ -292,6 +292,7 @@ public final class CFGVisualizeLauncher {
    * @param outputFile source output file
    * @param analysis instance of forward or backward analysis from specific dataflow test case
    */
+  @SuppressWarnings("PMD.UseObjectForClearerAPI")
   public static void writeStringOfCFG(
       String inputFile, String method, String clas, String outputFile, Analysis<?, ?, ?> analysis) {
     ControlFlowGraph cfg = generateMethodCFG(inputFile, method, clas, analysis);

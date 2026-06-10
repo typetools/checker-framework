@@ -144,12 +144,12 @@ public final class SceneToStubWriter {
   public static void formatAnnotation(StringBuilder sb, Annotation a) {
     String fullAnnoName = a.def().name;
     String simpleAnnoName = fullAnnoName.substring(fullAnnoName.lastIndexOf('.') + 1);
-    sb.append("@");
+    sb.append('@');
     sb.append(simpleAnnoName);
     if (a.fieldValues.isEmpty()) {
       return;
     } else {
-      sb.append("(");
+      sb.append('(');
       if (a.fieldValues.size() == 1 && a.fieldValues.containsKey("value")) {
         AnnotationFieldType aft = a.def().fieldTypes.get("value");
         aft.format(sb, a.fieldValues.get("value"));
@@ -159,13 +159,13 @@ public final class SceneToStubWriter {
           AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
           StringBuilder fsb = new StringBuilder();
           fsb.append(f.getKey());
-          fsb.append("=");
+          fsb.append('=');
           aft.format(fsb, f.getValue());
           sj.add(fsb);
         }
         sb.append(sj);
       }
-      sb.append(")");
+      sb.append(')');
     }
   }
 
@@ -197,7 +197,7 @@ public final class SceneToStubWriter {
     for (Annotation tla : annos) {
       if (!isInternalJDKAnnotation(tla.def.name)) {
         formatAnnotation(sb, tla);
-        sb.append(" ");
+        sb.append(' ');
       }
     }
   }
@@ -240,7 +240,7 @@ public final class SceneToStubWriter {
     List<? extends AnnotationMirror> explicitAnnos = javacRep.getAnnotationMirrors();
     for (AnnotationMirror explicitAnno : explicitAnnos) {
       sb.append(explicitAnno.toString());
-      sb.append(" ");
+      sb.append(' ');
     }
     if (explicitAnnos.isEmpty() && scenelibRep != null) {
       formatAnnotations(sb, scenelibRep.tlAnnotationsHere);
@@ -310,7 +310,7 @@ public final class SceneToStubWriter {
     if (!param.tlAnnotationsHere.isEmpty()) {
       for (Annotation declAnno : param.tlAnnotationsHere) {
         formatAnnotation(sb, declAnno);
-        sb.append(" ");
+        sb.append(' ');
       }
       sb.delete(sb.length() - 1, sb.length());
     }
@@ -466,7 +466,7 @@ public final class SceneToStubWriter {
       formatAnnotations(sb, aType.tlAnnotationsHere);
     }
     sb.append(basetypeToPrint);
-    sb.append(" ");
+    sb.append(' ');
   }
 
   /** Writes an import statement for each annotation used in an {@link AScene}. */

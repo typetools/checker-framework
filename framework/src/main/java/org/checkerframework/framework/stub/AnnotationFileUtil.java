@@ -263,36 +263,36 @@ public class AnnotationFileUtil {
     public void visit(ConstructorDeclaration n, Void arg) {
       sb.append("<init>");
 
-      sb.append("(");
+      sb.append('(');
       if (n.getParameters() != null) {
         for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext(); ) {
           Parameter p = i.next();
           p.accept(this, arg);
 
           if (i.hasNext()) {
-            sb.append(",");
+            sb.append(',');
           }
         }
       }
-      sb.append(")");
+      sb.append(')');
     }
 
     @Override
     public void visit(MethodDeclaration n, Void arg) {
       sb.append(n.getName());
 
-      sb.append("(");
+      sb.append('(');
       if (n.getParameters() != null) {
         for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext(); ) {
           Parameter p = i.next();
           p.accept(this, arg);
 
           if (i.hasNext()) {
-            sb.append(",");
+            sb.append(',');
           }
         }
       }
-      sb.append(")");
+      sb.append(')');
     }
 
     @Override

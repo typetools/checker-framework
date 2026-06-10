@@ -75,9 +75,13 @@ public class StubGenerator {
     this.out = new PrintStream(out);
   }
 
-  /** Generate the stub file for all the classes within the provided package. */
+  /**
+   * Generate the stub file for all the classes within the provided package.
+   *
+   * @param elt an element whose package to use
+   */
   public void stubFromField(Element elt) {
-    if (!(elt.getKind() == ElementKind.FIELD)) {
+    if (elt.getKind() != ElementKind.FIELD) {
       return;
     }
 

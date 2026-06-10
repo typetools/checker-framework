@@ -80,7 +80,8 @@ public class ATypeElementWithType extends ATypeElement {
     sb.append("AInsertTypecastTypeElement: ");
     sb.append('\t');
     sb.append(super.toString());
-    sb.append("type: " + type);
+    sb.append("type: ");
+    sb.append(type);
     return sb.toString();
   }
 

@@ -142,20 +142,22 @@ public class ObjectCreationNode extends Node {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     if (enclosingExpression != null) {
-      sb.append(enclosingExpression + ".");
+      sb.append(enclosingExpression);
+      sb.append('.');
     }
     sb.append("new ");
     if (!tree.getTypeArguments().isEmpty()) {
-      sb.append("<");
+      sb.append('<');
       sb.append(StringsPlume.join(", ", tree.getTypeArguments()));
-      sb.append(">");
+      sb.append('>');
     }
-    sb.append(typeToInstantiate + "(");
+    sb.append(typeToInstantiate);
+    sb.append('(');
     sb.append(StringsPlume.join(", ", arguments));
-    sb.append(")");
+    sb.append(')');
     if (classbody != null) {
       // TODO: maybe this can be done nicer...
-      sb.append(" ");
+      sb.append(' ');
       sb.append(classbody.toString());
     }
     return sb.toString();

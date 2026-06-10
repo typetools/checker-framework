@@ -1,8 +1,9 @@
 package org.checkerframework.afu.scenelib.io.classfile;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import org.checkerframework.afu.scenelib.el.AScene;
 import org.checkerframework.afu.scenelib.io.IndexFileWriter;
 import org.checkerframework.afu.scenelib.util.CommandLineUtils;
@@ -162,7 +163,7 @@ public final class ClassFileReader {
    * @throws IOException if there is a problem reading from {@code fileName}
    */
   public static void read(AScene scene, String fileName) throws IOException {
-    try (FileInputStream fis = new FileInputStream(fileName)) {
+    try (InputStream fis = Files.newInputStream(Paths.get(fileName))) {
       read(scene, fis);
     }
   }
