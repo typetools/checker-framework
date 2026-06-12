@@ -9,8 +9,8 @@ class JdbcResourceLeak {
   // ========== ResultSet Tests ==========
 
   void resultSetNotClosed(Statement stmt) throws SQLException {
-    ResultSet rs = stmt.executeQuery("SELECT 1");
     // :: error: [required.method.not.called]
+    ResultSet rs = stmt.executeQuery("SELECT 1");
   }
 
   void resultSetClosed(Statement stmt) throws SQLException {
@@ -21,8 +21,8 @@ class JdbcResourceLeak {
   // ========== Statement Tests ==========
 
   void statementNotClosed(Connection conn) throws SQLException {
-    Statement stmt = conn.createStatement();
     // :: error: [required.method.not.called]
+    Statement stmt = conn.createStatement();
   }
 
   void statementClosed(Connection conn) throws SQLException {
@@ -33,8 +33,8 @@ class JdbcResourceLeak {
   // ========== PreparedStatement Tests ==========
 
   void preparedStatementNotClosed(Connection conn) throws SQLException {
-    PreparedStatement ps = conn.prepareStatement("SELECT ?");
     // :: error: [required.method.not.called]
+    PreparedStatement ps = conn.prepareStatement("SELECT ?");
   }
 
   void preparedStatementClosed(Connection conn) throws SQLException {
@@ -52,16 +52,16 @@ class JdbcResourceLeak {
   }
 
   void nestedStatementNotClosed(Connection conn) throws SQLException {
+    // :: error: [required.method.not.called]
     Statement stmt = conn.createStatement();
     ResultSet rs = stmt.executeQuery("SELECT 1");
     rs.close();
-    // :: error: [required.method.not.called]
   }
 
   void nestedResultSetNotClosed(Connection conn) throws SQLException {
     Statement stmt = conn.createStatement();
+    // :: error: [required.method.not.called]
     ResultSet rs = stmt.executeQuery("SELECT 1");
     stmt.close();
-    // :: error: [required.method.not.called]
   }
 }
