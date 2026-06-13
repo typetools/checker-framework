@@ -449,6 +449,7 @@ public final class RegexUtil {
    * @param iterable an iterable
    * @return a list of the results of applying {@code f} to the elements of {@code iterable}
    */
+  @SuppressWarnings("resourceleak:required.method.not.known") // list elements
   public static <
           @KeyForBottom FROM extends @Nullable @UnknownKeyFor Object,
           @KeyForBottom TO extends @Nullable @UnknownKeyFor Object>
