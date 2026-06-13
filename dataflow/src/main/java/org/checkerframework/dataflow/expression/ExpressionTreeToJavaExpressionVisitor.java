@@ -579,7 +579,7 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
     //  * true: it's an instance field declared in the type (or supertype) of receiverExpr.
     //  * false: it's an instance field declared in an enclosing type of receiverExpr.
 
-    @SuppressWarnings("interning:not.interned") // Checking for exact object
+    @SuppressWarnings({"interning:not.interned", "TypeEquals"}) // Checking for exact object
     boolean fieldDeclaredInReceiverType = enclosingTypeOfField == receiverExpr.getType();
     if (fieldDeclaredInReceiverType) {
       TypeMirror fieldType = ElementUtils.getType(fieldElem);

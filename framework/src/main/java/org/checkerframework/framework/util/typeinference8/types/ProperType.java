@@ -34,7 +34,7 @@ public class ProperType extends AbstractType {
    * Creates a proper type.
    *
    * @param type the annotated type
-   * @param properType the java type
+   * @param properType the Java type
    * @param context the context
    */
   public ProperType(
@@ -46,7 +46,7 @@ public class ProperType extends AbstractType {
    * Creates a proper type.
    *
    * @param type the annotated type
-   * @param properType the java type
+   * @param properType the Java type
    * @param context the context
    * @param ignoreAnnotations true if the annotations on this type should be ignored
    */
@@ -62,7 +62,7 @@ public class ProperType extends AbstractType {
    * Creates a proper type.
    *
    * @param type the annotated type
-   * @param properType the java type
+   * @param properType the Java type
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
    * @param ignoreAnnotations true if the annotations on this type should be ignored
@@ -251,18 +251,25 @@ public class ProperType extends AbstractType {
 
     ProperType otherProperType = (ProperType) o;
 
+    // Need to check two fields: `type` and `properType`.
+
     if (!type.equals(otherProperType.type)) {
       return false;
     }
-    if (properType.getKind() == TypeKind.TYPEVAR) {
-      if (otherProperType.properType.getKind() == TypeKind.TYPEVAR) {
-        return TypesUtils.areSame(
-            (TypeVariable) properType, (TypeVariable) otherProperType.properType);
-      }
+
+    @SuppressWarnings("TypeEquals") // fast path in equals method
+    boolean sameProperType = (properType == otherProperType.properType);
+    if (sameProperType) {
+      return true;
+    }
+    if (properType.getKind() != otherProperType.properType.getKind()) {
       return false;
     }
-    return properType == otherProperType.properType // faster
-        || context.env.getTypeUtils().isSameType(properType, otherProperType.properType); // slower
+    if (properType.getKind() == TypeKind.TYPEVAR) {
+      return TypesUtils.areSame(
+          (TypeVariable) properType, (TypeVariable) otherProperType.properType);
+    }
+    return context.env.getTypeUtils().isSameType(properType, otherProperType.properType);
   }
 
   @Override
