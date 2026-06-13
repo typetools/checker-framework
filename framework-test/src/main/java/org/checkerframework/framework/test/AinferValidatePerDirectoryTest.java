@@ -161,6 +161,7 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
     return sb.toString();
   }
 
+  @SuppressWarnings("JUnitMethodInvoked")
   @Override
   public void run() {
     // Only run if annotated files have been created.

@@ -145,7 +145,7 @@ public class InvocationTypeInference {
    * @param invocation invocation which needs inference
    * @param executableType type of the method invocation
    * @return the result of inference
-   * @throws FalseBoundException if inference fails because of the java types
+   * @throws FalseBoundException if inference fails because of the Java types
    */
   public InferenceResult infer(ExpressionTree invocation, AnnotatedExecutableType executableType)
       throws FalseBoundException {
@@ -188,7 +188,7 @@ public class InvocationTypeInference {
    *
    * @param invocation member reference tree
    * @return the result of inference
-   * @throws FalseBoundException if inference fails because of the java types
+   * @throws FalseBoundException if inference fails because of the Java types
    */
   public InferenceResult infer(MemberReferenceTree invocation) throws FalseBoundException {
 
