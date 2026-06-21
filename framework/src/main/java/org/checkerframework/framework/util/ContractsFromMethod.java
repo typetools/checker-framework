@@ -216,10 +216,11 @@ public class ContractsFromMethod {
    * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
    * contractAnno}. May return null.
    *
-   * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
+   * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}.
+   *     Does not work for {@code PreconditionAnnotation} or {@code PostconditionAnnotation}.
    * @return the type annotation specified in {@code contractAnno.qualifier}
    */
-  private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
+  public @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno) {
     return getQualifierEnforcedByContractAnnotation(contractAnno, null, null);
   }
@@ -262,12 +263,15 @@ public class ContractsFromMethod {
       @Nullable AnnotationMirror argumentAnno,
       @Nullable Map<String, String> argumentRenaming) {
 
+    // This method returns null for user-defined contract annotations defined with
+    // @PreconditionAnnotation or @PostconditionAnnotation.  TODO: extend the method to handle that.
+
     @SuppressWarnings("deprecation") // permitted for use in the framework
     Name c = AnnotationUtils.getElementValueClassName(contractAnno, "qualifier", false);
 
     AnnotationMirror anno;
     if (argumentAnno == null || argumentRenaming.isEmpty()) {
-      // If there are no arguments, use factory method that allows caching
+      // If there are no arguments, use factory method that allows caching.
       anno = AnnotationBuilder.fromName(factory.getElementUtils(), c);
     } else {
       AnnotationBuilder builder = new AnnotationBuilder(factory.getProcessingEnv(), c);

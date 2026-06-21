@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.TreeSet;
 import java.util.Vector;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -105,7 +106,10 @@ import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.DefaultQualifier;
+import org.checkerframework.framework.qual.EnsuresQualifier;
+import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.HasQualifierParameter;
+import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceVisitor;
@@ -2391,6 +2395,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return null;
     }
 
+    // This logic is not in BaseTypeVisitor#checkContractsAtMethodDeclaration because that method
+    // apears to also check implicit annotations.
+    if (isPreOrPostConditionAnnotation(annoName)) {
+      AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(tree);
+      AnnotationMirror qualifier =
+          atypeFactory.getContractsFromMethod().getQualifierEnforcedByContractAnnotation(anno);
+      if (qualifier != null) {
+        AnnotationMirror topForQualifier = qualHierarchy.getTopAnnotation(qualifier);
+        if (AnnotationUtils.areSame(qualifier, topForQualifier)) {
+          Name contractQualName = qualifier.getAnnotationType().asElement().getSimpleName();
+          checker.reportWarning(tree, "contracts.toptype", contractQualName, tree);
+        }
+      }
+    }
+
     List<ExecutableElement> methods = ElementFilter.methodsIn(annoType.getEnclosedElements());
     // Mapping from argument simple name to its annotated type.
     Map<String, AnnotatedTypeMirror> annoTypes = ArrayMap.newArrayMapOrHashMap(methods.size());
@@ -2443,6 +2462,28 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
     return null;
+  }
+
+  /** Pre- and post-condition annotations that take a qualifier as an argument. */
+  private TreeSet<String> preAndPostConditionAnnotations =
+      new TreeSet<>(
+          List.of(
+              RequiresQualifier.class.getName(),
+              EnsuresQualifier.class.getName(),
+              EnsuresQualifierIf.class.getName()));
+
+  /**
+   * Returns true if the given annotation name matches that of a pre- or post-condition annotation
+   * or meta-annotation that takes a qualifier as an argument.
+   *
+   * @param annotationName an annotation name
+   * @return true iff the annotation name matches that of a pre- or post-condition annotation
+   */
+  private boolean isPreOrPostConditionAnnotation(Name annotationName) {
+    String annoName = annotationName.toString();
+    // TODO: This method should also return true for any annotation that is meta-annotated with
+    // @PreconditionAnnotation or @PostconditionAnnotation.
+    return preAndPostConditionAnnotations.contains(annoName);
   }
 
   @Override
