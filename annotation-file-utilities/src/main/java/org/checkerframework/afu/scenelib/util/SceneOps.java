@@ -299,6 +299,7 @@ class DiffVisitor implements ElementVisitor<Void, Pair<AElement, AElement>> {
    * @param <K> the type of keys
    * @param <V> the type of values
    */
+  @SuppressWarnings("resourceleak:required.method.not.known") // Not relevant to resources
   private <K, V extends AElement> void visitElements(
       VivifyingMap<K, V> minuend, VivifyingMap<K, V> subtrahend, VivifyingMap<K, V> difference) {
     if (minuend != null) {

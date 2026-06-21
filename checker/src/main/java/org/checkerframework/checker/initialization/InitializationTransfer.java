@@ -14,6 +14,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -59,7 +60,7 @@ import org.checkerframework.javacutil.TreeUtils;
 public class InitializationTransfer<
         V extends CFAbstractValue<V>,
         T extends InitializationTransfer<V, T, S>,
-        S extends InitializationStore<V, S>>
+        S extends InitializationStore<@MustCall({}) V, @MustCall({}) S>>
     extends CFAbstractTransfer<V, S, T> {
 
   protected final InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory;

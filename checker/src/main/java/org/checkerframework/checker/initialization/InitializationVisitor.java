@@ -20,6 +20,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -53,9 +54,10 @@ import org.plumelib.util.IPair;
  * @param <Store> the type of the store
  */
 public class InitializationVisitor<
-        Factory extends InitializationAnnotatedTypeFactory<Value, Store, ?, ?>,
-        Value extends CFAbstractValue<Value>,
-        Store extends InitializationStore<Value, Store>>
+        Factory extends
+            InitializationAnnotatedTypeFactory<@MustCall({}) Value, @MustCall({}) Store, ?, ?>,
+        Value extends CFAbstractValue<@MustCall({}) Value>,
+        Store extends InitializationStore<@MustCall({}) Value, @MustCall({}) Store>>
     extends BaseTypeVisitor<Factory> {
 
   /** The annotation formatter. */
