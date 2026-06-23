@@ -95,6 +95,7 @@ def resolvedGitDir = providers.exec {
 
 gitProperties {
   dotGitDirectory.set(rootProject.layout.dir(resolvedGitDir))
+  failOnNoGitDirectory = false
 }
 
 jar {
