@@ -98,9 +98,9 @@ tasks.register("installGitHooks", Copy) {
 }
 subprojects { subProject ->
   if (subProject.name.equals("checker")
-      || subProject.name.equals("annotation-file-utilities")
-      || subProject.name.equals("dataflow")
-      || subProject.name.equals("framework")) {
+  || subProject.name.equals("annotation-file-utilities")
+  || subProject.name.equals("dataflow")
+  || subProject.name.equals("framework")) {
     apply plugin: "com.gradleup.shadow"
     shadow {
       addShadowVariantIntoJavaComponent = false
@@ -536,13 +536,13 @@ tasks.register("zip", Zip) {
 
   from(layout.projectDirectory) {
     exclude("api/**",
-        "checker/bin/README",
-        "checker/dist/*.asc",
-        "docs/tutorial/tests/**",
-        "docs/tutorial/src/**",
-        "docs/tutorial/test/**",
-        "docs/tutorial/Makefile",
-        "docs/tutorial/README")
+    "checker/bin/README",
+    "checker/dist/*.asc",
+    "docs/tutorial/tests/**",
+    "docs/tutorial/src/**",
+    "docs/tutorial/test/**",
+    "docs/tutorial/Makefile",
+    "docs/tutorial/README")
 
     include("README.html",
         "LICENSE.txt",
