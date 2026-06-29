@@ -491,10 +491,10 @@ void copyNonannotatedToAnnotatedDirectory(String testdir) {
     into(file("tests/${testdir}/annotated"))
     filter { String line ->
       (line.contains("// :: error:")
-          // Don't remove unchecked cast warnings, because they're genuinely expected in some all-systems
-          // tests, such as GenericsCasts.java.
-          || (line.contains("// :: warning:") && !line.contains("// :: warning: [unchecked]")))
-          ? null : line
+      // Don't remove unchecked cast warnings, because they're genuinely expected in some all-systems
+      // tests, such as GenericsCasts.java.
+      || (line.contains("// :: warning:") && !line.contains("// :: warning: [unchecked]")))
+      ? null : line
     }
   }
   // The only file for which expected errors are maintained is ExpectedErrors.java, so we copy it over.
@@ -950,22 +950,22 @@ tasks.register("wpiManyTest", Exec) {
         if (
         // Ignore the line that WPI echoes with the javac command being run.
         line.startsWith("Running ")
-            // Warnings about bad path elements aren't related to WPI and are ignored.
-            || line.startsWith("warning: [path]")
-            // Ignore bootstrap classpath warning:
-            || line.startsWith("warning: [options] bootstrap")
-            // Ignore the warnings about --add-opens arguments to the JVM
-            || line.contains("warning: [options] --add-opens has no effect at compile time")
-            // Ignore warning about using -source; should use --release instead.
-            || line.equals("warning: [options] system modules path not set in conjunction with -source 11")
-            // Ignore the summary line that reports the total number of warnings (which can be single or plural).
-            || line.endsWith(" warning")
-            || line.endsWith(" warnings")
-            || line.startsWith("warning: No processor claimed any of these annotations: ")
-            // Ignore debugging output with the prefix "DEBUG: ".
-            || line.startsWith("DEBUG: ")
-            || line.startsWith("warning: DEBUG: ")
-            || line.contains("warning: [DEBUG: ")) {
+        // Warnings about bad path elements aren't related to WPI and are ignored.
+        || line.startsWith("warning: [path]")
+        // Ignore bootstrap classpath warning:
+        || line.startsWith("warning: [options] bootstrap")
+        // Ignore the warnings about --add-opens arguments to the JVM
+        || line.contains("warning: [options] --add-opens has no effect at compile time")
+        // Ignore warning about using -source; should use --release instead.
+        || line.equals("warning: [options] system modules path not set in conjunction with -source 11")
+        // Ignore the summary line that reports the total number of warnings (which can be single or plural).
+        || line.endsWith(" warning")
+        || line.endsWith(" warnings")
+        || line.startsWith("warning: No processor claimed any of these annotations: ")
+        // Ignore debugging output with the prefix "DEBUG: ".
+        || line.startsWith("DEBUG: ")
+        || line.startsWith("warning: DEBUG: ")
+        || line.contains("warning: [DEBUG: ")) {
           return
         }
         if (!line.trim().equals("")) {
