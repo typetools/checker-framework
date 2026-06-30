@@ -136,7 +136,7 @@ public class BinaryOperation extends JavaExpression {
     if (!(other instanceof BinaryOperation biOp)) {
       return false;
     }
-    if (!(operationKind == biOp.getOperationKind())) {
+    if (operationKind != biOp.getOperationKind()) {
       return false;
     }
     if (isCommutative()) {

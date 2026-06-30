@@ -242,6 +242,7 @@ public class AMethod extends ADeclaration {
    *
    * @param returnTypeMirror the return type
    */
+  @SuppressWarnings("TypeEquals") // checking for identical value
   public void setReturnTypeMirror(@FindDistinct @Nullable TypeMirror returnTypeMirror) {
     if (returnTypeMirror == null) {
       return;

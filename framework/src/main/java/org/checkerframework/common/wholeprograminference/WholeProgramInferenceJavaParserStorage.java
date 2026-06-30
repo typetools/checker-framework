@@ -1282,7 +1282,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param compilationUnit compilation unit being wrapped
    * @param types wrappers for classes and interfaces in {@code compilationUnit}
    */
-  private record CompilationUnitAnnos(
+  public record CompilationUnitAnnos(
       CompilationUnit compilationUnit, List<ClassOrInterfaceAnnos> types)
       implements DeepCopyable<CompilationUnitAnnos> {
 
@@ -1348,7 +1348,7 @@ public class WholeProgramInferenceJavaParserStorage
   /**
    * Stores wrappers for the locations where annotations may be inferred in a class or interface.
    */
-  private static class ClassOrInterfaceAnnos implements DeepCopyable<ClassOrInterfaceAnnos> {
+  public static class ClassOrInterfaceAnnos implements DeepCopyable<ClassOrInterfaceAnnos> {
     /**
      * Mapping from JVM method signatures to the wrapper containing the corresponding executable.
      */
@@ -1926,7 +1926,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /** Stores the JavaParser node for a field and the annotations that have been inferred for it. */
-  private static class FieldAnnos implements DeepCopyable<FieldAnnos> {
+  public static class FieldAnnos implements DeepCopyable<FieldAnnos> {
     /** Wrapped field declaration. */
     public final VariableDeclarator declaration;
 

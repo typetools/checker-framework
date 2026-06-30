@@ -33,6 +33,7 @@ import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.NewObject;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
@@ -468,7 +469,7 @@ public class LockAnnotatedTypeFactory
     }
 
     /** The weakest side effect annotation. */
-    static SideEffectAnnotation weakest = null;
+    static @MonotonicNonNull SideEffectAnnotation weakest;
 
     /**
      * Returns the weakest side effect annotation.

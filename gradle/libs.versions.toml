@@ -1,16 +1,16 @@
 [plugins]
 
-com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.4.2" }
+com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.4.3" }
 
 de-undercouch-download = { id = "de.undercouch.download", version = "5.7.0" }
 
 net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "5.1.0" }
 
-com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.6.0" }
+com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.7.0" }
 
 com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "4.0.1" }
 
-biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.2.3" }
+biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.3.0" }
 
 [versions]
 
@@ -18,11 +18,11 @@ biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.2.3" }
 #  * Temporarily comment out "-Werror" in build.gradle files.
 #  * Repeatedly run `./gradlew clean compileJava` and fix all errors.
 #  * Uncomment "-Werror".
-errorprone-version = "2.49.0"
+errorprone-version = "2.50.0"
 
 junit-junit = "4.13.2"
 
-jgit-version = "7.6.0.202603022253-r"
+jgit-version = "7.7.0.202606012155-r"
 
 [libraries]
 

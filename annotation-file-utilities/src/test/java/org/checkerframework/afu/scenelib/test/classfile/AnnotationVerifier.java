@@ -314,11 +314,17 @@ public class AnnotationVerifier {
         sb.append(lineSep);
       }
       for (Map.Entry<String, FieldRecorder> e : fieldRecorders.entrySet()) {
-        sb.append(indent + "  " + e.getKey() + ":" + lineSep);
+        sb.append(indent + "  ");
+        sb.append(e.getKey());
+        sb.append(':');
+        sb.append(lineSep);
         e.getValue().prettyPrint(sb, indent + "    ");
       }
       for (Map.Entry<String, MethodRecorder> e : methodRecorders.entrySet()) {
-        sb.append(indent + "  " + e.getKey() + ":" + lineSep);
+        sb.append(indent + "  ");
+        sb.append(e.getKey());
+        sb.append(':');
+        sb.append(lineSep);
         e.getValue().prettyPrint(sb, indent + "    ");
       }
     }

@@ -682,8 +682,10 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
         // in "actualPath". If it's not a match, this is not the correct
         // location. If it is a match, keep going.
         Tree next = null;
-        dbug.debug("astNode: %s%n", astNode);
-        dbug.debug("actualNode: %s%n", actualNode.getKind());
+        if (dbug.isEnabled()) {
+          dbug.debug("astNode: %s%n", astNode);
+          dbug.debug("actualNode: %s%n", actualNode.getKind());
+        }
         if (!kindsMatch(astNode.getTreeKind(), actualNode.getKind())) {
           return false;
         }

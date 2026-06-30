@@ -1532,7 +1532,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param msg the message text
    * @see SourceChecker#report(Object, DiagMessage)
    */
-  public void message(javax.tools.Diagnostic.Kind kind, String msg) {
+  public void message(Diagnostic.Kind kind, String msg) {
     if (messager == null) {
       // If this method is called before initChecker() sets the field
       messager = processingEnv.getMessager();
@@ -1583,7 +1583,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param root the compilation unit
    */
   protected void printOrStoreMessage(
-      javax.tools.Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
+      Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
     assert this.currentRoot == root;
     StackTraceElement[] trace = Thread.currentThread().getStackTrace();
     if (messageStore == null) {
@@ -1608,7 +1608,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *     dumpOnErrors option is enabled.
    */
   protected void printOrStoreMessage(
-      javax.tools.Diagnostic.Kind kind,
+      Diagnostic.Kind kind,
       String message,
       Tree source,
       CompilationUnitTree root,

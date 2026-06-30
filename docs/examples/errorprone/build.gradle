@@ -11,7 +11,7 @@ plugins {
 
 
 dependencies {
-  errorprone("com.google.errorprone:error_prone_core:2.49.0")
+  errorprone("com.google.errorprone:error_prone_core:2.50.0")
 }
 
 repositories {

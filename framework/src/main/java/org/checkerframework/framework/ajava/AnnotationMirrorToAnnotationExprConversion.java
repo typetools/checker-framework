@@ -151,7 +151,7 @@ public class AnnotationMirrorToAnnotationExprConversion {
 
     @Override
     public Expression visitAnnotation(AnnotationMirror value, Void p) {
-      return AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(value);
+      return annotationMirrorToAnnotationExpr(value);
     }
 
     @Override

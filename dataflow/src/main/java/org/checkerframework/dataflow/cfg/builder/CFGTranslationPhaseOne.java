@@ -1863,7 +1863,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // Declare and initialize the loop index variable
       TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
 
-      LiteralTree zero = treeBuilder.buildLiteral(Integer.valueOf(0));
+      LiteralTree zero = treeBuilder.buildLiteral(0);
       handleArtificialTree(zero);
 
       VariableTree indexVariable =
@@ -1957,7 +1957,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       indexNode3.setInSource(false);
       extendWithNode(indexNode3);
 
-      LiteralTree oneTree = treeBuilder.buildLiteral(Integer.valueOf(1));
+      LiteralTree oneTree = treeBuilder.buildLiteral(1);
       handleArtificialTree(oneTree);
       Node one = new IntegerLiteralNode(oneTree);
       one.setInSource(false);
@@ -2412,6 +2412,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param second a reference
    * @return the first argument that is non-null
    */
+  @SuppressWarnings("PMD.AvoidThrowingNullPointerException")
   private static <A> A firstNonNull(A first, A second) {
     if (first != null) {
       return first;

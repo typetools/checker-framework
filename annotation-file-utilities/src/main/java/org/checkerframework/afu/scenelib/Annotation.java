@@ -68,15 +68,16 @@ public final class Annotation {
         valueString.append(Arrays.toString(arr));
         classString.append(" {");
         for (Object elt : arr) {
-          classString.append(" " + elt.getClass());
+          classString.append(' ');
+          classString.append(elt.getClass());
         }
-        classString.append("}");
+        classString.append('}');
       } else if (value instanceof Collection<?> coll) {
         valueString.append(Arrays.toString(coll.toArray()));
         classString.append(" {");
         for (Object elt : coll) {
           assert elt != null : "@AssumeAssertion(nullness): annotation fields are non-null";
-          classString.append(" ");
+          classString.append(' ');
           classString.append(elt.getClass());
         }
         classString.append(" }");
@@ -343,7 +344,7 @@ public final class Annotation {
 //       StringBuilder sb = new StringBuilder();
 //       sb.append("tla: ");
 //       sb.append(tldef.retention);
-//       sb.append(":");
+//       sb.append(':');
 //       sb.append(ann.toString());
 //       return sb.toString();
 //     }

@@ -119,14 +119,14 @@ public class MethodCall extends JavaExpression {
     }
     return method.equals(other.method)
         && this.receiver.syntacticEquals(other.receiver)
-        && JavaExpression.syntacticEqualsList(this.arguments, other.arguments);
+        && syntacticEqualsList(this.arguments, other.arguments);
   }
 
   @Override
   public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
     return syntacticEquals(other)
         || receiver.containsSyntacticEqualJavaExpression(other)
-        || JavaExpression.listContainsSyntacticEqualJavaExpression(arguments, other);
+        || listContainsSyntacticEqualJavaExpression(arguments, other);
   }
 
   @Override
@@ -177,10 +177,10 @@ public class MethodCall extends JavaExpression {
     } else {
       preParen.append(receiver);
     }
-    preParen.append(".");
+    preParen.append('.');
     String methodName = method.getSimpleName().toString();
     preParen.append(methodName);
-    preParen.append("(");
+    preParen.append('(');
     StringJoiner result = new StringJoiner(", ", preParen, ")");
     for (JavaExpression argument : arguments) {
       result.add(argument.toString());

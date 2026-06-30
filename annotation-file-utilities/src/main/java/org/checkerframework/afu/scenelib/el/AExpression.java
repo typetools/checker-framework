@@ -181,7 +181,8 @@ public class AExpression extends AElement {
         sb.append(ae.toString());
       }
       if (loc.type_index >= 0) {
-        sb.append("typearg " + loc);
+        sb.append("typearg ");
+        sb.append(loc);
         sb.append(": ");
         sb.append(ae.toString());
         sb.append(' ');
@@ -201,7 +202,8 @@ public class AExpression extends AElement {
         sb.append(": ");
       }
       if (loc.type_index >= 0) {
-        sb.append("typearg " + loc);
+        sb.append("typearg ");
+        sb.append(loc);
         sb.append(": ");
         sb.append(ae.toString());
         sb.append(' ');

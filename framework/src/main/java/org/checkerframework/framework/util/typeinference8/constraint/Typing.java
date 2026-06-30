@@ -307,7 +307,7 @@ public class Typing extends TypeConstraint {
       if (S.getTypeKind() == TypeKind.WILDCARD) {
         return ConstraintSet.FALSE;
       }
-      // This code is incorrect because the java types must be equal, but the qualifiers can
+      // This code is incorrect because the Java types must be equal, but the qualifiers can
       // be covariant.
       // if (isCovarTypeArg) {
       // return new Typing(this, S, T, Kind.SUBTYPE);

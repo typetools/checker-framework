@@ -45,7 +45,7 @@ public class MarkerNode extends Node {
     StringBuilder sb = new StringBuilder();
     sb.append("marker (");
     sb.append(message);
-    sb.append(")");
+    sb.append(')');
     return sb.toString();
   }
 

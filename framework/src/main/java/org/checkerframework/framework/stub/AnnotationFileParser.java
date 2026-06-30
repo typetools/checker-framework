@@ -137,6 +137,7 @@ import org.plumelib.util.SystemPlume;
  *
  * <p>The other entry point is {@link #parseJdkFileAsStub}.
  */
+@SuppressWarnings("PMD.GuardLogStatement") // `warn()` must be called to check for duplicates
 public final class AnnotationFileParser {
 
   /**
@@ -3064,7 +3065,7 @@ public final class AnnotationFileParser {
         SystemPlume.sleep(1);
         processingEnv
             .getMessager()
-            .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
+            .printMessage(Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
         System.out.flush();
         SystemPlume.sleep(1);
       }
@@ -3088,7 +3089,7 @@ public final class AnnotationFileParser {
       SystemPlume.sleep(1);
       processingEnv
           .getMessager()
-          .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
+          .printMessage(Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
       System.out.flush();
       SystemPlume.sleep(1);
     }

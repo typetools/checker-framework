@@ -78,6 +78,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.util.IPair;
@@ -968,13 +969,19 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         continue;
       }
       CFStore store = getStoreBefore(tree);
+      if (store == null) {
+        throw new BugInCF(
+            "cannot find store before tree: " + TreeUtils.toStringTruncated(tree, 60));
+      }
       CFValue value = store.getValue(je);
       if (value != null && value.getAnnotations().size() == 1) {
+        AnnotationMirror anno =
+            qualHierarchy.findAnnotationInHierarchy(value.getAnnotations(), UNKNOWN);
+        if (anno == null) {
+          throw new BugInCF("cannot find annotation in hierarchy: " + value.getAnnotations());
+        }
         UBQualifier newUBQ =
-            UBQualifier.createUBQualifier(
-                qualHierarchy.findAnnotationInHierarchy(value.getAnnotations(), UNKNOWN),
-                AnnotatedTypeFactory.negateConstant(offset),
-                (IndexChecker) checker);
+            UBQualifier.createUBQualifier(anno, negateConstant(offset), (IndexChecker) checker);
         if (ubQualifier == null) {
           ubQualifier = newUBQ;
         } else {

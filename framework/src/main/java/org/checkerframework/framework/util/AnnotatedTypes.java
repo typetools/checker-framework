@@ -142,15 +142,15 @@ public final class AnnotatedTypes {
 
     Elements elements = atypeFactory.getProcessingEnv().getElementUtils();
     if (supertype != null
-        && AnnotatedTypes.isEnum(supertype)
-        && AnnotatedTypes.isDeclarationOfJavaLangEnum(types, elements, supertype)) {
+        && isEnum(supertype)
+        && isDeclarationOfJavaLangEnum(types, elements, supertype)) {
       // Don't return the asSuper result because it causes an infinite loop.
       @SuppressWarnings("unchecked")
       T result = (T) supertype.deepCopy();
       return result;
     }
 
-    T asSuperType = AnnotatedTypes.asSuper(atypeFactory, subtype, supertype);
+    T asSuperType = asSuper(atypeFactory, subtype, supertype);
 
     fixUpRawTypes(subtype, asSuperType, supertype, types);
     return asSuperType;
@@ -399,7 +399,7 @@ public final class AnnotatedTypes {
             memberType);
       }
       case WILDCARD -> {
-        if (AnnotatedTypes.isTypeArgOfRawType(receiverType)) {
+        if (isTypeArgOfRawType(receiverType)) {
           return substituteTypeArgsFromRawTypes(atypeFactory, member, memberType);
         }
         return asMemberOf(
@@ -907,10 +907,8 @@ public final class AnnotatedTypes {
               + "type1: %s, type2: %s",
           glbJava.getKind(), glbJava, type1, type2);
     }
-    AnnotationMirrorSet set1 =
-        AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type1);
-    AnnotationMirrorSet set2 =
-        AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type2);
+    AnnotationMirrorSet set1 = findEffectiveLowerBoundAnnotations(qualHierarchy, type1);
+    AnnotationMirrorSet set2 = findEffectiveLowerBoundAnnotations(qualHierarchy, type2);
     Set<? extends AnnotationMirror> glbAnno =
         qualHierarchy.greatestLowerBoundsShallow(set1, tm1, set2, tm2);
 
@@ -1293,10 +1291,11 @@ public final class AnnotatedTypes {
    * @param typeVar2 a type variable
    * @return true if the typeVar1 and typeVar2 are two uses of the same type variable
    */
-  @SuppressWarnings(
-      "interning:not.interned" // This is an equals method but @EqualsMethod can't be used
-  // because this method has 3 arguments.
-  )
+  @SuppressWarnings({
+    "interning:not.interned", // This is an equals method but @EqualsMethod can't be used
+    // because this method has 3 arguments.
+    "TypeEquals" // early exit from equals method
+  })
   public static boolean haveSameDeclaration(
       Types types, AnnotatedTypeVariable typeVar1, AnnotatedTypeVariable typeVar2) {
 

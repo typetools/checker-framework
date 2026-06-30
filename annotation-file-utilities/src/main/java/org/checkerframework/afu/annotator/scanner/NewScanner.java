@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.plumelib.util.IPair;
 
 /**
@@ -30,7 +31,9 @@ public final class NewScanner extends CommonScanner {
    * @return the index of the given cast tree
    */
   public static int indexOfNewTree(TreePath origpath, Tree tree) {
-    debug("indexOfNewTree: " + origpath.getLeaf());
+    if (debug) {
+      debug("indexOfNewTree: %s%n", origpath.getLeaf());
+    }
 
     IPair<TreePath, Tree> args = IPair.of(origpath, tree);
     if (cache.containsKey(args)) {
@@ -81,16 +84,32 @@ public final class NewScanner extends CommonScanner {
     return super.visitNewArray(node, null);
   }
 
-  public static void debug(String s) {
+  /**
+   * Output debugging information, if debugging is enabled.
+   *
+   * @param fmt a format string
+   * @param args the arguments to the format string
+   */
+  @FormatMethod
+  public static void debug(String fmt, Object... args) {
     if (debug) {
-      System.out.println(s);
+      System.out.printf(fmt, args);
     }
   }
 
+  /** For each method, all the locations where {@code new} instructions exist. */
   private static Map<String, List<Integer>> methodNameToNewOffsets = new HashMap<>();
 
+  /**
+   * Register the location of a {@code new} instruction.
+   *
+   * @param methodName the name of the method that contains the {@code new} instruction
+   * @param offset the offset of the {@code new} instruction
+   */
   public static void addNewToMethod(String methodName, Integer offset) {
-    debug("adding new to method: " + methodName + " offset: " + offset);
+    if (debug) {
+      debug("adding new to method: %s offset: %s%n", methodName, offset);
+    }
     List<Integer> offsetList =
         methodNameToNewOffsets.computeIfAbsent(methodName, k -> new ArrayList<>());
     offsetList.add(offset);

@@ -118,7 +118,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
    * A subclass of ContractsFromMethod that adds a postcondition contract to each constructor,
    * requiring that it initializes all fields.
    */
-  private class InitializedFieldsContractsFromMethod extends ContractsFromMethod {
+  public class InitializedFieldsContractsFromMethod extends ContractsFromMethod {
     /**
      * Creates an InitializedFieldsContractsFromMethod for the given factory.
      *

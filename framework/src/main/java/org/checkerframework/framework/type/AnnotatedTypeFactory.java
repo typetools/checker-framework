@@ -2614,7 +2614,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotatedTypeMirror returnType = AnnotatedTypeMirror.createType(type, this, false);
 
     if (returnType == null
-        || !(returnType.getKind() == TypeKind.DECLARED)
+        || (returnType.getKind() != TypeKind.DECLARED)
         || ((AnnotatedDeclaredType) returnType).getTypeArguments().size() != 1) {
       throw new BugInCF(
           "Unexpected type passed to AnnotatedTypes.adaptGetClassReturnTypeToReceiver%n"
@@ -5239,7 +5239,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>The second argument to visit must be a captured type variable.
    */
-  @SuppressWarnings("interning:not.interned") // Captured type vars can be compared with ==.
+  @SuppressWarnings({
+    "interning:not.interned",
+    "TypeEquals"
+  }) // Captured type vars can be compared with ==.
   private final SimpleAnnotatedTypeScanner<Boolean, TypeVariable> captureScanner =
       new SimpleAnnotatedTypeScanner<>(
           (type, other) -> type.getUnderlyingType() == other, Boolean::logicalOr, false);
