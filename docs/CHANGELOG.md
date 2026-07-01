@@ -5,11 +5,9 @@
 
 ## Version 4.2.1 (2026-07-01)
 
-### User-visible changes
-
-### Implementation details
-
 ### Closed issues
+
+\#7726.
 
 ## Version 4.2.0 (2026-06-01)
 
