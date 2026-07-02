@@ -329,7 +329,10 @@ public final class CFGVisualizeLauncher {
     try {
       ProcessBuilder pb = new ProcessBuilder("dot", "-Tpdf", file, "-o", file + ".pdf");
       Process child = pb.start();
-      child.waitFor();
+      int exitCode = child.waitFor();
+      if (exitCode != 0) {
+        System.err.println("dot exited with status " + exitCode);
+      }
     } catch (InterruptedException | IOException e) {
       e.printStackTrace();
       System.exit(1);
