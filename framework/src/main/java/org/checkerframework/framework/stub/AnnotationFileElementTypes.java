@@ -928,11 +928,7 @@ public class AnnotationFileElementTypes {
             "End of remainingJdkStubFilesJar for %s from %s.%n", factoryClass, jarFileURL);
 
         System.out.printf("Contents of %s:%n", jarFileURL);
-        List<String> jarEntryNames = new ArrayList<>(entries.size());
-        for (JarEntry jarEntry : entries) {
-          jarEntryNames.add(jarEntry.getName());
-        }
-        printSortedIndented(jarEntryNames);
+        printSortedIndented(entries.stream().map(JarEntry::getName).collect(Collectors.toList()));
         System.out.printf("End of %s.%n", jarFileURL);
         System.out.flush();
         SystemPlume.sleep(1);
