@@ -51,6 +51,7 @@ import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
+import org.plumelib.util.SystemPlume;
 
 /**
  * Holds information about types parsed from annotation files (stub files or ajava files). When
