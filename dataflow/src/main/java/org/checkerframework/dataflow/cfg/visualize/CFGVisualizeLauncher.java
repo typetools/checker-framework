@@ -327,8 +327,8 @@ public final class CFGVisualizeLauncher {
    */
   private static void producePDF(String file) {
     try {
-      String command = "dot -Tpdf \"" + file + "\" -o \"" + file + ".pdf\"";
-      Process child = Runtime.getRuntime().exec(new String[] {"/bin/sh", "-c", command});
+      ProcessBuilder pb = new ProcessBuilder("dot", "-Tpdf", file, "-o", file + ".pdf");
+      Process child = pb.start();
       child.waitFor();
     } catch (InterruptedException | IOException e) {
       e.printStackTrace();
