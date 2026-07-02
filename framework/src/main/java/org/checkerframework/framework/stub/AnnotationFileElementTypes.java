@@ -51,7 +51,6 @@ import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
-import org.plumelib.util.SystemPlume;
 
 /**
  * Holds information about types parsed from annotation files (stub files or ajava files). When
@@ -930,8 +929,6 @@ public class AnnotationFileElementTypes {
         System.out.printf("Contents of %s:%n", jarFileURL);
         printSortedIndented(entries.stream().map(JarEntry::getName).collect(Collectors.toList()));
         System.out.printf("End of %s.%n", jarFileURL);
-        System.out.flush();
-        SystemPlume.sleep(1);
       }
     } catch (IOException e) {
       throw new BugInCF("Cannot open the jar file " + connection.getJarFileURL(), e);
