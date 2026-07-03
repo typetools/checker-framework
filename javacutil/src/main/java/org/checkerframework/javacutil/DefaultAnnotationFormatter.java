@@ -82,7 +82,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
   /**
    * A helper method to output a single AnnotationMirror, without showing full package names.
    *
-   * @param am the annotation to formate
+   * @param am the annotation to format
    * @param sb where to output the annotation's formatted representation
    */
   protected void formatAnnotationMirror(AnnotationMirror am, StringBuilder sb) {

@@ -91,7 +91,7 @@ public abstract class GitTask extends DefaultTask {
     //   javax.security.auth.login.FailedLoginException:
     //   No password data for encrypted resource=/home/mernst/.ssh/id_rsa
     // Furthermore, such messages cause a Java stack trace that clutters the Gradle output and makes
-    // it look like compilation falied.
+    // it look like compilation failed.
     // So instead run `git pull` on the command line.
 
     boolean calledGit = false;
