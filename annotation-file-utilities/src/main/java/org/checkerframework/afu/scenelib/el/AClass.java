@@ -124,8 +124,7 @@ public class AClass extends ADeclaration {
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        super.hashCode(), bounds, methods, fields, staticInits, instanceInits, extendsImplements);
+    return Objects.hash(super.hashCode(), className, bounds, methods, fields, extendsImplements);
   }
 
   @Override
