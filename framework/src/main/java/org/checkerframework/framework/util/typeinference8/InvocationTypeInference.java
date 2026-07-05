@@ -60,11 +60,11 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <p>Bounds are between an inference variable and an abstract type. {@link AbstractType}s are
  * type-like structures that might include inference variables. Abstract types might also be an
- * inference variable or a type without any inference variables, which is also know as a proper
+ * inference variable or a type without any inference variables, which is also known as a proper
  * type.
  *
  * <p>An inference variable is represented by a {@link Variable} object which holds bounds for the
- * inference variable, in an {@link
+ * inference variable, in a {@link
  * org.checkerframework.framework.util.typeinference8.types.VariableBounds} object. Additional
  * inference variables may be created in later steps if any subexpression of the method invocation
  * requires type inference.
@@ -129,9 +129,9 @@ public class InvocationTypeInference {
   }
 
   /**
-   * Returns the tree for which inference is being inferred.
+   * Returns the tree for which type arguments are being inferred.
    *
-   * @return the tree for which inference is being inferred
+   * @return the tree for which type arguments are being inferred
    */
   public Tree getInferenceExpression() {
     return inferenceExpression;
@@ -150,7 +150,7 @@ public class InvocationTypeInference {
   public InferenceResult infer(ExpressionTree invocation, AnnotatedExecutableType executableType)
       throws FalseBoundException {
     ExecutableType e = executableType.getUnderlyingType();
-    AbstractExecutableType inferenceExectuableType =
+    AbstractExecutableType inferenceExecutableType =
         new AbstractInvocationType(executableType, e, invocation, context);
     ProperType target = context.inferenceTypeFactory.getTargetType();
     List<? extends ExpressionTree> args;
@@ -162,15 +162,15 @@ public class InvocationTypeInference {
 
     Theta map =
         context.inferenceTypeFactory.createThetaForInvocation(
-            invocation, inferenceExectuableType, context);
-    BoundSet b2 = createB2(inferenceExectuableType, args, map);
+            invocation, inferenceExecutableType, context);
+    BoundSet b2 = createB2(inferenceExecutableType, args, map);
     BoundSet b3;
     if (target != null && TreeUtils.isPolyExpression(invocation)) {
-      b3 = createB3(b2, invocation, inferenceExectuableType, target, map);
+      b3 = createB3(b2, invocation, inferenceExecutableType, target, map);
     } else {
       b3 = b2;
     }
-    ConstraintSet c = createC(inferenceExectuableType, args, map);
+    ConstraintSet c = createC(inferenceExecutableType, args, map);
 
     BoundSet b4 = getB4(b3, c);
     b4.resolve();
@@ -245,7 +245,7 @@ public class InvocationTypeInference {
    * </ol>
    *
    * @param executableType the type of the method or constructor invoked
-   * @param args argument expression tress
+   * @param args argument expression trees
    * @param map map of type variables to (inference) variables
    * @return bound set used to determine whether a method is applicable
    */
@@ -605,7 +605,7 @@ public class InvocationTypeInference {
    *
    * @param expressionTree expression tree
    * @param formalParameterType the formal parameter type of the method invocation
-   * @return true if {@code expressionTree} is pertinent to applicability
+   * @return true if {@code expressionTree} is not pertinent to applicability
    */
   private boolean notPertinentToApplicability(
       ExpressionTree expressionTree, AbstractType formalParameterType) {
@@ -667,7 +667,7 @@ public class InvocationTypeInference {
    * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS
    * 18.5.2.2</a>.
    *
-   * @param b3 bound set created by previous inference step that is sideeffect and returned
+   * @param b3 bound set created by the previous inference step that is side-effected and returned
    * @param c constraints that are reduced and incorporated
    * @return the result of reducing and incorporating the set of constraints
    */
