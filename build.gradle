@@ -133,7 +133,6 @@ subprojects { subProject ->
 allprojects { currentProj ->
 
   // To update the version number, change releaseVersion in file release.gradle.
-  version = releaseVersion
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -419,7 +418,7 @@ tasks.register("version") {
   description = "Print Checker Framework version"
   group = "Documentation"
   doLast {
-    println(version)
+    println(releaseVersion)
   }
 }
 
@@ -530,7 +529,7 @@ javadoc.dependsOn(allJavadoc)
 tasks.register("zip", Zip) {
   description = "Creates a zip archive for the Checker Framework."
   dependsOn("buildAll")
-  archiveFileName = "checker-framework-${version}.zip"
+  archiveFileName = "checker-framework-${releaseVersion}.zip"
   destinationDirectory = layout.buildDirectory
   into("checker-framework-${releaseVersion}")
 
@@ -838,7 +837,7 @@ subprojects {
         }
       }
       manifest {
-        attributes("Implementation-Version": "${project.version}")
+        attributes("Implementation-Version": "${releaseVersion}")
         attributes("Implementation-URL": "https://checkerframework.org")
         if (!archiveFileName.get().endsWith("source.jar") && !archiveFileName.get().startsWith("checker-qual")) {
           attributes("Automatic-Module-Name": "org.checkerframework." + project.name.replaceAll("-", "."))
