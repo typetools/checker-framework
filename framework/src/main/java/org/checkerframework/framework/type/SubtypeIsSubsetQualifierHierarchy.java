@@ -120,6 +120,7 @@ public class SubtypeIsSubsetQualifierHierarchy extends MostlyNoElementQualifierH
    * @param values the annotation's {@code value} element/argument
    * @return an annotation of the given kind and values
    */
+  @SuppressWarnings("InvalidParam") // similar name, but not a typo
   private AnnotationMirror createAnnotationMirrorWithValue(QualifierKind kind, Set<String> values) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, kind.getAnnotationClass());
     builder.setValue("value", values.toArray());
