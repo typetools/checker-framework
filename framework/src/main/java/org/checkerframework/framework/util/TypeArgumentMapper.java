@@ -198,7 +198,7 @@ public class TypeArgumentMapper {
     for (TypeParameterElement oldElement : elements) {
       Set<TypeParameterElement> substitutions = map.get(oldElement);
       if (substitutions != null) {
-        result.addAll(flattenPath(elements, map));
+        result.addAll(flattenPath(substitutions, map));
       } else {
         result.add(oldElement);
       }
