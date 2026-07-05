@@ -162,8 +162,8 @@ public final class BoundsInitializer {
     /**
      * Sets the extends and super bounds of {@code annotatedWildcardType} to {@code
      * AnnotatedTypeMirror} that match the upper and lower bounds of the underlying type of {@code
-     * annotatedWildcardType} by calling visiting each bound. This method should only be called once
-     * per {@link WildcardType}.
+     * annotatedWildcardType} by visiting each bound. This method should only be called once per
+     * {@link WildcardType}.
      *
      * @param annotatedWildcardType an annotated wildcard type
      */

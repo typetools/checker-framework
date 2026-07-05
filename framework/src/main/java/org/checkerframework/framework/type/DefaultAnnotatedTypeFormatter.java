@@ -139,7 +139,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     /**
      * For a given call to format, this setting specifies whether or not to printInvisibles. If a
      * user did not specify a printInvisible parameter in the call to format then this value will
-     * equal DefaultAnnotatedTypeFormatter.defaultInvisibleSettings for this object
+     * equal DefaultAnnotatedTypeFormatter.defaultInvisiblesSetting for this object
      */
     protected boolean currentPrintInvisibleSetting;
 
@@ -148,7 +148,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
 
     /**
      * Prints type variables in a less ambiguous manner using [] to delimit them. Always prints both
-     * bounds even if they lower bound is an AnnotatedNull type.
+     * bounds even if the lower bound is an AnnotatedNull type.
      */
     protected boolean currentPrintVerboseGenerics;
 
