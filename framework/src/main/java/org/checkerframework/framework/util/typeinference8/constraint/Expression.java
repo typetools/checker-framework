@@ -136,7 +136,7 @@ public class Expression extends TypeConstraint {
   }
 
   /**
-   * JSL 18.2.1: "If T is a proper type, the constraint reduces to true if the expression is
+   * JLS 18.2.1: "If T is a proper type, the constraint reduces to true if the expression is
    * compatible in a loose invocation context with T (5.3), and false otherwise."
    *
    * @return the result of reducing a proper type

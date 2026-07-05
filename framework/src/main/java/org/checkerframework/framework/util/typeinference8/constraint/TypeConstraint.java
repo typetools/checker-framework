@@ -115,7 +115,7 @@ public abstract class TypeConstraint implements Constraint {
 
   /**
    * For lambda and method references constraints, input variables are roughly the inference
-   * variables mentioned by they function type's parameter types and return types. For conditional
+   * variables mentioned by the function type's parameter types and return types. For conditional
    * expression constraints and switch expression constraints, input variables are the union of the
    * input variables of its subexpressions. For all other constraints, no input variables exist.
    *

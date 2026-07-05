@@ -726,7 +726,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * That is, no element has a {@code @Target} meta-annotation that contains something besides
    * TYPE_USE or TYPE_PARAMETER. ({@code @Target({})} is allowed.)
    *
-   * @throws BugInCF If supportedQuals is empty or contaions a non-type qualifier
+   * @throws TypeSystemError if supportedQuals is empty or contains a non-type qualifier
    */
   private void checkSupportedQualsAreTypeQuals() {
     if (supportedQuals == null || supportedQuals.isEmpty()) {
@@ -1893,7 +1893,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param type annotated type to which the annotation is added
    * @param accessedVia the annotated type of the receiver of the accessing tree. (Only used to get
-   *     the type element of the underling type.)
+   *     the type element of the underlying type.)
    * @param field element representing the field
    */
   protected void addAnnotationFromFieldInvariant(
@@ -2652,11 +2652,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns the element type of {@code expression}. This is usually the type of {@code
-   * expression.itertor().next()}. If {@code expression} is an array, it is the component type of
+   * expression.iterator().next()}. If {@code expression} is an array, it is the component type of
    * the array.
    *
    * @param expression an expression whose type is an array or implements {@link Iterable}
-   * @return the type of {@code expression.itertor().next()} or if {@code expression} is an array,
+   * @return the type of {@code expression.iterator().next()} or if {@code expression} is an array,
    *     the component type of the array
    */
   public AnnotatedTypeMirror getIterableElementType(ExpressionTree expression) {
@@ -2665,12 +2665,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns the element type of {@code iterableType}. This is usually the type of {@code
-   * expression.itertor().next()}. If {@code expression} is an array, it is the component type of
+   * expression.iterator().next()}. If {@code expression} is an array, it is the component type of
    * the array.
    *
    * @param expression an expression whose type is an array or implements {@link Iterable}
    * @param iterableType the type of the expression
-   * @return the type of {@code expression.itertor().next()} or if {@code expression} is an array,
+   * @return the type of {@code expression.iterator().next()} or if {@code expression} is an array,
    *     the component type of the array
    */
   protected AnnotatedTypeMirror getIterableElementType(
@@ -4007,7 +4007,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param elt the element to retrieve the annotation from
    * @param annoClass the class of the annotation to retrieve
-   * @param checkAliases if true, the metnhod may return an annotation mirror for an alias of the
+   * @param checkAliases if true, the method may return an annotation mirror for an alias of the
    *     requested annotation class name
    * @return the annotation mirror for the requested annotation, or null if not found
    */
@@ -4767,7 +4767,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param typeMirror a type that must be a functional interface
    * @param contextTree the tree that has the given type; used only for diagnostic messages
-   * @param tree a labmba tree that encloses {@code contextTree}; used only for diagnostic messages
+   * @param tree a lambda tree that encloses {@code contextTree}; used only for diagnostic messages
    */
   private void assertIsFunctionalInterface(TypeMirror typeMirror, Tree contextTree, Tree tree) {
     if (typeMirror.getKind() == TypeKind.WILDCARD) {
@@ -5787,7 +5787,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns the {@code expression} field/element of the given contract annotation.
    *
    * @param contractAnno a {@link RequiresQualifier}, {@link EnsuresQualifier}, or {@link
-   *     EnsuresQualifier}
+   *     EnsuresQualifierIf}
    * @return the {@code expression} field/element of the given annotation
    */
   public List<String> getContractExpressions(AnnotationMirror contractAnno) {

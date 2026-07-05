@@ -234,8 +234,8 @@ public class Typing extends TypeConstraint {
       int index = 0;
       for (AbstractType b : Bs) {
         AbstractType a = As.next();
-        boolean convarArg = covariantArgIndexes.contains(index);
-        set.add(new Typing(this, b, a, Kind.CONTAINED, convarArg));
+        boolean covarArg = covariantArgIndexes.contains(index);
+        set.add(new Typing(this, b, a, Kind.CONTAINED, covarArg));
         index++;
       }
 

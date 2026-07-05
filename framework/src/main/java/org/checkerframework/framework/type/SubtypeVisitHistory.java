@@ -18,7 +18,7 @@ import org.plumelib.util.IPair;
  * <p>This class is primarily used to implement isSubtype(ATM, ATM). The pair of types corresponds
  * to the subtype and the supertype being checked. A single subtype may be visited more than once,
  * but with a different supertype. For example, if the two types are {@code @A T extends @B
- * Serializable<T>} and {@code @C Serializable<?>}, then isSubtype is first called one those types
+ * Serializable<T>} and {@code @C Serializable<?>}, then isSubtype is first called on those types
  * and then on {@code @B Serializable<T>} and {@code @C Serializable<?>}.
  */
 // TODO: do we need to clear the history sometimes?

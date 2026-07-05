@@ -123,7 +123,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
   /**
    * Compare each type in types1 and types2 pairwise and return true if they are all equal. This
-   * method throws an exceptions if types1.size() != types2.size()
+   * method throws an exception if types1.size() != types2.size()
    *
    * @return true if for each pair (t1 = types1.get(i); t2 = types2.get(i)), areEqual(t1,t2)
    */

@@ -145,9 +145,9 @@ public abstract class AbstractType {
   public abstract TypeMirror getJavaType();
 
   /**
-   * Returns the underlying Java type without inference variables.
+   * Returns the underlying annotated type.
    *
-   * @return the underlying Java type without inference variables
+   * @return the underlying annotated type
    */
   public abstract AnnotatedTypeMirror getAnnotatedType();
 
@@ -323,7 +323,7 @@ public abstract class AbstractType {
    * @param typeFactory type factory
    * @return the ground type
    */
-  // TODO: This method is named make ground, but is actually implements non-wildcard
+  // TODO: This method is named make ground, but actually implements non-wildcard
   // parameterization as defined in
   // https://docs.oracle.com/javase/specs/jls/se11/html/jls-9.html#jls-9.9
   // https://docs.oracle.com/javase/specs/jls/se19/html/jls-15.html#jls-15.13.2
@@ -433,8 +433,8 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns the most specific array type, that is the first super type of {@code type} that is not
-   * an array.
+   * Returns the most specific array type, that is the first super type of {@code type} that is an
+   * array.
    *
    * @param type annotated type mirror
    * @return the first supertype of {@code type} that is an array
@@ -520,10 +520,10 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns true if this type is a parameterized type whose has at least one wildcard as a type
+   * Returns true if this type is a parameterized type that has at least one wildcard as a type
    * argument.
    *
-   * @return true if this type is a parameterized type whose has at least one wildcard as a type
+   * @return true if this type is a parameterized type that has at least one wildcard as a type
    *     argument
    */
   public boolean isWildcardParameterizedType() {
@@ -533,7 +533,7 @@ public abstract class AbstractType {
   /**
    * Returns this type's type arguments or null if this type isn't a declared type.
    *
-   * @return this type's type arguments or null this type isn't a declared type
+   * @return this type's type arguments or null if this type isn't a declared type
    */
   public List<AbstractType> getTypeArguments() {
     if (getJavaType().getKind() != TypeKind.DECLARED) {
