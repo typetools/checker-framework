@@ -173,7 +173,7 @@ clean {
 }
 
 
-if (skipDelombok) {
+if (rootProject.ext.skipDelombok) {
   test {
     exclude("**/ReturnsReceiverLombokTest.java")
   }
