@@ -22,7 +22,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Converts a field or methods tree into an AnnotatedTypeMirror.
+ * Converts a field or method tree into an AnnotatedTypeMirror.
  *
  * @see org.checkerframework.framework.type.TypeFromTree
  */

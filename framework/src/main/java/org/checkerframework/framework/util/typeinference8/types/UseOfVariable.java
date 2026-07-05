@@ -146,7 +146,7 @@ public class UseOfVariable extends AbstractType {
   }
 
   /**
-   * Adds a qualifier bound for this variable, is this use does not have a primary annotation.
+   * Adds a qualifier bound for this variable, if this use does not have a primary annotation.
    *
    * @param kind the kind of bound
    * @param annotations the qualifiers to add
@@ -158,7 +158,7 @@ public class UseOfVariable extends AbstractType {
   }
 
   /**
-   * Adds a bound for this variable, is this use does not have a primary annotation.
+   * Adds a bound for this variable, if this use does not have a primary annotation.
    *
    * @param parent the constraint whose reduction created this bound
    * @param kind the kind of bound

@@ -49,10 +49,10 @@ import org.plumelib.util.StringsPlume;
  * </ol>
  *
  * Once an annotation is built, no further modification or calls to build can be made. Otherwise, a
- * {@link IllegalStateException} is thrown.
+ * {@link BugInCF} is thrown.
  *
- * <p>All setter methods throw {@link IllegalArgumentException} if the specified element is not
- * found, or if the given value is not a subtype of the expected type.
+ * <p>All setter methods throw {@link BugInCF} if the specified element is not found, or if the
+ * given value is not a subtype of the expected type.
  *
  * <p>TODO: Doesn't type-check arrays yet
  */
@@ -200,7 +200,7 @@ public class AnnotationBuilder {
    *
    * @param elements the element utilities to use
    * @param name the name of the annotation to create
-   * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't be
+   * @return an {@link AnnotationMirror} of type {@code name} or null if the annotation couldn't be
    *     loaded
    */
   public static @Nullable AnnotationMirror fromName(
@@ -219,7 +219,7 @@ public class AnnotationBuilder {
    * @param elements the element utilities to use
    * @param name the name of the annotation to create
    * @param elementNamesValues the values for the annotation's elements/fields
-   * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't be
+   * @return an {@link AnnotationMirror} of type {@code name} or null if the annotation couldn't be
    *     loaded
    */
   public static @Nullable AnnotationMirror fromName(
