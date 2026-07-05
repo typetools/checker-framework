@@ -35,10 +35,12 @@ import org.checkerframework.javacutil.TypesUtils;
    */
   protected final ExpressionTree invocation;
 
-  /** Type variable for which the instantiation of this variable is a type argument. */
+  /** The Java type variable for which the instantiation of this variable is a type argument. */
   protected final TypeVariable typeVariableJava;
 
-  /** Type variable for which the instantiation of this variable is a type argument. */
+  /**
+   * The annotated type variable for which the instantiation of this variable is a type argument.
+   */
   protected final AnnotatedTypeVariable typeVariable;
 
   /** A mapping from type variable to inference variable. */
@@ -194,7 +196,7 @@ import org.checkerframework.javacutil.TypesUtils;
     return variableBounds.getInstantiation();
   }
 
-  /** in case the first attempt at resolution fails. */
+  /** Saves the current bounds, in case the first attempt at resolution fails. */
   public void save() {
     variableBounds.save();
   }
