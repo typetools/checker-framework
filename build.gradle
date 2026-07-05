@@ -854,7 +854,7 @@ subprojects {
     // Tasks such as `checkInterning` and `checkResourceLeak` run various checkers on all the main source sets.
     // These pass and are run by the `typecheck` task.
     // When you add one here, also update a dependsOn item for the "typecheck" task.
-    createCheckTypeTask(project.name, "Formatter",
+    rootProject.createCheckTypeTask(project.name, "Formatter",
         "org.checkerframework.checker.formatter.FormatterChecker")
 
     def checkInterningArgs = [
@@ -870,24 +870,24 @@ subprojects {
     }
 
 
-    createCheckTypeTask(project.name, "Interning",
+    rootProject.createCheckTypeTask(project.name, "Interning",
         "org.checkerframework.checker.interning.InterningChecker",
         checkInterningArgs)
 
-    createCheckTypeTask(project.name, "Optional",
+    rootProject.createCheckTypeTask(project.name, "Optional",
         "org.checkerframework.checker.optional.OptionalChecker",
         [
           // to avoid having to annotate JavaParser
           "-AassumePureGetters",
           "-AassumeAssertionsAreEnabled",
         ])
-    createCheckTypeTask(project.name, "Purity",
+    rootProject.createCheckTypeTask(project.name, "Purity",
         "org.checkerframework.framework.util.PurityChecker")
-    createCheckTypeTask(project.name, "Regex",
+    rootProject.createCheckTypeTask(project.name, "Regex",
         "org.checkerframework.checker.regex.RegexChecker")
-    createCheckTypeTask(project.name, "ResourceLeak",
+    rootProject.createCheckTypeTask(project.name, "ResourceLeak",
         "org.checkerframework.checker.resourceleak.ResourceLeakChecker")
-    createCheckTypeTask(project.name, "Signature",
+    rootProject.createCheckTypeTask(project.name, "Signature",
         "org.checkerframework.checker.signature.SignatureChecker")
 
     // The checkNullness task runs on all code, but it only *checks* the following code:
@@ -895,7 +895,7 @@ subprojects {
     //  * In the "framework", "checker", and "annotation-file-utilities" subprojects, files with `@AnnotatedFor("nullness")`.
     boolean nullnessAll = project.getProperties().containsKey("nullnessAll")
     if (!nullnessAll && (project.name.is("framework") || project.name.is("checker") || project.name.is("annotation-file-utilities"))) {
-      createCheckTypeTask(project.name, "Nullness",
+      rootProject.createCheckTypeTask(project.name, "Nullness",
           "org.checkerframework.checker.nullness.NullnessChecker",
           [
             "-AskipUses=com\\.sun\\.*",
@@ -904,13 +904,13 @@ subprojects {
             "-AuseConservativeDefaultsForUncheckedCode=source"
           ])
     } else {
-      createCheckTypeTask(project.name, "Nullness",
+      rootProject.createCheckTypeTask(project.name, "Nullness",
           "org.checkerframework.checker.nullness.NullnessChecker",
           ["-AskipUses=com\\.sun\\.*"])
     }
 
 
-    createCheckTypeTask(project.name, "CompilerMessages",
+    rootProject.createCheckTypeTask(project.name, "CompilerMessages",
         "org.checkerframework.checker.compilermsgs.CompilerMessagesChecker")
     checkCompilerMessages {
       doFirst {
