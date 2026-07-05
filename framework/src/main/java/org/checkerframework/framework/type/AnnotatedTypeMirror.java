@@ -252,7 +252,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * #getAnnotationInHierarchy(AnnotationMirror)} should be called instead.
    *
    * @param annotation an annotation in the qualifier hierarchy to check for
-   * @return the primary annotation in the same hierarchy as {@code annotation}, or null
+   * @return the annotation in the same hierarchy as {@code annotation}, or null
    */
   public @Nullable AnnotationMirror getPrimaryAnnotationInHierarchy(AnnotationMirror annotation) {
     if (primaryAnnotations.isEmpty()) {
