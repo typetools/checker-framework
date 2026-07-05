@@ -127,11 +127,6 @@ public class BinaryOperation extends JavaExpression {
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(operationKind, left, right);
-  }
-
-  @Override
   public boolean equals(@Nullable Object other) {
     if (!(other instanceof BinaryOperation biOp)) {
       return false;
@@ -144,6 +139,16 @@ public class BinaryOperation extends JavaExpression {
           || (left.equals(biOp.right) && right.equals(biOp.left));
     }
     return left.equals(biOp.left) && right.equals(biOp.right);
+  }
+
+  @Override
+  public int hashCode() {
+    if (isCommutative()) {
+      // Use a commutative combination of the operands' hash codes so that equal operands in
+      // swapped order (for which `equals()` returns true) hash identically.
+      return Objects.hash(operationKind, left.hashCode() + right.hashCode());
+    }
+    return Objects.hash(operationKind, left, right);
   }
 
   /**

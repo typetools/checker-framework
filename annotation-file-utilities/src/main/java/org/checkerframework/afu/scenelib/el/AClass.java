@@ -123,13 +123,7 @@ public class AClass extends ADeclaration {
 
   @Override
   public int hashCode() {
-    return super.hashCode()
-        + bounds.hashCode()
-        + methods.hashCode()
-        + fields.hashCode()
-        + staticInits.hashCode()
-        + instanceInits.hashCode()
-        + extendsImplements.hashCode();
+    return Objects.hash(super.hashCode(), className, bounds, methods, fields, extendsImplements);
   }
 
   @Override
