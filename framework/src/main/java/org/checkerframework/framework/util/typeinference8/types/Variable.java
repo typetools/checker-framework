@@ -2,6 +2,7 @@ package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.ExpressionTree;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeMirror;
