@@ -3,6 +3,7 @@ package org.checkerframework.afu.scenelib.el;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
@@ -104,13 +105,7 @@ public class AExpression extends AElement {
 
   @Override
   public int hashCode() {
-    return super.hashCode()
-        + typecasts.hashCode()
-        + instanceofs.hashCode()
-        + news.hashCode()
-        + refs.hashCode()
-        + calls.hashCode()
-        + funs.hashCode();
+    return Objects.hash(super.hashCode(), typecasts, instanceofs, news, refs, calls, funs);
   }
 
   @Override
