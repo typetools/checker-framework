@@ -512,7 +512,7 @@ public abstract class QualifierHierarchy {
    * @param newQualifier new qualifier dataflow computed for some expression; must be in the same
    *     hierarchy as {@code previousQualifier}
    * @param previousQualifier the previous qualifier dataflow computed on the last iteration; must
-   *     be in the same hierarchy as {@code previousQualifier}
+   *     be in the same hierarchy as {@code newQualifier}
    * @return an upper bound that is higher than the least upper bound of newQualifier and
    *     previousQualifier (or the lub if the qualifier hierarchy does not require this)
    */
@@ -582,7 +582,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Returns the greatest lower bound of the two sets of qualifiers. The result is the lub of the
+   * Returns the greatest lower bound of the two sets of qualifiers. The result is the glb of the
    * qualifier for the same hierarchy in each set.
    *
    * @param qualifiers1 a set of qualifiers; exactly one per hierarchy
@@ -613,7 +613,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Returns the greatest lower bound of the two sets of qualifiers. The result is the lub of the
+   * Returns the greatest lower bound of the two sets of qualifiers. The result is the glb of the
    * qualifier for the same hierarchy in each set.
    *
    * @param qualifiers1 a set of qualifiers; exactly one per hierarchy
@@ -648,8 +648,8 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Returns the greatest lower bound the all the collections of qualifiers. The result is the glb
-   * of the qualifier for the same hierarchy in each set.
+   * Returns the greatest lower bound of all the collections of qualifiers. The result is the glb of
+   * the qualifier for the same hierarchy in each set.
    *
    * @param qualifiers a collection of collections of qualifiers. Each inner collection has exactly
    *     one qualifier per hierarchy.

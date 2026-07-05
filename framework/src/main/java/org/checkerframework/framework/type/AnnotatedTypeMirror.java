@@ -252,7 +252,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * #getAnnotationInHierarchy(AnnotationMirror)} should be called instead.
    *
    * @param annotation an annotation in the qualifier hierarchy to check for
-   * @return the annotation mirror whose class is named {@code annoNAme} or null
+   * @return the primary annotation in the same hierarchy as {@code annotation}, or null
    */
   public @Nullable AnnotationMirror getPrimaryAnnotationInHierarchy(AnnotationMirror annotation) {
     if (primaryAnnotations.isEmpty()) {
@@ -377,7 +377,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * <p>This method requires that there is only a single hierarchy. Therefore, it is equivalent to
    * {@link #getAnnotationInHierarchy(AnnotationMirror)}.
    *
-   * @return a set of the annotations on this
+   * @return the annotation on this type, or null if there is none
    */
   public final AnnotationMirror getAnnotation() {
     AnnotationMirrorSet effectiveAnnotations = getAnnotations();
@@ -386,7 +386,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       return null;
     }
     if (effectiveAnnotations.size() != 1) {
-      throw new BugInCF("Bad annotation size for getPrimaryAnnotation(): " + this);
+      throw new BugInCF("Bad annotation size for getAnnotation(): " + this);
     }
     return effectiveAnnotations.iterator().next();
   }
@@ -669,7 +669,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * {@link AnnotatedIntersectionType}s, adds them to all bounds. (The canonical version is found
    * via {@link AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)} or {@link
    * AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror,TypeMirror)}.) If the canonical
-   * version of an annotation is not a supported qualifier, then that annotation is not add added.
+   * version of an annotation is not a supported qualifier, then that annotation is not added.
    *
    * @param annotations the annotations to add
    */
@@ -688,7 +688,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * {@link AnnotatedIntersectionType}s) added to all bounds. (The canonical version is found via
    * {@link AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)} or {@link
    * AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror,TypeMirror)}.) If the canonical
-   * version of an {@code annotation} is not a supported qualifier, then that annotation is not add
+   * version of an {@code annotation} is not a supported qualifier, then that annotation is not
    * added.
    *
    * @param annotation the annotations to add
@@ -1741,9 +1741,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     /**
      * Set the lower bound of this variable type.
      *
-     * <p>Returns the lower bound of this type variable. While a type parameter cannot include an
-     * explicit lower bound declaration, capture conversion can produce a type variable with a
-     * non-trivial lower bound. Type variables otherwise have a lower bound of NullType.
+     * <p>While a type parameter cannot include an explicit lower bound declaration, capture
+     * conversion can produce a type variable with a non-trivial lower bound. Type variables
+     * otherwise have a lower bound of NullType.
      *
      * @param type the lower bound type
      */
