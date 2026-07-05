@@ -2,6 +2,7 @@ package org.checkerframework.afu.scenelib.el;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import org.checkerframework.afu.scenelib.Annotation;
@@ -126,9 +127,7 @@ public class AElement implements Cloneable {
 
   @Override
   public int hashCode() {
-    return getClass().getName().hashCode()
-        + tlAnnotationsHere.hashCode()
-        + (type == null ? 0 : type.hashCode());
+    return Objects.hash(getClass().getName(), tlAnnotationsHere, type);
   }
 
   /**

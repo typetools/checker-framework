@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.afu.scenelib.Annotation;
@@ -123,13 +124,8 @@ public class AClass extends ADeclaration {
 
   @Override
   public int hashCode() {
-    return super.hashCode()
-        + bounds.hashCode()
-        + methods.hashCode()
-        + fields.hashCode()
-        + staticInits.hashCode()
-        + instanceInits.hashCode()
-        + extendsImplements.hashCode();
+    return Objects.hash(
+        super.hashCode(), bounds, methods, fields, staticInits, instanceInits, extendsImplements);
   }
 
   @Override

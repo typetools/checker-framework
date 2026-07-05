@@ -11,6 +11,7 @@ import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
@@ -486,8 +487,6 @@ public class Expression extends TypeConstraint {
 
   @Override
   public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + expression.hashCode();
-    return result;
+    return Objects.hash(super.hashCode(), expression);
   }
 }

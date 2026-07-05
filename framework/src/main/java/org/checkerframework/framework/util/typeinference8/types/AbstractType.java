@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -670,8 +671,6 @@ public abstract class AbstractType {
 
   @Override
   public int hashCode() {
-    int result = context.hashCode();
-    result = 31 * result + typeFactory.hashCode();
-    return result;
+    return Objects.hash(context, typeFactory);
   }
 }

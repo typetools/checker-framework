@@ -3,6 +3,7 @@ package org.checkerframework.framework.util.typeinference8.types;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -240,12 +241,6 @@ public class UseOfVariable extends AbstractType {
 
   @Override
   public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + variable.hashCode();
-    result = 31 * result + (hasPrimaryAnno ? 1 : 0);
-    result = 31 * result + bots.hashCode();
-    result = 31 * result + tops.hashCode();
-    result = 31 * result + type.hashCode();
-    return result;
+    return Objects.hash(super.hashCode(), variable, hasPrimaryAnno, bots, tops, type);
   }
 }
