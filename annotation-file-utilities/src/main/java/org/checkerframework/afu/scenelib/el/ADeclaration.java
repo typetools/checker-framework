@@ -1,6 +1,7 @@
 package org.checkerframework.afu.scenelib.el;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import org.checkerframework.afu.scenelib.io.ASTPath;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
@@ -69,9 +70,7 @@ public abstract class ADeclaration extends AElement {
 
   @Override
   public int hashCode() {
-    return super.hashCode()
-        + (insertAnnotations == null ? 0 : insertAnnotations.hashCode())
-        + (insertTypecasts == null ? 0 : insertTypecasts.hashCode());
+    return Objects.hash(super.hashCode(), insertAnnotations, insertTypecasts);
   }
 
   @Override
