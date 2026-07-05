@@ -54,8 +54,9 @@ ext {
   }
   // With "useJdk21Compiler" property, use JDK 21 to compile all code because the release does.
   // If you update this line, also update JAVA_HOME in docs/developer/release/release_vars.py.
-  boolean jdk21Compiler = providers.gradleProperty("useJdk21Compiler").getOrElse(false)
-  compilerJdkVersion = jdk21Compiler ? 21 : testJdkVersion
+  String useJdk21CompilerProperty = providers.gradleProperty("useJdk21Compiler").getOrElse("false")
+  boolean useJdk21Compiler = Boolean.valueOf(useJdk21CompilerProperty)
+  compilerJdkVersion = useJdk21Compiler ? 21 : testJdkVersion
   compilerRunsOnJava21orHigher = compilerJdkVersion >= 21
 
   // As of 2026-03-11 (Lombok 1.18.44), delombok does not support JDK 26;
@@ -894,7 +895,7 @@ subprojects {
     // The checkNullness task runs on all code, but it only *checks* the following code:
     //  * All files outside the "framework", "checker", and "annotation-file-utilities" subprojects.
     //  * In the "framework", "checker", and "annotation-file-utilities" subprojects, files with `@AnnotatedFor("nullness")`.
-    boolean nullnessAll = rootProject.getProperties().containsKey("nullnessAll")
+    boolean nullnessAll = providers.gradleProperty("nullnessAll").isPresent()
     if (!nullnessAll && (project.name.is("framework") || project.name.is("checker") || project.name.is("annotation-file-utilities"))) {
       rootProject.createCheckTypeTask(project.name, "Nullness",
           "org.checkerframework.checker.nullness.NullnessChecker",
