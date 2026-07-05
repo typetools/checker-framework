@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.StringJoiner;
 import org.checkerframework.afu.scenelib.el.AnnotationDef;
 import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
@@ -228,7 +229,7 @@ public final class Annotation {
    */
   @Override
   public int hashCode() {
-    return def.hashCode() + fieldValues.hashCode();
+    return Objects.hash(def, fieldValues);
   }
 
   /**
