@@ -216,7 +216,7 @@ public class ProperType extends AbstractType {
    * Is {@code this} assignable to {@code superType}?
    *
    * @param superType super type
-   * @return if {@code this} assignable to {@code superType}, then return {@link
+   * @return if {@code this} is assignable to {@code superType}, then return {@link
    *     ConstraintSet#TRUE}; otherwise, a false bound is returned
    */
   public ReductionResult isAssignable(ProperType superType) {
