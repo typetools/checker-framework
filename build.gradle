@@ -46,14 +46,15 @@ ext {
   gradleRunsOnJava25orHigher = JavaVersion.current() >= JavaVersion.VERSION_25
   gradleRunsOnJava26orHigher = JavaVersion.current() >= JavaVersion.VERSION_26
   // The JDK for running tests: the jdkTestVersion property or if not set, JavaVersion.current()
-  if (project.getProperties().containsKey("jdkTestVersion")) {
-    testJdkVersion = Integer.valueOf(project.getProperties().get("jdkTestVersion"))
+  jdkTestVersionProperty = providers.gradleProperty("jdkTestVersion").orNull
+  if (jdkTestVersionProperty != null) {
+    testJdkVersion = Integer.valueOf(jdkTestVersionProperty)
   } else {
     testJdkVersion = Integer.valueOf(JavaVersion.current().getMajorVersion())
   }
   // With "useJdk21Compiler" property, use JDK 21 to compile all code because the release does.
   // If you update this line, also update JAVA_HOME in docs/developer/release/release_vars.py.
-  boolean jdk21Compiler = project.getProperties().getOrDefault("useJdk21Compiler", false)
+  boolean jdk21Compiler = providers.gradleProperty("useJdk21Compiler").getOrElse(false)
   compilerJdkVersion = jdk21Compiler ? 21 : testJdkVersion
   compilerRunsOnJava21orHigher = compilerJdkVersion >= 21
 
@@ -893,7 +894,7 @@ subprojects {
     // The checkNullness task runs on all code, but it only *checks* the following code:
     //  * All files outside the "framework", "checker", and "annotation-file-utilities" subprojects.
     //  * In the "framework", "checker", and "annotation-file-utilities" subprojects, files with `@AnnotatedFor("nullness")`.
-    boolean nullnessAll = project.getProperties().containsKey("nullnessAll")
+    boolean nullnessAll = providers.gradleProperty("nullnessAll").isPresent()
     if (!nullnessAll && (project.name.is("framework") || project.name.is("checker") || project.name.is("annotation-file-utilities"))) {
       createCheckTypeTask(project.name, "Nullness",
           "org.checkerframework.checker.nullness.NullnessChecker",
