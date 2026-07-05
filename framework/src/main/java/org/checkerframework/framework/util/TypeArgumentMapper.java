@@ -170,6 +170,7 @@ public class TypeArgumentMapper {
           addToSetMap(intermediate, (TypeParameterElement) typeArgEle, correspondingParameter);
         }
       }
+      current = next;
     }
 
     List<? extends TypeParameterElement> supertypeParams = supertype.getTypeParameters();
