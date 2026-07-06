@@ -18,7 +18,7 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.IPair;
 
-/** Data structure to stores the bounds of a variable. */
+/** Data structure that stores the bounds of a variable. */
 public class VariableBounds {
 
   /** Kind of bound. */
@@ -57,7 +57,7 @@ public class VariableBounds {
   /** Constraints implied by complementary pairs of bounds found during incorporation. */
   public final ConstraintSet constraints = new ConstraintSet();
 
-  /** True if this variable has a throws bounds. */
+  /** True if this variable has a throws bound. */
   public boolean hasThrowsBound = false;
 
   /** Saved bounds used in the event the first attempt at resolution fails. */
@@ -426,7 +426,7 @@ public class VariableBounds {
   }
 
   /**
-   * Returns all upper bounds that proper types.
+   * Returns all upper bounds that are proper types.
    *
    * @return all upper bounds that are proper types
    */

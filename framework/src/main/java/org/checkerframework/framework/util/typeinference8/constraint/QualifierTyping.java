@@ -35,8 +35,8 @@ public class QualifierTyping implements Constraint {
   /**
    * Creates a qualifier typing constraint.
    *
-   * @param Q the qualifiers on the left-hand side of the constraint
-   * @param R the qualifiers on the right-hand side of the constraint
+   * @param Q the qualifier on the left-hand side of the constraint
+   * @param R the qualifier on the right-hand side of the constraint
    * @param kind the kind of qualifier constraint
    */
   public QualifierTyping(AbstractQualifier Q, AbstractQualifier R, Kind kind) {

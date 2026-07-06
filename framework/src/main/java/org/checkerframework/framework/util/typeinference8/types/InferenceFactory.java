@@ -197,7 +197,7 @@ public class InferenceFactory {
 
   /**
    * If the variable's type is a type variable, return getAnnotatedTypeLhsNoTypeVarDefault(tree).
-   * Rational:
+   * Rationale:
    *
    * <p>For example:
    *
@@ -232,8 +232,8 @@ public class InferenceFactory {
    *
    * The local variable default must be used or else the assignment context type is missing an
    * annotation. So, an incompatible types in return error is issued in the above code. We could
-   * improve type argument inference in this case and by using the lower bound of {@code S} instead
-   * of the local variable default.
+   * improve type argument inference in this case by using the lower bound of {@code S} instead of
+   * the local variable default.
    *
    * @param atypeFactory AnnotatedTypeFactory
    * @param assignmentContext VariableTree
@@ -622,7 +622,7 @@ public class InferenceFactory {
       }
     }
 
-    // Create inference variables for the type parameters to compileTypeDecl
+    // Create inference variables for the type parameters to compileTimeDecl
     if (memRef.getTypeArguments() == null && compileTimeDecl.hasTypeVariables()) {
       Iterator<? extends AnnotatedTypeVariable> iter1 =
           compileTimeDecl.getAnnotatedTypeVariables().iterator();
@@ -650,7 +650,7 @@ public class InferenceFactory {
    *
    * @param lambda lambda expression tree
    * @param functionalInterface functional interface of the lambda
-   * @return a mapping of the type variables of {@code compileTimeDecl} to inference variables
+   * @return a mapping of the type variables of {@code functionalInterface} to inference variables
    */
   public Theta createThetaForLambda(LambdaExpressionTree lambda, AbstractType functionalInterface) {
     if (context.maps.containsKey(lambda)) {
@@ -812,8 +812,8 @@ public class InferenceFactory {
    *
    * @param a type
    * @param b type
-   * @return the pair of {@code a} as the least upper bound of {@code a} and {@code b} and * {@code
-   *     b} as the least upper bound of {@code a} and {@code b}
+   * @return the pair of {@code a} as the least upper bound of {@code a} and {@code b} and {@code b}
+   *     as the least upper bound of {@code a} and {@code b}
    */
   public IPair<AbstractType, AbstractType> getParameterizedSupers(AbstractType a, AbstractType b) {
     TypeMirror aTypeMirror = a.getJavaType();
@@ -914,7 +914,7 @@ public class InferenceFactory {
    * Returns the greatest lower bound of {@code abstractTypes}.
    *
    * @param abstractTypes types to glb
-   * @return the greatest upper bounds of {@code abstractTypes}
+   * @return the greatest lower bound of {@code abstractTypes}
    */
   public AbstractType glb(Set<AbstractType> abstractTypes) {
     AbstractType ti = null;
@@ -1058,7 +1058,7 @@ public class InferenceFactory {
         for (UseOfVariable ei : es) {
           constraintSet.add(
               new Typing(
-                  "Exception constraint for %s" + expression,
+                  "Exception constraint for " + expression,
                   new ProperType(iter2.next(), xi, context),
                   ei,
                   TypeConstraint.Kind.SUBTYPE));

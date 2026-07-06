@@ -92,7 +92,12 @@ public final class ElementAnnotationApplier {
     }
   }
 
-  /** Issues an "invalid.annotation.location.bytecode" warning. */
+  /**
+   * Issues an "invalid.annotation.location.bytecode" warning.
+   *
+   * @param element the location at which to report the warning
+   * @param typeFactory the factory that reports the warning
+   */
   private static void reportInvalidLocation(Element element, AnnotatedTypeFactory typeFactory) {
     Element report = element;
     if (element.getEnclosingElement().getKind() == ElementKind.METHOD) {

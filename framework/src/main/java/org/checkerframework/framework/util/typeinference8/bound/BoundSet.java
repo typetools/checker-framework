@@ -177,7 +177,7 @@ public class BoundSet implements ReductionResult {
    * any variable in {@code as}?
    *
    * @param as a collection of variables
-   * @return true if the bound set contain a bound of the form {@code G<..., ai, ...> =
+   * @return true if the bound set contains a bound of the form {@code G<..., ai, ...> =
    *     capture(G<...>)} for any variable in {@code as}
    */
   public boolean containsCapture(Collection<Variable> as) {
@@ -254,7 +254,6 @@ public class BoundSet implements ReductionResult {
     for (Theta t : context.maps.values()) {
       variables.addAll(t.values());
     }
-    //    variables.addAll(additionalVars);
     Dependencies dependencies = new Dependencies();
 
     for (CaptureBound capture : captures) {
