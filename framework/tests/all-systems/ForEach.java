@@ -32,10 +32,6 @@ public class ForEach {
     }
   }
 
-  @SuppressWarnings({
-    "nonempty:argument",
-    "nonempty:method.invocation"
-  }) // generic type inference bug?
   public static <T extends Object> List<T> removeDuplicates(List<T> l) {
     // There are shorter solutions that do not maintain order.
     HashSet<T> hs = new HashSet<>(l.size());
