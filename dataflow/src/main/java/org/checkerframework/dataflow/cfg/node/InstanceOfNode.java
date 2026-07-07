@@ -75,20 +75,6 @@ public class InstanceOfNode extends Node {
   }
 
   /**
-   * Returns the binding variable for this instanceof, or null if one does not exist.
-   *
-   * @return the binding variable for this instanceof, or null if one does not exist
-   * @deprecated Use {@link #getPatternNode()} or {@link #getBindingVariables()} instead.
-   */
-  @Deprecated // 2023-09-24
-  public @Nullable LocalVariableNode getBindingVariable() {
-    if (patternNode instanceof LocalVariableNode) {
-      return (LocalVariableNode) patternNode;
-    }
-    return null;
-  }
-
-  /**
    * A list of all binding variables in this instanceof. This is lazily initialized, use {@link
    * #getBindingVariables()}.
    */
@@ -101,10 +87,10 @@ public class InstanceOfNode extends Node {
    */
   public List<LocalVariableNode> getBindingVariables() {
     if (bindingVariables == null) {
-      if (patternNode instanceof DeconstructorPatternNode) {
-        bindingVariables = ((DeconstructorPatternNode) patternNode).getBindingVariables();
-      } else if (patternNode instanceof LocalVariableNode) {
-        bindingVariables = Collections.singletonList((LocalVariableNode) patternNode);
+      if (patternNode instanceof DeconstructorPatternNode deconstructorPatternNode) {
+        bindingVariables = deconstructorPatternNode.getBindingVariables();
+      } else if (patternNode instanceof LocalVariableNode localVariableNode) {
+        bindingVariables = Collections.singletonList(localVariableNode);
       } else {
         bindingVariables = Collections.emptyList();
       }
@@ -152,10 +138,9 @@ public class InstanceOfNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof InstanceOfNode)) {
+    if (!(obj instanceof InstanceOfNode other)) {
       return false;
     }
-    InstanceOfNode other = (InstanceOfNode) obj;
     // TODO: TypeMirror.equals may be too restrictive.
     // Check whether Types.isSameType is the better comparison.
     return getOperand().equals(other.getOperand())

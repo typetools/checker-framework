@@ -23,7 +23,7 @@ class NonEmptyParentFieldTest {
 
     // Check for fields one level up (direct superclass)
     void m1() {
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       parentEmptyList.stream().max(Integer::compareTo).get();
 
       parentNEList.stream().max(Integer::compareTo).get(); // OK
@@ -31,7 +31,7 @@ class NonEmptyParentFieldTest {
 
     // Check for field more than one level up (non-direct superclass)
     void m2() {
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       grandParentEmptyList.stream().max(Integer::compareTo).get();
 
       grandParentNEList.stream().max(Integer::compareTo).get(); // OK
@@ -42,7 +42,7 @@ class NonEmptyParentFieldTest {
 
     // Check for field more than one level up (non-direct superclass)
     void m1() {
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       grandParentEmptyList.stream().max(Integer::compareTo).get();
 
       grandParentNEList.stream().max(Integer::compareTo).get(); // OK

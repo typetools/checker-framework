@@ -31,8 +31,7 @@ public class IntersectionTypeLocationCriterion implements Criterion {
     TreePath parentPath = path.getParentPath();
     if (parentPath != null) {
       Tree parent = parentPath.getLeaf();
-      if (parent instanceof IntersectionTypeTree) {
-        IntersectionTypeTree itt = (IntersectionTypeTree) parent;
+      if (parent instanceof IntersectionTypeTree itt) {
         List<? extends Tree> bounds = itt.getBounds();
         Tree leaf = path.getLeaf();
         @SuppressWarnings("interning:not.interned") // reference equality check

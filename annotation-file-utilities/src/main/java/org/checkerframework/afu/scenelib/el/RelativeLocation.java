@@ -1,6 +1,7 @@
 package org.checkerframework.afu.scenelib.el;
 
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A {@link RelativeLocation} holds location information for a instanceof, cast, or new: either the
@@ -73,8 +74,8 @@ public final class RelativeLocation implements Comparable<RelativeLocation> {
    * #index}.
    */
   @Override
-  public boolean equals(Object o) {
-    return o instanceof RelativeLocation && equals((RelativeLocation) o);
+  public boolean equals(@Nullable Object o) {
+    return o instanceof RelativeLocation other && equals(other);
   }
 
   @Override

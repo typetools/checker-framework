@@ -38,10 +38,9 @@ public class EqualToNode extends BinaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof EqualToNode)) {
+    if (!(obj instanceof EqualToNode other)) {
       return false;
     }
-    EqualToNode other = (EqualToNode) obj;
     return getLeftOperand().equals(other.getLeftOperand())
         && getRightOperand().equals(other.getRightOperand());
   }

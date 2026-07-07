@@ -3,10 +3,9 @@ package org.checkerframework.framework.util.dependenttypes;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.checkerframework.checker.formatter.qual.ConversionCategory;
-import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -38,10 +37,6 @@ public class DependentTypesError {
   public static boolean isExpressionError(String expression) {
     return expression.startsWith("[error");
   }
-
-  /** How to format warnings about use of formal parameter name. */
-  public static final @Format({ConversionCategory.INT, ConversionCategory.GENERAL}) String
-      FORMAL_PARAM_NAME_STRING = "Use \"#%d\" rather than \"%s\"";
 
   /** Matches warnings about use of formal parameter name. */
   private static final Pattern FORMAL_PARAM_NAME_PATTERN =
@@ -76,7 +71,7 @@ public class DependentTypesError {
    */
   public DependentTypesError(String expression, JavaExpressionParseException e) {
     this.expression = expression;
-    this.error = e.getDiagMessage().getArgs()[0].toString();
+    this.error = new DiagMessage(e).getArgs()[0].toString();
   }
 
   /**

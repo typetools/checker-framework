@@ -38,10 +38,9 @@ public class LeftShiftNode extends BinaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof LeftShiftNode)) {
+    if (!(obj instanceof LeftShiftNode other)) {
       return false;
     }
-    LeftShiftNode other = (LeftShiftNode) obj;
     return getLeftOperand().equals(other.getLeftOperand())
         && getRightOperand().equals(other.getRightOperand());
   }

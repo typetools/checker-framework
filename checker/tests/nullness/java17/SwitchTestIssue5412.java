@@ -32,7 +32,7 @@ class SwitchTestExhaustive {
           // good.
           default -> null;
         };
-    // :: error: (return)
+    // :: error: [return]
     return s;
   }
 
@@ -87,7 +87,7 @@ class SwitchTestExhaustive {
       default:
         break;
     }
-    // :: error: (return)
+    // :: error: [return]
     return aString;
   }
 
@@ -109,7 +109,7 @@ class SwitchTestExhaustive {
         aString = null;
         break;
     }
-    // :: error: (return)
+    // :: error: [return]
     return aString;
   }
 

@@ -42,7 +42,7 @@ import org.plumelib.util.CollectionsPlume;
  * called for a particular bound, the entirety of that bound, including circular references, is
  * created.
  */
-public class BoundsInitializer {
+public final class BoundsInitializer {
 
   /** Class cannot be instantiated. */
   private BoundsInitializer() {
@@ -79,19 +79,16 @@ public class BoundsInitializer {
    */
   public static WildcardType getUpperBoundAsWildcard(TypeVariable typeVariable, Types types) {
     TypeMirror upperBound = typeVariable.getUpperBound();
-    switch (upperBound.getKind()) {
-      case ARRAY:
-      case DECLARED:
-      case TYPEVAR:
-        return types.getWildcardType(upperBound, null);
-      case INTERSECTION:
-        // Can't create a wildcard with an intersection as an extends bound, so use
-        // an unbound wildcard instead.
-        return types.getWildcardType(null, null);
-      default:
-        throw new BugInCF(
-            "Unexpected upper bound kind: %s type: %s", upperBound.getKind(), upperBound);
-    }
+    return switch (upperBound.getKind()) {
+      case ARRAY, DECLARED, TYPEVAR -> types.getWildcardType(upperBound, null);
+      case INTERSECTION ->
+          // Can't create a wildcard with an intersection as an extends bound, so use
+          // an unbound wildcard instead.
+          types.getWildcardType(null, null);
+      default ->
+          throw new BugInCF(
+              "Unexpected upper bound kind: %s type: %s", upperBound.getKind(), upperBound);
+    };
   }
 
   /**
@@ -165,8 +162,8 @@ public class BoundsInitializer {
     /**
      * Sets the extends and super bounds of {@code annotatedWildcardType} to {@code
      * AnnotatedTypeMirror} that match the upper and lower bounds of the underlying type of {@code
-     * annotatedWildcardType} by calling visiting each bound. This method should only be called once
-     * per {@link WildcardType}.
+     * annotatedWildcardType} by visiting each bound. This method should only be called once per
+     * {@link WildcardType}.
      *
      * @param annotatedWildcardType an annotated wildcard type
      */

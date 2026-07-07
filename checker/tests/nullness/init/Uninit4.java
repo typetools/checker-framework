@@ -5,7 +5,7 @@ public class Uninit4 {
   }
 
   class BadSon {
-    // :: error: (initialization.field.uninitialized)
+    // :: error: [initialization.field.uninitialized]
     Object b;
   }
 
@@ -16,7 +16,7 @@ public class Uninit4 {
   class WeirdSon {
     Object b;
 
-    // :: error: (initialization.fields.uninitialized)
+    // :: error: [initialization.fields.uninitialized]
     WeirdSon() {
       super();
     }
@@ -25,7 +25,7 @@ public class Uninit4 {
   class Daughter {
     Object b;
 
-    // :: error: (initialization.fields.uninitialized)
+    // :: error: [initialization.fields.uninitialized]
     Daughter() {}
 
     Daughter(Object val) {

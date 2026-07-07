@@ -94,9 +94,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     while (checkerClass != BaseTypeChecker.class) {
       BaseTypeVisitor<?> result =
           invokeConstructorFor(
-              BaseTypeChecker.getRelatedClassName(checkerClass, "Visitor"),
-              baseTypeCheckerClassArray,
-              thisArray);
+              getRelatedClassName(checkerClass, "Visitor"), baseTypeCheckerClassArray, thisArray);
       if (result != null) {
         return result;
       }
@@ -104,7 +102,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     }
 
     // If a visitor couldn't be loaded reflectively, return the default.
-    return new BaseTypeVisitor<BaseAnnotatedTypeFactory>(this);
+    return new BaseTypeVisitor<>(this);
   }
 
   /**
@@ -160,13 +158,10 @@ public abstract class BaseTypeChecker extends SourceChecker {
 
   @Override
   protected Object processErrorMessageArg(Object arg) {
-    if (arg instanceof Collection) {
-      Collection<?> carg = (Collection<?>) arg;
+    if (arg instanceof Collection<?> carg) {
       return CollectionsPlume.mapList(this::processErrorMessageArg, carg);
-    } else if (arg instanceof AnnotationMirror && getTypeFactory() != null) {
-      return getTypeFactory()
-          .getAnnotationFormatter()
-          .formatAnnotationMirror((AnnotationMirror) arg);
+    } else if (arg instanceof AnnotationMirror am && getTypeFactory() != null) {
+      return getTypeFactory().getAnnotationFormatter().formatAnnotationMirror(am);
     } else {
       return super.processErrorMessageArg(arg);
     }
@@ -178,8 +173,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
       return true;
     }
     for (SourceChecker checker : getSubcheckers()) {
-      if ((checker instanceof BaseTypeChecker)
-          && ((BaseTypeChecker) checker).getTypeFactory().getCFGVisualizer() != null) {
+      if (checker instanceof BaseTypeChecker btc
+          && btc.getTypeFactory().getCFGVisualizer() != null) {
         return true;
       }
     }
@@ -196,8 +191,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
     }
 
     for (SourceChecker checker : getSubcheckers()) {
-      if (checker instanceof BaseTypeChecker) {
-        viz = ((BaseTypeChecker) checker).getTypeFactory().getCFGVisualizer();
+      if (checker instanceof BaseTypeChecker btc) {
+        viz = btc.getTypeFactory().getCFGVisualizer();
         if (viz != null) {
           viz.shutdown();
         }

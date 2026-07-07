@@ -10,11 +10,11 @@ public abstract class RawTypesUses {
 
   void foo() {
     Generic<@Nullable String> notRawNullable = new Generic<>();
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonNull Object o1 = notRawNullable.foo();
 
     Generic rawNullable = new Generic<@Nullable String>();
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonNull Object o2 = rawNullable.foo();
 
     Generic<@NonNull String> notRawNonNull = new Generic<>();
@@ -22,9 +22,9 @@ public abstract class RawTypesUses {
 
     Generic rawNonNull = new Generic<@NonNull String>();
     Generic rawNonNullAlais = rawNonNull;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonNull Object o4 = rawNonNull.foo();
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonNull Object o5 = rawNonNullAlais.foo();
   }
 
@@ -33,19 +33,19 @@ public abstract class RawTypesUses {
   void bar() {
     // :: warning: [unchecked] unchecked conversion
     Generic<@Nullable String> notRawNullable = rawReturn();
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonNull Object o1 = notRawNullable.foo();
 
     Generic rawNullable = rawReturn();
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonNull Object o2 = rawNullable.foo();
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonNull Object o3 = rawReturn().foo();
 
     Generic local = rawReturn();
     Generic localAlias = local;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonNull Object o4 = local.foo();
   }
 }

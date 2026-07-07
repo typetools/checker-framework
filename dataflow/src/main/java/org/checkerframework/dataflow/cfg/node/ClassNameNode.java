@@ -107,10 +107,9 @@ public class ClassNameNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ClassNameNode)) {
+    if (!(obj instanceof ClassNameNode other)) {
       return false;
     }
-    ClassNameNode other = (ClassNameNode) obj;
     return Objects.equals(getParent(), other.getParent())
         && getElement().equals(other.getElement());
   }

@@ -10,15 +10,15 @@ public class UniqueAnnoTest {
   public @Unique UniqueAnnoTest(int i) {
     notLeaked(this);
     leakedToResult(this);
-    // :: error: (unique.leaked)
+    // :: error: [unique.leaked]
     UniqueAnnoTest b = leakedToResult(this);
 
     UniqueAnnoTest other = new UniqueAnnoTest();
-    // :: error: (unique.leaked)
+    // :: error: [unique.leaked]
     other = this;
-    // :: error: (unique.leaked)
+    // :: error: [unique.leaked]
     leaked(this);
-    // :: error: (unique.leaked)
+    // :: error: [unique.leaked]
     leaked(other); // The receiver parameter is "this", so there is a leak.
   }
 

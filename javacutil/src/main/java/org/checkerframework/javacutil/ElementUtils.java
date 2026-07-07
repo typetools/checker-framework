@@ -8,15 +8,12 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -48,18 +45,12 @@ import org.plumelib.util.CollectionsPlume;
  * Utility methods for analyzing {@code Element}s. This complements {@link Elements}, providing
  * functionality that it does not.
  */
-public class ElementUtils {
+public final class ElementUtils {
 
   // Class cannot be instantiated.
   private ElementUtils() {
     throw new AssertionError("Class ElementUtils cannot be instantiated.");
   }
-
-  /** The value of Flags.COMPACT_RECORD_CONSTRUCTOR which does not exist in Java 9 or 11. */
-  private static final long Flags_COMPACT_RECORD_CONSTRUCTOR = 1L << 51;
-
-  /** The value of Flags.GENERATED_MEMBER which does not exist in Java 9 or 11. */
-  private static final long Flags_GENERATED_MEMBER = 16777216;
 
   /**
    * Returns the innermost type element that is, or encloses, the given element.
@@ -106,7 +97,7 @@ public class ElementUtils {
   /**
    * Returns the top-level type element that contains {@code element}.
    *
-   * @param element the element whose enclosing tye element to find
+   * @param element the element whose enclosing type element to find
    * @return a type element containing {@code element} that isn't contained in another class
    */
   public static TypeElement toplevelEnclosingTypeElement(Element element) {
@@ -295,7 +286,7 @@ public class ElementUtils {
     if (enclosing == null) { // is this possible?
       return simpleName;
     }
-    if (ElementUtils.isTypeElement(enclosing)) {
+    if (isTypeElement(enclosing)) {
       return getBinaryName((TypeElement) enclosing) + "$" + simpleName;
     } else if (enclosing.getKind() == ElementKind.PACKAGE) {
       PackageElement pe = (PackageElement) enclosing;
@@ -321,38 +312,16 @@ public class ElementUtils {
   public static String getSimpleSignature(ExecutableElement element) {
     // note: constructor simple name is <init>
     StringJoiner sj = new StringJoiner(",", element.getSimpleName() + "(", ")");
-    for (Iterator<? extends VariableElement> i = element.getParameters().iterator();
-        i.hasNext(); ) {
-      sj.add(TypesUtils.simpleTypeName(i.next().asType()));
+    for (VariableElement paramElt : element.getParameters()) {
+      sj.add(TypesUtils.simpleTypeName(paramElt.asType()));
     }
     return sj.toString();
   }
 
   /**
-   * Returns a user-friendly name for the given method. Does not return {@code "<init>"} or {@code
-   * "<clinit>"} as ExecutableElement.getSimpleName() does.
-   *
-   * @param element a method declaration
-   * @return a user-friendly name for the method
-   * @deprecated use {@link #getSimpleDescription}
-   */
-  @Deprecated // 2023-06-01
-  public static CharSequence getSimpleNameOrDescription(ExecutableElement element) {
-    Name result = element.getSimpleName();
-    switch (result.toString()) {
-      case "<init>":
-        return element.getEnclosingElement().getSimpleName();
-      case "<clinit>":
-        return "class initializer";
-      default:
-        return result;
-    }
-  }
-
-  /**
    * Returns a user-friendly name for the given method, which includes the name of the enclosing
-   * type. Does not return {@code "<init>"} or {@code "<clinit>"} as
-   * ExecutableElement.getSimpleName() does.
+   * type. Does not return {@code "<init>"} or {@code "<clinit>"} as {@link
+   * ExecutableElement#getSimpleName()} does.
    *
    * @param element a method declaration
    * @return a user-friendly name for the method
@@ -361,14 +330,11 @@ public class ElementUtils {
     String enclosingTypeName =
         ((TypeElement) element.getEnclosingElement()).getSimpleName().toString();
     Name methodName = element.getSimpleName();
-    switch (methodName.toString()) {
-      case "<init>":
-        return enclosingTypeName + " constructor";
-      case "<clinit>":
-        return "class initializer for " + enclosingTypeName;
-      default:
-        return enclosingTypeName + "." + methodName;
-    }
+    return switch (methodName.toString()) {
+      case "<init>" -> enclosingTypeName + " constructor";
+      case "<clinit>" -> "class initializer for " + enclosingTypeName;
+      default -> enclosingTypeName + "." + methodName;
+    };
   }
 
   /**
@@ -452,8 +418,7 @@ public class ElementUtils {
       return false;
     }
 
-    if (elt instanceof Symbol.ClassSymbol) {
-      Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
+    if (elt instanceof Symbol.ClassSymbol clss) {
       if (null != clss.classfile) {
         // The class file could be a .java file
         return clss.classfile.getKind() == JavaFileObject.Kind.CLASS;
@@ -594,7 +559,7 @@ public class ElementUtils {
       TypeMirror t = element.getEnclosingElement().asType();
       return TypesUtils.hasEnclosingType(t);
     } else if (element.getKind() == ElementKind.FIELD) {
-      if (ElementUtils.isStatic(element)
+      if (isStatic(element)
           // Artificial fields in interfaces are not marked as static, so check that
           // the field is not declared in an interface.
           || element.getEnclosingElement().getKind().isInterface()) {
@@ -605,7 +570,7 @@ public class ElementUtils {
         return !element.getSimpleName().contentEquals("this");
       }
     }
-    return element.getKind() == ElementKind.METHOD && !ElementUtils.isStatic(element);
+    return element.getKind() == ElementKind.METHOD && !isStatic(element);
   }
 
   /**
@@ -661,7 +626,7 @@ public class ElementUtils {
       // For each direct supertype of the current type element, if it
       // hasn't already been visited, push it onto the stack and
       // add it to our superElems set.
-      TypeElement supercls = ElementUtils.getSuperClass(current);
+      TypeElement supercls = getSuperClass(current);
       if (supercls != null) {
         if (!superElems.contains(supercls)) {
           stack.push(supercls);
@@ -698,7 +663,7 @@ public class ElementUtils {
   public static List<TypeElement> getDirectSuperTypeElements(TypeElement type, Elements elements) {
     TypeMirror superclass = type.getSuperclass();
     List<? extends TypeMirror> interfaces = type.getInterfaces();
-    List<TypeElement> result = new ArrayList<TypeElement>(interfaces.size() + 1);
+    List<TypeElement> result = new ArrayList<>(interfaces.size() + 1);
     if (superclass.getKind() != TypeKind.NONE) {
       @SuppressWarnings("nullness:assignment") // Not null because the TypeKind is not NONE.
       @NonNull TypeElement superclassElement = TypesUtils.getTypeElement(superclass);
@@ -807,18 +772,6 @@ public class ElementUtils {
    *
    * @param element the element to test
    * @return true, iff the given kind is a class kind
-   * @deprecated use {@link #isTypeElement}
-   */
-  @Deprecated // 2020-12-11
-  public static boolean isClassElement(Element element) {
-    return isTypeElement(element);
-  }
-
-  /**
-   * Is the given element kind a type, i.e., a class, enum, interface, or annotation type.
-   *
-   * @param element the element to test
-   * @return true, iff the given kind is a class kind
    */
   public static boolean isTypeElement(Element element) {
     return typeElementKinds().contains(element.getKind());
@@ -831,7 +784,7 @@ public class ElementUtils {
    * @return true if the argument is a type declaration
    */
   public static boolean isTypeDeclaration(Element elt) {
-    return isClassElement(elt) || elt.getKind() == ElementKind.TYPE_PARAMETER;
+    return isTypeElement(elt) || elt.getKind() == ElementKind.TYPE_PARAMETER;
   }
 
   /** The set of kinds that represent local variables. */
@@ -859,9 +812,11 @@ public class ElementUtils {
    *
    * @param element the element to test
    * @return true if the element is a binding variable
+   * @deprecated Use {@link ElementKind#BINDING_VARIABLE}
    */
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static boolean isBindingVariable(Element element) {
-    return SystemUtil.jreVersion >= 16 && "BINDING_VARIABLE".equals(element.getKind().name());
+    return element.getKind() == ElementKind.BINDING_VARIABLE;
   }
 
   /**
@@ -877,11 +832,11 @@ public class ElementUtils {
     }
 
     TypeElement enclosing = (TypeElement) methodElement.getEnclosingElement();
-    if (enclosing.getKind().toString().equals("RECORD")) {
+    if (enclosing.getKind() == ElementKind.RECORD) {
       String methodName = methodElement.getSimpleName().toString();
       List<? extends Element> encloseds = enclosing.getEnclosedElements();
       for (Element enclosed : encloseds) {
-        if (enclosed.getKind().toString().equals("RECORD_COMPONENT")
+        if (enclosed.getKind() == ElementKind.RECORD_COMPONENT
             && enclosed.getSimpleName().toString().equals(methodName)) {
           return true;
         }
@@ -899,12 +854,12 @@ public class ElementUtils {
    * @return true if the given element is generated by the compiler
    */
   public static boolean isAutoGeneratedRecordMember(Element e) {
-    if (!(e instanceof Symbol)) {
+    if (!(e instanceof Symbol sym)) {
       return false;
     }
     // Generated constructors seem to get GENERATEDCONSTR even though the documentation
     // seems to imply they would get GENERATED_MEMBER like the fields do.
-    return (((Symbol) e).flags() & (Flags_GENERATED_MEMBER | Flags.GENERATEDCONSTR)) != 0;
+    return (sym.flags() & (Flags.GENERATED_MEMBER | Flags.GENERATEDCONSTR)) != 0;
   }
 
   /**
@@ -1042,28 +997,15 @@ public class ElementUtils {
    *
    * @param elt the element to get the kind for
    * @return the kind of the element, but CLASS if the kind was RECORD
+   * @deprecated Use {@link ElementKind#RECORD}
    */
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static ElementKind getKindRecordAsClass(Element elt) {
     ElementKind kind = elt.getKind();
-    if (kind.name().equals("RECORD")) {
+    if (kind == ElementKind.RECORD) {
       kind = ElementKind.CLASS;
     }
     return kind;
-  }
-
-  /** The {@code TypeElement.getRecordComponents()} method. */
-  private static final @Nullable Method getRecordComponentsMethod;
-
-  static {
-    if (SystemUtil.jreVersion >= 16) {
-      try {
-        getRecordComponentsMethod = TypeElement.class.getMethod("getRecordComponents");
-      } catch (NoSuchMethodException e) {
-        throw new BugInCF("Cannot access TypeElement.getRecordComponents()", e);
-      }
-    } else {
-      getRecordComponentsMethod = null;
-    }
   }
 
   /**
@@ -1074,14 +1016,12 @@ public class ElementUtils {
    * @param element the type element to call getRecordComponents on
    * @return the return value of calling getRecordComponents, or empty list if the method is not
    *     available
+   * @deprecated use {@link TypeElement#getRecordComponents}
    */
-  @SuppressWarnings({"unchecked", "nullness"}) // because of cast from reflection
+  @Deprecated(forRemoval = true, since = "4.0.0")
+  @SuppressWarnings("unchecked")
   public static List<? extends Element> getRecordComponents(TypeElement element) {
-    try {
-      return (@NonNull List<? extends Element>) getRecordComponentsMethod.invoke(element);
-    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-      throw new Error("Cannot call TypeElement.getRecordComponents()", e);
-    }
+    return element.getRecordComponents();
   }
 
   /**
@@ -1092,7 +1032,7 @@ public class ElementUtils {
    */
   public static boolean isCompactCanonicalRecordConstructor(Element elt) {
     return elt.getKind() == ElementKind.CONSTRUCTOR
-        && (((Symbol) elt).flags() & Flags_COMPACT_RECORD_CONSTRUCTOR) != 0;
+        && (((Symbol) elt).flags() & Flags.COMPACT_RECORD_CONSTRUCTOR) != 0;
   }
 
   /**

@@ -60,13 +60,13 @@ public class ConstraintSet implements ReductionResult {
    */
   private final List<Constraint> list;
 
-  /** True if inference failed because the qualifiers where not in the correct relationship. */
+  /** True if inference failed because the qualifiers were not in the correct relationship. */
   private boolean annotationFailure = false;
 
   /**
    * Creates a new constraint set.
    *
-   * @param annotationFailure inference failed because the qualifiers where not in the correct
+   * @param annotationFailure inference failed because the qualifiers were not in the correct
    *     relationship
    */
   private ConstraintSet(boolean annotationFailure) {
@@ -181,16 +181,16 @@ public class ConstraintSet implements ReductionResult {
    *
    * @param c a constraint set
    * @param dependencies an object describing the dependencies of inference variables
-   * @return s a subset of constraints in {@code c} whose inputs do not affect {@code c}'s outputs,
-   *     or a singleton constraint from a constraint cycle
+   * @return a subset of constraints in {@code c} whose inputs do not affect {@code c}'s outputs, or
+   *     a singleton constraint from a constraint cycle
    */
   public static ConstraintSet getClosedSubset(ConstraintSet c, Dependencies dependencies) {
     ConstraintSet subset = new ConstraintSet();
     // Collection of all outputs of c.
     Set<Variable> allOutputsOfC = new LinkedHashSet<>();
     for (Constraint constraint : c.list) {
-      if (constraint instanceof TypeConstraint) {
-        allOutputsOfC.addAll(((TypeConstraint) constraint).getOutputVariables());
+      if (constraint instanceof TypeConstraint tc) {
+        allOutputsOfC.addAll(tc.getOutputVariables());
       }
       // No other constraints have output variables
     }
@@ -268,11 +268,10 @@ public class ConstraintSet implements ReductionResult {
     // of every other considered constraint.
     List<Constraint> consideredConstraints = new ArrayList<>();
     for (Constraint constraint : c.list) {
-      if (!(constraint instanceof TypeConstraint)) {
+      if (!(constraint instanceof TypeConstraint typeConstraint)) {
         continue;
       }
 
-      TypeConstraint typeConstraint = (TypeConstraint) constraint;
       Set<Variable> newInputs = dependencies.get(typeConstraint.getInputVariables());
       Set<Variable> newOutputs = dependencies.get(typeConstraint.getOutputVariables());
       if (inputDependencies.isEmpty()
@@ -301,8 +300,8 @@ public class ConstraintSet implements ReductionResult {
   public Set<Variable> getAllInferenceVariables() {
     Set<Variable> vars = new LinkedHashSet<>();
     for (Constraint c : list) {
-      if (c instanceof TypeConstraint) {
-        vars.addAll(((TypeConstraint) c).getInferenceVariables());
+      if (c instanceof TypeConstraint tc) {
+        vars.addAll(tc.getInferenceVariables());
       }
     }
     return vars;
@@ -316,8 +315,8 @@ public class ConstraintSet implements ReductionResult {
   public Set<Variable> getAllInputVariables() {
     Set<Variable> vars = new LinkedHashSet<>();
     for (Constraint constraint : list) {
-      if (constraint instanceof TypeConstraint) {
-        vars.addAll(((TypeConstraint) constraint).getInputVariables());
+      if (constraint instanceof TypeConstraint tc) {
+        vars.addAll(tc.getInputVariables());
       }
     }
     return vars;
@@ -326,8 +325,8 @@ public class ConstraintSet implements ReductionResult {
   /** Applies the instantiations to all the constraints in this set. */
   public void applyInstantiations() {
     for (Constraint constraint : list) {
-      if (constraint instanceof TypeConstraint) {
-        ((TypeConstraint) constraint).applyInstantiations();
+      if (constraint instanceof TypeConstraint tc) {
+        tc.applyInstantiations();
       }
     }
   }
@@ -347,7 +346,7 @@ public class ConstraintSet implements ReductionResult {
     BoundSet boundSet = new BoundSet(context);
     while (!this.isEmpty()) {
       if (this.list.size() > BoundSet.MAX_INCORPORATION_STEPS) {
-        throw new BugInCF("TO MANY CONSTRAINTS: %s", context.pathToExpression.getLeaf());
+        throw new BugInCF("TOO MANY CONSTRAINTS: %s", context.pathToExpression.getLeaf());
       }
       BoundSet result = reduceOneStep(context);
       boundSet.merge(result);
@@ -390,28 +389,28 @@ public class ConstraintSet implements ReductionResult {
 
     Constraint constraint = this.pop();
     ReductionResult result = constraint.reduce(context);
-    if (result instanceof ReductionResultPair) {
-      boundSet.merge(((ReductionResultPair) result).boundSet);
+    if (result instanceof ReductionResultPair rrp) {
+      boundSet.merge(rrp.boundSet());
       if (boundSet.containsFalse()) {
         throw new FalseBoundException(constraint, result);
       }
-      this.addAll(((ReductionResultPair) result).constraintSet);
+      this.addAll(rrp.constraintSet());
     } else if (result instanceof TypeConstraint) {
       // Add the new constraints to the beginning of the list so they are reduced first. This is
       // because each constraint is supposed to be reduced until no other constraints are produced
       // before moving onto another constraint.
       this.push((Constraint) result);
-    } else if (result instanceof ConstraintSet) {
+    } else if (result instanceof ConstraintSet cs) {
       if (result == TRUE_ANNO_FAIL) {
         this.annotationFailure = true;
       } else {
         // Add the new constraints to the beginning of the list so they are reduced first. This is
         // because each constraint is supposed to be reduced until no other constraints are produced
         // before moving onto another constraint.
-        this.pushAll((ConstraintSet) result);
+        this.pushAll(cs);
       }
-    } else if (result instanceof BoundSet) {
-      boundSet.merge((BoundSet) result);
+    } else if (result instanceof BoundSet bs) {
+      boundSet.merge(bs);
       if (boundSet.containsFalse()) {
         throw new FalseBoundException(constraint, result);
       }
@@ -425,8 +424,8 @@ public class ConstraintSet implements ReductionResult {
     if (this.annotationFailure) {
       boundSet.annoInferenceFailed = true;
       if (!alreadyFailed && boundSet.errorMsg.isEmpty()) {
-        if (constraint instanceof TypeConstraint) {
-          boundSet.errorMsg = ((TypeConstraint) constraint).constraintHistory();
+        if (constraint instanceof TypeConstraint tc) {
+          boundSet.errorMsg = tc.constraintHistory();
         } else {
           boundSet.errorMsg = constraint.toString();
         }

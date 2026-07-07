@@ -38,10 +38,9 @@ public class FloatingRemainderNode extends BinaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof FloatingRemainderNode)) {
+    if (!(obj instanceof FloatingRemainderNode other)) {
       return false;
     }
-    FloatingRemainderNode other = (FloatingRemainderNode) obj;
     return getLeftOperand().equals(other.getLeftOperand())
         && getRightOperand().equals(other.getRightOperand());
   }

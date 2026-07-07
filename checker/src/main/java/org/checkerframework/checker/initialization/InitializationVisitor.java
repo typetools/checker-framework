@@ -47,6 +47,10 @@ import org.plumelib.util.IPair;
  * The visitor for the freedom-before-commitment type-system. The freedom-before-commitment
  * type-system and this class are abstract and need to be combined with another type-system whose
  * safe initialization should be tracked. For an example, see the {@link NullnessChecker}.
+ *
+ * @param <Factory> the type of the annotated type factory
+ * @param <Value> the type of values in the store
+ * @param <Store> the type of the store
  */
 public class InitializationVisitor<
         Factory extends InitializationAnnotatedTypeFactory<Value, Store, ?, ?>,
@@ -168,14 +172,13 @@ public class InitializationVisitor<
     AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
 
     if (!qualHierarchy.isSubtypeShallow(invariantAnno, necessaryAnnotation, expr.getType())
-        || !(expr instanceof FieldAccess)) {
+        || !(expr instanceof FieldAccess fa)) {
       return super.checkContract(expr, necessaryAnnotation, inferredAnnotation, store);
     }
     if (expr.containsUnknown()) {
       return false;
     }
 
-    FieldAccess fa = (FieldAccess) expr;
     if (fa.getReceiver() instanceof ThisReference || fa.getReceiver() instanceof ClassName) {
       @SuppressWarnings("unchecked")
       Store s = (Store) store;
@@ -226,15 +229,14 @@ public class InitializationVisitor<
     // save all fields that are initialized and do not report errors about
     // them later when checking constructors.
     for (Tree member : tree.getMembers()) {
-      if (member instanceof BlockTree && !((BlockTree) member).isStatic()) {
-        BlockTree block = (BlockTree) member;
+      if (member instanceof BlockTree block && !block.isStatic()) {
         Store store = atypeFactory.getRegularExitStore(block);
 
         // Add field values for fields with an initializer.
         for (FieldInitialValue<Value> fieldInitialValue :
             store.getAnalysis().getFieldInitialValues()) {
-          if (fieldInitialValue.initializer != null) {
-            store.addInitializedField(fieldInitialValue.fieldDecl.getField());
+          if (fieldInitialValue.initializer() != null) {
+            store.addInitializedField(fieldInitialValue.fieldDecl().getField());
           }
         }
         List<VariableTree> init =
@@ -258,8 +260,8 @@ public class InitializationVisitor<
       // Add field values for fields with an initializer.
       for (FieldInitialValue<Value> fieldInitialValue :
           store.getAnalysis().getFieldInitialValues()) {
-        if (fieldInitialValue.initializer != null) {
-          store.addInitializedField(fieldInitialValue.fieldDecl.getField());
+        if (fieldInitialValue.initializer() != null) {
+          store.addInitializedField(fieldInitialValue.fieldDecl().getField());
         }
       }
 
@@ -343,8 +345,7 @@ public class InitializationVisitor<
     // Compact canonical record constructors do not generate visible assignments in the source,
     // but by definition they assign to all the record's fields so we don't need to
     // check for uninitialized fields in them:
-    if (tree instanceof MethodTree
-        && TreeUtils.isCompactCanonicalRecordConstructor((MethodTree) tree)) {
+    if (tree instanceof MethodTree mt && TreeUtils.isCompactCanonicalRecordConstructor(mt)) {
       return;
     }
 

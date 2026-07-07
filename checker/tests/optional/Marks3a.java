@@ -26,17 +26,17 @@ public class Marks3a {
   String customerNameByID_acceptable(List<Customer> custList, int custID) {
     Optional<Customer> opt = custList.stream().filter(c -> c.getID() == custID).findFirst();
 
-    // Not valid to report a map.and.orelse warning here
+    // :: warning: [prefer.map.and.orelse]
     String s = opt.isPresent() ? opt.get().getNameImpure() : "UNKNOWN";
 
-    // :: warning: (prefer.map.and.orelse)
+    // :: warning: [prefer.map.and.orelse]
     return opt.isPresent() ? opt.get().getName() : "UNKNOWN";
   }
 
   String customerNameByID_acceptable2(List<Customer> custList, int custID) {
     Optional<Customer> opt = custList.stream().filter(c -> c.getID() == custID).findFirst();
 
-    // :: warning: (prefer.map.and.orelse)
+    // :: warning: [prefer.map.and.orelse]
     return !opt.isPresent() ? "UNKNOWN" : opt.get().getName();
   }
 
@@ -44,7 +44,7 @@ public class Marks3a {
     Optional<Customer> opt = custList.stream().filter(c -> c.getID() == custID).findFirst();
 
     String customerName;
-    // :: warning: (prefer.map.and.orelse)
+    // :: warning: [prefer.map.and.orelse]
     if (opt.isPresent()) {
       customerName = opt.get().getName();
     } else {

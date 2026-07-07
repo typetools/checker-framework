@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <p>IntRangeFromNonNegative annotations derived from NonNegative annotations are used to create
  * IntRange annotations, but IntRangeFromNonNegative annotations are not checked when they appear on
- * the left hand side of expressions. Therefore, the Index Checker MUST be run on any code
+ * the left-hand side of expressions. Therefore, the Index Checker MUST be run on any code
  * with @NonNegative annotations on the left-hand side of expressions, since the Value Checker will
  * derive information from them but not check them.
  *

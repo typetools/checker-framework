@@ -5,16 +5,16 @@ import org.checkerframework.checker.nullness.qual.*;
  * get raised, leading to a missed NPE.
  */
 public class NullableLUB<T extends @Nullable Object> {
-  // :: error: (initialization.field.uninitialized)
+  // :: error: [initialization.field.uninitialized]
   T t;
   @Nullable T nt;
 
   T m(boolean b, T p) {
     T r1 = b ? p : null;
     nt = r1;
-    // :: error: (assignment)
+    // :: error: [assignment]
     t = r1;
-    // :: error: (return)
+    // :: error: [return]
     return r1;
   }
 
@@ -25,9 +25,9 @@ public class NullableLUB<T extends @Nullable Object> {
   T m2(boolean b, T p) {
     T r1 = b ? null : p;
     nt = r1;
-    // :: error: (assignment)
+    // :: error: [assignment]
     t = r1;
-    // :: error: (return)
+    // :: error: [return]
     return r1;
   }
 }

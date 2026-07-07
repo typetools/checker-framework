@@ -1,7 +1,9 @@
 package org.checkerframework.afu.scenelib.field;
 
 import java.util.Collection;
+import java.util.StringJoiner;
 import org.checkerframework.afu.scenelib.AnnotationBuilder;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** An {@link ArrayAFT} represents an annotation field type that is an array. */
@@ -26,12 +28,11 @@ public final class ArrayAFT extends AnnotationFieldType {
 
   @Override
   public boolean isValidValue(Object o) {
-    if (!(o instanceof Collection)) {
+    if (!(o instanceof Collection<?> asCollection)) {
       return false;
     }
-    Collection<?> asCollection = (Collection<?>) o;
     if (elementType == null) {
-      return (asCollection.size() == 0);
+      return asCollection.isEmpty();
     }
     for (Object elt : asCollection) {
       if (!elementType.isValidValue(elt)) {
@@ -48,24 +49,28 @@ public final class ArrayAFT extends AnnotationFieldType {
 
   @Override
   public void format(StringBuilder sb, Object o) {
-    Collection<?> asCollection = (Collection<?>) o;
+    Collection<? extends @NonNull Object> asCollection = (Collection<? extends @NonNull Object>) o;
     int size = asCollection.size();
     if (size == 1) {
-      Object elt = asCollection.iterator().next();
-      elementType.format(sb, elt);
+      if (elementType == null) {
+        sb.append("null");
+      } else {
+        @NonNull Object elt = asCollection.iterator().next();
+        elementType.format(sb, elt);
+      }
       return;
     }
-    sb.append("{");
-    boolean notfirst = false;
-    for (Object elt : asCollection) {
-      if (notfirst) {
-        sb.append(", ");
+    StringJoiner sj = new StringJoiner(", ", "{", "}");
+    for (@NonNull Object elt : asCollection) {
+      StringBuilder eltSb = new StringBuilder();
+      if (elementType == null) {
+        eltSb.append("null");
       } else {
-        notfirst = true;
+        elementType.format(eltSb, elt);
       }
-      elementType.format(sb, elt);
+      sj.add(eltSb);
     }
-    sb.append("}");
+    sb.append(sj);
   }
 
   @Override

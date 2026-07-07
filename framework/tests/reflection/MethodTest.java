@@ -219,7 +219,7 @@ public class MethodTest {
       }
       @TestReflectBottom
       Object o =
-          // :: error: (assignment)
+          // :: error: [assignment]
           m.invoke(new SuperClass(), new @TestReflectBottom Object @TestReflectBottom [0]);
     } catch (Exception ignore) {
     }
@@ -233,7 +233,7 @@ public class MethodTest {
       Method m =
           c.getMethod(
               "convertTestReflectSibling2ToTestReflectSibling1", new Class[] {Integer.class});
-      // :: error: (argument)
+      // :: error: [argument]
       Object o = m.invoke(null, sibling1);
     } catch (Exception ignore) {
     }
@@ -244,7 +244,7 @@ public class MethodTest {
     try {
       Class<?> c = Class.forName(str);
       Method m = c.getMethod("getA", new Class[] {Integer.class});
-      // :: error: (assignment)
+      // :: error: [assignment]
       @TestReflectSibling1 Object o = m.invoke(subClass, (@TestReflectBottom Object[]) null);
     } catch (Exception ignore) {
     }
@@ -255,7 +255,7 @@ public class MethodTest {
     try {
       Class<?> c = Class.forName("MethodTest$SuperClass");
       Method m = c.getMethod(str, new Class[] {Integer.class});
-      // :: error: (argument)
+      // :: error: [argument]
       m.invoke(this, sibling1);
     } catch (Exception ignore) {
     }
@@ -266,7 +266,7 @@ public class MethodTest {
     try {
       Class<?> c = Class.forName("MethodTest$SubClass");
       Method m = c.getMethod(str, new Class[] {Integer.class});
-      // :: error: (argument)
+      // :: error: [argument]
       m.invoke(this, new Object[] {sibling2});
     } catch (Exception ignore) {
     }
@@ -277,7 +277,7 @@ public class MethodTest {
     try {
       Class<?> c = Class.forName("MethodTest$SubClass");
       Method m = c.getMethod(str, new Class[] {Integer.class, Integer.class});
-      // :: error: (argument)
+      // :: error: [argument]
       m.invoke(this, new Object[] {sibling1, sibling2});
     } catch (Exception ignore) {
     }
@@ -291,14 +291,14 @@ public class MethodTest {
     try {
       Class<?> c = Class.forName("MethodTest$SubClass");
       Method m = c.getMethod(str, new Class[] {Integer.class});
-      // :: error: (argument)
+      // :: error: [argument]
       m.invoke(this, new Object[] {sibling1});
     } catch (Exception ignore) {
     }
   }
 
   public void fail7() {
-    // :: warning: (cast.unsafe.constructor.invocation)
+    // :: warning: [cast.unsafe.constructor.invocation]
     @TestReflectSibling2 MethodTest inst = new @TestReflectSibling2 MethodTest();
     try {
       Class<?> c = MethodTest.class;
@@ -315,7 +315,7 @@ public class MethodTest {
     try {
       Class<?> c = SuperClass.class;
       Method m = c.getMethod("setC", new Class[] {Integer.class});
-      // :: error: (argument)
+      // :: error: [argument]
       Object o = m.invoke(new SuperClass(), new Object[] {sibling2});
     } catch (Exception ignore) {
     }
@@ -333,7 +333,7 @@ public class MethodTest {
       // This error is a bug.
       // See DefaultReflectionResolver.resolveMethodCall(...)
       // for details.
-      // :: error: (argument)
+      // :: error: [argument]
       m.invoke(this, args);
     } catch (Exception ignore) {
     }
@@ -352,7 +352,7 @@ public class MethodTest {
       // This error is a bug.
       // See DefaultReflectionResolver.resolveMethodCall(...)
       // for details.
-      // :: error: (argument)
+      // :: error: [argument]
       m.invoke(this, args);
     } catch (Exception ignore) {
     }

@@ -23,8 +23,8 @@ import org.checkerframework.framework.qual.UpperBoundFor;
 @SubtypeOf({UnknownSignedness.class})
 @DefaultFor(
     typeKinds = {TypeKind.CHAR},
-    types = {java.lang.Character.class})
+    types = {Character.class})
 @UpperBoundFor(
     typeKinds = {TypeKind.CHAR},
-    types = {java.lang.Character.class})
+    types = {Character.class})
 public @interface Unsigned {}

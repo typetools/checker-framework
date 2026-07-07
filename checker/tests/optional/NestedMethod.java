@@ -18,7 +18,7 @@ class NestedMethod {
           foo.stream()
               .map(String::length)
               .max(Integer::compare)
-              // :: error: (method.invocation)
+              // :: error: [method.invocation]
               .get();
         };
     r.run();

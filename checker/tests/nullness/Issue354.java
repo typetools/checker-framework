@@ -7,7 +7,7 @@ public class Issue354 {
         new Object() {
           @Override
           public String toString() {
-            // :: error: (dereference.of.nullable)
+            // :: error: [dereference.of.nullable]
             return a.toString();
           }
         }.toString();

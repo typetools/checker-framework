@@ -5,7 +5,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class Uninit12 {
 
-  // :: error: (initialization.static.field.uninitialized)
+  // :: error: [initialization.static.field.uninitialized]
   static Object f;
 
   public Uninit12() {

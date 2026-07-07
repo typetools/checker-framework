@@ -8,24 +8,24 @@ import org.checkerframework.checker.nullness.qual.*;
 public class KeyForLocalVariable {
 
   public static void localVariableShadowing() {
-    // :: error: (expression.unparsable)
+    // :: error: [expression.unparsable]
     @KeyFor("m0") String kk;
     {
       Map<String, Integer> m0 = new HashMap<>();
       @SuppressWarnings("keyfor")
       @KeyFor("m0") String k = "key";
-      // :: error: (assignment)
+      // :: error: [assignment]
       kk = k;
     }
     {
       Map<String, Integer> m0 = new HashMap<>();
-      // :: error: (assignment)
+      // :: error: [assignment]
       @KeyFor("m0") String k2 = kk;
     }
   }
 
   public static void invalidLocalVariable() {
-    // :: error: (expression.unparsable)
+    // :: error: [expression.unparsable]
     @KeyFor("foobar") String kk;
   }
 }

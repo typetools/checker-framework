@@ -7,9 +7,9 @@ import pkg1.Class1;
 
 public class Class2 {
   @RequiresOdd("Class1.field")
-  // :: error: (flowexpr.parse.error)
+  // :: error: [flowexpr.parse.error]
   public void requiresOddParseError() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Odd Object odd = Class1.field;
   }
 
@@ -19,25 +19,25 @@ public class Class2 {
   }
 
   @EnsuresOdd("Class1.field")
-  // :: error: (flowexpr.parse.error)
+  // :: error: [flowexpr.parse.error]
   public void ensuresOddParseError() {
-    // :: warning: (cast.unsafe.constructor.invocation)
+    // :: warning: [cast.unsafe.constructor.invocation]
     Class1.field = new @Odd Object();
   }
 
   @EnsuresOdd("pkg1.Class1.field")
   public void ensuresOdd() {
-    // :: warning: (cast.unsafe.constructor.invocation)
+    // :: warning: [cast.unsafe.constructor.invocation]
     Class1.field = new @Odd Object();
   }
 
   void illegalUse() {
-    // :: error: (contracts.precondition)
+    // :: error: [contracts.precondition]
     requiresOdd();
   }
 
   void legalUse() {
-    // :: warning: (cast.unsafe.constructor.invocation)
+    // :: warning: [cast.unsafe.constructor.invocation]
     Class1.field = new @Odd Object();
     requiresOdd();
   }

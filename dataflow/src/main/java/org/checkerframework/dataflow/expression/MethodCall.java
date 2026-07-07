@@ -114,20 +114,19 @@ public class MethodCall extends JavaExpression {
 
   @Override
   public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof MethodCall)) {
+    if (!(je instanceof MethodCall other)) {
       return false;
     }
-    MethodCall other = (MethodCall) je;
     return method.equals(other.method)
         && this.receiver.syntacticEquals(other.receiver)
-        && JavaExpression.syntacticEqualsList(this.arguments, other.arguments);
+        && syntacticEqualsList(this.arguments, other.arguments);
   }
 
   @Override
   public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
     return syntacticEquals(other)
         || receiver.containsSyntacticEqualJavaExpression(other)
-        || JavaExpression.listContainsSyntacticEqualJavaExpression(arguments, other);
+        || listContainsSyntacticEqualJavaExpression(arguments, other);
   }
 
   @Override
@@ -148,13 +147,12 @@ public class MethodCall extends JavaExpression {
     if (this == obj) {
       return true;
     }
-    if (!(obj instanceof MethodCall)) {
+    if (!(obj instanceof MethodCall other)) {
       return false;
     }
     if (method.getKind() == ElementKind.CONSTRUCTOR) {
       return false;
     }
-    MethodCall other = (MethodCall) obj;
     boolean isComparingSuperWithThis =
         (receiver instanceof SuperReference && other.receiver instanceof ThisReference)
             || (receiver instanceof ThisReference && other.receiver instanceof SuperReference);
@@ -179,10 +177,10 @@ public class MethodCall extends JavaExpression {
     } else {
       preParen.append(receiver);
     }
-    preParen.append(".");
+    preParen.append('.');
     String methodName = method.getSimpleName().toString();
     preParen.append(methodName);
-    preParen.append("(");
+    preParen.append('(');
     StringJoiner result = new StringJoiner(", ", preParen, ")");
     for (JavaExpression argument : arguments) {
       result.add(argument.toString());

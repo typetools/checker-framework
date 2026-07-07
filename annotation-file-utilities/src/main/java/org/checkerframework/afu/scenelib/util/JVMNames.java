@@ -1,6 +1,5 @@
 package org.checkerframework.afu.scenelib.util;
 
-import com.google.errorprone.annotations.InlineMe;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -21,25 +20,11 @@ import org.plumelib.reflection.Signatures;
 // TODO: Move much of this class to reflection-util, if no special classpath manipulation is
 // required to get the com.sun and javax.lang classes on the classpath.
 /** Class to generate class formatted names from Trees. */
-public class JVMNames {
+public final class JVMNames {
 
-  /** Creates a new JVMNames. */
-  public JVMNames() {}
-
-  /**
-   * Converts a MethodTree into a JVML format method signature. There is probably an API to do this,
-   * but I couldn't find it.
-   *
-   * @param methodTree the tree to convert
-   * @return a String signature of methodTree in jvml format
-   * @deprecated use {@link #getJVMMethodSignature(MethodTree)}
-   */
-  @Deprecated // use getJVMMethodSignature(MethodTree)
-  @InlineMe(
-      replacement = "JVMNames.getJVMMethodSignature(methodTree)",
-      imports = "org.checkerframework.afu.scenelib.util.JVMNames")
-  public static String getJVMMethodName(MethodTree methodTree) {
-    return getJVMMethodSignature(methodTree);
+  /** Do not instantiate. */
+  private JVMNames() {
+    throw new Error("Do not instantiate");
   }
 
   /**
@@ -54,7 +39,7 @@ public class JVMNames {
     StringBuilder builder = new StringBuilder();
     String returnTypeStr;
     builder.append(methodTree.getName());
-    builder.append("(");
+    builder.append('(');
 
     if (methodElement == null) {
       // use source AST in lieu of symbol table
@@ -78,25 +63,9 @@ public class JVMNames {
         builder.append(typeToJvmlString(vt));
       }
     }
-    builder.append(")");
+    builder.append(')');
     builder.append(returnTypeStr);
     return builder.toString();
-  }
-
-  /**
-   * Converts a method element into a JVML format method signature. There is probably an API to do
-   * this, but I couldn't find it.
-   *
-   * @param methodElement the method element to convert
-   * @return a String signature of methodElement in JVML format
-   * @deprecated use {@link #getJVMMethodSignature(ExecutableElement)}
-   */
-  @Deprecated // use getJVMMethodSignature(ExecutableElement)
-  @InlineMe(
-      replacement = "JVMNames.getJVMMethodSignature(methodElement)",
-      imports = "org.checkerframework.afu.scenelib.util.JVMNames")
-  public static String getJVMMethodName(ExecutableElement methodElement) {
-    return getJVMMethodSignature(methodElement);
   }
 
   /**
@@ -110,7 +79,7 @@ public class JVMNames {
     StringBuilder builder = new StringBuilder();
     String returnTypeStr;
     builder.append(methodElement.getSimpleName());
-    builder.append("(");
+    builder.append('(');
     TypeMirror returnType = methodElement.getReturnType();
     returnTypeStr = typeToJvmlString((Type) returnType);
     for (VariableElement ve : methodElement.getParameters()) {
@@ -120,7 +89,7 @@ public class JVMNames {
       }
       builder.append(typeToJvmlString(vt));
     }
-    builder.append(")");
+    builder.append(')');
     builder.append(returnTypeStr);
     return builder.toString();
   }
@@ -166,15 +135,15 @@ public class JVMNames {
   @SuppressWarnings("signature") // com.sun.source.tree.Tree is not yet annotated
   private static void treeToJVMLString(Tree typeTree, StringBuilder builder) {
     switch (typeTree.getKind()) {
-      case ARRAY_TYPE:
+      case ARRAY_TYPE -> {
         builder.append('[');
         treeToJVMLString(((ArrayTypeTree) typeTree).getType(), builder);
-        break;
-      default:
+      }
+      default -> {
         String str = typeTree.toString();
         builder.append(
             "void".equals(str) ? "V" : Signatures.binaryNameToFieldDescriptor(typeTree.toString()));
-        break;
+      }
     }
   }
 

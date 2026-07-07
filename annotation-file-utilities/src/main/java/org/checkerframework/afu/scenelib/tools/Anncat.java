@@ -1,8 +1,9 @@
 package org.checkerframework.afu.scenelib.tools;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
@@ -19,7 +20,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.plumelib.util.FileIOException;
 
 /** Concatenates multiple descriptions of annotations into a single one. */
-public class Anncat {
+public final class Anncat {
 
   /** Do not instantiate. */
   private Anncat() {
@@ -105,8 +106,7 @@ public class Anncat {
           idx++;
           usageAssert(idx == args.length);
           System.err.println("Writing index file to " + outfile + "...");
-          // In Java 11, use: new FileWriter(outfile, UTF_8)
-          try (Writer w = Files.newBufferedWriter(Paths.get(outfile), StandardCharsets.UTF_8)) {
+          try (Writer w = new FileWriter(outfile, StandardCharsets.UTF_8)) {
             IndexFileWriter.write(theScene, w);
           }
           System.err.println("Finished.");
@@ -133,7 +133,7 @@ public class Anncat {
             usageAssert(idx == args.length);
             System.err.println("Reading original class file " + origfile);
             System.err.println("and writing annotated version to " + outfile + "...");
-            try (FileInputStream fis = new FileInputStream(origfile);
+            try (InputStream fis = Files.newInputStream(Paths.get(origfile));
                 FileOutputStream fos = new FileOutputStream(outfile)) {
               ClassFileWriter.insert(theScene, fis, fos, overwrite);
             }

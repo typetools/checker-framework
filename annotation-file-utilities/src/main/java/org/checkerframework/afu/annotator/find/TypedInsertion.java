@@ -77,15 +77,11 @@ public abstract class TypedInsertion extends Insertion {
   }
 
   public static DeclaredType getBaseType(Type type) {
-    switch (type.getKind()) {
-      case DECLARED:
-        return (DeclaredType) type;
-      case BOUNDED:
-        return getBaseType(((BoundedType) type).getName());
-      case ARRAY:
-        return getBaseType(((ArrayType) type).getComponentType());
-      default: // should never be reached
-        return null;
-    }
+    return switch (type.getKind()) {
+      case DECLARED -> (DeclaredType) type;
+      case BOUNDED -> getBaseType(((BoundedType) type).getName());
+      case ARRAY -> getBaseType(((ArrayType) type).getComponentType());
+      default -> null; // should never be reached
+    };
   }
 }

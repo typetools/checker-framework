@@ -58,6 +58,9 @@ public abstract class AbstractCFGVisualizer<
   /** The indentation for elements of the store. */
   protected static final String storeEntryIndent = "  ";
 
+  /** Creates an AbstractCFGVisualizer. */
+  public AbstractCFGVisualizer() {}
+
   @Override
   public void init(Map<String, Object> args) {
     this.verbose = toBoolean(args.get("verbose"));
@@ -74,8 +77,8 @@ public abstract class AbstractCFGVisualizer<
     if (o == null) {
       return false;
     }
-    if (o instanceof String) {
-      return Boolean.parseBoolean((String) o);
+    if (o instanceof String string) {
+      return Boolean.parseBoolean(string);
     }
     return (boolean) o;
   }
@@ -108,11 +111,11 @@ public abstract class AbstractCFGVisualizer<
     Set<Block> visited = new LinkedHashSet<>();
     StringBuilder sbGraph = new StringBuilder();
     Queue<Block> workList = new ArrayDeque<>();
-    Block cur = entry;
+    workList.add(entry);
     visited.add(entry);
-    while (cur != null) {
+    while (!workList.isEmpty()) {
+      Block cur = workList.remove();
       handleSuccessorsHelper(cur, visited, workList, sbGraph);
-      cur = workList.poll();
     }
     sbGraph.append(lineSeparator);
     sbGraph.append(visualizeNodes(visited, cfg, analysis));
@@ -223,7 +226,8 @@ public abstract class AbstractCFGVisualizer<
           if (!sbBlock.toString().endsWith(separator)) {
             sbBlock.append(separator);
           }
-          sbBlock.append(visualizeBlockTransferInputAfter(bb, analysis) + separator);
+          sbBlock.append(visualizeBlockTransferInputAfter(bb, analysis));
+          sbBlock.append(separator);
         }
       }
     }
@@ -358,14 +362,16 @@ public abstract class AbstractCFGVisualizer<
       }
     }
 
-    StringBuilder sbStore = new StringBuilder();
+    StringBuilder sbStore = new StringBuilder(64);
     if (verbose) {
-      sbStore.append((storesFromId == null ? "null" : storesFromId.getClassAndUid()) + separator);
+      sbStore.append((storesFromId == null ? "null" : storesFromId.getClassAndUid()));
+      sbStore.append(separator);
     }
     sbStore.append(where == VisualizeWhere.BEFORE ? "Before: " : "After: ");
 
     if (verbose && resultValue != null) {
-      sbStore.append("resultValue=" + resultValue);
+      sbStore.append("resultValue=");
+      sbStore.append(resultValue);
       sbStore.append(separator);
     }
 
@@ -378,13 +384,14 @@ public abstract class AbstractCFGVisualizer<
       assert elseStore != null : "@AssumeAssertion(nullness): invariant";
       sbStore.append("then=");
       sbStore.append(visualizeStore(thenStore));
-      sbStore.append(",");
+      sbStore.append(',');
       sbStore.append(separator);
       sbStore.append("else=");
       sbStore.append(visualizeStore(elseStore));
     }
     if (where == VisualizeWhere.BEFORE) {
-      sbStore.append(separator + "~~~~~~~~~");
+      sbStore.append(separator);
+      sbStore.append("~~~~~~~~~");
     } else {
       sbStore.insert(0, "~~~~~~~~~" + separator);
     }
@@ -398,16 +405,12 @@ public abstract class AbstractCFGVisualizer<
    * @return the String representation of the special block
    */
   protected String visualizeSpecialBlockHelper(SpecialBlock sbb) {
-    switch (sbb.getSpecialType()) {
-      case ENTRY:
-        return "<entry>";
-      case EXIT:
-        return "<exit>";
-      case EXCEPTIONAL_EXIT:
-        return "<exceptional-exit>";
-      default:
-        throw new BugInCF("Unrecognized special block type: " + sbb.getType());
-    }
+    return switch (sbb.getSpecialType()) {
+      case ENTRY -> "<entry>";
+      case EXIT -> "<exit>";
+      case EXCEPTIONAL_EXIT -> "<exceptional-exit>";
+      default -> throw new BugInCF("Unrecognized special block type: " + sbb.getType());
+    };
   }
 
   /**

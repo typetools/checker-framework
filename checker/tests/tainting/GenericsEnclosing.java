@@ -16,10 +16,10 @@ class ExtMyG extends MyG<@Untainted Object> {
   class EInner1 {
     class EInner2 {
       void bar() {
-        // :: error: (assignment)
+        // :: error: [assignment]
         f = 1;
         m("test");
-        // :: error: (argument)
+        // :: error: [argument]
         m(1);
       }
     }

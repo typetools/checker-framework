@@ -244,22 +244,17 @@ public class ControlFlowGraph implements UniqueId {
     Set<Block> visited = new LinkedHashSet<>();
     // worklist is always a subset of visited; any block in worklist is also in visited.
     Queue<Block> worklist = new ArrayDeque<>();
-    Block cur = entryBlock;
+    worklist.add(entryBlock);
     visited.add(entryBlock);
 
     // traverse the whole control flow graph
-    while (true) {
-      if (cur == null) {
-        break;
-      }
-
+    while (!worklist.isEmpty()) {
+      Block cur = worklist.remove();
       for (Block b : cur.getSuccessors()) {
         if (visited.add(b)) {
           worklist.add(b);
         }
       }
-
-      cur = worklist.poll();
     }
 
     return visited;
@@ -296,14 +291,15 @@ public class ControlFlowGraph implements UniqueId {
     Set<Block> visited = new LinkedHashSet<>();
     // `worklist` is always a subset of `visited`; any block in `worklist` is also in `visited`.
     Queue<Block> worklist = new ArrayDeque<>();
-    Block cur = entryBlock;
+    worklist.add(entryBlock);
     visited.add(entryBlock);
 
     // Traverse the whole control flow graph.
-    while (cur != null) {
-      if (cur instanceof ExceptionBlock) {
+    while (!worklist.isEmpty()) {
+      Block cur = worklist.remove();
+      if (cur instanceof ExceptionBlock exceptionBlock) {
         for (Map.Entry<TypeMirror, Set<Block>> entry :
-            ((ExceptionBlock) cur).getExceptionalSuccessors().entrySet()) {
+            exceptionBlock.getExceptionalSuccessors().entrySet()) {
           if (!shouldIgnoreException.apply(entry.getKey())) {
             for (Block b : entry.getValue()) {
               if (visited.add(b)) {
@@ -324,7 +320,6 @@ public class ControlFlowGraph implements UniqueId {
           }
         }
       }
-      cur = worklist.poll();
     }
 
     return visited;
@@ -470,7 +465,7 @@ public class ControlFlowGraph implements UniqueId {
     if (astString.length() > 65) {
       astString = "\"" + astString.substring(0, 60) + "\"";
     }
-    result.add("underlyingAST=" + underlyingAST);
+    result.add("underlyingAST=" + astString);
     result.add("treeLookup=" + AnalysisResult.treeLookupToString(treeLookup));
     result.add("convertedTreeLookup=" + AnalysisResult.treeLookupToString(convertedTreeLookup));
     result.add("postfixLookup=" + postfixNodeLookup);

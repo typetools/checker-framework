@@ -135,15 +135,11 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     boolean enableLombokSupport = true;
     for (String framework : disabledFrameworks) {
       switch (framework) {
-        case "autovalue":
-          enableAutoValueSupport = false;
-          break;
-        case "lombok":
-          enableLombokSupport = false;
-          break;
-        default:
-          throw new UserError(
-              "Unsupported builder framework in -AdisableBuilderFrameworkSupports: " + framework);
+        case "autovalue" -> enableAutoValueSupport = false;
+        case "lombok" -> enableLombokSupport = false;
+        default ->
+            throw new UserError(
+                "Unsupported builder framework in -AdisableBuilderFrameworkSupports: " + framework);
       }
     }
     if (enableAutoValueSupport) {
@@ -241,12 +237,11 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   // This cannot return a Name because filterKindToMethodName cannot.
   private @Nullable String filterTreeToMethodName(
       Tree filterTree, ValueAnnotatedTypeFactory valueATF) {
-    while (filterTree != null && filterTree instanceof MethodInvocationTree) {
+    while (filterTree instanceof MethodInvocationTree filterTreeAsMethodInvocation) {
 
-      MethodInvocationTree filterTreeAsMethodInvocation = (MethodInvocationTree) filterTree;
       String filterMethodName = TreeUtils.methodName(filterTreeAsMethodInvocation).toString();
       if (filterMethodName.contentEquals("withName")
-          && filterTreeAsMethodInvocation.getArguments().size() >= 1) {
+          && !filterTreeAsMethodInvocation.getArguments().isEmpty()) {
         Tree withNameArgTree = filterTreeAsMethodInvocation.getArguments().get(0);
         String withNameArg = ValueCheckerUtils.getExactStringValue(withNameArgTree, valueATF);
         return filterKindToMethodName(withNameArg);
@@ -279,16 +274,11 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *     filterKind is "image-id"; null otherwise
    */
   private static @Nullable String filterKindToMethodName(String filterKind) {
-    switch (filterKind) {
-      case "owner":
-      case "owner-alias":
-      case "owner-id":
-        return "withOwners";
-      case "image-id":
-        return "withImageIds";
-      default:
-        return null;
-    }
+    return switch (filterKind) {
+      case "owner", "owner-alias", "owner-id" -> "withOwners";
+      case "image-id" -> "withImageIds";
+      default -> null;
+    };
   }
 
   /**
@@ -340,7 +330,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   private class CalledMethodsTypeAnnotator extends TypeAnnotator {
 
     /**
-     * Constructor matching super.
+     * Creates a CalledMethodsTypeAnnotator.
      *
      * @param atypeFactory the type factory
      */
@@ -409,7 +399,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * @param calledMethodsAnnotation the annotation
    * @return the called methods
    */
-  protected List<String> getCalledMethods(AnnotationMirror calledMethodsAnnotation) {
+  public List<String> getCalledMethods(AnnotationMirror calledMethodsAnnotation) {
     return AnnotationUtils.getElementValueArray(
         calledMethodsAnnotation, calledMethodsValueElement, String.class, Collections.emptyList());
   }

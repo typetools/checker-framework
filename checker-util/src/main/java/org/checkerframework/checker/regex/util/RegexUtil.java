@@ -349,7 +349,7 @@ public final class RegexUtil {
   public static List<String> matchesSomeRegex(
       Collection<String> strings, Collection<@Regex String> regexes) {
     List<Pattern> patterns = mapList(Pattern::compile, regexes);
-    List<String> result = new ArrayList<String>(strings.size());
+    List<String> result = new ArrayList<>(strings.size());
     for (String s : strings) {
       for (Pattern p : patterns) {
         if (p.matcher(s).matches()) {
@@ -393,7 +393,7 @@ public final class RegexUtil {
   public static List<String> matchesNoRegex(
       Collection<String> strings, Collection<@Regex String> regexes) {
     List<Pattern> patterns = mapList(Pattern::compile, regexes);
-    List<String> result = new ArrayList<String>(strings.size());
+    List<String> result = new ArrayList<>(strings.size());
     outer:
     for (String s : strings) {
       for (Pattern p : patterns) {

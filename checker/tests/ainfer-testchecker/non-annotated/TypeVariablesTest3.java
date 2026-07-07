@@ -8,7 +8,7 @@ public class TypeVariablesTest3<@AinferSibling1 T extends @AinferSibling1 Object
   public T tField;
 
   void foo(T param) {
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     param = sibling2;
   }
 
@@ -17,7 +17,7 @@ public class TypeVariablesTest3<@AinferSibling1 T extends @AinferSibling1 Object
   }
 
   void bar(@AinferSibling2 T param) {
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     tField = param;
   }
 }

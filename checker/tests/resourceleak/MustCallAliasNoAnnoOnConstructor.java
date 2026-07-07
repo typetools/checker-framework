@@ -9,7 +9,7 @@ public class MustCallAliasNoAnnoOnConstructor {
 
   final @Owning InputStream is;
 
-  // :: warning: (mustcallalias.method.return.and.param)
+  // :: warning: [mustcallalias.method.return.and.param]
   @MustCallAlias MustCallAliasNoAnnoOnConstructor(InputStream p, boolean b) throws Exception {
     if (b) {
       throw new Exception("an exception!");

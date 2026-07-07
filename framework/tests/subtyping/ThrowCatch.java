@@ -1,7 +1,7 @@
 import org.checkerframework.framework.testchecker.util.Critical;
 
 /**
- * Tests the symantics for throwable exception.
+ * Tests the semantics for throwable exception.
  *
  * @on-hold
  * @skip-test
@@ -24,7 +24,7 @@ abstract class ThrowCatch {
 
     try {
       throwsNoncritical();
-      // :: error: (type.incompatible)
+      // :: error: [type.incompatible]
     } catch (@Critical Exception e) {
     }
 

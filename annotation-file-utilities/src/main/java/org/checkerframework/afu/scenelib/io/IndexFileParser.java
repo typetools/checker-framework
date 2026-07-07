@@ -54,6 +54,8 @@ import org.checkerframework.afu.scenelib.type.BoundedType.BoundKind;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.Identifier;
@@ -154,24 +156,14 @@ public final class IndexFileParser {
   private void expectChar(char c) throws IOException, ParseException {
     if (!matchChar(c)) {
       // Alternately, could use st.toString().
-      String found;
-      switch (st.ttype) {
-        case StreamTokenizer.TT_WORD:
-          found = st.sval;
-          break;
-        case StreamTokenizer.TT_NUMBER:
-          found = "" + st.nval;
-          break;
-        case StreamTokenizer.TT_EOL:
-          found = "end of line";
-          break;
-        case StreamTokenizer.TT_EOF:
-          found = "end of file";
-          break;
-        default:
-          found = "'" + ((char) st.ttype) + "'";
-          break;
-      }
+      String found =
+          switch (st.ttype) {
+            case StreamTokenizer.TT_WORD -> st.sval;
+            case StreamTokenizer.TT_NUMBER -> String.valueOf(st.nval);
+            case StreamTokenizer.TT_EOL -> "end of line";
+            case StreamTokenizer.TT_EOF -> "end of file";
+            default -> "'" + (char) st.ttype + "'";
+          };
       throw new ParseException("Expected '" + c + "', found " + found);
     }
   }
@@ -241,7 +233,7 @@ public final class IndexFileParser {
       "volatile",
       "while",
     };
-    knownKeywords = new LinkedHashSet<String>();
+    knownKeywords = new LinkedHashSet<>();
     Collections.addAll(knownKeywords, knownKeywords_array);
   }
 
@@ -272,7 +264,7 @@ public final class IndexFileParser {
    *
    * @return the next token, so long as it is an identifier; otherwise, returns null
    */
-  private @Identifier String checkIdentifier() {
+  private @Identifier @Nullable String checkIdentifier() {
     if (st.sval == null) {
       return null;
     } else {
@@ -398,7 +390,11 @@ public final class IndexFileParser {
    * "java.util.Map"  for Map.class
    * }</pre>
    *
-   * Thes use fully-qualified names, i.e. "Object" alone won't work.
+   * These use fully-qualified names, i.e. "Object" alone won't work.
+   *
+   * @return the class name that was read, in Class.forName format
+   * @throws IOException if there is trouble reading
+   * @throws ParseException if there is trouble parsing
    */
   private @ClassGetName String expectClassGetName() throws IOException, ParseException {
     int arrays = 0;
@@ -435,9 +431,8 @@ public final class IndexFileParser {
   /** Parse scalar annotation value. */
   // HMMM can a (readonly) Integer be casted to a writable Object?
   private Object parseScalarAFV(ScalarAFT aft) throws IOException, ParseException {
-    if (aft instanceof BasicAFT) {
+    if (aft instanceof BasicAFT baft) {
       Object val;
-      BasicAFT baft = (BasicAFT) aft;
       Class<?> type = baft.type;
       if (type == boolean.class) {
         if (matchKeyword("true")) {
@@ -516,8 +511,7 @@ public final class IndexFileParser {
       String name = expectQualifiedName();
       assert aft.isValidValue(name);
       return name;
-    } else if (aft instanceof AnnotationAFT) {
-      AnnotationAFT aaft = (AnnotationAFT) aft;
+    } else if (aft instanceof AnnotationAFT aaft) {
       AnnotationDef d = parseAnnotationHead();
       if (!d.name.equals(aaft.annotationDef.name)) {
         throw new ParseException(
@@ -584,8 +578,7 @@ public final class IndexFileParser {
           "The annotation type " + d.name + " has no field called " + fieldName);
     }
     AnnotationFieldType aft = aft1;
-    if (aft instanceof ArrayAFT) {
-      ArrayAFT aaft = (ArrayAFT) aft;
+    if (aft instanceof ArrayAFT aaft) {
       if (aaft.elementType == null) {
         // Array of unknown element type--must be zero-length
         expectChar('{');
@@ -594,8 +587,7 @@ public final class IndexFileParser {
       } else {
         parseAndAddArrayAFV(aaft, ab.beginArrayField(fieldName, aaft));
       }
-    } else if (aft instanceof ScalarAFT) {
-      ScalarAFT saft = (ScalarAFT) aft;
+    } else if (aft instanceof ScalarAFT saft) {
       Object value = parseScalarAFV(saft);
       ab.addScalarField(fieldName, saft, value);
     } else {
@@ -696,11 +688,8 @@ public final class IndexFileParser {
       if (abbreviate) {
         int i = name.lastIndexOf('.');
         if (i >= 0) {
-          Set<String> importSet = scene.imports.get(annotationFullyQualifiedName);
-          if (importSet == null) {
-            importSet = new TreeSet<String>();
-            scene.imports.put(annotationFullyQualifiedName, importSet);
-          }
+          Set<String> importSet =
+              scene.imports.computeIfAbsent(annotationFullyQualifiedName, k -> new TreeSet<>());
           importSet.add(name);
           String baseName = name.substring(i + 1);
           name = baseName;
@@ -938,12 +927,15 @@ public final class IndexFileParser {
       key = "<" + basename + ">";
     } else {
       key = expectIdentifier();
+      // TODO: className is no longer private in AClass.
       // It's too bad that className is private in AClass and thus must be
       // extracted from what toString() returns.
-      if (Pattern.matches("AClass: (?:[^. ]+\\.)*" + key, c.toString())) { // ugh
+      @Regex String aclassRegex = "AClass: (?:[^. ]+\\.)*" + Pattern.quote(key);
+      if (Pattern.matches(aclassRegex, c.toString())) { // ugh
         key = "<init>";
       }
     }
+    // `key` is now a Java identifier or "<init>" or "<clinit>".
 
     expectChar('(');
     key += '(';
@@ -1884,16 +1876,19 @@ public final class IndexFileParser {
    * Parse the given text into a {@link Type}.
    *
    * @param text the text to parse
+   * @param filename the filename for the IndexFileParser
    * @return the type
    */
   public static Type parseType(String text, String filename) {
-    StringReader in = new StringReader(text);
-    IndexFileParser parser = new IndexFileParser(in, filename, null);
-    try {
-      parser.st.nextToken();
-      return parser.parseType();
-    } catch (Exception e) {
-      throw new RuntimeException("Error parsing type from: '" + text + "'", e);
+    try (StringReader in = new StringReader(text)) {
+      @SuppressWarnings("nullness:argument") // null value is not used by callee
+      IndexFileParser parser = new IndexFileParser(in, filename, null);
+      try {
+        parser.st.nextToken();
+        return parser.parseType();
+      } catch (Exception e) {
+        throw new RuntimeException("Error parsing type from: '" + text + "'", e);
+      }
     }
   }
 }

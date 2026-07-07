@@ -24,7 +24,7 @@ import org.checkerframework.checker.tainting.qual.Untainted;
 public class TwoCheckers {
 
   void client(String a) {
-    // :: error: (argument)
+    // :: error: [argument]
     requiresUntainted(a);
   }
 

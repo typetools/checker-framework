@@ -6,16 +6,19 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
+import org.checkerframework.framework.util.typeinference8.types.AbstractExecutableType;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.CompileTimeDeclarationType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
-import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -95,41 +98,45 @@ public class Expression extends TypeConstraint {
       return new Typing(this, s, T, TypeConstraint.Kind.TYPE_COMPATIBILITY);
     }
     switch (expression.getKind()) {
-      case PARENTHESIZED:
+      case PARENTHESIZED -> {
         return new Expression(this, TreeUtils.withoutParens(expression), T);
-      case NEW_CLASS:
-      case METHOD_INVOCATION:
+      }
+      case NEW_CLASS, METHOD_INVOCATION -> {
         return reduceMethodInvocation(context);
-      case CONDITIONAL_EXPRESSION:
+      }
+      case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) expression;
         TypeConstraint trueConstraint = new Expression(this, conditional.getTrueExpression(), T);
         Constraint falseConstraint = new Expression(this, conditional.getFalseExpression(), T);
         return new ConstraintSet(trueConstraint, falseConstraint);
-      case LAMBDA_EXPRESSION:
+      }
+      case LAMBDA_EXPRESSION -> {
         return reduceLambda(context);
-      case MEMBER_REFERENCE:
+      }
+      case MEMBER_REFERENCE -> {
         return reduceMethodRef(context);
-      default:
-        if (TreeUtils.isSwitchExpression(expression)) {
-          ConstraintSet set = new ConstraintSet();
-          SwitchExpressionScanner<Void, Void> scanner =
-              new FunctionalSwitchExpressionScanner<>(
-                  (ExpressionTree valueTree, Void unused) -> {
-                    Constraint c = new Expression(this, valueTree, T);
-                    set.add(c);
-                    return null;
-                  },
-                  (c1, c2) -> null);
-          scanner.scanSwitchExpression(expression, null);
-          return set;
-        }
-        throw new BugInCF(
-            "Unexpected expression kind: %s, Expression: %s", expression.getKind(), expression);
+      }
+      case SWITCH_EXPRESSION -> {
+        ConstraintSet set = new ConstraintSet();
+        SwitchExpressionScanner<Void, Void> scanner =
+            new FunctionalSwitchExpressionScanner<>(
+                (ExpressionTree valueTree, Void unused) -> {
+                  Constraint c = new Expression(this, valueTree, T);
+                  set.add(c);
+                  return null;
+                },
+                (c1, c2) -> null);
+        scanner.scanSwitchExpression((SwitchExpressionTree) expression, null);
+        return set;
+      }
+      default ->
+          throw new BugInCF(
+              "Unexpected expression kind: %s, Expression: %s", expression.getKind(), expression);
     }
   }
 
   /**
-   * JSL 18.2.1: "If T is a proper type, the constraint reduces to true if the expression is
+   * JLS 18.2.1: "If T is a proper type, the constraint reduces to true if the expression is
    * compatible in a loose invocation context with T (5.3), and false otherwise."
    *
    * @return the result of reducing a proper type
@@ -160,20 +167,20 @@ public class Expression extends TypeConstraint {
   private BoundSet reduceMethodInvocation(Java8InferenceContext context) {
     ExpressionTree expressionTree = expression;
     List<? extends ExpressionTree> args;
-    if (expressionTree instanceof NewClassTree) {
-      NewClassTree newClassTree = (NewClassTree) expressionTree;
+    if (expressionTree instanceof NewClassTree newClassTree) {
       args = newClassTree.getArguments();
     } else {
       MethodInvocationTree methodInvocationTree = (MethodInvocationTree) expressionTree;
       args = methodInvocationTree.getArguments();
     }
 
-    InvocationType methodType =
+    AbstractExecutableType executableType =
         context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(expressionTree);
     Theta map =
-        context.inferenceTypeFactory.createThetaForInvocation(expressionTree, methodType, context);
-    BoundSet b2 = context.inference.createB2(methodType, args, map);
-    return context.inference.createB3(b2, expressionTree, methodType, T, map);
+        context.inferenceTypeFactory.createThetaForInvocation(
+            expressionTree, executableType, context);
+    BoundSet b2 = context.inference.createB2(executableType, args, map);
+    return context.inference.createB3(b2, expressionTree, executableType, T, map);
   }
 
   /**
@@ -186,7 +193,7 @@ public class Expression extends TypeConstraint {
   private ReductionResult reduceMethodRef(Java8InferenceContext context) {
     MemberReferenceTree memRef = (MemberReferenceTree) expression;
     if (TreeUtils.isExactMethodReference(memRef)) {
-      InvocationType typeOfPoAppMethod =
+      CompileTimeDeclarationType typeOfPoAppMethod =
           context.inferenceTypeFactory.compileTimeDeclarationType(memRef);
 
       ConstraintSet constraintSet = new ConstraintSet();
@@ -225,7 +232,7 @@ public class Expression extends TypeConstraint {
     // else the method reference is inexact.
 
     // Compile-time declaration of the member reference expression
-    InvocationType compileTimeDecl =
+    CompileTimeDeclarationType compileTimeDecl =
         context.inferenceTypeFactory.compileTimeDeclarationType(memRef);
     if (compileTimeDecl.isVoid()) {
       return ConstraintSet.TRUE;
@@ -247,11 +254,16 @@ public class Expression extends TypeConstraint {
         context.inferenceTypeFactory.createThetaForMethodReference(
             memRef, compileTimeDecl, context);
     AbstractType compileTimeReturn = compileTimeDecl.getReturnType(map);
-    if (TreeUtils.needsTypeArgInference(memRef) && !compileTimeReturn.isProper()) {
-      BoundSet b2 =
+    BoundSet b2;
+    if (TreeUtils.needsTypeArgInference(memRef)) {
+      b2 =
           context.inference.createB2MethodRef(
               compileTimeDecl, T.getFunctionTypeParameterTypes(), map);
-      return context.inference.createB3(b2, memRef, compileTimeDecl, r, map);
+      if (!compileTimeReturn.isProper()) {
+        return context.inference.createB3(b2, memRef, compileTimeDecl, r, map);
+      }
+    } else {
+      b2 = new BoundSet(context);
     }
 
     // https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.2.1-300-D-B-C
@@ -266,7 +278,7 @@ public class Expression extends TypeConstraint {
                 compileTimeReturn.capture(context),
                 r,
                 TypeConstraint.Kind.TYPE_COMPATIBILITY)),
-        new BoundSet(context));
+        b2);
   }
 
   /**
@@ -475,8 +487,6 @@ public class Expression extends TypeConstraint {
 
   @Override
   public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + expression.hashCode();
-    return result;
+    return Objects.hash(super.hashCode(), expression);
   }
 }

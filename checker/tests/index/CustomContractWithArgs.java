@@ -53,7 +53,7 @@ public class CustomContractWithArgs {
     }
 
     @EnsuresMinLen(value = "#1", targetValue = 10)
-    // :: error: (contracts.postcondition)
+    // :: error: [contracts.postcondition]
     void minLenWrong(int[] a) {
       if (a.length < 9) throw new RuntimeException();
     }
@@ -79,7 +79,7 @@ public class CustomContractWithArgs {
     }
 
     @EnsuresLTLIf(expression = "b", targetValue = "#1", targetOffset = "#3", result = true)
-    // :: error: (flowexpr.parse.error)
+    // :: error: [flowexpr.parse.error]
     boolean ltlPostInvalid(int[] a, int c) {
       return false;
     }
@@ -98,7 +98,7 @@ public class CustomContractWithArgs {
 
         ltlPre(a, c);
       }
-      // :: error: (assignment)
+      // :: error: [assignment]
       @LTLengthOf(value = "a", offset = "c+1") int j = b;
     }
   }
@@ -125,7 +125,7 @@ public class CustomContractWithArgs {
       @LTLengthOf(
           value = {"a", "a"},
           offset = {"d+1", "-10"})
-      // :: error: (assignment)
+      // :: error: [assignment]
       int i = b;
     }
   }
@@ -139,9 +139,9 @@ public class CustomContractWithArgs {
         targetValue = {"#1", "#1"},
         targetOffset = {"#2 + 1", "9"},
         result = true)
-    // :: error: (contracts.conditional.postcondition.true.override)
+    // :: error: [contracts.conditional.postcondition.true.override]
     boolean ltlPost(int[] a, int c) {
-      // :: error: (contracts.conditional.postcondition)
+      // :: error: [contracts.conditional.postcondition]
       return true;
     }
 
@@ -150,7 +150,7 @@ public class CustomContractWithArgs {
         value = "b ",
         targetValue = {"#1", "#1"},
         targetOffset = {"#2 + 1", "-9"})
-    // :: error: (contracts.precondition.override)
+    // :: error: [contracts.precondition.override]
     void ltlPre(int[] a, int d) {
       @LTLengthOf(
           value = {"a", "a"},

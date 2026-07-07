@@ -10,16 +10,16 @@ public class RawTypesBounded {
     @NonNull String field;
 
     public Bad() {
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       this.init(); // error
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       init(); // error
 
       this.field = "field"; // valid
-      // :: error: (assignment)
+      // :: error: [assignment]
       this.field = null; // error
       field = "field"; // valid
-      // :: error: (assignment)
+      // :: error: [assignment]
       field = null; // error
     }
 
@@ -39,22 +39,22 @@ public class RawTypesBounded {
     }
 
     public void init(@UnknownInitialization A this) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       output(this.field.length());
     }
 
     public void initExpl2(@UnknownInitialization A this) {
-      // :: error: (argument)
+      // :: error: [argument]
       output(this.field);
     }
 
     public void initImpl1(@UnknownInitialization A this) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       output(field.length());
     }
 
     public void initImpl2(@UnknownInitialization A this) {
-      // :: error: (argument)
+      // :: error: [argument]
       output(field);
     }
   }
@@ -64,30 +64,30 @@ public class RawTypesBounded {
 
     public B() {
       super();
-      // :: error: (assignment)
+      // :: error: [assignment]
       this.otherField = null; // error
       this.otherField = "otherField"; // valid
     }
 
     @Override
     public void init(@UnknownInitialization B this) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       output(this.field.length()); // error (TODO: substitution)
       super.init(); // valid
     }
 
     public void initImpl1(@UnknownInitialization B this) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       output(field.length()); // error (TODO: substitution)
     }
 
     public void initExpl2(@UnknownInitialization B this) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       output(this.otherField.length()); // error
     }
 
     public void initImpl2(@UnknownInitialization B this) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       output(otherField.length()); // error
     }
 
@@ -108,7 +108,7 @@ public class RawTypesBounded {
 
     @Override
     public void init(@UnknownInitialization C this) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       output(this.strings.length); // error
       System.out.println(); // valid
     }
@@ -144,7 +144,7 @@ public class RawTypesBounded {
     // If all fields have an initializer, then the type of "this"
     // should still not be non-raw (there might be uninitilized subclasses)
     public AllFieldsInitialized() {
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       nonRawMethod();
     }
 
@@ -161,15 +161,15 @@ public class RawTypesBounded {
 
     public AllFieldsSetInInitializer() {
       elapsedMillis = 0;
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       nonRawMethod();
       startTime = 0;
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       nonRawMethod(); // still error (subclasses...)
     }
 
     public AllFieldsSetInInitializer(boolean b) {
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       nonRawMethod();
     }
 
@@ -185,7 +185,7 @@ public class RawTypesBounded {
 
     public ConstructorInvocations() {
       this(0);
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       nonRawMethod();
     }
 
@@ -205,7 +205,7 @@ public class RawTypesBounded {
   void cast(@UnknownInitialization Object... args) {
 
     @SuppressWarnings("rawtypes")
-    // :: error: (assignment)
+    // :: error: [assignment]
     Object[] argsNonRaw1 = args;
 
     @SuppressWarnings("cast")

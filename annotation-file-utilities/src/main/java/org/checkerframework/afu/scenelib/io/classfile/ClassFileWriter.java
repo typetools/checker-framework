@@ -1,10 +1,11 @@
 package org.checkerframework.afu.scenelib.io.classfile;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import org.checkerframework.afu.scenelib.el.AScene;
 import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.checkerframework.afu.scenelib.util.CommandLineUtils;
@@ -17,22 +18,28 @@ import org.plumelib.options.Options;
  * A {@code ClassFileWriter} provides methods for inserting annotations from an {@link AScene} into
  * a class file.
  */
-public class ClassFileWriter {
+public final class ClassFileWriter {
 
+  /** Do not instantiate. */
+  private ClassFileWriter() {
+    throw new Error("Do not instantiate");
+  }
+
+  /** Print usage information and exit. */
   @Option("-h print usage information and exit")
   public static boolean help = false;
 
-  @Option("print version information and exit")
-  public static boolean version = false;
-
+  /** Print progress messages. */
   @Option("print progress messages")
   public static boolean verbose = false;
 
+  /** The system-specific line separator. */
   private static String linesep = System.getProperty("line.separator");
 
+  /** The usage message. */
   static String usage =
       "usage: insert-annotations [options] class1 indexfile1 class2 indexfile2 ..."
-          + ""
+          + linesep
           + linesep
           + "For each class/index file pair (a.second.C a.second.C.jaif), read annotations from"
           + linesep
@@ -60,7 +67,6 @@ public class ClassFileWriter {
    *
    * <pre>
    *   -h, --help   print usage information and exit
-   *   --version    print version information and exit
    * </pre>
    *
    * @param args options and classes and index files to analyze;
@@ -83,13 +89,8 @@ public class ClassFileWriter {
       throw new Error("unreachable");
     }
 
-    if (version) {
-      System.out.printf("insert-annotations (%s)", ClassFileReader.INDEX_UTILS_VERSION);
-    }
     if (help) {
       options.printUsage();
-    }
-    if (version || help) {
       System.exit(-1);
     }
 
@@ -156,7 +157,7 @@ public class ClassFileWriter {
         e.printStackTrace();
         System.out.flush();
         System.out.println("Please submit a bug report at");
-        System.out.println("  https://github.com/typetools/annotation-tools/issues");
+        System.out.println("  https://github.com/typetools/checker-framework/issues");
         System.out.println(
             "Be sure to include a copy of the following output trace, instructions on how");
         System.out.println("to reproduce this error, and all input files.  Thanks!");
@@ -183,7 +184,7 @@ public class ClassFileWriter {
 
     // can't just call other insert, because this closes the input stream
     ClassReader classReader;
-    try (InputStream in = new FileInputStream(fileName)) {
+    try (InputStream in = Files.newInputStream(Paths.get(fileName))) {
       classReader = new ClassReader(in);
     }
 

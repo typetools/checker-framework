@@ -49,18 +49,20 @@ public class DOTCFGVisualizer<
     extends AbstractCFGVisualizer<V, S, T> {
 
   /** The output directory. */
-  @SuppressWarnings("nullness:initialization.field.uninitialized") // uses init method
   protected String outDir;
 
   /** The (optional) checker name. Used as a part of the name of the output dot file. */
   protected @Nullable String checkerName;
 
   /** Mapping from class/method representation to generated dot file. */
-  @SuppressWarnings("nullness:initialization.field.uninitialized") // uses init method
   protected Map<String, String> generated;
 
   /** Terminator for lines that are left-justified. */
   protected static final String leftJustifiedTerminator = "\\l";
+
+  /** Creates a DOTCFGVisualizer. */
+  @SuppressWarnings("nullness:initialization.fields.uninitialized") // `init()` does the work
+  public DOTCFGVisualizer() {}
 
   @Override
   @SuppressWarnings("nullness") // assume arguments are set correctly
@@ -68,9 +70,12 @@ public class DOTCFGVisualizer<
     super.init(args);
     this.outDir = (String) args.get("outdir");
     if (this.outDir == null) {
-      throw new BugInCF(
-          "outDir should never be null,"
-              + " provide it in args when calling DOTCFGVisualizer.init(args).");
+      throw new UserError(
+          "The outdir argument to -Acfgvis was missing. Provide a non-empty directory path.");
+    }
+    if (this.outDir.isEmpty()) {
+      throw new UserError(
+          "The outdir argument to -Acfgvis was empty. Provide a non-empty directory path.");
     }
     this.checkerName = (String) args.get("checkerName");
     this.generated = new HashMap<>();
@@ -116,7 +121,7 @@ public class DOTCFGVisualizer<
   public String visualizeNodes(
       Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<V, S, T> analysis) {
 
-    StringBuilder sbDotNodes = new StringBuilder();
+    StringBuilder sbDotNodes = new StringBuilder(64);
 
     IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
 
@@ -198,7 +203,7 @@ public class DOTCFGVisualizer<
    * @return the file name used for DOT output
    */
   protected String dotOutputFileName(UnderlyingAST ast) {
-    StringBuilder srcLoc = new StringBuilder();
+    StringBuilder srcLoc = new StringBuilder(32);
     StringBuilder outFile = new StringBuilder();
 
     if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
@@ -208,11 +213,11 @@ public class DOTCFGVisualizer<
       outFile.append("-initializer-");
       outFile.append(ast.getUid());
 
-      srcLoc.append("<");
+      srcLoc.append('<');
       srcLoc.append(clsName);
       srcLoc.append("::initializer::");
       srcLoc.append(((JCTree) cfgStatement.getCode()).pos);
-      srcLoc.append(">");
+      srcLoc.append('>');
     } else if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
       CFGMethod cfgMethod = (CFGMethod) ast;
       String clsName = cfgMethod.getSimpleClassName();
@@ -222,49 +227,49 @@ public class DOTCFGVisualizer<
         params.add(tree.getType().toString());
       }
       outFile.append(clsName);
-      outFile.append("-");
+      outFile.append('-');
       outFile.append(methodName);
       if (params.length() != 0) {
-        outFile.append("-");
+        outFile.append('-');
         outFile.append(params);
       }
 
-      srcLoc.append("<");
+      srcLoc.append('<');
       srcLoc.append(clsName);
       srcLoc.append("::");
       srcLoc.append(methodName);
-      srcLoc.append("(");
+      srcLoc.append('(');
       srcLoc.append(params);
       srcLoc.append(")::");
       srcLoc.append(((JCTree) cfgMethod.getMethod()).pos);
-      srcLoc.append(">");
+      srcLoc.append('>');
     } else if (ast.getKind() == UnderlyingAST.Kind.LAMBDA) {
       CFGLambda cfgLambda = (CFGLambda) ast;
       String clsName = cfgLambda.getSimpleClassName();
       String enclosingMethodName = cfgLambda.getEnclosingMethodName();
       long uid = TreeUtils.treeUids.get(cfgLambda.getCode());
       outFile.append(clsName);
-      outFile.append("-");
+      outFile.append('-');
       if (enclosingMethodName != null) {
         outFile.append(enclosingMethodName);
-        outFile.append("-");
+        outFile.append('-');
       }
       outFile.append(uid);
 
-      srcLoc.append("<");
+      srcLoc.append('<');
       srcLoc.append(clsName);
       if (enclosingMethodName != null) {
         srcLoc.append("::");
         srcLoc.append(enclosingMethodName);
-        srcLoc.append("(");
+        srcLoc.append('(');
         @SuppressWarnings("nullness") // enclosingMethodName != null => getEnclosingMethod() != null
         @NonNull MethodTree method = cfgLambda.getEnclosingMethod();
         srcLoc.append(method.getParameters());
-        srcLoc.append(")");
+        srcLoc.append(')');
       }
       srcLoc.append("::");
       srcLoc.append(((JCTree) cfgLambda.getCode()).pos);
-      srcLoc.append(">");
+      srcLoc.append('>');
     } else {
       throw new BugInCF("Unexpected AST kind: " + ast.getKind() + " value: " + ast);
     }

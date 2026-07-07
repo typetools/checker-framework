@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -145,27 +144,28 @@ public final class SceneToStubWriter {
   public static void formatAnnotation(StringBuilder sb, Annotation a) {
     String fullAnnoName = a.def().name;
     String simpleAnnoName = fullAnnoName.substring(fullAnnoName.lastIndexOf('.') + 1);
-    sb.append("@");
+    sb.append('@');
     sb.append(simpleAnnoName);
     if (a.fieldValues.isEmpty()) {
       return;
     } else {
-      sb.append("(");
+      sb.append('(');
       if (a.fieldValues.size() == 1 && a.fieldValues.containsKey("value")) {
         AnnotationFieldType aft = a.def().fieldTypes.get("value");
         aft.format(sb, a.fieldValues.get("value"));
       } else {
-        // This simulates: new StringJoiner(", ", "@" + simpleAnnoName + "(", ")")
+        StringJoiner sj = new StringJoiner(", ");
         for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
           AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
-          sb.append(f.getKey());
-          sb.append("=");
-          aft.format(sb, f.getValue());
-          sb.append(", ");
+          StringBuilder fsb = new StringBuilder();
+          fsb.append(f.getKey());
+          fsb.append('=');
+          aft.format(fsb, f.getValue());
+          sj.add(fsb);
         }
-        sb.delete(sb.length() - 2, sb.length());
+        sb.append(sj);
       }
-      sb.append(")");
+      sb.append(')');
     }
   }
 
@@ -197,7 +197,7 @@ public final class SceneToStubWriter {
     for (Annotation tla : annos) {
       if (!isInternalJDKAnnotation(tla.def.name)) {
         formatAnnotation(sb, tla);
-        sb.append(" ");
+        sb.append(' ');
       }
     }
   }
@@ -240,7 +240,7 @@ public final class SceneToStubWriter {
     List<? extends AnnotationMirror> explicitAnnos = javacRep.getAnnotationMirrors();
     for (AnnotationMirror explicitAnno : explicitAnnos) {
       sb.append(explicitAnno.toString());
-      sb.append(" ");
+      sb.append(' ');
     }
     if (explicitAnnos.isEmpty() && scenelibRep != null) {
       formatAnnotations(sb, scenelibRep.tlAnnotationsHere);
@@ -310,7 +310,7 @@ public final class SceneToStubWriter {
     if (!param.tlAnnotationsHere.isEmpty()) {
       for (Annotation declAnno : param.tlAnnotationsHere) {
         formatAnnotation(sb, declAnno);
-        sb.append(" ");
+        sb.append(' ');
       }
       sb.delete(sb.length() - 1, sb.length());
     }
@@ -419,7 +419,7 @@ public final class SceneToStubWriter {
    * printed using the name of the class as {@code basetypeToPrint} instead of the javac type. The
    * other version of this method should be preferred in every other case.
    *
-   * @param sb where to formate the type to
+   * @param sb where to format the type to
    * @param aType the scene-lib representation of the type, or null if only the unannotated type is
    *     to be printed
    * @param javacType the javac representation of the type, or null if this is a receiver parameter
@@ -466,7 +466,7 @@ public final class SceneToStubWriter {
       formatAnnotations(sb, aType.tlAnnotationsHere);
     }
     sb.append(basetypeToPrint);
-    sb.append(" ");
+    sb.append(' ');
   }
 
   /** Writes an import statement for each annotation used in an {@link AScene}. */
@@ -718,8 +718,7 @@ public final class SceneToStubWriter {
     // comes first; within package sort by class name.
     @SuppressWarnings("signature") // scene-lib bytecode lacks signature annotations
     List<@BinaryName String> classes = new ArrayList<>(scene.getAScene().getClasses().keySet());
-    Collections.sort(
-        classes,
+    classes.sort(
         (o1, o2) ->
             ComparisonChain.start()
                 .compare(
@@ -882,11 +881,7 @@ public final class SceneToStubWriter {
    * @return a string containing that many indents
    */
   private static String indents(int n) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < n; i++) {
-      sb.append(INDENT);
-    }
-    return sb.toString();
+    return INDENT.repeat(Math.max(0, n));
   }
 
   /**

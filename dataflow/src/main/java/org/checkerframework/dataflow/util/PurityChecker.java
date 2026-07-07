@@ -20,6 +20,7 @@ import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -40,7 +41,12 @@ import org.plumelib.util.IPair;
  * @see Deterministic
  * @see Pure
  */
-public class PurityChecker {
+public final class PurityChecker {
+
+  /** Do not instantiate. */
+  private PurityChecker() {
+    throw new Error("Do not instantiate");
+  }
 
   /**
    * Compute whether the given statement is side-effect-free, deterministic, or both. Returns a
@@ -255,7 +261,10 @@ public class PurityChecker {
                 // Avoid computation if not necessary
                 ? detAndSeFree
                 : PurityUtils.getPurityKinds(annoProvider, elt);
-        boolean det = assumeDeterministic || purityKinds.contains(Pure.Kind.DETERMINISTIC);
+        boolean det =
+            assumeDeterministic
+                || purityKinds.contains(Pure.Kind.DETERMINISTIC)
+                || elt.getReturnType().getKind() == TypeKind.VOID;
         boolean seFree = assumeSideEffectFree || purityKinds.contains(Pure.Kind.SIDE_EFFECT_FREE);
         if (!det && !seFree) {
           purityResult.addNotBothReason(tree, "call");
@@ -283,7 +292,7 @@ public class PurityChecker {
       //    @SideEffectFree and the args are pure, and forbid all enclosing try statements
       //    that have a catch clause.
       // More precise rule:
-      //  * permit other non-deterministic expresssions within throw (at which time move this
+      //  * permit other non-deterministic expressions within throw (at which time move this
       //    logic to visitThrow()).
       //  * the only bad try statements are those with a catch block that is:
       //     * unchecked exceptions
@@ -314,7 +323,7 @@ public class PurityChecker {
       boolean sideEffectFree =
           assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, ctorElement);
       // This does not use "addNotBothReason" because the reasons are different:  one is
-      // because the constructor is called at all, and the other is because the constuctor is
+      // because the constructor is called at all, and the other is because the constructor is
       // not side-effect-free.
       if (!deterministic) {
         purityResult.addNotDetReason(tree, "object.creation");
@@ -339,16 +348,13 @@ public class PurityChecker {
     @Override
     public Void visitUnary(UnaryTree tree, Void ignore) {
       switch (tree.getKind()) {
-        case POSTFIX_DECREMENT:
-        case POSTFIX_INCREMENT:
-        case PREFIX_DECREMENT:
-        case PREFIX_INCREMENT:
+        case POSTFIX_DECREMENT, POSTFIX_INCREMENT, PREFIX_DECREMENT, PREFIX_INCREMENT -> {
           ExpressionTree expression = tree.getExpression();
           assignmentCheck(expression);
-          break;
-        default:
+        }
+        default -> {
           // Nothing to do
-          break;
+        }
       }
       return super.visitUnary(tree, ignore);
     }

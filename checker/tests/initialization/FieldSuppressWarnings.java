@@ -1,7 +1,7 @@
 public class FieldSuppressWarnings {
 
   static class FieldSuppressWarnings1 {
-    // :: error: (initialization.field.uninitialized)
+    // :: error: [initialization.field.uninitialized]
     private Object notInitialized;
   }
 

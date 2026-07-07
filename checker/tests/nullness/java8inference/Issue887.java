@@ -7,7 +7,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public abstract class Issue887 {
   void test() {
-    // :: error: (type.arguments.not.inferred)
+    // :: error: [type.arguments.not.inferred]
     method(foo(null).get(0));
     methodNullable(fooNullable(null).get(0));
   }

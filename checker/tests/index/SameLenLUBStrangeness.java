@@ -6,7 +6,7 @@ public class SameLenLUBStrangeness {
     if (cond) {
       b = a;
     }
-    // :: error: (assignment)
+    // :: error: [assignment]
     int @SameLen({"a", "b"}) [] c = a;
   }
 }

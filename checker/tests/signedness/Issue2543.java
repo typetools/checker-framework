@@ -6,7 +6,7 @@ import org.checkerframework.checker.signedness.qual.Unsigned;
 public class Issue2543 {
 
   public static @PolySigned int rotateRightPart1(@PolySigned int i, int distance) {
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     return i >>> distance;
   }
 
@@ -15,12 +15,12 @@ public class Issue2543 {
   }
 
   public static @PolySigned int rotateRight(@PolySigned int i, int distance) {
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     return (i >>> distance) | (i << -distance);
   }
 
   public static @Signed int rotateRightSignedPart1(@Signed int i, int distance) {
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     return i >>> distance;
   }
 
@@ -29,7 +29,7 @@ public class Issue2543 {
   }
 
   public static @Signed int rotateRightSigned(@Signed int i, int distance) {
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     return (i >>> distance) | (i << -distance);
   }
 
@@ -38,7 +38,7 @@ public class Issue2543 {
   }
 
   public static @Unsigned int rotateRightUnknownSignedness(@UnknownSignedness int i, int distance) {
-    // :: error: (return)
+    // :: error: [return]
     return (i >>> distance) | (i << -distance);
   }
 }

@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.StringTokenizer;
@@ -165,7 +166,7 @@ public final class AnnotationDef extends AElement {
     setFieldTypes(fieldTypes);
   }
 
-  // This ovverride is necessary because AnnotationDef extends AElement, which implements Cloneable.
+  // This override is necessary because AnnotationDef extends AElement, which implements Cloneable.
   @Override
   public AnnotationDef clone() {
     throw new UnsupportedOperationException("Can't duplicate an AnnotationDef");
@@ -266,7 +267,7 @@ public final class AnnotationDef extends AElement {
    */
   @Override
   public boolean equals(Object o) {
-    return o instanceof AnnotationDef && ((AnnotationDef) o).equals(this);
+    return o instanceof AnnotationDef other && other.equals(this);
   }
 
   /**
@@ -295,11 +296,9 @@ public final class AnnotationDef extends AElement {
 
   @Override
   public int hashCode() {
-    return name.hashCode()
-        // Omit tlAnnotationsHere, becase it should be unique and, more
-        // importantly, including it causes an infinite loop.
-        // + tlAnnotationsHere.hashCode()
-        + fieldTypes.hashCode();
+    // Omit tlAnnotationsHere, because it should be unique and, more
+    // importantly, including it causes an infinite loop.
+    return Objects.hash(name, fieldTypes);
   }
 
   /**

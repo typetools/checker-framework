@@ -37,8 +37,8 @@ public class ListTreeAnnotator extends TreeAnnotator {
     super(null);
     List<TreeAnnotator> annotatorList = new ArrayList<>(annotators.size());
     for (TreeAnnotator annotator : annotators) {
-      if (annotator instanceof ListTreeAnnotator) {
-        annotatorList.addAll(((ListTreeAnnotator) annotator).annotators);
+      if (annotator instanceof ListTreeAnnotator lta) {
+        annotatorList.addAll(lta.annotators);
       } else {
         annotatorList.add(annotator);
       }

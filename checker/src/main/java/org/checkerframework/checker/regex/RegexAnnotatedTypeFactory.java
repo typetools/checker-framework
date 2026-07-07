@@ -8,7 +8,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.Set;
 import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -138,13 +137,6 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     super(checker);
 
     this.postInit();
-  }
-
-  @Override
-  protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    return getBundledTypeQualifiers(
-        Regex.class, PartialRegex.class,
-        RegexBottom.class, UnknownRegex.class);
   }
 
   @Override
@@ -500,13 +492,13 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       AnnotationMirror primaryRegexAnno = type.getPrimaryAnnotation(Regex.class);
       if (primaryRegexAnno == null) {
         switch (type.getKind()) {
-          case TYPEVAR:
+          case TYPEVAR -> {
             return getMinimumRegexCount(((AnnotatedTypeVariable) type).getUpperBound());
-
-          case WILDCARD:
+          }
+          case WILDCARD -> {
             return getMinimumRegexCount(((AnnotatedWildcardType) type).getExtendsBound());
-
-          case INTERSECTION:
+          }
+          case INTERSECTION -> {
             Integer maxBound = null;
             for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) type).getBounds()) {
               Integer boundRegexNum = getMinimumRegexCount(bound);
@@ -517,8 +509,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
               }
             }
             return maxBound;
-          default:
-            // Nothing to do for other cases.
+          }
+          default -> {} // Nothing to do for other cases.
         }
 
         return null;

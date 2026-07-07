@@ -44,40 +44,14 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
    * @return true if IrrelevantTypeAnnotator should add a primary annotation
    */
   boolean shouldAddPrimaryAnnotation(TypeMirror tm) {
-    switch (tm.getKind()) {
-      case BOOLEAN:
-      case BYTE:
-      case CHAR:
-      case DOUBLE:
-      case FLOAT:
-      case INT:
-      case LONG:
-      case SHORT:
-        return true;
-
-      case DECLARED:
-        return true;
-
-      case ARRAY:
-        return true;
-      case TYPEVAR:
-      case WILDCARD:
-        return false;
-
-      case ERROR:
-      case EXECUTABLE:
-      case INTERSECTION:
-      case MODULE:
-      case NONE:
-      case NULL:
-      case OTHER:
-      case PACKAGE:
-      case UNION:
-      case VOID:
-        return false;
-
-      default:
-        throw new BugInCF("Unknown type kind %s for %s", tm.getKind(), tm);
-    }
+    return switch (tm.getKind()) {
+      case BOOLEAN, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SHORT -> true;
+      case DECLARED -> true;
+      case ARRAY -> true;
+      case TYPEVAR, WILDCARD -> false;
+      case ERROR, EXECUTABLE, INTERSECTION, MODULE, NONE, NULL, OTHER, PACKAGE, UNION, VOID ->
+          false;
+      default -> throw new BugInCF("Unknown type kind %s for %s", tm.getKind(), tm);
+    };
   }
 }

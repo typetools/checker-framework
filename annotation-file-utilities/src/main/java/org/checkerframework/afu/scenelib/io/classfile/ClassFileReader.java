@@ -1,8 +1,9 @@
 package org.checkerframework.afu.scenelib.io.classfile;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import org.checkerframework.afu.scenelib.el.AScene;
 import org.checkerframework.afu.scenelib.io.IndexFileWriter;
 import org.checkerframework.afu.scenelib.util.CommandLineUtils;
@@ -15,21 +16,26 @@ import org.plumelib.options.Options;
  * A {@code ClassFileReader } provides methods for reading in annotations from a class file into an
  * {@link AScene}.
  */
-public class ClassFileReader {
-  public static final String INDEX_UTILS_VERSION = "Annotation File Utilities v3.9.14";
+public final class ClassFileReader {
 
+  /** Do not instantiate. */
+  private ClassFileReader() {
+    throw new Error("Do not instantiate");
+  }
+
+  /** Omit annotations from bridge (compiler-created) methods. */
   @Option("-b omit annotations from bridge (compiler-created) methods")
   public static boolean ignore_bridge_methods = false;
 
+  /** Print usage information and exit. */
   @Option("-h print usage information and exit")
   public static boolean help = false;
 
-  @Option("print version information and exit")
-  public static boolean version = false;
-
+  /** Print progress messages. */
   @Option("print progress messages")
   public static boolean verbose = false;
 
+  /** The system-specific line separator. */
   private static String linesep = System.lineSeparator();
 
   static String usage =
@@ -79,13 +85,8 @@ public class ClassFileReader {
       System.exit(1);
     }
 
-    if (version) {
-      System.out.printf("extract-annotations (%s)", INDEX_UTILS_VERSION);
-    }
     if (help) {
       options.printUsage();
-    }
-    if (version || help) {
       System.exit(-1);
     }
 
@@ -132,7 +133,7 @@ public class ClassFileReader {
         System.out.println(e.getMessage());
         e.printStackTrace();
         System.out.println("Please submit a bug report at");
-        System.out.println("  https://github.com/typetools/annotation-tools/issues");
+        System.out.println("  https://github.com/typetools/checker-framework/issues");
         System.out.println("Be sure to include a copy of the output trace, instructions on how");
         System.out.println("to reproduce this error, and all input files.  Thanks!");
         return;
@@ -162,7 +163,7 @@ public class ClassFileReader {
    * @throws IOException if there is a problem reading from {@code fileName}
    */
   public static void read(AScene scene, String fileName) throws IOException {
-    try (FileInputStream fis = new FileInputStream(fileName)) {
+    try (InputStream fis = Files.newInputStream(Paths.get(fileName))) {
       read(scene, fis);
     }
   }
@@ -196,7 +197,7 @@ public class ClassFileReader {
    * {@code scene}.
    *
    * @param scene the scene into which the annotations should be inserted
-   * @param classReader the ClassReader for the class thet the annotations should be read from
+   * @param classReader the ClassReader for the class that the annotations should be read from
    */
   public static void read(AScene scene, ClassReader classReader) {
     ClassAnnotationSceneReader ca =

@@ -12,7 +12,7 @@ public class RefinedLocalInLambda {
   }
 
   public static void printIntegersGreaterThan(@Nullable Integer limit) {
-    // :: error: (unboxing.of.nullable)
+    // :: error: [unboxing.of.nullable]
     printIntegersWithPredicate(i -> i > limit); // type-checking fails
     if (limit == null) {
       return;

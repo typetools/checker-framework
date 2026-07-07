@@ -35,11 +35,10 @@ public class FormalParameter extends JavaExpression {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof FormalParameter)) {
+    if (!(obj instanceof FormalParameter other)) {
       return false;
     }
 
-    FormalParameter other = (FormalParameter) obj;
     return this.index == other.index && LocalVariable.sameElement(this.element, other.element);
   }
 
@@ -94,10 +93,9 @@ public class FormalParameter extends JavaExpression {
 
   @Override
   public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof FormalParameter)) {
+    if (!(je instanceof FormalParameter other)) {
       return false;
     }
-    FormalParameter other = (FormalParameter) je;
     return index == other.index;
   }
 

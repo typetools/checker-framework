@@ -31,13 +31,13 @@ public class Issue4170 {
 
   public ArrayList<@Tainted String> method5() {
     var list = new ArrayList<@Untainted String>();
-    // :: error: (return)
+    // :: error: [return]
     return list;
   }
 
   public ArrayList<@Untainted String> method6() {
     var list = new ArrayList<String>();
-    // :: error: (return)
+    // :: error: [return]
     return list;
   }
 
@@ -51,7 +51,7 @@ public class Issue4170 {
   public void method9(List<@Tainted String> taintedlist, List<@Untainted String> untaintedList) {
     var list1 = taintedlist;
     List<@Tainted String> l = list1;
-    // :: error: (assignment)
+    // :: error: [assignment]
     list1 = untaintedList;
   }
 }

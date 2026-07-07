@@ -1,6 +1,7 @@
 package org.checkerframework.afu.scenelib.el;
 
 import java.util.LinkedHashMap;
+import java.util.Objects;
 import org.checkerframework.afu.scenelib.io.ASTPath;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
@@ -49,8 +50,7 @@ public class ATypeElementWithType extends ATypeElement {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof ATypeElementWithType
-        && ((ATypeElementWithType) o).equalsTypeElementWithType(this);
+    return o instanceof ATypeElementWithType other && other.equalsTypeElementWithType(this);
   }
 
   /** Returns true if this {@link ATypeElementWithType} equals {@code o}. */
@@ -60,7 +60,7 @@ public class ATypeElementWithType extends ATypeElement {
 
   @Override
   public int hashCode() {
-    return super.hashCode() + type.hashCode();
+    return Objects.hash(super.hashCode(), type);
   }
 
   @Override
@@ -81,7 +81,8 @@ public class ATypeElementWithType extends ATypeElement {
     sb.append("AInsertTypecastTypeElement: ");
     sb.append('\t');
     sb.append(super.toString());
-    sb.append("type: " + type);
+    sb.append("type: ");
+    sb.append(type);
     return sb.toString();
   }
 
@@ -101,10 +102,10 @@ public class ATypeElementWithType extends ATypeElement {
    */
   /*package-private*/ static <K extends Object>
       VivifyingMap<K, ATypeElementWithType> newVivifyingLHMap_ATEWT() {
-    return new VivifyingMap<K, ATypeElementWithType>(new LinkedHashMap<>()) {
+    return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public ATypeElementWithType createValueFor(K k) {
-        return new ATypeElementWithType("" + k);
+        return new ATypeElementWithType(k.toString());
       }
 
       @Override

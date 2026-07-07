@@ -5,7 +5,7 @@ import org.checkerframework.checker.tainting.qual.Untainted;
 public class SubtypingConstraint {
   void test() {
     Object[] o = new Object[0];
-    // :: error: (type.arguments.not.inferred)
+    // :: error: [type.arguments.not.inferred]
     asList(0, 0, "", Arrays.asList(o));
   }
 

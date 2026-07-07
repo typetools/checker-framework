@@ -10,7 +10,7 @@ public class ObjectCasts {
   }
 
   Integer castObjectToInteger2(@Unsigned Object o) {
-    // :: error: (return)
+    // :: error: [return]
     return (Integer) o;
   }
 
@@ -23,7 +23,7 @@ public class ObjectCasts {
   }
 
   @Signed Integer castObjectToInteger5(@Unsigned Object o) {
-    // :: error: (return)
+    // :: error: [return]
     return (Integer) o;
   }
 
@@ -32,7 +32,7 @@ public class ObjectCasts {
   }
 
   @Unsigned Integer castObjectToInteger7(Object o) {
-    // :: error: (return)
+    // :: error: [return]
     return (Integer) o;
   }
 
@@ -41,7 +41,7 @@ public class ObjectCasts {
   }
 
   @Unsigned Integer castObjectToInteger9(@Signed Object o) {
-    // :: error: (return)
+    // :: error: [return]
     return (Integer) o;
   }
 
@@ -50,7 +50,7 @@ public class ObjectCasts {
   }
 
   Object castIntegerToObject2(@Unsigned Integer o) {
-    // :: error: (return)
+    // :: error: [return]
     return (Object) o;
   }
 
@@ -63,7 +63,7 @@ public class ObjectCasts {
   }
 
   @Signed Object castIntegerToObject5(@Unsigned Integer o) {
-    // :: error: (return)
+    // :: error: [return]
     return (Object) o;
   }
 
@@ -72,7 +72,7 @@ public class ObjectCasts {
   }
 
   @Unsigned Object castIntegerToObject7(Integer o) {
-    // :: error: (return)
+    // :: error: [return]
     return (Object) o;
   }
 
@@ -81,7 +81,7 @@ public class ObjectCasts {
   }
 
   @Unsigned Object castIntegerToObject9(@Signed Integer o) {
-    // :: error: (return)
+    // :: error: [return]
     return (Object) o;
   }
 

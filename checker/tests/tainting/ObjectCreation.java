@@ -36,7 +36,7 @@ public class ObjectCreation {
     }
 
     @PolyTainted MyBuffer(Object o) {
-      // :: error: (super.invocation)
+      // :: error: [super.invocation]
       super("");
     }
 

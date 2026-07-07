@@ -1,6 +1,7 @@
 package org.checkerframework.checker.lock;
 
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -41,7 +42,8 @@ public class LockAnalysis extends CFAbstractAnalysis<CFValue, LockStore, LockTra
   }
 
   @Override
-  public CFValue createAbstractValue(AnnotationMirrorSet annotations, TypeMirror underlyingType) {
-    return defaultCreateAbstractValue(this, annotations, underlyingType);
+  public @Nullable CFValue createAbstractValue(
+      AnnotationMirrorSet annotations, TypeMirror underlyingType) {
+    return getCfValue(this, annotations, underlyingType);
   }
 }

@@ -79,10 +79,9 @@ public class MethodAccessNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof MethodAccessNode)) {
+    if (!(obj instanceof MethodAccessNode other)) {
       return false;
     }
-    MethodAccessNode other = (MethodAccessNode) obj;
     return getReceiver().equals(other.getReceiver()) && getMethod().equals(other.getMethod());
   }
 

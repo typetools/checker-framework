@@ -38,10 +38,9 @@ public class GreaterThanOrEqualNode extends BinaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof GreaterThanOrEqualNode)) {
+    if (!(obj instanceof GreaterThanOrEqualNode other)) {
       return false;
     }
-    GreaterThanOrEqualNode other = (GreaterThanOrEqualNode) obj;
     return getLeftOperand().equals(other.getLeftOperand())
         && getRightOperand().equals(other.getRightOperand());
   }

@@ -12,7 +12,7 @@ public class Issue3970 {
 
   void t(InterfaceA<?> a) {
     if (a.f() == 1) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       InterfaceA<?> a2 = a.g();
     }
   }

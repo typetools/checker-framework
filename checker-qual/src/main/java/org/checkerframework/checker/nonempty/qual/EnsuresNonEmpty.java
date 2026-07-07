@@ -18,25 +18,26 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
  * effect:
  *
  * <pre><code>
- *   {@literal @}EnsuresNonEmpty("ids")
- *   void addId(String id) {
- *     ids.add(id);
- *   }
+ *  {@literal @}EnsuresNonEmpty("ids")
+ *  void addId(String id) {
+ *    ids.add(id);
+ *  }
  * </code></pre>
  *
  * It can also be used for a method that fails if a given value is empty, indicating that the
  * argument is non-empty if the method returns normally:
  *
  * <pre><code>
- *   /** Throws an exception if the argument is empty. *&#47;
- *   {@literal @}EnsuresNonEmpty("#1")
- *   void useTheMap(Map&lt;T, U&gt; arg) { ... }
+ *  /** Throws an exception if the argument is empty. *&#47;
+ *  {@literal @}EnsuresNonEmpty("#1")
+ *  void useTheMap(Map&lt;T, U&gt; arg) { ... }
  * </code></pre>
  *
  * @see NonEmpty
  * @see org.checkerframework.checker.nonempty.NonEmptyChecker
- * @checker_framework.manual #non-empty-checker Non-Empty Checker
  */
+// Reinstate when the Non-Empty Checker is publicized.
+//  * @checker_framework.manual #non-empty-checker Non-Empty Checker
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @PostconditionAnnotation(qualifier = NonEmpty.class)

@@ -15,7 +15,7 @@ public class InstanceOfCriterion implements Criterion {
   private final RelativeLocation loc;
 
   public InstanceOfCriterion(String methodName, RelativeLocation loc) {
-    this.methodName = methodName.substring(0, methodName.lastIndexOf(")") + 1);
+    this.methodName = methodName.substring(0, methodName.lastIndexOf(')') + 1);
     this.loc = loc;
   }
 
@@ -57,31 +57,42 @@ public class InstanceOfCriterion implements Criterion {
       return false;
     }
 
-    if (parent instanceof InstanceOfTree) {
-      InstanceOfTree instanceOfTree = (InstanceOfTree) parent;
+    if (parent instanceof InstanceOfTree instanceOfTree) {
       @SuppressWarnings("interning:not.interned") // reference equality check
       boolean foundLeaf = leaf == instanceOfTree.getType();
       if (!foundLeaf) {
-        Criteria.dbug.debug("return: not type part of instanceof%n");
+        if (Criteria.dbug.isEnabled()) {
+          Criteria.dbug.debug("return: not type part of instanceof%n");
+        }
         return false;
       }
 
       int indexInSource = InstanceOfScanner.indexOfInstanceOfTree(path, parent);
-      Criteria.dbug.debug("return source: %d%n", indexInSource);
+      if (Criteria.dbug.isEnabled()) {
+        Criteria.dbug.debug("return source: %d%n", indexInSource);
+      }
       boolean b;
       if (loc.isBytecodeOffset()) {
         int indexInClass = InstanceOfScanner.getMethodInstanceOfIndex(methodName, loc.offset);
-        Criteria.dbug.debug("return class: %d%n", indexInClass);
+        if (Criteria.dbug.isEnabled()) {
+          Criteria.dbug.debug("return class: %d%n", indexInClass);
+        }
         b = (indexInSource == indexInClass);
       } else {
         b = (indexInSource == loc.index);
-        Criteria.dbug.debug("return loc.index: %d%n", loc.index);
+        if (Criteria.dbug.isEnabled()) {
+          Criteria.dbug.debug("return loc.index: %d%n", loc.index);
+        }
       }
-      Criteria.dbug.debug("return new: %b", b);
+      if (Criteria.dbug.isEnabled()) {
+        Criteria.dbug.debug("return new: %b", b);
+      }
       return b;
     } else {
       boolean b = this.isSatisfiedBy(path.getParentPath());
-      Criteria.dbug.debug("return parent: %b%n", b);
+      if (Criteria.dbug.isEnabled()) {
+        Criteria.dbug.debug("return parent: %b%n", b);
+      }
       return b;
     }
   }

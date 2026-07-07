@@ -37,7 +37,7 @@ public class ExpressionsInterning {
     }
   }
 
-  // :: warning: (cast.unsafe.constructor.invocation)
+  // :: warning: [cast.unsafe.constructor.invocation]
   public @Interned Foo THEONE = new @Interned Foo();
 
   public boolean isItTheOne(Foo f) {
@@ -48,7 +48,7 @@ public class ExpressionsInterning {
   // is a good idea to convert a given class or reference to @Interned -- I can see whether there
   // are places that it is compared with .equals, which I might need to examine.
   public boolean dontUseEqualsMethod(@Interned Foo f1, @Interned Foo f2) {
-    // :: warning: (unnecessary.equals)
+    // :: warning: [unnecessary.equals]
     return f1.equals(f2);
   }
 }

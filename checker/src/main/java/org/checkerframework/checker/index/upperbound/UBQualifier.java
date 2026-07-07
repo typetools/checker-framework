@@ -21,9 +21,10 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
+import org.plumelib.util.MapsP;
 
 /**
  * Abstraction for Upper Bound annotations. This abstract class has 4 subclasses, each of which is a
@@ -58,29 +59,29 @@ public abstract class UBQualifier {
    */
   public static UBQualifier createUBQualifier(
       AnnotationMirror am, @Nullable String offset, UpperBoundChecker ubChecker) {
-    switch (AnnotationUtils.annotationName(am)) {
-      case "org.checkerframework.checker.index.qual.UpperBoundUnknown":
-        return UpperBoundUnknownQualifier.UNKNOWN;
-      case "org.checkerframework.checker.index.qual.UpperBoundBottom":
-        return UpperBoundBottomQualifier.BOTTOM;
-      case "org.checkerframework.checker.index.qual.UpperBoundLiteral":
+    return switch (AnnotationUtils.annotationName(am)) {
+      case "org.checkerframework.checker.index.qual.UpperBoundUnknown" ->
+          UpperBoundUnknownQualifier.UNKNOWN;
+      case "org.checkerframework.checker.index.qual.UpperBoundBottom" ->
+          UpperBoundBottomQualifier.BOTTOM;
+      case "org.checkerframework.checker.index.qual.UpperBoundLiteral" -> {
         int intValue =
             AnnotationUtils.getElementValueInt(am, ubChecker.upperBoundLiteralValueElement);
-        return UpperBoundLiteralQualifier.create(intValue);
-      case "org.checkerframework.checker.index.qual.LTLengthOf":
-        return parseLTLengthOf(am, offset, ubChecker);
-      case "org.checkerframework.checker.index.qual.SubstringIndexFor":
-        return parseSubstringIndexFor(am, offset, ubChecker);
-      case "org.checkerframework.checker.index.qual.LTEqLengthOf":
-        return parseLTEqLengthOf(am, offset, ubChecker);
-      case "org.checkerframework.checker.index.qual.LTOMLengthOf":
-        return parseLTOMLengthOf(am, offset, ubChecker);
-      case "org.checkerframework.checker.index.qual.PolyUpperBound":
-        // TODO:  Ignores offset.  Should we check that offset is not set?
-        return PolyQualifier.POLY;
-      default:
-        throw new TypeSystemError("createUBQualifier(%s, %s, ...)", am, offset);
-    }
+        yield UpperBoundLiteralQualifier.create(intValue);
+      }
+      case "org.checkerframework.checker.index.qual.LTLengthOf" ->
+          parseLTLengthOf(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.SubstringIndexFor" ->
+          parseSubstringIndexFor(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.LTEqLengthOf" ->
+          parseLTEqLengthOf(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.LTOMLengthOf" ->
+          parseLTOMLengthOf(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.PolyUpperBound" ->
+          // TODO:  Ignores offset.  Should we check that offset is not set?
+          PolyQualifier.POLY;
+      default -> throw new TypeSystemError("createUBQualifier(%s, %s, ...)", am, offset);
+    };
   }
 
   /** A cache for the {@link #nCopiesEmptyStringCache} method. */
@@ -224,7 +225,11 @@ public abstract class UBQualifier {
    */
   public static UBQualifier createUBQualifier(
       AnnotatedTypeMirror type, AnnotationMirror top, UpperBoundChecker ubChecker) {
-    return createUBQualifier(type.getEffectiveAnnotationInHierarchy(top), ubChecker);
+    AnnotationMirror anno = type.getAnnotationInHierarchy(top);
+    if (anno == null) {
+      throw new BugInCF("no annotation for " + type);
+    }
+    return createUBQualifier(anno, ubChecker);
   }
 
   /**
@@ -397,7 +402,7 @@ public abstract class UBQualifier {
   }
 
   /** The less-than-length-of qualifier (@LTLengthOf). */
-  public static class LessThanLengthOf extends UBQualifier {
+  public static final class LessThanLengthOf extends UBQualifier {
 
     // There are two representations for sequences and offsets.
     // In source code, they are represented by two parallel arrays, as in
@@ -415,11 +420,10 @@ public abstract class UBQualifier {
      * @return a copy of the map
      */
     private Map<String, Set<OffsetEquation>> copyMap() {
-      Map<String, Set<OffsetEquation>> result = new HashMap<>(CollectionsPlume.mapCapacity(map));
+      Map<String, Set<OffsetEquation>> result = new HashMap<>(MapsP.mapCapacity(map));
       for (String sequenceName : map.keySet()) {
         Set<OffsetEquation> oldEquations = map.get(sequenceName);
-        Set<OffsetEquation> newEquations =
-            new HashSet<>(CollectionsPlume.mapCapacity(oldEquations));
+        Set<OffsetEquation> newEquations = new HashSet<>(MapsP.mapCapacity(oldEquations));
         for (OffsetEquation offsetEquation : oldEquations) {
           newEquations.add(new OffsetEquation(offsetEquation));
         }
@@ -461,7 +465,7 @@ public abstract class UBQualifier {
     private static @Nullable Map<String, Set<OffsetEquation>> sequencesAndOffsetsToMap(
         List<String> sequences, List<String> offsets, @Nullable OffsetEquation extraEq) {
 
-      Map<String, Set<OffsetEquation>> map = new HashMap<>(CollectionsPlume.mapCapacity(sequences));
+      Map<String, Set<OffsetEquation>> map = new HashMap<>(MapsP.mapCapacity(sequences));
       if (offsets.isEmpty()) {
         for (String sequence : sequences) {
           // Not `Collections.singleton(extraEq)` because the values get modified
@@ -486,32 +490,15 @@ public abstract class UBQualifier {
       return map;
     }
 
-    /** A triple that is the return type of {@link #mapToSequencesAndOffsets}. */
-    private static class SequencesOffsetsAndClass {
-      /** List of sequences. */
-      public final List<String> sequences;
-
-      /** List of offsets. */
-      public final List<String> offsets;
-
-      /** The class of the annotation to be built. */
-      public final Class<? extends Annotation> annoClass;
-
-      /**
-       * Creates a new SequencesOffsetsAndClass.
-       *
-       * @param sequences list of sequences
-       * @param offsets list of offsets
-       * @param annoClass the class of the annotation to be built
-       */
-      public SequencesOffsetsAndClass(
-          List<String> sequences, List<String> offsets, Class<? extends Annotation> annoClass) {
-
-        this.sequences = sequences;
-        this.offsets = offsets;
-        this.annoClass = annoClass;
-      }
-    }
+    /**
+     * A triple that is the return type of {@link #mapToSequencesAndOffsets}.
+     *
+     * @param sequences list of sequences
+     * @param offsets list of offsets
+     * @param annoClass the class of the annotation to be built
+     */
+    private record SequencesOffsetsAndClass(
+        List<String> sequences, List<String> offsets, Class<? extends Annotation> annoClass) {}
 
     /**
      * Given the map representation, returns parallel-arrays representation.
@@ -838,8 +825,7 @@ public abstract class UBQualifier {
       Set<String> sequences = new HashSet<>(map.keySet());
       sequences.retainAll(otherLtl.map.keySet());
 
-      Map<String, Set<OffsetEquation>> lubMap =
-          new HashMap<>(CollectionsPlume.mapCapacity(sequences));
+      Map<String, Set<OffsetEquation>> lubMap = new HashMap<>(MapsP.mapCapacity(sequences));
       for (String sequence : sequences) {
         Set<OffsetEquation> offsets1 = map.get(sequence);
         Set<OffsetEquation> offsets2 = otherLtl.map.get(sequence);
@@ -1222,12 +1208,12 @@ public abstract class UBQualifier {
     }
 
     /**
-     * Generates a new UBQualifer without the given (sequence, offset) pair. Other occurrences of
+     * Generates a new UBQualifier without the given (sequence, offset) pair. Other occurrences of
      * the sequence and the offset may remain in the result, but not together.
      *
      * @param sequence a Java expression representing a string
      * @param offset an integral offset
-     * @return a new UBQualifer without the given sequence and offset
+     * @return a new UBQualifier without the given sequence and offset
      */
     public UBQualifier removeOffset(String sequence, int offset) {
       OffsetEquation offsetEq = OffsetEquation.createOffsetForInt(offset);
@@ -1293,7 +1279,7 @@ public abstract class UBQualifier {
   }
 
   /** Represents an integer value that is known at compile time. */
-  public static class UpperBoundLiteralQualifier extends UBQualifier {
+  public static final class UpperBoundLiteralQualifier extends UBQualifier {
 
     /** Represents the value -1. */
     public static final UpperBoundLiteralQualifier NEGATIVEONE = new UpperBoundLiteralQualifier(-1);
@@ -1320,16 +1306,12 @@ public abstract class UBQualifier {
      * @return an UpperBoundLiteralQualifier
      */
     public static UpperBoundLiteralQualifier create(int value) {
-      switch (value) {
-        case -1:
-          return NEGATIVEONE;
-        case 0:
-          return ZERO;
-        case 1:
-          return ONE;
-        default:
-          return new UpperBoundLiteralQualifier(value);
-      }
+      return switch (value) {
+        case -1 -> NEGATIVEONE;
+        case 0 -> ZERO;
+        case 1 -> ONE;
+        default -> new UpperBoundLiteralQualifier(value);
+      };
     }
 
     /** The integer value. */
@@ -1391,7 +1373,7 @@ public abstract class UBQualifier {
   }
 
   /** The top type qualifier. */
-  public static class UpperBoundUnknownQualifier extends UBQualifier {
+  public static final class UpperBoundUnknownQualifier extends UBQualifier {
     /** The canonical representative. */
     public static final UBQualifier UNKNOWN = new UpperBoundUnknownQualifier();
 
@@ -1425,7 +1407,7 @@ public abstract class UBQualifier {
   }
 
   /** The bottom qualifier for the upperbound type system. */
-  private static class UpperBoundBottomQualifier extends UBQualifier {
+  private static final class UpperBoundBottomQualifier extends UBQualifier {
     /** The canonical bottom qualifier for the upperbound type system. */
     public static final UBQualifier BOTTOM = new UpperBoundBottomQualifier();
 
@@ -1459,7 +1441,7 @@ public abstract class UBQualifier {
   }
 
   /** The polymorphic qualifier. */
-  private static class PolyQualifier extends UBQualifier {
+  private static final class PolyQualifier extends UBQualifier {
     /** The canonical representative. */
     public static final UBQualifier POLY = new PolyQualifier();
 

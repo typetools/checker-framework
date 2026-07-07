@@ -61,8 +61,8 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
       if (atf != null) {
         // Add all the subcheckers so that default values are checked for the subcheckers.
         for (SourceChecker subchecker : atf.getChecker().getSubcheckers()) {
-          if (subchecker instanceof BaseTypeChecker) {
-            defaultValueAtypeFactories.add(((BaseTypeChecker) subchecker).getTypeFactory());
+          if (subchecker instanceof BaseTypeChecker btc) {
+            defaultValueAtypeFactories.add(btc.getTypeFactory());
           }
         }
         defaultValueAtypeFactories.add(atf);
@@ -118,7 +118,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
    * A subclass of ContractsFromMethod that adds a postcondition contract to each constructor,
    * requiring that it initializes all fields.
    */
-  private class InitializedFieldsContractsFromMethod extends ContractsFromMethod {
+  public class InitializedFieldsContractsFromMethod extends ContractsFromMethod {
     /**
      * Creates an InitializedFieldsContractsFromMethod for the given factory.
      *
@@ -188,7 +188,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
    */
   // It is a bit wasteful that this is recomputed for each constructor.
   private String[] fieldsToInitialize(TypeElement type) {
-    List<String> result = new ArrayList<String>();
+    List<String> result = new ArrayList<>();
 
     for (Element member : type.getEnclosedElements()) {
 

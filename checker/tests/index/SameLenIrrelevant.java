@@ -8,17 +8,17 @@
 import org.checkerframework.checker.index.qual.SameLen;
 
 public class SameLenIrrelevant {
-  // NO :: error: (anno.on.irrelevant)
+  // NO :: error: [anno.on.irrelevant]
   public void test(@SameLen("#2") int x, int y) {
     // do nothing
   }
 
-  // NO :: error: (anno.on.irrelevant)
+  // NO :: error: [anno.on.irrelevant]
   public void test(@SameLen("#2") double x, double y) {
     // do nothing
   }
 
-  // NO :: error: (anno.on.irrelevant)
+  // NO :: error: [anno.on.irrelevant]
   public void test(@SameLen("#2") char x, char y) {
     // do nothing
   }

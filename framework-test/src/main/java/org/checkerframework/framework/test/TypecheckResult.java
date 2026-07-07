@@ -1,6 +1,7 @@
 package org.checkerframework.framework.test;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,19 +17,38 @@ import org.plumelib.util.StringsPlume;
  * TestConfiguration.
  */
 public class TypecheckResult {
+  /** The test configuration. */
   private final TestConfiguration configuration;
+
+  /** The compilation result. */
   private final CompilationResult compilationResult;
-  private final List<TestDiagnostic> expectedDiagnostics;
 
-  private final List<TestDiagnostic> missingDiagnostics;
-  private final List<TestDiagnostic> unexpectedDiagnostics;
+  // In Java 21, can declare the next three fields as SequencedCollection.
 
+  /** The expected diagnostics. */
+  private final Collection<TestDiagnostic> expectedDiagnostics;
+
+  /** The diagnostics that were expected but were not issued. */
+  private final Collection<TestDiagnostic> missingDiagnostics;
+
+  /** The diagnostics that were issued but were not expected. */
+  private final Collection<TestDiagnostic> unexpectedDiagnostics;
+
+  /**
+   * Creates a TypecheckResult.
+   *
+   * @param configuration the test configuration
+   * @param compilationResult the compilation result
+   * @param expectedDiagnostics the expected diagnostics
+   * @param missingDiagnostics the diagnostics that were expected but were not issued
+   * @param unexpectedDiagnostics the diagnostics that were issued but were not expected
+   */
   protected TypecheckResult(
       TestConfiguration configuration,
       CompilationResult compilationResult,
-      List<TestDiagnostic> expectedDiagnostics,
-      List<TestDiagnostic> missingDiagnostics,
-      List<TestDiagnostic> unexpectedDiagnostics) {
+      Collection<TestDiagnostic> expectedDiagnostics,
+      Collection<TestDiagnostic> missingDiagnostics,
+      Collection<TestDiagnostic> unexpectedDiagnostics) {
     this.configuration = configuration;
     this.compilationResult = compilationResult;
     this.expectedDiagnostics = expectedDiagnostics;
@@ -36,38 +56,72 @@ public class TypecheckResult {
     this.unexpectedDiagnostics = unexpectedDiagnostics;
   }
 
+  /**
+   * Returns the test configuration.
+   *
+   * @return the test configuration
+   */
   public TestConfiguration getConfiguration() {
     return configuration;
   }
 
+  /**
+   * Returns the compilation result.
+   *
+   * @return the compilation result
+   */
   public CompilationResult getCompilationResult() {
     return compilationResult;
   }
 
-  public List<Diagnostic<? extends JavaFileObject>> getActualDiagnostics() {
+  /**
+   * Returns the actual diagnostics.
+   *
+   * @return the actual diagnostics
+   */
+  public Collection<Diagnostic<? extends JavaFileObject>> getActualDiagnostics() {
     return compilationResult.getDiagnostics();
   }
 
-  public List<TestDiagnostic> getExpectedDiagnostics() {
+  /**
+   * Returns the expected diagnostics.
+   *
+   * @return the expected diagnostics
+   */
+  public Collection<TestDiagnostic> getExpectedDiagnostics() {
     return expectedDiagnostics;
   }
 
+  /**
+   * Returns true if the test failed.
+   *
+   * @return true if the test failed
+   */
   public boolean didTestFail() {
     return !unexpectedDiagnostics.isEmpty() || !missingDiagnostics.isEmpty();
   }
 
-  public List<TestDiagnostic> getMissingDiagnostics() {
+  /**
+   * Returns the diagnostics that were expected but were not issued.
+   *
+   * @return the diagnostics that were expected but were not issued
+   */
+  public Collection<TestDiagnostic> getMissingDiagnostics() {
     return missingDiagnostics;
   }
 
-  public List<TestDiagnostic> getUnexpectedDiagnostics() {
+  /**
+   * Returns the diagnostics that were issued but were not expected.
+   *
+   * @return the diagnostics that were issued but were not expected
+   */
+  public Collection<TestDiagnostic> getUnexpectedDiagnostics() {
     return unexpectedDiagnostics;
   }
 
   public List<String> getErrorHeaders() {
     List<String> errorHeaders = new ArrayList<>();
 
-    // none of these should be true if the test didn't fail
     if (didTestFail()) {
       if (compilationResult.compiledWithoutError() && !expectedDiagnostics.isEmpty()) {
         errorHeaders.add("The test run was expected to issue errors/warnings, but it did not.");
@@ -82,9 +136,7 @@ public class TypecheckResult {
         errorHeaders.add(
             numFound
                 + " out of "
-                + StringsPlume.nplural(numExpected, "expected diagnostic")
-                + " "
-                + (numFound == 1 ? "was" : "were")
+                + StringsPlume.nvPlural(numExpected, "expected diagnostic", "was")
                 + " found.");
       }
     }
@@ -104,29 +156,27 @@ public class TypecheckResult {
     StringJoiner summaryBuilder = new StringJoiner(System.lineSeparator());
     summaryBuilder.add(StringsPlume.joinLines(getErrorHeaders()));
 
-    if (!unexpectedDiagnostics.isEmpty()) {
-      int numUnexpected = unexpectedDiagnostics.size();
-      if (numUnexpected == 1) {
-        summaryBuilder.add("1 unexpected diagnostic was found:");
-      } else {
-        summaryBuilder.add(numUnexpected + " unexpected diagnostics were found:");
-      }
+    int numUnexpected = unexpectedDiagnostics.size();
+    int numMissing = missingDiagnostics.size();
 
+    if (numUnexpected != 0) {
+      summaryBuilder.add(
+          StringsPlume.nvPlural(numUnexpected, "unexpected diagnostic", "was") + " found:");
       for (TestDiagnostic unexpected : unexpectedDiagnostics) {
         summaryBuilder.add("  " + unexpected.toString());
       }
     }
 
-    if (!missingDiagnostics.isEmpty()) {
-      int numMissing = missingDiagnostics.size();
-      summaryBuilder.add(
-          StringsPlume.nplural(numMissing, "expected diagnostic")
-              + " "
-              + (numMissing == 1 ? "was" : "were")
-              + " not found:");
-
-      for (TestDiagnostic missing : missingDiagnostics) {
-        summaryBuilder.add("  " + missing.toString());
+    if (numMissing != 0) {
+      String msg = StringsPlume.nvPlural(numMissing, "expected diagnostic", "was") + " not found";
+      if (numUnexpected != 0 && numMissing == expectedDiagnostics.size()) {
+        // There were unexpected diagnostics and every expected diagnostic is missing.
+        summaryBuilder.add("All " + msg + ".");
+      } else {
+        summaryBuilder.add(msg + ":");
+        for (TestDiagnostic missing : missingDiagnostics) {
+          summaryBuilder.add("  " + missing.toString());
+        }
       }
     }
     return summaryBuilder.toString();
@@ -135,25 +185,18 @@ public class TypecheckResult {
   public static TypecheckResult fromCompilationResults(
       TestConfiguration configuration,
       CompilationResult result,
-      List<TestDiagnostic> expectedDiagnostics) {
+      Collection<TestDiagnostic> expectedDiagnostics) {
 
-    // We are passing `true` as the `noMsgText` argument because "-Anomsgtext"
-    // is always added to the non-JVM options in `TypecheckExecutor.compile`.
     Set<TestDiagnostic> actualDiagnostics =
-        TestDiagnosticUtils.fromJavaxDiagnosticList(result.getDiagnostics(), true);
+        TestDiagnosticUtils.fromJavaxDiagnosticList(result.getDiagnostics());
 
-    Set<TestDiagnostic> unexpectedDiagnostics = new LinkedHashSet<>();
-    unexpectedDiagnostics.addAll(actualDiagnostics);
+    Set<TestDiagnostic> unexpectedDiagnostics = new LinkedHashSet<>(actualDiagnostics);
     unexpectedDiagnostics.removeAll(expectedDiagnostics);
 
-    List<TestDiagnostic> missingDiagnostics = new ArrayList<>(expectedDiagnostics);
+    Set<TestDiagnostic> missingDiagnostics = new LinkedHashSet<>(expectedDiagnostics);
     missingDiagnostics.removeAll(actualDiagnostics);
 
     return new TypecheckResult(
-        configuration,
-        result,
-        expectedDiagnostics,
-        missingDiagnostics,
-        new ArrayList<>(unexpectedDiagnostics));
+        configuration, result, expectedDiagnostics, missingDiagnostics, unexpectedDiagnostics);
   }
 }

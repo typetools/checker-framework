@@ -44,8 +44,9 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  *
  * @see NonEmpty
  * @see EnsuresNonEmpty
- * @checker_framework.manual #non-empty-checker Non-Empty Checker
  */
+// Reinstate when the Non-Empty Checker is publicized.
+//  * @checker_framework.manual #non-empty-checker Non-Empty Checker
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
@@ -70,7 +71,7 @@ public @interface EnsuresNonEmptyIf {
   /**
    * A wrapper annotation that makes the {@link EnsuresNonEmptyIf} annotation repeatable.
    *
-   * <p>Programmers generally do not need to write ths. It is created by Java when a programmer
+   * <p>Programmers generally do not need to write this. It is created by Java when a programmer
    * writes more than one {@link EnsuresNonEmptyIf} annotation at the same location.
    */
   @Retention(RetentionPolicy.RUNTIME)

@@ -2,6 +2,7 @@ package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.ExpressionTree;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeMirror;
@@ -9,7 +10,6 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.util.typeinference8.types.AbstractType.Kind;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
@@ -35,10 +35,12 @@ import org.checkerframework.javacutil.TypesUtils;
    */
   protected final ExpressionTree invocation;
 
-  /** Type variable for which the instantiation of this variable is a type argument, */
+  /** The Java type variable for which the instantiation of this variable is a type argument. */
   protected final TypeVariable typeVariableJava;
 
-  /** Type variable for which the instantiation of this variable is a type argument, */
+  /**
+   * The annotated type variable for which the instantiation of this variable is a type argument.
+   */
   protected final AnnotatedTypeVariable typeVariable;
 
   /** A mapping from type variable to inference variable. */
@@ -118,19 +120,19 @@ import org.checkerframework.javacutil.TypesUtils;
     // Pp:=ap]} appears in the set; if this results in no proper upper bounds for al (only
     // dependencies), then the bound {@literal al <: Object} also appears in the set.
     switch (upperBound.getKind()) {
-      case INTERSECTION:
+      case INTERSECTION -> {
         Iterator<? extends TypeMirror> iter =
             ((IntersectionType) upperBound).getBounds().iterator();
         for (AnnotatedTypeMirror bound : typeVariable.getUpperBound().directSupertypes()) {
           AbstractType t1 = InferenceType.create(bound, iter.next(), map, context);
           variableBounds.addBound(null, BoundKind.UPPER, t1);
         }
-        break;
-      default:
+      }
+      default -> {
         AbstractType t1 =
             InferenceType.create(typeVariable.getUpperBound(), upperBound, map, context);
         variableBounds.addBound(null, BoundKind.UPPER, t1);
-        break;
+      }
     }
 
     Set<? extends AbstractQualifier> quals =
@@ -167,10 +169,11 @@ import org.checkerframework.javacutil.TypesUtils;
 
   @Override
   public int hashCode() {
-    int result = typeVariableJava.toString().hashCode();
-    result = 31 * result + Kind.USE_OF_VARIABLE.hashCode();
-    result = 31 * result + invocation.hashCode();
-    return result;
+    // TypesUtils.areSame depends on asElement().getSimpleName(), asElement().getEnclosingElement().
+    return Objects.hash(
+        typeVariableJava.asElement().getSimpleName(),
+        typeVariableJava.asElement().getEnclosingElement(),
+        invocation);
   }
 
   @Override
@@ -193,7 +196,7 @@ import org.checkerframework.javacutil.TypesUtils;
     return variableBounds.getInstantiation();
   }
 
-  /** in case the first attempt at resolution fails. */
+  /** Saves the current bounds, in case the first attempt at resolution fails. */
   public void save() {
     variableBounds.save();
   }

@@ -25,63 +25,63 @@ public class StringPatternsUsage {
     String e = "";
 
     requiresA(a);
-    // :: error: (argument)
+    // :: error: [argument]
     requiresB(a);
-    // :: error: (argument)
+    // :: error: [argument]
     requiresC(a);
     requiresAB(a);
-    // :: error: (argument)
+    // :: error: [argument]
     requiresBC(a);
     requiresAC(a);
     requiresAny(a);
 
-    // :: error: (argument)
+    // :: error: [argument]
     requiresA(b);
     requiresB(b);
-    // :: error: (argument)
+    // :: error: [argument]
     requiresC(b);
     requiresAB(b);
     requiresBC(b);
-    // :: error: (argument)
+    // :: error: [argument]
     requiresAC(b);
     requiresAny(b);
 
-    // :: error: (argument)
+    // :: error: [argument]
     requiresA(c);
-    // :: error: (argument)
+    // :: error: [argument]
     requiresB(c);
     requiresC(c);
-    // :: error: (argument)
+    // :: error: [argument]
     requiresAB(c);
     requiresBC(c);
     requiresAC(c);
     requiresAny(c);
 
-    // :: error: (argument)
+    // :: error: [argument]
     requiresA(d);
-    // :: error: (argument)
+    // :: error: [argument]
     requiresB(d);
-    // :: error: (argument)
+    // :: error: [argument]
     requiresC(d);
-    // :: error: (argument)
+    // :: error: [argument]
     requiresAB(d);
-    // :: error: (argument)
+    // :: error: [argument]
     requiresBC(d);
-    // :: error: (argument)
+    // :: error: [argument]
     requiresAC(d);
     requiresAny(d);
 
-    // :: error: (argument)
+    // :: error: [argument]
     requiresA(e);
-    // :: error: (argument)
+    // :: error: [argument]
     requiresB(e);
-    // :: error: (argument)
+    // :: error: [argument]
     requiresC(e);
-    // :: error: (argument)
+    // :: error: [argument]
     requiresAB(e);
-    // :: error: (argument)
+    // :: error: [argument]
     requiresBC(e);
-    // :: error: (argument)
+    // :: error: [argument]
     requiresAC(e);
     requiresAny(e);
   }

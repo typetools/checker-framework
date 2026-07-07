@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.*;
 public class CollectionsAnnotationsMin {
   static class Collection1<E extends @Nullable Object> {
     public void add(E elt) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       elt.hashCode();
     }
   }
@@ -18,7 +18,7 @@ public class CollectionsAnnotationsMin {
   // This is allowed, as "null" cannot be added to f1
   static Collection1<? extends @Nullable Object> f1 = new PriorityQueue1<@NonNull Object>();
 
-  // :: error: (assignment)
+  // :: error: [assignment]
   static Collection1<@Nullable Object> f2 = new PriorityQueue1<@NonNull Object>();
 
   static void addNull1(Collection1<@Nullable Object> l) {
@@ -27,13 +27,13 @@ public class CollectionsAnnotationsMin {
 
   // The upper bound on E is implicitly from Collection1
   static <E extends @Nullable Object> void addNull2(Collection1<E> l) {
-    // :: error: (argument)
+    // :: error: [argument]
     l.add(null);
   }
 
   // The upper bound on E is implicitly from Collection1
   static <E extends @Nullable Object> E addNull2b(Collection1<E> l, E p) {
-    // :: error: (argument)
+    // :: error: [argument]
     l.add(null);
     return p;
   }
@@ -43,16 +43,16 @@ public class CollectionsAnnotationsMin {
   }
 
   static void bad() {
-    // :: error: (argument)
+    // :: error: [argument]
     addNull1(new PriorityQueue1<@NonNull Object>());
 
     addNull2(new PriorityQueue1<@NonNull Object>());
     addNull2b(new PriorityQueue1<@NonNull Object>(), new Object());
 
-    // :: error: (type.arguments.not.inferred)
+    // :: error: [type.arguments.not.inferred]
     addNull3(new PriorityQueue1<@NonNull Object>());
 
-    // :: error: (argument)
+    // :: error: [argument]
     f1.add(null);
   }
 }

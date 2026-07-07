@@ -15,13 +15,13 @@ public class Constructors {
 
     Constructors m = new Constructors(null);
 
-    // :: error: (argument)
+    // :: error: [argument]
     new MyConstructors(s);
-    // :: error: (argument)
+    // :: error: [argument]
     new MyConstructors(s) {};
-    // :: error: (argument)
+    // :: error: [argument]
     m.new MyConstructors(s);
-    // :: error: (argument)
+    // :: error: [argument]
     m.new MyConstructors(s) {};
   }
 }

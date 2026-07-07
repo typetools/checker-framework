@@ -101,7 +101,7 @@ public class KeyForPropagator {
     TypeElement supertypeElement = (TypeElement) supertype.getUnderlyingType().asElement();
     Types types = typeFactory.getProcessingEnv().getTypeUtils();
 
-    // Note: The right hand side of this or expression will cover raw types
+    // Note: The right-hand side of this or expression will cover raw types
     if (subtype.getTypeArguments().isEmpty()) {
       return;
     } // else
@@ -130,19 +130,13 @@ public class KeyForPropagator {
       }
 
       switch (direction) {
-        case TO_SUBTYPE:
-          replacer.visit(supertypeArg, subtypeArg);
-          break;
-
-        case TO_SUPERTYPE:
-          replacer.visit(subtypeArg, supertypeArg);
-          break;
-
-        case BOTH:
+        case TO_SUBTYPE -> replacer.visit(supertypeArg, subtypeArg);
+        case TO_SUPERTYPE -> replacer.visit(subtypeArg, supertypeArg);
+        case BOTH -> {
           // note if they both have an annotation nothing will happen
           replacer.visit(subtypeArg, supertypeArg);
           replacer.visit(supertypeArg, subtypeArg);
-          break;
+        }
       }
     }
   }
@@ -168,8 +162,8 @@ public class KeyForPropagator {
     }
     Tree assignmentContext = TreePathUtil.getContextForPolyExpression(path);
     AnnotatedTypeMirror assignedTo;
-    if (assignmentContext instanceof VariableTree) {
-      if (TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) assignmentContext)) {
+    if (assignmentContext instanceof VariableTree vt) {
+      if (TreeUtils.isVariableTreeDeclaredUsingVar(vt)) {
         return;
       }
       assignedTo = atypeFactory.getAnnotatedTypeLhs(assignmentContext);
@@ -192,7 +186,11 @@ public class KeyForPropagator {
    * types to the second type, if the second type is annotated with @UnknownKeyFor or has no
    * annotation in the KeyFor hierarchy.
    */
-  private class KeyForPropagationReplacer extends AnnotatedTypeReplacer {
+  private final class KeyForPropagationReplacer extends AnnotatedTypeReplacer {
+
+    /** Creates a new KeyForPropagationReplacer. */
+    KeyForPropagationReplacer() {}
+
     @Override
     protected void replaceAnnotations(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
       AnnotationMirror fromKeyFor = from.getPrimaryAnnotationInHierarchy(UNKNOWN_KEYFOR);

@@ -7,15 +7,10 @@ export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-# Test that the CF, when built with JDK 21, works on other JDKs.
-export ORG_GRADLE_PROJECT_useJdk21Compiler=true
-
-# Run Gradle using Java 21.
-mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64" >> ~/.gradle/gradle.properties
 
 source "$SCRIPT_DIR"/clone-related.sh
 
-./gradlew assembleForJavac --console=plain -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
+./gradlew assembleForJavac -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
 
 # TODO: Maybe I should move this into the CI job, and do it for all CI jobs.
 cp "$SCRIPT_DIR"/mvn-settings.xml ~/settings.xml
@@ -31,7 +26,7 @@ if [ "$TRAVIS" = "true" ]; then
   exit 1
 fi
 
-## This command works locally, but on Azure it fails with timouts while downloading Maven dependencies.
+## This command works locally, but on Azure it fails with timeouts while downloading Maven dependencies.
 # cd guava && time mvn --debug -B package -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
 
 # Pre-download Maven dependencies.  Otherwise there are sometimes timeouts when downloading a Maven dependency.

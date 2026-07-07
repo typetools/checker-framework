@@ -17,12 +17,12 @@ public class RawMethodInvocation {
     b = "";
   }
 
-  // :: error: (initialization.fields.uninitialized)
+  // :: error: [initialization.fields.uninitialized]
   RawMethodInvocation(Byte constructor_inits_b) {
     init_b();
   }
 
-  // :: error: (initialization.fields.uninitialized)
+  // :: error: [initialization.fields.uninitialized]
   RawMethodInvocation(byte constructor_inits_b) {
     b = "";
     init_b();
@@ -40,7 +40,7 @@ public class RawMethodInvocation {
 
   RawMethodInvocation(long constructor_escapes_raw) {
     a = "";
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     nonRawMethod();
     b = "";
   }

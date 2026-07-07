@@ -34,7 +34,18 @@ import org.checkerframework.afu.scenelib.util.CommandLineUtils;
 import org.plumelib.util.FileIOException;
 
 /** Utility for merging index files, including multiple versions for the same class. */
-public class IndexFileMerger {
+public final class IndexFileMerger {
+
+  /** Do not instantiate. */
+  private IndexFileMerger() {
+    throw new Error("Do not instantiate");
+  }
+
+  /**
+   * Merges index files.
+   *
+   * @param args command-line arguments
+   */
   @SuppressWarnings("CatchAndPrintStackTrace") // TODO
   public static void main(String[] args) {
     if (args.length < 1) {

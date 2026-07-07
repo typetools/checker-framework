@@ -34,8 +34,15 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 /** Utility methods to generate annotated types and to convert between them. */
 @SuppressWarnings({"units", "checkstyle:constantname"})
 @AnnotatedFor("nullness")
-public class UnitsTools {
+public final class UnitsTools {
+
+  /** Do not instantiate. */
+  private UnitsTools() {
+    throw new Error("Do not instantiate");
+  }
+
   // Acceleration
+  /** Acceleration: meters per second squared. */
   public static final @mPERs2 int mPERs2 = 1;
 
   // Angle

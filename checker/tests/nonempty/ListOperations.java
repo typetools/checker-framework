@@ -6,14 +6,14 @@ class ListOperations {
 
   // Skip test until we decide whether to handle accesses on empty containers
   // void testGetOnEmptyList(List<String> strs) {
-  //   // :: error: (method.invocation)
+  //   // :: error: [method.invocation]
   //   strs.get(0);
   // }
 
   // Skip test until we decide whether to handle accesses on empty containers
   // void testGetOnNonEmptyList(List<String> strs) {
   //   if (strs.isEmpty()) {
-  //     // :: error: (method.invocation)
+  //     // :: error: [method.invocation]
   //     strs.get(0);
   //   } else {
   //     strs.get(0); // OK
@@ -29,7 +29,7 @@ class ListOperations {
   void testAddAllWithEmptyList() {
     List<Integer> nums = new ArrayList<>();
     nums.addAll(List.of());
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonEmpty List<Integer> nums2 = nums;
   }
 
@@ -44,7 +44,7 @@ class ListOperations {
     if (nums.contains(11)) {
       @NonEmpty List<Integer> nums2 = nums; // OK
     }
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonEmpty List<Integer> nums2 = nums;
   }
   // TODO: consider other sequences (e.g., calling get(int) after clear())

@@ -12,7 +12,7 @@ class Issue6407 {
     items.add("hello");
     @NonEmpty List<String> bar = items; // OK
     items.remove("hello");
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonEmpty List<String> baz = items; // I expect an error here
   }
 
@@ -38,7 +38,7 @@ class Issue6407 {
     items.add("hello");
     @NonEmpty MyList<String> bar = items; // OK
     items.remove("hello");
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonEmpty MyList<String> baz = items;
   }
 
@@ -48,14 +48,14 @@ class Issue6407 {
     items.add("hello");
     @NonEmpty MyList<String> bar = items; // OK
     removeIt(items, "hello");
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonEmpty MyList<String> baz = items;
   }
 
   void initialRemoval() {
     // items initially has the type @UnknownNonEmpty
     MyList<String> items = new MyList<>();
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     items.remove("hello");
   }
 }

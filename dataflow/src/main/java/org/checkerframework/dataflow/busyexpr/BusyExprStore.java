@@ -52,8 +52,7 @@ public class BusyExprStore implements Store<BusyExprStore> {
    * @return true if the expression contains the variable
    */
   public boolean exprContainsVariable(Node expr, Node var) {
-    if (expr instanceof BinaryOperationNode) {
-      BinaryOperationNode binaryNode = (BinaryOperationNode) expr;
+    if (expr instanceof BinaryOperationNode binaryNode) {
       return exprContainsVariable(binaryNode.getLeftOperand(), var)
           || exprContainsVariable(binaryNode.getRightOperand(), var);
     }
@@ -76,8 +75,7 @@ public class BusyExprStore implements Store<BusyExprStore> {
    * @param e the expression to be added
    */
   public void addUseInExpression(Node e) {
-    if (e instanceof BinaryOperationNode) {
-      BinaryOperationNode binaryNode = (BinaryOperationNode) e;
+    if (e instanceof BinaryOperationNode binaryNode) {
       putBusyExpr(new BusyExprValue(binaryNode));
       // recursively add expressions
       addUseInExpression(binaryNode.getLeftOperand());
@@ -128,10 +126,9 @@ public class BusyExprStore implements Store<BusyExprStore> {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof BusyExprStore)) {
+    if (!(obj instanceof BusyExprStore other)) {
       return false;
     }
-    BusyExprStore other = (BusyExprStore) obj;
     return other.busyExprValueSet.equals(this.busyExprValueSet);
   }
 

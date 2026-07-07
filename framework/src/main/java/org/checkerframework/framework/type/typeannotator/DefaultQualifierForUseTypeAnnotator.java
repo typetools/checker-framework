@@ -17,7 +17,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.MapsP;
 
 /**
  * Implements support for {@link DefaultQualifierForUse} and {@link NoDefaultQualifierForUse}. Adds
@@ -61,8 +61,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
    * Cache of elements to the set of annotations that should be applied to unannotated uses of the
    * element.
    */
-  protected final Map<Element, AnnotationMirrorSet> elementToDefaults =
-      CollectionsPlume.createLruCache(100);
+  protected final Map<Element, AnnotationMirrorSet> elementToDefaults = MapsP.createLruCache(100);
 
   /** Clears all caches. */
   public void clearCache() {
@@ -79,7 +78,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
     if (atypeFactory.shouldCache && elementToDefaults.containsKey(element)) {
       return elementToDefaults.get(element);
     }
-    AnnotationMirrorSet explictAnnos = getExplicitAnnos(element);
+    AnnotationMirrorSet explicitAnnos = getExplicitAnnos(element);
     AnnotationMirrorSet defaultAnnos = getDefaultQualifierForUses(element);
     AnnotationMirrorSet noDefaultAnnos = getHierarchiesNoDefault(element);
     AnnotationMirrorSet annosToApply = new AnnotationMirrorSet();
@@ -93,10 +92,10 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
       if (defaultAnno != null) {
         annosToApply.add(defaultAnno);
       } else {
-        AnnotationMirror explict =
-            atypeFactory.getQualifierHierarchy().findAnnotationInHierarchy(explictAnnos, top);
-        if (explict != null) {
-          annosToApply.add(explict);
+        AnnotationMirror explicit =
+            atypeFactory.getQualifierHierarchy().findAnnotationInHierarchy(explicitAnnos, top);
+        if (explicit != null) {
+          annosToApply.add(explicit);
         }
       }
     }

@@ -5,9 +5,9 @@ public class InheritanceTest {
     int field;
 
     public void expectsBotNoSignature(int t) {
-      // :: warning: (argument)
+      // :: warning: [argument]
       expectsBot(t);
-      // :: warning: (argument)
+      // :: warning: [argument]
       expectsBot(field);
     }
 

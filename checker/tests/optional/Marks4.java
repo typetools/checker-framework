@@ -12,17 +12,17 @@ public class Marks4 {
   }
 
   String process_bad(String s) {
-    // :: warning: (introduce.eliminate)
+    // :: warning: [introduce.eliminate]
     return Optional.ofNullable(s).orElseGet(this::getDefault);
   }
 
   String process_bad2(String s) {
-    // :: warning: (introduce.eliminate)
+    // :: warning: [introduce.eliminate]
     return Optional.<String>empty().orElseGet(this::getDefault);
   }
 
   String process_bad3(String s) {
-    // :: warning: (introduce.eliminate)
+    // :: warning: [introduce.eliminate]
     return Optional.of(s).orElseGet(this::getDefault);
   }
 
@@ -31,22 +31,22 @@ public class Marks4 {
   }
 
   String m1(String s) {
-    // :: warning: (introduce.eliminate)
+    // :: warning: [introduce.eliminate]
     return Optional.ofNullable(s).orElseGet(this::getDefault) + "hello";
   }
 
   boolean m2(String s) {
-    // :: warning: (introduce.eliminate)
+    // :: warning: [introduce.eliminate]
     return Objects.equals("hello", Optional.ofNullable(s).orElseGet(this::getDefault));
   }
 
   boolean m3(String s) {
-    // :: warning: (introduce.eliminate)
+    // :: warning: [introduce.eliminate]
     return "hello" == Optional.ofNullable(s).orElseGet(this::getDefault);
   }
 
   String m4(String s) {
-    // :: warning: (introduce.eliminate)
+    // :: warning: [introduce.eliminate]
     return Optional.ofNullable(s).map(Object::toString).orElseGet(this::getDefault);
   }
 
@@ -54,7 +54,7 @@ public class Marks4 {
     return Optional.ofNullable(s)
         .map(Object::toString)
         .map(Object::toString)
-        // :: warning: (introduce.eliminate)
+        // :: warning: [introduce.eliminate]
         .orElseGet(this::getDefault);
   }
 }

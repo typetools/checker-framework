@@ -17,11 +17,11 @@ import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarar
 import org.checkerframework.common.accumulation.AccumulationVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -93,13 +93,13 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
 
     JavaExpression e;
     try {
-      e = StringToJavaExpression.atMethodBody(postcond.getExpression(), tree, checker);
-    } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
-      checker.report(tree, ex.getDiagMessage());
+      e = StringToJavaExpression.atMethodBody(postcond.expression(), tree, checker);
+    } catch (JavaExpressionParseException ex) {
+      checker.report(tree, new DiagMessage(ex));
       return;
     }
 
-    AnnotationMirror requiredAnno = atypeFactory.createAccumulatorAnnotation(postcond.getMethod());
+    AnnotationMirror requiredAnno = atypeFactory.createAccumulatorAnnotation(postcond.method());
 
     CFAbstractValue<?> value = exitStore.getValue(e);
     AnnotationMirror inferredAnno = null;
@@ -113,8 +113,8 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
           tree,
           "contracts.exceptional.postcondition",
           tree.getName(),
-          contractExpressionAndType(postcond.getExpression(), inferredAnno),
-          contractExpressionAndType(postcond.getExpression(), requiredAnno));
+          contractExpressionAndType(postcond.expression(), inferredAnno),
+          contractExpressionAndType(postcond.expression(), requiredAnno));
     }
   }
 

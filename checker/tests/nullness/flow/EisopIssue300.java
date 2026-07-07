@@ -17,7 +17,7 @@ public class EisopIssue300 {
       return;
     }
     currentNode.setFieldNull(currentNode);
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     currentNode.toString();
   }
 

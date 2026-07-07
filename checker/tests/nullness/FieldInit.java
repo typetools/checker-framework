@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 public class FieldInit {
-  // :: error: (argument) :: error: (method.invocation)
+  // :: error: [argument] :: error: [method.invocation]
   String f = init(this);
 
   String init(FieldInit o) {

@@ -17,9 +17,9 @@ import org.checkerframework.framework.source.SourceChecker;
  * uses explicitly-written (i.e., programmer-written) annotations from the Non-Empty type system to
  * refine the analysis of operations on containers (e.g., Streams, Collections) that result in
  * values of type {@link java.util.Optional}.
- *
- * @checker_framework.manual #non-empty-checker Non-Empty Checker
  */
+// Reinstate when the Non-Empty Checker is publicized.
+//  * @checker_framework.manual #non-empty-checker Non-Empty Checker
 public class NonEmptyChecker extends BaseTypeChecker {
 
   /** A cached instance of {@link OptionalImplVisitor} */

@@ -23,7 +23,7 @@ class TestPure1 {
 
   void context() {
     PureFunc f1 = TestPure1::myPureMethod;
-    // :: warning: (purity.methodref)
+    // :: warning: [purity.methodref]
     PureFunc f2 = TestPure1::myMethod;
   }
 }

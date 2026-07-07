@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.afu.annotator.Main;
 import org.checkerframework.afu.annotator.find.AnnotationInsertion;
 import org.checkerframework.afu.annotator.find.CastInsertion;
@@ -88,7 +89,7 @@ public class IndexFileSpecification {
       // defKeys, it means that the unqualified name is ambiguous and
       // thus should always be qualified.
       for (String key : defKeys) {
-        int ix = Math.max(key.lastIndexOf("."), key.lastIndexOf("$"));
+        int ix = Math.max(key.lastIndexOf('.'), key.lastIndexOf('$'));
         if (ix >= 0) {
           String name = key.substring(ix + 1);
           // containsKey() would give wrong result here
@@ -339,7 +340,7 @@ public class IndexFileSpecification {
    * @return a list of the {@link AnnotationInsertion}s that are created
    */
   private List<Insertion> parseElement(CriterionList clist, AElement element) {
-    return parseElement(clist, element, new ArrayList<Insertion>(), false);
+    return parseElement(clist, element, new ArrayList<>(), false);
   }
 
   /**
@@ -353,7 +354,7 @@ public class IndexFileSpecification {
    */
   private List<Insertion> parseElement(
       CriterionList clist, AElement element, boolean isCastInsertion) {
-    return parseElement(clist, element, new ArrayList<Insertion>(), isCastInsertion);
+    return parseElement(clist, element, new ArrayList<>(), isCastInsertion);
   }
 
   /**
@@ -405,13 +406,12 @@ public class IndexFileSpecification {
     Set<IPair<String, Annotation>> elementAnnotations = getElementAnnotations(element);
     if (elementAnnotations.isEmpty()) {
       Criteria criteria = clist.criteria();
-      if (element instanceof ATypeElementWithType) {
+      if (element instanceof ATypeElementWithType atewt) {
         // Still insert even if it's a cast insertion with no outer
         // annotations to just insert a cast, or insert a cast with
         // annotations on the compound types.
         IPair<CastInsertion, CloseParenthesisInsertion> pair =
-            createCastInsertion(
-                ((ATypeElementWithType) element).getType(), null, innerTypeInsertions, criteria);
+            createCastInsertion(atewt.getType(), null, innerTypeInsertions, criteria);
         cast = pair.first;
         closeParen = pair.second;
       } else if (!innerTypeInsertions.isEmpty()) {
@@ -454,14 +454,10 @@ public class IndexFileSpecification {
           newI.getType().addAnnotation(annotationString);
         }
         addInsertionSource(newI, annotation);
-      } else if (element instanceof ATypeElementWithType) {
+      } else if (element instanceof ATypeElementWithType atewt) {
         if (cast == null) {
           IPair<CastInsertion, CloseParenthesisInsertion> insertions =
-              createCastInsertion(
-                  ((ATypeElementWithType) element).getType(),
-                  annotationString,
-                  innerTypeInsertions,
-                  criteria);
+              createCastInsertion(atewt.getType(), annotationString, innerTypeInsertions, criteria);
           cast = insertions.first;
           closeParen = insertions.second;
           elementInsertions.add(cast);
@@ -516,9 +512,9 @@ public class IndexFileSpecification {
       if (noTypePath(criteria) && isOnImplicitDefaultConstructor(criteria)) {
 
         if (constructorInsertion == null) {
+          @SuppressWarnings("nullness:argument") // getClassName returns non-null for Criteria
           DeclaredType type = new DeclaredType(criteria.getClassName());
-          constructorInsertion =
-              new ConstructorInsertion(type, criteria, new ArrayList<Insertion>());
+          constructorInsertion = new ConstructorInsertion(type, criteria, new ArrayList<>());
           this.insertions.add(constructorInsertion);
           // debug(
           //     "Added constructorInsertion to this.insertions, which is now %s%n",
@@ -604,7 +600,7 @@ public class IndexFileSpecification {
    * returns false.
    *
    * @param criteria the Criteria
-   * @return true if the Criteria is on a synthethic constructor
+   * @return true if the Criteria is on an implicit default constructor
    */
   private static boolean isOnImplicitDefaultConstructor(Criteria criteria) {
     if (!criteria.isOnMethod("<init>()V")) {
@@ -678,34 +674,31 @@ public class IndexFileSpecification {
 
   // Returns a string representation of the annotations at the element.
   private Set<IPair<String, Annotation>> getElementAnnotations(AElement element) {
-    Set<IPair<String, Annotation>> result =
-        new LinkedHashSet<IPair<String, Annotation>>(element.tlAnnotationsHere.size());
+    Set<IPair<String, Annotation>> result = new LinkedHashSet<>(element.tlAnnotationsHere.size());
     for (Annotation a : element.tlAnnotationsHere) {
       StringBuilder sb = new StringBuilder();
-      sb.append("@");
+      sb.append('@');
       sb.append(a.def.name);
 
-      if (a.fieldValues.size() == 0) {
+      if (a.fieldValues.isEmpty()) {
         // nothing to do
       } else {
-        sb.append("(");
+        sb.append('(');
         if (a.fieldValues.size() == 1 && a.fieldValues.containsKey("value")) {
           formatFieldValue(sb, a, "value");
         } else {
-          boolean first = true;
+          StringJoiner sj = new StringJoiner(", ");
           for (String field : a.fieldValues.keySet()) {
             // parameters of the annotation
-            if (!first) {
-              sb.append(", ");
-            } else {
-              first = false;
-            }
-            sb.append(field);
-            sb.append("=");
-            formatFieldValue(sb, a, field);
+            StringBuilder fieldSb = new StringBuilder();
+            fieldSb.append(field);
+            fieldSb.append('=');
+            formatFieldValue(fieldSb, a, field);
+            sj.add(fieldSb);
           }
+          sb.append(sj);
         }
-        sb.append(")");
+        sb.append(')');
       }
 
       result.add(IPair.of(sb.toString(), a));

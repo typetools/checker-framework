@@ -23,7 +23,7 @@ public class Marks3aJdk11 {
   String customerNameByID_acceptable3(List<Customer> custList, int custID) {
     Optional<Customer> opt = custList.stream().filter(c -> c.getID() == custID).findFirst();
 
-    // :: warning: (prefer.map.and.orelse)
+    // :: warning: [prefer.map.and.orelse]
     return opt.isEmpty() ? "UNKNOWN" : opt.get().getName();
   }
 }

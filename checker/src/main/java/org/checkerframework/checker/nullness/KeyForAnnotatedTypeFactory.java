@@ -21,6 +21,7 @@ import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -32,7 +33,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SubtypeIsSupersetQualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -114,7 +114,7 @@ public class KeyForAnnotatedTypeFactory
   protected ParameterizedExecutableType constructorFromUse(
       NewClassTree tree, boolean inferTypeArgs) {
     ParameterizedExecutableType result = super.constructorFromUse(tree, inferTypeArgs);
-    keyForPropagator.propagateNewClassTree(tree, result.executableType.getReturnType(), this);
+    keyForPropagator.propagateNewClassTree(tree, result.executableType().getReturnType(), this);
     return result;
   }
 
@@ -177,7 +177,7 @@ public class KeyForAnnotatedTypeFactory
     }
     Collection<String> maps = null;
     AnnotatedTypeMirror type = getAnnotatedType(tree);
-    AnnotationMirror keyForAnno = type.getEffectiveAnnotation(KeyFor.class);
+    AnnotationMirror keyForAnno = type.getAnnotation(KeyFor.class);
     if (keyForAnno != null) {
       maps = AnnotationUtils.getElementValueArray(keyForAnno, keyForValueElement, String.class);
     } else {
@@ -289,7 +289,7 @@ public class KeyForAnnotatedTypeFactory
                     stringExpr, methodInvocationTree, factory.getChecker());
             Unknown unknown = result.containedOfClass(Unknown.class);
             if (unknown != null) {
-              throw JavaExpressionParseUtil.constructJavaExpressionParseError(
+              throw JavaExpressionParseException.construct(
                   result.toString(), "Expression " + unknown.toString() + " is unparsable.");
             }
             return result;

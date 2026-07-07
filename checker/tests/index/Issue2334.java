@@ -1,4 +1,4 @@
-// Test case for issue #2334: http://tinyurl.com/cfissue/2334
+// Test case for issue #2334: https://tinyurl.com/cfissue/2334
 
 import org.checkerframework.checker.index.qual.NonNegative;
 
@@ -18,7 +18,7 @@ public class Issue2334 {
   void m2() {
     if (stringField.indexOf('d') != -1) {
       hasSideEffect();
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonNegative int i = stringField.indexOf('d');
     }
   }
@@ -33,7 +33,7 @@ public class Issue2334 {
   void m4() {
     if (stringField.indexOf('d') != -1) {
       System.out.println("hey");
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonNegative int i = stringField.indexOf('d');
     }
   }

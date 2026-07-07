@@ -26,7 +26,7 @@ public abstract class FunctionalInterfaces {
 
   public void normalConstruction() {
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     @MustCall({}) Actor a = new ActorImpl();
   }
 
@@ -37,14 +37,14 @@ public abstract class FunctionalInterfaces {
       public void act() {}
     }
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     @MustCall({}) Actor a = new ActorImplInline();
   }
 
   public void anonymousClass() {
 
     @MustCall({}) Actor a =
-        // :: error: (assignment)
+        // :: error: [assignment]
         new Actor() {
           public void act() {}
         };

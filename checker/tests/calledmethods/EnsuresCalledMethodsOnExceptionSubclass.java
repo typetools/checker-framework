@@ -14,7 +14,7 @@ public class EnsuresCalledMethodsOnExceptionSubclass {
 
   public static class SubclassWrong extends Parent {
     @Override
-    // ::error: (contracts.exceptional.postcondition)
+    // ::error: [contracts.exceptional.postcondition]
     public void method(Closeable x) throws IOException {
       throw new IOException();
     }

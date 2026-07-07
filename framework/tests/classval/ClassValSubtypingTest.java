@@ -20,25 +20,25 @@ public class ClassValSubtypingTest {
   }
 
   void assignUnknown() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     a = unknown;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ab = unknown;
-    // :: error: (assignment)
+    // :: error: [assignment]
     c = unknown;
-    // :: error: (assignment)
+    // :: error: [assignment]
     cd = unknown;
   }
 
   void assignments() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     a = ab;
     ab = a;
-    // :: error: (assignment)
+    // :: error: [assignment]
     a = c;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ab = c;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ab = cd;
   }
 }
@@ -62,25 +62,25 @@ class ClassBoundSubtypingTest {
   }
 
   void assignUnknown() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     a = unknown;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ab = unknown;
-    // :: error: (assignment)
+    // :: error: [assignment]
     c = unknown;
-    // :: error: (assignment)
+    // :: error: [assignment]
     cd = unknown;
   }
 
   void assignments() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     a = ab;
     ab = a;
-    // :: error: (assignment)
+    // :: error: [assignment]
     a = c;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ab = c;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ab = cd;
   }
 }
@@ -95,19 +95,19 @@ class ClassValClassBoundSubtypingTest {
   @ClassBound({"a", "b"}) Object abBound = null;
 
   void assignments1() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     a = aBound;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ab = aBound;
-    // :: error: (assignment)
+    // :: error: [assignment]
     a = abBound;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ab = abBound;
   }
 
   void assignments2() {
     aBound = a;
-    // :: error: (assignment)
+    // :: error: [assignment]
     aBound = ab;
 
     abBound = a;

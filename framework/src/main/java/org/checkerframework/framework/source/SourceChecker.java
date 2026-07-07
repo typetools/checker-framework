@@ -93,7 +93,7 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.MapsP;
 import org.plumelib.util.SystemPlume;
 import org.plumelib.util.UtilPlume;
 
@@ -133,7 +133,6 @@ import org.plumelib.util.UtilPlume;
   "onlyDefs",
   "skipFiles",
   "onlyFiles",
-  "skipDirs", // Obsolete as of 2024-03-15, replaced by "skipFiles".
 
   // Unsoundly assume all methods have no side effects, are deterministic, or both.
   "assumeSideEffectFree",
@@ -217,12 +216,18 @@ import org.plumelib.util.UtilPlume;
   "resolveReflection",
 
   // Whether to use whole-program inference. Takes an argument to specify the output format:
-  // "-Ainfer=stubs" or "-Ainfer=jaifs".
+  // "-Ainfer=ajava" or "-Ainfer=stubs" or "-Ainfer=jaifs".
   "infer",
+
+  // The directory into which to write whole-program inference results.
+  "inferOutputDirectory",
 
   // Whether to output a copy of each file for which annotations were inferred, formatted
   // as an ajava file. Can only be used with -Ainfer=ajava
   "inferOutputOriginal",
+
+  // Whether to show diagnostics about failed inference steps during whole-program inference.
+  "showWpiFailedInferences",
 
   // With each warning, in addition to the concrete error key,
   // output the SuppressWarnings strings that can be used to
@@ -321,9 +326,13 @@ import org.plumelib.util.UtilPlume;
   // constraints.
   "noWarnMemoryConstraints",
 
-  // Only output error code, useful for testing framework
+  // Only output the error message key, useful for testing the framework.
   // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
   "nomsgtext",
+
+  // Convert newlines to " / ", so error messages fit on one line.
+  // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
+  "onelinemsg",
 
   // Controls the line separator output in Checker Framework exceptions.
   // org.checkerframework.framework.source.SourceChecker.logBug
@@ -440,14 +449,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   // TODO A checker should export itself through a separate interface, and maybe have an interface
   // for all the methods for which it's safe to override.
 
-  /** The message key that will suppress all warnings (it matches any message key). */
-  public static final String SUPPRESS_ALL_MESSAGE_KEY = "all";
-
   /** The SuppressWarnings prefix that will suppress warnings for all checkers. */
   public static final String SUPPRESS_ALL_PREFIX = "allcheckers";
-
-  /** The message key emitted when an unused warning suppression is found. */
-  public static final @CompilerMessageKey String UNNEEDED_SUPPRESSION_KEY = "unneeded.suppression";
 
   /** File name of the localized messages. */
   protected static final String MSGS_FILE = "messages.properties";
@@ -671,7 +674,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   public final synchronized void init(ProcessingEnvironment env) {
     ProcessingEnvironment unwrappedEnv = unwrapProcessingEnvironment(env);
     super.init(unwrappedEnv);
-    // Sets processing enviroment and other related fields.
+    // Sets processing environment and other related fields.
     setProcessingEnvironment(unwrappedEnv);
 
     if (!hasOption("warnUnneededSuppressionsExceptions")) {
@@ -683,8 +686,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         throw new UserError("Must supply an argument to -AwarnUnneededSuppressionsExceptions");
       }
       try {
-        warnUnneededSuppressionsExceptions =
+        @SuppressWarnings(
+            "regex:argument") // user-provided string; validity checked by PatternSyntaxException
+        // catch
+        Pattern warnUnneededSuppressionsExceptionsPattern =
             Pattern.compile(warnUnneededSuppressionsExceptionsString);
+        warnUnneededSuppressionsExceptions = warnUnneededSuppressionsExceptionsPattern;
       } catch (PatternSyntaxException e) {
         throw new UserError(
             "Argument to -AwarnUnneededSuppressionsExceptions is not a regular expression: "
@@ -926,6 +933,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return getPattern(patternName, options, ".");
   }
 
+  /**
+   * Returns a pattern from user-supplied options.
+   *
+   * @param patternName the name of the pattern to look up in the options
+   * @param options the options supplied by the user
+   * @param defaultPattern the pattern to return if the user didn't supply a value
+   * @return the user-supplied pattern for {@code patternName}
+   */
+  @SuppressWarnings(
+      "regex:argument") // pattern string comes from user options; validated by try-catch
   private Pattern getPattern(
       String patternName, Map<String, String> options, String defaultPattern) {
     String pattern;
@@ -1219,7 +1236,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
       immediateSubcheckers = instantiateSubcheckers(checkerMap);
 
-      subcheckers = Collections.unmodifiableList(new ArrayList<>(checkerMap.values()));
+      subcheckers = List.copyOf(checkerMap.values());
     }
 
     return subcheckers;
@@ -1442,7 +1459,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return;
     }
 
-    String defaultFormat = "(" + messageKey + ")";
+    String defaultFormat = "[" + messageKey + "]";
     String prefix;
     String fmtString;
     if (this.processingEnv.getOptions() != null /*nnbug*/
@@ -1464,17 +1481,26 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       messageText = prefix + (fmtString == null ? "" : String.format(fmtString, args));
     } catch (Exception e) {
       throw new BugInCF(
-          "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args), e);
+          String.format(
+              "Invalid format string or number of args for %s: \"%s\" args: %s",
+              messageKey, fmtString, Arrays.toString(args)),
+          e);
     }
 
     if (kind == Diagnostic.Kind.ERROR && warns) {
       kind = Diagnostic.Kind.MANDATORY_WARNING;
     }
 
-    if (source instanceof Element) {
-      messager.printMessage(kind, messageText, (Element) source);
-    } else if (source instanceof Tree) {
-      printOrStoreMessage(kind, messageText, (Tree) source, currentRoot);
+    if (this.processingEnv.getOptions() != null /*nnbug*/
+        && this.processingEnv.getOptions().containsKey("onelinemsg")) {
+      // Use a virgule (/), as indicates a line break in poetry.
+      messageText = messageText.replace(System.lineSeparator(), " / ");
+    }
+
+    if (source instanceof Element elem) {
+      messager.printMessage(kind, messageText, elem);
+    } else if (source instanceof Tree sourceTree) {
+      printOrStoreMessage(kind, messageText, sourceTree, currentRoot);
     } else {
       throw new BugInCF("invalid position source of class " + source.getClass() + ": " + source);
     }
@@ -1506,7 +1532,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param msg the message text
    * @see SourceChecker#report(Object, DiagMessage)
    */
-  public void message(javax.tools.Diagnostic.Kind kind, String msg) {
+  public void message(Diagnostic.Kind kind, String msg) {
     if (messager == null) {
       // If this method is called before initChecker() sets the field
       messager = processingEnv.getMessager();
@@ -1557,7 +1583,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param root the compilation unit
    */
   protected void printOrStoreMessage(
-      javax.tools.Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
+      Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
     assert this.currentRoot == root;
     StackTraceElement[] trace = Thread.currentThread().getStackTrace();
     if (messageStore == null) {
@@ -1582,7 +1608,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *     dumpOnErrors option is enabled.
    */
   protected void printOrStoreMessage(
-      javax.tools.Diagnostic.Kind kind,
+      Diagnostic.Kind kind,
       String message,
       Tree source,
       CompilationUnitTree root,
@@ -1650,8 +1676,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   protected Object processErrorMessageArg(Object arg) {
     // Check to see if the argument itself is a property to be expanded
-    if (arg instanceof String) {
-      return messagesProperties.getProperty((String) arg, (String) arg);
+    if (arg instanceof String s) {
+      return messagesProperties.getProperty(s, s);
     } else {
       return arg;
     }
@@ -1665,7 +1691,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @param source the object from which to obtain source position information; may be an Element, a
    *     Tree, or null
-   * @param defaultFormat the message key, in parentheses
+   * @param defaultFormat the message key, in square brackets
    * @param args arguments for interpolation in the string corresponding to the given message key
    * @return the first part of the message format output by {@code -Adetailedmsgtext}
    */
@@ -1747,10 +1773,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return the tree associated with the given source object, or null if none
    */
   private @Nullable Tree sourceToTree(@Nullable Object source) {
-    if (source instanceof Element) {
-      return trees.getTree((Element) source);
-    } else if (source instanceof Tree) {
-      return (Tree) source;
+    if (source instanceof Element elem) {
+      return trees.getTree(elem);
+    } else if (source instanceof Tree sourceTree) {
+      return sourceTree;
     } else if (source == null) {
       return null;
     } else {
@@ -1999,7 +2025,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // This must return a modifiable set because clients modify it.
     // Most checkers have 1 or fewer subcheckers.
     LinkedHashSet<Class<? extends SourceChecker>> result =
-        new LinkedHashSet<>(CollectionsPlume.mapCapacity(2));
+        new LinkedHashSet<>(MapsP.mapCapacity(2));
     if (shouldResolveReflection()) {
       result.add(MethodValChecker.class);
     }
@@ -2105,7 +2131,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return new HashMap<>();
     }
 
-    Map<String, String> activeOpts = new HashMap<>(CollectionsPlume.mapCapacity(options));
+    Map<String, String> activeOpts = new HashMap<>(MapsP.mapCapacity(options));
 
     for (Map.Entry<String, String> opt : options.entrySet()) {
       String key = opt.getKey();
@@ -2113,34 +2139,36 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
       String[] split = key.split(OPTION_SEPARATOR);
 
-      splitlengthswitch:
       switch (split.length) {
-        case 1:
+        case 1 -> {
           // No separator, option always active.
           activeOpts.put(key, value);
-          break;
-        case 2:
+        }
+        case 2 -> {
           Class<?> clazz = this.getClass();
-
+          boolean found = false;
           do {
             if (clazz.getCanonicalName().equals(split[0])
                 || clazz.getSimpleName().equals(split[0])) {
               // Valid class-option pair.
               activeOpts.put(split[1], value);
-              break splitlengthswitch;
+              found = true;
+              break;
             }
-
             clazz = clazz.getSuperclass();
           } while (clazz != null
               && !clazz.getName().equals(AbstractTypeProcessor.class.getCanonicalName()));
-          // Didn't find a matching class. Option might be for another processor. Add
-          // option anyways. javac will warn if no processor supports the option.
-          activeOpts.put(key, value);
-          break;
-        default:
+          if (!found) {
+            // Didn't find a matching class. Option might be for another processor. Add
+            // option anyways. javac will warn if no processor supports the option.
+            activeOpts.put(key, value);
+          }
+        }
+        default -> {
           // Too many separators. Option might be for another processor. Add option
           // anyways. javac will warn if no processor supports the option.
           activeOpts.put(key, value);
+        }
       }
     }
     return activeOpts;
@@ -2314,8 +2342,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   protected Collection<String> expandCFOptions(
       List<? extends Class<?>> clazzPrefixes, String[] options) {
-    Set<String> res =
-        new HashSet<>(CollectionsPlume.mapCapacity(options.length * (1 + clazzPrefixes.size())));
+    Set<String> res = new HashSet<>(MapsP.mapCapacity(options.length * (1 + clazzPrefixes.size())));
     for (String option : options) {
       res.add(option);
       for (Class<?> clazz : clazzPrefixes) {
@@ -2439,31 +2466,28 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     this.elementsWithSuppressedWarnings.clear();
 
     Set<String> prefixes = new HashSet<>(getSuppressWarningsPrefixes());
-    Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
     for (SourceChecker subChecker : subcheckers) {
       allElementsWithSuppressedWarnings.addAll(subChecker.elementsWithSuppressedWarnings);
       subChecker.elementsWithSuppressedWarnings.clear();
       prefixes.addAll(subChecker.getSuppressWarningsPrefixes());
-      errorKeys.addAll(subChecker.messagesProperties.stringPropertyNames());
       subChecker.getVisitor().treesWithSuppressWarnings.clear();
     }
-    warnUnneededSuppressions(allElementsWithSuppressedWarnings, prefixes, errorKeys);
+    warnUnneededSuppressions(allElementsWithSuppressedWarnings, prefixes);
 
     getVisitor().treesWithSuppressWarnings.clear();
   }
 
   /**
-   * Issues a warning about any {@code @SuppressWarnings} string that didn't suppress a warning, but
-   * starts with one of the given prefixes (checker names). Does nothing if the string doesn't start
-   * with a checker name.
+   * Issues a warning about any {@code @SuppressWarnings} string that didn't suppress a warning. Has
+   * an effect only if the string is one of the given prefixes (checker names) or starts with one
+   * followed by a colon.
    *
    * @param elementsSuppress elements with a {@code @SuppressWarnings} that actually suppressed a
    *     warning
-   * @param prefixes the SuppressWarnings prefixes that suppress all warnings from this checker
-   * @param allErrorKeys all error keys that can be issued by this checker
+   * @param checkerPrefixes the SuppressWarnings prefixes associated with this checker
    */
   protected void warnUnneededSuppressions(
-      Set<Element> elementsSuppress, Set<String> prefixes, Set<String> allErrorKeys) {
+      Set<Element> elementsSuppress, Set<String> checkerPrefixes) {
     for (Tree tree : getVisitor().treesWithSuppressWarnings) {
       Element elt = TreeUtils.elementFromTree(tree);
       // TODO: This test is too coarse.  The fact that this @SuppressWarnings suppressed
@@ -2471,7 +2495,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       if (elementsSuppress.contains(elt)) {
         continue;
       }
-      // tree has a @SuppressWarnings annotation that didn't suppress any warnings.
+      // `tree` has a @SuppressWarnings annotation that didn't suppress any warnings.
       SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
       String[] suppressWarningsStrings = suppressAnno.value();
       for (String suppressWarningsString : suppressWarningsStrings) {
@@ -2479,12 +2503,29 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             && warnUnneededSuppressionsExceptions.matcher(suppressWarningsString).find(0)) {
           continue;
         }
-        for (String prefix : prefixes) {
-          if (suppressWarningsString.equals(prefix)
-              || (suppressWarningsString.startsWith(prefix + ":")
-                  && !suppressWarningsString.equals(prefix + ":unneeded.suppression"))) {
-            reportUnneededSuppression(tree, suppressWarningsString);
-            break; // Don't report the same warning string more than once.
+        if (suppressWarningsString.equals("allcheckers")) {
+          // Do nothing.
+        } else if (checkerPrefixes.contains(suppressWarningsString)) {
+          reportUnneededSuppression(tree, suppressWarningsString);
+        } else {
+          int colonPos = suppressWarningsString.indexOf(":");
+          if (colonPos != -1) {
+            String warningPrefix = suppressWarningsString.substring(0, colonPos);
+            if (!warningPrefix.equals("allcheckers") && checkerPrefixes.contains(warningPrefix)) {
+              // Test whether the error key is "unneeded.suppression", without creating a String.
+              boolean isUnneededSuppression =
+                  suppressWarningsString.length() == colonPos + 1 + "unneeded.suppression".length()
+                      && suppressWarningsString.endsWith("unneeded.suppression");
+              if (!isUnneededSuppression) {
+                reportUnneededSuppression(tree, suppressWarningsString);
+              }
+            }
+          } else {
+            // The annotation might be of the form `@SuppressWarnings("generic.argument")`.
+            // However, per the manual, "This only warns about @SuppressWarnings strings that
+            // contain a checker name".  Thus, `@SuppressWarnings("generic.argument")` is treated
+            // the same as `@SuppressWarnings("allcheckers:generic.argument")` in that no warning is
+            // ever issued about it.
           }
         }
       }
@@ -2502,7 +2543,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     report(
         swTree,
         Diagnostic.Kind.MANDATORY_WARNING,
-        SourceChecker.UNNEEDED_SUPPRESSION_KEY,
+        "unneeded.suppression",
         "\"" + suppressWarningsString + "\"",
         getClass().getSimpleName());
   }
@@ -2521,8 +2562,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     List<? extends AnnotationTree> annotations;
     if (TreeUtils.isClassTree(tree)) {
       annotations = ((ClassTree) tree).getModifiers().getAnnotations();
-    } else if (tree instanceof MethodTree) {
-      annotations = ((MethodTree) tree).getModifiers().getAnnotations();
+    } else if (tree instanceof MethodTree mt) {
+      annotations = mt.getModifiers().getAnnotations();
     } else {
       annotations = ((VariableTree) tree).getModifiers().getAnnotations();
     }
@@ -2548,10 +2589,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @see #shouldSuppressWarnings(Tree, String)
    */
   private boolean shouldSuppressWarnings(@Nullable Object src, String errKey) {
-    if (src instanceof Element) {
-      return shouldSuppressWarnings((Element) src, errKey);
-    } else if (src instanceof Tree) {
-      return shouldSuppressWarnings((Tree) src, errKey);
+    if (src instanceof Element elem) {
+      return shouldSuppressWarnings(elem, errKey);
+    } else if (src instanceof Tree srcTree) {
+      return shouldSuppressWarnings(srcTree, errKey);
     } else if (src == null) {
       return false;
     } else {
@@ -2572,7 +2613,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *     otherwise
    */
   public boolean shouldSuppressWarnings(Tree tree, String errKey) {
-
     Collection<String> prefixes = getSuppressWarningsPrefixes();
     if (prefixes.isEmpty() || (prefixes.contains(SUPPRESS_ALL_PREFIX) && prefixes.size() == 1)) {
       throw new BugInCF(
@@ -2616,13 +2656,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
       Tree decl = declPath.getLeaf();
 
-      if (decl instanceof VariableTree) {
-        Element elt = TreeUtils.elementFromDeclaration((VariableTree) decl);
+      if (decl instanceof VariableTree vt) {
+        Element elt = TreeUtils.elementFromDeclaration(vt);
         if (shouldSuppressWarnings(elt, errKey)) {
           return true;
         }
-      } else if (decl instanceof MethodTree) {
-        Element elt = TreeUtils.elementFromDeclaration((MethodTree) decl);
+      } else if (decl instanceof MethodTree mt) {
+        Element elt = TreeUtils.elementFromDeclaration(mt);
         if (shouldSuppressWarnings(elt, errKey)) {
           return true;
         }
@@ -2668,7 +2708,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     boolean useUncheckedDefaultsForSource = false;
     boolean useUncheckedDefaultsForByteCode = false;
     for (String arg : this.getStringsOption("useConservativeDefaultsForUncheckedCode", ',')) {
-      boolean value = arg.indexOf("-") != 0;
+      boolean value = arg.indexOf('-') != 0;
       arg = value ? arg : arg.substring(1);
       if (arg.equals(kindOfCode)) {
         return value;
@@ -2744,8 +2784,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *       with a message key that contains "generic.argument".
    * </ol>
    *
-   * {@code "allcheckers"} is a prefix that suppresses a warning from any checker. {@code "all"} is
-   * a partial-message-key that suppresses a warning with any message key.
+   * {@code "allcheckers"} is a prefix/checkername that suppresses a warning from any checker.
+   * {@code "all"} is a partial-message-key that suppresses a warning with any message key.
    *
    * <p>If the {@code -ArequirePrefixInWarningSuppressions} command-line argument was supplied, then
    * {@code "partial-message-key"} has no effect; {@code "prefix"} and {@code
@@ -2779,44 +2819,45 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     for (String currentSuppressWarningsInEffect : suppressWarningsInEffect) {
-      int colonPos = currentSuppressWarningsInEffect.indexOf(":");
-      String messageKeyInSuppressWarningsString;
+      int colonPos = currentSuppressWarningsInEffect.indexOf(':');
+      String messageKeyInEffect;
       if (colonPos == -1) {
-        // The SuppressWarnings string has no colon, so it is not of the form
+        // `currentSuppressWarningsInEffect` has no colon, so it is not of the form
         // prefix:partial-message-key.
         if (prefixes.contains(currentSuppressWarningsInEffect)) {
           // The value in the @SuppressWarnings is exactly a prefix.
           // Suppress the warning unless its message key is "unneeded.suppression".
-          boolean result = !currentSuppressWarningsInEffect.equals(UNNEEDED_SUPPRESSION_KEY);
+          boolean result = !messageKey.equals("unneeded.suppression");
           return result;
         } else if (requirePrefixInWarningSuppressions) {
           // A prefix is required, but this SuppressWarnings string does not have a
-          // prefix; check the next SuppressWarnings string.
+          // prefix.
           continue;
-        } else if (currentSuppressWarningsInEffect.equals(SUPPRESS_ALL_MESSAGE_KEY)) {
-          // Prefixes aren't required and the SuppressWarnings string is "all".
+        } else if (currentSuppressWarningsInEffect.equals("all")
+            || currentSuppressWarningsInEffect.equals("allcheckers")) {
+          // Prefixes aren't required and the whole SuppressWarnings string is
+          // the messagekey "all" or the checkername "allcheckers".
           // Suppress the warning unless its message key is "unneeded.suppression".
-          boolean result = !currentSuppressWarningsInEffect.equals(UNNEEDED_SUPPRESSION_KEY);
+          boolean result = !messageKey.equals("unneeded.suppression");
           return result;
         }
-        // The currentSuppressWarningsInEffect is not a prefix or a prefix:message-key, so
+        // The currentSuppressWarningsInEffect is not a checker name, so
         // it might be a message key.
-        messageKeyInSuppressWarningsString = currentSuppressWarningsInEffect;
+        messageKeyInEffect = currentSuppressWarningsInEffect;
       } else {
         // The SuppressWarnings string has a colon; that is, it has a prefix.
         String currentSuppressWarningsPrefix =
             currentSuppressWarningsInEffect.substring(0, colonPos);
         if (!prefixes.contains(currentSuppressWarningsPrefix)) {
-          // The prefix of this SuppressWarnings string is a not a prefix supported by
-          // this checker. Proceed to the next SuppressWarnings string.
+          // The prefix of this SuppressWarnings string is not a prefix supported
+          // by this checker. Proceed to the next SuppressWarnings string.
           continue;
         }
-        messageKeyInSuppressWarningsString =
-            currentSuppressWarningsInEffect.substring(colonPos + 1);
+        messageKeyInEffect = currentSuppressWarningsInEffect.substring(colonPos + 1);
       }
       // Check if the message key in the warning suppression is part of the message key that
-      // the checker is emiting.
-      if (messageKeyMatches(messageKey, messageKeyInSuppressWarningsString)) {
+      // the checker is emitting.
+      if (messageKeyMatches(messageKey, messageKeyInEffect)) {
         return true;
       }
     }
@@ -2831,16 +2872,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @param messageKey the message key of the error that is being emitted, without any "checker:"
    *     prefix
-   * @param messageKeyInSuppressWarningsString the message key in a {@code @SuppressWarnings}
-   *     annotation
+   * @param messageKeyInEffect the message key in a {@code @SuppressWarnings} annotation that is
+   *     currently in effect
    * @return true if the arguments match
    */
-  protected boolean messageKeyMatches(
-      String messageKey, String messageKeyInSuppressWarningsString) {
-    return messageKey.equals(messageKeyInSuppressWarningsString)
-        || messageKey.startsWith(messageKeyInSuppressWarningsString + ".")
-        || messageKey.endsWith("." + messageKeyInSuppressWarningsString)
-        || messageKey.contains("." + messageKeyInSuppressWarningsString + ".");
+  protected boolean messageKeyMatches(String messageKey, String messageKeyInEffect) {
+    return messageKey.equals(messageKeyInEffect)
+        || messageKey.startsWith(messageKeyInEffect + ".")
+        || messageKey.endsWith("." + messageKeyInEffect)
+        || messageKey.contains("." + messageKeyInEffect + ".");
   }
 
   /**
@@ -3162,8 +3202,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         }
 
         DiagnosticPosition pos = null;
-        if ((ce instanceof BugInCF) && ((BugInCF) ce).getLocation() != null) {
-          pos = (DiagnosticPosition) ((BugInCF) ce).getLocation();
+        if (ce instanceof BugInCF bugInCF && bugInCF.getLocation() != null) {
+          pos = (DiagnosticPosition) bugInCF.getLocation();
         } else if (this.visitor != null) {
           pos = (DiagnosticPosition) this.visitor.lastVisited;
         }
@@ -3401,8 +3441,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       Field field = handler.getClass().getDeclaredField("val$delegateTo");
       field.setAccessible(true);
       Object o = field.get(handler);
-      if (o instanceof ProcessingEnvironment) {
-        return (ProcessingEnvironment) o;
+      if (o instanceof ProcessingEnvironment pe) {
+        return pe;
       }
       return null;
     } catch (NoSuchFieldException | IllegalAccessException e) {
@@ -3424,8 +3464,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       Field field = delegateClass.getDeclaredField("delegate");
       field.setAccessible(true);
       Object o = field.get(env);
-      if (o instanceof ProcessingEnvironment) {
-        return (ProcessingEnvironment) o;
+      if (o instanceof ProcessingEnvironment pe) {
+        return pe;
       }
       return null;
     } catch (NoSuchFieldException | IllegalAccessException e) {

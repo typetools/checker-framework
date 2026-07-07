@@ -8,17 +8,17 @@ public class Issue868 {
   interface MyList {}
 
   <E extends @Nullable Object & @Nullable MyList> void test1(E e) {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     e.toString();
   }
 
   <E extends Object & @Nullable MyList> void test2(E e) {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     e.toString();
   }
 
   <E extends @Nullable Object & MyList> void test3(E e) {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     e.toString();
   }
 
@@ -26,14 +26,14 @@ public class Issue868 {
     e.toString();
   }
 
-  // :: warning: (explicit.annotation.ignored)
+  // :: warning: [explicit.annotation.ignored]
   <E extends @NonNull Object & @Nullable MyList> void test5(E e) {
     e.toString();
   }
 
-  // :: warning: (explicit.annotation.ignored)
+  // :: warning: [explicit.annotation.ignored]
   <E extends @Nullable Object & @NonNull MyList> void test6(E e) {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     e.toString();
   }
 
@@ -41,19 +41,19 @@ public class Issue868 {
     this.<@Nullable MyList>test1(null);
     this.<@Nullable MyList>test2(null);
     this.<@Nullable MyList>test3(null);
-    // :: error: (type.argument)
+    // :: error: [type.argument]
     this.<@Nullable MyList>test4(null);
-    // :: error: (type.argument)
+    // :: error: [type.argument]
     this.<@Nullable MyList>test5(null);
     this.<@Nullable MyList>test6(null);
   }
 
   <T extends @Nullable Object & @Nullable MyList> void use2(T t, @NonNull T nonNullT) {
     this.<T>test1(t);
-    // :: error: (argument)
+    // :: error: [argument]
     this.<@NonNull T>test3(t);
     this.<@NonNull T>test3(nonNullT);
-    // :: error: (type.argument)
+    // :: error: [type.argument]
     this.<T>test5(t);
   }
 }

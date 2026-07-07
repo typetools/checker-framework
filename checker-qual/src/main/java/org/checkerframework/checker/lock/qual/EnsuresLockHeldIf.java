@@ -35,7 +35,7 @@ public @interface EnsuresLockHeldIf {
    * Returns Java expressions whose values are locks that are held after the method returns the
    * given result.
    *
-   * @return Java expressions whose values are locks that are held after the method returns the
+   * @return the Java expressions whose values are locks that are held after the method returns the
    *     given result
    * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Syntax of
    *     Java expressions</a>

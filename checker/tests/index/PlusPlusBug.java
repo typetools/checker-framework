@@ -4,11 +4,11 @@ public class PlusPlusBug {
   int[] array = {};
 
   void test(@LTLengthOf("array") int x) {
-    // :: error: (unary.increment)
+    // :: error: [unary.increment]
     x++;
-    // :: error: (unary.increment)
+    // :: error: [unary.increment]
     ++x;
-    // :: error: (assignment)
+    // :: error: [assignment]
     x = x + 1;
   }
 }

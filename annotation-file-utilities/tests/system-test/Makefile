@@ -7,8 +7,8 @@
 JAVA?=java
 JAVAC?=javac
 
-ANNCAT ?= ../../scripts/anncat
-JAVAVERSION = $(shell $(JAVA) -version 2>&1)
+ANNCAT ?= ../../bin/anncat
+JAVAVERSION := $(shell $(JAVA) -version 2>&1)
 
 #Switch the lines below to deactivate this test
 all: clean results
@@ -16,9 +16,9 @@ all: clean results
 
 warn_and_exit:
 	@echo ""
-	@echo "******************************************************"
-	@echo "Warning: The sytem test has been temporarily disabled!"
-	@echo "******************************************************"
+	@echo "*******************************************************"
+	@echo "Warning: The system test has been temporarily disabled!"
+	@echo "*******************************************************"
 	@echo ""
 
 results: out1 check-out2 out3 out4.class check-out5
@@ -29,7 +29,7 @@ clean:
 
 # Step 1: Compile the source with annotations.
 out1:
-	mkdir out1
+	mkdir -p out1
 	${JAVAC} -d out1 source-ann/AnnotationTest.java || (\rm -rf out1 && false)
 
 # Step 2: Convert the annotated class file to an annotation file.

@@ -16,7 +16,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * <p>{@code Range} is immutable.
  */
-public class Range {
+public final class Range {
 
   /** The lower bound of the interval, inclusive. */
   public final long from;
@@ -111,7 +111,7 @@ public class Range {
    * @return the Range [from..to]
    */
   public static Range create(long from, long to) {
-    if (!(from <= to)) {
+    if (from > to) {
       throw new IllegalArgumentException(String.format("Invalid Range: %s %s", from, to));
     }
     return new Range(from, to);
@@ -150,22 +150,17 @@ public class Range {
    * @return the range for the given primitive type
    */
   public static Range create(TypeKind typeKind) {
-    switch (typeKind) {
-      case INT:
-        return INT_EVERYTHING;
-      case SHORT:
-        return SHORT_EVERYTHING;
-      case BYTE:
-        return BYTE_EVERYTHING;
-      case CHAR:
-        return CHAR_EVERYTHING;
-      case LONG:
-        return LONG_EVERYTHING;
-      default:
-        throw new IllegalArgumentException(
-            "Invalid TypeKind for Range: expected INT, SHORT, BYTE, CHAR, or LONG, got "
-                + typeKind);
-    }
+    return switch (typeKind) {
+      case INT -> INT_EVERYTHING;
+      case SHORT -> SHORT_EVERYTHING;
+      case BYTE -> BYTE_EVERYTHING;
+      case CHAR -> CHAR_EVERYTHING;
+      case LONG -> LONG_EVERYTHING;
+      default ->
+          throw new IllegalArgumentException(
+              "Invalid TypeKind for Range: expected INT, SHORT, BYTE, CHAR, or LONG, got "
+                  + typeKind);
+    };
   }
 
   /**
@@ -217,13 +212,15 @@ public class Range {
 
   /**
    * Returns a range with its bounds specified by two parameters, {@code from} and {@code to}. If
-   * {@code from} is greater than {@code to}, returns {@link #NOTHING}.
+   * {@code from > to}, returns {@link #NOTHING}.
+   *
+   * <p>Usually, you should use {@link #create(long,long)} rather than this method.
    *
    * @param from the lower bound (inclusive)
    * @param to the upper bound (inclusive)
    * @return newly-created Range or NOTHING
    */
-  private static Range createOrNothing(long from, long to) {
+  public static Range createOrNothing(long from, long to) {
     return createOrElse(from, to, NOTHING);
   }
 
@@ -250,8 +247,8 @@ public class Range {
     if (this == obj) {
       return true;
     }
-    if (obj instanceof Range) {
-      return equalsRange((Range) obj);
+    if (obj instanceof Range r) {
+      return equalsRange(r);
     }
     return false;
   }
@@ -541,7 +538,7 @@ public class Range {
       long resultFrom = from + right.from;
       long resultTo = to + right.to;
       if (from > to) {
-        return Range.EVERYTHING;
+        return EVERYTHING;
       } else {
         return create(resultFrom, resultTo);
       }
@@ -782,7 +779,7 @@ public class Range {
     // If the left-hand operand is long type, only the 6 lowest-order bits of the right-hand
     // operand are used.
     // For example, while 1 << -1== 1 << 31, 1L << -1 == 1L << 63.
-    // For ths reason, we restrict the shift-bits to analyze in [0. 31] and give up the analysis
+    // For this reason, we restrict the shift-bits to analyze in [0. 31] and give up the analysis
     // when out of this range.
     //
     // Other possible solutions:

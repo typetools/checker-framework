@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -51,8 +52,8 @@ public class Typing extends TypeConstraint {
    * Creates a typing constraint.
    *
    * @param parent the constraint whose reduction created this constraint
-   * @param S left hand side type
-   * @param t right hand side type
+   * @param S left-hand side type
+   * @param t right-hand side type
    * @param kind the kind of constraint
    */
   public Typing(Constraint parent, AbstractType S, AbstractType t, Kind kind) {
@@ -63,8 +64,8 @@ public class Typing extends TypeConstraint {
    * Creates a typing constraint.
    *
    * @param source a string describing where this constraint came from
-   * @param S left hand side type
-   * @param t right hand side type
+   * @param S left-hand side type
+   * @param t right-hand side type
    * @param kind the kind of constraint
    */
   public Typing(String source, AbstractType S, AbstractType t, Kind kind) {
@@ -76,8 +77,8 @@ public class Typing extends TypeConstraint {
    * Creates a typing constraint.
    *
    * @param parent the constraint whose reduction created this constraint
-   * @param S left hand side type
-   * @param t right hand side type
+   * @param S left-hand side type
+   * @param t right-hand side type
    * @param kind the kind of constraint
    * @param covarTypeArg true if the constraint is for a covariant type argument
    */
@@ -86,13 +87,8 @@ public class Typing extends TypeConstraint {
     super(parent, t);
     assert S != null;
     switch (kind) {
-      case TYPE_COMPATIBILITY:
-      case SUBTYPE:
-      case CONTAINED:
-      case TYPE_EQUALITY:
-        break;
-      default:
-        throw new BugInCF("Unexpected kind: " + kind);
+      case TYPE_COMPATIBILITY, SUBTYPE, CONTAINED, TYPE_EQUALITY -> {} // valid kinds
+      default -> throw new BugInCF("Unexpected kind: " + kind);
     }
     this.S = S;
     this.kind = kind;
@@ -140,18 +136,13 @@ public class Typing extends TypeConstraint {
   @Override
   public ReductionResult reduce(Java8InferenceContext context) {
 
-    switch (getKind()) {
-      case TYPE_COMPATIBILITY:
-        return reduceCompatible();
-      case SUBTYPE:
-        return reduceSubtyping(context);
-      case CONTAINED:
-        return reduceContained();
-      case TYPE_EQUALITY:
-        return reduceEquality();
-      default:
-        throw new BugInCF("Unexpected kind: " + getKind());
-    }
+    return switch (getKind()) {
+      case TYPE_COMPATIBILITY -> reduceCompatible();
+      case SUBTYPE -> reduceSubtyping(context);
+      case CONTAINED -> reduceContained();
+      case TYPE_EQUALITY -> reduceEquality();
+      default -> throw new BugInCF("Unexpected kind: " + getKind());
+    };
   }
 
   /**
@@ -199,19 +190,13 @@ public class Typing extends TypeConstraint {
       return ConstraintSet.TRUE;
     }
 
-    switch (T.getTypeKind()) {
-      case DECLARED:
-        return reduceSubtypeClass(context);
-      case ARRAY:
-        return reduceSubtypeArray();
-      case WILDCARD:
-      case TYPEVAR:
-        return reduceSubtypeTypeVariable();
-      case INTERSECTION:
-        return reduceSubtypingIntersection();
-      default:
-        return ConstraintSet.FALSE;
-    }
+    return switch (T.getTypeKind()) {
+      case DECLARED -> reduceSubtypeClass(context);
+      case ARRAY -> reduceSubtypeArray();
+      case WILDCARD, TYPEVAR -> reduceSubtypeTypeVariable();
+      case INTERSECTION -> reduceSubtypingIntersection();
+      default -> ConstraintSet.FALSE;
+    };
   }
 
   /**
@@ -249,8 +234,8 @@ public class Typing extends TypeConstraint {
       int index = 0;
       for (AbstractType b : Bs) {
         AbstractType a = As.next();
-        boolean convarArg = covariantArgIndexes.contains(index);
-        set.add(new Typing(this, b, a, Kind.CONTAINED, convarArg));
+        boolean covarArg = covariantArgIndexes.contains(index);
+        set.add(new Typing(this, b, a, Kind.CONTAINED, covarArg));
         index++;
       }
 
@@ -323,10 +308,16 @@ public class Typing extends TypeConstraint {
       if (S.getTypeKind() == TypeKind.WILDCARD) {
         return ConstraintSet.FALSE;
       }
-      if (isCovarTypeArg) {
-        return new Typing(this, S, T, Kind.SUBTYPE);
-      }
-      return new Typing(this, S, T, Kind.TYPE_EQUALITY);
+      // This code is incorrect because the Java types must be equal, but the qualifiers can
+      // be covariant.
+      // if (isCovarTypeArg) {
+      // return new Typing(this, S, T, Kind.SUBTYPE);
+      // }
+      // However, this causes new false positives.  For example,
+      // checker/tests/tainting/CovariantError.java
+      // TODO: (#7708) Need to mark this bound as equal for java types, but subtype for qualifiers.
+      // isCovarTypeArg is ignored when reducing this constraint.
+      return new Typing(this, S, T, Kind.TYPE_EQUALITY, isCovarTypeArg);
 
     } else if (T.isUnboundWildcard()) {
       return ConstraintSet.TRUE;
@@ -464,19 +455,16 @@ public class Typing extends TypeConstraint {
 
   @Override
   public String toString() {
-    switch (kind) {
-      case TYPE_COMPATIBILITY:
-        return S + " -> " + T;
-      case SUBTYPE:
-        return S + " <: " + T;
-      case CONTAINED:
-        return S + " <= " + T;
-      case TYPE_EQUALITY:
-        return S + " = " + T;
-      default:
+    return switch (kind) {
+      case TYPE_COMPATIBILITY -> S + " -> " + T;
+      case SUBTYPE -> S + " <: " + T;
+      case CONTAINED -> S + " <= " + T;
+      case TYPE_EQUALITY -> S + " = " + T;
+      default -> {
         assert false;
-        return super.toString();
-    }
+        yield super.toString();
+      }
+    };
   }
 
   @Override
@@ -498,9 +486,6 @@ public class Typing extends TypeConstraint {
 
   @Override
   public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + S.hashCode();
-    result = 31 * result + kind.hashCode();
-    return result;
+    return Objects.hash(super.hashCode(), S, kind);
   }
 }

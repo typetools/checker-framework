@@ -6,7 +6,7 @@ class ImmutableSetOperations {
   void testCreateEmptyImmutableSet() {
     Set<Integer> emptyInts = Set.of();
     // Creating a copy of an empty set should also yield an empty set
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonEmpty Set<Integer> copyOfEmptyInts = Set.copyOf(emptyInts);
   }
 

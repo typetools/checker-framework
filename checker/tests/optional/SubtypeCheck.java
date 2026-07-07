@@ -9,7 +9,7 @@ public class SubtypeCheck {
   void foo(@MaybePresent Optional<String> mp, @Present Optional<String> p) {
     @MaybePresent Optional<String> mp2 = mp;
     @MaybePresent Optional<String> mp3 = p;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Present Optional<String> p2 = mp;
     @Present Optional<String> p3 = p;
   }

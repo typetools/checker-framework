@@ -74,17 +74,6 @@ public class ObjectCreationNode extends Node {
   }
 
   /**
-   * Returns the constructor node.
-   *
-   * @return the constructor node
-   * @deprecated use {@link #getTypeToInstantiate()}
-   */
-  @Deprecated // 2024-02-16
-  public Node getConstructor() {
-    return typeToInstantiate;
-  }
-
-  /**
    * Returns the typeToInstantiate node. A non-generic typeToInstantiate node can refer to a {@link
    * ClassNameNode}, while a generic typeToInstantiate node can refer to a {@link
    * ParameterizedTypeNode}.
@@ -153,20 +142,22 @@ public class ObjectCreationNode extends Node {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     if (enclosingExpression != null) {
-      sb.append(enclosingExpression + ".");
+      sb.append(enclosingExpression);
+      sb.append('.');
     }
     sb.append("new ");
     if (!tree.getTypeArguments().isEmpty()) {
-      sb.append("<");
+      sb.append('<');
       sb.append(StringsPlume.join(", ", tree.getTypeArguments()));
-      sb.append(">");
+      sb.append('>');
     }
-    sb.append(typeToInstantiate + "(");
+    sb.append(typeToInstantiate);
+    sb.append('(');
     sb.append(StringsPlume.join(", ", arguments));
-    sb.append(")");
+    sb.append(')');
     if (classbody != null) {
       // TODO: maybe this can be done nicer...
-      sb.append(" ");
+      sb.append(' ');
       sb.append(classbody.toString());
     }
     return sb.toString();
@@ -175,10 +166,9 @@ public class ObjectCreationNode extends Node {
   @Override
   @Pure
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ObjectCreationNode)) {
+    if (!(obj instanceof ObjectCreationNode other)) {
       return false;
     }
-    ObjectCreationNode other = (ObjectCreationNode) obj;
     // TODO: See issue 470.
     if (typeToInstantiate == null && other.getTypeToInstantiate() != null) {
       return false;

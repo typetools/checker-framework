@@ -62,6 +62,7 @@ import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -73,11 +74,11 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.util.IPair;
@@ -288,8 +289,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    * Performs pre-processing on annotations written by users, replacing illegal annotations by legal
    * ones.
    */
-  private class UpperBoundTypeAnnotator extends TypeAnnotator {
+  private final class UpperBoundTypeAnnotator extends TypeAnnotator {
 
+    /**
+     * Creates an UpperBoundTypeAnnotator.
+     *
+     * @param atypeFactory the annotated type factory
+     */
     private UpperBoundTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
       super(atypeFactory);
     }
@@ -297,7 +303,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     @Override
     protected Void scan(AnnotatedTypeMirror type, Void aVoid) {
       // If there is an LTLengthOf annotation whose argument lengths don't match, replace it
-      // with bottom.
+      // with bottom.  (A warning is issued in UpperBoundVisitor#visitAnnotation.)
       AnnotationMirror anm = type.getPrimaryAnnotation(LTLengthOf.class);
       if (anm != null) {
         List<String> sequences =
@@ -554,24 +560,24 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       AnnotationMirrorSet annos = atm.getPrimaryAnnotations();
       for (AnnotationMirror anno : annos) {
         switch (AnnotationUtils.annotationName(anno)) {
-          case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+          case ValueAnnotatedTypeFactory.STRINGVAL_NAME -> {
             List<String> strings = vatf.getStringValues(anno);
             if (strings != null && !strings.contains("")) {
               return true;
             }
-            break;
-          case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
+          }
+          case ValueAnnotatedTypeFactory.ARRAYLEN_NAME -> {
             List<Integer> lengths = vatf.getArrayLength(anno);
             if (lengths != null && !lengths.contains(0)) {
               return true;
             }
-            break;
-          default:
+          }
+          default -> {
             Range range = vatf.getRange(anno);
             if (range != null && range.from > 0) {
               return true;
             }
-            break;
+          }
         }
       }
       return false;
@@ -658,29 +664,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       ExpressionTree left = tree.getLeftOperand();
       ExpressionTree right = tree.getRightOperand();
       switch (tree.getKind()) {
-        case PLUS:
-        case MINUS:
-          // Dataflow refines this type if possible
-          type.addAnnotation(UNKNOWN);
-          break;
-        case MULTIPLY:
-          addAnnotationForMultiply(left, right, type);
-          break;
-        case DIVIDE:
-          addAnnotationForDivide(left, right, type);
-          break;
-        case REMAINDER:
-          addAnnotationForRemainder(left, right, type);
-          break;
-        case AND:
-          addAnnotationForAnd(left, right, type);
-          break;
-        case RIGHT_SHIFT:
-        case UNSIGNED_RIGHT_SHIFT:
-          addAnnotationForRightShift(left, right, type);
-          break;
-        default:
-          break;
+        case PLUS, MINUS -> type.addAnnotation(UNKNOWN); // Dataflow refines this type if possible
+        case MULTIPLY -> addAnnotationForMultiply(left, right, type);
+        case DIVIDE -> addAnnotationForDivide(left, right, type);
+        case REMAINDER -> addAnnotationForRemainder(left, right, type);
+        case AND -> addAnnotationForAnd(left, right, type);
+        case RIGHT_SHIFT, UNSIGNED_RIGHT_SHIFT -> addAnnotationForRightShift(left, right, type);
+        default -> {}
       }
       return super.visitBinary(tree, type);
     }
@@ -867,9 +857,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
       ExpressionTree seqTree = getLengthSequenceTree(seqLenTree);
 
-      if (randTree instanceof MethodInvocationTree && seqTree != null) {
-
-        MethodInvocationTree mitree = (MethodInvocationTree) randTree;
+      if (randTree instanceof MethodInvocationTree mitree && seqTree != null) {
 
         if (imf.isMathRandom(mitree, processingEnv)) {
           // Okay, so this is Math.random() * array.length, which must be NonNegative
@@ -906,18 +894,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    * @return a @{@link UpperBoundLiteral} annotation
    */
   public AnnotationMirror createLiteral(int i) {
-    switch (i) {
-      case -1:
-        return NEGATIVEONE;
-      case 0:
-        return ZERO;
-      case 1:
-        return ONE;
-      default:
-        return new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
-            .setValue("value", i)
-            .build();
-    }
+    return switch (i) {
+      case -1 -> NEGATIVEONE;
+      case 0 -> ZERO;
+      case 1 -> ONE;
+      default ->
+          new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
+              .setValue("value", i)
+              .build();
+    };
   }
 
   /**
@@ -984,13 +969,19 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         continue;
       }
       CFStore store = getStoreBefore(tree);
+      if (store == null) {
+        throw new BugInCF(
+            "cannot find store before tree: " + TreeUtils.toStringTruncated(tree, 60));
+      }
       CFValue value = store.getValue(je);
       if (value != null && value.getAnnotations().size() == 1) {
+        AnnotationMirror anno =
+            qualHierarchy.findAnnotationInHierarchy(value.getAnnotations(), UNKNOWN);
+        if (anno == null) {
+          throw new BugInCF("cannot find annotation in hierarchy: " + value.getAnnotations());
+        }
         UBQualifier newUBQ =
-            UBQualifier.createUBQualifier(
-                qualHierarchy.findAnnotationInHierarchy(value.getAnnotations(), UNKNOWN),
-                AnnotatedTypeFactory.negateConstant(offset),
-                (IndexChecker) checker);
+            UBQualifier.createUBQualifier(anno, negateConstant(offset), (IndexChecker) checker);
         if (ubQualifier == null) {
           ubQualifier = newUBQ;
         } else {

@@ -20,7 +20,7 @@ public @Interned class InternedClass {
   private InternedClass(int i) {
     value = i;
     // "this" in the constructor is not interned.
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Interned InternedClass that = this;
   }
 
@@ -63,7 +63,7 @@ public @Interned class InternedClass {
     boolean b2 = (this == returnInternedObject()); // valid
     boolean b3 = (this == ica[0]); // valid
     InternedClass ic2 = returnArray()[0]; // valid
-    // :: error: (interned.object.creation)
+    // :: error: [interned.object.creation]
     ica[0] = new InternedClass(22);
     InternedClass[] arr1 = returnArray(); // valid
     InternedClass[] arr2 = new InternedClass[22]; // valid
@@ -95,7 +95,7 @@ public @Interned class InternedClass {
     int len = a_old.length;
     InternedClass[] a_new = new InternedClass[len];
     for (int i = 0; i < len; i++) {
-      // :: error: (interned.object.creation)
+      // :: error: [interned.object.creation]
       a_new[i] = new InternedClass(a_old[i]);
     }
     return a_new;
@@ -139,7 +139,7 @@ public @Interned class InternedClass {
   Class[] getSuperClasses(Class<?> c) {
     Vector<Class<?>> v = new Vector<>();
     while (true) {
-      // :: warning: (unnecessary.equals)
+      // :: warning: [unnecessary.equals]
       if (c.getSuperclass().equals((new Object()).getClass())) {
         break;
       }

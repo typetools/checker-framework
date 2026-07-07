@@ -10,7 +10,7 @@ abstract class BasicTest {
 
   public void runtimeExceptionManuallyThrown() throws IOException {
     // this code is obviously wrong
-    // ::error: (required.method.not.called)
+    // ::error: [required.method.not.called]
     Closeable r = alloc();
     if (true) {
       throw new RuntimeException();
@@ -20,7 +20,7 @@ abstract class BasicTest {
 
   public void runtimeExceptionFromMethod() throws IOException {
     // method() may throw RuntimeException, so this code is not OK
-    // ::error: (required.method.not.called)
+    // ::error: [required.method.not.called]
     Closeable r = alloc();
     method();
     r.close();
@@ -49,7 +49,7 @@ abstract class BasicTest {
   public void doNotIgnoreNPESubtype() throws IOException {
     // Only NullPointerException should be ignored, not its subtypes, since the options
     // specified "=java.lang.NullPointerException".
-    // ::error: (required.method.not.called)
+    // ::error: [required.method.not.called]
     Closeable r = alloc();
     if (true) {
       throw CustomNPESubtype.INSTANCE;

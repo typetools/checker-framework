@@ -96,7 +96,7 @@ public enum ConversionCategory {
 
   /**
    * Use if no object of any type can be passed as parameter. In this case, the only legal value is
-   * null. This is seldomly needed, and indicates an error in most cases. For example:
+   * null. This is seldom needed, and indicates an error in most cases. For example:
    *
    * <pre>
    *   format("Test %1$f %1$d", null);
@@ -107,8 +107,8 @@ public enum ConversionCategory {
   NULL(null),
 
   /**
-   * Use if a parameter is not used by the formatter. This is seldomly needed, and indicates an
-   * error in most cases. For example:
+   * Use if a parameter is not used by the formatter. This is seldom needed, and indicates an error
+   * in most cases. For example:
    *
    * <pre>
    *   format("Test %1$s %3$s", "a","unused","b");
@@ -187,8 +187,9 @@ public enum ConversionCategory {
    * The conversion categories that have a corresponding conversion character. This lacks UNUSED,
    * TIME_AND_INT, etc.
    */
-  private static final ConversionCategory[] conversionCategoriesWithChar =
-      new ConversionCategory[] {GENERAL, CHAR, INT, FLOAT, TIME};
+  private static final ConversionCategory[] conversionCategoriesWithChar = {
+    GENERAL, CHAR, INT, FLOAT, TIME
+  };
 
   /**
    * Converts a conversion character to a category. For example:
@@ -219,11 +220,12 @@ public enum ConversionCategory {
   }
 
   /** Conversion categories that need to be considered by {@link #intersect}. */
-  private static final ConversionCategory[] conversionCategoriesForIntersect =
-      new ConversionCategory[] {CHAR, INT, FLOAT, TIME, CHAR_AND_INT, INT_AND_TIME, NULL};
+  private static final ConversionCategory[] conversionCategoriesForIntersect = {
+    CHAR, INT, FLOAT, TIME, CHAR_AND_INT, INT_AND_TIME, NULL
+  };
 
   /**
-   * Returns the intersection of two categories. This is seldomly needed.
+   * Returns the intersection of two categories. This is seldom needed.
    *
    * <blockquote>
    *
@@ -270,11 +272,12 @@ public enum ConversionCategory {
   }
 
   /** Conversion categories that need to be considered by {@link #union}. */
-  private static final ConversionCategory[] conversionCategoriesForUnion =
-      new ConversionCategory[] {NULL, CHAR_AND_INT, INT_AND_TIME, CHAR, INT, FLOAT, TIME};
+  private static final ConversionCategory[] conversionCategoriesForUnion = {
+    NULL, CHAR_AND_INT, INT_AND_TIME, CHAR, INT, FLOAT, TIME
+  };
 
   /**
-   * Returns the union of two categories. This is seldomly needed.
+   * Returns the union of two categories. This is seldom needed.
    *
    * <blockquote>
    *
@@ -346,7 +349,7 @@ public enum ConversionCategory {
   @Pure
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    StringBuilder sb = new StringBuilder(32);
     sb.append(name());
     sb.append(" conversion category");
 
@@ -358,7 +361,7 @@ public enum ConversionCategory {
     for (Class<?> cls : types) {
       sj.add(cls.getSimpleName());
     }
-    sb.append(" ");
+    sb.append(' ');
     sb.append(sj);
 
     return sb.toString();

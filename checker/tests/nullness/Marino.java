@@ -25,24 +25,24 @@ public class Marino {
 
       @NonNull String a = s; // s cannot be null here
       s = null;
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       System.out.println("hi" + s.length());
       if (i > 2) break;
-      // :: error: (assignment)
+      // :: error: [assignment]
       a = null;
     }
     // Checker doesn't catch that m_str not initialized.
-    // This is Caveat 2 in the manual, but note that it is not limited to contructors.
+    // This is Caveat 2 in the manual, but note that it is not limited to constructors.
     System.out.println("Member string has length: " + m_str.length());
 
     // Dereference of any static field is allowed.
     // I suppose this is a design decision for practicality in interacting with libraries...?
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     System.out.println("Member string has length: " + ms_str.length());
     System.out.println(
         "Everyone should get this error: "
             +
-            // :: error: (dereference.of.nullable)
+            // :: error: [dereference.of.nullable]
             m_nullableStr.length());
 
     s = null;
@@ -53,7 +53,7 @@ public class Marino {
       s = "bye";
     } finally {
       // Checker doesn't catch that s will be null here.
-      // :: error: (assignment)
+      // :: error: [assignment]
       b = s;
       System.out.println("b has length: " + b.length());
     }

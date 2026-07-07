@@ -243,15 +243,15 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
 
       // do type parameter bound annotations
       for (Map.Entry<BoundLocation, ATypeElement> e : aClass.bounds.entrySet()) {
-        BoundLocation bloc = e.getKey();
+        BoundLocation bLoc = e.getKey();
         ATypeElement bound = e.getValue();
 
         TypeReference typeReference =
-            bloc.boundIndex == -1
+            bLoc.boundIndex == -1
                 ? TypeReference.newTypeParameterReference(
-                    TypeReference.CLASS_TYPE_PARAMETER, bloc.paramIndex)
+                    TypeReference.CLASS_TYPE_PARAMETER, bLoc.paramIndex)
                 : TypeReference.newTypeParameterBoundReference(
-                    TypeReference.CLASS_TYPE_PARAMETER_BOUND, bloc.paramIndex, bloc.boundIndex);
+                    TypeReference.CLASS_TYPE_PARAMETER_BOUND, bLoc.paramIndex, bLoc.boundIndex);
         for (Annotation tla : bound.tlAnnotationsHere) {
           // For ClassVisitor. typeReference has sort: CLASS_TYPE_PARAMETER,
           // CLASS_TYPE_PARAMETER_BOUND or CLASS_EXTENDS.
@@ -262,7 +262,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
 
         typeReference =
             TypeReference.newTypeParameterBoundReference(
-                TypeReference.CLASS_TYPE_PARAMETER_BOUND, bloc.paramIndex, bloc.boundIndex);
+                TypeReference.CLASS_TYPE_PARAMETER_BOUND, bLoc.paramIndex, bLoc.boundIndex);
         for (Map.Entry<List<TypePathEntry>, ATypeElement> e2 : bound.innerTypes.entrySet()) {
           TypePath typePath = TypePathEntry.listToTypePath(e2.getKey());
           ATypeElement innerType = e2.getValue();
@@ -559,16 +559,6 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
     }
 
     @Override
-    public void visitCode() {
-      super.visitCode();
-    }
-
-    @Override
-    public void visitLabel(Label label) {
-      super.visitLabel(label);
-    }
-
-    @Override
     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
       super.visitFieldInsn(opcode, owner, name, desc);
       track();
@@ -792,25 +782,11 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
       boolean visible = isRuntimeRetention(tla);
 
       switch (typeSort) {
-        case TypeReference.INSTANCEOF:
-          {
+        case TypeReference.INSTANCEOF, TypeReference.NEW ->
             typeReference = TypeReference.newTypeReference(typeSort);
-            break;
-          }
-
-        case TypeReference.NEW:
-          {
-            typeReference = TypeReference.newTypeReference(typeSort);
-            break;
-          }
-
-        case TypeReference.CAST:
-          {
+        case TypeReference.CAST ->
             typeReference = TypeReference.newTypeArgumentReference(typeSort, typeIndex);
-            break;
-          }
-        default:
-          throw new IllegalArgumentException();
+        default -> throw new IllegalArgumentException();
       }
 
       return super.visitInsnAnnotation(typeReference.getValue(), typePath, desc, visible);
@@ -890,14 +866,14 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
     /** Has this visit the annotations on type parameter bounds. */
     private void ensureVisitTypeParameterBoundAnnotations() {
       for (Map.Entry<BoundLocation, ATypeElement> e : aMethod.bounds.entrySet()) {
-        BoundLocation bloc = e.getKey();
+        BoundLocation bLoc = e.getKey();
         ATypeElement bound = e.getValue();
         TypeReference typeReference =
-            bloc.boundIndex == -1
+            bLoc.boundIndex == -1
                 ? TypeReference.newTypeParameterReference(
-                    TypeReference.METHOD_TYPE_PARAMETER, bloc.paramIndex)
+                    TypeReference.METHOD_TYPE_PARAMETER, bLoc.paramIndex)
                 : TypeReference.newTypeParameterBoundReference(
-                    TypeReference.METHOD_TYPE_PARAMETER_BOUND, bloc.paramIndex, bloc.boundIndex);
+                    TypeReference.METHOD_TYPE_PARAMETER_BOUND, bLoc.paramIndex, bLoc.boundIndex);
         visitTypeAnnotationsOnTypeElement(typeReference, bound, false);
       }
     }
@@ -935,7 +911,6 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
         for (Map.Entry<List<TypePathEntry>, ATypeElement> e :
             aLocation.type.innerTypes.entrySet()) {
           TypePath localVariableLocation = TypePathEntry.listToTypePath(e.getKey());
-          ;
           ATypeElement aInnerType = e.getValue();
           for (Annotation tla : aInnerType.tlAnnotationsHere) {
             if (shouldSkip(tla)) {
@@ -1025,7 +1000,6 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
           for (Map.Entry<List<TypePathEntry>, ATypeElement> e1 :
               aParameter.type.innerTypes.entrySet()) {
             TypePath aParameterLocation = TypePathEntry.listToTypePath(e1.getKey());
-            ;
             ATypeElement aInnerType = e1.getValue();
             for (Annotation tla : aInnerType.tlAnnotationsHere) {
               if (shouldSkip(tla)) {
@@ -1281,16 +1255,8 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
     public MethodVisitor visitMethod(
         int access, String name, String descriptor, String signature, String[] exceptions) {
       String methodDescription = name + descriptor;
-      constrs = dynamicConstructors.get(methodDescription);
-      if (constrs == null) {
-        constrs = new TreeSet<>();
-        dynamicConstructors.put(methodDescription, constrs);
-      }
-      lambdas = lambdaExpressions.get(methodDescription);
-      if (lambdas == null) {
-        lambdas = new TreeSet<>();
-        lambdaExpressions.put(methodDescription, lambdas);
-      }
+      constrs = dynamicConstructors.computeIfAbsent(methodDescription, k -> new TreeSet<>());
+      lambdas = lambdaExpressions.computeIfAbsent(methodDescription, k -> new TreeSet<>());
 
       return new MethodCodeOffsetAdapter(classReader, null, codeStart) {
         @Override

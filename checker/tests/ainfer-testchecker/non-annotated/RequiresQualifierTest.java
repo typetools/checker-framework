@@ -16,17 +16,17 @@ class RequiresQualifierTest {
   @AinferBottom int bottom;
 
   void field1IsParent() {
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     @AinferParent int x = field1;
   }
 
   void field1IsAinferSibling2() {
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     @AinferSibling2 int x = field1;
   }
 
   void parentIsAinferSibling1() {
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     @AinferSibling1 int x = parent;
   }
 

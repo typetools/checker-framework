@@ -79,7 +79,7 @@ import org.plumelib.util.StringsPlume;
  * -Alint:cast} (or {@code -Alint:all} which implies it) is passed to javac. You can suppress the
  * warning by passing {@code -Alint:-cast} to javac.
  */
-public class RemoveAnnotationsForInference {
+public final class RemoveAnnotationsForInference {
 
   /**
    * Do not instantiate. This is a standalone program whose entry point is {@link #main(String[])}.
@@ -196,9 +196,12 @@ public class RemoveAnnotationsForInference {
    * Callback to process each Java file; see the {@link RemoveAnnotationsForInference class
    * documentation} for details.
    */
-  private static class RemoveAnnotationsCallback implements SourceRoot.Callback {
+  private static final class RemoveAnnotationsCallback implements SourceRoot.Callback {
     /** The visitor instance. */
     private final RemoveAnnotationsVisitor rav = new RemoveAnnotationsVisitor();
+
+    /** Creates a new RemoveAnnotationsCallback. */
+    RemoveAnnotationsCallback() {}
 
     @Override
     public Result process(Path localPath, Path absolutePath, ParseResult<CompilationUnit> result) {
@@ -304,8 +307,11 @@ public class RemoveAnnotationsForInference {
    * <p>The annotations will be removed from the source code by the {@link #removeAnnotations}
    * method.
    */
-  private static class RemoveAnnotationsVisitor
+  private static final class RemoveAnnotationsVisitor
       extends GenericListVisitorAdapter<AnnotationExpr, Void> {
+
+    /** Creates a new RemoveAnnotationsVisitor. */
+    RemoveAnnotationsVisitor() {}
 
     /**
      * Returns annotations that should be removed from source code.
@@ -528,14 +534,14 @@ public class RemoveAnnotationsForInference {
     if (name.equals("SuppressWarnings") || name.equals("java.lang.SuppressWarnings")) {
       if (n instanceof MarkerAnnotationExpr) {
         return Collections.emptyList();
-      } else if (n instanceof NormalAnnotationExpr) {
-        NodeList<MemberValuePair> pairs = ((NormalAnnotationExpr) n).getPairs();
+      } else if (n instanceof NormalAnnotationExpr nae) {
+        NodeList<MemberValuePair> pairs = nae.getPairs();
         assert pairs.size() == 1;
         MemberValuePair pair = pairs.get(0);
         assert pair.getName().asString().equals("value");
         return annotationElementStrings(pair.getValue());
-      } else if (n instanceof SingleMemberAnnotationExpr) {
-        return annotationElementStrings(((SingleMemberAnnotationExpr) n).getMemberValue());
+      } else if (n instanceof SingleMemberAnnotationExpr smae) {
+        return annotationElementStrings(smae.getMemberValue());
       } else {
         throw new BugInCF("Unexpected AnnotationExpr of type %s: %s", n.getClass(), n);
       }
@@ -563,14 +569,14 @@ public class RemoveAnnotationsForInference {
    * @return the strings expressed by {@code e}
    */
   private static @Nullable List<String> annotationElementStrings(Expression e) {
-    if (e instanceof StringLiteralExpr) {
-      return Collections.singletonList(((StringLiteralExpr) e).asString());
-    } else if (e instanceof ArrayInitializerExpr) {
-      NodeList<Expression> values = ((ArrayInitializerExpr) e).getValues();
+    if (e instanceof StringLiteralExpr sle) {
+      return Collections.singletonList(sle.asString());
+    } else if (e instanceof ArrayInitializerExpr aie) {
+      NodeList<Expression> values = aie.getValues();
       List<String> result = new ArrayList<>(values.size());
       for (Expression v : values) {
-        if (v instanceof StringLiteralExpr) {
-          result.add(((StringLiteralExpr) v).asString());
+        if (v instanceof StringLiteralExpr vsle) {
+          result.add(vsle.asString());
         } else if (v instanceof NameExpr) {
           // TODO: is it better to return null here, thus causing nothing under this
           // warning to be treated as "suppressed", or to return any keys that are string
@@ -600,7 +606,7 @@ public class RemoveAnnotationsForInference {
    * @return the part of s before the colon, or the whole thing if it contains no colon
    */
   private static String checkerName(String s) {
-    int colonPos = s.indexOf(":");
+    int colonPos = s.indexOf(':');
     if (colonPos == -1) {
       return s;
     } else {

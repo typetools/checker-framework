@@ -18,19 +18,19 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * meters or seconds:
  *
  * <pre><code>
- * {@literal @}PolyUnit int triplePolyUnit(@PolyUnit int amount) {
+ *  {@literal @}PolyUnit int triplePolyUnit(@PolyUnit int amount) {
  *    return 3*amount;
  *  }
  *
  *  void testPolyUnit() {
- *   {@literal @}m int m1 = 7 * UnitsTools.m;
- *   {@literal @}m int m2 = triplePolyUnit(m1);
+ *    {@literal @}m int m1 = 7 * UnitsTools.m;
+ *    {@literal @}m int m2 = triplePolyUnit(m1);
  *
- *   {@literal @}s int sec1 = 7 * UnitsTools.s;
- *   {@literal @}s int sec2 = triplePolyUnit(sec1);
+ *    {@literal @}s int sec1 = 7 * UnitsTools.s;
+ *    {@literal @}s int sec2 = triplePolyUnit(sec1);
  *
- *    // :: error: (assignment)
- *   {@literal @}s int sec3 = triplePolyUnit(m1);
+ *    // :: error: [assignment]
+ *    {@literal @}s int sec3 = triplePolyUnit(m1);
  *  }
  * </code></pre>
  *

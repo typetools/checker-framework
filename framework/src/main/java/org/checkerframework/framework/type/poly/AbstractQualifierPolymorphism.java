@@ -380,8 +380,11 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
    * A helper class that resolves the polymorphic qualifiers with the most restrictive qualifier. It
    * returns a mapping from the polymorphic qualifier to the substitution for that qualifier.
    */
-  private class PolyCollector
+  private final class PolyCollector
       extends EquivalentAtmComboScanner<AnnotationMirrorMap<AnnotationMirror>, Void> {
+
+    /** Creates a new PolyCollector. */
+    PolyCollector() {}
 
     /**
      * Set of {@link AnnotatedTypeVariable} or {@link AnnotatedWildcardType} that have been visited.
@@ -392,7 +395,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * IPair<?,?>} may be equal, but they both should be visited.
      */
     private final Set<AnnotatedTypeMirror> visitedTypes =
-        Collections.newSetFromMap(new IdentityHashMap<AnnotatedTypeMirror, Boolean>());
+        Collections.newSetFromMap(new IdentityHashMap<>());
 
     /**
      * Returns true if the {@link AnnotatedTypeMirror} has been visited. If it has not, then it is
@@ -499,16 +502,15 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
           return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
         }
 
-        switch (polyType.getKind()) {
-          case WILDCARD:
+        return switch (polyType.getKind()) {
+          case WILDCARD -> {
             AnnotatedTypeMirror asSuper =
                 AnnotatedTypes.asSuper(atypeFactory, wildcardType, polyType);
-            return visit(asSuper, polyType, null);
-          case TYPEVAR:
-            return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
-          default:
-            return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
-        }
+            yield visit(asSuper, polyType, null);
+          }
+          case TYPEVAR -> mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
+          default -> mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
+        };
       }
 
       AnnotatedTypeMirror asSuper = AnnotatedTypes.asSuper(atypeFactory, type, polyType);

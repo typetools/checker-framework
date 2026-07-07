@@ -7,7 +7,7 @@ class ImmutableMapOperations {
 
   void emptyImmutableMap() {
     Map<String, Integer> emptyMap = Map.of();
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonEmpty Map<String, Integer> nonEmptyMap = emptyMap;
   }
 
@@ -18,7 +18,7 @@ class ImmutableMapOperations {
 
   void immutableCopyEmptyMap() {
     Map<String, Integer> emptyMap = Map.of();
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonEmpty Map<String, Integer> nonEmptyMap = Map.copyOf(emptyMap);
   }
 

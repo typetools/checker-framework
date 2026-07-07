@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -48,10 +49,10 @@ import org.plumelib.util.StringsPlume;
  * </ol>
  *
  * Once an annotation is built, no further modification or calls to build can be made. Otherwise, a
- * {@link IllegalStateException} is thrown.
+ * {@link BugInCF} is thrown.
  *
- * <p>All setter methods throw {@link IllegalArgumentException} if the specified element is not
- * found, or if the given value is not a subtype of the expected type.
+ * <p>All setter methods throw {@link BugInCF} if the specified element is not found, or if the
+ * given value is not a subtype of the expected type.
  *
  * <p>TODO: Doesn't type-check arrays yet
  */
@@ -185,7 +186,6 @@ public class AnnotationBuilder {
               : "Is the class on the compilation classpath, which is:"
                   + System.lineSeparator()
                   + ReflectionPlume.classpathToString();
-      new Error("Backtrace:").printStackTrace();
       throw new UserError("AnnotationBuilder: fromClass can't load class %s%n" + extra, name);
     }
     return res;
@@ -200,7 +200,7 @@ public class AnnotationBuilder {
    *
    * @param elements the element utilities to use
    * @param name the name of the annotation to create
-   * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't be
+   * @return an {@link AnnotationMirror} of type {@code name} or null if the annotation couldn't be
    *     loaded
    */
   public static @Nullable AnnotationMirror fromName(
@@ -219,7 +219,7 @@ public class AnnotationBuilder {
    * @param elements the element utilities to use
    * @param name the name of the annotation to create
    * @param elementNamesValues the values for the annotation's elements/fields
-   * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't be
+   * @return an {@link AnnotationMirror} of type {@code name} or null if the annotation couldn't be
    *     loaded
    */
   public static @Nullable AnnotationMirror fromName(
@@ -623,15 +623,15 @@ public class AnnotationBuilder {
 
     if (expected.getKind() == TypeKind.DECLARED
         && ((DeclaredType) expected).asElement().getKind() == ElementKind.ANNOTATION_TYPE
-        && givenValue instanceof AnnotationMirror) {
-      found = ((AnnotationMirror) givenValue).getAnnotationType();
+        && givenValue instanceof AnnotationMirror am) {
+      found = am.getAnnotationType();
       isSubtype = ((DeclaredType) expected).asElement().equals(((DeclaredType) found).asElement());
-    } else if (givenValue instanceof AnnotationMirror) {
-      found = ((AnnotationMirror) givenValue).getAnnotationType();
+    } else if (givenValue instanceof AnnotationMirror am) {
+      found = am.getAnnotationType();
       // TODO: why is this always failing???
       isSubtype = false;
-    } else if (givenValue instanceof VariableElement) {
-      found = ((VariableElement) givenValue).asType();
+    } else if (givenValue instanceof VariableElement ve) {
+      found = ve.asType();
       if (expected.getKind() == TypeKind.DECLARED) {
         isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
       } else {
@@ -713,26 +713,22 @@ public class AnnotationBuilder {
         return toStringVal;
       }
       StringBuilder buf = new StringBuilder();
-      buf.append("@");
+      buf.append('@');
       buf.append(annotationName);
       int len = elementValues.size();
       if (len > 0) {
-        buf.append('(');
-        boolean first = true;
+        StringJoiner sj = new StringJoiner(", ", "(", ")");
         for (Map.Entry<ExecutableElement, AnnotationValue> pair : elementValues.entrySet()) {
-          if (!first) {
-            buf.append(", ");
-          }
-          first = false;
-
+          StringBuilder element = new StringBuilder();
           String name = pair.getKey().getSimpleName().toString();
           if (len > 1 || !name.equals("value")) {
-            buf.append(name);
-            buf.append('=');
+            element.append(name);
+            element.append('=');
           }
-          buf.append(pair.getValue());
+          element.append(pair.getValue());
+          sj.add(element);
         }
-        buf.append(')');
+        buf.append(sj);
       }
       toStringVal = buf.toString().intern();
       return toStringVal;
@@ -770,18 +766,16 @@ public class AnnotationBuilder {
         toStringVal = "\"" + value + "\"";
       } else if (value instanceof Character) {
         toStringVal = "\'" + value + "\'";
-      } else if (value instanceof List<?>) {
-        List<?> list = (List<?>) value;
+      } else if (value instanceof List<?> list) {
         toStringVal = "{" + StringsPlume.join(", ", list) + "}";
-      } else if (value instanceof VariableElement) {
+      } else if (value instanceof VariableElement var) {
         // for Enums
-        VariableElement var = (VariableElement) value;
         String encl = var.getEnclosingElement().toString();
         if (!encl.isEmpty()) {
           encl = encl + '.';
         }
         toStringVal = encl + var;
-      } else if (value instanceof TypeMirror && TypesUtils.isClassType((TypeMirror) value)) {
+      } else if (value instanceof TypeMirror tm && TypesUtils.isClassType(tm)) {
         toStringVal = value.toString() + ".class";
       } else {
         toStringVal = value.toString();
@@ -793,30 +787,30 @@ public class AnnotationBuilder {
     @SuppressWarnings("unchecked")
     @Override
     public <R, P> R accept(AnnotationValueVisitor<R, P> v, P p) {
-      if (value instanceof AnnotationMirror) {
-        return v.visitAnnotation((AnnotationMirror) value, p);
-      } else if (value instanceof List) {
-        return v.visitArray((List<? extends AnnotationValue>) value, p);
-      } else if (value instanceof Boolean) {
-        return v.visitBoolean((Boolean) value, p);
-      } else if (value instanceof Character) {
-        return v.visitChar((Character) value, p);
-      } else if (value instanceof Double) {
-        return v.visitDouble((Double) value, p);
-      } else if (value instanceof VariableElement) {
-        return v.visitEnumConstant((VariableElement) value, p);
-      } else if (value instanceof Float) {
-        return v.visitFloat((Float) value, p);
-      } else if (value instanceof Integer) {
-        return v.visitInt((Integer) value, p);
-      } else if (value instanceof Long) {
-        return v.visitLong((Long) value, p);
-      } else if (value instanceof Short) {
-        return v.visitShort((Short) value, p);
-      } else if (value instanceof String) {
-        return v.visitString((String) value, p);
-      } else if (value instanceof TypeMirror) {
-        return v.visitType((TypeMirror) value, p);
+      if (value instanceof AnnotationMirror am) {
+        return v.visitAnnotation(am, p);
+      } else if (value instanceof List<?> list) {
+        return v.visitArray((List<? extends AnnotationValue>) list, p);
+      } else if (value instanceof Boolean b) {
+        return v.visitBoolean(b, p);
+      } else if (value instanceof Character c) {
+        return v.visitChar(c, p);
+      } else if (value instanceof Double d) {
+        return v.visitDouble(d, p);
+      } else if (value instanceof VariableElement ve) {
+        return v.visitEnumConstant(ve, p);
+      } else if (value instanceof Float f) {
+        return v.visitFloat(f, p);
+      } else if (value instanceof Integer i) {
+        return v.visitInt(i, p);
+      } else if (value instanceof Long l) {
+        return v.visitLong(l, p);
+      } else if (value instanceof Short s) {
+        return v.visitShort(s, p);
+      } else if (value instanceof String str) {
+        return v.visitString(str, p);
+      } else if (value instanceof TypeMirror tm) {
+        return v.visitType(tm, p);
       } else {
         assert false : " unknown type : " + v.getClass();
         return v.visitUnknown(this, p);
@@ -826,10 +820,9 @@ public class AnnotationBuilder {
     @Override
     public boolean equals(@Nullable Object obj) {
       // System.out.printf("Calling CFAV.equals()%n");
-      if (!(obj instanceof AnnotationValue)) {
+      if (!(obj instanceof AnnotationValue other)) {
         return false;
       }
-      AnnotationValue other = (AnnotationValue) obj;
       return Objects.equals(this.getValue(), other.getValue());
     }
 

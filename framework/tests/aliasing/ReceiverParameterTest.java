@@ -4,13 +4,13 @@ public class ReceiverParameterTest {
 
   public @Unique ReceiverParameterTest() {
     nonLeaked();
-    // :: error: (unique.leaked)
+    // :: error: [unique.leaked]
     mayLeak();
   }
 
   public @Unique ReceiverParameterTest(int i) {
     leakedToResult();
-    // :: error: (unique.leaked)
+    // :: error: [unique.leaked]
     ReceiverParameterTest b = leakedToResult();
   }
 
@@ -22,9 +22,9 @@ public class ReceiverParameterTest {
     rec.leakedToResult();
     isUnique(rec);
     ReceiverParameterTest other = rec.leakedToResult();
-    // :: error: (argument)
+    // :: error: [argument]
     isUnique(rec);
-    // :: error: (argument)
+    // :: error: [argument]
     isUnique(other);
   }
 
@@ -35,9 +35,9 @@ public class ReceiverParameterTest {
     sb.append("something");
     isUnique(sb);
     StringBuffer sb2 = sb.append("something");
-    // :: error: (argument)
+    // :: error: [argument]
     isUnique(sb);
-    // :: error: (argument)
+    // :: error: [argument]
     isUnique(sb2);
   }
 

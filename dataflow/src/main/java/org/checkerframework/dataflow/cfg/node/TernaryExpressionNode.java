@@ -114,10 +114,9 @@ public class TernaryExpressionNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof TernaryExpressionNode)) {
+    if (!(obj instanceof TernaryExpressionNode other)) {
       return false;
     }
-    TernaryExpressionNode other = (TernaryExpressionNode) obj;
     return getConditionOperand().equals(other.getConditionOperand())
         && getThenOperand().equals(other.getThenOperand())
         && getElseOperand().equals(other.getElseOperand());

@@ -6,7 +6,7 @@ class ImmutableListOperations {
   void testCreateEmptyImmutableList() {
     List<Integer> emptyInts = List.of();
     // Creating a copy of an empty list should also yield an empty list
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonEmpty List<Integer> copyOfEmptyInts = List.copyOf(emptyInts);
   }
 

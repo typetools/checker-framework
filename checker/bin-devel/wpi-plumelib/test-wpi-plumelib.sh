@@ -73,7 +73,7 @@ test_wpi_plume_lib() {
   java -cp "$CHECKERFRAMEWORK/checker/dist/checker.jar" org.checkerframework.framework.stub.RemoveAnnotationsForInference . || exit 1
   # The project may not build after running RemoveAnnotationsForInference, because some casts
   # may become redundant and javac -Xlint:all yields "warning: [cast] redundant cast to ...".
-  "$CHECKERFRAMEWORK"/checker/bin-devel/.plume-scripts/preplace -- "-Xlint:" "-Xlint:-cast," build.gradle
+  "$CHECKERFRAMEWORK"/.plume-scripts/preplace -- "-Xlint:" "-Xlint:-cast," build.gradle
 
   echo "test-wpi-plumelib.sh for ${project} about to call wpi.sh at $(date)."
   "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers"
@@ -89,7 +89,7 @@ test_wpi_plume_lib() {
   if ! cmp --quiet expected.txt actual.txt; then
     echo "Comparing $EXPECTED_FILE $ACTUAL_FILE in $(pwd)"
     diff -u expected.txt actual.txt
-    if [ -n "$AZURE_HTTP_USER_AGENT" ] || [ -n "$CIRCLE_PR_USERNAME" ] || [ -n "$GITHUB_HEAD_REF" ] || [ "$TRAVIS" = "true" ]; then
+    if [ -n "$("$CHECKERFRAMEWORK"/checker/bin-devel/is-ci.sh)" ]; then
       # Running under continuous integration.  Output files that may be useful for debugging.
       echo "TESTDIR = ${TESTDIR}"
       echo "project = ${project}"
@@ -98,8 +98,12 @@ test_wpi_plume_lib() {
       more "$DLJC_OUT_DIR"/*
       # The string is printed by `tools/wpi.py` in the do_like_javac repository.
       AJAVADIR="$(sed -n 's/Directory for generated annotation files: \(.*\)$/\1/p' "$DLJC_OUT_DIR"/dljc-stdout-*)"
-      echo "AJAVADIR=$AJAVADIR"
-      find "$AJAVADIR" -type f -print0 | xargs -0 more
+      if [ -z "$AJAVADIR" ]; then
+        echo "AJAVADIR cannot be determined from $DLJC_OUT_DIR/dljc-stdout-* (printed immediately above)"
+      else
+        echo "AJAVADIR=$AJAVADIR"
+        find "$AJAVADIR" -type f -print0 | xargs -0 more
+      fi
       # Repeat the actual error, so it appears at the end of the continuous integration log.
       echo "Comparing $EXPECTED_FILE $ACTUAL_FILE in $(pwd)"
       diff -u expected.txt actual.txt

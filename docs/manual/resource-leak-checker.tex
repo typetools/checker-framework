@@ -1,8 +1,14 @@
 \htmlhr
 \chapterAndLabel{Resource Leak Checker for must-call obligations}{resource-leak-checker}
 
-The Resource Leak Checker guarantees that the program fulfills every object's
-must-call obligations before the object is de-allocated.
+The Resource Leak Checker guarantees that every resource is closed rather
+than leaked.  Examples of resources are a channel, executor,
+\<ExecutionControl>, file, \<FileLock>, \<Formatter>, reader,
+\<Scanner>, socket, stream, writer, etc.
+
+More precisely, the Resource Leak Checker guarantees that the program
+fulfills every object's must-call obligations before the object is
+de-allocated.
 
 A resource leak occurs when a program does not explicitly dispose of some finite
 underlying resource, such as a socket, file descriptor, or database connection.  To dispose
@@ -34,11 +40,6 @@ The Resource Leak Checker works in three stages:
   if there exists some method in \emph{MC} that is not in \emph{CM}.
 \end{enumerate}
 
-The paper
-``Lightweight and Modular Resource Leak Verification''~\cite{KelloggSSE2021} (ESEC/FSE 2021,
-\myurl{https://homes.cs.washington.edu/~mernst/pubs/resource-leak-esecfse2021-abstract.html})
-gives more details about the Resource Leak Checker.
-
 
 \sectionAndLabel{How to run the Resource Leak Checker}{resource-leak-run-checker}
 
@@ -61,14 +62,13 @@ the Called Methods Checker, plus four others:
 \item[\<-ApermitInitializationLeak>]
   See Section~\ref{resource-leak-field-initialization}.
 \item[\<-AenableReturnsReceiverForRlc>]
-  Enables the Returns Receiver Checker (Section~\ref{returns-reciever-checker})
+  Enables the Returns Receiver Checker (Section~\ref{returns-receiver-checker})
   when running this checker. By default, the Returns Receiver checker is
   disabled when running the Called Methods Checker as part of the RLC,
   because it has a significant runtime cost but provides little benefit in the common case,
   since resources are rarely combined with fluent builders.
-%% TODO: Uncomment when the feature is ready to be publicized.
-% \item[\<-AenableWpiForRlc>]
-%   See Section~\ref{resource-leak-checker-inference-algo}.
+\item[\<-AenableWpiForRlc>]
+  See Section~\ref{resource-leak-checker-references}.
 \end{description}
 
 If you are running the Resource Leak Checker, then there is no need to run
@@ -575,20 +575,22 @@ The set of ignored exception types can be controlled with the option
 \<-AresourceLeakIgnoredExceptions=...>.  The option takes a comma-separated list of
 fully-qualified exception types.  A type can be prefixed with \<=> to ignore exactly
 that type and not its subclasses.  For example, for a very pedantic set of ignored
-exceptions use:
+exceptions use either of these, which have identical effect:
 
 \begin{verbatim}
-  -AresourceLeakIgnoredExceptions=java.lang.Error, =java.lang.NullPointerException
+  -AresourceLeakIgnoredExceptions="java.lang.Error,=java.lang.NullPointerException"
+  -AresourceLeakIgnoredExceptions="=java.lang.NullPointerException,java.lang.Error"
 \end{verbatim}
 
 which ignores \<java.lang.Error> (and all its subclasses) as well as
 \<java.lang.NullPointerException> (but not its subclasses).
 
 The keyword \<default> will expand to the default set of ignored exceptions.  So,
-to add an additional exception to the set of ignored exceptions, use:
+to add an additional exception to the set of ignored exceptions, use one of these:
 
 \begin{verbatim}
-  -AresourceLeakIgnoredExceptions=default,package.MyCustomException
+  -AresourceLeakIgnoredExceptions="default,package.MyCustomException"
+  -AresourceLeakIgnoredExceptions="default,=package.MyCustomException"
 \end{verbatim}
 
 \sectionAndLabel{Errors about field initialization}{resource-leak-field-initialization}
@@ -668,7 +670,12 @@ not possible, the programmer will probably need to suppress a warning and
 then verify the code using a method other than the Resource Leak Checker.
 
 
-\sectionAndLabel{Resource Leak Checker annotation inference algorithm}{resource-leak-checker-inference-algo}
+\sectionAndLabel{Further reading}{resource-leak-checker-references}
+
+The paper ``Lightweight and Modular Resource Leak
+Verification''~\cite{KelloggSSE2021} (ESEC/FSE 2021,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/resource-leak-esecfse2021-abstract.html})
+gives more details about the Resource Leak Checker.
 
 The Resource Leak Checker uses a specialized algorithm to infer annotations
 when whole program inference (WPI, Section~\ref{whole-program-inference})

@@ -1,4 +1,4 @@
-// Test case for issue #2434: http://tinyurl.com/cfissue/2434
+// Test case for issue #2434: https://tinyurl.com/cfissue/2434
 
 import org.checkerframework.checker.index.qual.SameLen;
 

@@ -105,39 +105,21 @@ public class CFTreeBuilder extends TreeBuilder {
     // AnnotationTrees to form a ClassTree of kind ANNOTATION_TYPE.
     JCExpression typeTree;
     switch (type.getKind()) {
-      case BYTE:
-        typeTree = maker.TypeIdent(TypeTag.BYTE);
-        break;
-      case CHAR:
-        typeTree = maker.TypeIdent(TypeTag.CHAR);
-        break;
-      case SHORT:
-        typeTree = maker.TypeIdent(TypeTag.SHORT);
-        break;
-      case INT:
-        typeTree = maker.TypeIdent(TypeTag.INT);
-        break;
-      case LONG:
-        typeTree = maker.TypeIdent(TypeTag.LONG);
-        break;
-      case FLOAT:
-        typeTree = maker.TypeIdent(TypeTag.FLOAT);
-        break;
-      case DOUBLE:
-        typeTree = maker.TypeIdent(TypeTag.DOUBLE);
-        break;
-      case BOOLEAN:
-        typeTree = maker.TypeIdent(TypeTag.BOOLEAN);
-        break;
-      case VOID:
-        typeTree = maker.TypeIdent(TypeTag.VOID);
-        break;
-      case TYPEVAR:
+      case BYTE -> typeTree = maker.TypeIdent(TypeTag.BYTE);
+      case CHAR -> typeTree = maker.TypeIdent(TypeTag.CHAR);
+      case SHORT -> typeTree = maker.TypeIdent(TypeTag.SHORT);
+      case INT -> typeTree = maker.TypeIdent(TypeTag.INT);
+      case LONG -> typeTree = maker.TypeIdent(TypeTag.LONG);
+      case FLOAT -> typeTree = maker.TypeIdent(TypeTag.FLOAT);
+      case DOUBLE -> typeTree = maker.TypeIdent(TypeTag.DOUBLE);
+      case BOOLEAN -> typeTree = maker.TypeIdent(TypeTag.BOOLEAN);
+      case VOID -> typeTree = maker.TypeIdent(TypeTag.VOID);
+      case TYPEVAR -> {
         // No recursive annotations.
         TypeVariable underlyingTypeVar = (TypeVariable) type;
         typeTree = maker.Ident((TypeSymbol) underlyingTypeVar.asElement());
-        break;
-      case WILDCARD:
+      }
+      case WILDCARD -> {
         WildcardType wildcardType = (WildcardType) type;
         boolean visitedBefore = !visitedWildcards.add(wildcardType);
         if (!visitedBefore && wildcardType.getExtendsBound() != null) {
@@ -152,18 +134,18 @@ public class CFTreeBuilder extends TreeBuilder {
         } else {
           typeTree = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
         }
-        break;
-      case INTERSECTION:
+      }
+      case INTERSECTION -> {
         IntersectionType intersectionType = (IntersectionType) type;
         List<JCExpression> components = List.nil();
         for (TypeMirror bound : intersectionType.getBounds()) {
           components = components.append((JCExpression) createAnnotatedType(bound));
         }
         typeTree = maker.TypeIntersection(components);
-        break;
+      }
       // case UNION:
       // TODO: case UNION similar to INTERSECTION, but write test first.
-      case DECLARED:
+      case DECLARED -> {
         typeTree = maker.Type((Type) type);
 
         if (typeTree instanceof JCTypeApply) {
@@ -176,19 +158,17 @@ public class CFTreeBuilder extends TreeBuilder {
           JCExpression clazz = (JCExpression) ((JCTypeApply) typeTree).getType();
           typeTree = maker.TypeApply(clazz, typeArgTrees);
         }
-        break;
-      case ARRAY:
+      }
+      case ARRAY -> {
         ArrayType arrayType = (ArrayType) type;
         Tree componentTree = createAnnotatedType(arrayType.getComponentType());
         typeTree = maker.TypeArray((JCExpression) componentTree);
-        break;
-      case ERROR:
-        typeTree = maker.TypeIdent(TypeTag.ERROR);
-        break;
-      default:
+      }
+      case ERROR -> typeTree = maker.TypeIdent(TypeTag.ERROR);
+      default -> {
         assert false : "unexpected type: " + type;
         typeTree = null;
-        break;
+      }
     }
 
     typeTree.setType((Type) type);

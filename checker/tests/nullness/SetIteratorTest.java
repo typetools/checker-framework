@@ -26,7 +26,7 @@ public class SetIteratorTest {
 
     if (edges.get(parentNode) != null) {
       for (String childNode : edges.get(parentNode).keySet()) {
-        // :: error: (dereference.of.nullable)
+        // :: error: [dereference.of.nullable]
         edges.get(parentNode).toString();
         for (String childNodeEdgeX : edges.get(parentNode).get(childNode)) {
           childrenString += " " + childNode + "(" + childNodeEdgeX + ")";
@@ -42,7 +42,7 @@ public class SetIteratorTest {
       Iterator<String> itor = edges.get(parentNode).keySet().iterator();
       edges.get(parentNode).toString();
       String s = itor.next();
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       edges.get(parentNode).toString();
     }
   }

@@ -11,14 +11,14 @@ import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.expression.JavaExpressionParseUtil;
 import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Holds information from {@link HasSubsequence} annotations. */
-public class Subsequence {
+public final class Subsequence {
 
   /** Name of the Subsequence. */
   public final String array;
@@ -89,11 +89,10 @@ public class Subsequence {
    */
   public static @Nullable Subsequence getSubsequenceFromReceiver(
       JavaExpression expr, BaseAnnotatedTypeFactoryForIndexChecker factory) {
-    if (!(expr instanceof FieldAccess)) {
+    if (!(expr instanceof FieldAccess fa)) {
       return null;
     }
 
-    FieldAccess fa = (FieldAccess) expr;
     VariableElement element = fa.getField();
     AnnotationMirror hasSub = factory.getDeclAnnotation(element, HasSubsequence.class);
     if (hasSub == null) {

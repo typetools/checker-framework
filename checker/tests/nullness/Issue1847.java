@@ -9,7 +9,7 @@ public class Issue1847 {
 
   public void test() {
     // Should give null error here:
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     withLookup((String myVar) -> map.get(myVar).length());
     for (Iterator<Map.Entry<@KeyFor("map") String, String>> iterator = map.entrySet().iterator();
         iterator.hasNext(); ) {
@@ -22,7 +22,7 @@ public class Issue1847 {
     }
 
     // Should also give null error here:
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     withLookup(myVar -> map.get(myVar).length());
   }
 

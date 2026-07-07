@@ -15,7 +15,12 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 
 /** This class provides a collection of utilities to ease working with format strings. */
 @AnnotatedFor("nullness")
-public class FormatUtil {
+public final class FormatUtil {
+
+  /** Do not instantiate. */
+  private FormatUtil() {
+    throw new Error("Do not instantiate");
+  }
 
   /**
    * A representation of a format specifier, which is represented by "%..." in the format string.
@@ -70,8 +75,7 @@ public class FormatUtil {
    */
   // TODO introduce more such functions, see RegexUtil for examples
   @ReturnsFormat
-  public static String asFormat(String format, ConversionCategory... cc)
-      throws IllegalFormatException {
+  public static String asFormat(String format, ConversionCategory... cc) {
     ConversionCategory[] fcc = formatParameterCategories(format);
     if (fcc.length != cc.length) {
       throw new ExcessiveOrMissingFormatArgumentException(cc.length, fcc.length);
@@ -92,7 +96,7 @@ public class FormatUtil {
    * @param format a format string
    * @throws IllegalFormatException if the format string is invalid
    */
-  public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
+  public static void tryFormatSatisfiability(String format) {
     try {
       @SuppressWarnings({
         "unused", // called for side effect, to see if it throws an exception
@@ -111,10 +115,11 @@ public class FormatUtil {
   /**
    * Returns a {@link ConversionCategory} for every conversion found in the format string.
    *
-   * <p>Throws an exception if the format is not syntactically valid.
+   * @param format a format string
+   * @return the conversion categories in the format string
+   * @throws IllegalFormatException if the format is not syntactically valid
    */
-  public static ConversionCategory[] formatParameterCategories(String format)
-      throws IllegalFormatException {
+  public static ConversionCategory[] formatParameterCategories(String format) {
     tryFormatSatisfiability(format);
 
     int last = -1; // index of last argument referenced
@@ -142,21 +147,20 @@ public class FormatUtil {
       conv.put(
           last,
           ConversionCategory.intersect(
-              conv.containsKey(lastKey) ? conv.get(lastKey) : ConversionCategory.UNUSED,
-              c.category()));
+              conv.getOrDefault(lastKey, ConversionCategory.UNUSED), c.category()));
     }
 
     ConversionCategory[] res = new ConversionCategory[maxindex + 1];
     for (int i = 0; i <= maxindex; ++i) {
       Integer key = i; // autoboxing prevents recognizing that containsKey => get() != null
-      res[i] = conv.containsKey(key) ? conv.get(key) : ConversionCategory.UNUSED;
+      res[i] = conv.getOrDefault(key, ConversionCategory.UNUSED);
     }
     return res;
   }
 
   /**
    * A regex that matches a format specifier. Its syntax is specified in the See <a
-   * href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Formatter.html#syntax">{@code
+   * href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Formatter.html#syntax">{@code
    * Formatter} documentation</a>.
    *
    * <pre>
@@ -190,21 +194,19 @@ public class FormatUtil {
    * Returns the index, in the argument list, of the value that will be formatted by the matched
    * format specifier.
    *
-   * @param m a matcher that matches a format specifier
+   * @param m a match of {@code fsPattern}
    * @return the index of the argument to format
    */
-  private static int indexFromFormat(Matcher m) {
+  private static int indexFromFormat(@Regex(6) Matcher m) {
     int index;
     String s = m.group(1);
-    if (s != null) { // explicit index
+    String group2 = m.group(2); // not @Deterministic, so extract into local var
+    if (group2 != null && group2.indexOf('<') != -1) {
+      index = -1; // relative index
+    } else if (s != null) { // explicit index
       index = Integer.parseInt(s.substring(0, s.length() - 1));
     } else {
-      String group2 = m.group(2); // not @Deterministic, so extract into local var
-      if (group2 != null && group2.contains(String.valueOf('<'))) {
-        index = -1; // relative index
-      } else {
-        index = 0; // ordinary index
-      }
+      index = 0; // ordinary index
     }
     return index;
   }
@@ -215,8 +217,11 @@ public class FormatUtil {
    * @param m a matcher that matches a format specifier
    * @return the conversion character from the format specifier
    */
-  @SuppressWarnings(
-      "nullness:dereference.of.nullable") // group formatSpecifierConversion always exists
+  @SuppressWarnings({
+    "nullness:dereference.of.nullable", // group formatSpecifierConversion always exists
+    "regex:group.count.unknown" // formatSpecifierT=5 and formatSpecifierConversion=6 are within
+    // range
+  })
   private static char conversionCharFromFormat(@Regex(6) Matcher m) {
     String tGroup = m.group(formatSpecifierT);
     if (tGroup != null) {
@@ -230,13 +235,13 @@ public class FormatUtil {
    * Returns the conversion character that is in the given format specifier.
    *
    * @param formatSpecifier a <a
-   *     href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Formatter.html#syntax">format
+   *     href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Formatter.html#syntax">format
    *     specifier</a>
    * @return the conversion character that is in the given format specifier
    * @deprecated This method is public only for testing. Use private method {@code
    *     #conversionCharFromFormat(Matcher)}.
    */
-  @Deprecated // used only for testing.  Use conversionCharFromFormat(Matcher).
+  @Deprecated // Not for removal. Used only for testing
   public static char conversionCharFromFormat(String formatSpecifier) {
     Matcher m = fsPattern.matcher(formatSpecifier);
     assert m.find();
@@ -251,7 +256,7 @@ public class FormatUtil {
    */
   private static Conversion[] parse(String format) {
     ArrayList<Conversion> cs = new ArrayList<>();
-    @Regex(7) Matcher m = fsPattern.matcher(format);
+    @Regex(6) Matcher m = fsPattern.matcher(format);
     while (m.find()) {
       char c = conversionCharFromFormat(m);
       switch (c) {
