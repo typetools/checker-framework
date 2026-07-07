@@ -169,7 +169,11 @@ import org.checkerframework.javacutil.TypesUtils;
 
   @Override
   public int hashCode() {
-    return Objects.hash(typeVariableJava.toString(), invocation);
+    // TypesUtils.areSame depends on asElement().getSimpleName(), asElement().getEnclosingElement().
+    return Objects.hash(
+        typeVariableJava.asElement().getSimpleName(),
+        typeVariableJava.asElement().getEnclosingElement(),
+        invocation);
   }
 
   @Override
