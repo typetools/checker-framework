@@ -139,8 +139,6 @@ public class CheckedExceptionConstraint extends TypeConstraint {
 
   @Override
   public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + (expression != null ? expression.hashCode() : 0);
-    return result;
+    return Objects.hash(super.hashCode(), expression);
   }
 }

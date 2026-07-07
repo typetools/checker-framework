@@ -2,6 +2,7 @@ package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.ExpressionTree;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeMirror;
@@ -9,7 +10,6 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.util.typeinference8.types.AbstractType.Kind;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
@@ -35,10 +35,12 @@ import org.checkerframework.javacutil.TypesUtils;
    */
   protected final ExpressionTree invocation;
 
-  /** Type variable for which the instantiation of this variable is a type argument, */
+  /** The Java type variable for which the instantiation of this variable is a type argument. */
   protected final TypeVariable typeVariableJava;
 
-  /** Type variable for which the instantiation of this variable is a type argument, */
+  /**
+   * The annotated type variable for which the instantiation of this variable is a type argument.
+   */
   protected final AnnotatedTypeVariable typeVariable;
 
   /** A mapping from type variable to inference variable. */
@@ -167,10 +169,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
   @Override
   public int hashCode() {
-    int result = typeVariableJava.toString().hashCode();
-    result = 31 * result + Kind.USE_OF_VARIABLE.hashCode();
-    result = 31 * result + invocation.hashCode();
-    return result;
+    return Objects.hash(typeVariableJava.toString(), invocation);
   }
 
   @Override
@@ -193,7 +192,7 @@ import org.checkerframework.javacutil.TypesUtils;
     return variableBounds.getInstantiation();
   }
 
-  /** in case the first attempt at resolution fails. */
+  /** Saves the current bounds, in case the first attempt at resolution fails. */
   public void save() {
     variableBounds.save();
   }

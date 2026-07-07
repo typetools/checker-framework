@@ -3,13 +3,19 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 4.2.1 (2026-07-01)
+## Version 4.2.2 (2026-08-01)
 
 ### User-visible changes
 
 ### Implementation details
 
 ### Closed issues
+
+## Version 4.2.1 (2026-07-01)
+
+### Closed issues
+
+\#7726.
 
 ## Version 4.2.0 (2026-06-01)
 

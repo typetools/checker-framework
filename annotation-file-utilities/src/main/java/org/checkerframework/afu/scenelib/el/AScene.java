@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
@@ -124,7 +125,7 @@ public class AScene implements Cloneable {
 
   @Override
   public int hashCode() {
-    return classes.hashCode() + packages.hashCode();
+    return Objects.hash(classes, packages);
   }
 
   /**

@@ -214,7 +214,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-4.2.0.zip}
+  \url{https://checkerframework.org/checker-framework-4.2.1.zip}
 
   For example, on Unix you can run: \<wget https://checkerframework.org/checker-framework-\ReleaseVersion{}.zip>
 
@@ -1403,7 +1403,8 @@ overriding definition is permitted to accept \code{null}.
 %% TODO: Revise when @NullableWhen or @NonNullWhen is implemented
 \begin{sloppypar}
 As a bad example, consider an erroneous \code{@Nullable} annotation in
-\href{https://github.com/google/guava/blob/master/guava/src/com/google/common/collect/Multiset.java\#L129}{\code{com/google/common/collect/Multiset.java}}:
+\code{com/google/common/collect/Multiset.java} (the annotation was
+subsequently changed to the more correct \code{@ParametricNullness}):
 \end{sloppypar}
 
 \begin{Verbatim}

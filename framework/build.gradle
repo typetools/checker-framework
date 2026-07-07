@@ -173,7 +173,7 @@ clean {
 }
 
 
-if (skipDelombok) {
+if (rootProject.ext.skipDelombok) {
   test {
     exclude("**/ReturnsReceiverLombokTest.java")
   }
@@ -193,7 +193,7 @@ if (skipDelombok) {
     dependsOn(project(":checker-qual").tasks.jar)
 
     doLast {
-      if (!skipDelombok) {
+      if (!rootProject.ext.skipDelombok) {
         def collection = files(configurations.testCompileClasspath)
         ant.taskdef(name: "delombok", classname: "lombok.delombok.ant.Tasks\$Delombok",
         classpath: collection.asPath)
