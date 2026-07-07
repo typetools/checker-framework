@@ -24,7 +24,8 @@ if [ "${JAVA_VER}" != "8" ] && [ "${JAVA_VER}" != "11" ]; then
   # echo "Starting: ./gradlew spotlessGroovy"
   # ./gradlew spotlessGroovy > /dev/null 2>&1 || (echo "spotlessGroovy failed" && sleep 60 && true)
   # echo "Finished: ./gradlew spotlessGroovy"
-  ./gradlew spotlessCheck --warning-mode=all -x spotlessGroovy -x spotlessGroovyGradle
+  # ./gradlew spotlessCheck --warning-mode=all -x spotlessGroovy -x spotlessGroovyGradle
+  ./gradlew spotlessCheck --warning-mode=all
 fi
 if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --exclude-dir=tests --exclude="*.astub" --exclude="*.tex" '^\(import static \|import .*\*;$\)'; then
   echo "Don't use static import or wildcard import"

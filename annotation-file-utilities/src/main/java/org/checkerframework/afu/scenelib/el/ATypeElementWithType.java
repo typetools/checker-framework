@@ -1,6 +1,7 @@
 package org.checkerframework.afu.scenelib.el;
 
 import java.util.LinkedHashMap;
+import java.util.Objects;
 import org.checkerframework.afu.scenelib.io.ASTPath;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
@@ -59,7 +60,7 @@ public class ATypeElementWithType extends ATypeElement {
 
   @Override
   public int hashCode() {
-    return super.hashCode() + type.hashCode();
+    return Objects.hash(super.hashCode(), type);
   }
 
   @Override
