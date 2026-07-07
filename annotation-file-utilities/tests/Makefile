@@ -115,14 +115,14 @@ bin/annotator/tests/%.class: %.java
 # Remove all .diff, .log files from the tests directory.
 .PHONY: clean
 clean :
-	rm -rf bin
-	rm -f *.diff
-	rm -f *.log
-	rm -f *.output
-	(cd abbreviated && make clean)
-	(cd converted && make clean)
-	(cd enum-imports && make clean)
-	(cd ad-hoc && make clean)
-	(cd issue155 && make clean)
-	(cd source-extension && make clean)
-	(cd system-test && make clean)
+	@rm -rf bin
+	@rm -f *.diff
+	@rm -f *.log
+	@rm -f *.output
+	@${MAKE} -C abbreviated clean
+	@${MAKE} -C converted clean
+	@${MAKE} -C enum-imports clean
+	@${MAKE} -C ad-hoc clean
+	@${MAKE} -C issue155 clean
+	@${MAKE} -C source-extension clean
+	@${MAKE} -C system-test clean
