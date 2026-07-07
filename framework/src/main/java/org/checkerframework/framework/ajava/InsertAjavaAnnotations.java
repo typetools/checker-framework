@@ -21,7 +21,6 @@ import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.github.javaparser.utils.Pair;
 import com.sun.source.util.JavacTask;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileVisitResult;
@@ -88,7 +87,7 @@ public class InsertAjavaAnnotations {
       System.exit(1);
     }
 
-    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
     try (JavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null)) {
       if (fileManager == null) {
         System.err.println("Could not get file manager");
@@ -392,7 +391,7 @@ public class InsertAjavaAnnotations {
       StringBuilder insertionContent = new StringBuilder();
       for (AnnotationExpr annotation : annotations) {
         insertionContent.append(printer.print(annotation));
-        insertionContent.append(" ");
+        insertionContent.append(' ');
       }
 
       // Can't test `annotations.isEmpty()` earlier because `annotations` has type `Iterable`.
@@ -545,7 +544,8 @@ public class InsertAjavaAnnotations {
       String fileContents = FilesPlume.readString(Path.of(javaFileName));
       @SuppressWarnings("regex") // next release of plume-lib annotates `inferLineSeparator()`
       @Regex String lineSeparator = FilesPlume.inferLineSeparator(javaFileName);
-      try (FileInputStream annotationInputStream = new FileInputStream(annotationFileName)) {
+      try (InputStream annotationInputStream =
+          Files.newInputStream(Paths.get(annotationFileName))) {
         String result = insertAnnotations(annotationInputStream, fileContents, lineSeparator);
         FilesPlume.writeString(javaFile, result);
       }
@@ -587,7 +587,7 @@ public class InsertAjavaAnnotations {
     InsertAjavaAnnotations inserter = new InsertAjavaAnnotations(createElements());
     // For each Java file, this visitor inserts annotations into it.
     FileVisitor<Path> insertionVisitor =
-        new SimpleFileVisitor<Path>() {
+        new SimpleFileVisitor<>() {
           @Override
           public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
             if (!path.getFileName().toString().endsWith(".java")) {

@@ -69,7 +69,7 @@ public class AnnotationVerifier {
    * visited a class.
    *
    * @throws AnnotationMismatchException if the two visitors have not visited two versions of the
-   *     same class that contain idential annotations
+   *     same class that contain identical annotations
    */
   public void verify() {
     if (!newVisitor.name.equals(originalVisitor.name)) {
@@ -280,7 +280,12 @@ public class AnnotationVerifier {
       return sb.toString();
     }
 
-    // pretty-prints this into the given list of lines
+    /**
+     * Pretty-prints this into the given StringBuilder.
+     *
+     * @param sb the destination for the pretty-printed output
+     * @param indent a prefix for each line of the output
+     */
     public void prettyPrint(StringBuilder sb, String indent) {
 
       // avoid boilerplate of adding indent and lineSep every time
@@ -309,11 +314,17 @@ public class AnnotationVerifier {
         sb.append(lineSep);
       }
       for (Map.Entry<String, FieldRecorder> e : fieldRecorders.entrySet()) {
-        sb.append(indent + "  " + e.getKey() + ":" + lineSep);
+        sb.append(indent + "  ");
+        sb.append(e.getKey());
+        sb.append(':');
+        sb.append(lineSep);
         e.getValue().prettyPrint(sb, indent + "    ");
       }
       for (Map.Entry<String, MethodRecorder> e : methodRecorders.entrySet()) {
-        sb.append(indent + "  " + e.getKey() + ":" + lineSep);
+        sb.append(indent + "  ");
+        sb.append(e.getKey());
+        sb.append(':');
+        sb.append(lineSep);
         e.getValue().prettyPrint(sb, indent + "    ");
       }
     }

@@ -19,7 +19,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Util for checked exception constraints. */
-public class CheckedExceptionsUtil {
+public final class CheckedExceptionsUtil {
 
   /** Don't use. */
   private CheckedExceptionsUtil() {}
@@ -41,7 +41,7 @@ public class CheckedExceptionsUtil {
    * Helper class for gathering the types of checked exceptions in a lambda. See
    * https://docs.oracle.com/javase/specs/jls/se9/html/jls-11.html#jls-11.2.2
    */
-  private static class CheckedExceptionVisitor
+  private static final class CheckedExceptionVisitor
       extends TreeScanner<@Nullable List<TypeMirror>, Void> {
 
     /** the context. */
@@ -154,7 +154,7 @@ public class CheckedExceptionsUtil {
   /**
    * Returns true iff {@code type} is a checked exception.
    *
-   * @param type at ype to check
+   * @param type a type to check
    * @param context the context
    * @return true iff {@code type} is a checked exception
    */
@@ -181,7 +181,7 @@ public class CheckedExceptionsUtil {
    * Helper class for gathering the types of checked exceptions in a lambda. See
    * https://docs.oracle.com/javase/specs/jls/se9/html/jls-11.html#jls-11.2.2
    */
-  private static class CheckedExceptionATMVisitor
+  private static final class CheckedExceptionATMVisitor
       extends TreeScanner<@Nullable List<AnnotatedTypeMirror>, Void> {
 
     /** The context. */

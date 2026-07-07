@@ -1,4 +1,4 @@
-// Based on a crash encountered when runnnig WPI on plume-lib's RequireJavadoc.
+// Based on a crash encountered when running WPI on plume-lib's RequireJavadoc.
 
 import org.plumelib.options.Options;
 

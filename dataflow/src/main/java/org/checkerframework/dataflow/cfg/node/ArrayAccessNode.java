@@ -28,7 +28,7 @@ public class ArrayAccessNode extends Node {
   /** The array expression being accessed. */
   protected final Node array;
 
-  /** The index expresssion used to access the array. */
+  /** The index expression used to access the array. */
   protected final Node index;
 
   /**

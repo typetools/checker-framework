@@ -17,7 +17,7 @@ import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
 
 /** A set of utilities and factory methods useful for working with TestDiagnostics. */
-public class TestDiagnosticUtils {
+public final class TestDiagnosticUtils {
 
   /** Do not instantiate. */
   private TestDiagnosticUtils() {
@@ -144,7 +144,7 @@ public class TestDiagnosticUtils {
     "nullness", // TODO: regular expression group access
     "regex:group.count" // group count varies by pattern; callers ensure correct group counts
   })
-  protected static TestDiagnostic fromPatternMatching(
+  /*package-private*/ static TestDiagnostic fromPatternMatching(
       Pattern diagnosticPattern,
       Pattern warningPattern,
       String filename,

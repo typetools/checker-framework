@@ -541,7 +541,7 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Returns an immutable set of the <em>monotonic</em> type qualifiers supported by this checker.
    *
-   * @return the monotonic type qualifiers supported this processor, or an empty set if none
+   * @return the monotonic type qualifiers supported by this processor, or an empty set if none
    * @see MonotonicQualifier
    */
   public final Set<Class<? extends Annotation>> getSupportedMonotonicTypeQualifiers() {
@@ -1160,9 +1160,7 @@ public abstract class GenericAnnotatedTypeFactory<
   protected final IdentityHashMap<MethodTree, List<IPair<ReturnNode, TransferResult<Value, Store>>>>
       returnStatementStores;
 
-  /**
-   * A mapping from methods to their a list with all return statements and the corresponding store.
-   */
+  /** A mapping from a method invocation to its corresponding store. */
   protected IdentityHashMap<MethodInvocationTree, Store> methodInvocationStores;
 
   /**
@@ -2646,8 +2644,7 @@ public abstract class GenericAnnotatedTypeFactory<
         return false;
       }
 
-      default ->
-          throw new BugInCF("isRelevantHelper(%s): Unexpected TypeKind %s", tm, tm.getKind());
+      default -> throw new BugInCF("isRelevantImpl(%s): Unexpected TypeKind %s", tm, tm.getKind());
     }
   }
 
@@ -3168,8 +3165,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param kind the kind of {@code contractAnnotation}
    * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, or {@link
    *     EnsuresQualifierIf}
-   * @return the {@code result} element of {@code contractAnnotation}, or null if it doesn't have a
-   *     {@code result} element
+   * @return the {@code expression} or {@code value} element of {@code contractAnnotation}, or null
+   *     if it doesn't have one
    */
   public @Nullable List<String> getContractExpressions(
       Contract.Kind kind, AnnotationMirror contractAnnotation) {

@@ -197,7 +197,7 @@ public class MaskedShifts {
     testRes = (signed >>> 8) | 0xFF800000;
     testRes = (signed >> 8) | 0xFF800000;
 
-    // Use mask that render ths 8 MSB_s irrelevant.
+    // Use mask that render the 8 MSB_s irrelevant.
 
     // Shifting right by 8, the introduced bits are still masked away.
     testRes = (unsigned >>> 8) | 0xFF000000;

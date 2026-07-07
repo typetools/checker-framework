@@ -119,7 +119,10 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
    *
    * <p>Subclasses may override this method to do any initialization work.
    */
-  public void typeProcessingStart() {}
+  @SuppressWarnings("PMD.EmptyMethodInAbstractClassShouldBeAbstract")
+  public void typeProcessingStart() {
+    // The default implementation does nothing.
+  }
 
   /**
    * Processes a fully-analyzed class that contains a supported annotation (see {@link
@@ -140,7 +143,10 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
    *
    * <p>Method {@link #getCompilerLog()} can be used to access the number of compiler errors.
    */
-  public void typeProcessingOver() {}
+  @SuppressWarnings("PMD.EmptyMethodInAbstractClassShouldBeAbstract")
+  public void typeProcessingOver() {
+    // The default implementation does nothing.
+  }
 
   /**
    * Returns the compiler log, which contains errors and warnings.
@@ -154,6 +160,8 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
 
   /** A task listener that invokes the processor whenever a class is fully analyzed. */
   private final class AttributionTaskListener implements TaskListener {
+    /** Creates a AttributionTaskListener. */
+    public AttributionTaskListener() {}
 
     @Override
     public void finished(TaskEvent e) {

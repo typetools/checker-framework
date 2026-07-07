@@ -31,7 +31,7 @@
 # "count-suppression-reasons-ignore"; see below for the full list.
 
 # This script is useful to determine the most frequent reasons for warning
-# suppressions, to help checker developers decide what featuers to add to
+# suppressions, to help checker developers decide what features to add to
 # their type systems.  However, use common.util.count.AnnotationStatistics
 # to count the total number of warning suppressions (for example, to report
 # in a paper), because this script gives only an approximate count.

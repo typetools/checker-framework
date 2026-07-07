@@ -107,7 +107,7 @@ public class ArrayCreation extends JavaExpression {
     if (!(je instanceof ArrayCreation other)) {
       return false;
     }
-    return JavaExpression.syntacticEqualsList(this.dimensions, other.dimensions)
+    return syntacticEqualsList(this.dimensions, other.dimensions)
         && JavaExpression.syntacticEqualsList(this.initializers, other.initializers)
         && getType().toString().equals(other.getType().toString());
   }
@@ -123,19 +123,21 @@ public class ArrayCreation extends JavaExpression {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     if (dimensions.isEmpty()) {
-      sb.append("new " + type);
+      sb.append("new ");
+      sb.append(type);
     } else {
-      sb.append("new " + TypesUtils.getInnermostComponentType((ArrayType) type));
+      sb.append("new ");
+      sb.append(TypesUtils.getInnermostComponentType((ArrayType) type));
       for (JavaExpression dim : dimensions) {
-        sb.append("[");
+        sb.append('[');
         sb.append(dim == null ? "" : dim);
-        sb.append("]");
+        sb.append(']');
       }
     }
     if (!initializers.isEmpty() || dimensions.isEmpty()) {
       sb.append(" {");
       sb.append(StringsPlume.join(", ", initializers));
-      sb.append("}");
+      sb.append('}');
     }
     return sb.toString();
   }

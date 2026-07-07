@@ -62,7 +62,7 @@ import org.plumelib.util.StringsPlume;
  * Utility methods for operating on {@code AnnotatedTypeMirror}. This class mimics the class {@link
  * Types}.
  */
-public class AnnotatedTypes {
+public final class AnnotatedTypes {
   /** Class cannot be instantiated. */
   private AnnotatedTypes() {
     throw new AssertionError("Class AnnotatedTypes cannot be instantiated.");
@@ -142,15 +142,15 @@ public class AnnotatedTypes {
 
     Elements elements = atypeFactory.getProcessingEnv().getElementUtils();
     if (supertype != null
-        && AnnotatedTypes.isEnum(supertype)
-        && AnnotatedTypes.isDeclarationOfJavaLangEnum(types, elements, supertype)) {
+        && isEnum(supertype)
+        && isDeclarationOfJavaLangEnum(types, elements, supertype)) {
       // Don't return the asSuper result because it causes an infinite loop.
       @SuppressWarnings("unchecked")
       T result = (T) supertype.deepCopy();
       return result;
     }
 
-    T asSuperType = AnnotatedTypes.asSuper(atypeFactory, subtype, supertype);
+    T asSuperType = asSuper(atypeFactory, subtype, supertype);
 
     fixUpRawTypes(subtype, asSuperType, supertype, types);
     return asSuperType;
@@ -399,7 +399,7 @@ public class AnnotatedTypes {
             memberType);
       }
       case WILDCARD -> {
-        if (AnnotatedTypes.isTypeArgOfRawType(receiverType)) {
+        if (isTypeArgOfRawType(receiverType)) {
           return substituteTypeArgsFromRawTypes(atypeFactory, member, memberType);
         }
         return asMemberOf(
@@ -511,9 +511,9 @@ public class AnnotatedTypes {
     while (enclosingType != null) {
       TypeElement enclosingTypeElement = (TypeElement) enclosingType.asElement();
       addTypeVarMappings(types, atypeFactory, receiverType, enclosingTypeElement, mappings);
-      if (enclosingType.getEnclosingType() != null
-          && enclosingType.getEnclosingType().getKind() == TypeKind.DECLARED) {
-        enclosingType = (DeclaredType) enclosingType.getEnclosingType();
+      TypeMirror enclosingOfEnclosing = enclosingType.getEnclosingType();
+      if (enclosingOfEnclosing != null && enclosingOfEnclosing.getKind() == TypeKind.DECLARED) {
+        enclosingType = (DeclaredType) enclosingOfEnclosing;
       } else {
         enclosingType = null;
       }
@@ -907,10 +907,8 @@ public class AnnotatedTypes {
               + "type1: %s, type2: %s",
           glbJava.getKind(), glbJava, type1, type2);
     }
-    AnnotationMirrorSet set1 =
-        AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type1);
-    AnnotationMirrorSet set2 =
-        AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type2);
+    AnnotationMirrorSet set1 = findEffectiveLowerBoundAnnotations(qualHierarchy, type1);
+    AnnotationMirrorSet set2 = findEffectiveLowerBoundAnnotations(qualHierarchy, type2);
     Set<? extends AnnotationMirror> glbAnno =
         qualHierarchy.greatestLowerBoundsShallow(set1, tm1, set2, tm2);
 
@@ -1025,15 +1023,16 @@ public class AnnotatedTypes {
 
     // Handle anonymous constructors that extend a class with an enclosing type,
     // as in `new MyClass() { ... }`.
-    if (method.getElement().getKind() == ElementKind.CONSTRUCTOR
-        && method.getElement().getEnclosingElement().getSimpleName().contentEquals("")) {
+    ExecutableElement methodElement = method.getElement();
+    if (methodElement.getKind() == ElementKind.CONSTRUCTOR
+        && methodElement.getEnclosingElement().getSimpleName().contentEquals("")) {
       DeclaredType t =
           TypesUtils.getSuperClassOrInterface(
-              method.getElement().getEnclosingElement().asType(), atypeFactory.types);
-      if (t.getEnclosingType() != null) {
+              methodElement.getEnclosingElement().asType(), atypeFactory.types);
+      TypeMirror enclosingType = t.getEnclosingType();
+      if (enclosingType != null) {
         if (!parameters.isEmpty()) {
-          if (atypeFactory.types.isSameType(
-              t.getEnclosingType(), parameters.get(0).getUnderlyingType())) {
+          if (atypeFactory.types.isSameType(enclosingType, parameters.get(0).getUnderlyingType())) {
             if (args.isEmpty()
                 || !atypeFactory.types.isSameType(
                     TreeUtils.typeOf(args.get(0)), parameters.get(0).getUnderlyingType())) {
@@ -1189,7 +1188,8 @@ public class AnnotatedTypes {
     visited.add(type);
 
     if (!found && !vis) {
-      if (type.getKind() == TypeKind.DECLARED) {
+      TypeKind kind = type.getKind();
+      if (kind == TypeKind.DECLARED) {
         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
         for (AnnotatedTypeMirror typeMirror : declaredType.getTypeArguments()) {
           found |= containsModifierImpl(typeMirror, modifier, visited);
@@ -1197,21 +1197,23 @@ public class AnnotatedTypes {
             break;
           }
         }
-      } else if (type.getKind() == TypeKind.ARRAY) {
+      } else if (kind == TypeKind.ARRAY) {
         AnnotatedArrayType arrayType = (AnnotatedArrayType) type;
         found = containsModifierImpl(arrayType.getComponentType(), modifier, visited);
-      } else if (type.getKind() == TypeKind.TYPEVAR) {
+      } else if (kind == TypeKind.TYPEVAR) {
         AnnotatedTypeVariable atv = (AnnotatedTypeVariable) type;
-        if (atv.getUpperBound() != null) {
-          found = containsModifierImpl(atv.getUpperBound(), modifier, visited);
+        AnnotatedTypeMirror upperBound = atv.getUpperBound();
+        if (upperBound != null) {
+          found = containsModifierImpl(upperBound, modifier, visited);
         }
         if (!found && atv.getLowerBound() != null) {
           found = containsModifierImpl(atv.getLowerBound(), modifier, visited);
         }
-      } else if (type.getKind() == TypeKind.WILDCARD) {
+      } else if (kind == TypeKind.WILDCARD) {
         AnnotatedWildcardType awc = (AnnotatedWildcardType) type;
-        if (awc.getExtendsBound() != null) {
-          found = containsModifierImpl(awc.getExtendsBound(), modifier, visited);
+        AnnotatedTypeMirror extendsBound = awc.getExtendsBound();
+        if (extendsBound != null) {
+          found = containsModifierImpl(extendsBound, modifier, visited);
         }
         if (!found && awc.getSuperBound() != null) {
           found = containsModifierImpl(awc.getSuperBound(), modifier, visited);
@@ -1289,10 +1291,11 @@ public class AnnotatedTypes {
    * @param typeVar2 a type variable
    * @return true if the typeVar1 and typeVar2 are two uses of the same type variable
    */
-  @SuppressWarnings(
-      "interning:not.interned" // This is an equals method but @EqualsMethod can't be used
-  // because this method has 3 arguments.
-  )
+  @SuppressWarnings({
+    "interning:not.interned", // This is an equals method but @EqualsMethod can't be used
+    // because this method has 3 arguments.
+    "TypeEquals" // early exit from equals method
+  })
   public static boolean haveSameDeclaration(
       Types types, AnnotatedTypeVariable typeVar1, AnnotatedTypeVariable typeVar2) {
 

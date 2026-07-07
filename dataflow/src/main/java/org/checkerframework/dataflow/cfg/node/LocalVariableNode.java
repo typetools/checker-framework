@@ -97,7 +97,7 @@ public class LocalVariableNode extends Node {
 
   @Override
   public String toString() {
-    return getName().toString();
+    return getName();
   }
 
   @Override

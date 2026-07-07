@@ -164,7 +164,7 @@ testDataflowAnalysis("constantPropagationTest", "constant-propagation", "constan
 testDataflowAnalysis("issue3447Test", "issue3447", "livevar.LiveVariable", false)
 testDataflowAnalysis("liveVariableTest", "live-variable", "livevar.LiveVariable", true)
 testDataflowAnalysis("reachingDefinitionTest", "reachingdef", "reachingdef.ReachingDefinition", true)
-if (testJdkVersion >= 22) {
+if (rootProject.ext.testJdkVersion >= 22) {
   testDataflowAnalysis("unnamedPatternTest", "java22/unnamed-pattern", "reachingdef.ReachingDefinition", true)
 }
 
@@ -221,10 +221,10 @@ final dataflowShadedPom(MavenPublication publication, String shadedPkgName) {
       // This should just happen automatically, but I can't figure out how to make it happen with
       // a custom Shadow task.
       asNode().appendNode("dependencies").appendNode("dependency")
-          .appendNode("groupId", "org.checkerframework").parent()
-          .appendNode("artifactId", "checker-qual").parent()
-          .appendNode("version", version).parent()
-          .appendNode("scope", "runtime")
+      .appendNode("groupId", "org.checkerframework").parent()
+      .appendNode("artifactId", "checker-qual").parent()
+      .appendNode("version", version).parent()
+      .appendNode("scope", "runtime")
     }
   }
 }

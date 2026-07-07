@@ -53,6 +53,11 @@ import org.plumelib.util.StringsPlume;
  */
 public class TypeVisualizer {
 
+  /** Do not instantiate. */
+  private TypeVisualizer() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Creates a dot file at dest that contains a digraph for the structure of {@code type}.
    *
@@ -150,9 +155,9 @@ public class TypeVisualizer {
 
     if (typeVarNames.contains(varName)) {
       if (png) {
-        TypeVisualizer.drawToPng(dirPath + varName + ".png", typeVariable);
+        drawToPng(dirPath + varName + ".png", typeVariable);
       } else {
-        TypeVisualizer.drawToDot(dirPath + varName + ".dot", typeVariable);
+        drawToDot(dirPath + varName + ".dot", typeVariable);
       }
       return true;
     }
@@ -168,7 +173,7 @@ public class TypeVisualizer {
    * hierarchical order. However, since there is no LinkedIdentityHashMap, it was easiest to just
    * create a wrapper that performed referential equality on types and use a LinkedHashMap.
    */
-  private static class Node {
+  private static final class Node {
     /** The delegate; that is, the wrapped value. */
     private final @InternedDistinct AnnotatedTypeMirror type;
 
@@ -264,7 +269,10 @@ public class TypeVisualizer {
      * Connection drawer is used to add the connections between all the nodes created by the
      * NodeDrawer. It is not a scanner and is called on every node in the nodes map.
      */
-    private class ConnectionDrawer implements AnnotatedTypeVisitor<Void, Void> {
+    private final class ConnectionDrawer implements AnnotatedTypeVisitor<Void, Void> {
+
+      /** Creates a new ConnectionDrawer. */
+      ConnectionDrawer() {}
 
       @Override
       public Void visit(AnnotatedTypeMirror type) {
@@ -591,9 +599,9 @@ public class TypeVisualizer {
 
         builder.append(methodElem.getSimpleName().toString());
 
-        builder.append("(");
+        builder.append('(');
         builder.append(StringsPlume.join(",", methodElem.getParameters()));
-        builder.append(")");
+        builder.append(')');
         return builder.toString();
       }
     }

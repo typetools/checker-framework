@@ -28,7 +28,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * represent the result of capture conversion applied to {@code G<A1, ..., An>} (where A1, ..., An
  * may be types or wildcards and may mention inference variables).
  */
-public class CaptureBound {
+public final class CaptureBound {
   /** {@code G<A1, ..., An>} sometimes called the right-hand side. */
   private final AbstractType capturedType;
 
@@ -57,8 +57,7 @@ public class CaptureBound {
    * Creates a captured bound.
    *
    * @param capturedType a capture type
-   * @param invocation invocation a method or constructor invocation; used to create fresh inference
-   *     variables
+   * @param invocation a method or constructor invocation; used to create fresh inference variables
    * @param context the context
    */
   private CaptureBound(
@@ -86,16 +85,15 @@ public class CaptureBound {
   }
 
   /**
-   * Given {@code r}, a parameterized type, {@code G<A1, ..., An>}}, and one of {@code A1, ..., An}
+   * Given {@code r}, a parameterized type, {@code G<A1, ..., An>}, and one of {@code A1, ..., An}
    * is a wildcard, then, for fresh inference variables {@code B1, ..., Bn}, the constraint formula
    * {@code <G<B1, ..., Bn> -> T>} is reduced and incorporated, along with the bound {@code G<B1,
-   * ..., Bn> = capture(G<A1, ..., An>)}, with B2.
+   * ..., Bn> = capture(G<A1, ..., An>)}.
    *
    * @param r a parameterized type, {@code G<A1, ..., An>}, and one of {@code A1, ..., An} is a
    *     wildcard
    * @param target target of the constraint
-   * @param invocation invocation a method or constructor invocation; used to create fresh inference
-   *     variables
+   * @param invocation a method or constructor invocation; used to create fresh inference variables
    * @param context the context
    * @return the result of incorporating the created capture constraint
    */
@@ -114,7 +112,7 @@ public class CaptureBound {
    * <p>Also, reduces and incorporates the constraint {@code G<a1,...,an> -> target}. See JLS
    * 18.5.2.1.
    *
-   * @param target the target type of
+   * @param target the target type
    * @param context the context
    * @return the result of incorporation
    */
@@ -194,7 +192,7 @@ public class CaptureBound {
    * groups ai, Ai, and the upper bound of the corresponding type variable.
    *
    * @param alpha fresh inference variable (in the left-hand side of the capture). (Also referred to
-   *     as beta in the some places in the JLS.) For example {@code a1} in {@code G<a1, ..., an> =
+   *     as beta in some places in the JLS.) For example {@code a1} in {@code G<a1, ..., an> =
    *     capture(G<A1, ..., An>)}.
    * @param capturedTypeArg type argument in the right-hand side for the capture. For example {@code
    *     A1} in {@code G<a1, ..., an> = capture(G<A1, ..., An>)}.

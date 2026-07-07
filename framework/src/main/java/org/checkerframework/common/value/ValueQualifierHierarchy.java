@@ -46,9 +46,6 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
    * @param otherAnno annotation from the value checker hierarchy
    * @return greatest lower bound of {@code stringValAnno} and {@code otherAnno}
    */
-  @SuppressWarnings(
-      "regex:type.arguments.not.inferred") // AnnotationUtils.getElementValueArray contains @Regex
-  // strings
   private AnnotationMirror glbOfStringVal(
       AnnotationMirror stringValAnno, AnnotationMirror otherAnno) {
     List<String> values = atypeFactory.getStringValues(stringValAnno);

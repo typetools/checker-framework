@@ -74,16 +74,17 @@ public class ArrayCreationNode extends Node {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("new " + type);
+    sb.append("new ");
+    sb.append(type);
     if (!dimensions.isEmpty()) {
       sb.append(" (");
       sb.append(StringsPlume.join(", ", dimensions));
-      sb.append(")");
+      sb.append(')');
     }
     if (!initializers.isEmpty() || dimensions.isEmpty()) {
       sb.append(" {");
       sb.append(StringsPlume.join(", ", initializers));
-      sb.append("}");
+      sb.append('}');
     }
     return sb.toString();
   }

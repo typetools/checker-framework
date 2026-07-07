@@ -109,9 +109,9 @@ public class ArrayAccess extends JavaExpression {
   public String toString() {
     StringBuilder result = new StringBuilder();
     result.append(array.toString());
-    result.append("[");
+    result.append('[');
     result.append(index.toString());
-    result.append("]");
+    result.append(']');
     return result.toString();
   }
 

@@ -3,6 +3,7 @@ package org.checkerframework.afu.scenelib.el;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
 
@@ -66,7 +67,7 @@ public class ATypeElement extends AElement {
   @Override
   public int hashCode() {
     checkRep();
-    return tlAnnotationsHere.hashCode() + innerTypes.hashCode();
+    return Objects.hash(tlAnnotationsHere, innerTypes);
   }
 
   @Override
@@ -91,18 +92,17 @@ public class ATypeElement extends AElement {
     sb.append(" : ");
     for (Annotation a : tlAnnotationsHere) {
       sb.append(a.toString());
-      sb.append(" ");
+      sb.append(' ');
     }
-    sb.append("{");
-    String linePrefix = "  ";
+    sb.append('{');
     for (Map.Entry<List<TypePathEntry>, ATypeElement> entry : innerTypes.entrySet()) {
-      sb.append(linePrefix);
+      sb.append("  ");
       sb.append(entry.getKey().toString());
       sb.append(" => ");
       sb.append(entry.getValue().toString());
       sb.append(lineSep);
     }
-    sb.append("}");
+    sb.append('}');
     return sb.toString();
   }
 
@@ -112,7 +112,7 @@ public class ATypeElement extends AElement {
   }
 
   static <K extends Object> VivifyingMap<K, ATypeElement> newVivifyingLHMap_ATE() {
-    return new VivifyingMap<K, ATypeElement>(new LinkedHashMap<>()) {
+    return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public ATypeElement createValueFor(K k) {
         return new ATypeElement(k.toString());

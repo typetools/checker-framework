@@ -50,7 +50,6 @@ including people who wish to edit its source code or make pull requests.
               <li><a href="#ci-increasing-quota">Increasing quota</a></li>
               <li><a href="#project-visibility">How to change project visibility settings</a></li>
             </ul></li>
-          <li><a href="#ci-travis">Travis CI</a></li>
           <li><a href="#ci-related-projects">Continuous Integration failures in related projects (daikon, plume-lib, etc.)</a></li>
           <li><a href="#ci-failure">Reproducing Continuous Integration build failures</a></li>
         </ul></li>
@@ -236,7 +235,7 @@ Code in this project follows the
 <a href="https://google.github.io/styleguide/javaguide.html">Google Java Style
   Guide</a>,
 <a href="https://homes.cs.washington.edu/~mernst/advice/coding-style.html">Michael
-Ernst's coding style guidelines</a>, and <a href="https://www.oracle.com/java/technologies/javase/codeconventions-indentation.html#248">Oracle's
+Ernst's coding style guidelines</a>, and <a href="https://www.oracle.com/java/technologies/javase/codeconventions-indentation.html">Oracle's
 Java code conventions</a>.
 </p>
 
@@ -424,7 +423,7 @@ branches after they are merged</a>.
 
 <p>
 The Checker Framework has continuous integration jobs that run in Azure
-Pipelines, CircleCI, GitHub Actions, and/or Travis CI on each push to GitHub.
+Pipelines, CircleCI, and/or GitHub Actions on each push to GitHub.
 </p>
 
 
@@ -484,17 +483,15 @@ Pipelines, CircleCI, GitHub Actions, and/or Travis CI on each push to GitHub.
   <li>Click "run".</li>
 </ul>
 
-<!-- TODO: Document how to use with Travis CI.  Note that Travis CI is no longer
-free for open-source projects; you have to apply for an Open Source Sponsorship.
--->
-
-
 <h4 id="ci-increasing-quota">Increasing quota</h4>
 
 <p>
 By default, your project has no parallelism and thus pipeline runs fail
-immediately. Azure DevOps provides
-a <a href="https://aka.ms/azpipelines-parallelism-request">Microsoft Forms</a>
+immediately. Azure DevOps provides a
+<!-- Another URL that redirects to the same place:
+  https://aka.ms/azpipelines-parallelism-request
+-->
+<a href="https://forms.office.com/r/nwUb97Fj9r">Microsoft Forms</a>
 through which you can request increased public project concurrency for validated
 open-source projects.
 </p>
@@ -534,7 +531,11 @@ To change your project's visibility settings (usually to "Public" to enable CI):
 </ul>
 
 
-<h3 id="ci-travis">Travis CI</h3>
+<!-- Travis CI is not currently supported. -->
+<!-- Note that Travis CI is no longer
+free for open-source projects; you have to apply for an Open Source Sponsorship.
+-->
+<!-- <h3 id="ci-travis">Travis CI</h3>
 
 <p>
   To enable Travis CI continuous integration for your fork:
@@ -545,7 +546,7 @@ To change your project's visibility settings (usually to "Public" to enable CI):
   <li>Click settings</li>
   <li>Find "checker-framework" in the list, and click the slider to enable it.</li>
 </ul>
-
+-->
 
 <h3 id="ci-related-projects">Continuous Integration failures in related projects (daikon, plume-lib, etc.)</h3>
 
@@ -603,7 +604,7 @@ If a CI job fails, examine the CI logs.
 <p>
 You can also run the same test locally.  Each CI job runs a different command.
 You can see the commands in
-file <a href="https://github.com/typetools/checker-framework/blob/master/azure-pipelines.yml"><code>azure-pipelines.yml</code></a>,
+file <a href="https://github.com/typetools/checker-framework/blob/master/.azure/azure-pipelines.yml"><code>azure-pipelines.yml</code></a>,
 usually on lines starting with <code>bash:</code>.  The scripts that are run
 generally just invoke gradle to run particular tasks.
 </p>
@@ -613,7 +614,7 @@ Sometimes, CI tests for your pull request may fail even though the same command
 passed locally.  First, ensure you are using the same JDK.  Second, all CI tests
 are run in a Docker container, and you can use that container if necessary.  The
 container names are in top-level
-file <a href="https://github.com/typetools/checker-framework/blob/master/azure-pipelines.yml"><code>azure-pipelines.yml</code></a>,
+file <a href="https://github.com/typetools/checker-framework/blob/master/.azure/azure-pipelines.yml"><code>azure-pipelines.yml</code></a>,
 on lines starting with <code>container:</code>.
 </p>
 
@@ -666,7 +667,9 @@ for example to 6.2.0.2.
 See a separate document about the Checker Framework release process:
 <a href="https://htmlpreview.github.io/?https://github.com/typetools/checker-framework/master/docs/developer/release/README-release-process.html">web version (from previous release)</a> or
 <!-- This relative URL works from a clone, but not from the web. -->
-<a href="release/README-release-process.html">local version (link works from a clone)</a>.
+<a href="release/README-release-process.html">local version (link works if
+  you are reading the Checker Framework Developer Manual from a clone of the
+  Checker Framework repository)</a>.
 </p>
 
 

@@ -1,16 +1,16 @@
 [plugins]
 
-com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.4.1" }
+com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.5.1" }
 
 de-undercouch-download = { id = "de.undercouch.download", version = "5.7.0" }
 
 net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "5.1.0" }
 
-com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.4.0" }
+com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.8.0" }
 
-com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.7" }
+com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "4.0.1" }
 
-biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.2.3" }
+biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.3.0" }
 
 [versions]
 
@@ -18,20 +18,21 @@ biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.2.3" }
 #  * Temporarily comment out "-Werror" in build.gradle files.
 #  * Repeatedly run `./gradlew clean compileJava` and fix all errors.
 #  * Uncomment "-Werror".
-errorprone-version = "2.49.0"
+errorprone-version = "2.50.0"
 
 junit-junit = "4.13.2"
 
-jgit-version = "7.6.0.202603022253-r"
+jgit-version = "7.7.0.202606012155-r"
 
 [libraries]
 
 # This line might need to be updated by hand, because sometimes the artifact
 # name itself changes (independently of the version number), such as from
 # org.apache.spark:spark-sql_2.12 to org.apache.spark:spark-sql_2.13.
-spark-sql = "org.apache.spark:spark-sql_2.13:4.1.1"
+# See https://mvnrepository.com/artifact/org.apache.spark/spark-sql .
+spark-sql = "org.apache.spark:spark-sql_2.13:4.1.2"
 
-asm = "org.ow2.asm:asm:9.9.1"
+asm = "org.ow2.asm:asm:9.10.1"
 
 auto-value = "com.google.auto.value:auto-value:1.11.1"
 
@@ -79,4 +80,4 @@ reflection-util = "org.plumelib:reflection-util:1.1.6"
 
 require-javadoc = "org.plumelib:require-javadoc:2.0.0"
 
-stubparser = "org.checkerframework:stubparser:3.28.0"
+stubparser = "org.checkerframework:stubparser:3.28.1"

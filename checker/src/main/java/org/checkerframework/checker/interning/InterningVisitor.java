@@ -239,7 +239,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     } else if (hasEqualsMethodAnno && !(params == 1 || params == 2)) {
       checker.reportError(
           tree, "invalid.method.annotation", "@EqualsMethod", "1 or 2", methElt, params);
-    } else if (hasInternMethodAnno && !(params == 0)) {
+    } else if (hasInternMethodAnno && params != 0) {
       checker.reportError(tree, "invalid.method.annotation", "@InternMethod", "0", methElt, params);
     }
 

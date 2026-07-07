@@ -16,9 +16,9 @@ all: clean results
 
 warn_and_exit:
 	@echo ""
-	@echo "******************************************************"
-	@echo "Warning: The sytem test has been temporarily disabled!"
-	@echo "******************************************************"
+	@echo "*******************************************************"
+	@echo "Warning: The system test has been temporarily disabled!"
+	@echo "*******************************************************"
 	@echo ""
 
 results: out1 check-out2 out3 out4.class check-out5

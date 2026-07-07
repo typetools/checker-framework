@@ -599,7 +599,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
     Set<Node> existing = treeToCfgNodes.get(tree);
     if (existing == null) {
-      Set<Node> newSet = new IdentityArraySet<Node>(1);
+      Set<Node> newSet = new IdentityArraySet<>(1);
       newSet.add(node);
       treeToCfgNodes.put(tree, newSet);
     } else {
@@ -1863,7 +1863,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // Declare and initialize the loop index variable
       TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
 
-      LiteralTree zero = treeBuilder.buildLiteral(Integer.valueOf(0));
+      LiteralTree zero = treeBuilder.buildLiteral(0);
       handleArtificialTree(zero);
 
       VariableTree indexVariable =
@@ -1957,7 +1957,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       indexNode3.setInSource(false);
       extendWithNode(indexNode3);
 
-      LiteralTree oneTree = treeBuilder.buildLiteral(Integer.valueOf(1));
+      LiteralTree oneTree = treeBuilder.buildLiteral(1);
       handleArtificialTree(oneTree);
       Node one = new IntegerLiteralNode(oneTree);
       one.setInSource(false);
@@ -2048,7 +2048,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Helper class for handling switch statements and switch expressions, including all their
    * substatements such as case labels.
    */
-  private class SwitchBuilder {
+  private final class SwitchBuilder {
 
     /**
      * The tree for the switch statement or switch expression. Its type may be {@link SwitchTree}
@@ -2412,6 +2412,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param second a reference
    * @return the first argument that is non-null
    */
+  @SuppressWarnings("PMD.AvoidThrowingNullPointerException")
   private static <A> A firstNonNull(A first, A second) {
     if (first != null) {
       return first;
@@ -3462,7 +3463,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // `tree` has an explicit receiver.
       return scan(mtree.getExpression(), null);
     } else {
-      // `tree` lacks an explicit reciever.
+      // `tree` lacks an explicit receiver.
       Element ele = TreeUtils.elementFromUse(tree);
       TypeElement declaringClass = ElementUtils.enclosingTypeElement(ele);
       TypeMirror typeOfDeclaringClass = ElementUtils.getType(declaringClass);

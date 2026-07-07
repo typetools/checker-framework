@@ -514,7 +514,7 @@ def main(argv: list[str]) -> None:
             "Please 'Publish' the artifacts.\n"
             "First log into https://central.sonatype.com/publishing using your "
             "Sonatype credentials.\n"
-            "Find the deployment labled 'org.checkerframework (via OSSRH Staging API)'.\n"
+            "Find the deployment labeled 'org.checkerframework (via OSSRH Staging API)'.\n"
             "Click on the Publish button next to it.\n"
             "Now it should say PUBLISHING next to the deployment. "
             "This will take a while, you can move onto the next release steps.\n\n"

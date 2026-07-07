@@ -18,7 +18,7 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Holds information from {@link HasSubsequence} annotations. */
-public class Subsequence {
+public final class Subsequence {
 
   /** Name of the Subsequence. */
   public final String array;

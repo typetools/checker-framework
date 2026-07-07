@@ -60,13 +60,13 @@ public class ConstraintSet implements ReductionResult {
    */
   private final List<Constraint> list;
 
-  /** True if inference failed because the qualifiers where not in the correct relationship. */
+  /** True if inference failed because the qualifiers were not in the correct relationship. */
   private boolean annotationFailure = false;
 
   /**
    * Creates a new constraint set.
    *
-   * @param annotationFailure inference failed because the qualifiers where not in the correct
+   * @param annotationFailure inference failed because the qualifiers were not in the correct
    *     relationship
    */
   private ConstraintSet(boolean annotationFailure) {
@@ -181,8 +181,8 @@ public class ConstraintSet implements ReductionResult {
    *
    * @param c a constraint set
    * @param dependencies an object describing the dependencies of inference variables
-   * @return s a subset of constraints in {@code c} whose inputs do not affect {@code c}'s outputs,
-   *     or a singleton constraint from a constraint cycle
+   * @return a subset of constraints in {@code c} whose inputs do not affect {@code c}'s outputs, or
+   *     a singleton constraint from a constraint cycle
    */
   public static ConstraintSet getClosedSubset(ConstraintSet c, Dependencies dependencies) {
     ConstraintSet subset = new ConstraintSet();
@@ -346,7 +346,7 @@ public class ConstraintSet implements ReductionResult {
     BoundSet boundSet = new BoundSet(context);
     while (!this.isEmpty()) {
       if (this.list.size() > BoundSet.MAX_INCORPORATION_STEPS) {
-        throw new BugInCF("TO MANY CONSTRAINTS: %s", context.pathToExpression.getLeaf());
+        throw new BugInCF("TOO MANY CONSTRAINTS: %s", context.pathToExpression.getLeaf());
       }
       BoundSet result = reduceOneStep(context);
       boundSet.merge(result);

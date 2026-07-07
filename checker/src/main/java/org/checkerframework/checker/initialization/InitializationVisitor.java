@@ -47,6 +47,10 @@ import org.plumelib.util.IPair;
  * The visitor for the freedom-before-commitment type-system. The freedom-before-commitment
  * type-system and this class are abstract and need to be combined with another type-system whose
  * safe initialization should be tracked. For an example, see the {@link NullnessChecker}.
+ *
+ * @param <Factory> the type of the annotated type factory
+ * @param <Value> the type of values in the store
+ * @param <Store> the type of the store
  */
 public class InitializationVisitor<
         Factory extends InitializationAnnotatedTypeFactory<Value, Store, ?, ?>,

@@ -38,13 +38,19 @@ import org.plumelib.util.IPair;
 
 /** Utility class for annotation files (stub files and ajava files). */
 public class AnnotationFileUtil {
+
+  /** Do not instantiate. */
+  private AnnotationFileUtil() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * The types of files that can contain annotations. Also indicates the file's source, such as from
    * the JDK, built in, or from the command line.
    *
    * <p>Stub files have extension ".astub". Ajava files have extension ".ajava".
    */
-  public enum AnnotationFileType {
+  public static enum AnnotationFileType {
     /** Stub file in the annotated JDK. */
     JDK_STUB,
     /** Stub file built into a checker. */
@@ -257,36 +263,36 @@ public class AnnotationFileUtil {
     public void visit(ConstructorDeclaration n, Void arg) {
       sb.append("<init>");
 
-      sb.append("(");
+      sb.append('(');
       if (n.getParameters() != null) {
         for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext(); ) {
           Parameter p = i.next();
           p.accept(this, arg);
 
           if (i.hasNext()) {
-            sb.append(",");
+            sb.append(',');
           }
         }
       }
-      sb.append(")");
+      sb.append(')');
     }
 
     @Override
     public void visit(MethodDeclaration n, Void arg) {
       sb.append(n.getName());
 
-      sb.append("(");
+      sb.append('(');
       if (n.getParameters() != null) {
         for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext(); ) {
           Parameter p = i.next();
           p.accept(this, arg);
 
           if (i.hasNext()) {
-            sb.append(",");
+            sb.append(',');
           }
         }
       }
-      sb.append(")");
+      sb.append(')');
     }
 
     @Override
