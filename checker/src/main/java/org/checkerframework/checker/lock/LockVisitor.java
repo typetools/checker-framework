@@ -431,6 +431,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       AnnotatedDeclaredType enclosingType,
       AnnotatedExecutableType overridden,
       AnnotatedDeclaredType overriddenType,
+      SideEffectAnnotation seaOfOverriderMethod,
+      SideEffectAnnotation seaOfOverriddenMethod,
       List<String> overriderLocks,
       List<String> overriddenLocks) {
     // Get the type of the overriding method.
@@ -446,14 +448,27 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     if (overriderLocks == null || overriddenLocks == null) {
       checker.reportError(
-          overriderTree, messageKey, overriderTyp, overriderMeth, overriddenTyp, overriddenMeth);
+          overriderTree,
+          messageKey,
+          seaOfOverriderMethod,
+          seaOfOverriddenMethod,
+          overriderTyp,
+          seaOfOverriderMethod,
+          overriderMeth,
+          overriddenTyp,
+          seaOfOverriddenMethod,
+          overriddenMeth);
     } else {
       checker.reportError(
           overriderTree,
           messageKey,
+          seaOfOverriderMethod,
+          seaOfOverriddenMethod,
           overriderTyp,
+          seaOfOverriderMethod,
           overriderMeth,
           overriddenTyp,
+          seaOfOverriddenMethod,
           overriddenMeth,
           overriderLocks,
           overriddenLocks);
@@ -487,6 +502,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
           enclosingType,
           overriddenMethodType,
           overriddenType,
+          seaOfOverriderMethod,
+          seaOfOverriddenMethod,
           null,
           null);
     }
