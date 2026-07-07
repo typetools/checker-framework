@@ -462,7 +462,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         }
         if (qualifierKind.bottom == null) {
           qualifierKind.bottom = bot;
-        } else if (qualifierKind.top != bot) {
+        } else if (qualifierKind.bottom != bot) {
           throw new TypeSystemError(
               "Multiple bottoms found for qualifier %s. Bottoms: %s and %s.",
               qualifierKind, bot, qualifierKind.bottom);
