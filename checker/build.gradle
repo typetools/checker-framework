@@ -276,7 +276,7 @@ tasks.register("allNullnessTests", Test) {
 tasks.register("allCalledMethodsTests", Test) {
   description = "Run all Junit tests for the Called Methods Checker."
   group = "Verification"
-  if (!skipDelombok) {
+  if (!rootProject.ext.skipDelombok) {
     dependsOn("delombok")
   }
   testClassesDirs = sourceSets.test.output.classesDirs
@@ -301,14 +301,14 @@ tasks.register("allResourceLeakTests", Test) {
 // ./gradlew NullnessJSpecifySamplesTest
 test {
   exclude("**/org/checkerframework/checker/test/junit/NullnessJSpecifySamplesTest.class")
-  if (skipDelombok) {
+  if (rootProject.ext.skipDelombok) {
     exclude("**/org/checkerframework/checker/test/junit/CalledMethodsNoDelombokTest.class")
     exclude("**/org/checkerframework/checker/test/junit/CalledMethodsDisableReturnsReceiverTest.class")
     exclude("**/org/checkerframework/checker/test/junit/NullnessNoDelombokTest.class")
   }
 }
 
-if (!skipDelombok) {
+if (!rootProject.ext.skipDelombok) {
   tasks.register("delombok") {
     description = "Delomboks the source code tree in tests/calledmethods-lombok"
 
@@ -322,7 +322,7 @@ if (!skipDelombok) {
     dependsOn(project(":checker-qual").tasks.jar)
 
     doLast {
-      if (!skipDelombok) {
+      if (!rootProject.ext.skipDelombok) {
         def collection =(files(configurations.testCompileClasspath))
         ant.taskdef(name: "delombok", classname: "lombok.delombok.ant.Tasks\$Delombok",
         classpath: collection.asPath)

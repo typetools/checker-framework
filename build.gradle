@@ -367,7 +367,7 @@ allprojects { currentProj ->
         // Error Prone must be available in the annotation processor path
         options.annotationProcessorPath = configurations.errorProneAnnotationProcessor
         // Enable Error Prone
-        options.errorprone.enabled = compilerRunsOnJava21orHigher
+        options.errorprone.enabled = rootProject.ext.compilerRunsOnJava21orHigher
         options.errorprone.disableWarningsInGeneratedCode = true
         options.errorprone.errorproneArgs = [
           // Many compiler classes are interned.
@@ -808,19 +808,19 @@ subprojects {
     withSourcesJar()
 
     toolchain {
-      languageVersion = JavaLanguageVersion.of(testJdkVersion)
+      languageVersion = JavaLanguageVersion.of(rootProject.ext.testJdkVersion)
     }
   }
 
   tasks.withType(JavaExec).configureEach {
     javaLauncher = javaToolchains.launcherFor {
-      languageVersion = JavaLanguageVersion.of(testJdkVersion)
+      languageVersion = JavaLanguageVersion.of(rootProject.ext.testJdkVersion)
     }
   }
 
   tasks.withType(JavaCompile).configureEach { compilationTask ->
     javaCompiler = javaToolchains.compilerFor {
-      languageVersion = JavaLanguageVersion.of(compilerJdkVersion)
+      languageVersion = JavaLanguageVersion.of(rootProject.ext.compilerJdkVersion)
     }
   }
 
