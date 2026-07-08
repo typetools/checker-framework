@@ -1,6 +1,5 @@
 import java.util.Date;
 
-@SuppressWarnings("ainfertest") // only check WPI for crashes
 public class GetClassTest {
 
   // See AnnotatedTypeFactory.adaptGetClassReturnTypeToReceiver

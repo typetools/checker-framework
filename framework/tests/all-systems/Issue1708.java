@@ -5,11 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@SuppressWarnings({
-  "unchecked",
-  "ainfertest",
-}) // Don't issue warnings during ainfer tests, because more than one round of inference is required
-// for the value checker
+@SuppressWarnings({"unchecked"})
 public class Issue1708 {
 
   static class A<T extends B> {}
