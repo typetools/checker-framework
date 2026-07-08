@@ -513,7 +513,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   // combination of types.
 
   // ------------------------------------------------------------------------
-  // Arrays as subtypes
+  // array as subtype
 
   @Override
   public Boolean visitArray_Array(
@@ -531,11 +531,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   @Override
-  public Boolean visitArray_Null(AnnotatedArrayType subtype, AnnotatedNullType supertype, Void p) {
-    return isPrimarySubtype(subtype, supertype);
-  }
-
-  @Override
   public Boolean visitArray_Intersection(
       AnnotatedArrayType subtype, AnnotatedIntersectionType supertype, Void p) {
     return isSubtype(
@@ -545,9 +540,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   @Override
-  public Boolean visitArray_Wildcard(
-      AnnotatedArrayType subtype, AnnotatedWildcardType supertype, Void p) {
-    return visitType_Wildcard(subtype, supertype);
+  public Boolean visitArray_Null(AnnotatedArrayType subtype, AnnotatedNullType supertype, Void p) {
+    return isPrimarySubtype(subtype, supertype);
   }
 
   @Override
@@ -556,8 +550,15 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     return visitType_Typevar(subtype, superType);
   }
 
+  @Override
+  public Boolean visitArray_Wildcard(
+      AnnotatedArrayType subtype, AnnotatedWildcardType supertype, Void p) {
+    return visitType_Wildcard(subtype, supertype);
+  }
+
   // ------------------------------------------------------------------------
   // Declared as subtype
+
   @Override
   public Boolean visitDeclared_Array(
       AnnotatedDeclaredType subtype, AnnotatedArrayType supertype, Void p) {
@@ -744,22 +745,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
   // ------------------------------------------------------------------------
   // Intersection as subtype
+
   @Override
   public Boolean visitIntersection_Declared(
       AnnotatedIntersectionType subtype, AnnotatedDeclaredType supertype, Void p) {
     return visitIntersection_Type(subtype, supertype);
-  }
-
-  @Override
-  public Boolean visitIntersection_Primitive(
-      AnnotatedIntersectionType subtype, AnnotatedPrimitiveType supertype, Void p) {
-    for (AnnotatedTypeMirror subtypeBound : subtype.getBounds()) {
-      if (TypesUtils.isBoxedPrimitive(subtypeBound.getUnderlyingType())
-          && isSubtype(subtypeBound, supertype, currentTop)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   @Override
@@ -791,6 +781,18 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   @Override
+  public Boolean visitIntersection_Primitive(
+      AnnotatedIntersectionType subtype, AnnotatedPrimitiveType supertype, Void p) {
+    for (AnnotatedTypeMirror subtypeBound : subtype.getBounds()) {
+      if (TypesUtils.isBoxedPrimitive(subtypeBound.getUnderlyingType())
+          && isSubtype(subtypeBound, supertype, currentTop)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Override
   public Boolean visitIntersection_Typevar(
       AnnotatedIntersectionType subtype, AnnotatedTypeVariable supertype, Void p) {
     return visitIntersection_Type(subtype, supertype);
@@ -804,6 +806,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
   // ------------------------------------------------------------------------
   // Null as subtype
+
   @Override
   public Boolean visitNull_Array(AnnotatedNullType subtype, AnnotatedArrayType supertype, Void p) {
     return isPrimarySubtype(subtype, supertype);
@@ -816,21 +819,27 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   @Override
-  public Boolean visitNull_Typevar(
-      AnnotatedNullType subtype, AnnotatedTypeVariable supertype, Void p) {
-    return visitType_Typevar(subtype, supertype);
-  }
-
-  @Override
-  public Boolean visitNull_Wildcard(
-      AnnotatedNullType subtype, AnnotatedWildcardType supertype, Void p) {
-    return visitType_Wildcard(subtype, supertype);
+  public Boolean visitNull_Intersection(
+      AnnotatedNullType subtype, AnnotatedIntersectionType supertype, Void p) {
+    return isPrimarySubtype(subtype, supertype);
   }
 
   @Override
   public Boolean visitNull_Null(AnnotatedNullType subtype, AnnotatedNullType supertype, Void p) {
     // this can occur when comparing typevar lower bounds since they are usually null types
     return isPrimarySubtype(subtype, supertype);
+  }
+
+  @Override
+  public Boolean visitNull_Primitive(
+      AnnotatedNullType subtype, AnnotatedPrimitiveType supertype, Void p) {
+    return isPrimarySubtype(subtype, supertype);
+  }
+
+  @Override
+  public Boolean visitNull_Typevar(
+      AnnotatedNullType subtype, AnnotatedTypeVariable supertype, Void p) {
+    return visitType_Typevar(subtype, supertype);
   }
 
   @Override
@@ -844,19 +853,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   @Override
-  public Boolean visitNull_Intersection(
-      AnnotatedNullType subtype, AnnotatedIntersectionType supertype, Void p) {
-    return isPrimarySubtype(subtype, supertype);
-  }
-
-  @Override
-  public Boolean visitNull_Primitive(
-      AnnotatedNullType subtype, AnnotatedPrimitiveType supertype, Void p) {
-    return isPrimarySubtype(subtype, supertype);
+  public Boolean visitNull_Wildcard(
+      AnnotatedNullType subtype, AnnotatedWildcardType supertype, Void p) {
+    return visitType_Wildcard(subtype, supertype);
   }
 
   // ------------------------------------------------------------------------
   // Primitive as subtype
+
   @Override
   public Boolean visitPrimitive_Declared(
       AnnotatedPrimitiveType subtype, AnnotatedDeclaredType supertype, Void p) {
@@ -875,15 +879,15 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   @Override
-  public Boolean visitPrimitive_Primitive(
-      AnnotatedPrimitiveType subtype, AnnotatedPrimitiveType supertype, Void p) {
-    return isPrimarySubtype(subtype, supertype);
-  }
-
-  @Override
   public Boolean visitPrimitive_Intersection(
       AnnotatedPrimitiveType subtype, AnnotatedIntersectionType supertype, Void p) {
     return visitType_Intersection(subtype, supertype);
+  }
+
+  @Override
+  public Boolean visitPrimitive_Primitive(
+      AnnotatedPrimitiveType subtype, AnnotatedPrimitiveType supertype, Void p) {
+    return isPrimarySubtype(subtype, supertype);
   }
 
   @Override
@@ -906,6 +910,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
   // ------------------------------------------------------------------------
   // Union as subtype
+
   @Override
   public Boolean visitUnion_Declared(
       AnnotatedUnionType subtype, AnnotatedDeclaredType supertype, Void p) {
@@ -925,6 +930,17 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     // declared type argument of method.
     // See org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments
     return visitUnion_Type(subtype, supertype);
+  }
+
+  @Override
+  public Boolean visitUnion_Typevar(
+      AnnotatedUnionType subtype, AnnotatedTypeVariable supertype, Void p) {
+    // For example:
+    // } catch (RuntimeException | IOException e) {
+    //     ArrayList<? super Exception> lWildcard = new ArrayList<>();
+    //     lWildcard.add(e);
+
+    return visitType_Typevar(subtype, supertype);
   }
 
   @Override
@@ -950,19 +966,16 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     return visitType_Wildcard(subtype, supertype);
   }
 
-  @Override
-  public Boolean visitUnion_Typevar(
-      AnnotatedUnionType subtype, AnnotatedTypeVariable supertype, Void p) {
-    // For example:
-    // } catch (RuntimeException | IOException e) {
-    //     ArrayList<? super Exception> lWildcard = new ArrayList<>();
-    //     lWildcard.add(e);
-
-    return visitType_Typevar(subtype, supertype);
-  }
-
   // ------------------------------------------------------------------------
   // typevar as subtype
+
+  @Override
+  public Boolean visitTypevar_Array(
+      AnnotatedTypeVariable subtype, AnnotatedArrayType supertype, Void p) {
+    // This happens when the type variable is a captured wildcard.
+    return visitTypevar_Type(subtype, supertype);
+  }
+
   @Override
   public Boolean visitTypevar_Declared(
       AnnotatedTypeVariable subtype, AnnotatedDeclaredType supertype, Void p) {
@@ -977,15 +990,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   @Override
-  public Boolean visitTypevar_Primitive(
-      AnnotatedTypeVariable subtype, AnnotatedPrimitiveType supertype, Void p) {
+  public Boolean visitTypevar_Null(
+      AnnotatedTypeVariable subtype, AnnotatedNullType supertype, Void p) {
     return visitTypevar_Type(subtype, supertype);
   }
 
   @Override
-  public Boolean visitTypevar_Array(
-      AnnotatedTypeVariable subtype, AnnotatedArrayType supertype, Void p) {
-    // This happens when the type variable is a captured wildcard.
+  public Boolean visitTypevar_Primitive(
+      AnnotatedTypeVariable subtype, AnnotatedPrimitiveType supertype, Void p) {
     return visitTypevar_Type(subtype, supertype);
   }
 
@@ -1048,12 +1060,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       return visit(subtype, supertype.getLowerBound(), p);
     }
     // check that the upper bound of the subtype is below the lower bound of the supertype
-    return visitTypevar_Type(subtype, supertype);
-  }
-
-  @Override
-  public Boolean visitTypevar_Null(
-      AnnotatedTypeVariable subtype, AnnotatedNullType supertype, Void p) {
     return visitTypevar_Type(subtype, supertype);
   }
 
