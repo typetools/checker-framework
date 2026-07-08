@@ -63,7 +63,7 @@ plume-bib:
 
 
 # Leaves manual.html, and .svg files that it references.
-.PHONY:
+.PHONY: clean
 clean:
 	@\rm -f *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc manual.image.tex
 
