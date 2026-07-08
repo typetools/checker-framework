@@ -14,5 +14,5 @@ all:
 	(grep -qF "MavenExample.java:[29,25] error: [assignment] incompatible types in assignment." Out.txt || (echo "FAILURE.  Here is file Out.txt:" && cat Out.txt && echo "End of file Out.txt." && false))
 
 clean:
-	mvn -q clean
-	rm -f Out.txt
+	@mvn -q clean
+	@rm -f Out.txt
