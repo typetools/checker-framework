@@ -909,65 +909,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   // ------------------------------------------------------------------------
-  // Union as subtype
-
-  @Override
-  public Boolean visitUnion_Declared(
-      AnnotatedUnionType subtype, AnnotatedDeclaredType supertype, Void p) {
-    return visitUnion_Type(subtype, supertype);
-  }
-
-  @Override
-  public Boolean visitUnion_Intersection(
-      AnnotatedUnionType subtype, AnnotatedIntersectionType supertype, Void p) {
-    // For example:
-    // <T extends Throwable & Cloneable> void method(T param) {}
-    // ...
-    // catch (Exception1 | Exception2 union) { // Assuming Exception1 and Exception2 implement
-    // Cloneable
-    //   method(union);
-    // This case happens when checking that the inferred type argument is a subtype of the
-    // declared type argument of method.
-    // See org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments
-    return visitUnion_Type(subtype, supertype);
-  }
-
-  @Override
-  public Boolean visitUnion_Typevar(
-      AnnotatedUnionType subtype, AnnotatedTypeVariable supertype, Void p) {
-    // For example:
-    // } catch (RuntimeException | IOException e) {
-    //     ArrayList<? super Exception> lWildcard = new ArrayList<>();
-    //     lWildcard.add(e);
-
-    return visitType_Typevar(subtype, supertype);
-  }
-
-  @Override
-  public Boolean visitUnion_Union(
-      AnnotatedUnionType subtype, AnnotatedUnionType supertype, Void p) {
-    // For example:
-    // <T> void method(T param) {}
-    // ...
-    // catch (Exception1 | Exception2 union) {
-    //   method(union);
-    // This case happens when checking the arguments to method after type variable substitution
-    return visitUnion_Type(subtype, supertype);
-  }
-
-  @Override
-  public Boolean visitUnion_Wildcard(
-      AnnotatedUnionType subtype, AnnotatedWildcardType supertype, Void p) {
-    // For example:
-    // } catch (RuntimeException | IOException e) {
-    //     ArrayList<? super Exception> lWildcard = new ArrayList<>();
-    //     lWildcard.add(e);
-
-    return visitType_Wildcard(subtype, supertype);
-  }
-
-  // ------------------------------------------------------------------------
-  // typevar as subtype
+  // Typevar as subtype
 
   @Override
   public Boolean visitTypevar_Array(
@@ -1066,6 +1008,64 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   @Override
   public Boolean visitTypevar_Wildcard(
       AnnotatedTypeVariable subtype, AnnotatedWildcardType supertype, Void p) {
+    return visitType_Wildcard(subtype, supertype);
+  }
+
+  // ------------------------------------------------------------------------
+  // Union as subtype
+
+  @Override
+  public Boolean visitUnion_Declared(
+      AnnotatedUnionType subtype, AnnotatedDeclaredType supertype, Void p) {
+    return visitUnion_Type(subtype, supertype);
+  }
+
+  @Override
+  public Boolean visitUnion_Intersection(
+      AnnotatedUnionType subtype, AnnotatedIntersectionType supertype, Void p) {
+    // For example:
+    // <T extends Throwable & Cloneable> void method(T param) {}
+    // ...
+    // catch (Exception1 | Exception2 union) { // Assuming Exception1 and Exception2 implement
+    // Cloneable
+    //   method(union);
+    // This case happens when checking that the inferred type argument is a subtype of the
+    // declared type argument of method.
+    // See org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments
+    return visitUnion_Type(subtype, supertype);
+  }
+
+  @Override
+  public Boolean visitUnion_Typevar(
+      AnnotatedUnionType subtype, AnnotatedTypeVariable supertype, Void p) {
+    // For example:
+    // } catch (RuntimeException | IOException e) {
+    //     ArrayList<? super Exception> lWildcard = new ArrayList<>();
+    //     lWildcard.add(e);
+
+    return visitType_Typevar(subtype, supertype);
+  }
+
+  @Override
+  public Boolean visitUnion_Union(
+      AnnotatedUnionType subtype, AnnotatedUnionType supertype, Void p) {
+    // For example:
+    // <T> void method(T param) {}
+    // ...
+    // catch (Exception1 | Exception2 union) {
+    //   method(union);
+    // This case happens when checking the arguments to method after type variable substitution
+    return visitUnion_Type(subtype, supertype);
+  }
+
+  @Override
+  public Boolean visitUnion_Wildcard(
+      AnnotatedUnionType subtype, AnnotatedWildcardType supertype, Void p) {
+    // For example:
+    // } catch (RuntimeException | IOException e) {
+    //     ArrayList<? super Exception> lWildcard = new ArrayList<>();
+    //     lWildcard.add(e);
+
     return visitType_Wildcard(subtype, supertype);
   }
 
