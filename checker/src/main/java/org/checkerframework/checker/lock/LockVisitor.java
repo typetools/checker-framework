@@ -433,8 +433,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       AnnotatedDeclaredType overriddenType,
       SideEffectAnnotation seaOfOverriderMethod,
       SideEffectAnnotation seaOfOverriddenMethod,
-      List<String> overriderLocks,
-      List<String> overriddenLocks) {
+      @Nullable List<String> overriderLocks,
+      @Nullable List<String> overriddenLocks) {
     // Get the type of the overriding method.
     AnnotatedExecutableType overrider = atypeFactory.getAnnotatedType(overriderTree);
 
