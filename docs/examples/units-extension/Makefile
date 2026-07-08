@@ -35,5 +35,6 @@ qual-folder-test:
 	rm -f Out.txt
 
 # test clean up
+.PHONY: clean
 clean:
-	rm -f qual/*.class
+	@rm -f qual/*.class

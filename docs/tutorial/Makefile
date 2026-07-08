@@ -6,6 +6,8 @@ CHECKER_QUAL_JAR=../../checker/dist/checker-qual.jar
 
 ZIPFILES = sourcefiles.zip
 
+.PHONY: all clean clean-classes
+
 all: ${ZIPFILES}
 
 sourcefiles.zip: clean-classes
@@ -14,7 +16,7 @@ sourcefiles.zip: clean-classes
 	zip -r sourcefiles.zip src/
 
 clean-classes:
-	find . -name '*.class' ! -name '.*' -exec rm {} +
+	@find . -name '*.class' ! -name '.*' -exec rm {} +
 
 clean: clean-classes
 	@\rm -f ${ZIPFILES}

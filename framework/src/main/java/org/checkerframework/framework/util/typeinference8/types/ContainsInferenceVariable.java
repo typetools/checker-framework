@@ -127,7 +127,7 @@ public final class ContainsInferenceVariable {
 
     @Override
     public Boolean visitError(ErrorType t, Void aVoid) {
-      return null;
+      return false;
     }
 
     @Override

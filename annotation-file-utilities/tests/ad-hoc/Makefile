@@ -7,4 +7,4 @@ bridge:
 
 .PHONY: clean
 clean:
-	${MAKE} -C bridge clean
+	@${MAKE} -C bridge clean
