@@ -546,8 +546,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
   @Override
   public Boolean visitArray_Typevar(
-      AnnotatedArrayType subtype, AnnotatedTypeVariable superType, Void p) {
-    return visitType_Typevar(subtype, superType);
+      AnnotatedArrayType subtype, AnnotatedTypeVariable supertype, Void p) {
+    return visitType_Typevar(subtype, supertype);
   }
 
   @Override
@@ -711,7 +711,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       unboxedType = subtype.atypeFactory.getUnboxedType(subtype);
     } catch (IllegalArgumentException ex) {
       throw new BugInCF(
-          "DefaultTypeHierarchy: subtype isn't a boxed type: subtype: %s superType: %s",
+          "DefaultTypeHierarchy: subtype isn't a boxed type: subtype: %s supertype: %s",
           subtype, supertype);
     }
     return isPrimarySubtype(unboxedType, supertype);
@@ -1070,7 +1070,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   // ------------------------------------------------------------------------
-  // wildcard as subtype
+  // Wildcard as subtype
 
   @Override
   public Boolean visitWildcard_Array(
