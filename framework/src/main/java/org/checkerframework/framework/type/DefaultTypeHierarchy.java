@@ -545,6 +545,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   @Override
+  public Boolean visitArray_Primitive(
+      AnnotatedArrayType subtype, AnnotatedPrimitiveType supertype, Void p) {
+    return isPrimarySubtype(subtype, supertype);
+  }
+
+  @Override
   public Boolean visitArray_Typevar(
       AnnotatedArrayType subtype, AnnotatedTypeVariable supertype, Void p) {
     return visitType_Typevar(subtype, supertype);
@@ -1038,6 +1044,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     // This case happens when checking that the inferred type argument is a subtype of the
     // declared type argument of method.
     // See org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments
+    return visitUnion_Type(subtype, supertype);
+  }
+
+  @Override
+  public Boolean visitUnion_Primitive(
+      AnnotatedUnionType subtype, AnnotatedPrimitiveType supertype, Void p) {
     return visitUnion_Type(subtype, supertype);
   }
 
