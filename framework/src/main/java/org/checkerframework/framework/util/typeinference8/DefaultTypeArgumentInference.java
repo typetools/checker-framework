@@ -242,7 +242,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
 
     ExecutableType executableType = (ExecutableType) executableElement.asType();
-    // There are fewer parameters than arguments if this is a var args method.
+    // There are fewer parameters than arguments if this is a varargs method.
     if (executableType.getParameterTypes().size() <= index) {
       index = executableType.getParameterTypes().size() - 1;
     }
