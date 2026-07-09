@@ -22,7 +22,7 @@ import org.plumelib.util.IPair;
  *
  * @checker_framework.manual #signedness-checker Signedness Checker
  */
-public class SignednessShifts {
+public final class SignednessShifts {
 
   /** Do not instantiate SignednessShifts. */
   private SignednessShifts() {

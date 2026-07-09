@@ -76,7 +76,7 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
-  /** Creates a new TypeFromTreeVisitor. */
+  /** Creates a new TypeFromExpressionVisitor. */
   TypeFromExpressionVisitor() {
     // nothing to do
   }
@@ -185,8 +185,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
   /**
    * Compute the type of the switch expression tree.
    *
-   * @param switchExpressionTree a SwitchExpressionTree; typed as Tree so method signature is
-   *     backward-compatible
+   * @param switchExpressionTree the switch expression tree
    * @param f an AnnotatedTypeFactory
    * @return the type of the switch expression
    */
@@ -241,7 +240,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     }
     switch (elt.getKind()) {
       case METHOD,
-          CONSTRUCTOR, // x0.super() in anoymous classes
+          CONSTRUCTOR, // x0.super() in anonymous classes
           PACKAGE, // "java.lang" in new java.lang.Short("2")
           CLASS, // o instanceof MyClass.InnerClass
           RECORD,

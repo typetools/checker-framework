@@ -15,6 +15,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
@@ -41,6 +42,11 @@ import org.plumelib.util.StringsPlume;
  * methods used by the ElementAnnotationAppliers that do most of the work.
  */
 public class ElementAnnotationUtil {
+
+  /** Do not instantiate. */
+  private ElementAnnotationUtil() {
+    throw new Error("Do not instantiate");
+  }
 
   /**
    * For each type/element pair, add all of the annotations stored in Element to type. See apply for
@@ -326,7 +332,7 @@ public class ElementAnnotationUtil {
    * Returns true if the typeCompound is a primary annotation for the type it targets (or lower
    * bound if this is a type variable or wildcard ). If you think of a type as a tree-like structure
    * then a nested type any type that is not the root. E.g. {@code @T List< @N String>}, @T is on a
-   * top-level NON-nested type where as the annotation @N is on a nested type.
+   * top-level NON-nested type whereas the annotation @N is on a nested type.
    *
    * @param typeCompound the type compound to inspect
    * @return true if typeCompound is placed on a nested type, false otherwise
@@ -589,7 +595,7 @@ public class ElementAnnotationUtil {
 
   /** Exception indicating an invalid location for an annotation was found. */
   @SuppressWarnings("serial")
-  public static class UnexpectedAnnotationLocationException extends Exception {
+  public static final class UnexpectedAnnotationLocationException extends Exception {
 
     /**
      * Creates an UnexpectedAnnotationLocationException.
@@ -617,5 +623,29 @@ public class ElementAnnotationUtil {
     public ErrorTypeKindException(String format, Object... args) {
       super(String.format(format, args));
     }
+  }
+
+  /**
+   * Returns the formatted representation of a {@link TypeCompound}.
+   *
+   * @param tc a TypeCompound
+   * @return its string representation
+   */
+  public static String toString(TypeCompound tc) {
+    return tc + "@" + tc.getPosition();
+  }
+
+  /**
+   * Returns the formatted representation of a collection of {@link TypeCompound}s.
+   *
+   * @param tcs a collection of TypeCompounds
+   * @return its string representation
+   */
+  public static String toString(Iterable<TypeCompound> tcs) {
+    StringJoiner sj = new StringJoiner(", ", "[", "]");
+    for (TypeCompound tc : tcs) {
+      sj.add(toString(tc));
+    }
+    return sj.toString();
   }
 }

@@ -1,4 +1,4 @@
-public class WildCardCrash {}
+public class WildcardCrash {}
 
 abstract class AbstractTransfer123<
         IndexStore extends CFAbstractStore123<CFValue123, IndexStore>,
@@ -16,7 +16,12 @@ class SomeGen<IndexStore extends Store123<IndexStore>> {
 
 class CFValue123 extends CFAbstractValue123<CFValue123> {}
 
-@SuppressWarnings({"initialization", "initializedfields:contracts.postcondition"})
+@SuppressWarnings({
+  "initialization",
+  "initializedfields:contracts.postcondition",
+  "unneeded.suppression" // The suppression is needed when the InitializedFields Checker is run
+  // without the Value Checker.
+})
 class CFAbstractTransfer123<
         V extends CFAbstractValue123<V>,
         S extends CFAbstractStore123<V, S>,

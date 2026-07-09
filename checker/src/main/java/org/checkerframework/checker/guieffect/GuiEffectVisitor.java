@@ -384,7 +384,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     // subclasses a Safe instantiation, all is well.  If it subclasses a UI instantiation, then
     // the receivers should probably be @UI in both new and override methods, so calls to
     // polymorphic methods of the parent class will work correctly.  In which case for proving
-    // anything, the qualifier on sublasses of UI instantiations would always have to be @UI...
+    // anything, the qualifier on subclasses of UI instantiations would always have to be @UI...
     // Need to write down |- t for this system!  And the judgments for method overrides and
     // inheritance!  Those are actually the hardest part of the system.
 

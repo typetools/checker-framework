@@ -137,7 +137,8 @@ import org.plumelib.util.SystemPlume;
  *
  * <p>The other entry point is {@link #parseJdkFileAsStub}.
  */
-public class AnnotationFileParser {
+@SuppressWarnings("PMD.GuardLogStatement") // `warn()` must be called to check for duplicates
+public final class AnnotationFileParser {
 
   /**
    * The type of file being parsed: stub file or ajava file. Also indicates its source, such as from
@@ -234,7 +235,7 @@ public class AnnotationFileParser {
   private final List<AnnotatedTypeVariable> typeParameters = new ArrayList<>();
 
   /**
-   * The annotations on the declared package of the complation unit being processed. Contains null
+   * The annotations on the declared package of the compilation unit being processed. Contains null
    * if not processing a compilation unit or if the file has no declared package.
    */
   @Nullable List<@Nullable AnnotationExpr> packageAnnos;
@@ -354,7 +355,7 @@ public class AnnotationFileParser {
    * Information about a record component: its type, and whether there was an accessor in the stubs
    * for that component. That is, for a component "foo" was there a method named exactly "foo()" in
    * the stubs. If so, annotations on that accessor will take precedence over annotations that would
-   * otherwise be copied from the component in the stubs to the acessor.
+   * otherwise be copied from the component in the stubs to the accessor.
    */
   public static class RecordComponentStub {
     /** The type of the record component. */
@@ -729,8 +730,7 @@ public class AnnotationFileParser {
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
       AnnotationFileAnnotations stubAnnos) {
-    Map<String, String> options = processingEnv.getOptions();
-    boolean debugAnnotationFileParser = options.containsKey("stubDebug");
+    boolean debugAnnotationFileParser = processingEnv.getOptions().containsKey("stubDebug");
     if (debugAnnotationFileParser) {
       stubDebugStatic(
           processingEnv,
@@ -918,7 +918,7 @@ public class AnnotationFileParser {
    * Process a type declaration: copy its annotations to {@code #annotationFileAnnos}.
    *
    * <p>This method stores the declaration's type parameters in {@link #typeParameters}. When
-   * processing an ajava file, where traversal is handled externaly by a {@link
+   * processing an ajava file, where traversal is handled externally by a {@link
    * org.checkerframework.framework.ajava.JointJavacJavaParserVisitor}, these type variables must be
    * removed after processing the type's members. Otherwise, this method removes them.
    *
@@ -3065,7 +3065,7 @@ public class AnnotationFileParser {
         SystemPlume.sleep(1);
         processingEnv
             .getMessager()
-            .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
+            .printMessage(Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
         System.out.flush();
         SystemPlume.sleep(1);
       }
@@ -3089,7 +3089,7 @@ public class AnnotationFileParser {
       SystemPlume.sleep(1);
       processingEnv
           .getMessager()
-          .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
+          .printMessage(Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
       System.out.flush();
       SystemPlume.sleep(1);
     }
@@ -3102,7 +3102,10 @@ public class AnnotationFileParser {
    * corresponding to that construct, such as {@link #processCallableDeclaration} or {@link
    * #processField}.
    */
-  private class AjavaAnnotationCollectorVisitor extends DefaultJointVisitor {
+  private final class AjavaAnnotationCollectorVisitor extends DefaultJointVisitor {
+    /** Creates a new AjavaAnnotationCollectorVisitor. */
+    AjavaAnnotationCollectorVisitor() {}
+
     @Override
     public Void visitClass(ClassTree javacTree, Node javaParserNode) {
       List<AnnotatedTypeVariable> typeDeclTypeParameters = null;

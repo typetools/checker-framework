@@ -6,6 +6,9 @@ import java.util.Set;
  * A {@code KeyedSet} is a set whose members have distinct <em>keys</em> and can be looked up by
  * key. A {@link Keyer} provides keys for the elements. It is forbidden for an element's key to
  * change while the element is in the set.
+ *
+ * @param <K> the type of the map keys
+ * @param <V> the type of the map values
  */
 public interface KeyedSet<K, V> extends Set<V> {
   /**

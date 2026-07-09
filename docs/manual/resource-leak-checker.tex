@@ -575,20 +575,22 @@ The set of ignored exception types can be controlled with the option
 \<-AresourceLeakIgnoredExceptions=...>.  The option takes a comma-separated list of
 fully-qualified exception types.  A type can be prefixed with \<=> to ignore exactly
 that type and not its subclasses.  For example, for a very pedantic set of ignored
-exceptions use:
+exceptions use either of these, which have identical effect:
 
 \begin{verbatim}
-  -AresourceLeakIgnoredExceptions=java.lang.Error, =java.lang.NullPointerException
+  -AresourceLeakIgnoredExceptions="java.lang.Error,=java.lang.NullPointerException"
+  -AresourceLeakIgnoredExceptions="=java.lang.NullPointerException,java.lang.Error"
 \end{verbatim}
 
 which ignores \<java.lang.Error> (and all its subclasses) as well as
 \<java.lang.NullPointerException> (but not its subclasses).
 
 The keyword \<default> will expand to the default set of ignored exceptions.  So,
-to add an additional exception to the set of ignored exceptions, use:
+to add an additional exception to the set of ignored exceptions, use one of these:
 
 \begin{verbatim}
-  -AresourceLeakIgnoredExceptions=default,package.MyCustomException
+  -AresourceLeakIgnoredExceptions="default,package.MyCustomException"
+  -AresourceLeakIgnoredExceptions="default,=package.MyCustomException"
 \end{verbatim}
 
 \sectionAndLabel{Errors about field initialization}{resource-leak-field-initialization}

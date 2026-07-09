@@ -24,7 +24,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
  * Java, if T(A) = the type argument for a, in the above example T(A) == String and T(B) == Integer
  *
  * <p>For the Checker Framework we also need to infer reasonable annotations for these type
- * arguments. For information on inferring type arguments see the documentation in JJLS8:
+ * arguments. For information on inferring type arguments see the documentation in JLS8:
  * https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html
  */
 public interface TypeArgumentInference {
@@ -32,15 +32,15 @@ public interface TypeArgumentInference {
   /**
    * Infer the type arguments for the method or constructor invocation given by invocation.
    *
-   * @param typeFactory the type factory used to create methodType
+   * @param typeFactory the type factory used to create executableType
    * @param invocation a tree representing the method or constructor invocation for which we are
    *     inferring type arguments
-   * @param methodType the declaration type of method elem
+   * @param executableType the declaration type of the invoked method
    * @return the result which includes the inferred type arguments or an error message if they were
    *     not inferred
    */
   InferenceResult inferTypeArgs(
       AnnotatedTypeFactory typeFactory,
       ExpressionTree invocation,
-      AnnotatedExecutableType methodType);
+      AnnotatedExecutableType executableType);
 }

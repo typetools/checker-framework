@@ -39,13 +39,13 @@ public class Issue1633 {
   }
 
   void foo41(Optional1633<String> o) {
-    // This is a false postive because inference doesn't work with poly qualifiers.
+    // This is a false positive because inference doesn't work with poly qualifiers.
     // :: error: [return]
     @Nullable String str3 = o.orElseGetPolyNull(() -> null);
   }
 
   void foo41nw(Optional1633<String> o) {
-    // This is a false postive because inference doesn't work with poly qualifiers.
+    // This is a false positive because inference doesn't work with poly qualifiers.
     // :: error: [return]
     @Nullable String str3 = o.orElseGetPolyNullNoWildcard(() -> null);
   }

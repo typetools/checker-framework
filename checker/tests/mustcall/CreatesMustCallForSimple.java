@@ -36,7 +36,7 @@ class CreatesMustCallForSimple {
   static void test3() {
     Object cos = makeNoMC();
     @MustCall({}) Object a = cos;
-    // :: error: [createsmustcallfor.target.unparseable]
+    // :: error: [createsmustcallfor.target.unparsable]
     ((CreatesMustCallForSimple) cos).reset();
     // It would be better to issue an assignment incompatible error here, but the
     // error above is okay too.

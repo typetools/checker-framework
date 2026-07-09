@@ -10,7 +10,7 @@ public class CollectorsToList {
 
   // See checker/tests/i18n-formatter/I18nFormatCollectorsToList.java
   @SuppressWarnings({
-    "i18n:methodref.param", // true postive, see
+    "i18n:methodref.param", // true positive, see
     // checker/tests/i18n-formatter/I18nFormatCollectorsToList.java
     "lock:methodref.receiver.bound"
   })
@@ -22,7 +22,6 @@ public class CollectorsToList {
     // This works:
     List<@Nullable String> collectedStrings2 = s.collect(Collectors.toList());
     // This works:
-    @SuppressWarnings("nullness")
     List<String> collectedStrings3 = s.collect(Collectors.toList());
 
     // This assignment issues a warning due to incompatible types:

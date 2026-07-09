@@ -199,14 +199,8 @@ public abstract class AbstractAnalysis<
           || (currentTree != null && currentTree == n.getTree())) {
         return null;
       }
-      // check that 'n' is a subnode of 'currentNode'. Check immediate operands
-      // first for efficiency.
       assert !n.isLValue() : "Did not expect an lvalue, but got " + n;
-      if (!currentNode.getOperands().contains(n)
-          && !currentNode.getTransitiveOperands().contains(n)) {
-        return null;
-      }
-      // fall through when the current node is not 'n', and 'n' is not a subnode.
+      // fall through when the current node is not 'n'.
     }
     return nodeValues.get(n);
   }
@@ -497,7 +491,6 @@ public abstract class AbstractAnalysis<
     }
     transferInput.node = node;
     setCurrentNode(node);
-    @SuppressWarnings("nullness") // CF bug: "INFERENCE FAILED"
     TransferResult<V, S> transferResult = node.accept(transferFunction, transferInput);
     setCurrentNode(null);
     if (node instanceof AssignmentNode assignment) {

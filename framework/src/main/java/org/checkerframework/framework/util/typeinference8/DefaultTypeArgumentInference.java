@@ -45,7 +45,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
   public InferenceResult inferTypeArgs(
       AnnotatedTypeFactory typeFactory,
       ExpressionTree expressionTree,
-      AnnotatedExecutableType methodType) {
+      AnnotatedExecutableType executableType) {
     TreePath pathToExpression = typeFactory.getPath(expressionTree);
 
     // In order to find the type arguments for expressionTree, type arguments for outer method
@@ -94,7 +94,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             "Unexpected kind of outer expression to infer type arguments: %s", outerTree.getKind());
       }
     } else {
-      outerMethodType = methodType;
+      outerMethodType = executableType;
     }
     if (java8Inference != null) {
       java8InferenceStack.push(java8Inference);
@@ -110,7 +110,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           java8Inference.context.pathToExpression = typeFactory.getPath(expressionTree);
           return java8Inference.infer(mrt2);
         }
-        return result.swapTypeVariables(methodType, expressionTree);
+        return result.swapTypeVariables(executableType, expressionTree);
       }
     } catch (Exception ex) {
       if (typeFactory
@@ -242,7 +242,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
 
     ExecutableType executableType = (ExecutableType) executableElement.asType();
-    // There are fewer parameters than arguments if this is a var args method.
+    // There are fewer parameters than arguments if this is a varargs method.
     if (executableType.getParameterTypes().size() <= index) {
       index = executableType.getParameterTypes().size() - 1;
     }

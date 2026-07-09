@@ -13,8 +13,8 @@ import org.checkerframework.framework.util.typeinference8.types.VariableBounds.B
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 
 /**
- * A {@code QualifierVar} is a variable for a polymorphic qualifier that needs to be viewpoint
- * adapted at a call site.
+ * A {@code QualifierVar} is a variable for a polymorphic qualifier that needs to be
+ * viewpoint-adapted at a call site.
  */
 public class QualifierVar extends AbstractQualifier {
 

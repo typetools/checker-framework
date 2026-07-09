@@ -402,7 +402,7 @@ public abstract class UBQualifier {
   }
 
   /** The less-than-length-of qualifier (@LTLengthOf). */
-  public static class LessThanLengthOf extends UBQualifier {
+  public static final class LessThanLengthOf extends UBQualifier {
 
     // There are two representations for sequences and offsets.
     // In source code, they are represented by two parallel arrays, as in
@@ -1208,12 +1208,12 @@ public abstract class UBQualifier {
     }
 
     /**
-     * Generates a new UBQualifer without the given (sequence, offset) pair. Other occurrences of
+     * Generates a new UBQualifier without the given (sequence, offset) pair. Other occurrences of
      * the sequence and the offset may remain in the result, but not together.
      *
      * @param sequence a Java expression representing a string
      * @param offset an integral offset
-     * @return a new UBQualifer without the given sequence and offset
+     * @return a new UBQualifier without the given sequence and offset
      */
     public UBQualifier removeOffset(String sequence, int offset) {
       OffsetEquation offsetEq = OffsetEquation.createOffsetForInt(offset);
@@ -1279,7 +1279,7 @@ public abstract class UBQualifier {
   }
 
   /** Represents an integer value that is known at compile time. */
-  public static class UpperBoundLiteralQualifier extends UBQualifier {
+  public static final class UpperBoundLiteralQualifier extends UBQualifier {
 
     /** Represents the value -1. */
     public static final UpperBoundLiteralQualifier NEGATIVEONE = new UpperBoundLiteralQualifier(-1);
@@ -1373,7 +1373,7 @@ public abstract class UBQualifier {
   }
 
   /** The top type qualifier. */
-  public static class UpperBoundUnknownQualifier extends UBQualifier {
+  public static final class UpperBoundUnknownQualifier extends UBQualifier {
     /** The canonical representative. */
     public static final UBQualifier UNKNOWN = new UpperBoundUnknownQualifier();
 
@@ -1407,7 +1407,7 @@ public abstract class UBQualifier {
   }
 
   /** The bottom qualifier for the upperbound type system. */
-  private static class UpperBoundBottomQualifier extends UBQualifier {
+  private static final class UpperBoundBottomQualifier extends UBQualifier {
     /** The canonical bottom qualifier for the upperbound type system. */
     public static final UBQualifier BOTTOM = new UpperBoundBottomQualifier();
 
@@ -1441,7 +1441,7 @@ public abstract class UBQualifier {
   }
 
   /** The polymorphic qualifier. */
-  private static class PolyQualifier extends UBQualifier {
+  private static final class PolyQualifier extends UBQualifier {
     /** The canonical representative. */
     public static final UBQualifier POLY = new PolyQualifier();
 

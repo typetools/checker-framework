@@ -24,7 +24,7 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 
 /** Utility methods for the Value Checker. */
-public class ValueCheckerUtils {
+public final class ValueCheckerUtils {
 
   /** Do not instantiate. */
   private ValueCheckerUtils() {
@@ -371,7 +371,7 @@ public class ValueCheckerUtils {
 
   /**
    * Finds the maximum value in a Value Checker type. If there is no information (such as when the
-   * list of possible values is empty or null), returns null. Otherwise, returns the smallest value
+   * list of possible values is empty or null), returns null. Otherwise, returns the largest value
    * in the list of possible values.
    */
   public static @Nullable Long getMaxValue(Tree tree, ValueAnnotatedTypeFactory factory) {

@@ -355,7 +355,7 @@ final class SupertypeFinder {
      * All enums implicitly extend {@code Enum<MyEnum>}, where {@code MyEnum} is the type of the
      * enum. This method creates the AnnotatedTypeMirror for {@code Enum<MyEnum>} where the
      * annotation on {@code MyEnum} is copied from the annotation on the upper bound of the type
-     * argument to Enum. For example, {@code class Enum<E extend @HERE Enum<E>>}.
+     * argument to Enum. For example, {@code class Enum<E extends @HERE Enum<E>>}.
      *
      * @param type annotated type of an enum
      * @param elem element corresponding to {@code type}
@@ -381,7 +381,7 @@ final class SupertypeFinder {
      * <pre>{@code
      * For type = A[ ] ==>
      *  Object >: A[ ]
-     *  Clonable >: A[ ]
+     *  Cloneable >: A[ ]
      *  java.io.Serializable >: A[ ]
      *
      * if A is reference type, then also

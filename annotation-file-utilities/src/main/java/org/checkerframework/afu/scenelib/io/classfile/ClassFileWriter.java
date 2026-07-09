@@ -1,10 +1,11 @@
 package org.checkerframework.afu.scenelib.io.classfile;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import org.checkerframework.afu.scenelib.el.AScene;
 import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.checkerframework.afu.scenelib.util.CommandLineUtils;
@@ -17,7 +18,7 @@ import org.plumelib.options.Options;
  * A {@code ClassFileWriter} provides methods for inserting annotations from an {@link AScene} into
  * a class file.
  */
-public class ClassFileWriter {
+public final class ClassFileWriter {
 
   /** Do not instantiate. */
   private ClassFileWriter() {
@@ -183,7 +184,7 @@ public class ClassFileWriter {
 
     // can't just call other insert, because this closes the input stream
     ClassReader classReader;
-    try (InputStream in = new FileInputStream(fileName)) {
+    try (InputStream in = Files.newInputStream(Paths.get(fileName))) {
       classReader = new ClassReader(in);
     }
 
