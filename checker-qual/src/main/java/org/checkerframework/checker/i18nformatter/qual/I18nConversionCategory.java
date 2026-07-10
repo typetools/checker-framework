@@ -145,7 +145,7 @@ public enum I18nConversionCategory {
         return v;
       }
     }
-    throw new RuntimeException();
+    throw new RuntimeException("Could not compute intersect(" + a + ", " + b + ")");
   }
 
   /**
