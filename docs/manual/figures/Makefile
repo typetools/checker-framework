@@ -25,6 +25,7 @@ else
   endif
 endif
 
+.PHONY: clean
 clean: clean-obsolete-files
 	@\rm -f ${PDFFILES}
 

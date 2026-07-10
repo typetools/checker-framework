@@ -43,7 +43,7 @@ public abstract class AbstractExecutableType {
 
   /**
    * A mapping from polymorphic annotation to {@link QualifierVar}. It keeps track of which
-   * annotation mirror is be represented by which {@code QualifierVar}.
+   * annotation mirror is represented by which {@code QualifierVar}.
    */
   protected final AnnotationMirrorMap<QualifierVar> qualifierVars;
 
@@ -149,7 +149,7 @@ public abstract class AbstractExecutableType {
    * @param size the number of parameters to return; used to expand the vararg
    * @param firstParam an extra first parameter to add at the beginning of the returned list, or
    *     null
-   * @param isVarargsCall true if this invocation is uses varargs
+   * @param isVarargsCall true if this invocation uses varargs
    * @return a list of the parameter types of {@code InferenceExecutableType}, of length {@code
    *     size}
    */

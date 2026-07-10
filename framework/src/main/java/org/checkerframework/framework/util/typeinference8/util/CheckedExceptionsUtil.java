@@ -154,7 +154,7 @@ public final class CheckedExceptionsUtil {
   /**
    * Returns true iff {@code type} is a checked exception.
    *
-   * @param type at ype to check
+   * @param type a type to check
    * @param context the context
    * @return true iff {@code type} is a checked exception
    */

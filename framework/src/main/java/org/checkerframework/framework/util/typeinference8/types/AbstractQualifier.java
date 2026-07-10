@@ -76,7 +76,7 @@ public abstract class AbstractQualifier {
    * @param quals a set of qualifiers; can contain multiple qualifiers for multiple hierarchies and
    *     multiple qualifiers for a hierarchy
    * @param context a context
-   * @return the greatest lowest bounds of {@code quals}
+   * @return the greatest lower bounds of {@code quals}
    */
   public static Set<AnnotationMirror> glb(
       Set<AbstractQualifier> quals, Java8InferenceContext context) {
@@ -118,8 +118,7 @@ public abstract class AbstractQualifier {
    * @param annos a set of annotation mirrors
    * @param qualifierVars a map from polymorphic qualifiers to {@link QualifierVar}
    * @param context a context
-   * @return a set containing an {@code AbstractQualifier} for each annotation in {@code
-   *     qualifierVars}
+   * @return a set containing an {@code AbstractQualifier} for each annotation in {@code annos}
    */
   public static Set<AbstractQualifier> create(
       Set<AnnotationMirror> annos,
@@ -141,11 +140,11 @@ public abstract class AbstractQualifier {
   }
 
   /**
-   * Creates new {@code Qualifier} is added for each annotation in {@code annos}.
+   * Creates a new {@code Qualifier} for each annotation in {@code annos}.
    *
    * @param annos a set of annotation mirrors
    * @param context a context
-   * @return new {@code Qualifier} is added for each annotation in {@code annos}
+   * @return a set containing a new {@code Qualifier} for each annotation in {@code annos}
    */
   private static Set<AbstractQualifier> create(
       Set<AnnotationMirror> annos, Java8InferenceContext context) {

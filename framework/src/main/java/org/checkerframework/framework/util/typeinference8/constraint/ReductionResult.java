@@ -4,8 +4,8 @@ import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 
 /**
- * A result of reduction. One of: {@link TypeConstraint},{@link ConstraintSet},{@link BoundSet}, or
- * {@link ReductionResultPair}.
+ * A result of reduction. One of: {@link TypeConstraint}, {@link ConstraintSet}, {@link BoundSet},
+ * or {@link ReductionResultPair}.
  */
 public interface ReductionResult {
 
