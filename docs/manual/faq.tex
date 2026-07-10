@@ -545,7 +545,7 @@ Section~\ref{checker-guarantees} states other limitations to a checker's
 guarantee, such as regarding concurrency.  Java's type system is also
 unsound in certain situations, such as for arrays and casts (however, the
 Checker Framework is sound for arrays and casts).  Java uses dynamic checks
-in some places it is unsound, so that errors are thrown at run time.  The
+in some places where it is unsound, so that errors are thrown at run time.  The
 pluggable type-checkers do not currently have built-in dynamic checkers to
 check for the places they are unsound.
 Writing dynamic checkers would be an interesting and valuable project.

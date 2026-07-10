@@ -5201,7 +5201,7 @@ Code Changes
   * added handling for unary trees
 
 * checkers.nonnull
-  * added a tests for the flow-sensitive analysis and varargs methods
+  * added tests for the flow-sensitive analysis and varargs methods
   * improved flow-sensitive analysis: else statements, asserts,
       return/throw statements, instanceof checks, complex conditionals with &&
   * fixed a bug in the flow-sensitive analysis that incorrectly inferred
