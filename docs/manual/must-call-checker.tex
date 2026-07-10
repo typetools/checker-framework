@@ -82,7 +82,7 @@ contains objects that need to call \<foo> and objects that need to call
 nothing, but the type does not contain an
 object that needs to call \<bar> (or both \<foo> and \<bar>).
 \<@MustCall(\{"foo", "bar"\}) Object> represents all objects that need to
-call \<foo>, \<bar>, both, or neither; it cannot not represent an object that needs
+call \<foo>, \<bar>, both, or neither; it cannot represent an object that needs
 to call some other method.
 
 
@@ -166,7 +166,7 @@ is non-owning (and therefore treated as \<@MustCall({})>).
 
 The Must Call Checker is unsound with respect to reflection: it assumes
 that objects instantiated reflectively do not have must-call obligations (i.e., that their
-type is \<@MustCall(\{\})>. If the checker is run with \<-AresolveReflection>, then
+type is \<@MustCall(\{\})>). If the checker is run with \<-AresolveReflection>, then
 this assumption applies only to types that cannot be resolved.
 
 \sectionAndLabel{Type parameter bounds often need to be annotated}{must-call-type-params}
