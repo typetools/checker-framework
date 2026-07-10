@@ -131,7 +131,7 @@ Framework named <code>jdk</code>.
 
 <p>
 If a change spans multiple projects, make pull requests for all of them.
-Each pull request description's should link to all the others.
+Each pull request description should link to all the others.
 </p>
 
 <p>
@@ -286,12 +286,6 @@ the IDE for the first time.
 This ensures generated files are not put in the standard <code>../bin/</code> directories.
 </p>
 
-<p>
-For VS Code and Eclipse, run <code>./gradlew eclipseClasspath</code> before running
-the IDE for the first time.
-This ensures generated files are not put in the standard <code>../bin/</code> directories.
-</p>
-
 
 <h2 id="pull-requests">Pull requests</h2>
 
@@ -365,7 +359,7 @@ commit hash, it re-uses a previous execution result.  This is a bug because the
 CI job's behavior may depend on the branch name and other factors that are
 independent of the commit hash.  This means that you may see spurious successes
 or failures when your branch of (say) the <code>jdk</code> repository has the
-identical commit hash to some other branch that Azure Pipelines previous ran a
+identical commit hash to some other branch that Azure Pipelines previously ran a
 job for.
 </p>
 

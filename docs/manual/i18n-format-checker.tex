@@ -42,7 +42,7 @@ The paper ``A type system for format strings''~\cite{WeitzKSE2014} (ISSTA
 2014,
 \myurl{https://homes.cs.washington.edu/~mernst/pubs/format-string-issta2014-abstract.html})
 gives more details about the Internationalization Format String Checker and the Format
-String Checker (\chapterpageref{formatter-checker});
+String Checker (\chapterpageref{formatter-checker}).
 
 
 \sectionAndLabel{Internationalization Format String Checker annotations}{i18n-format-annotation}
@@ -181,7 +181,7 @@ The conversion categories are:
 indicates an unused argument. For example, in
 \code{MessageFormat.format("\{0, number\} \{2, number\}", 3.14, "Hello", 2.718)}
 , the second argument \code{Hello} is unused. Thus, the conversion
-categories for the format, \code{{0, number} {2, number}}, is
+categories for the format, \code{{0, number} {2, number}}, are
 \code{(NUMBER, UNUSED, NUMBER)}.
 
 \item[\refenum{checker/i18nformatter/qual}{I18nConversionCategory}{GENERAL}{}]

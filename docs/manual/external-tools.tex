@@ -183,7 +183,7 @@ This section explains each part of the Ant task.
 The \code{fork} field of the \code{javac} task
 ensures that an external \code{javac} program is called.  Otherwise, Ant will run
 \code{javac} via a Java method call, and there is no guarantee that it will get
-correct version of \code{javac}.
+the correct version of \code{javac}.
 
 The \code{-version} compiler argument is just for debugging; you may omit
 it.
@@ -271,7 +271,7 @@ For example, you might run
 ./buck build --verbose 8 //app:main
 \end{Verbatim}
 
-However, the command lines that buck prints with \<-v 8> is \emph{not} what
+However, the command lines that buck prints with \<-v 8> are \emph{not} what
 Buck actually executes.  Buck's invocation of the Checker Framework may
 produce errors that cannot be reproduced from the command line.  This is
 because Buck uses
