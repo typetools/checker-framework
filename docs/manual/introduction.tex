@@ -400,7 +400,7 @@ option, or use auto-discovery as described in
 Section~\ref{checker-auto-discovery}.
 (If your project already uses auto-discovery for some annotation processor,
 such as AutoValue, then you should use auto-discovery.)
-Two concretes example of using \code{-processor} to run the Nullness Checker are
+Two concrete examples of using \code{-processor} to run the Nullness Checker are
 
 \begin{Verbatim}
   javac -processor nullness MyFile.java
@@ -474,7 +474,7 @@ Some stub files are used automatically by a checker, without any action on
 your part.  For others, you must pass the \<-Astubs=...> command-line argument.
 As a special case, if an \<.astub> file appears in
 \<checker/src/main/resources/>, then pass the command-line option
-use \<-Astubs=checker.jar/\emph{stubfilename.astub}>.
+\<-Astubs=checker.jar/\emph{stubfilename.astub}>.
 The ``\<checker.jar>'' should be literal --- don't provide a path.
 This special syntax only works for ``\<checker.jar>''.
 %% There aren't any such libraries at the moment.
@@ -1433,7 +1433,7 @@ normal behavior.)
 
 If parameter \code{element} on line 141 were to be annotated, the correct
 annotation would be \code{@NonNull}.  Suppose a client has a reference to
-same Multiset \code{ms}.  The only way the client can be sure not to throw an exception is to pass
+the same Multiset \code{ms}.  The only way the client can be sure not to throw an exception is to pass
 only non-\code{null} elements to \code{ms.add()}.  A particular class
 that implements Multiset could declare \code{add} to take a
 \code{@Nullable} parameter.  That still satisfies the original contract.
@@ -1495,7 +1495,7 @@ There are three general causes for the warnings:
 \item[Type-checker weakness]
   There is a weakness in the type-checker.  Your code is safe --- it never
   suffers the error at run time --- but the checker cannot prove this fact.
-  (Recall that The checker works modularly:  when type-checking a
+  (Recall that the checker works modularly:  when type-checking a
   method \<m>, it relies on the types and signatures of variables and
   methods used by \<m>, but not the initialization expressions or the
   method bodies.)
@@ -1596,7 +1596,7 @@ of other methods.
 If there are complex facts in your proof that cannot be expressed as
 annotations, then that is a weakness in the type-checker.  For example,
 the Nullness Checker cannot express ``in list \<lst>, elements stored at
-even indices are always non-\<null>, but elements stored at odd elements
+even indices are always non-\<null>, but elements stored at odd indices
 might be \<null>.''  In this case, you have two choices.
 %
 First, you can suppress the warning

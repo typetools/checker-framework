@@ -44,7 +44,7 @@ The programmer does need to write field types and method pre-conditions or post-
 if a method's formal parameter is used as an index for
 \<myArray>, the programmer might need to
 write an \refqualclasswithparams{checker/index/qual}{IndexFor}{"myArray"}
-annotation on the formal parameter's types.
+annotation on the formal parameter's type.
 
 The Index Checker checks fixed-size data structures, whose size is never
 changed after creation.  A fixed-size data structure has no \<add> or
@@ -99,13 +99,13 @@ might be indices:
 and about sequence lengths:
 \begin{itemize}
 \item
-  the minimum length of a sequence, such ``\<myArray> contains at least 3
+  the minimum length of a sequence, such as ``\<myArray> contains at least 3
   elements'' (Section~\ref{index-minlen})
 \item
   whether two sequences have the same length (Section~\ref{index-samelen})
 \end{itemize}
 
-The Index Checker checks of all these properties at once, but
+The Index Checker checks all these properties at once, but
 this manual discusses each type system in a different section.
 There are some annotations that are shorthand for writing multiple
 annotations, each from a different type system:
@@ -300,7 +300,7 @@ or \code{@LTOMLengthOf("arr")}.
 \item[\refqualclasswithparams{checker/index/qual}{LTOMLengthOf}{String[] names}]
   An expression with this type
   has value at least 2 less than the length of each sequence listed in \<names>.
-  It may always used as an index for a sequence listed in \<names>, if it is
+  It may always be used as an index for a sequence listed in \<names>, if it is
   non-negative.
 
   This type exists to allow the checker to infer the safety of loops of

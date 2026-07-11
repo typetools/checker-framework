@@ -145,21 +145,21 @@ public final class Subsequence {
    */
   public static String negateString(String s) {
     String original = s;
-    String result = "";
+    StringBuilder result = new StringBuilder(original.length() + 1);
     if (!original.startsWith("-")) {
-      result += '-';
+      result.append('-');
     }
     for (int i = 0; i < original.length(); i++) {
       char c = original.charAt(i);
       if (c == '-') {
-        result += '+';
+        result.append('+');
       } else if (c == '+') {
-        result += '-';
+        result.append('-');
       } else {
-        result += c;
+        result.append(c);
       }
     }
-    return result;
+    return result.toString();
   }
 
   @Override

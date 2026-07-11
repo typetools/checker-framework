@@ -42,7 +42,7 @@ public class ConfidentialVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactor
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
     // Permit casting anything to @Confidential.
-    if (varType.hasEffectiveAnnotation(Confidential.class)) {
+    if (varType.hasAnnotation(Confidential.class)) {
       return true;
     }
     return super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
