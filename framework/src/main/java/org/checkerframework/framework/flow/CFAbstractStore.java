@@ -32,6 +32,7 @@ import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.SuperReference;
@@ -39,10 +40,10 @@ import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.qual.MonotonicQualifier;
+import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -259,8 +260,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           JavaExpression exprJe =
               StringToJavaExpression.atMethodInvocation(st, methodInvocationNode, checker);
           sideEffectsOnlyExpressions.add(exprJe);
-        } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
-          checker.report(st, ex.getDiagMessage());
+        } catch (JavaExpressionParseException ex) {
+          checker.report(st, new DiagMessage(ex));
           return;
         }
       }

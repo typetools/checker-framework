@@ -133,8 +133,6 @@ import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.FieldInvariants;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.typeinference8.InferenceResult;
@@ -1276,12 +1274,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         try {
           JavaExpression exprJe = StringToJavaExpression.atMethodBody(st, tree, checker);
           sideEffectsOnlyExpressions.add(exprJe);
-        } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
-          DiagMessage diagMessage = ex.getDiagMessage();
+        } catch (JavaExpressionParseException ex) {
+          DiagMessage diagMessage = new DiagMessage(ex);
           if (diagMessage.getMessageKey().equals("flowexpr.parse.error")) {
             checker.reportError(methodTree, "flowexpr.parse.error", st);
           } else {
-            checker.report(st, ex.getDiagMessage());
+            checker.report(st, new DiagMessage(ex));
           }
           return;
         }
