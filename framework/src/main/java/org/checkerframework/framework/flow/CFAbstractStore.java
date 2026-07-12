@@ -32,18 +32,24 @@ import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.qual.MonotonicQualifier;
+import org.checkerframework.framework.source.DiagMessage;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
@@ -79,6 +85,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   /** Information collected about fields, using the internal representation {@link FieldAccess}. */
   protected Map<FieldAccess, V> fieldValues;
+
+  /** The SideEffectsOnly.value argument/element. */
+  public ExecutableElement sideEffectsOnlyValueElement;
 
   /**
    * Returns information about fields. Clients should not side-effect the returned value, which is
@@ -150,6 +159,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.arrayValues = new HashMap<>();
     this.classValues = new HashMap<>();
     this.sequentialSemantics = sequentialSemantics;
+    sideEffectsOnlyValueElement =
+        TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
     this.assumeSideEffectFree =
         analysis.checker.hasOption("assumeSideEffectFree")
             || analysis.checker.hasOption("assumePure");
@@ -170,6 +181,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.arrayValues = new HashMap<>(other.arrayValues);
     this.classValues = new HashMap<>(other.classValues);
     this.sequentialSemantics = other.sequentialSemantics;
+    this.sideEffectsOnlyValueElement = other.sideEffectsOnlyValueElement;
     this.assumeSideEffectFree = other.assumeSideEffectFree;
     this.assumePureGetters = other.assumePureGetters;
   }
@@ -230,6 +242,31 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     GenericAnnotatedTypeFactory<V, S, ?, ?> gatypeFactory =
         (GenericAnnotatedTypeFactory<V, S, ?, ?>) atypeFactory;
 
+    // List of expressions that this method side-effects (specified as arguments/elements of
+    // @SideEffectsOnly). If the list is empty, then there is no @SideEffectsOnly annotation.  (If
+    // the @SideEffectsOnly is written without any annotation argument, then
+    // "purity.empty.sideeffectsonly" is reported at the method declaration.)
+    List<JavaExpression> sideEffectsOnlyExpressions = new ArrayList<>();
+    AnnotationMirror sefOnlyAnnotation =
+        atypeFactory.getDeclAnnotation(method, SideEffectsOnly.class);
+    if (sefOnlyAnnotation != null) {
+      SourceChecker checker = analysis.checker;
+
+      List<String> sideEffectsOnlyExpressionStrings =
+          AnnotationUtils.getElementValueArray(
+              sefOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
+      for (String st : sideEffectsOnlyExpressionStrings) {
+        try {
+          JavaExpression exprJe =
+              StringToJavaExpression.atMethodInvocation(st, methodInvocationNode, checker);
+          sideEffectsOnlyExpressions.add(exprJe);
+        } catch (JavaExpressionParseException ex) {
+          checker.report(st, new DiagMessage(ex));
+          return;
+        }
+      }
+    }
+
     // Case 1: The method is side-effect-free.
     boolean hasSideEffect =
         !(assumeSideEffectFree
@@ -282,13 +319,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 });
       } else {
         // Case 2 (unassignable fields) and case 3 (monotonic fields).
-        updateFieldValuesForMethodCall(gatypeFactory, doNotUnrefine::test);
+        updateFieldValuesForMethodCall(
+            gatypeFactory, doNotUnrefine::test, sideEffectsOnlyExpressions);
       }
 
       // Update array values.
       arrayValues.entrySet().removeIf(e -> !doNotUnrefine.test(e.getKey()));
 
       // Update information about method calls.
+      updateMethodCallValues(sideEffectsOnlyExpressions);
       methodCallExpressions
           .entrySet()
           .removeIf(
@@ -301,6 +340,46 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     // Store information about method calls if possible.
     JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
     replaceValue(methodCall, val);
+  }
+
+  /**
+   * Update information about method calls given the list of side-effected expressions.
+   *
+   * @param sideEffectsOnlyExpressions the list of side-effected expressions
+   */
+  private void updateMethodCallValues(List<JavaExpression> sideEffectsOnlyExpressions) {
+    if (sideEffectsOnlyExpressions.isEmpty()) {
+      methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
+    } else {
+      methodCallExpressions
+          .keySet()
+          .removeIf(
+              methodCallValue ->
+                  hasMethodCallInformationChanged(methodCallValue, sideEffectsOnlyExpressions));
+    }
+  }
+
+  /**
+   * Returns true if information about a method call might have changed.
+   *
+   * <p>Information about a method call might have changed if:
+   *
+   * <ul>
+   *   <li>It is modifiable by other code
+   *   <li>It contains expressions that appear in the list of expressions that are provided to a
+   *       {@code @SideEffectsOnly} annotation
+   * </ul>
+   *
+   * @param methodCallValue the method call value
+   * @param sideEffectsOnlyExpressions the list of expressions provided to a
+   *     {@code @SideEffectsOnly} annotation
+   * @return true if information about a method call might have changed
+   */
+  private boolean hasMethodCallInformationChanged(
+      JavaExpression methodCallValue, List<JavaExpression> sideEffectsOnlyExpressions) {
+    return methodCallValue.isModifiableByOtherCode()
+        && sideEffectsOnlyExpressions.stream()
+            .anyMatch(methodCallValue::containsSyntacticEqualJavaExpression);
   }
 
   /**
@@ -385,27 +464,40 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * <p>More specifically, remove all information about fields except for unassignable fields and
    * fields that have a monotonic annotation.
    *
+   * <p>A non-empty {@code sideEffectsOnlyExpressions} indicates that the invoked method has side
+   * effects. In this case, remove information for fields that actually appear in the list of
+   * side-effected expressions.
+   *
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
    * @param doNotUnrefine if true of a field access, don't unrefine it. This predicate indicates
    *     exceptions: fields that are not updated by this method.
+   * @param sideEffectsOnlyExpressions the expressions that are side-effected by a method call
    */
   private void updateFieldValuesForMethodCall(
-      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory, Predicate<FieldAccess> doNotUnrefine) {
+      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory,
+      Predicate<FieldAccess> doNotUnrefine,
+      List<JavaExpression> sideEffectsOnlyExpressions) {
     Map<FieldAccess, V> newFieldValues = new HashMap<>(MapsP.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
       V previousValue = e.getValue();
 
-      V newValue;
-      boolean doNotUnrefineResult = doNotUnrefine.test(fieldAccess);
-      if (doNotUnrefineResult) {
-        newValue = previousValue;
+      if (!sideEffectsOnlyExpressions.isEmpty()
+          && !sideEffectsOnlyExpressions.contains(fieldAccess)) {
+        // If the field hasn't been side-effected, there is no need to compute a new value for it.
+        newFieldValues.put(fieldAccess, previousValue);
       } else {
-        newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
-      }
-      if (newValue != null) {
-        // Keep information for all hierarchies where we had a monotonic annotation.
-        newFieldValues.put(fieldAccess, newValue);
+        V newValue;
+        boolean doNotUnrefineResult = doNotUnrefine.test(fieldAccess);
+        if (doNotUnrefineResult) {
+          newValue = previousValue;
+        } else {
+          newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
+        }
+        if (newValue != null) {
+          // Keep information for all hierarchies where we had a monotonic annotation.
+          newFieldValues.put(fieldAccess, newValue);
+        }
       }
     }
     fieldValues = newFieldValues;
