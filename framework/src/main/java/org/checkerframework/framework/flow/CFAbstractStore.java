@@ -220,15 +220,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Furthermore, if the method is deterministic, we store its result {@code val} in the store.
    *
    * @param methodInvocationNode method whose information is being updated
-   * @param atypeFactory the type factory of the associated checker
+   * @param _atypeFactory the type factory of the associated checker
    * @param val abstract value of the method call
    */
   public void updateForMethodCall(
-      MethodInvocationNode methodInvocationNode, AnnotatedTypeFactory atypeFactory, V val) {
+      MethodInvocationNode methodInvocationNode, AnnotatedTypeFactory _atypeFactory, V val) {
     ExecutableElement method = methodInvocationNode.getTarget().getMethod();
     @SuppressWarnings("unchecked")
-    GenericAnnotatedTypeFactory<V, S, ?, ?> gatypeFactory =
-        (GenericAnnotatedTypeFactory<V, S, ?, ?>) atypeFactory;
+    GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory =
+        (GenericAnnotatedTypeFactory<V, S, ?, ?>) _atypeFactory;
 
     // Case 1: The method is side-effect-free.
     boolean hasSideEffect =
@@ -237,7 +237,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             || atypeFactory.isSideEffectFree(method));
     if (hasSideEffect) {
 
-      boolean sideEffectsUnrefineAliases = gatypeFactory.sideEffectsUnrefineAliases;
+      boolean sideEffectsUnrefineAliases = atypeFactory.sideEffectsUnrefineAliases;
       Node receiver = methodInvocationNode.getTarget().getReceiver();
       boolean hasDoesNotUnrefineReceiver = atypeFactory.hasDoesNotUnrefineReceiver(method);
 
@@ -282,25 +282,37 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 });
       } else {
         // Case 2 (unassignable fields) and case 3 (monotonic fields).
-        updateFieldValuesForMethodCall(gatypeFactory, doNotUnrefine::test);
+        updateFieldValuesForMethodCall(atypeFactory, receiverJe);
       }
 
       // Update array values.
-      arrayValues.entrySet().removeIf(e -> !doNotUnrefine.test(e.getKey()));
+      arrayValues.entrySet().removeIf(e -> isSideEffected(e.getKey(), receiverJe));
 
       // Update information about method calls.
-      methodCallExpressions
-          .entrySet()
-          .removeIf(
-              e -> {
-                MethodCall mc = e.getKey();
-                return mc.isModifiableByOtherCode() && !doNotUnrefine.test(mc);
-              });
+      methodCallExpressions.entrySet().removeIf(e -> isSideEffected(e.getKey(), receiverJe));
     }
 
     // Store information about method calls if possible.
     JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
     replaceValue(methodCall, val);
+  }
+
+  /**
+   * Returns true if the given expression might evaluate to a different value.
+   *
+   * @param expr an expression
+   * @param notSideEffectedExpression an expression that is never considered to be side-effected, or
+   *     null
+   * @return true if the abstract value of the expression might have changed
+   */
+  private boolean isSideEffected(JavaExpression expr, JavaExpression notSideEffectedExpression) {
+    if (!expr.isModifiableByOtherCode()) {
+      return false;
+    }
+    if (notSideEffectedExpression != null && expr.equals(notSideEffectedExpression)) {
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -386,26 +398,24 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * fields that have a monotonic annotation.
    *
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
-   * @param doNotUnrefine if true of a field access, don't unrefine it. This predicate indicates
-   *     exceptions: fields that are not updated by this method.
+   * @param receiverJe if non-null, the receiver, which should not be unrefined
    */
   private void updateFieldValuesForMethodCall(
-      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory, Predicate<FieldAccess> doNotUnrefine) {
+      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory, JavaExpression receiverJe) {
     Map<FieldAccess, V> newFieldValues = new HashMap<>(MapsP.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
       V previousValue = e.getValue();
 
-      V newValue;
-      boolean doNotUnrefineResult = doNotUnrefine.test(fieldAccess);
-      if (doNotUnrefineResult) {
-        newValue = previousValue;
+      if (!isSideEffected(fieldAccess, receiverJe)) {
+        // If the field hasn't been side-effected, there is no need to compute a new value for it.
+        newFieldValues.put(fieldAccess, previousValue);
       } else {
-        newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
-      }
-      if (newValue != null) {
-        // Keep information for all hierarchies where we had a monotonic annotation.
-        newFieldValues.put(fieldAccess, newValue);
+        V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
+        if (newValue != null) {
+          // Keep information for all hierarchies where we had a monotonic annotation.
+          newFieldValues.put(fieldAccess, newValue);
+        }
       }
     }
     fieldValues = newFieldValues;
