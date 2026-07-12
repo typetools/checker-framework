@@ -107,7 +107,7 @@ In some cases, you may need to specify your code. You do so by writing one of th
 annotations (Figure~\ref{fig-called-methods-types}):
 \begin{description}
 \item[\refqualclasswithparams{checker/calledmethods/qual}{CalledMethods}{String[] methodNames}]
-  The annotated type represents values on which all the given method were definitely called.
+  The annotated type represents values on which all the given methods were definitely called.
   (Other methods might also have been called.) \<@CalledMethods()>, with no
   arguments, is the default annotation.
 
@@ -255,7 +255,7 @@ There are also method annotations:
   This version of \<@EnsuresCalledMethods> always applies to the varargs parameter of the
   annotated method. It has only one argument, which is the list of methods that are guaranteed
   to be called on the varargs parameter's elements before the method returns. This annotation
-  currently cannot be verified, and a \<ensuresvarargs.unverified> error is always issued
+  currently cannot be verified, and an \<ensuresvarargs.unverified> error is always issued
   when it is used. When annotating a method as \<@EnsuresCalledMethodsVarargs>, you should verify
   that the named methods are actually called on every element of the varargs parameter via some
   other method (such as manual inspection) and then suppress the warning.

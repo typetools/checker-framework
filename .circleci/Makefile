@@ -16,4 +16,4 @@ ${PLUME_SCRIPTS}:
 	make -C .. get-plume-scripts
 
 clean:
-	rm -f config.yml
+	@rm -f config.yml

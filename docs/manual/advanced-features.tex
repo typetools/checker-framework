@@ -163,7 +163,7 @@ qualifier at all.
 Most readers can skip this section on first reading, because you will
 probably find the system simply ``does what you mean'', without forcing
 you to write too many qualifiers in your program.
-particular, programmers rarely write qualifiers in method bodies (except on
+In particular, programmers rarely write qualifiers in method bodies (except on
 type arguments and array component types).
 
 The following steps determine the effective
@@ -256,7 +256,7 @@ This means any unannotated use of \<MyClass> is treated as \<@B MyClass> by the 
 (Except for locals, which can be refined.)
 
 Similarly, the meta-annotation \refqualclass{framework/qual}{DefaultFor} can be used to specify defaults
-for uses of types, using the \<types> element, or type kinds, using the \<typeKinds> elements.
+for uses of types, using the \<types> element, or type kinds, using the \<typeKinds> element.
 
 Interaction between qualifier bounds and \<DefaultQualifierForUse>:
 \begin{itemize}
@@ -391,14 +391,14 @@ Exception parameters default to the top type because they might catch an
 exception thrown anywhere in the program.
 
 An alternate design for exception parameters would be to default exception
-parameters some other type T (instead of the top type); then the Checker
+parameters to some other type T (instead of the top type); then the Checker
 Framework would need to issue a warning at every \<throw> statement whose
 argument might not be a subtype of T\@.  A checker can implement this
 alternate design by overriding a few methods.  The alternative is not
 appropriate for all type systems.  The alternative is unsound for deep type
 systems because the JDK's annotations are trusted rather than checked.  A
 deep type system is one where the type of a field can determine the type of
-its containing instance, such as tainting, Example: a user passes a secret
+its containing instance, such as tainting.  Example: a user passes a secret
 regex to the JDK, and the JDK throws a format exception that includes the
 regex.  This could be caught by a \<catch> clause in the program whose
 exception parameter is not annotated as secret.  As another example, the
@@ -492,7 +492,7 @@ method, programmers must write the type annotation \<@Nullable>:
 \end{Verbatim}
 
 An alternate design would be for every annotation on a superclass member to
-to be automatically inherited by subclasses that override it.
+be automatically inherited by subclasses that override it.
 
 The alternate design would reduce annotation effort.
 
@@ -519,7 +519,7 @@ future, this feature may be added.
 
 \subsectionAndLabel{Inherited wildcard annotations}{inherited-wildcard-annotations}
 
-If a wildcard is unbounded and has no annotation (e.g. \code{List<?>}),
+If a wildcard is unbounded and has no annotation (e.g., \code{List<?>}),
 the annotations on the wildcard's bounds are copied from the type parameter
 to which the wildcard is an argument.
 
@@ -760,7 +760,7 @@ suppress the warning if the code is correct.
 \sectionAndLabel{Type refinement (flow-sensitive type qualifier inference)}{type-refinement}
 
 A checker can sometimes deduce that an expression's type is more specific
-than --- that is, a subtype of --- its declared or defaulted (Section~\ref{defaults}).
+than --- that is, a subtype of --- its declared or defaulted type (Section~\ref{defaults}).
 This is called ``flow-sensitive type refinement'' or ``local type inference''.
 
 Due to local type refinement, a programmer typically
@@ -840,7 +840,7 @@ via an assignment, or because a method call might have a side effect).
 
 The checker never treats a variable as
 a supertype of its declared type.  For example, an expression with declared type \refqualclass{checker/nullness/qual}{NonNull}
-type is never treated as possibly-null, and such an assignment is always illegal.
+is never treated as possibly-null, and such an assignment is always illegal.
 
 The functionality has a variety of names:  type refinement,
 flow-sensitive type qualifier inference, local type inference, and
@@ -852,7 +852,7 @@ sometimes just ``flow''.
 You generally do not need to annotate the top-level type of a local variable.
 You do need to annotate its type arguments or array element types.
 (Type refinement does not change them, because doing so would not produce a
-subtype, as explained in see Section~\ref{covariant-type-parameters} and
+subtype, as explained in Section~\ref{covariant-type-parameters} and
 Section~\ref{invariant-arrays}.)
 Type refinement works within a method, so you still need to
 annotate method signatures (parameter and return type) and field types.

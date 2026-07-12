@@ -160,7 +160,7 @@ regular expression with at least the given number of capturing groups.
 \begin{sloppypar}
 If you detect that a \<String> is not a valid regular expression but would like
 to report the error higher up the call stack (potentially where you can
-provide a more detailed error message) you can throw a
+provide a more detailed error message), you can throw a
 \refclass{checker/regex/util}{RegexUtil.CheckedPatternSyntaxException}. This exception is
 functionally the same as a
 \sunjavadoc{java.base/java/util/regex/PatternSyntaxException.html}{Pattern\-Syntax\-Exception}
@@ -210,7 +210,7 @@ method that takes a capturing group parameter. This method works the same as
 described above, but returns a \code{@Regex String} with the parameter on the
 annotation set to the value of the capturing group parameter passed to the method.
 
-The use case shown in Figure~\ref{fig-regex-util-example} should support most cases
+The use case shown in Figure~\ref{fig-regex-util-example} should support most cases,
 so the \<asRegex> method should be used rarely.
 
 

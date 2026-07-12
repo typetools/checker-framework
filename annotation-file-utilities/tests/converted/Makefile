@@ -100,9 +100,9 @@ bin/annotator/tests/%.class: %.java
 # Remove all .diff, .log files from the tests directory.
 .PHONY: clean
 clean :
-	rm -rf bin
-	rm -f *.diff
-	rm -f *.log
-	rm -f *.output
-	rm -f *.java
-	rm -f *.goal
+	@rm -rf bin
+	@rm -f *.diff
+	@rm -f *.log
+	@rm -f *.output
+	@rm -f *.java
+	@rm -f *.goal

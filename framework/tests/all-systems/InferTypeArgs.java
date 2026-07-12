@@ -75,7 +75,7 @@ class GenericAnnotatedTypeFactoryInferTypeArgs<
     return result;
   }
 
-  @SuppressWarnings({"nullness:return", "lock:return", "immutabilitysub:type.argument"})
+  @SuppressWarnings({"nullness:return", "immutabilitysub:type.argument"})
   public static <T> T invokeConstructorFor() {
     return null;
   }

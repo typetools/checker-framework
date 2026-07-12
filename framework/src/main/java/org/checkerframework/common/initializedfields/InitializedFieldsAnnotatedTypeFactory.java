@@ -246,7 +246,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     return true;
   }
 
-  // Overridden because there is no InitalizedFieldsAnalysis.
+  // Overridden because there is no InitializedFieldsAnalysis.
   @Override
   protected AccumulationAnalysis createFlowAnalysis() {
     return new AccumulationAnalysis(this.getChecker(), this);

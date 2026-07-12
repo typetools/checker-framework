@@ -29,7 +29,7 @@ ever tries to call \<setNavigationMode> with an \<int> that is not a
 \<@NavigationMode int>.
 
 The Fake Enum Checker gives the same safety guarantees as a true enumeration
-type or typedef, but retaining backward-compatibility with interfaces that
+type or typedef, but retains backward-compatibility with interfaces that
 use existing Java types.  You can apply fenum annotations to any Java type,
 including all primitive types and also reference types.  Thus, you could
 use it (for example) to represent floating-point values between 0 and 1, or
@@ -90,7 +90,7 @@ public @interface \textit{MyFenum} \ttlcb\ttrcb
 You only need to adapt the italicized package, annotation, and file names in the example.
 
 Note that all custom annotations must have the
-\<@Target(\ttlcb ElementType.TYPE\_USE\ttrcb)> meta-annotation. See section
+\<@Target(\ttlcb ElementType.TYPE\_USE\ttrcb)> meta-annotation. See Section
 \ref{creating-define-type-qualifiers}.
 
 \item Use the provided \refqualclass{checker/fenum/qual}{Fenum} annotation, which takes a
