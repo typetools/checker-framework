@@ -1185,7 +1185,7 @@ There are two other ways to suppress the warning:
 A method cannot be annotated with both \refqualclass{dataflow/qual}{SideEffectFree}
 and \refqualclass{dataflow/qual}{SideEffectsOnly}.
 The annotation \<@SideEffectsOnly(\{\})> (i.e., a \<@SideEffectsOnly> annotation
-with an empty list of expressions) is illegal, write \<@SideEffectFree> instead.
+with an empty list of expressions) is illegal; write \<@SideEffectFree> instead.
 If a method has no \refqualclass{dataflow/qual}{SideEffectsOnly}
 or \refqualclass{dataflow/qual}{SideEffectFree} annotation, then the Checker Framework
 assumes that the method may side-effect any expressions (including fields and arguments).

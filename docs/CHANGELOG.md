@@ -7,6 +7,8 @@
 
 ### User-visible changes
 
+New annotation `@SideEffectsOnly` permits more precise purity specifications.
+
 ### Implementation details
 
 ### Closed issues

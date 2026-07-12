@@ -34,10 +34,14 @@ public final class PurityUtils {
   /**
    * Does the method {@code methodTree} have any purity annotation?
    *
+   * <p>This method does not consider {@code @SideEffectsOnly} to be a purity annotation. Fixing
+   * that bug requires refactoring.
+   *
    * @param provider how to get annotations
    * @param methodTree a method to test
    * @return true if the method has any purity annotations
    */
+  // TODO: Handle @SideEffectsOnly.
   public static boolean hasPurityAnnotation(AnnotationProvider provider, MethodTree methodTree) {
     return !getPurityKinds(provider, methodTree).isEmpty();
   }
@@ -45,10 +49,14 @@ public final class PurityUtils {
   /**
    * Does the method {@code methodElement} have any purity annotation?
    *
+   * <p>This method does not consider {@code @SideEffectsOnly} to be a purity annotation. Fixing
+   * that bug requires refactoring.
+   *
    * @param provider how to get annotations
    * @param methodElement a method to test
    * @return true if the method has any purity annotations
    */
+  // TODO: Handle @SideEffectsOnly.
   public static boolean hasPurityAnnotation(
       AnnotationProvider provider, ExecutableElement methodElement) {
     return !getPurityKinds(provider, methodElement).isEmpty();
