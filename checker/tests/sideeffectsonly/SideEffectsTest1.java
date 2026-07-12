@@ -4,7 +4,7 @@ import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 
-public class SideEffectsTest {
+public class SideEffectsTest1 {
   @Tainted Object x;
 
   void test() {
