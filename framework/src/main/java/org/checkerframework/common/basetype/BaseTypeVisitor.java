@@ -1151,7 +1151,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param tree the method tree to check
    */
-  @SuppressWarnings("AlreadyChecked") // TEMPORARY, must fix
   protected void checkPurityAnnotations(MethodTree tree) {
     if (!checkPurityAnnotations) {
       return;

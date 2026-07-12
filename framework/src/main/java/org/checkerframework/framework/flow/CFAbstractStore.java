@@ -86,7 +86,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /** Information collected about fields, using the internal representation {@link FieldAccess}. */
   protected Map<FieldAccess, V> fieldValues;
 
-  /** The SideEffectsOnly.value argument/element. */
+  /** The {@code SideEffectsOnly.value} argument/element. */
   public ExecutableElement sideEffectsOnlyValueElement;
 
   /**
