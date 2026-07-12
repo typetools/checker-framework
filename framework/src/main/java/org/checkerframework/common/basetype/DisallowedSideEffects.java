@@ -29,83 +29,73 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.IPair;
 
 /**
- * For methods annotated with {@link SideEffectsOnly}, computes expressions that are side-effected
- * but not permitted by the annotation.
+ * The set of expressions a method side-effects, beyond those specified its {@link SideEffectsOnly}
+ * annotation.
  */
-public class SideEffectsOnlyChecker {
+public class DisallowedSideEffects {
 
-  /** Do not instantiate. */
-  private SideEffectsOnlyChecker() {
-    throw new Error("Do not instantiate");
+  /** Creates an empty DisallowedSideEffects. */
+  public DisallowedSideEffects() {}
+
+  /**
+   * List of expressions a method side-effects that are not specified in the list of arguments to
+   * {@link SideEffectsOnly}.
+   */
+  protected final List<IPair<Tree, JavaExpression>> exprs = new ArrayList<>(1);
+
+  /**
+   * Adds {@code t} and {@code javaExpr} as a pair to this.
+   *
+   * @param t the expression that is mutated
+   * @param javaExpr the corresponding Java expression
+   */
+  public void addExpr(Tree t, JavaExpression javaExpr) {
+    exprs.add(IPair.of(t, javaExpr));
   }
 
   /**
-   * Returns the computed {@code ExtraSideEffects}.
+   * Returns a list of expressions a method side-effects that are not specified in the list of
+   * arguments to {@link SideEffectsOnly}.
    *
-   * @param statement The statement to check
-   * @param annoProvider The annotation provider
-   * @param sideEffectsOnlyExpressions List of JavaExpressions that are provided as annotation
-   *     values to {@link SideEffectsOnly}
-   * @param processingEnv The processing environment
-   * @param checker The checker to use
-   * @return a ExtraSideEffects
+   * @return side-effected expressions, beyond what is in {@code @SideEffectsOnly}.
    */
-  public static ExtraSideEffects checkSideEffectsOnly(
+  public List<IPair<Tree, JavaExpression>> getExprs() {
+    return exprs;
+  }
+
+  // Static methods
+
+  /**
+   * Returns the computed {@code DisallowedSideEffects}.
+   *
+   * @param statement the statement to check
+   * @param annoProvider the annotation provider
+   * @param sideEffectsOnlyExpressions a list of JavaExpressions that are provided as annotation
+   *     values to {@link SideEffectsOnly}
+   * @param processingEnv the processing environment
+   * @param checker the checker to use
+   * @return an DisallowedSideEffects
+   */
+  public static DisallowedSideEffects checkSideEffectsOnly(
       TreePath statement,
       AnnotationProvider annoProvider,
       List<JavaExpression> sideEffectsOnlyExpressions,
       ProcessingEnvironment processingEnv,
       BaseTypeChecker checker) {
-    SideEffectsOnlyCheckerHelper helper =
-        new SideEffectsOnlyCheckerHelper(
+    DisallowedSideEffectsHelper helper =
+        new DisallowedSideEffectsHelper(
             annoProvider, sideEffectsOnlyExpressions, processingEnv, checker);
     helper.scan(statement, null);
     return helper.extraSideEffects;
   }
 
   /**
-   * The set of expressions a method side-effects, beyond those specified its {@link
-   * SideEffectsOnly} annotation.
-   */
-  public static class ExtraSideEffects {
-
-    /** Creates an empty ExtraSideEffects. */
-    public ExtraSideEffects() {}
-
-    /**
-     * List of expressions a method side-effects that are not specified in the list of arguments to
-     * {@link SideEffectsOnly}.
-     */
-    protected final List<IPair<Tree, JavaExpression>> exprs = new ArrayList<>(1);
-
-    /**
-     * Adds {@code t} and {@code javaExpr} as a pair to this.
-     *
-     * @param t the expression that is mutated
-     * @param javaExpr the corresponding Java expression
-     */
-    public void addExpr(Tree t, JavaExpression javaExpr) {
-      exprs.add(IPair.of(t, javaExpr));
-    }
-
-    /**
-     * Returns a list of expressions a method side-effects that are not specified in the list of
-     * arguments to {@link SideEffectsOnly}.
-     *
-     * @return side-effected expressions, beyond what is in {@code @SideEffectsOnly}.
-     */
-    public List<IPair<Tree, JavaExpression>> getExprs() {
-      return exprs;
-    }
-  }
-
-  /**
    * Class that visits various nodes and computes mutated expressions that are not specified as
    * annotation values to {@link SideEffectsOnly}.
    */
-  protected static class SideEffectsOnlyCheckerHelper extends TreePathScanner<Void, Void> {
-    /** Result computed by SideEffectsOnlyCheckerHelper. */
-    ExtraSideEffects extraSideEffects = new ExtraSideEffects();
+  protected static class DisallowedSideEffectsHelper extends TreePathScanner<Void, Void> {
+    /** Result computed by DisallowedSideEffectsHelper. */
+    DisallowedSideEffects extraSideEffects = new DisallowedSideEffects();
 
     /**
      * List of expressions specified as annotation arguments in {@link SideEffectsOnly} annotation.
@@ -125,7 +115,7 @@ public class SideEffectsOnlyChecker {
     BaseTypeChecker checker;
 
     /**
-     * Constructor for SideEffectsOnlyCheckerHelper.
+     * Constructor for DisallowedSideEffectsHelper.
      *
      * @param annoProvider The annotation provider
      * @param sideEffectsOnlyExpressions List of JavaExpressions that are provided as annotation
@@ -133,7 +123,7 @@ public class SideEffectsOnlyChecker {
      * @param processingEnv The processing environment
      * @param checker The checker to use
      */
-    public SideEffectsOnlyCheckerHelper(
+    public DisallowedSideEffectsHelper(
         AnnotationProvider annoProvider,
         List<JavaExpression> sideEffectsOnlyExpressions,
         ProcessingEnvironment processingEnv,

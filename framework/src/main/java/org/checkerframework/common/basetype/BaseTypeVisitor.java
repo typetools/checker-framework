@@ -1257,7 +1257,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           getPureOrSideEffectFreeAnnotation(methodDeclElem);
       if (pureOrSideEffectFreeAnnotation != null) {
         // It is an error if a @SideEffectsOnly annotation appears with a @Pure or @SideEffectFree
-        // annotation
+        // annotation.
         checker.reportError(
             tree,
             "purity.incorrect.annotation.conflict",
@@ -1270,6 +1270,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               sefOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
       List<JavaExpression> sideEffectsOnlyExpressions =
           new ArrayList<>(sideEffectsOnlyExpressionStrings.size());
+      if (sideEffectsOnlyExpressionStrings.isEmpty()) {
+        checker.reportError(methodTree, "purity.empty.sideeffectsonly");
+      }
       for (String st : sideEffectsOnlyExpressionStrings) {
         try {
           JavaExpression exprJe = StringToJavaExpression.atMethodBody(st, tree, checker);
@@ -1292,8 +1295,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return;
       }
 
-      SideEffectsOnlyChecker.ExtraSideEffects sefOnlyResult =
-          SideEffectsOnlyChecker.checkSideEffectsOnly(
+      DisallowedSideEffects sefOnlyResult =
+          DisallowedSideEffects.checkSideEffectsOnly(
               body,
               atypeFactory,
               sideEffectsOnlyExpressions,

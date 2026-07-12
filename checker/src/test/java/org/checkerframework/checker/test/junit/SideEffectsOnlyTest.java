@@ -1,7 +1,8 @@
-package org.checkerframework.framework.test.junit;
+package org.checkerframework.checker.test.junit;
 
 import java.io.File;
 import java.util.List;
+import org.checkerframework.checker.tainting.TaintingChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -13,9 +14,10 @@ public class SideEffectsOnlyTest extends CheckerFrameworkPerDirectoryTest {
   public SideEffectsOnlyTest(List<File> testFiles) {
     super(
         testFiles,
-        org.checkerframework.framework.testchecker.sideeffectsonly.SideEffectsOnlyToyChecker.class,
+        TaintingChecker.class,
         "sideeffectsonly",
-        "-AcheckPurityAnnotations");
+        "-AcheckPurityAnnotations",
+        "-Aflowdotdir=.");
   }
 
   @Parameters

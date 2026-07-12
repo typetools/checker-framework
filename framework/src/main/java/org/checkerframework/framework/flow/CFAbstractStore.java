@@ -243,8 +243,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         (GenericAnnotatedTypeFactory<V, S, ?, ?>) atypeFactory;
 
     // List of expressions that this method side-effects (specified as arguments/elements of
-    // @SideEffectsOnly). If the list is empty, then either there is no @SideEffectsOnly annotation
-    // or the @SideEffectsOnly is written without any annotation argument.
+    // @SideEffectsOnly). If the list is empty, then there is no @SideEffectsOnly annotation.  (If
+    // the @SideEffectsOnly is written without any annotation argument, then
+    // "purity.empty.sideeffectsonly" is reported at the method declaration.)
     List<JavaExpression> sideEffectsOnlyExpressions = new ArrayList<>();
     AnnotationMirror sefOnlyAnnotation =
         atypeFactory.getDeclAnnotation(method, SideEffectsOnly.class);
@@ -254,7 +255,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       List<String> sideEffectsOnlyExpressionStrings =
           AnnotationUtils.getElementValueArray(
               sefOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
-
       for (String st : sideEffectsOnlyExpressionStrings) {
         try {
           JavaExpression exprJe =
