@@ -86,7 +86,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected Map<FieldAccess, V> fieldValues;
 
   /** The {@code SideEffectsOnly.value} argument/element. */
-  public static ExecutableElement sideEffectsOnlyValueElement;
+  public ExecutableElement sideEffectsOnlyValueElement;
 
   /**
    * Returns information about fields. Clients should not side-effect the returned value, which is
@@ -159,10 +159,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.arrayValues = new HashMap<>();
     this.classValues = new HashMap<>();
     this.sequentialSemantics = sequentialSemantics;
-    if (sideEffectsOnlyValueElement == null) {
-      sideEffectsOnlyValueElement =
-          TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
-    }
+    // It's wasteful to compute this for every Store.
+    sideEffectsOnlyValueElement =
+        TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
     this.assumeSideEffectFree =
         analysis.checker.hasOption("assumeSideEffectFree")
             || analysis.checker.hasOption("assumePure");

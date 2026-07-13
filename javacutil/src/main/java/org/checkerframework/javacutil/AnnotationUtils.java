@@ -1061,7 +1061,7 @@ public final class AnnotationUtils {
       AnnotationMirror anno, ExecutableElement element, Class<T> expectedType) {
     AnnotationValue av = anno.getElementValues().get(element);
     if (av == null) {
-      throw new BugInCF("getElementValueArray(%s, %s, ...)", anno, element);
+      throw new BugInCF("getElementValueArray(%s, %s, %s)", anno, element, expectedType);
     }
     return annotationValueToList(av, expectedType);
   }
