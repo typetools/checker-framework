@@ -8,9 +8,9 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.JavaExpression;
 
 /**
- * A method annotated with the declaration annotation {@code @SideEffectsOnly("A", "B")} changes the
- * value of at most the expressions A and B. All other expressions have the same value before and
- * after a call to the method.
+ * A method annotated with the declaration annotation {@code @SideEffectsOnly({"A", "B"})} changes
+ * the value of at most the expressions A and B. All other expressions have the same value before
+ * and after a call to the method.
  *
  * @checker_framework.manual #type-refinement-purity Specifying side effects
  */

@@ -4,32 +4,28 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.javacutil.AnnotationProvider;
-import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
 
 /**
- * The set of expressions a method side-effects, beyond those specified its {@link SideEffectsOnly}
+ * The set of expressions a method side-effects, beyond those listed in its {@link SideEffectsOnly}
  * annotation.
  */
 public class DisallowedSideEffects {
@@ -37,10 +33,7 @@ public class DisallowedSideEffects {
   /** Creates an empty DisallowedSideEffects. */
   public DisallowedSideEffects() {}
 
-  /**
-   * List of expressions a method side-effects that are not specified in the list of arguments to
-   * {@link SideEffectsOnly}.
-   */
+  /** Expressions a method side-effects that are not in its {@link SideEffectsOnly} annotation. */
   protected final List<IPair<Tree, JavaExpression>> exprs = new ArrayList<>(1);
 
   /**
@@ -54,8 +47,8 @@ public class DisallowedSideEffects {
   }
 
   /**
-   * Returns a list of expressions a method side-effects that are not specified in the list of
-   * arguments to {@link SideEffectsOnly}.
+   * Returns the expressions a method side-effects that are listed in its {@link SideEffectsOnly}
+   * annotation.
    *
    * @return side-effected expressions, beyond what is in {@code @SideEffectsOnly}.
    */
@@ -70,11 +63,10 @@ public class DisallowedSideEffects {
    *
    * @param statement the statement to check
    * @param annoProvider the annotation provider
-   * @param sideEffectsOnlyExpressions a list of JavaExpressions that are provided as annotation
-   *     values to {@link SideEffectsOnly}
+   * @param sideEffectsOnlyExpressions the values in the {@link SideEffectsOnly} annotation
    * @param processingEnv the processing environment
    * @param checker the checker to use
-   * @return an DisallowedSideEffects
+   * @return a DisallowedSideEffects
    */
   public static DisallowedSideEffects checkSideEffectsOnly(
       TreePath statement,
@@ -86,24 +78,28 @@ public class DisallowedSideEffects {
         new DisallowedSideEffectsHelper(
             annoProvider, sideEffectsOnlyExpressions, processingEnv, checker);
     helper.scan(statement, null);
-    return helper.extraSideEffects;
+    return helper.disallowedSideEffects;
   }
 
   /**
-   * Class that visits various nodes and computes mutated expressions that are not specified as
-   * annotation values to {@link SideEffectsOnly}.
+   * Visitor that collects mutated expressions that are not listed in a {@link SideEffectsOnly}
+   * annotation.
    */
   protected static class DisallowedSideEffectsHelper extends TreePathScanner<Void, Void> {
     /** Result computed by DisallowedSideEffectsHelper. */
-    DisallowedSideEffects extraSideEffects = new DisallowedSideEffects();
+    DisallowedSideEffects disallowedSideEffects = new DisallowedSideEffects();
 
     /**
-     * List of expressions specified as annotation arguments in {@link SideEffectsOnly} annotation.
+     * List of expressions specified as annotation arguments in a {@link SideEffectsOnly}
+     * annotation.
      */
     List<JavaExpression> sideEffectsOnlyExpressionsFromAnnotation;
 
-    /** Map of expressions that are aliased to other expressions. */
-    Map<JavaExpression, JavaExpression> aliasedExpressions;
+    /**
+     * Expressions that may aliased to other expressions. Keys are lhs of assignments, values are
+     * rhs.
+     */
+    Set<JavaExpression> aliasedExpressions;
 
     /** The annotation provider. */
     protected final AnnotationProvider annoProvider;
@@ -115,20 +111,20 @@ public class DisallowedSideEffects {
     BaseTypeChecker checker;
 
     /**
-     * Constructor for DisallowedSideEffectsHelper.
+     * Creates a new DisallowedSideEffectsHelper.
      *
-     * @param annoProvider The annotation provider
-     * @param sideEffectsOnlyExpressions List of JavaExpressions that are provided as annotation
-     *     values to {@link SideEffectsOnly}
-     * @param processingEnv The processing environment
-     * @param checker The checker to use
+     * @param annoProvider the annotation provider
+     * @param sideEffectsOnlyExpressions the arguments/values of a {@link SideEffectsOnly}
+     *     annotation
+     * @param processingEnv the processing environment
+     * @param checker the checker to use
      */
     public DisallowedSideEffectsHelper(
         AnnotationProvider annoProvider,
         List<JavaExpression> sideEffectsOnlyExpressions,
         ProcessingEnvironment processingEnv,
         BaseTypeChecker checker) {
-      this.aliasedExpressions = new HashMap<>();
+      this.aliasedExpressions = new HashSet<>();
       this.annoProvider = annoProvider;
       this.sideEffectsOnlyExpressionsFromAnnotation = sideEffectsOnlyExpressions;
       this.processingEnv = processingEnv;
@@ -142,13 +138,9 @@ public class DisallowedSideEffects {
       boolean isMarkedSideEffectFree =
           annoProvider.getDeclAnnotation(invokedElem, SideEffectFree.class) != null;
       if (isMarkedPure || isMarkedSideEffectFree) {
+        // TODO: Should all the checking de integrated together?
         return super.visitMethodInvocation(node, aVoid);
       }
-
-      AnnotationMirror sideEffectsOnlyAnnotationOnEnclosingMethod =
-          getSideEffectsOnlyAnnotationOnEnclosingMethod(node);
-      assert sideEffectsOnlyAnnotationOnEnclosingMethod != null
-          : "This method should only be invoked when the @SideEffectsOnly annotation is not null";
 
       boolean isInvokedMethodMarkedWithSideEffectsOnly =
           annoProvider.getDeclAnnotation(invokedElem, SideEffectsOnly.class) != null;
@@ -156,11 +148,11 @@ public class DisallowedSideEffects {
       List<JavaExpression> actualSideEffectedExprs =
           this.getJavaExpressionsFromMethodInvocation(node);
 
-      // If the invoked method is NOT marked with @SideEffectsOnly, it may modify anything
+      // If the invoked method is NOT marked with @SideEffectsOnly, it may modify anything.
       if (!isInvokedMethodMarkedWithSideEffectsOnly) {
-        // What does it modify? Check the arguments for the method invocation
+        // What does it modify? Check the arguments for the method invocation.
         if (actualSideEffectedExprs.isEmpty()) {
-          // If the args are empty, it might be modifying anything
+          // If the args are empty, it might be modifying anything.
           checker.reportError(
               node,
               "purity.incorrect.sideeffectsonly",
@@ -169,28 +161,9 @@ public class DisallowedSideEffects {
         }
       }
       actualSideEffectedExprs.stream()
-          .filter(this::isAdditionalSideEffectedExpression)
-          .forEach(expr -> extraSideEffects.addExpr(node, expr));
+          .filter(this::isDisallowedSideEffectedExpression)
+          .forEach(expr -> disallowedSideEffects.addExpr(node, expr));
       return super.visitMethodInvocation(node, aVoid);
-    }
-
-    /**
-     * Returns the {@link SideEffectsOnly} annotation (if it exists, else null) on the enclosing
-     * method of a given method invocation.
-     *
-     * @param tree the method invocation
-     * @return the {@link SideEffectsOnly} annotation on the enclosing method of a given method
-     *     invocation
-     */
-    private AnnotationMirror getSideEffectsOnlyAnnotationOnEnclosingMethod(
-        MethodInvocationTree tree) {
-      MethodTree enclosingMethod =
-          TreePathUtil.enclosingMethod(checker.getTypeFactory().getPath(tree));
-      if (enclosingMethod == null) {
-        return null;
-      }
-      return annoProvider.getDeclAnnotation(
-          TreeUtils.elementFromDeclaration(enclosingMethod), SideEffectsOnly.class);
     }
 
     /**
@@ -207,68 +180,94 @@ public class DisallowedSideEffects {
       ExpressionTree receiver = TreeUtils.getReceiverTree(methodInvok);
       List<ExpressionTree> exprs;
       if (receiver == null) {
+        // Unfortunate, unnecessary copying.
         exprs = new ArrayList<>(args);
       } else {
         exprs = new ArrayList<>(args.size() + 1);
         exprs.add(receiver);
         exprs.addAll(args);
       }
-      return exprs.stream().map(JavaExpression::fromTree).collect(Collectors.toList());
+      return CollectionsPlume.mapList(JavaExpression::fromTree, exprs);
     }
 
     /**
-     * Returns true if the given expression is a side-effected expression beyond what is described
-     * in the {@link SideEffectsOnly} annotation.
-     *
-     * <p>The following criteria must be met in determining whether a given expression is
-     * side-effected beyond the expressions provided in the annotation:
+     * Returns true if the given expression is a side-effected expression beyond what is listed in
+     * the {@link SideEffectsOnly} annotation.
      *
      * <ul>
-     *   <li>The expression does <b>not</b> appear in the expressions passed as arguments to the
-     *       {@link SideEffectsOnly} annotation
-     *   <li>The expression is modifiable by other code
-     *   <li>The expression is <b>not</b> aliased by other variables in the method body
+     *   <li>The expression is not listed in the {@link SideEffectsOnly} annotation.
+     *   <li>The expression is modifiable by other code.
+     *   <li>The expression is <b>not</b> aliased by other variables in the method body.
      * </ul>
      *
      * @param expr the expression to check for side-effecting
-     * @return true if the given expression is a side-effected expressio beyond what is described in
+     * @return true if the given expression is a side-effected expression beyond what is listed in
      *     the {@link SideEffectsOnly} annotation
      */
-    private boolean isAdditionalSideEffectedExpression(JavaExpression expr) {
+    private boolean isDisallowedSideEffectedExpression(JavaExpression expr) {
       return !sideEffectsOnlyExpressionsFromAnnotation.contains(expr)
           && expr.isModifiableByOtherCode()
-          && !aliasedExpressions.containsKey(expr);
-    }
-
-    @Override
-    public Void visitNewClass(NewClassTree node, Void aVoid) {
-      return super.visitNewClass(node, aVoid);
+          && !aliasedExpressions.contains(expr);
     }
 
     @Override
     public Void visitAssignment(AssignmentTree node, Void aVoid) {
-      JavaExpression javaExpr = JavaExpression.fromTree(node.getVariable());
-      if (!sideEffectsOnlyExpressionsFromAnnotation.contains(javaExpr)) {
-        extraSideEffects.addExpr(node, javaExpr);
+      JavaExpression lhs = JavaExpression.fromTree(node.getVariable());
+      JavaExpression rhs = JavaExpression.fromTree(node.getExpression());
+      // TODO: Need to check for subexpressions, in case the `@SideEffectsOnly(...)` expressions are
+      // broader than `lhs`.
+      if (!sideEffectsOnlyExpressionsFromAnnotation.contains(lhs)) {
+        disallowedSideEffects.addExpr(node, lhs);
       }
+      aliasedExpressions.add(lhs);
+      aliasedExpressions.add(rhs);
       return super.visitAssignment(node, aVoid);
     }
 
     @Override
     public Void visitVariable(VariableTree node, Void aVoid) {
+      ExpressionTree initializer = node.getInitializer();
+      if (initializer == null) {
+        // A declaration with no initializer, such as `int x;`, creates no alias.
+        return super.visitVariable(node, aVoid);
+      }
       JavaExpression name = JavaExpression.fromVariableTree(node);
-      JavaExpression expr = JavaExpression.fromTree(node.getInitializer());
-      aliasedExpressions.put(name, expr);
+      JavaExpression expr = JavaExpression.fromTree(initializer);
+      aliasedExpressions.add(name);
+      aliasedExpressions.add(expr);
       return super.visitVariable(node, aVoid);
     }
 
     @Override
     public Void visitUnary(UnaryTree node, Void aVoid) {
+      switch (node.getKind()) {
+        case POSTFIX_INCREMENT:
+        case POSTFIX_DECREMENT:
+        case PREFIX_INCREMENT:
+        case PREFIX_DECREMENT:
+          JavaExpression operand = JavaExpression.fromTree(node.getExpression());
+          // TODO: Need to check for subexpressions, in case the `@SideEffectsOnly(...)`
+          // expressions are broader than `operand`.
+          if (!sideEffectsOnlyExpressionsFromAnnotation.contains(operand)) {
+            disallowedSideEffects.addExpr(node, operand);
+          }
+          break;
+        default:
+          break;
+      }
       return super.visitUnary(node, aVoid);
     }
 
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void aVoid) {
+      // Does not make the left-hand side an alias of the right-hand side,
+      // beacuse the rhs expression uses the lhs.
+      JavaExpression lhs = JavaExpression.fromTree(node.getVariable());
+      // TODO: Need to check for subexpressions, in case the `@SideEffectsOnly(...)` expressions are
+      // broader than `lhs`.
+      if (!sideEffectsOnlyExpressionsFromAnnotation.contains(lhs)) {
+        disallowedSideEffects.addExpr(node, lhs);
+      }
       return super.visitCompoundAssignment(node, aVoid);
     }
   }

@@ -240,7 +240,7 @@ The nullness hierarchy contains these qualifiers:
   By contrast, for a \<@Nullable> field, the Nullness Checker assumes that
   most method calls might set it to \<null>. (Exceptions are calls to
   methods that are \refqualclass{dataflow/qual}{SideEffectFree} or
-  \refqualclass{dataflow/qual}{SideEffectsOnly}, or that
+  (for non-listed expressions) \refqualclass{dataflow/qual}{SideEffectsOnly}, or that
   have an \refqualclass{checker/nullness/qual}{EnsuresNonNull} or
   \refqualclass{checker/nullness/qual}{EnsuresNonNullIf} annotation.)
   \end{sloppypar}

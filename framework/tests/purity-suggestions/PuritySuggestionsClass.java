@@ -178,7 +178,7 @@ public class PuritySuggestionsClass {
   private static class EmptySideEffectsOnly {
 
     @SideEffectsOnly({})
-    // :: error: (purity.emptysideeffectsonly) :: warning: (purity.more.sideeffectfree)
+    // :: error: (purity.empty.sideeffectsonly) :: warning: (purity.more.sideeffectfree)
     void foo() {}
   }
 

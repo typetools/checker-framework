@@ -1146,7 +1146,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * AnnotatedTypeMirror.AnnotatedDeclaredType)}.
    *
    * <p>If the method {@code tree} is annotated with {@link SideEffectsOnly}, check that the method
-   * side-effects a subset of the expressions specified as annotation arguments/elements to {@link
+   * side-effects only expressions specified as annotation arguments/elements to {@link
    * SideEffectsOnly}.
    *
    * @param tree the method tree to check
@@ -1156,6 +1156,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
 
+    // Or it contains @SideEffectsOnly.
     // if (!suggestPureMethods && !PurityUtils.hasPurityAnnotation(atypeFactory, tree) &&
     // !checkPurityAnnotations) {
     //   // There is nothing to check.
@@ -1238,82 +1239,70 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
-    if (checkPurityAnnotations) {
-      if (bodyAssigned == false) {
-        body = atypeFactory.getPath(tree.getBody());
-        bodyAssigned = true;
-      }
-      if (body == null) {
-        return;
-      }
-      @Nullable Element methodDeclElem = TreeUtils.elementFromDeclaration(tree);
-      AnnotationMirror sefOnlyAnnotation =
-          atypeFactory.getDeclAnnotation(methodDeclElem, SideEffectsOnly.class);
-      if (sefOnlyAnnotation == null) {
-        return;
-      }
-      AnnotationMirror pureOrSideEffectFreeAnnotation =
-          getPureOrSideEffectFreeAnnotation(methodDeclElem);
-      if (pureOrSideEffectFreeAnnotation != null) {
-        // It is an error if a @SideEffectsOnly annotation appears with a @Pure or @SideEffectFree
-        // annotation.
-        checker.reportError(
-            tree,
-            "purity.incorrect.annotation.conflict",
-            tree.getName(),
-            pureOrSideEffectFreeAnnotation);
-        return;
-      }
-      List<String> sideEffectsOnlyExpressionStrings =
-          AnnotationUtils.getElementValueArray(
-              sefOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
-      List<JavaExpression> sideEffectsOnlyExpressions =
-          new ArrayList<>(sideEffectsOnlyExpressionStrings.size());
-      if (sideEffectsOnlyExpressionStrings.isEmpty()) {
-        checker.reportError(methodTree, "purity.empty.sideeffectsonly");
-      }
-      for (String st : sideEffectsOnlyExpressionStrings) {
-        try {
-          JavaExpression exprJe = StringToJavaExpression.atMethodBody(st, tree, checker);
-          sideEffectsOnlyExpressions.add(exprJe);
-        } catch (JavaExpressionParseException ex) {
-          DiagMessage diagMessage = new DiagMessage(ex);
-          if (diagMessage.getMessageKey().equals("flowexpr.parse.error")) {
-            checker.reportError(methodTree, "flowexpr.parse.error", st);
-          } else {
-            checker.report(st, new DiagMessage(ex));
-          }
-          return;
+    if (bodyAssigned == false) {
+      body = atypeFactory.getPath(tree.getBody());
+      bodyAssigned = true;
+    }
+    if (body == null) {
+      return;
+    }
+    @Nullable Element methodDeclElem = TreeUtils.elementFromDeclaration(tree);
+    AnnotationMirror seOnlyAnnotation =
+        atypeFactory.getDeclAnnotation(methodDeclElem, SideEffectsOnly.class);
+    if (seOnlyAnnotation == null) {
+      return;
+    }
+
+    // It is an error if a @SideEffectsOnly annotation appears with a @Pure or @SideEffectFree
+    // annotation.
+    AnnotationMirror pureOrSideEffectFreeAnnotation =
+        getPureOrSideEffectFreeAnnotation(methodDeclElem);
+    if (pureOrSideEffectFreeAnnotation != null) {
+      checker.reportError(
+          tree,
+          "purity.incorrect.annotation.conflict",
+          tree.getName(),
+          pureOrSideEffectFreeAnnotation);
+      return;
+    }
+
+    List<String> seOnlyExpressionStrings =
+        AnnotationUtils.getElementValueArray(
+            seOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
+    List<JavaExpression> seOnlyExpressions = new ArrayList<>(seOnlyExpressionStrings.size());
+    if (seOnlyExpressionStrings.isEmpty()) {
+      checker.reportError(methodTree, "purity.empty.sideeffectsonly");
+      return;
+    }
+
+    for (String st : seOnlyExpressionStrings) {
+      try {
+        JavaExpression exprJe = StringToJavaExpression.atMethodBody(st, tree, checker);
+        seOnlyExpressions.add(exprJe);
+      } catch (JavaExpressionParseException ex) {
+        DiagMessage diagMessage = new DiagMessage(ex);
+        if (diagMessage.getMessageKey().equals("flowexpr.parse.error")) {
+          checker.reportError(methodTree, "flowexpr.parse.error", st);
+        } else {
+          checker.report(st, new DiagMessage(ex));
         }
-      }
-
-      if (sideEffectsOnlyExpressions.isEmpty()) {
-        // A @SideEffectsOnly annotation with an empty expression array is equivalent to
-        // a @SideEffectFree annotation.
-        checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
         return;
       }
+    }
 
-      DisallowedSideEffects sefOnlyResult =
-          DisallowedSideEffects.checkSideEffectsOnly(
-              body,
-              atypeFactory,
-              sideEffectsOnlyExpressions,
-              atypeFactory.getProcessingEnv(),
-              checker);
+    // TODO: this should issue the errors itself.
+    DisallowedSideEffects disallowedSideEffects =
+        DisallowedSideEffects.checkSideEffectsOnly(
+            body, atypeFactory, seOnlyExpressions, atypeFactory.getProcessingEnv(), checker);
 
-      // System.out.printf("sefOnlyResult = %s%n", sefOnlyResult);
+    List<IPair<Tree, JavaExpression>> seOnlyIncorrectExprs = disallowedSideEffects.getExprs();
 
-      List<IPair<Tree, JavaExpression>> seOnlyIncorrectExprs = sefOnlyResult.getExprs();
-      // System.out.printf("seOnlyIncorrectExprs = %s%n", seOnlyIncorrectExprs);
-
-      if (!seOnlyIncorrectExprs.isEmpty()) {
-        for (IPair<Tree, JavaExpression> s : seOnlyIncorrectExprs) {
-          if (!sideEffectsOnlyExpressions.contains(s.second)) {
-            // System.out.printf("Error 2%n");
-            checker.reportError(
-                s.first, "purity.incorrect.sideeffectsonly", tree.getName(), s.second.toString());
-          }
+    if (!seOnlyIncorrectExprs.isEmpty()) {
+      for (IPair<Tree, JavaExpression> s : seOnlyIncorrectExprs) {
+        // TODO: Can this test ever fail??
+        if (!seOnlyExpressions.contains(s.second)) {
+          checker.reportError(
+              s.first, "purity.incorrect.sideeffectsonly", tree.getName(), s.second.toString());
         }
       }
     }
@@ -1321,6 +1310,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // There will be code here that *may* use `body` (and may set `body` before using it).
     // The below is just a placeholder so `bodyAssigned` is not a dead variable.
     // ...
+    // TODO.
     if (!bodyAssigned) {
       body = atypeFactory.getPath(tree.getBody());
       bodyAssigned = true;
@@ -1328,9 +1318,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // ...
   }
 
+  // TODO: also @SideEffectsOnly.
   /**
    * Return either the {@link Pure} or {@link SideEffectFree} annotation (in that order) if either
-   * appears on a method declaration.
+   * appears on a method declaration, otherwise return null.
    *
    * @param methodDeclaration the method declaration
    * @return either the {@link Pure} or {@link SideEffectFree} annotation (in that order) if either

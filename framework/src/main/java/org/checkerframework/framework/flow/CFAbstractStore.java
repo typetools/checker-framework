@@ -232,40 +232,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Furthermore, if the method is deterministic, we store its result {@code val} in the store.
    *
    * @param methodInvocationNode method whose information is being updated
-   * @param atypeFactory the type factory of the associated checker
    * @param val abstract value of the method call
    */
-  public void updateForMethodCall(
-      MethodInvocationNode methodInvocationNode, AnnotatedTypeFactory atypeFactory, V val) {
+  public void updateForMethodCall(MethodInvocationNode methodInvocationNode, V val) {
     ExecutableElement method = methodInvocationNode.getTarget().getMethod();
+
     @SuppressWarnings("unchecked")
-    GenericAnnotatedTypeFactory<V, S, ?, ?> gatypeFactory =
-        (GenericAnnotatedTypeFactory<V, S, ?, ?>) atypeFactory;
-
-    // List of expressions that this method side-effects (specified as arguments/elements of
-    // @SideEffectsOnly). If the list is empty, then there is no @SideEffectsOnly annotation.  (If
-    // the @SideEffectsOnly is written without any annotation argument, then
-    // "purity.empty.sideeffectsonly" is reported at the method declaration.)
-    List<JavaExpression> sideEffectsOnlyExpressions = new ArrayList<>();
-    AnnotationMirror sefOnlyAnnotation =
-        atypeFactory.getDeclAnnotation(method, SideEffectsOnly.class);
-    if (sefOnlyAnnotation != null) {
-      SourceChecker checker = analysis.checker;
-
-      List<String> sideEffectsOnlyExpressionStrings =
-          AnnotationUtils.getElementValueArray(
-              sefOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
-      for (String st : sideEffectsOnlyExpressionStrings) {
-        try {
-          JavaExpression exprJe =
-              StringToJavaExpression.atMethodInvocation(st, methodInvocationNode, checker);
-          sideEffectsOnlyExpressions.add(exprJe);
-        } catch (JavaExpressionParseException ex) {
-          checker.report(st, new DiagMessage(ex));
-          return;
-        }
-      }
-    }
+    GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory =
+        (GenericAnnotatedTypeFactory<V, S, ?, ?>) analysis.atypeFactory;
 
     // Case 1: The method is side-effect-free.
     boolean hasSideEffect =
@@ -274,17 +248,19 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             || atypeFactory.isSideEffectFree(method));
     if (hasSideEffect) {
 
-      boolean sideEffectsUnrefineAliases = gatypeFactory.sideEffectsUnrefineAliases;
+      boolean sideEffectsUnrefineAliases = atypeFactory.sideEffectsUnrefineAliases;
       Node receiver = methodInvocationNode.getTarget().getReceiver();
+
       boolean hasDoesNotUnrefineReceiver = atypeFactory.hasDoesNotUnrefineReceiver(method);
+      @Nullable JavaExpression receiverJe =
+          hasDoesNotUnrefineReceiver ? JavaExpression.fromNode(receiver) : null;
+
+      @Nullable List<JavaExpression> sideEffectsOnlyExpressions =
+          getSideEffectsOnlyExpressions(method, methodInvocationNode);
 
       // TODO: Also remove if any element/argument to the annotation is not
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
 
-      // If @DoesNotUnrefineReceiver is present, compute the receiver as a JavaExpression so
-      // that it can be exempted from unrefinement in all expression categories below.
-      @Nullable JavaExpression receiverJe =
-          hasDoesNotUnrefineReceiver ? JavaExpression.fromNode(receiver) : null;
       // Returns true if the expression should NOT be unrefined (because the method is
       // annotated @DoesNotUnrefineReceiver and the expression is the receiver).
       Predicate<JavaExpression> doNotUnrefine =
@@ -319,22 +295,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 });
       } else {
         // Case 2 (unassignable fields) and case 3 (monotonic fields).
-        updateFieldValuesForMethodCall(
-            gatypeFactory, doNotUnrefine::test, sideEffectsOnlyExpressions);
+        updateFieldValuesForMethodCall(atypeFactory, receiverJe, sideEffectsOnlyExpressions);
       }
 
       // Update array values.
-      arrayValues.entrySet().removeIf(e -> !doNotUnrefine.test(e.getKey()));
+      arrayValues
+          .entrySet()
+          .removeIf(e -> isSideEffected(e.getKey(), receiverJe, sideEffectsOnlyExpressions));
 
       // Update information about method calls.
-      updateMethodCallValues(sideEffectsOnlyExpressions);
       methodCallExpressions
           .entrySet()
-          .removeIf(
-              e -> {
-                MethodCall mc = e.getKey();
-                return mc.isModifiableByOtherCode() && !doNotUnrefine.test(mc);
-              });
+          .removeIf(e -> isSideEffected(e.getKey(), receiverJe, sideEffectsOnlyExpressions));
     }
 
     // Store information about method calls if possible.
@@ -343,43 +315,68 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Update information about method calls given the list of side-effected expressions.
+   * Returns the expressions that the method side-effects (specified as arguments/elements of
+   * {@code @SideEffectsOnly}, view-adapted to the given method invocation. Returns null if the
+   * method has no @SideEffectsOnly annotation.
    *
-   * @param sideEffectsOnlyExpressions the list of side-effected expressions
+   * @param method a method
+   * @return the expressions that the method side-effects, view-adapted to the given invocation; or
+   *     null if it side-effects arbitrary expressions
    */
-  private void updateMethodCallValues(List<JavaExpression> sideEffectsOnlyExpressions) {
-    if (sideEffectsOnlyExpressions.isEmpty()) {
-      methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
-    } else {
-      methodCallExpressions
-          .keySet()
-          .removeIf(
-              methodCallValue ->
-                  hasMethodCallInformationChanged(methodCallValue, sideEffectsOnlyExpressions));
+  @Nullable List<JavaExpression> getSideEffectsOnlyExpressions(
+      ExecutableElement method, MethodInvocationNode methodInvocationNode) {
+
+    AnnotationMirror seOnlyAnnotation =
+        analysis.atypeFactory.getDeclAnnotation(method, SideEffectsOnly.class);
+    if (seOnlyAnnotation == null) {
+      return null;
     }
+
+    List<JavaExpression> seOnlyExpressions = new ArrayList<>();
+
+    SourceChecker checker = analysis.checker;
+
+    List<String> sideEffectsOnlyExpressionStrings =
+        AnnotationUtils.getElementValueArray(
+            seOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
+    for (String st : sideEffectsOnlyExpressionStrings) {
+      try {
+        JavaExpression exprJe =
+            StringToJavaExpression.atMethodInvocation(st, methodInvocationNode, checker);
+        seOnlyExpressions.add(exprJe);
+      } catch (JavaExpressionParseException ex) {
+        checker.report(st, new DiagMessage(ex));
+      }
+    }
+
+    return seOnlyExpressions;
   }
 
   /**
-   * Returns true if information about a method call might have changed.
+   * Returns true if the given expression might evaluate to a different value.
    *
-   * <p>Information about a method call might have changed if:
-   *
-   * <ul>
-   *   <li>It is modifiable by other code
-   *   <li>It contains expressions that appear in the list of expressions that are provided to a
-   *       {@code @SideEffectsOnly} annotation
-   * </ul>
-   *
-   * @param methodCallValue the method call value
-   * @param sideEffectsOnlyExpressions the list of expressions provided to a
-   *     {@code @SideEffectsOnly} annotation
-   * @return true if information about a method call might have changed
+   * @param expr an expression
+   * @param notSideEffectedExpression an expression that is never considered to be side-effected, or
+   *     null
+   * @param sideEffectsOnlyExpressions if non-null, only these expressions are considered to be
+   *     side-effected
+   * @return true if the abstract value of the expression might have changed
    */
-  private boolean hasMethodCallInformationChanged(
-      JavaExpression methodCallValue, List<JavaExpression> sideEffectsOnlyExpressions) {
-    return methodCallValue.isModifiableByOtherCode()
-        && sideEffectsOnlyExpressions.stream()
-            .anyMatch(methodCallValue::containsSyntacticEqualJavaExpression);
+  private boolean isSideEffected(
+      JavaExpression expr,
+      JavaExpression notSideEffectedExpression,
+      List<JavaExpression> sideEffectsOnlyExpressions) {
+    if (!expr.isModifiableByOtherCode()) {
+      return false;
+    }
+    if (notSideEffectedExpression != null && expr.equals(notSideEffectedExpression)) {
+      return false;
+    }
+    if (sideEffectsOnlyExpressions != null) {
+      return !sideEffectsOnlyExpressions.stream()
+          .anyMatch(expr::containsSyntacticEqualJavaExpression);
+    }
+    return true;
   }
 
   /**
@@ -457,43 +454,35 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Helper for {@link #updateForMethodCall(MethodInvocationNode, AnnotatedTypeFactory,
-   * CFAbstractValue)}. Remove any information about field values that might not be valid any more
-   * after a method call, and add information guaranteed by the method.
+   * Helper for {@link #updateForMethodCall(MethodInvocationNode, CFAbstractValue)}. Remove any
+   * information about field values that might not be valid any more after a method call, and add
+   * information guaranteed by the method.
    *
    * <p>More specifically, remove all information about fields except for unassignable fields and
    * fields that have a monotonic annotation.
    *
-   * <p>A non-empty {@code sideEffectsOnlyExpressions} indicates that the invoked method has side
-   * effects. In this case, remove information for fields that actually appear in the list of
+   * <p>A non-null {@code sideEffectsOnlyExpressions} indicates that the invoked method has limited
+   * side effects. In this case, remove information for fields that appear in the list of
    * side-effected expressions.
    *
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
-   * @param doNotUnrefine if true of a field access, don't unrefine it. This predicate indicates
-   *     exceptions: fields that are not updated by this method.
+   * @param receiverJe if non-null, the receiver, which should not be unrefined
    * @param sideEffectsOnlyExpressions the expressions that are side-effected by a method call
    */
   private void updateFieldValuesForMethodCall(
       GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory,
-      Predicate<FieldAccess> doNotUnrefine,
+      JavaExpression receiverJe,
       List<JavaExpression> sideEffectsOnlyExpressions) {
     Map<FieldAccess, V> newFieldValues = new HashMap<>(MapsP.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
       V previousValue = e.getValue();
 
-      if (!sideEffectsOnlyExpressions.isEmpty()
-          && !sideEffectsOnlyExpressions.contains(fieldAccess)) {
+      if (!isSideEffected(fieldAccess, receiverJe, sideEffectsOnlyExpressions)) {
         // If the field hasn't been side-effected, there is no need to compute a new value for it.
         newFieldValues.put(fieldAccess, previousValue);
       } else {
-        V newValue;
-        boolean doNotUnrefineResult = doNotUnrefine.test(fieldAccess);
-        if (doNotUnrefineResult) {
-          newValue = previousValue;
-        } else {
-          newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
-        }
+        V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
         if (newValue != null) {
           // Keep information for all hierarchies where we had a monotonic annotation.
           newFieldValues.put(fieldAccess, newValue);
