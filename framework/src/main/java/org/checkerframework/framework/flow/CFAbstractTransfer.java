@@ -1105,7 +1105,7 @@ public abstract class CFAbstractTransfer<
     V storeValue = store.getValue(n);
     V resValue = moreSpecificValue(factoryValue, storeValue);
 
-    store.updateForMethodCall(n, analysis.atypeFactory, resValue);
+    store.updateForMethodCall(n, resValue);
 
     // add new information based on postcondition
     processPostconditions(n, store, method, invocationTree);
