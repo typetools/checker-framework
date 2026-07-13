@@ -212,7 +212,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *       {@code a} is a local variable or {@code this}, and {@code f} is final, or if {@code a.f}
    *       has a {@link MonotonicQualifier} in the current store. Subclasses can change this
    *       behavior by overriding {@link #newFieldValueAfterMethodCall(FieldAccess,
-   *       CFAbstractValue)}.
+   *       GenericAnnotatedTypeFactory, CFAbstractValue)}.
    *   <li>Furthermore, if the field has a monotonic annotation, then its information can also be
    *       kept.
    * </ol>
