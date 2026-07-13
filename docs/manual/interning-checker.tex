@@ -324,7 +324,7 @@ For example, here is one set of guidelines that you could check manually:
 \begin{itemize}
 \item The constructor is private.
 \item The factory method (whose return type is annotated with
-  \<@InternedDistinct> returns the canonical version for certain values.
+  \<@InternedDistinct>) returns the canonical version for certain values.
 \item The class is final, so that subclasses cannot violate these properties.
 \end{itemize}
 
@@ -346,7 +346,7 @@ The checker issues an error in two cases:
   When a reference (in)equality operator (``\code{==}'' or ``\code{!=}'')
   has an operand of non-\refqualclass{checker/interning/qual}{Interned} type.
   As a special case, the operation is permitted if either argument is of
-  \refqualclass{checker/interning/qual}{InternedDistinct} type
+  \refqualclass{checker/interning/qual}{InternedDistinct} type.
 
 \item
   When a non-\refqualclass{checker/interning/qual}{Interned} type is used

@@ -337,7 +337,7 @@ satisfied.  When those fields are used throughout execution, until the
 program exits, there is no good place to dispose of them, so these warnings
 might not be useful.  The \<-ApermitStaticOwning> command-line argument
 suppresses warnings related to static owning fields.  This can help in
-checking legacy code.  It permits only a small number of resource retained
+checking legacy code.  It permits only a small number of resources retained
 throughout execution, related to the number of such fields and assignments
 to them.
 
@@ -463,7 +463,7 @@ At a call site to a method annotated as
   Treats any existing \<@MustCall> obligations of \emph{expr} as \emph{satisfied},
 \item
   Creates a fresh obligation to check, as if \emph{expr} was assigned to a newly-allocated
-  object (i.e. as if \emph{expr} were a constructor result).
+  object (i.e., as if \emph{expr} were a constructor result).
 \item
   Un-refines the type in the Called Methods Checker's type hierarchy for \emph{expr} to
   \<@CalledMethods(\{\})>, if it had any other Called Methods type.
@@ -616,10 +616,10 @@ checker unsound:  the Resource Leak Checker will not warn if the constructor
 and initializers set a field more than once.  The amount of leakage is
 limited to how many times the field is set.
 
-\sectionAndLabel{Errors about unknown must call obligations}{resource-leak-generic-unknown}
+\sectionAndLabel{Errors about unknown must-call obligations}{resource-leak-generic-unknown}
 
 The Resource Leak Checker issues a \<required.method.not.known> error
-when a variable with the type \<@MustCallUnknown> has a must call obligation.
+when a variable with the type \<@MustCallUnknown> has a must-call obligation.
 \<@MustCallUnknown> rarely occurs, but if you encounter this error usually
 the right thing to do is to write an explicit \<@MustCall> annotation
 on the indicated expression (e.g., as a cast), because the Must Call Checker

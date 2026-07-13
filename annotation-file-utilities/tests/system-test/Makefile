@@ -24,7 +24,7 @@ warn_and_exit:
 results: out1 check-out2 out3 out4.class check-out5
 
 clean:
-	rm -rf out[1-5]*
+	@rm -rf out[1-5]*
 
 
 # Step 1: Compile the source with annotations.

@@ -164,7 +164,7 @@ testDataflowAnalysis("constantPropagationTest", "constant-propagation", "constan
 testDataflowAnalysis("issue3447Test", "issue3447", "livevar.LiveVariable", false)
 testDataflowAnalysis("liveVariableTest", "live-variable", "livevar.LiveVariable", true)
 testDataflowAnalysis("reachingDefinitionTest", "reachingdef", "reachingdef.ReachingDefinition", true)
-if (testJdkVersion >= 22) {
+if (rootProject.ext.testJdkVersion >= 22) {
   testDataflowAnalysis("unnamedPatternTest", "java22/unnamed-pattern", "reachingdef.ReachingDefinition", true)
 }
 
@@ -177,7 +177,7 @@ apply from: rootProject.file("gradle-mvn-push.gradle")
 
 /** Adds information to the publication for uploading the dataflow artifacts to Maven repositories. */
 final dataflowPom(publication) {
-  sharedPublicationConfiguration(publication)
+  rootProject.sharedPublicationConfiguration(publication)
   publication.from(components.java)
   // Information that is in all pom files is configured in checker-framework/gradle-mvn-push.gradle.
   publication.pom {
@@ -198,7 +198,7 @@ final dataflowPom(publication) {
  * @param shadedPkgName the name of the shaded package to use; also used as part of the artifact name: "dataflow-${shadePkgName}"
  */
 final dataflowShadedPom(MavenPublication publication, String shadedPkgName) {
-  sharedPublicationConfiguration(publication)
+  rootProject.sharedPublicationConfiguration(publication)
 
   publication.artifactId = "dataflow-${shadedPkgName}"
   publication.pom {

@@ -304,9 +304,6 @@ public final class InferenceType extends AbstractType {
       context.typeFactory.initializeAtm(instantiation);
       mapping.put(alpha.getJavaType(), instantiation);
     }
-    if (map.isEmpty()) {
-      return this;
-    }
 
     AnnotatedTypeMirror newType = typeFactory.getTypeVarSubstitutor().substitute(mapping, type);
     return createIgnoreInstantiated(

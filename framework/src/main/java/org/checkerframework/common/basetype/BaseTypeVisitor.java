@@ -3755,7 +3755,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * required one.
    *
    * <p>Note this method requires the lists to have the same length, as it does not handle cases
-   * like var args.
+   * like varargs.
    *
    * @see #checkVarargs(AnnotatedTypeMirror.AnnotatedExecutableType, Tree)
    * @param requiredTypes the required types. This may differ from the formal parameter types,
