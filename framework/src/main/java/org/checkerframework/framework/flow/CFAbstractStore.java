@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BinaryOperator;
-import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -248,20 +247,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // that it can be exempted from unrefinement in all expression categories below.
       @Nullable JavaExpression receiverJe =
           hasDoesNotUnrefineReceiver ? JavaExpression.fromNode(receiver) : null;
-      // Returns true if the expression should NOT be unrefined (because the method is
-      // annotated @DoesNotUnrefineReceiver and the expression is the receiver).
-      Predicate<JavaExpression> doNotUnrefine =
-          receiverJe != null ? je -> je.equals(receiverJe) : je -> false;
 
       // Update local variables.
       if (sideEffectsUnrefineAliases) {
-        localVariableValues
-            .entrySet()
-            .removeIf(
-                e -> {
-                  LocalVariable lv = e.getKey();
-                  return lv.isModifiableByOtherCode() && !doNotUnrefine.test(lv);
-                });
+        localVariableValues.entrySet().removeIf(e -> isSideEffected(e.getKey(), receiverJe));
       }
 
       // Update this value.
@@ -273,13 +262,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
       // Update field values.
       if (sideEffectsUnrefineAliases) {
-        fieldValues
-            .entrySet()
-            .removeIf(
-                (Map.Entry<FieldAccess, V> e) -> {
-                  FieldAccess fa = e.getKey();
-                  return fa.isModifiableByOtherCode() && !doNotUnrefine.test(fa);
-                });
+        fieldValues.entrySet().removeIf(e -> isSideEffected(e.getKey(), receiverJe));
       } else {
         // Case 2 (unassignable fields) and case 3 (monotonic fields).
         updateFieldValuesForMethodCall(atypeFactory, receiverJe);
