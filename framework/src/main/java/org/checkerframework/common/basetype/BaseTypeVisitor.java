@@ -1152,16 +1152,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param tree the method tree to check
    */
   protected void checkPurityAnnotations(MethodTree tree) {
-    if (!checkPurityAnnotations) {
+
+    if (!suggestPureMethods
+        && !(checkPurityAnnotations && PurityUtils.hasPurityAnnotation(atypeFactory, tree))) {
+      // There is no work to do.
       return;
     }
-
-    // Or it contains @SideEffectsOnly.
-    // if (!suggestPureMethods && !PurityUtils.hasPurityAnnotation(atypeFactory, tree) &&
-    // !checkPurityAnnotations) {
-    //   // There is nothing to check.
-    //   return;
-    // }
 
     if (isExplicitlySideEffectFreeAndDeterministic(tree)) {
       checker.reportWarning(tree, "purity.effectively.pure", tree.getName());
@@ -1312,8 +1308,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // ...
     // TODO.
     if (!bodyAssigned) {
-      body = atypeFactory.getPath(tree.getBody());
-      bodyAssigned = true;
+      // body = atypeFactory.getPath(tree.getBody());
+      // bodyAssigned = true;
     }
     // ...
   }

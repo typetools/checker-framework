@@ -241,19 +241,15 @@ public class DisallowedSideEffects {
     @Override
     public Void visitUnary(UnaryTree node, Void aVoid) {
       switch (node.getKind()) {
-        case POSTFIX_INCREMENT:
-        case POSTFIX_DECREMENT:
-        case PREFIX_INCREMENT:
-        case PREFIX_DECREMENT:
+        case POSTFIX_INCREMENT, POSTFIX_DECREMENT, PREFIX_INCREMENT, PREFIX_DECREMENT -> {
           JavaExpression operand = JavaExpression.fromTree(node.getExpression());
           // TODO: Need to check for subexpressions, in case the `@SideEffectsOnly(...)`
           // expressions are broader than `operand`.
           if (!sideEffectsOnlyExpressionsFromAnnotation.contains(operand)) {
             disallowedSideEffects.addExpr(node, operand);
           }
-          break;
-        default:
-          break;
+        }
+        default -> {}
       }
       return super.visitUnary(node, aVoid);
     }

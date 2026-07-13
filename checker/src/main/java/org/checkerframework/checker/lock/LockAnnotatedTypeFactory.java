@@ -47,6 +47,7 @@ import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFValue;
@@ -414,7 +415,9 @@ public class LockAnnotatedTypeFactory
     RELEASESNOLOCKS("@ReleasesNoLocks", ReleasesNoLocks.class),
     LOCKINGFREE("@LockingFree", LockingFree.class),
     SIDEEFFECTFREE("@SideEffectFree", SideEffectFree.class),
+    SIDEEFFECTSONLY("@SideEffectsOnly", SideEffectsOnly.class),
     PURE("@Pure", Pure.class);
+
     final String annotation;
     final Class<? extends Annotation> annotationClass;
 

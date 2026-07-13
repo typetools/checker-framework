@@ -41,7 +41,6 @@ public final class PurityUtils {
    * @param methodTree a method to test
    * @return true if the method has any purity annotations
    */
-  // TODO: Handle @SideEffectsOnly.
   public static boolean hasPurityAnnotation(AnnotationProvider provider, MethodTree methodTree) {
     return !getPurityKinds(provider, methodTree).isEmpty();
   }
@@ -56,7 +55,6 @@ public final class PurityUtils {
    * @param methodElement a method to test
    * @return true if the method has any purity annotations
    */
-  // TODO: Handle @SideEffectsOnly.
   public static boolean hasPurityAnnotation(
       AnnotationProvider provider, ExecutableElement methodElement) {
     return !getPurityKinds(provider, methodElement).isEmpty();

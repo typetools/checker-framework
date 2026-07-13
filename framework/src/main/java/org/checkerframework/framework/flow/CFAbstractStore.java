@@ -87,7 +87,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected Map<FieldAccess, V> fieldValues;
 
   /** The {@code SideEffectsOnly.value} argument/element. */
-  public ExecutableElement sideEffectsOnlyValueElement;
+  public static ExecutableElement sideEffectsOnlyValueElement;
 
   /**
    * Returns information about fields. Clients should not side-effect the returned value, which is
@@ -150,6 +150,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * @param analysis the analysis class this store belongs to
    * @param sequentialSemantics should the analysis use sequential Java semantics?
    */
+  @SuppressWarnings("StaticAssignmentInConstructor")
   protected CFAbstractStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
     this.analysis = analysis;
     this.localVariableValues = new HashMap<>();
@@ -159,8 +160,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.arrayValues = new HashMap<>();
     this.classValues = new HashMap<>();
     this.sequentialSemantics = sequentialSemantics;
-    sideEffectsOnlyValueElement =
-        TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
+    if (sideEffectsOnlyValueElement == null) {
+      sideEffectsOnlyValueElement =
+          TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
+    }
     this.assumeSideEffectFree =
         analysis.checker.hasOption("assumeSideEffectFree")
             || analysis.checker.hasOption("assumePure");
@@ -181,7 +184,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.arrayValues = new HashMap<>(other.arrayValues);
     this.classValues = new HashMap<>(other.classValues);
     this.sequentialSemantics = other.sequentialSemantics;
-    this.sideEffectsOnlyValueElement = other.sideEffectsOnlyValueElement;
     this.assumeSideEffectFree = other.assumeSideEffectFree;
     this.assumePureGetters = other.assumePureGetters;
   }
@@ -364,8 +366,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   private boolean isSideEffected(
       JavaExpression expr,
-      JavaExpression notSideEffectedExpression,
-      List<JavaExpression> sideEffectsOnlyExpressions) {
+      @Nullable JavaExpression notSideEffectedExpression,
+      @Nullable List<JavaExpression> sideEffectsOnlyExpressions) {
     if (!expr.isModifiableByOtherCode()) {
       return false;
     }
@@ -373,7 +375,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return false;
     }
     if (sideEffectsOnlyExpressions != null) {
-      return !sideEffectsOnlyExpressions.stream()
+      return sideEffectsOnlyExpressions.stream()
           .anyMatch(expr::containsSyntacticEqualJavaExpression);
     }
     return true;
