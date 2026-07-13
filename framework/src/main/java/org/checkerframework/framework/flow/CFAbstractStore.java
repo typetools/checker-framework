@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BinaryOperator;
-import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -240,8 +239,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     ExecutableElement method = methodInvocationNode.getTarget().getMethod();
 
     @SuppressWarnings("unchecked")
-    GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory =
-        (GenericAnnotatedTypeFactory<V, S, ?, ?>) analysis.atypeFactory;
+    GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory = analysis.atypeFactory;
 
     // Case 1: The method is side-effect-free.
     boolean hasSideEffect =
@@ -263,20 +261,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // TODO: Also remove if any element/argument to the annotation is not
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
 
-      // Returns true if the expression should NOT be unrefined (because the method is
-      // annotated @DoesNotUnrefineReceiver and the expression is the receiver).
-      Predicate<JavaExpression> doNotUnrefine =
-          receiverJe != null ? je -> je.equals(receiverJe) : je -> false;
+      // If @DoesNotUnrefineReceiver is present, compute the receiver as a JavaExpression so
+      // that it can be exempted from unrefinement in all expression categories below.
+      @Nullable JavaExpression receiverJe =
+          hasDoesNotUnrefineReceiver ? JavaExpression.fromNode(receiver) : null;
 
       // Update local variables.
       if (sideEffectsUnrefineAliases) {
-        localVariableValues
-            .entrySet()
-            .removeIf(
-                e -> {
-                  LocalVariable lv = e.getKey();
-                  return lv.isModifiableByOtherCode() && !doNotUnrefine.test(lv);
-                });
+        localVariableValues.entrySet().removeIf(e -> isSideEffected(e.getKey(), receiverJe));
       }
 
       // Update this value.
@@ -288,13 +280,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
       // Update field values.
       if (sideEffectsUnrefineAliases) {
-        fieldValues
-            .entrySet()
-            .removeIf(
-                (Map.Entry<FieldAccess, V> e) -> {
-                  FieldAccess fa = e.getKey();
-                  return fa.isModifiableByOtherCode() && !doNotUnrefine.test(fa);
-                });
+        fieldValues.entrySet().removeIf(e -> isSideEffected(e.getKey(), receiverJe));
       } else {
         // Case 2 (unassignable fields) and case 3 (monotonic fields).
         updateFieldValuesForMethodCall(atypeFactory, receiverJe, sideEffectsOnlyExpressions);
@@ -482,6 +468,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
       if (!isSideEffected(fieldAccess, receiverJe, sideEffectsOnlyExpressions)) {
         // If the field hasn't been side-effected, there is no need to compute a new value for it.
+        // This is safe to skip because a field that is not modifiable by other code is also not
+        // assignable by other code (see FieldAccess#isModifiableByOtherCode), so
+        // newFieldValueAfterMethodCall would return the previous value anyway.
         newFieldValues.put(fieldAccess, previousValue);
       } else {
         V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);

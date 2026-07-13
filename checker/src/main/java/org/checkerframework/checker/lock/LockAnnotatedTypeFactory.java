@@ -441,31 +441,31 @@ public class LockAnnotatedTypeFactory
     boolean isWeakerThan(SideEffectAnnotation other) {
       boolean weaker = false;
 
-      switch (other) {
-        case MAYRELEASELOCKS -> {}
+      switch (this) {
+        case MAYRELEASELOCKS -> {
+          switch (other) {
+            case RELEASESNOLOCKS, LOCKINGFREE, SIDEEFFECTFREE, PURE -> weaker = true;
+            default -> {}
+          }
+        }
         case RELEASESNOLOCKS -> {
-          if (this == MAYRELEASELOCKS) {
-            weaker = true;
+          switch (other) {
+            case LOCKINGFREE, SIDEEFFECTFREE, PURE -> weaker = true;
+            default -> {}
           }
         }
         case LOCKINGFREE -> {
-          switch (this) {
-            case MAYRELEASELOCKS, RELEASESNOLOCKS -> weaker = true;
+          switch (other) {
+            case SIDEEFFECTFREE, PURE -> weaker = true;
             default -> {}
           }
         }
         case SIDEEFFECTFREE -> {
-          switch (this) {
-            case MAYRELEASELOCKS, RELEASESNOLOCKS, LOCKINGFREE -> weaker = true;
-            default -> {}
+          if (other == PURE) {
+            weaker = true;
           }
         }
-        case PURE -> {
-          switch (this) {
-            case MAYRELEASELOCKS, RELEASESNOLOCKS, LOCKINGFREE, SIDEEFFECTFREE -> weaker = true;
-            default -> {}
-          }
-        }
+        case PURE -> {}
       }
 
       return weaker;
