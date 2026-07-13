@@ -46,15 +46,17 @@ ext {
   gradleRunsOnJava25orHigher = JavaVersion.current() >= JavaVersion.VERSION_25
   gradleRunsOnJava26orHigher = JavaVersion.current() >= JavaVersion.VERSION_26
   // The JDK for running tests: the jdkTestVersion property or if not set, JavaVersion.current()
-  if (project.getProperties().containsKey("jdkTestVersion")) {
-    testJdkVersion = Integer.valueOf(project.getProperties().get("jdkTestVersion"))
+  jdkTestVersionProperty = providers.gradleProperty("jdkTestVersion").orNull
+  if (jdkTestVersionProperty != null) {
+    testJdkVersion = Integer.valueOf(jdkTestVersionProperty)
   } else {
     testJdkVersion = Integer.valueOf(JavaVersion.current().getMajorVersion())
   }
   // With "useJdk21Compiler" property, use JDK 21 to compile all code because the release does.
   // If you update this line, also update JAVA_HOME in docs/developer/release/release_vars.py.
-  boolean jdk21Compiler = project.getProperties().getOrDefault("useJdk21Compiler", false)
-  compilerJdkVersion = jdk21Compiler ? 21 : testJdkVersion
+  String useJdk21CompilerProperty = providers.gradleProperty("useJdk21Compiler").getOrElse("false")
+  boolean useJdk21Compiler = Boolean.valueOf(useJdk21CompilerProperty)
+  compilerJdkVersion = useJdk21Compiler ? 21 : testJdkVersion
   compilerRunsOnJava21orHigher = compilerJdkVersion >= 21
 
   // As of 2026-03-11 (Lombok 1.18.44), delombok does not support JDK 26;
@@ -365,7 +367,7 @@ allprojects { currentProj ->
         // Error Prone must be available in the annotation processor path
         options.annotationProcessorPath = configurations.errorProneAnnotationProcessor
         // Enable Error Prone
-        options.errorprone.enabled = compilerRunsOnJava21orHigher
+        options.errorprone.enabled = rootProject.ext.compilerRunsOnJava21orHigher
         options.errorprone.disableWarningsInGeneratedCode = true
         options.errorprone.errorproneArgs = [
           // Many compiler classes are interned.
@@ -806,19 +808,19 @@ subprojects {
     withSourcesJar()
 
     toolchain {
-      languageVersion = JavaLanguageVersion.of(testJdkVersion)
+      languageVersion = JavaLanguageVersion.of(rootProject.ext.testJdkVersion)
     }
   }
 
   tasks.withType(JavaExec).configureEach {
     javaLauncher = javaToolchains.launcherFor {
-      languageVersion = JavaLanguageVersion.of(testJdkVersion)
+      languageVersion = JavaLanguageVersion.of(rootProject.ext.testJdkVersion)
     }
   }
 
   tasks.withType(JavaCompile).configureEach { compilationTask ->
     javaCompiler = javaToolchains.compilerFor {
-      languageVersion = JavaLanguageVersion.of(compilerJdkVersion)
+      languageVersion = JavaLanguageVersion.of(rootProject.ext.compilerJdkVersion)
     }
   }
 
@@ -854,7 +856,7 @@ subprojects {
     // Tasks such as `checkInterning` and `checkResourceLeak` run various checkers on all the main source sets.
     // These pass and are run by the `typecheck` task.
     // When you add one here, also update a dependsOn item for the "typecheck" task.
-    createCheckTypeTask(project.name, "Formatter",
+    rootProject.createCheckTypeTask(project.name, "Formatter",
         "org.checkerframework.checker.formatter.FormatterChecker")
 
     def checkInterningArgs = [
@@ -870,32 +872,32 @@ subprojects {
     }
 
 
-    createCheckTypeTask(project.name, "Interning",
+    rootProject.createCheckTypeTask(project.name, "Interning",
         "org.checkerframework.checker.interning.InterningChecker",
         checkInterningArgs)
 
-    createCheckTypeTask(project.name, "Optional",
+    rootProject.createCheckTypeTask(project.name, "Optional",
         "org.checkerframework.checker.optional.OptionalChecker",
         [
           // to avoid having to annotate JavaParser
           "-AassumePureGetters",
           "-AassumeAssertionsAreEnabled",
         ])
-    createCheckTypeTask(project.name, "Purity",
+    rootProject.createCheckTypeTask(project.name, "Purity",
         "org.checkerframework.framework.util.PurityChecker")
-    createCheckTypeTask(project.name, "Regex",
+    rootProject.createCheckTypeTask(project.name, "Regex",
         "org.checkerframework.checker.regex.RegexChecker")
-    createCheckTypeTask(project.name, "ResourceLeak",
+    rootProject.createCheckTypeTask(project.name, "ResourceLeak",
         "org.checkerframework.checker.resourceleak.ResourceLeakChecker")
-    createCheckTypeTask(project.name, "Signature",
+    rootProject.createCheckTypeTask(project.name, "Signature",
         "org.checkerframework.checker.signature.SignatureChecker")
 
     // The checkNullness task runs on all code, but it only *checks* the following code:
     //  * All files outside the "framework", "checker", and "annotation-file-utilities" subprojects.
     //  * In the "framework", "checker", and "annotation-file-utilities" subprojects, files with `@AnnotatedFor("nullness")`.
-    boolean nullnessAll = project.getProperties().containsKey("nullnessAll")
+    boolean nullnessAll = providers.gradleProperty("nullnessAll").isPresent()
     if (!nullnessAll && (project.name.is("framework") || project.name.is("checker") || project.name.is("annotation-file-utilities"))) {
-      createCheckTypeTask(project.name, "Nullness",
+      rootProject.createCheckTypeTask(project.name, "Nullness",
           "org.checkerframework.checker.nullness.NullnessChecker",
           [
             "-AskipUses=com\\.sun\\.*",
@@ -904,13 +906,13 @@ subprojects {
             "-AuseConservativeDefaultsForUncheckedCode=source"
           ])
     } else {
-      createCheckTypeTask(project.name, "Nullness",
+      rootProject.createCheckTypeTask(project.name, "Nullness",
           "org.checkerframework.checker.nullness.NullnessChecker",
           ["-AskipUses=com\\.sun\\.*"])
     }
 
 
-    createCheckTypeTask(project.name, "CompilerMessages",
+    rootProject.createCheckTypeTask(project.name, "CompilerMessages",
         "org.checkerframework.checker.compilermsgs.CompilerMessagesChecker")
     checkCompilerMessages {
       doFirst {

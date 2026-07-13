@@ -185,7 +185,7 @@ change; for example, you
 can write library annotations (see Chapter~\ref{annotating-libraries}).
 
 \item[Composability]
-A Java object has just one class at run time.  You care about multiple
+A Java object has just one class at run time.  If you care about multiple
 correctness properties, then using the Java type system requires a
 combinatorial number of classes (all possible combinations).  By contrast,
 arbitrary type qualifiers can be used at the same time.
@@ -228,7 +228,7 @@ Java type-checker would reject.  Here are a few examples.
 \item[Efficiency]
   Type qualifiers have no run-time representation.  Therefore, there is no
   space overhead for separate classes or for wrapper classes for
-  primitives.  There is no run-time overhead for due to extra dereferences
+  primitives.  There is no run-time overhead due to extra dereferences
   or dynamic dispatch for methods that could otherwise be statically
   dispatched.
 
@@ -445,7 +445,7 @@ sorted array.
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-  /** Return index of the search key, if it is contained it the sorted array a; otherwise ... */
+  /** Return index of the search key, if it is contained in the sorted array a; otherwise ... */
   int binarySearch(Object @Sorted [] a, Object key)
 \end{Verbatim}
 %BEGIN LATEX
@@ -491,7 +491,7 @@ eliminate a warning is to perform a run-time test
 null)> before a dereference of \<x> to avoid a warning about a potential
 null pointer dereference.  However, sometimes the checker issues a warning
 even though the code contains a run-time test.  Two common reasons are
-non-determinism in the expression being tested and or side effects to the
+non-determinism in the expression being tested and side effects to the
 expression after the run-time test.  For details and examples, see
 Section~\ref{type-refinement-side-effects}.
 
@@ -545,7 +545,7 @@ Section~\ref{checker-guarantees} states other limitations to a checker's
 guarantee, such as regarding concurrency.  Java's type system is also
 unsound in certain situations, such as for arrays and casts (however, the
 Checker Framework is sound for arrays and casts).  Java uses dynamic checks
-is some places it is unsound, so that errors are thrown at run time.  The
+in some places where it is unsound, so that errors are thrown at run time.  The
 pluggable type-checkers do not currently have built-in dynamic checkers to
 check for the places they are unsound.
 Writing dynamic checkers would be an interesting and valuable project.
@@ -865,7 +865,7 @@ There are several reasons for this design choice.
 \item[Consistent behavior with or without pluggable type-checking]
   The \<.class> files produced with or without pluggable type-checking
   should specify the same types for all public fields and methods.  If
-  pluggable type-checking changed the those types, then users would be
+  pluggable type-checking changed those types, then users would be
   confused.  Depending on how a library was compiled, pluggable
   type-checking of a client program would give different results.
 
@@ -917,7 +917,7 @@ For consistency, the Checker Framework treats the \<MyClass1> and
 
 The Checker Framework estimates the possible run-time value of each
 variable, as expressed in a type system.  In general, the Checker Framework
-does estimate relationships between two variables, except for specific
+does not estimate relationships between two variables, except for specific
 relationships listed in Section~\ref{java-expressions-as-arguments}.
 
 For example, the Checker Framework does not track which variables are equal
@@ -1042,7 +1042,7 @@ paths are feasible:  namely, [true, true] and [false, false].
 
 The Checker Framework is not path-sensitive, so it issues a warning.
 
-The lack of path-sensitivity can be viewed as special case of the fact that
+The lack of path-sensitivity can be viewed as a special case of the fact that
 the Checker Framework maintains a single estimate for each variable value,
 rather than tracking relationships between multiple variables
 (Section~\ref{faq-relationships-between-variables}).
@@ -1073,7 +1073,7 @@ syntax and by the Checker Framework.
 
 A type annotation on the receiver is treated exactly like a type annotation
 on any other formal parameter.  At each call site, the type of the argument
-must be a consistent with (a subtype of or equal to) the declaration of the
+must be consistent with (a subtype of or equal to) the declaration of the
 corresponding formal parameter.  If not, the type-checker issues a warning.
 
 Here is an example.  Suppose that \<@A Object> is a supertype of \<@B
@@ -1743,7 +1743,7 @@ provenance.
 Types are a poor choice for expressing properties about timing, such as
 that action B will happen within 10 milliseconds of action A.  Types are
 not good for verifying the results of calculations; for example, they could
-ensure that code always call an \<encrypt> routine in the appropriate
+ensure that code always calls an \<encrypt> routine in the appropriate
 places, but not that the \<encrypt> routine is correctly implemented.
 Types are not a good solution for preventing infinite loops, except perhaps
 in special cases.
@@ -1919,7 +1919,7 @@ Here are some reasons that the Checker Framework is slow.
   Its analysis is general; it interprets user-defined type systems whereas
   \<javac> hard-codes one type system and integrates it with other processing.
 \item
-  Its analysis are much richer.  \<javac> can take certain shortcuts that
+  Its analysis is much richer.  \<javac> can take certain shortcuts that
   are not correct for all possible type systems.
 \item
   It builds a control flow graph and performs a fixpoint analysis on it,
@@ -2032,7 +2032,7 @@ differs from a bug detector in several ways:
   A type-checker uses a more sophisticated and precise analysis.  For
   example, it can take advantage of method annotations and annotations on
   generic type parameters, such as \code{List<@NonNull String>}.  An
-  example specific to the Nullness Checker (Section~\ref{nullness-checker},
+  example specific to the Nullness Checker (Section~\ref{nullness-checker}):
   no other tool correctly handles map keys or initialization.
 
   A bug detector does a more lightweight analysis.  This means that a bug
@@ -2143,7 +2143,7 @@ an official standard.
 
 You can use the JSpecify annotations or the Checker Framework ones,
 whichever you prefer.  All nullness checkers we know of (e.g., Eclipse,
-EISOP, IntelliJ, Nullaway, the Nullness Checker, SpotBugs) recognize the
+EISOP, IntelliJ, NullAway, the Nullness Checker, SpotBugs) recognize the
 JSpecify and Nullness Checker versions of those two type annotations, so
 there is no tooling reason to prefer one over the other.  JSpecify has only
 nullness annotations, and none for the dozens of other type-checkers that
@@ -2151,7 +2151,7 @@ the Checker Framework supports.
 
 The JSpecify specification language is weaker than what the Nullness
 Checker supports.  For example, JSpecify lacks a polymorphic qualifier such
-as\refqualclass{checker/nullness/qual}{PolyNull}, and it lacks method
+as \refqualclass{checker/nullness/qual}{PolyNull}, and it lacks method
 specifications (Section~\ref{nullness-method-annotations}).  It lacks
 annotations for initialization (Section~\ref{initialization-checker}, but
 you could consider that a benefit, if you always suppress all
@@ -2170,7 +2170,7 @@ used for warning suppression in unannotated code, but doing so has two
 problems.  First, it makes your specification tool-dependent, because a
 JSpecify-compliant tool may have \emph{any} behavior (including issuing
 warnings or not issuing warnings) for code that uses ``unspecified
-nullness'' or use a library that uses ``unspecified nullness''.  Second, it
+nullness'' or uses a library that uses ``unspecified nullness''.  Second, it
 mixes notions of nullness specification and warning suppression, which are
 separate concepts.  The Checker Framework has well-defined behavior for all
 specifications, and it has rich facilities for warning suppression

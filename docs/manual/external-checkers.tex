@@ -27,11 +27,11 @@ first and older ones appear last.
 The
 \ahreforurl{https://github.com/t-rasmud/checker-framework/tree/nondet-checker}{Determinism
   Checker} ensures that a program is deterministic across executions.  A
-determinismic program is easier to test, and it is easier to debug (such as
+deterministic program is easier to test, and it is easier to debug (such as
 comparing executions).
 
 The Determinism Checker focuses on sequential programs.  It detects
-determinism due to the iteration order of a hash table (or on any other
+nondeterminism due to the iteration order of a hash table (or on any other
 property of hash codes), default formatting (such as Java's
 \<Object.toString()>, which includes a memory address), \<random>,
 date-and-time functions, and accessing system properties such as the file
@@ -98,7 +98,7 @@ Web Services.
 The \ahreforurl{https://github.com/awslabs/aws-kms-compliance-checker}{AWS KMS
   compliance checker} extends the Constant Value Checker (see
 \chapterpageref{constant-value-checker}) to enforce that calls to Amazon
-Web Services' Key Management System only request 256-bit (or longer) data
+Web Services' Key Management Service only request 256-bit (or longer) data
 keys.  This checker can be used to help enforce a compliance requirement
 (such as from SOC or PCI-DSS) that customer data is always encrypted with
 256-bit keys.
@@ -220,7 +220,7 @@ The paper ``Don't miss the end: Preventing unsafe end-of-file
 comparisons''~\cite{ChenD2018} and the thesis
 \href{https://uwspace.uwaterloo.ca/bitstream/handle/10012/13181/zhuo_chen.pdf}{``Pluggable
   Properties for Program Understanding: Ontic Type Checking and
-  Inference''}~\cite{Chen2018} describes the Read Checker.
+  Inference''}~\cite{Chen2018} describe the Read Checker.
 
 
 \sectionAndLabel{Ontology type system}{ontology-checker}

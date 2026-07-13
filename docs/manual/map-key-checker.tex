@@ -30,7 +30,7 @@ declaration would not work, however, because the Map Key Checker has
 special-case logic for \<Map.get>.  This is different than suppressing
 warnings, because it changes a method's return type.  This is not the same
 as assuming that the return value is \<@NonNull>, because the map's value
-type might be \<@Nullable>, as in \code{Map<String, @Nullable Integer>}.
+type might be \<@Nullable>, as in \code{Map<String, @Nullable Integer>}.)
 
 
 \sectionAndLabel{Map key annotations}{map-key-annotations}
@@ -141,7 +141,7 @@ type is a type variable, programmers must write an \<@UnknownKeyFor>
 annotation on either the type variable declaration or on variable
 declarations, as shown in \<MyClass1> and
 \<MyClass2>.
-A disadvantage of this default is that the Map Key checker may issue
+A disadvantage of this default is that the Map Key Checker may issue
 warnings in code that has nothing to do with map keys, and in which no map
 key annotations are used.
 

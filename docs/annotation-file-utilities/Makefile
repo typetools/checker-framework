@@ -16,6 +16,7 @@ annotation-file-format.html: annotation-file-format.pdf
 plume-bib:
 	cd ../.. && ./gradlew getPlumeBib
 
+.PHONY: clean
 clean:
-	latexmk -C annotation-file-format.tex
-	make -C figures clean
+	@latexmk -C annotation-file-format.tex
+	@make -C figures clean

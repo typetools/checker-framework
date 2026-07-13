@@ -12,4 +12,4 @@ ${PLUME_SCRIPTS}:
 	make -C .. get-plume-scripts
 
 clean:
-	rm -f azure-pipelines.yml azure-pipelines-daily.yml
+	@rm -f azure-pipelines.yml azure-pipelines-daily.yml
