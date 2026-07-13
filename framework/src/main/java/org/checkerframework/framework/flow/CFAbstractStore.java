@@ -162,6 +162,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.sequentialSemantics = sequentialSemantics;
     this.sideEffectsOnlyValueElement =
         TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
+    if (sideEffectsOnlyValueElement == null) {
+      throw new Error();
+    }
     this.assumeSideEffectFree =
         analysis.checker.hasOption("assumeSideEffectFree")
             || analysis.checker.hasOption("assumePure");
@@ -185,6 +188,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.sequentialSemantics = other.sequentialSemantics;
     this.sideEffectsOnlyValueElement =
         TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
+    if (sideEffectsOnlyValueElement == null) {
+      throw new Error();
+    }
     this.assumeSideEffectFree = other.assumeSideEffectFree;
     this.assumePureGetters = other.assumePureGetters;
   }
