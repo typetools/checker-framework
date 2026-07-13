@@ -85,9 +85,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /** Information collected about fields, using the internal representation {@link FieldAccess}. */
   protected Map<FieldAccess, V> fieldValues;
 
-  // It would be wasteful to compute this anew every time a Store is constructed.
+  // It is wasteful to compute this anew every time a Store is constructed.
   /** The {@code SideEffectsOnly.value} argument/element. */
-  public static ExecutableElement sideEffectsOnlyValueElement;
+  public final ExecutableElement sideEffectsOnlyValueElement;
 
   /**
    * Returns information about fields. Clients should not side-effect the returned value, which is
@@ -160,10 +160,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.arrayValues = new HashMap<>();
     this.classValues = new HashMap<>();
     this.sequentialSemantics = sequentialSemantics;
-    if (sideEffectsOnlyValueElement == null) {
-      sideEffectsOnlyValueElement =
-          TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
-    }
+    this.sideEffectsOnlyValueElement =
+        TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
     this.assumeSideEffectFree =
         analysis.checker.hasOption("assumeSideEffectFree")
             || analysis.checker.hasOption("assumePure");
@@ -185,10 +183,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.arrayValues = new HashMap<>(other.arrayValues);
     this.classValues = new HashMap<>(other.classValues);
     this.sequentialSemantics = other.sequentialSemantics;
-    if (sideEffectsOnlyValueElement == null) {
-      sideEffectsOnlyValueElement =
-          TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
-    }
+    this.sideEffectsOnlyValueElement =
+        TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
     this.assumeSideEffectFree = other.assumeSideEffectFree;
     this.assumePureGetters = other.assumePureGetters;
   }
