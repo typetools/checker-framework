@@ -13,7 +13,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public interface Criterion {
 
   /** Types of criterion. */
-  public static enum Kind {
+  public enum Kind {
     IN_METHOD,
     /*
      * Used for classes, interfaces, enums, annotation types.
