@@ -309,6 +309,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * method has no {@code @SideEffectsOnly} annotation.
    *
    * @param method a method
+   * @param methodInvocationNode the call site at which the side-effecting expressions will be used
    * @return the expressions that the method side-effects, view-adapted to the given invocation; or
    *     null if the method has no {@code @SideEffectsOnly} annotation
    */
