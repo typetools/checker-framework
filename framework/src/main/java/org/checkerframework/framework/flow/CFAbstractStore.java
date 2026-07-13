@@ -460,8 +460,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   private void updateFieldValuesForMethodCall(
       GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory,
-      JavaExpression receiverJe,
-      List<JavaExpression> sideEffectsOnlyExpressions) {
+      @Nullable JavaExpression receiverJe,
+      @Nullable List<JavaExpression> sideEffectsOnlyExpressions) {
     Map<FieldAccess, V> newFieldValues = new HashMap<>(MapsP.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();

@@ -134,6 +134,9 @@ public class DisallowedSideEffects {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void aVoid) {
       Element invokedElem = TreeUtils.elementFromUse(node);
+      if (invokedElem == null || TreeUtils.isEnumSuperCall(node)) {
+        return super.visitMethodInvocation(node, aVoid);
+      }
       boolean isMarkedPure = annoProvider.getDeclAnnotation(invokedElem, Pure.class) != null;
       boolean isMarkedSideEffectFree =
           annoProvider.getDeclAnnotation(invokedElem, SideEffectFree.class) != null;
