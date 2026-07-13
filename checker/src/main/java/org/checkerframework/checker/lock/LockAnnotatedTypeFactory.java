@@ -414,8 +414,8 @@ public class LockAnnotatedTypeFactory
     MAYRELEASELOCKS("@MayReleaseLocks", MayReleaseLocks.class),
     RELEASESNOLOCKS("@ReleasesNoLocks", ReleasesNoLocks.class),
     LOCKINGFREE("@LockingFree", LockingFree.class),
-    SIDEEFFECTFREE("@SideEffectFree", SideEffectFree.class),
     SIDEEFFECTSONLY("@SideEffectsOnly", SideEffectsOnly.class),
+    SIDEEFFECTFREE("@SideEffectFree", SideEffectFree.class),
     PURE("@Pure", Pure.class);
 
     final String annotation;
@@ -444,25 +444,33 @@ public class LockAnnotatedTypeFactory
       switch (this) {
         case MAYRELEASELOCKS -> {
           switch (other) {
-            case RELEASESNOLOCKS, LOCKINGFREE, SIDEEFFECTFREE, PURE -> weaker = true;
+            case RELEASESNOLOCKS, LOCKINGFREE, SIDEEFFECTSONLY, SIDEEFFECTFREE, PURE ->
+                weaker = true;
             default -> {}
           }
         }
         case RELEASESNOLOCKS -> {
           switch (other) {
-            case LOCKINGFREE, SIDEEFFECTFREE, PURE -> weaker = true;
+            case LOCKINGFREE, SIDEEFFECTSONLY, SIDEEFFECTFREE, PURE -> weaker = true;
             default -> {}
           }
         }
         case LOCKINGFREE -> {
+          switch (other) {
+            case SIDEEFFECTSONLY, SIDEEFFECTFREE, PURE -> weaker = true;
+            default -> {}
+          }
+        }
+        case SIDEEFFECTSONLY -> {
           switch (other) {
             case SIDEEFFECTFREE, PURE -> weaker = true;
             default -> {}
           }
         }
         case SIDEEFFECTFREE -> {
-          if (other == PURE) {
-            weaker = true;
+          switch (other) {
+            case PURE -> weaker = true;
+            default -> {}
           }
         }
         case PURE -> {}
