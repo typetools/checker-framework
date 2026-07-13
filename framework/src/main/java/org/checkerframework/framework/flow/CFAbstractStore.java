@@ -212,7 +212,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *       {@code a} is a local variable or {@code this}, and {@code f} is final, or if {@code a.f}
    *       has a {@link MonotonicQualifier} in the current store. Subclasses can change this
    *       behavior by overriding {@link #newFieldValueAfterMethodCall(FieldAccess,
-   *       GenericAnnotatedTypeFactory, CFAbstractValue)}.
+   *       CFAbstractValue)}.
    *   <li>Furthermore, if the field has a monotonic annotation, then its information can also be
    *       kept.
    * </ol>
@@ -225,8 +225,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   public void updateForMethodCall(MethodInvocationNode methodInvocationNode, V val) {
     ExecutableElement method = methodInvocationNode.getTarget().getMethod();
     @SuppressWarnings("unchecked")
-    GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory =
-        (GenericAnnotatedTypeFactory<V, S, ?, ?>) analysis.atypeFactory;
+    GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory = analysis.atypeFactory;
 
     // Case 1: The method is side-effect-free.
     boolean hasSideEffect =
