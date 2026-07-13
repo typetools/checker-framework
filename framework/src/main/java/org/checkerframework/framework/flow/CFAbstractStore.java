@@ -85,8 +85,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /** Information collected about fields, using the internal representation {@link FieldAccess}. */
   protected Map<FieldAccess, V> fieldValues;
 
+  // It would be wasteful to compute this anew every time a Store is constructed.
   /** The {@code SideEffectsOnly.value} argument/element. */
-  public ExecutableElement sideEffectsOnlyValueElement;
+  public static ExecutableElement sideEffectsOnlyValueElement;
 
   /**
    * Returns information about fields. Clients should not side-effect the returned value, which is
@@ -159,9 +160,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.arrayValues = new HashMap<>();
     this.classValues = new HashMap<>();
     this.sequentialSemantics = sequentialSemantics;
-    // It's wasteful to compute this for every Store.
-    sideEffectsOnlyValueElement =
-        TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
+    if (sideEffectsOnlyValueElement == null) {
+      sideEffectsOnlyValueElement =
+          TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
+    }
     this.assumeSideEffectFree =
         analysis.checker.hasOption("assumeSideEffectFree")
             || analysis.checker.hasOption("assumePure");
@@ -173,6 +175,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * @param other a CFAbstractStore to copy into this
    */
+  @SuppressWarnings("StaticAssignmentInConstructor")
   protected CFAbstractStore(CFAbstractStore<V, S> other) {
     this.analysis = other.analysis;
     this.localVariableValues = new HashMap<>(other.localVariableValues);
@@ -182,6 +185,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.arrayValues = new HashMap<>(other.arrayValues);
     this.classValues = new HashMap<>(other.classValues);
     this.sequentialSemantics = other.sequentialSemantics;
+    if (sideEffectsOnlyValueElement == null) {
+      sideEffectsOnlyValueElement =
+          TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
+    }
     this.assumeSideEffectFree = other.assumeSideEffectFree;
     this.assumePureGetters = other.assumePureGetters;
   }
