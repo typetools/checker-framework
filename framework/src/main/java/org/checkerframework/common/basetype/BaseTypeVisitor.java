@@ -1314,10 +1314,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // ...
   }
 
-  // TODO: also @SideEffectsOnly.
   /**
    * Return either the {@link Pure} or {@link SideEffectFree} annotation (in that order) if either
    * appears on a method declaration, otherwise return null.
+   *
+   * <p>This intentionally does not return a {@link SideEffectsOnly} annotation.
    *
    * @param methodDeclaration the method declaration
    * @return either the {@link Pure} or {@link SideEffectFree} annotation (in that order) if either

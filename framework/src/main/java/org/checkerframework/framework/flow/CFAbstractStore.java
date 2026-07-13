@@ -251,24 +251,23 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       boolean sideEffectsUnrefineAliases = atypeFactory.sideEffectsUnrefineAliases;
       Node receiver = methodInvocationNode.getTarget().getReceiver();
 
+      // If @DoesNotUnrefineReceiver is present, compute the receiver as a JavaExpression so
+      // that it can be exempted from unrefinement in all expression categories below.
       boolean hasDoesNotUnrefineReceiver = atypeFactory.hasDoesNotUnrefineReceiver(method);
       @Nullable JavaExpression receiverJe =
           hasDoesNotUnrefineReceiver ? JavaExpression.fromNode(receiver) : null;
 
-      @Nullable List<JavaExpression> sideEffectsOnlyExpressions =
+      @Nullable List<JavaExpression> seOnlyExpressions =
           getSideEffectsOnlyExpressions(method, methodInvocationNode);
 
       // TODO: Also remove if any element/argument to the annotation is not
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
 
-      // If @DoesNotUnrefineReceiver is present, compute the receiver as a JavaExpression so
-      // that it can be exempted from unrefinement in all expression categories below.
-      @Nullable JavaExpression receiverJe =
-          hasDoesNotUnrefineReceiver ? JavaExpression.fromNode(receiver) : null;
-
       // Update local variables.
       if (sideEffectsUnrefineAliases) {
-        localVariableValues.entrySet().removeIf(e -> isSideEffected(e.getKey(), receiverJe));
+        localVariableValues
+            .entrySet()
+            .removeIf(e -> isSideEffected(e.getKey(), receiverJe, seOnlyExpressions));
       }
 
       // Update this value.
@@ -280,21 +279,23 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
       // Update field values.
       if (sideEffectsUnrefineAliases) {
-        fieldValues.entrySet().removeIf(e -> isSideEffected(e.getKey(), receiverJe));
+        fieldValues
+            .entrySet()
+            .removeIf(e -> isSideEffected(e.getKey(), receiverJe, seOnlyExpressions));
       } else {
         // Case 2 (unassignable fields) and case 3 (monotonic fields).
-        updateFieldValuesForMethodCall(atypeFactory, receiverJe, sideEffectsOnlyExpressions);
+        updateFieldValuesForMethodCall(atypeFactory, receiverJe, seOnlyExpressions);
       }
 
       // Update array values.
       arrayValues
           .entrySet()
-          .removeIf(e -> isSideEffected(e.getKey(), receiverJe, sideEffectsOnlyExpressions));
+          .removeIf(e -> isSideEffected(e.getKey(), receiverJe, seOnlyExpressions));
 
       // Update information about method calls.
       methodCallExpressions
           .entrySet()
-          .removeIf(e -> isSideEffected(e.getKey(), receiverJe, sideEffectsOnlyExpressions));
+          .removeIf(e -> isSideEffected(e.getKey(), receiverJe, seOnlyExpressions));
     }
 
     // Store information about method calls if possible.
@@ -305,11 +306,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /**
    * Returns the expressions that the method side-effects (specified as arguments/elements of
    * {@code @SideEffectsOnly}, view-adapted to the given method invocation. Returns null if the
-   * method has no @SideEffectsOnly annotation.
+   * method has no {@code @SideEffectsOnly} annotation.
    *
    * @param method a method
    * @return the expressions that the method side-effects, view-adapted to the given invocation; or
-   *     null if it side-effects arbitrary expressions
+   *     null if the method has no {@code @SideEffectsOnly} annotation
    */
   @Nullable List<JavaExpression> getSideEffectsOnlyExpressions(
       ExecutableElement method, MethodInvocationNode methodInvocationNode) {
@@ -324,10 +325,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     SourceChecker checker = analysis.checker;
 
-    List<String> sideEffectsOnlyExpressionStrings =
+    List<String> seOnlyExpressionStrings =
         AnnotationUtils.getElementValueArray(
             seOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
-    for (String st : sideEffectsOnlyExpressionStrings) {
+    for (String st : seOnlyExpressionStrings) {
       try {
         JavaExpression exprJe =
             StringToJavaExpression.atMethodInvocation(st, methodInvocationNode, checker);

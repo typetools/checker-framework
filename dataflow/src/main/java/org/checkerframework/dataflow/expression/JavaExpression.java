@@ -181,9 +181,9 @@ public abstract class JavaExpression {
   public abstract boolean isAssignableByOtherCode();
 
   /**
-   * Returns true if the value this expression evaluates to can be changed by a method call;
-   * equivalently, if the value this expression evaluates to can be changed by a side effect from
-   * outside the containing method.
+   * Returns true if the abstract value of this expression can be changed by a method call;
+   * equivalently, if the abstract value can be changed by a side effect from outside the containing
+   * method.
    *
    * <p>Approximately, this returns true if the expression is {@link #isAssignableByOtherCode} or
    * its type is mutable. ({@code String} is an immutable type.)
