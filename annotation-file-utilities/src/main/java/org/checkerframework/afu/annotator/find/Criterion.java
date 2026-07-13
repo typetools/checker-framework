@@ -14,6 +14,7 @@ public interface Criterion {
 
   /** Types of criterion. */
   public enum Kind {
+    /** The annotation appears within a method. */
     IN_METHOD,
     /*
      * Used for classes, interfaces, enums, annotation types.
