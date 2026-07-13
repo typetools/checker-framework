@@ -49,7 +49,6 @@ class OptionalSideEffectsPrecondition {
   void methodB(OptionalContainer optContainer, Object param) {}
 
   @SideEffectsOnly({"#1.getOptional()"})
-  // :: error: (flowexpr.parse.error)
   void methodC(OptionalContainer optContainer, Object param) {}
 
   void havoc(OptionalContainer optContainer, Object param) {}

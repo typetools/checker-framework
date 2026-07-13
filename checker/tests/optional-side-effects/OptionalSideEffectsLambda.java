@@ -1,7 +1,8 @@
 import java.util.List;
 import java.util.Optional;
-import org.checkerframework.checker.optional.qual.*;
-import org.checkerframework.dataflow.qual.*;
+import org.checkerframework.checker.optional.qual.RequiresPresent;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 class OptionalSideEffectsLambda {
 
@@ -10,7 +11,8 @@ class OptionalSideEffectsLambda {
       return;
     }
     for (String s : strs) {
-      bar(container); // OK
+      // This should verify because the call to Iterator.next only side effects the iterator.
+      bar(container);
     }
   }
 
@@ -18,25 +20,25 @@ class OptionalSideEffectsLambda {
     if (!container.getOptStr().isPresent()) {
       return;
     }
-    strs.forEach(s -> bar(container)); // OK
+    strs.forEach(s -> bar(container));
   }
 
   @RequiresPresent("#1.getOptStr()")
   @SideEffectFree
   void bar(OptContainer container) {}
+}
 
-  class OptContainer {
+class OptContainer {
 
-    @SuppressWarnings("optional:field")
-    private Optional<String> optStr;
+  @SuppressWarnings("optional:field")
+  private Optional<String> optStr;
 
-    OptContainer(String s) {
-      this.optStr = Optional.ofNullable(s);
-    }
+  OptContainer(String s) {
+    this.optStr = Optional.ofNullable(s);
+  }
 
-    @Pure
-    public Optional<String> getOptStr() {
-      return this.optStr;
-    }
+  @Pure
+  public Optional<String> getOptStr() {
+    return this.optStr;
   }
 }
