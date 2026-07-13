@@ -305,7 +305,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *     null
    * @return true if the abstract value of the expression might have changed
    */
-  private boolean isSideEffected(JavaExpression expr, JavaExpression notSideEffectedExpression) {
+  private boolean isSideEffected(
+      JavaExpression expr, @Nullable JavaExpression notSideEffectedExpression) {
     if (!expr.isModifiableByOtherCode()) {
       return false;
     }
@@ -401,7 +402,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * @param receiverJe if non-null, the receiver, which should not be unrefined
    */
   private void updateFieldValuesForMethodCall(
-      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory, JavaExpression receiverJe) {
+      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory, @Nullable JavaExpression receiverJe) {
     Map<FieldAccess, V> newFieldValues = new HashMap<>(MapsP.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
