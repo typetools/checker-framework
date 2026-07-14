@@ -4258,23 +4258,62 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /** Check that an override respects purity. */
     private void checkPurity() {
-      String msgKey = isMethodReference ? "purity.methodref" : "purity.overriding";
-
-      // check purity annotations
       EnumSet<PurityKind> superPurity =
           PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
       EnumSet<PurityKind> subPurity =
           PurityUtils.getPurityKinds(atypeFactory, overrider.getElement());
-      if (!subPurity.containsAll(superPurity)) {
-        checker.reportError(
-            overriderTree,
-            msgKey,
-            overriderType,
-            overrider,
-            overriddenType,
-            overridden,
-            subPurity,
-            superPurity);
+
+      boolean ok;
+      if (superPurity.contains(PurityKind.SIDE_EFFECTS_ONLY)) {
+        if (subPurity.contains(PurityKind.SIDE_EFFECT_FREE)) {
+          ok = true;
+        } else if (subPurity.contains(PurityKind.SIDE_EFFECT_FREE)) {
+          // Both methods are annotated with @SideEffectsOnly.
+
+          ExecutableElement superElement = overridden.getElement();
+          AnnotationMirror seOnlySuper =
+              atypeFactory.getDeclAnnotation(superElement, SideEffectsOnly.class);
+          List<String> seOnlySuperExpressions =
+              AnnotationUtils.getElementValueArray(
+                  seOnlySuper, sideEffectsOnlyValueElement, String.class);
+          ExecutableElement subElement = overridden.getElement();
+          AnnotationMirror seOnlySub =
+              atypeFactory.getDeclAnnotation(subElement, SideEffectsOnly.class);
+          List<String> seOnlySubExpressions =
+              AnnotationUtils.getElementValueArray(
+                  seOnlySub, sideEffectsOnlyValueElement, String.class);
+
+          // The subclass method (the overrider) is allowed to perform fewer side effects.
+          ok = seOnlySuperExpressions.containsAll(seOnlySubExpressions);
+        } else {
+          // Superclass method has @SideEffectsOnly, subclass method has no side-effect annotation.
+          ok = false;
+        }
+      } else {
+        // The subclass method (the overrider) is allowed to make more guarantees.
+        ok = subPurity.containsAll(superPurity);
+      }
+
+      if (!ok) {
+        if (isMethodReference) {
+          checker.reportError(
+              overriderTree,
+              "purity.methodref",
+              overriderType,
+              overrider,
+              overriddenType,
+              overridden);
+        } else {
+          checker.reportError(
+              overriderTree,
+              "purity.overriding",
+              overriderType,
+              overriddenType,
+              subPurity,
+              overrider,
+              superPurity,
+              overridden);
+        }
       }
     }
 
