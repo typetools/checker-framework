@@ -98,6 +98,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
+import org.checkerframework.dataflow.util.PurityKind;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.ajava.AnnotationEqualityVisitor;
 import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
@@ -1171,8 +1172,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (suggestPureMethods || PurityUtils.hasPurityAnnotation(atypeFactory, tree)) {
 
       // check "no" purity
-      EnumSet<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, tree);
-      boolean isDeterministic = kinds.contains(Pure.Kind.DETERMINISTIC);
+      EnumSet<PurityKind> kinds = PurityUtils.getPurityKinds(atypeFactory, tree);
+      boolean isDeterministic = kinds.contains(PurityKind.DETERMINISTIC);
       if (isDeterministic) {
         // @Deterministic makes no sense for a void method or constructor
         if (TreeUtils.isConstructor(tree)) {
@@ -1198,14 +1199,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
       if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
         // Issue a warning if the method is pure, but not annotated as such.
-        EnumSet<Pure.Kind> additionalKinds = r.getKinds().clone();
+        EnumSet<PurityKind> additionalKinds = r.getKinds().clone();
         if (!infer) {
           // During WPI, propagate all purity kinds, even those that are already
           // present (because they were inferred in a previous WPI round).
           additionalKinds.removeAll(kinds);
         }
         if (TreeUtils.isConstructor(tree) || TreeUtils.isVoidReturn(tree)) {
-          additionalKinds.remove(Pure.Kind.DETERMINISTIC);
+          additionalKinds.remove(PurityKind.DETERMINISTIC);
         }
         if (infer) {
           WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
@@ -1226,9 +1227,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           // No need to suggest @Impure, since it is equivalent to no annotation.
         } else if (additionalKinds.size() == 2) {
           checker.reportWarning(tree, "purity.more.pure", tree.getName());
-        } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+        } else if (additionalKinds.contains(PurityKind.SIDE_EFFECT_FREE)) {
           checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
-        } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+        } else if (additionalKinds.contains(PurityKind.DETERMINISTIC)) {
           checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
         } else {
           throw new BugInCF("Unexpected purity kind in " + additionalKinds);
@@ -1365,12 +1366,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param elt the element whose purity is being inferred
    */
   private void inferPurityAnno(
-      EnumSet<Pure.Kind> kinds, WholeProgramInference wpi, ExecutableElement elt) {
+      EnumSet<PurityKind> kinds, WholeProgramInference wpi, ExecutableElement elt) {
     if (kinds.size() == 2) {
       wpi.addMethodDeclarationAnnotation(elt, PURE, true);
-    } else if (kinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+    } else if (kinds.contains(PurityKind.SIDE_EFFECT_FREE)) {
       wpi.addMethodDeclarationAnnotation(elt, SIDE_EFFECT_FREE, true);
-    } else if (kinds.contains(Pure.Kind.DETERMINISTIC)) {
+    } else if (kinds.contains(PurityKind.DETERMINISTIC)) {
       wpi.addMethodDeclarationAnnotation(elt, DETERMINISTIC, true);
     } else {
       assert kinds.isEmpty();
@@ -1410,16 +1411,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param expectedKinds the expected purity for the method
    */
   protected void reportPurityErrors(
-      PurityResult result, MethodTree tree, EnumSet<Pure.Kind> expectedKinds) {
+      PurityResult result, MethodTree tree, EnumSet<PurityKind> expectedKinds) {
     assert !result.isPure(expectedKinds);
-    EnumSet<Pure.Kind> violations = EnumSet.copyOf(expectedKinds);
+    EnumSet<PurityKind> violations = EnumSet.copyOf(expectedKinds);
     violations.removeAll(result.getKinds());
-    if (violations.contains(Pure.Kind.DETERMINISTIC)
-        || violations.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+    if (violations.contains(PurityKind.DETERMINISTIC)
+        || violations.contains(PurityKind.SIDE_EFFECT_FREE)) {
       String msgKeyPrefix;
-      if (!violations.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+      if (!violations.contains(PurityKind.SIDE_EFFECT_FREE)) {
         msgKeyPrefix = "purity.not.deterministic.";
-      } else if (!violations.contains(Pure.Kind.DETERMINISTIC)) {
+      } else if (!violations.contains(PurityKind.DETERMINISTIC)) {
         msgKeyPrefix = "purity.not.sideeffectfree.";
       } else {
         msgKeyPrefix = "purity.not.deterministic.not.sideeffectfree.";
@@ -1427,12 +1428,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       for (IPair<Tree, String> r : result.getNotBothReasons()) {
         reportPurityError(msgKeyPrefix, r);
       }
-      if (violations.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+      if (violations.contains(PurityKind.SIDE_EFFECT_FREE)) {
         for (IPair<Tree, String> r : result.getNotSEFreeReasons()) {
           reportPurityError("purity.not.sideeffectfree.", r);
         }
       }
-      if (violations.contains(Pure.Kind.DETERMINISTIC)) {
+      if (violations.contains(PurityKind.DETERMINISTIC)) {
         for (IPair<Tree, String> r : result.getNotDetReasons()) {
           reportPurityError("purity.not.deterministic.", r);
         }
@@ -4269,9 +4270,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       String msgKey = isMethodReference ? "purity.methodref" : "purity.overriding";
 
       // check purity annotations
-      EnumSet<Pure.Kind> superPurity =
+      EnumSet<PurityKind> superPurity =
           PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
-      EnumSet<Pure.Kind> subPurity =
+      EnumSet<PurityKind> subPurity =
           PurityUtils.getPurityKinds(atypeFactory, overrider.getElement());
       if (!subPurity.containsAll(superPurity)) {
         checker.reportError(

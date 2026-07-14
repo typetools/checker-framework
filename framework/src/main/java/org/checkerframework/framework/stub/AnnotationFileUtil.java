@@ -50,7 +50,7 @@ public class AnnotationFileUtil {
    *
    * <p>Stub files have extension ".astub". Ajava files have extension ".ajava".
    */
-  public static enum AnnotationFileType {
+  public enum AnnotationFileType {
     /** Stub file in the annotated JDK. */
     JDK_STUB,
     /** Stub file built into a checker. */

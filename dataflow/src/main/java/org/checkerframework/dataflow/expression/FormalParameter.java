@@ -6,12 +6,11 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.TypeAnnotationUtils;
 
 /**
  * A formal parameter, represented by its 1-based index.
  *
- * <p>{@link LocalVariable} represents a formal parameter expressed using its name.
+ * <p>By contrast, {@link LocalVariable} represents a formal parameter expressed using its name.
  */
 public class FormalParameter extends JavaExpression {
 
@@ -33,15 +32,6 @@ public class FormalParameter extends JavaExpression {
     this.element = element;
   }
 
-  @Override
-  public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof FormalParameter other)) {
-      return false;
-    }
-
-    return this.index == other.index && LocalVariable.sameElement(this.element, other.element);
-  }
-
   /**
    * Returns the 1-based index of this formal parameter.
    *
@@ -61,13 +51,20 @@ public class FormalParameter extends JavaExpression {
   }
 
   @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof FormalParameter other)) {
+      return false;
+    }
+
+    return this.index == other.index && LocalVariable.sameElement(this.element, other.element);
+  }
+
+  @Override
   public int hashCode() {
     VarSymbol vs = (VarSymbol) element;
-    return Objects.hash(
-        index,
-        vs.name.toString(),
-        TypeAnnotationUtils.unannotatedType(vs.type).toString(),
-        vs.owner.toString());
+    // Hash the same fields that `equals()` compares (via `LocalVariable.sameElement()`),
+    // mirroring `LocalVariable.hashCode()`.
+    return Objects.hash(index, vs.pos, vs.name, vs.owner);
   }
 
   @Override
