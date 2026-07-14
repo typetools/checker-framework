@@ -7,6 +7,7 @@ import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -33,9 +34,7 @@ public final class PurityUtils {
 
   /**
    * Does the method {@code methodTree} have any purity annotation?
-   *
-   * <p>This method does not consider {@code @SideEffectsOnly} to be a purity annotation. Fixing
-   * that bug requires refactoring.
+   * (@Pure, @SideEffectFree, @SideEffectsOnly, @Deterministic.)
    *
    * @param provider how to get annotations
    * @param methodTree a method to test
@@ -140,16 +139,23 @@ public final class PurityUtils {
     }
 
     AnnotationMirror pureAnnotation = provider.getDeclAnnotation(methodElement, Pure.class);
+    if (pureAnnotation != null) {
+      return detAndSeFree;
+    }
+
     AnnotationMirror sefAnnotation =
         provider.getDeclAnnotation(methodElement, SideEffectFree.class);
     AnnotationMirror detAnnotation = provider.getDeclAnnotation(methodElement, Deterministic.class);
 
-    if (pureAnnotation != null) {
+    if (sefAnnotation != null && detAnnotation != null) {
       return detAndSeFree;
     }
+
     EnumSet<PurityKind> result = EnumSet.noneOf(PurityKind.class);
     if (sefAnnotation != null) {
       result.add(PurityKind.SIDE_EFFECT_FREE);
+    } else if (provider.getDeclAnnotation(methodElement, SideEffectsOnly.class) != null) {
+      result.add(PurityKind.SIDE_EFFECTS_ONLY);
     }
     if (detAnnotation != null) {
       result.add(PurityKind.DETERMINISTIC);

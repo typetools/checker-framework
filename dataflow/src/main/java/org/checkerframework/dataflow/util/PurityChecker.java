@@ -252,17 +252,19 @@ public final class PurityChecker {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void ignore) {
       ExecutableElement elt = TreeUtils.elementFromUse(tree);
-      if (!PurityUtils.hasSimplePurityAnnotation(annoProvider, elt)) {
-        // The called method is not pure, so the callee is not pure either.
+      EnumSet<PurityKind> eltPurityKinds = PurityUtils.getPurityKinds(annoProvider, elt);
+      if (!eltPurityKinds.contains(PurityKind.SIDE_EFFECT_FREE)
+          && !eltPurityKinds.contains(PurityKind.DETERMINISTIC)) {
+        // The called method has no purity annotation, so the callee is not pure either.
         purityResult.addNotBothReason(tree, "call");
       } else {
-        // The called method has a purity annotation.
+        // The called method has a purity annotation:  @SideEffectFree, @Deterministic, or both.
         EnumSet<PurityKind> purityKinds =
             ((assumeDeterministic && assumeSideEffectFree)
                     || (assumePureGetters && ElementUtils.isGetter(elt)))
                 // Avoid computation if not necessary
                 ? detAndSeFree
-                : PurityUtils.getPurityKinds(annoProvider, elt);
+                : eltPurityKinds;
         boolean det =
             assumeDeterministic
                 || purityKinds.contains(PurityKind.DETERMINISTIC)

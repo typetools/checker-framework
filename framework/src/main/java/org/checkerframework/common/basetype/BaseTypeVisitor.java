@@ -1154,8 +1154,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   protected void checkPurityAnnotations(MethodTree tree) {
 
-    if (!suggestPureMethods
-        && !(checkPurityAnnotations && PurityUtils.hasPurityAnnotation(atypeFactory, tree))) {
+    EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, tree);
+
+    if (!suggestPureMethods && !(checkPurityAnnotations && !purityKinds.isEmpty())) {
       // There is no work to do.
       return;
     }
@@ -1168,12 +1169,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     TreePath body = null;
     boolean bodyAssigned = false;
 
-    // This should NOT include @SideEffectsOnly.
-    if (suggestPureMethods || PurityUtils.hasPurityAnnotation(atypeFactory, tree)) {
+    // @SideEffectsOnly is handled later, not here.
+    if (suggestPureMethods
+        || purityKinds.contains(PurityKind.SIDE_EFFECT_FREE)
+        || purityKinds.contains(PurityKind.DETERMINISTIC)) {
 
       // check "no" purity
-      EnumSet<PurityKind> kinds = PurityUtils.getPurityKinds(atypeFactory, tree);
-      boolean isDeterministic = kinds.contains(PurityKind.DETERMINISTIC);
+      boolean isDeterministic = purityKinds.contains(PurityKind.DETERMINISTIC);
       if (isDeterministic) {
         // @Deterministic makes no sense for a void method or constructor
         if (TreeUtils.isConstructor(tree)) {
@@ -1193,8 +1195,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             PurityChecker.checkPurity(
                 body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
       }
-      if (!r.isPure(kinds)) {
-        reportPurityErrors(r, tree, kinds);
+      if (!r.isPure(purityKinds)) {
+        reportPurityErrors(r, tree, purityKinds);
       }
 
       if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
@@ -1203,7 +1205,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (!infer) {
           // During WPI, propagate all purity kinds, even those that are already
           // present (because they were inferred in a previous WPI round).
-          additionalKinds.removeAll(kinds);
+          additionalKinds.removeAll(purityKinds);
         }
         if (TreeUtils.isConstructor(tree) || TreeUtils.isVoidReturn(tree)) {
           additionalKinds.remove(PurityKind.DETERMINISTIC);
@@ -1355,26 +1357,30 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Infer a purity annotation for {@code elt} by converting {@code kinds} into a method annotation.
+   * Infer a purity annotation for {@code elt} by converting {@code purityKinds} into a method
+   * annotation.
    *
    * <p>This method delegates to {@code WholeProgramInference.addMethodDeclarationAnnotation}, which
    * special-cases purity annotations: that method lubs a purity argument with whatever purity
    * annotation is already present on {@code elt}.
    *
-   * @param kinds the set of purity kinds to use to infer the annotation
+   * @param purityKinds the set of purity purityKinds to use to infer the annotation
    * @param wpi the whole program inference instance to use to do the inferring
    * @param elt the element whose purity is being inferred
    */
   private void inferPurityAnno(
-      EnumSet<PurityKind> kinds, WholeProgramInference wpi, ExecutableElement elt) {
-    if (kinds.size() == 2) {
+      EnumSet<PurityKind> purityKinds, WholeProgramInference wpi, ExecutableElement elt) {
+    // Ignore PurityKind.SIDE_EFFECTS_ONLY if it is present.
+    boolean sef = purityKinds.contains(PurityKind.SIDE_EFFECT_FREE);
+    boolean det = purityKinds.contains(PurityKind.DETERMINISTIC);
+
+    if (sef && det) {
       wpi.addMethodDeclarationAnnotation(elt, PURE, true);
-    } else if (kinds.contains(PurityKind.SIDE_EFFECT_FREE)) {
+    } else if (sef) {
       wpi.addMethodDeclarationAnnotation(elt, SIDE_EFFECT_FREE, true);
-    } else if (kinds.contains(PurityKind.DETERMINISTIC)) {
+    } else if (det) {
       wpi.addMethodDeclarationAnnotation(elt, DETERMINISTIC, true);
     } else {
-      assert kinds.isEmpty();
       wpi.addMethodDeclarationAnnotation(elt, IMPURE, true);
     }
   }
