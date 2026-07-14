@@ -4299,17 +4299,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               overriderTree,
               "purity.methodref",
               overriderType,
+              subPurity,
               overrider,
               overriddenType,
+              superPurity,
               overridden);
         } else {
           checker.reportError(
               overriderTree,
               "purity.overriding",
               overriderType,
-              overriddenType,
               subPurity,
               overrider,
+              overriddenType,
               superPurity,
               overridden);
         }
