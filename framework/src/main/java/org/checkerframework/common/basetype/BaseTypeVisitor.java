@@ -1143,11 +1143,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param tree the method tree to check
    */
   protected void checkPurityAnnotations(MethodTree tree) {
-    if (!checkPurityAnnotations) {
-      return;
-    }
 
-    if (!suggestPureMethods && !PurityUtils.hasPurityAnnotation(atypeFactory, tree)) {
+    EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, tree);
+
+    if (!suggestPureMethods && !(checkPurityAnnotations && !purityKinds.isEmpty())) {
       // There is no work to do.
       return;
     }
@@ -1160,13 +1159,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     TreePath body = null;
     boolean bodyAssigned = false;
 
-    if (suggestPureMethods || PurityUtils.hasPurityAnnotation(atypeFactory, tree)) {
+    if (suggestPureMethods
+        || purityKinds.contains(PurityKind.SIDE_EFFECT_FREE)
+        || purityKinds.contains(PurityKind.DETERMINISTIC)) {
 
       // check "no" purity
-      EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, tree);
-      // @Deterministic makes no sense for a void method or constructor
       boolean isDeterministic = purityKinds.contains(PurityKind.DETERMINISTIC);
       if (isDeterministic) {
+        // @Deterministic makes no sense for a void method or constructor
         if (TreeUtils.isConstructor(tree)) {
           checker.reportWarning(tree, "purity.deterministic.constructor");
         } else if (TreeUtils.isVoidReturn(tree)) {

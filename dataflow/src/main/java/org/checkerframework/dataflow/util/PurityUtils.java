@@ -117,7 +117,8 @@ public final class PurityUtils {
   }
 
   /**
-   * Returns the purity annotations on the method {@code methodElement}.
+   * Returns the purity annotations on the method {@code methodElement}. {@code @Pure} is treated as
+   * an alias for {@code @SideEffectFree} and {@code @Deterministic}.
    *
    * @param provider how to get annotations. Its {@link AnnotationProvider#isSideEffectFree} and
    *     {@link AnnotationProvider#isDeterministic} methods are not used.
@@ -133,13 +134,18 @@ public final class PurityUtils {
     }
 
     AnnotationMirror pureAnnotation = provider.getDeclAnnotation(methodElement, Pure.class);
+    if (pureAnnotation != null) {
+      return detAndSeFree;
+    }
+
     AnnotationMirror sefAnnotation =
         provider.getDeclAnnotation(methodElement, SideEffectFree.class);
     AnnotationMirror detAnnotation = provider.getDeclAnnotation(methodElement, Deterministic.class);
 
-    if (pureAnnotation != null) {
+    if (sefAnnotation != null && detAnnotation != null) {
       return detAndSeFree;
     }
+
     EnumSet<PurityKind> result = EnumSet.noneOf(PurityKind.class);
     if (sefAnnotation != null) {
       result.add(PurityKind.SIDE_EFFECT_FREE);
