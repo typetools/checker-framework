@@ -271,6 +271,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
     }
   }
 
+  // `equals()` and `hashCode()` ignore the `analysis` field.
   @Override
   public boolean equals(@Nullable Object o) {
     if (o instanceof TransferInput) {
@@ -292,7 +293,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.analysis, this.node, this.store, this.thenStore, this.elseStore);
+    return Objects.hash(this.store, this.thenStore, this.elseStore);
   }
 
   @Override

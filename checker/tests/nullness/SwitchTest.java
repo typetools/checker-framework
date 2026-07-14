@@ -30,7 +30,7 @@ public class SwitchTest {
     return A.X;
   }
 
-  public static enum A {
+  public enum A {
     X
   }
 }
