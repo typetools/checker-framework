@@ -40,7 +40,7 @@ class ACOwning {
   }
 
   // make sure enum doesn't crash things
-  static enum TestEnum {
+  enum TestEnum {
     CASE1,
     CASE2,
     CASE3
