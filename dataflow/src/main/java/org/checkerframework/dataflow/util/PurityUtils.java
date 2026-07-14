@@ -123,7 +123,8 @@ public final class PurityUtils {
   }
 
   /**
-   * Returns the purity annotations on the method {@code methodElement}.
+   * Returns the purity annotations on the method {@code methodElement}. {@code @Pure} is treated as
+   * an alias for {@code @SideEffectFree} and {@code @Deterministic}.
    *
    * @param provider how to get annotations. Its {@link AnnotationProvider#isSideEffectFree} and
    *     {@link AnnotationProvider#isDeterministic} methods are not used.

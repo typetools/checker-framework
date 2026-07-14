@@ -1167,13 +1167,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     TreePath body = null;
     boolean bodyAssigned = false;
 
+    // This should NOT include @SideEffectsOnly.
     if (suggestPureMethods || PurityUtils.hasPurityAnnotation(atypeFactory, tree)) {
 
       // check "no" purity
       EnumSet<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, tree);
-      // @Deterministic makes no sense for a void method or constructor
       boolean isDeterministic = kinds.contains(Pure.Kind.DETERMINISTIC);
       if (isDeterministic) {
+        // @Deterministic makes no sense for a void method or constructor
         if (TreeUtils.isConstructor(tree)) {
           checker.reportWarning(tree, "purity.deterministic.constructor");
         } else if (TreeUtils.isVoidReturn(tree)) {
@@ -1242,6 +1243,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (body == null) {
       return;
     }
+
     @Nullable Element methodDeclElem = TreeUtils.elementFromDeclaration(tree);
     AnnotationMirror seOnlyAnnotation =
         atypeFactory.getDeclAnnotation(methodDeclElem, SideEffectsOnly.class);
@@ -1262,28 +1264,32 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
 
+    System.out.printf("About to compute seOnlyExpressions%n");
     List<String> seOnlyExpressionStrings =
         AnnotationUtils.getElementValueArray(
             seOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
     List<JavaExpression> seOnlyExpressions = new ArrayList<>(seOnlyExpressionStrings.size());
-    if (seOnlyExpressionStrings.isEmpty()) {
-      checker.reportError(methodTree, "purity.empty.sideeffectsonly");
-      return;
-    }
-
     for (String st : seOnlyExpressionStrings) {
       try {
         JavaExpression exprJe = StringToJavaExpression.atMethodBody(st, tree, checker);
         seOnlyExpressions.add(exprJe);
       } catch (JavaExpressionParseException ex) {
+        ex.printStackTrace(System.out);
+        ex.printStackTrace(System.err);
         DiagMessage diagMessage = new DiagMessage(ex);
         if (diagMessage.getMessageKey().equals("flowexpr.parse.error")) {
           checker.reportError(methodTree, "flowexpr.parse.error", st);
         } else {
-          checker.report(st, new DiagMessage(ex));
+          checker.report(st, diagMessage);
         }
-        return;
+        throw new Error(ex);
+        // return;
       }
+    }
+    System.out.printf("seOnlyExpressionStrings = %s%n", seOnlyExpressionStrings);
+    if (seOnlyExpressionStrings.isEmpty()) {
+      checker.reportError(methodTree, "purity.empty.sideeffectsonly");
+      return;
     }
 
     // TODO: this should issue the errors itself.

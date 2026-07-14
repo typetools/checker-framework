@@ -3,7 +3,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
-public class SideEffectsOnlyConflictingAnnotations {
+public class ConflictingAnnotations {
 
   @SideEffectsOnly("#1")
   @SideEffectFree

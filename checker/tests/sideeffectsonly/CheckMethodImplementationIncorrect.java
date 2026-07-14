@@ -1,9 +1,7 @@
-package sideeffectsonly;
-
 import java.util.Collection;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
-public class IncorrectSideEffectsOnly {
+public class CheckMethodImplementationIncorrect {
   Collection<Integer> coll;
 
   @SideEffectsOnly({"#2"})

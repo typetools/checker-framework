@@ -252,9 +252,11 @@ public final class PurityChecker {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void ignore) {
       ExecutableElement elt = TreeUtils.elementFromUse(tree);
-      if (!PurityUtils.hasPurityAnnotation(annoProvider, elt)) {
+      if (!PurityUtils.hasSimplePurityAnnotation(annoProvider, elt)) {
+        // The called method is not pure, so the callee is not pure either.
         purityResult.addNotBothReason(tree, "call");
       } else {
+        // The called method has a purity annotation.
         EnumSet<Pure.Kind> purityKinds =
             ((assumeDeterministic && assumeSideEffectFree)
                     || (assumePureGetters && ElementUtils.isGetter(elt)))

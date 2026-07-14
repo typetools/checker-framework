@@ -1,4 +1,4 @@
-package sideeffectsonly;
+// This test has nothing to do with @SideEffectsOnly.
 
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;

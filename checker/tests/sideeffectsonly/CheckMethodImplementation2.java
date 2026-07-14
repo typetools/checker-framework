@@ -1,8 +1,6 @@
-package sideeffectsonly;
-
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
-public class TestMethodInvocation {
+public class CheckMethodImplementation2 {
   @SideEffectsOnly("#1")
   void method1(Object o) {
     // :: error: purity.incorrect.sideeffectsonly
