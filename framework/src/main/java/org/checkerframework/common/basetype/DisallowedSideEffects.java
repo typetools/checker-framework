@@ -1,5 +1,7 @@
 package org.checkerframework.common.basetype;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
@@ -10,9 +12,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.Element;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.qual.Pure;
@@ -92,7 +92,7 @@ public class DisallowedSideEffects {
     List<JavaExpression> sideEffectsOnlyExpressionsFromAnnotation;
 
     /** Expressions that may be aliased to other expressions in the method body. */
-    Set<JavaExpression> aliasedExpressions;
+    Multimap<JavaExpression, JavaExpression> aliasedExpressions = HashMultimap.create();
 
     /** The annotation provider. */
     protected final AnnotationProvider annoProvider;
@@ -112,7 +112,6 @@ public class DisallowedSideEffects {
         AnnotationProvider annoProvider,
         List<JavaExpression> sideEffectsOnlyExpressions,
         BaseTypeChecker checker) {
-      this.aliasedExpressions = new HashSet<>();
       this.annoProvider = annoProvider;
       this.sideEffectsOnlyExpressionsFromAnnotation = sideEffectsOnlyExpressions;
       this.checker = checker;
@@ -195,9 +194,25 @@ public class DisallowedSideEffects {
      *     the {@link SideEffectsOnly} annotation
      */
     private boolean isDisallowedSideEffectedExpression(JavaExpression expr) {
-      return !sideEffectsOnlyExpressionsFromAnnotation.contains(expr)
-          && expr.isModifiableByOtherCode()
-          && !aliasedExpressions.contains(expr);
+      if (!expr.isModifiableByOtherCode()) {
+        return false;
+      }
+      // TODO: Improve the test, to test all receivers.
+      for (JavaExpression seOnlyExpr : sideEffectsOnlyExpressionsFromAnnotation) {
+        System.out.printf("Testing whether %s contains %s%n", expr, seOnlyExpr);
+        if (aliasedExpressions.containsKey(seOnlyExpr)) {
+          for (JavaExpression seOnlyExprAlias : sideEffectsOnlyExpressionsFromAnnotation)
+            if (expr.equals(seOnlyExprAlias)) {
+              return false;
+            }
+        } else {
+          if (expr.equals(seOnlyExpr)) {
+            return false;
+          }
+        }
+      }
+      System.out.printf("isDisallowedSideEffectedExpression => false: %s%n", expr);
+      return true;
     }
 
     @Override
@@ -209,8 +224,7 @@ public class DisallowedSideEffects {
       if (!sideEffectsOnlyExpressionsFromAnnotation.contains(lhs)) {
         disallowedSideEffects.addExpr(node, lhs);
       }
-      aliasedExpressions.add(lhs);
-      aliasedExpressions.add(rhs);
+      addAlias(lhs, rhs);
       return super.visitAssignment(node, aVoid);
     }
 
@@ -223,8 +237,7 @@ public class DisallowedSideEffects {
       }
       JavaExpression name = JavaExpression.fromVariableTree(node);
       JavaExpression expr = JavaExpression.fromTree(initializer);
-      aliasedExpressions.add(name);
-      aliasedExpressions.add(expr);
+      addAlias(name, expr);
       return super.visitVariable(node, aVoid);
     }
 
@@ -255,6 +268,25 @@ public class DisallowedSideEffects {
         disallowedSideEffects.addExpr(node, lhs);
       }
       return super.visitCompoundAssignment(node, aVoid);
+    }
+
+    /**
+     * Set the two expressions as possibly aliased.
+     *
+     * @param lhs a Java expression
+     * @param rhs a Java expression
+     */
+    private void addAlias(JavaExpression lhs, JavaExpression rhs) {
+      for (JavaExpression alias : aliasedExpressions.get(lhs)) {
+        aliasedExpressions.put(rhs, alias);
+      }
+      for (JavaExpression alias : aliasedExpressions.get(rhs)) {
+        aliasedExpressions.put(lhs, alias);
+      }
+      aliasedExpressions.put(lhs, lhs);
+      aliasedExpressions.put(lhs, rhs);
+      aliasedExpressions.put(rhs, lhs);
+      aliasedExpressions.put(rhs, rhs);
     }
   }
 }

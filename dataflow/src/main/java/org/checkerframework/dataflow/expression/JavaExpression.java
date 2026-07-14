@@ -195,10 +195,12 @@ public abstract class JavaExpression {
   @Pure
   public abstract boolean isModifiableByOtherCode();
 
+  // TODO: Document how this differs from `equals()`.
   /**
    * Returns true if and only if the two Java expressions are syntactically identical.
    *
-   * <p>This exists for use by {@link #containsSyntacticEqualJavaExpression}.
+   * <p>This is a stricter test than {@link #equals}, which accommodates commutativity of
+   * operations.
    *
    * @param je the other Java expression to compare to this one
    * @return true if and only if the two Java expressions are syntactically identical
@@ -263,6 +265,18 @@ public abstract class JavaExpression {
       List<? extends @Nullable JavaExpression> list, JavaExpression other) {
     return list.stream()
         .anyMatch(je -> je != null && je.containsSyntacticEqualJavaExpression(other));
+  }
+
+  /**
+   * Returns true if the given expression is equal to this or equal to the receiver of this,
+   * recursively.
+   *
+   * @param receiver a JavaExpression that might be the receiver of this
+   * @return true if the given expression is equal to this or equal to the receiver of this,
+   *     recursively
+   */
+  public boolean containsAsReceiver(JavaExpression receiver) {
+    return FOO;
   }
 
   /**
@@ -650,7 +664,7 @@ public abstract class JavaExpression {
   }
 
   //
-  // Obtaining the receiver
+  // Obtaining the receiver from a non-JavaExpression
   //
 
   /**
@@ -717,6 +731,10 @@ public abstract class JavaExpression {
       return new ThisReference(enclosingType);
     }
   }
+
+  //
+  // End of receiver methods
+  //
 
   /**
    * Accept method of the visitor pattern.
