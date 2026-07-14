@@ -2,7 +2,7 @@ import org.checkerframework.common.value.qual.*;
 
 public class EnumValues {
 
-  public static enum Direction {
+  public enum Direction {
     NORTH,
     SOUTH,
     EAST,
