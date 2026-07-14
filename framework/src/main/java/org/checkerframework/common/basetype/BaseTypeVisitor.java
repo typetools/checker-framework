@@ -1143,6 +1143,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param tree the method tree to check
    */
   protected void checkPurityAnnotations(MethodTree tree) {
+
+    EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, tree);
+
     if (!checkPurityAnnotations) {
       return;
     }
@@ -1160,13 +1163,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     TreePath body = null;
     boolean bodyAssigned = false;
 
-    if (suggestPureMethods || PurityUtils.hasPurityAnnotation(atypeFactory, tree)) {
+    if (suggestPureMethods
+        || purityKinds.contains(PurityKind.SIDE_EFFECT_FREE)
+        || purityKinds.contains(PurityKind.DETERMINISTIC)) {
 
       // check "no" purity
-      EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, tree);
-      // @Deterministic makes no sense for a void method or constructor
       boolean isDeterministic = purityKinds.contains(PurityKind.DETERMINISTIC);
       if (isDeterministic) {
+        // @Deterministic makes no sense for a void method or constructor
         if (TreeUtils.isConstructor(tree)) {
           checker.reportWarning(tree, "purity.deterministic.constructor");
         } else if (TreeUtils.isVoidReturn(tree)) {
@@ -1258,8 +1262,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Infer a purity annotation for {@code elt} by converting {@code purityKinds} into a method
-   * annotation.
+   * Infer a purity annotation for {@code elt} by converting {@code kinds} into a method annotation.
    *
    * <p>This method delegates to {@code WholeProgramInference.addMethodDeclarationAnnotation}, which
    * special-cases purity annotations: that method lubs a purity argument with whatever purity
