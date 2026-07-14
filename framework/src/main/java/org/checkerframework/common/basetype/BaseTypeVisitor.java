@@ -1260,20 +1260,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * special-cases purity annotations: that method lubs a purity argument with whatever purity
    * annotation is already present on {@code elt}.
    *
-   * @param kinds the set of purity kinds to use to infer the annotation
+   * @param purityKinds the set of purity kinds to use to infer the annotation
    * @param wpi the whole program inference instance to use to do the inferring
    * @param elt the element whose purity is being inferred
    */
   private void inferPurityAnno(
-      EnumSet<PurityKind> kinds, WholeProgramInference wpi, ExecutableElement elt) {
-    if (kinds.size() == 2) {
+      EnumSet<PurityKind> purityKinds, WholeProgramInference wpi, ExecutableElement elt) {
+    if (purityKinds.size() == 2) {
       wpi.addMethodDeclarationAnnotation(elt, PURE, true);
-    } else if (kinds.contains(PurityKind.SIDE_EFFECT_FREE)) {
+    } else if (purityKinds.contains(PurityKind.SIDE_EFFECT_FREE)) {
       wpi.addMethodDeclarationAnnotation(elt, SIDE_EFFECT_FREE, true);
-    } else if (kinds.contains(PurityKind.DETERMINISTIC)) {
+    } else if (purityKinds.contains(PurityKind.DETERMINISTIC)) {
       wpi.addMethodDeclarationAnnotation(elt, DETERMINISTIC, true);
     } else {
-      assert kinds.isEmpty();
+      assert purityKinds.isEmpty();
       wpi.addMethodDeclarationAnnotation(elt, IMPURE, true);
     }
   }
@@ -4166,23 +4166,30 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /** Check that an override respects purity. */
     private void checkPurity() {
-      String msgKey = isMethodReference ? "purity.methodref" : "purity.overriding";
-
-      // check purity annotations
       EnumSet<PurityKind> superPurity =
           PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
       EnumSet<PurityKind> subPurity =
           PurityUtils.getPurityKinds(atypeFactory, overrider.getElement());
       if (!subPurity.containsAll(superPurity)) {
-        checker.reportError(
-            overriderTree,
-            msgKey,
-            overriderType,
-            overrider,
-            overriddenType,
-            overridden,
-            subPurity,
-            superPurity);
+        if (isMethodReference) {
+          checker.reportError(
+              overriderTree,
+              "purity.methodref",
+              overriderType,
+              overrider,
+              overriddenType,
+              overridden);
+        } else {
+          checker.reportError(
+              overriderTree,
+              "purity.overriding",
+              overriderType,
+              overriddenType,
+              subPurity,
+              overrider,
+              superPurity,
+              overridden);
+        }
       }
     }
 
