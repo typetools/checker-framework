@@ -104,29 +104,6 @@ public class BinaryOperation extends JavaExpression {
   }
 
   @Override
-  public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof BinaryOperation other)) {
-      return false;
-    }
-    return operationKind == other.getOperationKind()
-        && left.syntacticEquals(other.left)
-        && right.syntacticEquals(other.right);
-  }
-
-  @Override
-  public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
-    return this.syntacticEquals(other)
-        || left.containsSyntacticEqualJavaExpression(other)
-        || right.containsSyntacticEqualJavaExpression(other);
-  }
-
-  @Override
-  public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
-    return left.containsModifiableAliasOf(store, other)
-        || right.containsModifiableAliasOf(store, other);
-  }
-
-  @Override
   public boolean equals(@Nullable Object other) {
     if (!(other instanceof BinaryOperation biOp)) {
       return false;
@@ -149,6 +126,29 @@ public class BinaryOperation extends JavaExpression {
       return Objects.hash(operationKind, left.hashCode() + right.hashCode());
     }
     return Objects.hash(operationKind, left, right);
+  }
+
+  @Override
+  public boolean syntacticEquals(JavaExpression je) {
+    if (!(je instanceof BinaryOperation other)) {
+      return false;
+    }
+    return operationKind == other.getOperationKind()
+        && left.syntacticEquals(other.left)
+        && right.syntacticEquals(other.right);
+  }
+
+  @Override
+  public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+    return this.syntacticEquals(other)
+        || left.containsSyntacticEqualJavaExpression(other)
+        || right.containsSyntacticEqualJavaExpression(other);
+  }
+
+  @Override
+  public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
+    return left.containsModifiableAliasOf(store, other)
+        || right.containsModifiableAliasOf(store, other);
   }
 
   /**

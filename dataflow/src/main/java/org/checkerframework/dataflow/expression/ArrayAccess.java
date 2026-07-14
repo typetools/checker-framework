@@ -70,6 +70,19 @@ public class ArrayAccess extends JavaExpression {
   }
 
   @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof ArrayAccess other)) {
+      return false;
+    }
+    return array.equals(other.array) && index.equals(other.index);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(array, index);
+  }
+
+  @Override
   public boolean syntacticEquals(JavaExpression je) {
     if (!(je instanceof ArrayAccess other)) {
       return false;
@@ -90,19 +103,6 @@ public class ArrayAccess extends JavaExpression {
       return true;
     }
     return index.containsModifiableAliasOf(store, other);
-  }
-
-  @Override
-  public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ArrayAccess other)) {
-      return false;
-    }
-    return array.equals(other.array) && index.equals(other.index);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(array, index);
   }
 
   @Override
