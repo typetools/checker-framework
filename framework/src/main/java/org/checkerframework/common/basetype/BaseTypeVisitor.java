@@ -4266,7 +4266,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (superPurity.contains(PurityKind.SIDE_EFFECTS_ONLY)) {
         if (subPurity.contains(PurityKind.SIDE_EFFECT_FREE)) {
           ok = true;
-        } else if (subPurity.contains(PurityKind.SIDE_EFFECT_FREE)) {
+        } else if (subPurity.contains(PurityKind.SIDE_EFFECTS_ONLY)) {
           // Both methods are annotated with @SideEffectsOnly.
 
           ExecutableElement superElement = overridden.getElement();
@@ -4275,7 +4275,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           List<String> seOnlySuperExpressions =
               AnnotationUtils.getElementValueArray(
                   seOnlySuper, sideEffectsOnlyValueElement, String.class);
-          ExecutableElement subElement = overridden.getElement();
+          ExecutableElement subElement = overrider.getElement();
           AnnotationMirror seOnlySub =
               atypeFactory.getDeclAnnotation(subElement, SideEffectsOnly.class);
           List<String> seOnlySubExpressions =
