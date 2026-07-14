@@ -4166,9 +4166,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /** Check that an override respects purity. */
     private void checkPurity() {
-      String msgKey = isMethodReference ? "purity.methodref" : "purity.overriding";
-
-      // check purity annotations
       EnumSet<PurityKind> superPurity =
           PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
       EnumSet<PurityKind> subPurity =
@@ -4176,13 +4173,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (!subPurity.containsAll(superPurity)) {
         checker.reportError(
             overriderTree,
-            msgKey,
+            "purity.methodref",
             overriderType,
+            subPurity,
             overrider,
             overriddenType,
-            overridden,
+            superPurity,
+            overridden);
+      } else {
+        checker.reportError(
+            overriderTree,
+            "purity.overriding",
+            overriderType,
+            overriddenType,
             subPurity,
-            superPurity);
+            overrider,
+            superPurity,
+            overridden);
       }
     }
 
