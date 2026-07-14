@@ -4182,8 +4182,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               overriderTree,
               "purity.methodref",
               overriderType,
+              subPurity,
               overrider,
               overriddenType,
+              superPurity,
               overridden);
         } else {
           checker.reportError(
