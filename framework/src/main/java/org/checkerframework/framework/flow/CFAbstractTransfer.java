@@ -73,6 +73,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.dataflow.util.PurityChecker;
+import org.checkerframework.dataflow.util.PurityKind;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -475,7 +476,7 @@ public abstract class CFAbstractTransfer<
             isAssumeSideEffectFreeEnabled,
             isAssumeDeterministicEnabled,
             aTypeFactory.getChecker().hasOption("assumePureGetters"));
-    return result.isPure(EnumSet.allOf(Pure.Kind.class));
+    return result.isPure(EnumSet.allOf(PurityKind.class));
   }
 
   /**
