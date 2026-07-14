@@ -51,20 +51,18 @@ public class FormalParameter extends JavaExpression {
   }
 
   @Override
-  public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof FormalParameter other)) {
-      return false;
-    }
-
-    return this.index == other.index && LocalVariable.sameElement(this.element, other.element);
+  public boolean isAssignableByOtherCode() {
+    return false;
   }
 
   @Override
-  public int hashCode() {
-    VarSymbol vs = (VarSymbol) element;
-    // Hash the same fields that `equals()` compares (via `LocalVariable.sameElement()`),
-    // mirroring `LocalVariable.hashCode()`.
-    return Objects.hash(index, vs.pos, vs.name, vs.owner);
+  public boolean isModifiableByOtherCode() {
+    return false;
+  }
+
+  @Override
+  public boolean isDeterministic(AnnotationProvider provider) {
+    return true;
   }
 
   @Override
@@ -82,10 +80,21 @@ public class FormalParameter extends JavaExpression {
         + "]";
   }
 
-  @SuppressWarnings("unchecked") // generic cast
   @Override
-  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
-    return getClass() == clazz ? (T) this : null;
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof FormalParameter other)) {
+      return false;
+    }
+
+    return this.index == other.index && LocalVariable.sameElement(this.element, other.element);
+  }
+
+  @Override
+  public int hashCode() {
+    VarSymbol vs = (VarSymbol) element;
+    // Hash the same fields that `equals()` compares (via `LocalVariable.sameElement()`),
+    // mirroring `LocalVariable.hashCode()`.
+    return Objects.hash(index, vs.pos, vs.name, vs.owner);
   }
 
   @Override
@@ -101,19 +110,10 @@ public class FormalParameter extends JavaExpression {
     return syntacticEquals(other);
   }
 
+  @SuppressWarnings("unchecked") // generic cast
   @Override
-  public boolean isAssignableByOtherCode() {
-    return false;
-  }
-
-  @Override
-  public boolean isModifiableByOtherCode() {
-    return false;
-  }
-
-  @Override
-  public boolean isDeterministic(AnnotationProvider provider) {
-    return true;
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
+    return getClass() == clazz ? (T) this : null;
   }
 
   @Override
