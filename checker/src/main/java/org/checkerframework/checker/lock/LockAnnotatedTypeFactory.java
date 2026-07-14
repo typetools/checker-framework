@@ -408,16 +408,31 @@ public class LockAnnotatedTypeFactory
     }
   }
 
-  // The side effect annotations processed by the Lock Checker.
+  /** The side effect annotations processed by the Lock Checker. */
   enum SideEffectAnnotation {
+    /** The method might release some locks. */
     MAYRELEASELOCKS("@MayReleaseLocks", MayReleaseLocks.class),
+    /** The method does not release any locks. */
     RELEASESNOLOCKS("@ReleasesNoLocks", ReleasesNoLocks.class),
+    /** The method does not acquire or release any locks. */
     LOCKINGFREE("@LockingFree", LockingFree.class),
+    /** The method has no side effects. */
     SIDEEFFECTFREE("@SideEffectFree", SideEffectFree.class),
+    /** The method has no side effects and is deterministic. */
     PURE("@Pure", Pure.class);
+
+    /** The annotation as written in Java source code, starting with "@". */
     final String annotation;
+
+    /** The Java class of the annotation. */
     final Class<? extends Annotation> annotationClass;
 
+    /**
+     * Creates a new SideEffectAnnotation.
+     *
+     * @param annotation the annotation as written in Java source code, starting with "@"
+     * @param annotationClass the Java class of the annotation
+     */
     SideEffectAnnotation(String annotation, Class<? extends Annotation> annotationClass) {
       this.annotation = annotation;
       this.annotationClass = annotationClass;
