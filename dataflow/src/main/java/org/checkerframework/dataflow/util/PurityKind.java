@@ -1,6 +1,6 @@
 package org.checkerframework.dataflow.util;
 
-/** Varieties of purity, defined here for convenience and not user-visible. */
+/** Varieties of purity. */
 public enum PurityKind {
   /** The method has no visible side effects. */
   SIDE_EFFECT_FREE,

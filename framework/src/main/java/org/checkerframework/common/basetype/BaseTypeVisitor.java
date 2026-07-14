@@ -1342,14 +1342,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Infer a purity annotation for {@code elt} by converting {@code purityKinds} into a method
-   * annotation.
+   * Infer a purity annotation for {@code elt} by converting {@code kinds} into a method annotation.
    *
    * <p>This method delegates to {@code WholeProgramInference.addMethodDeclarationAnnotation}, which
    * special-cases purity annotations: that method lubs a purity argument with whatever purity
    * annotation is already present on {@code elt}.
    *
-   * @param purityKinds the set of purity purityKinds to use to infer the annotation
+   * @param purityKinds the set of purity kinds to use to infer the annotation
    * @param wpi the whole program inference instance to use to do the inferring
    * @param elt the element whose purity is being inferred
    */
