@@ -1267,7 +1267,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
 
-    System.out.printf("About to compute seOnlyExpressions%n");
     List<String> seOnlyExpressionStrings =
         AnnotationUtils.getElementValueArray(
             seOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
@@ -1289,7 +1288,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // return;
       }
     }
-    System.out.printf("seOnlyExpressionStrings = %s%n", seOnlyExpressionStrings);
     if (seOnlyExpressionStrings.isEmpty()) {
       checker.reportError(methodTree, "purity.empty.sideeffectsonly");
       return;
