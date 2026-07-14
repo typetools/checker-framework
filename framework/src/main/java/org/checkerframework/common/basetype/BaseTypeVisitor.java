@@ -1216,14 +1216,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           }
         } else if (additionalKinds.isEmpty()) {
           // No need to suggest @Impure, since it is equivalent to no annotation.
-        } else if (additionalKinds.size() == 2) {
-          checker.reportWarning(tree, "purity.more.pure", tree.getName());
-        } else if (additionalKinds.contains(PurityKind.SIDE_EFFECT_FREE)) {
-          checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
-        } else if (additionalKinds.contains(PurityKind.DETERMINISTIC)) {
-          checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
         } else {
-          throw new BugInCF("Unexpected purity kind in " + additionalKinds);
+          boolean isSef = additionalKinds.contains(PurityKind.SIDE_EFFECT_FREE);
+          boolean isDet = additionalKinds.contains(PurityKind.DETERMINISTIC);
+          if (isSef && isDet) {
+            checker.reportWarning(tree, "purity.more.pure", tree.getName());
+          } else if (isSef) {
+            checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
+          } else if (isDet) {
+            checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
+          } else {
+            throw new BugInCF("Unexpected purity kind in " + additionalKinds);
+          }
         }
       }
     }
@@ -1277,7 +1281,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     } else if (det) {
       wpi.addMethodDeclarationAnnotation(elt, DETERMINISTIC, true);
     } else {
-      assert purityKinds.isEmpty();
       wpi.addMethodDeclarationAnnotation(elt, IMPURE, true);
     }
   }
