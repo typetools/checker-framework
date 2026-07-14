@@ -4176,7 +4176,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
       EnumSet<PurityKind> subPurity =
           PurityUtils.getPurityKinds(atypeFactory, overrider.getElement());
-      if (!subPurity.containsAll(superPurity)) {
+      boolean ok = subPurity.containsAll(superPurity);
+      if (!ok) {
         if (isMethodReference) {
           checker.reportError(
               overriderTree,
@@ -4192,9 +4193,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               overriderTree,
               "purity.overriding",
               overriderType,
-              overriddenType,
               subPurity,
               overrider,
+              overriddenType,
               superPurity,
               overridden);
         }
