@@ -89,10 +89,14 @@ public final class PurityChecker {
     protected final List<IPair<Tree, String>> notBothReasons = new ArrayList<>(1);
 
     /**
-     * Contains all the varieties of purity that the expression has. Starts out with all varieties,
-     * and elements are removed from it as violations are found.
+     * Contains the varieties of purity that the expression has. Starts out with the purities that a
+     * method body can be analyzed for ({@link PurityKind#SIDE_EFFECT_FREE} and {@link
+     * PurityKind#DETERMINISTIC}), and elements are removed from it as violations are found. {@link
+     * PurityKind#SIDE_EFFECTS_ONLY} is not tracked here; it is checked separately, since it does
+     * not correspond to a property that this analysis computes about a method body.
      */
-    protected EnumSet<PurityKind> kinds = EnumSet.allOf(PurityKind.class);
+    protected EnumSet<PurityKind> kinds =
+        EnumSet.of(PurityKind.SIDE_EFFECT_FREE, PurityKind.DETERMINISTIC);
 
     /**
      * Returns the kinds of purity that the method has.

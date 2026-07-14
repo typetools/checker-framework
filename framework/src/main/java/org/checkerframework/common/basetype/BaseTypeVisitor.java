@@ -1239,9 +1239,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
-    if (bodyAssigned == false) {
+    if (!bodyAssigned) {
       body = atypeFactory.getPath(tree.getBody());
-      bodyAssigned = true;
     }
     if (body == null) {
       return;
@@ -1270,55 +1269,39 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     List<String> seOnlyExpressionStrings =
         AnnotationUtils.getElementValueArray(
             seOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
+    if (seOnlyExpressionStrings.isEmpty()) {
+      checker.reportError(tree, "purity.empty.sideeffectsonly");
+      return;
+    }
     List<JavaExpression> seOnlyExpressions = new ArrayList<>(seOnlyExpressionStrings.size());
     for (String st : seOnlyExpressionStrings) {
       try {
         JavaExpression exprJe = StringToJavaExpression.atMethodBody(st, tree, checker);
         seOnlyExpressions.add(exprJe);
       } catch (JavaExpressionParseException ex) {
-        ex.printStackTrace(System.out);
-        ex.printStackTrace(System.err);
         DiagMessage diagMessage = new DiagMessage(ex);
         if (diagMessage.getMessageKey().equals("flowexpr.parse.error")) {
-          checker.reportError(methodTree, "flowexpr.parse.error", st);
+          checker.reportError(tree, "flowexpr.parse.error", st);
         } else {
           checker.report(st, diagMessage);
         }
-        throw new Error(ex);
-        // return;
+        return;
       }
-    }
-    if (seOnlyExpressionStrings.isEmpty()) {
-      checker.reportError(methodTree, "purity.empty.sideeffectsonly");
-      return;
     }
 
     // TODO: this should issue the errors itself.
     DisallowedSideEffects disallowedSideEffects =
-        DisallowedSideEffects.checkSideEffectsOnly(
-            body, atypeFactory, seOnlyExpressions, atypeFactory.getProcessingEnv(), checker);
+        DisallowedSideEffects.checkSideEffectsOnly(body, atypeFactory, seOnlyExpressions, checker);
 
     List<IPair<Tree, JavaExpression>> seOnlyIncorrectExprs = disallowedSideEffects.getExprs();
 
-    if (!seOnlyIncorrectExprs.isEmpty()) {
-      for (IPair<Tree, JavaExpression> s : seOnlyIncorrectExprs) {
-        // TODO: Can this test ever fail??
-        if (!seOnlyExpressions.contains(s.second)) {
-          checker.reportError(
-              s.first, "purity.incorrect.sideeffectsonly", tree.getName(), s.second.toString());
-        }
+    for (IPair<Tree, JavaExpression> s : seOnlyIncorrectExprs) {
+      // TODO: Can this test ever fail??
+      if (!seOnlyExpressions.contains(s.second)) {
+        checker.reportError(
+            s.first, "purity.incorrect.sideeffectsonly", tree.getName(), s.second.toString());
       }
     }
-
-    // There will be code here that *may* use `body` (and may set `body` before using it).
-    // The below is just a placeholder so `bodyAssigned` is not a dead variable.
-    // ...
-    // TODO.
-    if (!bodyAssigned) {
-      // body = atypeFactory.getPath(tree.getBody());
-      // bodyAssigned = true;
-    }
-    // ...
   }
 
   /**

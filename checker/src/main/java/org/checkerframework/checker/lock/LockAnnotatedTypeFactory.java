@@ -415,7 +415,7 @@ public class LockAnnotatedTypeFactory
     MAYRELEASELOCKS("@MayReleaseLocks", MayReleaseLocks.class),
     /** The method does not release any locks. */
     RELEASESNOLOCKS("@ReleasesNoLocks", ReleasesNoLocks.class),
-    /** The method does not aquire or release any locks. */
+    /** The method does not acquire or release any locks. */
     LOCKINGFREE("@LockingFree", LockingFree.class),
     /** The method side-effects a limited number of expressions. */
     SIDEEFFECTSONLY("@SideEffectsOnly", SideEffectsOnly.class),

@@ -150,7 +150,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * @param analysis the analysis class this store belongs to
    * @param sequentialSemantics should the analysis use sequential Java semantics?
    */
-  @SuppressWarnings("StaticAssignmentInConstructor")
   protected CFAbstractStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
     this.analysis = analysis;
     this.localVariableValues = new HashMap<>();
@@ -163,7 +162,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.sideEffectsOnlyValueElement =
         TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
     if (sideEffectsOnlyValueElement == null) {
-      throw new Error();
+      throw new BugInCF("Could not find SideEffectsOnly.value element");
     }
     this.assumeSideEffectFree =
         analysis.checker.hasOption("assumeSideEffectFree")
@@ -176,7 +175,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * @param other a CFAbstractStore to copy into this
    */
-  @SuppressWarnings("StaticAssignmentInConstructor")
   protected CFAbstractStore(CFAbstractStore<V, S> other) {
     this.analysis = other.analysis;
     this.localVariableValues = new HashMap<>(other.localVariableValues);
@@ -186,11 +184,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.arrayValues = new HashMap<>(other.arrayValues);
     this.classValues = new HashMap<>(other.classValues);
     this.sequentialSemantics = other.sequentialSemantics;
-    this.sideEffectsOnlyValueElement =
-        TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
-    if (sideEffectsOnlyValueElement == null) {
-      throw new Error();
-    }
+    // Copy the already-computed element rather than recomputing it; this constructor runs on
+    // every store copy during dataflow.
+    this.sideEffectsOnlyValueElement = other.sideEffectsOnlyValueElement;
     this.assumeSideEffectFree = other.assumeSideEffectFree;
     this.assumePureGetters = other.assumePureGetters;
   }
@@ -351,13 +347,21 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Returns true if the given expression might evaluate to a different value.
+   * Returns true if a method call might change the abstract value of the given expression, so its
+   * refinement should be discarded.
+   *
+   * <p>When {@code sideEffectsOnlyExpressions} is non-null (the method has a
+   * {@code @SideEffectsOnly} annotation), {@code expr} is side-effected only if it
+   * <em>contains</em> one of those expressions as a subexpression: modifying {@code x} can change
+   * {@code x.f}, but not the other way around. This is the counterpart of the exact-equality test
+   * used at the declaration site in {@code DisallowedSideEffects}, which checks what the method
+   * body actually modifies.
    *
    * @param expr an expression
    * @param notSideEffectedExpression an expression that is never considered to be side-effected, or
    *     null
-   * @param sideEffectsOnlyExpressions if non-null, only these expressions are considered to be
-   *     side-effected
+   * @param sideEffectsOnlyExpressions if non-null, only these expressions (and expressions built
+   *     from them) are considered to be side-effected
    * @return true if the abstract value of the expression might have changed
    */
   private boolean isSideEffected(
