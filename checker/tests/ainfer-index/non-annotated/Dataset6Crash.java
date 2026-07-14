@@ -4,6 +4,7 @@
 // a capture that extends T.
 
 import java.util.Iterator;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 public class Dataset6Crash {
 
@@ -21,6 +22,7 @@ public class Dataset6Crash {
         return true;
       }
 
+      @SideEffectsOnly("this")
       public T next() {
         fetch();
         T r = next;
@@ -42,6 +44,7 @@ public class Dataset6Crash {
         }
       }
 
+      @SideEffectsOnly("this")
       public void remove() {
         throw new UnsupportedOperationException();
       }

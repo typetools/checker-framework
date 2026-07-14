@@ -1,5 +1,6 @@
 import java.util.HashMap;
 import java.util.Map;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.qual.Covariant;
 
 public class Issue6382 {
@@ -33,6 +34,7 @@ public class Issue6382 {
     }
 
     @Override
+    @SideEffectsOnly("this")
     public V setValue(V value) throws UnsupportedOperationException {
       throw new UnsupportedOperationException();
     }
