@@ -32,7 +32,7 @@ abstract class TargetedElementAnnotationApplier {
    * Three annotation groups that may be encountered when calling getRawTypeAttributes. See {@link
    * #sift}.
    */
-  protected static enum TargetClass {
+  protected enum TargetClass {
     /** The annotation that should be applied to the current object. */
     TARGETED,
     /** The annotation is valid but we will ignore it. */
