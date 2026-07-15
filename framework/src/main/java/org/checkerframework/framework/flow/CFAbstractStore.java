@@ -399,9 +399,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
       if (!isSideEffected(fieldAccess, unrefinableReceiverJe)) {
         // If the field hasn't been side-effected, there is no need to compute a new value for it.
-        // This is safe to skip because a field that is not modifiable by other code is also not
-        // assignable by other code (see FieldAccess#isModifiableByOtherCode), so
-        // newFieldValueAfterMethodCall would return the previous value anyway.
+        // For unmodifiable fields, this is safe because they are not assignable by other code.
+        // For the exempt receiver, skipping recomputation is necessary to preserve its value.
         newFieldValues.put(fieldAccess, previousValue);
       } else {
         V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
