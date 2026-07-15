@@ -89,10 +89,12 @@ public final class PurityChecker {
     protected final List<IPair<Tree, String>> notBothReasons = new ArrayList<>(1);
 
     /**
-     * Contains all the varieties of purity that the expression has. Starts out with all varieties,
-     * and elements are removed from it as violations are found.
+     * Contains the varieties of purity that the expression has. Starts out with the purities that a
+     * method body can be analyzed for ({@link PurityKind#SIDE_EFFECT_FREE} and {@link
+     * PurityKind#DETERMINISTIC}), and elements are removed from it as violations are found.
      */
-    protected EnumSet<PurityKind> kinds = EnumSet.allOf(PurityKind.class);
+    protected EnumSet<PurityKind> kinds =
+        EnumSet.of(PurityKind.SIDE_EFFECT_FREE, PurityKind.DETERMINISTIC);
 
     /**
      * Returns the kinds of purity that the method has.
@@ -252,15 +254,19 @@ public final class PurityChecker {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void ignore) {
       ExecutableElement elt = TreeUtils.elementFromUse(tree);
-      if (!PurityUtils.hasPurityAnnotation(annoProvider, elt)) {
+      EnumSet<PurityKind> eltPurityKinds = PurityUtils.getPurityKinds(annoProvider, elt);
+      if (!eltPurityKinds.contains(PurityKind.SIDE_EFFECT_FREE)
+          && !eltPurityKinds.contains(PurityKind.DETERMINISTIC)) {
+        // The called method has no purity annotation, so the callee is not pure either.
         purityResult.addNotBothReason(tree, "call");
       } else {
+        // The called method has a purity annotation:  @SideEffectFree, @Deterministic, or both.
         EnumSet<PurityKind> purityKinds =
             ((assumeDeterministic && assumeSideEffectFree)
                     || (assumePureGetters && ElementUtils.isGetter(elt)))
                 // Avoid computation if not necessary
                 ? detAndSeFree
-                : PurityUtils.getPurityKinds(annoProvider, elt);
+                : eltPurityKinds;
         boolean det =
             assumeDeterministic
                 || purityKinds.contains(PurityKind.DETERMINISTIC)

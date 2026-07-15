@@ -219,15 +219,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Furthermore, if the method is deterministic, we store its result {@code val} in the store.
    *
    * @param methodInvocationNode method whose information is being updated
-   * @param _atypeFactory the type factory of the associated checker
    * @param val abstract value of the method call
    */
-  public void updateForMethodCall(
-      MethodInvocationNode methodInvocationNode, AnnotatedTypeFactory _atypeFactory, V val) {
+  public void updateForMethodCall(MethodInvocationNode methodInvocationNode, V val) {
     ExecutableElement method = methodInvocationNode.getTarget().getMethod();
     @SuppressWarnings("unchecked")
-    GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory =
-        (GenericAnnotatedTypeFactory<V, S, ?, ?>) _atypeFactory;
+    GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory = analysis.atypeFactory;
 
     // Case 1: The method is side-effect-free.
     boolean hasSideEffect =
@@ -374,9 +371,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Helper for {@link #updateForMethodCall(MethodInvocationNode, AnnotatedTypeFactory,
-   * CFAbstractValue)}. Remove any information about field values that might not be valid any more
-   * after a method call, and add information guaranteed by the method.
+   * Helper for {@link #updateForMethodCall(MethodInvocationNode, CFAbstractValue)}. Remove any
+   * information about field values that might not be valid any more after a method call, and add
+   * information guaranteed by the method.
    *
    * <p>More specifically, remove all information about fields except for unassignable fields and
    * fields that have a monotonic annotation.
