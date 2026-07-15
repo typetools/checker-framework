@@ -122,6 +122,21 @@ public class ValueLiteral extends JavaExpression {
   }
 
   @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof ValueLiteral other)) {
+      return false;
+    }
+    // TODO:  Can this string comparison be cleaned up?
+    // Cannot use Types.isSameType(type, other.type) because we don't have a Types object.
+    return type.toString().equals(other.type.toString()) && Objects.equals(value, other.value);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(value, type.toString());
+  }
+
+  @Override
   public boolean syntacticEquals(JavaExpression je) {
     return this.equals(je);
   }
@@ -136,18 +151,6 @@ public class ValueLiteral extends JavaExpression {
     return false; // not modifiable
   }
 
-  // java.lang.Object methods
-
-  @Override
-  public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ValueLiteral other)) {
-      return false;
-    }
-    // TODO:  Can this string comparison be cleaned up?
-    // Cannot use Types.isSameType(type, other.type) because we don't have a Types object.
-    return type.toString().equals(other.type.toString()) && Objects.equals(value, other.value);
-  }
-
   @Override
   public String toString() {
     if (value == null) {
@@ -160,11 +163,6 @@ public class ValueLiteral extends JavaExpression {
       return StringsPlume.charLiteral((Character) value);
     }
     return value.toString();
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(value, type.toString());
   }
 
   @Override
