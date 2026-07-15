@@ -18,8 +18,9 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
+import org.plumelib.util.UnionFind;
 
 /**
  * The set of expressions a method side-effects, beyond those listed in its {@link SideEffectsOnly}
@@ -177,7 +178,7 @@ public class DisallowedSideEffects {
         exprs.add(receiver);
         exprs.addAll(args);
       }
-      return CollectionsPlume.mapList(JavaExpression::fromTree, exprs);
+      return CollectionsP.mapList(JavaExpression::fromTree, exprs);
     }
 
     /**

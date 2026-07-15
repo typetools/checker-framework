@@ -26,7 +26,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.util.RegexUtil;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Adds annotations to a type based on the contents of a tree. This class applies annotations
@@ -286,9 +286,9 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
         // Verify that res is not a subtype of any type in nonMatches
         for (Set<? extends AnnotationMirror> sam : nonMatches) {
           if (qualHierarchy.isSubtypeShallow(res, sam, tm)) {
-            String matchesOnePerLine = StringsPlume.join(System.lineSeparator() + "     ", matches);
+            String matchesOnePerLine = StringsP.join(System.lineSeparator() + "     ", matches);
             throw new BugInCF(
-                StringsPlume.joinLines(
+                StringsP.joinLines(
                     "Bug in @QualifierForLiterals(stringpatterns=...) in type"
                         + " hierarchy definition:",
                     " the glb of `matches` for \"" + string + "\" is " + res,

@@ -56,7 +56,7 @@ import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.stub.AnnotationFileParser;
 import org.checkerframework.framework.util.JavaParserUtil;
-import org.plumelib.util.FilesPlume;
+import org.plumelib.util.FilesP;
 import org.plumelib.util.MapsP;
 
 /**
@@ -541,13 +541,13 @@ public class InsertAjavaAnnotations {
   public void insertAnnotations(String annotationFileName, String javaFileName) {
     try {
       File javaFile = new File(javaFileName);
-      String fileContents = FilesPlume.readString(Path.of(javaFileName));
+      String fileContents = FilesP.readString(Path.of(javaFileName));
       @SuppressWarnings("regex") // next release of plume-lib annotates `inferLineSeparator()`
-      @Regex String lineSeparator = FilesPlume.inferLineSeparator(javaFileName);
+      @Regex String lineSeparator = FilesP.inferLineSeparator(javaFileName);
       try (InputStream annotationInputStream =
           Files.newInputStream(Paths.get(annotationFileName))) {
         String result = insertAnnotations(annotationInputStream, fileContents, lineSeparator);
-        FilesPlume.writeString(javaFile, result);
+        FilesP.writeString(javaFile, result);
       }
     } catch (IOException e) {
       System.err.println(

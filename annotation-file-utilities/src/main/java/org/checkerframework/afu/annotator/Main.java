@@ -74,7 +74,7 @@ import org.plumelib.options.OptionGroup;
 import org.plumelib.options.Options;
 import org.plumelib.reflection.ReflectionPlume;
 import org.plumelib.util.FileIOException;
-import org.plumelib.util.FilesPlume;
+import org.plumelib.util.FilesP;
 import org.plumelib.util.IPair;
 
 /**
@@ -719,7 +719,7 @@ public final class Main {
       String fileLineSep;
       try {
         // fileLineSep is set here so that exceptions can be caught
-        fileLineSep = FilesPlume.inferLineSeparator(javafilename);
+        fileLineSep = FilesP.inferLineSeparator(javafilename);
       } catch (IOException e) {
         throw new Error("Cannot read " + javafilename, e);
       }

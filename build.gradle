@@ -22,6 +22,9 @@ repositories {
   }
   mavenCentral()
 }
+configurations.all {
+  resolutionStrategy.cacheChangingModulesFor(0, "minutes")
+}
 
 ext {
   // Different JDKs may be used to run Gradle, compile the Checker Framework, and run the CF tests.

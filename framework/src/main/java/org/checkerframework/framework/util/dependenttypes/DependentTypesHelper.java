@@ -62,7 +62,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * A class that helps checkers use qualifiers that are represented by annotations with Java
@@ -683,7 +683,7 @@ public class DependentTypesHelper {
 
     // For use in stringToJavaExpr below, to avoid re-computation. Especially
     // important for the TreePath, which is expensive to compute.
-    List<JavaExpression> argsAsExprs = CollectionsPlume.mapList(LocalVariable::fromNode, arguments);
+    List<JavaExpression> argsAsExprs = CollectionsP.mapList(LocalVariable::fromNode, arguments);
     JavaExpression receiverAsExpr = receiver == null ? null : LocalVariable.fromNode(receiver);
     TreePath path = factory.getPath(invocationTree);
 
@@ -861,7 +861,7 @@ public class DependentTypesHelper {
             factory.getProcessingEnv(), AnnotationUtils.annotationName(originalAnno));
     builder.copyElementValuesFromAnnotation(originalAnno, elementMap.keySet());
     for (Map.Entry<ExecutableElement, List<JavaExpression>> entry : elementMap.entrySet()) {
-      List<String> strings = CollectionsPlume.mapList(JavaExpression::toString, entry.getValue());
+      List<String> strings = CollectionsP.mapList(JavaExpression::toString, entry.getValue());
       builder.setValue(entry.getKey(), strings);
     }
     return builder.build();

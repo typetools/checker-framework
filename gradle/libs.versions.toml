@@ -74,7 +74,7 @@ lombok = "org.projectlombok:lombok:1.18.46"
 
 options = "org.plumelib:options:2.0.3"
 
-plume-util = "org.plumelib:plume-util:1.14.0"
+plume-util = "org.plumelib:plume-util:1.15.0-SNAPSHOT"
 
 reflection-util = "org.plumelib:reflection-util:1.1.6"
 

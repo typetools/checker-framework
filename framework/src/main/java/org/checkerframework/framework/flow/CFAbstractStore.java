@@ -49,7 +49,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
 import org.plumelib.util.ToStringComparator;
@@ -432,8 +432,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         atypeFactory.getAnnotationWithMetaAnnotation(
             fieldAccess.getField(), MonotonicQualifier.class);
     List<AnnotationMirror> metaAnnotations =
-        CollectionsPlume.withoutDuplicates(
-            CollectionsPlume.mapList(pair -> pair.second, fieldAnnotationPairs));
+        CollectionsP.withoutDuplicates(
+            CollectionsP.mapList(pair -> pair.second, fieldAnnotationPairs));
     List<AnnotationMirror> monotonicAnnotations = new ArrayList<>(metaAnnotations.size());
     for (AnnotationMirror metaAnnotation : metaAnnotations) {
       @SuppressWarnings("deprecation") // permitted for use in the framework

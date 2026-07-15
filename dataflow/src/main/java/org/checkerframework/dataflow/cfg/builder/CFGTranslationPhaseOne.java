@@ -183,7 +183,7 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
 import org.plumelib.util.IdentityArraySet;
 
@@ -2433,7 +2433,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             tree, "start of try statement #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
 
     List<IPair<TypeMirror, Label>> catchLabels =
-        CollectionsPlume.mapList(
+        CollectionsP.mapList(
             (CatchTree c) -> IPair.of(TreeUtils.typeOf(c.getParameter().getType()), new Label()),
             catches);
 
@@ -3346,14 +3346,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     assert dimensions != null;
 
     List<Node> dimensionNodes =
-        CollectionsPlume.mapList(dim -> unaryNumericPromotion(scan(dim, p)), dimensions);
+        CollectionsP.mapList(dim -> unaryNumericPromotion(scan(dim, p)), dimensions);
 
     List<Node> initializerNodes;
     if (initializers == null) {
       initializerNodes = Collections.emptyList();
     } else {
       initializerNodes =
-          CollectionsPlume.mapList(init -> assignConvert(scan(init, p), elemType), initializers);
+          CollectionsP.mapList(init -> assignConvert(scan(init, p), elemType), initializers);
     }
 
     Node node = new ArrayCreationNode(tree, type, dimensionNodes, initializerNodes);
