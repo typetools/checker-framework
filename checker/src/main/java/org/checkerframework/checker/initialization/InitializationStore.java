@@ -17,7 +17,6 @@ import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -104,14 +103,13 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
    * the 'invariant' annotation.
    */
   @Override
-  public void updateForMethodCall(
-      MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, V val) {
+  public void updateForMethodCall(MethodInvocationNode n, V val) {
     // Remove invariant annotated fields to avoid performance issue reported in #1438.
     for (FieldAccess invariantField : invariantFields.keySet()) {
       fieldValues.remove(invariantField);
     }
 
-    super.updateForMethodCall(n, atypeFactory, val);
+    super.updateForMethodCall(n, val);
 
     // Add invariant annotation again.
     fieldValues.putAll(invariantFields);
