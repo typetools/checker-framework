@@ -284,8 +284,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /**
    * Returns true if the given expression might evaluate to a different value.
    *
-   * <p>Some side effects are ignored: {@code notSideEffectedExpression} is treated as if it cannot
-   * change. Concretely, the implementation ignores it if it appears within {@code expr}.
+   * <p>Some side effects are ignored: {`@code` notSideEffectedExpression} is treated as if it cannot
+   * change. Concretely, the implementation evaluates to false if {`@code` expr} is strictly equal
+   * to {`@code` notSideEffectedExpression}.
    *
    * @param expr an expression
    * @param notSideEffectedExpression an expression that is never considered to be side-effected, or
