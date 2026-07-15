@@ -1861,15 +1861,16 @@ public final class TreeUtils {
 
     ExecutableElement element = elementFromUse(tree);
     if (element.isVarArgs()) {
+      // Sometimes when the method type is viewpoint-adapted, the vararg parameter disappears,
+      // just return the declared type.
+      // For example,
+      // static void call(MethodHandle methodHandle) throws Throwable {
+      //   methodHandle.invoke();
+      // }
+      // See framework/tests/all-systems/Issue6078.java.
       List<? extends TypeMirror> params = executableTypeFromUse.getParameterTypes();
 
       if (params.size() != element.getParameters().size()) {
-        // Sometimes when the method type is viewpoint-adapted, the vararg parameter disappears,
-        // just return the declared type.
-        // For example,
-        // static void call(MethodHandle methodHandle) throws Throwable {
-        //   methodHandle.invoke();
-        // }
         return (ExecutableType) element.asType();
       }
 
