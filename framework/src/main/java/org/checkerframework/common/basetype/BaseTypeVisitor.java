@@ -1162,10 +1162,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       checker.reportWarning(tree, "purity.effectively.pure", tree.getName());
     }
 
-    // `body` is lazily assigned.
-    TreePath body = null;
-    boolean bodyAssigned = false;
-
     // check "no" purity
     boolean isDeterministic = purityKinds.contains(PurityKind.DETERMINISTIC);
     if (isDeterministic) {
@@ -1177,8 +1173,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
-    body = atypeFactory.getPath(tree.getBody());
-    bodyAssigned = true;
+    TreePath body = atypeFactory.getPath(tree.getBody());
     PurityResult r;
     if (body == null) {
       r = new PurityResult();
@@ -1233,15 +1228,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
       }
     }
-
-    // There will be code here that *may* use `body` (and may set `body` before using it).
-    // The below is just a placeholder so `bodyAssigned` is not a dead variable.
-    // ...
-    if (!bodyAssigned) {
-      body = atypeFactory.getPath(tree.getBody());
-      bodyAssigned = true;
-    }
-    // ...
   }
 
   /**
