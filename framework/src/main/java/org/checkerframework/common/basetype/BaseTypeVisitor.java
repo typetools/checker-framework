@@ -1143,12 +1143,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param tree the method tree to check
    */
   protected void checkPurityAnnotations(MethodTree tree) {
+
+    EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, tree);
+
     if (!checkPurityAnnotations) {
       return;
     }
 
     if (!suggestPureMethods && !PurityUtils.hasPurityAnnotation(atypeFactory, tree)) {
-      // There is nothing to check.
+      // There is no work to do.
       return;
     }
 
@@ -1160,13 +1163,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     TreePath body = null;
     boolean bodyAssigned = false;
 
-    if (suggestPureMethods || PurityUtils.hasPurityAnnotation(atypeFactory, tree)) {
+    if (suggestPureMethods
+        || purityKinds.contains(PurityKind.SIDE_EFFECT_FREE)
+        || purityKinds.contains(PurityKind.DETERMINISTIC)) {
 
       // check "no" purity
-      EnumSet<PurityKind> kinds = PurityUtils.getPurityKinds(atypeFactory, tree);
-      // @Deterministic makes no sense for a void method or constructor
-      boolean isDeterministic = kinds.contains(PurityKind.DETERMINISTIC);
+      boolean isDeterministic = purityKinds.contains(PurityKind.DETERMINISTIC);
       if (isDeterministic) {
+        // @Deterministic makes no sense for a void method or constructor
         if (TreeUtils.isConstructor(tree)) {
           checker.reportWarning(tree, "purity.deterministic.constructor");
         } else if (TreeUtils.isVoidReturn(tree)) {
@@ -1184,8 +1188,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             PurityChecker.checkPurity(
                 body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
       }
-      if (!r.isPure(kinds)) {
-        reportPurityErrors(r, tree, kinds);
+      if (!r.isPure(purityKinds)) {
+        reportPurityErrors(r, tree, purityKinds);
       }
 
       if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
@@ -1194,7 +1198,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (!infer) {
           // During WPI, propagate all purity kinds, even those that are already
           // present (because they were inferred in a previous WPI round).
-          additionalKinds.removeAll(kinds);
+          additionalKinds.removeAll(purityKinds);
         }
         if (TreeUtils.isConstructor(tree) || TreeUtils.isVoidReturn(tree)) {
           additionalKinds.remove(PurityKind.DETERMINISTIC);
@@ -1216,14 +1220,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           }
         } else if (additionalKinds.isEmpty()) {
           // No need to suggest @Impure, since it is equivalent to no annotation.
-        } else if (additionalKinds.size() == 2) {
-          checker.reportWarning(tree, "purity.more.pure", tree.getName());
-        } else if (additionalKinds.contains(PurityKind.SIDE_EFFECT_FREE)) {
-          checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
-        } else if (additionalKinds.contains(PurityKind.DETERMINISTIC)) {
-          checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
         } else {
-          throw new BugInCF("Unexpected purity kind in " + additionalKinds);
+          boolean isSef = additionalKinds.contains(PurityKind.SIDE_EFFECT_FREE);
+          boolean isDet = additionalKinds.contains(PurityKind.DETERMINISTIC);
+          if (isSef && isDet) {
+            checker.reportWarning(tree, "purity.more.pure", tree.getName());
+          } else if (isSef) {
+            checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
+          } else if (isDet) {
+            checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
+          } else {
+            throw new BugInCF("Unexpected purity kind in " + additionalKinds);
+          }
         }
       }
     }
@@ -1260,20 +1268,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * special-cases purity annotations: that method lubs a purity argument with whatever purity
    * annotation is already present on {@code elt}.
    *
-   * @param kinds the set of purity kinds to use to infer the annotation
+   * @param purityKinds the set of purity kinds to use to infer the annotation
    * @param wpi the whole program inference instance to use to do the inferring
    * @param elt the element whose purity is being inferred
    */
   private void inferPurityAnno(
-      EnumSet<PurityKind> kinds, WholeProgramInference wpi, ExecutableElement elt) {
-    if (kinds.size() == 2) {
+      EnumSet<PurityKind> purityKinds, WholeProgramInference wpi, ExecutableElement elt) {
+    boolean sef = purityKinds.contains(PurityKind.SIDE_EFFECT_FREE);
+    boolean det = purityKinds.contains(PurityKind.DETERMINISTIC);
+
+    if (sef && det) {
       wpi.addMethodDeclarationAnnotation(elt, PURE, true);
-    } else if (kinds.contains(PurityKind.SIDE_EFFECT_FREE)) {
+    } else if (sef) {
       wpi.addMethodDeclarationAnnotation(elt, SIDE_EFFECT_FREE, true);
-    } else if (kinds.contains(PurityKind.DETERMINISTIC)) {
+    } else if (det) {
       wpi.addMethodDeclarationAnnotation(elt, DETERMINISTIC, true);
     } else {
-      assert kinds.isEmpty();
       wpi.addMethodDeclarationAnnotation(elt, IMPURE, true);
     }
   }
@@ -4166,23 +4176,33 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /** Check that an override respects purity. */
     private void checkPurity() {
-      String msgKey = isMethodReference ? "purity.methodref" : "purity.overriding";
-
-      // check purity annotations
       EnumSet<PurityKind> superPurity =
           PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
       EnumSet<PurityKind> subPurity =
           PurityUtils.getPurityKinds(atypeFactory, overrider.getElement());
-      if (!subPurity.containsAll(superPurity)) {
-        checker.reportError(
-            overriderTree,
-            msgKey,
-            overriderType,
-            overrider,
-            overriddenType,
-            overridden,
-            subPurity,
-            superPurity);
+      boolean ok = subPurity.containsAll(superPurity);
+      if (!ok) {
+        if (isMethodReference) {
+          checker.reportError(
+              overriderTree,
+              "purity.methodref",
+              overriderType,
+              subPurity,
+              overrider,
+              overriddenType,
+              superPurity,
+              overridden);
+        } else {
+          checker.reportError(
+              overriderTree,
+              "purity.overriding",
+              overriderType,
+              subPurity,
+              overrider,
+              overriddenType,
+              superPurity,
+              overridden);
+        }
       }
     }
 
