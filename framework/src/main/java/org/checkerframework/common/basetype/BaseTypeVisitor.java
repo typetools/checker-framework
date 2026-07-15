@@ -1146,7 +1146,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, tree);
 
-    if (!suggestPureMethods && !(checkPurityAnnotations && !purityKinds.isEmpty())) {
+    boolean needToSuggest =
+        suggestPureMethods
+            && !(purityKinds.contains(PurityKind.SIDE_EFFECT_FREE)
+                && purityKinds.contains(PurityKind.DETERMINISTIC));
+    boolean needToCheck = checkPurityAnnotations && !purityKinds.isEmpty();
+
+    if (!needToSuggest && !needToCheck) {
       // There is no work to do.
       return;
     }
@@ -1159,7 +1165,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     TreePath body = null;
     boolean bodyAssigned = false;
 
-    if (suggestPureMethods
+    if (needToSuggest
         || purityKinds.contains(PurityKind.SIDE_EFFECT_FREE)
         || purityKinds.contains(PurityKind.DETERMINISTIC)) {
 
