@@ -227,8 +227,9 @@ public abstract class JavaExpression {
    * @return true if the given expression is equal to this or equal to the receiver of this,
    *     recursively
    */
+  @Pure
   public boolean containsAsReceiver(JavaExpression receiver) {
-    return FOO;
+    return syntacticEquals(receiver);
   }
 
   /**

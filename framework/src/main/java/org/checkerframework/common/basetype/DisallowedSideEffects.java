@@ -1,7 +1,5 @@
 package org.checkerframework.common.basetype;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
@@ -91,10 +89,13 @@ public class DisallowedSideEffects {
      */
     List<JavaExpression> sideEffectsOnlyExpressionsFromAnnotation;
 
-    /** Expressions that may be aliased to other expressions in the method body. */
-    Multimap<JavaExpression, JavaExpression> aliasedExpressions = HashMultimap.create();
+    UnionFind<JavaExpression> aliasedExpressions = new UnionFind<>();
 
-    /** The annotation provider. */
+    /**
+     * The elements of {@link #aliasedExpressions}. Needed because UnionFind does not
+     *
+     * <p>/** The annotation provider.
+     */
     protected final AnnotationProvider annoProvider;
 
     /** The checker to use. */
@@ -197,21 +198,30 @@ public class DisallowedSideEffects {
       if (!expr.isModifiableByOtherCode()) {
         return false;
       }
-      // TODO: Improve the test, to test all receivers.
+      JavaExpression expr1 = aliasedExpressions.find(expr);
       for (JavaExpression seOnlyExpr : sideEffectsOnlyExpressionsFromAnnotation) {
         System.out.printf("Testing whether %s contains %s%n", expr, seOnlyExpr);
+
+        addAliasExpression(seOnlyExpr);
+        seOnlyExpr1 = aliasedExpressions.find(seOnlyExpr);
+        // TODO: I need to check all possible pairs.
+        // For efficiency, I will want to cache results to avoid recomputation.
         if (aliasedExpressions.containsKey(seOnlyExpr)) {
-          for (JavaExpression seOnlyExprAlias : sideEffectsOnlyExpressionsFromAnnotation)
-            if (expr.equals(seOnlyExprAlias)) {
+          System.out.printf("aliases for %s: %s%n", seOnlyExpr, aliasedExpressions.get(seOnlyExpr));
+          for (JavaExpression seOnlyExprAlias : aliasedExpressions.get(seOnlyExpr)) {
+            System.out.printf("containsAsReceiver: %s %s%n", expr, seOnlyExprAlias);
+            if (expr.containsAsReceiver(seOnlyExprAlias)) {
+              System.out.printf("containsAsReceiver: %s %s => false%n", expr, seOnlyExprAlias);
               return false;
             }
+          }
         } else {
-          if (expr.equals(seOnlyExpr)) {
+          if (expr.containsAsReceiver(seOnlyExpr)) {
             return false;
           }
         }
       }
-      System.out.printf("isDisallowedSideEffectedExpression => false: %s%n", expr);
+      System.out.printf("isDisallowedSideEffectedExpression => true: %s%n", expr);
       return true;
     }
 
@@ -224,8 +234,7 @@ public class DisallowedSideEffects {
       if (!sideEffectsOnlyExpressionsFromAnnotation.contains(lhs)) {
         disallowedSideEffects.addExpr(node, lhs);
       }
-      addAlias(lhs, rhs);
-      return super.visitAssignment(node, aVoid);
+      aliasedExpressions.union(lhs, rhs);
     }
 
     @Override
@@ -271,22 +280,28 @@ public class DisallowedSideEffects {
     }
 
     /**
+     * Add the expression to {@link #aliasedExpressions} if it is not already present.
+     *
+     * @param expr an expression
+     */
+    private void addAliasExpression(JavaExpression expr) {
+      if (!aliasedExpressions.getParentMap().containsKey()) {
+        aliasedExpressions.addElement(expr);
+      }
+    }
+
+    /**
      * Set the two expressions as possibly aliased.
      *
      * @param lhs a Java expression
      * @param rhs a Java expression
      */
     private void addAlias(JavaExpression lhs, JavaExpression rhs) {
-      for (JavaExpression alias : aliasedExpressions.get(lhs)) {
-        aliasedExpressions.put(rhs, alias);
-      }
-      for (JavaExpression alias : aliasedExpressions.get(rhs)) {
-        aliasedExpressions.put(lhs, alias);
-      }
-      aliasedExpressions.put(lhs, lhs);
-      aliasedExpressions.put(lhs, rhs);
-      aliasedExpressions.put(rhs, lhs);
-      aliasedExpressions.put(rhs, rhs);
+      System.out.printf("addAlias(%s, %s) pre: %s%n", lhs, rhs, aliasedExpressions);
+      addAliasExpression(lhs);
+      addAliasExpression(rhs);
+      aliasedExpressions.union(lhs, rhs);
+      System.out.printf("addAlias(%s, %s) => %s%n", lhs, rhs, aliasedExpressions);
     }
   }
 }
