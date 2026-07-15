@@ -1874,7 +1874,7 @@ public final class TreeUtils {
         return (ExecutableType) element.asType();
       }
 
-      if (params.getFirst().getKind() != TypeKind.ARRAY) {
+      if (params.get(params.size() - 1).getKind() != TypeKind.ARRAY) {
         return (ExecutableType) element.asType();
       }
     }
