@@ -49,7 +49,6 @@ import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.ArraysP;
 import org.plumelib.util.CollectionsP;
-import org.plumelib.util.StringsP;
 
 /**
  * Process Java source files to remove annotations that ought to be inferred.
@@ -293,7 +292,7 @@ public final class RemoveAnnotationsForInference {
    * @param newLine the new line for index {@code lineno}
    */
   static void replaceLine(List<String> lines, int lineno, String newLine) {
-    if (StringsP.isBlank(newLine)) {
+    if (newLine.isBlank()) {
       lines.remove(lineno);
     } else {
       lines.set(lineno, newLine);
