@@ -66,7 +66,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * LockAnnotatedTypeFactory builds types with @LockHeld and @LockPossiblyHeld annotations. LockHeld
@@ -754,7 +754,7 @@ public class LockAnnotatedTypeFactory
     if (value instanceof List) {
       @SuppressWarnings("unchecked")
       List<AnnotationValue> la = (List<AnnotationValue>) value;
-      lockExpressions = CollectionsPlume.mapList((AnnotationValue a) -> (String) a.getValue(), la);
+      lockExpressions = CollectionsP.mapList((AnnotationValue a) -> (String) a.getValue(), la);
     } else if (value instanceof String) {
       lockExpressions = Collections.singletonList((String) value);
     } else {

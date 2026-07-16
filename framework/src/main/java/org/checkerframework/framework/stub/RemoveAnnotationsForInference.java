@@ -47,9 +47,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.stubifier.JavaStubifier;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.ArraysPlume;
-import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.ArraysP;
+import org.plumelib.util.CollectionsP;
+import org.plumelib.util.StringsP;
 
 /**
  * Process Java source files to remove annotations that ought to be inferred.
@@ -135,7 +135,7 @@ public final class RemoveAnnotationsForInference {
         }
       }
 
-      args = ArraysPlume.subarray(args, 2, args.length - 2);
+      args = ArraysP.subarray(args, 2, args.length - 2);
     }
     if (args.length < 1) {
       System.err.println("Usage: provide one or more directory names to process");
@@ -293,7 +293,7 @@ public final class RemoveAnnotationsForInference {
    * @param newLine the new line for index {@code lineno}
    */
   static void replaceLine(List<String> lines, int lineno, String newLine) {
-    if (StringsPlume.isBlank(newLine)) {
+    if (StringsP.isBlank(newLine)) {
       lines.remove(lineno);
     } else {
       lines.set(lineno, newLine);
@@ -501,8 +501,7 @@ public final class RemoveAnnotationsForInference {
       return false;
     }
     List<String> checkerNames =
-        CollectionsPlume.mapList(
-            RemoveAnnotationsForInference::checkerName, suppressWarningsStrings);
+        CollectionsP.mapList(RemoveAnnotationsForInference::checkerName, suppressWarningsStrings);
     // "allcheckers" suppresses all warnings.
     if (checkerNames.contains("allcheckers")) {
       return true;

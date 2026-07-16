@@ -224,7 +224,7 @@ public class IndexFileSpecification {
             "Warning: IndexFileSpecification did not find classfile for: " + className);
         System.out.println("The classpath is:");
         System.out.println(ReflectionPlume.classpathToString());
-        // org.plumelib.util.SystemPlume.sleep(100);
+        // org.plumelib.util.SystemP.sleep(100);
         // throw new RuntimeException("IndexFileSpecification.parseClass", e);
       } catch (RuntimeException e) {
         System.err.println("IndexFileSpecification had a problem reading class: " + className);

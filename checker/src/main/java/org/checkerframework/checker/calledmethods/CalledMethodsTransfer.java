@@ -34,7 +34,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /** A transfer function that accumulates the names of methods called. */
 public class CalledMethodsTransfer extends AccumulationTransfer {
@@ -324,7 +324,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
 
     List<String> currentMethods =
         AnnotationUtils.getElementValueArray(type, calledMethodsValueElement, String.class);
-    List<String> newList = CollectionsPlume.concatenate(currentMethods, methodNames);
+    List<String> newList = CollectionsP.concatenate(currentMethods, methodNames);
 
     return atypeFactory.createAccumulatorAnnotation(newList);
   }

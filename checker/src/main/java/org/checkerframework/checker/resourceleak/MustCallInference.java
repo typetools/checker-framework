@@ -59,7 +59,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * This class implements the annotation inference algorithm for the Resource Leak Checker. It infers
@@ -514,7 +514,7 @@ public class MustCallInference {
   private int getIndexOfParam(Obligation obligation) {
     Set<ResourceAlias> resourceAliases = obligation.resourceAliases;
     List<VariableElement> paramElts =
-        CollectionsPlume.mapList(TreeUtils::elementFromDeclaration, methodTree.getParameters());
+        CollectionsP.mapList(TreeUtils::elementFromDeclaration, methodTree.getParameters());
     for (ResourceAlias resourceAlias : resourceAliases) {
       int paramIndex = paramElts.indexOf(resourceAlias.element);
       if (paramIndex != -1) {

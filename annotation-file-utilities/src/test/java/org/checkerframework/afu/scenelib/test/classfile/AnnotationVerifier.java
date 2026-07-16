@@ -18,7 +18,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.TypePath;
 import org.objectweb.asm.TypeReference;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * An {@code AnnotationVerifier} provides a way to check to see if two versions of the same class
@@ -787,7 +787,7 @@ public class AnnotationVerifier {
       if (questionable.equals(correct)) {
         return;
       }
-      if (CollectionsPlume.deepEquals(questionable, correct)) {
+      if (CollectionsP.deepEquals(questionable, correct)) {
         return;
       }
 

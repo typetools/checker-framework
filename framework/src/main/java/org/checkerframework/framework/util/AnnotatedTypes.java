@@ -54,9 +54,9 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Utility methods for operating on {@code AnnotatedTypeMirror}. This class mimics the class {@link
@@ -206,7 +206,7 @@ public final class AnnotatedTypes {
     if (typeArgMap.size() == ((AnnotatedDeclaredType) supertype).getTypeArguments().size()) {
       List<? extends AnnotatedTypeMirror> subTypeArgs = declaredSubtype.getTypeArguments();
       List<AnnotatedTypeMirror> newTypeArgs =
-          CollectionsPlume.mapList(
+          CollectionsP.mapList(
               mapping -> subTypeArgs.get(mapping.first).deepCopy(), orderedByDestination);
       declaredAsSuper.setTypeArguments(newTypeArgs);
     } else {
@@ -545,7 +545,7 @@ public final class AnnotatedTypes {
     for (AnnotatedTypeMirror typeParam : enclosingType.getTypeArguments()) {
       if (typeParam.getKind() != TypeKind.TYPEVAR) {
         throw new BugInCF(
-            StringsPlume.joinLines(
+            StringsP.joinLines(
                 "Type arguments of a declaration should be type variables.",
                 "  enclosingClassOfElem=" + enclosingClassOfElem,
                 "  enclosingType=" + enclosingType,
@@ -557,7 +557,7 @@ public final class AnnotatedTypes {
     List<AnnotatedTypeMirror> baseParams = base.getTypeArguments();
     if (ownerParams.size() != baseParams.size() && !base.isUnderlyingTypeRaw()) {
       throw new BugInCF(
-          StringsPlume.joinLines(
+          StringsP.joinLines(
               "Unexpected number of parameters.",
               "enclosingType=" + enclosingType,
               "baseType=" + base));
@@ -565,7 +565,7 @@ public final class AnnotatedTypes {
     if (!ownerParams.isEmpty() && baseParams.isEmpty() && base.isUnderlyingTypeRaw()) {
       // If base type was raw and the type arguments are missing, set them to the erased
       // type of the type variable (which is the erased type of the upper bound).
-      baseParams = CollectionsPlume.mapList(AnnotatedTypeVariable::getErased, ownerParams);
+      baseParams = CollectionsP.mapList(AnnotatedTypeVariable::getErased, ownerParams);
     }
 
     for (int i = 0; i < ownerParams.size(); ++i) {
@@ -1403,7 +1403,7 @@ public final class AnnotatedTypes {
             return null;
           }
           throw new BugInCF(
-              StringsPlume.joinLines(
+              StringsP.joinLines(
                   "Unexpected AnnotatedTypeMirror with no primary annotation.",
                   "toSearch=" + toSearch,
                   "top=" + top,

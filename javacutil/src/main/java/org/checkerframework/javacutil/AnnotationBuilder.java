@@ -35,7 +35,7 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.reflection.ReflectionPlume;
 import org.plumelib.util.ArrayMap;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Builds an annotation mirror that may have some values.
@@ -767,7 +767,7 @@ public class AnnotationBuilder {
       } else if (value instanceof Character) {
         toStringVal = "\'" + value + "\'";
       } else if (value instanceof List<?> list) {
-        toStringVal = "{" + StringsPlume.join(", ", list) + "}";
+        toStringVal = "{" + StringsP.join(", ", list) + "}";
       } else if (value instanceof VariableElement var) {
         // for Enums
         String encl = var.getEnclosingElement().toString();

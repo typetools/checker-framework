@@ -26,7 +26,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.reflection.Signatures;
 import org.plumelib.util.ArrayMap;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * This class contains static methods that convert between {@link Annotation} and {@link
@@ -71,7 +71,7 @@ public class AnnotationConverter {
         // Convert each AnnotationValue to its respective Java type.
         @SuppressWarnings("unchecked")
         List<AnnotationValue> valueList = (List<AnnotationValue>) value;
-        value = CollectionsPlume.mapList(AnnotationValue::getValue, valueList);
+        value = CollectionsP.mapList(AnnotationValue::getValue, valueList);
       } else if (value instanceof TypeMirror) {
         try {
           value = Class.forName(TypesUtils.binaryName((TypeMirror) value));

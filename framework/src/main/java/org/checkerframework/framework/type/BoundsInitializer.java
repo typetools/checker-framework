@@ -30,7 +30,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * {@code BoundsInitializer} creates AnnotatedTypeMirrors (without annotations) for the bounds of
@@ -275,7 +275,7 @@ public final class BoundsInitializer {
       AnnotatedUnionType annotatedUnionType = (AnnotatedUnionType) createAnnotatedType(t);
 
       annotatedUnionType.alternatives =
-          CollectionsPlume.mapList(
+          CollectionsP.mapList(
               alternative -> (AnnotatedDeclaredType) visit(alternative), t.getAlternatives());
       return annotatedUnionType;
     }
@@ -284,7 +284,7 @@ public final class BoundsInitializer {
     public AnnotatedTypeMirror visitIntersection(IntersectionType t, Void unused) {
       AnnotatedIntersectionType annotatedIntersectionType =
           (AnnotatedIntersectionType) createAnnotatedType(t);
-      annotatedIntersectionType.bounds = CollectionsPlume.mapList(this::visit, t.getBounds());
+      annotatedIntersectionType.bounds = CollectionsP.mapList(this::visit, t.getBounds());
       return annotatedIntersectionType;
     }
 
