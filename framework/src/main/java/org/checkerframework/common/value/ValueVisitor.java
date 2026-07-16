@@ -36,7 +36,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /** Visitor for the Constant Value type system. */
 public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
@@ -370,29 +370,29 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
           switch (castTypeKind) {
             case BYTE -> {
               TreeSet<Byte> castValuesSet =
-                  new TreeSet<>(CollectionsPlume.mapList(Number::byteValue, castValues));
+                  new TreeSet<>(CollectionsP.mapList(Number::byteValue, castValues));
               TreeSet<Byte> exprValuesSet =
-                  new TreeSet<>(CollectionsPlume.mapList(Number::byteValue, exprValues));
-              return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+                  new TreeSet<>(CollectionsP.mapList(Number::byteValue, exprValues));
+              return CollectionsP.sortedSetContainsAll(castValuesSet, exprValuesSet);
             }
             case INT -> {
               TreeSet<Integer> castValuesSet =
-                  new TreeSet<>(CollectionsPlume.mapList(Number::intValue, castValues));
+                  new TreeSet<>(CollectionsP.mapList(Number::intValue, castValues));
               TreeSet<Integer> exprValuesSet =
-                  new TreeSet<>(CollectionsPlume.mapList(Number::intValue, exprValues));
-              return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+                  new TreeSet<>(CollectionsP.mapList(Number::intValue, exprValues));
+              return CollectionsP.sortedSetContainsAll(castValuesSet, exprValuesSet);
             }
             case SHORT -> {
               TreeSet<Short> castValuesSet =
-                  new TreeSet<>(CollectionsPlume.mapList(Number::shortValue, castValues));
+                  new TreeSet<>(CollectionsP.mapList(Number::shortValue, castValues));
               TreeSet<Short> exprValuesSet =
-                  new TreeSet<>(CollectionsPlume.mapList(Number::shortValue, exprValues));
-              return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+                  new TreeSet<>(CollectionsP.mapList(Number::shortValue, exprValues));
+              return CollectionsP.sortedSetContainsAll(castValuesSet, exprValuesSet);
             }
             default -> {
               TreeSet<Long> castValuesSet = new TreeSet<>(castValues);
               TreeSet<Long> exprValuesSet = new TreeSet<>(exprValues);
-              return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+              return CollectionsP.sortedSetContainsAll(castValuesSet, exprValuesSet);
             }
           }
         }
@@ -417,10 +417,10 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             // Convert expression values to what they would be after float cast, then check
             // containment.
             TreeSet<Float> castValuesSet =
-                new TreeSet<>(CollectionsPlume.mapList(Number::floatValue, castValues));
+                new TreeSet<>(CollectionsP.mapList(Number::floatValue, castValues));
             TreeSet<Float> exprValuesSet =
-                new TreeSet<>(CollectionsPlume.mapList(Number::floatValue, exprValues));
-            return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+                new TreeSet<>(CollectionsP.mapList(Number::floatValue, exprValues));
+            return CollectionsP.sortedSetContainsAll(castValuesSet, exprValuesSet);
           }
         }
 
@@ -432,7 +432,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             // Float-to-double is lossless, so just check containment directly.
             TreeSet<Double> castValuesSet = new TreeSet<>(castValues);
             TreeSet<Double> exprValuesSet = new TreeSet<>(exprValues);
-            return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+            return CollectionsP.sortedSetContainsAll(castValuesSet, exprValuesSet);
           }
         }
       }

@@ -38,7 +38,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /** The type factory for the Less Than Checker. */
 public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForIndexChecker {
@@ -146,7 +146,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
       if (a1List == null || a2List == null) {
         return LESS_THAN_BOTTOM;
       }
-      CollectionsPlume.adjoinAll(a1List, a2List); // union
+      CollectionsP.adjoinAll(a1List, a2List); // union
       return createLessThanQualifier(a1List);
     }
   }

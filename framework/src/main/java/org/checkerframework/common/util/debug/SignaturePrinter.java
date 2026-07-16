@@ -34,7 +34,7 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Outputs the method signatures of a class with fully annotated types.
@@ -158,7 +158,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
       }
 
       out.print('<');
-      out.print(StringsPlume.join(", ", params));
+      out.print(StringsP.join(", ", params));
       out.print("> ");
     }
 

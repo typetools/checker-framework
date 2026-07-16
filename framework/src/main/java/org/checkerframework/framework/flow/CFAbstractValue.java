@@ -23,7 +23,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * An implementation of an abstract value used by the Checker Framework
@@ -90,7 +90,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         : "Encountered invalid type: "
             + underlyingType
             + " annotations: "
-            + StringsPlume.join(", ", annotations);
+            + StringsP.join(", ", annotations);
   }
 
   /**

@@ -26,7 +26,7 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.FieldDescriptor;
 import org.checkerframework.checker.signature.qual.MethodDescriptor;
 import org.plumelib.reflection.Signatures;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * A criterion that matches a method with a specific signature (name, argument types, and return
@@ -67,7 +67,7 @@ public class IsSigMethodCriterion implements Criterion {
       String jvmlArgs =
           fullSignature.substring(fullSignature.indexOf('('), fullSignature.indexOf(')') + 1);
       this.fullyQualifiedParams =
-          CollectionsPlume.mapList(
+          CollectionsP.mapList(
               Signatures::fieldDescriptorToBinaryName, Signatures.splitJvmArglist(jvmlArgs));
     } catch (Exception e) {
       throw new RuntimeException("Exception while parsing method: " + fullSignature, e);

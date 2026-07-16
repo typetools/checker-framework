@@ -94,8 +94,8 @@ import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
 import org.plumelib.util.MapsP;
-import org.plumelib.util.SystemPlume;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.SystemP;
+import org.plumelib.util.UtilP;
 
 /**
  * An abstract annotation processor designed for implementing a source-file checker as an annotation
@@ -1308,7 +1308,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     if (!warnedAboutGarbageCollection) {
-      String gcUsageMessage = SystemPlume.gcUsageMessage(.25, 60);
+      String gcUsageMessage = SystemP.gcUsageMessage(.25, 60);
       if (gcUsageMessage != null) {
         boolean noWarnMemoryConstraints =
             (processingEnv != null
@@ -3219,12 +3219,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
         Throwable forStackTrace = ce.getCause() != null ? ce.getCause() : ce;
         if (forStackTrace != null) {
-          msg.add(
-              "Exception: " + forStackTrace + "; " + UtilPlume.stackTraceToString(forStackTrace));
+          msg.add("Exception: " + forStackTrace + "; " + UtilP.stackTraceToString(forStackTrace));
           boolean printClasspath = forStackTrace instanceof NoClassDefFoundError;
           Throwable cause = forStackTrace.getCause();
           while (cause != null) {
-            msg.add("Underlying Exception: " + cause + "; " + UtilPlume.stackTraceToString(cause));
+            msg.add("Underlying Exception: " + cause + "; " + UtilP.stackTraceToString(cause));
             printClasspath |= cause instanceof NoClassDefFoundError;
             cause = cause.getCause();
           }
