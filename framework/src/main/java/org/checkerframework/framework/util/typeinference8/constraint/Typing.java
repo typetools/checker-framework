@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -233,8 +234,8 @@ public class Typing extends TypeConstraint {
       int index = 0;
       for (AbstractType b : Bs) {
         AbstractType a = As.next();
-        boolean convarArg = covariantArgIndexes.contains(index);
-        set.add(new Typing(this, b, a, Kind.CONTAINED, convarArg));
+        boolean covarArg = covariantArgIndexes.contains(index);
+        set.add(new Typing(this, b, a, Kind.CONTAINED, covarArg));
         index++;
       }
 
@@ -485,9 +486,6 @@ public class Typing extends TypeConstraint {
 
   @Override
   public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + S.hashCode();
-    result = 31 * result + kind.hashCode();
-    return result;
+    return Objects.hash(super.hashCode(), S, kind);
   }
 }

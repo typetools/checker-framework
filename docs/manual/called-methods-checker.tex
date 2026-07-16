@@ -107,7 +107,7 @@ In some cases, you may need to specify your code. You do so by writing one of th
 annotations (Figure~\ref{fig-called-methods-types}):
 \begin{description}
 \item[\refqualclasswithparams{checker/calledmethods/qual}{CalledMethods}{String[] methodNames}]
-  The annotated type represents values on which all the given method were definitely called.
+  The annotated type represents values on which all the given methods were definitely called.
   (Other methods might also have been called.) \<@CalledMethods()>, with no
   arguments, is the default annotation.
 
@@ -251,7 +251,7 @@ There are also method annotations:
   This version of \<@EnsuresCalledMethods> always applies to the varargs parameter of the
   annotated method. It has only one argument, which is the list of methods that are guaranteed
   to be called on the varargs parameter's elements before the method returns. This annotation
-  currently cannot be verified, and a \<ensuresvarargs.unverified> error is always issued
+  currently cannot be verified, and an \<ensuresvarargs.unverified> error is always issued
   when it is used. When annotating a method as \<@EnsuresCalledMethodsVarargs>, you should verify
   that the named methods are actually called on every element of the varargs parameter via some
   other method (such as manual inspection) and then suppress the warning.
@@ -335,7 +335,7 @@ The Called Methods Checker can be used to verify any property of the form
 
 For example, consider the AWS EC2 \<describeImages> API, which
 clients use during the process of initializing a new cloud instance.
-\href{https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-15869}{CVE-2018-15869}
+\href{https://www.cve.org/CVERecord?id=CVE-2018-15869}{CVE-2018-15869}
 describes how an improperly-configured request to this API can make the
 requesting client vulnerable to a ``machine-image sniping'' attack that
 would allow a malicious third-party to control the operating system image

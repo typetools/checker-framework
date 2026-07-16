@@ -525,7 +525,7 @@ of \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
 
 The qualifiers should be in a \<qual> subpackage of the type checker package ---
 by default, the checker reflectively determines the qualifiers and the only thing that matters for that is the package name.
-As mentioned in {creating-parts-of-a-checker}, the files for that \<qual> package can be
+As mentioned in Section~\ref{creating-parts-of-a-checker}, the files for that \<qual> package can be
 either in a subdirectory or in a separate Gradle module, depending on whether
 they should be distributable separately.
 The Checker Framework automatically treats any annotation that
@@ -970,7 +970,7 @@ to return a subclass of \<DependentTypesHelper>.
 
 Given a specific expression in the program (of type Tree or Node), a
 checker may need to obtain its canonical string representation.  This
-enables the checker to create an dependent type annotation that refers to
+enables the checker to create a dependent type annotation that refers to
 it, or to compare to the string expression of an existing expression
 annotation.
 To obtain the string, first create a
@@ -1053,7 +1053,7 @@ and
 \refmethodterse{framework/source}{SourceChecker}{reportWarning}{(java.lang.Object,java.lang.String,java.lang.Object...)}
 (like \code{"type.incompatible"}) and the values are the strings to be
 printed (\code{"cannot assign ..."}).
-The \<messages.properties> file only need to mention the new messages that
+The \<messages.properties> file only needs to mention the new messages that
 the checker defines.
 It is also allowed to override messages defined in superclasses, but this
 is rarely needed.
@@ -1368,12 +1368,12 @@ being called and then treats the method in a special way.
 
 \sectionAndLabel{Type factory: Type introduction rules}{creating-type-introduction}
 
-The annotated type of expressions and types are defined via type introduction rules in the
+The annotated type of expressions and types is defined via type introduction rules in the
 type factory.  For most expressions and types, these rules are the same regardless of the type system.
 For example, the type of a method invocation expression is the return type of the invoked method,
 viewpoint-adapted for the call site.  The framework implements these rules so that all type systems
 automatically use them.  For other expressions, such as string literals, their (annotated) types depend
-on the type system, so the framework provides way to specify what qualifiers should apply to these expressions.
+on the type system, so the framework provides a way to specify what qualifiers should apply to these expressions.
 
 Defaulting rules are type introduction rules for computing the annotated type for an unannotated type;
 these rules are explained in Section~\ref{creating-typesystem-defaults}. The meta-annotation \refqualclass{framework/qual}{QualifierForLiterals} can be written on an annotation
@@ -1804,7 +1804,7 @@ visited.  (Remember that \refclass{common/basetype}{BaseTypeVisitor} uses the
 \refTreeclass{tree}{Tree}s.)
 \end{sloppypar}
 
-For example, When \refclass{checker/regex}{RegexTransfer} evaluates a
+For example, when \refclass{checker/regex}{RegexTransfer} evaluates a
 \code{RegexUtils.asRegex} invocation, it updates the
 \refclass{dataflow/analysis}{TransferResult}'s result type. This changes the
 type of the \code{RegexUtils.asRegex} invocation when its
@@ -2197,7 +2197,7 @@ If the Checker Framework is in an infinite loop, you can use
 to determine what source code triggers the infinite loop.
 
 While the Checker Framework is in its infinite loop (no more progress is
-being made), get a traceback (stack trace) from from each Java thread,
+being made), get a traceback (stack trace) from each Java thread,
 using any of the following four techniques:
 
 \begin{itemize}
@@ -2283,7 +2283,7 @@ command-line options. \\
 
 \item \code{-Averbosecfg}:
   Enable additional output in the CFG visualization.
-  Equivalent to passing \<verbose> to \<cfgviz>, e.g. as in
+  Equivalent to passing \<verbose> to \<cfgviz>, e.g., as in
   \<-Acfgviz=MyVisualizer,verbose>
 
 \item \code{-Acfgviz=\emph{VizClassName}[,\emph{opts},...]}:
@@ -2600,13 +2600,13 @@ help you to create your checker.
 Do not use \code{instanceof Subinterface} to determine which kind of \<TypeMirror> or \<Element> an expression is,
 because some of the classes that implement the TypeMirror and Element subinterfaces implement multiple
 subinterfaces. For example, \<type instanceof DeclaredType> and \<type instanceof UnionType>
-both return true if \<type> is an \<com.sun.tools.javac.code.Type.UnionClassType> object.
+both return true if \<type> is a \<com.sun.tools.javac.code.Type.UnionClassType> object.
 
 Instead, use the
 \sunjavadoc{java.compiler/javax/lang/model/type/TypeMirror.html\#getKind()}{TypeMirror.getKind()}
 or
 \sunjavadoc{java.compiler/javax/lang/model/element/Element.html\#getKind()}{Element.getKind()}
-method.  For example, if \<type> is an \<com.sun.tools.javac.code.Type.UnionClassType> object, then
+method.  For example, if \<type> is a \<com.sun.tools.javac.code.Type.UnionClassType> object, then
 \<expr.getKind() == TypeKind.DECLARED> is false and \<expr.getKind() == TypeKind.UNION> is true.
 
 
@@ -2655,7 +2655,7 @@ source file after the compiler confirms that the class is valid Java code.
 
 The most important methods of \refclass{javacutil}{AbstractTypeProcessor}
 are \code{typeProcess} and \code{getSupportedSourceVersion}. The former
-class is where you would insert any sort of method call to walk the AST\@,
+method is where you would insert any sort of method call to walk the AST\@,
 and the latter just returns a constant indicating that we are targeting
 version 8 of the compiler. Implementing these two methods should be enough
 for a basic plugin; see the Javadoc for the class for other methods that

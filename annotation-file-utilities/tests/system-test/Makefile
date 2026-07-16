@@ -16,15 +16,15 @@ all: clean results
 
 warn_and_exit:
 	@echo ""
-	@echo "******************************************************"
-	@echo "Warning: The sytem test has been temporarily disabled!"
-	@echo "******************************************************"
+	@echo "*******************************************************"
+	@echo "Warning: The system test has been temporarily disabled!"
+	@echo "*******************************************************"
 	@echo ""
 
 results: out1 check-out2 out3 out4.class check-out5
 
 clean:
-	rm -rf out[1-5]*
+	@rm -rf out[1-5]*
 
 
 # Step 1: Compile the source with annotations.

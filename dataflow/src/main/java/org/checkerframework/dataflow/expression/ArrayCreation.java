@@ -86,11 +86,6 @@ public class ArrayCreation extends JavaExpression {
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(dimensions, initializers, getType().toString());
-  }
-
-  @Override
   public boolean equals(@Nullable Object obj) {
     if (!(obj instanceof ArrayCreation other)) {
       return false;
@@ -100,6 +95,11 @@ public class ArrayCreation extends JavaExpression {
         // It might be better to use Types.isSameType(getType(), other.getType()), but I
         // don't have a Types object.
         && getType().toString().equals(other.getType().toString());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(dimensions, initializers, getType().toString());
   }
 
   @Override

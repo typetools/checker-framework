@@ -122,6 +122,10 @@ tasks.register("copyAndMinimizeAnnotatedJdkFiles", JavaExec) {
 sourcesJar.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
 processResources.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
 
+jar {
+  duplicatesStrategy = DuplicatesStrategy.WARN
+}
+
 tasks.register("allSourcesJar", Jar) {
   description = "Creates a sources jar that includes sources for all Checker Framework classes in framework.jar"
   group = "Build"
@@ -173,7 +177,7 @@ clean {
 }
 
 
-if (skipDelombok) {
+if (rootProject.ext.skipDelombok) {
   test {
     exclude("**/ReturnsReceiverLombokTest.java")
   }
@@ -193,7 +197,7 @@ if (skipDelombok) {
     dependsOn(project(":checker-qual").tasks.jar)
 
     doLast {
-      if (!skipDelombok) {
+      if (!rootProject.ext.skipDelombok) {
         def collection = files(configurations.testCompileClasspath)
         ant.taskdef(name: "delombok", classname: "lombok.delombok.ant.Tasks\$Delombok",
         classpath: collection.asPath)

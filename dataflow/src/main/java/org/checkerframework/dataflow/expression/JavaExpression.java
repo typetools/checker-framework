@@ -93,57 +93,6 @@ public abstract class JavaExpression {
   }
 
   /**
-   * Returns true if some subexpression is of given class.
-   *
-   * <p>If you want to debug and determine <em>which</em> subexpression is of the given class, use
-   * {@link #containedOfClass}.
-   *
-   * @param clazz the JavaExpression subclass to search for
-   * @return true if some subexpression's class is the given class
-   */
-  @Pure
-  public final boolean containsOfClass(Class<? extends JavaExpression> clazz) {
-    return containedOfClass(clazz) != null;
-  }
-
-  /**
-   * Returns the first subexpression whose class is the given class, or null.
-   *
-   * <p>This is intended as a diagnostic aid; most clients will use {@link #containsOfClass}.
-   *
-   * @param <T> the type corresponding to {@code clazz}
-   * @param clazz the JavaExpression subclass to search for
-   * @return true if some subexpression whose class is the given class
-   */
-  @Pure
-  public abstract <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz);
-
-  /**
-   * Returns true if some subexpression is {@link Unknown}.
-   *
-   * <p>If you want to debug and determine <em>which</em> subexpression is of the given class, use
-   * {@link #containedUnknown}.
-   *
-   * @return true if some subexpression is {@link Unknown}
-   */
-  @Pure
-  public final boolean containsUnknown() {
-    return containsOfClass(Unknown.class);
-  }
-
-  /**
-   * Returns the first subexpression whose class is {@link Unknown}, or null.
-   *
-   * <p>This is intended as a diagnostic aid; most clients will use {@link #containsUnknown}.
-   *
-   * @return the first subexpression whose class is {@link Unknown}, or null
-   */
-  @Pure
-  public final @Nullable Unknown containedUnknown() {
-    return containedOfClass(Unknown.class);
-  }
-
-  /**
    * Returns true if the expression is deterministic.
    *
    * @param provider an annotation provider (a type factory)
@@ -194,6 +143,10 @@ public abstract class JavaExpression {
    */
   @Pure
   public abstract boolean isModifiableByOtherCode();
+
+  //
+  // Equality and containment
+  //
 
   /**
    * Returns true if and only if the two Java expressions are syntactically identical.
@@ -278,6 +231,132 @@ public abstract class JavaExpression {
   }
 
   /**
+   * Returns true if some subexpression is of given class.
+   *
+   * <p>If you want to debug and determine <em>which</em> subexpression is of the given class, use
+   * {@link #containedOfClass}.
+   *
+   * @param clazz the JavaExpression subclass to search for
+   * @return true if some subexpression's class is the given class
+   */
+  @Pure
+  public final boolean containsOfClass(Class<? extends JavaExpression> clazz) {
+    return containedOfClass(clazz) != null;
+  }
+
+  /**
+   * Returns the first subexpression whose class is the given class, or null.
+   *
+   * <p>This is intended as a diagnostic aid; most clients will use {@link #containsOfClass}.
+   *
+   * @param <T> the type corresponding to {@code clazz}
+   * @param clazz the JavaExpression subclass to search for
+   * @return true if some subexpression whose class is the given class
+   */
+  @Pure
+  public abstract <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz);
+
+  /**
+   * Returns true if some subexpression is {@link Unknown}.
+   *
+   * <p>If you want to debug and determine <em>which</em> subexpression is of the given class, use
+   * {@link #containedUnknown}.
+   *
+   * @return true if some subexpression is {@link Unknown}
+   */
+  @Pure
+  public final boolean containsUnknown() {
+    return containsOfClass(Unknown.class);
+  }
+
+  /**
+   * Returns the first subexpression whose class is {@link Unknown}, or null.
+   *
+   * <p>This is intended as a diagnostic aid; most clients will use {@link #containsUnknown}.
+   *
+   * @return the first subexpression whose class is {@link Unknown}, or null
+   */
+  @Pure
+  public final @Nullable Unknown containedUnknown() {
+    return containedOfClass(Unknown.class);
+  }
+
+  //
+  // Viewpoint adaptation
+  //
+
+  /**
+   * Viewpoint-adapts {@code this} to a field access with receiver {@code receiver}.
+   *
+   * @param receiver receiver of the field access
+   * @return viewpoint-adapted version of this
+   */
+  public JavaExpression atFieldAccess(JavaExpression receiver) {
+    return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiver);
+  }
+
+  /**
+   * Viewpoint-adapts {@code this} to the {@code methodTree} by converting any {@code
+   * FormalParameter} into {@code LocalVariable}s.
+   *
+   * @param methodTree method declaration tree
+   * @return viewpoint-adapted version of this
+   */
+  public final JavaExpression atMethodBody(MethodTree methodTree) {
+    @SuppressWarnings("nullness:argument") // elementFromDeclaration is non-null for a parameter
+    List<JavaExpression> parametersJe =
+        CollectionsPlume.mapList(
+            (VariableTree param) -> new LocalVariable(TreeUtils.elementFromDeclaration(param)),
+            methodTree.getParameters());
+    return ViewpointAdaptJavaExpression.viewpointAdapt(this, parametersJe);
+  }
+
+  /**
+   * Viewpoint-adapts {@code this} to the {@code methodInvocationTree}.
+   *
+   * @param methodInvocationTree method invocation
+   * @return viewpoint-adapted version of this
+   */
+  public final JavaExpression atMethodInvocation(MethodInvocationTree methodInvocationTree) {
+    JavaExpression receiverJe = getReceiver(methodInvocationTree);
+    List<JavaExpression> argumentsJe =
+        argumentTreesToJavaExpressions(
+            TreeUtils.elementFromUse(methodInvocationTree), methodInvocationTree.getArguments());
+    return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
+  }
+
+  /**
+   * Viewpoint-adapts {@code this} to the {@code invocationNode}.
+   *
+   * @param invocationNode method invocation
+   * @return viewpoint-adapted version of this
+   */
+  public final JavaExpression atMethodInvocation(MethodInvocationNode invocationNode) {
+    JavaExpression receiverJe = fromNode(invocationNode.getTarget().getReceiver());
+    List<JavaExpression> argumentsJe =
+        CollectionsPlume.mapList(JavaExpression::fromNode, invocationNode.getArguments());
+    return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
+  }
+
+  /**
+   * Viewpoint-adapts {@code this} to the {@code newClassTree}.
+   *
+   * @param newClassTree constructor invocation
+   * @return viewpoint-adapted version of this
+   */
+  public JavaExpression atConstructorInvocation(NewClassTree newClassTree) {
+    JavaExpression receiverJe = getReceiver(newClassTree);
+    List<JavaExpression> argumentsJe =
+        argumentTreesToJavaExpressions(
+            TreeUtils.elementFromUse(newClassTree), newClassTree.getArguments());
+    return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
+  }
+
+  //
+  // Visitor and debugging
+  //
+
+  /**
    * Format this verbosely, for debugging.
    *
    * @return a verbose string representation of this
@@ -286,6 +365,17 @@ public abstract class JavaExpression {
   public String toStringDebug() {
     return String.format("%s(%s): %s", getClass().getSimpleName(), type, toString());
   }
+
+  /**
+   * Accept method of the visitor pattern.
+   *
+   * @param visitor the visitor to be applied to this JavaExpression
+   * @param p the parameter for this operation
+   * @param <R> result type of the operation
+   * @param <P> parameter type
+   * @return the result of visiting this
+   */
+  public abstract <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p);
 
   //
   // Static methods
@@ -716,84 +806,6 @@ public abstract class JavaExpression {
     } else {
       return new ThisReference(enclosingType);
     }
-  }
-
-  /**
-   * Accept method of the visitor pattern.
-   *
-   * @param visitor the visitor to be applied to this JavaExpression
-   * @param p the parameter for this operation
-   * @param <R> result type of the operation
-   * @param <P> parameter type
-   * @return the result of visiting this
-   */
-  public abstract <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p);
-
-  /**
-   * Viewpoint-adapts {@code this} to a field access with receiver {@code receiver}.
-   *
-   * @param receiver receiver of the field access
-   * @return viewpoint-adapted version of this
-   */
-  public JavaExpression atFieldAccess(JavaExpression receiver) {
-    return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiver);
-  }
-
-  /**
-   * Viewpoint-adapts {@code this} to the {@code methodTree} by converting any {@code
-   * FormalParameter} into {@code LocalVariable}s.
-   *
-   * @param methodTree method declaration tree
-   * @return viewpoint-adapted version of this
-   */
-  public final JavaExpression atMethodBody(MethodTree methodTree) {
-    @SuppressWarnings("nullness:argument") // elementFromDeclaration is non-null for a parameter
-    List<JavaExpression> parametersJe =
-        CollectionsPlume.mapList(
-            (VariableTree param) -> new LocalVariable(TreeUtils.elementFromDeclaration(param)),
-            methodTree.getParameters());
-    return ViewpointAdaptJavaExpression.viewpointAdapt(this, parametersJe);
-  }
-
-  /**
-   * Viewpoint-adapts {@code this} to the {@code methodInvocationTree}.
-   *
-   * @param methodInvocationTree method invocation
-   * @return viewpoint-adapted version of this
-   */
-  public final JavaExpression atMethodInvocation(MethodInvocationTree methodInvocationTree) {
-    JavaExpression receiverJe = getReceiver(methodInvocationTree);
-    List<JavaExpression> argumentsJe =
-        argumentTreesToJavaExpressions(
-            TreeUtils.elementFromUse(methodInvocationTree), methodInvocationTree.getArguments());
-    return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
-  }
-
-  /**
-   * Viewpoint-adapts {@code this} to the {@code invocationNode}.
-   *
-   * @param invocationNode method invocation
-   * @return viewpoint-adapted version of this
-   */
-  public final JavaExpression atMethodInvocation(MethodInvocationNode invocationNode) {
-    JavaExpression receiverJe = fromNode(invocationNode.getTarget().getReceiver());
-    List<JavaExpression> argumentsJe =
-        CollectionsPlume.mapList(JavaExpression::fromNode, invocationNode.getArguments());
-    return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
-  }
-
-  /**
-   * Viewpoint-adapts {@code this} to the {@code newClassTree}.
-   *
-   * @param newClassTree constructor invocation
-   * @return viewpoint-adapted version of this
-   */
-  public JavaExpression atConstructorInvocation(NewClassTree newClassTree) {
-    JavaExpression receiverJe = getReceiver(newClassTree);
-    List<JavaExpression> argumentsJe =
-        argumentTreesToJavaExpressions(
-            TreeUtils.elementFromUse(newClassTree), newClassTree.getArguments());
-    return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
   }
 
   /**

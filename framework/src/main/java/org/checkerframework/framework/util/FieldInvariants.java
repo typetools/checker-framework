@@ -119,7 +119,7 @@ public class FieldInvariants {
   /**
    * Returns null if this is stronger than the given FieldInvariants, otherwise returns the error
    * message. This is stronger if each of its qualifiers is a subtype of (or equal to) the
-   * respective qualfier in the given FieldInvariants.
+   * respective qualifier in the given FieldInvariants.
    *
    * @param superInvar the value to check for being a weaker invariant
    * @return null if this is stronger, otherwise returns an error message

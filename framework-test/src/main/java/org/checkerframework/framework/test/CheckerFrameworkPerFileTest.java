@@ -82,7 +82,8 @@ public abstract class CheckerFrameworkPerFileTest extends CheckerFrameworkRooted
     this.testFile = testFile;
     this.checker = checker;
     this.testDir = testDir;
-    this.checkerOptions = new ArrayList<>(Arrays.asList(checkerOptions));
+    this.checkerOptions = new ArrayList<String>(Arrays.asList(checkerOptions));
+    this.checkerOptions.add("-AwarnUnneededSuppressions");
   }
 
   @Test

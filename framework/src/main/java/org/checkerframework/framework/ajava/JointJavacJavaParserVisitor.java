@@ -2134,7 +2134,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       RequiresTree javacTree, ModuleRequiresDirective javaParserNode);
 
   /**
-   * Process a {@code RetrunTree}.
+   * Process a {@code ReturnTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node

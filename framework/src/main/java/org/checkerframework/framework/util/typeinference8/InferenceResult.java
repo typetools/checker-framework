@@ -15,7 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** The result of type argument inferrece. */
+/** The result of type argument inference. */
 public class InferenceResult {
 
   /** An empty inference result. */
@@ -56,7 +56,8 @@ public class InferenceResult {
    * Creates an inference result.
    *
    * @param variables instantiated variables
-   * @param uncheckedConversion where unchecked conversion was required to infer the type arguments
+   * @param uncheckedConversion whether unchecked conversion was required to infer the type
+   *     arguments
    * @param annoInferenceFailed true if inference failed because of annotations
    * @param errorMsg message to report to users if inference failed
    */
@@ -72,7 +73,8 @@ public class InferenceResult {
    * Creates an inference result.
    *
    * @param variables instantiated variables
-   * @param uncheckedConversion where unchecked conversion was required to infer the type arguments
+   * @param uncheckedConversion whether unchecked conversion was required to infer the type
+   *     arguments
    * @param annoInferenceFailed true if inference failed because of annotations
    * @param inferenceCrashed the type argument inference code crashed
    * @param errorMsg message to report to users if inference failed

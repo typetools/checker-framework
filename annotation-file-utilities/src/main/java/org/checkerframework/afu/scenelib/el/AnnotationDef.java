@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.StringTokenizer;
@@ -295,11 +296,9 @@ public final class AnnotationDef extends AElement {
 
   @Override
   public int hashCode() {
-    return name.hashCode()
-        // Omit tlAnnotationsHere, because it should be unique and, more
-        // importantly, including it causes an infinite loop.
-        // + tlAnnotationsHere.hashCode()
-        + fieldTypes.hashCode();
+    // Omit tlAnnotationsHere, because it should be unique and, more
+    // importantly, including it causes an infinite loop.
+    return Objects.hash(name, fieldTypes);
   }
 
   /**

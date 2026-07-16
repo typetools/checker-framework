@@ -7,6 +7,7 @@ import java.util.List;
 
 @SuppressWarnings({
   "unchecked",
+  "unneeded.suppression", // ainfertest is only issued sometimes.
   "ainfertest",
   "value"
 }) // Don't issue warnings during ainfer tests, because more than one round of inference is required
