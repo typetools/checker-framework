@@ -255,10 +255,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       boolean sideEffectsUnrefineAliases = atypeFactory.sideEffectsUnrefineAliases;
       Node receiver = methodInvocationNode.getTarget().getReceiver();
 
-      // If @DoesNotUnrefineReceiver is present, compute the receiver as a JavaExpression so
-      // that it can be exempted from unrefinement in all expression categories below.
+      // This is an expression that is exempted from unrefinement, or null if no expression is
+      // exempted.
       boolean hasDoesNotUnrefineReceiver = atypeFactory.hasDoesNotUnrefineReceiver(method);
-      @Nullable JavaExpression receiverJe =
+      @Nullable JavaExpression unrefinableReceiverJe =
           hasDoesNotUnrefineReceiver ? JavaExpression.fromNode(receiver) : null;
 
       @Nullable List<JavaExpression> seOnlyExpressions =
@@ -271,13 +271,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       if (sideEffectsUnrefineAliases) {
         localVariableValues
             .entrySet()
-            .removeIf(e -> isSideEffected(e.getKey(), receiverJe, seOnlyExpressions));
+            .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
       }
 
       // Update this value.
       if (sideEffectsUnrefineAliases
-          && !(receiverJe instanceof ThisReference)
-          && !(receiverJe instanceof SuperReference)) {
+          && !(unrefinableReceiverJe instanceof ThisReference)
+          && !(unrefinableReceiverJe instanceof SuperReference)) {
         thisValue = null;
       }
 
@@ -285,21 +285,21 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       if (sideEffectsUnrefineAliases) {
         fieldValues
             .entrySet()
-            .removeIf(e -> isSideEffected(e.getKey(), receiverJe, seOnlyExpressions));
+            .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
       } else {
         // Case 2 (unassignable fields) and case 3 (monotonic fields).
-        updateFieldValuesForMethodCall(atypeFactory, receiverJe, seOnlyExpressions);
+        updateFieldValuesForMethodCall(atypeFactory, unrefinableReceiverJe, seOnlyExpressions);
       }
 
       // Update array values.
       arrayValues
           .entrySet()
-          .removeIf(e -> isSideEffected(e.getKey(), receiverJe, seOnlyExpressions));
+          .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
 
       // Update information about method calls.
       methodCallExpressions
           .entrySet()
-          .removeIf(e -> isSideEffected(e.getKey(), receiverJe, seOnlyExpressions));
+          .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
     }
 
     // Store information about method calls if possible.
@@ -356,6 +356,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * {@code x.f}, but not the other way around. This is the counterpart of the exact-equality test
    * used at the declaration site in {@code DisallowedSideEffects}, which checks what the method
    * body actually modifies.
+   *
+   * <p>Some side effects are ignored: {@code notSideEffectedExpression} is treated as if it cannot
+   * change. Concretely, the implementation evaluates to false if {@code expr} is strictly equal to
+   * {@code notSideEffectedExpression}.
    *
    * @param expr an expression
    * @param notSideEffectedExpression an expression that is never considered to be side-effected, or
@@ -468,23 +472,22 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * side-effected expressions.
    *
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
-   * @param receiverJe if non-null, the receiver, which should not be unrefined
+   * @param unrefinableReceiverJe if non-null, the receiver, which should not be unrefined
    * @param sideEffectsOnlyExpressions the expressions that are side-effected by a method call
    */
   private void updateFieldValuesForMethodCall(
       GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory,
-      @Nullable JavaExpression receiverJe,
+      @Nullable JavaExpression unrefinableReceiverJe,
       @Nullable List<JavaExpression> sideEffectsOnlyExpressions) {
     Map<FieldAccess, V> newFieldValues = new HashMap<>(MapsP.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
       V previousValue = e.getValue();
 
-      if (!isSideEffected(fieldAccess, receiverJe, sideEffectsOnlyExpressions)) {
+      if (!isSideEffected(fieldAccess, unrefinableReceiverJe, sideEffectsOnlyExpressions)) {
         // If the field hasn't been side-effected, there is no need to compute a new value for it.
-        // This is safe to skip because a field that is not modifiable by other code is also not
-        // assignable by other code (see FieldAccess#isModifiableByOtherCode), so
-        // newFieldValueAfterMethodCall would return the previous value anyway.
+        // For unmodifiable fields, this is safe because they are not assignable by other code.
+        // For the exempt receiver, skipping recomputation is necessary to preserve its value.
         newFieldValues.put(fieldAccess, previousValue);
       } else {
         V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);

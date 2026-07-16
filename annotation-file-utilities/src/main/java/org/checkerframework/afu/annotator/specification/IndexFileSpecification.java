@@ -50,7 +50,7 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
-import org.plumelib.reflection.ReflectionPlume;
+import org.plumelib.reflection.ReflectionP;
 import org.plumelib.util.FileIOException;
 import org.plumelib.util.IPair;
 
@@ -223,7 +223,7 @@ public class IndexFileSpecification {
         System.out.println(
             "Warning: IndexFileSpecification did not find classfile for: " + className);
         System.out.println("The classpath is:");
-        System.out.println(ReflectionPlume.classpathToString());
+        System.out.println(ReflectionP.classpathToString());
         // org.plumelib.util.SystemP.sleep(100);
         // throw new RuntimeException("IndexFileSpecification.parseClass", e);
       } catch (RuntimeException e) {
