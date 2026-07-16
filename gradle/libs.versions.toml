@@ -76,7 +76,7 @@ options = "org.plumelib:options:2.0.3"
 
 plume-util = "org.plumelib:plume-util:1.15.0-SNAPSHOT"
 
-reflection-util = "org.plumelib:reflection-util:1.1.6"
+reflection-util = "org.plumelib:reflection-util:2.0.0-SNAPSHOT"
 
 require-javadoc = "org.plumelib:require-javadoc:2.0.0"
 
