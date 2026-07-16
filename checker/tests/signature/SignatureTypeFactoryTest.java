@@ -85,7 +85,7 @@ public class SignatureTypeFactoryTest {
     String t30 = "pakkage.Outer$22[]";
     String t31 = "[Lpakkage.Outer$22;";
 
-    String t34 = "org.plumelib.reflection.TestReflectionPlume$Inner.InnerInner";
+    String t34 = "org.plumelib.reflection.TestReflectionP$Inner.InnerInner";
     String t17 = "pakkage.Outer.Inner";
     String t18 = "pakkage.Outer.Inner[]";
     String t19 = "pakkage.Outer$Inner";

@@ -72,7 +72,7 @@ import org.objectweb.asm.TypePath;
 import org.plumelib.options.Option;
 import org.plumelib.options.OptionGroup;
 import org.plumelib.options.Options;
-import org.plumelib.reflection.ReflectionPlume;
+import org.plumelib.reflection.ReflectionP;
 import org.plumelib.util.FileIOException;
 import org.plumelib.util.FilesP;
 import org.plumelib.util.IPair;
@@ -666,7 +666,7 @@ public final class Main {
                     + causeMessage.substring(22)
                     + " to the classpath.");
             System.err.println("The classpath is:");
-            System.err.println(ReflectionPlume.classpathToString());
+            System.err.println(ReflectionP.classpathToString());
           }
         }
         if (print_error_stack) {

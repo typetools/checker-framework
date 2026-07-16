@@ -1851,24 +1851,34 @@ public final class TreeUtils {
    */
   @Pure
   public static ExecutableType typeFromUse(MethodInvocationTree tree) {
-    TypeMirror type = typeOf(tree.getMethodSelect());
-    if (!(type instanceof ExecutableType executableType)) {
+    TypeMirror typeFromUse = typeOf(tree.getMethodSelect());
+    if (!(typeFromUse instanceof ExecutableType executableTypeFromUse)) {
       throw new BugInCF(
           "typeFromUse(MethodInvocationTree): type of method select in method"
               + " invocation should be ExecutableType. Found: %s",
-          type);
+          typeFromUse);
     }
+
     ExecutableElement element = elementFromUse(tree);
-    if (executableType.getParameterTypes().size() != element.getParameters().size()) {
+    if (element.isVarArgs()) {
       // Sometimes when the method type is viewpoint-adapted, the vararg parameter disappears,
       // just return the declared type.
       // For example,
       // static void call(MethodHandle methodHandle) throws Throwable {
       //   methodHandle.invoke();
       // }
-      return (ExecutableType) element.asType();
+      // See framework/tests/all-systems/Issue6078.java.
+      List<? extends TypeMirror> params = executableTypeFromUse.getParameterTypes();
+
+      if (params.size() != element.getParameters().size()) {
+        return (ExecutableType) element.asType();
+      }
+
+      if (params.get(params.size() - 1).getKind() != TypeKind.ARRAY) {
+        return (ExecutableType) element.asType();
+      }
     }
-    return executableType;
+    return executableTypeFromUse;
   }
 
   /**
@@ -2453,6 +2463,12 @@ public final class TreeUtils {
     if (numParameters != invok.getArguments().size()) {
       if (numParameters > 0 && parameters.get(numParameters - 1).asType() instanceof ArrayType) {
         return true;
+      }
+    } else if (numParameters == invok.getArguments().size()) {
+      ExecutableElement e = elementFromUse(invok);
+      if (e.isVarArgs() && e.getSimpleName().contentEquals("invoke")) {
+        TypeMirror type = TreeUtils.typeOf(invok.getArguments().get(numParameters - 1));
+        return type.getKind().isPrimitive() || TypesUtils.isBoxedPrimitive(type);
       }
     }
 
