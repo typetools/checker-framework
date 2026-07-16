@@ -143,6 +143,9 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
 
       List<String> a1List = getLessThanExpressions(a1);
       List<String> a2List = getLessThanExpressions(a2);
+      if (a1List == null || a2List == null) {
+        return LESS_THAN_BOTTOM;
+      }
       CollectionsPlume.adjoinAll(a1List, a2List); // union
       return createLessThanQualifier(a1List);
     }

@@ -513,7 +513,8 @@ public class MustCallInference {
    */
   private int getIndexOfParam(Obligation obligation) {
     Set<ResourceAlias> resourceAliases = obligation.resourceAliases;
-    List<VariableElement> paramElts =
+    // `elementFromDeclaration` returns `@Nullable`; if any are actually null, that is a bug.
+    List<@Nullable VariableElement> paramElts =
         CollectionsPlume.mapList(TreeUtils::elementFromDeclaration, methodTree.getParameters());
     for (ResourceAlias resourceAlias : resourceAliases) {
       int paramIndex = paramElts.indexOf(resourceAlias.element);
