@@ -240,36 +240,40 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // TODO: Also remove if any element/argument to the annotation is not
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
 
-      // If @DoesNotUnrefineReceiver is present, compute the receiver as a JavaExpression so
-      // that it can be exempted from unrefinement in all expression categories below.
-      @Nullable JavaExpression receiverJe =
+      // This is an expression that is exempted from unrefinement, or null if no expression is
+      // exempted.
+      @Nullable JavaExpression unrefinableReceiverJe =
           hasDoesNotUnrefineReceiver ? JavaExpression.fromNode(receiver) : null;
 
       // Update local variables.
       if (sideEffectsUnrefineAliases) {
-        localVariableValues.entrySet().removeIf(e -> isSideEffected(e.getKey(), receiverJe));
+        localVariableValues
+            .entrySet()
+            .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe));
       }
 
       // Update this value.
       if (sideEffectsUnrefineAliases
-          && !(receiverJe instanceof ThisReference)
-          && !(receiverJe instanceof SuperReference)) {
+          && !(unrefinableReceiverJe instanceof ThisReference)
+          && !(unrefinableReceiverJe instanceof SuperReference)) {
         thisValue = null;
       }
 
       // Update field values.
       if (sideEffectsUnrefineAliases) {
-        fieldValues.entrySet().removeIf(e -> isSideEffected(e.getKey(), receiverJe));
+        fieldValues.entrySet().removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe));
       } else {
         // Case 2 (unassignable fields) and case 3 (monotonic fields).
-        updateFieldValuesForMethodCall(atypeFactory, receiverJe);
+        updateFieldValuesForMethodCall(atypeFactory, unrefinableReceiverJe);
       }
 
       // Update array values.
-      arrayValues.entrySet().removeIf(e -> isSideEffected(e.getKey(), receiverJe));
+      arrayValues.entrySet().removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe));
 
       // Update information about method calls.
-      methodCallExpressions.entrySet().removeIf(e -> isSideEffected(e.getKey(), receiverJe));
+      methodCallExpressions
+          .entrySet()
+          .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe));
     }
 
     // Store information about method calls if possible.
@@ -279,6 +283,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   /**
    * Returns true if the given expression might evaluate to a different value.
+   *
+   * <p>Some side effects are ignored: {@code notSideEffectedExpression} is treated as if it cannot
+   * change. Concretely, the implementation evaluates to false if {@code expr} is strictly equal to
+   * {@code notSideEffectedExpression}.
    *
    * @param expr an expression
    * @param notSideEffectedExpression an expression that is never considered to be side-effected, or
@@ -379,20 +387,20 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * fields that have a monotonic annotation.
    *
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
-   * @param receiverJe if non-null, the receiver, which should not be unrefined
+   * @param unrefinableReceiverJe if non-null, the receiver, which should not be unrefined
    */
   private void updateFieldValuesForMethodCall(
-      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory, @Nullable JavaExpression receiverJe) {
+      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory,
+      @Nullable JavaExpression unrefinableReceiverJe) {
     Map<FieldAccess, V> newFieldValues = new HashMap<>(MapsP.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
       V previousValue = e.getValue();
 
-      if (!isSideEffected(fieldAccess, receiverJe)) {
+      if (!isSideEffected(fieldAccess, unrefinableReceiverJe)) {
         // If the field hasn't been side-effected, there is no need to compute a new value for it.
-        // This is safe to skip because a field that is not modifiable by other code is also not
-        // assignable by other code (see FieldAccess#isModifiableByOtherCode), so
-        // newFieldValueAfterMethodCall would return the previous value anyway.
+        // For unmodifiable fields, this is safe because they are not assignable by other code.
+        // For the exempt receiver, skipping recomputation is necessary to preserve its value.
         newFieldValues.put(fieldAccess, previousValue);
       } else {
         V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
