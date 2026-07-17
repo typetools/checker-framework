@@ -542,7 +542,6 @@ public class InsertAjavaAnnotations {
     try {
       File javaFile = new File(javaFileName);
       String fileContents = FilesP.readString(Path.of(javaFileName));
-      @SuppressWarnings("regex") // next release of plume-lib annotates `inferLineSeparator()`
       @Regex String lineSeparator = FilesP.inferLineSeparator(javaFileName);
       try (InputStream annotationInputStream =
           Files.newInputStream(Paths.get(annotationFileName))) {
