@@ -44,9 +44,9 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.ImmutableTypes;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * A utility class that helps with {@link TypeMirror}s. It complements {@link Types}, providing
@@ -1095,7 +1095,7 @@ public final class TypesUtils {
   private static com.sun.tools.javac.util.List<Type> typeMirrorListToTypeList(
       List<TypeMirror> typeMirrors) {
     @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
-    List<Type> typeList = CollectionsPlume.mapList(Type.class::cast, typeMirrors);
+    List<Type> typeList = CollectionsP.mapList(Type.class::cast, typeMirrors);
     return com.sun.tools.javac.util.List.from(typeList);
   }
 
@@ -1208,9 +1208,9 @@ public final class TypesUtils {
       List<? extends TypeMirror> typeArgs,
       ProcessingEnvironment env) {
     @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
-    List<Type> newP = CollectionsPlume.mapList(Type.class::cast, typeVariables);
+    List<Type> newP = CollectionsP.mapList(Type.class::cast, typeVariables);
     @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
-    List<Type> newT = CollectionsPlume.mapList(Type.class::cast, typeArgs);
+    List<Type> newT = CollectionsP.mapList(Type.class::cast, typeArgs);
 
     JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
     com.sun.tools.javac.code.Types types =
@@ -1339,7 +1339,7 @@ public final class TypesUtils {
         return candidate;
       }
     }
-    throw new BugInCF("Not found: %s", StringsPlume.join(",", collection));
+    throw new BugInCF("Not found: %s", StringsP.join(",", collection));
   }
 
   /**
