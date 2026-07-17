@@ -200,7 +200,6 @@ public class DisallowedSideEffects {
       if (!expr.isModifiableByOtherCode()) {
         return false;
       }
-      JavaExpression exprNonCanonical = expr;
       expr = aliasedExpressions.find(expr);
       for (JavaExpression seOnlyExpr : sideEffectsOnlyExpressionsFromAnnotation) {
         System.out.printf("Testing whether %s contains %s%n", expr, seOnlyExpr);
