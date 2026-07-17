@@ -69,6 +69,35 @@ public interface TypeHierarchy {
   boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype);
 
   /**
+   * Returns true if the effective annotations of {@code type1} are equal to the effective
+   * annotations of {@code type2}, according to the type qualifier hierarchy.
+   *
+   * <p>The underlying types of {@code type1} and {@code type2} are not necessarily in a Java
+   * subtyping relationship with one another and are only used by this method for special cases when
+   * qualifier subtyping depends on the Java basetype.
+   *
+   * @param type1 a type
+   * @param type2 a type
+   * @return true iff the effective annotations of {@code type1} are equal to the effective
+   *     annotations of {@code type2}
+   */
+  boolean equalsShallowEffective(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2);
+
+  /**
+   * Returns true if the effective annotations of {@code type1} are equal to {@code qualifiers2},
+   * according to the type qualifier hierarchy. Other annotations in {@code type1} are ignored.
+   *
+   * <p>The underlying type of {@code type1} is only used by this method for special cases when
+   * qualifier subtyping depends on the Java basetype.
+   *
+   * @param type1 a type
+   * @param qualifiers2 qualifiers
+   * @return true iff the effective annotations of {@code type1} are equal to {@code qualifiers2}
+   */
+  boolean equalsShallowEffective(
+      AnnotatedTypeMirror type1, Collection<? extends AnnotationMirror> qualifiers2);
+
+  /**
    * Returns true if the effective annotations of {@code subtype} are equal to or are sub-qualifiers
    * of the effective annotations of {@code supertype}, according to the type qualifier hierarchy.
    *
@@ -145,7 +174,7 @@ public interface TypeHierarchy {
    *
    * @param subtype possible subtype
    * @param superQualifier possible super qualifier
-   * @return true iffhe effective annotation of {@code subtype} in the same hierarchy as {@code
+   * @return true iff the effective annotation of {@code subtype} in the same hierarchy as {@code
    *     superQualifier} is equal to or sub-qualifier of {@code superQualifier}
    */
   boolean isSubtypeShallowEffective(AnnotatedTypeMirror subtype, AnnotationMirror superQualifier);

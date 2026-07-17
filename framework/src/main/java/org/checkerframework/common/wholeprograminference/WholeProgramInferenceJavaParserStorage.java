@@ -97,11 +97,11 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArraySet;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.DeepCopyable;
 import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.UtilP;
 
 /**
  * This is an implementation of {@link WholeProgramInferenceStorage} that stores annotations
@@ -1282,7 +1282,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param compilationUnit compilation unit being wrapped
    * @param types wrappers for classes and interfaces in {@code compilationUnit}
    */
-  private record CompilationUnitAnnos(
+  public record CompilationUnitAnnos(
       CompilationUnit compilationUnit, List<ClassOrInterfaceAnnos> types)
       implements DeepCopyable<CompilationUnitAnnos> {
 
@@ -1297,7 +1297,7 @@ public class WholeProgramInferenceJavaParserStorage
 
     @Override
     public CompilationUnitAnnos deepCopy() {
-      return new CompilationUnitAnnos(compilationUnit, CollectionsPlume.deepCopy(types));
+      return new CompilationUnitAnnos(compilationUnit, CollectionsP.deepCopy(types));
     }
 
     /**
@@ -1348,7 +1348,7 @@ public class WholeProgramInferenceJavaParserStorage
   /**
    * Stores wrappers for the locations where annotations may be inferred in a class or interface.
    */
-  private static class ClassOrInterfaceAnnos implements DeepCopyable<ClassOrInterfaceAnnos> {
+  public static class ClassOrInterfaceAnnos implements DeepCopyable<ClassOrInterfaceAnnos> {
     /**
      * Mapping from JVM method signatures to the wrapper containing the corresponding executable.
      */
@@ -1393,7 +1393,7 @@ public class WholeProgramInferenceJavaParserStorage
       ClassOrInterfaceAnnos result = new ClassOrInterfaceAnnos(className, classDeclaration);
       result.callableDeclarations = MapsP.deepCopyValues(callableDeclarations);
       result.fields = MapsP.deepCopyValues(fields);
-      result.enumConstants = UtilPlume.clone(enumConstants); // no deep copy: elements are strings
+      result.enumConstants = UtilP.clone(enumConstants); // no deep copy: elements are strings
       if (classAnnotations != null) {
         result.classAnnotations = classAnnotations.deepCopy();
       }
@@ -1536,7 +1536,7 @@ public class WholeProgramInferenceJavaParserStorage
       result.returnType = DeepCopyable.deepCopyOrNull(this.returnType);
       result.receiverType = DeepCopyable.deepCopyOrNull(this.receiverType);
       if (parameterTypes != null) {
-        result.parameterTypes = CollectionsPlume.deepCopy(this.parameterTypes);
+        result.parameterTypes = CollectionsP.deepCopy(this.parameterTypes);
       }
       result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
 
@@ -1926,7 +1926,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /** Stores the JavaParser node for a field and the annotations that have been inferred for it. */
-  private static class FieldAnnos implements DeepCopyable<FieldAnnos> {
+  public static class FieldAnnos implements DeepCopyable<FieldAnnos> {
     /** Wrapped field declaration. */
     public final VariableDeclarator declaration;
 

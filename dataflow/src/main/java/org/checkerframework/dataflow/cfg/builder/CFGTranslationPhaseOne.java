@@ -183,7 +183,7 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
 import org.plumelib.util.IdentityArraySet;
 
@@ -599,7 +599,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
     Set<Node> existing = treeToCfgNodes.get(tree);
     if (existing == null) {
-      Set<Node> newSet = new IdentityArraySet<Node>(1);
+      Set<Node> newSet = new IdentityArraySet<>(1);
       newSet.add(node);
       treeToCfgNodes.put(tree, newSet);
     } else {
@@ -1863,7 +1863,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // Declare and initialize the loop index variable
       TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
 
-      LiteralTree zero = treeBuilder.buildLiteral(Integer.valueOf(0));
+      LiteralTree zero = treeBuilder.buildLiteral(0);
       handleArtificialTree(zero);
 
       VariableTree indexVariable =
@@ -1957,7 +1957,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       indexNode3.setInSource(false);
       extendWithNode(indexNode3);
 
-      LiteralTree oneTree = treeBuilder.buildLiteral(Integer.valueOf(1));
+      LiteralTree oneTree = treeBuilder.buildLiteral(1);
       handleArtificialTree(oneTree);
       Node one = new IntegerLiteralNode(oneTree);
       one.setInSource(false);
@@ -2048,7 +2048,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Helper class for handling switch statements and switch expressions, including all their
    * substatements such as case labels.
    */
-  private class SwitchBuilder {
+  private final class SwitchBuilder {
 
     /**
      * The tree for the switch statement or switch expression. Its type may be {@link SwitchTree}
@@ -2412,6 +2412,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param second a reference
    * @return the first argument that is non-null
    */
+  @SuppressWarnings("PMD.AvoidThrowingNullPointerException")
   private static <A> A firstNonNull(A first, A second) {
     if (first != null) {
       return first;
@@ -2432,7 +2433,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             tree, "start of try statement #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
 
     List<IPair<TypeMirror, Label>> catchLabels =
-        CollectionsPlume.mapList(
+        CollectionsP.mapList(
             (CatchTree c) -> IPair.of(TreeUtils.typeOf(c.getParameter().getType()), new Label()),
             catches);
 
@@ -3345,14 +3346,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     assert dimensions != null;
 
     List<Node> dimensionNodes =
-        CollectionsPlume.mapList(dim -> unaryNumericPromotion(scan(dim, p)), dimensions);
+        CollectionsP.mapList(dim -> unaryNumericPromotion(scan(dim, p)), dimensions);
 
     List<Node> initializerNodes;
     if (initializers == null) {
       initializerNodes = Collections.emptyList();
     } else {
       initializerNodes =
-          CollectionsPlume.mapList(init -> assignConvert(scan(init, p), elemType), initializers);
+          CollectionsP.mapList(init -> assignConvert(scan(init, p), elemType), initializers);
     }
 
     Node node = new ArrayCreationNode(tree, type, dimensionNodes, initializerNodes);

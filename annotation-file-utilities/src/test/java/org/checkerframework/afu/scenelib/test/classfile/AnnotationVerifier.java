@@ -18,7 +18,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.TypePath;
 import org.objectweb.asm.TypeReference;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * An {@code AnnotationVerifier} provides a way to check to see if two versions of the same class
@@ -280,7 +280,12 @@ public class AnnotationVerifier {
       return sb.toString();
     }
 
-    // pretty-prints this into the given list of lines
+    /**
+     * Pretty-prints this into the given StringBuilder.
+     *
+     * @param sb the destination for the pretty-printed output
+     * @param indent a prefix for each line of the output
+     */
     public void prettyPrint(StringBuilder sb, String indent) {
 
       // avoid boilerplate of adding indent and lineSep every time
@@ -309,11 +314,17 @@ public class AnnotationVerifier {
         sb.append(lineSep);
       }
       for (Map.Entry<String, FieldRecorder> e : fieldRecorders.entrySet()) {
-        sb.append(indent + "  " + e.getKey() + ":" + lineSep);
+        sb.append(indent + "  ");
+        sb.append(e.getKey());
+        sb.append(':');
+        sb.append(lineSep);
         e.getValue().prettyPrint(sb, indent + "    ");
       }
       for (Map.Entry<String, MethodRecorder> e : methodRecorders.entrySet()) {
-        sb.append(indent + "  " + e.getKey() + ":" + lineSep);
+        sb.append(indent + "  ");
+        sb.append(e.getKey());
+        sb.append(':');
+        sb.append(lineSep);
         e.getValue().prettyPrint(sb, indent + "    ");
       }
     }
@@ -776,7 +787,7 @@ public class AnnotationVerifier {
       if (questionable.equals(correct)) {
         return;
       }
-      if (CollectionsPlume.deepEquals(questionable, correct)) {
+      if (CollectionsP.deepEquals(questionable, correct)) {
         return;
       }
 

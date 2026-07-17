@@ -14,7 +14,7 @@ import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.RegexUtil;
 
 /** The qualifier hierarchy for the Value type system. */
@@ -260,32 +260,32 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         }
         case ValueAnnotatedTypeFactory.INTVAL_NAME -> {
           List<Long> longs = atypeFactory.getIntValues(a1);
-          CollectionsPlume.adjoinAll(longs, atypeFactory.getIntValues(a2));
+          CollectionsP.adjoinAll(longs, atypeFactory.getIntValues(a2));
           return atypeFactory.createIntValAnnotation(longs);
         }
         case ValueAnnotatedTypeFactory.ARRAYLEN_NAME -> {
           List<Integer> arrayLens = atypeFactory.getArrayLength(a1);
-          CollectionsPlume.adjoinAll(arrayLens, atypeFactory.getArrayLength(a2));
+          CollectionsP.adjoinAll(arrayLens, atypeFactory.getArrayLength(a2));
           return atypeFactory.createArrayLenAnnotation(arrayLens);
         }
         case ValueAnnotatedTypeFactory.STRINGVAL_NAME -> {
           List<String> strings = atypeFactory.getStringValues(a1);
-          CollectionsPlume.adjoinAll(strings, atypeFactory.getStringValues(a2));
+          CollectionsP.adjoinAll(strings, atypeFactory.getStringValues(a2));
           return atypeFactory.createStringAnnotation(strings);
         }
         case ValueAnnotatedTypeFactory.BOOLVAL_NAME -> {
           List<Boolean> bools = atypeFactory.getBooleanValues(a1);
-          CollectionsPlume.adjoinAll(bools, atypeFactory.getBooleanValues(a2));
+          CollectionsP.adjoinAll(bools, atypeFactory.getBooleanValues(a2));
           return atypeFactory.createBooleanAnnotation(bools);
         }
         case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME -> {
           List<Double> doubles = atypeFactory.getDoubleValues(a1);
-          CollectionsPlume.adjoinAll(doubles, atypeFactory.getDoubleValues(a2));
+          CollectionsP.adjoinAll(doubles, atypeFactory.getDoubleValues(a2));
           return atypeFactory.createDoubleAnnotation(doubles);
         }
         case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME -> {
           List<@Regex String> regexes = atypeFactory.getMatchesRegexValues(a1);
-          CollectionsPlume.adjoinAll(regexes, atypeFactory.getMatchesRegexValues(a2));
+          CollectionsP.adjoinAll(regexes, atypeFactory.getMatchesRegexValues(a2));
           return atypeFactory.createMatchesRegexAnnotation(regexes);
         }
         case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME -> {

@@ -147,6 +147,7 @@ public abstract class MostlyNoElementQualifierHierarchy extends ElementQualifier
    * @param qualifierKind1 QualifierKind for {@code a1}
    * @param a2 second annotation
    * @param qualifierKind2 QualifierKind for {@code a2}
+   * @param glbKind the kind of the glb of {@code qualifierKind1} and {@code qualifierKind2}
    * @return the greatest lower bound between {@code a1} and {@code a2}
    */
   protected abstract AnnotationMirror greatestLowerBoundWithElements(

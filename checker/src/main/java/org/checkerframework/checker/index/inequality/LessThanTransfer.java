@@ -18,7 +18,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * Implements 3 refinement rules:
@@ -62,7 +62,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
       }
       String leftString = leftJe.toString();
       if (!lessThanExpressions.contains(leftString)) {
-        lessThanExpressions = CollectionsPlume.append(lessThanExpressions, leftString);
+        lessThanExpressions = CollectionsP.append(lessThanExpressions, leftString);
         JavaExpression rightJe = JavaExpression.fromNode(right);
         store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
       }
@@ -97,7 +97,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
       }
       String leftIncremented = incrementedExpression(leftJe);
       if (!lessThanExpressions.contains(leftIncremented)) {
-        lessThanExpressions = CollectionsPlume.append(lessThanExpressions, leftIncremented);
+        lessThanExpressions = CollectionsP.append(lessThanExpressions, leftIncremented);
         JavaExpression rightJe = JavaExpression.fromNode(right);
         store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
       }
@@ -121,7 +121,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
           if (expressions == null) {
             expressions = Collections.singletonList(leftJe.toString());
           } else {
-            expressions = CollectionsPlume.append(expressions, leftJe.toString());
+            expressions = CollectionsP.append(expressions, leftJe.toString());
           }
         }
         AnnotationMirror refine = factory.createLessThanQualifier(expressions);

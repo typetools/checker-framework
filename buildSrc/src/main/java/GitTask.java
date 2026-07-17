@@ -82,15 +82,33 @@ public abstract class GitTask extends DefaultTask {
    * @param directory where the clone to update is
    */
   public void update(File directory) {
+    //       If the repository remote is configured using ssh, e.g.,
+    // git@github.com:typetools/checker-framework.git,
+    // then `git.pull().call()` may get permission problems such as:
+    //       org.eclipse.jgit.api.errors.TransportException: git@github.com:smillst/jdk.git:
+    // invalid privatekey: ...
+    // or
+    //   javax.security.auth.login.FailedLoginException:
+    //   No password data for encrypted resource=/home/mernst/.ssh/id_rsa
+    // Furthermore, such messages cause a Java stack trace that clutters the Gradle output and makes
+    // it look like compilation failed.
+    // So instead run `git pull` on the command line.
+
+    boolean calledGit = false;
+
     try (Git git = Git.open(directory)) {
-      git.pull().call();
+
+      String originUrl = git.getRepository().getConfig().getString("remote", "origin", "url");
+
+      if (originUrl.startsWith("https:")) {
+        git.pull().call();
+        calledGit = true;
+      }
     } catch (Exception e) {
-      //       If the repository remote is configured using ssh, e.g.,
-      // git@github.com:typetools/checker-framework.git,
-      //       then the above may get permission problems such as:
-      //       org.eclipse.jgit.api.errors.TransportException: git@github.com:smillst/jdk.git:
-      // invalid privatekey: ...
-      //       So fall back to running git pull on the command line.
+      // Nothing to do.
+    }
+
+    if (!calledGit) {
       org.gradle.process.ExecResult execResult =
           execOperations.exec(
               execSpec -> {

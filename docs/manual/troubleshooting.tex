@@ -392,7 +392,7 @@ mypackage/MyClass.java:2044: warning: incompatible types in assignment.
 \end{Verbatim}
 
 \noindent
-A value that can be assigned to a variable of type \<T extends @MyQualifier
+A value can be assigned to a variable of type \<T extends @MyQualifier
 Object> only if that value is of the bottom type, since the bottom type is
 the only one that is a subtype of every subtype of \<T extends @MyQualifier
 Object>.  The value \<null> satisfies this for the Java type system, and it
@@ -566,7 +566,7 @@ least the following 4 parts: commands, inputs, outputs, and expectation.
 
   In the simplest case, you will provide one command of
   the form \<javac -processor ... MyFile.java>.  In more complex cases, it
-  might be a set of commands clone a repository, check out a branch, and
+  might be a set of commands to clone a repository, check out a branch, and
   run a build command.  Include commands to install software and set
   environment variables if necessary.
 

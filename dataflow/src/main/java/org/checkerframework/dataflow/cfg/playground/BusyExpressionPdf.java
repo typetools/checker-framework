@@ -13,7 +13,7 @@ import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeOptions;
  *
  * <p>As an example, try {@code dataflow/manual/examples/BusyExprSimple.java}.
  */
-public class BusyExpressionPdf {
+public final class BusyExpressionPdf {
 
   /** Class cannot be instantiated. */
   private BusyExpressionPdf() {

@@ -81,7 +81,7 @@ public class QualifierUpperBounds {
     boolean res = qualHierarchy.updateMappingToMutableSet(typeKinds, typeKind, theQual);
     if (!res) {
       throw new BugInCF(
-          "QualifierUpperBounds: invalid update of typeKinds $s at %s with %s.",
+          "QualifierUpperBounds: invalid update of typeKinds %s at %s with %s.",
           typeKinds, typeKind, theQual);
     }
   }
@@ -92,7 +92,7 @@ public class QualifierUpperBounds {
     boolean res = qualHierarchy.updateMappingToMutableSet(types, typeNameString, theQual);
     if (!res) {
       throw new BugInCF(
-          "QualifierUpperBounds: invalid update of types $s at %s with %s.", types, type, theQual);
+          "QualifierUpperBounds: invalid update of types %s at %s with %s.", types, type, theQual);
     }
   }
 

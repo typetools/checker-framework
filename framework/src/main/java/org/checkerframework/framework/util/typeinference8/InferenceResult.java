@@ -15,7 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** The result of type argument inferrece. */
+/** The result of type argument inference. */
 public class InferenceResult {
 
   /** An empty inference result. */
@@ -56,7 +56,8 @@ public class InferenceResult {
    * Creates an inference result.
    *
    * @param variables instantiated variables
-   * @param uncheckedConversion where unchecked conversion was required to infer the type arguments
+   * @param uncheckedConversion whether unchecked conversion was required to infer the type
+   *     arguments
    * @param annoInferenceFailed true if inference failed because of annotations
    * @param errorMsg message to report to users if inference failed
    */
@@ -72,7 +73,8 @@ public class InferenceResult {
    * Creates an inference result.
    *
    * @param variables instantiated variables
-   * @param uncheckedConversion where unchecked conversion was required to infer the type arguments
+   * @param uncheckedConversion whether unchecked conversion was required to infer the type
+   *     arguments
    * @param annoInferenceFailed true if inference failed because of annotations
    * @param inferenceCrashed the type argument inference code crashed
    * @param errorMsg message to report to users if inference failed
@@ -171,17 +173,17 @@ public class InferenceResult {
 
   /**
    * Switch the {@link TypeVariable}s in {@code results} with the {@code TypeVariable}s in {@code
-   * methodType} so that the {@code TypeVariable}s in the result are {@code .equals}. {@link
+   * executableType} so that the {@code TypeVariable}s in the result are {@code .equals}. {@link
    * TypesUtils#areSame(TypeVariable, TypeVariable)} is used to decide which type variables to swap.
    *
-   * @param methodType annotated method type
+   * @param executableType annotated method type
    * @param tree method invocation tree
    * @return this
    */
   /* package-private */ InferenceResult swapTypeVariables(
-      AnnotatedExecutableType methodType, ExpressionTree tree) {
+      AnnotatedExecutableType executableType, ExpressionTree tree) {
     Map<TypeVariable, AnnotatedTypeMirror> map = results.get(tree);
-    for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
+    for (AnnotatedTypeVariable tv : executableType.getTypeVariables()) {
       TypeVariable typeVariable = tv.getUnderlyingType();
       for (TypeVariable t : new HashSet<>(map.keySet())) {
         if (TypesUtils.areSame(t, typeVariable)) {

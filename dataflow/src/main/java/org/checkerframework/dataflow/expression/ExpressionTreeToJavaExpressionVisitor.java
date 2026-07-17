@@ -50,13 +50,13 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.javacparse.JavacParse;
 import org.plumelib.javacparse.JavacParseResult;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * A visitor class that converts a javac {@link ExpressionTree} to a {@link JavaExpression}. This
  * class does not viewpoint-adapt the expression.
  */
-class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpression, Void> {
+final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpression, Void> {
 
   /** How to format warnings about use of formal parameter name. */
   public static final @Format({ConversionCategory.INT, ConversionCategory.GENERAL}) String
@@ -420,7 +420,8 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
    * @param identifier possible simple class name
    * @return the {@code ClassName} for {@code identifier}, or null if it is not a simple class name
    */
-  protected @Nullable ClassName getIdentifierAsInnerClassName(TypeMirror type, String identifier) {
+  /*package-private*/ @Nullable ClassName getIdentifierAsInnerClassName(
+      TypeMirror type, String identifier) {
     if (type.getKind() != TypeKind.DECLARED) {
       return null;
     }
@@ -454,7 +455,7 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
    * @param identifier possible class name
    * @return the {@code ClassName} for {@code identifier}, or null if it is not a class name
    */
-  protected @Nullable ClassName getIdentifierAsUnqualifiedClassName(String identifier) {
+  /*package-private*/ @Nullable ClassName getIdentifierAsUnqualifiedClassName(String identifier) {
     // Is identifier an inner class of enclosingType or of any enclosing class of
     // enclosingType?
     TypeMirror searchType = enclosingType;
@@ -517,7 +518,7 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
    * @return a field access, or null if {@code identifier} is not a field that can be accessed via
    *     {@code receiverExpr}
    */
-  protected @Nullable FieldAccess getIdentifierAsFieldAccess(
+  /*package-private*/ @Nullable FieldAccess getIdentifierAsFieldAccess(
       JavaExpression receiverExpr, String identifier) {
     setResolverField();
     // Find the field element.
@@ -578,7 +579,7 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
     //  * true: it's an instance field declared in the type (or supertype) of receiverExpr.
     //  * false: it's an instance field declared in an enclosing type of receiverExpr.
 
-    @SuppressWarnings("interning:not.interned") // Checking for exact object
+    @SuppressWarnings({"interning:not.interned", "TypeEquals"}) // Checking for exact object
     boolean fieldDeclaredInReceiverType = enclosingTypeOfField == receiverExpr.getType();
     if (fieldDeclaredInReceiverType) {
       TypeMirror fieldType = ElementUtils.getType(fieldElem);
@@ -631,8 +632,7 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
 
     // Convert argument expressions
     List<JavaExpression> arguments =
-        CollectionsPlume.mapList(
-            argument -> argument.accept(this, null), invocation.getArguments());
+        CollectionsP.mapList(argument -> argument.accept(this, null), invocation.getArguments());
 
     // Resolve method
     ExecutableElement methodElement;
@@ -729,7 +729,7 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
       Resolver resolver)
       throws JavaExpressionParseException {
 
-    List<TypeMirror> argumentTypes = CollectionsPlume.mapList(JavaExpression::getType, arguments);
+    List<TypeMirror> argumentTypes = CollectionsP.mapList(JavaExpression::getType, arguments);
 
     if (receiverType.getKind() == TypeKind.ARRAY) {
       ExecutableElement element =

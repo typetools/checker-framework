@@ -13,9 +13,14 @@ on:  # yamllint disable-line rule:truthy
     branches:
       - "**"
 
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
+#   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+# Cancel in-progress jobs that originate from a fork.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.fork && github.event.pull_request.head.ref || github.ref }}
+  cancel-in-progress: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
 
 permissions:
   contents: read
@@ -45,6 +50,18 @@ jobs:
     steps:
       - name: canary_jobs
         run: true
+  ci_info:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          set-safe-directory: true
+          # Unlimited history for contributors.tex generation.
+          fetch-depth: 0
+      - name: clone_plume_scripts
+        run: git clone https://github.com/plume-lib/plume-scripts.git /tmp/plume-scripts
+      - name: ci_info
+        run: /tmp/plume-scripts/ci-info --debug
 
 include([../../.azure/jobs.m4])dnl
 

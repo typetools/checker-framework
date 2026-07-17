@@ -359,7 +359,7 @@ satisfied.  When those fields are used throughout execution, until the
 program exits, there is no good place to dispose of them, so these warnings
 might not be useful.  The \<-ApermitStaticOwning> command-line argument
 suppresses warnings related to static owning fields.  This can help in
-checking legacy code.  It permits only a small number of resource retained
+checking legacy code.  It permits only a small number of resources retained
 throughout execution, related to the number of such fields and assignments
 to them.
 
@@ -485,7 +485,7 @@ At a call site to a method annotated as
   Treats any existing \<@MustCall> obligations of \emph{expr} as \emph{satisfied},
 \item
   Creates a fresh obligation to check, as if \emph{expr} was assigned to a newly-allocated
-  object (i.e. as if \emph{expr} were a constructor result).
+  object (i.e., as if \emph{expr} were a constructor result).
 \item
   Un-refines the type in the Called Methods Checker's type hierarchy for \emph{expr} to
   \<@CalledMethods(\{\})>, if it had any other Called Methods type.
@@ -597,20 +597,22 @@ The set of ignored exception types can be controlled with the option
 \<-AresourceLeakIgnoredExceptions=...>.  The option takes a comma-separated list of
 fully-qualified exception types.  A type can be prefixed with \<=> to ignore exactly
 that type and not its subclasses.  For example, for a very pedantic set of ignored
-exceptions use:
+exceptions use either of these, which have identical effect:
 
 \begin{verbatim}
-  -AresourceLeakIgnoredExceptions=java.lang.Error, =java.lang.NullPointerException
+  -AresourceLeakIgnoredExceptions="java.lang.Error,=java.lang.NullPointerException"
+  -AresourceLeakIgnoredExceptions="=java.lang.NullPointerException,java.lang.Error"
 \end{verbatim}
 
 which ignores \<java.lang.Error> (and all its subclasses) as well as
 \<java.lang.NullPointerException> (but not its subclasses).
 
 The keyword \<default> will expand to the default set of ignored exceptions.  So,
-to add an additional exception to the set of ignored exceptions, use:
+to add an additional exception to the set of ignored exceptions, use one of these:
 
 \begin{verbatim}
-  -AresourceLeakIgnoredExceptions=default,package.MyCustomException
+  -AresourceLeakIgnoredExceptions="default,package.MyCustomException"
+  -AresourceLeakIgnoredExceptions="default,=package.MyCustomException"
 \end{verbatim}
 
 \sectionAndLabel{Errors about field initialization}{resource-leak-field-initialization}
@@ -636,10 +638,10 @@ checker unsound:  the Resource Leak Checker will not warn if the constructor
 and initializers set a field more than once.  The amount of leakage is
 limited to how many times the field is set.
 
-\sectionAndLabel{Errors about unknown must call obligations}{resource-leak-generic-unknown}
+\sectionAndLabel{Errors about unknown must-call obligations}{resource-leak-generic-unknown}
 
 The Resource Leak Checker issues a \<required.method.not.known> error
-when a variable with the type \<@MustCallUnknown> has a must call obligation.
+when a variable with the type \<@MustCallUnknown> has a must-call obligation.
 \<@MustCallUnknown> rarely occurs, but if you encounter this error usually
 the right thing to do is to write an explicit \<@MustCall> annotation
 on the indicated expression (e.g., as a cast), because the Must Call Checker

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -233,8 +234,8 @@ public class Typing extends TypeConstraint {
       int index = 0;
       for (AbstractType b : Bs) {
         AbstractType a = As.next();
-        boolean convarArg = covariantArgIndexes.contains(index);
-        set.add(new Typing(this, b, a, Kind.CONTAINED, convarArg));
+        boolean covarArg = covariantArgIndexes.contains(index);
+        set.add(new Typing(this, b, a, Kind.CONTAINED, covarArg));
         index++;
       }
 
@@ -307,7 +308,7 @@ public class Typing extends TypeConstraint {
       if (S.getTypeKind() == TypeKind.WILDCARD) {
         return ConstraintSet.FALSE;
       }
-      // This code is incorrect because the java types must be equal, but the qualifiers can
+      // This code is incorrect because the Java types must be equal, but the qualifiers can
       // be covariant.
       // if (isCovarTypeArg) {
       // return new Typing(this, S, T, Kind.SUBTYPE);
@@ -485,9 +486,6 @@ public class Typing extends TypeConstraint {
 
   @Override
   public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + S.hashCode();
-    result = 31 * result + kind.hashCode();
-    return result;
+    return Objects.hash(super.hashCode(), S, kind);
   }
 }

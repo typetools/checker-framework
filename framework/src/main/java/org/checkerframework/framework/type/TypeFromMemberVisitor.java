@@ -22,7 +22,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Converts a field or methods tree into an AnnotatedTypeMirror.
+ * Converts a field or method tree into an AnnotatedTypeMirror.
  *
  * @see org.checkerframework.framework.type.TypeFromTree
  */
@@ -123,6 +123,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     return result;
   }
 
+  // This method has no effect on the result of ((MethodSymbol) elt).getRawTypeAttributes().  That
+  // is affected elsewhere.
   @Override
   public AnnotatedTypeMirror visitMethod(MethodTree tree, AnnotatedTypeFactory f) {
     ExecutableElement elt = TreeUtils.elementFromDeclaration(tree);

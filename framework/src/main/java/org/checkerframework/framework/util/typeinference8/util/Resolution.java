@@ -25,11 +25,11 @@ import org.checkerframework.framework.util.typeinference8.types.VariableBounds.B
 
 /**
  * Resolution finds an instantiation for each variable in a given set of variables. It does this
- * using all the bounds on a variable. Because a bound on a variable by be another unresolved
- * variable, the order in which the variables must be computed before resolution. If the set of
- * variables contains any captured variables, then a different resolution algorithm is used. If a
- * set of variables does not contain a captured variable, but the resolution fails, then the
- * resolution algorithm for captured variables is used.
+ * using all the bounds on a variable. Because a bound on a variable may be another unresolved
+ * variable, the order in which the variables are resolved must be computed before resolution. If
+ * the set of variables contains any captured variables, then a different resolution algorithm is
+ * used. If a set of variables does not contain a captured variable, but the resolution fails, then
+ * the resolution algorithm for captured variables is used.
  *
  * <p>Resolution is discussed in <a
  * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.4">JLS Section
@@ -39,7 +39,7 @@ import org.checkerframework.framework.util.typeinference8.types.VariableBounds.B
  * #resolve(Variable, BoundSet, Java8InferenceContext)}, which create {@link Resolution} objects
  * that actually perform the resolution.
  */
-public class Resolution {
+public final class Resolution {
 
   /**
    * Instantiates a set of variables, {@code as}.
@@ -135,7 +135,7 @@ public class Resolution {
     while (!unresolvedVars.isEmpty()) {
       assert !boundSet.containsFalse();
 
-      Set<Variable> smallestDependencySet = getSmallestDependecySet(resolvedVars, unresolvedVars);
+      Set<Variable> smallestDependencySet = getSmallestDependencySet(resolvedVars, unresolvedVars);
 
       // Resolve the smallest unresolved dependency set.
       boundSet = resolveSmallestSet(smallestDependencySet, boundSet);
@@ -154,7 +154,7 @@ public class Resolution {
    * @param unresolvedVars variables that have not been resolved
    * @return the smallest set of unresolved variable
    */
-  private Set<Variable> getSmallestDependecySet(
+  private Set<Variable> getSmallestDependencySet(
       List<Variable> resolvedVars, Queue<Variable> unresolvedVars) {
     Set<Variable> smallestDependencySet = null;
     // This loop is looking for the smallest set of dependencies that have not been resolved.
@@ -180,7 +180,7 @@ public class Resolution {
   /**
    * Resolves {@code as}
    *
-   * @param as the smallest set of unresolved variables that includes all any variable on which a
+   * @param as the smallest set of unresolved variables that includes any variable on which a
    *     variable in the set depends
    * @param boundSet current bounds set
    * @return current bound set
@@ -260,7 +260,7 @@ public class Resolution {
    *
    * @param as variables to resolve
    * @param boundSet the bound set to use
-   * @return the resolved bound st
+   * @return the resolved bound set
    */
   private BoundSet resolveWithoutCapture(Set<Variable> as, BoundSet boundSet) {
     BoundSet resolvedBoundSet = new BoundSet(context);
@@ -362,7 +362,7 @@ public class Resolution {
    *
    * @param as a set of variables to resolve
    * @param boundSet the bounds set to use
-   * @param context the contest
+   * @param context the context
    * @return the resolved bound set
    */
   private static BoundSet resolveWithCapture(

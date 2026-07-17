@@ -63,7 +63,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 public @interface RequiresPresent {
 
   /**
-   * The Java expressions that that need to be {@link Present}.
+   * The Java expressions that need to be {@link Present}.
    *
    * @return the Java expressions that need to be {@link Present}
    * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions

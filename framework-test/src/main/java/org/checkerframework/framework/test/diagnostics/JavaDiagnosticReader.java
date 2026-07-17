@@ -27,7 +27,7 @@ import org.checkerframework.dataflow.qual.Pure;
  * #readJavaSourceFiles} reads diagnostics from multiple Java source files, and {@link
  * #readDiagnosticFiles} reads diagnostics from multiple "diagnostic files".
  */
-public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Closeable {
+public final class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Closeable {
 
   //
   // This class begins with the public static methods that clients use to read diagnostics.
@@ -160,7 +160,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
   private final String filename;
 
   /** The reader for the file. */
-  private final @Owning LineNumberReader reader;
+  @Owning private final LineNumberReader reader;
 
   /** The next line to be read, or null. */
   private @Nullable String nextLine = null;
@@ -268,8 +268,8 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
    * @throws IOException if reading from the underlying reader fails
    */
   @RequiresNonNull("reader")
-  protected void advance(@NotOwningCollection @UnknownInitialization JavaDiagnosticReader this)
-      throws IOException {
+  /*package-private*/ void advance(
+      @NotOwningCollection @UnknownInitialization JavaDiagnosticReader this) throws IOException {
     nextLine = reader.readLine();
     nextLineNumber = reader.getLineNumber();
     if (nextLine == null) {

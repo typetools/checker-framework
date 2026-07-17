@@ -26,7 +26,7 @@ if [ "$TRAVIS" = "true" ]; then
   exit 1
 fi
 
-## This command works locally, but on Azure it fails with timouts while downloading Maven dependencies.
+## This command works locally, but on Azure it fails with timeouts while downloading Maven dependencies.
 # cd guava && time mvn --debug -B package -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
 
 # Pre-download Maven dependencies.  Otherwise there are sometimes timeouts when downloading a Maven dependency.

@@ -21,10 +21,10 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /** Utility methods for the Value Checker. */
-public class ValueCheckerUtils {
+public final class ValueCheckerUtils {
 
   /** Do not instantiate. */
   private ValueCheckerUtils() {
@@ -168,13 +168,13 @@ public class ValueCheckerUtils {
    * @param origValues the objects to format
    * @return a list of the formatted objects
    */
-  @SuppressWarnings("collectionownership:argument") // defaulting/ownership CollectionsPlume.mapList
+  @SuppressWarnings("collectionownership:argument") // defaulting/ownership CollectionsP.mapList
   private static @Nullable List<?> convertToStringVal(
       List<? extends @MustCallUnknown Object> origValues) {
     if (origValues == null) {
       return null;
     }
-    return CollectionsPlume.mapList(Object::toString, origValues);
+    return CollectionsP.mapList(Object::toString, origValues);
   }
 
   /**
@@ -210,7 +210,7 @@ public class ValueCheckerUtils {
       AnnotationMirror anno, Class<?> newClass, ValueAnnotatedTypeFactory atypeFactory) {
     List<String> strings = atypeFactory.getStringValues(anno);
     if (newClass == char[].class) {
-      return CollectionsPlume.mapList(String::toCharArray, strings);
+      return CollectionsP.mapList(String::toCharArray, strings);
     }
     return strings;
   }
@@ -233,7 +233,7 @@ public class ValueCheckerUtils {
     if (newClass == String.class) {
       return convertToStringVal(longs);
     } else if (newClass == Character.class || newClass == char.class) {
-      return CollectionsPlume.mapList((Long l) -> (char) l.longValue(), longs);
+      return CollectionsP.mapList((Long l) -> (char) l.longValue(), longs);
     } else if (newClass == Boolean.class) {
       throw new UnsupportedOperationException(
           "ValueAnnotatedTypeFactory: can't convert integral type to boolean");
@@ -262,7 +262,7 @@ public class ValueCheckerUtils {
     if (newClass == String.class) {
       return convertToStringVal(doubles);
     } else if (newClass == Character.class || newClass == char.class) {
-      return CollectionsPlume.mapList((Double l) -> (char) l.doubleValue(), doubles);
+      return CollectionsP.mapList((Double l) -> (char) l.doubleValue(), doubles);
     } else if (newClass == Boolean.class) {
       throw new UnsupportedOperationException(
           "ValueAnnotatedTypeFactory: can't convert double to boolean");
@@ -277,8 +277,8 @@ public class ValueCheckerUtils {
    * @return list of unique lengths of strings in {@code values}
    */
   public static List<Integer> getLengthsForStringValues(List<String> values) {
-    List<Integer> lengths = CollectionsPlume.mapList(String::length, values);
-    return CollectionsPlume.withoutDuplicatesSorted(lengths);
+    List<Integer> lengths = CollectionsP.mapList(String::length, values);
+    return CollectionsP.withoutDuplicatesSorted(lengths);
   }
 
   /**
@@ -372,7 +372,7 @@ public class ValueCheckerUtils {
 
   /**
    * Finds the maximum value in a Value Checker type. If there is no information (such as when the
-   * list of possible values is empty or null), returns null. Otherwise, returns the smallest value
+   * list of possible values is empty or null), returns null. Otherwise, returns the largest value
    * in the list of possible values.
    */
   public static @Nullable Long getMaxValue(Tree tree, ValueAnnotatedTypeFactory factory) {

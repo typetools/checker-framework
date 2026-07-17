@@ -37,11 +37,12 @@ import java.lang.annotation.Target;
  * <pre><code>
  * {@literal @}ConditionalPostconditionAnnotation(qualifier = MinLen.class)
  * {@literal @}Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
- * public {@literal @}interface EnsuresMinLen {
+ * public {@literal @}interface EnsuresMinLenIf {
  *   String[] expression();
  *   boolean result();
  *   {@literal @}QualifierArgument("value")
  *   int targetValue() default 0;
+ * }
  * </code></pre>
  *
  * The {@code expression} element holds the expressions to which the qualifier applies and {@code
@@ -52,7 +53,7 @@ import java.lang.annotation.Target;
  * {@code @MinLen(4)} upon returning {@code true}.
  *
  * <pre><code>
- * {@literal @}EnsuresMinLenIf(expression = "field", result = true, targetValue = 4")
+ * {@literal @}EnsuresMinLenIf(expression = "field", result = true, targetValue = 4)
  * public boolean isFieldBool() {
  *   return field == "true" || field == "false";
  * }

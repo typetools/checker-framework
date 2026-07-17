@@ -60,9 +60,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.StringJoiner;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
-import org.plumelib.util.ArraysPlume;
+import org.plumelib.util.ArraysP;
 
 /** A path through the AST. */
 public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
@@ -265,9 +266,9 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
     public String toString() {
       StringBuilder b = new StringBuilder();
       b.append(treeKind.asInterface().getSimpleName().replace("Tree", ""));
-      b.append(".").append(childSelector);
+      b.append('.').append(childSelector);
       if (argument != null) {
-        b.append(" ").append(argument);
+        b.append(' ').append(argument);
       }
       return b.toString();
     }
@@ -596,8 +597,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
       String s = strVal();
       for (String arg : legalChildSelectors) {
         if (s.equals(arg)) {
-          if (argumentChildSelectors != null
-              && ArraysPlume.indexOf(argumentChildSelectors, arg) >= 0) {
+          if (argumentChildSelectors != null && ArraysP.indexOf(argumentChildSelectors, arg) >= 0) {
             getTok();
             return new ASTEntry(kind, arg, intVal());
           } else {
@@ -683,8 +683,10 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
         // in "actualPath". If it's not a match, this is not the correct
         // location. If it is a match, keep going.
         Tree next = null;
-        dbug.debug("astNode: %s%n", astNode);
-        dbug.debug("actualNode: %s%n", actualNode.getKind());
+        if (dbug.isEnabled()) {
+          dbug.debug("astNode: %s%n", astNode);
+          dbug.debug("actualNode: %s%n", actualNode.getKind());
+        }
         if (!kindsMatch(astNode.getTreeKind(), actualNode.getKind())) {
           return false;
         }
@@ -1311,12 +1313,11 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
     if (isEmpty()) {
       return "";
     }
-    Iterator<ASTEntry> iter = iterator();
-    StringBuilder sb = new StringBuilder().append(iter.next());
-    while (iter.hasNext()) {
-      sb = sb.append(", ").append(iter.next());
+    StringJoiner sj = new StringJoiner(", ");
+    for (ASTEntry entry : this) {
+      sj.add(entry.toString());
     }
-    return sb.toString();
+    return sj.toString();
   }
 } // end of class ASTPath
 

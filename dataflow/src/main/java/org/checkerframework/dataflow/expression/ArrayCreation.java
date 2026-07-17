@@ -8,7 +8,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /** JavaExpression for array creations. {@code new String[]()}. */
 public class ArrayCreation extends JavaExpression {
@@ -86,11 +86,6 @@ public class ArrayCreation extends JavaExpression {
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(dimensions, initializers, getType().toString());
-  }
-
-  @Override
   public boolean equals(@Nullable Object obj) {
     if (!(obj instanceof ArrayCreation other)) {
       return false;
@@ -103,11 +98,16 @@ public class ArrayCreation extends JavaExpression {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(dimensions, initializers, getType().toString());
+  }
+
+  @Override
   public boolean syntacticEquals(JavaExpression je) {
     if (!(je instanceof ArrayCreation other)) {
       return false;
     }
-    return JavaExpression.syntacticEqualsList(this.dimensions, other.dimensions)
+    return syntacticEqualsList(this.dimensions, other.dimensions)
         && JavaExpression.syntacticEqualsList(this.initializers, other.initializers)
         && getType().toString().equals(other.getType().toString());
   }
@@ -123,19 +123,21 @@ public class ArrayCreation extends JavaExpression {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     if (dimensions.isEmpty()) {
-      sb.append("new " + type);
+      sb.append("new ");
+      sb.append(type);
     } else {
-      sb.append("new " + TypesUtils.getInnermostComponentType((ArrayType) type));
+      sb.append("new ");
+      sb.append(TypesUtils.getInnermostComponentType((ArrayType) type));
       for (JavaExpression dim : dimensions) {
-        sb.append("[");
+        sb.append('[');
         sb.append(dim == null ? "" : dim);
-        sb.append("]");
+        sb.append(']');
       }
     }
     if (!initializers.isEmpty() || dimensions.isEmpty()) {
       sb.append(" {");
-      sb.append(StringsPlume.join(", ", initializers));
-      sb.append("}");
+      sb.append(StringsP.join(", ", initializers));
+      sb.append('}');
     }
     return sb.toString();
   }

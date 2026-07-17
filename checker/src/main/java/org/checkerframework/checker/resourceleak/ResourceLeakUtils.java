@@ -36,7 +36,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * Collection of static utility functions related to the various (sub-) checkers within the
  * ResourceLeakChecker.
  */
-public class ResourceLeakUtils {
+public final class ResourceLeakUtils {
 
   /** Do not instantiate; this class is a collection of static methods. */
   private ResourceLeakUtils() {

@@ -10,9 +10,14 @@ on:  # yamllint disable-line rule:truthy
     branches:
       - "**"
 
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
+#   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+# Cancel in-progress jobs that originate from a fork.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.fork && github.event.pull_request.head.ref || github.ref }}
+  cancel-in-progress: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
 
 permissions:
   contents: read
@@ -42,6 +47,18 @@ jobs:
     steps:
       - name: canary_jobs
         run: true
+  ci_info:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          # Unlimited history for contributors.tex generation.
+          fetch-depth: 0
+      - name: clone_plume_scripts
+        run: git clone https://github.com/plume-lib/plume-scripts.git /tmp/plume-scripts
+      - name: ci_info
+        run: /tmp/plume-scripts/ci-info --debug
 
   junit_jdk17:
     needs:
@@ -53,7 +70,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk17:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -71,7 +88,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk21:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -85,7 +102,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -99,7 +116,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -117,7 +134,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk26:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -131,7 +148,7 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -151,7 +168,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -165,7 +182,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -182,11 +199,17 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk21-plus:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - name: getPlumeScripts
+        run: ./gradlew -q getPlumeScripts
+      - name: ci-org-and-branch
+        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+      - name: git-changes
+        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:
@@ -196,11 +219,17 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25-plus:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - name: getPlumeScripts
+        run: ./gradlew -q getPlumeScripts
+      - name: ci-org-and-branch
+        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+      - name: git-changes
+        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:
@@ -210,11 +239,17 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk26-plus:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - name: getPlumeScripts
+        run: ./gradlew -q getPlumeScripts
+      - name: ci-org-and-branch
+        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+      - name: git-changes
+        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:
@@ -226,7 +261,7 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 0
@@ -239,7 +274,7 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 0
@@ -259,7 +294,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -275,7 +310,7 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25

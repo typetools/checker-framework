@@ -19,16 +19,6 @@ public class ThisReference extends JavaExpression {
   }
 
   @Override
-  public boolean equals(@Nullable Object obj) {
-    return obj instanceof ThisReference;
-  }
-
-  @Override
-  public int hashCode() {
-    return 0;
-  }
-
-  @Override
   public String toString() {
     if (Node.disambiguateOwner) {
       return "this{" + type + "}";
@@ -56,6 +46,16 @@ public class ThisReference extends JavaExpression {
   @Override
   public boolean isModifiableByOtherCode() {
     return !TypesUtils.isImmutableTypeInJdk(type);
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    return obj instanceof ThisReference;
+  }
+
+  @Override
+  public int hashCode() {
+    return 0;
   }
 
   @Override

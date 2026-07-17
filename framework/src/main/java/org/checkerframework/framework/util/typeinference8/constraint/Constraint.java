@@ -16,8 +16,8 @@ public interface Constraint extends ReductionResult {
   Kind getKind();
 
   /**
-   * Reduce this constraint what this means depends on the kind of constraint. Reduction can produce
-   * new bounds and/or new constraints.
+   * Reduce this constraint; what this means depends on the kind of constraint. Reduction can
+   * produce new bounds and/or new constraints.
    *
    * <p>Reduction is documented in <a
    * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.2">JLS section
@@ -60,7 +60,7 @@ public interface Constraint extends ReductionResult {
     /** {@code < Q <: R >}: A qualifier Q is a subtype of a qualifier R. */
     QUALIFIER_SUBTYPE,
 
-    /** {@code < Q = R >}: A qualifier R is the same as a qualifier R. */
+    /** {@code < Q = R >}: A qualifier Q is the same as a qualifier R. */
     QUALIFIER_EQUALITY,
 
     /** A single constraint, that when reduced, generates additional argument constraints. */

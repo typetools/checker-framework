@@ -22,6 +22,9 @@ repositories {
   }
   mavenCentral()
 }
+configurations.all {
+  resolutionStrategy.cacheChangingModulesFor(0, "minutes")
+}
 
 ext {
   // Different JDKs may be used to run Gradle, compile the Checker Framework, and run the CF tests.
@@ -46,15 +49,17 @@ ext {
   gradleRunsOnJava25orHigher = JavaVersion.current() >= JavaVersion.VERSION_25
   gradleRunsOnJava26orHigher = JavaVersion.current() >= JavaVersion.VERSION_26
   // The JDK for running tests: the jdkTestVersion property or if not set, JavaVersion.current()
-  if (project.getProperties().containsKey("jdkTestVersion")) {
-    testJdkVersion = Integer.valueOf(project.getProperties().get("jdkTestVersion"))
+  jdkTestVersionProperty = providers.gradleProperty("jdkTestVersion").orNull
+  if (jdkTestVersionProperty != null) {
+    testJdkVersion = Integer.valueOf(jdkTestVersionProperty)
   } else {
     testJdkVersion = Integer.valueOf(JavaVersion.current().getMajorVersion())
   }
   // With "useJdk21Compiler" property, use JDK 21 to compile all code because the release does.
   // If you update this line, also update JAVA_HOME in docs/developer/release/release_vars.py.
-  boolean jdk21Compiler = project.getProperties().getOrDefault("useJdk21Compiler", false)
-  compilerJdkVersion = jdk21Compiler ? 21 : testJdkVersion
+  String useJdk21CompilerProperty = providers.gradleProperty("useJdk21Compiler").getOrElse("false")
+  boolean useJdk21Compiler = Boolean.valueOf(useJdk21CompilerProperty)
+  compilerJdkVersion = useJdk21Compiler ? 21 : testJdkVersion
   compilerRunsOnJava21orHigher = compilerJdkVersion >= 21
 
   // As of 2026-03-11 (Lombok 1.18.44), delombok does not support JDK 26;
@@ -98,9 +103,9 @@ tasks.register("installGitHooks", Copy) {
 }
 subprojects { subProject ->
   if (subProject.name.equals("checker")
-      || subProject.name.equals("annotation-file-utilities")
-      || subProject.name.equals("dataflow")
-      || subProject.name.equals("framework")) {
+  || subProject.name.equals("annotation-file-utilities")
+  || subProject.name.equals("dataflow")
+  || subProject.name.equals("framework")) {
     apply plugin: "com.gradleup.shadow"
     shadow {
       addShadowVariantIntoJavaComponent = false
@@ -143,6 +148,7 @@ allprojects { currentProj ->
   apply plugin: "eclipse"
   apply plugin: "de.undercouch.download"
   apply plugin: "net.ltgt.errorprone"
+  // apply plugin: "pmd"
 
   group = "org.checkerframework"
 
@@ -168,7 +174,7 @@ allprojects { currentProj ->
   }
 
   dependencies {
-    errorprone(libs.error.prone.core)
+    errorprone(rootProject.libs.error.prone.core)
 
     allProjects(subprojects)
   }
@@ -235,6 +241,14 @@ allprojects { currentProj ->
   dependencies {
     checkerFatJar(project(path: ":checker", configuration: "fatJar"))
   }
+
+  /*
+   pmd {
+   toolVersion = "7.25.0"
+   consoleOutput = true
+   ruleSetFiles = files("${rootDir}/.pmd-ruleset.xml")
+   }
+   */
 
   // After all the tasks have been created, modify some of them.
   afterEvaluate {
@@ -356,7 +370,7 @@ allprojects { currentProj ->
         // Error Prone must be available in the annotation processor path
         options.annotationProcessorPath = configurations.errorProneAnnotationProcessor
         // Enable Error Prone
-        options.errorprone.enabled = compilerRunsOnJava21orHigher
+        options.errorprone.enabled = rootProject.ext.compilerRunsOnJava21orHigher
         options.errorprone.disableWarningsInGeneratedCode = true
         options.errorprone.errorproneArgs = [
           // Many compiler classes are interned.
@@ -393,8 +407,6 @@ allprojects { currentProj ->
           "-Xep:ASTHelpersSuggestions:OFF",
           // Removing "public" from private class members loses information about the abstraction.
           "-Xep:EffectivelyPrivate:OFF",
-          // Broken in Error Prone 2.49.0; see https://github.com/google/error-prone/issues/5710.
-          "-Xep:AlreadyChecked:OFF",
           // -Werror halts the build if Error Prone issues a warning, which ensures that
           // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
           // stops as soon as it issues one warning, rather than outputting them all.
@@ -529,13 +541,13 @@ tasks.register("zip", Zip) {
 
   from(layout.projectDirectory) {
     exclude("api/**",
-        "checker/bin/README",
-        "checker/dist/*.asc",
-        "docs/tutorial/tests/**",
-        "docs/tutorial/src/**",
-        "docs/tutorial/test/**",
-        "docs/tutorial/Makefile",
-        "docs/tutorial/README")
+    "checker/bin/README",
+    "checker/dist/*.asc",
+    "docs/tutorial/tests/**",
+    "docs/tutorial/src/**",
+    "docs/tutorial/test/**",
+    "docs/tutorial/Makefile",
+    "docs/tutorial/README")
 
     include("README.html",
         "LICENSE.txt",
@@ -778,8 +790,8 @@ subprojects {
 
   dependencies {
     // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
-    annotatedGuava(libs.error.prone.annotations)
-    annotatedGuava(libs.guava) {
+    annotatedGuava(rootProject.libs.error.prone.annotations)
+    annotatedGuava(rootProject.libs.guava) {
       // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
       exclude group: "org.checkerframework"
     }
@@ -799,19 +811,19 @@ subprojects {
     withSourcesJar()
 
     toolchain {
-      languageVersion = JavaLanguageVersion.of(testJdkVersion)
+      languageVersion = JavaLanguageVersion.of(rootProject.ext.testJdkVersion)
     }
   }
 
   tasks.withType(JavaExec).configureEach {
     javaLauncher = javaToolchains.launcherFor {
-      languageVersion = JavaLanguageVersion.of(testJdkVersion)
+      languageVersion = JavaLanguageVersion.of(rootProject.ext.testJdkVersion)
     }
   }
 
   tasks.withType(JavaCompile).configureEach { compilationTask ->
     javaCompiler = javaToolchains.compilerFor {
-      languageVersion = JavaLanguageVersion.of(compilerJdkVersion)
+      languageVersion = JavaLanguageVersion.of(rootProject.ext.compilerJdkVersion)
     }
   }
 
@@ -847,7 +859,7 @@ subprojects {
     // Tasks such as `checkInterning` and `checkResourceLeak` run various checkers on all the main source sets.
     // These pass and are run by the `typecheck` task.
     // When you add one here, also update a dependsOn item for the "typecheck" task.
-    createCheckTypeTask(project.name, "Formatter",
+    rootProject.createCheckTypeTask(project.name, "Formatter",
         "org.checkerframework.checker.formatter.FormatterChecker")
 
     def checkInterningArgs = [
@@ -863,32 +875,32 @@ subprojects {
     }
 
 
-    createCheckTypeTask(project.name, "Interning",
+    rootProject.createCheckTypeTask(project.name, "Interning",
         "org.checkerframework.checker.interning.InterningChecker",
         checkInterningArgs)
 
-    createCheckTypeTask(project.name, "Optional",
+    rootProject.createCheckTypeTask(project.name, "Optional",
         "org.checkerframework.checker.optional.OptionalChecker",
         [
           // to avoid having to annotate JavaParser
           "-AassumePureGetters",
           "-AassumeAssertionsAreEnabled",
         ])
-    createCheckTypeTask(project.name, "Purity",
+    rootProject.createCheckTypeTask(project.name, "Purity",
         "org.checkerframework.framework.util.PurityChecker")
-    createCheckTypeTask(project.name, "Regex",
+    rootProject.createCheckTypeTask(project.name, "Regex",
         "org.checkerframework.checker.regex.RegexChecker")
-    createCheckTypeTask(project.name, "ResourceLeak",
+    rootProject.createCheckTypeTask(project.name, "ResourceLeak",
         "org.checkerframework.checker.resourceleak.ResourceLeakChecker")
-    createCheckTypeTask(project.name, "Signature",
+    rootProject.createCheckTypeTask(project.name, "Signature",
         "org.checkerframework.checker.signature.SignatureChecker")
 
     // The checkNullness task runs on all code, but it only *checks* the following code:
     //  * All files outside the "framework", "checker", and "annotation-file-utilities" subprojects.
     //  * In the "framework", "checker", and "annotation-file-utilities" subprojects, files with `@AnnotatedFor("nullness")`.
-    boolean nullnessAll = project.getProperties().containsKey("nullnessAll")
+    boolean nullnessAll = providers.gradleProperty("nullnessAll").isPresent()
     if (!nullnessAll && (project.name.is("framework") || project.name.is("checker") || project.name.is("annotation-file-utilities"))) {
-      createCheckTypeTask(project.name, "Nullness",
+      rootProject.createCheckTypeTask(project.name, "Nullness",
           "org.checkerframework.checker.nullness.NullnessChecker",
           [
             "-AskipUses=com\\.sun\\.*",
@@ -897,13 +909,13 @@ subprojects {
             "-AuseConservativeDefaultsForUncheckedCode=source"
           ])
     } else {
-      createCheckTypeTask(project.name, "Nullness",
+      rootProject.createCheckTypeTask(project.name, "Nullness",
           "org.checkerframework.checker.nullness.NullnessChecker",
           ["-AskipUses=com\\.sun\\.*"])
     }
 
 
-    createCheckTypeTask(project.name, "CompilerMessages",
+    rootProject.createCheckTypeTask(project.name, "CompilerMessages",
         "org.checkerframework.checker.compilermsgs.CompilerMessagesChecker")
     checkCompilerMessages {
       doFirst {
@@ -990,27 +1002,23 @@ subprojects {
     tasks.withType(Test) {
       jvmArgs += compilerArgsForRunningCF
 
-      // // maxParallelForks controls the parallelism of a single Test task.
-      // // --parallel controls parallelism for the entire build.
+      // `maxParallelForks` controls the parallelism of a single Test task.
+      // `--parallel` controls parallelism for the entire build.
 
-      // // Run tests in parallel, except on CI where it seems to lead to flaky failures.
-      // // The TF_BUILD environment variable is set to "True" for jobs running on Azure Pipelines.
-      // if (!System.getenv("TF_BUILD")?.equals("True")) {
-      //   // Not running under Azure Pipelines CI.
-
-      //   maxParallelForks = Runtime.runtime.availableProcessors() ?: 1
-      // } else {
-      //   // Running under Azure Pipelines CI.
-
-      //   // Per Manu's comment above, on CI, parallelism seems to lead to flaky failures.
-      //   maxParallelForks = 1
-
-      //   // Fork the test to try to improve performance.
-      //   // https://docs.gradle.org/current/userguide/performance.html#fork_tests_into_multiple_processes
-      //   tasks.withType(Test) {
-      //     forkEvery = 25
-      //   }
-      // }
+      // Run tests in parallel, except on CI where it seems to lead to flaky failures.
+      if (System.getenv("TF_BUILD") != null ||
+          System.getenv("CIRCLECI") != null ||
+          System.getenv("GITHUB_ACTIONS") != null ||
+          System.getenv("CI") != null) {
+        // Running under CI.
+        maxParallelForks = 1
+        // Fork the test to try to improve performance.
+        // https://docs.gradle.org/current/userguide/performance.html#b_fork_tests_into_multiple_processes
+        forkEvery = 25
+      } else {
+        // Not running under CI.
+        maxParallelForks = Runtime.getRuntime().availableProcessors() ?: 1
+      }
 
       if (project.name.is("checker")) {
         dependsOn("assembleForJavac")

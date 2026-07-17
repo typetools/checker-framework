@@ -488,11 +488,11 @@ public final class TreePathUtil {
    *     such enclosing element can be found
    */
   public static @Nullable Element findNearestEnclosingElement(TreePath path) {
-    MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(path);
+    MethodTree enclosingMethodTree = enclosingMethod(path);
     if (enclosingMethodTree != null) {
       return TreeUtils.elementFromDeclaration(enclosingMethodTree);
     }
-    ClassTree enclosingClassTree = TreePathUtil.enclosingClass(path);
+    ClassTree enclosingClassTree = enclosingClass(path);
     if (enclosingClassTree != null) {
       return TreeUtils.elementFromDeclaration(enclosingClassTree);
     }

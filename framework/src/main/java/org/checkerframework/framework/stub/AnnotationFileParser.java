@@ -112,9 +112,9 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArrayMap;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
-import org.plumelib.util.SystemPlume;
+import org.plumelib.util.SystemP;
 
 // From an implementation perspective, this class represents a single annotation file (stub file or
 // ajava file), notably its annotated types and its declaration annotations.
@@ -137,7 +137,8 @@ import org.plumelib.util.SystemPlume;
  *
  * <p>The other entry point is {@link #parseJdkFileAsStub}.
  */
-public class AnnotationFileParser {
+@SuppressWarnings("PMD.GuardLogStatement") // `warn()` must be called to check for duplicates
+public final class AnnotationFileParser {
 
   /**
    * The type of file being parsed: stub file or ajava file. Also indicates its source, such as from
@@ -345,7 +346,7 @@ public class AnnotationFileParser {
       if (componentsInCanonicalConstructor != null) {
         return componentsInCanonicalConstructor;
       } else {
-        return CollectionsPlume.mapList(c -> c.type, componentsByName.values());
+        return CollectionsP.mapList(c -> c.type, componentsByName.values());
       }
     }
   }
@@ -3061,12 +3062,12 @@ public class AnnotationFileParser {
       String warning = String.format(fmt, args);
       if (warnings.add(warning)) {
         System.out.flush();
-        SystemPlume.sleep(1);
+        SystemP.sleep(1);
         processingEnv
             .getMessager()
-            .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
+            .printMessage(Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
         System.out.flush();
-        SystemPlume.sleep(1);
+        SystemP.sleep(1);
       }
     }
   }
@@ -3085,12 +3086,12 @@ public class AnnotationFileParser {
     String warning = String.format(fmt, args);
     if (warnings.add(warning)) {
       System.out.flush();
-      SystemPlume.sleep(1);
+      SystemP.sleep(1);
       processingEnv
           .getMessager()
-          .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
+          .printMessage(Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
       System.out.flush();
-      SystemPlume.sleep(1);
+      SystemP.sleep(1);
     }
   }
 
@@ -3101,7 +3102,10 @@ public class AnnotationFileParser {
    * corresponding to that construct, such as {@link #processCallableDeclaration} or {@link
    * #processField}.
    */
-  private class AjavaAnnotationCollectorVisitor extends DefaultJointVisitor {
+  private final class AjavaAnnotationCollectorVisitor extends DefaultJointVisitor {
+    /** Creates a new AjavaAnnotationCollectorVisitor. */
+    AjavaAnnotationCollectorVisitor() {}
+
     @Override
     public Void visitClass(ClassTree javacTree, Node javaParserNode) {
       List<AnnotatedTypeVariable> typeDeclTypeParameters = null;

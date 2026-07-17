@@ -540,7 +540,7 @@ The methodology is:
   </li>
   <li>
     In Guava, see
-  its <a href="https://github.com/google/guava/wiki/PrimitivesExplained#unsigned-support">unsigned
+  its <a href="https://github.com/google/guava/wiki/PrimitivesExplained#user-content-unsigned-support">unsigned
   support</a>, such
   as <a href="https://guava.dev/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedBytes.html">UnsignedBytes</a>,
   <a href="https://guava.dev/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedLong.html">UnsignedLong</a>,
@@ -666,7 +666,7 @@ currently disabled by default?
 There is no need to annotate new code for this project.  Just use existing
 annotated codebases, such as those that are type-checked as part of the
 Checker
-Framework's <a href="https://github.com/typetools/checker-framework/blob/master/azure-pipelines.yml">Azure
+Framework's <a href="https://github.com/typetools/checker-framework/blob/master/.azure/azure-pipelines.yml">Azure
     Pipeline</a>.  In other words, you can start by enabling Azure
 Pipelines for your fork and then changing the default behavior in a
 branch.  The Azure Pipelines job will show you what new warnings appear.
@@ -682,7 +682,7 @@ branch.  The Azure Pipelines job will show you what new warnings appear.
 <p>
 Android uses its own annotations that are similar to some in the Checker
 Framework.  Examples include the
-<a href="https://tips.seebrock3r.me/annotations-to-support-your-contracts-609ff259d5df">Android
+<a href="https://developer.android.com/studio/write/annotations">Android
   Studio support annotations</a>,
   including <code>@NonNull</code>, <code>@IntRange</code>, <code>@IntDef</code>,
   and others.
@@ -963,7 +963,7 @@ throw <code>NoSuchElementException</code> if the program
 calls <code>next()</code> on the <code>Iterator</code> but
 the <code>Iterator</code> has no more elements to iterate over. Such
 exceptions even occur in production code (for example,
-in <a href="https://github.com/eclipse/rdf4j/issues/3090">Eclipse's
+in <a href="https://github.com/eclipse-rdf4j/rdf4j/issues/3090">Eclipse's
 rdf4j</a>).
 </p>
 
@@ -1036,7 +1036,7 @@ vulnerabilities?  How much customization, if any, is needed?"
 
 <p>
 The generalized taint analysis is the Checker Framework's
-a <a href="https://checkerframework.org/manual/#tainting-checker">Tainting
+<a href="https://checkerframework.org/manual/#tainting-checker">Tainting
   Checker</a>.  It requires customization to a particular domain:
 </p>
 <ul>
@@ -1368,7 +1368,7 @@ It would behave similarly for other library methods.
 <p>
 Clarity of compiler error
 messages is as important as the speed of the executable
-(<a href="https://www.brettbecker.com/wp-content/uploads/2016/06/Becker-Effective-2016-SIGCSE.pdf">1</a>, <a href="https://www.mville.edu/sites/default/files/p53-munson_1.pdf">2</a>,
+(<a href="https://dl.acm.org/doi/10.1145/2839509.2844584">1</a>, <a href="https://dl.acm.org/doi/10.5555/2835377.2835386">2</a>,
 <a href="https://se.inf.ethz.ch/~meyer/publications/teaching/compiler-errors.pdf">3</a>,
 <a href="https://static.barik.net/barik/publications/icse2017/PID4655707.pdf">4</a>).  This is especially true when the language or type system has rich features.
 </p>
@@ -1614,7 +1614,7 @@ Here is a possible sequence of steps for this project:
     Replace every use
     of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code></a>
     by a use of the javac class
-    class <a href="https://www.javadoc.io/static/org.kohsuke.sorcerer/sorcerer-javac/0.11/com/sun/tools/javac/tree/JCTree.JCExpression.html"><code>com.sun.tools.javac.tree.JCTree.JCExpression.html</code></a>.
+    <a href="https://www.javadoc.io/static/org.kohsuke.sorcerer/sorcerer-javac/0.11/com/sun/tools/javac/tree/JCTree.JCExpression.html"><code>com.sun.tools.javac.tree.JCTree.JCExpression.html</code></a>.
     You also need to decide how to store the <code>type</code> field
     of <code>JavaExpression</code>, when <code>JavaExpression</code> is eliminated.
 
@@ -1631,7 +1631,7 @@ Here is a possible sequence of steps for this project:
   </li>
   <li>
     Delete most or all of
-    the <a href="https://checkerframework.org/api/org/checkerframework/framework/util/JavaExpressionParseUtil.html"><code>JavaExpressionParseUtil</code></a>
+    the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpressionParseUtil.html"><code>JavaExpressionParseUtil</code></a>
     class; <code>ExpressionToJavaExpressionVisitor</code> will definitely
     be deleted.  The deletion of code is an advantage of this approach.
   </li>
@@ -1807,7 +1807,7 @@ effective and to improve them.  The research questions include:
 <ul>
   <li>What side effect analysis algorithms are most effective?  What are their limitations?
   </li>
-  <li>Can the most effective algorithms be combined to become even effective?  Or can their limitations be overcome?
+  <li>Can the most effective algorithms be combined to become even more effective?  Or can their limitations be overcome?
   </li>
   <li>How much does accurate side effect analysis improve other programming tasks?
   </li>

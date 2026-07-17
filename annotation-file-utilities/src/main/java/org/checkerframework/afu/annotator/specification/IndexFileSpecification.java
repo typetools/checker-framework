@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.afu.annotator.Main;
 import org.checkerframework.afu.annotator.find.AnnotationInsertion;
 import org.checkerframework.afu.annotator.find.CastInsertion;
@@ -49,7 +50,7 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
-import org.plumelib.reflection.ReflectionPlume;
+import org.plumelib.reflection.ReflectionP;
 import org.plumelib.util.FileIOException;
 import org.plumelib.util.IPair;
 
@@ -222,8 +223,8 @@ public class IndexFileSpecification {
         System.out.println(
             "Warning: IndexFileSpecification did not find classfile for: " + className);
         System.out.println("The classpath is:");
-        System.out.println(ReflectionPlume.classpathToString());
-        // org.plumelib.util.SystemPlume.sleep(100);
+        System.out.println(ReflectionP.classpathToString());
+        // org.plumelib.util.SystemP.sleep(100);
         // throw new RuntimeException("IndexFileSpecification.parseClass", e);
       } catch (RuntimeException e) {
         System.err.println("IndexFileSpecification had a problem reading class: " + className);
@@ -673,34 +674,31 @@ public class IndexFileSpecification {
 
   // Returns a string representation of the annotations at the element.
   private Set<IPair<String, Annotation>> getElementAnnotations(AElement element) {
-    Set<IPair<String, Annotation>> result =
-        new LinkedHashSet<IPair<String, Annotation>>(element.tlAnnotationsHere.size());
+    Set<IPair<String, Annotation>> result = new LinkedHashSet<>(element.tlAnnotationsHere.size());
     for (Annotation a : element.tlAnnotationsHere) {
       StringBuilder sb = new StringBuilder();
-      sb.append("@");
+      sb.append('@');
       sb.append(a.def.name);
 
       if (a.fieldValues.isEmpty()) {
         // nothing to do
       } else {
-        sb.append("(");
+        sb.append('(');
         if (a.fieldValues.size() == 1 && a.fieldValues.containsKey("value")) {
           formatFieldValue(sb, a, "value");
         } else {
-          boolean first = true;
+          StringJoiner sj = new StringJoiner(", ");
           for (String field : a.fieldValues.keySet()) {
             // parameters of the annotation
-            if (!first) {
-              sb.append(", ");
-            } else {
-              first = false;
-            }
-            sb.append(field);
-            sb.append("=");
-            formatFieldValue(sb, a, field);
+            StringBuilder fieldSb = new StringBuilder();
+            fieldSb.append(field);
+            fieldSb.append('=');
+            formatFieldValue(fieldSb, a, field);
+            sj.add(fieldSb);
           }
+          sb.append(sj);
         }
-        sb.append(")");
+        sb.append(')');
       }
 
       result.add(IPair.of(sb.toString(), a));

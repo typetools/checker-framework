@@ -72,9 +72,9 @@ import org.objectweb.asm.TypePath;
 import org.plumelib.options.Option;
 import org.plumelib.options.OptionGroup;
 import org.plumelib.options.Options;
-import org.plumelib.reflection.ReflectionPlume;
+import org.plumelib.reflection.ReflectionP;
 import org.plumelib.util.FileIOException;
-import org.plumelib.util.FilesPlume;
+import org.plumelib.util.FilesP;
 import org.plumelib.util.IPair;
 
 /**
@@ -134,7 +134,8 @@ import org.plumelib.util.IPair;
  *
  * <!-- end options doc -->
  */
-public class Main {
+@SuppressWarnings("PMD.ShortClassName")
+public final class Main {
 
   /** Do not instantiate. */
   private Main() {
@@ -186,19 +187,25 @@ public class Main {
 
   // Debugging options go below here.
 
+  /** Print progress information. */
   @OptionGroup("Debugging options")
   @Option("-v Verbose (print progress information)")
   public static boolean verbose = false;
 
+  /** Print debug information. */
   @Option("Debug (print debug information)")
   public static boolean debug = false;
 
+  /** Print the stack if an error is thrown. */
   @Option("Print error stack")
   public static boolean print_error_stack = false;
 
+  /** Debugging flag. */
   // TODO: remove this.
   public static boolean temporaryDebug = false;
 
+  /** Does the work of {@link #filteredScene}. */
+  @SuppressWarnings("PMD.UseDiamondOperator")
   private static ElementVisitor<Void, AElement> classFilter =
       new ElementVisitor<Void, AElement>() {
         <K, V extends AElement> Void filter(VivifyingMap<K, V> vm0, VivifyingMap<K, V> vm1) {
@@ -398,14 +405,17 @@ public class Main {
           } catch (NumberFormatException e) {
             TreePath path = ASTIndex.getTreePath(tree, rec);
             JCTree.JCVariableDecl varTree = null;
-            JCTree.JCMethodDecl methTree = null;
+            JCTree.JCMethodDecl methTree;
             loop:
             while (path != null) {
               Tree leaf = path.getLeaf();
               switch (leaf.getKind()) {
                 // TODO: Is this an infinite loop if leaf is a VARIABLE or METHOD?
                 case VARIABLE -> varTree = (JCTree.JCVariableDecl) leaf;
-                case METHOD -> methTree = (JCTree.JCMethodDecl) leaf;
+                case METHOD -> {
+                  // This assignment is not used.
+                  // methTree = (JCTree.JCMethodDecl) leaf;
+                }
                 case ANNOTATION_TYPE, CLASS, ENUM, INTERFACE -> {
                   break loop;
                 }
@@ -603,7 +613,9 @@ public class Main {
           }
           insertionIndex.get(jaifFile).putAll(spec.insertionSources());
         }
-        verb.debug("Read %d annotations from %s%n", parsedSpec.size(), jaifFile);
+        if (verb.isEnabled()) {
+          verb.debug("Read %d annotations from %s%n", parsedSpec.size(), jaifFile);
+        }
         if (omit_annotation != null) {
           List<Insertion> filtered = new ArrayList<>(parsedSpec.size());
           for (Insertion insertion : parsedSpec) {
@@ -615,7 +627,9 @@ public class Main {
             }
           }
           parsedSpec = filtered;
-          verb.debug("After filtering: %d annotations from %s%n", parsedSpec.size(), jaifFile);
+          if (verb.isEnabled()) {
+            verb.debug("After filtering: %d annotations from %s%n", parsedSpec.size(), jaifFile);
+          }
         }
         // if (dbug.isEnabled()) {
         //   dbug.debug("parsedSpec:%n");
@@ -652,7 +666,7 @@ public class Main {
                     + causeMessage.substring(22)
                     + " to the classpath.");
             System.err.println("The classpath is:");
-            System.err.println(ReflectionPlume.classpathToString());
+            System.err.println(ReflectionP.classpathToString());
           }
         }
         if (print_error_stack) {
@@ -672,7 +686,9 @@ public class Main {
     }
 
     for (String javafilename : javafiles) {
-      verb.debug("Processing %s%n", javafilename);
+      if (verb.isEnabled()) {
+        verb.debug("Processing %s%n", javafilename);
+      }
 
       File javafile = new File(javafilename);
       File unannotated = new File(javafilename + ".unannotated");
@@ -682,7 +698,9 @@ public class Main {
         // A user can rename that file back to just .java to cause the
         // .java file to be read.
         if (unannotated.exists()) {
-          verb.debug("Renaming %s to %s%n", unannotated, javafile);
+          if (verb.isEnabled()) {
+            verb.debug("Renaming %s to %s%n", unannotated, javafile);
+          }
           boolean success = unannotated.renameTo(javafile);
           if (!success) {
             throw new Error(String.format("Failed renaming %s to %s", unannotated, javafile));
@@ -694,12 +712,14 @@ public class Main {
       if (src == null) {
         return;
       } else {
-        verb.debug("Parsed %s%n", javafilename);
+        if (verb.isEnabled()) {
+          verb.debug("Parsed %s%n", javafilename);
+        }
       }
       String fileLineSep;
       try {
         // fileLineSep is set here so that exceptions can be caught
-        fileLineSep = FilesPlume.inferLineSeparator(javafilename);
+        fileLineSep = FilesP.inferLineSeparator(javafilename);
       } catch (IOException e) {
         throw new Error("Cannot read " + javafilename, e);
       }
@@ -751,12 +771,15 @@ public class Main {
         }
 
         // Apply the positions to the source file.
-        verb.debug(
-            "getPositions returned %d positions in tree for %s%n", positions.size(), javafilename);
+        if (verb.isEnabled()) {
+          verb.debug(
+              "getPositions returned %d positions in tree for %s%n",
+              positions.size(), javafilename);
+        }
 
         Set<IPair<Integer, ASTPath>> positionKeysUnsorted = positions.keySet();
         Set<IPair<Integer, ASTPath>> positionKeysSorted =
-            new TreeSet<IPair<Integer, ASTPath>>(
+            new TreeSet<>(
                 (p1, p2) -> {
                   int c = Integer.compare(p2.first, p1.first);
                   if (c != 0) {
@@ -1013,13 +1036,9 @@ public class Main {
           if (pkg.isEmpty()) {
             outfile = new File(outdir, javafile.getName());
           } else {
-            @SuppressWarnings("StringSplitter") // false positive because pkg is non-empty
-            String[] pkgPath = pkg.split("\\.");
-            StringBuilder sb = new StringBuilder(outdir);
-            for (int i = 0; i < pkgPath.length; i++) {
-              sb.append(File.separator).append(pkgPath[i]);
-            }
-            outfile = new File(sb.toString(), javafile.getName());
+            // `pkg` is non-empty.
+            String path = outdir + File.separator + pkg.replace(".", File.separator);
+            outfile = new File(path, javafile.getName());
           }
           outfile.getParentFile().mkdirs();
         }

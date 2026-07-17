@@ -59,7 +59,7 @@ The paper ``A type system for format strings''~\cite{WeitzKSE2014} (ISSTA
 2014,
 \myurl{https://homes.cs.washington.edu/~mernst/pubs/format-string-issta2014-abstract.html})
 gives more details about the Format String Checker and the Internationalization Format
-String Checker (\chapterpageref{i18n-formatter-checker});
+String Checker (\chapterpageref{i18n-formatter-checker}).
 
 
 \sectionAndLabel{Formatting terminology}{formatter-terminology}
@@ -233,7 +233,7 @@ categories, and can therefore be neither a \code{Character} nor a \code{long}.
     format("Char %1$c, Int %1$d", (long)42);           // error
 \end{Verbatim}
 
-Only three additional conversion categories are needed represent all possible
+Only three additional conversion categories are needed to represent all possible
 intersections of previously-mentioned conversion categories:
 
 \begin{description}
@@ -271,7 +271,7 @@ It is legal to:
 \begin{itemize}
 \item use a format string with a weaker (less restrictive) conversion category than required.
 \item use a format string with fewer format specifiers than required.
-  Although this is legal a warning is issued because most occurrences of
+  Although this is legal, a warning is issued because most occurrences of
   this are due to programmer error.
 \end{itemize}
 

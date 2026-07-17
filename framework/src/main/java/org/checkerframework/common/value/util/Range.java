@@ -16,7 +16,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * <p>{@code Range} is immutable.
  */
-public class Range {
+public final class Range {
 
   /** The lower bound of the interval, inclusive. */
   public final long from;
@@ -111,7 +111,7 @@ public class Range {
    * @return the Range [from..to]
    */
   public static Range create(long from, long to) {
-    if (!(from <= to)) {
+    if (from > to) {
       throw new IllegalArgumentException(String.format("Invalid Range: %s %s", from, to));
     }
     return new Range(from, to);
@@ -538,7 +538,7 @@ public class Range {
       long resultFrom = from + right.from;
       long resultTo = to + right.to;
       if (from > to) {
-        return Range.EVERYTHING;
+        return EVERYTHING;
       } else {
         return create(resultFrom, resultTo);
       }

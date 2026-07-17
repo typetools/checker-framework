@@ -9,7 +9,7 @@ import org.checkerframework.dataflow.livevariable.LiveVarStore;
 import org.checkerframework.dataflow.livevariable.LiveVarTransfer;
 
 /** Run live variable analysis on a file and create a PDF of the CFG. */
-public class LiveVariablePdf {
+public final class LiveVariablePdf {
 
   /** Class cannot be instantiated. */
   private LiveVariablePdf() {

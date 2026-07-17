@@ -44,9 +44,9 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.ImmutableTypes;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * A utility class that helps with {@link TypeMirror}s. It complements {@link Types}, providing
@@ -141,7 +141,7 @@ public final class TypesUtils {
         // BUG: need to compute a @ClassGetName, but this code computes a
         // @CanonicalNameOrEmpty.  They are different for inner classes.
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Names.toString
-        @DotSeparatedIdentifiers String typeString = TypesUtils.getQualifiedName((DeclaredType) typeMirror).toString();
+        @DotSeparatedIdentifiers String typeString = getQualifiedName((DeclaredType) typeMirror);
         if (typeString.equals("<nulltype>")) {
           return void.class;
         }
@@ -349,8 +349,7 @@ public final class TypesUtils {
    * @return true if the type is {@code char} or {@code Character}
    */
   public static boolean isCharOrCharacter(TypeMirror type) {
-    return type.getKind() == TypeKind.CHAR
-        || TypesUtils.isDeclaredOfName(type, "java.lang.Character");
+    return type.getKind() == TypeKind.CHAR || isDeclaredOfName(type, "java.lang.Character");
   }
 
   /**
@@ -411,7 +410,7 @@ public final class TypesUtils {
   public static boolean isImmutableTypeInJdk(TypeMirror type) {
     return isPrimitive(type)
         || (type.getKind() == TypeKind.DECLARED
-            && ImmutableTypes.isImmutable(getQualifiedName((DeclaredType) type).toString()));
+            && ImmutableTypes.isImmutable(getQualifiedName((DeclaredType) type)));
   }
 
   /**
@@ -465,7 +464,7 @@ public final class TypesUtils {
     return switch (type.getKind()) {
       case BOOLEAN, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SHORT -> true;
       case DECLARED -> {
-        String qualifiedName = getQualifiedName((DeclaredType) type).toString();
+        String qualifiedName = getQualifiedName((DeclaredType) type);
         yield (qualifiedName.equals("java.lang.Boolean")
             || qualifiedName.equals("java.lang.Byte")
             || qualifiedName.equals("java.lang.Character")
@@ -509,7 +508,7 @@ public final class TypesUtils {
    */
   public static boolean isNumericBoxed(TypeMirror type) {
     return type.getKind() == TypeKind.DECLARED
-        && numericBoxedTypes.contains(getQualifiedName((DeclaredType) type).toString());
+        && numericBoxedTypes.contains(getQualifiedName((DeclaredType) type));
   }
 
   /**
@@ -568,7 +567,7 @@ public final class TypesUtils {
       return false;
     }
 
-    String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
+    String qualifiedName = getQualifiedName((DeclaredType) declaredType);
     return switch (primitiveType.getKind()) {
       case BOOLEAN -> qualifiedName.equals("java.lang.Boolean");
       case BYTE -> qualifiedName.equals("java.lang.Byte");
@@ -593,7 +592,7 @@ public final class TypesUtils {
       return false;
     }
 
-    String qualifiedName = getQualifiedName((DeclaredType) type).toString();
+    String qualifiedName = getQualifiedName((DeclaredType) type);
     return qualifiedName.equals("java.lang.Double") || qualifiedName.equals("java.lang.Float");
   }
 
@@ -683,7 +682,7 @@ public final class TypesUtils {
    *     has no bounds
    */
   public static TypeMirror upperBound(TypeMirror type) {
-    do {
+    while (true) {
       if (type instanceof TypeVariable tvar) {
         if (tvar.getUpperBound() != null) {
           type = tvar.getUpperBound();
@@ -699,7 +698,7 @@ public final class TypesUtils {
       } else {
         break;
       }
-    } while (true);
+    }
     return type;
   }
 
@@ -818,7 +817,7 @@ public final class TypesUtils {
     while (true) {
       switch (effectiveUpper.getKind()) {
         case WILDCARD -> {
-          effectiveUpper = ((javax.lang.model.type.WildcardType) effectiveUpper).getExtendsBound();
+          effectiveUpper = ((WildcardType) effectiveUpper).getExtendsBound();
           if (effectiveUpper == null) {
             return null;
           }
@@ -1096,7 +1095,7 @@ public final class TypesUtils {
   private static com.sun.tools.javac.util.List<Type> typeMirrorListToTypeList(
       List<TypeMirror> typeMirrors) {
     @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
-    List<Type> typeList = CollectionsPlume.mapList(Type.class::cast, typeMirrors);
+    List<Type> typeList = CollectionsP.mapList(Type.class::cast, typeMirrors);
     return com.sun.tools.javac.util.List.from(typeList);
   }
 
@@ -1209,9 +1208,9 @@ public final class TypesUtils {
       List<? extends TypeMirror> typeArgs,
       ProcessingEnvironment env) {
     @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
-    List<Type> newP = CollectionsPlume.mapList(Type.class::cast, typeVariables);
+    List<Type> newP = CollectionsP.mapList(Type.class::cast, typeVariables);
     @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
-    List<Type> newT = CollectionsPlume.mapList(Type.class::cast, typeArgs);
+    List<Type> newT = CollectionsP.mapList(Type.class::cast, typeArgs);
 
     JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
     com.sun.tools.javac.code.Types types =
@@ -1269,7 +1268,7 @@ public final class TypesUtils {
     Names names = Names.instance(javacEnv.getContext());
     Symtab syms = Symtab.instance(javacEnv.getContext());
     com.sun.tools.javac.util.Name capturedName = names.fromString("<captured wildcard>");
-    WildcardType wildcardType = null;
+    WildcardType wildcardType;
     if (lower != null
         && (lower.getKind() == TypeKind.ARRAY
             || lower.getKind() == TypeKind.DECLARED
@@ -1322,7 +1321,10 @@ public final class TypesUtils {
    * @return the first TypeVariable in {@code collection} that does not contain any other type in
    *     the collection, but maybe itself
    */
-  @SuppressWarnings("interning:not.interned") // must be the same object from collection
+  @SuppressWarnings({
+    "interning:not.interned",
+    "TypeEquals"
+  }) // must be the same object from collection
   private static TypeVariable doesNotContainOthers(
       Collection<? extends TypeVariable> collection, Types types) {
     for (TypeVariable candidate : collection) {
@@ -1337,7 +1339,7 @@ public final class TypesUtils {
         return candidate;
       }
     }
-    throw new BugInCF("Not found: %s", StringsPlume.join(",", collection));
+    throw new BugInCF("Not found: %s", StringsP.join(",", collection));
   }
 
   /**
@@ -1491,6 +1493,7 @@ public final class TypesUtils {
    * @param typeVariable2 a type variable
    * @return if the two type variables are the same type variable
    */
+  @SuppressWarnings("TypeEquals") // early exit from comparison method
   @EqualsMethod
   public static boolean areSame(TypeVariable typeVariable1, TypeVariable typeVariable2) {
     if (typeVariable1 == typeVariable2) {

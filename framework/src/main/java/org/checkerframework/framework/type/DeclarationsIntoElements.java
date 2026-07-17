@@ -32,6 +32,7 @@ public final class DeclarationsIntoElements {
   /**
    * The entry point.
    *
+   * @param env the processing environment
    * @param atypeFactory the type factory
    * @param tree the ClassTree to process
    */

@@ -5,10 +5,12 @@ import com.sun.source.util.JavacTask;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Types;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -92,7 +94,7 @@ public final class Source {
       path = src;
       source = new StringBuilder();
       try (ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-          FileInputStream in = new FileInputStream(src)) {
+          InputStream in = Files.newInputStream(Paths.get(src))) {
         int c;
         while ((c = in.read()) != -1) {
           bytes.write(c);

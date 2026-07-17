@@ -14,7 +14,7 @@ import java.util.Map;
  * instanceof check, where the i^th index corresponds to the i^th instanceof check, using 0-based
  * indexing.
  */
-public class InstanceOfScanner extends CommonScanner {
+public final class InstanceOfScanner extends CommonScanner {
 
   private int index = -1;
   private boolean done = false;

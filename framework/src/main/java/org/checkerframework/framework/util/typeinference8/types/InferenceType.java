@@ -27,7 +27,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * A type-like structure that contains at least one inference variable, but is not an inference
  * variable.
  */
-public class InferenceType extends AbstractType {
+public final class InferenceType extends AbstractType {
 
   /**
    * The underlying Java type. It contains type variables that are mapped to inference variables in
@@ -52,7 +52,7 @@ public class InferenceType extends AbstractType {
    *
    * @param type the annotated type mirror
    * @param typeMirror the type mirror
-   * @param map a mapping from type variable to inference variablef
+   * @param map a mapping from type variable to inference variable
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
    * @param ignoreAnnotations true if the annotations on this type should be ignored
@@ -82,10 +82,10 @@ public class InferenceType extends AbstractType {
    * if {@code type} contains any type variables that are mapped to inference variables as specified
    * by {@code map}. Or if {@code type} is a type variable that is mapped to an inference variable,
    * that {@link Variable} is returned. Or if {@code type} contains no type variables that are
-   * mapped in an inference variable, a {@link ProperType} is returned.
+   * mapped to an inference variable, a {@link ProperType} is returned.
    *
    * @param type the annotated type mirror
-   * @param typeMirror the java type
+   * @param typeMirror the Java type
    * @param map a mapping from type variable to inference variable
    * @param context the context
    * @return the abstract type for the given TypeMirror and AnnotatedTypeMirror
@@ -104,10 +104,10 @@ public class InferenceType extends AbstractType {
    * if {@code type} contains any type variables that are mapped to inference variables as specified
    * by {@code map}. Or if {@code type} is a type variable that is mapped to an inference variable,
    * that {@link Variable} is returned. Or if {@code type} contains no type variables that are
-   * mapped in an inference variable, a {@link ProperType} is returned.
+   * mapped to an inference variable, a {@link ProperType} is returned.
    *
    * @param type the annotated type mirror
-   * @param typeMirror the java type
+   * @param typeMirror the Java type
    * @param map a mapping from type variable to inference variable
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
@@ -146,7 +146,7 @@ public class InferenceType extends AbstractType {
    * {@code map}, but already have an instantiation, they are treated as proper types.
    *
    * @param type the annotated type mirror
-   * @param typeMirror the java type
+   * @param typeMirror the Java type
    * @param map a mapping from type variable to inference variable
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
@@ -188,7 +188,7 @@ public class InferenceType extends AbstractType {
    * variable, a {@link ProperType} is returned.
    *
    * @param types the annotated type mirrors
-   * @param typeMirrors the java types
+   * @param typeMirrors the Java types
    * @param map a mapping from type variable to inference variable
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
@@ -303,9 +303,6 @@ public class InferenceType extends AbstractType {
       AnnotatedTypeMirror instantiation = alpha.getBounds().getInstantiation().getAnnotatedType();
       context.typeFactory.initializeAtm(instantiation);
       mapping.put(alpha.getJavaType(), instantiation);
-    }
-    if (map.isEmpty()) {
-      return this;
     }
 
     AnnotatedTypeMirror newType = typeFactory.getTypeVarSubstitutor().substitute(mapping, type);

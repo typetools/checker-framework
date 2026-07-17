@@ -12,7 +12,7 @@ import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Manages a set of bounds. Bounds are stored in the variable to which they apply, except for
@@ -23,8 +23,7 @@ public class BoundSet implements ReductionResult {
    * Max number of incorporation loops. Use same constant as {@link
    * com.sun.tools.javac.comp.Infer#MAX_INCORPORATION_STEPS}
    */
-  // TODO: revert to com.sun.tools.javac.comp.Infer#MAX_INCORPORATION_STEPS
-  public static final int MAX_INCORPORATION_STEPS = 1000;
+  public static final int MAX_INCORPORATION_STEPS = 10000;
 
   /** All inference variables in this bound set. */
   private final LinkedHashSet<Variable> variables;
@@ -178,7 +177,7 @@ public class BoundSet implements ReductionResult {
    * any variable in {@code as}?
    *
    * @param as a collection of variables
-   * @return true if the bound set contain a bound of the form {@code G<..., ai, ...> =
+   * @return true if the bound set contains a bound of the form {@code G<..., ai, ...> =
    *     capture(G<...>)} for any variable in {@code as}
    */
   public boolean containsCapture(Collection<Variable> as) {
@@ -255,7 +254,6 @@ public class BoundSet implements ReductionResult {
     for (Theta t : context.maps.values()) {
       variables.addAll(t.values());
     }
-    //    variables.addAll(additionalVars);
     Dependencies dependencies = new Dependencies();
 
     for (CaptureBound capture : captures) {
@@ -366,7 +364,7 @@ public class BoundSet implements ReductionResult {
     } else if (variables.isEmpty()) {
       return "EMPTY";
     }
-    String vars = StringsPlume.join(", ", getInstantiatedVariables());
+    String vars = StringsP.join(", ", getInstantiatedVariables());
     if (vars.isEmpty()) {
       return "No instantiated variables";
     } else {
