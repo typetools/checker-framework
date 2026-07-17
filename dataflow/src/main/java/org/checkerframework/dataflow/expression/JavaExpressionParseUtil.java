@@ -11,7 +11,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.plumelib.javacparse.JavacParse;
 import org.plumelib.javacparse.JavacParseResult;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Helper methods to parse a string that represents a restricted Java expression.
@@ -74,7 +74,7 @@ public final class JavaExpressionParseUtil {
       throws JavaExpressionParseException {
 
     String expressionWithParameterNames =
-        StringsPlume.replaceAll(expression, PARAMETER_PATTERN, PARAMETER_REPLACEMENT);
+        StringsP.replaceAll(expression, PARAMETER_PATTERN, PARAMETER_REPLACEMENT);
     ExpressionTree exprTree;
     try {
       JavacParseResult<ExpressionTree> jpr =
