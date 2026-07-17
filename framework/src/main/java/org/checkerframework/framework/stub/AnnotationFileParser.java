@@ -112,9 +112,9 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArrayMap;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
-import org.plumelib.util.SystemPlume;
+import org.plumelib.util.SystemP;
 
 // From an implementation perspective, this class represents a single annotation file (stub file or
 // ajava file), notably its annotated types and its declaration annotations.
@@ -346,7 +346,7 @@ public final class AnnotationFileParser {
       if (componentsInCanonicalConstructor != null) {
         return componentsInCanonicalConstructor;
       } else {
-        return CollectionsPlume.mapList(c -> c.type, componentsByName.values());
+        return CollectionsP.mapList(c -> c.type, componentsByName.values());
       }
     }
   }
@@ -3062,12 +3062,12 @@ public final class AnnotationFileParser {
       String warning = String.format(fmt, args);
       if (warnings.add(warning)) {
         System.out.flush();
-        SystemPlume.sleep(1);
+        SystemP.sleep(1);
         processingEnv
             .getMessager()
             .printMessage(Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
         System.out.flush();
-        SystemPlume.sleep(1);
+        SystemP.sleep(1);
       }
     }
   }
@@ -3086,12 +3086,12 @@ public final class AnnotationFileParser {
     String warning = String.format(fmt, args);
     if (warnings.add(warning)) {
       System.out.flush();
-      SystemPlume.sleep(1);
+      SystemP.sleep(1);
       processingEnv
           .getMessager()
           .printMessage(Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
       System.out.flush();
-      SystemPlume.sleep(1);
+      SystemP.sleep(1);
     }
   }
 

@@ -13,7 +13,7 @@ import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
 
 /** A set of utilities and factory methods useful for working with TestDiagnostics. */
@@ -387,7 +387,7 @@ public final class TestDiagnosticUtils {
       String restOfLine = trimmedLine.substring(5); // drop the "// ::"
       String[] diagnosticStrs = restOfLine.split("::");
       List<TestDiagnostic> diagnostics =
-          CollectionsPlume.mapList(
+          CollectionsP.mapList(
               (String diagnostic) -> fromJavaFileComment(filename, errorLine, diagnostic),
               diagnosticStrs);
       return new TestDiagnosticLine(
@@ -469,7 +469,7 @@ public final class TestDiagnosticUtils {
    * @return a list of the diagnastics as they would appear in a source file
    */
   public static List<String> diagnosticsToString(List<TestDiagnostic> diagnostics) {
-    return CollectionsPlume.mapList(TestDiagnostic::toString, diagnostics);
+    return CollectionsP.mapList(TestDiagnostic::toString, diagnostics);
   }
 
   public static void removeDiagnosticsOfKind(

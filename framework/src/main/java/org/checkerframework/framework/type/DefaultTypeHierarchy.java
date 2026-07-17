@@ -862,12 +862,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   // Primitive as subtype
 
   @Override
-  public Boolean visitPrimitive_Array(
-      AnnotatedPrimitiveType subtype, AnnotatedArrayType supertype, Void p) {
-    return isPrimarySubtype(subtype, supertype);
-  }
-
-  @Override
   public Boolean visitPrimitive_Declared(
       AnnotatedPrimitiveType subtype, AnnotatedDeclaredType supertype, Void p) {
     AnnotatedTypeFactory atypeFactory = subtype.atypeFactory;

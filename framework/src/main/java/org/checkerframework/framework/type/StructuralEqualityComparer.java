@@ -19,7 +19,7 @@ import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * A visitor used to compare two type mirrors for "structural" equality. Structural equality implies
@@ -133,10 +133,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     if (types1.size() != types2.size()) {
       throw new BugInCF(
           "Mismatching collection sizes:%n    types 1: %s (%d)%n    types 2: %s (%d)",
-          StringsPlume.join("; ", types1),
-          types1.size(),
-          StringsPlume.join("; ", types2),
-          types2.size());
+          StringsP.join("; ", types1), types1.size(), StringsP.join("; ", types2), types2.size());
     }
 
     Iterator<? extends AnnotatedTypeMirror> types1Iter = types1.iterator();

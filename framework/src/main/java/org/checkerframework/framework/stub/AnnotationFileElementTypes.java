@@ -50,9 +50,9 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
-import org.plumelib.util.SystemPlume;
+import org.plumelib.util.SystemP;
 
 /**
  * Holds information about types parsed from annotation files (stub files or ajava files). When
@@ -896,7 +896,7 @@ public class AnnotationFileElementTypes {
     JarURLConnection connection = getJarURLConnectionToJdk();
 
     try (JarFile jarFile = connection.getJarFile()) {
-      ArrayList<JarEntry> entries = CollectionsPlume.makeArrayList(jarFile.entries());
+      ArrayList<JarEntry> entries = CollectionsP.makeArrayList(jarFile.entries());
       entries.sort(Comparator.comparing(Object::toString));
       for (JarEntry jarEntry : entries) {
         // filter out directories and non-Java files
@@ -942,7 +942,7 @@ public class AnnotationFileElementTypes {
           // do nothing
         }
         System.out.flush();
-        SystemPlume.sleep(1);
+        SystemP.sleep(1);
         System.out.printf("End of %s.%n", jarFileURL);
       }
     } catch (IOException e) {

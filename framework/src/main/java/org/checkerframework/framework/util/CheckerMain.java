@@ -26,7 +26,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * This class behaves similarly to javac. CheckerMain does the following:
@@ -551,7 +551,7 @@ public class CheckerMain {
 
     if (!missingFiles.isEmpty()) {
       List<String> missingAbsoluteFilenames =
-          CollectionsPlume.mapList(File::getAbsolutePath, missingFiles);
+          CollectionsP.mapList(File::getAbsolutePath, missingFiles);
       throw new RuntimeException(
           "The following files could not be located: "
               + String.join(", ", missingAbsoluteFilenames));
