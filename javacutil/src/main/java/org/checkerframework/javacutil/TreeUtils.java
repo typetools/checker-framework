@@ -101,7 +101,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.UniqueIdMap;
 
 /**
@@ -1749,7 +1749,7 @@ public final class TreeUtils {
    */
   public static List<AnnotationMirror> annotationsFromTypeAnnotationTrees(
       List<? extends AnnotationTree> annoTrees) {
-    return CollectionsPlume.mapList(TreeUtils::annotationFromAnnotationTree, annoTrees);
+    return CollectionsP.mapList(TreeUtils::annotationFromAnnotationTree, annoTrees);
   }
 
   /**

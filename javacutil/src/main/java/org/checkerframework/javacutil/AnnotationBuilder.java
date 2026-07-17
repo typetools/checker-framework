@@ -33,9 +33,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.plumelib.reflection.ReflectionPlume;
+import org.plumelib.reflection.ReflectionP;
 import org.plumelib.util.ArrayMap;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Builds an annotation mirror that may have some values.
@@ -185,7 +185,7 @@ public class AnnotationBuilder {
               ? "Is the class in checker-qual.jar?"
               : "Is the class on the compilation classpath, which is:"
                   + System.lineSeparator()
-                  + ReflectionPlume.classpathToString();
+                  + ReflectionP.classpathToString();
       throw new UserError("AnnotationBuilder: fromClass can't load class %s%n" + extra, name);
     }
     return res;
@@ -767,7 +767,7 @@ public class AnnotationBuilder {
       } else if (value instanceof Character) {
         toStringVal = "\'" + value + "\'";
       } else if (value instanceof List<?> list) {
-        toStringVal = "{" + StringsPlume.join(", ", list) + "}";
+        toStringVal = "{" + StringsP.join(", ", list) + "}";
       } else if (value instanceof VariableElement var) {
         // for Enums
         String encl = var.getEnclosingElement().toString();

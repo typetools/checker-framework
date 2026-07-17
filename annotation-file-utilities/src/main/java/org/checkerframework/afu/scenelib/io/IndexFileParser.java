@@ -61,7 +61,7 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.Identifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.objectweb.asm.TypePath;
-import org.plumelib.util.ArraysPlume;
+import org.plumelib.util.ArraysP;
 import org.plumelib.util.FileIOException;
 import org.plumelib.util.IPair;
 
@@ -1556,8 +1556,7 @@ public final class IndexFileParser {
     expectChar('.');
     for (String arg : legalChildSelectors) {
       if (matchKeyword(arg)) {
-        if (argumentChildSelectors != null
-            && ArraysPlume.indexOf(argumentChildSelectors, arg) >= 0) {
+        if (argumentChildSelectors != null && ArraysP.indexOf(argumentChildSelectors, arg) >= 0) {
           int index = matchNNInteger();
           return new ASTPath.ASTEntry(kind, arg, index);
         } else {

@@ -38,7 +38,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.DeepCopyable;
 
 /**
@@ -1029,7 +1029,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
         }
         typeArgs = Collections.unmodifiableList(ts);
       } else {
-        List<AnnotatedTypeMirror> uses = CollectionsPlume.mapList(AnnotatedTypeMirror::asUse, ts);
+        List<AnnotatedTypeMirror> uses = CollectionsP.mapList(AnnotatedTypeMirror::asUse, ts);
         typeArgs = Collections.unmodifiableList(uses);
       }
     }
@@ -1549,7 +1549,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      * @return erased annotated type mirrors
      */
     private List<AnnotatedTypeMirror> erasureList(Iterable<? extends AnnotatedTypeMirror> lst) {
-      return CollectionsPlume.mapList(AnnotatedTypeMirror::getErased, lst);
+      return CollectionsP.mapList(AnnotatedTypeMirror::getErased, lst);
     }
   }
 
@@ -2378,8 +2378,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       if (bounds == null) {
         List<? extends TypeMirror> ubounds = ((IntersectionType) underlyingType).getBounds();
         List<AnnotatedTypeMirror> res =
-            CollectionsPlume.mapList(
-                (TypeMirror bnd) -> createType(bnd, atypeFactory, false), ubounds);
+            CollectionsP.mapList((TypeMirror bnd) -> createType(bnd, atypeFactory, false), ubounds);
         bounds = Collections.unmodifiableList(res);
         fixupBoundAnnotations();
       }
@@ -2477,7 +2476,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       if (alternatives == null) {
         List<? extends TypeMirror> ualts = ((UnionType) underlyingType).getAlternatives();
         List<AnnotatedDeclaredType> res =
-            CollectionsPlume.mapList(
+            CollectionsP.mapList(
                 (TypeMirror alt) -> (AnnotatedDeclaredType) createType(alt, atypeFactory, false),
                 ualts);
         alternatives = Collections.unmodifiableList(res);
