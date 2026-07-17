@@ -8,7 +8,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /** JavaExpression for array creations. {@code new String[]()}. */
 public class ArrayCreation extends JavaExpression {
@@ -86,11 +86,6 @@ public class ArrayCreation extends JavaExpression {
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(dimensions, initializers, getType().toString());
-  }
-
-  @Override
   public boolean equals(@Nullable Object obj) {
     if (!(obj instanceof ArrayCreation other)) {
       return false;
@@ -100,6 +95,11 @@ public class ArrayCreation extends JavaExpression {
         // It might be better to use Types.isSameType(getType(), other.getType()), but I
         // don't have a Types object.
         && getType().toString().equals(other.getType().toString());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(dimensions, initializers, getType().toString());
   }
 
   @Override
@@ -136,7 +136,7 @@ public class ArrayCreation extends JavaExpression {
     }
     if (!initializers.isEmpty() || dimensions.isEmpty()) {
       sb.append(" {");
-      sb.append(StringsPlume.join(", ", initializers));
+      sb.append(StringsP.join(", ", initializers));
       sb.append('}');
     }
     return sb.toString();

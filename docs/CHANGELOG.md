@@ -870,7 +870,7 @@ introduced since JDK 11).
 Added `-AnoWarnMemoryConstraints` to change the "Memory constraints are impeding
 performance; please increase max heap size" message from a warning to a note.
 
-'unneeded.suppression' warnings can now themeselves be suppressed.
+'unneeded.suppression' warnings can now themselves be suppressed.
 
 ### Implementation details
 
@@ -4270,7 +4270,7 @@ Manual Documentations
 
 Functionality
 
-* Added pre-liminary support for lazy initialization in nullness
+* Added preliminary support for lazy initialization in nullness
     see LazyNonNull
 
 Bug fixes
@@ -5201,7 +5201,7 @@ Code Changes
   * added handling for unary trees
 
 * checkers.nonnull
-  * added a tests for the flow-senstive analysis and varargs methods
+  * added tests for the flow-sensitive analysis and varargs methods
   * improved flow-sensitive analysis: else statements, asserts,
       return/throw statements, instanceof checks, complex conditionals with &&
   * fixed a bug in the flow-sensitive analysis that incorrectly inferred

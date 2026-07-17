@@ -69,7 +69,7 @@ public class FormatterTreeUtil {
   }
 
   /** Describes the ways a format method may be invoked. */
-  public static enum InvocationType {
+  public enum InvocationType {
     /**
      * The parameters are passed as varargs. For example:
      *

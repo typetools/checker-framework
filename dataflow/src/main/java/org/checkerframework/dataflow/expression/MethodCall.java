@@ -113,6 +113,33 @@ public class MethodCall extends JavaExpression {
   }
 
   @Override
+  public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof MethodCall other)) {
+      return false;
+    }
+    if (method.getKind() == ElementKind.CONSTRUCTOR) {
+      return false;
+    }
+    boolean isComparingSuperWithThis =
+        (receiver instanceof SuperReference && other.receiver instanceof ThisReference)
+            || (receiver instanceof ThisReference && other.receiver instanceof SuperReference);
+    return method.equals(other.method)
+        && (receiver.equals(other.receiver) || isComparingSuperWithThis)
+        && arguments.equals(other.arguments);
+  }
+
+  @Override
+  public int hashCode() {
+    if (method.getKind() == ElementKind.CONSTRUCTOR) {
+      return System.identityHashCode(this);
+    }
+    return Objects.hash(method, receiver, arguments);
+  }
+
+  @Override
   public boolean syntacticEquals(JavaExpression je) {
     if (!(je instanceof MethodCall other)) {
       return false;
@@ -140,33 +167,6 @@ public class MethodCall extends JavaExpression {
       }
     }
     return false; // the method call itself is not modifiable
-  }
-
-  @Override
-  public boolean equals(@Nullable Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!(obj instanceof MethodCall other)) {
-      return false;
-    }
-    if (method.getKind() == ElementKind.CONSTRUCTOR) {
-      return false;
-    }
-    boolean isComparingSuperWithThis =
-        (receiver instanceof SuperReference && other.receiver instanceof ThisReference)
-            || (receiver instanceof ThisReference && other.receiver instanceof SuperReference);
-    return method.equals(other.method)
-        && (receiver.equals(other.receiver) || isComparingSuperWithThis)
-        && arguments.equals(other.arguments);
-  }
-
-  @Override
-  public int hashCode() {
-    if (method.getKind() == ElementKind.CONSTRUCTOR) {
-      return System.identityHashCode(this);
-    }
-    return Objects.hash(method, receiver, arguments);
   }
 
   @Override

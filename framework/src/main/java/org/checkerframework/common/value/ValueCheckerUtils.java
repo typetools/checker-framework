@@ -21,7 +21,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /** Utility methods for the Value Checker. */
 public final class ValueCheckerUtils {
@@ -173,7 +173,7 @@ public final class ValueCheckerUtils {
     if (origValues == null) {
       return null;
     }
-    return CollectionsPlume.mapList(Object::toString, origValues);
+    return CollectionsP.mapList(Object::toString, origValues);
   }
 
   /**
@@ -209,7 +209,7 @@ public final class ValueCheckerUtils {
       AnnotationMirror anno, Class<?> newClass, ValueAnnotatedTypeFactory atypeFactory) {
     List<String> strings = atypeFactory.getStringValues(anno);
     if (newClass == char[].class) {
-      return CollectionsPlume.mapList(String::toCharArray, strings);
+      return CollectionsP.mapList(String::toCharArray, strings);
     }
     return strings;
   }
@@ -232,7 +232,7 @@ public final class ValueCheckerUtils {
     if (newClass == String.class) {
       return convertToStringVal(longs);
     } else if (newClass == Character.class || newClass == char.class) {
-      return CollectionsPlume.mapList((Long l) -> (char) l.longValue(), longs);
+      return CollectionsP.mapList((Long l) -> (char) l.longValue(), longs);
     } else if (newClass == Boolean.class) {
       throw new UnsupportedOperationException(
           "ValueAnnotatedTypeFactory: can't convert integral type to boolean");
@@ -261,7 +261,7 @@ public final class ValueCheckerUtils {
     if (newClass == String.class) {
       return convertToStringVal(doubles);
     } else if (newClass == Character.class || newClass == char.class) {
-      return CollectionsPlume.mapList((Double l) -> (char) l.doubleValue(), doubles);
+      return CollectionsP.mapList((Double l) -> (char) l.doubleValue(), doubles);
     } else if (newClass == Boolean.class) {
       throw new UnsupportedOperationException(
           "ValueAnnotatedTypeFactory: can't convert double to boolean");
@@ -276,8 +276,8 @@ public final class ValueCheckerUtils {
    * @return list of unique lengths of strings in {@code values}
    */
   public static List<Integer> getLengthsForStringValues(List<String> values) {
-    List<Integer> lengths = CollectionsPlume.mapList(String::length, values);
-    return CollectionsPlume.withoutDuplicatesSorted(lengths);
+    List<Integer> lengths = CollectionsP.mapList(String::length, values);
+    return CollectionsP.withoutDuplicatesSorted(lengths);
   }
 
   /**

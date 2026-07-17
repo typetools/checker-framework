@@ -59,7 +59,7 @@ The checker issues a warning in these cases:
   is a misuse of the type:  the null value could flow to a dereference that
   the checker does not warn about.
 
-  As a special case of an of \refqualclass{checker/nullness/qual}{NonNull}
+  As a special case of a \refqualclass{checker/nullness/qual}{NonNull}
   type becoming null, the checker also warns whenever a field of
   \refqualclass{checker/nullness/qual}{NonNull} type is not initialized in a
   constructor.
@@ -187,7 +187,7 @@ command-line option.)
 
 The Nullness Checker uses three separate type hierarchies:  one for nullness,
 one for initialization (Section~\ref{initialization-checker}),
-and one for map keys (\chapterpageref{map-key-checker})
+and one for map keys (\chapterpageref{map-key-checker}).
 The Nullness Checker has four varieties of annotations:  nullness
 type qualifiers, nullness method annotations, initialization type qualifiers, and
 map key type
@@ -1347,7 +1347,7 @@ Chapter~\ref{optional-checker}) that guarantees that programmers use
 \<Optional> correctly, such as calling \<isPresent> before calling \<get>.
 
 There are some limitations to the utility of \code{Optional}, which might
-lead to you choose to use regular Java references rather than \<Optional>.
+lead you to choose to use regular Java references rather than \<Optional>.
 (For more details, see the article
 \href{https://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html}{``Nothing
   is better than the \<Optional> type''}.)
@@ -1488,7 +1488,7 @@ The initialization hierarchy contains these qualifiers:
   \<@UnknownInitialization> takes a parameter that is the class the object
   is definitely initialized up to.  For instance, the type
   \<@UnknownInitialization(Foo.class)> denotes an object in which every
-  fields declared in \<Foo> or its superclasses is initialized, but other
+  field declared in \<Foo> or its superclasses is initialized, but other
   fields might not be.
   Just \<@UnknownInitialization> is equivalent to
   \<@UnknownInitialization(Object.class)>.
@@ -1617,7 +1617,7 @@ for all the fields that the helper method assigns.
 \subsectionAndLabel{\code{@UnderInitialization} examples}{underinitialization-examples}
 
 The most common use for the \<@UnderInitialization> annotation is for a
-helper routine that is called by constructor.  For example:
+helper routine that is called by a constructor.  For example:
 
 \begin{Verbatim}
   class MyClass {
@@ -1766,7 +1766,7 @@ the type of the object being constructed is:
 \end{enumerate}
 
 Note that neither \<@UnderInitialization(A.class) A> nor
-\<@UnderInitialization(A.class) B> may be used where <@Initialized A> is
+\<@UnderInitialization(A.class) B> may be used where \<@Initialized A> is
 required.  Permitting that would be unsound.  For example, consider this
 code, where all types are \<@NonNull> because \<@NonNull> is the default annotation:
 
@@ -1935,7 +1935,7 @@ Similarly, Figure~\ref{fig-init-write-field} shows under which conditions
 an assignment \<x.f = y> is allowed for a
 \refqualclass{checker/initialization/qual}{NotOnlyInitialized} field \<f>.
 If the receiver \<x> is
-\refqualclass{checker/initialization/qual}{UnderInitialization}, then any
+\refqualclass{checker/initialization/qual}{UnderInitialization}, then
 \<y> can be of any initialization state.  If \<y> is known to be
 fully initialized, then any receiver is allowed.  All other assignments
 are disallowed.

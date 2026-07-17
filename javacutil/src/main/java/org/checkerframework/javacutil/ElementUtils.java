@@ -39,7 +39,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.plumelib.util.ArraySet;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * Utility methods for analyzing {@code Element}s. This complements {@link Elements}, providing
@@ -961,7 +961,7 @@ public final class ElementUtils {
   public static List<TypeElement> getAllSupertypes(TypeElement type, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-    return CollectionsPlume.<Type, TypeElement>mapList(
+    return CollectionsP.<Type, TypeElement>mapList(
         t -> (TypeElement) t.tsym, javacTypes.closure(((Symbol) type).type));
   }
 

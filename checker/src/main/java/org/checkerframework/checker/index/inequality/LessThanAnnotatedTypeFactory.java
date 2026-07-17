@@ -38,7 +38,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /** The type factory for the Less Than Checker. */
 public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForIndexChecker {
@@ -143,7 +143,10 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
 
       List<String> a1List = getLessThanExpressions(a1);
       List<String> a2List = getLessThanExpressions(a2);
-      CollectionsPlume.adjoinAll(a1List, a2List); // union
+      if (a1List == null || a2List == null) {
+        return LESS_THAN_BOTTOM;
+      }
+      CollectionsP.adjoinAll(a1List, a2List); // union
       return createLessThanQualifier(a1List);
     }
   }

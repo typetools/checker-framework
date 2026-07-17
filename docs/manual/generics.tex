@@ -373,7 +373,7 @@ Most of the following types mean different things:
 The implementation of \<MyList1> must be able to consume (store) a null
 value and produce (retrieve) a null value.
 
-\<MyList2> and \<MyList2a> must be instantiated with non-null type.
+\<MyList2> and \<MyList2a> must be instantiated with a non-null type.
 The implementation of \<MyList2> has to account for only non-null values --- it
 does not have to account for consuming or producing null.
 
@@ -596,7 +596,7 @@ then the unification (lub) is \<@Nullable>, and so is the return type.
 \subsectionAndLabel{Relationship to subtyping and generics}{qualifier-polymorphism-vs-subtyping}
 
 Qualifier polymorphism has the same purpose and plays the same role as
-Java's generics.  You use them for the similar reasons, such as:
+Java's generics.  You use them for similar reasons, such as:
 \begin{itemize}
 \item
   A method operates on collections with different types of
@@ -917,7 +917,7 @@ qualifiers (Section~\ref{method-qualifier-polymorphism}).
 If the receiver type has a qualifier parameter and is annotated with a polymorphic qualifier,
 then at a call site all polymorphic annotations are instantiated to
 the same qualifier as the type of the receiver expression of the method call.
-Otherwise, use the rules of Section~\ref{method-qualifier-polymorphism}
+Otherwise, use the rules of Section~\ref{method-qualifier-polymorphism}.
 
 For example, consider
 
@@ -959,7 +959,7 @@ At a field access where the declared type of the field has a polymorphic
 qualifier, that polymorphic qualifier is instantiated to the qualifier on the
 type of the receiver of the field access (or in the case of type variables, the
 qualifier on the upper bound).  That is, the qualifier on \<myBuffer.field>
-is that same as that on \<myBuffer>.
+is the same as that on \<myBuffer>.
 
 \subsectionAndLabel{Local variable defaults for types with qualifier parameters}{local-vars-qual-param-defaults}
 

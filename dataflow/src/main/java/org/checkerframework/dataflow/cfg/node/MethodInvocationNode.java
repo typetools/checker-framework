@@ -13,7 +13,7 @@ import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * A node for method invocation.
@@ -156,7 +156,7 @@ public class MethodInvocationNode extends Node {
 
   @Override
   public String toString() {
-    return target + "(" + StringsPlume.join(", ", arguments) + ")";
+    return target + "(" + StringsP.join(", ", arguments) + ")";
   }
 
   @Override

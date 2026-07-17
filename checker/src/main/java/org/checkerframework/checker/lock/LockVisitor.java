@@ -65,7 +65,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * The LockVisitor enforces the special type-checking rules described in the Lock Checker manual
@@ -433,8 +433,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       AnnotatedDeclaredType overriddenType,
       SideEffectAnnotation seaOfOverriderMethod,
       SideEffectAnnotation seaOfOverriddenMethod,
-      List<String> overriderLocks,
-      List<String> overriddenLocks) {
+      @Nullable List<String> overriderLocks,
+      @Nullable List<String> overriddenLocks) {
     // Get the type of the overriding method.
     AnnotatedExecutableType overrider = atypeFactory.getAnnotatedType(overriderTree);
 
@@ -1249,7 +1249,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       self = new Unknown(tree);
     }
 
-    return CollectionsPlume.mapList(
+    return CollectionsP.mapList(
         expression -> parseExpressionString(expression, currentPath, self), expressions);
   }
 

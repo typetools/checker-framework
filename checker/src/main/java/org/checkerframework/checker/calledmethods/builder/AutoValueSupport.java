@@ -30,7 +30,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
-import org.plumelib.util.ArraysPlume;
+import org.plumelib.util.ArraysP;
 
 /**
  * AutoValue support for the Called Methods Checker. This class adds {@code @}{@link CalledMethods}
@@ -335,7 +335,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     DeclaredType declaredType = (DeclaredType) type;
     TypeElement typeElement = (TypeElement) declaredType.asElement();
     return typeElement.getTypeParameters().size() == declaredType.getTypeArguments().size()
-        && ArraysPlume.indexOf(optionalClassNames, typeElement.getQualifiedName().toString()) != -1;
+        && ArraysP.indexOf(optionalClassNames, typeElement.getQualifiedName().toString()) != -1;
   }
 
   /**
