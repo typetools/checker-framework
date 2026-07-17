@@ -24,7 +24,6 @@ import org.checkerframework.dataflow.cfg.CFGProcessor;
 import org.checkerframework.dataflow.cfg.CFGProcessor.CFGProcessResult;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.plumelib.util.ArrayMap;
-import org.plumelib.util.SystemP;
 
 /**
  * Launcher to generate the DOT or String representation of the control flow graph of a given method
@@ -328,9 +327,6 @@ public final class CFGVisualizeLauncher {
    */
   private static void producePDF(String file) {
     try {
-      String pathEnv = System.getenv("PATH");
-      System.out.println("PATH: " + pathEnv);
-      System.out.println("dot: " + SystemP.pathToExecutable("dot"));
       ProcessBuilder pb = new ProcessBuilder("dot", "-Tpdf", file, "-o", file + ".pdf");
       Process child = pb.start();
       int exitCode = child.waitFor();
