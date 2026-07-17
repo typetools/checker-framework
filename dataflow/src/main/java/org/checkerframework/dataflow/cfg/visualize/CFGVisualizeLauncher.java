@@ -327,6 +327,8 @@ public final class CFGVisualizeLauncher {
    */
   private static void producePDF(String file) {
     try {
+      String pathEnv = System.getenv("PATH");
+      System.out.printf("PATH: " + pathEnv);
       ProcessBuilder pb = new ProcessBuilder("dot", "-Tpdf", file, "-o", file + ".pdf");
       Process child = pb.start();
       int exitCode = child.waitFor();
