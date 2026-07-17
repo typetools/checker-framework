@@ -199,15 +199,16 @@ public class DisallowedSideEffects {
       if (!expr.isModifiableByOtherCode()) {
         return false;
       }
-      JavaExpression expr1 = aliasedExpressions.find(expr);
-      for (JavaExpression seOnlyExpr : sideEffectsOnlyExpressionsFromAnnotation) {
-        System.out.printf("Testing whether %s contains %s%n", expr, seOnlyExpr);
+      JavaExpression exprNonCanonical = expr;
+      expr = aliasedExpressions.find(expr);
+      for (JavaExpression seOnlyExprNoncanonical : sideEffectsOnlyExpressionsFromAnnotation) {
+        System.out.printf("Testing whether %s contains %s%n", expr, seOnlyExprNoncanonical);
 
-        addAliasExpression(seOnlyExpr);
-        seOnlyExpr1 = aliasedExpressions.find(seOnlyExpr);
+        aliasedExpressions.add(seOnlyExprNoncanonical);
+        JavaExpression seOnlyExpr = aliasedExpressions.find(seOnlyExprNoncanonical);
         // TODO: I need to check all possible pairs.
         // For efficiency, I will want to cache results to avoid recomputation.
-        if (aliasedExpressions.containsKey(seOnlyExpr)) {
+        if (aliasedExpressions.contains(seOnlyExpr)) {
           System.out.printf("aliases for %s: %s%n", seOnlyExpr, aliasedExpressions.get(seOnlyExpr));
           for (JavaExpression seOnlyExprAlias : aliasedExpressions.get(seOnlyExpr)) {
             System.out.printf("containsAsReceiver: %s %s%n", expr, seOnlyExprAlias);
@@ -236,6 +237,7 @@ public class DisallowedSideEffects {
         disallowedSideEffects.addExpr(node, lhs);
       }
       aliasedExpressions.union(lhs, rhs);
+      return super.visitAssignment(node, aVoid);
     }
 
     @Override
@@ -281,17 +283,6 @@ public class DisallowedSideEffects {
     }
 
     /**
-     * Add the expression to {@link #aliasedExpressions} if it is not already present.
-     *
-     * @param expr an expression
-     */
-    private void addAliasExpression(JavaExpression expr) {
-      if (!aliasedExpressions.getParentMap().containsKey()) {
-        aliasedExpressions.addElement(expr);
-      }
-    }
-
-    /**
      * Set the two expressions as possibly aliased.
      *
      * @param lhs a Java expression
@@ -299,8 +290,8 @@ public class DisallowedSideEffects {
      */
     private void addAlias(JavaExpression lhs, JavaExpression rhs) {
       System.out.printf("addAlias(%s, %s) pre: %s%n", lhs, rhs, aliasedExpressions);
-      addAliasExpression(lhs);
-      addAliasExpression(rhs);
+      aliasedExpressions.add(lhs);
+      aliasedExpressions.add(rhs);
       aliasedExpressions.union(lhs, rhs);
       System.out.printf("addAlias(%s, %s) => %s%n", lhs, rhs, aliasedExpressions);
     }
