@@ -90,7 +90,8 @@ public class DisallowedSideEffects {
      */
     List<JavaExpression> sideEffectsOnlyExpressionsFromAnnotation;
 
-    UnionFind<JavaExpression> aliasedExpressions = new UnionFind<>();
+    UnionFind<JavaExpression> aliasedExpressions =
+        new UnionFind<>(null, JavaExpression::containsAsReceiver);
 
     /**
      * The elements of {@link #aliasedExpressions}. Needed because UnionFind does not
@@ -201,26 +202,12 @@ public class DisallowedSideEffects {
       }
       JavaExpression exprNonCanonical = expr;
       expr = aliasedExpressions.find(expr);
-      for (JavaExpression seOnlyExprNoncanonical : sideEffectsOnlyExpressionsFromAnnotation) {
-        System.out.printf("Testing whether %s contains %s%n", expr, seOnlyExprNoncanonical);
-
-        aliasedExpressions.add(seOnlyExprNoncanonical);
-        JavaExpression seOnlyExpr = aliasedExpressions.find(seOnlyExprNoncanonical);
-        // TODO: I need to check all possible pairs.
-        // For efficiency, I will want to cache results to avoid recomputation.
-        if (aliasedExpressions.contains(seOnlyExpr)) {
-          System.out.printf("aliases for %s: %s%n", seOnlyExpr, aliasedExpressions.get(seOnlyExpr));
-          for (JavaExpression seOnlyExprAlias : aliasedExpressions.get(seOnlyExpr)) {
-            System.out.printf("containsAsReceiver: %s %s%n", expr, seOnlyExprAlias);
-            if (expr.containsAsReceiver(seOnlyExprAlias)) {
-              System.out.printf("containsAsReceiver: %s %s => false%n", expr, seOnlyExprAlias);
-              return false;
-            }
-          }
-        } else {
-          if (expr.containsAsReceiver(seOnlyExpr)) {
-            return false;
-          }
+      for (JavaExpression seOnlyExpr : sideEffectsOnlyExpressionsFromAnnotation) {
+        System.out.printf("Testing whether %s contains %s%n", expr, seOnlyExpr);
+        aliasedExpressions.add(seOnlyExpr);
+        if (aliasedExpressions.test(expr, seOnlyExpr)) {
+          System.out.printf("containsAsReceiver: %s %s => false%n", expr, seOnlyExpr);
+          return false;
         }
       }
       System.out.printf("isDisallowedSideEffectedExpression => true: %s%n", expr);

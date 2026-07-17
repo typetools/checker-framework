@@ -1239,13 +1239,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
-    if (!bodyAssigned) {
-      body = atypeFactory.getPath(tree.getBody());
-    }
-    if (body == null) {
-      return;
-    }
-
     @Nullable Element methodDeclElem = TreeUtils.elementFromDeclaration(tree);
     AnnotationMirror seOnlyAnnotation =
         atypeFactory.getDeclAnnotation(methodDeclElem, SideEffectsOnly.class);
