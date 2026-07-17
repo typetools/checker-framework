@@ -90,6 +90,10 @@ public class DisallowedSideEffects {
      */
     List<JavaExpression> sideEffectsOnlyExpressionsFromAnnotation;
 
+    /**
+     * Groups expressions into sets, where all the elements in each set might be aliased to one
+     * other.
+     */
     UnionFind<JavaExpression> aliasedExpressions =
         new UnionFind<>(null, JavaExpression::containsAsReceiver);
 
