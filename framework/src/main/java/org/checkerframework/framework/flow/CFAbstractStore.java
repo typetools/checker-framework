@@ -339,7 +339,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             StringToJavaExpression.atMethodInvocation(st, methodInvocationNode, checker);
         seOnlyExpressions.add(exprJe);
       } catch (JavaExpressionParseException ex) {
-        checker.report(st, new DiagMessage(ex));
+        checker.report(method, new DiagMessage(ex));
       }
     }
 

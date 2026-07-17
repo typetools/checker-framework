@@ -4,6 +4,7 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
@@ -16,7 +17,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
-import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
@@ -57,23 +58,30 @@ public class DisallowedSideEffects {
   // Static methods
 
   /**
-   * Returns the computed {@code DisallowedSideEffects}.
+   * Issues warnings about side effects beyond the {@code @SideEffectsOnly} annotation
    *
    * @param statement the statement to check
-   * @param annoProvider the annotation provider
    * @param sideEffectsOnlyExpressions the values in the {@link SideEffectsOnly} annotation
    * @param checker the checker to use
-   * @return a DisallowedSideEffects
+   * @param methodTree the method, used for diagnostics
    */
-  public static DisallowedSideEffects checkSideEffectsOnly(
+  public static void checkSideEffectsOnly(
       TreePath statement,
-      AnnotationProvider annoProvider,
       List<JavaExpression> sideEffectsOnlyExpressions,
-      BaseTypeChecker checker) {
+      BaseTypeChecker checker,
+      MethodTree methodTree) {
     DisallowedSideEffectsHelper helper =
-        new DisallowedSideEffectsHelper(annoProvider, sideEffectsOnlyExpressions, checker);
+        new DisallowedSideEffectsHelper(sideEffectsOnlyExpressions, checker);
     helper.scan(statement, null);
-    return helper.disallowedSideEffects;
+
+    DisallowedSideEffects disallowedSideEffects = helper.disallowedSideEffects;
+    List<IPair<Tree, JavaExpression>> seOnlyIncorrectExprs = disallowedSideEffects.getExprs();
+
+    for (IPair<Tree, JavaExpression> s : seOnlyIncorrectExprs) {
+      System.out.printf("Reporting from checkSideEffectsOnly.%n");
+      checker.reportError(
+          s.first, "purity.incorrect.sideeffectsonly", methodTree.getName(), s.second.toString());
+    }
   }
 
   /**
@@ -97,29 +105,18 @@ public class DisallowedSideEffects {
     UnionFind<JavaExpression> aliasedExpressions =
         new UnionFind<>(null, JavaExpression::containsAsReceiver);
 
-    /**
-     * The elements of {@link #aliasedExpressions}. Needed because UnionFind does not
-     *
-     * <p>/** The annotation provider.
-     */
-    protected final AnnotationProvider annoProvider;
-
     /** The checker to use. */
     BaseTypeChecker checker;
 
     /**
      * Creates a new DisallowedSideEffectsHelper.
      *
-     * @param annoProvider the annotation provider
      * @param sideEffectsOnlyExpressions the arguments/values of a {@link SideEffectsOnly}
      *     annotation
      * @param checker the checker to use
      */
     public DisallowedSideEffectsHelper(
-        AnnotationProvider annoProvider,
-        List<JavaExpression> sideEffectsOnlyExpressions,
-        BaseTypeChecker checker) {
-      this.annoProvider = annoProvider;
+        List<JavaExpression> sideEffectsOnlyExpressions, BaseTypeChecker checker) {
       this.sideEffectsOnlyExpressionsFromAnnotation = sideEffectsOnlyExpressions;
       this.checker = checker;
     }
@@ -130,16 +127,17 @@ public class DisallowedSideEffects {
       if (invokedElem == null || TreeUtils.isEnumSuperCall(node)) {
         return super.visitMethodInvocation(node, aVoid);
       }
-      boolean isMarkedPure = annoProvider.getDeclAnnotation(invokedElem, Pure.class) != null;
+      AnnotatedTypeFactory atypeFactory = checker.getTypeFactory();
+      boolean isMarkedPure = atypeFactory.getDeclAnnotation(invokedElem, Pure.class) != null;
       boolean isMarkedSideEffectFree =
-          annoProvider.getDeclAnnotation(invokedElem, SideEffectFree.class) != null;
+          atypeFactory.getDeclAnnotation(invokedElem, SideEffectFree.class) != null;
       if (isMarkedPure || isMarkedSideEffectFree) {
         // TODO: Should all the checking be integrated together?
         return super.visitMethodInvocation(node, aVoid);
       }
 
       boolean isInvokedMethodMarkedWithSideEffectsOnly =
-          annoProvider.getDeclAnnotation(invokedElem, SideEffectsOnly.class) != null;
+          atypeFactory.getDeclAnnotation(invokedElem, SideEffectsOnly.class) != null;
 
       List<JavaExpression> actualSideEffectedExprs =
           this.getJavaExpressionsFromMethodInvocation(node);
@@ -149,6 +147,7 @@ public class DisallowedSideEffects {
         // What does it modify? Check the arguments for the method invocation.
         if (actualSideEffectedExprs.isEmpty()) {
           // The call has no receiver or arguments, so it might modify arbitrary state.
+          System.out.printf("Reporting from DisallowedSideEffectsHelper.%n");
           checker.reportError(
               node,
               "purity.incorrect.sideeffectsonly",
@@ -204,16 +203,21 @@ public class DisallowedSideEffects {
       if (!expr.isModifiableByOtherCode()) {
         return false;
       }
+      aliasedExpressions.add(expr);
       expr = aliasedExpressions.find(expr);
       for (JavaExpression seOnlyExpr : sideEffectsOnlyExpressionsFromAnnotation) {
-        System.out.printf("Testing whether %s contains %s%n", expr, seOnlyExpr);
+        System.out.printf(
+            "isDisallowedSideEffectedExpression: testing whether %s contains %s%n",
+            expr, seOnlyExpr);
         aliasedExpressions.add(seOnlyExpr);
         if (aliasedExpressions.test(expr, seOnlyExpr)) {
-          System.out.printf("containsAsReceiver: %s %s => false%n", expr, seOnlyExpr);
+          System.out.printf(
+              "%s.containsAsReceiver(%s) => true; so isDisallowedSideEffectedExpression=>false%n",
+              expr, seOnlyExpr);
           return false;
         }
       }
-      System.out.printf("isDisallowedSideEffectedExpression => true: %s%n", expr);
+      System.out.printf("isDisallowedSideEffectedExpression(%s) => true%n", expr);
       return true;
     }
 

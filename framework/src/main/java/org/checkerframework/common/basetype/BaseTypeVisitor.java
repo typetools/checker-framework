@@ -1282,19 +1282,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
-    // TODO: this should issue the errors itself.
-    DisallowedSideEffects disallowedSideEffects =
-        DisallowedSideEffects.checkSideEffectsOnly(body, atypeFactory, seOnlyExpressions, checker);
-
-    List<IPair<Tree, JavaExpression>> seOnlyIncorrectExprs = disallowedSideEffects.getExprs();
-
-    for (IPair<Tree, JavaExpression> s : seOnlyIncorrectExprs) {
-      // TODO: Can this test ever fail??
-      if (!seOnlyExpressions.contains(s.second)) {
-        checker.reportError(
-            s.first, "purity.incorrect.sideeffectsonly", tree.getName(), s.second.toString());
-      }
-    }
+    DisallowedSideEffects.checkSideEffectsOnly(body, seOnlyExpressions, checker, tree);
   }
 
   /**

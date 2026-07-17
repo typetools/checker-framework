@@ -4,6 +4,7 @@
 // a capture that extends T.
 
 import java.util.Iterator;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 public class Dataset6Crash {
@@ -30,6 +31,7 @@ public class Dataset6Crash {
         return r;
       }
 
+      @SideEffectsOnly({"this"}) // adding "base" leads to "identifier not found" error
       private void fetch() {
         if (next == null && !end) {
           if (base.hasNext()) {
@@ -52,6 +54,7 @@ public class Dataset6Crash {
   }
 
   private static class CountingPredicate<T> {
+    @Pure
     public boolean apply(int i, T next) {
       return false;
     }

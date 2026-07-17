@@ -132,6 +132,16 @@ public class FieldAccess extends JavaExpression {
 
   @Override
   public boolean containsAsReceiver(JavaExpression other) {
+    System.out.printf("containsAsReceiver(%s, %s)%n", this, other);
+    System.out.printf(
+        "  %s.syntacticEquals(%s)=%s %s [%s].containsAsReceiver(%s)=%s%n",
+        this,
+        other,
+        syntacticEquals(other),
+        receiver,
+        receiver.getClass(),
+        other,
+        receiver.containsAsReceiver(other));
     return syntacticEquals(other) || receiver.containsAsReceiver(other);
   }
 
