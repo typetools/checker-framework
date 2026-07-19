@@ -7,6 +7,7 @@ import java.util.Iterator;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
+@SuppressWarnings("purity.incorrect.sideeffectsonly") // not relevant to this test case
 public class Dataset6Crash {
 
   public static <T> Iterator<T> limit(
