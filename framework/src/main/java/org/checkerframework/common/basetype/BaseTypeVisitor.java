@@ -1282,7 +1282,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
-    DisallowedSideEffects.checkSideEffectsOnly(body, seOnlyExpressions, checker, tree);
+    if (body != null) {
+      DisallowedSideEffects.checkSideEffectsOnly(body, seOnlyExpressions, checker, tree);
+    }
   }
 
   /**
