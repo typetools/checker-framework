@@ -71,7 +71,6 @@ public class ThisReference extends JavaExpression {
   @Override
   public boolean containsAsReceiver(JavaExpression other) {
     boolean result = this.syntacticEquals(other);
-    System.out.printf("ThisReference %s.containsAsReceiver(%s) => %s%n", this, other, result);
     return result;
   }
 
