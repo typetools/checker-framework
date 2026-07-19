@@ -78,7 +78,6 @@ public class DisallowedSideEffects {
     List<IPair<Tree, JavaExpression>> seOnlyIncorrectExprs = disallowedSideEffects.getExprs();
 
     for (IPair<Tree, JavaExpression> s : seOnlyIncorrectExprs) {
-      System.out.printf("Reporting from checkSideEffectsOnly.%n");
       checker.reportError(
           s.first, "purity.incorrect.sideeffectsonly", methodTree.getName(), s.second.toString());
     }
@@ -147,7 +146,6 @@ public class DisallowedSideEffects {
         // What does it modify? Check the arguments for the method invocation.
         if (actualSideEffectedExprs.isEmpty()) {
           // The call has no receiver or arguments, so it might modify arbitrary state.
-          System.out.printf("Reporting from DisallowedSideEffectsHelper.%n");
           checker.reportError(
               node,
               "purity.incorrect.sideeffectsonly",
@@ -206,18 +204,11 @@ public class DisallowedSideEffects {
       aliasedExpressions.add(expr);
       expr = aliasedExpressions.find(expr);
       for (JavaExpression seOnlyExpr : sideEffectsOnlyExpressionsFromAnnotation) {
-        System.out.printf(
-            "isDisallowedSideEffectedExpression: testing whether %s contains %s%n",
-            expr, seOnlyExpr);
         aliasedExpressions.add(seOnlyExpr);
         if (aliasedExpressions.test(expr, seOnlyExpr)) {
-          System.out.printf(
-              "%s.containsAsReceiver(%s) => true; so isDisallowedSideEffectedExpression=>false%n",
-              expr, seOnlyExpr);
           return false;
         }
       }
-      System.out.printf("isDisallowedSideEffectedExpression(%s) => true%n", expr);
       return true;
     }
 
@@ -283,11 +274,9 @@ public class DisallowedSideEffects {
      * @param rhs a Java expression
      */
     private void addAlias(JavaExpression lhs, JavaExpression rhs) {
-      System.out.printf("addAlias(%s, %s) pre: %s%n", lhs, rhs, aliasedExpressions);
       aliasedExpressions.add(lhs);
       aliasedExpressions.add(rhs);
       aliasedExpressions.union(lhs, rhs);
-      System.out.printf("addAlias(%s, %s) => %s%n", lhs, rhs, aliasedExpressions);
     }
   }
 }
