@@ -91,7 +91,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   /**
    * Issues warnings about side effects beyond the {@code @SideEffectsOnly} annotation.
    *
-   * @param statement the method body to check
+   * @param statement the statement to check; currently, at the only call site it is a method body
    * @param sideEffectsOnlyExpressions the values in the {@link SideEffectsOnly} annotation
    * @param checker the checker to use
    * @param methodTree the method, used for diagnostics
@@ -301,8 +301,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * </ul>
    *
    * <p>Use this for an expression whose <em>value</em> is mutated, such as an expression that a
-   * callee modifies. For an expression that is <em>assigned to</em>, use {@link
-   * #isDisallowedAssignmentTarget}.
+   * callee modifies (e.g., one of the arguments). For an expression that is <em>assigned to</em>,
+   * use {@link #isDisallowedAssignmentTarget}.
    *
    * @param expr the expression to check for side-effecting
    * @return true if the given expression is a side-effected expression beyond what is listed in the
