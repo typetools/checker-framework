@@ -60,6 +60,10 @@ public class WrapperMap<K, V> implements Map<K, V> {
   }
 
   @Override
+  @SuppressWarnings({
+    "keyfor:contracts.postcondition", // backing map
+    "nullness:return" // generics lower bound problem
+  })
   @SideEffectsOnly("this")
   public V put(K key, V value) {
     return back.put(key, value);
@@ -72,6 +76,7 @@ public class WrapperMap<K, V> implements Map<K, V> {
   }
 
   @Override
+  @SuppressWarnings("nullness:return") // generics lower bound problem
   @SideEffectsOnly("this")
   public V remove(Object key) {
     return back.remove(key);
