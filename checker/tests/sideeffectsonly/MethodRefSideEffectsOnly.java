@@ -2,6 +2,7 @@
 // method it implements. That check reports `purity.methodref` rather than `purity.overriding`.
 
 import java.util.Collection;
+import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
@@ -32,5 +33,25 @@ public class MethodRefSideEffectsOnly {
     // The referenced method promises nothing, so it cannot implement a `@SideEffectsOnly` method.
     // :: error: (purity.methodref)
     Mutator m = MethodRefSideEffectsOnly::unannotated;
+  }
+
+  interface DeterministicMutator {
+    @Deterministic
+    @SideEffectsOnly("#1")
+    int apply(Collection<Integer> c);
+  }
+
+  @SideEffectsOnly("#1")
+  static int mutatesArgumentNondeterministically(Collection<Integer> c) {
+    c.add(1);
+    return 0;
+  }
+
+  void determinismNotOk() {
+    // The referenced method satisfies the `@SideEffectsOnly` annotation, but not the
+    // `@Deterministic` one.  (Unlike an overriding method, a referenced method does not inherit
+    // the annotations of the method that it implements.)
+    // :: error: (purity.methodref)
+    DeterministicMutator m = MethodRefSideEffectsOnly::mutatesArgumentNondeterministically;
   }
 }

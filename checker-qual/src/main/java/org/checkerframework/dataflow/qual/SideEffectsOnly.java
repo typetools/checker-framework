@@ -18,12 +18,15 @@ import org.checkerframework.framework.qual.JavaExpression;
  * {@code @InheritedAnnotation}.
  *
  * <p>On a constructor, this annotation constrains what the constructor modifies besides the object
- * being constructed; list {@code this} to permit assigning to the new object's own fields. A
- * constructor's annotation is verified at its declaration, but it does not yet affect type
- * refinement at {@code new} expressions.
+ * being constructed; list {@code this} to permit assigning to the new object's own fields. At a
+ * {@code new} expression, the expressions that are reached through {@code this} are ignored,
+ * because the object being constructed did not exist before the call. A constructor's annotation
+ * does not yet affect type refinement at {@code new} expressions.
  *
  * @checker_framework.manual #type-refinement-purity Specifying side effects
  */
+// @InheritedAnnotation cannot be written here, because "dataflow" project cannot depend on
+// "framework" project.
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
@@ -35,5 +38,5 @@ public @interface SideEffectsOnly {
    * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
    */
   @JavaExpression
-  public String[] value();
+  String[] value();
 }

@@ -1118,6 +1118,11 @@ issuing a warning about the call \<myField.toString()>.
   int computeValue() { ... }
 \end{Verbatim}
 
+\noindent
+The Nullness Checker issues no warnings, because it can reason that
+the second occurrence of \code{myField} has the same (non-null) value as
+the one in the test.
+
 \item
   If \<computeValue> has side effects, but they do not affect \<myField>,
   declare the method as \refqualclass{dataflow/qual}{SideEffectsOnly}:
@@ -1126,11 +1131,6 @@ issuing a warning about the call \<myField.toString()>.
   @SideEffectsOnly({"someOtherVariable1", "someOtherVariable2"})
   int computeValue() { ... }
 \end{Verbatim}
-
-\noindent
-The Nullness Checker issues no warnings, because it can reason that
-the second occurrence of \code{myField} has the same (non-null) value as
-the one in the test.
 
 \item
   If no method resets \<myField> to \<null> after it has been initialized
@@ -1214,10 +1214,17 @@ receiver and arguments.  When the callee is annotated \<@SideEffectsOnly>, it is
 as modifying exactly the expressions in its own annotation, viewpoint-adapted to the call
 site --- not its receiver and arguments.
 
+The same holds for a constructor invocation --- a \<new> expression, or a \<this(...)> or
+\<super(...)> call.  Because most constructors, including most of those in the JDK, have no
+side-effect annotation, a \<@SideEffectsOnly> method that creates an object often reports
+\<purity.unknown.sideeffectsonly>.
+
 On a constructor, \<@SideEffectsOnly> constrains what the constructor modifies besides
 the object being constructed; list \<this> to permit assigning to the new object's own
-fields.  A constructor's annotation is verified at its declaration, but it does not yet
-affect type refinement at \<new> expressions.
+fields.  At a \<new> expression, the expressions that are reached through \<this> are
+ignored, because the object being constructed did not exist before the call and therefore
+no expression at the call site refers to it.  A constructor's \<@SideEffectsOnly>
+annotation does not yet affect type refinement at \<new> expressions.
 
 Checking of \<@SideEffectsOnly> is unsound in the presence of aliasing.  The checker
 reasons syntactically, and treats two expressions as possibly aliased only when an

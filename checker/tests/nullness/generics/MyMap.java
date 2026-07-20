@@ -12,10 +12,8 @@ public abstract class MyMap<K, V> implements Map<K, V> {
     return null;
   }
 
-  // `put` is `@SideEffectsOnly("this")`, so it does not modify its arguments.  However,
-  // DisallowedSideEffects.visitMethodInvocation ignores the callee's annotation and assumes that
-  // every call modifies its receiver and all its arguments.
-  @SuppressWarnings("purity.incorrect.sideeffectsonly")
+  // The call to `put` is permitted because `put` is `@SideEffectsOnly("this")`, and `this` is
+  // listed in this method's own annotation.
   @Override
   @SideEffectsOnly("this")
   public void putAll(Map<? extends K, ? extends V> map) {

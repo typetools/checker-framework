@@ -244,7 +244,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected final ExecutableElement unusedWhenElement;
 
   /** The {@code value} element/field of the @{@link SideEffectsOnly} annotation. */
-  ExecutableElement sideEffectsOnlyValueElement;
+  protected final ExecutableElement sideEffectsOnlyValueElement;
 
   /** True if "-Ashowchecks" was passed on the command line. */
   protected final boolean showchecks;
@@ -325,8 +325,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         atypeFactory.fromElement(elements.getTypeElement(Vector.class.getCanonicalName()));
     targetValueElement = TreeUtils.getMethod(Target.class, "value", 0, env);
     unusedWhenElement = TreeUtils.getMethod(Unused.class, "when", 0, env);
-    sideEffectsOnlyValueElement =
-        TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, checker.getProcessingEnvironment());
+    sideEffectsOnlyValueElement = TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, env);
     showchecks = checker.hasOption("showchecks");
     infer = checker.hasOption("infer");
     suggestPureMethods = checker.hasOption("suggestPureMethods") || infer;
@@ -1183,16 +1182,24 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
+    // PurityChecker computes only PurityKind.SIDE_EFFECT_FREE and PurityKind.DETERMINISTIC, so
+    // running it is pointless for a method whose only purity annotation is @SideEffectsOnly,
+    // unless a suggestion might be issued.
+    boolean needPurityResult =
+        suggestPureMethods
+            || purityKinds.contains(PurityKind.SIDE_EFFECT_FREE)
+            || purityKinds.contains(PurityKind.DETERMINISTIC);
+
     TreePath body = atypeFactory.getPath(tree.getBody());
     PurityResult r;
-    if (body == null) {
+    if (body == null || !needPurityResult) {
       r = new PurityResult();
     } else {
       r =
           PurityChecker.checkPurity(
               body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
     }
-    if (!r.isPure(purityKinds)) {
+    if (needPurityResult && !r.isPure(purityKinds)) {
       reportPurityErrors(r, tree, purityKinds);
     }
 
@@ -1283,7 +1290,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (diagMessage.getMessageKey().equals("flowexpr.parse.error")) {
           checker.reportError(tree, "flowexpr.parse.error", st);
         } else {
-          checker.report(st, diagMessage);
+          checker.report(tree, diagMessage);
         }
         return;
       }
@@ -4281,6 +4288,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                   seOnlySub, sideEffectsOnlyValueElement, String.class);
 
           // The subclass method (the overrider) is allowed to perform fewer side effects.
+          // TODO: This compares the annotations' string arguments rather than the Java
+          // expressions they stand for, so it does not recognize that (say) `@SideEffectsOnly("a")`
+          // permits everything that `@SideEffectsOnly("a.f")` does.  Such a comparison is
+          // conservative: it reports an error where none is warranted.
           ok = seOnlySuperExpressions.containsAll(seOnlySubExpressions);
         } else {
           // Superclass method has @SideEffectsOnly, subclass method has no side-effect annotation.
@@ -4288,6 +4299,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           // has the overridden method's annotation, and its body is checked against it.
           ok = false;
         }
+        // The tests above account only for side effects.  The overrider must also satisfy every
+        // other purity kind, such as @Deterministic, that the overridden method promises.  (For an
+        // override this is guaranteed, because purity annotations are inherited, but for a method
+        // reference the referenced method does not inherit the annotations.)
+        EnumSet<PurityKind> superNonSideEffectKinds = superPurity.clone();
+        superNonSideEffectKinds.remove(PurityKind.SIDE_EFFECTS_ONLY);
+        ok = ok && subPurity.containsAll(superNonSideEffectKinds);
       } else {
         // The subclass method (the overrider) is allowed to make more guarantees.
         ok = subPurity.containsAll(superPurity);

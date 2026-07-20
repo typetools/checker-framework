@@ -5,6 +5,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
@@ -18,6 +19,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
@@ -77,7 +79,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   /**
    * Issues warnings about side effects beyond the {@code @SideEffectsOnly} annotation.
    *
-   * @param statement the statement to check
+   * @param statement the method body to check
    * @param sideEffectsOnlyExpressions the values in the {@link SideEffectsOnly} annotation
    * @param checker the checker to use
    * @param methodTree the method, used for diagnostics
@@ -98,6 +100,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
           s.first, "purity.incorrect.sideeffectsonly", methodTree.getName(), s.second.toString());
     }
   }
+
+  // A `this(...)` or `super(...)` call is a MethodInvocationTree, so `visitMethodInvocation`
+  // handles it.  A `new` expression is handled by `visitNewClass`.
 
   @Override
   public Void visitMethodInvocation(MethodInvocationTree node, Void aVoid) {
@@ -166,6 +171,93 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       }
     }
     return result;
+  }
+
+  @Override
+  public Void visitNewClass(NewClassTree node, Void aVoid) {
+    ExecutableElement constructorElt = TreeUtils.elementFromUse(node);
+    if (constructorElt == null) {
+      return super.visitNewClass(node, aVoid);
+    }
+    AnnotatedTypeFactory atypeFactory = checker.getTypeFactory();
+    boolean isMarkedPure = atypeFactory.getDeclAnnotation(constructorElt, Pure.class) != null;
+    boolean isMarkedSideEffectFree =
+        atypeFactory.getDeclAnnotation(constructorElt, SideEffectFree.class) != null;
+    if (isMarkedPure || isMarkedSideEffectFree) {
+      // The constructor modifies nothing that existed before it was called.
+      return super.visitNewClass(node, aVoid);
+    }
+
+    AnnotationMirror seOnlyAnnotation =
+        atypeFactory.getDeclAnnotation(constructorElt, SideEffectsOnly.class);
+    if (seOnlyAnnotation == null) {
+      // The constructor has no side-effect annotation, so it might modify arbitrary state.
+      checker.reportError(node, "purity.unknown.sideeffectsonly", constructorName(constructorElt));
+      return super.visitNewClass(node, aVoid);
+    }
+
+    // The constructor modifies at most the expressions listed in its own `@SideEffectsOnly`
+    // annotation.
+    for (JavaExpression expr :
+        constructorSideEffectedExpressions(node, constructorElt, seOnlyAnnotation)) {
+      if (isDisallowedSideEffectedExpression(expr)) {
+        disallowedSideEffects.add(IPair.of(node, expr));
+      }
+    }
+    return super.visitNewClass(node, aVoid);
+  }
+
+  /**
+   * Returns the expressions that the invoked constructor side-effects: the arguments/elements of
+   * its {@link SideEffectsOnly} annotation, view-adapted to the given call site.
+   *
+   * <p>An expression that mentions {@code this} is omitted from the result. In a constructor's
+   * annotation, {@code this} is the object being constructed, which did not exist before the call,
+   * so modifying it is not a side effect that is visible to the caller.
+   *
+   * <p>If an expression cannot be parsed, this reports {@code purity.unknown.sideeffectsonly} and
+   * returns an empty list, just as {@link #calleeSideEffectedExpressions} does.
+   *
+   * @param node a call to a constructor that is annotated with {@link SideEffectsOnly}
+   * @param constructorElt the invoked constructor
+   * @param seOnlyAnnotation the invoked constructor's {@link SideEffectsOnly} annotation
+   * @return the expressions that the invoked constructor side-effects, view-adapted to {@code node}
+   */
+  protected List<JavaExpression> constructorSideEffectedExpressions(
+      NewClassTree node, ExecutableElement constructorElt, AnnotationMirror seOnlyAnnotation) {
+    List<String> exprStrings =
+        AnnotationUtils.getElementValueArray(
+            seOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
+    List<JavaExpression> result = new ArrayList<>(exprStrings.size());
+    for (String exprString : exprStrings) {
+      JavaExpression atDeclaration;
+      try {
+        atDeclaration = StringToJavaExpression.atMethodDecl(exprString, constructorElt, checker);
+      } catch (JavaExpressionParseException ex) {
+        // The parse error itself is reported at the constructor's declaration, by
+        // BaseTypeVisitor.checkPurityAnnotations.
+        checker.reportError(
+            node, "purity.unknown.sideeffectsonly", constructorName(constructorElt));
+        return Collections.emptyList();
+      }
+      if (atDeclaration.containedOfClass(ThisReference.class) != null) {
+        // The expression is the object under construction, or is reached through it.
+        continue;
+      }
+      result.add(atDeclaration.atConstructorInvocation(node));
+    }
+    return result;
+  }
+
+  /**
+   * Returns a name for the given constructor, for use in a diagnostic message. The constructor's
+   * own simple name is {@code <init>}, which would be unhelpful.
+   *
+   * @param constructorElt a constructor
+   * @return the simple name of the class that the constructor constructs
+   */
+  private CharSequence constructorName(ExecutableElement constructorElt) {
+    return constructorElt.getEnclosingElement().getSimpleName();
   }
 
   /**

@@ -33,8 +33,8 @@ public final class PurityUtils {
       EnumSet.of(PurityKind.DETERMINISTIC, PurityKind.SIDE_EFFECT_FREE);
 
   /**
-   * Does the method {@code methodTree} have any purity annotation?
-   * (@Pure, @SideEffectFree, @SideEffectsOnly, @Deterministic.)
+   * Does the method {@code methodTree} have any purity annotation? The purity annotations are
+   * {@code @Pure}, {@code @SideEffectFree}, {@code @SideEffectsOnly}, and {@code @Deterministic}.
    *
    * @param provider how to get annotations
    * @param methodTree a method to test
@@ -45,7 +45,8 @@ public final class PurityUtils {
   }
 
   /**
-   * Does the method {@code methodElement} have any purity annotation?
+   * Does the method {@code methodElement} have any purity annotation? The purity annotations are
+   * {@code @Pure}, {@code @SideEffectFree}, {@code @SideEffectsOnly}, and {@code @Deterministic}.
    *
    * @param provider how to get annotations
    * @param methodElement a method to test
