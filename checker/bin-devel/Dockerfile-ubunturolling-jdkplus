@@ -39,11 +39,16 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   jtreg7 \
   libcurl3-gnutls \
   make \
-  maven \
   python3-requests \
   python3-setuptools \
   unzip \
   wget
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& cd $HOME
+&& wget https://dlcdn.apache.org/maven/maven-4/4.0.0-rc-5/binaries/apache-maven-4.0.0-rc-5-bin.tar.gz
+&& tar xzf apache-maven-4.0.0-rc-5-bin.tar.gz
+ENV PATH="$HOME/apache-maven-4.0.0-rc-5/bin:$PATH"
 
 
 # Dependencies for developing the Checker Framework.
