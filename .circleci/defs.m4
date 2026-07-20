@@ -171,7 +171,7 @@ circleci_boilerplate($1,)
       - run:
           name: test-guava.sh
           command: ./checker/bin-devel/test-guava.sh
-          no_output_timeout: "50m"
+          no_output_timeout: "90m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: $1
 ])dnl
