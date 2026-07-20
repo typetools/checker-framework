@@ -9,7 +9,7 @@ jobs:
   # Only proceed to other jobs if canary_jobs passes.
   canary_jobs:
     docker:
-      - image: 'cimg/base:2026.04'
+      - image: 'cimg/base:2026.07'
     resource_class: small
     environment:
       TERM: dumb
