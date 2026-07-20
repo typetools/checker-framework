@@ -31,24 +31,18 @@ import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.qual.MonotonicQualifier;
-import org.checkerframework.framework.source.DiagMessage;
-import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
@@ -84,11 +78,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   /** Information collected about fields, using the internal representation {@link FieldAccess}. */
   protected Map<FieldAccess, V> fieldValues;
-
-  // TODO: It is wasteful to compute this anew every time a Store is constructed.  Move it to the
-  // analysis or the type factory, which are longer-lived than a Store.
-  /** The {@code SideEffectsOnly.value} argument/element. */
-  protected final ExecutableElement sideEffectsOnlyValueElement;
 
   /**
    * Returns information about fields. Clients should not side-effect the returned value, which is
@@ -160,9 +149,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.arrayValues = new HashMap<>();
     this.classValues = new HashMap<>();
     this.sequentialSemantics = sequentialSemantics;
-    // TreeUtils.getMethod throws BugInCF if there is not exactly one match, so no null check.
-    this.sideEffectsOnlyValueElement =
-        TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
     this.assumeSideEffectFree =
         analysis.checker.hasOption("assumeSideEffectFree")
             || analysis.checker.hasOption("assumePure");
@@ -183,9 +169,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.arrayValues = new HashMap<>(other.arrayValues);
     this.classValues = new HashMap<>(other.classValues);
     this.sequentialSemantics = other.sequentialSemantics;
-    // Copy the already-computed element rather than recomputing it; this constructor runs on
-    // every store copy during dataflow.
-    this.sideEffectsOnlyValueElement = other.sideEffectsOnlyValueElement;
     this.assumeSideEffectFree = other.assumeSideEffectFree;
     this.assumePureGetters = other.assumePureGetters;
   }
@@ -261,7 +244,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           hasDoesNotUnrefineReceiver ? JavaExpression.fromNode(receiver) : null;
 
       @Nullable List<JavaExpression> seOnlyExpressions =
-          getSideEffectsOnlyExpressions(method, methodInvocationNode);
+          analysis.getSideEffectsOnlyExpressions(method, methodInvocationNode);
 
       // TODO: Also remove if any element/argument to the annotation is not
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
@@ -304,55 +287,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     // Store information about method calls if possible.
     JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
     replaceValue(methodCall, val);
-  }
-
-  /**
-   * Returns the expressions that the method side-effects (specified as arguments/elements of
-   * {@code @SideEffectsOnly}, view-adapted to the given method invocation. Returns null if the
-   * method has no {@code @SideEffectsOnly} annotation.
-   *
-   * <p>Also returns null if any of the annotation's expressions cannot be parsed at the call site.
-   * Null means "the method might side-effect anything", which is the conservative result; returning
-   * a list that omits the unparseable expression would treat the method as side-effecting
-   * <em>less</em> than it was declared to. The parse error itself is reported at the method
-   * declaration by {@code BaseTypeVisitor.checkPurityAnnotations}.
-   *
-   * @param method a method
-   * @param methodInvocationNode the call site at which the side-effecting expressions will be used
-   * @return the expressions that the method side-effects, view-adapted to the given invocation; or
-   *     null if the method has no {@code @SideEffectsOnly} annotation or an expression in it cannot
-   *     be parsed
-   */
-  @Nullable List<JavaExpression> getSideEffectsOnlyExpressions(
-      ExecutableElement method, MethodInvocationNode methodInvocationNode) {
-
-    SourceChecker checker = analysis.checker;
-
-    AnnotationMirror seOnlyAnnotation =
-        analysis.atypeFactory.getDeclAnnotation(method, SideEffectsOnly.class);
-    if (seOnlyAnnotation == null) {
-      return null;
-    }
-
-    List<String> seOnlyExpressionStrings =
-        AnnotationUtils.getElementValueArray(
-            seOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
-    List<JavaExpression> seOnlyExpressions = new ArrayList<>(seOnlyExpressionStrings.size());
-
-    for (String st : seOnlyExpressionStrings) {
-      try {
-        JavaExpression exprJe =
-            StringToJavaExpression.atMethodInvocation(st, methodInvocationNode, checker);
-        seOnlyExpressions.add(exprJe);
-      } catch (JavaExpressionParseException ex) {
-        // TODO: Do not report the error here: this method runs once per dataflow iteration per call
-        // site, so reporting would produce many duplicate diagnostics.
-        checker.report(method, new DiagMessage(ex));
-        return null;
-      }
-    }
-
-    return seOnlyExpressions;
   }
 
   /**

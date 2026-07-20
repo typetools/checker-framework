@@ -1,9 +1,12 @@
 package org.checkerframework.framework.flow;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -13,8 +16,13 @@ import org.checkerframework.dataflow.analysis.ForwardAnalysisImpl;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
+import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -23,9 +31,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
+import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -84,6 +95,20 @@ public abstract class CFAbstractAnalysis<
   /** Instance of the types utility. */
   protected final Types types;
 
+  /** The {@code SideEffectsOnly.value} argument/element. */
+  protected final ExecutableElement sideEffectsOnlyValueElement;
+
+  /**
+   * Cache for {@link #getSideEffectsOnlyExpressions}, which would otherwise re-parse the
+   * annotation's expressions once per dataflow iteration per call site. A key that is mapped to
+   * null stands for the null result, so test membership with {@link Map#containsKey} rather than
+   * comparing the result of {@link Map#get} to null.
+   *
+   * <p>The keys are nodes of a single control flow graph, so {@link #performAnalysis} clears this.
+   */
+  private final Map<MethodInvocationNode, @Nullable List<JavaExpression>>
+      sideEffectsOnlyExpressionsCache = new HashMap<>();
+
   /**
    * Create a CFAbstractAnalysis.
    *
@@ -106,6 +131,8 @@ public abstract class CFAbstractAnalysis<
     this.checker = checker;
     this.transferFunction = createTransferFunction();
     this.fieldValues = new ArrayList<>();
+    // TreeUtils.getMethod throws BugInCF if there is not exactly one match, so no null check.
+    this.sideEffectsOnlyValueElement = TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, env);
   }
 
   /**
@@ -129,7 +156,78 @@ public abstract class CFAbstractAnalysis<
   public void performAnalysis(ControlFlowGraph cfg, List<FieldInitialValue<V>> fieldValues) {
     this.fieldValues.clear();
     this.fieldValues.addAll(fieldValues);
+    // The cache's keys are nodes of the control flow graph that was analyzed previously.
+    sideEffectsOnlyExpressionsCache.clear();
     super.performAnalysis(cfg);
+  }
+
+  /**
+   * Returns the expressions that the method side-effects (specified as arguments/elements of
+   * {@code @SideEffectsOnly}), view-adapted to the given method invocation. Returns null if the
+   * method has no {@code @SideEffectsOnly} annotation.
+   *
+   * <p>Also returns null if any of the annotation's expressions cannot be parsed at the call site.
+   * Null means "the method might side-effect anything", which is the conservative result; returning
+   * a list that omits the unparseable expression would treat the method as side-effecting
+   * <em>less</em> than it was declared to. The parse error itself is reported at the method
+   * declaration by {@code BaseTypeVisitor.checkPurityAnnotations}.
+   *
+   * <p>The result is cached, because dataflow calls this once per iteration per call site and
+   * parsing an expression is not cheap. Clients should not side-effect the returned value, which is
+   * aliased to internal state.
+   *
+   * @param method a method
+   * @param methodInvocationNode the call site at which the side-effecting expressions will be used
+   * @return the expressions that the method side-effects, view-adapted to the given invocation; or
+   *     null if the method has no {@code @SideEffectsOnly} annotation or an expression in it cannot
+   *     be parsed
+   */
+  public @Nullable List<JavaExpression> getSideEffectsOnlyExpressions(
+      ExecutableElement method, MethodInvocationNode methodInvocationNode) {
+    if (sideEffectsOnlyExpressionsCache.containsKey(methodInvocationNode)) {
+      return sideEffectsOnlyExpressionsCache.get(methodInvocationNode);
+    }
+    List<JavaExpression> result = computeSideEffectsOnlyExpressions(method, methodInvocationNode);
+    sideEffectsOnlyExpressionsCache.put(methodInvocationNode, result);
+    return result;
+  }
+
+  /**
+   * Computes the value that {@link #getSideEffectsOnlyExpressions} caches and returns; see that
+   * method for the specification.
+   *
+   * @param method a method
+   * @param methodInvocationNode the call site at which the side-effecting expressions will be used
+   * @return the expressions that the method side-effects, view-adapted to the given invocation, or
+   *     null
+   */
+  private @Nullable List<JavaExpression> computeSideEffectsOnlyExpressions(
+      ExecutableElement method, MethodInvocationNode methodInvocationNode) {
+    AnnotationMirror seOnlyAnnotation =
+        atypeFactory.getDeclAnnotation(method, SideEffectsOnly.class);
+    if (seOnlyAnnotation == null) {
+      return null;
+    }
+
+    List<String> seOnlyExpressionStrings =
+        AnnotationUtils.getElementValueArray(
+            seOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
+    List<JavaExpression> seOnlyExpressions = new ArrayList<>(seOnlyExpressionStrings.size());
+
+    for (String st : seOnlyExpressionStrings) {
+      try {
+        JavaExpression exprJe =
+            StringToJavaExpression.atMethodInvocation(st, methodInvocationNode, checker);
+        seOnlyExpressions.add(exprJe);
+      } catch (JavaExpressionParseException ex) {
+        // Because the result is cached, this is reported once per call site rather than once per
+        // dataflow iteration.
+        checker.report(method, new DiagMessage(ex));
+        return null;
+      }
+    }
+
+    return seOnlyExpressions;
   }
 
   /**
