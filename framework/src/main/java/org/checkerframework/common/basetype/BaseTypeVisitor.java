@@ -4211,7 +4211,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     private String purityKindsToString(EnumSet<PurityKind> purityKinds) {
       if (purityKinds.isEmpty()) {
-        return "(no purity annotation)";
+        return "(no side effect annotation)";
       }
       StringJoiner result = new StringJoiner(" ");
       for (PurityKind purityKind : purityKinds) {
