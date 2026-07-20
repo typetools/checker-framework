@@ -15,6 +15,9 @@ public final class StaticIteratorSE<T> implements Iterator<T> {
 
   @SideEffectsOnly("this")
   public T next() {
+    // `Enumeration.nextElement` has no purity annotation in the annotated JDK, so the checker
+    // must assume that it modifies arbitrary state.
+    // :: error: (purity.unknown.sideeffectsonly)
     return e.nextElement();
   }
 

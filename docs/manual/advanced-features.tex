@@ -1197,6 +1197,44 @@ or \refqualclass{dataflow/qual}{SideEffectFree} annotation, then the Checker Fra
 assumes that the method may side-effect any expressions (including fields and arguments).
 
 
+\subsubsectionAndLabel{Checking \<@SideEffectsOnly>}{side-effects-only-checking}
+
+Under \<-AcheckPurityAnnotations>, the Checker Framework verifies that the body of a
+\<@SideEffectsOnly> method modifies at most the listed expressions.  An expression is
+covered by the annotation if it is listed, if it is reached through a listed expression
+(\<@SideEffectsOnly("\#1")> permits modifying \<\#1.f.g>), or if the method body assigns
+it to or from a listed expression.  Assigning to a local variable is never a side effect,
+because it is not visible outside the method.
+
+Every method that a \<@SideEffectsOnly> method calls must itself be annotated
+\<@Pure>, \<@SideEffectFree>, or \<@SideEffectsOnly>.  A call to a method with none of
+these reports \<purity.unknown.sideeffectsonly>, because such a method may modify
+arbitrary state, including static state and other state that is not reachable from its
+receiver and arguments.  When the callee is annotated \<@SideEffectsOnly>, it is treated
+as modifying exactly the expressions in its own annotation, viewpoint-adapted to the call
+site --- not its receiver and arguments.
+
+On a constructor, \<@SideEffectsOnly> constrains what the constructor modifies besides
+the object being constructed; list \<this> to permit assigning to the new object's own
+fields.  A constructor's annotation is verified at its declaration, but it does not yet
+affect type refinement at \<new> expressions.
+
+Checking of \<@SideEffectsOnly> is unsound in the presence of aliasing.  The checker
+reasons syntactically, and treats two expressions as possibly aliased only when an
+assignment relating them appears in the method body.  That approximation is
+flow-insensitive and never splits alias sets, so a method that modifies a listed
+expression through an alias created elsewhere is accepted:
+
+\begin{Verbatim}
+  @SideEffectsOnly("#1")
+  void m(List<String> a, List<String> b) {
+    List<String> t = a;
+    t = b;        // a, b, and t are now all in one alias set
+    t.add("x");   // accepted, although it modifies b, which is not listed
+  }
+\end{Verbatim}
+
+
 \subsubsectionAndLabel{Deterministic methods}{type-refinement-determinism}
 
 Consider the following declaration and uses:

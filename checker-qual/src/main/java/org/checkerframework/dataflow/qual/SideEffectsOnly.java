@@ -17,6 +17,11 @@ import org.checkerframework.framework.qual.JavaExpression;
  * <p>This annotation is inherited by subtypes, just as if it were meta-annotated with
  * {@code @InheritedAnnotation}.
  *
+ * <p>On a constructor, this annotation constrains what the constructor modifies besides the object
+ * being constructed; list {@code this} to permit assigning to the new object's own fields. A
+ * constructor's annotation is verified at its declaration, but it does not yet affect type
+ * refinement at {@code new} expressions.
+ *
  * @checker_framework.manual #type-refinement-purity Specifying side effects
  */
 @Documented
