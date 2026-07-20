@@ -7,4 +7,4 @@ define([latest_version], [26])dnl
 define([canary_test], [canary_os[]canary_version])dnl
 define([docker_testing], [])dnl
 ifelse([uncomment the next line to use the "testing" Docker images])
-ifelse([define([docker_testing], [-testing]])dnl
+ifelse([define([docker_testing], [-testing])])dnl
