@@ -1246,16 +1246,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
 
-    // It is an error if a @SideEffectsOnly annotation appears with a @Pure or @SideEffectFree
-    // annotation.
     AnnotationMirror pureOrSideEffectFreeAnnotation =
         getPureOrSideEffectFreeAnnotation(methodDeclElem);
     if (pureOrSideEffectFreeAnnotation != null) {
-      checker.reportError(
-          tree,
-          "purity.incorrect.annotation.conflict",
-          tree.getName(),
-          pureOrSideEffectFreeAnnotation);
+      // It is an error if a @SideEffectsOnly annotation is *written* together with a @Pure or
+      // @SideEffectFree annotation.  It is not an error if one of the two is inherited: an
+      // overriding method may promise more than the method it overrides, so @SideEffectFree on an
+      // override of a @SideEffectsOnly method is legal (and checkPurity() permits it).
+      if (isWrittenOn(methodDeclElem, seOnlyAnnotation)
+          && isWrittenOn(methodDeclElem, pureOrSideEffectFreeAnnotation)) {
+        checker.reportError(
+            tree,
+            "purity.incorrect.annotation.conflict",
+            tree.getName(),
+            pureOrSideEffectFreeAnnotation);
+      }
+      // Either way, there is nothing more to do: @Pure and @SideEffectFree are stronger than
+      // @SideEffectsOnly, and the purity check above has already verified them.
       return;
     }
 
@@ -1303,6 +1310,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return pureAnnotation;
     }
     return atypeFactory.getDeclAnnotation(methodDeclaration, SideEffectFree.class);
+  }
+
+  /**
+   * Returns true if {@code anno} is written on {@code elt} itself, as opposed to being inherited
+   * from a method that {@code elt} overrides.
+   *
+   * <p>This consults only the element's own annotations, so it is accurate only for a declaration
+   * that appears in source code, which is the only case in which it is used.
+   *
+   * @param elt an element
+   * @param anno an annotation that applies to {@code elt}
+   * @return true if {@code anno} is written on {@code elt} itself
+   */
+  private boolean isWrittenOn(Element elt, AnnotationMirror anno) {
+    return AnnotationUtils.containsSameByName(elt.getAnnotationMirrors(), anno);
   }
 
   /**
@@ -4261,6 +4283,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           ok = seOnlySuperExpressions.containsAll(seOnlySubExpressions);
         } else {
           // Superclass method has @SideEffectsOnly, subclass method has no side-effect annotation.
+          // This is normally unreachable, because @SideEffectsOnly is inherited: the overrider
+          // has the overridden method's annotation, and its body is checked against it.
           ok = false;
         }
       } else {

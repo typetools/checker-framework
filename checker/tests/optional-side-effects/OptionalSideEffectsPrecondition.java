@@ -48,9 +48,6 @@ class OptionalSideEffectsPrecondition {
   @SideEffectsOnly({"#1", "#2"})
   void methodB(OptionalContainer optContainer, Object param) {}
 
-  @SideEffectsOnly({"#1.getOpt()"})
-  void methodC(OptionalContainer optContainer, Object param) {}
-
   void havoc(OptionalContainer optContainer, Object param) {}
 
   class OptionalContainer {

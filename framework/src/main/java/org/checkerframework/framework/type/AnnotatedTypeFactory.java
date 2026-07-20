@@ -805,9 +805,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     addInheritedAnnotation(
         AnnotationBuilder.fromClass(
             elements, org.checkerframework.dataflow.qual.SideEffectFree.class));
-    addInheritedAnnotation(
-        AnnotationBuilder.fromClass(
-            elements, org.checkerframework.dataflow.qual.SideEffectsOnly.class));
+    // `AnnotationBuilder.fromClass` cannot build a `@SideEffectsOnly`, because its `value` element
+    // has no default.  Any value will do: `inheritedAnnotations` is consulted via
+    // `AnnotationUtils.containsSameByName`, so only the annotation's name is used.
+    AnnotationBuilder sideEffectsOnlyBuilder =
+        new AnnotationBuilder(
+            processingEnv, org.checkerframework.dataflow.qual.SideEffectsOnly.class);
+    sideEffectsOnlyBuilder.setValue("value", new String[0]);
+    addInheritedAnnotation(sideEffectsOnlyBuilder.build());
     addInheritedAnnotation(
         AnnotationBuilder.fromClass(
             elements, org.checkerframework.dataflow.qual.Deterministic.class));
