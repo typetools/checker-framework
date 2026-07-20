@@ -138,7 +138,6 @@ public abstract class CFAbstractAnalysis<
     this.checker = checker;
     this.transferFunction = createTransferFunction();
     this.fieldValues = new ArrayList<>();
-    // TreeUtils.getMethod throws BugInCF if there is not exactly one match, so no null check.
     this.sideEffectsOnlyValueElement = TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, env);
   }
 

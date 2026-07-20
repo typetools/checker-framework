@@ -237,9 +237,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       boolean sideEffectsUnrefineAliases = atypeFactory.sideEffectsUnrefineAliases;
       Node receiver = methodInvocationNode.getTarget().getReceiver();
 
+      boolean hasDoesNotUnrefineReceiver = atypeFactory.hasDoesNotUnrefineReceiver(method);
       // This is an expression that is exempted from unrefinement, or null if no expression is
       // exempted.
-      boolean hasDoesNotUnrefineReceiver = atypeFactory.hasDoesNotUnrefineReceiver(method);
       @Nullable JavaExpression unrefinableReceiverJe =
           hasDoesNotUnrefineReceiver ? JavaExpression.fromNode(receiver) : null;
 
