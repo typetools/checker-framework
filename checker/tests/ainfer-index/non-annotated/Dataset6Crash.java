@@ -31,6 +31,7 @@ public class Dataset6Crash {
         return r;
       }
 
+      @SuppressWarnings("purity.incorrect.sideeffectsonly") // fetch may side-effect base
       @SideEffectsOnly({"this"}) // adding "base" leads to "identifier not found" error
       private void fetch() {
         if (next == null && !end) {
