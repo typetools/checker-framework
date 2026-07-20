@@ -1,3 +1,5 @@
+# Review notes
+
 ## 4. Alias union-find is flow-insensitive and monotonic, which suppresses errors
 
 `DisallowedSideEffects.DisallowedSideEffectsHelper.aliasedExpressions` only ever merges sets; it
