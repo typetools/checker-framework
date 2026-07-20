@@ -12,7 +12,10 @@ public abstract class MyMap<K, V> implements Map<K, V> {
     return null;
   }
 
-  @SuppressWarnings("purity.incorrect.sideeffectsonly") // CF bug: entry and map are "aliased"
+  // `put` is `@SideEffectsOnly("this")`, so it does not modify its arguments.  However,
+  // DisallowedSideEffects.visitMethodInvocation ignores the callee's annotation and assumes that
+  // every call modifies its receiver and all its arguments.
+  @SuppressWarnings("purity.incorrect.sideeffectsonly")
   @Override
   @SideEffectsOnly("this")
   public void putAll(Map<? extends K, ? extends V> map) {

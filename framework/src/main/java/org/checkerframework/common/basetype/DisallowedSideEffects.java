@@ -186,41 +186,70 @@ public class DisallowedSideEffects {
 
     /**
      * Returns true if the given expression is a side-effected expression beyond what is listed in
-     * the {@link SideEffectsOnly} annotation.
+     * the {@link SideEffectsOnly} annotation. That is, all of the following hold:
      *
      * <ul>
-     *   <li>The expression is not listed in the {@link SideEffectsOnly} annotation.
-     *   <li>The expression is modifiable by other code.
-     *   <li>The expression is <b>not</b> aliased by other variables in the method body.
+     *   <li>The expression's value is modifiable by other code.
+     *   <li>The expression is not covered by the {@link SideEffectsOnly} annotation, in the sense
+     *       of {@link #isCoveredByAnnotation}.
      * </ul>
+     *
+     * <p>Use this for an expression whose <em>value</em> is mutated, such as the receiver or an
+     * argument of a method call. For an expression that is <em>assigned to</em>, use {@link
+     * #isDisallowedAssignmentTarget}.
      *
      * @param expr the expression to check for side-effecting
      * @return true if the given expression is a side-effected expression beyond what is listed in
      *     the {@link SideEffectsOnly} annotation
      */
     private boolean isDisallowedSideEffectedExpression(JavaExpression expr) {
-      if (!expr.isModifiableByOtherCode()) {
-        return false;
-      }
+      return expr.isModifiableByOtherCode() && !isCoveredByAnnotation(expr);
+    }
+
+    /**
+     * Returns true if assigning to the given expression is a side effect beyond what is listed in
+     * the {@link SideEffectsOnly} annotation. That is, all of the following hold:
+     *
+     * <ul>
+     *   <li>The expression is assignable by other code; equivalently, the assignment is visible
+     *       outside the method being checked. (Assigning to a local variable is not.)
+     *   <li>The expression is not covered by the {@link SideEffectsOnly} annotation, in the sense
+     *       of {@link #isCoveredByAnnotation}.
+     * </ul>
+     *
+     * @param expr the expression that is assigned to
+     * @return true if assigning to the given expression is a side effect beyond what is listed in
+     *     the {@link SideEffectsOnly} annotation
+     */
+    private boolean isDisallowedAssignmentTarget(JavaExpression expr) {
+      return expr.isAssignableByOtherCode() && !isCoveredByAnnotation(expr);
+    }
+
+    /**
+     * Returns true if the given expression is listed in the {@link SideEffectsOnly} annotation, is
+     * a subexpression of one of those expressions, or may be aliased to one of them.
+     *
+     * @param expr the expression to look for
+     * @return true if the given expression is covered by the {@link SideEffectsOnly} annotation
+     */
+    private boolean isCoveredByAnnotation(JavaExpression expr) {
       aliasedExpressions.add(expr);
       for (JavaExpression seOnlyExpr : sideEffectsOnlyExpressionsFromAnnotation) {
         aliasedExpressions.add(seOnlyExpr);
         // Argument order matters: `test` lifts the asymmetric `containsAsReceiver` relation over
         // the two elements' alias sets, and `expr` must be the potential sub-expression.
         if (aliasedExpressions.test(expr, seOnlyExpr)) {
-          return false;
+          return true;
         }
       }
-      return true;
+      return false;
     }
 
     @Override
     public Void visitAssignment(AssignmentTree node, Void aVoid) {
       JavaExpression lhs = JavaExpression.fromTree(node.getVariable());
       JavaExpression rhs = JavaExpression.fromTree(node.getExpression());
-      // TODO: Need to check for subexpressions, in case the `@SideEffectsOnly(...)` expressions are
-      // broader than `lhs`.
-      if (!sideEffectsOnlyExpressionsFromAnnotation.contains(lhs)) {
+      if (isDisallowedAssignmentTarget(lhs)) {
         disallowedSideEffects.addExpr(node, lhs);
       }
       aliasedExpressions.union(lhs, rhs);
@@ -246,9 +275,7 @@ public class DisallowedSideEffects {
       switch (node.getKind()) {
         case POSTFIX_INCREMENT, POSTFIX_DECREMENT, PREFIX_INCREMENT, PREFIX_DECREMENT -> {
           JavaExpression operand = JavaExpression.fromTree(node.getExpression());
-          // TODO: Need to check for subexpressions, in case the `@SideEffectsOnly(...)`
-          // expressions are broader than `operand`.
-          if (!sideEffectsOnlyExpressionsFromAnnotation.contains(operand)) {
+          if (isDisallowedAssignmentTarget(operand)) {
             disallowedSideEffects.addExpr(node, operand);
           }
         }
@@ -262,9 +289,7 @@ public class DisallowedSideEffects {
       // Does not make the left-hand side an alias of the right-hand side,
       // because the rhs expression uses the lhs.
       JavaExpression lhs = JavaExpression.fromTree(node.getVariable());
-      // TODO: Need to check for subexpressions, in case the `@SideEffectsOnly(...)` expressions are
-      // broader than `lhs`.
-      if (!sideEffectsOnlyExpressionsFromAnnotation.contains(lhs)) {
+      if (isDisallowedAssignmentTarget(lhs)) {
         disallowedSideEffects.addExpr(node, lhs);
       }
       return super.visitCompoundAssignment(node, aVoid);

@@ -807,6 +807,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             elements, org.checkerframework.dataflow.qual.SideEffectFree.class));
     addInheritedAnnotation(
         AnnotationBuilder.fromClass(
+            elements, org.checkerframework.dataflow.qual.SideEffectsOnly.class));
+    addInheritedAnnotation(
+        AnnotationBuilder.fromClass(
             elements, org.checkerframework.dataflow.qual.Deterministic.class));
     addInheritedAnnotation(
         AnnotationBuilder.fromClass(
