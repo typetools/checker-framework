@@ -31,8 +31,10 @@ public class Dataset6Crash {
         return r;
       }
 
-      @SuppressWarnings("purity.incorrect.sideeffectsonly") // fetch may side-effect base
-      @SideEffectsOnly({"this"}) // adding "base" leads to "identifier not found" error
+      // This annotation is imprecise: `fetch` may also side-effect `base`.  Writing "base" leads
+      // to an "identifier not found" error, and this test does not run with
+      // -AcheckPurityAnnotations, so the imprecision is not reported.
+      @SideEffectsOnly({"this"})
       private void fetch() {
         if (next == null && !end) {
           if (base.hasNext()) {

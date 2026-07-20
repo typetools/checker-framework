@@ -257,7 +257,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
 
       // Update this value.
+      // `thisValue` is the abstract value of the expression `this`, which has no proper
+      // subexpression.  So, by the rule that `isSideEffected` implements, a callee with a
+      // `@SideEffectsOnly` annotation can change it only if the annotation lists `this` itself
+      // (after view-adaptation to this call site; `x.m()` adapts the callee's `this` to `x`).
+      boolean thisIsSideEffected =
+          seOnlyExpressions == null
+              || seOnlyExpressions.stream().anyMatch(je -> je instanceof ThisReference);
       if (sideEffectsUnrefineAliases
+          && thisIsSideEffected
           && !(unrefinableReceiverJe instanceof ThisReference)
           && !(unrefinableReceiverJe instanceof SuperReference)) {
         thisValue = null;

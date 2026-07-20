@@ -1,7 +1,8 @@
 package org.checkerframework.framework.flow;
 
+import com.sun.source.tree.MethodInvocationTree;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -105,9 +106,15 @@ public abstract class CFAbstractAnalysis<
    * comparing the result of {@link Map#get} to null.
    *
    * <p>The keys are nodes of a single control flow graph, so {@link #performAnalysis} clears this.
+   *
+   * <p>This is an {@link IdentityHashMap} because the cached values are viewpoint-adapted to a
+   * particular call site, but {@link MethodInvocationNode#equals} compares only the target and the
+   * arguments. Two call sites that are equal in that sense need not adapt to the same expressions,
+   * so a hash map keyed by {@code equals} could return one call site's expressions for another. The
+   * same node object is passed on every dataflow iteration, so identity keys still hit.
    */
-  private final Map<MethodInvocationNode, @Nullable List<JavaExpression>>
-      sideEffectsOnlyExpressionsCache = new HashMap<>();
+  private final IdentityHashMap<MethodInvocationNode, @Nullable List<JavaExpression>>
+      sideEffectsOnlyExpressionsCache = new IdentityHashMap<>();
 
   /**
    * Create a CFAbstractAnalysis.
@@ -169,8 +176,8 @@ public abstract class CFAbstractAnalysis<
    * <p>Also returns null if any of the annotation's expressions cannot be parsed at the call site.
    * Null means "the method might side-effect anything", which is the conservative result; returning
    * a list that omits the unparseable expression would treat the method as side-effecting
-   * <em>less</em> than it was declared to. The parse error itself is reported at the method
-   * declaration by {@code BaseTypeVisitor.checkPurityAnnotations}.
+   * <em>less</em> than it was declared to. The parse error itself is reported at the call site,
+   * since the callee's declaration may not be under compilation.
    *
    * <p>The result is cached, because dataflow calls this once per iteration per call site and
    * parsing an expression is not cheap. Clients should not side-effect the returned value, which is
@@ -220,9 +227,13 @@ public abstract class CFAbstractAnalysis<
             StringToJavaExpression.atMethodInvocation(st, methodInvocationNode, checker);
         seOnlyExpressions.add(exprJe);
       } catch (JavaExpressionParseException ex) {
-        // Because the result is cached, this is reported once per call site rather than once per
-        // dataflow iteration.
-        checker.report(method, new DiagMessage(ex));
+        // Report at the call site rather than at the callee's declaration.  The callee may be
+        // declared in a different compilation unit, or (as for an annotation that comes from a
+        // stub file) in no compilation unit at all, in which case a diagnostic positioned at its
+        // declaration would be discarded.  Because the result is cached, this is reported once per
+        // call site rather than once per dataflow iteration.
+        MethodInvocationTree callTree = methodInvocationNode.getTree();
+        checker.report(callTree != null ? callTree : method, new DiagMessage(ex));
         return null;
       }
     }

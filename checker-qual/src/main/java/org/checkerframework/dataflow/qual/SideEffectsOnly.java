@@ -23,7 +23,7 @@ import org.checkerframework.framework.qual.JavaExpression;
  * because the object being constructed did not exist before the call. A constructor's annotation
  * does not yet affect type refinement at {@code new} expressions.
  *
- * @checker_framework.manual #type-refinement-purity Specifying side effects
+ * @checker_framework.manual #side-effects-only-checking Checking {@code @SideEffectsOnly}
  */
 // @InheritedAnnotation cannot be written here, because "dataflow" project cannot depend on
 // "framework" project.

@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
@@ -26,6 +25,7 @@ import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.IPair;
 import org.plumelib.util.UnionFind;
@@ -59,6 +59,12 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   /** The {@code SideEffectsOnly.value} argument/element. */
   protected final ExecutableElement sideEffectsOnlyValueElement;
 
+  /** True if "-AassumeSideEffectFree" or "-AassumePure" was passed on the command line. */
+  protected final boolean assumeSideEffectFree;
+
+  /** True if "-AassumePureGetters" was passed on the command line. */
+  protected final boolean assumePureGetters;
+
   /**
    * Creates a new DisallowedSideEffects.
    *
@@ -66,14 +72,20 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    *     annotation of the method being checked
    * @param checker the checker to use
    * @param sideEffectsOnlyValueElement the {@code SideEffectsOnly.value} argument/element
+   * @param assumeSideEffectFree true if every method should be assumed to be side-effect-free
+   * @param assumePureGetters true if every getter should be assumed to be side-effect-free
    */
   protected DisallowedSideEffects(
       List<JavaExpression> sideEffectsOnlyExpressions,
       BaseTypeChecker checker,
-      ExecutableElement sideEffectsOnlyValueElement) {
+      ExecutableElement sideEffectsOnlyValueElement,
+      boolean assumeSideEffectFree,
+      boolean assumePureGetters) {
     this.sideEffectsOnlyExpressionsFromAnnotation = sideEffectsOnlyExpressions;
     this.checker = checker;
     this.sideEffectsOnlyValueElement = sideEffectsOnlyValueElement;
+    this.assumeSideEffectFree = assumeSideEffectFree;
+    this.assumePureGetters = assumePureGetters;
   }
 
   /**
@@ -84,15 +96,24 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * @param checker the checker to use
    * @param methodTree the method, used for diagnostics
    * @param sideEffectsOnlyValueElement the {@code SideEffectsOnly.value} argument/element
+   * @param assumeSideEffectFree true if every method should be assumed to be side-effect-free
+   * @param assumePureGetters true if every getter should be assumed to be side-effect-free
    */
   public static void checkSideEffectsOnly(
       TreePath statement,
       List<JavaExpression> sideEffectsOnlyExpressions,
       BaseTypeChecker checker,
       MethodTree methodTree,
-      ExecutableElement sideEffectsOnlyValueElement) {
+      ExecutableElement sideEffectsOnlyValueElement,
+      boolean assumeSideEffectFree,
+      boolean assumePureGetters) {
     DisallowedSideEffects scanner =
-        new DisallowedSideEffects(sideEffectsOnlyExpressions, checker, sideEffectsOnlyValueElement);
+        new DisallowedSideEffects(
+            sideEffectsOnlyExpressions,
+            checker,
+            sideEffectsOnlyValueElement,
+            assumeSideEffectFree,
+            assumePureGetters);
     scanner.scan(statement, null);
 
     for (IPair<Tree, JavaExpression> s : scanner.disallowedSideEffects) {
@@ -106,8 +127,12 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
 
   @Override
   public Void visitMethodInvocation(MethodInvocationTree node, Void aVoid) {
-    Element invokedElem = TreeUtils.elementFromUse(node);
+    ExecutableElement invokedElem = TreeUtils.elementFromUse(node);
     if (invokedElem == null || TreeUtils.isEnumSuperCall(node)) {
+      return super.visitMethodInvocation(node, aVoid);
+    }
+    if (assumeSideEffectFree || (assumePureGetters && ElementUtils.isGetter(invokedElem))) {
+      // The user asked that the callee be assumed to modify nothing.
       return super.visitMethodInvocation(node, aVoid);
     }
     AnnotatedTypeFactory atypeFactory = checker.getTypeFactory();
@@ -155,7 +180,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * @return the expressions that the invoked method side-effects, view-adapted to {@code node}
    */
   protected List<JavaExpression> calleeSideEffectedExpressions(
-      MethodInvocationTree node, Element invokedElem, AnnotationMirror seOnlyAnnotation) {
+      MethodInvocationTree node, ExecutableElement invokedElem, AnnotationMirror seOnlyAnnotation) {
     List<String> exprStrings =
         AnnotationUtils.getElementValueArray(
             seOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
@@ -177,6 +202,11 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   public Void visitNewClass(NewClassTree node, Void aVoid) {
     ExecutableElement constructorElt = TreeUtils.elementFromUse(node);
     if (constructorElt == null) {
+      return super.visitNewClass(node, aVoid);
+    }
+    // There is no need to check assumePureGetters, because a constructor is never a getter.
+    if (assumeSideEffectFree) {
+      // The user asked that the constructor be assumed to modify nothing.
       return super.visitNewClass(node, aVoid);
     }
     AnnotatedTypeFactory atypeFactory = checker.getTypeFactory();

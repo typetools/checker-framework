@@ -1228,9 +1228,11 @@ annotation does not yet affect type refinement at \<new> expressions.
 
 Checking of \<@SideEffectsOnly> is unsound in the presence of aliasing.  The checker
 reasons syntactically, and treats two expressions as possibly aliased only when an
-assignment relating them appears in the method body.  That approximation is
-flow-insensitive and never splits alias sets, so a method that modifies a listed
-expression through an alias created elsewhere is accepted:
+assignment relating them appears in the method body.  The method body is scanned once,
+in source order, so an alias is visible only after the assignment that creates it; and
+alias sets grow but are never split, even when a later assignment makes the aliasing
+impossible.  A method that modifies a listed expression through an alias is therefore
+accepted:
 
 \begin{Verbatim}
   @SideEffectsOnly("#1")
@@ -1238,6 +1240,19 @@ expression through an alias created elsewhere is accepted:
     List<String> t = a;
     t = b;        // a, b, and t are now all in one alias set
     t.add("x");   // accepted, although it modifies b, which is not listed
+  }
+\end{Verbatim}
+
+\noindent
+Because the scan is in source order, moving the modification before the assignment that
+creates the alias causes it to be reported:
+
+\begin{Verbatim}
+  @SideEffectsOnly("#1")
+  void m(List<String> a, List<String> b) {
+    List<String> t = b;
+    t.add("x");   // reported:  t is not yet known to be aliased to a
+    t = a;
   }
 \end{Verbatim}
 

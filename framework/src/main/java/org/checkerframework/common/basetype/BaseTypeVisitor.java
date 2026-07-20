@@ -261,6 +261,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   private final boolean checkPurityAnnotations;
 
+  /**
+   * True if "-AcheckPurityAnnotations" itself was passed on the command line. Unlike {@link
+   * #checkPurityAnnotations}, this is not implied by "-AsuggestPureMethods" or "-Ainfer".
+   *
+   * <p>Checking a {@link SideEffectsOnly} annotation against a method body requires this option.
+   * That check is a separate scan of the body, and it reports errors about expressions that a
+   * method modifies -- which is unrelated to what a purity suggestion is about. Enabling it as a
+   * side effect of asking for suggestions would issue errors that the user did not ask for; in
+   * particular, every whole-program inference run would perform it.
+   */
+  private final boolean checkPurityAnnotationsOption;
+
   /** True if "-AajavaChecks" was passed on the command line. */
   private final boolean ajavaChecks;
 
@@ -329,7 +341,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     showchecks = checker.hasOption("showchecks");
     infer = checker.hasOption("infer");
     suggestPureMethods = checker.hasOption("suggestPureMethods") || infer;
-    checkPurityAnnotations = checker.hasOption("checkPurityAnnotations") || suggestPureMethods;
+    checkPurityAnnotationsOption = checker.hasOption("checkPurityAnnotations");
+    checkPurityAnnotations = checkPurityAnnotationsOption || suggestPureMethods;
     boolean ajavaChecksOptions = checker.hasOption("ajavaChecks");
     if (ajavaChecksOptions) {
       // TODO: Make annotation insertion work for Java 21.
@@ -1246,6 +1259,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
+    if (!checkPurityAnnotationsOption) {
+      // The remainder of this method verifies a @SideEffectsOnly annotation against the method
+      // body, which happens only when -AcheckPurityAnnotations was itself supplied.  Control can
+      // reach here without it, because issuing a purity suggestion does not require it.
+      return;
+    }
+
     ExecutableElement methodDeclElem = TreeUtils.elementFromDeclaration(tree);
     AnnotationMirror seOnlyAnnotation =
         atypeFactory.getDeclAnnotation(methodDeclElem, SideEffectsOnly.class);
@@ -1298,7 +1318,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     if (body != null) {
       DisallowedSideEffects.checkSideEffectsOnly(
-          body, seOnlyExpressions, checker, tree, sideEffectsOnlyValueElement);
+          body,
+          seOnlyExpressions,
+          checker,
+          tree,
+          sideEffectsOnlyValueElement,
+          assumeSideEffectFree,
+          assumePureGetters);
     }
   }
 
@@ -4317,23 +4343,45 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               overriderTree,
               "purity.methodref",
               overriderType,
-              subPurity,
+              purityKindsToString(subPurity),
               overrider,
               overriddenType,
-              superPurity,
+              purityKindsToString(superPurity),
               overridden);
         } else {
           checker.reportError(
               overriderTree,
               "purity.overriding",
               overriderType,
-              subPurity,
+              purityKindsToString(subPurity),
               overrider,
               overriddenType,
-              superPurity,
+              purityKindsToString(superPurity),
               overridden);
         }
       }
+    }
+
+    /**
+     * Formats purity kinds for a diagnostic message, as the annotations that a user writes rather
+     * than as the enum constant names that {@code EnumSet.toString} would produce.
+     *
+     * @param purityKinds a set of purity kinds
+     * @return the annotations corresponding to {@code purityKinds}, space-separated
+     */
+    private String purityKindsToString(EnumSet<PurityKind> purityKinds) {
+      if (purityKinds.isEmpty()) {
+        return "(no purity annotation)";
+      }
+      StringJoiner result = new StringJoiner(" ");
+      for (PurityKind purityKind : purityKinds) {
+        switch (purityKind) {
+          case SIDE_EFFECT_FREE -> result.add("@SideEffectFree");
+          case SIDE_EFFECTS_ONLY -> result.add("@SideEffectsOnly");
+          case DETERMINISTIC -> result.add("@Deterministic");
+        }
+      }
+      return result.toString();
     }
 
     /**
