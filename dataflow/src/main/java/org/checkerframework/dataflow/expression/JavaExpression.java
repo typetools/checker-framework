@@ -221,7 +221,11 @@ public abstract class JavaExpression {
 
   /**
    * Returns true if the given expression is equal to this or equal to the receiver of this,
-   * recursively.
+   * recursively. For example, {@code a.f.g} contains {@code a.f} and {@code a} as receivers.
+   *
+   * <p>This relation is reflexive and transitive, but <b>not symmetric</b>: {@code a.f} contains
+   * {@code a} as a receiver, but not the converse. Callers must therefore pass the arguments in the
+   * intended order, and must not rely on it as an equivalence relation.
    *
    * @param receiver a JavaExpression that might be the receiver of this
    * @return true if the given expression is equal to this or equal to the receiver of this,

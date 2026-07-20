@@ -1239,7 +1239,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
-    @Nullable Element methodDeclElem = TreeUtils.elementFromDeclaration(tree);
+    ExecutableElement methodDeclElem = TreeUtils.elementFromDeclaration(tree);
     AnnotationMirror seOnlyAnnotation =
         atypeFactory.getDeclAnnotation(methodDeclElem, SideEffectsOnly.class);
     if (seOnlyAnnotation == null) {

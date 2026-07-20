@@ -68,11 +68,8 @@ public class ThisReference extends JavaExpression {
     return this.syntacticEquals(other);
   }
 
-  @Override
-  public boolean containsAsReceiver(JavaExpression other) {
-    boolean result = this.syntacticEquals(other);
-    return result;
-  }
+  // containsAsReceiver is not overridden: `this` has no receiver, so the inherited
+  // implementation (a syntactic equality test) is already correct.
 
   @Override
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {

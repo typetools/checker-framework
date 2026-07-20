@@ -12,6 +12,14 @@ import org.checkerframework.framework.qual.JavaExpression;
  * the value of at most the expressions A and B. All other expressions have the same value before
  * and after a call to the method.
  *
+ * <p>Unlike {@link SideEffectFree}, this annotation is not inherited by overriding methods. An
+ * overriding method must state its own side effects.
+ *
+ * <p>Checking of this annotation (under {@code -AcheckPurityAnnotations}) is unsound in the
+ * presence of aliasing: the checker reasons syntactically about expressions, and it treats two
+ * expressions as possibly aliased only when an assignment relating them appears in the method body.
+ * A method that mutates the listed expressions through an alias created elsewhere is accepted.
+ *
  * @checker_framework.manual #type-refinement-purity Specifying side effects
  */
 @Documented

@@ -142,15 +142,16 @@ public class DisallowedSideEffects {
           this.getJavaExpressionsFromMethodInvocation(node);
 
       // If the invoked method is NOT marked with @SideEffectsOnly, it may modify anything.
+      // TODO: This is unsound.  When the call has a receiver or arguments, the code below assumes
+      // that an unannotated method modifies only those.  In fact an unannotated method may also
+      // modify static state and any other state not reachable from its receiver and arguments.
       if (!isInvokedMethodMarkedWithSideEffectsOnly) {
         // What does it modify? Check the arguments for the method invocation.
         if (actualSideEffectedExprs.isEmpty()) {
           // The call has no receiver or arguments, so it might modify arbitrary state.
-          checker.reportError(
-              node,
-              "purity.incorrect.sideeffectsonly",
-              invokedElem.getSimpleName(),
-              "arbitrary expressions");
+          // A different message key than `purity.incorrect.sideeffectsonly` is used because the
+          // subject of this message is the callee, not the method being checked.
+          checker.reportError(node, "purity.unknown.sideeffectsonly", invokedElem.getSimpleName());
         }
       }
       actualSideEffectedExprs.stream()
@@ -202,9 +203,10 @@ public class DisallowedSideEffects {
         return false;
       }
       aliasedExpressions.add(expr);
-      expr = aliasedExpressions.find(expr);
       for (JavaExpression seOnlyExpr : sideEffectsOnlyExpressionsFromAnnotation) {
         aliasedExpressions.add(seOnlyExpr);
+        // Argument order matters: `test` lifts the asymmetric `containsAsReceiver` relation over
+        // the two elements' alias sets, and `expr` must be the potential sub-expression.
         if (aliasedExpressions.test(expr, seOnlyExpr)) {
           return false;
         }
@@ -234,7 +236,8 @@ public class DisallowedSideEffects {
       }
       JavaExpression name = JavaExpression.fromVariableTree(node);
       JavaExpression expr = JavaExpression.fromTree(initializer);
-      addAlias(name, expr);
+      // `union` adds both arguments, so they need not be added first.
+      aliasedExpressions.union(name, expr);
       return super.visitVariable(node, aVoid);
     }
 
@@ -265,18 +268,6 @@ public class DisallowedSideEffects {
         disallowedSideEffects.addExpr(node, lhs);
       }
       return super.visitCompoundAssignment(node, aVoid);
-    }
-
-    /**
-     * Set the two expressions as possibly aliased.
-     *
-     * @param lhs a Java expression
-     * @param rhs a Java expression
-     */
-    private void addAlias(JavaExpression lhs, JavaExpression rhs) {
-      aliasedExpressions.add(lhs);
-      aliasedExpressions.add(rhs);
-      aliasedExpressions.union(lhs, rhs);
     }
   }
 }

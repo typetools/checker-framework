@@ -3,7 +3,7 @@ import org.checkerframework.dataflow.qual.SideEffectsOnly;
 public class CheckMethodImplementation2 {
   @SideEffectsOnly("#1")
   void method1(Object o) {
-    // :: error: purity.incorrect.sideeffectsonly
+    // :: error: purity.unknown.sideeffectsonly
     method2();
     method3(o);
   }
