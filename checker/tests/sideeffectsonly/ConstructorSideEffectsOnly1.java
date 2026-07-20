@@ -11,27 +11,27 @@ public class ConstructorSideEffectsOnly1 {
 
   // Assigning to the new object's own fields is covered by "this".
   @SideEffectsOnly("this")
-  ConstructorSideEffectsOnly() {
+  ConstructorSideEffectsOnly1() {
     f = null;
     this.f = null;
   }
 
   // A constructor may be annotated to permit modifying one of its arguments.
   @SideEffectsOnly({"this", "#1"})
-  ConstructorSideEffectsOnly(Collection<Integer> c) {
+  ConstructorSideEffectsOnly1(Collection<Integer> c) {
     f = null;
     c.add(1);
   }
 
   // Modifying state that the annotation does not list is an error, just as in a method.
   @SideEffectsOnly("this")
-  ConstructorSideEffectsOnly(int unused) {
+  ConstructorSideEffectsOnly1(int unused) {
     // :: error: (purity.incorrect.sideeffectsonly)
     staticColl.add(1);
   }
 
   @SideEffectsOnly("this")
-  ConstructorSideEffectsOnly(Collection<Integer> c, int unused) {
+  ConstructorSideEffectsOnly1(Collection<Integer> c, int unused) {
     // `c` is not listed in the annotation.
     // :: error: (purity.incorrect.sideeffectsonly)
     c.add(1);
