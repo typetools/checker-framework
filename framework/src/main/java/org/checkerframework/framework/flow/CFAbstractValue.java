@@ -135,7 +135,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * @param annos a set of annotations
    * @param typeMirror where the annotations are written
    * @param atypeFactory the type factory
-   * @return top annotations for hierarchcies where {@code annos} is missing an annotation, or null
+   * @return top annotations for hierarchies where {@code annos} is missing an annotation, or null
    */
   public static @Nullable AnnotationMirrorSet missingAnnotations(
       AnnotationMirrorSet annos, TypeMirror typeMirror, AnnotatedTypeFactory atypeFactory) {
