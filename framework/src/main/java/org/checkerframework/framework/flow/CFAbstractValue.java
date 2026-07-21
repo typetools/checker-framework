@@ -87,11 +87,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
     assert hasAnnotationFromEveryHierarchy(annotations, underlyingType, atypeFactory)
         : "Encountered invalid type: "
-            + underlyingType
-            + " annotations: "
-            + annotations
-            + " missing hierarchies: "
-            + missingAnnotations(annotations, underlyingType, atypeFactory);
+            + (underlyingType + " [" + underlyingType.getClass().getSimpleName() + "]")
+            + (" annotations: " + annotations)
+            + (" missing hierarchies: "
+                + missingAnnotations(annotations, underlyingType, atypeFactory));
   }
 
   /**
@@ -441,7 +440,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         boolean canCombinedSetBeMissingAnnos) {
 
       AnnotationMirror upperBound = typeVar.getAnnotationInHierarchy(top);
-      TypeMirror upperBoundTM = typeVar.getUpperBound().getUnderlyingType();
 
       if (!canCombinedSetBeMissingAnnos) {
         TypeVariable typeVarTM = typeVar.getUnderlyingType();
@@ -453,6 +451,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       TypeMirror lowerBoundTM = typeVar.getLowerBound().getUnderlyingType();
 
       TypeMirror typeVarTM = typeVar.getUnderlyingType();
+      TypeMirror upperBoundTM = typeVar.getUpperBound().getUnderlyingType();
       if (qualHierarchy.isSubtypeShallow(upperBound, upperBoundTM, annotation, typeVarTM)) {
         // no anno is more specific than anno
         return null;
