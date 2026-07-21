@@ -3,7 +3,7 @@ package org.checkerframework.framework.util.typeinference8.constraint;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
-import org.checkerframework.framework.util.typeinference8.types.InferenceExecutableType;
+import org.checkerframework.framework.util.typeinference8.types.AbstractExecutableType;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 
@@ -38,7 +38,7 @@ public class AdditionalArgument implements Constraint {
   @Override
   public ConstraintSet reduce(Java8InferenceContext context) {
     if (methodOrConstructorInvocation instanceof MethodInvocationTree methodInvocation) {
-      InferenceExecutableType methodType =
+      AbstractExecutableType methodType =
           context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(methodInvocation);
       Theta newMap =
           context.inferenceTypeFactory.createThetaForInvocation(
@@ -49,7 +49,7 @@ public class AdditionalArgument implements Constraint {
       return set;
     } else {
       NewClassTree newClassTree = (NewClassTree) methodOrConstructorInvocation;
-      InferenceExecutableType methodType =
+      AbstractExecutableType methodType =
           context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(newClassTree);
 
       Theta newMap =

@@ -25,7 +25,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
  * AnnotatedExecutableType} that returns {@link AbstractType}s for the types in the {@link
  * AnnotatedExecutableType}
  */
-public abstract class InferenceExecutableType {
+public abstract class AbstractExecutableType {
 
   /** The annotated method type. */
   protected final AnnotatedExecutableType annotatedExecutableType;
@@ -50,7 +50,7 @@ public abstract class InferenceExecutableType {
    * @param invocation a method or constructor invocation
    * @param context the context
    */
-  protected InferenceExecutableType(
+  protected AbstractExecutableType(
       AnnotatedExecutableType annotatedExecutableType,
       ExecutableType methodType,
       ExpressionTree invocation,
@@ -113,12 +113,12 @@ public abstract class InferenceExecutableType {
   public abstract AbstractType getReturnType(Theta map);
 
   /**
-   * Returns a list of the parameter types of {@code InferenceExecutableType} where the vararg
+   * Returns a list of the parameter types of {@code AbstractExecutableType} where the vararg
    * parameter has been modified to match the arguments in {@code expression}.
    *
    * @param map a mapping from type variable to inference variable
    * @param size the number of parameters to return; used to expand the vararg
-   * @return a list of the parameter types of {@code InferenceExecutableType} where the vararg
+   * @return a list of the parameter types of {@code AbstractExecutableType} where the vararg
    *     parameter has been modified to match the arguments in {@code expression}
    */
   public abstract List<AbstractType> getParameterTypes(Theta map, int size);

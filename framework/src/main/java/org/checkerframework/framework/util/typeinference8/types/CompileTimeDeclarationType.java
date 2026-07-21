@@ -39,7 +39,7 @@ import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
  * <p>The function type is {@code compare(Comparator<MyClass> this, MyClass o1, MyClass o2)} where
  * as the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}.
  */
-public class CompileTimeDeclarationType extends InferenceExecutableType {
+public class CompileTimeDeclarationType extends AbstractExecutableType {
 
   /**
    * The type of the receiver. This may be different than {@code
