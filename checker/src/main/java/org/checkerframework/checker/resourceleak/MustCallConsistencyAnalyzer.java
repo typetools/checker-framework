@@ -32,6 +32,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -85,7 +86,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
 
 /**
@@ -1504,6 +1505,24 @@ public class MustCallConsistencyAnalyzer {
           return;
         }
       }
+    } else if (TreeUtils.isConstructor(enclosingMethodTree)) {
+      // If this assignment is the first write to the private field in this constructor,
+      // then do not throw non-final owning field reassignment error.
+      // (If the field is not private, conservatively throw the owning file reassignment error.)
+      ExecutableElement elementFromDeclaration =
+          TreeUtils.elementFromDeclaration(enclosingMethodTree);
+      @SuppressWarnings("nullness:dereference.of.nullable") // a constructor has an enclosing class
+      Element enclosingClassElement = elementFromDeclaration.getEnclosingElement();
+      Element receiverTypeElement = TypesUtils.getTypeElement(receiver.getType());
+      if (Objects.equals(enclosingClassElement, receiverTypeElement)) {
+        VariableElement lhsElement = lhs.getElement();
+        if (lhsElement.getModifiers().contains(Modifier.PRIVATE)
+            && ConstructorFirstWriteAnalysis.isFirstWriteToFieldInConstructor(
+                node.getTree(), lhsElement, enclosingMethodTree, cmAtf)) {
+          // Safe; first assignment in constructor.
+          return;
+        }
+      }
     }
 
     // Check that there is a corresponding CreatesMustCallFor annotation, unless this is
@@ -2533,7 +2552,7 @@ public class MustCallConsistencyAnalyzer {
       for (BlockWithObligations bwo : bwos) {
         blocksWithDuplicates.add(bwo.block);
       }
-      Collection<Block> duplicateBlocks = CollectionsPlume.duplicates(blocksWithDuplicates);
+      Collection<Block> duplicateBlocks = CollectionsP.duplicates(blocksWithDuplicates);
       StringJoiner result = new StringJoiner(", ", "BWOs[", "]");
       for (BlockWithObligations bwo : bwos) {
         ImmutableSet<Obligation> obligations = bwo.obligations;

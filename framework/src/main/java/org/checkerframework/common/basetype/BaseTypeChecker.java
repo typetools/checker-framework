@@ -21,8 +21,8 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
-import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.CollectionsP;
+import org.plumelib.util.StringsP;
 
 /**
  * An abstract {@link SourceChecker} that provides a simple {@link
@@ -94,9 +94,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     while (checkerClass != BaseTypeChecker.class) {
       BaseTypeVisitor<?> result =
           invokeConstructorFor(
-              BaseTypeChecker.getRelatedClassName(checkerClass, "Visitor"),
-              baseTypeCheckerClassArray,
-              thisArray);
+              getRelatedClassName(checkerClass, "Visitor"), baseTypeCheckerClassArray, thisArray);
       if (result != null) {
         return result;
       }
@@ -104,7 +102,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     }
 
     // If a visitor couldn't be loaded reflectively, return the default.
-    return new BaseTypeVisitor<BaseAnnotatedTypeFactory>(this);
+    return new BaseTypeVisitor<>(this);
   }
 
   /**
@@ -161,7 +159,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
   @Override
   protected Object processErrorMessageArg(Object arg) {
     if (arg instanceof Collection<?> carg) {
-      return CollectionsPlume.mapList(this::processErrorMessageArg, carg);
+      return CollectionsP.mapList(this::processErrorMessageArg, carg);
     } else if (arg instanceof AnnotationMirror am && getTypeFactory() != null) {
       return getTypeFactory().getAnnotationFormatter().formatAnnotationMirror(am);
     } else {
@@ -276,7 +274,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
         // `ctor.newInstance(args)`, if the constructor itself uses reflection.
         // But this case is unlikely.
         throw new TypeSystemError(
-            "Could not find constructor %s(%s)", className, StringsPlume.join(", ", paramTypes));
+            "Could not find constructor %s(%s)", className, StringsP.join(", ", paramTypes));
       }
 
       Throwable cause;
@@ -298,7 +296,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
           cause,
           "Error when invoking constructor %s(%s) on args %s; cause: %s",
           className,
-          StringsPlume.join(", ", paramTypes),
+          StringsP.join(", ", paramTypes),
           Arrays.toString(args),
           causeMessage);
     }

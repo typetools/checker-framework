@@ -33,7 +33,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * Implements framework support for qualifier polymorphism.
@@ -187,7 +187,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     List<AnnotatedTypeMirror> parameters =
         AnnotatedTypes.adaptParameters(atypeFactory, type, tree.getArguments(), tree);
     List<AnnotatedTypeMirror> arguments =
-        CollectionsPlume.mapList(atypeFactory::getAnnotatedType, tree.getArguments());
+        CollectionsP.mapList(atypeFactory::getAnnotatedType, tree.getArguments());
 
     AnnotationMirrorMap<AnnotationMirror> instantiationMapping =
         collector.visit(arguments, parameters);
@@ -222,7 +222,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     List<AnnotatedTypeMirror> parameters =
         AnnotatedTypes.adaptParameters(atypeFactory, type, tree.getArguments(), tree);
     List<AnnotatedTypeMirror> arguments =
-        CollectionsPlume.mapList(atypeFactory::getAnnotatedType, tree.getArguments());
+        CollectionsP.mapList(atypeFactory::getAnnotatedType, tree.getArguments());
 
     AnnotationMirrorMap<AnnotationMirror> instantiationMapping =
         collector.visit(arguments, parameters);
@@ -380,8 +380,11 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
    * A helper class that resolves the polymorphic qualifiers with the most restrictive qualifier. It
    * returns a mapping from the polymorphic qualifier to the substitution for that qualifier.
    */
-  private class PolyCollector
+  private final class PolyCollector
       extends EquivalentAtmComboScanner<AnnotationMirrorMap<AnnotationMirror>, Void> {
+
+    /** Creates a new PolyCollector. */
+    PolyCollector() {}
 
     /**
      * Set of {@link AnnotatedTypeVariable} or {@link AnnotatedWildcardType} that have been visited.
@@ -392,7 +395,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * IPair<?,?>} may be equal, but they both should be visited.
      */
     private final Set<AnnotatedTypeMirror> visitedTypes =
-        Collections.newSetFromMap(new IdentityHashMap<AnnotatedTypeMirror, Boolean>());
+        Collections.newSetFromMap(new IdentityHashMap<>());
 
     /**
      * Returns true if the {@link AnnotatedTypeMirror} has been visited. If it has not, then it is

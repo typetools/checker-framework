@@ -62,7 +62,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * A class that helps checkers use qualifiers that are represented by annotations with Java
@@ -683,7 +683,7 @@ public class DependentTypesHelper {
 
     // For use in stringToJavaExpr below, to avoid re-computation. Especially
     // important for the TreePath, which is expensive to compute.
-    List<JavaExpression> argsAsExprs = CollectionsPlume.mapList(LocalVariable::fromNode, arguments);
+    List<JavaExpression> argsAsExprs = CollectionsP.mapList(LocalVariable::fromNode, arguments);
     JavaExpression receiverAsExpr = receiver == null ? null : LocalVariable.fromNode(receiver);
     TreePath path = factory.getPath(invocationTree);
 
@@ -861,7 +861,7 @@ public class DependentTypesHelper {
             factory.getProcessingEnv(), AnnotationUtils.annotationName(originalAnno));
     builder.copyElementValuesFromAnnotation(originalAnno, elementMap.keySet());
     for (Map.Entry<ExecutableElement, List<JavaExpression>> entry : elementMap.entrySet()) {
-      List<String> strings = CollectionsPlume.mapList(JavaExpression::toString, entry.getValue());
+      List<String> strings = CollectionsP.mapList(JavaExpression::toString, entry.getValue());
       builder.setValue(entry.getKey(), strings);
     }
     return builder.build();
@@ -921,8 +921,11 @@ public class DependentTypesHelper {
    * function returns a non-null annotation, then the original annotation is replaced with the
    * result. If the function returns null, the original annotation is retained.
    */
-  private static class AnnotatedTypeReplacer
+  private static final class AnnotatedTypeReplacer
       extends AnnotatedTypeScanner<Void, Function<AnnotationMirror, AnnotationMirror>> {
+
+    /** Creates a new AnnotatedTypeReplacer. */
+    AnnotatedTypeReplacer() {}
 
     @Override
     public Void visitTypeVariable(
@@ -1166,7 +1169,7 @@ public class DependentTypesHelper {
    * annotated type has any errors, then a non-empty list of {@link DependentTypesError} is
    * returned.
    */
-  private class ExpressionErrorCollector
+  private final class ExpressionErrorCollector
       extends SimpleAnnotatedTypeScanner<List<DependentTypesError>, Void> {
 
     /** Create ExpressionErrorCollector. */
@@ -1190,7 +1193,7 @@ public class DependentTypesHelper {
    * Replaces a dependent type annotation with a parser error with the top qualifier in the
    * hierarchy.
    */
-  protected class ErrorAnnoReplacer extends SimpleAnnotatedTypeScanner<Void, Void> {
+  protected final class ErrorAnnoReplacer extends SimpleAnnotatedTypeScanner<Void, Void> {
 
     /**
      * Create an ErrorAnnoReplacer.
@@ -1246,7 +1249,7 @@ public class DependentTypesHelper {
    * visited type to the second formal parameter except for annotations on types that have been
    * substituted.
    */
-  protected class ViewpointAdaptedCopier extends DoubleAnnotatedTypeScanner<Void> {
+  protected final class ViewpointAdaptedCopier extends DoubleAnnotatedTypeScanner<Void> {
 
     /** Create a ViewpointAdaptedCopier. */
     private ViewpointAdaptedCopier() {}

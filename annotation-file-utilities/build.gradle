@@ -111,9 +111,9 @@ test.dependsOn(testAnnotator)
 
 tasks.register("updateUserOptions") {
   dependsOn(
-      "updateUserOptionsJavadoc",
-      "updateUserOptionsHtml"
-      )
+  "updateUserOptionsJavadoc",
+  "updateUserOptionsHtml"
+  )
 }
 
 tasks.register("updateUserOptionsJavadoc", Javadoc) {

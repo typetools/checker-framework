@@ -34,7 +34,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Utility methods for adding the annotations that are stored in an Element to the type that
@@ -42,6 +42,11 @@ import org.plumelib.util.StringsPlume;
  * methods used by the ElementAnnotationAppliers that do most of the work.
  */
 public class ElementAnnotationUtil {
+
+  /** Do not instantiate. */
+  private ElementAnnotationUtil() {
+    throw new Error("Do not instantiate");
+  }
 
   /**
    * For each type/element pair, add all of the annotations stored in Element to type. See apply for
@@ -61,10 +66,10 @@ public class ElementAnnotationUtil {
       throw new BugInCF(
           "Number of types and elements don't match. "
               + "types ( "
-              + StringsPlume.join(", ", types)
+              + StringsP.join(", ", types)
               + " ) "
               + "element ( "
-              + StringsPlume.join(", ", elements)
+              + StringsP.join(", ", elements)
               + " ) ");
     }
 
@@ -327,7 +332,7 @@ public class ElementAnnotationUtil {
    * Returns true if the typeCompound is a primary annotation for the type it targets (or lower
    * bound if this is a type variable or wildcard ). If you think of a type as a tree-like structure
    * then a nested type any type that is not the root. E.g. {@code @T List< @N String>}, @T is on a
-   * top-level NON-nested type where as the annotation @N is on a nested type.
+   * top-level NON-nested type whereas the annotation @N is on a nested type.
    *
    * @param typeCompound the type compound to inspect
    * @return true if typeCompound is placed on a nested type, false otherwise
@@ -590,7 +595,7 @@ public class ElementAnnotationUtil {
 
   /** Exception indicating an invalid location for an annotation was found. */
   @SuppressWarnings("serial")
-  public static class UnexpectedAnnotationLocationException extends Exception {
+  public static final class UnexpectedAnnotationLocationException extends Exception {
 
     /**
      * Creates an UnexpectedAnnotationLocationException.

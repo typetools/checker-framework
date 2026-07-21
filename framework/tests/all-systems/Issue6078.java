@@ -6,6 +6,8 @@ public class Issue6078 {
     // The vararg parameter disappears for the below method. It's some sort of bug in javac.
     // It is worked around in TreeUtils.isVarargsCall().
     methodHandle.invoke();
+    methodHandle.invoke(1L);
+
     // The vararg parameter does not disappaer for these method calls.
     methodHandle.invoke("");
     methodHandle.invoke(array);

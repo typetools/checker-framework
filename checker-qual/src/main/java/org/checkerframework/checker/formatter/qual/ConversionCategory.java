@@ -187,8 +187,9 @@ public enum ConversionCategory {
    * The conversion categories that have a corresponding conversion character. This lacks UNUSED,
    * TIME_AND_INT, etc.
    */
-  private static final ConversionCategory[] conversionCategoriesWithChar =
-      new ConversionCategory[] {GENERAL, CHAR, INT, FLOAT, TIME};
+  private static final ConversionCategory[] conversionCategoriesWithChar = {
+    GENERAL, CHAR, INT, FLOAT, TIME
+  };
 
   /**
    * Converts a conversion character to a category. For example:
@@ -219,8 +220,9 @@ public enum ConversionCategory {
   }
 
   /** Conversion categories that need to be considered by {@link #intersect}. */
-  private static final ConversionCategory[] conversionCategoriesForIntersect =
-      new ConversionCategory[] {CHAR, INT, FLOAT, TIME, CHAR_AND_INT, INT_AND_TIME, NULL};
+  private static final ConversionCategory[] conversionCategoriesForIntersect = {
+    CHAR, INT, FLOAT, TIME, CHAR_AND_INT, INT_AND_TIME, NULL
+  };
 
   /**
    * Returns the intersection of two categories. This is seldom needed.
@@ -266,12 +268,13 @@ public enum ConversionCategory {
         return v;
       }
     }
-    throw new RuntimeException();
+    throw new RuntimeException("Could not compute intersect(" + a + ", " + b + ")");
   }
 
   /** Conversion categories that need to be considered by {@link #union}. */
-  private static final ConversionCategory[] conversionCategoriesForUnion =
-      new ConversionCategory[] {NULL, CHAR_AND_INT, INT_AND_TIME, CHAR, INT, FLOAT, TIME};
+  private static final ConversionCategory[] conversionCategoriesForUnion = {
+    NULL, CHAR_AND_INT, INT_AND_TIME, CHAR, INT, FLOAT, TIME
+  };
 
   /**
    * Returns the union of two categories. This is seldom needed.
@@ -346,7 +349,7 @@ public enum ConversionCategory {
   @Pure
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    StringBuilder sb = new StringBuilder(32);
     sb.append(name());
     sb.append(" conversion category");
 
@@ -358,7 +361,7 @@ public enum ConversionCategory {
     for (Class<?> cls : types) {
       sj.add(cls.getSimpleName());
     }
-    sb.append(" ");
+    sb.append(' ');
     sb.append(sj);
 
     return sb.toString();

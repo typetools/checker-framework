@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.afu.scenelib.Annotation;
@@ -123,13 +124,7 @@ public class AClass extends ADeclaration {
 
   @Override
   public int hashCode() {
-    return super.hashCode()
-        + bounds.hashCode()
-        + methods.hashCode()
-        + fields.hashCode()
-        + staticInits.hashCode()
-        + instanceInits.hashCode()
-        + extendsImplements.hashCode();
+    return Objects.hash(super.hashCode(), className, bounds, methods, fields, extendsImplements);
   }
 
   @Override
@@ -163,43 +158,62 @@ public class AClass extends ADeclaration {
     return unparse("");
   }
 
+  /**
+   * Format this class, indenting each line with {@code linePrefix}.
+   *
+   * @param linePrefix the indentation to use on each line
+   * @return a formatted version of this class
+   */
   public String unparse(String linePrefix) {
+    // Cannot use StringJoiner because MapsP.mapToStringMultiLine side-effects a StringBuffer.
     StringBuilder sb = new StringBuilder();
     sb.append(linePrefix);
     sb.append(toString());
     sb.append(System.lineSeparator());
     sb.append(linePrefix);
-    sb.append("Annotations:" + System.lineSeparator());
+    sb.append("Annotations:");
+    sb.append(System.lineSeparator());
     for (Annotation a : tlAnnotationsHere) {
       sb.append(linePrefix);
-      sb.append("  " + a + System.lineSeparator());
+      sb.append("  ");
+      sb.append(a);
+      sb.append(System.lineSeparator());
     }
     sb.append(linePrefix);
-    sb.append("Bounds:" + System.lineSeparator());
+    sb.append("Bounds:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, bounds, linePrefix + "  ");
     sb.append(linePrefix);
-    sb.append("Extends/implements:" + System.lineSeparator());
+    sb.append("Extends/implements:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, extendsImplements, linePrefix + "  ");
     sb.append(linePrefix);
-    sb.append("Fields:" + System.lineSeparator());
+    sb.append("Fields:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, fields, linePrefix + "  ");
     sb.append(linePrefix);
-    sb.append("Field Initializers:" + System.lineSeparator());
+    sb.append("Field Initializers:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, fieldInits, linePrefix + "  ");
     sb.append(linePrefix);
-    sb.append("Static Initializers:" + System.lineSeparator());
+    sb.append("Static Initializers:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, staticInits, linePrefix + "  ");
     sb.append(linePrefix);
-    sb.append("Instance Initializers:" + System.lineSeparator());
+    sb.append("Instance Initializers:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, instanceInits, linePrefix + "  ");
     sb.append(linePrefix);
-    sb.append("AST Typecasts:" + System.lineSeparator());
+    sb.append("AST Typecasts:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, insertTypecasts, linePrefix + "  ");
     sb.append(linePrefix);
-    sb.append("AST Annotations:" + System.lineSeparator());
+    sb.append("AST Annotations:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, insertAnnotations, linePrefix + "  ");
     sb.append(linePrefix);
-    sb.append("Methods:" + System.lineSeparator());
+    sb.append("Methods:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, methods, linePrefix + "  ");
     return sb.toString();
   }
@@ -212,7 +226,7 @@ public class AClass extends ADeclaration {
   // Static methods
 
   private static VivifyingMap<String, AMethod> createMethodMap() {
-    return new VivifyingMap<String, AMethod>(new LinkedHashMap<>()) {
+    return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public AMethod createValueFor(String k) {
         return new AMethod(k);
@@ -226,7 +240,7 @@ public class AClass extends ADeclaration {
   }
 
   private static VivifyingMap<Integer, ABlock> createInitBlockMap() {
-    return new VivifyingMap<Integer, ABlock>(new LinkedHashMap<>()) {
+    return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public ABlock createValueFor(Integer k) {
         return new ABlock(String.valueOf(k));
@@ -240,7 +254,7 @@ public class AClass extends ADeclaration {
   }
 
   private static VivifyingMap<String, AExpression> createFieldInitMap() {
-    return new VivifyingMap<String, AExpression>(new LinkedHashMap<>()) {
+    return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public AExpression createValueFor(String k) {
         return new AExpression(k);

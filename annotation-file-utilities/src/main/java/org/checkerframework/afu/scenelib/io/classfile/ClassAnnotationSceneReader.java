@@ -1294,7 +1294,10 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
 
     // There are only so many different array types that are permitted in
     // an annotation.  (I'm not sure how relevant that is here.)
-    @SuppressWarnings("signature") // ASM is not annotated yet
+    @SuppressWarnings({
+      "signature", // ASM is not annotated yet
+      "PMD.UnnecessaryFullyQualifiedName" // fully-qualified name for explicitness
+    })
     @Override
     public void visit(String name, Object value) {
       if (trace) {

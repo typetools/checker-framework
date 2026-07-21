@@ -33,6 +33,7 @@ import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.NewObject;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
@@ -65,7 +66,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * LockAnnotatedTypeFactory builds types with @LockHeld and @LockPossiblyHeld annotations. LockHeld
@@ -407,16 +408,31 @@ public class LockAnnotatedTypeFactory
     }
   }
 
-  // The side effect annotations processed by the Lock Checker.
+  /** The side effect annotations processed by the Lock Checker. */
   enum SideEffectAnnotation {
+    /** The method might release some locks. */
     MAYRELEASELOCKS("@MayReleaseLocks", MayReleaseLocks.class),
+    /** The method does not release any locks. */
     RELEASESNOLOCKS("@ReleasesNoLocks", ReleasesNoLocks.class),
+    /** The method does not acquire or release any locks. */
     LOCKINGFREE("@LockingFree", LockingFree.class),
+    /** The method has no side effects. */
     SIDEEFFECTFREE("@SideEffectFree", SideEffectFree.class),
+    /** The method has no side effects and is deterministic. */
     PURE("@Pure", Pure.class);
+
+    /** The annotation as written in Java source code, starting with "@". */
     final String annotation;
+
+    /** The Java class of the annotation. */
     final Class<? extends Annotation> annotationClass;
 
+    /**
+     * Creates a new SideEffectAnnotation.
+     *
+     * @param annotation the annotation as written in Java source code, starting with "@"
+     * @param annotationClass the Java class of the annotation
+     */
     SideEffectAnnotation(String annotation, Class<? extends Annotation> annotationClass) {
       this.annotation = annotation;
       this.annotationClass = annotationClass;
@@ -437,38 +453,38 @@ public class LockAnnotatedTypeFactory
     boolean isWeakerThan(SideEffectAnnotation other) {
       boolean weaker = false;
 
-      switch (other) {
-        case MAYRELEASELOCKS -> {}
+      switch (this) {
+        case MAYRELEASELOCKS -> {
+          switch (other) {
+            case RELEASESNOLOCKS, LOCKINGFREE, SIDEEFFECTFREE, PURE -> weaker = true;
+            default -> {}
+          }
+        }
         case RELEASESNOLOCKS -> {
-          if (this == MAYRELEASELOCKS) {
-            weaker = true;
+          switch (other) {
+            case LOCKINGFREE, SIDEEFFECTFREE, PURE -> weaker = true;
+            default -> {}
           }
         }
         case LOCKINGFREE -> {
-          switch (this) {
-            case MAYRELEASELOCKS, RELEASESNOLOCKS -> weaker = true;
+          switch (other) {
+            case SIDEEFFECTFREE, PURE -> weaker = true;
             default -> {}
           }
         }
         case SIDEEFFECTFREE -> {
-          switch (this) {
-            case MAYRELEASELOCKS, RELEASESNOLOCKS, LOCKINGFREE -> weaker = true;
-            default -> {}
+          if (other == PURE) {
+            weaker = true;
           }
         }
-        case PURE -> {
-          switch (this) {
-            case MAYRELEASELOCKS, RELEASESNOLOCKS, LOCKINGFREE, SIDEEFFECTFREE -> weaker = true;
-            default -> {}
-          }
-        }
+        case PURE -> {}
       }
 
       return weaker;
     }
 
     /** The weakest side effect annotation. */
-    static SideEffectAnnotation weakest = null;
+    static @MonotonicNonNull SideEffectAnnotation weakest;
 
     /**
      * Returns the weakest side effect annotation.
@@ -738,7 +754,7 @@ public class LockAnnotatedTypeFactory
     if (value instanceof List) {
       @SuppressWarnings("unchecked")
       List<AnnotationValue> la = (List<AnnotationValue>) value;
-      lockExpressions = CollectionsPlume.mapList((AnnotationValue a) -> (String) a.getValue(), la);
+      lockExpressions = CollectionsP.mapList((AnnotationValue a) -> (String) a.getValue(), la);
     } else if (value instanceof String) {
       lockExpressions = Collections.singletonList((String) value);
     } else {

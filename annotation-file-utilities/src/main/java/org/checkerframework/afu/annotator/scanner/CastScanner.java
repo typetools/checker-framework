@@ -13,7 +13,7 @@ import java.util.Map;
  * be used to scan the source tree and determine the index of a given cast, where the i^th index
  * corresponds to the i^th cast, using 0-based indexing.
  */
-public class CastScanner extends CommonScanner {
+public final class CastScanner extends CommonScanner {
 
   /**
    * Computes the index of the given cast tree amongst all cast trees inside its method, using

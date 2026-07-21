@@ -39,7 +39,7 @@ public class SuperNode extends Node {
 
   @Override
   public String toString() {
-    if (Node.disambiguateOwner) {
+    if (disambiguateOwner) {
       return "super{owner=" + type + "}";
     } else {
       return "super";

@@ -121,7 +121,7 @@ This section describes the lock annotations you can write on types and methods.
   (see \chapterpageref{annotating-libraries}).
 
 \item[\refqualclass{checker/lock/qual}{NewObject}]
-  This type represents a newly-constructed value; such as the result of
+  This type represents a newly-constructed value, such as the result of
   calling a constructor or factory method.  The client can use the value as
   any \refqualclass{checker/lock/qual}{GuardedBy} type.
 
@@ -712,7 +712,7 @@ filename = filename.append(extension);
 \sectionAndLabel{More locking details}{lock-details}
 
 This section gives some details that are helpful for understanding how Java
-locking and the Lock Checker works.
+locking and the Lock Checker work.
 
 The paper ``Locking discipline inference and checking''~\cite{ErnstLMST2016} (ICSE 2016,
 \myurl{https://homes.cs.washington.edu/~mernst/pubs/locking-inference-checking-icse2016-abstract.html})

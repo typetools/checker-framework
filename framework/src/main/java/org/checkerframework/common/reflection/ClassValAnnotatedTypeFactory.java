@@ -41,7 +41,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /** A type factory for the @ClassVal and @ClassBound annotations. */
 public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -155,7 +155,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
         List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
         // There are usually few arguments/elements of @ClassBound and @ClassVal.
-        List<String> lubClassNames = CollectionsPlume.listUnion(a1ClassNames, a2ClassNames);
+        List<String> lubClassNames = CollectionsP.listUnion(a1ClassNames, a2ClassNames);
 
         // If either annotation is a ClassBound, the lub must also be a class bound.
         if (areSameByClass(a1, ClassBound.class) || areSameByClass(a2, ClassBound.class)) {
@@ -178,7 +178,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else {
         List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
         List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
-        List<String> glbClassNames = CollectionsPlume.listIntersection(a1ClassNames, a2ClassNames);
+        List<String> glbClassNames = CollectionsP.listIntersection(a1ClassNames, a2ClassNames);
 
         // If either annotation is a ClassVal, the glb must also be a ClassVal.
         // For example:

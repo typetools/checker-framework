@@ -11,6 +11,7 @@ import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
@@ -135,7 +136,7 @@ public class Expression extends TypeConstraint {
   }
 
   /**
-   * JSL 18.2.1: "If T is a proper type, the constraint reduces to true if the expression is
+   * JLS 18.2.1: "If T is a proper type, the constraint reduces to true if the expression is
    * compatible in a loose invocation context with T (5.3), and false otherwise."
    *
    * @return the result of reducing a proper type
@@ -173,12 +174,13 @@ public class Expression extends TypeConstraint {
       args = methodInvocationTree.getArguments();
     }
 
-    AbstractExecutableType methodType =
+    AbstractExecutableType executableType =
         context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(expressionTree);
     Theta map =
-        context.inferenceTypeFactory.createThetaForInvocation(expressionTree, methodType, context);
-    BoundSet b2 = context.inference.createB2(methodType, args, map);
-    return context.inference.createB3(b2, expressionTree, methodType, T, map);
+        context.inferenceTypeFactory.createThetaForInvocation(
+            expressionTree, executableType, context);
+    BoundSet b2 = context.inference.createB2(executableType, args, map);
+    return context.inference.createB3(b2, expressionTree, executableType, T, map);
   }
 
   /**
@@ -485,8 +487,6 @@ public class Expression extends TypeConstraint {
 
   @Override
   public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + expression.hashCode();
-    return result;
+    return Objects.hash(super.hashCode(), expression);
   }
 }

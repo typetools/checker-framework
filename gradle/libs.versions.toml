@@ -1,16 +1,16 @@
 [plugins]
 
-com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.4.1" }
+com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.6.0" }
 
 de-undercouch-download = { id = "de.undercouch.download", version = "5.7.0" }
 
 net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "5.1.0" }
 
-com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.5.1" }
+com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.8.0" }
 
-com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "3.0.3" }
+com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "4.0.1" }
 
-biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.2.3" }
+biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.3.0" }
 
 [versions]
 
@@ -18,11 +18,11 @@ biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.2.3" }
 #  * Temporarily comment out "-Werror" in build.gradle files.
 #  * Repeatedly run `./gradlew clean compileJava` and fix all errors.
 #  * Uncomment "-Werror".
-errorprone-version = "2.49.0"
+errorprone-version = "2.50.0"
 
 junit-junit = "4.13.2"
 
-jgit-version = "7.6.0.202603022253-r"
+jgit-version = "7.7.0.202606012155-r"
 
 [libraries]
 
@@ -30,7 +30,7 @@ jgit-version = "7.6.0.202603022253-r"
 # name itself changes (independently of the version number), such as from
 # org.apache.spark:spark-sql_2.12 to org.apache.spark:spark-sql_2.13.
 # See https://mvnrepository.com/artifact/org.apache.spark/spark-sql .
-spark-sql = "org.apache.spark:spark-sql_2.13:4.1.2"
+spark-sql = "org.apache.spark:spark-sql_2.13:4.2.0"
 
 asm = "org.ow2.asm:asm:9.10.1"
 
@@ -74,9 +74,9 @@ lombok = "org.projectlombok:lombok:1.18.46"
 
 options = "org.plumelib:options:2.0.3"
 
-plume-util = "org.plumelib:plume-util:1.14.0"
+plume-util = "org.plumelib:plume-util:1.15.0-SNAPSHOT"
 
-reflection-util = "org.plumelib:reflection-util:1.1.6"
+reflection-util = "org.plumelib:reflection-util:2.0.0-SNAPSHOT"
 
 require-javadoc = "org.plumelib:require-javadoc:2.0.0"
 

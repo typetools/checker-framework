@@ -430,14 +430,14 @@ public final class RegexUtil {
   // Utilities
   //
 
-  // This is from CollectionsPlume, but is here to make the file self-contained.
+  // This is from CollectionsP, but is here to make the file self-contained.
 
   /**
    * Applies the function to each element of the given iterable, producing a list of the results.
    *
    * <p>The point of this method is to make mapping operations more concise. Import it with
    *
-   * <pre>import static org.plumelib.util.CollectionsPlume.mapList;</pre>
+   * <pre>import static org.plumelib.util.CollectionsP.mapList;</pre>
    *
    * This method is just like {@code transform}, but with the arguments in the other order.
    *

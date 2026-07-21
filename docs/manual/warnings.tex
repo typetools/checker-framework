@@ -73,8 +73,9 @@ Some type checkers can suppress warnings via
 \noindent
 The rest of this chapter explains these mechanisms in turn.
 
-You can use the \code{-AwarnUnneededSuppressions} command-line option to issue a
-warning if a \code{@SuppressWarnings} did not suppress any warnings issued by the current checker.
+You can use the \code{-AwarnUnneededSuppressions} command-line option to
+issue a warning for each \code{@SuppressWarnings} that does not suppress
+any warnings issued by the current checker.
 
 
 \sectionAndLabel{\code{@SuppressWarnings} annotation}{suppresswarnings-annotation}
@@ -150,11 +151,9 @@ warnings than you expect.
 
 The checkername \<"allcheckers"> means all checkers.  Using this is not
 recommended, except for messages common to all checkers such as
-purity-related messages when using \<-AcheckPurityAnnotations>.  If you use
-\<"allcheckers">, you run some checker that does not issue any warnings,
-and you supply the \<-AwarnUnneededSuppressions> command-line argument, then
-the Checker Framework will issue an \<unneeded.suppression>
-warning.
+purity-related messages when using \<-AcheckPurityAnnotations>.
+The Checker Framework never issues an \<unneeded.suppression> warning
+about a \<@SuppressWarnings> whose checkername is \<"allcheckers">.
 
 The special messagekey ``\<all>'' means to suppress all warnings.
 
@@ -351,12 +350,15 @@ the issue tracker, as in these two from \href{https://plse.cs.washington.edu/dai
 \end{Verbatim}
 
 \noindent
-Please report false positive warnings, then reference them in your warning suppressions.
-This permits the Checker Framework maintainers to know about the
-problem, it helps them with prioritization (by knowing how often in your
-codebase a particular issue arises), and it enables you to know when an
-issue has been fixed (though the \<-AwarnUnneededSuppressions> command-line
-option also serves the latter purpose).
+When you encounter a false positive warning, please upvote the
+corresponding issue on the
+\href{https://github.com/typetools/checker-framework/issues}{issue
+tracker}, or create a new issue.  This helps the Checker Framework
+maintainers to prioritize their work.
+If you reference the issue URL in your warning suppression, then you can
+later follow the URL to check whether an issue has been fixed (though the
+\<-AwarnUnneededSuppressions> command-line option also serves this
+purpose).
 
 
 \sectionAndLabel{\code{@AssumeAssertion} string in an \<assert> message}{assumeassertion}
@@ -494,7 +496,7 @@ programs that crash due to passing \<null> to \<verifyNotNull>.
 (A comment in Guava's \<Preconditions.java> agrees with this reasoning:
 ``the first parameter to \<checkNotNull> \emph{should} be annotated to
 require it to be non-null.''  The comment goes on to say ``I had hoped to
-take a principled stand on this'' (that, is, write the annotation
+take a principled stand on this'' (that is, write the annotation
 \<@NonNull>), but Guava annotates it as \<@Nullable> to accommodate misuses
 within the Google codebase.)
 

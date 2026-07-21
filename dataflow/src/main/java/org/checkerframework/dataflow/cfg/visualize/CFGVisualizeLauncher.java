@@ -292,6 +292,7 @@ public final class CFGVisualizeLauncher {
    * @param outputFile source output file
    * @param analysis instance of forward or backward analysis from specific dataflow test case
    */
+  @SuppressWarnings("PMD.UseObjectForClearerAPI")
   public static void writeStringOfCFG(
       String inputFile, String method, String clas, String outputFile, Analysis<?, ?, ?> analysis) {
     ControlFlowGraph cfg = generateMethodCFG(inputFile, method, clas, analysis);
@@ -326,9 +327,12 @@ public final class CFGVisualizeLauncher {
    */
   private static void producePDF(String file) {
     try {
-      String command = "dot -Tpdf \"" + file + "\" -o \"" + file + ".pdf\"";
-      Process child = Runtime.getRuntime().exec(new String[] {"/bin/sh", "-c", command});
-      child.waitFor();
+      ProcessBuilder pb = new ProcessBuilder("dot", "-Tpdf", file, "-o", file + ".pdf");
+      Process child = pb.start();
+      int exitCode = child.waitFor();
+      if (exitCode != 0) {
+        System.err.println("dot exited with status " + exitCode);
+      }
     } catch (InterruptedException | IOException e) {
       e.printStackTrace();
       System.exit(1);

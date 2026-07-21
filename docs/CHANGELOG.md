@@ -3,6 +3,20 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
+## Version 4.2.2 (2026-08-01)
+
+### User-visible changes
+
+### Implementation details
+
+### Closed issues
+
+## Version 4.2.1 (2026-07-01)
+
+### Closed issues
+
+\#7726.
+
 ## Version 4.2.0 (2026-06-01)
 
 ### User-visible changes
@@ -13,9 +27,15 @@ Renamed error message key "createsmustcallfor.target.unparseable" to "createsmus
 
 In `AnnotatedTypeFactory`:
 
-* new overload `canonicalAnnotation(AnnotationMirror, TypeMirror)`
+* new overload `canonicalAnnotation(AnnotationMirror, TypeMirror)`.
+
+In `TypeHierarchy`:
+
+* new methods `equalsShallowEffective()`.
 
 ### Closed issues
+
+\#7676, #7679, #7680, #7695, #7697, #7699, #7700, #7727.
 
 ## Version 4.1.0 (2026-05-01)
 
@@ -850,7 +870,7 @@ introduced since JDK 11).
 Added `-AnoWarnMemoryConstraints` to change the "Memory constraints are impeding
 performance; please increase max heap size" message from a warning to a note.
 
-'unneeded.suppression' warnings can now themeselves be suppressed.
+'unneeded.suppression' warnings can now themselves be suppressed.
 
 ### Implementation details
 
@@ -4250,7 +4270,7 @@ Manual Documentations
 
 Functionality
 
-* Added pre-liminary support for lazy initialization in nullness
+* Added preliminary support for lazy initialization in nullness
     see LazyNonNull
 
 Bug fixes
@@ -5181,7 +5201,7 @@ Code Changes
   * added handling for unary trees
 
 * checkers.nonnull
-  * added a tests for the flow-senstive analysis and varargs methods
+  * added tests for the flow-sensitive analysis and varargs methods
   * improved flow-sensitive analysis: else statements, asserts,
       return/throw statements, instanceof checks, complex conditionals with &&
   * fixed a bug in the flow-sensitive analysis that incorrectly inferred

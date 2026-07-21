@@ -18,9 +18,8 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * An inference type for a method or constructor. This is a wrapper around {@link
- * AnnotatedExecutableType} that returns {@link AbstractType}s for the types in the {@link
- * AnnotatedExecutableType}
+ * An inference type for a method or constructor invocation. This is a wrapper around {@link
+ * AnnotatedExecutableType} whose methods return {@link AbstractType}.
  */
 public class AbstractInvocationType extends AbstractExecutableType {
 
@@ -30,17 +29,17 @@ public class AbstractInvocationType extends AbstractExecutableType {
   /**
    * Creates an invocation type for a method or constructor invocation.
    *
-   * @param annotatedExecutableType annotated method type
-   * @param methodType java method type
+   * @param annotatedExecutableType annotated method or constructor type
+   * @param executableType the Java executable type
    * @param invocation a method or constructor invocation
    * @param context the context
    */
   public AbstractInvocationType(
       AnnotatedExecutableType annotatedExecutableType,
-      ExecutableType methodType,
+      ExecutableType executableType,
       ExpressionTree invocation,
       Java8InferenceContext context) {
-    super(annotatedExecutableType, methodType, invocation, context);
+    super(annotatedExecutableType, executableType, invocation, context);
     this.invocation = invocation;
     assert invocation instanceof MethodInvocationTree || invocation instanceof NewClassTree;
   }
@@ -53,31 +52,32 @@ public class AbstractInvocationType extends AbstractExecutableType {
    */
   @Override
   public AbstractType getReturnType(Theta map) {
-    TypeMirror returnType;
     AnnotatedTypeMirror annotatedReturnType;
+    TypeMirror returnType;
 
     if (TreeUtils.isDiamondTree(invocation)) {
       Element e = ElementUtils.enclosingTypeElement(TreeUtils.elementFromUse(invocation));
-      returnType = e.asType();
       annotatedReturnType = typeFactory.getAnnotatedType(e);
+      returnType = e.asType();
     } else if (invocation instanceof MethodInvocationTree) {
-      returnType = methodType.getReturnType();
       annotatedReturnType = annotatedExecutableType.getReturnType();
+      returnType = executableType.getReturnType();
     } else {
-      returnType = TreeUtils.typeOf(invocation);
       annotatedReturnType = typeFactory.getAnnotatedType(invocation);
+      returnType = TreeUtils.typeOf(invocation);
     }
 
     if (map == null) {
       return new ProperType(annotatedReturnType, returnType, context);
+    } else {
+      return InferenceType.create(annotatedReturnType, returnType, map, context);
     }
-    return InferenceType.create(annotatedReturnType, returnType, map, context);
   }
 
   @Override
   public List<AbstractType> getParameterTypes(Theta map, int size) {
     List<AnnotatedTypeMirror> params = new ArrayList<>(annotatedExecutableType.getParameterTypes());
-    List<TypeMirror> paramsJava = new ArrayList<>(methodType.getParameterTypes());
+    List<TypeMirror> paramsJava = new ArrayList<>(executableType.getParameterTypes());
 
     if (TreeUtils.isVarargsCall(invocation)) {
       AnnotatedArrayType vararg = (AnnotatedArrayType) params.remove(params.size() - 1);

@@ -264,7 +264,6 @@ public enum AtmCombo {
       PARAM initialParam,
       AtmComboVisitor<RETURN_TYPE, PARAM> visitor) {
     AtmCombo combo = valueOf(type1, type2);
-    // Reaching this point indicates that there is an AtmCombo missing
     return switch (combo) {
       case ARRAY_ARRAY ->
           visitor.visitArray_Array(
@@ -560,6 +559,7 @@ public enum AtmCombo {
       case WILDCARD_WILDCARD ->
           visitor.visitWildcard_Wildcard(
               (AnnotatedWildcardType) type1, (AnnotatedWildcardType) type2, initialParam);
+      // Reaching this point indicates that there is an AtmCombo missing.
       default -> throw new BugInCF("Unhandled AtmCombo ( " + combo + " ) ");
     };
   }

@@ -28,6 +28,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *     #visitSwitchResultExpression(ExpressionTree, Object)}
  */
 public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
+  /** Creates a SwitchExpressionScanner. */
+  public SwitchExpressionScanner() {}
 
   /**
    * This method is called for each result expression of the switch expression passed in {@link
@@ -107,6 +109,8 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
    * does not descend into switch expressions.
    */
   protected class YieldVisitor extends TreeScanner<@Nullable R, P> {
+    /** Creates a YieldVisitor. */
+    public YieldVisitor() {}
 
     @Override
     public @Nullable R scan(Tree tree, P p) {

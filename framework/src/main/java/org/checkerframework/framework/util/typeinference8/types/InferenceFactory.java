@@ -127,12 +127,12 @@ public class InferenceFactory {
       case METHOD_INVOCATION -> {
         MethodInvocationTree methodInvocation = (MethodInvocationTree) context;
 
-        AnnotatedExecutableType methodType =
+        AnnotatedExecutableType executableType =
             factory.methodFromUseWithoutTypeArgInference(methodInvocation).executableType();
 
         AnnotatedTypeMirror paramType =
             assignedToExecutable(
-                path, methodInvocation, methodInvocation.getArguments(), methodType);
+                path, methodInvocation, methodInvocation.getArguments(), executableType);
         return new ProperType(
             paramType,
             assignedToExecutable(
@@ -197,7 +197,7 @@ public class InferenceFactory {
 
   /**
    * If the variable's type is a type variable, return getAnnotatedTypeLhsNoTypeVarDefault(tree).
-   * Rational:
+   * Rationale:
    *
    * <p>For example:
    *
@@ -232,8 +232,8 @@ public class InferenceFactory {
    *
    * The local variable default must be used or else the assignment context type is missing an
    * annotation. So, an incompatible types in return error is issued in the above code. We could
-   * improve type argument inference in this case and by using the lower bound of {@code S} instead
-   * of the local variable default.
+   * improve type argument inference in this case by using the lower bound of {@code S} instead of
+   * the local variable default.
    *
    * @param atypeFactory AnnotatedTypeFactory
    * @param assignmentContext VariableTree
@@ -271,15 +271,15 @@ public class InferenceFactory {
       }
     }
 
-    ExecutableType methodType = getTypeOfMethodAdaptedToUse(invocation, context);
-    if (treeIndex >= methodType.getParameterTypes().size() - 1
+    ExecutableType executableType = getTypeOfMethodAdaptedToUse(invocation, context);
+    if (treeIndex >= executableType.getParameterTypes().size() - 1
         && TreeUtils.isVarargsCall(invocation)) {
-      treeIndex = methodType.getParameterTypes().size() - 1;
-      TypeMirror typeMirror = methodType.getParameterTypes().get(treeIndex);
+      treeIndex = executableType.getParameterTypes().size() - 1;
+      TypeMirror typeMirror = executableType.getParameterTypes().get(treeIndex);
       return ((ArrayType) typeMirror).getComponentType();
     }
 
-    return methodType.getParameterTypes().get(treeIndex);
+    return executableType.getParameterTypes().get(treeIndex);
   }
 
   /**
@@ -288,14 +288,14 @@ public class InferenceFactory {
    * @param path path to the argument
    * @param invocation a method or constructor invocation
    * @param arguments the argument expression tress
-   * @param methodType the type of the method or constructor
+   * @param executableType the type of the method or constructor
    * @return the rhs of the assignment of an argument and its formal parameter
    */
   private static AnnotatedTypeMirror assignedToExecutable(
       TreePath path,
       ExpressionTree invocation,
       List<? extends ExpressionTree> arguments,
-      AnnotatedExecutableType methodType) {
+      AnnotatedExecutableType executableType) {
     int treeIndex = -1;
     for (int i = 0; i < arguments.size(); ++i) {
       ExpressionTree argumentTree = arguments.get(i);
@@ -305,14 +305,14 @@ public class InferenceFactory {
       }
     }
 
-    if (treeIndex >= methodType.getParameterTypes().size() - 1
+    if (treeIndex >= executableType.getParameterTypes().size() - 1
         && TreeUtils.isVarargsCall(invocation)) {
-      treeIndex = methodType.getParameterTypes().size() - 1;
-      AnnotatedTypeMirror typeMirror = methodType.getParameterTypes().get(treeIndex);
+      treeIndex = executableType.getParameterTypes().size() - 1;
+      AnnotatedTypeMirror typeMirror = executableType.getParameterTypes().get(treeIndex);
       return ((AnnotatedArrayType) typeMirror).getComponentType();
     }
 
-    return methodType.getParameterTypes().get(treeIndex);
+    return executableType.getParameterTypes().get(treeIndex);
   }
 
   /**
@@ -508,27 +508,29 @@ public class InferenceFactory {
   /**
    * If a mapping, theta, for {@code invocation} doesn't exist create it by:
    *
-   * <p>Creates inference variables for the type parameters to {@code methodType} for a particular
-   * {@code invocation}. Initializes the bounds of the variables. Returns a mapping from type
-   * variables to newly created variables.
+   * <p>Creates inference variables for the type parameters to {@code executableType} for a
+   * particular {@code invocation}. Initializes the bounds of the variables. Returns a mapping from
+   * type variables to newly created variables.
    *
    * <p>Otherwise, returns the previously created mapping.
    *
    * @param invocation method or constructor invocation
-   * @param methodType type of generic method
+   * @param executableType type of generic method
    * @param context Java8InferenceContext
-   * @return a mapping of the type variables of {@code methodType} to inference variables
+   * @return a mapping of the type variables of {@code executableType} to inference variables
    */
   public Theta createThetaForInvocation(
-      ExpressionTree invocation, AbstractExecutableType methodType, Java8InferenceContext context) {
+      ExpressionTree invocation,
+      AbstractExecutableType executableType,
+      Java8InferenceContext context) {
     if (context.maps.containsKey(invocation)) {
       return context.maps.get(invocation);
     }
     Theta map = new Theta();
 
-    // Create inference variables for the type parameters to methodType
+    // Create inference variables for the type parameters to executableType
 
-    for (AnnotatedTypeVariable pl : methodType.getAnnotatedTypeVariables()) {
+    for (AnnotatedTypeVariable pl : executableType.getAnnotatedTypeVariables()) {
       @SuppressWarnings("interning:interned.object.creation")
       Variable al = new @Interned Variable(pl, pl.getUnderlyingType(), invocation, context, map);
       map.put(pl.getUnderlyingType(), al);
@@ -620,7 +622,7 @@ public class InferenceFactory {
       }
     }
 
-    // Create inference variables for the type parameters to compileTypeDecl
+    // Create inference variables for the type parameters to compileTimeDecl
     if (memRef.getTypeArguments() == null && compileTimeDecl.hasTypeVariables()) {
       Iterator<? extends AnnotatedTypeVariable> iter1 =
           compileTimeDecl.getAnnotatedTypeVariables().iterator();
@@ -648,7 +650,7 @@ public class InferenceFactory {
    *
    * @param lambda lambda expression tree
    * @param functionalInterface functional interface of the lambda
-   * @return a mapping of the type variables of {@code compileTimeDecl} to inference variables
+   * @return a mapping of the type variables of {@code functionalInterface} to inference variables
    */
   public Theta createThetaForLambda(LambdaExpressionTree lambda, AbstractType functionalInterface) {
     if (context.maps.containsKey(lambda)) {
@@ -810,8 +812,8 @@ public class InferenceFactory {
    *
    * @param a type
    * @param b type
-   * @return the pair of {@code a} as the least upper bound of {@code a} and {@code b} and * {@code
-   *     b} as the least upper bound of {@code a} and {@code b}
+   * @return the pair of {@code a} as the least upper bound of {@code a} and {@code b} and {@code b}
+   *     as the least upper bound of {@code a} and {@code b}
    */
   public IPair<AbstractType, AbstractType> getParameterizedSupers(AbstractType a, AbstractType b) {
     TypeMirror aTypeMirror = a.getJavaType();
@@ -912,7 +914,7 @@ public class InferenceFactory {
    * Returns the greatest lower bound of {@code abstractTypes}.
    *
    * @param abstractTypes types to glb
-   * @return the greatest upper bounds of {@code abstractTypes}
+   * @return the greatest lower bound of {@code abstractTypes}
    */
   public AbstractType glb(Set<AbstractType> abstractTypes) {
     AbstractType ti = null;
@@ -1056,7 +1058,7 @@ public class InferenceFactory {
         for (UseOfVariable ei : es) {
           constraintSet.add(
               new Typing(
-                  "Exception constraint for %s" + expression,
+                  "Exception constraint for " + expression,
                   new ProperType(iter2.next(), xi, context),
                   ei,
                   TypeConstraint.Kind.SUBTYPE));

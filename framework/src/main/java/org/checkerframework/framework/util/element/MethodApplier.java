@@ -17,7 +17,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Adds annotations from an element to the return type, formal parameter types, type parameters, and
@@ -117,7 +117,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
 
   @Override
   protected boolean isAccepted() {
-    return MethodApplier.accepts(type, element);
+    return accepts(type, element);
   }
 
   /**
@@ -174,7 +174,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     if (!unmatched.isEmpty()) {
       throw new BugInCF(
           "Unexpected annotations ( "
-              + StringsPlume.join(",", unmatched)
+              + StringsP.join(",", unmatched)
               + " ) for"
               + "type ( "
               + type

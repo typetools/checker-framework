@@ -16,34 +16,34 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 
 /**
- * Represents the compile-time declaration of the method reference that is the method to which the
- * expression refers. See <a
+ * Represents the compile-time declaration type of the method reference that is the method to which
+ * the method reference refers. See <a
  * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.13.1">JLS section
  * 15.13.1</a> for a complete definition.
  *
  * <p>The type of a member reference is a functional interface. The function type of a member
  * reference is the type of the single abstract method declared by the functional interface. The
  * compile-time declaration type is the type of the actual method referenced by the method
- * reference, i.e. the method that is actually being referenced.
+ * reference.
  *
  * <p>For example,
  *
  * <pre>{@code
- * static class MyClass {
- *   String field;
- *   public static int compareByField(MyClass a, MyClass b) { ... }
- * }
- * Comparator<MyClass> func = MyClass::compareByField;
+ * class MyClass {
+ *    public int compareByField(MyClass other) { ... }
+ *  }
+ *  Comparator<MyClass> func = MyClass::compareByField;
  * }</pre>
  *
- * <p>The function type is {@code compare(Comparator<MyClass> this, MyClass o1, MyClass o2)} where
- * as the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}.
+ * <p>The function type is {@code int compare(Comparator<MyClass> this, MyClass o1, MyClass o2)}
+ * whereas the compile-time declaration type is {@code int compareByField(MyClass this, MyClass
+ * other)}.
  */
 public class CompileTimeDeclarationType extends AbstractExecutableType {
 
   /**
-   * The type of the receiver. This may be different than {@code
-   * annotatedExecutableType.getReceiver()}.
+   * The type of the receiver. Its value may be different than {@code
+   * this.annotatedExecutableType.getReceiver()}.
    */
   AnnotatedTypeMirror receiver;
 
@@ -51,29 +51,29 @@ public class CompileTimeDeclarationType extends AbstractExecutableType {
   MemberReferenceTree methodRef;
 
   /**
-   * Creates an invocation type for a method reference.
+   * Creates a compile-time declaration type for a method reference.
    *
-   * @param annotatedExecutableType annotated method type
-   * @param methodType java method type
+   * @param annotatedExecutableType annotated method or constructor type
+   * @param executableType a Java method or constructor type
    * @param methodRef a method reference
    * @param receiver the type of the receiver for this method reference
    * @param context the context
    */
   public CompileTimeDeclarationType(
       AnnotatedExecutableType annotatedExecutableType,
-      ExecutableType methodType,
+      ExecutableType executableType,
       MemberReferenceTree methodRef,
       AnnotatedTypeMirror receiver,
       Java8InferenceContext context) {
-    super(annotatedExecutableType, methodType, methodRef, context);
+    super(annotatedExecutableType, executableType, methodRef, context);
     this.receiver = receiver;
     this.methodRef = methodRef;
   }
 
   /**
-   * Returns the method reference for with this a compile time declaration.
+   * Returns the method reference for which this is a compile-time declaration.
    *
-   * @return the method reference for with this a compile time declaration
+   * @return the method reference for which this is a compile-time declaration
    */
   public MemberReferenceTree getMethodRef() {
     return methodRef;
@@ -82,7 +82,7 @@ public class CompileTimeDeclarationType extends AbstractExecutableType {
   @Override
   public List<AbstractType> getParameterTypes(Theta map, int size) {
     List<AnnotatedTypeMirror> params = new ArrayList<>(annotatedExecutableType.getParameterTypes());
-    List<TypeMirror> paramsJava = new ArrayList<>(methodType.getParameterTypes());
+    List<TypeMirror> paramsJava = new ArrayList<>(executableType.getParameterTypes());
 
     if (MemberReferenceKind.getMemberReferenceKind(methodRef).isUnbound()) {
       params.add(0, receiver);
@@ -105,8 +105,8 @@ public class CompileTimeDeclarationType extends AbstractExecutableType {
 
   @Override
   public AbstractType getReturnType(Theta map) {
-    TypeMirror returnType;
     AnnotatedTypeMirror annotatedReturnType;
+    TypeMirror returnType;
 
     if (methodRef.getMode() == ReferenceMode.NEW) {
       annotatedReturnType =
@@ -114,13 +114,14 @@ public class CompileTimeDeclarationType extends AbstractExecutableType {
               methodRef, annotatedExecutableType);
       returnType = annotatedReturnType.getUnderlyingType();
     } else {
-      returnType = methodType.getReturnType();
       annotatedReturnType = annotatedExecutableType.getReturnType();
+      returnType = executableType.getReturnType();
     }
 
     if (map == null) {
       return new ProperType(annotatedReturnType, returnType, context);
+    } else {
+      return InferenceType.create(annotatedReturnType, returnType, map, context);
     }
-    return InferenceType.create(annotatedReturnType, returnType, map, context);
   }
 }

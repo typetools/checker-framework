@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BinaryOperator;
-import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -44,7 +43,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
 import org.plumelib.util.ToStringComparator;
@@ -220,15 +219,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Furthermore, if the method is deterministic, we store its result {@code val} in the store.
    *
    * @param methodInvocationNode method whose information is being updated
-   * @param atypeFactory the type factory of the associated checker
    * @param val abstract value of the method call
    */
-  public void updateForMethodCall(
-      MethodInvocationNode methodInvocationNode, AnnotatedTypeFactory atypeFactory, V val) {
+  public void updateForMethodCall(MethodInvocationNode methodInvocationNode, V val) {
     ExecutableElement method = methodInvocationNode.getTarget().getMethod();
     @SuppressWarnings("unchecked")
-    GenericAnnotatedTypeFactory<V, S, ?, ?> gatypeFactory =
-        (GenericAnnotatedTypeFactory<V, S, ?, ?>) atypeFactory;
+    GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory = analysis.atypeFactory;
 
     // Case 1: The method is side-effect-free.
     boolean hasSideEffect =
@@ -237,70 +233,75 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             || atypeFactory.isSideEffectFree(method));
     if (hasSideEffect) {
 
-      boolean sideEffectsUnrefineAliases = gatypeFactory.sideEffectsUnrefineAliases;
+      boolean sideEffectsUnrefineAliases = atypeFactory.sideEffectsUnrefineAliases;
       Node receiver = methodInvocationNode.getTarget().getReceiver();
       boolean hasDoesNotUnrefineReceiver = atypeFactory.hasDoesNotUnrefineReceiver(method);
 
       // TODO: Also remove if any element/argument to the annotation is not
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
 
-      // If @DoesNotUnrefineReceiver is present, compute the receiver as a JavaExpression so
-      // that it can be exempted from unrefinement in all expression categories below.
-      @Nullable JavaExpression receiverJe =
+      // This is an expression that is exempted from unrefinement, or null if no expression is
+      // exempted.
+      @Nullable JavaExpression unrefinableReceiverJe =
           hasDoesNotUnrefineReceiver ? JavaExpression.fromNode(receiver) : null;
-      // Returns true if the expression should NOT be unrefined (because the method is
-      // annotated @DoesNotUnrefineReceiver and the expression is the receiver).
-      Predicate<JavaExpression> doNotUnrefine =
-          receiverJe != null ? je -> je.equals(receiverJe) : je -> false;
 
       // Update local variables.
       if (sideEffectsUnrefineAliases) {
         localVariableValues
             .entrySet()
-            .removeIf(
-                e -> {
-                  LocalVariable lv = e.getKey();
-                  return lv.isModifiableByOtherCode() && !doNotUnrefine.test(lv);
-                });
+            .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe));
       }
 
       // Update this value.
       if (sideEffectsUnrefineAliases
-          && !(receiverJe instanceof ThisReference)
-          && !(receiverJe instanceof SuperReference)) {
+          && !(unrefinableReceiverJe instanceof ThisReference)
+          && !(unrefinableReceiverJe instanceof SuperReference)) {
         thisValue = null;
       }
 
       // Update field values.
       if (sideEffectsUnrefineAliases) {
-        fieldValues
-            .entrySet()
-            .removeIf(
-                (Map.Entry<FieldAccess, V> e) -> {
-                  FieldAccess fa = e.getKey();
-                  return fa.isModifiableByOtherCode() && !doNotUnrefine.test(fa);
-                });
+        fieldValues.entrySet().removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe));
       } else {
         // Case 2 (unassignable fields) and case 3 (monotonic fields).
-        updateFieldValuesForMethodCall(gatypeFactory, doNotUnrefine::test);
+        updateFieldValuesForMethodCall(atypeFactory, unrefinableReceiverJe);
       }
 
       // Update array values.
-      arrayValues.entrySet().removeIf(e -> !doNotUnrefine.test(e.getKey()));
+      arrayValues.entrySet().removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe));
 
       // Update information about method calls.
       methodCallExpressions
           .entrySet()
-          .removeIf(
-              e -> {
-                MethodCall mc = e.getKey();
-                return mc.isModifiableByOtherCode() && !doNotUnrefine.test(mc);
-              });
+          .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe));
     }
 
     // Store information about method calls if possible.
     JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
     replaceValue(methodCall, val);
+  }
+
+  /**
+   * Returns true if the given expression might evaluate to a different value.
+   *
+   * <p>Some side effects are ignored: {@code notSideEffectedExpression} is treated as if it cannot
+   * change. Concretely, the implementation evaluates to false if {@code expr} is strictly equal to
+   * {@code notSideEffectedExpression}.
+   *
+   * @param expr an expression
+   * @param notSideEffectedExpression an expression that is never considered to be side-effected, or
+   *     null
+   * @return true if the abstract value of the expression might have changed
+   */
+  private boolean isSideEffected(
+      JavaExpression expr, @Nullable JavaExpression notSideEffectedExpression) {
+    if (!expr.isModifiableByOtherCode()) {
+      return false;
+    }
+    if (notSideEffectedExpression != null && expr.equals(notSideEffectedExpression)) {
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -354,8 +355,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         atypeFactory.getAnnotationWithMetaAnnotation(
             fieldAccess.getField(), MonotonicQualifier.class);
     List<AnnotationMirror> metaAnnotations =
-        CollectionsPlume.withoutDuplicates(
-            CollectionsPlume.mapList(pair -> pair.second, fieldAnnotationPairs));
+        CollectionsP.withoutDuplicates(
+            CollectionsP.mapList(pair -> pair.second, fieldAnnotationPairs));
     List<AnnotationMirror> monotonicAnnotations = new ArrayList<>(metaAnnotations.size());
     for (AnnotationMirror metaAnnotation : metaAnnotations) {
       @SuppressWarnings("deprecation") // permitted for use in the framework
@@ -378,34 +379,35 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Helper for {@link #updateForMethodCall(MethodInvocationNode, AnnotatedTypeFactory,
-   * CFAbstractValue)}. Remove any information about field values that might not be valid any more
-   * after a method call, and add information guaranteed by the method.
+   * Helper for {@link #updateForMethodCall(MethodInvocationNode, CFAbstractValue)}. Remove any
+   * information about field values that might not be valid any more after a method call, and add
+   * information guaranteed by the method.
    *
    * <p>More specifically, remove all information about fields except for unassignable fields and
    * fields that have a monotonic annotation.
    *
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
-   * @param doNotUnrefine if true of a field access, don't unrefine it. This predicate indicates
-   *     exceptions: fields that are not updated by this method.
+   * @param unrefinableReceiverJe if non-null, the receiver, which should not be unrefined
    */
   private void updateFieldValuesForMethodCall(
-      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory, Predicate<FieldAccess> doNotUnrefine) {
+      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory,
+      @Nullable JavaExpression unrefinableReceiverJe) {
     Map<FieldAccess, V> newFieldValues = new HashMap<>(MapsP.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
       V previousValue = e.getValue();
 
-      V newValue;
-      boolean doNotUnrefineResult = doNotUnrefine.test(fieldAccess);
-      if (doNotUnrefineResult) {
-        newValue = previousValue;
+      if (!isSideEffected(fieldAccess, unrefinableReceiverJe)) {
+        // If the field hasn't been side-effected, there is no need to compute a new value for it.
+        // For unmodifiable fields, this is safe because they are not assignable by other code.
+        // For the exempt receiver, skipping recomputation is necessary to preserve its value.
+        newFieldValues.put(fieldAccess, previousValue);
       } else {
-        newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
-      }
-      if (newValue != null) {
-        // Keep information for all hierarchies where we had a monotonic annotation.
-        newFieldValues.put(fieldAccess, newValue);
+        V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
+        if (newValue != null) {
+          // Keep information for all hierarchies where we had a monotonic annotation.
+          newFieldValues.put(fieldAccess, newValue);
+        }
       }
     }
     fieldValues = newFieldValues;

@@ -59,7 +59,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * This class implements the annotation inference algorithm for the Resource Leak Checker. It infers
@@ -513,8 +513,9 @@ public class MustCallInference {
    */
   private int getIndexOfParam(Obligation obligation) {
     Set<ResourceAlias> resourceAliases = obligation.resourceAliases;
-    List<VariableElement> paramElts =
-        CollectionsPlume.mapList(TreeUtils::elementFromDeclaration, methodTree.getParameters());
+    // `elementFromDeclaration` returns `@Nullable`; if any are actually null, that is a bug.
+    List<@Nullable VariableElement> paramElts =
+        CollectionsP.mapList(TreeUtils::elementFromDeclaration, methodTree.getParameters());
     for (ResourceAlias resourceAlias : resourceAliases) {
       int paramIndex = paramElts.indexOf(resourceAlias.element);
       if (paramIndex != -1) {
@@ -692,7 +693,7 @@ public class MustCallInference {
    * @param obligations the current set of tracked Obligations
    * @param invocation a method invocation node to check
    */
-  private void inferOwningForRecieverOrFormalParamPassedToCall(
+  private void inferOwningForReceiverOrFormalParamPassedToCall(
       Set<Obligation> obligations, MethodInvocationNode invocation) {
     Node receiver = invocation.getTarget().getReceiver();
     receiver = NodeUtils.removeCasts(receiver);
@@ -790,7 +791,7 @@ public class MustCallInference {
    * <ul>
    *   <li>If a formal parameter is passed as an owning parameter, add an @Owning annotation to that
    *       formal parameter (see {@link #inferOwningParamsViaOwnershipTransfer}).
-   *   <li>It calls {@link #inferOwningForRecieverOrFormalParamPassedToCall} to infer @Owning
+   *   <li>It calls {@link #inferOwningForReceiverOrFormalParamPassedToCall} to infer @Owning
    *       annotations for the receiver or arguments of a call by analyzing the called-methods set
    *       after the call.
    *   <li>It calls {@link #inferMustCallAliasFromThisOrSuperCall} to infer @MustCallAlias
@@ -810,7 +811,7 @@ public class MustCallInference {
     } else if (invocation instanceof MethodInvocationNode invMin) {
       inferMustCallAliasFromThisOrSuperCall(obligations, invMin);
       inferOwningParamsViaOwnershipTransfer(obligations, invocation);
-      inferOwningForRecieverOrFormalParamPassedToCall(obligations, invMin);
+      inferOwningForReceiverOrFormalParamPassedToCall(obligations, invMin);
     }
   }
 

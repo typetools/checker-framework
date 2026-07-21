@@ -92,7 +92,12 @@ public final class ElementAnnotationApplier {
     }
   }
 
-  /** Issues an "invalid.annotation.location.bytecode warning. */
+  /**
+   * Issues an "invalid.annotation.location.bytecode" warning.
+   *
+   * @param element the location at which to report the warning
+   * @param typeFactory the factory that reports the warning
+   */
   private static void reportInvalidLocation(Element element, AnnotatedTypeFactory typeFactory) {
     Element report = element;
     if (element.getEnclosingElement().getKind() == ElementKind.METHOD) {
@@ -183,6 +188,7 @@ public final class ElementAnnotationApplier {
    * has been placed here.
    *
    * @param varEle the element that may represent a lambda's parameter
+   * @param typeFactory the type factory
    * @return a LambdaExpressionTree if the varEle represents a parameter in a lambda expression,
    *     otherwise null
    */
@@ -215,7 +221,12 @@ public final class ElementAnnotationApplier {
    * Annotates uses of type variables with annotation written explicitly on the type parameter
    * declaration and/or its upper bound.
    */
-  private static class TypeVarAnnotator extends AnnotatedTypeScanner<Void, AnnotatedTypeFactory> {
+  private static final class TypeVarAnnotator
+      extends AnnotatedTypeScanner<Void, AnnotatedTypeFactory> {
+
+    /** Creates a new TypeVarAnnotator. */
+    TypeVarAnnotator() {}
+
     @Override
     public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeFactory factory) {
       TypeParameterElement tpelt = (TypeParameterElement) type.getUnderlyingType().asElement();
@@ -224,7 +235,7 @@ public final class ElementAnnotationApplier {
           && type.getUpperBound().getPrimaryAnnotations().isEmpty()
           && tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
         try {
-          ElementAnnotationApplier.applyInternal(type, tpelt, factory);
+          applyInternal(type, tpelt, factory);
         } catch (UnexpectedAnnotationLocationException e) {
           // The above is the second call to applyInternal on this type and element, so
           // any errors were already reported by the first call. (See the only use of this

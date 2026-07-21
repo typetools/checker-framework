@@ -21,47 +21,52 @@ import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 /**
- * An inference type for a method, constructor, or method reference. This is a wrapper around {@link
- * AnnotatedExecutableType} that returns {@link AbstractType}s for the types in the {@link
- * AnnotatedExecutableType}
+ * An inference type for a method call, a constructor invocation, or a compile-time declaration of a
+ * method reference. This is a wrapper around {@link AnnotatedExecutableType} whose methods return
+ * {@link AbstractType}.
  */
 public abstract class AbstractExecutableType {
 
-  /** The annotated method type. */
+  /** The underlying annotated method or constructor type. */
   protected final AnnotatedExecutableType annotatedExecutableType;
 
-  /** The Java method type. */
-  protected final ExecutableType methodType;
+  /** The underlying Java method or constructor type. */
+  protected final ExecutableType executableType;
 
-  /** The context. */
+  /** The inference context. */
   protected final Java8InferenceContext context;
 
   /** The annotated type factory. */
   protected final AnnotatedTypeFactory typeFactory;
 
-  /** A mapping from polymorphic annotation to {@link QualifierVar}. */
+  /**
+   * A mapping from polymorphic annotation to {@link QualifierVar}. It keeps track of which
+   * annotation mirror is represented by which {@code QualifierVar}.
+   */
   protected final AnnotationMirrorMap<QualifierVar> qualifierVars;
 
   /**
-   * Creates an invocation type.
+   * Fills in fields of abstract class AbstractExecutableType.
    *
-   * @param annotatedExecutableType annotated method type
-   * @param methodType java method type
+   * @param annotatedExecutableType the underlying annotated method or constructor type
+   * @param executableType the underlying Java method or constructor type. This must be an argument
+   *     to the constructor, because it is not always equal to {@code
+   *     annotatedExecutableType.getUnderlyingType()}.
    * @param invocation a method or constructor invocation
    * @param context the context
    */
   protected AbstractExecutableType(
       AnnotatedExecutableType annotatedExecutableType,
-      ExecutableType methodType,
+      ExecutableType executableType,
       ExpressionTree invocation,
       Java8InferenceContext context) {
-    assert annotatedExecutableType != null && methodType != null;
+    assert annotatedExecutableType != null && executableType != null;
     this.annotatedExecutableType = annotatedExecutableType;
-    this.methodType = methodType;
+    this.executableType = executableType;
     this.context = context;
     this.typeFactory = context.typeFactory;
 
-    SimpleAnnotatedTypeScanner<Void, Set<AnnotationMirror>> s =
+    SimpleAnnotatedTypeScanner<Void, Set<AnnotationMirror>> polymorphicQualifierCollector =
         new SimpleAnnotatedTypeScanner<>(
             (type, polys) -> {
               for (AnnotationMirror a : type.getPrimaryAnnotations()) {
@@ -72,7 +77,7 @@ public abstract class AbstractExecutableType {
               return null;
             });
     Set<AnnotationMirror> polys = new AnnotationMirrorSet();
-    s.visit(annotatedExecutableType, polys);
+    polymorphicQualifierCollector.visit(annotatedExecutableType, polys);
     AnnotationMirrorMap<QualifierVar> qualifierVars = new AnnotationMirrorMap<>();
     for (AnnotationMirror poly : polys) {
       qualifierVars.put(poly, new QualifierVar(invocation, poly, context));
@@ -81,23 +86,23 @@ public abstract class AbstractExecutableType {
   }
 
   /**
-   * Returns the java method type.
+   * Returns the Java method or constructor type.
    *
-   * @return the java method type
+   * @return the Java method or constructor type
    */
   public ExecutableType getJavaType() {
     return annotatedExecutableType.getUnderlyingType();
   }
 
   /**
-   * Returns the thrown types.
+   * Returns the thrown types of this.
    *
    * @param map a mapping from type variable to inference variable
    * @return the thrown types
    */
   public List<? extends AbstractType> getThrownTypes(Theta map) {
     List<AbstractType> thrown = new ArrayList<>();
-    Iterator<? extends TypeMirror> iter = methodType.getThrownTypes().iterator();
+    Iterator<? extends TypeMirror> iter = executableType.getThrownTypes().iterator();
     for (AnnotatedTypeMirror t : annotatedExecutableType.getThrownTypes()) {
       thrown.add(InferenceType.create(t, iter.next(), map, context));
     }
@@ -105,7 +110,7 @@ public abstract class AbstractExecutableType {
   }
 
   /**
-   * Returns the return type.
+   * Returns the return type of this.
    *
    * @param map a mapping from type variable to inference variable
    * @return the return type
@@ -114,17 +119,16 @@ public abstract class AbstractExecutableType {
 
   /**
    * Returns a list of the parameter types of {@code AbstractExecutableType} where the vararg
-   * parameter has been modified to match the arguments in {@code expression}.
+   * parameter has been replaced by individual parameters so the result has length {@code size}.
    *
    * @param map a mapping from type variable to inference variable
    * @param size the number of parameters to return; used to expand the vararg
-   * @return a list of the parameter types of {@code AbstractExecutableType} where the vararg
-   *     parameter has been modified to match the arguments in {@code expression}
+   * @return a list of the parameter types of {@code AbstractExecutableType}, of length {@code size}
    */
   public abstract List<AbstractType> getParameterTypes(Theta map, int size);
 
   /**
-   * Returns the parameter types. (Varags are not expanded.)
+   * Returns the parameter types of this. (Varags are not expanded.)
    *
    * @param map a mapping from type variable to inference variable
    * @return the parameter types
@@ -152,27 +156,27 @@ public abstract class AbstractExecutableType {
   }
 
   /**
-   * Returns the type variables.
+   * Returns the Java type variables.
    *
-   * @return the type variables
+   * @return the Java type variables
    */
   public List<? extends TypeVariable> getTypeVariables() {
-    return methodType.getTypeVariables();
+    return executableType.getTypeVariables();
   }
 
   /**
-   * Returns true if this method is void.
+   * Returns true if this method or constructor has void return type.
    *
-   * @return true if this method is void
+   * @return true if this method or constructor has void return type
    */
   public boolean isVoid() {
     return annotatedExecutableType.getReturnType().getKind() == TypeKind.VOID;
   }
 
   /**
-   * Returns the annotated method type.
+   * Returns the underlying annotated method or constructor type.
    *
-   * @return the annotated method type
+   * @return the underlying annotated method or constructor type
    */
   public AnnotatedExecutableType getAnnotatedType() {
     return annotatedExecutableType;

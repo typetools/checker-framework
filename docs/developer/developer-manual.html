@@ -131,7 +131,7 @@ Framework named <code>jdk</code>.
 
 <p>
 If a change spans multiple projects, make pull requests for all of them.
-Each pull request description's should link to all the others.
+Each pull request description should link to all the others.
 </p>
 
 <p>
@@ -235,7 +235,7 @@ Code in this project follows the
 <a href="https://google.github.io/styleguide/javaguide.html">Google Java Style
   Guide</a>,
 <a href="https://homes.cs.washington.edu/~mernst/advice/coding-style.html">Michael
-Ernst's coding style guidelines</a>, and <a href="https://www.oracle.com/java/technologies/javase/codeconventions-indentation.html#248">Oracle's
+Ernst's coding style guidelines</a>, and <a href="https://www.oracle.com/java/technologies/javase/codeconventions-indentation.html">Oracle's
 Java code conventions</a>.
 </p>
 
@@ -278,12 +278,6 @@ After that succeeds, import the projects into your IDE as Gradle projects.
 
 <p>
 If your IDE cannot find <code>com.sun.source.*</code> packages, try changing the project JDK to JDK 17 or JDK 21.
-</p>
-
-<p>
-For VS Code and Eclipse, run <code>./gradlew eclipseClasspath</code> before running
-the IDE for the first time.
-This ensures generated files are not put in the standard <code>../bin/</code> directories.
 </p>
 
 <p>
@@ -365,7 +359,7 @@ commit hash, it re-uses a previous execution result.  This is a bug because the
 CI job's behavior may depend on the branch name and other factors that are
 independent of the commit hash.  This means that you may see spurious successes
 or failures when your branch of (say) the <code>jdk</code> repository has the
-identical commit hash to some other branch that Azure Pipelines previous ran a
+identical commit hash to some other branch that Azure Pipelines previously ran a
 job for.
 </p>
 
@@ -487,8 +481,11 @@ Pipelines, CircleCI, and/or GitHub Actions on each push to GitHub.
 
 <p>
 By default, your project has no parallelism and thus pipeline runs fail
-immediately. Azure DevOps provides
-a <a href="https://aka.ms/azpipelines-parallelism-request">Microsoft Forms</a>
+immediately. Azure DevOps provides a
+<!-- Another URL that redirects to the same place:
+  https://aka.ms/azpipelines-parallelism-request
+-->
+<a href="https://forms.office.com/r/nwUb97Fj9r">Microsoft Forms</a>
 through which you can request increased public project concurrency for validated
 open-source projects.
 </p>
@@ -601,7 +598,7 @@ If a CI job fails, examine the CI logs.
 <p>
 You can also run the same test locally.  Each CI job runs a different command.
 You can see the commands in
-file <a href="https://github.com/typetools/checker-framework/blob/master/azure-pipelines.yml"><code>azure-pipelines.yml</code></a>,
+file <a href="https://github.com/typetools/checker-framework/blob/master/.azure/azure-pipelines.yml"><code>azure-pipelines.yml</code></a>,
 usually on lines starting with <code>bash:</code>.  The scripts that are run
 generally just invoke gradle to run particular tasks.
 </p>
@@ -611,7 +608,7 @@ Sometimes, CI tests for your pull request may fail even though the same command
 passed locally.  First, ensure you are using the same JDK.  Second, all CI tests
 are run in a Docker container, and you can use that container if necessary.  The
 container names are in top-level
-file <a href="https://github.com/typetools/checker-framework/blob/master/azure-pipelines.yml"><code>azure-pipelines.yml</code></a>,
+file <a href="https://github.com/typetools/checker-framework/blob/master/.azure/azure-pipelines.yml"><code>azure-pipelines.yml</code></a>,
 on lines starting with <code>container:</code>.
 </p>
 
@@ -664,7 +661,9 @@ for example to 6.2.0.2.
 See a separate document about the Checker Framework release process:
 <a href="https://htmlpreview.github.io/?https://github.com/typetools/checker-framework/master/docs/developer/release/README-release-process.html">web version (from previous release)</a> or
 <!-- This relative URL works from a clone, but not from the web. -->
-<a href="release/README-release-process.html">local version (link works from a clone)</a>.
+<a href="release/README-release-process.html">local version (link works if
+  you are reading the Checker Framework Developer Manual from a clone of the
+  Checker Framework repository)</a>.
 </p>
 
 

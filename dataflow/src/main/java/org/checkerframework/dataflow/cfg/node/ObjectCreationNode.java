@@ -9,7 +9,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * A node for a new object creation.
@@ -142,20 +142,22 @@ public class ObjectCreationNode extends Node {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     if (enclosingExpression != null) {
-      sb.append(enclosingExpression + ".");
+      sb.append(enclosingExpression);
+      sb.append('.');
     }
     sb.append("new ");
     if (!tree.getTypeArguments().isEmpty()) {
-      sb.append("<");
-      sb.append(StringsPlume.join(", ", tree.getTypeArguments()));
-      sb.append(">");
+      sb.append('<');
+      sb.append(StringsP.join(", ", tree.getTypeArguments()));
+      sb.append('>');
     }
-    sb.append(typeToInstantiate + "(");
-    sb.append(StringsPlume.join(", ", arguments));
-    sb.append(")");
+    sb.append(typeToInstantiate);
+    sb.append('(');
+    sb.append(StringsP.join(", ", arguments));
+    sb.append(')');
     if (classbody != null) {
       // TODO: maybe this can be done nicer...
-      sb.append(" ");
+      sb.append(' ');
       sb.append(classbody.toString());
     }
     return sb.toString();
