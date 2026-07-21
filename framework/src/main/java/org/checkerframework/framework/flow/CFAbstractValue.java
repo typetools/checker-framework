@@ -761,8 +761,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         throw new NullPointerException("combineSets: bTypeMirror==null");
       }
 
-      AnnotatedTypeVariable aAtv = getTypeVar(aTypeMirror);
-      AnnotatedTypeVariable bAtv = getTypeVar(bTypeMirror);
+      AnnotatedTypeVariable aAtv = null;
+      AnnotatedTypeVariable bAtv = null;
       AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
       AnnotationMirrorSet combinedSets = new AnnotationMirrorSet();
       for (AnnotationMirror top : tops) {
@@ -772,10 +772,34 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         if (a != null && b != null) {
           result = combineTwoAnnotations(a, aTypeMirror, b, bTypeMirror, top);
         } else if (a != null) {
+          if (bAtv == null) {
+            bAtv = getTypeVar(bTypeMirror);
+            if (bAtv == null) {
+              throw new BugInCF("getTypeVar(%s) => null", bTypeMirror);
+            }
+          }
           result = combineAnnotationWithTypeVar(a, bAtv, top, canCombinedSetBeMissingAnnos);
         } else if (b != null) {
+          if (aAtv == null) {
+            aAtv = getTypeVar(aTypeMirror);
+            if (aAtv == null) {
+              throw new BugInCF("getTypeVar(%s) => null", aTypeMirror);
+            }
+          }
           result = combineAnnotationWithTypeVar(b, aAtv, top, canCombinedSetBeMissingAnnos);
         } else {
+          if (aAtv == null) {
+            aAtv = getTypeVar(aTypeMirror);
+            if (aAtv == null) {
+              throw new BugInCF("getTypeVar(%s) => null", aTypeMirror);
+            }
+          }
+          if (bAtv == null) {
+            bAtv = getTypeVar(bTypeMirror);
+            if (bAtv == null) {
+              throw new BugInCF("getTypeVar(%s) => null", bTypeMirror);
+            }
+          }
           result = combineTwoTypeVars(aAtv, bAtv, top, canCombinedSetBeMissingAnnos);
         }
         if (result != null) {
