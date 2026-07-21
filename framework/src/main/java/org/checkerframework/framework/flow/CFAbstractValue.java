@@ -407,22 +407,23 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         boolean canCombinedSetBeMissingAnnos) {
 
       AnnotationMirror upperBound = typeVar.getAnnotationInHierarchy(top);
-      TypeMirror upperBoundTM = typeVar.getUpperBound().getUnderlyingType();
 
       if (!canCombinedSetBeMissingAnnos) {
         TypeVariable typeVarTM = typeVar.getUnderlyingType();
         return combineTwoAnnotations(annotation, typeVarTM, upperBound, typeVarTM, top);
       }
-      AnnotationMirrorSet lBSet =
-          AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, typeVar);
-      AnnotationMirror lowerBound = qualHierarchy.findAnnotationInHierarchy(lBSet, top);
-      TypeMirror lowerBoundTM = typeVar.getLowerBound().getUnderlyingType();
 
+      TypeMirror upperBoundTM = typeVar.getUpperBound().getUnderlyingType();
       TypeMirror typeVarTM = typeVar.getUnderlyingType();
       if (qualHierarchy.isSubtypeShallow(upperBound, upperBoundTM, annotation, typeVarTM)) {
         // no anno is more specific than anno
         return null;
-      } else if (qualHierarchy.isSubtypeShallow(annotation, typeVarTM, lowerBound, lowerBoundTM)) {
+      }
+      AnnotationMirrorSet lBSet =
+          AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, typeVar);
+      AnnotationMirror lowerBound = qualHierarchy.findAnnotationInHierarchy(lBSet, top);
+      TypeMirror lowerBoundTM = typeVar.getLowerBound().getUnderlyingType();
+      if (qualHierarchy.isSubtypeShallow(annotation, typeVarTM, lowerBound, lowerBoundTM)) {
         return lowestQualifier(annotation, lowerBound);
       } else {
         return getBackupAnnoIn(top);
