@@ -65,9 +65,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   protected final TypeMirror underlyingType;
 
   /**
-   * The annotations in this abstract value. Its size is the same as the number of hierarchies,
-   * except that it may be empty if, when creating this CFAbstractValue, true was passed for the
-   * {@code permitEmptyAnnotations} formal parameter.
+   * The annotations in this abstract value. Its size is the same as the number of hierarchies, with
+   * two exceptions. First, some typekinds are excluded by {@link #canBeMissingAnnotations}. Second,
+   * it may be empty if, when creating this CFAbstractValue, true was passed for the {@code
+   * permitEmptyAnnotations} formal parameter.
    */
   protected final AnnotationMirrorSet annotations;
 
@@ -108,7 +109,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     this.annotations = annotations;
     this.underlyingType = underlyingType;
 
-    assert permitEmptyAnnotations
+    assert (permitEmptyAnnotations && annotations.isEmpty())
             || hasAnnotationFromEveryHierarchy(annotations, underlyingType, atypeFactory)
         : "Attempted to create incomplete CFAbstractValue: "
             + (underlyingType + " [" + underlyingType.getClass().getSimpleName() + "]")
