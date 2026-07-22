@@ -40,7 +40,7 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
   private @Nullable Set<String> accumulatedValues = null;
 
   /**
-   * Creates a new CFAbstractValue.
+   * Creates a new AccumulationValue.
    *
    * @param analysis the analysis class this value belongs to
    * @param annotations the annotations in this abstract value
