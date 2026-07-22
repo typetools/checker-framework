@@ -2,13 +2,10 @@ package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
-import java.util.ArrayList;
 import java.util.List;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
@@ -80,30 +77,6 @@ public class CompileTimeDeclarationType extends AbstractExecutableType {
   }
 
   @Override
-  public List<AbstractType> getParameterTypes(Theta map, int size) {
-    List<AnnotatedTypeMirror> params = new ArrayList<>(annotatedExecutableType.getParameterTypes());
-    List<TypeMirror> paramsJava = new ArrayList<>(executableType.getParameterTypes());
-
-    if (MemberReferenceKind.getMemberReferenceKind(methodRef).isUnbound()) {
-      params.add(0, receiver);
-      paramsJava.add(0, receiver.getUnderlyingType());
-    }
-
-    if (TreeUtils.isVarargsCall(methodRef)) {
-      AnnotatedArrayType vararg = (AnnotatedArrayType) params.remove(params.size() - 1);
-      for (int i = params.size(); i < size; i++) {
-        params.add(vararg.getComponentType());
-      }
-      ArrayType varargTM = (ArrayType) paramsJava.remove(paramsJava.size() - 1);
-      for (int i = paramsJava.size(); i < size; i++) {
-        paramsJava.add(varargTM.getComponentType());
-      }
-    }
-
-    return InferenceType.create(params, paramsJava, map, qualifierVars, context);
-  }
-
-  @Override
   public AbstractType getReturnType(Theta map) {
     AnnotatedTypeMirror annotatedReturnType;
     TypeMirror returnType;
@@ -123,5 +96,19 @@ public class CompileTimeDeclarationType extends AbstractExecutableType {
     } else {
       return InferenceType.create(annotatedReturnType, returnType, map, context);
     }
+  }
+
+  @Override
+  public List<AbstractType> getParameterTypes(Theta map, int size) {
+    AnnotatedTypeMirror receiverTM;
+    if (MemberReferenceKind.getMemberReferenceKind(methodRef).isUnbound()) {
+      // For unbound method references, i.e. Type::instanceMethod, the receiver is treated as the
+      // first parameter.
+      receiverTM = receiver;
+    } else {
+      receiverTM = null;
+    }
+
+    return getParameterTypes(map, size, receiverTM, TreeUtils.isVarargsCall(methodRef));
   }
 }

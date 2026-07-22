@@ -3,14 +3,11 @@ package org.checkerframework.framework.util.typeinference8.types;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
-import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.Element;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
@@ -76,23 +73,6 @@ public class AbstractInvocationType extends AbstractExecutableType {
 
   @Override
   public List<AbstractType> getParameterTypes(Theta map, int size) {
-    List<AnnotatedTypeMirror> params = new ArrayList<>(annotatedExecutableType.getParameterTypes());
-    List<TypeMirror> paramsJava = new ArrayList<>(executableType.getParameterTypes());
-
-    if (TreeUtils.isVarargsCall(invocation)) {
-      AnnotatedArrayType vararg = (AnnotatedArrayType) params.remove(params.size() - 1);
-      for (int i = params.size(); i < size; i++) {
-        params.add(vararg.getComponentType());
-      }
-    }
-
-    if (TreeUtils.isVarargsCall(invocation)) {
-      ArrayType vararg = (ArrayType) paramsJava.remove(paramsJava.size() - 1);
-      for (int i = paramsJava.size(); i < size; i++) {
-        paramsJava.add(vararg.getComponentType());
-      }
-    }
-
-    return InferenceType.create(params, paramsJava, map, qualifierVars, context);
+    return getParameterTypes(map, size, null, TreeUtils.isVarargsCall(invocation));
   }
 }

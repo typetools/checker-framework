@@ -6,12 +6,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
@@ -138,9 +140,49 @@ public abstract class AbstractExecutableType {
   }
 
   /**
-   * Returns true if this method has type variables.
+   * Returns a list of the parameter types of {@code InferenceExecutableType} where the vararg
+   * parameter has been replaced by individual parameters so the result has length {@code size}.
    *
-   * @return true if this method has type variables
+   * <p>This is a helper method for {@link #getParameterTypes(Theta, int)}.
+   *
+   * @param map a mapping from type variable to inference variable
+   * @param size the number of parameters to return; used to expand the vararg
+   * @param firstParam an extra first parameter to add at the beginning of the returned list, or
+   *     null
+   * @param isVarargsCall true if this invocation uses varargs
+   * @return a list of the parameter types of {@code InferenceExecutableType}, of length {@code
+   *     size}
+   */
+  protected final List<AbstractType> getParameterTypes(
+      Theta map, int size, AnnotatedTypeMirror firstParam, boolean isVarargsCall) {
+    List<AnnotatedTypeMirror> params = new ArrayList<>(size);
+    List<TypeMirror> paramsJava = new ArrayList<>(size);
+
+    if (firstParam != null) {
+      params.add(firstParam);
+      paramsJava.add(firstParam.getUnderlyingType());
+    }
+
+    params.addAll(annotatedExecutableType.getParameterTypes());
+    paramsJava.addAll(executableType.getParameterTypes());
+
+    if (isVarargsCall) {
+      AnnotatedTypeMirror eltATM =
+          ((AnnotatedArrayType) params.remove(params.size() - 1)).getComponentType();
+      TypeMirror eltTM = ((ArrayType) paramsJava.remove(paramsJava.size() - 1)).getComponentType();
+      for (int i = params.size(); i < size; i++) {
+        params.add(eltATM);
+        paramsJava.add(eltTM);
+      }
+    }
+
+    return InferenceType.create(params, paramsJava, map, qualifierVars, context);
+  }
+
+  /**
+   * Returns true if this type has type variables.
+   *
+   * @return true if this type has type variables
    */
   public boolean hasTypeVariables() {
     return !annotatedExecutableType.getTypeVariables().isEmpty();
