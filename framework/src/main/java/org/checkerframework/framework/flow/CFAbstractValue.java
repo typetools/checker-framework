@@ -776,16 +776,20 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         if (a != null && b != null) {
           result = combineTwoAnnotations(a, aTypeMirror, b, bTypeMirror, top);
         } else if (a != null) {
-          if (bAtv == null) {
+          if (!bAtvIsSet) {
             bAtv = getTypeVar(bTypeMirror);
-            if (bAtv == null) {
-              throw new BugInCF("getTypeVar(%s) => null", bTypeMirror);
-            }
+            bAtvIsSet = true;
+          }
+          if (bAtv == null) {
+            throw new BugInCF("getTypeVar(%s) => null", bTypeMirror);
           }
           result = combineAnnotationWithTypeVar(a, bAtv, top, canCombinedSetBeMissingAnnos);
         } else if (b != null) {
           if (aAtv == null) {
-            aAtv = getTypeVar(aTypeMirror);
+            if (!aAtvIsSet) {
+              aAtv = getTypeVar(aTypeMirror);
+              aAtvIsSet = true;
+            }
             if (aAtv == null) {
               throw new BugInCF("getTypeVar(%s) => null", aTypeMirror);
             }
