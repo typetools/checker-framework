@@ -196,8 +196,9 @@ public abstract class GenericAnnotatedTypeFactory<
   public final @Nullable Set<TypeMirror> relevantJavaTypes;
 
   /**
-   * True if users may write type annotations on arrays. Ignored unless {@link #relevantJavaTypes}
-   * is non-null.
+   * The simple and fully-qualified names of the types in {@link #relevantJavaTypes}. null means no
+   * restrictions. This is redundant with the value of {@link #relevantJavaTypes} but is included
+   * for efficiency.
    */
   public final @Nullable Set<String> relevantJavaTypeNames;
 
@@ -404,9 +405,8 @@ public abstract class GenericAnnotatedTypeFactory<
           relevantJavaTypesTemp.add(erased);
           String typeString = erased.toString();
           relevantJavaTypeNamesTemp.add(typeString);
-          if (clazz.isPrimitive()) {
+          if (!clazz.isPrimitive()) { // TODO: Check logic
             nonprimitivesAreRelevantTemp = true;
-          } else {
             int dotIndex = typeString.lastIndexOf('.');
             if (dotIndex != -1) {
               // It's a fully-qualified name.  Add the simple name as well.

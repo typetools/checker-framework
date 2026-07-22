@@ -1114,7 +1114,7 @@ public class WholeProgramInferenceJavaParserStorage
       return true;
     }
 
-    // `aname` is a fully-qualified name.
+    // `aName` is a fully-qualified name.
     String aName = anno.getNameAsString();
     if (!atypeFactory.isSupportedQualifier(aName)) {
       // The annotation might be a declaration qualifier, such as a side effect specification.
