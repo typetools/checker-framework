@@ -94,10 +94,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       outerMethodType = executableType;
     }
 
-    InvocationTypeInference java8Inference =
-        new InvocationTypeInference(typeFactory, pathToExpression);
-    java8InferenceStack.push(java8Inference);
+    boolean pushedToInferenceStack = false;
     try {
+      InvocationTypeInference java8Inference =
+          new InvocationTypeInference(typeFactory, pathToExpression);
+      java8InferenceStack.push(java8Inference);
+      pushedToInferenceStack = true;
       if (outerTree instanceof MemberReferenceTree mrt) {
         return java8Inference.infer(mrt);
       } else {
@@ -125,7 +127,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       }
       throw BugInCF.addLocation(outerTree, ex);
     } finally {
-      if (!java8InferenceStack.isEmpty()) {
+      if (pushedToInferenceStack && !java8InferenceStack.isEmpty()) {
         java8InferenceStack.pop();
       }
     }
