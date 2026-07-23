@@ -7,6 +7,8 @@ all: clean
 	grep -qF "Demo.java:7: warning: [CollectionIncompatibleType] Argument 'i - 1' should not be passed to this method; its type int is not compatible with its collection's type argument Short" Out.txt || (echo "Problem in Out.txt:"; cat Out.txt; false)
 	grep -qF "Demo.java:8: error: [argument] incompatible argument for parameter arg0 of Set.add." Out.txt || (echo "Problem in Out.txt:"; cat Out.txt; false)
 
+test: all
+
 clean:
 	@../../../gradlew clean
 	@rm -f Out.txt

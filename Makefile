@@ -1,0 +1,22 @@
+# This Makefile checks and enforces style.
+# Most build system functionality exists in file `build.gradle`.
+
+.PHONY: all test clean default
+default: all
+all: style-check
+
+test: all
+
+clean:
+
+PLUME_SCRIPTS=checker/bin-devel/.plume-scripts
+
+# Code style; defines `style-check` and `style-fix`.
+CODE_STYLE_EXCLUSIONS_USER := --exclude=manual.html --exclude=annotation-file-format.html --exclude-dir tmpapi --exclude-dir .git-scripts --exclude-dir .html-tools --exclude-dir .plume-scripts
+ifeq (,$(wildcard ${PLUME_SCRIPTS}))
+dummy := $(shell ./gradlew -q getPlumeScripts)
+endif
+include ${PLUME_SCRIPTS}/code-style.mak
+
+.PHONY: get-plume-scripts
+get-plume-scripts:

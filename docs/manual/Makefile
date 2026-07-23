@@ -4,14 +4,15 @@
 
 .PHONY: all test clean
 all: manual.pdf manual.html ../api
+test: all
 
 .PHONY: figures-all
 figures-all:
 	${MAKE} -C figures all
 
-manual.pdf: *.tex plume-bib figures-all check-labels
 # It is not harmful to run `latexmk` needlessly because it does its own dependency check,
 # which depends on file contents, not timestamp.
+manual.pdf: *.tex plume-bib figures-all check-labels
 	latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
 
 .PHONY: html
@@ -69,6 +70,7 @@ plume-bib:
 clean:
 	@\rm -f *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc manual.image.tex
 
+.PHONY: very-clean very_clean
 very-clean: very_clean
 very_clean: clean
 	@\rm -f manual.html manual.bbl CFLogo.png manual001.png favicon-checkerframework.png *.svg

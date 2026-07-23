@@ -1,6 +1,8 @@
 .PHONY: all test clean
 all: bridge
 
+test: all
+
 .PHONY: bridge
 bridge:
 	${MAKE} -C bridge

@@ -8,6 +8,10 @@ all: \
  Dockerfile-ubuntu-jdk25 Dockerfile-ubuntu-jdk25-plus \
  Dockerfile-ubuntu-jdk26 Dockerfile-ubuntu-jdk26-plus
 
+test: all
+
+clean:
+
 %: %.m4 Dockerfile-contents-ubuntu-base.m4 Dockerfile-contents-ubuntu-plus.m4 Dockerfile-contents-apt-clean.m4
 	@chmod -f +w $@ || true
 	m4 $< > $@
