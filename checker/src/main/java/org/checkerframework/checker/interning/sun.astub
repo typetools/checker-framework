@@ -100,7 +100,7 @@ public class ConnectorBootstrap {
          public static final @Interned String USE_LOCAL_ONLY = "true";
          public static final @Interned String USE_REGISTRY_SSL = "false";
          public static final @Interned String USE_AUTHENTICATION = "true";
-         public static final @Interned String PASSWORD_FILE_NAME = "jmxremote.password";
+         public static final @Interned String PASSWORD_FILE_NAME = "jmxremote.password"; // pragma: allowlist secret
          public static final @Interned String ACCESS_FILE_NAME = "jmxremote.access";
          public static final @Interned String SSL_NEED_CLIENT_AUTH = "false";
 }
@@ -144,7 +144,7 @@ public class PKCS9Attribute {
      public static final @Interned String MESSAGE_DIGEST_STR = "MessageDigest";
      public static final @Interned String SIGNING_TIME_STR = "SigningTime";
      public static final @Interned String COUNTERSIGNATURE_STR = "Countersignature";
-     public static final @Interned String CHALLENGE_PASSWORD_STR = "ChallengePassword";
+     public static final @Interned String CHALLENGE_PASSWORD_STR = "ChallengePassword";  // pragma: allowlist secret
      public static final @Interned String UNSTRUCTURED_ADDRESS_STR = "UnstructuredAddress";
      public static final @Interned String ISSUER_SERIALNUMBER_STR = "IssuerAndSerialNumber";
      public static final @Interned String EXTENSION_REQUEST_STR = "ExtensionRequest";

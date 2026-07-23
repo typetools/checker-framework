@@ -51,12 +51,3 @@ class TestLocalVariableGenericArray:
 		local 1 # 8 + 10 :
 		    type:
 			inner-type 3, 0 : @A
-
-
-
-
-
-
-
-
-

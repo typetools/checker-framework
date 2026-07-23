@@ -7,4 +7,3 @@ class InstanceOfSimple:
     method foo(Ljava/lang/Object;)V:
         return:
         insert-annotation Method.body, Block.statement 0, If.condition, Parenthesized.expression, InstanceOf.type: @java.lang.Tainted
-

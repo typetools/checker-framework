@@ -1,4 +1,4 @@
-.PHONY: all clean
+.PHONY: all test clean
 
 all: clean
 	$(JAVAC) Issue607SuperClass.java Issue607Interface.java

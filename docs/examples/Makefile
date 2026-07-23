@@ -1,6 +1,6 @@
 JAVAC ?= $(realpath ../../checker/bin/javac)
 
-.PHONY: all
+.PHONY: all test clean
 
 all: compile
 

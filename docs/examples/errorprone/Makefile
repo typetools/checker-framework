@@ -1,6 +1,6 @@
 JAVA_VER := $(shell java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
 
-.PHONY: all
+.PHONY: all test clean
 
 all: clean
 	- ../../../gradlew build > Out.txt 2>&1

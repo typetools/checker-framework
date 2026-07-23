@@ -1,6 +1,6 @@
 JAVA_VER := $(shell java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
 
-.PHONY: all clean
+.PHONY: all test clean
 
 all:
 # `-fn` command-line argument means never fail the build.

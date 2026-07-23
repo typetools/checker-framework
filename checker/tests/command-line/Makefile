@@ -1,5 +1,5 @@
 # All targets
-.PHONY: all skipped issue618
+.PHONY: all test clean skipped issue618
 
 # Tests that are currently passing
 all: issue618

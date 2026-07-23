@@ -85,4 +85,3 @@ class LocalClass$1OuterLocalClass$1InnerLocalClass:
 
     field f:
         insert-annotation Variable.type: @A(value=9)
-

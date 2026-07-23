@@ -1,4 +1,4 @@
-.PHONY: all clean
+.PHONY: all test clean
 
 all: clean
 	$(JAVAC) testpkg/Issue3597B.java

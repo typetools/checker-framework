@@ -2,6 +2,7 @@
 # Make will silently continue if that file does not exist.
 -include Makefile.user
 
+.PHONY: all test clean
 all: manual.pdf manual.html ../api
 
 .PHONY: figures-all
@@ -13,6 +14,7 @@ manual.pdf: *.tex plume-bib figures-all check-labels
 # which depends on file contents, not timestamp.
 	latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
 
+.PHONY: html
 html: manual.html
 manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 	hevea -fix svg.hva -exec xxdate.exe manual.tex
@@ -87,10 +89,10 @@ checklink-via-http: manual.html
 	(cd .. && cp -prf manual ${HOME}/public_html/tmp-cf-manual)
 	${CHECKLINK}/checklink -q -e `grep -v '^#' ${CHECKLINK}/checklink-args.txt` https://homes.cs.washington.edu/~mernst/tmp-cf-manual/manual.html
 
-.PHONY: tags
-tags: TAGS
+.PHONY: tags TAGS
+TAGS: tags
 # This target always runs because contributors.tex is always updated.
-TAGS: *.tex ../../checker/bin-devel/.plume-scripts
+tags: *.tex ../../checker/bin-devel/.plume-scripts
 # Update plume-scripts even if it is already cloned.
 	cd ../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60 && ./gradlew --stacktrace getPlumeScripts))
 # This is better than using "*.tex" because this command puts the files in the appropriate order.

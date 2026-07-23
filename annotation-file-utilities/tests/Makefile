@@ -33,7 +33,7 @@ DEBUG :=
 
 default : all
 
-.PHONY: all
+.PHONY: all test clean
 all : $(DIFFS) abbreviated converted enum-imports ad-hoc issue155 system-test source-extension showdiffs results
 
 .PHONY: abbreviated

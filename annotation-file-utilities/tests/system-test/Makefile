@@ -10,6 +10,7 @@ JAVAC?=javac
 ANNCAT ?= ../../bin/anncat
 JAVAVERSION := $(shell $(JAVA) -version 2>&1)
 
+.PHONY: all test clean
 #Switch the lines below to deactivate this test
 all: clean results
 #all: warn_and_exit
@@ -21,6 +22,7 @@ warn_and_exit:
 	@echo "*******************************************************"
 	@echo ""
 
+.PHONY: results
 results: out1 check-out2 out3 out4.class check-out5
 
 clean:

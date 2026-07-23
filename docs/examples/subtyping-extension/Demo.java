@@ -32,7 +32,7 @@ abstract class EncryptionDemo {
   }
 
   void sendPassword() {
-    String password = "unencrypted";
+    String password = "unencrypted"; // pragma: allowlist secret
     sendOverTheInternet(password); // invalid
   }
 }
