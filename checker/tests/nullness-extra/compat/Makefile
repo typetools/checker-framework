@@ -1,4 +1,4 @@
-.PHONY: all
+.PHONY: all test clean
 
 all:
 	rm -f Out.txt CompatTest.class lib/Lib.class javax/annotation/Nullable.class

@@ -1,4 +1,4 @@
-.PHONY: all clean
+.PHONY: all test clean
 
 all: clean
 	$(JAVAC) -processor org.checkerframework.checker.nullness.NullnessChecker Issue502.java

@@ -1,4 +1,4 @@
-.PHONY: all
+.PHONY: all test clean
 all: bridge no-bridge
 
 JAVAC?=javac
@@ -23,4 +23,3 @@ C.class: C.java
 .PHONY: clean
 clean:
 	@rm -rf *.class C.jaif annotated out
-

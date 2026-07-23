@@ -5,6 +5,7 @@
 
 PNGFILES = corresp.png dataflow.png nocast.png typecast.png
 
+.PHONY: all test clean
 all: ${EPSFILES} ${PDFFILES} ${PNGFILES} png-copy
 
 png-copy: ${PNGFILES}

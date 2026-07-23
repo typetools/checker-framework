@@ -1,4 +1,6 @@
-all default: azure-pipelines.yml azure-pipelines-daily.yml
+.PHONY: all test clean default
+default: all
+all: azure-pipelines.yml azure-pipelines-daily.yml
 
 PLUME_SCRIPTS=../checker/bin-devel/.plume-scripts
 

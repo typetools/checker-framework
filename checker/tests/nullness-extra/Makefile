@@ -6,6 +6,8 @@ PASSING_TESTS = Bug109 compat issue265 issue594 issue607 multiple-errors package
 # issue309 the error is not thrown on later JDK versions.
 FAILING_TESTS = issue559 issue309
 
+.PHONY: all test clean
+
 # Tests that are currently passing
 all: ${PASSING_TESTS}
 

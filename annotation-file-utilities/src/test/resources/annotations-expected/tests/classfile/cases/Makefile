@@ -1,3 +1,5 @@
+.PHONY: all test clean bless bless-files
+
 bless:
 	-echo Make sure to run "ant test" in scene-lib before!
 	make bless-files

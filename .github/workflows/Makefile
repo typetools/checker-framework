@@ -1,4 +1,6 @@
-all default: ci.yml
+.PHONY: all test clean default
+default: all
+all: ci.yml
 
 PLUME_SCRIPTS=../../checker/bin-devel/.plume-scripts
 

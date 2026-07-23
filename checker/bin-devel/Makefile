@@ -1,4 +1,6 @@
-all default: \
+.PHONY: all test clean default
+default: all
+all: \
  Dockerfile-ubuntu-jdkbase Dockerfile-ubunturolling-jdkbase \
  Dockerfile-ubuntu-jdkplus Dockerfile-ubunturolling-jdkplus \
  Dockerfile-ubuntu-jdk17 Dockerfile-ubuntu-jdk17-plus \
