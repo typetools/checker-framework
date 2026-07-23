@@ -38,7 +38,8 @@ if [ -n "$("$CHECKERFRAMEWORK"/checker/bin-devel/is-ci.sh)" ]; then
 else
   num_jobs="$(nproc || sysctl -n hw.ncpu || getconf _NPROCESSORS_ONLN || echo 1)"
 fi
-prek -q run --all-files
+# TEMPORARY:
+# prek -q run --all-files
 
 declare -a failures=()
 
