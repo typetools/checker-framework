@@ -7,6 +7,7 @@ all: issue618
 test: all
 
 clean:
+	make -C issue618 clean
 
 # Tests that are currently not passing
 skipped:

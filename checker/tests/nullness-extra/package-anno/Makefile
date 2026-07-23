@@ -8,3 +8,4 @@ all:
 test: all
 
 clean:
+	rm -f test/*.class Out.txt

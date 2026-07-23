@@ -28,6 +28,7 @@ all: load-from-dir-test load-from-jar-test
 test: all
 
 clean:
+	rm -f LoaderTest.java Out.txt
 
 # ======================================================
 # demo or manual test usage:
