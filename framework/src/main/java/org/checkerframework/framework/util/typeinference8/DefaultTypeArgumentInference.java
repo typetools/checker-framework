@@ -93,11 +93,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     } else {
       outerMethodType = executableType;
     }
-    try {
-      InvocationTypeInference java8Inference =
-          new InvocationTypeInference(typeFactory, pathToExpression);
-      java8InferenceStack.push(java8Inference);
 
+    InvocationTypeInference java8Inference =
+        new InvocationTypeInference(typeFactory, pathToExpression);
+    java8InferenceStack.push(java8Inference);
+    try {
       if (outerTree instanceof MemberReferenceTree mrt) {
         return java8Inference.infer(mrt);
       } else {
