@@ -20,4 +20,3 @@ class Bar:
         return:
         parameter #0: @NonNull
             type: @org.checkerframework.checker.nullness.qual.NonNull
-

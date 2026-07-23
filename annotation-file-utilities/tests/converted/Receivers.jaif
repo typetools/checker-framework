@@ -135,4 +135,3 @@ class Receivers10:
         insert-annotation Method.parameter -1, Variable.type, ParameterizedType.typeArgument 0: @annotation.A
         insert-annotation Method.parameter -1, Variable.type, ParameterizedType.typeArgument 1: @annotation.B
         insert-annotation Method.parameter -1, Variable.type: @checkers.tainting.quals.Tainted
-

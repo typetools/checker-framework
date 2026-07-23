@@ -24,4 +24,3 @@ class InnerClassAnonymous$3:
 
     field serialVersionUID:
         insert-annotation Variable.type: @InnerlyAnnotated
-

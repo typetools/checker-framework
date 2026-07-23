@@ -8,4 +8,3 @@ class TypeCastSimple:
 
     method foo(Ljava/lang/Object;)V:
         typecast #1: @java.lang.UnderInitialization
-

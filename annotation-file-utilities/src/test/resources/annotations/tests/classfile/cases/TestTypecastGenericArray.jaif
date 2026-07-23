@@ -47,4 +47,3 @@ class TestTypecastGenericArray:
   		inner-type 3, 1 : @annotations.tests.classfile.foo.B(value="2d-array is value")
   		inner-type 3, 1, 0, 0 : @annotations.tests.classfile.foo.B(value="first dimension")
   		inner-type 3, 1, 0, 0, 0, 0 : @annotations.tests.classfile.foo.B(value="second dimension")
-

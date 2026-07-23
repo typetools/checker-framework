@@ -23,4 +23,3 @@ C.class: C.java
 .PHONY: clean
 clean:
 	@rm -rf *.class C.jaif annotated out
-
