@@ -1,4 +1,4 @@
-.PHONY: all test clean default
+.PHONY: all test clean default validate
 default: all
 all: config.yml
 # TODO: all: config.yml config-daily.yml
