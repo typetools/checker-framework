@@ -2,12 +2,12 @@
 
 all: bless
 
-test: all
+test:
 
 clean:
 
 bless:
-	-echo Make sure to run "ant test" in scene-lib before!
+	@echo "Make sure to run "ant test" in scene-lib before running 'make bless'!"
 	make bless-files
 
 bless-files: TestClassEmpty_Expected.class \
