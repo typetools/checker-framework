@@ -475,8 +475,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       AnnotationMirror lowerBound = qualHierarchy.findAnnotationInHierarchy(lBSet, top);
       TypeMirror lowerBoundTM = typeVar.getLowerBound().getUnderlyingType();
 
-      TypeMirror typeVarTM = typeVar.getUnderlyingType();
       TypeMirror upperBoundTM = typeVar.getUpperBound().getUnderlyingType();
+      TypeMirror typeVarTM = typeVar.getUnderlyingType();
       if (qualHierarchy.isSubtypeShallow(upperBound, upperBoundTM, annotation, typeVarTM)) {
         // no anno is more specific than anno
         return null;
