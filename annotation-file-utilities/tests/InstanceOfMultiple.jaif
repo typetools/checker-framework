@@ -14,4 +14,3 @@ class InstanceOfMultiple:
         instanceof #15: @java.lang.UnderInitialization
         instanceof #29: @java.lang.UnderInitialization
             inner-type 3, 0: @java.lang.Tainted
-

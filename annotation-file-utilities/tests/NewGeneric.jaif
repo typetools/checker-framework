@@ -13,4 +13,3 @@ class NewGeneric:
         typecast #1: @java.lang.Tainted
             inner-type 3, 0: @java.lang.UnderInitialization
         typecast #6: @java.lang.UnderInitialization
-
