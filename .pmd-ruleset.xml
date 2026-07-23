@@ -165,7 +165,6 @@
     <rule ref="category/java/design.xml/SimplifyConditional" />
     <rule ref="category/java/design.xml/TooManyFields" />
     <rule ref="category/java/design.xml/UselessOverridingMethod" />
-    <rule ref="category/java/design.xml/UseObjectForClearerAPI" />
     <rule ref="category/java/design.xml/UseUtilityClass" />
 
     <!-- design rules that seem to be broken.
