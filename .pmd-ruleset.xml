@@ -21,13 +21,7 @@
     <rule ref="category/java/bestpractices.xml/DoubleBraceInitialization" />
     <rule ref="category/java/bestpractices.xml/ForLoopCanBeForeach" />
     <rule ref="category/java/bestpractices.xml/ForLoopVariableCount" />
-    <rule ref="category/java/bestpractices.xml/GuardLogStatement">
-        <properties>
-            <property name="logLevels" value="trace,debug,info,warn,error,log,finest,finer,fine,info,warning,severe" />
-            <!-- Adds "isEnabled" to the default list. -->
-            <property name="guardsMethods" value="isTraceEnabled,isDebugEnabled,isInfoEnabled,isWarnEnabled,isErrorEnabled,isLoggable,isEnabled" />
-        </properties>
-    </rule>
+    <rule ref="category/java/bestpractices.xml/GuardLogStatement" />
     <rule ref="category/java/bestpractices.xml/ImplicitFunctionalInterface" />
     <rule ref="category/java/bestpractices.xml/JUnit4SuitesShouldUseSuiteAnnotation" />
     <rule ref="category/java/bestpractices.xml/JUnitJupiterTestShouldBePackagePrivate" />
@@ -62,8 +56,7 @@
     <rule ref="category/java/bestpractices.xml/LiteralsFirstInComparisons" />
     <rule ref="category/java/bestpractices.xml/LooseCoupling" />
     <rule ref="category/java/bestpractices.xml/PreserveStackTrace" />
-    <rule ref="category/java/bestpractices.xml/RelianceOnDefaultCharset" />
-      Java 18+ uses UTF-8 as the default character encoding.
+    <rule ref="category/java/bestpractices.xml/RelianceOnDefaultCharset" />      Java 18+ uses UTF-8 as the default character encoding.
     <rule ref="category/java/bestpractices.xml/SystemPrintln" />
     <rule ref="category/java/bestpractices.xml/UnitTestAssertionsShouldIncludeMessage" />
     <rule ref="category/java/bestpractices.xml/UnitTestContainsTooManyAsserts" />
@@ -100,7 +93,6 @@
     <rule ref="category/java/codestyle.xml/PackageCase" />
     <rule ref="category/java/codestyle.xml/RemoteInterfaceNamingConvention" />
     <rule ref="category/java/codestyle.xml/RemoteSessionInterfaceNamingConvention" />
-    <rule ref="category/java/codestyle.xml/ShortClassName" />
     <rule ref="category/java/codestyle.xml/UnnecessaryAnnotationValueElement" />
     <rule ref="category/java/codestyle.xml/UnnecessaryBoxing" />
     <rule ref="category/java/codestyle.xml/UnnecessaryFullyQualifiedName" />
@@ -115,12 +107,12 @@
 
     <!-- code style rules that might be useful, but generate too much noise for now
     <rule ref="category/java/codestyle.xml/CallSuperInConstructor" />
+    <rule ref="category/java/codestyle.xml/ConfusingTernary" />
     <rule ref="category/java/codestyle.xml/FieldDeclarationsShouldBeAtStartOfClass" />
     <rule ref="category/java/codestyle.xml/LinguisticNaming" />
     <rule ref="category/java/codestyle.xml/LocalVariableCouldBeFinal" />
     <rule ref="category/java/codestyle.xml/MethodArgumentCouldBeFinal" />
     <rule ref="category/java/codestyle.xml/PrematureDeclaration" />
-    <rule ref="category/java/codestyle.xml/UselessParentheses" />
      -->
 
     <!-- code style rules that seem to be broken
@@ -132,21 +124,20 @@
     <!-- code style rules we are not using
     <rule ref="category/java/codestyle.xml/ClassNamingConventions" />
     <rule ref="category/java/codestyle.xml/CommentDefaultAccessModifier" />
-    <rule ref="category/java/codestyle.xml/ConfusingTernary" />
     <rule ref="category/java/codestyle.xml/FieldNamingConventions" />
     <rule ref="category/java/codestyle.xml/FormalParameterNamingConventions" />
     <rule ref="category/java/codestyle.xml/LocalVariableNamingConventions" />
     <rule ref="category/java/codestyle.xml/LongVariable" />
     <rule ref="category/java/codestyle.xml/MethodNamingConventions" />
     <rule ref="category/java/codestyle.xml/OnlyOneReturn" />
+    <rule ref="category/java/codestyle.xml/ShortClassName" />      Complains about "Type", "Node", etc.
     <rule ref="category/java/codestyle.xml/ShortMethodName" />
     <rule ref="category/java/codestyle.xml/ShortVariable" />
     <rule ref="category/java/codestyle.xml/TooManyStaticImports" />
     <rule ref="category/java/codestyle.xml/TypeParameterNamingConventions" />
-    <rule ref="category/java/codestyle.xml/UnnecessaryModifier" />
-      Redundant `public` can be useful.
-    <rule ref="category/java/codestyle.xml/VariableCanBeInlined" />
-      Naming a value can improve readability.
+    <rule ref="category/java/codestyle.xml/UnnecessaryModifier" />      Redundant `public` can be useful.
+    <rule ref="category/java/codestyle.xml/UselessParentheses" />      Redundant parens can be helpful, for example to emphasize subexpressions in string concatenation.
+    <rule ref="category/java/codestyle.xml/VariableCanBeInlined" />      Naming a value can improve readability.
      -->
 
     <!-- design rules -->
@@ -166,6 +157,7 @@
     <rule ref="category/java/design.xml/SimplifiedTernary" />
     <rule ref="category/java/design.xml/SimplifyBooleanExpressions" />
     <rule ref="category/java/design.xml/SimplifyConditional" />
+    <rule ref="category/java/design.xml/SwitchDensity" />
     <rule ref="category/java/design.xml/TooManyFields" />
     <rule ref="category/java/design.xml/UselessOverridingMethod" />
     <rule ref="category/java/design.xml/UseObjectForClearerAPI" />
@@ -197,8 +189,7 @@
     <rule ref="category/java/design.xml/LoosePackageCoupling" />
     <rule ref="category/java/design.xml/NcssCount" />
     <rule ref="category/java/design.xml/NPathComplexity" />
-    <rule ref="category/java/design.xml/SimplifyBooleanReturns" />
-    <rule ref="category/java/design.xml/SwitchDensity" />
+    <rule ref="category/java/design.xml/SimplifyBooleanReturns" />      Suggests too-clever boolean expressions to replace simpler code.
     <rule ref="category/java/design.xml/TooManyMethods" />
     -->
 
@@ -207,17 +198,22 @@
     <rule ref="category/java/documentation.xml/UncommentedEmptyMethodBody" />
 
     <!-- documentation rules that seem to be broken
-    <rule ref="category/java/documentation.xml/DanglingJavadoc" />
-      False positive for record constructors.
+    <rule ref="category/java/documentation.xml/DanglingJavadoc" />      False positive for record constructors.
     -->
 
     <!-- documentation rules we are not using
-    <rule ref="category/java/documentation.xml/CommentRequired" />
+    <rule ref="category/java/documentation.xml/CommentRequired" />      A good rule, but too disruptive to apply without lint-diff.
     <rule ref="category/java/documentation.xml/CommentSize" />
     <rule ref="category/java/documentation.xml/UncommentedEmptyConstructor" />
      -->
 
     <!-- error prone rules -->
+    <rule ref="category/java/errorprone.xml/AssignmentInOperand">
+        <properties>
+            <property name="allowIncrementDecrement" value="true" />
+              <!-- permit "i++" -->
+        </properties>
+    </rule>
     <rule ref="category/java/errorprone.xml/AssignmentToNonFinalStatic" />
     <rule ref="category/java/errorprone.xml/AvoidAssertAsIdentifier" />
     <rule ref="category/java/errorprone.xml/AvoidCallingFinalize" />
@@ -235,7 +231,6 @@
     <rule ref="category/java/errorprone.xml/CloneMethodMustBePublic" />
     <rule ref="category/java/errorprone.xml/CloneMethodMustImplementCloneable" />
     <rule ref="category/java/errorprone.xml/CloneMethodReturnTypeMustMatchClassName" />
-    <rule ref="category/java/errorprone.xml/CloseResource" />
     <rule ref="category/java/errorprone.xml/CollectionTypeMismatch" />
     <rule ref="category/java/errorprone.xml/ComparisonWithNaN" />
     <rule ref="category/java/errorprone.xml/ConfusingArgumentToVarargsMethod" />
@@ -273,6 +268,7 @@
     <rule ref="category/java/errorprone.xml/NonSerializableClass" />
     <rule ref="category/java/errorprone.xml/NonStaticInitializer" />
     <rule ref="category/java/errorprone.xml/OverrideBothEqualsAndHashcode" />
+    <rule ref="category/java/errorprone.xml/OverrideBothEqualsAndHashCodeOnComparable" />
     <rule ref="category/java/errorprone.xml/ProperCloneImplementation" />
     <rule ref="category/java/errorprone.xml/ProperLogger" />
     <rule ref="category/java/errorprone.xml/ReplaceJavaUtilCalendar" />
@@ -296,14 +292,12 @@
     <rule ref="category/java/errorprone.xml/UseLocaleWithCaseConversions" />
 
     <!-- error prone rules that seem to be broken
-    <rule ref="category/java/errorprone.xml/UnusedNullCheckInEquals" />
-      False positive in OptionsDoclet.
-    <rule ref="category/java/errorprone.xml/AvoidBranchingStatementAsLastInLoop" />
-      Triggers for `return` as well as for branches within the method.
+    <rule ref="category/java/errorprone.xml/UnusedNullCheckInEquals" />      False positive in OptionsDoclet.
+    <rule ref="category/java/errorprone.xml/AvoidBranchingStatementAsLastInLoop" />      Triggers for `return` as well as for branches within the method.
+    <rule ref="category/java/errorprone.xml/CloseResource" />      CloseResource ought to warn only when the RHS is "new ..."
     -->
 
     <!-- error prone rules we are not using
-    <rule ref="category/java/errorprone.xml/AssignmentInOperand" />
     <rule ref="category/java/errorprone.xml/AvoidAccessibilityAlteration" />
     <rule ref="category/java/errorprone.xml/AvoidCatchingThrowable" />
     <rule ref="category/java/errorprone.xml/AvoidDuplicateLiterals" />
@@ -312,7 +306,6 @@
     <rule ref="category/java/errorprone.xml/CompareObjectsWithEquals" />
     <rule ref="category/java/errorprone.xml/DoNotTerminateVM" />
     <rule ref="category/java/errorprone.xml/NullAssignment" />
-    <rule ref="category/java/errorprone.xml/OverrideBothEqualsAndHashCodeOnComparable" />
     <rule ref="category/java/errorprone.xml/ReturnEmptyCollectionRatherThanNull" />
     <rule ref="category/java/errorprone.xml/TestClassWithoutTestCases" />
     <rule ref="category/java/errorprone.xml/UseProperClassLoader" />
@@ -349,20 +342,23 @@
     <rule ref="category/java/performance.xml/StringInstantiation" />
     <rule ref="category/java/performance.xml/StringToString" />
     <rule ref="category/java/performance.xml/UseArrayListInsteadOfVector" />
-    <rule ref="category/java/performance.xml/UseArraysAsList" />
     <rule ref="category/java/performance.xml/UseIndexOfChar" />
     <rule ref="category/java/performance.xml/UseIOStreamsWithApacheCommonsFileItem" />
     <rule ref="category/java/performance.xml/UselessStringValueOf" />
     <rule ref="category/java/performance.xml/UseStringBufferLength" />
 
     <!-- performance rules we are not using
-    <rule ref="category/java/performance.xml/AvoidInstantiatingObjectsInLoops" />
-    <rule ref="category/java/performance.xml/ConsecutiveAppendsShouldReuse" />
-      It's not clear this helps, and "fluent" appends are harder to read.
-    <rule ref="category/java/performance.xml/RedundantFieldInitializer" />
+    <rule ref="category/java/performance.xml/AvoidInstantiatingObjectsInLoops" />      Blanket prohibition on `new` in loops is too broad.
+    <rule ref="category/java/performance.xml/ConsecutiveAppendsShouldReuse" />      It's not clear this helps, and "fluent" appends are harder to read.
+    <rule ref="category/java/performance.xml/RedundantFieldInitializer" />  Explicit initializers are better style
     <rule ref="category/java/performance.xml/TooFewBranchesForSwitch" />
     <rule ref="category/java/performance.xml/UseStringBufferForStringAppends" />
      -->
+
+    <!-- performance rules that are broken
+    <rule ref="category/java/performance.xml/UseArraysAsList" />
+      Warns when appending to an existing list; should only warn when adding to a new empty list.
+    -->
 
     <!-- security rules -->
     <rule ref="category/java/security.xml/HardCodedCryptoKey" />
