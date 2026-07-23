@@ -11,6 +11,10 @@ FAILING_TESTS = issue559 issue309
 # Tests that are currently passing
 all: ${PASSING_TESTS}
 
+test: all
+
+clean:
+
 # Tests that are currently not passing
 skipped: ${FAILING_TESTS}
 

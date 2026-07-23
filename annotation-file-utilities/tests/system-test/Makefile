@@ -15,6 +15,8 @@ JAVAVERSION := $(shell $(JAVA) -version 2>&1)
 all: clean results
 #all: warn_and_exit
 
+test: all
+
 warn_and_exit:
 	@echo ""
 	@echo "*******************************************************"

@@ -10,3 +10,7 @@ all:
 	diff -u Expected.txt Out.txt
 	rm Out.txt lib.jar bin/*.class bin/lib/*.class
 	rmdir bin/lib bin/
+
+test: all
+
+clean:

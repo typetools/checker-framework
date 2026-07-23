@@ -14,6 +14,8 @@ PROJECTDIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 .PHONY: all test clean
 all: compile-for-test named-quals-test qual-folder-test clean
 
+test: all
+
 demo:
 	$(JAVAC) $(JAVAOPTS) $(FILES)
 	@echo "***** This command is expected to produce errors on line 14 & 67:"

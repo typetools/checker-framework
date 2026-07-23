@@ -39,6 +39,8 @@ default : all
 .PHONY: all test clean default
 all : $(DIFFS) results
 
+test: all
+
 # Display results of all .diff files.
 .PHONY: results
 results: ../bin/VerifyDiffs.class
@@ -56,27 +58,25 @@ compile :
 	mkdir -p bin
 	$(JAVAC) -g -cp ../../build/classes/java/main -d bin ../*.java
 
-.PRECIOUS : bin/annotator/tests/%.class
+.PRECIOUS : bin/annotator/tests/%.class %.java %.goal %.output
+
 bin/annotator/tests/%.class: %.java
 	mkdir -p bin
-# Added "-Xlint:-options" to see if it permits Jenkins job to succeed, due to
-# problem "target value 1.8 is obsolete and will be removed in a future release"
 	$(JAVAC) -Xlint:-options -g -cp bin:../dist/annotation-file-utilities.jar -d bin -sourcepath . $*.java
+# Added "-Xlint:-options" above to see if it permits Jenkins job to succeed, due
+# to "target value 1.8 is obsolete and will be removed in a future release".
 
 # Create a symbolic link for a .java file.
-.PRECIOUS: %.java
 %.java:
 	rm -f $*.java
 	ln -s ../$*.java $*.java
 
 # Create a symbolic link for a .goal file.
-.PRECIOUS: %.goal
 %.goal:
 	rm -f $*.goal
 	ln -s ../$*.goal $*.goal
 
 # Actually runs the annotator to create the annotated java file.
-.PRECIOUS: %.output
 # TODO: added `-` to these commands to proceed past failures
 # The failures will still show up in the summary, but it might
 # be better to fail earlier.

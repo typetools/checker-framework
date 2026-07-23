@@ -4,6 +4,10 @@ JAVAC ?= $(realpath ../../checker/bin/javac)
 
 all: compile
 
+test: all
+
+clean:
+
 compile:
 	$(JAVAC) *.java
 	$(MAKE) -C fenum-extension

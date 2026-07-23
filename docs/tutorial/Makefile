@@ -10,6 +10,8 @@ ZIPFILES = sourcefiles.zip
 
 all: ${ZIPFILES}
 
+test: all
+
 sourcefiles.zip: clean-classes
 	rm -f src/README.txt
 	cp -pf README-sourcefiles.txt src/README.txt

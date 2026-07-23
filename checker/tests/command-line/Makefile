@@ -4,6 +4,10 @@
 # Tests that are currently passing
 all: issue618
 
+test: all
+
+clean:
+
 # Tests that are currently not passing
 skipped:
 

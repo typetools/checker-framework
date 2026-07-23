@@ -2,6 +2,10 @@
 
 all: nullnessOnly nullnessRegex nullnessBad nonsense
 
+test: all
+
+clean:
+
 nullnessOnly:
 	rm -f Out.txt
 	-$(JAVAC) -processor NullnessChecker -XDrawDiagnostics -Anomsgtext -Awarns NullnessRegexWithErrors.java > Out.txt 2>&1

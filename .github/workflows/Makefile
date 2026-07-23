@@ -2,6 +2,8 @@
 default: all
 all: ci.yml
 
+test: all
+
 PLUME_SCRIPTS=../../checker/bin-devel/.plume-scripts
 
 %: %.m4 ../../.azure/defs-common.m4 defs.m4 ../../.azure/jobs.m4 ${PLUME_SCRIPTS}

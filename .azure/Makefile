@@ -2,6 +2,8 @@
 default: all
 all: azure-pipelines.yml azure-pipelines-daily.yml
 
+test: all
+
 PLUME_SCRIPTS=../checker/bin-devel/.plume-scripts
 
 %: %.m4 defs-common.m4 defs.m4 jobs.m4 ${PLUME_SCRIPTS}
