@@ -7,11 +7,11 @@
 # Fail if any command fails
 set -e
 
-(
-  # shellcheck disable=SC2046
-  unset $(git rev-parse --local-env-vars)
-  make plume-scripts-update
-)
+# (
+#   # shellcheck disable=SC2046
+#   unset $(git rev-parse --local-env-vars)
+#   make plume-scripts-update
+# )
 
 # Check formatting.  This is slow (3+ seconds).
 ./gradlew spotlessCheck -q

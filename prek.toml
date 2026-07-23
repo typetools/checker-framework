@@ -1,0 +1,234 @@
+# Configuration file for `prek`, a git hook framework written in Rust.
+# See https://prek.j178.dev for more information.
+#:schema https://www.schemastore.org/prek.json
+
+[[repos]]
+repo = "builtin"
+hooks = [
+  { id = "check-added-large-files" },
+  { id = "check-case-conflict" },
+  { id = "check-executables-have-shebangs", exclude = { glob = [
+    "search",
+  ] } },
+  { id = "check-json" },
+  { id = "check-merge-conflict" },
+  { id = "check-shebang-scripts-are-executable" },
+  { id = "check-symlinks", exclude = { glob = [
+    ".subversion/auth",
+    "dots/.subversion/auth",
+  ] } },
+  { id = "check-toml" },
+  { id = "check-vcs-permalinks" },
+  { id = "check-xml" },
+  { id = "check-yaml" },
+  { id = "destroyed-symlinks" },
+  { id = "detect-private-key" },
+  { id = "end-of-file-fixer", exclude = { glob = [
+    "bugs/jikes-patches/*",
+    "**/non-conflicted-file-without-terminator.txt",
+    "**/native-image/**",
+    "**/tests/squeeze-blank-lines-test/**",
+  ] } },
+  { id = "fix-byte-order-marker" },
+  { id = "forbid-new-submodules" },
+  { id = "mixed-line-ending" },
+  { id = "trailing-whitespace", exclude = { glob = [
+    "**/*.diff",
+    "**/*.diff3",
+    "**/*.patch",
+    "**/tests/squeeze-blank-lines-test/**",
+    ".aspell.en.prepl",
+    ".aspell.en.pws",
+    "bugs/BUGS.to-do",
+    "bugs/bug-mew",
+    "bugs/jikes-patches/*",
+    "dots/.aspell.en.prepl",
+    "dots/.aspell.en.pws",
+    "dots/en_US_apostrophe.aff",
+    "dots/enscript.st",
+    "emacs/bug/crypted.UUE",
+    "en_US_apostrophe.aff",
+    "enscript.st",
+  ] } },
+]
+
+## GitHub Actions
+
+[[repos]]
+repo = "https://github.com/rhysd/actionlint"
+rev = "v1.7.12"
+hooks = [{ id = "actionlint" }]
+
+## HTML
+
+[[repos]]
+repo = "https://github.com/Lucas-C/pre-commit-hooks-java"
+rev = "1.3.10"
+hooks = [{ id = "validate-html", exclude = { glob = ["**/bytopic-headfoot.html"] }}]
+
+## Makefiles
+
+[[repos]]
+repo = "https://github.com/checkmake/checkmake.git"
+rev = "0.2.2"
+hooks = [{ id = "checkmake" }]
+
+## Markdown
+
+[[repos]]
+repo = "https://github.com/DavidAnson/markdownlint-cli2"
+rev = "v0.23.1"
+hooks = [{ id = "markdownlint-cli2" }]
+
+## Pre-commit itself
+
+[[repos]]
+repo = "https://github.com/pre-commit/sync-pre-commit-deps"
+rev = "v0.0.4"
+hooks = [{ id = "sync-pre-commit-deps" }]
+
+## Python
+
+[[repos]]
+repo = "https://github.com/astral-sh/ruff-pre-commit"
+rev = "v0.15.22" # Ruff version.
+hooks = [
+  # Run the linter.
+  { id = "ruff-check", args = ["--fix"], types_or = ["python", "pyi"] },
+
+  # Run the formatter.
+  { id = "ruff-format", types_or = ["python", "pyi"] },
+]
+
+[[repos]]
+repo = "https://github.com/astral-sh/ty-pre-commit"
+rev = "v0.0.62"                                       # ty version.
+hooks = [{ id = "ty", types_or = ["python", "pyi"] }]
+
+[[repos]]
+repo = "https://github.com/asottile/pyupgrade"
+rev = "v3.21.2"
+hooks = [{ id = "pyupgrade" }]
+
+## Secrets
+
+[[repos]]
+repo = "https://github.com/gitleaks/gitleaks"
+rev = "v8.24.2"
+hooks = [{ id = "gitleaks", exclude = { glob = ["**/AdjacentTest*"] } }]
+
+[[repos]]
+repo = "https://github.com/Yelp/detect-secrets"
+rev = "v1.5.0"
+hooks = [{ id = "detect-secrets", exclude = { glob = ["**/AdjacentTest*"] } }]
+
+## Shell scripts
+
+[[repos]]
+repo = "https://github.com/shellcheck-py/shellcheck-py"
+rev = "v0.11.0.1"
+hooks = [
+  { id = "shellcheck", args = [
+    "-x",
+    "-P",
+    "SCRIPTDIR",
+  ], exclude = { glob = [
+    "share/csail-athena-tickets.bash",
+    "share/addrfilter",
+    "share/print-mail",
+    "share/javapp",
+    "share/myxapps",
+    "cronic-orig",
+    "classfile_check_version",
+  ] } },
+]
+
+[[repos]]
+repo = "https://github.com/scop/pre-commit-shfmt"
+rev = "v3.13.1-1"
+hooks = [
+  { id = "shfmt", args = [
+    "-i",
+    "2",
+    "-ci",
+    "-bn",
+    "-sr",
+  ], exclude = { glob = [
+    "gradlew",
+    "share/addrfilter",
+    "dots/conda-initialize.sh",
+    "conda-initialize.sh",
+  ] } },
+]
+
+# TODO: checkbashisms (I need to write my own).
+# [[repos]]
+# repo = "TODO"
+# hooks = [
+#   { id = "checkbashisms", types = [
+#     "shell",
+#   ], exclude = { glob = [
+#     "share/addrfilter",
+#     "share/print-mail",
+#     "share/myxapps",
+#     "share/javapp",
+#     "gradlew",
+#   ] } },
+# ]
+
+# Problems:
+# * False positives for E011.
+# * It requires indent to be a multiple of 4.
+# [[repos]]
+# repo = "https://github.com/openstack/bashate"
+# rev = "2.1.1"
+# hooks = [
+#     { id = "bashate", exclude = { glob = ["share/csail-athena-tickets.bash" ] } },
+# ]
+
+## Text
+
+# Very noisy.
+# [[repos]]
+# repo = "https://github.com/errata-ai/vale"
+# rev = "16d3a7f"
+# hooks = [ #{id = "vale", name = "vale sync",         pass_filenames = false,         args =  ["sync"], },
+#   { id = "vale", args = [
+#     "--output=line",
+#     "--minAlertLevel=error",
+#   ] },
+# ]
+
+# Very disruptive.  Perhaps re-enable later.
+# [[repos]]
+# repo = "https://github.com/crate-ci/typos"
+# rev = "v1.48.0"
+# hooks = [
+#     { id = "typos", exclude = { glob = [".abbrev_defs", "share/mail-review-spam", "bugs/jikes-patches/*", "share/checkbashisms", "dots/.aspell.en.prepl", ".aspell.en.prepl", "dots/en_US_apostrophe.dic", "dots/.aspell.en.pws", ".aspell.en.pws", "dots/en_US_apostrophe.aff", "en_US_apostrophe.aff" ] } }
+# ]
+
+# Very noisy.  Perhaps re-enable later.
+# [[repos]]
+# repo = "https://github.com/codespell-project/codespell"
+# rev = "v2.4.1"
+# hooks = [
+#     { id = "codespell", exclude = { glob = [ "en_US_apostrophe.dic", ".ssh/known_hosts", "enscript.st" ] } },
+# ]
+
+# proselint does not understand fenced code blocks in markdown files.
+# [[repos]]
+# repo = "https://github.com/amperser/proselint"
+# rev = "v0.16.0"
+# hooks = [{ id = "proselint", args = ["check"],  }]
+
+## YAML
+
+[[repos]]
+repo = "https://github.com/google/yamlfmt"
+rev = "v0.19.0"
+hooks = [{ id = "yamlfmt" }]
+
+[[repos]]
+repo = "https://github.com/adrienverge/yamllint.git"
+rev = "v1.29.0"
+hooks = [{ id = "yamllint" }]
