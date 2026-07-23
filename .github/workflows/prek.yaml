@@ -1,0 +1,8 @@
+name: Prek checks
+"on": [push, pull_request]
+jobs:
+  prek:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: j178/prek-action@v2
