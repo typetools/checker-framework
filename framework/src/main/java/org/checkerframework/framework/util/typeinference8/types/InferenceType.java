@@ -306,17 +306,20 @@ public final class InferenceType extends AbstractType {
       mapping.put(alpha.getJavaType(), instantiation);
     }
 
+    AnnotatedTypeMirror newATM = typeFactory.getTypeVarSubstitutor().substitute(mapping, type);
+    AbstractType newAbstractType =
+        createIgnoreInstantiated(
+            newATM, newTypeJava, map, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations);
+
     // Also apply instantiations to function type.
     AnnotatedExecutableType unsubedFunctionType = getFunctionType();
     if (unsubedFunctionType != null) {
-      functionType =
+      newAbstractType.functionType =
           (AnnotatedExecutableType)
               typeFactory.getTypeVarSubstitutor().substitute(mapping, unsubedFunctionType);
     }
 
-    AnnotatedTypeMirror newType = typeFactory.getTypeVarSubstitutor().substitute(mapping, type);
-    return createIgnoreInstantiated(
-        newType, newTypeJava, map, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations);
+    return newAbstractType;
   }
 
   @Override
