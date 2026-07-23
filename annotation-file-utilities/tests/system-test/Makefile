@@ -17,6 +17,7 @@ all: clean results
 
 test: all
 
+.PHONY: warn_and_exit
 warn_and_exit:
 	@echo ""
 	@echo "*******************************************************"
