@@ -114,21 +114,15 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
     // other annotations are not empty.  In this case, copy the accumulatedValues to the
     // value with no annotations and return it as most specific.
     if (other.getAnnotations().isEmpty()) {
-
       mostSpecific =
           new AccumulationValue(
-              analysis,
-              atypeFactory.getQualifierHierarchy().getTopAnnotations(),
-              other.getUnderlyingType());
+              analysis, AnnotationMirrorSet.emptySet(), other.getUnderlyingType());
       mostSpecific.addAccumulatedValues(this.accumulatedValues);
       mostSpecific.addAccumulatedValues(other.accumulatedValues);
       return mostSpecific;
     } else if (this.getAnnotations().isEmpty()) {
       mostSpecific =
-          new AccumulationValue(
-              analysis,
-              atypeFactory.getQualifierHierarchy().getTopAnnotations(),
-              other.getUnderlyingType());
+          new AccumulationValue(analysis, AnnotationMirrorSet.emptySet(), this.getUnderlyingType());
       mostSpecific.addAccumulatedValues(this.accumulatedValues);
       mostSpecific.addAccumulatedValues(other.accumulatedValues);
       return mostSpecific;
