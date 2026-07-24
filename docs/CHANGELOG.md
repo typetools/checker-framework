@@ -3,6 +3,8 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
+New Confidential Checker to identify sensitive information exposure.
+
 ## Version 4.2.2 (2026-08-01)
 
 ### User-visible changes
@@ -392,9 +394,6 @@ Removed annotations:
 ## Version 3.46.0 (August 1, 2024)
 
 ### User-visible changes
-
-The new SqlQuotesChecker prevents errors in quoting in SQL queries.  It prevents
-injection attacks that exploit quoting errors.
 
 Renamed `@EnsuresCalledMethodsVarArgs`to `@EnsuresCalledMethodsVarargs`.
 
