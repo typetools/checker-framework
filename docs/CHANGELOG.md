@@ -821,8 +821,9 @@ Renamed Gradle task `copyJarsToDist` to `assembleForJavac`.
 Dropped support for `-ApermitUnsupportedJdkVersion` command-line argument.
 You can now run the Checker Framework under any JDK version, without a warning.
 
-Pass `-Astubs=permit-nullness-assertion-exception.astub` to not be warned about null
-pointer exceptions within nullness assertion methods like `Objects.requireNonNull`.
+Pass `-Astubs=permit-nullness-assertion-exception.astub` to not be warned about
+null pointer exceptions within nullness assertion methods like
+`Objects.requireNonNull`.
 
 Pass `-Astubs=sometimes-nullable.astub` to unsoundly permit passing null to
 calls if null is sometimes but not always permitted.
@@ -1115,6 +1116,8 @@ Java records are type-checked.  Thanks to Neil Brown.
 
 Method renamings and signature changes (old methods are removed) in `GenericAnnotatedTypeFactory`:
 
+<!-- markdownlint-disable line-length -->
+
 * `getPreconditionAnnotation(VariableElement, AnnotatedTypeMirror)` => `getPreconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror)`
 * `getPostconditionAnnotation(VariableElement, AnnotatedTypeMirror, List<AnnotationMirror>)` => `getPostconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror, List<AnnotationMirror>)`
 * `getPreOrPostconditionAnnotation(VariableElement, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)` => `getPreOrPostconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)`
@@ -1123,6 +1126,8 @@ Method renamings and signature changes (old methods are removed) in `GenericAnno
 Method renamings and signature changes (old method is removed) in `WholeProgramInferenceStorage`:
 
 * `getPreOrPostconditionsForField(Analysis.BeforeOrAfter, ExecutableElement, VariableElement, AnnotatedTypeFactory)` =>  `getPreOrPostconditions(Analysis.BeforeOrAfter, ExecutableElement, String, AnnotatedTypeMirror, AnnotatedTypeFactory)`
+
+<!-- markdownlint-enable line-length -->
 
 Method renamings:
 
@@ -1804,7 +1809,8 @@ BackwardAnalysis, BackwardTransferFunction, and BackwardAnalysisImpl.
 To adapt existing code:
 
 * `extends Analysis<V, S, T>` => `extends ForwardAnalysisImpl<V, S, T>`
-* `implements TransferFunction<V, S>` => `implements ForwardTransferFunction<V, S>`
+* `implements TransferFunction<V, S>`
+  => `implements ForwardTransferFunction<V, S>`
 
 In AbstractQualifierPolymorphism, use AnnotationMirrors instead of sets of
 annotation mirrors.

@@ -31,4 +31,3 @@ class LambdaExpression:
                 type: @A
                 inner-type 3, 0: @B
                 inner-type 3, 0, 2, 0: @C
-
