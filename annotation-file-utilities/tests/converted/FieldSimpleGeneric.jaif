@@ -10,4 +10,3 @@ class FieldSimpleGeneric:
     field field:
         insert-annotation Variable.type, ParameterizedType.typeArgument 0: @java.lang.Tainted
         insert-annotation Variable.type: @java.lang.UnderInitialization
-

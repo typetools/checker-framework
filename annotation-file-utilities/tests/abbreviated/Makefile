@@ -37,8 +37,10 @@ DEBUG :=
 
 default : all
 
-.PHONY: all
+.PHONY: all test clean default
 all : $(DIFFS) results
+
+test: all
 
 # Display results of all .diff files.
 .PHONY: results

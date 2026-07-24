@@ -1,5 +1,8 @@
 
+.PHONY: all test clean
 all: annotation-file-format.pdf annotation-file-format.html
+
+test: all
 
 .PHONY: figures
 figures:

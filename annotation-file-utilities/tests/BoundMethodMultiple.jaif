@@ -39,4 +39,3 @@ class BoundMethodMultiple:
     method foo(Lannotator/tests/Date;Ljava/util/Map;)V:
         bound 0 & 0: @java.lang.F
         bound 1 & 1: @java.lang.G
-

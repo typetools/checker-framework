@@ -18,4 +18,3 @@ class InnerTypeResolution:
         parameter #0:
             type:
                 inner-type 3, 0: @Tainted
-

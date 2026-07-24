@@ -45,4 +45,3 @@ class ExtImpl$C3:
 class ExtImpl$Iface4:
     typeparam 1: @org.checkerframework.checker.nullness.qual.NonNull
     bound 1&1: @org.checkerframework.checker.nullness.qual.UnknownKeyFor @org.checkerframework.checker.nullness.qual.NonNull
-

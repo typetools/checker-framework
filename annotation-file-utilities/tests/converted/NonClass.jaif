@@ -52,4 +52,3 @@ package :
 class NonClass$I:
     insert-annotation Class.bound 0: @X
     insert-annotation Class.bound 0, ParameterizedType.typeArgument 0: @X
-

@@ -1,7 +1,9 @@
-.PHONY: all
+.PHONY: all test clean
 all: bridge no-bridge
 
 JAVAC?=javac
+
+test: all
 
 .PHONY: bridge
 # Counting bridge methods, there should be 3 @A annotations.
@@ -23,4 +25,3 @@ C.class: C.java
 .PHONY: clean
 clean:
 	@rm -rf *.class C.jaif annotated out
-

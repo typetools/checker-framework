@@ -58,7 +58,9 @@ def execute_write_to_file(
     args = shlex.split(command_args) if isinstance(command_args, str) else command_args
 
     output_file = Path.open(output_file_path, "w+")
-    process = subprocess.Popen(args, stdout=output_file, stderr=output_file, cwd=working_dir)
+    process = subprocess.Popen(
+        args, stdout=output_file, stderr=output_file, cwd=working_dir
+    )
     process.communicate()
     process.wait()
     output_file.close()
@@ -212,7 +214,9 @@ def current_distribution_by_website(site: str) -> str:
         the Checker Framework version from the Checker Framework website.
     """
     print(f"Looking up checker-framework-version from {site}\n")
-    ver_re = re.compile(r"<!-- checker-framework-zip-version -->checker-framework-(.*)\.zip")
+    ver_re = re.compile(
+        r"<!-- checker-framework-zip-version -->checker-framework-(.*)\.zip"
+    )
     text = urllib.request.urlopen(url=site).read().decode("utf-8")
     result = ver_re.search(text)
     if result is None:
@@ -359,16 +363,22 @@ def is_repo_cleaned_and_updated(repo_dir: Path) -> bool:
     # The idiom "not execute_output(...)" evaluates to True when the captured output is empty.
     if git_bare_repo_exists_at_path(repo_dir):
         execute("git fetch origin", working_dir=repo_dir)
-        is_updated = not execute_output("git diff master..FETCH_HEAD", working_dir=repo_dir)
+        is_updated = not execute_output(
+            "git diff master..FETCH_HEAD", working_dir=repo_dir
+        )
         return is_updated
     # Could add "--untracked-files=no" to this command
     is_clean = not execute_output("git status --porcelain", working_dir=repo_dir)
     execute("git fetch origin", working_dir=repo_dir)
-    is_updated = not execute_output("git diff origin/master..master", working_dir=repo_dir)
+    is_updated = not execute_output(
+        "git diff origin/master..master", working_dir=repo_dir
+    )
     return is_clean and is_updated
 
 
-def check_repo(repo: Path, fail_on_error: bool, is_intermediate_repo_list: bool) -> None:
+def check_repo(
+    repo: Path, fail_on_error: bool, is_intermediate_repo_list: bool
+) -> None:
     """Fail if the repository is not clean and up to date."""
     if git_repo_exists_at_path(repo):
         if not is_repo_cleaned_and_updated(repo):
@@ -388,7 +398,9 @@ def check_repo(repo: Path, fail_on_error: bool, is_intermediate_repo_list: bool)
                 raise Exception("repo " + str(repo) + " is not clean and up to date!")
 
 
-def get_tag_line(lines: list[str], revision: str, tag_prefixes: list[str]) -> str | None:
+def get_tag_line(
+    lines: list[str], revision: str, tag_prefixes: list[str]
+) -> str | None:
     """Get the revision hash for the tag matching the given project revision.
 
     in
@@ -408,7 +420,9 @@ def get_tag_line(lines: list[str], revision: str, tag_prefixes: list[str]) -> st
     return None
 
 
-def get_commit_for_tag(revision: str, repo_file_path: Path, tag_prefixes: list[str]) -> str:
+def get_commit_for_tag(
+    revision: str, repo_file_path: Path, tag_prefixes: list[str]
+) -> str:
     """Get the commit hash for the tag matching the given project revision.
 
     of
