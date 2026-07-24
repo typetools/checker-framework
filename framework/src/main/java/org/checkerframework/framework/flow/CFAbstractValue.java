@@ -22,6 +22,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsP;
 
@@ -406,22 +407,23 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         boolean canCombinedSetBeMissingAnnos) {
 
       AnnotationMirror upperBound = typeVar.getAnnotationInHierarchy(top);
-      TypeMirror upperBoundTM = typeVar.getUpperBound().getUnderlyingType();
 
       if (!canCombinedSetBeMissingAnnos) {
         TypeVariable typeVarTM = typeVar.getUnderlyingType();
         return combineTwoAnnotations(annotation, typeVarTM, upperBound, typeVarTM, top);
       }
-      AnnotationMirrorSet lBSet =
-          AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, typeVar);
-      AnnotationMirror lowerBound = qualHierarchy.findAnnotationInHierarchy(lBSet, top);
-      TypeMirror lowerBoundTM = typeVar.getLowerBound().getUnderlyingType();
 
+      TypeMirror upperBoundTM = typeVar.getUpperBound().getUnderlyingType();
       TypeMirror typeVarTM = typeVar.getUnderlyingType();
       if (qualHierarchy.isSubtypeShallow(upperBound, upperBoundTM, annotation, typeVarTM)) {
         // no anno is more specific than anno
         return null;
-      } else if (qualHierarchy.isSubtypeShallow(annotation, typeVarTM, lowerBound, lowerBoundTM)) {
+      }
+      AnnotationMirrorSet lBSet =
+          AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, typeVar);
+      AnnotationMirror lowerBound = qualHierarchy.findAnnotationInHierarchy(lBSet, top);
+      TypeMirror lowerBoundTM = typeVar.getLowerBound().getUnderlyingType();
+      if (qualHierarchy.isSubtypeShallow(annotation, typeVarTM, lowerBound, lowerBoundTM)) {
         return lowestQualifier(annotation, lowerBound);
       } else {
         return getBackupAnnoIn(top);
@@ -761,8 +763,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         throw new NullPointerException("combineSets: bTypeMirror==null");
       }
 
-      AnnotatedTypeVariable aAtv = getTypeVar(aTypeMirror);
-      AnnotatedTypeVariable bAtv = getTypeVar(bTypeMirror);
+      AnnotatedTypeVariable aAtv = null;
+      boolean aAtvIsSet = false;
+      AnnotatedTypeVariable bAtv = null;
+      boolean bAtvIsSet = false;
       AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
       AnnotationMirrorSet combinedSets = new AnnotationMirrorSet();
       for (AnnotationMirror top : tops) {
@@ -772,10 +776,34 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         if (a != null && b != null) {
           result = combineTwoAnnotations(a, aTypeMirror, b, bTypeMirror, top);
         } else if (a != null) {
+          if (!bAtvIsSet) {
+            bAtv = getTypeVar(bTypeMirror);
+            bAtvIsSet = true;
+          }
+          if (bAtv == null) {
+            throw new BugInCF("getTypeVar(%s) => null", bTypeMirror);
+          }
           result = combineAnnotationWithTypeVar(a, bAtv, top, canCombinedSetBeMissingAnnos);
         } else if (b != null) {
+          if (aAtv == null) {
+            if (!aAtvIsSet) {
+              aAtv = getTypeVar(aTypeMirror);
+              aAtvIsSet = true;
+            }
+            if (aAtv == null) {
+              throw new BugInCF("getTypeVar(%s) => null", aTypeMirror);
+            }
+          }
           result = combineAnnotationWithTypeVar(b, aAtv, top, canCombinedSetBeMissingAnnos);
         } else {
+          if (!aAtvIsSet) {
+            aAtv = getTypeVar(aTypeMirror);
+            aAtvIsSet = true;
+          }
+          if (!bAtvIsSet) {
+            bAtv = getTypeVar(bTypeMirror);
+            bAtvIsSet = true;
+          }
           result = combineTwoTypeVars(aAtv, bAtv, top, canCombinedSetBeMissingAnnos);
         }
         if (result != null) {
