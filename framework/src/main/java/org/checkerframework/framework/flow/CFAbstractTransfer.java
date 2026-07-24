@@ -476,7 +476,7 @@ public abstract class CFAbstractTransfer<
             isAssumeSideEffectFreeEnabled,
             isAssumeDeterministicEnabled,
             aTypeFactory.getChecker().hasOption("assumePureGetters"));
-    return result.isPure(EnumSet.allOf(PurityKind.class));
+    return result.isPure(EnumSet.of(PurityKind.SIDE_EFFECT_FREE, PurityKind.DETERMINISTIC));
   }
 
   /**
