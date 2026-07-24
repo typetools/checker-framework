@@ -6,7 +6,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ProcessBuilder.Redirect;
 import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -52,7 +51,6 @@ import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
-import org.plumelib.util.SystemP;
 
 /**
  * Holds information about types parsed from annotation files (stub files or ajava files). When
@@ -929,20 +927,7 @@ public class AnnotationFileElementTypes {
             "End of remainingJdkStubFilesJar for %s from %s.%n", factoryClass, jarFileURL);
 
         System.out.printf("Contents of %s:%n", jarFileURL);
-        assert jarFileURL.startsWith("file:");
-        ProcessBuilder pb =
-            new ProcessBuilder(
-                "/bin/sh", "-c", "jar tf '" + jarFileURL.substring(5) + "' | LC_ALL=C sort");
-        pb.redirectOutput(Redirect.INHERIT);
-        pb.redirectError(Redirect.INHERIT);
-        Process p = pb.start();
-        try {
-          p.waitFor();
-        } catch (InterruptedException e) {
-          // do nothing
-        }
-        System.out.flush();
-        SystemP.sleep(1);
+        printSortedIndented(entries.stream().map(JarEntry::getName).collect(Collectors.toList()));
         System.out.printf("End of %s.%n", jarFileURL);
       }
     } catch (IOException e) {
