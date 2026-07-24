@@ -50,4 +50,3 @@ class InnerClass$1:
         insert-annotation Method.body, Block.statement 1, If.thenStatement, Block.statement 0, Variable.type: @C(value=4)
         insert-annotation Method.body, Block.statement 0, Variable.initializer, NewClass.identifier: @C(value=2)
         insert-annotation Method.body, Block.statement 0, Variable.type: @C(value=1)
-

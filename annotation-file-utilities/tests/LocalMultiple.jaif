@@ -14,4 +14,3 @@ class LocalMultiple:
             type: @java.lang.UnderInitialization
         local 3 #26+8:
             type: @java.lang.Tainted
-

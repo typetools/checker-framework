@@ -26,4 +26,3 @@ class LocalMultipleManyMethods:
             type: @java.lang.A
         local 3 #26+8:
             type: @java.lang.D
-

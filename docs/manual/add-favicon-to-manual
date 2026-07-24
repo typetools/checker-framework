@@ -1,3 +1,4 @@
+#!/bin/sh
 # Similar to ../logo/html-add-favicon, but works only on a single file: manual.html
 # The reason we don't just fix ../logo/html-add-favicon to work on a single file instead
 # of creating this special-purpose script is that any changes we make to ../logo/html-add-favicon

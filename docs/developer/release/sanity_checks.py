@@ -40,9 +40,7 @@ def javac_sanity_check(checker_framework_website: str, release_version: str) -> 
     checker_framework_release_dirname = f"checker-framework-{release_version}"
     checker_framework_zipfile_name = f"{checker_framework_release_dirname}.zip"
 
-    new_checkers_release_zip = (
-        f"{checker_framework_website}/releases/{release_version}/{checker_framework_zipfile_name}"
-    )
+    new_checkers_release_zip = f"{checker_framework_website}/releases/{release_version}/{checker_framework_zipfile_name}"
 
     javac_sanity_path = Path(SANITY_DIR) / "javac"
 
@@ -121,11 +119,17 @@ def maven_sanity_check(sub_sanity_dir_name: str, repo_url: str) -> None:
     maven_example_dir = Path(maven_sanity_dir) / "MavenExample"
     output_log = Path(maven_example_dir) / "output.log"
 
-    get_example_dir_cmd = f"./gradlew updateCopyMavenExample -PdestDir={maven_sanity_dir}"
+    get_example_dir_cmd = (
+        f"./gradlew updateCopyMavenExample -PdestDir={maven_sanity_dir}"
+    )
 
     execute(get_example_dir_cmd, CHECKER_FRAMEWORK)
     path_to_artifacts = (
-        pathlib.Path("~").expanduser() / ".m2" / "repository" / "org" / "checkerframework"
+        pathlib.Path("~").expanduser()
+        / ".m2"
+        / "repository"
+        / "org"
+        / "checkerframework"
     )
     if repo_url != "":
         print(

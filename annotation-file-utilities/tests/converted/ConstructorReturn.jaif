@@ -8,4 +8,3 @@ class ConstructorReturn:
 
     method <init>()V:
         insert-annotation Method.type: @java.lang.Tainted
-

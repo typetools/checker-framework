@@ -54,7 +54,9 @@ def check_release_version(previous_release: str, new_release: str) -> None:
     Raises:
         Exception: If the new version is not greater than the previous one.
     """
-    if version_number_to_array(previous_release) >= version_number_to_array(new_release):
+    if version_number_to_array(previous_release) >= version_number_to_array(
+        new_release
+    ):
         raise Exception(
             "Previous release version ("
             + previous_release
@@ -436,7 +438,9 @@ def main(argv: list[str]) -> None:
     # to the live website rather than the development website. A straight copy of the directory
     # will NOT update the symlinks.
 
-    print_step("Push Step 6. Copy dev current release website to live website")  # SEMIAUTO
+    print_step(
+        "Push Step 6. Copy dev current release website to live website"
+    )  # SEMIAUTO
     if not test_mode:
         if prompt_yes_no("Copy release to the live website?"):
             print("Copying to live site")
@@ -490,7 +494,9 @@ def main(argv: list[str]) -> None:
     # This step could be performed without asking for user input but I think we should err on the
     # side of caution.
     if not test_mode:
-        if prompt_yes_no("Push the release to GitHub repositories?  This is irreversible.", True):
+        if prompt_yes_no(
+            "Push the release to GitHub repositories?  This is irreversible.", True
+        ):
             push_interm_to_release_repos()
             print("Pushed to repos")
     else:
@@ -502,7 +508,9 @@ def main(argv: list[str]) -> None:
     # prompts. The Maven artifacts (such as checker-qual.jar) are still needed, but the Maven
     # plug-in is no longer maintained.
 
-    print_step("Push Step 10. Publish staged artifacts in Central Repository.")  # MANUAL
+    print_step(
+        "Push Step 10. Publish staged artifacts in Central Repository."
+    )  # MANUAL
     if test_mode:
         msg = (
             "Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "

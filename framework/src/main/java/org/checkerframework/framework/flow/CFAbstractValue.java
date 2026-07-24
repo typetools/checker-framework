@@ -22,8 +22,8 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.StringsP;
 
 /**
  * An implementation of an abstract value used by the Checker Framework
@@ -65,7 +65,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   /** The underlying (Java) type in this abstract value. */
   protected final TypeMirror underlyingType;
 
-  /** The annotations in this abstract value. */
+  /**
+   * The annotations in this abstract value. Its size is the same as the number of hierarchies, with
+   * two exceptions. First, some typekinds are excluded by {@link #canBeMissingAnnotations}. Second,
+   * it may be empty if, when creating this CFAbstractValue, true was passed for the {@code
+   * permitEmptyAnnotations} formal parameter.
+   */
   protected final AnnotationMirrorSet annotations;
 
   /**
@@ -86,28 +91,63 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     this.annotations = annotations;
     this.underlyingType = underlyingType;
 
-    assert validateSet(this.getAnnotations(), this.getUnderlyingType(), atypeFactory)
-        : "Encountered invalid type: "
-            + underlyingType
-            + " annotations: "
-            + StringsP.join(", ", annotations);
+    assert hasAnnotationFromEveryHierarchy(annotations, underlyingType, atypeFactory)
+        : "Attempted to create incomplete CFAbstractValue: "
+            + (underlyingType + " [" + underlyingType.getClass().getSimpleName() + "]")
+            + (" annotations: " + annotations)
+            + (" missing hierarchies: "
+                + missingAnnotations(annotations, underlyingType, atypeFactory));
   }
 
   /**
    * Returns true if the set has an annotation from every hierarchy (or if it doesn't need to);
    * returns false if the set is missing an annotation from some hierarchy.
    *
+   * <p>Method {@link #missingAnnotations} provides better diagnostics but is less efficient.
+   *
    * @param annos a set of annotations
    * @param typeMirror where the annotations are written
    * @param atypeFactory the type factory
    * @return true if no annotations are missing
    */
-  public static boolean validateSet(
+  public static boolean hasAnnotationFromEveryHierarchy(
       AnnotationMirrorSet annos, TypeMirror typeMirror, AnnotatedTypeFactory atypeFactory) {
 
     boolean canBeMissing = canBeMissingAnnotations(typeMirror);
     if (canBeMissing) {
       return true;
+    }
+
+    if (annos.isEmpty()) {
+      return false;
+    }
+
+    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
+    for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+      AnnotationMirror anno = qualHierarchy.findAnnotationInHierarchy(annos, top);
+      if (anno == null) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Returns a set of top annotations -- one for every hierarchy where {@code annos} should have an
+   * annotation but does not. For efficiency, never returns an empty set -- returns null instead.
+   *
+   * @param annos a set of annotations
+   * @param typeMirror where the annotations are written
+   * @param atypeFactory the type factory
+   * @return top annotations for hierarchies where {@code annos} is missing an annotation, or null
+   */
+  public static @Nullable AnnotationMirrorSet missingAnnotations(
+      AnnotationMirrorSet annos, TypeMirror typeMirror, AnnotatedTypeFactory atypeFactory) {
+
+    boolean canBeMissing = canBeMissingAnnotations(typeMirror);
+    if (canBeMissing) {
+      return null;
     }
 
     QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
@@ -122,7 +162,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       }
     }
 
-    return missingHierarchy == null;
+    return missingHierarchy;
   }
 
   /**
@@ -406,22 +446,23 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         boolean canCombinedSetBeMissingAnnos) {
 
       AnnotationMirror upperBound = typeVar.getAnnotationInHierarchy(top);
-      TypeMirror upperBoundTM = typeVar.getUpperBound().getUnderlyingType();
 
       if (!canCombinedSetBeMissingAnnos) {
         TypeVariable typeVarTM = typeVar.getUnderlyingType();
         return combineTwoAnnotations(annotation, typeVarTM, upperBound, typeVarTM, top);
       }
-      AnnotationMirrorSet lBSet =
-          AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, typeVar);
-      AnnotationMirror lowerBound = qualHierarchy.findAnnotationInHierarchy(lBSet, top);
-      TypeMirror lowerBoundTM = typeVar.getLowerBound().getUnderlyingType();
 
+      TypeMirror upperBoundTM = typeVar.getUpperBound().getUnderlyingType();
       TypeMirror typeVarTM = typeVar.getUnderlyingType();
       if (qualHierarchy.isSubtypeShallow(upperBound, upperBoundTM, annotation, typeVarTM)) {
         // no anno is more specific than anno
         return null;
-      } else if (qualHierarchy.isSubtypeShallow(annotation, typeVarTM, lowerBound, lowerBoundTM)) {
+      }
+      AnnotationMirrorSet lBSet =
+          AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, typeVar);
+      AnnotationMirror lowerBound = qualHierarchy.findAnnotationInHierarchy(lBSet, top);
+      TypeMirror lowerBoundTM = typeVar.getLowerBound().getUnderlyingType();
+      if (qualHierarchy.isSubtypeShallow(annotation, typeVarTM, lowerBound, lowerBoundTM)) {
         return lowestQualifier(annotation, lowerBound);
       } else {
         return getBackupAnnoIn(top);
@@ -761,8 +802,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         throw new NullPointerException("combineSets: bTypeMirror==null");
       }
 
-      AnnotatedTypeVariable aAtv = getTypeVar(aTypeMirror);
-      AnnotatedTypeVariable bAtv = getTypeVar(bTypeMirror);
+      AnnotatedTypeVariable aAtv = null;
+      boolean aAtvIsSet = false;
+      AnnotatedTypeVariable bAtv = null;
+      boolean bAtvIsSet = false;
       AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
       AnnotationMirrorSet combinedSets = new AnnotationMirrorSet();
       for (AnnotationMirror top : tops) {
@@ -772,10 +815,34 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         if (a != null && b != null) {
           result = combineTwoAnnotations(a, aTypeMirror, b, bTypeMirror, top);
         } else if (a != null) {
+          if (!bAtvIsSet) {
+            bAtv = getTypeVar(bTypeMirror);
+            bAtvIsSet = true;
+          }
+          if (bAtv == null) {
+            throw new BugInCF("getTypeVar(%s) => null", bTypeMirror);
+          }
           result = combineAnnotationWithTypeVar(a, bAtv, top, canCombinedSetBeMissingAnnos);
         } else if (b != null) {
+          if (aAtv == null) {
+            if (!aAtvIsSet) {
+              aAtv = getTypeVar(aTypeMirror);
+              aAtvIsSet = true;
+            }
+            if (aAtv == null) {
+              throw new BugInCF("getTypeVar(%s) => null", aTypeMirror);
+            }
+          }
           result = combineAnnotationWithTypeVar(b, aAtv, top, canCombinedSetBeMissingAnnos);
         } else {
+          if (!aAtvIsSet) {
+            aAtv = getTypeVar(aTypeMirror);
+            aAtvIsSet = true;
+          }
+          if (!bAtvIsSet) {
+            bAtv = getTypeVar(bTypeMirror);
+            bAtvIsSet = true;
+          }
           result = combineTwoTypeVars(aAtv, bAtv, top, canCombinedSetBeMissingAnnos);
         }
         if (result != null) {

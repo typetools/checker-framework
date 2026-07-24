@@ -18,4 +18,3 @@ class ParseType:
         insert-typecast Block.statement 9, Variable.initializer: @A Map.Entry<String, Integer>
         insert-typecast Block.statement 10, Variable.initializer: @A Map.Entry<String, Integer>[]
         insert-typecast Block.statement 11, Variable.initializer: @A ParseType<String>.Inner<Integer>[]
-

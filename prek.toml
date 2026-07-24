@@ -7,11 +7,16 @@ repo = "builtin"
 hooks = [
   { id = "check-added-large-files" },
   { id = "check-case-conflict" },
-  { id = "check-executables-have-shebangs" },
+  { id = "check-executables-have-shebangs", exclude = { glob = [
+    "search",
+  ] } },
   { id = "check-json" },
   { id = "check-merge-conflict" },
   { id = "check-shebang-scripts-are-executable" },
-  { id = "check-symlinks" },
+  { id = "check-symlinks", exclude = { glob = [
+    ".subversion/auth",
+    "dots/.subversion/auth",
+  ] } },
   { id = "check-toml" },
   { id = "check-vcs-permalinks" },
   { id = "check-xml" },
@@ -19,29 +24,36 @@ hooks = [
   { id = "destroyed-symlinks" },
   { id = "detect-private-key" },
   { id = "end-of-file-fixer", exclude = { glob = [
-    "bugs/jikes-patches/*",
-    "**/non-conflicted-file-without-terminator.txt",
+    "**/*.diff",
+    "**/*.diff3",
+    "**/*.patch",
+    "**/expected*",
     "**/native-image/**",
+    "**/tests/squeeze-blank-lines-test/**",
+    "**/non-conflicted-file-without-terminator.txt",
+    "bugs/jikes-patches/*",
   ] } },
   { id = "fix-byte-order-marker" },
   { id = "forbid-new-submodules" },
   { id = "mixed-line-ending" },
   { id = "trailing-whitespace", exclude = { glob = [
-    "bugs/jikes-patches/*",
-    "bugs/bug-mew",
-    "bugs/BUGS.to-do",
-    "dots/.aspell.en.prepl",
-    ".aspell.en.prepl",
-    "dots/.aspell.en.pws",
-    ".aspell.en.pws",
-    "dots/en_US_apostrophe.aff",
-    "en_US_apostrophe.aff",
-    "dots/enscript.st",
-    "enscript.st",
-    "emacs/bug/crypted.UUE",
     "**/*.diff",
     "**/*.diff3",
+    "**/*.goal",
     "**/*.patch",
+    "**/tests/squeeze-blank-lines-test/**",
+    ".aspell.en.prepl",
+    ".aspell.en.pws",
+    "bugs/BUGS.to-do",
+    "bugs/bug-mew",
+    "bugs/jikes-patches/*",
+    "dots/.aspell.en.prepl",
+    "dots/.aspell.en.pws",
+    "dots/en_US_apostrophe.aff",
+    "dots/enscript.st",
+    "emacs/bug/crypted.UUE",
+    "en_US_apostrophe.aff",
+    "enscript.st",
   ] } },
 ]
 
@@ -57,14 +69,14 @@ hooks = [{ id = "actionlint" }]
 [[repos]]
 repo = "https://github.com/Lucas-C/pre-commit-hooks-java"
 rev = "1.3.10"
-hooks = [{ id = "validate-html" }]
+hooks = [{ id = "validate-html", exclude = { glob = ["**/bytopic-headfoot.html"] }}]
 
 ## Makefiles
 
 [[repos]]
 repo = "https://github.com/checkmake/checkmake.git"
 rev = "0.2.2"
-hooks = [{ id = "checkmake" }]
+hooks = [{ id = "checkmake", args = ["--format={{.FileName}}:{{.LineNumber}}:0: {{.Rule}}: {{.Violation}}\n" ]}]
 
 ## Markdown
 
@@ -131,6 +143,8 @@ hooks = [
     "share/print-mail",
     "share/javapp",
     "share/myxapps",
+    "cronic-orig",
+    "classfile_check_version",
   ] } },
 ]
 

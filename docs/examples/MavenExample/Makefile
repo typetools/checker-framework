@@ -1,6 +1,6 @@
 JAVA_VER := $(shell java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
 
-.PHONY: all clean
+.PHONY: all test clean
 
 all:
 # `-fn` command-line argument means never fail the build.
@@ -12,6 +12,8 @@ all:
 	mvn -B clean > /dev/null 2>&1
 	mvn -B -fn compile > Out.txt 2>&1
 	(grep -qF "MavenExample.java:[29,25] error: [assignment] incompatible types in assignment." Out.txt || (echo "FAILURE.  Here is file Out.txt:" && cat Out.txt && echo "End of file Out.txt." && false))
+
+test: all
 
 clean:
 	@mvn -q clean

@@ -20,4 +20,3 @@ class InnerClassAnonymous$3:
 
     field serialVersionUID:
         type: @InnerlyAnnotated
-

@@ -12,4 +12,3 @@ class FieldSimpleArray:
         inner-type 0, 0: @java.lang.UnderInitialization
 
     method <init>()V:
-
