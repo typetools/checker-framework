@@ -47,53 +47,6 @@ fi
 # Finished SignatureChecker in 193 seconds
 # Finished SignednessChecker in 327 seconds
 
-## This variant runs all the type-checkers in a single run.  It causes
-## a timeout under CI.  (Maybe because of thrashing?)
-# Comment about -D flags: the maven.wagon settings should not be relevant to Maven 3.9 and later, but try them anyway.
-# (I saw Maven take 30 minutes to download a dependency even with all these flags.)
-# (cd guava \
-#   && time mvn --debug -B compile -P checkerframework-local \
-#     -Dhttp.keepAlive=false -Daether.connector.http.connectionMaxTtl=25 -Dmaven.wagon.http.pool=false -Dmaven.wagon.httpconnectionManager.ttlSeconds=120)
-
-## This variant runs the type-checkers one by one, and it finishes in 52 minutes under GitHub Actions.
-## We may need to split it into two separate jobs at some point.
-
-echo "Starting FormatterChecker"
-start_time=$(date +%s)
-(cd guava \
-  && mvn -B clean \
-  && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.formatter.FormatterChecker)
-end_time=$(date +%s)
-elapsed=$((end_time - start_time))
-echo "Finished FormatterChecker in $elapsed seconds"
-
-echo "Starting IndexChecker"
-start_time=$(date +%s)
-(cd guava \
-  && mvn -B clean \
-  && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.index.IndexChecker)
-end_time=$(date +%s)
-elapsed=$((end_time - start_time))
-echo "Finished IndexChecker in $elapsed seconds"
-
-echo "Starting InterningChecker"
-start_time=$(date +%s)
-(cd guava \
-  && mvn -B clean \
-  && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.interning.InterningChecker)
-end_time=$(date +%s)
-elapsed=$((end_time - start_time))
-echo "Finished InterningChecker in $elapsed seconds"
-
-echo "Starting LockChecker"
-start_time=$(date +%s)
-(cd guava \
-  && mvn -B clean \
-  && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.lock.LockChecker)
-end_time=$(date +%s)
-elapsed=$((end_time - start_time))
-echo "Finished LockChecker in $elapsed seconds"
-
 echo "Starting NullnessChecker"
 start_time=$(date +%s)
 (cd guava \
