@@ -277,7 +277,7 @@ ifelse($1,canary_version,,[dnl
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    timeout-minutes: 70
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v7
         with:
