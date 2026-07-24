@@ -55,7 +55,7 @@ fi
 #   && time mvn --debug -B compile -P checkerframework-local \
 #     -Dhttp.keepAlive=false -Daether.connector.http.connectionMaxTtl=25 -Dmaven.wagon.http.pool=false -Dmaven.wagon.httpconnectionManager.ttlSeconds=120)
 
-## This variant runs the type-checkers one by one, and it finishes in 52 munutes under GitHub Actions.
+## This variant runs the type-checkers one by one, and it finishes in 52 minutes under GitHub Actions.
 ## We may need to split it into two separate jobs at some point.
 
 echo "Starting FormatterChecker"

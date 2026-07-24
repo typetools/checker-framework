@@ -476,7 +476,11 @@ workflows:
       # job_dependences_not_in_canary(canary_version, daikon_part1)
       # job_dependences_not_in_canary(canary_version, daikon_part2)
       # job_dependences_not_in_canary(canary_version, daikon_part3)
-      - guava_jdk25:
+      - guava_part1_jdk25:
+          requires:
+            - canary_jobs
+
+      - guava_part2_jdk25:
           requires:
             - canary_jobs
 
