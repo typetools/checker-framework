@@ -209,7 +209,8 @@ public abstract class CFAbstractAnalysis<
       CFAbstractAnalysis<CFValue, ?, ?> analysis,
       AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {
-    if (!CFAbstractValue.validateSet(annotations, underlyingType, atypeFactory)) {
+    if (!CFAbstractValue.hasAnnotationFromEveryHierarchy(
+        annotations, underlyingType, atypeFactory)) {
       return null;
     }
     return new CFValue(analysis, annotations, underlyingType);

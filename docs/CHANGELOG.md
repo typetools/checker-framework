@@ -9,6 +9,8 @@
 
 ### Implementation details
 
+Renamed `CFAbstractValue.validateSet()` to `hasAnnotationFromEveryHierarchy()`.
+
 ### Closed issues
 
 ## Version 4.2.1 (2026-07-01)
