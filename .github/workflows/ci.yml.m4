@@ -53,7 +53,7 @@ jobs:
   ci_info:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
