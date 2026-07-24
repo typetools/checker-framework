@@ -171,7 +171,8 @@ public abstract class CFAbstractAnalysis<
    * extends bound. See {@link CFAbstractValue} for an explanation.
    *
    * @param type the type to convert into an abstract value
-   * @return an abstract value containing the given annotated {@code type}
+   * @return an abstract value containing the given annotated {@code type} or null if {@code type}
+   *     is missing annotations
    */
   public @Nullable V createAbstractValue(AnnotatedTypeMirror type) {
     AnnotationMirrorSet annos;
@@ -192,6 +193,7 @@ public abstract class CFAbstractAnalysis<
    * @param annotations the annotations for the result annotated type
    * @param underlyingType the unannotated type for the result annotated type
    * @return an abstract value containing the given {@code annotations} and {@code underlyingType}
+   *     or null if {@code annotations} is missing annotations
    */
   public abstract @Nullable V createAbstractValue(
       AnnotationMirrorSet annotations, TypeMirror underlyingType);
