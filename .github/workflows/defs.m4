@@ -14,7 +14,7 @@ ifelse($1,canary_version,,[    needs:
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -34,7 +34,7 @@ ifelse($1,canary_version,,[    needs:
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -52,7 +52,7 @@ ifelse($1,canary_version,,[    needs:
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -71,7 +71,7 @@ ifelse($1,canary_version,,[    needs:
     container:
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -89,7 +89,7 @@ ifelse($1,canary_version,[dnl
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -103,7 +103,7 @@ ifelse($1,canary_version,[dnl
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -122,7 +122,7 @@ ifelse($1,canary_version,[dnl
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -143,7 +143,7 @@ ifelse($1,canary_version,,$1,latest_version,,[    needs:
     container:
       image: mdernst/cf-ubuntu-jdk$1-plus[]docker_testing:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
@@ -167,7 +167,7 @@ ifelse($1,canary_version,[dnl
     container:
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 0
@@ -180,7 +180,7 @@ ifelse($1,canary_version,[dnl
     container:
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 0
@@ -198,7 +198,7 @@ ifelse($1,canary_version,[dnl
     container:
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 0
@@ -220,7 +220,7 @@ ifelse($1,canary_version,,[dnl
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -239,7 +239,7 @@ ifelse($1,canary_version,,[dnl
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeout-minutes: 80
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -258,7 +258,7 @@ ifelse($1,canary_version,,[dnl
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeout-minutes: 80
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -268,23 +268,42 @@ ifelse($1,canary_version,,[dnl
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
 dnl
 define([guava_job], [dnl
-  guava_jdk$1:
+  guava_jdk$1_part1:
     needs:
       - canary_jobs
 ifelse($1,canary_version,,[dnl
-      - guava_jdk[]canary_version
+      - guava_jdk[]canary_version[]_part1
 ])dnl
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
-      - name: test-guava.sh
-        run: ./checker/bin-devel/test-guava.sh
+      - name: test-guava-part1.sh
+        run: ./checker/bin-devel/test-guava-part1.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
+  guava_jdk$1_part2:
+    needs:
+      - canary_jobs
+ifelse($1,canary_version,,[dnl
+      - guava_jdk[]canary_version[]_part2
+])dnl
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+      - name: test-guava-part2.sh
+        run: ./checker/bin-devel/test-guava-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
 dnl
@@ -299,7 +318,7 @@ ifelse($1,canary_version,,[dnl
     container:
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
