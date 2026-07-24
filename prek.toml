@@ -39,6 +39,7 @@ hooks = [
   { id = "trailing-whitespace", exclude = { glob = [
     "**/*.diff",
     "**/*.diff3",
+    "**/*.goal",
     "**/*.patch",
     "**/tests/squeeze-blank-lines-test/**",
     ".aspell.en.prepl",
