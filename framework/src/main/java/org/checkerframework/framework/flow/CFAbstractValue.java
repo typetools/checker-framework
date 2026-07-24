@@ -422,7 +422,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     @Override
-    protected @Nullable AnnotationMirror combineTwoTypeVarsWithoutPrimaryAnnotations(
+    protected @Nullable AnnotationMirror combineTwoTypeVarsUsingExtendsBounds(
         AnnotatedTypeVariable aAtv, AnnotatedTypeVariable bAtv, AnnotationMirror top) {
       AnnotationMirror aUB = aAtv.getAnnotationInHierarchy(top);
       AnnotationMirror bUB = bAtv.getAnnotationInHierarchy(top);
@@ -602,7 +602,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     @Override
-    protected @Nullable AnnotationMirror combineTwoTypeVarsWithoutPrimaryAnnotations(
+    protected @Nullable AnnotationMirror combineTwoTypeVarsUsingExtendsBounds(
         AnnotatedTypeVariable aAtv, AnnotatedTypeVariable bAtv, AnnotationMirror top) {
       AnnotationMirror aUB = aAtv.getAnnotationInHierarchy(top);
       AnnotationMirror bUB = bAtv.getAnnotationInHierarchy(top);
@@ -698,7 +698,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     @Override
-    protected @Nullable AnnotationMirror combineTwoTypeVarsWithoutPrimaryAnnotations(
+    protected @Nullable AnnotationMirror combineTwoTypeVarsUsingExtendsBounds(
         AnnotatedTypeVariable aAtv, AnnotatedTypeVariable bAtv, AnnotationMirror top) {
       AnnotationMirror aUB = aAtv.getAnnotationInHierarchy(top);
       AnnotationMirror bUB = bAtv.getAnnotationInHierarchy(top);
@@ -747,7 +747,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * <ol>
    *   <li>{@link #combineTwoAnnotations}
    *   <li>{@link #combineAnnotationWithTypeVar}
-   *   <li>{@link #combineTwoTypeVarsWithoutPrimaryAnnotations}
+   *   <li>{@link #combineTwoTypeVarsUsingExtendsBounds}
    * </ol>
    *
    * If a set is missing an annotation in a hierarchy, and if the combined set can be missing an
@@ -820,10 +820,14 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             bAtv = getTypeVar(bTypeMirror);
             bAtvIsSet = true;
           }
+          // Both annotations are null.
           if (canCombinedSetBeMissingAnnos) {
+            // If the result can be missing an annotation, then if both annotations are null, then
+            // just make this annotation missing.
             result = null;
           } else {
-            result = combineTwoTypeVarsWithoutPrimaryAnnotations(aAtv, bAtv, top);
+            // If the result must have an annotation, use the bounds.
+            result = combineTwoTypeVarsUsingExtendsBounds(aAtv, bAtv, top);
           }
         }
         if (result != null) {
@@ -860,7 +864,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * @param top the top annotation in the hierarchy
      * @return the result of combining the two type variables, which may be null
      */
-    protected abstract @Nullable AnnotationMirror combineTwoTypeVarsWithoutPrimaryAnnotations(
+    protected abstract @Nullable AnnotationMirror combineTwoTypeVarsUsingExtendsBounds(
         AnnotatedTypeVariable aAtv, AnnotatedTypeVariable bAtv, AnnotationMirror top);
 
     /**
