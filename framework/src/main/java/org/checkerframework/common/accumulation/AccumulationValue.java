@@ -50,7 +50,7 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
       CFAbstractAnalysis<AccumulationValue, ?, ?> analysis,
       AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {
-    super(analysis, annotations, underlyingType, true);
+    super(analysis, annotations, underlyingType);
     if (underlyingType.getKind() == TypeKind.TYPEVAR
         || underlyingType.getKind() == TypeKind.WILDCARD) {
       AccumulationAnnotatedTypeFactory typeFactory =

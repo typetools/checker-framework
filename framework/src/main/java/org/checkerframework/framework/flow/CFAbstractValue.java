@@ -84,33 +84,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       CFAbstractAnalysis<V, ?, ?> analysis,
       AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {
-    this(analysis, annotations, underlyingType, false);
-  }
-
-  /**
-   * Creates a new CFAbstractValue. Most clients should use {@link
-   * #CFAbstractValue(CFAbstractAnalysis, AnnotationMirrorSet, TypeMirror)} rather than this
-   * overload.
-   *
-   * @param analysis the analysis class this value belongs to
-   * @param annotations the annotations in this abstract value
-   * @param underlyingType the underlying (Java) type in this abstract value
-   * @param permitEmptyAnnotations if true, {@code annotations} is permitted to be empty
-   */
-  @SuppressWarnings("this-escape")
-  protected CFAbstractValue(
-      CFAbstractAnalysis<V, ?, ?> analysis,
-      AnnotationMirrorSet annotations,
-      TypeMirror underlyingType,
-      boolean permitEmptyAnnotations) {
     this.analysis = analysis;
     this.atypeFactory = analysis.getTypeFactory();
     this.qualHierarchy = atypeFactory.getQualifierHierarchy();
     this.annotations = annotations;
     this.underlyingType = underlyingType;
 
-    assert (permitEmptyAnnotations && annotations.isEmpty())
-            || hasAnnotationFromEveryHierarchy(annotations, underlyingType, atypeFactory)
+    assert hasAnnotationFromEveryHierarchy(annotations, underlyingType, atypeFactory)
         : "Attempted to create incomplete CFAbstractValue: "
             + (underlyingType + " [" + underlyingType.getClass().getSimpleName() + "]")
             + (" annotations: " + annotations)
