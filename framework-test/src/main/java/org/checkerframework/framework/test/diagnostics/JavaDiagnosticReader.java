@@ -12,8 +12,10 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import javax.tools.JavaFileObject;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
@@ -232,7 +234,7 @@ public final class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>,
   }
 
   @Override
-  public TestDiagnosticLine next() {
+  public @NotOwning TestDiagnosticLine next() {
     if (nextLine == null) {
       throw new NoSuchElementException();
     }
@@ -260,13 +262,14 @@ public final class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>,
   }
 
   /**
-   * Read the next line.
+   * Advances the reader by reading a single line, updating the {@code nextLine} and {@code
+   * nextLineNumber} fields. If there is no remaining line, the reader is {@code close}d.
    *
-   * @throws IOException if there is trouble while reading
+   * @throws IOException if reading from the underlying reader fails
    */
   @RequiresNonNull("reader")
-  /*package-private*/ void advance(@UnknownInitialization JavaDiagnosticReader this)
-      throws IOException {
+  /*package-private*/ void advance(
+      @NotOwningCollection @UnknownInitialization JavaDiagnosticReader this) throws IOException {
     nextLine = reader.readLine();
     nextLineNumber = reader.getLineNumber();
     if (nextLine == null) {
