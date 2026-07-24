@@ -42,36 +42,36 @@ fi
 #   && time mvn --debug -B compile -P checkerframework-local \
 #     -Dhttp.keepAlive=false -Daether.connector.http.connectionMaxTtl=25 -Dmaven.wagon.http.pool=false -Dmaven.wagon.httpconnectionManager.ttlSeconds=120)
 
- echo "Starting FormatterChecker"
- (cd guava \
-   && mvn -B clean \
-   && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.formatter.FormatterChecker)
- echo "Finished FormatterChecker"
- echo "Starting IndexChecker"
- (cd guava \
-   && mvn -B clean \
-   && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.index.IndexChecker)
- echo "Finished IndexChecker"
- echo "Starting InterningChecker"
- (cd guava \
-   && mvn -B clean \
-   && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.interning.InterningChecker)
- echo "Finished InterningChecker"
- echo "Starting LockChecker"
- (cd guava \
-   && mvn -B clean \
-   && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.lock.LockChecker)
- echo "Finished LockChecker"
- echo "Starting NullnessChecker"
- (cd guava \
-   && mvn -B clean \
-   && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
- echo "Finished NullnessChecker"
- echo "Starting RegexChecker"
- (cd guava \
-   && mvn -B clean \
-   && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.regex.RegexChecker)
- echo "Finished RegexChecker"
+echo "Starting FormatterChecker"
+(cd guava \
+  && mvn -B clean \
+  && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.formatter.FormatterChecker)
+echo "Finished FormatterChecker"
+echo "Starting IndexChecker"
+(cd guava \
+  && mvn -B clean \
+  && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.index.IndexChecker)
+echo "Finished IndexChecker"
+echo "Starting InterningChecker"
+(cd guava \
+  && mvn -B clean \
+  && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.interning.InterningChecker)
+echo "Finished InterningChecker"
+echo "Starting LockChecker"
+(cd guava \
+  && mvn -B clean \
+  && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.lock.LockChecker)
+echo "Finished LockChecker"
+echo "Starting NullnessChecker"
+(cd guava \
+  && mvn -B clean \
+  && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
+echo "Finished NullnessChecker"
+echo "Starting RegexChecker"
+(cd guava \
+  && mvn -B clean \
+  && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.regex.RegexChecker)
+echo "Finished RegexChecker"
 echo "Starting ResourceLeakChecker"
 (cd guava \
   && mvn -B clean \
