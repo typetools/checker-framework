@@ -122,8 +122,7 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
       return mostSpecific;
     } else if (this.getAnnotations().isEmpty()) {
       mostSpecific =
-          new AccumulationValue(
-              analysis, AnnotationMirrorSet.emptySet(), other.getUnderlyingType());
+          new AccumulationValue(analysis, AnnotationMirrorSet.emptySet(), this.getUnderlyingType());
       mostSpecific.addAccumulatedValues(this.accumulatedValues);
       mostSpecific.addAccumulatedValues(other.accumulatedValues);
       return mostSpecific;
