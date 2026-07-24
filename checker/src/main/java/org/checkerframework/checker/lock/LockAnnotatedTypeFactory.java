@@ -47,6 +47,7 @@ import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFValue;
@@ -416,6 +417,8 @@ public class LockAnnotatedTypeFactory
     RELEASESNOLOCKS("@ReleasesNoLocks", ReleasesNoLocks.class),
     /** The method does not acquire or release any locks. */
     LOCKINGFREE("@LockingFree", LockingFree.class),
+    /** The method side-effects a limited number of expressions. */
+    SIDEEFFECTSONLY("@SideEffectsOnly", SideEffectsOnly.class),
     /** The method has no side effects. */
     SIDEEFFECTFREE("@SideEffectFree", SideEffectFree.class),
     /** The method has no side effects and is deterministic. */
@@ -456,25 +459,33 @@ public class LockAnnotatedTypeFactory
       switch (this) {
         case MAYRELEASELOCKS -> {
           switch (other) {
-            case RELEASESNOLOCKS, LOCKINGFREE, SIDEEFFECTFREE, PURE -> weaker = true;
+            case RELEASESNOLOCKS, LOCKINGFREE, SIDEEFFECTSONLY, SIDEEFFECTFREE, PURE ->
+                weaker = true;
             default -> {}
           }
         }
         case RELEASESNOLOCKS -> {
           switch (other) {
-            case LOCKINGFREE, SIDEEFFECTFREE, PURE -> weaker = true;
+            case LOCKINGFREE, SIDEEFFECTSONLY, SIDEEFFECTFREE, PURE -> weaker = true;
             default -> {}
           }
         }
         case LOCKINGFREE -> {
+          switch (other) {
+            case SIDEEFFECTSONLY, SIDEEFFECTFREE, PURE -> weaker = true;
+            default -> {}
+          }
+        }
+        case SIDEEFFECTSONLY -> {
           switch (other) {
             case SIDEEFFECTFREE, PURE -> weaker = true;
             default -> {}
           }
         }
         case SIDEEFFECTFREE -> {
-          if (other == PURE) {
-            weaker = true;
+          switch (other) {
+            case PURE -> weaker = true;
+            default -> {}
           }
         }
         case PURE -> {}

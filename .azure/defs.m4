@@ -240,7 +240,7 @@ ifelse($1,canary_version,,[dnl
     pool:
       vmImage: 'ubuntu-latest'
     container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    timeoutInMinutes: 70
+    timeoutInMinutes: 90
     steps:
       - checkout: self
         fetchDepth: 25

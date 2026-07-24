@@ -3,6 +3,7 @@ package org.checkerframework.afu.scenelib.util.coll;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 /**
  * A {@link WrapperMap} is a map all of whose methods delegate by default to those of a supplied
@@ -22,6 +23,7 @@ public class WrapperMap<K, V> implements Map<K, V> {
   }
 
   @Override
+  @SideEffectsOnly("this")
   public void clear() {
     back.clear();
   }
@@ -58,16 +60,24 @@ public class WrapperMap<K, V> implements Map<K, V> {
   }
 
   @Override
+  @SuppressWarnings({
+    "keyfor:contracts.postcondition", // backing map
+    "nullness:return" // generics lower bound problem
+  })
+  @SideEffectsOnly("this")
   public V put(K key, V value) {
     return back.put(key, value);
   }
 
   @Override
+  @SideEffectsOnly("this")
   public void putAll(Map<? extends K, ? extends V> m) {
     back.putAll(m);
   }
 
   @Override
+  @SuppressWarnings("nullness:return") // generics lower bound problem
+  @SideEffectsOnly("this")
   public V remove(Object key) {
     return back.remove(key);
   }

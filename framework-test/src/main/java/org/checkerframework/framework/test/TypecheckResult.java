@@ -124,6 +124,7 @@ public class TypecheckResult {
 
     if (didTestFail()) {
       if (compilationResult.compiledWithoutError() && !expectedDiagnostics.isEmpty()) {
+        // TODO: This prints if all errors are as expected, but the test issued unexpected warnings.
         errorHeaders.add("The test run was expected to issue errors/warnings, but it did not.");
 
       } else if (!compilationResult.compiledWithoutError() && expectedDiagnostics.isEmpty()) {

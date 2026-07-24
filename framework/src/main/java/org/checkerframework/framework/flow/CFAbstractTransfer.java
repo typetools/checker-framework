@@ -476,7 +476,7 @@ public abstract class CFAbstractTransfer<
             isAssumeSideEffectFreeEnabled,
             isAssumeDeterministicEnabled,
             aTypeFactory.getChecker().hasOption("assumePureGetters"));
-    return result.isPure(EnumSet.allOf(PurityKind.class));
+    return result.isPure(EnumSet.of(PurityKind.SIDE_EFFECT_FREE, PurityKind.DETERMINISTIC));
   }
 
   /**
@@ -1080,6 +1080,8 @@ public abstract class CFAbstractTransfer<
     S store = p.getRegularStore();
     // add new information based on postcondition
     processPostconditions(n, store, constructorElt, newClassTree);
+    // TODO: This does not call `store.updateForMethodCall`, so a constructor's
+    // `@SideEffectsOnly` annotation has no effect on type refinement at a `new` expression.
     return super.visitObjectCreation(n, p);
   }
 
