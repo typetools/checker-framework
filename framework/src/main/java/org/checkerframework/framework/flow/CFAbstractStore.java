@@ -223,6 +223,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   public void updateForMethodCall(MethodInvocationNode methodInvocationNode, V val) {
     ExecutableElement method = methodInvocationNode.getTarget().getMethod();
+
     @SuppressWarnings("unchecked")
     GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory = analysis.atypeFactory;
 
@@ -282,7 +283,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Returns true if the given expression might evaluate to a different value.
+   * Returns true if a method call might change the abstract value of the given expression, so its
+   * refinement should be discarded.
    *
    * <p>Some side effects are ignored: {@code notSideEffectedExpression} is treated as if it cannot
    * change. Concretely, the implementation evaluates to false if {@code expr} is strictly equal to

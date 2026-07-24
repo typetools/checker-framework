@@ -166,11 +166,19 @@ circleci_boilerplate($1,)
 ])dnl
 dnl
 define([guava_job], [dnl
-  guava_jdk$1:
+  guava_jdk$1_part1:
 circleci_boilerplate($1,)
       - run:
-          name: test-guava.sh
-          command: ./checker/bin-devel/test-guava.sh
+          name: test-guava-part1.sh
+          command: ./checker/bin-devel/test-guava-part1.sh
+          no_output_timeout: "50m"
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: $1
+  guava_jdk$1_part2:
+circleci_boilerplate($1,)
+      - run:
+          name: test-guava-part2.sh
+          command: ./checker/bin-devel/test-guava-part2.sh
           no_output_timeout: "50m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: $1
