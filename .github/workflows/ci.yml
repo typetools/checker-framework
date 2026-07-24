@@ -286,7 +286,7 @@ jobs:
   # TEMPORARILY commented until Daikon release 5.8.24.
   # daikon_job(canary_version)
 
-  guava_jdk25:
+  guava_jdk25_part1:
     needs:
       - canary_jobs
     runs-on: ubuntu-latest
@@ -298,8 +298,24 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
-      - name: test-guava.sh
-        run: ./checker/bin-devel/test-guava.sh
+      - name: test-guava-part1.sh
+        run: ./checker/bin-devel/test-guava-part1.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+  guava_jdk25_part2:
+    needs:
+      - canary_jobs
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk25:latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+      - name: test-guava-part2.sh
+        run: ./checker/bin-devel/test-guava-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
