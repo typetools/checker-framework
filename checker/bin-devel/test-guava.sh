@@ -36,54 +36,94 @@ fi
 # (cd guava && \
 # (timeout 5m mvn -B dependency:go-offline || (sleep 1m && (timeout 5m mvn -B dependency:go-offline || true))))
 
+## This variant runs all the type-checkers in a single run.  It causes
+## a timeout under CI.  (Maybe because of thrashing?)
 # Comment about -D flags: the maven.wagon settings should not be relevant to Maven 3.9 and later, but try them anyway.
 # (I saw Maven take 30 minutes to download a dependency even with all these flags.)
 # (cd guava \
 #   && time mvn --debug -B compile -P checkerframework-local \
 #     -Dhttp.keepAlive=false -Daether.connector.http.connectionMaxTtl=25 -Dmaven.wagon.http.pool=false -Dmaven.wagon.httpconnectionManager.ttlSeconds=120)
 
+## This variant runs the type-checkers one by one, and it finishes in 52 munutes under GitHub Actions.
+## We may need to split it into two separate jobs at some point.
+
 echo "Starting FormatterChecker"
+start_time=$(date +%s)
 (cd guava \
   && mvn -B clean \
   && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.formatter.FormatterChecker)
-echo "Finished FormatterChecker"
+end_time=$(date +%s)
+elapsed=$((end_time - start_time))
+echo "Finished FormatterChecker in $elapsed seconds"
+
 echo "Starting IndexChecker"
+start_time=$(date +%s)
 (cd guava \
   && mvn -B clean \
   && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.index.IndexChecker)
-echo "Finished IndexChecker"
+end_time=$(date +%s)
+elapsed=$((end_time - start_time))
+echo "Finished IndexChecker in $elapsed seconds"
+
 echo "Starting InterningChecker"
+start_time=$(date +%s)
 (cd guava \
   && mvn -B clean \
   && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.interning.InterningChecker)
-echo "Finished InterningChecker"
+end_time=$(date +%s)
+elapsed=$((end_time - start_time))
+echo "Finished InterningChecker in $elapsed seconds"
+
 echo "Starting LockChecker"
+start_time=$(date +%s)
 (cd guava \
   && mvn -B clean \
   && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.lock.LockChecker)
-echo "Finished LockChecker"
+end_time=$(date +%s)
+elapsed=$((end_time - start_time))
+echo "Finished LockChecker in $elapsed seconds"
+
 echo "Starting NullnessChecker"
+start_time=$(date +%s)
 (cd guava \
   && mvn -B clean \
   && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.nullness.NullnessChecker)
-echo "Finished NullnessChecker"
+end_time=$(date +%s)
+elapsed=$((end_time - start_time))
+echo "Finished NullnessChecker in $elapsed seconds"
+
 echo "Starting RegexChecker"
+start_time=$(date +%s)
 (cd guava \
   && mvn -B clean \
   && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.regex.RegexChecker)
-echo "Finished RegexChecker"
+end_time=$(date +%s)
+elapsed=$((end_time - start_time))
+echo "Finished RegexChecker in $elapsed seconds"
+
 echo "Starting ResourceLeakChecker"
+start_time=$(date +%s)
 (cd guava \
   && mvn -B clean \
   && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.resourceleak.ResourceLeakChecker)
-echo "Finished ResourceLeakChecker"
+end_time=$(date +%s)
+elapsed=$((end_time - start_time))
+echo "Finished ResourceLeakChecker in $elapsed seconds"
+
 echo "Starting SignatureChecker"
+start_time=$(date +%s)
 (cd guava \
   && mvn -B clean \
   && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.signature.SignatureChecker)
-echo "Finished SignatureChecker"
+end_time=$(date +%s)
+elapsed=$((end_time - start_time))
+echo "Finished SignatureChecker in $elapsed seconds"
+
 echo "Starting SignednessChecker"
+start_time=$(date +%s)
 (cd guava \
   && mvn -B clean \
   && mvn -B compile -P checkerframework-local -Dcheckerframework.checkers=org.checkerframework.checker.signedness.SignednessChecker)
-echo "Finished SignednessChecker"
+end_time=$(date +%s)
+elapsed=$((end_time - start_time))
+echo "Finished SignednessChecker in $elapsed seconds"
