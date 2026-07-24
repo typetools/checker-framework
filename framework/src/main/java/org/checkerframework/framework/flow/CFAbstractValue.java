@@ -422,20 +422,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     @Override
-    protected @Nullable AnnotationMirror combineTwoTypeVars(
-        AnnotatedTypeVariable aAtv,
-        AnnotatedTypeVariable bAtv,
-        AnnotationMirror top,
-        boolean canCombinedSetBeMissingAnnos) {
-      if (canCombinedSetBeMissingAnnos) {
-        return null;
-      } else {
-        AnnotationMirror aUB = aAtv.getAnnotationInHierarchy(top);
-        AnnotationMirror bUB = bAtv.getAnnotationInHierarchy(top);
-        TypeMirror aTM = aAtv.getUnderlyingType();
-        TypeMirror bTM = bAtv.getUnderlyingType();
-        return combineTwoAnnotations(aUB, aTM, bUB, bTM, top);
-      }
+    protected @Nullable AnnotationMirror combineTwoTypeVarsWithoutPrimaryAnnotations(
+        AnnotatedTypeVariable aAtv, AnnotatedTypeVariable bAtv, AnnotationMirror top) {
+      AnnotationMirror aUB = aAtv.getAnnotationInHierarchy(top);
+      AnnotationMirror bUB = bAtv.getAnnotationInHierarchy(top);
+      TypeMirror aTM = aAtv.getUnderlyingType();
+      TypeMirror bTM = bAtv.getUnderlyingType();
+      return combineTwoAnnotations(aUB, aTM, bUB, bTM, top);
     }
 
     @Override
@@ -609,20 +602,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     @Override
-    protected @Nullable AnnotationMirror combineTwoTypeVars(
-        AnnotatedTypeVariable aAtv,
-        AnnotatedTypeVariable bAtv,
-        AnnotationMirror top,
-        boolean canCombinedSetBeMissingAnnos) {
-      if (canCombinedSetBeMissingAnnos) {
-        // don't add an annotation
-        return null;
-      } else {
-        AnnotationMirror aUB = aAtv.getAnnotationInHierarchy(top);
-        AnnotationMirror bUB = bAtv.getAnnotationInHierarchy(top);
-        return combineTwoAnnotations(
-            aUB, aAtv.getUnderlyingType(), bUB, bAtv.getUnderlyingType(), top);
-      }
+    protected @Nullable AnnotationMirror combineTwoTypeVarsWithoutPrimaryAnnotations(
+        AnnotatedTypeVariable aAtv, AnnotatedTypeVariable bAtv, AnnotationMirror top) {
+      AnnotationMirror aUB = aAtv.getAnnotationInHierarchy(top);
+      AnnotationMirror bUB = bAtv.getAnnotationInHierarchy(top);
+      return combineTwoAnnotations(
+          aUB, aAtv.getUnderlyingType(), bUB, bAtv.getUnderlyingType(), top);
     }
 
     @Override
@@ -713,21 +698,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     @Override
-    protected @Nullable AnnotationMirror combineTwoTypeVars(
-        AnnotatedTypeVariable aAtv,
-        AnnotatedTypeVariable bAtv,
-        AnnotationMirror top,
-        boolean canCombinedSetBeMissingAnnos) {
-      if (canCombinedSetBeMissingAnnos) {
-        // don't add an annotation
-        return null;
-      } else {
-        AnnotationMirror aUB = aAtv.getAnnotationInHierarchy(top);
-        AnnotationMirror bUB = bAtv.getAnnotationInHierarchy(top);
-        TypeMirror aTM = aAtv.getUnderlyingType();
-        TypeMirror bTM = bAtv.getUnderlyingType();
-        return combineTwoAnnotations(aUB, aTM, bUB, bTM, top);
-      }
+    protected @Nullable AnnotationMirror combineTwoTypeVarsWithoutPrimaryAnnotations(
+        AnnotatedTypeVariable aAtv, AnnotatedTypeVariable bAtv, AnnotationMirror top) {
+      AnnotationMirror aUB = aAtv.getAnnotationInHierarchy(top);
+      AnnotationMirror bUB = bAtv.getAnnotationInHierarchy(top);
+      TypeMirror aTM = aAtv.getUnderlyingType();
+      TypeMirror bTM = bAtv.getUnderlyingType();
+      return combineTwoAnnotations(aUB, aTM, bUB, bTM, top);
     }
 
     @Override
@@ -770,7 +747,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * <ol>
    *   <li>{@link #combineTwoAnnotations}
    *   <li>{@link #combineAnnotationWithTypeVar}
-   *   <li>{@link #combineTwoTypeVars}
+   *   <li>{@link #combineTwoTypeVarsWithoutPrimaryAnnotations}
    * </ol>
    *
    * If a set is missing an annotation in a hierarchy, and if the combined set can be missing an
@@ -843,7 +820,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             bAtv = getTypeVar(bTypeMirror);
             bAtvIsSet = true;
           }
-          result = combineTwoTypeVars(aAtv, bAtv, top, canCombinedSetBeMissingAnnos);
+          if (canCombinedSetBeMissingAnnos) {
+            result = null;
+          } else {
+            result = combineTwoTypeVarsWithoutPrimaryAnnotations(aAtv, bAtv, top);
+          }
         }
         if (result != null) {
           combinedSets.add(result);
@@ -872,21 +853,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
     /**
      * Returns the primary annotation that result from of combining the two {@link
-     * AnnotatedTypeVariable}. If the result has no primary annotation, {@code null} is returned.
-     * This method is called when no annotation exists in either sets for the hierarchy whose top is
-     * {@code top}.
+     * AnnotatedTypeVariable} that do not have primary annotations.
      *
      * @param aAtv a type variable that does not have a primary annotation in {@code top} hierarchy
      * @param bAtv a type variable that does not have a primary annotation in {@code top} hierarchy
      * @param top the top annotation in the hierarchy
-     * @param canCombinedSetBeMissingAnnos true if TODO
      * @return the result of combining the two type variables, which may be null
      */
-    protected abstract @Nullable AnnotationMirror combineTwoTypeVars(
-        AnnotatedTypeVariable aAtv,
-        AnnotatedTypeVariable bAtv,
-        AnnotationMirror top,
-        boolean canCombinedSetBeMissingAnnos);
+    protected abstract @Nullable AnnotationMirror combineTwoTypeVarsWithoutPrimaryAnnotations(
+        AnnotatedTypeVariable aAtv, AnnotatedTypeVariable bAtv, AnnotationMirror top);
 
     /**
      * Returns the result of combining {@code annotation} with {@code typeVar}.
@@ -896,7 +871,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * @param annotation an annotation
      * @param typeVar a type variable that does not have a primary annotation in the hierarchy
      * @param top the top annotation of the hierarchy
-     * @param canCombinedSetBeMissingAnnos true if TODO
+     * @param canCombinedSetBeMissingAnnos true if the combined set can be missing annotations
      * @return the result of combining {@code annotation} with {@code typeVar}
      */
     protected abstract @Nullable AnnotationMirror combineAnnotationWithTypeVar(
