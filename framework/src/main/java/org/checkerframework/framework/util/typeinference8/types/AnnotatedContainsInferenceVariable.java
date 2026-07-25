@@ -18,7 +18,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 
 /** Helper class for determining if a type contains an inference variable. */
-public class AnnotatedContainsInferenceVariable {
+public final class AnnotatedContainsInferenceVariable {
 
   /** Do not instantiate. */
   private AnnotatedContainsInferenceVariable() {

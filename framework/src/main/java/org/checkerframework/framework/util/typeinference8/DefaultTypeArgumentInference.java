@@ -230,6 +230,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       boolean found = argTrees.get(i) == argTree;
       if (found) {
         index = i;
+        break;
       }
     }
     if (index == -1) {

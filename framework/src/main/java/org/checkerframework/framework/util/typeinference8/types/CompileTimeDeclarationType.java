@@ -42,10 +42,10 @@ public class CompileTimeDeclarationType extends AbstractExecutableType {
    * The type of the receiver. Its value may be different than {@code
    * this.annotatedExecutableType.getReceiver()}.
    */
-  AnnotatedTypeMirror receiver;
+  private final AnnotatedTypeMirror receiver;
 
   /** The method reference tree. */
-  MemberReferenceTree methodRef;
+  private final MemberReferenceTree methodRef;
 
   /**
    * Creates a compile-time declaration type for a method reference.
