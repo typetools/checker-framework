@@ -238,7 +238,8 @@ public class Expression extends TypeConstraint {
       return ConstraintSet.TRUE;
     }
     AbstractType r = T.getFunctionTypeReturnType();
-    if (r.getTypeKind() == TypeKind.VOID) {
+    if (r == null || r.getTypeKind() == TypeKind.VOID) {
+      // getFunctionTypeReturnType() returns null if the function type's return type is void.
       return ConstraintSet.TRUE;
     }
 

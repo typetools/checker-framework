@@ -46,7 +46,7 @@ public class Typing extends TypeConstraint {
   private final Kind kind;
 
   /** True if this constraint is for a covariant type argument. */
-  private boolean isCovarTypeArg;
+  private final boolean isCovarTypeArg;
 
   /**
    * Creates a typing constraint.
