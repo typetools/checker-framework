@@ -43,7 +43,11 @@ file to be checked is `AssertNonNullTest.java` in directory
 
 ```sh
   cd $CHECKERFRAMEWORK
-  ./gradlew assembleForJavac && checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class checker/tests/nullness/AssertNonNullTest.java
+  ./gradlew assembleForJavac \
+  && checker/bin/javac \
+      -processor org.checkerframework.checker.nullness.NullnessChecker
+      -implicit:class \
+      checker/tests/nullness/AssertNonNullTest.java
 ```
 
 where the specific checker and command-line arguments are often clear from

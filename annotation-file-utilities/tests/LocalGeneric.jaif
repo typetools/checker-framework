@@ -13,4 +13,3 @@ class LocalGeneric:
         local 1 #2+8:
             type: @java.lang.UnderInitialization
                 inner-type 3, 0: @java.lang.Tainted
-
