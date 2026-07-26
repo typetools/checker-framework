@@ -623,9 +623,14 @@ tasks.register("ainferIndexGenerateAjava", Test) {
     exceptionFormat = "full"
     events("passed", "skipped", "failed")
   }
+  // Resolve these directories at configuration time, and delete them with `File.deleteDir()`
+  // rather than with `Project.delete()`, because the Gradle configuration cache forbids using
+  // a project object from within a task action.
+  File ainferIndexAnnotatedDir = file("tests/ainfer-index/annotated")
+  File ainferIndexBuildDir = layout.buildDirectory.dir("ainfer-index").get().asFile
   doFirst {
-    delete("tests/ainfer-index/annotated")
-    delete(layout.buildDirectory.dir("ainfer-index"))
+    ainferIndexAnnotatedDir.deleteDir()
+    ainferIndexBuildDir.deleteDir()
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-index")

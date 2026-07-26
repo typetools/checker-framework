@@ -314,6 +314,9 @@ allprojects { currentProj ->
         // fails with "java.lang.IllegalAccessError: ... cannot access class
         // com.sun.tools.javac.tree.JCTree".  If a doclet ever needs deep reflection into
         // these packages, it will also need the "--add-opens" equivalents.
+        // Only a doclet that loads the documented classes needs the "-J" variant, but it is
+        // harmless for the standard doclet, so set both variants for every Javadoc task
+        // rather than requiring each task to declare which doclet it runs.
         [
           "api",
           "code",

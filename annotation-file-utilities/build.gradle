@@ -115,6 +115,8 @@ test.dependsOn(testAnnotator)
 // spotlessApply for another reason, Gradle may schedule it before these tasks rather than
 // after, leaving Main.java unformatted.)
 tasks.register("updateUserOptions") {
+  description = "Updates documentation of command-line arguments, in Javadoc and in the manual."
+  group = "Documentation"
   dependsOn(
   "updateUserOptionsJavadoc",
   "updateUserOptionsHtml"
@@ -137,7 +139,7 @@ tasks.register("updateUserOptions") {
  * @param taskDescription description of the task
  * @param format the OptionsDoclet output format: "javadoc" or "html"
  * @param docfile the file whose command-line argument documentation to update
- * @return the new task
+ * @return a TaskProvider for the new task
  */
 def createUpdateUserOptionsTask(taskName, taskDescription, format, docfile) {
   tasks.register(taskName, Javadoc) {
@@ -186,7 +188,7 @@ createUpdateUserOptionsTask(
     "html",
     // Read `afuManualDir` through `rootProject.ext`.  An unqualified reference would be an
     // implicit lookup of a property in a parent project, which Gradle 10 will reject.
-    new File(rootProject.file(rootProject.ext.afuManualDir), "annotation-file-utilities.html").toString())
+    rootProject.file("${rootProject.ext.afuManualDir}/annotation-file-utilities.html").toString())
 
 tasks.named("assemble") {
   dependsOn(shadowJar)
