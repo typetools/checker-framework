@@ -171,7 +171,7 @@ public final class Main {
   public static boolean abbreviate = true;
 
   /** Don't insert the given annotation. */
-  @Option("-o Omit given annotation")
+  @Option("-o Omit (don't insert) the given annotation")
   public static String omit_annotation;
 
   @Option("Suppress warnings about disallowed insertions")
@@ -197,7 +197,7 @@ public final class Main {
   public static boolean debug = false;
 
   /** Print the stack if an error is thrown. */
-  @Option("Print error stack")
+  @Option("Print the stack if an error is thrown")
   public static boolean print_error_stack = false;
 
   /** Debugging flag. */
