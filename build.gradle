@@ -78,9 +78,15 @@ ext {
 // so running `git` must be guarded by the same condition as the task itself.  Otherwise,
 // building a checkout that contains no `.git` (such as an unpacked source archive, or a
 // checkout made without git) would fail.
-def gitDirExists = rootProject.file(".git").exists()
+def gitDir = rootProject.file(".git")
+// Test for `.git` through a ValueSource rather than calling `File.exists()` directly, so that
+// the Gradle configuration cache treats the test as an input and reconfigures when its result
+// changes.
+def gitDirExists = providers.of(GitDirExists) {
+  parameters.gitDirPath = gitDir.absolutePath
+}
 def localHooksDir
-if (gitDirExists) {
+if (gitDirExists.get()) {
   localHooksDir = providers.exec {
     workingDir = rootProject.projectDir
     commandLine("git", "rev-parse", "--git-path", "hooks")
@@ -95,8 +101,10 @@ if (gitDirExists) {
 tasks.register("installGitHooks", Copy) {
   // Test for `.git` again, rather than reusing `gitDirExists`, so that the test is made when
   // the task runs rather than when the build is configured.  The two differ if the build
-  // configuration is reused, as the Gradle configuration cache does.
-  onlyIf { rootProject.file(".git").exists() }
+  // configuration is reused, as the Gradle configuration cache does.  Capture the `gitDir`
+  // variable rather than referring to `rootProject`, which the configuration cache forbids in
+  // code that runs during task execution.
+  onlyIf { gitDir.exists() }
   description = "Copies git hooks to the local git hooks directory"
   from(files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit"))
   rename("git\\.(.*)", "\$1")
@@ -292,11 +300,12 @@ allprojects { currentProj ->
         }
 
         // Javadoc needs these because Checker Framework source code uses javac internals.
-        // The "-J" variant opens the package in the JVM that runs Javadoc, which a doclet that
-        // reflectively loads the documented classes requires.  The OptionsDoclet that the
+        // The "-J" variant exports the package in the JVM that runs Javadoc, which a doclet
+        // that loads the documented classes requires.  The OptionsDoclet that the
         // annotation-file-utilities tasks run is such a doclet; without the "-J" variant it
         // fails with "java.lang.IllegalAccessError: ... cannot access class
-        // com.sun.tools.javac.tree.JCTree".
+        // com.sun.tools.javac.tree.JCTree".  If a doclet ever needs deep reflection into
+        // these packages, it will also need the "--add-opens" equivalents.
         [
           "api",
           "code",
@@ -312,7 +321,8 @@ allprojects { currentProj ->
           // Gradle writes an option name preceded by "-", so this yields "--add-exports=...".
           String addExports = "-add-exports=jdk.compiler/com.sun.tools.javac.${javacPackage}=ALL-UNNAMED"
           options.addBooleanOption(addExports, true)
-          // A jFlag is written as-is, so it needs the leading "-" that Gradle would supply.
+          // Gradle prefixes each jFlag with "-J", but does not supply the flag's own leading
+          // "-", so this yields "-J--add-exports=...".
           options.jFlags("-${addExports}")
         }
 
@@ -547,9 +557,6 @@ tasks.register("allJavadoc", Javadoc) {
       classpath += javadocTask.classpath
     }
   }
-
-  // disable interpreting module-info.java files until all sub-modules support them
-  modularity.inferModulePath = false
 
   finalizedBy("addFavicon")
 
