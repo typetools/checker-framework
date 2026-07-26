@@ -252,7 +252,7 @@ public class ConstraintSet implements ReductionResult {
     // checker/tests/all-systems/java8inference/MapEntryGetFails.java is a test that uses this code.
 
     Set<Variable> inputDependencies = new LinkedHashSet<>();
-    Set<Variable> outDependencies = new LinkedHashSet<>();
+    Set<Variable> outputDependencies = new LinkedHashSet<>();
     // If this subset is empty then no closed subset was found and there is a cycle (or cycles) in
     // the graph of dependencies between constraints.
 
@@ -277,10 +277,10 @@ public class ConstraintSet implements ReductionResult {
       Set<Variable> newInputs = dependencies.get(typeConstraint.getInputVariables());
       Set<Variable> newOutputs = dependencies.get(typeConstraint.getOutputVariables());
       if (inputDependencies.isEmpty()
-          || !Collections.disjoint(newInputs, outDependencies)
+          || !Collections.disjoint(newInputs, outputDependencies)
           || !Collections.disjoint(newOutputs, inputDependencies)) {
         inputDependencies.addAll(newInputs);
-        outDependencies.addAll(newOutputs);
+        outputDependencies.addAll(newOutputs);
         consideredConstraints.add(typeConstraint);
       }
     }
