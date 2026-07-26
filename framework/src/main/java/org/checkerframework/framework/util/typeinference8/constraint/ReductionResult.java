@@ -39,8 +39,7 @@ public interface ReductionResult {
      * @return a reduction result pair
      */
     public static ReductionResultPair of(ConstraintSet constraintSet, BoundSet boundSet) {
-      ReductionResultPair pair = new ReductionResultPair(constraintSet, boundSet);
-      return pair;
+      return new ReductionResultPair(constraintSet, boundSet);
     }
   }
 }
