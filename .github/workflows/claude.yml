@@ -12,16 +12,32 @@ name: Claude Code
 
 jobs:
   claude:
+    # Every one of these events runs in the context of the base repository, with
+    # a token that can write to pull requests and issues.  The first conjunct
+    # therefore restricts the trigger to users who already have write access to
+    # the repository.  Otherwise, anyone who can open an issue or write a
+    # comment could use its text to steer Claude, whose token has more privilege
+    # than their own.
+    #
+    # A `github.event.*` reference to an absent property evaluates to the empty
+    # string, so `||` selects the first property that the payload contains.  The
+    # order matters: an `issue_comment` payload holds both `comment` and
+    # `issue`, and `comment.author_association` is the one to test, because it
+    # describes the commenter rather than the issue's author.
     if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'),
+               github.event.comment.author_association
+               || github.event.review.author_association
+               || github.event.issue.author_association)
+      && ((github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude'))))
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pull-requests: write
-      issues: read
+      contents: read # Claude cannot push or merge; it can only comment.
+      pull-requests: write # To comment on pull requests.
+      issues: write # To comment on issues, which the `issues` event triggers on.
       id-token: write
       actions: read # Required for Claude to read CI results on PRs
     steps:
