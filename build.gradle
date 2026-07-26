@@ -563,8 +563,13 @@ tasks.register("allJavadoc", Javadoc) {
       project(":annotation-file-utilities").sourceSets.main.allJava,
       )
 
+  // Use only the `javadoc` task's classpath from each subproject.  Every other Javadoc task,
+  // such as `javadocPrivate` and the annotation-file-utilities tasks that run the OptionsDoclet,
+  // would otherwise contribute its classpath too.  That would make this task's classpath depend
+  // on which other Javadoc tasks happen to exist, so that adding a Javadoc task to a subproject
+  // silently changes this task.
   subprojects.each { proj ->
-    proj.tasks.withType(Javadoc).each { javadocTask ->
+    proj.tasks.withType(Javadoc).matching { it.name == "javadoc" }.each { javadocTask ->
       classpath += javadocTask.classpath
     }
   }
