@@ -20,8 +20,8 @@ import org.checkerframework.checker.confidential.qual.UnknownConfidential;
 
 public abstract class AbstractAuthenticationTargetUrlRequestHandler {
 
-	protected void handle(HttpServletRequest request, HttpServletResponse response, @UnknownConfidential Authentication authentication);
+    protected void handle(HttpServletRequest request, HttpServletResponse response, @UnknownConfidential Authentication authentication);
 
-	protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response,
-			@UnknownConfidential Authentication authentication);
+    protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response,
+            @UnknownConfidential Authentication authentication);
 }

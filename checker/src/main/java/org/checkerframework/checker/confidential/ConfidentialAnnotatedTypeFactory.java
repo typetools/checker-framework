@@ -37,22 +37,6 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The {@code @}{@link BottomConfidential} annotation mirror. */
   protected final AnnotationMirror BOTTOM_CONFIDENTIAL;
 
-  /** Fully-qualified class name of {@link NonConfidential}. */
-  public static final String NONCONFIDENTIAL_NAME =
-      "org.checkerframework.checker.confidential.qual.NonConfidential";
-
-  /** Fully-qualified class name of {@link Confidential}. */
-  public static final String CONFIDENTIAL_NAME =
-      "org.checkerframework.checker.confidential.qual.Confidential";
-
-  /** Fully-qualified class name of {@link UnknownConfidential}. */
-  public static final String UNKNOWN_CONFIDENTIAL_NAME =
-      "org.checkerframework.checker.confidential.qual.UnknownConfidential";
-
-  /** Fully-qualified class name of {@link BottomConfidential}. */
-  public static final String BOTTOM_CONFIDENTIAL_NAME =
-      "org.checkerframework.checker.confidential.qual.BottomConfidential";
-
   /** A singleton set containing the {@code @}{@link NonConfidential} annotation mirror. */
   private final AnnotationMirrorSet setOfNonConfidential;
 
@@ -106,7 +90,7 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   private class ConfidentialTreeAnnotator extends TreeAnnotator {
     /**
-     * Creates a {@link ConfidentialAnnotatedTypeFactory.ConfidentialTreeAnnotator}
+     * Creates a {@link ConfidentialAnnotatedTypeFactory.ConfidentialTreeAnnotator}.
      *
      * @param atypeFactory the annotated type factory
      */
@@ -122,6 +106,12 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * cases, i.e. all cases covered by a @PolyConfidential receiver and return excepting
      * a @NonConfidential String from @Confidential receivers.
      *
+     * <p>This rule also applies to every override of {@code Object.toString()}, and it takes
+     * precedence over the override's declared return type. That is necessary for soundness: without
+     * it, an override that is declared to return {@code @NonConfidential String} would let a
+     * confidential receiver leak through {@code toString()}. A method that deliberately sanitizes a
+     * confidential receiver must suppress the resulting warning, as described in the manual.
+     *
      * @param tree an AST node representing a method call
      * @param type the type obtained from tree
      */
@@ -129,7 +119,12 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
       if (TreeUtils.isMethodInvocation(tree, objectToString, processingEnv)) {
         AnnotatedTypeMirror receiver = getReceiverType(tree);
-        if (receiver.hasPrimaryAnnotation(NONCONFIDENTIAL)) {
+        if (receiver == null) {
+          // The receiver is unknown, so leave the declared return type unchanged.
+        } else if (receiver.hasPrimaryAnnotation(BOTTOM_CONFIDENTIAL)) {
+          // Bottom is the most precise result, and it is a subtype of every other qualifier.
+          type.replaceAnnotation(BOTTOM_CONFIDENTIAL);
+        } else if (receiver.hasPrimaryAnnotation(NONCONFIDENTIAL)) {
           type.replaceAnnotation(NONCONFIDENTIAL);
         } else {
           type.replaceAnnotation(CONFIDENTIAL);

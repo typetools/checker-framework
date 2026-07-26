@@ -1,6 +1,7 @@
 package org.checkerframework.checker.confidential;
 
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -66,6 +67,11 @@ public class ConfidentialTransfer extends CFTransfer {
       TransferResult<CFValue, CFStore> result) {
     AnnotationMirror resultAnno =
         createAnnotationForStringConcatenation(leftOperand, rightOperand, p);
+    if (resultAnno == null) {
+      // The Confidential qualifier of an operand is unknown, so leave the result of the
+      // superclass's transfer function unchanged.
+      return result;
+    }
     return recreateTransferResult(resultAnno, result);
   }
 
@@ -76,25 +82,21 @@ public class ConfidentialTransfer extends CFTransfer {
    * @param rightOperand the right operand to be concatenated
    * @param p the input abstract values
    * @return the resulting AnnotationMirror of the string concatenation operation, or null if either
-   *     leftOperand or rightOperand is null or either operand does not belong to the Confidential
-   *     hierarchy.
+   *     operand has no abstract value or has no annotation in the Confidential hierarchy
    */
-  private AnnotationMirror createAnnotationForStringConcatenation(
+  private @Nullable AnnotationMirror createAnnotationForStringConcatenation(
       Node leftOperand, Node rightOperand, TransferInput<CFValue, CFStore> p) {
-    CFValue leftValue = p.getValueOfSubNode(leftOperand);
-    AnnotationMirror leftAnno = getValueAnnotation(leftValue);
+    AnnotationMirror leftAnno = getValueAnnotation(p.getValueOfSubNode(leftOperand));
     if (leftAnno == null) {
       return null;
     }
-    CFValue rightValue = p.getValueOfSubNode(rightOperand);
-    AnnotationMirror rightAnno = getValueAnnotation(rightValue);
+    AnnotationMirror rightAnno = getValueAnnotation(p.getValueOfSubNode(rightOperand));
     if (rightAnno == null) {
       return null;
     }
 
-    if (AnnotationUtils.areSameByName(leftAnno, ConfidentialAnnotatedTypeFactory.CONFIDENTIAL_NAME)
-        || AnnotationUtils.areSameByName(
-            rightAnno, ConfidentialAnnotatedTypeFactory.CONFIDENTIAL_NAME)) {
+    if (AnnotationUtils.areSame(leftAnno, atypeFactory.CONFIDENTIAL)
+        || AnnotationUtils.areSame(rightAnno, atypeFactory.CONFIDENTIAL)) {
       return atypeFactory.CONFIDENTIAL;
     }
 
@@ -105,10 +107,14 @@ public class ConfidentialTransfer extends CFTransfer {
   /**
    * Returns the annotation in the Confidential type hierarchy for the given value.
    *
-   * @param cfValue the value
-   * @return the value's AnnotationMirror from the Confidential hierarchy
+   * @param cfValue the value, or null if the value is unknown
+   * @return the value's AnnotationMirror from the Confidential hierarchy, or null if {@code
+   *     cfValue} is null or has no annotation in the Confidential hierarchy
    */
-  private AnnotationMirror getValueAnnotation(CFValue cfValue) {
+  private @Nullable AnnotationMirror getValueAnnotation(@Nullable CFValue cfValue) {
+    if (cfValue == null) {
+      return null;
+    }
     return qualHierarchy.findAnnotationInHierarchy(
         cfValue.getAnnotations(), atypeFactory.UNKNOWN_CONFIDENTIAL);
   }

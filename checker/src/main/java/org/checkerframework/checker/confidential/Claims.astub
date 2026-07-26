@@ -1,9 +1,12 @@
+package io.jsonwebtoken;
+
 import org.checkerframework.checker.confidential.qual.PolyConfidential;
 
 import java.util.Date;
 import java.util.Map;
 
-public interface Claims extends Map<@PolyConfidential String, @PolyConfidential Object>, ClaimsMutator<Claims> {
+// The ClaimsMutator supertype is omitted because no annotation is written on it.
+public interface Claims extends Map<@PolyConfidential String, @PolyConfidential Object> {
     String getIssuer();
 
     Claims setIssuer(String var1);
