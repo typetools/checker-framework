@@ -96,7 +96,7 @@ tasks.register("installGitHooks", Copy) {
   description = "Copies git hooks to the local git hooks directory"
   from(files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit"))
   rename("git\\.(.*)", "\$1")
-  into({ localHooksDir })
+  into(localHooksDir)
 }
 subprojects { subProject ->
   if (subProject.name.equals("checker")
