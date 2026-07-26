@@ -315,8 +315,7 @@ public class InvocationTypeInference {
       // conversion (§5.1.10) applied to G<...>; otherwise, the type to search is the same
       // as the type of the first search. Type arguments, if any, are given by the method
       // reference expression.
-      AbstractType receiver = args.remove(0);
-      args.add(0, receiver.capture(context));
+      args.set(0, args.get(0).capture(context));
     }
 
     for (int i = 0; i < formals.size(); i++) {
