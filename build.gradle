@@ -86,14 +86,17 @@ if (gitDirExists) {
     commandLine("git", "rev-parse", "--git-path", "hooks")
   }.standardOutput.asText.map { rootProject.file(it.trim()) }
 } else {
-  // This value is never used, because the installGitHooks task is skipped, but the task
-  // still needs a destination.
+  // The installGitHooks task is skipped, so nothing is ever written to this directory.  But
+  // Gradle resolves the destination even of a skipped task, so the task still needs one.
   localHooksDir = providers.provider { rootProject.file(".git/hooks") }
 }
 
 // No group so it does not show up in the output of `gradlew tasks`
 tasks.register("installGitHooks", Copy) {
-  onlyIf { gitDirExists }
+  // Test for `.git` again, rather than reusing `gitDirExists`, so that the test is made when
+  // the task runs rather than when the build is configured.  The two differ if the build
+  // configuration is reused, as the Gradle configuration cache does.
+  onlyIf { rootProject.file(".git").exists() }
   description = "Copies git hooks to the local git hooks directory"
   from(files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit"))
   rename("git\\.(.*)", "\$1")
@@ -257,6 +260,11 @@ allprojects { currentProj ->
     tasks.withType(Javadoc).configureEach {
       dependsOn(":checker:shadowJar")
       dependsOn(":framework-test:tagletClasses")
+      // No Javadoc task interprets a module-info.java file (see the exclude below), so no
+      // Javadoc task should infer a module path.  Only checker-qual and checker-qual-android
+      // contain a module-info.java, but setting this everywhere means that a new Javadoc task
+      // does not have to remember to set it.
+      modularity.inferModulePath = false
       doFirst {
         options.encoding = "UTF-8"
         // Supply a default member level, but do not override the member level of a task
@@ -269,24 +277,44 @@ allprojects { currentProj ->
         // on class in checker.jar.
         exclude("**/module-info.java")
         classpath += configurations.named("checkerFatJar").get().asFileTree
-        options.taglets("org.checkerframework.taglet.ManualTaglet")
-        options.tagletPath(project(":framework-test").sourceSets.taglet.output.classesDirs.getFiles() as File[])
-        options.noTimestamp = true
 
-        // This file is looked for by Javadoc.
-        file("${destinationDir}/resources/fonts/").mkdirs()
-        ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
+        // Only the standard doclet supports the following options, so do not pass them to a
+        // task that runs some other doclet, such as the annotation-file-utilities tasks that
+        // run the OptionsDoclet.  Doing so fails with "error: invalid flag: -taglet".
+        if (options.doclet == null) {
+          options.taglets("org.checkerframework.taglet.ManualTaglet")
+          options.tagletPath(project(":framework-test").sourceSets.taglet.output.classesDirs.getFiles() as File[])
+          options.noTimestamp = true
 
-        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED", true)
-        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED", true)
-        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED", true)
-        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED", true)
-        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED", true)
-        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED", true)
-        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED", true)
-        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED", true)
-        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED", true)
-        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED", true)
+          // This file is looked for by Javadoc.
+          file("${destinationDir}/resources/fonts/").mkdirs()
+          ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
+        }
+
+        // Javadoc needs these because Checker Framework source code uses javac internals.
+        // The "-J" variant opens the package in the JVM that runs Javadoc, which a doclet that
+        // reflectively loads the documented classes requires.  The OptionsDoclet that the
+        // annotation-file-utilities tasks run is such a doclet; without the "-J" variant it
+        // fails with "java.lang.IllegalAccessError: ... cannot access class
+        // com.sun.tools.javac.tree.JCTree".
+        [
+          "api",
+          "code",
+          "comp",
+          "file",
+          "main",
+          "model",
+          "parser",
+          "processing",
+          "tree",
+          "util",
+        ].forEach { javacPackage ->
+          // Gradle writes an option name preceded by "-", so this yields "--add-exports=...".
+          String addExports = "-add-exports=jdk.compiler/com.sun.tools.javac.${javacPackage}=ALL-UNNAMED"
+          options.addBooleanOption(addExports, true)
+          // A jFlag is written as-is, so it needs the leading "-" that Gradle would supply.
+          options.jFlags("-${addExports}")
+        }
 
         // "-Xwerror" requires Javadoc everywhere.  Currently, CI jobs require Javadoc only
         // on changed lines.  Enable -Xwerror in the future when all Javadoc exists.
@@ -688,8 +716,6 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
     }
 
     classpath = configurations.allProjects
-    // disable interpreting module-info.java files until all sub-modules support them
-    modularity.inferModulePath = false
 
     destinationDir.deleteDir()
     options.memberLevel = memberLevel
@@ -1126,10 +1152,8 @@ subprojects {
       group = "Documentation"
       source = sourceSets.main.allJava
       classpath = sourceSets.main.output + sourceSets.main.compileClasspath
-      destinationDir = layout.buildDirectory.dir("docs/javadoc-private").get().asFile
+      destinationDir = file(layout.buildDirectory.dir("docs/javadoc-private"))
       options.memberLevel = JavadocMemberLevel.PRIVATE
-      // disable interpreting module-info.java files until all sub-modules support them
-      modularity.inferModulePath = false
     }
   }
 }
