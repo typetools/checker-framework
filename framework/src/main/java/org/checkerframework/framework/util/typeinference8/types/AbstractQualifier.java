@@ -98,13 +98,10 @@ public abstract class AbstractQualifier {
     Map<String, AnnotationMirror> m = new HashMap<>();
 
     for (AbstractQualifier qual : quals) {
-      AnnotationMirror lub = m.get(qual.hierarchyName);
-      if (lub != null) {
-        lub = combine.apply(lub, qual.getInstantiation());
-      } else {
-        lub = qual.getInstantiation();
-      }
-      m.put(qual.hierarchyName, lub);
+      AnnotationMirror soFar = m.get(qual.hierarchyName);
+      AnnotationMirror combined =
+          soFar == null ? qual.getInstantiation() : combine.apply(soFar, qual.getInstantiation());
+      m.put(qual.hierarchyName, combined);
     }
     return new AnnotationMirrorSet(m.values());
   }
