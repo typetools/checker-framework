@@ -172,7 +172,7 @@ public final class Main {
 
   /** Don't insert the given annotation. */
   @Option("-o Omit (don't insert) the given annotation")
-  public static String omit_annotation;
+  public static String omit_annotation = null;
 
   @Option("Suppress warnings about disallowed insertions")
   public static boolean nowarn;
