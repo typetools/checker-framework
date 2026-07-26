@@ -625,7 +625,7 @@ tasks.register("ainferIndexGenerateAjava", Test) {
   }
   doFirst {
     delete("tests/ainfer-index/annotated")
-    delete("${buildDir}/ainfer-index/")
+    delete(layout.buildDirectory.dir("ainfer-index"))
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-index")

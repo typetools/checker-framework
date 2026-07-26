@@ -71,21 +71,29 @@ ext {
   plumeScriptsHome = "${project(":checker").projectDir}/bin-devel/.plume-scripts"
   htmlToolsHome = "${project(":checker").projectDir}/bin-devel/.html-tools"
   doLikeJavacHome = "${project(":checker").projectDir}/bin/.do-like-javac"
-
-  javadocMemberLevel = JavadocMemberLevel.PROTECTED
 }
 
 // Path to git hooks for this checkout (works for normal repos, worktrees, and submodules).
-// This is a lazy provider, so `git` is run only if the value is needed, that is, only if
-// the installGitHooks task below is not skipped by its `onlyIf`.
-def localHooksDir = providers.exec {
-  workingDir = rootProject.projectDir
-  commandLine("git", "rev-parse", "--git-path", "hooks")
-}.standardOutput.asText.map { rootProject.file(it.trim()) }
+// Gradle resolves a Copy task's destination even when the task is skipped by its `onlyIf`,
+// so running `git` must be guarded by the same condition as the task itself.  Otherwise,
+// building a checkout that contains no `.git` (such as an unpacked source archive, or a
+// checkout made without git) would fail.
+def gitDirExists = rootProject.file(".git").exists()
+def localHooksDir
+if (gitDirExists) {
+  localHooksDir = providers.exec {
+    workingDir = rootProject.projectDir
+    commandLine("git", "rev-parse", "--git-path", "hooks")
+  }.standardOutput.asText.map { rootProject.file(it.trim()) }
+} else {
+  // This value is never used, because the installGitHooks task is skipped, but the task
+  // still needs a destination.
+  localHooksDir = providers.provider { rootProject.file(".git/hooks") }
+}
 
 // No group so it does not show up in the output of `gradlew tasks`
 tasks.register("installGitHooks", Copy) {
-  onlyIf { rootProject.file(".git").exists() }
+  onlyIf { gitDirExists }
   description = "Copies git hooks to the local git hooks directory"
   from(files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit"))
   rename("git\\.(.*)", "\$1")
@@ -251,9 +259,11 @@ allprojects { currentProj ->
       dependsOn(":framework-test:tagletClasses")
       doFirst {
         options.encoding = "UTF-8"
-        // The javadocDoclintAll and javadocPrivate tasks set their own member level.
-        if (!name.equals("javadocDoclintAll") && !name.equals("javadocPrivate")) {
-          options.memberLevel = javadocMemberLevel
+        // Supply a default member level, but do not override the member level of a task
+        // that chose one, such as javadocDoclintAll, javadocPrivate, and the
+        // annotation-file-utilities tasks that run the OptionsDoclet.
+        if (options.memberLevel == null) {
+          options.memberLevel = JavadocMemberLevel.PROTECTED
         }
         // Without the following exclude, Javadoc will error on checker-qual with "error: reference not found"
         // on class in checker.jar.
@@ -1109,14 +1119,14 @@ subprojects {
 
     // Like the `javadoc` task, but also documents private members.  It writes to its own
     // destination directory so that it does not clobber the `javadoc` task's output.
-    // Most options are set by the `tasks.withType(Javadoc)` block above, which does not
-    // override the member level of this task.
+    // Most options are set by the `tasks.withType(Javadoc)` block above, which supplies a
+    // member level only for tasks that do not set one.
     tasks.register("javadocPrivate", Javadoc) {
       description = "Generates API documentation, including private members."
       group = "Documentation"
       source = sourceSets.main.allJava
       classpath = sourceSets.main.output + sourceSets.main.compileClasspath
-      destinationDir = file("${buildDir}/docs/javadoc-private")
+      destinationDir = layout.buildDirectory.dir("docs/javadoc-private").get().asFile
       options.memberLevel = JavadocMemberLevel.PRIVATE
       // disable interpreting module-info.java files until all sub-modules support them
       modularity.inferModulePath = false
