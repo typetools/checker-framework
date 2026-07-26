@@ -64,7 +64,7 @@ ext {
   skipDelombok = gradleRunsOnJava26orHigher
 
   parentDir = file("${rootDir}/../").absolutePath
-  afuManualDir = "docs/annotation-file-utilities/"
+  afuManualDir = "docs/annotation-file-utilities"
 
   gitScriptsHome = "${project(":checker").projectDir}/bin-devel/.git-scripts"
   plumeBibHome = "${projectDir}/docs/manual/plume-bib"
@@ -569,9 +569,7 @@ tasks.register("allJavadoc", Javadoc) {
   // on which other Javadoc tasks happen to exist, so that adding a Javadoc task to a subproject
   // silently changes this task.
   subprojects.each { proj ->
-    proj.tasks.withType(Javadoc).matching { it.name == "javadoc" }.each { javadocTask ->
-      classpath += javadocTask.classpath
-    }
+    classpath += proj.tasks.named("javadoc", Javadoc).get().classpath
   }
 
   finalizedBy("addFavicon")

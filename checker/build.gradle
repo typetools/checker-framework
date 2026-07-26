@@ -633,8 +633,9 @@ tasks.register("ainferIndexGenerateAjava", Test) {
   doFirst {
     ainferIndexDirsToDelete.forEach { dirToDelete ->
       // Unlike `Project.delete()`, `File.deleteDir()` reports failure by returning false rather
-      // than by throwing.  (It returns true if the directory does not exist.)  Without this
-      // test, this task would run against stale output after a failed deletion.
+      // than by throwing.  (It returns true if the directory does not exist, and false if the
+      // path exists but is not a directory.)  Without this test, this task would run against
+      // stale output after a failed deletion.
       if (!dirToDelete.deleteDir()) {
         throw new GradleException("Could not delete ${dirToDelete}")
       }
