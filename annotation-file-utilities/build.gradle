@@ -109,6 +109,11 @@ clean {
 test.dependsOn(testExample)
 test.dependsOn(testAnnotator)
 
+// The OptionsDoclet rewrites Main.java's Javadoc without regard to this project's formatting
+// conventions, so run `./gradlew spotlessApply` afterward, as a separate Gradle invocation.
+// (`finalizedBy("spotlessApply")` would not be reliable: if the same build also runs
+// spotlessApply for another reason, Gradle may schedule it before these tasks rather than
+// after, leaving Main.java unformatted.)
 tasks.register("updateUserOptions") {
   dependsOn(
   "updateUserOptionsJavadoc",
@@ -152,6 +157,12 @@ def createUpdateUserOptionsTask(taskName, taskDescription, format, docfile) {
     // do not have overlapping outputs with one another or with the `javadoc` task, all of
     // which the java plugin otherwise points at "build/docs/javadoc".
     destinationDir = file(layout.buildDirectory.dir("docs/${taskName}"))
+    // Nothing is written to destinationDir, and docfile is not declared as an output, so
+    // Gradle's up-to-date check would skip this task whenever the source files are unchanged,
+    // even if docfile had been edited by hand.  docfile cannot be declared as an output,
+    // because for updateUserOptionsJavadoc it is also an input (it is one of the source
+    // files).  So, always run this task.
+    outputs.upToDateWhen { false }
     options.memberLevel = JavadocMemberLevel.PRIVATE
     options.docletpath = project.sourceSets.main.runtimeClasspath as List
     options.doclet = "org.plumelib.options.OptionsDoclet"
@@ -173,7 +184,9 @@ createUpdateUserOptionsTask(
     "updateUserOptionsHtml",
     "Updates documentation of command-line arguments in the manual.",
     "html",
-    rootProject.file("${afuManualDir}/annotation-file-utilities.html").toString())
+    // Read `afuManualDir` through `rootProject.ext`.  An unqualified reference would be an
+    // implicit lookup of a property in a parent project, which Gradle 10 will reject.
+    new File(rootProject.file(rootProject.ext.afuManualDir), "annotation-file-utilities.html").toString())
 
 tasks.named("assemble") {
   dependsOn(shadowJar)

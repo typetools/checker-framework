@@ -79,6 +79,9 @@ ext {
 // building a checkout that contains no `.git` (such as an unpacked source archive, or a
 // checkout made without git) would fail.
 def gitDir = rootProject.file(".git")
+// Capture the root project directory as a File.  Code within a provider must not refer to
+// `rootProject`, because the Gradle configuration cache cannot serialize a Project.
+def rootProjectDir = rootProject.projectDir
 // Test for `.git` through a ValueSource rather than calling `File.exists()` directly, so that
 // the Gradle configuration cache treats the test as an input and reconfigures when its result
 // changes.
@@ -87,23 +90,26 @@ def gitDirExists = providers.of(GitDirExists) {
 }
 def localHooksDir
 if (gitDirExists.get()) {
+  // `git rev-parse` usually prints a path relative to the working directory, but prints an
+  // absolute path in some checkouts, so resolve its result against the root project directory.
   localHooksDir = providers.exec {
-    workingDir = rootProject.projectDir
+    workingDir = rootProjectDir
     commandLine("git", "rev-parse", "--git-path", "hooks")
-  }.standardOutput.asText.map { rootProject.file(it.trim()) }
+  }.standardOutput.asText.map { rootProjectDir.toPath().resolve(it.trim()).toFile() }
 } else {
   // The installGitHooks task is skipped, so nothing is ever written to this directory.  But
   // Gradle resolves the destination even of a skipped task, so the task still needs one.
-  localHooksDir = providers.provider { rootProject.file(".git/hooks") }
+  localHooksDir = new File(gitDir, "hooks")
 }
 
 // No group so it does not show up in the output of `gradlew tasks`
 tasks.register("installGitHooks", Copy) {
   // Test for `.git` again, rather than reusing `gitDirExists`, so that the test is made when
-  // the task runs rather than when the build is configured.  The two differ if the build
-  // configuration is reused, as the Gradle configuration cache does.  Capture the `gitDir`
-  // variable rather than referring to `rootProject`, which the configuration cache forbids in
-  // code that runs during task execution.
+  // the task runs rather than when the build is configured.  `gitDirExists` is a configuration
+  // cache input, so removing `.git` between two builds does reconfigure this build; this test
+  // additionally handles `.git` being removed within a single build, after configuration.
+  // Capture the `gitDir` variable rather than referring to `rootProject`, which the
+  // configuration cache forbids in code that runs during task execution.
   onlyIf { gitDir.exists() }
   description = "Copies git hooks to the local git hooks directory"
   from(files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit"))
@@ -271,8 +277,10 @@ allprojects { currentProj ->
       // No Javadoc task interprets a module-info.java file (see the exclude below), so no
       // Javadoc task should infer a module path.  Only checker-qual and checker-qual-android
       // contain a module-info.java, but setting this everywhere means that a new Javadoc task
-      // does not have to remember to set it.
-      modularity.inferModulePath = false
+      // does not have to remember to set it.  This is a convention rather than an assignment
+      // because this block runs in `afterEvaluate`, after each subproject's build script; an
+      // assignment would silently override a subproject that requests module path inference.
+      modularity.inferModulePath.convention(false)
       doFirst {
         options.encoding = "UTF-8"
         // Supply a default member level, but do not override the member level of a task

@@ -108,8 +108,8 @@ import org.plumelib.util.IPair;
  *             Similarly, if the user runs the annotator twice in a row with {@code --in-place},
  *             only the last set of annotations will appear in the codebase at the end.
  *             <p>To preserve changes when using the {@code --in-place} option, first remove the
- *             backup files. Or, use the {@code -d .} option, which makes (and reads) no backup,
- *             instead of {@code --in-place}. [default: false]
+ *             backup files. Or, instead of {@code --in-place}, use the {@code -d .} option, which
+ *             makes (and reads) no backup. [default: false]
  *         <li id="option:abbreviate"><b>-a</b> <b>--abbreviate=</b><i>boolean</i>. If true, insert
  *             {@code import} statements as necessary. [default: true]
  *         <li id="option:omit-annotation"><b>-o</b> <b>--omit-annotation=</b><i>string</i>. Don't
@@ -160,8 +160,8 @@ public final class Main {
    * annotations will appear in the codebase at the end.
    *
    * <p>To preserve changes when using the {@code --in-place} option, first remove the backup files.
-   * Or, use the {@code -d .} option, which makes (and reads) no backup, instead of {@code
-   * --in-place}.
+   * Or, instead of {@code --in-place}, use the {@code -d .} option, which makes (and reads) no
+   * backup.
    */
   @Option("-i Overwrite original source files")
   public static boolean in_place = false;
