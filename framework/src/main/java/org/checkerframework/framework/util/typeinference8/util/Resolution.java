@@ -35,9 +35,9 @@ import org.checkerframework.framework.util.typeinference8.types.VariableBounds.B
  * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.4">JLS Section
  * 18.4</a>.
  *
- * <p>Entry point is two static methods, {@link #resolveSmallestSet(Set, BoundSet)} and {@link
- * #resolve(Variable, BoundSet, Java8InferenceContext)}, which create {@link Resolution} objects
- * that actually perform the resolution.
+ * <p>Entry point is two static methods, {@link #resolve(Collection, BoundSet,
+ * Java8InferenceContext)} and {@link #resolve(Variable, BoundSet, Java8InferenceContext)}, which
+ * create {@link Resolution} objects that actually perform the resolution.
  */
 public final class Resolution {
 
