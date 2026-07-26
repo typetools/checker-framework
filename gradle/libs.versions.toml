@@ -22,7 +22,7 @@ errorprone-version = "2.50.0"
 
 junit-junit = "4.13.2"
 
-jgit-version = "7.7.0.202606012155-r"
+jgit-version = "7.7.1.202607240634-r"
 
 [libraries]
 
