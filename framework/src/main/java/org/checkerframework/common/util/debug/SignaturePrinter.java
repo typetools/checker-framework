@@ -241,7 +241,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
     /**
      * Returns the Java keyword that declares the given type element.
      *
-     * @param a type element
+     * @param e a type element
      * @return the Java keyword that declares the given type element
      */
     private String typeIdentifier(TypeElement e) {
