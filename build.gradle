@@ -73,30 +73,23 @@ ext {
   doLikeJavacHome = "${project(":checker").projectDir}/bin/.do-like-javac"
 
   javadocMemberLevel = JavadocMemberLevel.PROTECTED
-
-  // Path to git hooks for this checkout (works for normal repos, worktrees, and submodules).
-  // This value is always overwritten, but Gradle needs the variable to be initialized.
-  localHooksDir = ".git/hooks"
 }
 
-tasks.register("setLocalHooksDir", Exec) {
-  onlyIf { rootProject.file(".git").exists() }
+// Path to git hooks for this checkout (works for normal repos, worktrees, and submodules).
+// This is a lazy provider, so `git` is run only if the value is needed, that is, only if
+// the installGitHooks task below is not skipped by its `onlyIf`.
+def localHooksDir = providers.exec {
+  workingDir = rootProject.projectDir
   commandLine("git", "rev-parse", "--git-path", "hooks")
-  standardOutput = new ByteArrayOutputStream()
-
-  doLast {
-    localHooksDir = standardOutput.toString().trim()
-  }
-}
+}.standardOutput.asText.map { rootProject.file(it.trim()) }
 
 // No group so it does not show up in the output of `gradlew tasks`
 tasks.register("installGitHooks", Copy) {
   onlyIf { rootProject.file(".git").exists() }
-  dependsOn("setLocalHooksDir")
   description = "Copies git hooks to the local git hooks directory"
   from(files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit"))
   rename("git\\.(.*)", "\$1")
-  into({ localHooksDir })
+  into(localHooksDir)
 }
 subprojects { subProject ->
   if (subProject.name.equals("checker")
@@ -258,7 +251,8 @@ allprojects { currentProj ->
       dependsOn(":framework-test:tagletClasses")
       doFirst {
         options.encoding = "UTF-8"
-        if (!name.equals("javadocDoclintAll")) {
+        // The javadocDoclintAll and javadocPrivate tasks set their own member level.
+        if (!name.equals("javadocDoclintAll") && !name.equals("javadocPrivate")) {
           options.memberLevel = javadocMemberLevel
         }
         // Without the following exclude, Javadoc will error on checker-qual with "error: reference not found"
@@ -1113,14 +1107,19 @@ subprojects {
       dependsOn("test", "nonJunitTests", "inferenceTests", "typecheck")
     }
 
-    tasks.register("javadocPrivate") {
-      dependsOn(javadoc)
-      doFirst {
-        javadocMemberLevel = JavadocMemberLevel.PRIVATE
-      }
-      doLast {
-        javadocMemberLevel = JavadocMemberLevel.PROTECTED
-      }
+    // Like the `javadoc` task, but also documents private members.  It writes to its own
+    // destination directory so that it does not clobber the `javadoc` task's output.
+    // Most options are set by the `tasks.withType(Javadoc)` block above, which does not
+    // override the member level of this task.
+    tasks.register("javadocPrivate", Javadoc) {
+      description = "Generates API documentation, including private members."
+      group = "Documentation"
+      source = sourceSets.main.allJava
+      classpath = sourceSets.main.output + sourceSets.main.compileClasspath
+      destinationDir = file("${buildDir}/docs/javadoc-private")
+      options.memberLevel = JavadocMemberLevel.PRIVATE
+      // disable interpreting module-info.java files until all sub-modules support them
+      modularity.inferModulePath = false
     }
   }
 }
