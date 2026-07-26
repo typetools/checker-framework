@@ -14,4 +14,3 @@ class FieldGenericArray:
         insert-annotation Variable.type, ArrayType.type, ParameterizedType.typeArgument 0: @GenericType
         insert-annotation Variable.type, ArrayType.type: @InsideArray
         insert-annotation Variable.type: @OuterMostType
-

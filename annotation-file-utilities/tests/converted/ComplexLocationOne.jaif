@@ -29,4 +29,3 @@ class ComplexLocationOne:
         insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.typeArgument 1, ArrayType.type: @java.lang.E
         insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.type: @java.lang.C
         insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.typeArgument 0: @java.lang.D
-

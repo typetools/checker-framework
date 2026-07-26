@@ -33,4 +33,3 @@ class NonStandardSpacing:
     method m7()V:
         return:
         insert-annotation Method.parameter -1: @Anno
-

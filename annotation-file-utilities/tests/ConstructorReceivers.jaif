@@ -139,4 +139,3 @@ class ConstructorReceivers$P1:
 
     method <init>()V:
         return:
-

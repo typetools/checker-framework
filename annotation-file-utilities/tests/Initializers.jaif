@@ -26,4 +26,3 @@ new *0: @X
 class Initializers$MyEnum:
 instanceinit *0:
 new *0: @X
-

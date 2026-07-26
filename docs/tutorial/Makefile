@@ -6,9 +6,11 @@ CHECKER_QUAL_JAR=../../checker/dist/checker-qual.jar
 
 ZIPFILES = sourcefiles.zip
 
-.PHONY: all clean clean-classes
+.PHONY: all test clean clean-classes
 
 all: ${ZIPFILES}
+
+test: all
 
 sourcefiles.zip: clean-classes
 	rm -f src/README.txt

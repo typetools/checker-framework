@@ -7,4 +7,3 @@ class ArrayReturnTypeSimple:
     method foo()[Ljava/lang/Object;:
         return:
         insert-annotation Method.type, ArrayType.type: @java.lang.UnderInitialization
-

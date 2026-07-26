@@ -113,4 +113,3 @@ class AnnotationTest: @annotations.tests.AClass @annotations.tests.CClass
         instanceof #0: @annotations.tests.A02 @annotations.tests.C02
         new #15: @annotations.tests.A04 @annotations.tests.C04
             inner-type 0: @annotations.tests.A05 @annotations.tests.C05
-

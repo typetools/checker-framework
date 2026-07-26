@@ -7,4 +7,3 @@ class EnumListAnnotationParameter:
 
     method foo()V: @java.lang.TestAnnotation(value={A,B})
         return:
-

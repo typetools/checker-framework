@@ -81,4 +81,3 @@ class CastInsert:
         insert-typecast Block.statement 5, ExpressionStatement.expression, Assignment.expression: Map<String, Integer>
     inner-type 3, 0: @annotation.A
     inner-type 3, 1: @annotation.B
-

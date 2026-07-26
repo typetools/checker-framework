@@ -7,4 +7,3 @@ class DeclarationAnnotation:
 
     method foo()V: @java.lang.SuppressWarnings(value="string argument")
         return:
-

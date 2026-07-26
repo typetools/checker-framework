@@ -10,4 +10,3 @@ class FieldSimpleArray:
     field field:
         insert-annotation Variable.type, ArrayType.type: @java.lang.UnderInitialization
         insert-annotation Variable.type: @java.lang.Tainted
-

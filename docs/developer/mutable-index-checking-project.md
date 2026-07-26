@@ -30,11 +30,16 @@ but improving the checker to precisely handle it.  For example, the current
 Index Checker effectively forbids all mutable-length data structures, such
 as `List`s.
 
+<!-- markdownlint-disable line-length -->
+
 ## Focus on side effects: permit mutation, but invalidate flow facts when a list might be modified
+
+<!-- markdownlint-enable line-length -->
 
 It is essential to invalidate some flow facts when a mutation may occur.
 (And to forbid mutation when prohibited by a programmer-written annotation.)
-It is a goal to invalidate as few flow facts as possible, while still retaining soundness.
+It is a goal to invalidate as few flow facts as possible, while still retaining
+soundness.
 
 When an `int` is mutated, then no change is needed:  use the Index
 Checker's current logic.  This section is about what to do when a `List` is
@@ -118,9 +123,10 @@ Here are some steps toward invalidating fewer flow facts.
 ## Forbid problematic mutation: only permit lists to grow
 
 If an index is valid for a given collection, then the index is also valid
-for a bigger collection.  Adding to a collection does not invalidate any existing indices.
-Therefore, the Index Checker can ignore code that can add to a collection, treating it
-just like code that does not modify the collection at all.
+for a bigger collection.  Adding to a collection does not invalidate any
+existing indices.  Therefore, the Index Checker can ignore code that can
+add to a collection, treating it just like code that does not modify the
+collection at all.
 
 As a first step, limit the guarantees provided by the checker only to
 non-shrinking collections.  (Just as they are currently limited to
@@ -135,10 +141,10 @@ This is the qualifier hierarchy:
 @BottomGrowShrink <: @UncheckedCanShrink <: @CanShrink <: @UnshrinkableRef
 ```
 
-* A `@GrowOnly` reference to a collection states that as long as that reference exists,
-  the size of the collection will not decrease (elements cannot be removed, but can be added).
-  Calling `remove()`, `clear()`, etc. is forbidden, and no alias can remove
-  elements, either.
+* A `@GrowOnly` reference to a collection states that as long as that
+  reference exists, the size of the collection will not decrease (elements
+  cannot be removed, but can be added).  Calling `remove()`, `clear()`,
+  etc. is forbidden, and no alias can remove elements, either.
   The expression is not aliased to any `@CanShrink` list.
   Any valid index remains valid (unless the index is changed), regardless of
   changes to any list.
@@ -146,9 +152,10 @@ This is the qualifier hierarchy:
 * A `@CanShrink` reference to a collection allows removing elements
   from the collection using methods such as `remove()` and `clear()`.
   An alias to the collection may also shrink the collection.
-* `@UnshrinkableRef`: calling `remove()`, `clear()`, etc. is forbidden.
-  A `@UnshrinkableRef` reference to the collection cannot be used to remove elements,
-  but admits the possibility to remove elements from the collection using another reference to it.
+* `@UnshrinkableRef`: calling `remove()`, `clear()`, etc. is forbidden.  A
+  `@UnshrinkableRef` reference to the collection cannot be used to remove
+  elements, but admits the possibility to remove elements from the
+  collection using another reference to it.
 * The annotation `@UncheckedCanShrink` is like `@CanShrink`,
   but is used to opt out of index checking.
   The checker behaves as if all indices are valid for this collection.
@@ -176,22 +183,31 @@ probably also treat `@UnshrinkableRef` as unchecked).
 
 As is typical, JDK annotations are trusted, not checked.
 
-Checking indices of a mutable collection type (such as `List`) in the Java library would require annotating its methods:
+Checking indices of a mutable collection type (such as `List`) in the Java
+library would require annotating its methods:
 
-* Methods that accept indices must have the parameters annotated `@IndexFor` or `@IndexOrHigh`. Missing annotation would create unsoundness.
-* Methods that return indices should have the return type annotated `@IndexFor` or `@IndexOrHigh`. Missing annotation would cause false positives.
-* Most methods do not remove from the collection -- the default qualifier for this type should be UnshrinkableRef.
-* Methods that can remove from the collection must use the CanShrink annotation. Missing annotation would create unsoundness.
-* Methods that allocate and return a new list could also use the CanShrink annotation.
+* Methods that accept indices must have the parameters annotated `@IndexFor`
+  or `@IndexOrHigh`. Missing annotation would create unsoundness.
+* Methods that return indices should have the return type annotated `@IndexFor`
+  or `@IndexOrHigh`. Missing annotation would cause false positives.
+* Most methods do not remove from the collection -- the default qualifier
+  for this type should be UnshrinkableRef.
+* Methods that can remove from the collection must use the CanShrink
+  annotation. Missing annotation would create unsoundness.
+* Methods that allocate and return a new list could also use the CanShrink
+  annotation.
 
 ### Annotating application code
 
-In application code, each allocation of a list should be by default `@UncheckedCanShrink`.
-If all lists are `@UncheckedCanShrink`, it would ideally result in no warnings reported.
+In application code, each allocation of a list should be by default
+`@UncheckedCanShrink`.  If all lists are `@UncheckedCanShrink`, it would
+ideally result in no warnings reported.
 
-Then, collections that are intended to be grow-only should be annotated `@GrowOnly`.
-Now, the Index Checker starts providing value by checking that the accesses are not out of bounds.
-Some types within the application might need to be annotated `@UnshrinkableRef` to accept both kinds of collections.
+Then, collections that are intended to be grow-only should be annotated
+`@GrowOnly`.  Now, the Index Checker starts providing value by checking
+that the accesses are not out of bounds.  Some types within the application
+might need to be annotated `@UnshrinkableRef` to accept both kinds of
+collections.
 
 ### Advanced features
 
@@ -201,7 +217,8 @@ Also see [advanced features](mutable-index-checking-advanced.md).
 
 Here are alternative, unacceptable qualifier hierarchy designs.
 
-In this hierarchy, any `@GrowOnly` can be cast to `@CanShrink` and have `remove()` called on it:
+In this hierarchy, any `@GrowOnly` can be cast to `@CanShrink` and have
+`remove()` called on it:
 
 ```text
 bottom <: @GrowOnly <: @CanShrink
