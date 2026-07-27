@@ -80,7 +80,7 @@ public final class CaptureBound {
       captureVariables.add(alphai);
       alphai.initialBounds(map);
 
-      tuples.add(CaptureTuple.of(alphai, Ai, Bi));
+      tuples.add(new CaptureTuple(alphai, Ai, Bi));
     }
   }
 
@@ -107,7 +107,7 @@ public final class CaptureBound {
   }
 
   /**
-   * Incorporate this capture bound. See JLS 18.3.1.
+   * Incorporate this capture bound. See JLS 18.3.2.
    *
    * <p>Also, reduces and incorporates the constraint {@code G<a1,...,an> -> target}. See JLS
    * 18.5.2.1.
@@ -200,19 +200,5 @@ public final class CaptureBound {
    *     fresh inference variables
    */
   private record CaptureTuple(
-      CaptureVariable alpha, AbstractType capturedTypeArg, AbstractType bound) {
-
-    /**
-     * Creates a tuple.
-     *
-     * @param alpha capture variable
-     * @param capturedTypeArg captured type argument
-     * @param bound the bound of the type parameter
-     * @return a tuple
-     */
-    public static CaptureTuple of(
-        CaptureVariable alpha, AbstractType capturedTypeArg, AbstractType bound) {
-      return new CaptureTuple(alpha, capturedTypeArg, bound);
-    }
-  }
+      CaptureVariable alpha, AbstractType capturedTypeArg, AbstractType bound) {}
 }
