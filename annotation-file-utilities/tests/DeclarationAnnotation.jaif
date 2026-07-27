@@ -7,4 +7,3 @@ package org.checkerframework.afu.annotator.tests:
 class DeclarationAnnotation:
 
     method foo()V: @java.lang.SuppressWarnings("string argument")
-

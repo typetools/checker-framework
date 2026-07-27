@@ -22,4 +22,3 @@ class BoundClassMultiple:
     insert-annotation Class.typeParameter 2, TypeParameter.bound 0: @java.lang.D
     insert-annotation Class.typeParameter 1, TypeParameter.bound 1: @java.lang.C
     insert-annotation Class.typeParameter 2, TypeParameter.bound 0, ParameterizedType.typeArgument 0: @java.lang.E
-

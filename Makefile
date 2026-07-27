@@ -1,7 +1,13 @@
 # This Makefile checks and enforces style.
 # Most build system functionality exists in file `build.gradle`.
 
-all default: style-check
+.PHONY: all test clean default
+default: all
+all: style-check
+
+test: all
+
+clean:
 
 PLUME_SCRIPTS=checker/bin-devel/.plume-scripts
 

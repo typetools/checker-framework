@@ -132,7 +132,9 @@ CHECKER_FRAMEWORK_RELEASE = CHECKER_FRAMEWORK / "docs" / "developer" / "release"
 # If a new Gradle wrapper was recently installed, the first ./gradlew command may output:
 #   Downloading https://services.gradle.org/distributions/gradle-6.6.1-bin.zip
 execute("./gradlew version -q", TMP_DIR / "checker-framework")
-CF_VERSION = execute_output("./gradlew version -q", TMP_DIR / "checker-framework").strip()
+CF_VERSION = execute_output(
+    "./gradlew version -q", TMP_DIR / "checker-framework"
+).strip()
 
 GIT_SCRIPTS = BUILD_DIR / "git-scripts"
 PLUME_SCRIPTS = BUILD_DIR / "plume-scripts"

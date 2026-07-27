@@ -1038,4 +1038,3 @@ publishing {
 signing {
   sign(publishing.publications.checker)
 }
-

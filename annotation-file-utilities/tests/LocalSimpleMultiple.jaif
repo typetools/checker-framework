@@ -18,4 +18,3 @@ class LocalSimpleMultiple:
     method bar(Ljava/lang/Object;)V:
         local 2 #2+6:
             type: @java.lang.Tainted
-

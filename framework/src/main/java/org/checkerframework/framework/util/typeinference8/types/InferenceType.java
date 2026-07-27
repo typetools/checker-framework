@@ -15,6 +15,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
@@ -305,9 +306,20 @@ public final class InferenceType extends AbstractType {
       mapping.put(alpha.getJavaType(), instantiation);
     }
 
-    AnnotatedTypeMirror newType = typeFactory.getTypeVarSubstitutor().substitute(mapping, type);
-    return createIgnoreInstantiated(
-        newType, newTypeJava, map, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations);
+    AnnotatedTypeMirror newATM = typeFactory.getTypeVarSubstitutor().substitute(mapping, type);
+    AbstractType newAbstractType =
+        createIgnoreInstantiated(
+            newATM, newTypeJava, map, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations);
+
+    // Also apply instantiations to function type.
+    AnnotatedExecutableType unsubedFunctionType = getFunctionType();
+    if (unsubedFunctionType != null) {
+      newAbstractType.functionType =
+          (AnnotatedExecutableType)
+              typeFactory.getTypeVarSubstitutor().substitute(mapping, unsubedFunctionType);
+    }
+
+    return newAbstractType;
   }
 
   @Override

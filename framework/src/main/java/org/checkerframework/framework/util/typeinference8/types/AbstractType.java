@@ -17,11 +17,11 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -34,7 +34,6 @@ import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.IPair;
 
 /**
  * This class represents "types" that "include type-like syntax that contains inference variables"
@@ -245,7 +244,7 @@ public abstract class AbstractType {
    * function type. Otherwise, {@code functionType} is null. Initialized by {@link
    * #getFunctionType()}.
    */
-  private IPair<AnnotatedExecutableType, ExecutableType> functionType = null;
+  protected AnnotatedExecutableType functionType = null;
 
   /**
    * If this {@link AbstractType} is a functional interface type, then its function type is
@@ -254,14 +253,13 @@ public abstract class AbstractType {
    * @return this {@link AbstractType} is a functional interface type, then its function type is
    *     returned; otherwise, returns null
    */
-  IPair<AnnotatedExecutableType, ExecutableType> getFunctionType() {
-    if (functionType == null) {
+  @Nullable AnnotatedExecutableType getFunctionType() {
+    if (functionType == null && TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
       ExecutableElement element = TypesUtils.findFunction(getJavaType(), context.env);
       AnnotatedDeclaredType groundType =
           makeGround((AnnotatedDeclaredType) getAnnotatedType(), typeFactory);
-      AnnotatedExecutableType aet =
+      functionType =
           AnnotatedTypes.asMemberOf(context.modelTypes, typeFactory, groundType, element);
-      functionType = IPair.of(aet, aet.getUnderlyingType());
     }
     return functionType;
   }
@@ -274,19 +272,12 @@ public abstract class AbstractType {
    */
   public AbstractType getFunctionTypeReturnType() {
     if (TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
-      IPair<AnnotatedExecutableType, ExecutableType> pair = getFunctionType();
-      ExecutableType elementType = pair.second;
-      TypeMirror returnTypeJava = elementType.getReturnType();
-      if (returnTypeJava.getKind() == TypeKind.VOID) {
-        return null;
-      }
-
-      AnnotatedExecutableType aet = pair.first;
+      AnnotatedExecutableType aet = getFunctionType();
       AnnotatedTypeMirror returnType = aet.getReturnType();
       if (returnType.getKind() == TypeKind.VOID) {
         return null;
       }
-      return create(returnType, returnTypeJava, ignoreAnnotations);
+      return create(returnType, returnType.getUnderlyingType(), ignoreAnnotations);
     } else {
       return null;
     }
@@ -301,12 +292,10 @@ public abstract class AbstractType {
    */
   public List<AbstractType> getFunctionTypeParameterTypes() {
     if (TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
-      IPair<AnnotatedExecutableType, ExecutableType> pair = getFunctionType();
-      List<? extends TypeMirror> paramsTypeMirror = pair.second.getParameterTypes();
+      AnnotatedExecutableType functionType = getFunctionType();
       List<AbstractType> params = new ArrayList<>();
-      Iterator<? extends TypeMirror> iter = paramsTypeMirror.iterator();
-      for (AnnotatedTypeMirror param : pair.first.getParameterTypes()) {
-        params.add(create(param, iter.next(), ignoreAnnotations));
+      for (AnnotatedTypeMirror param : functionType.getParameterTypes()) {
+        params.add(create(param, param.getUnderlyingType(), ignoreAnnotations));
       }
       return params;
     } else {

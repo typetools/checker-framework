@@ -32,5 +32,3 @@ class TestLocalVariable: @annotations.tests.classfile.foo.A
   method someMethod()V:
 
   method main([Ljava/lang/String;)V:
-
-

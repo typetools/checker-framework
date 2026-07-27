@@ -12,4 +12,3 @@ class FieldSimpleGeneric:
         inner-type 3, 0: @java.lang.Tainted
 
     method <init>()V:
-
