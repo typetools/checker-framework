@@ -1,17 +1,3 @@
-[plugins]
-
-com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.6.1" }
-
-de-undercouch-download = { id = "de.undercouch.download", version = "5.7.0" }
-
-net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "5.1.0" }
-
-com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.8.0" }
-
-com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "4.0.1" }
-
-biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.3.0" }
-
 [versions]
 
 # If you update errorprone-version:
@@ -81,3 +67,18 @@ reflection-util = "org.plumelib:reflection-util:2.0.0-SNAPSHOT"
 require-javadoc = "org.plumelib:require-javadoc:2.0.0"
 
 stubparser = "org.checkerframework:stubparser:3.28.1"
+
+[plugins]
+
+com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.6.1" }
+
+de-undercouch-download = { id = "de.undercouch.download", version = "5.7.0" }
+
+net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "5.1.0" }
+
+com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.8.0" }
+
+com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "4.0.1" }
+
+biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.3.0" }
+
