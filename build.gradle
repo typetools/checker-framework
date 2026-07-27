@@ -762,8 +762,8 @@ tasks.register("docTags", Exec) {
 }
 
 tasks.register("buildSrcTags", Exec) {
-  group = "Emacs"
   description = "Create Emacs TAGS table in buildSrc dir."
+  group = "IDE"
   workingDir("buildSrc")
   // `ctags -e -f TAGS` used to work in place of `etags`, but apparently no longer.
   commandLine("bash", "-c", "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs etags")
@@ -772,7 +772,7 @@ tasks.register("buildSrcTags", Exec) {
 tasks.register("tags", Exec) {
   dependsOn(docTags, buildSrcTags)
   description = "Create Emacs TAGS table"
-  group = "Emacs"
+  group = "IDE"
   // running this task will also run the tags task in the subprojects, which is defined later in this file.
   commandLine("etags", "-i", "annotation-file-utilities/TAGS", "-i", "buildSrc/TAGS", "-i", "checker/TAGS", "-i", "checker-qual/TAGS", "-i", "checker-util/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "framework-test/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS")
 }
@@ -796,8 +796,8 @@ subprojects {
 
   if (!project.name.startsWith("checker-qual-android")) {
     tasks.register("tags", Exec) {
-      group = "Emacs"
       description = "Create Emacs TAGS table"
+      group = "IDE"
       // `ctags -e -f TAGS` used to work in place of `etags`, but apparently no longer.
       commandLine("bash", "-c", "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs etags")
     }
