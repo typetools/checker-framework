@@ -1481,6 +1481,12 @@ public final class AnnotationFileParser {
     }
   }
 
+  /**
+   * Returns a ClassOrInterfaceType for the given type, possibly unwrapping a reference type.
+   *
+   * @param type a type
+   * @return a ClassOrInterfaceType for the given type
+   */
   private @Nullable ClassOrInterfaceType unwrapDeclaredType(Type type) {
     if (type instanceof ClassOrInterfaceType coit) {
       return coit;
