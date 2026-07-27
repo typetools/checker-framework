@@ -221,10 +221,10 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Returns a string representtion of the given element, or null.
+   * Returns a string representation of the given element, or null.
    *
    * @param element an Element
-   * @return a string representtion of the given element, or null
+   * @return a string representation of the given element, or null
    */
   /*package-private*/ static @Nullable String toString(Element element) {
     if (element instanceof ExecutableElement ee) {

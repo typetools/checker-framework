@@ -21,6 +21,7 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
    *
    * @param n the node to operate upon
    * @param p an extra argument
+   * @return the result of the visitor action
    */
   public abstract R visitNode(Node n, P p);
 

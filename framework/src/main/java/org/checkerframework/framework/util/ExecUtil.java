@@ -21,6 +21,7 @@ public class ExecUtil {
    * @param cmd the command
    * @param std a stream to capture the standard output of the process
    * @param err a stream to capture the standard error of the process
+   * @return the exit status of the process
    */
   public static int execute(String[] cmd, OutputStream std, OutputStream err) {
 
