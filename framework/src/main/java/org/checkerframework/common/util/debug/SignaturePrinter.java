@@ -238,6 +238,12 @@ public class SignaturePrinter extends AbstractTypeProcessor {
       throw new IllegalArgumentException("Cannot process packages");
     }
 
+    /**
+     * Returns the Java keyword that declares the given type element.
+     *
+     * @param e a type element
+     * @return the Java keyword that declares the given type element
+     */
     private String typeIdentifier(TypeElement e) {
       return switch (e.getKind()) {
         case INTERFACE -> "interface";
