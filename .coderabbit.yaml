@@ -15,6 +15,7 @@ reviews:
   path_filters:
     - "!**/.gradle/**"
     - "!**/.idea/**"
+    - "!**/__init__.py"
     - "!**/build/**"
     - "!**/node_modules/**"
     - "!**/out/**"
@@ -24,6 +25,7 @@ reviews:
       - "wip"
       - "draft"
     ignore_usernames:
+      - "app/renovate"
       - "dependabot"
       - "dependabot[bot]"
       - "mend"
