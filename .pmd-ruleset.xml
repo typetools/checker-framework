@@ -21,7 +21,13 @@
     <rule ref="category/java/bestpractices.xml/DoubleBraceInitialization" />
     <rule ref="category/java/bestpractices.xml/ForLoopCanBeForeach" />
     <rule ref="category/java/bestpractices.xml/ForLoopVariableCount" />
-    <rule ref="category/java/bestpractices.xml/GuardLogStatement" />
+    <rule ref="category/java/bestpractices.xml/GuardLogStatement">
+        <properties>
+            <property name="logLevels" value="trace,debug,info,warn,error,log,finest,finer,fine,info,warning,severe" />
+            <!-- Adds "isEnabled" to the default list. -->
+            <property name="guardsMethods" value="isTraceEnabled,isDebugEnabled,isInfoEnabled,isWarnEnabled,isErrorEnabled,isLoggable,isEnabled" />
+        </properties>
+    </rule>
     <rule ref="category/java/bestpractices.xml/ImplicitFunctionalInterface" />
     <rule ref="category/java/bestpractices.xml/JUnit4SuitesShouldUseSuiteAnnotation" />
     <rule ref="category/java/bestpractices.xml/JUnitJupiterTestShouldBePackagePrivate" />
@@ -117,7 +123,7 @@
 
     <!-- code style rules that seem to be broken
     <rule ref="category/java/codestyle.xml/UnnecessaryCast" />  This is issued even if there is a type qualifier in the cast.
-    <rule ref="category/java/codestyle.xml/UnnecessaryConstructor" />  This is issued even though doclint requires there is no default constructor (it must be explicit).
+    <rule ref="category/java/codestyle.xml/UnnecessaryConstructor" />  This is issued even though doclint requires that there be no default constructor (it must be explicit).
     <rule ref="category/java/codestyle.xml/IdenticalCatchBranches" />
      -->
 
@@ -157,7 +163,6 @@
     <rule ref="category/java/design.xml/SimplifiedTernary" />
     <rule ref="category/java/design.xml/SimplifyBooleanExpressions" />
     <rule ref="category/java/design.xml/SimplifyConditional" />
-    <rule ref="category/java/design.xml/SwitchDensity" />
     <rule ref="category/java/design.xml/TooManyFields" />
     <rule ref="category/java/design.xml/UselessOverridingMethod" />
     <rule ref="category/java/design.xml/UseUtilityClass" />
@@ -189,6 +194,7 @@
     <rule ref="category/java/design.xml/NcssCount" />
     <rule ref="category/java/design.xml/NPathComplexity" />
     <rule ref="category/java/design.xml/SimplifyBooleanReturns" />      Suggests too-clever boolean expressions to replace simpler code.
+    <rule ref="category/java/design.xml/SwitchDensity" />
     <rule ref="category/java/design.xml/TooManyMethods" />
     -->
 
@@ -349,7 +355,7 @@
     <!-- performance rules we are not using
     <rule ref="category/java/performance.xml/AvoidInstantiatingObjectsInLoops" />      Blanket prohibition on `new` in loops is too broad.
     <rule ref="category/java/performance.xml/ConsecutiveAppendsShouldReuse" />      It's not clear this helps, and "fluent" appends are harder to read.
-    <rule ref="category/java/performance.xml/RedundantFieldInitializer" />  Explicit initializers are better style
+    <rule ref="category/java/performance.xml/RedundantFieldInitializer" />  Explicit initializers are better style.
     <rule ref="category/java/performance.xml/TooFewBranchesForSwitch" />
     <rule ref="category/java/performance.xml/UseStringBufferForStringAppends" />
      -->
