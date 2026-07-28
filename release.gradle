@@ -19,33 +19,15 @@ ext {
 
 // Note about update tasks:
 // It's not possible to update the version numbers in place, so first
-// updateVersionNumbersInDocs and updateVersionNumbersAFU copy to a temporary
-// directory with a filter to do replacement, then updateVersionNumbers copies
-// the changed files back to their original locations.
+// updateVersionNumbersInDocs copies to a temporary directory with a filter to do
+// replacement, then updateVersionNumbers copies the changed files back to their
+// original locations.
 
 tasks.register("updateVersionNumbers", Copy) {
   // See documentation above.
   dependsOn("updateVersionNumbersInDocs")
-  dependsOn("updateVersionNumbersAFU")
   from(layout.buildDirectory.file("updateVersionNumbers/"))
   into(layout.projectDirectory)
-}
-
-tasks.register("updateVersionNumbersAFU", Copy) {
-  // See documentation above.
-  String classFileReader = "annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java"
-  doFirst {
-    if (!file("annotation-file-utilities/${classFileReader}").exists()) {
-      throw new GradleException("File annotation-file-utilities/${classFileReader} not found.")
-    }
-  }
-
-  into(layout.buildDirectory.file("updateVersionNumbers/annotation-file-utilities"))
-  from("annotation-file-utilities")
-  include(classFileReader)
-  filter { String line ->
-    line.replaceAll("Annotation File Utilities v${releaseVersionRegex}", "Annotation File Utilities v${releaseVersion}")
-  }
 }
 
 tasks.register("updateVersionNumbersInDocs", Copy) {
