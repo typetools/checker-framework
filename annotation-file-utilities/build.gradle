@@ -116,7 +116,7 @@ test.dependsOn(testAnnotator)
 // after, leaving Main.java unformatted.)
 tasks.register("updateUserOptions") {
   description = "Updates documentation of command-line arguments, in Javadoc and in the manual."
-  group = "Documentation"
+  group = "documentation"
   dependsOn("updateUserOptionsJavadoc", "updateUserOptionsHtml")
 }
 
