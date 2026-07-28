@@ -29,7 +29,6 @@ hooks = [
   { id = "end-of-file-fixer", exclude = { glob = [
     "**/*.diff",
     "**/*.diff3",
-    "**/*.goal",
     "**/*.ics",
     "**/*.key",
     "**/*.patch",
@@ -68,7 +67,6 @@ hooks = [
     "**/*.ps-*",
     "**/*.svg",
     "**/tests/squeeze-blank-lines-test/**",
-    "**/expected*",
     ".aspell.en.prepl",
     ".aspell.en.pws",
     "bugs/BUGS.to-do",
