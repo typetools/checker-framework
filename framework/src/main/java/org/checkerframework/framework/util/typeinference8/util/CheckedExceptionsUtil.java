@@ -25,6 +25,17 @@ public final class CheckedExceptionsUtil {
   private CheckedExceptionsUtil() {}
 
   /**
+   * Returns {@code list}, or an empty list if {@code list} is null.
+   *
+   * @param list a list, or null
+   * @param <T> the element type of {@code list}
+   * @return {@code list}, or an empty list if {@code list} is null
+   */
+  private static <T> List<T> nullToEmptyList(@Nullable List<T> list) {
+    return list != null ? list : Collections.emptyList();
+  }
+
+  /**
    * Returns a list of checked exception types that can be thrown by the lambda.
    *
    * @param lambda an expression
@@ -81,9 +92,9 @@ public final class CheckedExceptionsUtil {
           removeAssignable(TreeUtils.typeOf(catchTree.getParameter()), results);
         }
       }
-      results.addAll(scan(node.getResources(), aVoid));
-      results.addAll(scan(node.getCatches(), aVoid));
-      results.addAll(scan(node.getFinallyBlock(), aVoid));
+      results.addAll(nullToEmptyList(scan(node.getResources(), aVoid)));
+      results.addAll(nullToEmptyList(scan(node.getCatches(), aVoid)));
+      results.addAll(nullToEmptyList(scan(node.getFinallyBlock(), aVoid)));
 
       return results;
     }
@@ -159,8 +170,8 @@ public final class CheckedExceptionsUtil {
    * @return true iff {@code type} is a checked exception
    */
   private static boolean isCheckedException(TypeMirror type, Java8InferenceContext context) {
-    TypeMirror runtimeEx = context.runtimeEx;
-    return context.env.getTypeUtils().isSubtype(type, runtimeEx);
+    javax.lang.model.util.Types types = context.env.getTypeUtils();
+    return !types.isSubtype(type, context.runtimeEx) && !types.isSubtype(type, context.error);
   }
 
   /**
@@ -222,9 +233,9 @@ public final class CheckedExceptionsUtil {
           removeAssignable(TreeUtils.typeOf(catchTree.getParameter()), results);
         }
       }
-      results.addAll(scan(node.getResources(), aVoid));
-      results.addAll(scan(node.getCatches(), aVoid));
-      results.addAll(scan(node.getFinallyBlock(), aVoid));
+      results.addAll(nullToEmptyList(scan(node.getResources(), aVoid)));
+      results.addAll(nullToEmptyList(scan(node.getCatches(), aVoid)));
+      results.addAll(nullToEmptyList(scan(node.getFinallyBlock(), aVoid)));
 
       return results;
     }
@@ -306,7 +317,6 @@ public final class CheckedExceptionsUtil {
    */
   private static boolean isCheckedException(
       AnnotatedTypeMirror type, Java8InferenceContext context) {
-    TypeMirror runtimeEx = context.runtimeEx;
-    return context.env.getTypeUtils().isSubtype(type.getUnderlyingType(), runtimeEx);
+    return isCheckedException(type.getUnderlyingType(), context);
   }
 }
