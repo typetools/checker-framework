@@ -5,4 +5,5 @@
 # would promptly be overwritten the next time it is updated from the plume-lib repository.
 # Likewise any changes made to html-add-favicon in our clone of the plume-lib repository would
 # be overwritten once we refreshed it from its upstream repository.
-sed -i -e " s%<head>\$%<head><link rel=\"icon\" href=\"favicon-checkerframework.png\" type=\"image/png\"/>%" manual.html
+sed -i.bak -e " s%<head>\$%<head><link rel=\"icon\" href=\"favicon-checkerframework.png\" type=\"image/png\"/>%" manual.html
+rm -f manual.html.bak
