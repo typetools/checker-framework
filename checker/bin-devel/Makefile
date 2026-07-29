@@ -1,18 +1,23 @@
-.PHONY: all test clean default
-default: all
-all: \
- Dockerfile-ubuntu-jdkbase Dockerfile-ubunturolling-jdkbase \
+ALL_FILES=Dockerfile-ubuntu-jdkbase Dockerfile-ubunturolling-jdkbase \
  Dockerfile-ubuntu-jdkplus Dockerfile-ubunturolling-jdkplus \
  Dockerfile-ubuntu-jdk17 Dockerfile-ubuntu-jdk17-plus \
  Dockerfile-ubuntu-jdk21 Dockerfile-ubuntu-jdk21-plus \
  Dockerfile-ubuntu-jdk25 Dockerfile-ubuntu-jdk25-plus \
  Dockerfile-ubuntu-jdk26 Dockerfile-ubuntu-jdk26-plus
 
+.PHONY: all test clean default
+default: all
+all: ${ALL_FILES}
+
 test: all
 
 clean:
+	rm -f ${ALL_FILES}
 
 %: %.m4 Dockerfile-contents-ubuntu-base.m4 Dockerfile-contents-ubuntu-plus.m4 Dockerfile-contents-apt-clean.m4
 	@chmod -f +w $@ || true
 	m4 $< > $@
+# Remove trailing blank lines.
+	@sed -i.bak -e :a -e '/^[[:space:]]*$$/{$$d;N;ba;}' $@
+	@rm -f $@.bak
 	@chmod -w $@
