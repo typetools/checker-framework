@@ -18,6 +18,6 @@ clean:
 	@chmod -f +w $@ || true
 	m4 $< > $@
 # Remove trailing blank lines.
-	@sed -i.bak -e :a -e '/^\s*$$/{$$d;N;ba;}' $@
+	@sed -i.bak -e :a -e '/^[[:space:]]*$$/{$$d;N;ba;}' $@
 	@rm -f $@.bak
 	@chmod -w $@
