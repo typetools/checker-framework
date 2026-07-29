@@ -94,11 +94,14 @@ tasks.register("installGitHooks", Copy) {
   onlyIf { rootProject.file(".git").exists() }
   dependsOn("setLocalHooksDir")
   description = "Copies git hooks to the local git hooks directory"
-  from(files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit"))
-  rename("git\\.(.*)", "\$1")
+  from(files("checker/bin-devel/git.pre-commit"))
+  rename("git\\.(.*)", "\$1.legacy")
   into(localHooksDir)
 }
 tasks.register("installPrekGitHook", Exec) {
+  onlyIf { rootProject.file(".git").exists() }
+  onlyIf { ! rootProject.file(".git/pre-commit").exists() }
+  onlyIf { System.getenv("CI") == null }
   commandLine("prek", "install")
 }
 tasks.named("installGitHooks") {
