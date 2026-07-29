@@ -5,10 +5,12 @@ include([defs-common.m4])dnl
 include([defs.m4])dnl
 # Workaround for https://status.dev.azure.com/_event/179641421
 trigger:
+  autoCancel: true
   branches:
     include:
       - '*'
 pr:
+  autoCancel: true
   branches:
     include:
       - '*'
