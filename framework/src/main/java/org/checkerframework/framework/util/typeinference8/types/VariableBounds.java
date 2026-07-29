@@ -295,8 +295,10 @@ public class VariableBounds {
       // then for all i (1 <= i <= n), if Si and Ti are types (not wildcards),
       // the constraint formula <Si = Ti> is implied.
       if (boundType.isInferenceType() || boundType.isProper()) {
-        for (AbstractType t : bounds.get(BoundKind.LOWER)) {
-          if (t.isProper() || t.isInferenceType()) {
+        // By the time this method runs, addBound has already added boundType to the upper bounds,
+        // so skip it to avoid pairing boundType with itself.
+        for (AbstractType t : bounds.get(BoundKind.UPPER)) {
+          if (boundType != t && (t.isProper() || t.isInferenceType())) {
             constraints.addAll(getConstraintsFromParameterized(boundType, t));
           }
         }
@@ -666,6 +668,9 @@ public class VariableBounds {
         return null;
       }
       // var <: R implies the constraint formula <Bi theta <: R>
+      for (AbstractType r : upperBoundsNonVar) {
+        constraintSet.add(new Typing(source, Bi, r, TypeConstraint.Kind.SUBTYPE));
+      }
     } else if (Ai.isUpperBoundedWildcard()) {
       // R <: var implies the bound false
       if (!lowerBoundsNonVar.isEmpty()) {
