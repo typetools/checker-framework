@@ -37,23 +37,25 @@ clean_compile_output() {
   cp -f "$in" "$out" || exit 1
 
   # Remove "Running ..." line
-  sed -i '/^Running /d' "$out"
+  sed -i.bak '/^Running /d' "$out"
 
   # Remove comments starting with "#" and blank lines
-  sed -i '/^#/d' "$out"
-  sed -i '/^$/d' "$out"
+  sed -i.bak '/^#/d' "$out"
+  sed -i.bak '/^$/d' "$out"
 
   # Remove uninteresting output
-  sed -i '/^warning: \[path\] bad path element /d' "$out"
-  sed -i '/^warning: \[options\] bootstrap class path not set/d' "$out"
-  sed -i '/^warning: \[options\] system modules path not set in conjunction with -source 11/d' "$out"
+  sed -i.bak '/^warning: \[path\] bad path element /d' "$out"
+  sed -i.bak '/^warning: \[options\] bootstrap class path not set/d' "$out"
+  sed -i.bak '/^warning: \[options\] system modules path not set in conjunction with -source 11/d' "$out"
 
   # Remove warning count because it can differ between JDK 8 and later JDKs due to the bootstrap warning:
-  sed -i '/^[0-9]* warning/d' "$out"
+  sed -i.bak '/^[0-9]* warning/d' "$out"
 
   # Remove directory names and line numbers
-  sed -i 's/^[^ ]*\///' "$out"
-  sed -i 's/:[0-9]+: /: /' "$out"
+  sed -i.bak 's/^[^ ]*\///' "$out"
+  sed -i.bak 's/:[0-9]+: /: /' "$out"
+
+  rm -f "$out".bak
 }
 
 # Takes two arguments, the project name and the comma-separated list of checkers to run.
