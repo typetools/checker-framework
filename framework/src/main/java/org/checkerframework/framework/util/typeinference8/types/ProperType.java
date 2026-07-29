@@ -11,6 +11,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -236,6 +237,42 @@ public class ProperType extends AbstractType {
       }
     } else {
       return ConstraintSet.FALSE;
+    }
+  }
+
+  /**
+   * Is {@code this} the same type as {@code other}? See JLS 4.3.4.
+   *
+   * <p>The Java types must be the same. The annotated types need only be comparable: one must be a
+   * subtype of the other. Requiring the annotated types to be subtypes of one another would issue
+   * false positive errors, because inference is deliberately biased toward the annotations of the
+   * target type: when the target type's annotation is a supertype of the annotation that would
+   * otherwise be inferred, the supertype annotation is chosen. See {@link
+   * org.checkerframework.framework.type.AnnotatedTypeFactory#getDummyAssignedTo(ExpressionTree)}.
+   *
+   * @param other another proper type
+   * @return if {@code this} is the same type as {@code other}, then return {@link
+   *     ConstraintSet#TRUE}; otherwise, a false bound is returned
+   */
+  public ReductionResult isSameType(ProperType other) {
+    TypeMirror thisJavaType = getJavaType();
+    TypeMirror otherJavaType = other.getJavaType();
+
+    // Use javac's Types rather than javax.lang.model.util.Types, because the latter always
+    // returns false if either argument is a wildcard.
+    if (!context.types.isSameType((Type) thisJavaType, (Type) otherJavaType)) {
+      return ConstraintSet.FALSE;
+    }
+    if (ignoreAnnotations || other.ignoreAnnotations) {
+      return ConstraintSet.TRUE;
+    }
+    AnnotatedTypeMirror thisATM = this.getAnnotatedType();
+    AnnotatedTypeMirror otherATM = other.getAnnotatedType();
+    TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
+    if (typeHierarchy.isSubtype(thisATM, otherATM) || typeHierarchy.isSubtype(otherATM, thisATM)) {
+      return ConstraintSet.TRUE;
+    } else {
+      return ConstraintSet.TRUE_ANNO_FAIL;
     }
   }
 
