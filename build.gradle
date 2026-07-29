@@ -98,6 +98,14 @@ tasks.register("installGitHooks", Copy) {
   rename("git\\.(.*)", "\$1")
   into(localHooksDir)
 }
+tasks.register("installPrekGitHook", Exec) {
+  commandLine("prek", "install")
+}
+tasks.named("installGitHooks") {
+    finalizedBy("installPrekGitHook")
+}
+
+
 subprojects { subProject ->
   if (subProject.name.equals("checker")
   || subProject.name.equals("annotation-file-utilities")
