@@ -100,8 +100,8 @@ tasks.register("installGitHooks", Copy) {
 }
 tasks.register("installPrekGitHook", Exec) {
   onlyIf { rootProject.file(".git").exists() }
-  onlyIf { ! rootProject.file(".git/pre-commit").exists() }
-  onlyIf { System.getenv("CI") == null }
+  onlyIf { ! rootProject.file(".git/hooks/pre-commit").exists() }
+  onlyIf { System.getenv("CI") == null && System.getenv("TF_BUILD") == null }
   commandLine("prek", "install")
 }
 tasks.named("installGitHooks") {
