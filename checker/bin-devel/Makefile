@@ -16,8 +16,8 @@ clean:
 
 %: %.m4 Dockerfile-contents-ubuntu-base.m4 Dockerfile-contents-ubuntu-plus.m4 Dockerfile-contents-apt-clean.m4
 	@chmod -f +w $@ || true
-	m4 $< > $@
-# Remove trailing blank lines.
-	@sed -i.bak -e :a -e '/^[[:space:]]*$$/{$$d;N;ba;}' $@
-	@rm -f $@.bak
+	m4 $< > $@.tmp
+# Remove trailing blank lines.  Use `awk` because `sed`'s branch syntax is not portable.
+	@awk 'NF {last=NR} {line[NR]=$$0} END {for (i = 1; i <= last; i++) print line[i]}' $@.tmp > $@
+	@rm -f $@.tmp
 	@chmod -w $@
