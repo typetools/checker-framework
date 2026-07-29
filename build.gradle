@@ -89,19 +89,7 @@ tasks.register("setLocalHooksDir", Exec) {
   }
 }
 
-// No group so it does not show up in the output of `gradlew tasks`
-tasks.register("installPrekGitHook", Exec) {
-  // `prek install` is idempotent, so it is harmless to run it on every build.
-  // However, we want to avoid the extra process creation when it is not necessary.
-  onlyIf { rootProject.file(".git").exists() }
-  onlyIf { ! rootProject.file(".git/hooks/pre-commit").exists() }
-  onlyIf { System.getenv("CI") == null && System.getenv("TF_BUILD") == null }
-  description = "Installs the prek git hooks, if prek is installed"
-  // Do nothing if prek is not installed, rather than failing the build.
-  commandLine("sh", "-c", "if command -v prek > /dev/null; then prek install; fi")
-}
-
-// No group so it does not show up in the output of `gradlew tasks`
+// No group so it does not show up in the output of `gradlew tasks`.
 tasks.register("installGitHooks", Copy) {
   onlyIf { rootProject.file(".git").exists() }
   dependsOn("setLocalHooksDir")
@@ -114,13 +102,16 @@ tasks.register("installGitHooks", Copy) {
   into(localHooksDir)
 }
 tasks.register("installPrekGitHook", Exec) {
+  // `prek install` is idempotent, so it is harmless to run it on every build.
+  // However, we want to avoid the extra process creation when it is not necessary.
   onlyIf { rootProject.file(".git").exists() }
-  onlyIf { ! rootProject.file(".git/hooks/pre-commit").exists() }
+  // Sets `localHooksDir`, which the next `onlyIf` uses.
+  dependsOn("setLocalHooksDir")
+  onlyIf { ! rootProject.file("${localHooksDir}/pre-commit").exists() }
   onlyIf { System.getenv("CI") == null && System.getenv("TF_BUILD") == null }
-  commandLine("prek", "install")
-}
-tasks.named("installGitHooks") {
-    finalizedBy("installPrekGitHook")
+  description = "Installs the prek git hooks, if prek is installed"
+  // Do nothing if prek is not installed, rather than failing the build.
+  commandLine("sh", "-c", "if command -v prek > /dev/null; then prek install; fi")
 }
 
 subprojects { subProject ->
