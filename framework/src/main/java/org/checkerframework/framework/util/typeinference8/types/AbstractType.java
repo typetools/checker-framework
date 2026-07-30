@@ -287,6 +287,8 @@ public abstract class AbstractType {
    * If this type is a functional interface, then this method returns the parameter types of the
    * function type of that functional interface. Otherwise, it returns null.
    *
+   * <p>Each call returns a new list, which the caller may modify.
+   *
    * @return the parameter types of the function type of this type or null if no function type
    *     exists
    */

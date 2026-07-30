@@ -198,6 +198,11 @@ public class Expression extends TypeConstraint {
 
       ConstraintSet constraintSet = new ConstraintSet();
       List<AbstractType> ps = T.getFunctionTypeParameterTypes();
+      if (ps == null) {
+        // getFunctionTypeParameterTypes() returns null if T is not a functional interface, which
+        // happens when T is an inference variable that has not been instantiated.
+        return ConstraintSet.TRUE;
+      }
       List<AbstractType> fs = typeOfPoAppMethod.getParameterTypes(null);
 
       if (ps.size() == fs.size() + 1) {
