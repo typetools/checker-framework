@@ -1133,10 +1133,6 @@ public class InferenceFactory {
     }
     context.typeFactory.capturedTypeVarSubstitutor.substitute(
         typeVariable, Collections.singletonMap(typeVariable.getUnderlyingType(), typeVariable));
-    // `create` uses its receiver only to decide what kind of type to create and which qualifier
-    // variables to propagate.  If there is no upper bound, then the upper bound of
-    // `freshTypeVariable` is `Object`, so the lower bound (a proper type) decides; if there is no
-    // bound at all, then the fresh type variable mentions no inference variable.
     AbstractType template = upperBound != null ? upperBound : lowerBound;
     if (template == null) {
       return new ProperType(typeVariable, freshTypeVariable, context);
