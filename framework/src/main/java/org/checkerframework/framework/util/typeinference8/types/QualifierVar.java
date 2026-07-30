@@ -107,27 +107,26 @@ public class QualifierVar extends AbstractQualifier {
    * @param s other abstract qualifier
    * @return the constraints
    */
-  @SuppressWarnings("interning:not.interned") // Checking for exact object.
   private ConstraintSet addConstraintsFromComplementaryBounds(BoundKind kind, AbstractQualifier s) {
     ConstraintSet constraints = new ConstraintSet();
     switch (kind) {
       case EQUAL -> {
         for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
-          if (s != t) {
+          if (!s.equals(t)) {
             constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_EQUALITY));
           }
         }
       }
       case LOWER -> {
         for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
-          if (s != t) {
+          if (!s.equals(t)) {
             constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_SUBTYPE));
           }
         }
       }
       case UPPER -> {
         for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
-          if (s != t) {
+          if (!s.equals(t)) {
             constraints.add(new QualifierTyping(t, s, Kind.QUALIFIER_SUBTYPE));
           }
         }
@@ -136,7 +135,7 @@ public class QualifierVar extends AbstractQualifier {
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
       for (AbstractQualifier t : qualifierBounds.get(BoundKind.LOWER)) {
-        if (s != t) {
+        if (!s.equals(t)) {
           constraints.add(new QualifierTyping(t, s, Kind.QUALIFIER_SUBTYPE));
         }
       }
@@ -144,7 +143,7 @@ public class QualifierVar extends AbstractQualifier {
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.LOWER) {
       for (AbstractQualifier t : qualifierBounds.get(BoundKind.UPPER)) {
-        if (s != t) {
+        if (!s.equals(t)) {
           constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_SUBTYPE));
         }
       }
