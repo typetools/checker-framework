@@ -22,4 +22,4 @@ plume-bib:
 .PHONY: clean
 clean:
 	@latexmk -silent -C annotation-file-format.tex || latexmk -C annotation-file-format.tex
-	@make -C figures clean
+	@make -C figures --quiet clean
