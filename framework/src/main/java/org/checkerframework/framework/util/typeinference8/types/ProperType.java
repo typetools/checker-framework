@@ -111,16 +111,24 @@ public class ProperType extends AbstractType {
   /**
    * Asserts that the underlying type of {@code atm} is the same kind as {@code typeMirror}.
    *
+   * <p>There is one permitted exception: {@code atm} may be a union or an intersection type while
+   * {@code typeMirror} is a declared type that stands in for it. javac represents a multicatch
+   * parameter's type as the least upper bound of the alternatives, whereas the Checker Framework
+   * represents it as an {@code AnnotatedUnionType}; and javac sometimes represents a bound whose
+   * Checker Framework counterpart is an {@code AnnotatedIntersectionType} by one of the bounds of
+   * the intersection.
+   *
    * @param atm annotated type mirror
    * @param typeMirror java type
    */
   private static void verifyTypeKinds(AnnotatedTypeMirror atm, TypeMirror typeMirror) {
     assert typeMirror != null && typeMirror.getKind() != TypeKind.VOID && atm != null;
-
-    if (typeMirror.getKind() != atm.getKind()) {
-      //      throw new BugInCF("type: %s annotated type: %s", typeMirror,
-      // atm.getUnderlyingType());
-    }
+    assert typeMirror.getKind() == atm.getKind()
+            || (typeMirror.getKind() == TypeKind.DECLARED
+                && (atm.getKind() == TypeKind.UNION || atm.getKind() == TypeKind.INTERSECTION))
+        : String.format(
+            "Mismatched kinds: type: %s [%s] annotated type: %s [%s]",
+            typeMirror, typeMirror.getKind(), atm.getUnderlyingType(), atm.getKind());
   }
 
   @Override
