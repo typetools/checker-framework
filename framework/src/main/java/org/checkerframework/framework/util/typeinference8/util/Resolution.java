@@ -307,12 +307,12 @@ public final class Resolution {
    */
   private void resolveWithUpperBounds(Variable ai, Set<ProperType> upperBounds) {
     ProperType ti = null;
-    boolean useRuntimeEx = false;
+    boolean useRuntimeException = false;
     for (ProperType liProperType : upperBounds) {
       TypeMirror li = liProperType.getJavaType();
       if (ai.getBounds().hasThrowsBound()
           && context.env.getTypeUtils().isSubtype(context.runtimeException, li)) {
-        useRuntimeEx = true;
+        useRuntimeException = true;
       }
       if (ti == null) {
         ti = liProperType;
@@ -320,7 +320,7 @@ public final class Resolution {
         ti = (ProperType) context.inferenceTypeFactory.glb(ti, liProperType);
       }
     }
-    if (useRuntimeEx) {
+    if (useRuntimeException) {
       ti = context.inferenceTypeFactory.getRuntimeException();
     }
     ai.getBounds().addBound(null, BoundKind.EQUAL, ti);
