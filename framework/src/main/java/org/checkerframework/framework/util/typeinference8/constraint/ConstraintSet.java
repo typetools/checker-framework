@@ -117,7 +117,7 @@ public class ConstraintSet implements ReductionResult {
    * @param constraintSet a collection of constraints to add to this set
    */
   public void addAll(Collection<? extends Constraint> constraintSet) {
-    list.addAll(constraintSet);
+    constraintSet.forEach(this::add);
   }
 
   /**
