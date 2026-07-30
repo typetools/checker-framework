@@ -73,9 +73,6 @@ public class Java8InferenceContext {
   /** TypeMirror for java.lang.RuntimeException. */
   public final TypeMirror runtimeException;
 
-  /** TypeMirror for java.lang.Error. */
-  public final TypeMirror error;
-
   /** The inference factory. */
   public final InferenceFactory inferenceTypeFactory;
 
@@ -108,7 +105,6 @@ public class Java8InferenceContext {
     this.error = TypesUtils.typeFromClass(Error.class, env.getTypeUtils(), env.getElementUtils());
     this.runtimeException =
         TypesUtils.typeFromClass(RuntimeException.class, env.getTypeUtils(), env.getElementUtils());
-    this.error = TypesUtils.typeFromClass(Error.class, env.getTypeUtils(), env.getElementUtils());
     this.inferenceTypeFactory = new InferenceFactory(this);
     this.object = inferenceTypeFactory.getObject();
   }
