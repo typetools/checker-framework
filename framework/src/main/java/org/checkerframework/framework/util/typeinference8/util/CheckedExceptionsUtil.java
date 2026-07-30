@@ -171,7 +171,8 @@ public final class CheckedExceptionsUtil {
    */
   private static boolean isCheckedException(TypeMirror type, Java8InferenceContext context) {
     javax.lang.model.util.Types types = context.env.getTypeUtils();
-    return !types.isSubtype(type, context.runtimeEx) && !types.isSubtype(type, context.error);
+    return !types.isSubtype(type, context.runtimeException)
+        && !types.isSubtype(type, context.error);
   }
 
   /**
