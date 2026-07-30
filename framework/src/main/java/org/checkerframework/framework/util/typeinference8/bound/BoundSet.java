@@ -12,6 +12,7 @@ import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
+import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.StringsP;
 
 /**
@@ -344,8 +345,14 @@ public class BoundSet implements ReductionResult {
       }
 
       containsFalse |= newBounds.containsFalse;
-      assert count < MAX_INCORPORATION_STEPS : "Max incorporation steps reached.";
-    } while (!containsFalse && count < MAX_INCORPORATION_STEPS);
+      if (count >= MAX_INCORPORATION_STEPS) {
+        // Exiting the loop here would leave this bound set at a non-fixed point, which would
+        // silently produce wrong inference results, so fail loudly instead.
+        throw new BugInCF(
+            "Max incorporation steps (%d) reached without reaching a fixed point.",
+            MAX_INCORPORATION_STEPS);
+      }
+    } while (!containsFalse);
   }
 
   /**

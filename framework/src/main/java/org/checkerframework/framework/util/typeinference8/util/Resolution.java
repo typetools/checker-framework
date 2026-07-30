@@ -22,6 +22,7 @@ import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Resolution finds an instantiation for each variable in a given set of variables. It does this
@@ -79,7 +80,7 @@ public final class Resolution {
     // Resolve the variables
     Resolution resolution = new Resolution(context, dependencies);
     boundSet = resolution.resolve(boundSet, unresolvedVars);
-    assert !boundSet.containsFalse();
+    checkNoFalse(boundSet, "after resolving", as);
     return boundSet;
   }
 
@@ -101,8 +102,24 @@ public final class Resolution {
     unresolvedVars.add(a);
     Resolution resolution = new Resolution(context, dependencies);
     boundSet = resolution.resolveSmallestSet(unresolvedVars, boundSet);
-    assert !boundSet.containsFalse();
+    checkNoFalse(boundSet, "after resolving", unresolvedVars);
     return boundSet;
+  }
+
+  /**
+   * Throws {@link BugInCF} if {@code boundSet} contains the false bound. Resolution is only applied
+   * to bound sets that do not contain false, and it does not itself introduce false: {@link
+   * #resolveWithoutCapture(Set, BoundSet)} may produce false, but {@link #resolveSmallestSet(Set,
+   * BoundSet)} discards that bound set and resolves with capture instead.
+   *
+   * @param boundSet a bound set that should not contain the false bound
+   * @param where a description of where the check is performed, for the error message
+   * @param vars the variables being resolved, for the error message
+   */
+  private static void checkNoFalse(BoundSet boundSet, String where, Collection<Variable> vars) {
+    if (boundSet.containsFalse()) {
+      throw new BugInCF("Bound set contains false %s %s.", where, vars);
+    }
   }
 
   /** The context. */
@@ -133,7 +150,7 @@ public final class Resolution {
     List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
 
     while (!unresolvedVars.isEmpty()) {
-      assert !boundSet.containsFalse();
+      checkNoFalse(boundSet, "while resolving", unresolvedVars);
 
       Set<Variable> smallestDependencySet = getSmallestDependencySet(resolvedVars, unresolvedVars);
 
@@ -186,7 +203,7 @@ public final class Resolution {
    * @return current bound set
    */
   private BoundSet resolveSmallestSet(Set<Variable> as, BoundSet boundSet) {
-    assert !boundSet.containsFalse();
+    checkNoFalse(boundSet, "on entry to resolveSmallestSet for", as);
 
     if (boundSet.containsCapture(as)) {
       BoundSet resolvedBounds = resolveWithoutCapture(as, boundSet);
@@ -367,7 +384,7 @@ public final class Resolution {
    */
   private static BoundSet resolveWithCapture(
       Set<Variable> as, BoundSet boundSet, Java8InferenceContext context) {
-    assert !boundSet.containsFalse();
+    checkNoFalse(boundSet, "on entry to resolveWithCapture for", as);
     boundSet.removeCaptures(as);
     BoundSet resolvedBoundSet = new BoundSet(context);
     List<Variable> asList = new ArrayList<>();

@@ -15,6 +15,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.QualifierTy
 import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.IPair;
 
@@ -381,7 +382,11 @@ public class VariableBounds {
 
     List<AbstractType> ss = pair.first.getTypeArguments();
     List<AbstractType> ts = pair.second.getTypeArguments();
-    assert ss.size() == ts.size();
+    if (ss.size() != ts.size()) {
+      throw new BugInCF(
+          "Parameterized supertypes %s and %s have different numbers of type arguments.",
+          pair.first, pair.second);
+    }
 
     List<Typing> constraints = new ArrayList<>();
     for (int i = 0; i < ss.size(); i++) {

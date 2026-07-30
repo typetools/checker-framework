@@ -276,7 +276,9 @@ public class InvocationTypeInference {
     }
 
     BoundSet newBounds = c.reduce(context);
-    assert !newBounds.containsFalse();
+    if (newBounds.containsFalse()) {
+      throw new BugInCF("Applicability constraints reduced to false for %s.", executableType);
+    }
     b1.incorporateToFixedPoint(newBounds);
 
     return b1;
@@ -329,7 +331,11 @@ public class InvocationTypeInference {
     }
 
     BoundSet newBounds = c.reduce(context);
-    assert !newBounds.containsFalse();
+    if (newBounds.containsFalse()) {
+      throw new BugInCF(
+          "Applicability constraints reduced to false for method reference %s.",
+          executableType.getMethodRef());
+    }
     b1.incorporateToFixedPoint(newBounds);
 
     return b1;

@@ -297,11 +297,22 @@ public class Expression extends TypeConstraint {
 
     ConstraintSet constraintSet = new ConstraintSet();
 
+    if (boundSet.containsFalse()) {
+      // No valid parameterization of the functional interface exists (18.5.3), so the constraint
+      // reduces to false.
+      return ReductionResultPair.of(constraintSet, boundSet);
+    }
+
     if (!TreeUtils.isImplicitlyTypedLambda(lambda)) {
       // Explicitly typed lambda
       List<? extends VariableTree> parameters = lambda.getParameters();
       List<AbstractType> gs = T.getFunctionTypeParameterTypes();
-      assert parameters.size() == gs.size();
+      if (parameters.size() != gs.size()) {
+        // If the number of lambda parameters differs from the number of parameter types of the
+        // function type, the constraint reduces to false.
+        boundSet.addFalse();
+        return ReductionResultPair.of(constraintSet, boundSet);
+      }
 
       for (int i = 0; i < gs.size(); i++) {
         VariableTree parameter = parameters.get(i);
@@ -421,7 +432,10 @@ public class Expression extends TypeConstraint {
     AbstractType tprime = InferenceType.create(t.getAnnotatedType(), t.getJavaType(), map, context);
 
     List<AbstractType> qs = tprime.getFunctionTypeParameterTypes();
-    assert qs.size() == ps.size();
+    if (qs.size() != ps.size()) {
+      // 18.5.3: If n != k, no valid parameterization exists.
+      return IPair.of(t, falseBoundSet(context));
+    }
 
     // A set of constraint formulas is formed with, for all i (1 <= i <= n), <Pi = Qi>.
     ConstraintSet constraintSet = new ConstraintSet();
@@ -432,8 +446,10 @@ public class Expression extends TypeConstraint {
     }
     // This constraint formula set is reduced to form the bound set B.
     BoundSet b = constraintSet.reduce(context);
-    assert !b.containsFalse()
-        : "Bound set contains false during Functional Interface Parameterization Inference";
+    if (b.containsFalse()) {
+      // 18.5.3: If B contains the bound false, no valid parameterization exists.
+      return IPair.of(t, b);
+    }
 
     // A new parameterization of the functional interface type, F<A'1, ..., A'm>, is constructed
     // as follows, for 1 <= i <= m:
@@ -462,6 +478,18 @@ public class Expression extends TypeConstraint {
       return IPair.of(nonWildcardParameterization(target, context), b);
     }
     return IPair.of(target, b);
+  }
+
+  /**
+   * Returns a new bound set that contains the false bound.
+   *
+   * @param context the context
+   * @return a new bound set that contains the false bound
+   */
+  private static BoundSet falseBoundSet(Java8InferenceContext context) {
+    BoundSet boundSet = new BoundSet(context);
+    boundSet.addFalse();
+    return boundSet;
   }
 
   @Override
