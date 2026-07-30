@@ -625,12 +625,12 @@ tasks.register("zip", Zip) {
 
 tasks.register("cleanCfManual", Exec) {
   description = "Clean the manual"
-  commandLine("make", "-C", "docs/manual", "clean")
+  commandLine("make", "-C", "docs/manual", "--quiet", "clean")
 }
 
 tasks.register("cleanAfuManual", Exec) {
   description = "Clean the manual"
-  commandLine("make", "-C", "${afuManualDir}", "clean")
+  commandLine("make", "-C", "${afuManualDir}", "--quiet", "clean")
 }
 
 tasks.register("cleanManual") {
