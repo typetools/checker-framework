@@ -130,9 +130,9 @@ public abstract class JavaExpression {
   public abstract boolean isAssignableByOtherCode();
 
   /**
-   * Returns true if the value this expression stands for can be changed by a method call;
-   * equivalently, if the value this expression evaluates to can be changed by a side effect from
-   * outside the containing method.
+   * Returns true if the abstract value of this expression can be changed by a method call;
+   * equivalently, if the abstract value can be changed by a side effect from outside the containing
+   * method.
    *
    * <p>Approximately, this returns true if the expression is {@link #isAssignableByOtherCode} or
    * its type is mutable. ({@code String} is an immutable type.)
@@ -151,7 +151,8 @@ public abstract class JavaExpression {
   /**
    * Returns true if and only if the two Java expressions are syntactically identical.
    *
-   * <p>This exists for use by {@link #containsSyntacticEqualJavaExpression}.
+   * <p>This is a stricter test than {@link #equals}, which accommodates commutativity of
+   * operations.
    *
    * @param je the other Java expression to compare to this one
    * @return true if and only if the two Java expressions are syntactically identical
@@ -740,7 +741,7 @@ public abstract class JavaExpression {
   }
 
   //
-  // Obtaining the receiver
+  // Obtaining the receiver from a non-JavaExpression
   //
 
   /**
@@ -807,6 +808,10 @@ public abstract class JavaExpression {
       return new ThisReference(enclosingType);
     }
   }
+
+  //
+  // End of receiver methods
+  //
 
   /**
    * Converts method or constructor arguments from Trees to JavaExpressions, accounting for varargs.

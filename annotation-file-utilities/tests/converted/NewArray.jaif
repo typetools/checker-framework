@@ -84,4 +84,3 @@ class NewArray:
         insert-annotation Variable.initializer, NewArray.type 0: @E
         insert-annotation Variable.initializer, NewArray.type 1: @C
         insert-annotation Variable.initializer, NewArray.type 1, ParameterizedType.typeArgument 0: @D
-

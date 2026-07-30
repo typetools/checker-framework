@@ -231,11 +231,11 @@ ifelse($1,canary_version,,[dnl
           ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl
 define([guava_job], [dnl
-  - job: guava_jdk$1
+  - job: guava_part1_jdk$1
     dependsOn:
       - canary_jobs
 ifelse($1,canary_version,,[dnl
-      - guava_jdk[]canary_version
+      - guava_part1_jdk[]canary_version
 ])dnl
     pool:
       vmImage: 'ubuntu-latest'
@@ -244,8 +244,25 @@ ifelse($1,canary_version,,[dnl
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: ./checker/bin-devel/test-guava.sh
-        displayName: test-guava.sh
+      - bash: ./checker/bin-devel/test-guava-part1.sh
+        displayName: test-guava-part1.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: $1
+  - job: guava_part2_jdk$1
+    dependsOn:
+      - canary_jobs
+ifelse($1,canary_version,,[dnl
+      - guava_part2_jdk[]canary_version
+])dnl
+    pool:
+      vmImage: 'ubuntu-latest'
+    container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
+    timeoutInMinutes: 70
+    steps:
+      - checkout: self
+        fetchDepth: 25
+      - bash: ./checker/bin-devel/test-guava-part2.sh
+        displayName: test-guava-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: $1])dnl
 dnl

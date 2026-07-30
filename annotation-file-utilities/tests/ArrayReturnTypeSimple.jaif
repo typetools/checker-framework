@@ -9,4 +9,3 @@ class ArrayReturnTypeSimple:
     method foo()[Ljava/lang/Object;:
         return:
             inner-type 0, 0: @java.lang.UnderInitialization
-

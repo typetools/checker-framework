@@ -1,0 +1,14 @@
+name: Prek checks
+"on": [push, pull_request]
+jobs:
+  prek:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up JDK 25
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          cache: 'gradle'
+      - uses: j178/prek-action@v2

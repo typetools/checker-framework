@@ -13,4 +13,3 @@ extends: @B
 
 class Monomorphic:
     insert-annotation Class.bound -1: @B
-

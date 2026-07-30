@@ -699,7 +699,7 @@ You may need to log out and log back in for the setting to take effect.
   is a JDK version such as 17, 21, 25, etc.:
 
 (This list should be the same as in
-\<checker/bin-devel/Dockerfile-ubuntu-jdk25-plus>; if your build fails
+\< checker/bin-devel/Dockerfile-ubuntu-jdk25-plus >; if your build fails
 because it is missing a package, try the commands there and report a bug
 in this manual.)
 
@@ -749,12 +749,10 @@ apt -qqy install \
 
 # Install uv (manages Python dependencies).
 curl -LsSf https://astral.sh/uv/install.sh | sh
-export PATH=$USER/.local/bin:$PATH
+export PATH=$HOME/.local/bin:$PATH
 
-# Install markdownlint.
-sudo apt -y install \
-  npm
-sudo npm install markdownlint-cli2 --global
+# Install prek (pre-commit hook).
+uv tool install prek
 
 # Install the JDK.
 sudo apt -qqy install \
@@ -769,7 +767,7 @@ export JAVA25_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 In a startup file, write:
 % Can someone give a simpler command?
 % Command taken from:
-%   https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/clone-related.sh#L19
+%   https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/clone-related.sh
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX

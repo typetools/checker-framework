@@ -89,15 +89,31 @@ tasks.register("setLocalHooksDir", Exec) {
   }
 }
 
-// No group so it does not show up in the output of `gradlew tasks`
+// No group so it does not show up in the output of `gradlew tasks`.
 tasks.register("installGitHooks", Copy) {
   onlyIf { rootProject.file(".git").exists() }
   dependsOn("setLocalHooksDir")
+  // `prek install` renames any pre-existing `pre-commit` hook to `pre-commit.legacy`, so
+  // `installPrekGitHook` must run before this task overwrites `pre-commit.legacy`.
+  dependsOn("installPrekGitHook")
   description = "Copies git hooks to the local git hooks directory"
-  from(files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit"))
-  rename("git\\.(.*)", "\$1")
-  into({ localHooksDir })
+  from(files("checker/bin-devel/git.pre-commit"))
+  rename("git\\.(.*)", "\$1.legacy")
+  into(localHooksDir)
 }
+tasks.register("installPrekGitHook", Exec) {
+  // `prek install` is idempotent, so it is harmless to run it on every build.
+  // However, we want to avoid the extra process creation when it is not necessary.
+  onlyIf { rootProject.file(".git").exists() }
+  // Sets `localHooksDir`, which the next `onlyIf` uses.
+  dependsOn("setLocalHooksDir")
+  onlyIf { ! rootProject.file("${localHooksDir}/pre-commit").exists() }
+  onlyIf { System.getenv("CI") == null && System.getenv("TF_BUILD") == null }
+  description = "Installs the prek git hooks, if prek is installed"
+  // Do nothing if prek is not installed, rather than failing the build.
+  commandLine("sh", "-c", "if command -v prek > /dev/null; then prek install; fi")
+}
+
 subprojects { subProject ->
   if (subProject.name.equals("checker")
   || subProject.name.equals("annotation-file-utilities")
@@ -610,12 +626,12 @@ tasks.register("zip", Zip) {
 
 tasks.register("cleanCfManual", Exec) {
   description = "Clean the manual"
-  commandLine("make", "-C", "docs/manual", "clean")
+  commandLine("make", "-C", "docs/manual", "--quiet", "clean")
 }
 
 tasks.register("cleanAfuManual", Exec) {
   description = "Clean the manual"
-  commandLine("make", "-C", "${afuManualDir}", "clean")
+  commandLine("make", "-C", "${afuManualDir}", "--quiet", "clean")
 }
 
 tasks.register("cleanManual") {
@@ -763,8 +779,8 @@ tasks.register("docTags", Exec) {
 }
 
 tasks.register("buildSrcTags", Exec) {
-  group = "Emacs"
   description = "Create Emacs TAGS table in buildSrc dir."
+  group = "IDE"
   workingDir("buildSrc")
   // `ctags -e -f TAGS` used to work in place of `etags`, but apparently no longer.
   commandLine("bash", "-c", "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs etags")
@@ -773,7 +789,7 @@ tasks.register("buildSrcTags", Exec) {
 tasks.register("tags", Exec) {
   dependsOn(docTags, buildSrcTags)
   description = "Create Emacs TAGS table"
-  group = "Emacs"
+  group = "IDE"
   // running this task will also run the tags task in the subprojects, which is defined later in this file.
   commandLine("etags", "-i", "annotation-file-utilities/TAGS", "-i", "buildSrc/TAGS", "-i", "checker/TAGS", "-i", "checker-qual/TAGS", "-i", "checker-util/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "framework-test/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS")
 }
@@ -797,8 +813,8 @@ subprojects {
 
   if (!project.name.startsWith("checker-qual-android")) {
     tasks.register("tags", Exec) {
-      group = "Emacs"
       description = "Create Emacs TAGS table"
+      group = "IDE"
       // `ctags -e -f TAGS` used to work in place of `etags`, but apparently no longer.
       commandLine("bash", "-c", "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs etags")
     }

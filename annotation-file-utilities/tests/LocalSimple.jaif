@@ -9,4 +9,3 @@ class LocalSimple:
     method foo()V:
         local 1 #2+8:
             type: @java.lang.Tainted
-

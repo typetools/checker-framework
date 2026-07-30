@@ -17,4 +17,3 @@ class NewInAnnotatedVariable:
         insert-annotation Variable.initializer, NewArray.type 0: @NonNull
         insert-annotation Variable.initializer, NewArray.type 1: @NonNull
         insert-annotation Variable.type: @NonNull
-

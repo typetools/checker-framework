@@ -11,14 +11,16 @@ On the other hand, satisfying the necessary uniqueness conditions might be diffi
 
 ## 2. Qualifier hierarchy for shrink-only
 
-The above conversion could make useful a qualifier hierarchy that works in the opposite direction:
+The above conversion could make useful a qualifier hierarchy that works in
+the opposite direction:
 
 ```text
 Bottom <: ShrinkOnly <: CannotAddTo
 Bottom <: Growable <: CannotAddTo
 ```
 
-Maybe not very useful in isolation, but common pairs of qualifiers from the two hierarchies can be:
+Maybe not very useful in isolation, but common pairs of qualifiers from the
+two hierarchies can be:
 
 ```text
 MutableLength = Growable + CanShrink

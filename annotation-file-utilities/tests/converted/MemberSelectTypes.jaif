@@ -133,4 +133,3 @@ class MemberSelectTypes$StaticInner:
     method m()V:
         return:
         insert-annotation Method.parameter -1, Variable.type: @B
-

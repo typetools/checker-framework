@@ -1,4 +1,8 @@
-.PHONY: clean
+.PHONY: all test clean
+
+all: checker-framework-dataflow-manual.pdf
+
+test: all
 
 checker-framework-dataflow-manual.pdf: checker-framework-dataflow-manual.tex content.tex examples
 	pdflatex checker-framework-dataflow-manual

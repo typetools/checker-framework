@@ -56,7 +56,8 @@ ifelse([The following jobs have no corresponding job in the canary jobs.])dnl
       # job_dependences_not_in_canary(canary_version, daikon_part1)
       # job_dependences_not_in_canary(canary_version, daikon_part2)
       # job_dependences_not_in_canary(canary_version, daikon_part3)
-job_dependences_not_in_canary(canary_version, guava)
+job_dependences_not_in_canary(canary_version, guava_part1)
+job_dependences_not_in_canary(canary_version, guava_part2)
 job_dependences_not_in_canary(canary_version, plume_lib)
 
 ifelse([
