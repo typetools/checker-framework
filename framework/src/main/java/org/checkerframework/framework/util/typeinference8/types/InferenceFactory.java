@@ -976,9 +976,9 @@ public class InferenceFactory {
    * @return the proper type for RuntimeException
    */
   public ProperType getRuntimeException() {
-    AnnotatedTypeMirror runtimeEx = typeFactory.getAnnotatedType(RuntimeException.class);
-    runtimeEx.addMissingAnnotations(typeFactory.getQualifierHierarchy().getTopAnnotations());
-    return new ProperType(runtimeEx, context.runtimeEx, context);
+    AnnotatedTypeMirror runtimeException = typeFactory.getAnnotatedType(RuntimeException.class);
+    runtimeException.addMissingAnnotations(typeFactory.getQualifierHierarchy().getTopAnnotations());
+    return new ProperType(runtimeException, context.runtimeException, context);
   }
 
   /**
@@ -1106,9 +1106,9 @@ public class InferenceFactory {
    * @return a fresh type variable with the provided upper and lower bounds
    */
   public AbstractType createFreshTypeVariable(
-      ProperType lowerBound,
+      @Nullable ProperType lowerBound,
       Set<? extends AnnotationMirror> lowerBoundAnnos,
-      AbstractType upperBound,
+      @Nullable AbstractType upperBound,
       Set<? extends AnnotationMirror> upperBoundAnnos) {
     TypeMirror freshTypeVariable =
         TypesUtils.freshTypeVariable(
@@ -1133,7 +1133,15 @@ public class InferenceFactory {
     }
     context.typeFactory.capturedTypeVarSubstitutor.substitute(
         typeVariable, Collections.singletonMap(typeVariable.getUnderlyingType(), typeVariable));
-    return upperBound.create(typeVariable, freshTypeVariable, false);
+    // `create` uses its receiver only to decide what kind of type to create and which qualifier
+    // variables to propagate.  If there is no upper bound, then the upper bound of
+    // `freshTypeVariable` is `Object`, so the lower bound (a proper type) decides; if there is no
+    // bound at all, then the fresh type variable mentions no inference variable.
+    AbstractType template = upperBound != null ? upperBound : lowerBound;
+    if (template == null) {
+      return new ProperType(typeVariable, freshTypeVariable, context);
+    }
+    return template.create(typeVariable, freshTypeVariable, false);
   }
 
   /**
