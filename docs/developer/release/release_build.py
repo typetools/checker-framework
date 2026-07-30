@@ -212,7 +212,7 @@ def build_checker_framework_release(
 
     # clean no longer necessary files left over from building the checker framework tutorial
     checker_tutorial_dir = Path(CHECKER_FRAMEWORK) / "docs" / "tutorial"
-    execute("make clean", checker_tutorial_dir)
+    execute("make --quiet clean", checker_tutorial_dir)
 
     build_and_locally_deploy_maven()
 
