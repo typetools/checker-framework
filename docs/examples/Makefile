@@ -8,12 +8,12 @@ test: all
 
 clean:
 	rm -f *.class
-	${MAKE} -C fenum-extension clean
-	${MAKE} -C subtyping-extension clean
-	${MAKE} -C units-extension clean
-	${MAKE} -C MavenExample clean
-	${MAKE} -C lombok clean
-	${MAKE} -C errorprone clean
+	${MAKE} -C fenum-extension --quiet clean
+	${MAKE} -C subtyping-extension --quiet clean
+	${MAKE} -C units-extension --quiet clean
+	${MAKE} -C MavenExample --quiet clean
+	${MAKE} -C lombok --quiet clean
+	${MAKE} -C errorprone --quiet clean
 
 compile:
 	$(JAVAC) *.java
