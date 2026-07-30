@@ -73,6 +73,8 @@ public class BoundSet implements ReductionResult {
     this.captures = new LinkedHashSet<>(toCopy.captures);
     this.variables = new LinkedHashSet<>(toCopy.variables);
     this.uncheckedConversion = toCopy.uncheckedConversion;
+    this.annoInferenceFailed = toCopy.annoInferenceFailed;
+    this.errorMsg = toCopy.errorMsg;
   }
 
   /**
