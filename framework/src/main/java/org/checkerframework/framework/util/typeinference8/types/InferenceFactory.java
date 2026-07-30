@@ -263,14 +263,7 @@ public class InferenceFactory {
       ExpressionTree invocation,
       List<? extends ExpressionTree> arguments,
       Java8InferenceContext context) {
-    int treeIndex = -1;
-    for (int i = 0; i < arguments.size(); ++i) {
-      ExpressionTree argumentTree = arguments.get(i);
-      if (isArgument(path, argumentTree)) {
-        treeIndex = i;
-        break;
-      }
-    }
+    int treeIndex = argumentIndex(path, invocation, arguments);
 
     ExecutableType executableType = getTypeOfMethodAdaptedToUse(invocation, context);
     if (treeIndex >= executableType.getParameterTypes().size() - 1
@@ -297,14 +290,7 @@ public class InferenceFactory {
       ExpressionTree invocation,
       List<? extends ExpressionTree> arguments,
       AnnotatedExecutableType executableType) {
-    int treeIndex = -1;
-    for (int i = 0; i < arguments.size(); ++i) {
-      ExpressionTree argumentTree = arguments.get(i);
-      if (isArgument(path, argumentTree)) {
-        treeIndex = i;
-        break;
-      }
-    }
+    int treeIndex = argumentIndex(path, invocation, arguments);
 
     if (treeIndex >= executableType.getParameterTypes().size() - 1
         && TreeUtils.isVarargsCall(invocation)) {
@@ -314,6 +300,30 @@ public class InferenceFactory {
     }
 
     return executableType.getParameterTypes().get(treeIndex);
+  }
+
+  /**
+   * Returns the index in {@code arguments} of the argument that contains the tree at the leaf of
+   * {@code path}.
+   *
+   * @param path path to an argument of {@code invocation}
+   * @param invocation a method or constructor invocation
+   * @param arguments the argument expression trees of {@code invocation}
+   * @return the index in {@code arguments} of the argument that contains the tree at the leaf of
+   *     {@code path}
+   */
+  private static int argumentIndex(
+      TreePath path, ExpressionTree invocation, List<? extends ExpressionTree> arguments) {
+    for (int i = 0; i < arguments.size(); ++i) {
+      if (isArgument(path, arguments.get(i))) {
+        return i;
+      }
+    }
+    // The caller found `invocation` by walking up from `path`, via
+    // TreePathUtil#getContextForPolyExpression, which returns an invocation only for a tree that
+    // is (possibly transitively) one of its arguments.
+    throw new BugInCF(
+        "Not an argument of the invocation.%nTree: %s%nInvocation: %s", path.getLeaf(), invocation);
   }
 
   /**
@@ -976,9 +986,9 @@ public class InferenceFactory {
    * @return the proper type for RuntimeException
    */
   public ProperType getRuntimeException() {
-    AnnotatedTypeMirror runtimeEx = typeFactory.getAnnotatedType(RuntimeException.class);
-    runtimeEx.addMissingAnnotations(typeFactory.getQualifierHierarchy().getTopAnnotations());
-    return new ProperType(runtimeEx, context.runtimeEx, context);
+    AnnotatedTypeMirror runtimeException = typeFactory.getAnnotatedType(RuntimeException.class);
+    runtimeException.addMissingAnnotations(typeFactory.getQualifierHierarchy().getTopAnnotations());
+    return new ProperType(runtimeException, context.runtimeException, context);
   }
 
   /**
