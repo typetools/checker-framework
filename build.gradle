@@ -102,20 +102,30 @@ if (gitDirExists.get()) {
   localHooksDir = new File(gitDir, "hooks")
 }
 
-// No group so it does not show up in the output of `gradlew tasks`
+// No group so it does not show up in the output of `gradlew tasks`.
 tasks.register("installGitHooks", Copy) {
-  // Test for `.git` again, rather than reusing `gitDirExists`, so that the test is made when
-  // the task runs rather than when the build is configured.  `gitDirExists` is a configuration
-  // cache input, so removing `.git` between two builds does reconfigure this build; this test
-  // additionally handles `.git` being removed within a single build, after configuration.
-  // Capture the `gitDir` variable rather than referring to `rootProject`, which the
-  // configuration cache forbids in code that runs during task execution.
+  // Don't reuse `gitDirExists`, so that the test is made when the
+  // task runs rather than when the build is configured.
   onlyIf { gitDir.exists() }
+  // `prek install` renames any pre-existing `pre-commit` hook to `pre-commit.legacy`, so
+  // `installPrekGitHook` must run before this task overwrites `pre-commit.legacy`.
+  dependsOn("installPrekGitHook")
   description = "Copies git hooks to the local git hooks directory"
-  from(files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit"))
-  rename("git\\.(.*)", "\$1")
+  from(files("checker/bin-devel/git.pre-commit"))
+  rename("git\\.(.*)", "\$1.legacy")
   into(localHooksDir)
 }
+tasks.register("installPrekGitHook", Exec) {
+  // `prek install` is idempotent, so it is harmless to run it on every build.
+  // However, we want to avoid the extra process creation when it is not necessary.
+  onlyIf { rootProject.file(".git").exists() }
+  onlyIf { ! rootProject.file("${gitDir}/hooks/pre-commit").exists() }
+  onlyIf { System.getenv("CI") == null && System.getenv("TF_BUILD") == null }
+  description = "Installs the prek git hooks, if prek is installed"
+  // Do nothing if prek is not installed, rather than failing the build.
+  commandLine("sh", "-c", "if command -v prek > /dev/null; then prek install; fi")
+}
+
 subprojects { subProject ->
   if (subProject.name.equals("checker")
   || subProject.name.equals("annotation-file-utilities")
@@ -662,12 +672,12 @@ tasks.register("zip", Zip) {
 
 tasks.register("cleanCfManual", Exec) {
   description = "Clean the manual"
-  commandLine("make", "-C", "docs/manual", "clean")
+  commandLine("make", "-C", "docs/manual", "--quiet", "clean")
 }
 
 tasks.register("cleanAfuManual", Exec) {
   description = "Clean the manual"
-  commandLine("make", "-C", "${afuManualDir}", "clean")
+  commandLine("make", "-C", "${afuManualDir}", "--quiet", "clean")
 }
 
 tasks.register("cleanManual") {

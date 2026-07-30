@@ -29,6 +29,7 @@ hooks = [
   { id = "end-of-file-fixer", exclude = { glob = [
     "**/*.diff",
     "**/*.diff3",
+    "**/*.goal",
     "**/*.ics",
     "**/*.key",
     "**/*.patch",
@@ -67,6 +68,7 @@ hooks = [
     "**/*.ps-*",
     "**/*.svg",
     "**/tests/squeeze-blank-lines-test/**",
+    "**/expected*",
     ".aspell.en.prepl",
     ".aspell.en.pws",
     "bugs/BUGS.to-do",
@@ -102,6 +104,15 @@ hooks = [
     "**/pubs-bytopic-headfoot.html",
   ] } },
 ]
+
+## Java
+
+[[repos]]
+repo = "local"
+hooks = [
+  { id = "spotless", name = "spotless formatting", language = "unsupported", entry = "./gradlew spotlessApply", files = "\\.java$", pass_filenames = false },
+]
+
 
 ## Makefiles
 
