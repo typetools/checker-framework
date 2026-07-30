@@ -121,10 +121,10 @@ clean :
 	@rm -f *.diff
 	@rm -f *.log
 	@rm -f *.output
-	@${MAKE} -C abbreviated clean
-	@${MAKE} -C converted clean
-	@${MAKE} -C enum-imports clean
-	@${MAKE} -C ad-hoc clean
-	@${MAKE} -C issue155 clean
-	@${MAKE} -C source-extension clean
-	@${MAKE} -C system-test clean
+	@${MAKE} -C abbreviated --quiet clean
+	@${MAKE} -C converted --quiet clean
+	@${MAKE} -C enum-imports --quiet clean
+	@${MAKE} -C ad-hoc --quiet clean
+	@${MAKE} -C issue155 --quiet clean
+	@${MAKE} -C source-extension --quiet clean
+	@${MAKE} -C system-test --quiet clean
