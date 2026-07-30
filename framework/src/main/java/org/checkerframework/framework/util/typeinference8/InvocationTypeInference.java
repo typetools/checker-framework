@@ -664,9 +664,10 @@ public class InvocationTypeInference {
    * @return the result of reducing and incorporating the set of constraints
    */
   private BoundSet getB4(BoundSet b3, ConstraintSet c) {
-    // C might contain new variables that have not yet been added to the b3 bound set.
-    Set<Variable> newVariables = c.getAllInferenceVariables();
     while (!c.isEmpty()) {
+      // C might contain new variables that have not yet been added to the b3 bound set.
+      // Each iteration might create a new Theta and new variables.
+      Set<Variable> newVariables = c.getAllInferenceVariables();
 
       ConstraintSet subset = ConstraintSet.getClosedSubset(c, b3.getDependencies(newVariables));
       Set<Variable> alphas = subset.getAllInputVariables();
