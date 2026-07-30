@@ -976,9 +976,9 @@ public class InferenceFactory {
    * @return the proper type for RuntimeException
    */
   public ProperType getRuntimeException() {
-    AnnotatedTypeMirror runtimeEx = typeFactory.getAnnotatedType(RuntimeException.class);
-    runtimeEx.addMissingAnnotations(typeFactory.getQualifierHierarchy().getTopAnnotations());
-    return new ProperType(runtimeEx, context.runtimeEx, context);
+    AnnotatedTypeMirror runtimeException = typeFactory.getAnnotatedType(RuntimeException.class);
+    runtimeException.addMissingAnnotations(typeFactory.getQualifierHierarchy().getTopAnnotations());
+    return new ProperType(runtimeException, context.runtimeException, context);
   }
 
   /**
@@ -1030,26 +1030,30 @@ public class InferenceFactory {
           compileTimeDeclarationType((MemberReferenceTree) expression)
               .getAnnotatedType()
               .getThrownTypes();
-      if (thrownTypes.size() != thrownTypeMirrors.size()) {
-        // TODO: the thrown types are not stored in the ExecutableElements, so the above
-        // method doesn't find any thrown types.  Below gets the types thrown type from the
-        // ExecutableType and just adds default annotations.  This is just a work around for
-        // this problem.  We need to figure out how to get the type with the correct
-        // annotations.
-        List<AnnotatedTypeMirror> thrownTypesNew = new ArrayList<>(thrownTypeMirrors.size());
-        for (TypeMirror thrown : thrownTypeMirrors) {
-          AnnotatedTypeMirror thrownATM =
-              AnnotatedTypeMirror.createType(thrown, context.typeFactory, false);
-          context.typeFactory.addDefaultAnnotations(thrownATM);
-          thrownTypesNew.add(thrownATM);
-        }
-        thrownTypes = thrownTypesNew;
+    }
+    if (thrownTypes.size() != thrownTypeMirrors.size()) {
+      // The two lists cannot be paired up element by element, so discard `thrownTypes`: create
+      // annotated types from `thrownTypeMirrors` and add default annotations to them.  The sizes
+      // differ for a method reference, because the thrown types are not stored in the
+      // ExecutableElements, so the above code doesn't find any thrown types.  The sizes can also
+      // differ for a lambda, because `thrownCheckedExceptions` and `thrownCheckedExceptionsATM`
+      // are independent traversals that can classify a thrown type differently: the former tests
+      // the declared type of the exception and the latter tests its type after substitution.
+      // TODO: This is just a work around.  We need to figure out how to get the types with the
+      // correct annotations.
+      List<AnnotatedTypeMirror> thrownTypesNew = new ArrayList<>(thrownTypeMirrors.size());
+      for (TypeMirror thrown : thrownTypeMirrors) {
+        AnnotatedTypeMirror thrownATM =
+            AnnotatedTypeMirror.createType(thrown, context.typeFactory, false);
+        context.typeFactory.addDefaultAnnotations(thrownATM);
+        thrownTypesNew.add(thrownATM);
       }
+      thrownTypes = thrownTypesNew;
     }
 
-    Iterator<? extends AnnotatedTypeMirror> iter2 = thrownTypes.iterator();
-    for (TypeMirror xi : thrownTypeMirrors) {
-      AnnotatedTypeMirror xiAnnotated = iter2.next();
+    for (int i = 0; i < thrownTypeMirrors.size(); i++) {
+      TypeMirror xi = thrownTypeMirrors.get(i);
+      AnnotatedTypeMirror xiAnnotated = thrownTypes.get(i);
       boolean isSubtypeOfProper = false;
       for (ProperType properType : properTypes) {
         if (context.env.getTypeUtils().isSubtype(xi, properType.getJavaType())) {
