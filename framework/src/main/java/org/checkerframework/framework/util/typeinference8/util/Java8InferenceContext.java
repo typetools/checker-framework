@@ -68,7 +68,7 @@ public class Java8InferenceContext {
   private int qualifierVarCount = 1;
 
   /** TypeMirror for java.lang.RuntimeException. */
-  public final TypeMirror runtimeEx;
+  public final TypeMirror runtimeException;
 
   /** TypeMirror for java.lang.Error. */
   public final TypeMirror error;
@@ -102,7 +102,7 @@ public class Java8InferenceContext {
     ClassTree clazz = TreePathUtil.enclosingClass(pathToExpression);
     this.enclosingType = (DeclaredType) TreeUtils.typeOf(clazz);
     this.maps = new HashMap<>();
-    this.runtimeEx =
+    this.runtimeException =
         TypesUtils.typeFromClass(RuntimeException.class, env.getTypeUtils(), env.getElementUtils());
     this.error = TypesUtils.typeFromClass(Error.class, env.getTypeUtils(), env.getElementUtils());
     this.inferenceTypeFactory = new InferenceFactory(this);

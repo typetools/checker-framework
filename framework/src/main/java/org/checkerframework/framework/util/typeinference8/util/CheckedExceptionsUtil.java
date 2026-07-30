@@ -171,10 +171,9 @@ public final class CheckedExceptionsUtil {
    * @return true iff {@code type} is a checked exception
    */
   private static boolean isCheckedException(TypeMirror type, Java8InferenceContext context) {
-    // A checked exception is one that is neither a subclass of RuntimeException nor a subclass of
-    // Error.  (JLS 11.1.1)
     Types types = context.env.getTypeUtils();
-    return !types.isSubtype(type, context.runtimeEx) && !types.isSubtype(type, context.error);
+    return !types.isSubtype(type, context.runtimeException)
+        && !types.isSubtype(type, context.error);
   }
 
   /**

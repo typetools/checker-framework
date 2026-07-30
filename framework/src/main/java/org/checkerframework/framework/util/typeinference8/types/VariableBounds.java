@@ -295,8 +295,8 @@ public class VariableBounds {
       // then for all i (1 <= i <= n), if Si and Ti are types (not wildcards),
       // the constraint formula <Si = Ti> is implied.
       if (boundType.isInferenceType() || boundType.isProper()) {
-        // `boundType` has already been added to the upper bounds, so skip it.
         for (AbstractType t : bounds.get(BoundKind.UPPER)) {
+          // `boundType` has already been added to the upper bounds.
           if (boundType != t && (t.isProper() || t.isInferenceType())) {
             constraints.addAll(getConstraintsFromParameterized(boundType, t));
           }
