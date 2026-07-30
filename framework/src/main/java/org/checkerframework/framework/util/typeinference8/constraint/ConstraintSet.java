@@ -19,29 +19,21 @@ import org.checkerframework.javacutil.BugInCF;
 /** A set of constraints and the operations that can be performed on them. */
 public class ConstraintSet implements ReductionResult {
 
-  /** The result given when a constraint set reduces to true. */
+  /** The result given when a constraint set reduces to true. It is empty and immutable. */
   @SuppressWarnings("interning:assignment")
   public static final @InternedDistinct ConstraintSet TRUE =
-      new ConstraintSet() {
-        @Override
-        public String toString() {
-          return "TRUE";
-        }
-      };
+      new ImmutableConstraintSet("TRUE", false);
 
   /**
    * The Java types are correct, but the qualifiers are not in the correct relationship. Return this
    * rather than throwing an exception so that type arguments with the correct Java type are still
    * inferred.
+   *
+   * <p>It is empty and immutable; every attempt to modify it throws {@link BugInCF}.
    */
   @SuppressWarnings("interning:assignment")
   public static final @InternedDistinct ConstraintSet TRUE_ANNO_FAIL =
-      new ConstraintSet(true) {
-        @Override
-        public String toString() {
-          return "TRUE_ANNO_FAIL";
-        }
-      };
+      new ImmutableConstraintSet("TRUE_ANNO_FAIL", true);
 
   /** The result given when a constraint set reduces to false. */
   @SuppressWarnings("interning:assignment")
@@ -434,5 +426,82 @@ public class ConstraintSet implements ReductionResult {
       }
     }
     return boundSet;
+  }
+
+  /**
+   * An empty {@code ConstraintSet} that cannot be modified. This is used for the {@link
+   * ConstraintSet#TRUE} and {@link ConstraintSet#TRUE_ANNO_FAIL} singletons, which are shared by
+   * every inference problem and therefore must never be mutated.
+   */
+  private static class ImmutableConstraintSet extends ConstraintSet {
+
+    /** The name of this constraint set; it is the value returned by {@link #toString}. */
+    private final String name;
+
+    /**
+     * Creates an immutable constraint set.
+     *
+     * @param name the name of this constraint set; it is the value returned by {@link #toString}
+     * @param annotationFailure inference failed because the qualifiers were not in the correct
+     *     relationship
+     */
+    ImmutableConstraintSet(String name, boolean annotationFailure) {
+      super(annotationFailure);
+      this.name = name;
+    }
+
+    /**
+     * Returns an exception to throw because this constraint set cannot be modified.
+     *
+     * @return an exception to throw because this constraint set cannot be modified
+     */
+    private BugInCF cannotModify() {
+      return new BugInCF("Attempt to modify the immutable constraint set " + name + ".");
+    }
+
+    @Override
+    public void add(Constraint c) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void addAll(ConstraintSet constraintSet) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void addAll(Collection<? extends Constraint> constraintSet) {
+      throw cannotModify();
+    }
+
+    @Override
+    public Constraint pop() {
+      throw cannotModify();
+    }
+
+    @Override
+    public void push(Constraint constraint) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void pushAll(ConstraintSet constraints) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void remove(ConstraintSet subset) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void applyInstantiations() {
+      throw cannotModify();
+    }
+
+    @Override
+    public String toString() {
+      return name;
+    }
   }
 }
