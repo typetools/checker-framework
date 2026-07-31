@@ -166,7 +166,7 @@ circleci_boilerplate($1,)
 ])dnl
 dnl
 define([guava_job], [dnl
-  guava_jdk$1_part1:
+  guava_part1_jdk$1:
 circleci_boilerplate($1,)
       - run:
           name: test-guava-part1.sh
@@ -174,7 +174,7 @@ circleci_boilerplate($1,)
           no_output_timeout: "50m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: $1
-  guava_jdk$1_part2:
+  guava_part2_jdk$1:
 circleci_boilerplate($1,)
       - run:
           name: test-guava-part2.sh
