@@ -2,17 +2,41 @@
 # See https://prek.j178.dev for more information.
 #:schema https://www.schemastore.org/prek.json
 
+exclude = { glob = [
+  "**/*.diff",
+  "**/*.diff3",
+  "**/*.goal",
+  "**/*.graffle",
+  "**/*.ics",
+  "**/*.key",
+  "**/*.patch",
+  "**/*.pdf",
+  "**/*.pdf-*",
+  "**/*.ppt",
+  "**/*.pptx",
+  "**/*.ps",
+  "**/*.ps-*",
+  "**/*.svg",
+  "src/main/resources/specifications/jdk/*",
+  "**/COPYING",
+] }
+
 [[repos]]
 repo = "builtin"
 hooks = [
   { id = "check-added-large-files" },
   { id = "check-case-conflict" },
   { id = "check-executables-have-shebangs", exclude = { glob = [
+    "scripts/*.pl",
+    "scripts/trace-untruncate",
     "search",
+    "tests/kvasir-tests/**",
   ] } },
   { id = "check-json" },
   { id = "check-merge-conflict" },
-  { id = "check-shebang-scripts-are-executable" },
+  { id = "check-shebang-scripts-are-executable", exclude = { glob = [
+    "tests/kvasir-tests/povray/source/**",
+  ] } },
   { id = "check-symlinks", exclude = { glob = [
     ".subversion/auth",
     "dots/.subversion/auth",
@@ -27,45 +51,24 @@ hooks = [
   { id = "destroyed-symlinks" },
   { id = "detect-private-key" },
   { id = "end-of-file-fixer", exclude = { glob = [
-    "**/*.diff",
-    "**/*.diff3",
-    "**/*.ics",
-    "**/*.key",
-    "**/*.patch",
-    "**/*.pdf",
-    "**/*.pdf-*",
-    "**/*.ppt",
-    "**/*.pptx",
-    "**/*.ps",
-    "**/*.ps-*",
-    "**/*.svg",
     "**/.vscode/settings.json",
     "**/expected*",
     "**/native-image/**",
     "**/non-conflicted-file-without-terminator.txt",
     "**/tests/squeeze-blank-lines-test/**",
     "bugs/jikes-patches/*",
+    "java/jtb/**",
+    "src/main/resources/specifications/jdk",
+    "tests/kvasir-tests/**",
+  ] } },
+  { id = "file-contents-sorter", files = { glob = [
+    "src/systemTest/resources/test-covgoals/**",
   ] } },
   { id = "fix-byte-order-marker" },
   { id = "forbid-new-submodules" },
-  { id = "mixed-line-ending", exclude = { glob = [
-    "**/*.ps",
-    "**/*.ps-*",
-  ] } },
+  { id = "mixed-line-ending" },
   { id = "trailing-whitespace", exclude = { glob = [
-    "**/*.diff",
-    "**/*.diff3",
-    "**/*.goal",
-    "**/*.ics",
-    "**/*.key",
-    "**/*.patch",
-    "**/*.pdf",
-    "**/*.pdf-*",
-    "**/*.ppt",
-    "**/*.pptx",
-    "**/*.ps",
-    "**/*.ps-*",
-    "**/*.svg",
+    "**/expected*",
     "**/tests/squeeze-blank-lines-test/**",
     ".aspell.en.prepl",
     ".aspell.en.pws",
@@ -79,6 +82,8 @@ hooks = [
     "emacs/bug/crypted.UUE",
     "en_US_apostrophe.aff",
     "enscript.st",
+    "java/jtb/**",
+    "tests/kvasir-tests/**",
   ] } },
 ]
 
@@ -97,10 +102,20 @@ rev = "1.3.10"
 hooks = [
   { id = "validate-html", exclude = { glob = [
     "**/bytopic-headfoot.html",
-    "google04aaa4eb05fd668b.html",
-    "**/pubs-bytopic-underreview-headfoot.html",
     "**/pubs-bytopic-headfoot.html",
+    "**/pubs-bytopic-underreview-headfoot.html",
+    "google04aaa4eb05fd668b.html",
+    "tests/sources/six170/huffman.html",
+    "tools/hierarchical/clustering.html",
   ] } },
+]
+
+## Java
+
+[[repos]]
+repo = "local"
+hooks = [
+  { id = "spotless", name = "spotless formatting", language = "unsupported", entry = "./gradlew spotlessApply", files = "\\.java$", pass_filenames = false },
 ]
 
 ## Makefiles
@@ -113,6 +128,7 @@ hooks = [
     "--format={{.FileName}}:{{.LineNumber}}:0: {{.Rule}}: {{.Violation}}\n",
   ], exclude = { glob = [
     "code-style.Makefile",
+    "tests/kvasir-tests/povray/*",
   ] } },
 ]
 
@@ -158,24 +174,19 @@ hooks = [{ id = "pyupgrade" }]
 [[repos]]
 repo = "https://github.com/gitleaks/gitleaks"
 rev = "v8.24.2"
-hooks = [
-  { id = "gitleaks", exclude = { glob = [
-    "**/AdjacentTest*",
-    "**/*.ps",
-  ] } },
-]
+hooks = [{ id = "gitleaks", exclude = { glob = ["**/AdjacentTest*"] } }]
 
-[[repos]]
-repo = "https://github.com/Yelp/detect-secrets"
-rev = "v1.5.0"
-hooks = [
-  { id = "detect-secrets", exclude = { glob = [
-    "**/*.ps",
-    "**/AdjacentTest*",
-    "_layouts/schedule.html",
-    "_posts/2025-05-29-managing-research-data.md",
-  ] } },
-]
+## This is very slow.  (I stopped it after 8 minutes, when running on Daikon.)
+# [[repos]]
+# repo = "https://github.com/Yelp/detect-secrets"
+# rev = "v1.5.0"
+# hooks = [
+#   { id = "detect-secrets", exclude = { glob = [
+#     "**/AdjacentTest*",
+#     "_layouts/schedule.html",
+#     "_posts/2025-05-29-managing-research-data.md",
+#   ] } },
+# ]
 
 ## Shell scripts
 
@@ -193,8 +204,15 @@ hooks = [
     "share/print-mail",
     "share/javapp",
     "share/myxapps",
+    "scripts/eps2png-mono-alpha.zsh",
+    "scripts/browser_emacs",
+    "scripts/find-dtrace",
+    "tests/kvasir-tests/tcas/tests.sh",
+    "tests/kvasir-tests/flex-pristine/mkskel.sh",
+    "tests/kvasir-tests/tot_info/tests.sh",
     "cronic-orig",
     "classfile_check_version",
+    "tests/kvasir-tests/povray/**/*",
   ] } },
 ]
 

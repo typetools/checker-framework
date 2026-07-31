@@ -268,11 +268,11 @@ ifelse($1,canary_version,,[dnl
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
 dnl
 define([guava_job], [dnl
-  guava_jdk$1_part1:
+  guava_part1_jdk$1:
     needs:
       - canary_jobs
 ifelse($1,canary_version,,[dnl
-      - guava_jdk[]canary_version[]_part1
+      - guava_part1_jdk[]canary_version
 ])dnl
     runs-on: ubuntu-latest
     container:
@@ -287,11 +287,11 @@ ifelse($1,canary_version,,[dnl
         run: ./checker/bin-devel/test-guava-part1.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-  guava_jdk$1_part2:
+  guava_part2_jdk$1:
     needs:
       - canary_jobs
 ifelse($1,canary_version,,[dnl
-      - guava_jdk[]canary_version[]_part2
+      - guava_part2_jdk[]canary_version
 ])dnl
     runs-on: ubuntu-latest
     container:
