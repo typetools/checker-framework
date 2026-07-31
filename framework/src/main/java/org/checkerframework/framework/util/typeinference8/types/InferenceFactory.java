@@ -1024,12 +1024,10 @@ public class InferenceFactory {
       thrownTypeMirrors = CheckedExceptionsUtil.thrownCheckedExceptions(let, context);
       thrownTypes = CheckedExceptionsUtil.thrownCheckedExceptionsATM(let, context);
     } else {
-      thrownTypeMirrors =
-          TypesUtils.findFunctionType(TreeUtils.typeOf(expression), context.env).getThrownTypes();
-      thrownTypes =
-          compileTimeDeclarationType((MemberReferenceTree) expression)
-              .getAnnotatedType()
-              .getThrownTypes();
+      CompileTimeDeclarationType compileTimeDeclaration =
+          compileTimeDeclarationType((MemberReferenceTree) expression);
+      thrownTypeMirrors = compileTimeDeclaration.getJavaType().getThrownTypes();
+      thrownTypes = compileTimeDeclaration.getAnnotatedType().getThrownTypes();
       if (thrownTypes.size() != thrownTypeMirrors.size()) {
         // TODO: the thrown types are not stored in the ExecutableElements, so the above
         // method doesn't find any thrown types.  Below gets the types thrown type from the
