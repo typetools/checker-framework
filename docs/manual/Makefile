@@ -29,9 +29,10 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 	./hevea-retarget-crossrefs < manual.html-with-htoc > manual.html
 	\rm -f manual.html-with-htoc
 # Add CSS styling, since \newstyle doesn't work for me.
-	sed -i -e "s%<style type=\"text/css\">%<style type=\"text/css\">\nimg { max-width: 100\%; max-height: 100\%; }%" manual.html
+	sed -i.bak -e "s%<style type=\"text/css\">%<style type=\"text/css\">\nimg { max-width: 100\%; max-height: 100\%; }%" manual.html
 # Add CSS styling for some links, since \ahrefloc doesn't permit styling
-	sed -i -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
+	sed -i.bak -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
+	rm -f manual.html.bak
 
 ../../checker/bin-devel/.git-scripts:
 	cd ../.. && ./gradlew getGitScripts
