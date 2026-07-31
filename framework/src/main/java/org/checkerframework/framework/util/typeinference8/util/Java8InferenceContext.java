@@ -67,8 +67,11 @@ public class Java8InferenceContext {
   /** Number of qualifier variables in this inference problem. */
   private int qualifierVarCount = 1;
 
+  /** TypeMirror for java.lang.Error. */
+  public final TypeMirror error;
+
   /** TypeMirror for java.lang.RuntimeException. */
-  public final TypeMirror runtimeEx;
+  public final TypeMirror runtimeException;
 
   /** The inference factory. */
   public final InferenceFactory inferenceTypeFactory;
@@ -99,7 +102,8 @@ public class Java8InferenceContext {
     ClassTree clazz = TreePathUtil.enclosingClass(pathToExpression);
     this.enclosingType = (DeclaredType) TreeUtils.typeOf(clazz);
     this.maps = new HashMap<>();
-    this.runtimeEx =
+    this.error = TypesUtils.typeFromClass(Error.class, env.getTypeUtils(), env.getElementUtils());
+    this.runtimeException =
         TypesUtils.typeFromClass(RuntimeException.class, env.getTypeUtils(), env.getElementUtils());
     this.inferenceTypeFactory = new InferenceFactory(this);
     this.object = inferenceTypeFactory.getObject();
