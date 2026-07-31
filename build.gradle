@@ -89,15 +89,31 @@ tasks.register("setLocalHooksDir", Exec) {
   }
 }
 
-// No group so it does not show up in the output of `gradlew tasks`
+// No group so it does not show up in the output of `gradlew tasks`.
 tasks.register("installGitHooks", Copy) {
   onlyIf { rootProject.file(".git").exists() }
   dependsOn("setLocalHooksDir")
+  // `prek install` renames any pre-existing `pre-commit` hook to `pre-commit.legacy`, so
+  // `installPrekGitHook` must run before this task overwrites `pre-commit.legacy`.
+  dependsOn("installPrekGitHook")
   description = "Copies git hooks to the local git hooks directory"
-  from(files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit"))
-  rename("git\\.(.*)", "\$1")
+  from(files("checker/bin-devel/git.pre-commit"))
+  rename("git\\.(.*)", "\$1.legacy")
   into(localHooksDir)
 }
+tasks.register("installPrekGitHook", Exec) {
+  // `prek install` is idempotent, so it is harmless to run it on every build.
+  // However, we want to avoid the extra process creation when it is not necessary.
+  onlyIf { rootProject.file(".git").exists() }
+  // Sets `localHooksDir`, which the next `onlyIf` uses.
+  dependsOn("setLocalHooksDir")
+  onlyIf { ! rootProject.file("${localHooksDir}/pre-commit").exists() }
+  onlyIf { System.getenv("CI") == null && System.getenv("TF_BUILD") == null }
+  description = "Installs the prek git hooks, if prek is installed"
+  // Do nothing if prek is not installed, rather than failing the build.
+  commandLine("sh", "-c", "if command -v prek > /dev/null; then prek install; fi")
+}
+
 subprojects { subProject ->
   if (subProject.name.equals("checker")
   || subProject.name.equals("annotation-file-utilities")
@@ -609,12 +625,12 @@ tasks.register("zip", Zip) {
 
 tasks.register("cleanCfManual", Exec) {
   description = "Clean the manual"
-  commandLine("make", "-C", "docs/manual", "clean")
+  commandLine("make", "-C", "docs/manual", "--quiet", "clean")
 }
 
 tasks.register("cleanAfuManual", Exec) {
   description = "Clean the manual"
-  commandLine("make", "-C", "${afuManualDir}", "clean")
+  commandLine("make", "-C", "${afuManualDir}", "--quiet", "clean")
 }
 
 tasks.register("cleanManual") {

@@ -5,7 +5,7 @@ include([../../.azure/defs-common.m4])dnl
 include([defs.m4])dnl
 name: CI
 
-on:  # yamllint disable-line rule:truthy
+"on":
   push:
     branches:
       - "**"
@@ -35,6 +35,7 @@ jobs:
   # The needs clauses are:
   #  * Everything depends on the canary jobs (the main jdk25 jobs), except those jobs themselves.
   #  * Any other *_jdkNN job depends on the corresponding *_jdk25 job.
+
   canary_jobs:
     needs:
       - junit_part1_jdk[]canary_version

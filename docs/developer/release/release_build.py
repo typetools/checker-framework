@@ -89,25 +89,19 @@ The following repositories will be cloned or updated from their origins:
 
     if not prompt_yes_no(message, True):
         clone_from_scratch = False
-        if not prompt_yes_no(
-            "Update the repositories without cloning them from scratch?", True
-        ):
+        if not prompt_yes_no("Update the repositories without cloning them from scratch?", True):
             print("WARNING: Continuing without refreshing repositories.\n")
             return
 
     for live_to_interm in LIVE_TO_INTERM_REPOS:
-        clone_from_scratch_or_update(
-            live_to_interm[0], live_to_interm[1], clone_from_scratch, True
-        )
+        clone_from_scratch_or_update(live_to_interm[0], live_to_interm[1], clone_from_scratch, True)
 
     for interm_to_build in INTERM_TO_BUILD_REPOS:
         clone_from_scratch_or_update(
             interm_to_build[0], interm_to_build[1], clone_from_scratch, False
         )
 
-    clone_from_scratch_or_update(
-        PLUME_SCRIPTS_REPO, PLUME_SCRIPTS, clone_from_scratch, False
-    )
+    clone_from_scratch_or_update(PLUME_SCRIPTS_REPO, PLUME_SCRIPTS, clone_from_scratch, False)
     clone_from_scratch_or_update(CHECKLINK_REPO, CHECKLINK, clone_from_scratch, False)
     clone_from_scratch_or_update(PLUME_BIB_REPO, PLUME_BIB, clone_from_scratch, False)
 
@@ -218,7 +212,7 @@ def build_checker_framework_release(
 
     # clean no longer necessary files left over from building the checker framework tutorial
     checker_tutorial_dir = Path(CHECKER_FRAMEWORK) / "docs" / "tutorial"
-    execute("make clean", checker_tutorial_dir)
+    execute("make --quiet clean", checker_tutorial_dir)
 
     build_and_locally_deploy_maven()
 
@@ -337,19 +331,13 @@ def main(argv: list[str]) -> None:
         )
         prompt_to_continue()
 
-    print_step(
-        "Build Step 4: Create directories for the current release on the dev site."
-    )  # AUTO
+    print_step("Build Step 4: Create directories for the current release on the dev site.")  # AUTO
 
-    checker_framework_interm_dir = create_dir_for_dev_website_release_version(
-        cf_version
-    )
+    checker_framework_interm_dir = create_dir_for_dev_website_release_version(cf_version)
 
     # The Checker Framework jar files and documentation are built and the website is updated.
     print_step("Build Step 5: Build projects and websites.")  # AUTO
-    build_checker_framework_release(
-        cf_version, old_cf_version, checker_framework_interm_dir
-    )
+    build_checker_framework_release(cf_version, old_cf_version, checker_framework_interm_dir)
 
     print_step("Build Step 6: Overwrite .htaccess and CFLogo.png .")  # AUTO
 
