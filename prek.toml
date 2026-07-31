@@ -6,6 +6,7 @@ exclude = { glob = [
   "**/*.diff",
   "**/*.diff3",
   "**/*.goal",
+  "**/*.goal.*",
   "**/*.graffle",
   "**/*.ics",
   "**/*.key",
@@ -17,8 +18,9 @@ exclude = { glob = [
   "**/*.ps",
   "**/*.ps-*",
   "**/*.svg",
-  "src/main/resources/specifications/jdk/*",
   "**/COPYING",
+  "**/expected*",
+  "src/main/resources/specifications/jdk/*",
 ] }
 
 [[repos]]
@@ -52,7 +54,6 @@ hooks = [
   { id = "detect-private-key" },
   { id = "end-of-file-fixer", exclude = { glob = [
     "**/.vscode/settings.json",
-    "**/expected*",
     "**/native-image/**",
     "**/non-conflicted-file-without-terminator.txt",
     "**/tests/squeeze-blank-lines-test/**",
@@ -68,7 +69,6 @@ hooks = [
   { id = "forbid-new-submodules" },
   { id = "mixed-line-ending" },
   { id = "trailing-whitespace", exclude = { glob = [
-    "**/expected*",
     "**/tests/squeeze-blank-lines-test/**",
     ".aspell.en.prepl",
     ".aspell.en.pws",
@@ -112,10 +112,12 @@ hooks = [
 
 ## Java
 
+# https://github.com/ORCID/pre-commit-spotless requires use of a spotless.xml file.
+
 [[repos]]
 repo = "local"
 hooks = [
-  { id = "spotless", name = "spotless formatting", language = "unsupported", entry = "./gradlew spotlessApply", files = "\\.java$", pass_filenames = false },
+  { id = "gradle-spotless", name = "spotless formatting", language = "unsupported", entry = "bash -c 'if [ -f ./gradlew ] ; then ./gradlew spotlessApply; fi'", files = "\\.java$", pass_filenames = false },
 ]
 
 ## Makefiles
