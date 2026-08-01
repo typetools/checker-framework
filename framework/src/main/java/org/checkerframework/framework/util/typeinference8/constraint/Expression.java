@@ -18,7 +18,6 @@ import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.types.AbstractExecutableType;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.CompileTimeDeclarationType;
-import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -300,7 +299,9 @@ public class Expression extends TypeConstraint {
     if (!TreeUtils.isImplicitlyTypedLambda(lambda)) {
       // Explicitly typed lambda
       List<? extends VariableTree> parameters = lambda.getParameters();
-      List<AbstractType> gs = T.getFunctionTypeParameterTypes();
+      // The parameter types G1, ..., Gn are those of the function type of the ground target type
+      // T', not those of T.  The two differ when T is wildcard-parameterized.
+      List<AbstractType> gs = tPrime.getFunctionTypeParameterTypes();
       assert parameters.size() == gs.size();
 
       for (int i = 0; i < gs.size(); i++) {
@@ -418,7 +419,8 @@ public class Expression extends TypeConstraint {
     // alpham>, where alpha1, ..., alpham are fresh inference variables.
     Theta map = context.inferenceTypeFactory.createThetaForLambda(lambda, t);
     List<Variable> alphas = new ArrayList<>(map.values());
-    AbstractType tprime = InferenceType.create(t.getAnnotatedType(), t.getJavaType(), map, context);
+    AbstractType tprime =
+        context.inferenceTypeFactory.getFunctionalInterfaceWithInferenceVars(t, map);
 
     List<AbstractType> qs = tprime.getFunctionTypeParameterTypes();
     assert qs.size() == ps.size();

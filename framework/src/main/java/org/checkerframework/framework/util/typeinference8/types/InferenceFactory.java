@@ -678,6 +678,30 @@ public class InferenceFactory {
   }
 
   /**
+   * Returns the type {@code F<alpha1, ..., alpham>}, where {@code F} is the generic functional
+   * interface of which {@code functionalInterface} is a parameterization, and {@code alpha1, ...,
+   * alpham} are the inference variables that {@code map} associates with the type parameters of
+   * {@code F}. JLS 18.5.3 uses this type to compute the ground target type of an explicitly typed
+   * lambda whose target type is wildcard-parameterized.
+   *
+   * <p>The type arguments of {@code functionalInterface} are ignored; only its erasure is used.
+   * (Substituting into {@code functionalInterface} itself would have no effect, because its type
+   * arguments are the ones written at the use site rather than the type parameters of {@code F}.)
+   *
+   * @param functionalInterface a functional interface type
+   * @param map a mapping from the type parameters of the functional interface to inference
+   *     variables, as created by {@link #createThetaForLambda}
+   * @return the type {@code F<alpha1, ..., alpham>}
+   */
+  public AbstractType getFunctionalInterfaceWithInferenceVars(
+      AbstractType functionalInterface, Theta map) {
+    TypeElement typeEle =
+        (TypeElement) ((DeclaredType) functionalInterface.getJavaType()).asElement();
+    AnnotatedDeclaredType classType = typeFactory.getAnnotatedType(typeEle);
+    return InferenceType.create(classType.asUse(), typeEle.asType(), map, context);
+  }
+
+  /**
    * Creates capture variables for variables introduced by a capture bounds. The new variables
    * correspond to the type parameters of {@code capturedType}.
    *
