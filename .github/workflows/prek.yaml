@@ -5,6 +5,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: j178/prek-action@v2
+      - uses: actions/setup-java@v5
         with:
-          extra-args: '-q'
+          distribution: 'temurin'
+          java-version: '25'
+          cache: 'gradle'
+      - uses: j178/prek-action@v3.0.0

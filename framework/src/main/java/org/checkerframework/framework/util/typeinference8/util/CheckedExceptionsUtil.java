@@ -13,6 +13,7 @@ import java.util.List;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.UnionType;
+import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -154,13 +155,14 @@ public final class CheckedExceptionsUtil {
   /**
    * Returns true iff {@code type} is a checked exception.
    *
-   * @param type a type to check
+   * @param type an exception type to check (that is, Throwable or a subtype of it)
    * @param context the context
    * @return true iff {@code type} is a checked exception
    */
   private static boolean isCheckedException(TypeMirror type, Java8InferenceContext context) {
-    TypeMirror runtimeEx = context.runtimeEx;
-    return context.env.getTypeUtils().isSubtype(type, runtimeEx);
+    Types types = context.env.getTypeUtils();
+    return !types.isSubtype(type, context.runtimeException)
+        && !types.isSubtype(type, context.error);
   }
 
   /**
@@ -300,13 +302,12 @@ public final class CheckedExceptionsUtil {
   /**
    * Returns true iff {@code type} is a checked exception.
    *
-   * @param type a type to check
+   * @param type an exception type to check (that is, Throwable or a subtype of it)
    * @param context the context
    * @return true iff {@code type} is a checked exception
    */
   private static boolean isCheckedException(
       AnnotatedTypeMirror type, Java8InferenceContext context) {
-    TypeMirror runtimeEx = context.runtimeEx;
-    return context.env.getTypeUtils().isSubtype(type.getUnderlyingType(), runtimeEx);
+    return isCheckedException(type.getUnderlyingType(), context);
   }
 }
