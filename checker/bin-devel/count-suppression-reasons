@@ -9,7 +9,7 @@
 #   -d       debug
 #   -i REGEX include matches for the grep basic regex
 #   -x REGEX exclude matches for the grep basic regex
-#   -y REGEX exclude matches for the grep basic regex
+#   -y REGEX exclude matches for the grep basic regex (enables supplying two regexes)
 # The -i argument (if any) is processed before the -x argument (if any).
 
 # The "reason" for a warning suppression is the Java line comment after it:

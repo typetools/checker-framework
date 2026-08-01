@@ -335,7 +335,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
   protected void checkConstructorResult(
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
     if (constructorElement.getEnclosingElement().getKind() == ElementKind.ENUM) {
-      // Enums constructor are only called once per enum constant.
+      // Enum constructors are only called once per enum constant.
       return;
     }
     super.checkConstructorResult(constructorType, constructorElement);
