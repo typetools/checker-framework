@@ -171,9 +171,9 @@
 \newcommand{\refenum}[4]{\href{../api/org/checkerframework/#1/#2.html\##3#4}{\<#3>}}
 
 % Reference to Oracle (previously Sun) Javadoc.
-% Arg 1: .html reference, without the .../api/ prefix
+% Arg 1: .html reference, without the .../api/ prefix.  Quote "#" as "\#" if it appears.
 % Arg 2: What will appear in the formatted manual.
-% Do not use \url in the body of any macro
+% Do not use \url in the body of any macro.
 \newcommand{\sunjavadoc}[2]{\href{https://docs.oracle.com/en/java/javase/25/docs/api/#1}{\<#2>}}
 % Like \sunjavadoc, but for annotations and prepends "@".
 \newcommand{\sunjavadocanno}[2]{\href{https://docs.oracle.com/en/java/javase/25/docs/api/#1}{\<@#2>}}
