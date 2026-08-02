@@ -1390,7 +1390,7 @@ public final class AnnotationUtils {
   }
 
   /**
-   * Returns the annotations explicitly written on a constructor result. Callers should check that
+   * Returns the annotations explicitly written on a constructor result. Callers must ensure that
    * {@code constructorDeclaration} is in fact a declaration of a constructor.
    *
    * @param constructorDeclaration declaration tree of constructor
