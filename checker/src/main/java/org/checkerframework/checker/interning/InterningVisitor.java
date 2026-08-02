@@ -59,10 +59,10 @@ import org.checkerframework.javacutil.TypesUtils;
  *
  * <ol>
  *   <li value="1">either argument to a "==" or "!=" comparison is not Interned (error
- *       "not.interned"). As a special case, the comparison is permitted if either argument is
- *       InternedDistinct.
+ *                 "not.interned"). As a special case, the comparison is permitted if either
+ *                 argument is InternedDistinct.
  *   <li value="2">the receiver and argument for a call to an equals method are both Interned
- *       (optional warning "unnecessary.equals")
+ *                 (optional warning "unnecessary.equals")
  * </ol>
  *
  * @see BaseTypeVisitor
