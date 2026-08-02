@@ -10,4 +10,4 @@ jobs:
           distribution: 'temurin'
           java-version: '25'
           cache: 'gradle'
-      - uses: j178/prek-action@v2
+      - uses: j178/prek-action@v3.0.0
