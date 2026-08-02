@@ -889,15 +889,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * <ol>
    *   <!-- The item numbering is referred to in the body of the method.-->
    *   <li value="1">If the superclass of {@code classTree} has a field invariant, then the field
-   *       invariant for {@code classTree} must include all the fields in the superclass invariant
-   *       and those fields' annotations must be a subtype (or equal) to the annotations for those
-   *       fields in the superclass.
+   *                 invariant for {@code classTree} must include all the fields in the superclass
+   *                 invariant and those fields' annotations must be a subtype (or equal) to the
+   *                 annotations for those fields in the superclass.
    *   <li value="2">The fields in the invariant must be a.) final and b.) declared in a superclass
-   *       of {@code classTree}.
+   *                 of {@code classTree}.
    *   <li value="3">The qualifier for each field must be a subtype of the annotation on the
-   *       declaration of that field.
+   *                 declaration of that field.
    *   <li value="4">The field invariant has an equal number of fields and qualifiers, or it has one
-   *       qualifier and at least one field.
+   *                 qualifier and at least one field.
    * </ol>
    *
    * @param classTree class that might have a field invariant
