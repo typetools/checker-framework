@@ -202,12 +202,6 @@ public class Expression extends TypeConstraint {
         // T is not a functional interface type, so it has no function type. JLS 18.2.1 says that
         // the constraint reduces to false in that case.
         //
-        // Returning TRUE here instead would drop the constraint silently, letting inference
-        // resolve type arguments from an incomplete constraint set with no diagnostic. FALSE
-        // throws FalseBoundException, which DefaultTypeArgumentInference catches and converts to
-        // an inference-failed warning -- the same outcome this code had before this null check
-        // existed, when it threw NullPointerException here.
-        //
         // (reduce() handles proper types before calling this method, so T mentions at least one
         // inference variable. If T is an inference variable that has not yet been instantiated,
         // then reducing this constraint now is premature -- JLS 18.5.2.2 makes that variable an
@@ -254,8 +248,7 @@ public class Expression extends TypeConstraint {
       return ConstraintSet.TRUE;
     }
     if (!T.isFunctionalInterface()) {
-      // T has no function type, so JLS 18.2.1 says that the constraint reduces to false. See the
-      // longer comment about this case in the exact method reference branch above.
+      // T has no function type, so JLS 18.2.1 says that the constraint reduces to false.
       return ConstraintSet.FALSE;
     }
     AbstractType r = T.getFunctionTypeReturnType();
@@ -446,11 +439,11 @@ public class Expression extends TypeConstraint {
     // alpham>, where alpha1, ..., alpham are fresh inference variables.
     Theta map = context.inferenceTypeFactory.createThetaForLambda(lambda, t);
     List<Variable> alphas = new ArrayList<>(map.values());
-    AbstractType tprime = InferenceType.create(t.getAnnotatedType(), t.getJavaType(), map, context);
+    AbstractType tPrime = InferenceType.create(t.getAnnotatedType(), t.getJavaType(), map, context);
 
-    List<AbstractType> qs = tprime.getFunctionTypeParameterTypes();
-    // tprime is a parameterization of t, which is a wildcard-parameterized functional interface.
-    assert qs != null : "@AssumeAssertion(nullness): tprime is a functional interface";
+    List<AbstractType> qs = tPrime.getFunctionTypeParameterTypes();
+    // tPrime is a parameterization of t, which is a wildcard-parameterized functional interface.
+    assert qs != null : "@AssumeAssertion(nullness): tPrime is a functional interface";
     assert qs.size() == ps.size();
 
     // A set of constraint formulas is formed with, for all i (1 <= i <= n), <Pi = Qi>.

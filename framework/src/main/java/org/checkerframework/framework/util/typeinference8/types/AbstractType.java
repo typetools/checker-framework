@@ -247,9 +247,7 @@ public abstract class AbstractType {
   protected AnnotatedExecutableType functionType = null;
 
   /**
-   * Returns true if this {@link AbstractType} is a functional interface type. If it is not, then
-   * {@link #getFunctionType()}, {@link #getFunctionTypeReturnType()}, and {@link
-   * #getFunctionTypeParameterTypes()} all return null.
+   * Returns true if this {@link AbstractType} is a functional interface type.
    *
    * @return true if this {@link AbstractType} is a functional interface type
    */
