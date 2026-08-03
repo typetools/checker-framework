@@ -419,10 +419,10 @@ public class Expression extends TypeConstraint {
     // alpham>, where alpha1, ..., alpham are fresh inference variables.
     Theta map = context.inferenceTypeFactory.createThetaForLambda(lambda, t);
     List<Variable> alphas = new ArrayList<>(map.values());
-    AbstractType tprime =
+    AbstractType tPrime =
         context.inferenceTypeFactory.getFunctionalInterfaceWithInferenceVars(t, map);
 
-    List<AbstractType> qs = tprime.getFunctionTypeParameterTypes();
+    List<AbstractType> qs = tPrime.getFunctionTypeParameterTypes();
     assert qs.size() == ps.size();
 
     // A set of constraint formulas is formed with, for all i (1 <= i <= n), <Pi = Qi>.

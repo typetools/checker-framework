@@ -657,8 +657,7 @@ public class InferenceFactory {
     if (context.maps.containsKey(lambda)) {
       return context.maps.get(lambda);
     }
-    TypeElement typeEle =
-        (TypeElement) ((DeclaredType) functionalInterface.getJavaType()).asElement();
+    TypeElement typeEle = getFunctionalInterfaceElement(functionalInterface);
     AnnotatedDeclaredType classType = typeFactory.getAnnotatedType(typeEle);
 
     Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
@@ -678,15 +677,28 @@ public class InferenceFactory {
   }
 
   /**
+   * Returns the generic functional interface {@code F} of which {@code functionalInterface} is a
+   * parameterization.
+   *
+   * @param functionalInterface a functional interface type
+   * @return the type element of {@code functionalInterface}
+   */
+  private TypeElement getFunctionalInterfaceElement(AbstractType functionalInterface) {
+    return (TypeElement) ((DeclaredType) functionalInterface.getJavaType()).asElement();
+  }
+
+  /**
    * Returns the type {@code F<alpha1, ..., alpham>}, where {@code F} is the generic functional
    * interface of which {@code functionalInterface} is a parameterization, and {@code alpha1, ...,
    * alpham} are the inference variables that {@code map} associates with the type parameters of
    * {@code F}. JLS 18.5.3 uses this type to compute the ground target type of an explicitly typed
    * lambda whose target type is wildcard-parameterized.
    *
-   * <p>The type arguments of {@code functionalInterface} are ignored; only its erasure is used.
-   * (Substituting into {@code functionalInterface} itself would have no effect, because its type
-   * arguments are the ones written at the use site rather than the type parameters of {@code F}.)
+   * <p>The type arguments of {@code functionalInterface} are ignored; the type is built from the
+   * declaration of {@code F}, whose type arguments are the type parameters {@code T1, ..., Tm} that
+   * {@code map} maps. (Substituting into {@code functionalInterface} itself would have no effect,
+   * because its type arguments are the ones written at the use site rather than the type parameters
+   * of {@code F}.)
    *
    * @param functionalInterface a functional interface type
    * @param map a mapping from the type parameters of the functional interface to inference
@@ -695,8 +707,9 @@ public class InferenceFactory {
    */
   public AbstractType getFunctionalInterfaceWithInferenceVars(
       AbstractType functionalInterface, Theta map) {
-    TypeElement typeEle =
-        (TypeElement) ((DeclaredType) functionalInterface.getJavaType()).asElement();
+    TypeElement typeEle = getFunctionalInterfaceElement(functionalInterface);
+    assert map.size() == typeEle.getTypeParameters().size()
+        : "Theta " + map.keySet() + " does not map the type parameters of " + typeEle;
     AnnotatedDeclaredType classType = typeFactory.getAnnotatedType(typeEle);
     return InferenceType.create(classType.asUse(), typeEle.asType(), map, context);
   }

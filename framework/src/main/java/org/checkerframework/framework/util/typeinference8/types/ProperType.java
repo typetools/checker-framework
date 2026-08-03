@@ -250,9 +250,13 @@ public class ProperType extends AbstractType {
    * otherwise be inferred, the supertype annotation is chosen. See {@link
    * org.checkerframework.framework.type.AnnotatedTypeFactory#getDummyAssignedTo(ExpressionTree)}.
    *
+   * <p>This method is unrelated to {@link #equals}, which tests whether two {@code ProperType}s
+   * represent the same type in the sense used by the constraint machinery.
+   *
    * @param other another proper type
-   * @return if {@code this} is the same type as {@code other}, then return {@link
-   *     ConstraintSet#TRUE}; otherwise, a false bound is returned
+   * @return {@link ConstraintSet#TRUE} if {@code this} is the same type as {@code other}; {@link
+   *     ConstraintSet#TRUE_ANNO_FAIL} if the Java types are the same but the annotated types are
+   *     incomparable; {@link ConstraintSet#FALSE} if the Java types differ
    */
   public ReductionResult isSameType(ProperType other) {
     TypeMirror thisJavaType = getJavaType();
@@ -261,9 +265,18 @@ public class ProperType extends AbstractType {
     // Use javac's Types rather than javax.lang.model.util.Types, because the latter always
     // returns false if either argument is a wildcard.
     if (!context.types.isSameType((Type) thisJavaType, (Type) otherJavaType)) {
+      // No test in the test suite reaches this statement: javac has already performed the same
+      // inference on the same Java types, so a surviving constraint between two proper types with
+      // different Java types indicates a bug in this implementation rather than in the user's
+      // code.  Accordingly, callers turn this result into a crash rather than into a diagnostic;
+      // see framework/tests/value/ExplicitLambdaGroundTargetType.java, which reached this
+      // statement before the ground target type of an explicitly typed lambda was computed
+      // correctly.
       return ConstraintSet.FALSE;
     }
     if (ignoreAnnotations || other.ignoreAnnotations) {
+      // Reached when a use of an inference variable has a primary annotation; see
+      // UseOfVariable#addBound and checker/tests/tainting/TaintingIssue7679.java.
       return ConstraintSet.TRUE;
     }
     AnnotatedTypeMirror thisATM = this.getAnnotatedType();
