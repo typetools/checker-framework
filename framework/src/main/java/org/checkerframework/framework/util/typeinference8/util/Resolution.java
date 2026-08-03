@@ -312,7 +312,9 @@ public final class Resolution {
     boolean useRuntimeException = ai.getBounds().hasThrowsBound();
     for (ProperType liProperType : upperBounds) {
       TypeMirror li = liProperType.getJavaType();
-      useRuntimeException &= context.env.getTypeUtils().isSubtype(context.runtimeException, li);
+      if (useRuntimeException) {
+        useRuntimeException = context.env.getTypeUtils().isSubtype(context.runtimeException, li);
+      }
       if (ti == null) {
         ti = liProperType;
       } else {
