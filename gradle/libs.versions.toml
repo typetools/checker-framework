@@ -40,7 +40,7 @@ error-prone-annotations = { group = "com.google.errorprone", name = "error_prone
 
 error-prone-core = { group = "com.google.errorprone", name = "error_prone_core", version.ref = "errorprone-version" }
 
-google-java-format = "com.google.googlejavaformat:google-java-format:1.35.0"
+google-java-format = "com.google.googlejavaformat:google-java-format:1.36.1"
 
 guava = "org.checkerframework.annotatedlib:guava:33.1.0.2-jre"
 
