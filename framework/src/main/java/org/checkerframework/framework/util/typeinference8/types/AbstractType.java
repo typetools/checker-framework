@@ -322,7 +322,6 @@ public abstract class AbstractType {
     AnnotatedDeclaredType decl = typeFactory.getAnnotatedType((TypeElement) e);
     Iterator<AnnotatedTypeMirror> bounds = decl.getTypeArguments().iterator();
 
-    //    typeFactory.getTypeVarSubstitutor().substitute()
     Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArg = new HashMap<>();
     for (AnnotatedTypeMirror pn : type.getTypeArguments()) {
       AnnotatedTypeVariable typeVariable = (AnnotatedTypeVariable) bounds.next();
