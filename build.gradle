@@ -274,7 +274,8 @@ allprojects { currentProj ->
       dependsOn(":framework-test:tagletClasses")
       doFirst {
         options.encoding = "UTF-8"
-        if (!name.equals("javadocDoclintAll")) {
+        // These tasks set their own member level, so do not overwrite it.
+        if (!name.equals("javadocDoclintAll") && !name.equals("javadocPrivate")) {
           options.memberLevel = javadocMemberLevel
         }
         // Without the following exclude, Javadoc will error on checker-qual with "error: reference not found"
@@ -912,7 +913,7 @@ subprojects {
     //  * All files outside the "framework", "checker", and "annotation-file-utilities" subprojects.
     //  * In the "framework", "checker", and "annotation-file-utilities" subprojects, files with `@AnnotatedFor("nullness")`.
     boolean nullnessAll = providers.gradleProperty("nullnessAll").isPresent()
-    if (!nullnessAll && (project.name.is("framework") || project.name.is("checker") || project.name.is("annotation-file-utilities"))) {
+    if (!nullnessAll && (project.name.equals("framework") || project.name.equals("checker") || project.name.equals("annotation-file-utilities"))) {
       rootProject.createCheckTypeTask(project.name, "Nullness",
           "org.checkerframework.checker.nullness.NullnessChecker",
           [
@@ -933,7 +934,7 @@ subprojects {
     checkCompilerMessages {
       doFirst {
         String propfiles = sourceSets.main.resources.filter { file -> file.name.equals("messages.properties") }.asPath
-        if (project.name.is("checker")) {
+        if (project.name.equals("checker")) {
           String frameworkPropFiles = project(":framework").sourceSets.main.resources.filter { file -> file.name.equals("messages.properties") }.asPath
           propfiles = propfiles + File.pathSeparator + frameworkPropFiles
         }
@@ -943,7 +944,7 @@ subprojects {
 
 
     // Add jtregTests to framework and checker modules
-    if (project.name.is("framework") || project.name.is("checker")) {
+    if (project.name.equals("framework") || project.name.equals("checker")) {
       tasks.register("jtregTests", Exec) {
         description = "Run the jtreg tests. Requires jtreg to be installed."
         group = "Verification"
@@ -984,12 +985,12 @@ subprojects {
           "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
           "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
         ]
-        if (project.name.is("framework")) {
+        if (project.name.equals("framework")) {
           // Do not check for the annotated JDK
           args += [
             "-javacoptions:-ApermitMissingJdk"
           ]
-        } else if (project.name.is("checker")) {
+        } else if (project.name.equals("checker")) {
           args += [
             "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
           ]
@@ -1033,7 +1034,7 @@ subprojects {
         maxParallelForks = Runtime.getRuntime().availableProcessors() ?: 1
       }
 
-      if (project.name.is("checker")) {
+      if (project.name.equals("checker")) {
         dependsOn("assembleForJavac")
       }
 
@@ -1059,18 +1060,18 @@ subprojects {
     tasks.register("nonJunitTests") {
       description = "Run all Checker Framework tests except for the Junit tests and inference tests."
       group = "Verification"
-      if (project.name.is("framework") || project.name.is("checker")) {
+      if (project.name.equals("framework") || project.name.equals("checker")) {
         dependsOn("jtregTests")
       }
-      if (project.name.is("framework")) {
+      if (project.name.equals("framework")) {
         dependsOn("loaderTests")
       }
 
-      if (project.name.is("checker")) {
+      if (project.name.equals("checker")) {
         dependsOn("nullnessExtraTests", "commandLineTests", "tutorialTests")
       }
 
-      if (project.name.is("dataflow")) {
+      if (project.name.equals("dataflow")) {
         dependsOn("allDataflowTests")
       }
     }
@@ -1079,21 +1080,21 @@ subprojects {
     tasks.register("inferenceTests") {
       description = "Run inference tests."
       group = "Verification"
-      if (project.name.is("checker")) {
+      if (project.name.equals("checker")) {
         dependsOn("inferenceTests-part1", "inferenceTests-part2")
       }
     }
     tasks.register("inferenceTests-part1") {
       description = "Run inference tests (part 1)."
       group = "Verification"
-      if (project.name.is("checker")) {
+      if (project.name.equals("checker")) {
         dependsOn("wpiManyTest")
       }
     }
     tasks.register("inferenceTests-part2") {
       description = "Run inference tests (part 2)."
       group = "Verification"
-      if (project.name.is("checker")) {
+      if (project.name.equals("checker")) {
         dependsOn("ainferTest", "wpiPlumeLibTest")
       }
     }
@@ -1115,7 +1116,7 @@ subprojects {
       description = "Run the Checker Framework on itself (part 2)"
       group = "Verification"
       dependsOn("checkRegex", "checkResourceLeak", "checkSignature")
-      if (!(project.name.is("framework") || project.name.is("checker"))) {
+      if (!(project.name.equals("framework") || project.name.equals("checker"))) {
         dependsOn("checkNullness")
       }
     }
@@ -1129,14 +1130,16 @@ subprojects {
       dependsOn("test", "nonJunitTests", "inferenceTests", "typecheck")
     }
 
-    tasks.register("javadocPrivate") {
-      dependsOn(javadoc)
-      doFirst {
-        javadocMemberLevel = JavadocMemberLevel.PRIVATE
-      }
-      doLast {
-        javadocMemberLevel = JavadocMemberLevel.PROTECTED
-      }
+    tasks.register("javadocPrivate", Javadoc) {
+      description = "Generates Javadoc API documentation, including private members."
+      source = sourceSets.main.allJava
+      classpath = sourceSets.main.output + sourceSets.main.compileClasspath
+      destinationDir = file("${buildDir}/docs/javadocPrivate")
+      options.memberLevel = JavadocMemberLevel.PRIVATE
+      // Disable interpreting module-info.java files, as `javadoc` and `javadocDoclintAll` do.
+      // Otherwise, references to classes outside the module (such as NullnessChecker, which is
+      // in checker.jar) fail with "error: reference not found".
+      modularity.inferModulePath = false
     }
   }
 }
