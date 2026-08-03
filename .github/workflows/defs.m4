@@ -2,142 +2,92 @@ changequote
 changequote(`[',`]')dnl
 ifelse([The built-in "dnl" m4 macro means "discard to next line".])dnl
 dnl
-define([junit_job], [dnl
-  junit_jdk$1:
-ifelse($1,canary_version,,[    needs:
-      - canary_jobs
-      - junit_part1_jdk[]canary_version
-      - junit_part2_jdk[]canary_version
-])dnl
+define([dependsOn], [needs])dnl
+dnl
+define([job_name], [$1:])dnl
+dnl
+ifelse([Takes 4 arguments: OS, JDK version number, name, command line.])dnl
+define([boilerplate], [dnl
     runs-on: ubuntu-latest
     container:
-      image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    timeout-minutes: 70
+      image: mdernst/cf-$1-jdk$2[]docker_testing:latest
+ifelse($3,test-cftests-nonjunit.sh,[],
+       $3,test-typecheck-part1.sh,[],
+       $3,test-typecheck-part2.sh,[],
+       $3,test-plume-lib.sh,[],
+       $3,test-cftests-inference-part1.sh,[    timeout-minutes: 90
+],
+       $3,test-cftests-inference-part2.sh,[    timeout-minutes: 90
+],
+[    timeout-minutes: 70
+])dnl
     steps:
       - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
-      - name: test-cftests-junit.sh
-        run: ./checker/bin-devel/test-cftests-junit.sh
+      - name: $3
+        run: $4
         env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
+          ORG_GRADLE_PROJECT_jdkTestVersion: "$2"
+])dnl
+dnl
+define([junit_job], [dnl
+  job_name(junit_jdk$1)
+ifelse($1,canary_jdk,,[    dependsOn:
+      - canary_jobs
+      - junit_part1_jdk[]canary_jdk
+      - junit_part2_jdk[]canary_jdk
+])dnl
+boilerplate(ubuntu, $1, test-cftests-junit.sh, ./checker/bin-devel/test-cftests-junit.sh)dnl
+])dnl
 dnl
 define([junit_jobs], [dnl
-  junit_part1_jdk$1:
-ifelse($1,canary_version,,[    needs:
+  job_name(junit_part1_jdk$1)
+ifelse($1,canary_jdk,,[    dependsOn:
       - canary_jobs
-      - junit_part1_jdk[]canary_version
+      - junit_part1_jdk[]canary_jdk
 ])dnl
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    timeout-minutes: 70
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          set-safe-directory: true
-          fetch-depth: 25
-      - name: test-cftests-junit.sh part1
-        run: ./checker/bin-devel/test-cftests-junit.sh part1
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-  junit_part2_jdk$1:
-ifelse($1,canary_version,,[    needs:
+boilerplate(ubuntu, $1, test-cftests-junit.sh part1, ./checker/bin-devel/test-cftests-junit.sh part1)dnl
+  job_name(junit_part2_jdk$1)
+ifelse($1,canary_jdk,,[    dependsOn:
       - canary_jobs
-      - junit_part2_jdk[]canary_version
+      - junit_part2_jdk[]canary_jdk
 ])dnl
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    timeout-minutes: 70
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          set-safe-directory: true
-          fetch-depth: 25
-      - name: test-cftests-junit.sh part2
-        run: ./checker/bin-devel/test-cftests-junit.sh part2
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
+boilerplate(ubuntu, $1, test-cftests-junit.sh part2, ./checker/bin-devel/test-cftests-junit.sh part2)dnl
+])dnl
 dnl
 define([nonjunit_job], [dnl
-  nonjunit_jdk$1:
-ifelse($1,canary_version,,[    needs:
+  job_name(nonjunit_jdk$1)
+ifelse($1,canary_jdk,,[    dependsOn:
       - canary_jobs
-      - nonjunit_jdk[]canary_version
+      - nonjunit_jdk[]canary_jdk
 ])dnl
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          set-safe-directory: true
-          fetch-depth: 25
-      - name: test-cftests-nonjunit.sh
-        run: ./checker/bin-devel/test-cftests-nonjunit.sh
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
+boilerplate(ubuntu, $1, test-cftests-nonjunit.sh, ./checker/bin-devel/test-cftests-nonjunit.sh)dnl
+])dnl
 dnl
 define([inference_job], [dnl
-ifelse($1,canary_version,[dnl
+ifelse($1,canary_jdk,[dnl
   # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
-  inference_part1_jdk$1:
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    timeout-minutes: 90
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          set-safe-directory: true
-          fetch-depth: 25
-      - name: test-cftests-inference-part1.sh
-        run: ./checker/bin-devel/test-cftests-inference-part1.sh
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-  inference_part2_jdk$1:
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    timeout-minutes: 90
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          set-safe-directory: true
-          fetch-depth: 25
-      - name: test-cftests-inference-part2.sh
-        run: ./checker/bin-devel/test-cftests-inference-part2.sh
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
+  job_name(inference_part1_jdk$1)
+boilerplate(ubuntu, $1, test-cftests-inference-part1.sh, ./checker/bin-devel/test-cftests-inference-part1.sh)dnl
+  job_name(inference_part2_jdk$1)
+boilerplate(ubuntu, $1, test-cftests-inference-part2.sh, ./checker/bin-devel/test-cftests-inference-part2.sh)dnl
 ],[dnl
-  inference_jdk$1:
-    needs:
+  job_name(inference_jdk$1)
+    dependsOn:
       - canary_jobs
-      - inference_part1_jdk[]canary_version
-      - inference_part2_jdk[]canary_version
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    timeout-minutes: 90
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          set-safe-directory: true
-          fetch-depth: 25
-      - name: test-cftests-inference.sh
-        run: ./checker/bin-devel/test-cftests-inference.sh
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
+      - inference_part1_jdk[]canary_jdk
+      - inference_part2_jdk[]canary_jdk
+boilerplate(ubuntu, $1, test-cftests-inference.sh, ./checker/bin-devel/test-cftests-inference.sh)dnl
 ])dnl
 ])dnl
 dnl
 define([misc_job], [dnl
-  misc_jdk$1:
-ifelse($1,canary_version,,$1,latest_version,,[    needs:
+  job_name(misc_jdk$1)
+ifelse($1,canary_jdk,,$1,latest_jdk,,[    dependsOn:
       - canary_jobs
-      - misc_jdk[]canary_version
+      - misc_jdk[]canary_jdk
 ])dnl
     runs-on: ubuntu-latest
     container:
@@ -160,172 +110,70 @@ ifelse($1,canary_version,,$1,latest_version,,[    needs:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
 dnl
 define([typecheck_job], [dnl
-ifelse($1,canary_version,[dnl
-  # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
-  typecheck_part1_jdk$1:
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          set-safe-directory: true
-          fetch-depth: 0
-      - name: test-typecheck-part1.sh
-        run: ./checker/bin-devel/test-typecheck-part1.sh
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-  typecheck_part2_jdk$1:
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          set-safe-directory: true
-          fetch-depth: 0
-      - name: test-typecheck-part2.sh
-        run: ./checker/bin-devel/test-typecheck-part2.sh
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
+ifelse($1,canary_jdk,[dnl
+  job_name(typecheck_part1_jdk$1)
+boilerplate(ubuntu, $1, test-typecheck-part1.sh, ./checker/bin-devel/test-typecheck-part1.sh)dnl
+  job_name(typecheck_part2_jdk$1)
+boilerplate(ubuntu, $1, test-typecheck-part2.sh, ./checker/bin-devel/test-typecheck-part2.sh)dnl
 ], [dnl
-  typecheck_jdk$1:
-    needs:
+  job_name(typecheck_jdk$1)
+    dependsOn:
       - canary_jobs
-      - typecheck_part1_jdk[]canary_version
-      - typecheck_part2_jdk[]canary_version
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          set-safe-directory: true
-          fetch-depth: 0
-      - name: test-typecheck.sh
-        run: ./checker/bin-devel/test-typecheck.sh
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
+      - typecheck_part1_jdk[]canary_jdk
+      - typecheck_part2_jdk[]canary_jdk
+boilerplate(ubuntu, $1, test-typecheck.sh, ./checker/bin-devel/test-typecheck.sh)dnl
 ])])dnl
 dnl
 define([daikon_job], [dnl
-  daikon_part1_jdk$1:
-    needs:
+  job_name(daikon_part1_jdk$1)
+    dependsOn:
       - canary_jobs
-ifelse($1,canary_version,,[dnl
-      - daikon_part1_jdk[]canary_version
+ifelse($1,canary_jdk,,[dnl
+      - daikon_part1_jdk[]canary_jdk
 ])dnl
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    timeout-minutes: 70
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          set-safe-directory: true
-          fetch-depth: 25
-      - name: test-daikon-part1.sh
-        run: ./checker/bin-devel/test-daikon-part1.sh
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-  daikon_part2_jdk$1:
-    needs:
+boilerplate(ubuntu, $1, test-daikon-part1.sh, ./checker/bin-devel/test-daikon-part1.sh)dnl
+  job_name(daikon_part2_jdk$1)
+    dependsOn:
       - canary_jobs
-ifelse($1,canary_version,,[dnl
-      - daikon_part2_jdk[]canary_version
+ifelse($1,canary_jdk,,[dnl
+      - daikon_part2_jdk[]canary_jdk
 ])dnl
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    timeout-minutes: 80
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          set-safe-directory: true
-          fetch-depth: 25
-      - name: test-daikon-part2.sh
-        run: ./checker/bin-devel/test-daikon-part2.sh
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-  daikon_part3_jdk$1:
-    needs:
+boilerplate(ubuntu, $1, test-daikon-part2.sh, ./checker/bin-devel/test-daikon-part2.sh)dnl
+  job_name(daikon_part3_jdk$1)
+    dependsOn:
       - canary_jobs
-ifelse($1,canary_version,,[dnl
-      - daikon_part3_jdk[]canary_version
+ifelse($1,canary_jdk,,[dnl
+      - daikon_part3_jdk[]canary_jdk
 ])dnl
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    timeout-minutes: 80
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          set-safe-directory: true
-          fetch-depth: 25
-      - name: test-daikon-part3.sh
-        run: ./checker/bin-devel/test-daikon-part3.sh
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
+boilerplate(ubuntu, $1, test-daikon-part3.sh, ./checker/bin-devel/test-daikon-part3.sh)dnl
+])dnl
 dnl
 define([guava_job], [dnl
-  guava_part1_jdk$1:
-    needs:
+  job_name(guava_part1_jdk$1)
+    dependsOn:
       - canary_jobs
-ifelse($1,canary_version,,[dnl
-      - guava_part1_jdk[]canary_version
+ifelse($1,canary_jdk,,[dnl
+      - guava_part1_jdk[]canary_jdk
 ])dnl
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    timeout-minutes: 70
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          set-safe-directory: true
-          fetch-depth: 25
-      - name: test-guava-part1.sh
-        run: ./checker/bin-devel/test-guava-part1.sh
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
-  guava_part2_jdk$1:
-    needs:
+boilerplate(ubuntu, $1, test-guava-part1.sh, ./checker/bin-devel/test-guava-part1.sh)dnl
+  job_name(guava_part2_jdk$1)
+    dependsOn:
       - canary_jobs
-ifelse($1,canary_version,,[dnl
-      - guava_part2_jdk[]canary_version
+ifelse($1,canary_jdk,,[dnl
+      - guava_part2_jdk[]canary_jdk
 ])dnl
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    timeout-minutes: 70
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          set-safe-directory: true
-          fetch-depth: 25
-      - name: test-guava-part2.sh
-        run: ./checker/bin-devel/test-guava-part2.sh
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
+boilerplate(ubuntu, $1, test-guava-part2.sh, ./checker/bin-devel/test-guava-part2.sh)dnl
+])dnl
 dnl
 define([plume_lib_job], [dnl
-  plume_lib_jdk$1:
-    needs:
+  job_name(plume_lib_jdk$1)
+    dependsOn:
       - canary_jobs
-ifelse($1,canary_version,,[dnl
-      - plume_lib_jdk[]canary_version
+ifelse($1,canary_jdk,,[dnl
+      - plume_lib_jdk[]canary_jdk
 ])dnl
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          set-safe-directory: true
-          fetch-depth: 25
-      - name: test-plume-lib.sh
-        run: ./checker/bin-devel/test-plume-lib.sh
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
+boilerplate(ubuntu, $1, test-plume-lib.sh, ./checker/bin-devel/test-plume-lib.sh)dnl
+])dnl
 dnl
 ifelse([
 Local Variables:
