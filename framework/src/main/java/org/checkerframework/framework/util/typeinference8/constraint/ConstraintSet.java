@@ -78,6 +78,7 @@ public class ConstraintSet implements ReductionResult {
    *
    * @param constraints constraints to add to the newly created set
    */
+  @SuppressWarnings("this-escape") // calling `add()` does not leak `this`
   public ConstraintSet(Constraint... constraints) {
     if (constraints != null) {
       list = new ArrayList<>(constraints.length);
