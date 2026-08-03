@@ -1,13 +1,3 @@
-// The exception types that JLS 18.2.5 collects for a lambda body are its *checked* exceptions: the
-// ones that are neither a subclass of RuntimeException nor a subclass of Error (JLS 11.1.1).
-// `CheckedExceptionsUtil.isCheckedException` used to test the opposite, so `‹Xi <: Ej›` constraints
-// were generated for the unchecked exceptions and not for the checked ones.
-//
-// In `uncheckedOnly` below, the lambda throws only an unchecked exception, so JLS 18.2.5 generates
-// no constraint at all and E is resolved to IOException.  With the predicate inverted, the
-// constraint `‹IllegalStateException <: E›` was generated instead; together with the declared bound
-// `E extends IOException` that is unsatisfiable, and inference failed.
-
 import java.io.IOException;
 
 public class Java8InferenceCheckedExceptions {

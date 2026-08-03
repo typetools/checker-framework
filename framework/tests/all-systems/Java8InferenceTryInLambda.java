@@ -1,10 +1,3 @@
-// A `try` statement in a lambda body, where the target functional interface has an inference
-// variable in its `throws` clause.  Computing the checked exceptions thrown by the lambda (JLS
-// 18.2.5) scans the `try` statement.  `TreeScanner.scan(Iterable, P)` returns null for an empty
-// iterable and `TreeScanner.scan(Tree, P)` returns null for a null tree, so a `try` with no
-// resources or no `finally` block used to pass null to `List.addAll`, which threw a
-// NullPointerException that surfaced as a `type.argument.inference.crashed` error.
-
 import java.io.IOException;
 
 public class Java8InferenceTryInLambda {
