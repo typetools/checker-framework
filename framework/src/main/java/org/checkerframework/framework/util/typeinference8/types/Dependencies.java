@@ -61,7 +61,10 @@ public class Dependencies {
           if (gamma == alpha) {
             continue;
           }
-          betas.addAll(map.get(gamma));
+          LinkedHashSet<Variable> gammaDependencies = map.get(gamma);
+          if (gammaDependencies != null) {
+            betas.addAll(gammaDependencies);
+          }
         }
         changed |= gammas.addAll(betas);
       }

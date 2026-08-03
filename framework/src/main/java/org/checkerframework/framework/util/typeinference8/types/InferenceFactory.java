@@ -1049,6 +1049,7 @@ public class InferenceFactory {
 
     Iterator<? extends AnnotatedTypeMirror> iter2 = thrownTypes.iterator();
     for (TypeMirror xi : thrownTypeMirrors) {
+      AnnotatedTypeMirror xiAnnotated = iter2.next();
       boolean isSubtypeOfProper = false;
       for (ProperType properType : properTypes) {
         if (context.env.getTypeUtils().isSubtype(xi, properType.getJavaType())) {
@@ -1060,7 +1061,7 @@ public class InferenceFactory {
           constraintSet.add(
               new Typing(
                   "Exception constraint for " + expression,
-                  new ProperType(iter2.next(), xi, context),
+                  new ProperType(xiAnnotated, xi, context),
                   ei,
                   TypeConstraint.Kind.SUBTYPE));
           ei.setHasThrowsBound(true);
