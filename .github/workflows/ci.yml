@@ -79,6 +79,7 @@ jobs:
         run: ./checker/bin-devel/test-cftests-junit.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "17"
+
   junit_jdk21:
     needs:
       - canary_jobs
@@ -97,6 +98,7 @@ jobs:
         run: ./checker/bin-devel/test-cftests-junit.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "21"
+
   junit_part1_jdk25:
     runs-on: ubuntu-latest
     container:
@@ -125,6 +127,7 @@ jobs:
         run: ./checker/bin-devel/test-cftests-junit.sh part2
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+
   junit_jdk26:
     needs:
       - canary_jobs
@@ -256,7 +259,6 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "26"
 
-  # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk25:
     runs-on: ubuntu-latest
     container:
@@ -265,7 +267,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           set-safe-directory: true
-          fetch-depth: 0
+          fetch-depth: 25
       - name: test-typecheck-part1.sh
         run: ./checker/bin-devel/test-typecheck-part1.sh
         env:
@@ -278,14 +280,14 @@ jobs:
       - uses: actions/checkout@v7
         with:
           set-safe-directory: true
-          fetch-depth: 0
+          fetch-depth: 25
       - name: test-typecheck-part2.sh
         run: ./checker/bin-devel/test-typecheck-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
   # TEMPORARILY commented until Daikon release 5.8.24.
-  # daikon_job(canary_version)
+  # daikon_job(canary_jdk)
 
   guava_part1_jdk25:
     needs:
