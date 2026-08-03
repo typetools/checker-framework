@@ -304,10 +304,10 @@ public class InferenceFactory {
 
   /**
    * Returns the index in {@code arguments} of the argument that contains the tree at the leaf of
-   * {@code path}.
+   * {@code path}. Throws {@link BugInCF} if no argument contains that tree.
    *
-   * @param path path to an argument of {@code invocation}
-   * @param invocation a method or constructor invocation
+   * @param path path to an expression whose target type is being computed
+   * @param invocation a method or constructor invocation; used only in the error message
    * @param arguments the argument expression trees of {@code invocation}
    * @return the index in {@code arguments} of the argument that contains the tree at the leaf of
    *     {@code path}
@@ -320,8 +320,9 @@ public class InferenceFactory {
       }
     }
     // The caller found `invocation` by walking up from `path`, via
-    // TreePathUtil#getContextForPolyExpression, which returns an invocation only for a tree that
-    // is (possibly transitively) one of its arguments.
+    // TreePathUtil#getContextForPolyExpression.  Reaching here means that
+    // getContextForPolyExpression returned an invocation for a tree that is not (even
+    // transitively) one of its arguments, which is a bug in getContextForPolyExpression.
     throw new BugInCF(
         "Not an argument of the invocation.%nTree: %s%nInvocation: %s", path.getLeaf(), invocation);
   }
