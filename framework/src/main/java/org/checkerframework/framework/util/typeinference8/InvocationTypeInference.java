@@ -464,14 +464,7 @@ public class InvocationTypeInference {
       if (notPertinentToApplicability(ei, fi)) {
         c.add(new Expression("Argument constraint", ei, fi));
       }
-      if (ei instanceof MethodInvocationTree || ei instanceof NewClassTree) {
-        if (TreeUtils.isPolyExpression(ei)) {
-          AdditionalArgument aa = new AdditionalArgument(ei);
-          c.addAll(aa.reduce(context));
-        }
-      } else {
-        c.addAll(createAdditionalArgConstraints(ei, fi, map));
-      }
+      c.addAll(createAdditionalArgConstraints(ei, fi, map));
     }
 
     return c;

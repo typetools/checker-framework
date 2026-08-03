@@ -114,21 +114,21 @@ public class QualifierVar extends AbstractQualifier {
       case EQUAL -> {
         for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
           if (s != t) {
-            constraints.add(new QualifierTyping(s, t, Kind.TYPE_EQUALITY));
+            constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_EQUALITY));
           }
         }
       }
       case LOWER -> {
         for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
           if (s != t) {
-            constraints.add(new QualifierTyping(s, t, Kind.SUBTYPE));
+            constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_SUBTYPE));
           }
         }
       }
       case UPPER -> {
         for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
           if (s != t) {
-            constraints.add(new QualifierTyping(t, s, Kind.SUBTYPE));
+            constraints.add(new QualifierTyping(t, s, Kind.QUALIFIER_SUBTYPE));
           }
         }
       }
@@ -137,7 +137,7 @@ public class QualifierVar extends AbstractQualifier {
     if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
       for (AbstractQualifier t : qualifierBounds.get(BoundKind.LOWER)) {
         if (s != t) {
-          constraints.add(new QualifierTyping(t, s, Kind.SUBTYPE));
+          constraints.add(new QualifierTyping(t, s, Kind.QUALIFIER_SUBTYPE));
         }
       }
     }
@@ -145,7 +145,7 @@ public class QualifierVar extends AbstractQualifier {
     if (kind == BoundKind.EQUAL || kind == BoundKind.LOWER) {
       for (AbstractQualifier t : qualifierBounds.get(BoundKind.UPPER)) {
         if (s != t) {
-          constraints.add(new QualifierTyping(s, t, Kind.SUBTYPE));
+          constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_SUBTYPE));
         }
       }
     }
