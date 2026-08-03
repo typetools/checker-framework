@@ -1,0 +1,11 @@
+package:
+annotation @Tainted: @Retention(RUNTIME)
+annotation @NonNull: @Retention(RUNTIME)
+
+package foo:
+class Bar:
+  method getSomething(Ljava/lang/StringBuffer;)V:
+    receiver: @Tainted
+  method setSomething(Ljava/lang/String;)V:
+    parameter #0: @NonNull
+  method <init>(Ljava/lang/String;)V:
