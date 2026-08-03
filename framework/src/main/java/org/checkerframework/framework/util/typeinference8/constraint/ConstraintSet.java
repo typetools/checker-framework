@@ -78,7 +78,6 @@ public class ConstraintSet implements ReductionResult {
    *
    * @param constraints constraints to add to the newly created set
    */
-  @SuppressWarnings("this-escape") // calling `add()` does not leak `this`
   public ConstraintSet(Constraint... constraints) {
     if (constraints != null) {
       list = new ArrayList<>(constraints.length);
@@ -93,9 +92,11 @@ public class ConstraintSet implements ReductionResult {
   /**
    * Adds {@code c} to this set, if c isn't already in the list.
    *
+   * <p>This method is final because constructors call it.
+   *
    * @param c a constraint to add to this set
    */
-  public void add(Constraint c) {
+  public final void add(Constraint c) {
     if (c != null && !list.contains(c)) {
       list.add(c);
     }
@@ -114,12 +115,12 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
-   * Adds all constraints in {@code constraintSet} to this constraint set.
+   * Adds all constraints in {@code constraints} to this constraint set.
    *
-   * @param constraintSet a collection of constraints to add to this set
+   * @param constraints a collection of constraints to add to this set
    */
-  public void addAll(Collection<? extends Constraint> constraintSet) {
-    constraintSet.forEach(this::add);
+  public void addAll(Collection<? extends Constraint> constraints) {
+    constraints.forEach(this::add);
   }
 
   /**
