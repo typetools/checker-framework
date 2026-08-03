@@ -433,13 +433,13 @@ public class Expression extends TypeConstraint {
     // F<alpha1, ..., alpham> is built from the declaration of F, whose type arguments are F's own
     // type parameters, which is what `map` maps to the fresh inference variables.  Building it
     // from t instead would be a no-op: t is F<A1, ..., Am>, which does not mention F's type
-    // parameters, so `map` would substitute nothing and tprime would be t itself.
+    // parameters, so `map` would substitute nothing and tPrime would be t itself.
     TypeElement fElement = (TypeElement) ((DeclaredType) t.getJavaType()).asElement();
-    AbstractType tprime =
+    AbstractType tPrime =
         InferenceType.create(
             context.typeFactory.getAnnotatedType(fElement), fElement.asType(), map, context);
 
-    List<AbstractType> qs = tprime.getFunctionTypeParameterTypes();
+    List<AbstractType> qs = tPrime.getFunctionTypeParameterTypes();
     // If n != k, no valid parameterization exists.
     if (qs == null || qs.size() != ps.size()) {
       return null;
