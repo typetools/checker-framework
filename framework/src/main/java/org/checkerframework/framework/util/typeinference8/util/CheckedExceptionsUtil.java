@@ -28,7 +28,7 @@ public final class CheckedExceptionsUtil {
   /**
    * Returns {@code list}, or an empty list if {@code list} is null.
    *
-   * @param list a list, or null
+   * @param list a list or null
    * @param <T> the element type of {@code list}
    * @return {@code list}, or an empty list if {@code list} is null
    */

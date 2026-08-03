@@ -667,6 +667,9 @@ public class VariableBounds {
         return null;
       }
       // var <: R implies the constraint formula <Bi theta <: R>
+      for (AbstractType r : upperBoundsNonVar) {
+        constraintSet.add(new Typing(source, Bi, r, TypeConstraint.Kind.SUBTYPE));
+      }
     } else if (Ai.isUpperBoundedWildcard()) {
       // R <: var implies the bound false
       if (!lowerBoundsNonVar.isEmpty()) {
