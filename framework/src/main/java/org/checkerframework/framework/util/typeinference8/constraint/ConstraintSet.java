@@ -16,7 +16,13 @@ import org.checkerframework.framework.util.typeinference8.util.FalseBoundExcepti
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.BugInCF;
 
-/** A set of constraints and the operations that can be performed on them. */
+/**
+ * A set of constraints and the operations that can be performed on them.
+ *
+ * <p>If you add a method that modifies a constraint set, override that method in {@code
+ * ImmutableConstraintSet}, so that the constant constraint sets {@link #TRUE} and {@link
+ * #TRUE_ANNO_FAIL} remain immutable.
+ */
 public class ConstraintSet implements ReductionResult {
 
   /** The result given when a constraint set reduces to true. It is empty and immutable. */
@@ -29,7 +35,7 @@ public class ConstraintSet implements ReductionResult {
    * rather than throwing an exception so that type arguments with the correct Java type are still
    * inferred.
    *
-   * <p>It is empty and immutable; every attempt to modify it throws {@link BugInCF}.
+   * <p>It is empty and immutable.
    */
   @SuppressWarnings("interning:assignment")
   public static final @InternedDistinct ConstraintSet TRUE_ANNO_FAIL =
@@ -56,13 +62,14 @@ public class ConstraintSet implements ReductionResult {
   private boolean annotationFailure = false;
 
   /**
-   * Creates a new constraint set.
+   * Creates an empty constraint set whose list of constraints cannot be modified. Only {@code
+   * ImmutableConstraintSet} calls this constructor.
    *
    * @param annotationFailure inference failed because the qualifiers were not in the correct
    *     relationship
    */
   private ConstraintSet(boolean annotationFailure) {
-    this();
+    this.list = List.of();
     this.annotationFailure = annotationFailure;
   }
 
@@ -432,8 +439,12 @@ public class ConstraintSet implements ReductionResult {
    * An empty {@code ConstraintSet} that cannot be modified. This is used for the {@link
    * ConstraintSet#TRUE} and {@link ConstraintSet#TRUE_ANNO_FAIL} singletons, which are shared by
    * every inference problem and therefore must never be mutated.
+   *
+   * <p>Every method that would modify the set is overridden to throw {@link BugInCF}. As a
+   * backstop, the list of constraints is unmodifiable, so a modifying method that someone forgets
+   * to override throws {@link UnsupportedOperationException}.
    */
-  private static class ImmutableConstraintSet extends ConstraintSet {
+  private static final class ImmutableConstraintSet extends ConstraintSet {
 
     /** The name of this constraint set; it is the value returned by {@link #toString}. */
     private final String name;
@@ -456,7 +467,7 @@ public class ConstraintSet implements ReductionResult {
      * @return an exception to throw because this constraint set cannot be modified
      */
     private BugInCF cannotModify() {
-      return new BugInCF("Attempt to modify the immutable constraint set " + name + ".");
+      return new BugInCF("Attempt to modify the immutable constraint set %s.", name);
     }
 
     @Override
@@ -497,6 +508,13 @@ public class ConstraintSet implements ReductionResult {
     @Override
     public void applyInstantiations() {
       throw cannotModify();
+    }
+
+    // This method is overridden so that the error message describes reduction, rather than the
+    // modification that the inherited implementation's call to pop() would report.
+    @Override
+    public BoundSet reduceOneStep(Java8InferenceContext context) {
+      throw new BugInCF("Attempt to reduce the empty constraint set %s.", name);
     }
 
     @Override
