@@ -435,15 +435,7 @@ public class ConstraintSet implements ReductionResult {
     return boundSet;
   }
 
-  /**
-   * An empty {@code ConstraintSet} that cannot be modified. This is used for the {@link
-   * ConstraintSet#TRUE} and {@link ConstraintSet#TRUE_ANNO_FAIL} singletons, which are shared by
-   * every inference problem and therefore must never be mutated.
-   *
-   * <p>Every method that would modify the set is overridden to throw {@link BugInCF}. As a
-   * backstop, the list of constraints is unmodifiable, so a modifying method that someone forgets
-   * to override throws {@link UnsupportedOperationException}.
-   */
+  /** An empty {@code ConstraintSet} that cannot be modified. */
   private static final class ImmutableConstraintSet extends ConstraintSet {
 
     /** The name of this constraint set; it is the value returned by {@link #toString}. */
@@ -467,7 +459,7 @@ public class ConstraintSet implements ReductionResult {
      * @return an exception to throw because this constraint set cannot be modified
      */
     private BugInCF cannotModify() {
-      return new BugInCF("Attempt to modify the immutable constraint set %s.", name);
+      return new BugInCF("Attempted to modify an immutable constraint set: %s", name);
     }
 
     @Override
