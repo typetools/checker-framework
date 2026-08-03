@@ -300,7 +300,7 @@ public class Expression extends TypeConstraint {
     if (!TreeUtils.isImplicitlyTypedLambda(lambda)) {
       // Explicitly typed lambda
       List<? extends VariableTree> parameters = lambda.getParameters();
-      List<AbstractType> gs = T.getFunctionTypeParameterTypes();
+      List<AbstractType> gs = tPrime.getFunctionTypeParameterTypes();
       assert parameters.size() == gs.size();
 
       for (int i = 0; i < gs.size(); i++) {
