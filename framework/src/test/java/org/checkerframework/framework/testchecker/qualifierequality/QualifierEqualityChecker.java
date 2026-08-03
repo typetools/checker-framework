@@ -30,12 +30,10 @@ import org.checkerframework.javacutil.trees.TreeParser;
  * <p>Its type hierarchy is:
  *
  * <pre>
- *   QualEqTop     &lt;-- @DefaultQualifierInHierarchy
- *       |
- *   QualEqBottom
+ *   @QualEqTop (default)
+ *        |
+ *   @QualEqBottom
  * </pre>
- *
- * plus the polymorphic qualifier PolyQualEq.
  *
  * <p>The tests are performed in {@link #typeProcess}, which throws an {@code AssertionError} if a
  * test fails. The tests need a {@link Java8InferenceContext}, which needs a {@code TreePath}, so
