@@ -1,17 +1,5 @@
 // Exercises the deferred additional-argument constraint path of JLS 18.5.2.2, which is
 // handled by the loop in InvocationTypeInference.getB4.
-//
-// Each lambda below has an implicitly typed parameter whose body contains a generic method
-// invocation or diamond constructor invocation that mentions that parameter.  The additional
-// argument constraint for the nested invocation cannot be created until the lambda parameter
-// has a type, so InvocationTypeInference.createAdditionalArgConstraintsNoLambda defers it by
-// adding an unreduced AdditionalArgument constraint to C.  That constraint is reduced later,
-// inside getB4, where reducing it creates a new Theta -- and therefore new inference
-// variables -- that are mentioned by the constraints added back to C.
-//
-// Before this test, SimpleLambdaParameter.java was the only test that reached the deferred
-// path, and its nested invocation is not itself generic, so it introduces no new inference
-// variables.
 
 import java.util.ArrayList;
 import java.util.List;
