@@ -40,7 +40,7 @@ public class TypeInferenceComplementaryUpperBounds {
 
   static void useTwoUpperBoundsAndArgMismatch(Box<List<@Odd String>> b, List<String> l) {
     // 18.3.1 implies <S = @Odd String>, which `l` does not satisfy.
-    // :: error: (type.arguments.not.inferred)
+    // :: error: [type.arguments.not.inferred]
     twoUpperBoundsAndArg(b, l);
   }
 }
