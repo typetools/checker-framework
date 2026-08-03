@@ -7,9 +7,9 @@ import org.checkerframework.framework.testchecker.constraintequality.ConstraintE
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * Runs the {@link ConstraintEqualityChecker}, which tests {@code QualifierTyping.equals} and {@code
- * hashCode}. The test files are irrelevant; the checker performs its tests on the first class it
- * visits.
+ * Runs the {@link ConstraintEqualityChecker}, which tests {@code Qualifier.equals} and {@code
+ * QualifierTyping.equals}, and their {@code hashCode} methods. The test files are irrelevant; the
+ * checker performs its tests on the first class it visits.
  */
 public class ConstraintEqualityTest extends CheckerFrameworkPerDirectoryTest {
 

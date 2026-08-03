@@ -48,13 +48,32 @@ public class AdditionalArgumentTest {
     Assert.assertEquals(c1.hashCode(), c2.hashCode());
   }
 
-  /** Two constraints for different invocations are not equal. */
+  /**
+   * Two constraints for different invocations are not equal, even when the two invocations have the
+   * same source text. A tree stands for one occurrence in the source code, and two occurrences of
+   * {@code m()} are two invocations that are inferred about separately. (This test holds because
+   * {@code JCTree} does not override {@code equals}, so comparing two trees compares references.)
+   */
   @Test
   public void differentInvocationIsNotEqual() {
-    AdditionalArgument c1 = new AdditionalArgument(newInvocation());
-    AdditionalArgument c2 = new AdditionalArgument(newInvocation());
+    ExpressionTree invocation1 = newInvocation();
+    ExpressionTree invocation2 = newInvocation();
+    Assert.assertNotSame(invocation1, invocation2);
+    Assert.assertEquals(invocation1.toString(), invocation2.toString());
+
+    AdditionalArgument c1 = new AdditionalArgument(invocation1);
+    AdditionalArgument c2 = new AdditionalArgument(invocation2);
 
     Assert.assertNotEquals(c1, c2);
+  }
+
+  /** A constraint is not equal to null or to an object of a different class. */
+  @Test
+  public void notEqualToNullOrOtherClass() {
+    AdditionalArgument c = new AdditionalArgument(newInvocation());
+
+    Assert.assertNotEquals(c, null);
+    Assert.assertNotEquals(c, "not a constraint");
   }
 
   /** {@link ConstraintSet#add} does not add a constraint that is equal to one already present. */

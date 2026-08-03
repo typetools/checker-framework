@@ -15,16 +15,18 @@ import org.checkerframework.framework.util.typeinference8.constraint.Constraint.
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.QualifierTyping;
 import org.checkerframework.framework.util.typeinference8.types.AbstractQualifier;
+import org.checkerframework.framework.util.typeinference8.types.Qualifier;
 import org.checkerframework.framework.util.typeinference8.types.QualifierVar;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
 
 /**
- * A checker that tests that {@link QualifierTyping} implements {@code equals} and {@code hashCode}
- * in terms of its kind and its two qualifiers, and that {@link ConstraintSet} therefore maintains
- * the invariant documented on its {@code list} field: "It does not contain constraints that are
- * equal."
+ * A checker that tests that {@link Qualifier} implements {@code equals} and {@code hashCode} in
+ * terms of its annotation, that {@link QualifierTyping} implements {@code equals} and {@code
+ * hashCode} in terms of its kind and its two qualifiers, and that {@link ConstraintSet} therefore
+ * maintains the invariant documented on its {@code list} field: "It does not contain constraints
+ * that are equal."
  *
  * <p>A {@code QualifierTyping} can only be built from {@link AbstractQualifier}s, which in turn can
  * only be built from a {@link Java8InferenceContext}. That is why these tests run inside a checker
@@ -41,7 +43,10 @@ public class ConstraintEqualityChecker extends BaseTypeChecker {
     return new ConstraintEqualityVisitor(this);
   }
 
-  /** A visitor that tests {@link QualifierTyping#equals} when it visits the first class. */
+  /**
+   * A visitor that tests {@link Qualifier#equals} and {@link QualifierTyping#equals} when it visits
+   * the first class.
+   */
   private static class ConstraintEqualityVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
 
     /** True if the tests have already run. */
@@ -66,8 +71,8 @@ public class ConstraintEqualityChecker extends BaseTypeChecker {
     }
 
     /**
-     * Throws an {@code AssertionError} if {@link QualifierTyping} does not implement {@code equals}
-     * and {@code hashCode}, or if {@link ConstraintSet} does not use them.
+     * Throws an {@code AssertionError} if {@link Qualifier} or {@link QualifierTyping} does not
+     * implement {@code equals} and {@code hashCode}, or if {@link ConstraintSet} does not use them.
      *
      * @param path the path to the class currently being visited; used to create an inference
      *     context
@@ -78,9 +83,20 @@ public class ConstraintEqualityChecker extends BaseTypeChecker {
               atypeFactory, path, new InvocationTypeInference(atypeFactory, path));
       AbstractQualifier top = createQualifier(ConstraintEqTop.class, context);
       AbstractQualifier bottom = createQualifier(ConstraintEqBottom.class, context);
+      // Each call to createQualifier returns a distinct Qualifier object, so these are equal to but
+      // not identical to top and bottom. Inference creates such duplicates, so constraints must be
+      // compared by the meaning of their qualifiers rather than by reference.
+      AbstractQualifier equalTop = createQualifier(ConstraintEqTop.class, context);
+      AbstractQualifier equalBottom = createQualifier(ConstraintEqBottom.class, context);
+
+      check(top != equalTop, "createQualifier returned the same object twice; test is vacuous");
+      check(top.equals(equalTop), "Qualifiers for the same annotation are not equal");
+      check(top.hashCode() == equalTop.hashCode(), "Equal Qualifiers have different hash codes");
+      check(!top.equals(bottom), "Qualifiers for different annotations are equal");
 
       QualifierTyping subtype = new QualifierTyping(bottom, top, Kind.QUALIFIER_SUBTYPE);
-      QualifierTyping sameSubtype = new QualifierTyping(bottom, top, Kind.QUALIFIER_SUBTYPE);
+      QualifierTyping sameSubtype =
+          new QualifierTyping(equalBottom, equalTop, Kind.QUALIFIER_SUBTYPE);
       QualifierTyping reversedSubtype = new QualifierTyping(top, bottom, Kind.QUALIFIER_SUBTYPE);
       QualifierTyping equality = new QualifierTyping(bottom, top, Kind.QUALIFIER_EQUALITY);
 
@@ -93,6 +109,11 @@ public class ConstraintEqualityChecker extends BaseTypeChecker {
           "Equal QualifierTypings have different hash codes");
       check(!subtype.equals(reversedSubtype), "QualifierTypings with swapped qualifiers are equal");
       check(!subtype.equals(equality), "QualifierTypings with different kinds are equal");
+      // These are Object-typed so that Error Prone's EqualsIncompatibleType check does not fire.
+      Object nullObject = null;
+      Object notAConstraint = "not a constraint";
+      check(!subtype.equals(nullObject), "A QualifierTyping is equal to null");
+      check(!subtype.equals(notAConstraint), "A QualifierTyping is equal to a String");
 
       ConstraintSet addSet = new ConstraintSet();
       addSet.add(subtype);

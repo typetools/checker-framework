@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util.typeinference8.constraint;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -82,9 +81,24 @@ public class ConstraintSet implements ReductionResult {
   public ConstraintSet(Constraint... constraints) {
     if (constraints != null) {
       list = new ArrayList<>(constraints.length);
-      list.addAll(Arrays.asList(constraints));
+      for (Constraint c : constraints) {
+        addIfAbsent(c);
+      }
     } else {
       list = new ArrayList<>();
+    }
+  }
+
+  /**
+   * Adds {@code c} to the end of {@link #list}, if {@code c} is non-null and no constraint equal to
+   * it is already in {@link #list}. This method is private so that it can be called from the
+   * constructor.
+   *
+   * @param c a constraint to add to this set, or null
+   */
+  private void addIfAbsent(Constraint c) {
+    if (c != null && !list.contains(c)) {
+      list.add(c);
     }
   }
 
@@ -94,9 +108,7 @@ public class ConstraintSet implements ReductionResult {
    * @param c a constraint to add to this set
    */
   public void add(Constraint c) {
-    if (c != null && !list.contains(c)) {
-      list.add(c);
-    }
+    addIfAbsent(c);
   }
 
   /**
@@ -117,7 +129,7 @@ public class ConstraintSet implements ReductionResult {
    * @param constraintSet a collection of constraints to add to this set
    */
   public void addAll(Collection<? extends Constraint> constraintSet) {
-    list.addAll(constraintSet);
+    constraintSet.forEach(this::add);
   }
 
   /**

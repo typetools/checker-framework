@@ -62,6 +62,14 @@ public class AdditionalArgument implements Constraint {
     }
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Two {@code AdditionalArgument}s are equal if they are for the same invocation. Because
+   * {@code JCTree} does not override {@code equals}, this compares the two trees by reference:
+   * constraints for two textually identical invocations at different places in the source code are
+   * not equal.
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) {
