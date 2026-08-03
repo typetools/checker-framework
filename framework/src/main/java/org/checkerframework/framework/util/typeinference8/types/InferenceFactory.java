@@ -319,12 +319,8 @@ public class InferenceFactory {
         return i;
       }
     }
-    // The caller found `invocation` by walking up from `path`, via
-    // TreePathUtil#getContextForPolyExpression.  Reaching here means that
-    // getContextForPolyExpression returned an invocation for a tree that is not (even
-    // transitively) one of its arguments, which is a bug in getContextForPolyExpression.
     throw new BugInCF(
-        "Not an argument of the invocation.%nTree: %s%nInvocation: %s", path.getLeaf(), invocation);
+        "Not an argument of the invocation. tree: %s invocation: %s", path.getLeaf(), invocation);
   }
 
   /**
