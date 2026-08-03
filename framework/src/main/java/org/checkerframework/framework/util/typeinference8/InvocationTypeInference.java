@@ -233,14 +233,14 @@ public class InvocationTypeInference {
    *
    * <ol>
    *   <li value="1">Creating the inference variables and initializing their bounds based on the
-   *       type parameter declaration.
+   *                 type parameter declaration.
    *   <li value="2">Adding any bounds implied by the throws clause of {@code executableType}.
    *   <li value="3">Constructing constraints between formal parameters and arguments that are
-   *       "pertinent to applicability" (See <a
-   *       href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.12.2.2">JLS
-   *       Section 15.12.2.2</a>). Generally, all arguments are applicable except: inexact method
-   *       reference, implicitly typed lambdas, or explicitly typed lambda whose return
-   *       expression(s) are not pertinent.
+   *                 "pertinent to applicability" (See <a
+   *                 href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.12.2.2">JLS
+   *                 Section 15.12.2.2</a>). Generally, all arguments are applicable except: inexact
+   *                 method reference, implicitly typed lambdas, or explicitly typed lambda whose
+   *                 return expression(s) are not pertinent.
    *   <li value="4">Reducing and incorporating those constraints which finally produces B2.
    * </ol>
    *
