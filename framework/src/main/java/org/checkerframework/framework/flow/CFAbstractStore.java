@@ -988,15 +988,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * <ol>
    *   <li value="1">Update the abstract value of other field accesses <em>b.g</em> where the field
-   *       is equal (that is, <em>f=g</em>), and the receiver <em>b</em> might alias the receiver of
-   *       {@code fieldAccess}, <em>a</em>. This update will raise the abstract value for such field
-   *       accesses to at least {@code val} (or the old value, if that was less precise). However,
-   *       this is only necessary if the field <em>g</em> is not final.
+   *                 is equal (that is, <em>f=g</em>), and the receiver <em>b</em> might alias the
+   *                 receiver of {@code fieldAccess}, <em>a</em>. This update will raise the
+   *                 abstract value for such field accesses to at least {@code val} (or the old
+   *                 value, if that was less precise). However, this is only necessary if the field
+   *                 <em>g</em> is not final.
    *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where {@code
-   *       fieldAccess} might alias any expression in the receiver <em>b</em>.
+   *                 fieldAccess} might alias any expression in the receiver <em>b</em>.
    *   <li value="3">Remove any information about method calls.
    *   <li value="4">Remove any abstract values an array access <em>b[i]</em> where {@code
-   *       fieldAccess} might alias any expression in the receiver <em>a</em> or index <em>i</em>.
+   *                 fieldAccess} might alias any expression in the receiver <em>a</em> or index
+   *                 <em>i</em>.
    * </ol>
    *
    * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
@@ -1050,11 +1052,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * <ol>
    *   <li value="1">Remove any abstract value for other array access <em>b[j]</em> where <em>a</em>
-   *       and <em>b</em> can be aliases, or where either <em>b</em> or <em>j</em> contains a
-   *       modifiable alias of <em>a[i]</em>.
+   *                 and <em>b</em> can be aliases, or where either <em>b</em> or <em>j</em>
+   *                 contains a modifiable alias of <em>a[i]</em>.
    *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where <em>a[i]</em>
-   *       might alias any expression in the receiver <em>b</em> and there is an array expression
-   *       somewhere in the receiver.
+   *                 might alias any expression in the receiver <em>b</em> and there is an array
+   *                 expression somewhere in the receiver.
    *   <li value="3">Remove any information about method calls.
    * </ol>
    *
@@ -1099,11 +1101,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * <ol>
    *   <li value="1">Remove any abstract values for field accesses <em>b.g</em> where {@code
-   *       localVar} might alias any expression in the receiver <em>b</em>.
+   *                 localVar} might alias any expression in the receiver <em>b</em>.
    *   <li value="2">Remove any abstract values for array accesses <em>a[i]</em> where {@code
-   *       localVar} might alias the receiver <em>a</em>.
+   *                 localVar} might alias the receiver <em>a</em>.
    *   <li value="3">Remove any information about method calls where the receiver or any of the
-   *       parameters contains {@code localVar}.
+   *                 parameters contains {@code localVar}.
    * </ol>
    */
   protected void removeConflicting(LocalVariable var) {
