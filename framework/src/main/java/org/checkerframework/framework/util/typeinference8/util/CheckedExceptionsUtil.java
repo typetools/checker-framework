@@ -28,8 +28,13 @@ public final class CheckedExceptionsUtil {
   /**
    * Returns {@code list}, or an empty list if {@code list} is null.
    *
-   * @param list a list or null
+   * <p>{@code TreeScanner.scan} returns null both for an empty iterable and for a null tree, so
+   * every use of its result needs this. The {@code reduce} methods below also tolerate a null
+   * argument, but they can return null, whereas this method cannot; using this method keeps the
+   * lists that the visitors build up provably non-null.
+   *
    * @param <T> the element type of {@code list}
+   * @param list a list or null
    * @return {@code list}, or an empty list if {@code list} is null
    */
   private static <T> List<T> nullToEmptyList(@Nullable List<T> list) {
@@ -45,8 +50,7 @@ public final class CheckedExceptionsUtil {
    */
   public static List<TypeMirror> thrownCheckedExceptions(
       LambdaExpressionTree lambda, Java8InferenceContext context) {
-    @Nullable List<TypeMirror> result = new CheckedExceptionVisitor(context).scan(lambda, null);
-    return result != null ? result : Collections.emptyList();
+    return nullToEmptyList(new CheckedExceptionVisitor(context).scan(lambda, null));
   }
 
   /**
@@ -185,9 +189,7 @@ public final class CheckedExceptionsUtil {
    */
   public static List<AnnotatedTypeMirror> thrownCheckedExceptionsATM(
       LambdaExpressionTree lambda, Java8InferenceContext context) {
-    @Nullable List<AnnotatedTypeMirror> result =
-        new CheckedExceptionATMVisitor(context).scan(lambda, null);
-    return result != null ? result : Collections.emptyList();
+    return nullToEmptyList(new CheckedExceptionATMVisitor(context).scan(lambda, null));
   }
 
   /**

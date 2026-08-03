@@ -12,6 +12,7 @@ import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
+import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.StringsP;
 
 /**
@@ -304,10 +305,12 @@ public class BoundSet implements ReductionResult {
    * <p>Incorporation creates new constraints that are then reduced to a bound set which is further
    * incorporated into this bound set. Incorporation terminates when the bounds set has reached a
    * fixed point. <a
-   * href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.3">JLS 18 .1</a>
+   * href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.3">JLS 18.3</a>
    * defines this fixed point and further explains incorporation.
    *
    * @param newBounds bounds to incorporate
+   * @throws BugInCF if incorporation does not reach a fixed point within {@link
+   *     #MAX_INCORPORATION_STEPS} steps
    */
   public void incorporateToFixedPoint(final BoundSet newBounds) {
     this.containsFalse |= newBounds.containsFalse;
@@ -337,8 +340,15 @@ public class BoundSet implements ReductionResult {
       }
 
       containsFalse |= newBounds.containsFalse;
-      assert count < MAX_INCORPORATION_STEPS : "Max incorporation steps reached.";
-    } while (!containsFalse && count < MAX_INCORPORATION_STEPS);
+      if (count >= MAX_INCORPORATION_STEPS) {
+        // Throw rather than assert, so that this is reported as a
+        // "type.argument.inference.crashed" error for this one expression, rather than as an
+        // AssertionError that aborts the entire compilation.
+        throw new BugInCF(
+            "MAX INCORPORATION STEPS (%d) REACHED: %s",
+            MAX_INCORPORATION_STEPS, context.pathToExpression.getLeaf());
+      }
+    } while (!containsFalse);
   }
 
   /**
