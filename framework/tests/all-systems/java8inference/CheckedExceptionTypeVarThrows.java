@@ -12,7 +12,7 @@
 // is unchecked).  So the first list is longer than the second one, and pairing them up element by
 // element threw `NoSuchElementException`.
 
-@SuppressWarnings({"unchecked", "all"}) // Just check for crashes.
+@SuppressWarnings("all") // Just check for crashes.
 class CheckedExceptionTypeVarThrows {
 
   interface ThrowingSupplier<T, E extends Exception> {
