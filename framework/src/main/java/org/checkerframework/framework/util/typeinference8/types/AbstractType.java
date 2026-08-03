@@ -247,6 +247,17 @@ public abstract class AbstractType {
   protected AnnotatedExecutableType functionType = null;
 
   /**
+   * Returns true if this {@link AbstractType} is a functional interface type. If it is not, then
+   * {@link #getFunctionType()}, {@link #getFunctionTypeReturnType()}, and {@link
+   * #getFunctionTypeParameterTypes()} all return null.
+   *
+   * @return true if this {@link AbstractType} is a functional interface type
+   */
+  public boolean isFunctionalInterface() {
+    return TypesUtils.isFunctionalInterface(getJavaType(), context.env);
+  }
+
+  /**
    * If this {@link AbstractType} is a functional interface type, then its function type is
    * returned. Otherwise, returns null.
    *
@@ -265,14 +276,19 @@ public abstract class AbstractType {
   }
 
   /**
-   * If this type is a functional interface, then this method returns the return type of the
-   * function type of that functional interface. Otherwise, returns null.
+   * If this type is a functional interface whose function type has a non-void return type, then
+   * this method returns that return type. Otherwise, returns null.
    *
-   * @return the return type of the function type of this type or null if one doesn't exist
+   * <p>Note that a null result does not distinguish between the two reasons for it: this type is
+   * not a functional interface, or the return type of its function type is void.
+   *
+   * @return the return type of the function type of this type, or null if this type is not a
+   *     functional interface or its function type returns void
    */
-  public AbstractType getFunctionTypeReturnType() {
-    if (TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
+  public @Nullable AbstractType getFunctionTypeReturnType() {
+    if (isFunctionalInterface()) {
       AnnotatedExecutableType aet = getFunctionType();
+      assert aet != null : "@AssumeAssertion(nullness): this is a functional interface";
       AnnotatedTypeMirror returnType = aet.getReturnType();
       if (returnType.getKind() == TypeKind.VOID) {
         return null;
@@ -292,9 +308,10 @@ public abstract class AbstractType {
    * @return the parameter types of the function type of this type or null if no function type
    *     exists
    */
-  public List<AbstractType> getFunctionTypeParameterTypes() {
-    if (TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
+  public @Nullable List<AbstractType> getFunctionTypeParameterTypes() {
+    if (isFunctionalInterface()) {
       AnnotatedExecutableType functionType = getFunctionType();
+      assert functionType != null : "@AssumeAssertion(nullness): this is a functional interface";
       List<AbstractType> params = new ArrayList<>();
       for (AnnotatedTypeMirror param : functionType.getParameterTypes()) {
         params.add(create(param, param.getUnderlyingType(), ignoreAnnotations));
