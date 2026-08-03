@@ -26,6 +26,17 @@ public final class CheckedExceptionsUtil {
   private CheckedExceptionsUtil() {}
 
   /**
+   * Returns {@code list}, or an empty list if {@code list} is null.
+   *
+   * @param list a list, or null
+   * @param <T> the element type of {@code list}
+   * @return {@code list}, or an empty list if {@code list} is null
+   */
+  private static <T> List<T> nullToEmptyList(@Nullable List<T> list) {
+    return list != null ? list : Collections.emptyList();
+  }
+
+  /**
    * Returns a list of checked exception types that can be thrown by the lambda.
    *
    * @param lambda an expression
@@ -82,9 +93,9 @@ public final class CheckedExceptionsUtil {
           removeAssignable(TreeUtils.typeOf(catchTree.getParameter()), results);
         }
       }
-      results.addAll(scan(node.getResources(), aVoid));
-      results.addAll(scan(node.getCatches(), aVoid));
-      results.addAll(scan(node.getFinallyBlock(), aVoid));
+      results.addAll(nullToEmptyList(scan(node.getResources(), aVoid)));
+      results.addAll(nullToEmptyList(scan(node.getCatches(), aVoid)));
+      results.addAll(nullToEmptyList(scan(node.getFinallyBlock(), aVoid)));
 
       return results;
     }
@@ -224,9 +235,9 @@ public final class CheckedExceptionsUtil {
           removeAssignable(TreeUtils.typeOf(catchTree.getParameter()), results);
         }
       }
-      results.addAll(scan(node.getResources(), aVoid));
-      results.addAll(scan(node.getCatches(), aVoid));
-      results.addAll(scan(node.getFinallyBlock(), aVoid));
+      results.addAll(nullToEmptyList(scan(node.getResources(), aVoid)));
+      results.addAll(nullToEmptyList(scan(node.getCatches(), aVoid)));
+      results.addAll(nullToEmptyList(scan(node.getFinallyBlock(), aVoid)));
 
       return results;
     }
