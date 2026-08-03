@@ -79,6 +79,7 @@ jobs:
         run: ./checker/bin-devel/test-cftests-junit.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "17"
+
   junit_jdk21:
     needs:
       - canary_jobs
@@ -97,6 +98,7 @@ jobs:
         run: ./checker/bin-devel/test-cftests-junit.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "21"
+
   junit_part1_jdk25:
     runs-on: ubuntu-latest
     container:
@@ -125,6 +127,7 @@ jobs:
         run: ./checker/bin-devel/test-cftests-junit.sh part2
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+
   junit_jdk26:
     needs:
       - canary_jobs
@@ -265,11 +268,12 @@ jobs:
       - uses: actions/checkout@v7
         with:
           set-safe-directory: true
-          fetch-depth: 0
+          fetch-depth: 25
       - name: test-typecheck-part1.sh
         run: ./checker/bin-devel/test-typecheck-part1.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+
   typecheck_part2_jdk25:
     runs-on: ubuntu-latest
     container:
@@ -278,7 +282,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           set-safe-directory: true
-          fetch-depth: 0
+          fetch-depth: 25
       - name: test-typecheck-part2.sh
         run: ./checker/bin-devel/test-typecheck-part2.sh
         env:
