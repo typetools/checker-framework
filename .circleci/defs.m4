@@ -66,7 +66,7 @@ circleci_boilerplate($1,)
 ])dnl
 dnl
 define([inference_job], [dnl
-ifelse($1,canary_version, [dnl
+ifelse($1,canary_jdk, [dnl
   # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk$1:
 circleci_boilerplate($1,)
@@ -112,7 +112,7 @@ circleci_boilerplate($1,-plus,full)
 ])dnl
 dnl
 define([typecheck_job], [dnl
-ifelse($1,canary_version,[dnl
+ifelse($1,canary_jdk,[dnl
   # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk$1:
 circleci_boilerplate($1,)
@@ -197,15 +197,15 @@ dnl
 define([job_dependences], [dnl
 ifelse([This is tricky because whether the ":" should appear depends on whether the subsequent "requires: exists,])dnl
       - $2[]_jdk$1[]dnl
-ifelse($2$1,misc[]latest_version,,[dnl
-ifelse($1,canary_version,,[:
+ifelse($2$1,misc[]latest_jdk,,[dnl
+ifelse($1,canary_jdk,,[:
           requires:
             - canary_jobs
 ifelse($2,junit,[dnl
-            - $2_part1_jdk[]canary_version
-            - $2_part2_jdk[]canary_version
+            - $2_part1_jdk[]canary_jdk
+            - $2_part2_jdk[]canary_jdk
 ],[dnl
-            - $2_jdk[]canary_version
+            - $2_jdk[]canary_jdk
 ])dnl
 ])dnl
 ])dnl

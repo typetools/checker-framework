@@ -4,10 +4,10 @@ ifelse([The built-in "dnl" m4 macro means "discard to next line".])dnl
 dnl
 define([junit_job], [dnl
   junit_jdk$1:
-ifelse($1,canary_version,,[    needs:
+ifelse($1,canary_jdk,,[    needs:
       - canary_jobs
-      - junit_part1_jdk[]canary_version
-      - junit_part2_jdk[]canary_version
+      - junit_part1_jdk[]canary_jdk
+      - junit_part2_jdk[]canary_jdk
 ])dnl
     runs-on: ubuntu-latest
     container:
@@ -25,9 +25,9 @@ ifelse($1,canary_version,,[    needs:
 dnl
 define([junit_jobs], [dnl
   junit_part1_jdk$1:
-ifelse($1,canary_version,,[    needs:
+ifelse($1,canary_jdk,,[    needs:
       - canary_jobs
-      - junit_part1_jdk[]canary_version
+      - junit_part1_jdk[]canary_jdk
 ])dnl
     runs-on: ubuntu-latest
     container:
@@ -43,9 +43,9 @@ ifelse($1,canary_version,,[    needs:
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"
   junit_part2_jdk$1:
-ifelse($1,canary_version,,[    needs:
+ifelse($1,canary_jdk,,[    needs:
       - canary_jobs
-      - junit_part2_jdk[]canary_version
+      - junit_part2_jdk[]canary_jdk
 ])dnl
     runs-on: ubuntu-latest
     container:
@@ -63,9 +63,9 @@ ifelse($1,canary_version,,[    needs:
 dnl
 define([nonjunit_job], [dnl
   nonjunit_jdk$1:
-ifelse($1,canary_version,,[    needs:
+ifelse($1,canary_jdk,,[    needs:
       - canary_jobs
-      - nonjunit_jdk[]canary_version
+      - nonjunit_jdk[]canary_jdk
 ])dnl
     runs-on: ubuntu-latest
     container:
@@ -81,7 +81,7 @@ ifelse($1,canary_version,,[    needs:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
 dnl
 define([inference_job], [dnl
-ifelse($1,canary_version,[dnl
+ifelse($1,canary_jdk,[dnl
   # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk$1:
     runs-on: ubuntu-latest
@@ -115,8 +115,8 @@ ifelse($1,canary_version,[dnl
   inference_jdk$1:
     needs:
       - canary_jobs
-      - inference_part1_jdk[]canary_version
-      - inference_part2_jdk[]canary_version
+      - inference_part1_jdk[]canary_jdk
+      - inference_part2_jdk[]canary_jdk
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
@@ -135,9 +135,9 @@ ifelse($1,canary_version,[dnl
 dnl
 define([misc_job], [dnl
   misc_jdk$1:
-ifelse($1,canary_version,,$1,latest_version,,[    needs:
+ifelse($1,canary_jdk,,$1,latest_jdk,,[    needs:
       - canary_jobs
-      - misc_jdk[]canary_version
+      - misc_jdk[]canary_jdk
 ])dnl
     runs-on: ubuntu-latest
     container:
@@ -160,7 +160,7 @@ ifelse($1,canary_version,,$1,latest_version,,[    needs:
           ORG_GRADLE_PROJECT_jdkTestVersion: "$1"])dnl
 dnl
 define([typecheck_job], [dnl
-ifelse($1,canary_version,[dnl
+ifelse($1,canary_jdk,[dnl
   # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk$1:
     runs-on: ubuntu-latest
@@ -192,8 +192,8 @@ ifelse($1,canary_version,[dnl
   typecheck_jdk$1:
     needs:
       - canary_jobs
-      - typecheck_part1_jdk[]canary_version
-      - typecheck_part2_jdk[]canary_version
+      - typecheck_part1_jdk[]canary_jdk
+      - typecheck_part2_jdk[]canary_jdk
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
@@ -212,8 +212,8 @@ define([daikon_job], [dnl
   daikon_part1_jdk$1:
     needs:
       - canary_jobs
-ifelse($1,canary_version,,[dnl
-      - daikon_part1_jdk[]canary_version
+ifelse($1,canary_jdk,,[dnl
+      - daikon_part1_jdk[]canary_jdk
 ])dnl
     runs-on: ubuntu-latest
     container:
@@ -231,8 +231,8 @@ ifelse($1,canary_version,,[dnl
   daikon_part2_jdk$1:
     needs:
       - canary_jobs
-ifelse($1,canary_version,,[dnl
-      - daikon_part2_jdk[]canary_version
+ifelse($1,canary_jdk,,[dnl
+      - daikon_part2_jdk[]canary_jdk
 ])dnl
     runs-on: ubuntu-latest
     container:
@@ -250,8 +250,8 @@ ifelse($1,canary_version,,[dnl
   daikon_part3_jdk$1:
     needs:
       - canary_jobs
-ifelse($1,canary_version,,[dnl
-      - daikon_part3_jdk[]canary_version
+ifelse($1,canary_jdk,,[dnl
+      - daikon_part3_jdk[]canary_jdk
 ])dnl
     runs-on: ubuntu-latest
     container:
@@ -271,8 +271,8 @@ define([guava_job], [dnl
   guava_part1_jdk$1:
     needs:
       - canary_jobs
-ifelse($1,canary_version,,[dnl
-      - guava_part1_jdk[]canary_version
+ifelse($1,canary_jdk,,[dnl
+      - guava_part1_jdk[]canary_jdk
 ])dnl
     runs-on: ubuntu-latest
     container:
@@ -290,8 +290,8 @@ ifelse($1,canary_version,,[dnl
   guava_part2_jdk$1:
     needs:
       - canary_jobs
-ifelse($1,canary_version,,[dnl
-      - guava_part2_jdk[]canary_version
+ifelse($1,canary_jdk,,[dnl
+      - guava_part2_jdk[]canary_jdk
 ])dnl
     runs-on: ubuntu-latest
     container:
@@ -311,8 +311,8 @@ define([plume_lib_job], [dnl
   plume_lib_jdk$1:
     needs:
       - canary_jobs
-ifelse($1,canary_version,,[dnl
-      - plume_lib_jdk[]canary_version
+ifelse($1,canary_jdk,,[dnl
+      - plume_lib_jdk[]canary_jdk
 ])dnl
     runs-on: ubuntu-latest
     container:
