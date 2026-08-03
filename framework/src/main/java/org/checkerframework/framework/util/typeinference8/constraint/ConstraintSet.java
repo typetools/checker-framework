@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util.typeinference8.constraint;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -82,7 +81,9 @@ public class ConstraintSet implements ReductionResult {
   public ConstraintSet(Constraint... constraints) {
     if (constraints != null) {
       list = new ArrayList<>(constraints.length);
-      list.addAll(Arrays.asList(constraints));
+      for (Constraint constraint : constraints) {
+        add(constraint);
+      }
     } else {
       list = new ArrayList<>();
     }
