@@ -303,7 +303,6 @@ jobs:
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 26
 
-  # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'

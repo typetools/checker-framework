@@ -1,6 +1,6 @@
 changequote
 changequote(`[',`]')dnl
-ifelse([The built-in "dnl" macro means "discard to next line".])dnl
+ifelse([The built-in "dnl" m4 macro means "discard to next line".])dnl
 dnl
 define([job_name], [$1:])
 dnl
@@ -95,7 +95,8 @@ boilerplate(ubuntu, $1, test-cftests-inference-part2.sh, ./checker/bin-devel/tes
 ], [dnl
   job_name(inference_jdk$1)
 boilerplate(ubuntu, $1, test-cftests-inference.sh, ./checker/bin-devel/test-cftests-inference.sh)dnl
-])])dnl
+])dnl
+])dnl
 dnl
 define([misc_job], [dnl
   job_name(misc_jdk$1)
@@ -118,7 +119,6 @@ circleci_boilerplate($1,-plus,full)
 dnl
 define([typecheck_job], [dnl
 ifelse($1,canary_jdk,[dnl
-  # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   job_name(typecheck_part1_jdk$1)
 boilerplate(ubuntu, $1, test-typecheck-part1.sh, ./checker/bin-devel/test-typecheck-part1.sh)dnl
   job_name(typecheck_part2_jdk$1)

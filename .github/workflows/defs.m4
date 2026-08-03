@@ -2,9 +2,11 @@ changequote
 changequote(`[',`]')dnl
 ifelse([The built-in "dnl" m4 macro means "discard to next line".])dnl
 dnl
+define([dependsOn], [needs])dnl
+dnl
 define([job_name], [$1:])dnl
 dnl
-ifelse([Four arguments: OS, JDK version, name, command line.])
+ifelse([Takes 4 arguments: OS, JDK version number, name, command line.])dnl
 define([boilerplate], [dnl
     runs-on: ubuntu-latest
     container:
@@ -32,7 +34,7 @@ ifelse($3,test-cftests-nonjunit.sh,[],
 dnl
 define([junit_job], [dnl
   job_name(junit_jdk$1)
-ifelse($1,canary_jdk,,[    needs:
+ifelse($1,canary_jdk,,[    dependsOn:
       - canary_jobs
       - junit_part1_jdk[]canary_jdk
       - junit_part2_jdk[]canary_jdk
@@ -42,13 +44,13 @@ boilerplate(ubuntu, $1, test-cftests-junit.sh, ./checker/bin-devel/test-cftests-
 dnl
 define([junit_jobs], [dnl
   job_name(junit_part1_jdk$1)
-ifelse($1,canary_jdk,,[    needs:
+ifelse($1,canary_jdk,,[    dependsOn:
       - canary_jobs
       - junit_part1_jdk[]canary_jdk
 ])dnl
 boilerplate(ubuntu, $1, test-cftests-junit.sh part1, ./checker/bin-devel/test-cftests-junit.sh part1)dnl
   job_name(junit_part2_jdk$1)
-ifelse($1,canary_jdk,,[    needs:
+ifelse($1,canary_jdk,,[    dependsOn:
       - canary_jobs
       - junit_part2_jdk[]canary_jdk
 ])dnl
@@ -57,7 +59,7 @@ boilerplate(ubuntu, $1, test-cftests-junit.sh part2, ./checker/bin-devel/test-cf
 dnl
 define([nonjunit_job], [dnl
   job_name(nonjunit_jdk$1)
-ifelse($1,canary_jdk,,[    needs:
+ifelse($1,canary_jdk,,[    dependsOn:
       - canary_jobs
       - nonjunit_jdk[]canary_jdk
 ])dnl
@@ -73,7 +75,7 @@ boilerplate(ubuntu, $1, test-cftests-inference-part1.sh, ./checker/bin-devel/tes
 boilerplate(ubuntu, $1, test-cftests-inference-part2.sh, ./checker/bin-devel/test-cftests-inference-part2.sh)dnl
 ],[dnl
   job_name(inference_jdk$1)
-    needs:
+    dependsOn:
       - canary_jobs
       - inference_part1_jdk[]canary_jdk
       - inference_part2_jdk[]canary_jdk
@@ -83,7 +85,7 @@ boilerplate(ubuntu, $1, test-cftests-inference.sh, ./checker/bin-devel/test-cfte
 dnl
 define([misc_job], [dnl
   job_name(misc_jdk$1)
-ifelse($1,canary_jdk,,$1,latest_jdk,,[    needs:
+ifelse($1,canary_jdk,,$1,latest_jdk,,[    dependsOn:
       - canary_jobs
       - misc_jdk[]canary_jdk
 ])dnl
@@ -109,14 +111,13 @@ ifelse($1,canary_jdk,,$1,latest_jdk,,[    needs:
 dnl
 define([typecheck_job], [dnl
 ifelse($1,canary_jdk,[dnl
-  # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   job_name(typecheck_part1_jdk$1)
-boilerplate(ubuntu, $1, test-typecheck-part1.sh, ./checker/bin-devel/test-typecheck-part1.sh)
+boilerplate(ubuntu, $1, test-typecheck-part1.sh, ./checker/bin-devel/test-typecheck-part1.sh)dnl
   job_name(typecheck_part2_jdk$1)
 boilerplate(ubuntu, $1, test-typecheck-part2.sh, ./checker/bin-devel/test-typecheck-part2.sh)dnl
 ], [dnl
   job_name(typecheck_jdk$1)
-    needs:
+    dependsOn:
       - canary_jobs
       - typecheck_part1_jdk[]canary_jdk
       - typecheck_part2_jdk[]canary_jdk
@@ -125,21 +126,21 @@ boilerplate(ubuntu, $1, test-typecheck.sh, ./checker/bin-devel/test-typecheck.sh
 dnl
 define([daikon_job], [dnl
   job_name(daikon_part1_jdk$1)
-    needs:
+    dependsOn:
       - canary_jobs
 ifelse($1,canary_jdk,,[dnl
       - daikon_part1_jdk[]canary_jdk
 ])dnl
 boilerplate(ubuntu, $1, test-daikon-part1.sh, ./checker/bin-devel/test-daikon-part1.sh)dnl
   job_name(daikon_part2_jdk$1)
-    needs:
+    dependsOn:
       - canary_jobs
 ifelse($1,canary_jdk,,[dnl
       - daikon_part2_jdk[]canary_jdk
 ])dnl
 boilerplate(ubuntu, $1, test-daikon-part2.sh, ./checker/bin-devel/test-daikon-part2.sh)dnl
   job_name(daikon_part3_jdk$1)
-    needs:
+    dependsOn:
       - canary_jobs
 ifelse($1,canary_jdk,,[dnl
       - daikon_part3_jdk[]canary_jdk
@@ -149,14 +150,14 @@ boilerplate(ubuntu, $1, test-daikon-part3.sh, ./checker/bin-devel/test-daikon-pa
 dnl
 define([guava_job], [dnl
   job_name(guava_part1_jdk$1)
-    needs:
+    dependsOn:
       - canary_jobs
 ifelse($1,canary_jdk,,[dnl
       - guava_part1_jdk[]canary_jdk
 ])dnl
 boilerplate(ubuntu, $1, test-guava-part1.sh, ./checker/bin-devel/test-guava-part1.sh)dnl
   job_name(guava_part2_jdk$1)
-    needs:
+    dependsOn:
       - canary_jobs
 ifelse($1,canary_jdk,,[dnl
       - guava_part2_jdk[]canary_jdk
@@ -166,7 +167,7 @@ boilerplate(ubuntu, $1, test-guava-part2.sh, ./checker/bin-devel/test-guava-part
 dnl
 define([plume_lib_job], [dnl
   job_name(plume_lib_jdk$1)
-    needs:
+    dependsOn:
       - canary_jobs
 ifelse($1,canary_jdk,,[dnl
       - plume_lib_jdk[]canary_jdk

@@ -259,7 +259,6 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "26"
 
-  # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk25:
     runs-on: ubuntu-latest
     container:
@@ -273,7 +272,6 @@ jobs:
         run: ./checker/bin-devel/test-typecheck-part1.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
-
   typecheck_part2_jdk25:
     runs-on: ubuntu-latest
     container:

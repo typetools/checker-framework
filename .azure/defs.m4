@@ -4,7 +4,7 @@ ifelse([The built-in "dnl" m4 macro means "discard to next line".])dnl
 dnl
 define(job_name, [- job: $1])
 dnl
-ifelse([Arguments are OS, JDK version number, name, command line.])dnl
+ifelse([Takes 4 arguments: OS, JDK version number, name, command line.])dnl
 define([boilerplate], [dnl
     pool:
       vmImage: 'ubuntu-latest'
@@ -127,10 +127,16 @@ boilerplate(ubuntu, $1, test-daikon-part1.sh, ./checker/bin-devel/test-daikon-pa
   job_name(daikon_part2_jdk$1)
     dependsOn:
       - canary_jobs
+ifelse($1,canary_jdk,,[dnl
+      - daikon_part2_jdk[]canary_jdk
+])dnl
 boilerplate(ubuntu, $1, test-daikon-part2.sh, ./checker/bin-devel/test-daikon-part2.sh)dnl
   job_name(daikon_part3_jdk$1)
     dependsOn:
       - canary_jobs
+ifelse($1,canary_jdk,,[dnl
+      - daikon_part3_jdk[]canary_jdk
+])dnl
 boilerplate(ubuntu, $1, test-daikon-part3.sh, ./checker/bin-devel/test-daikon-part3.sh)dnl
 ])dnl
 dnl
@@ -160,6 +166,7 @@ ifelse($1,canary_jdk,,[dnl
 ])dnl
 boilerplate(ubuntu, $1, test-plume-lib.sh, ./checker/bin-devel/test-plume-lib.sh)dnl
 ])dnl
+dnl
 ifelse([
 Local Variables:
 eval: (add-hook 'after-save-hook '(lambda () (run-command nil "make")) nil 'local)
