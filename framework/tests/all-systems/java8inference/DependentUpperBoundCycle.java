@@ -1,4 +1,4 @@
-// Regression test for the last sentence of JLS 18.1.3: if the substituted upper bounds of a type
+// Test case for the last sentence of JLS 18.1.3: if the substituted upper bounds of a type
 // parameter are all dependencies on other inference variables, then the bound
 // "alpha <: Object" is also implied.
 
