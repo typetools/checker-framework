@@ -16,7 +16,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * 6.7</a> gives the following example:
  *
  * <blockquote>
- *
  * The difference between a fully qualified name and a canonical name can be seen in code such as:
  *
  * <pre>{@code
@@ -27,7 +26,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * Both {@code p.O1.I} and {@code p.O2.I} are fully qualified names that denote the member class
  * {@code I}, but only {@code p.O1.I} is its canonical name.
- *
  * </blockquote>
  *
  * Given a character sequence that is a fully-qualified name, there is no way to know whether or not
