@@ -51,11 +51,11 @@ import org.plumelib.util.StringsP;
  *
  * <ol>
  *   <li id="a">From source: the class is to be used as an annotation processor when reading
- *       annotations from source. It can be invoked via the command:
- *       <p>{@code javac -processor SignaturePrinter <java files> ...}
+ *              annotations from source. It can be invoked via the command:
+ *              <p>{@code javac -processor SignaturePrinter <java files> ...}
  *   <li id="b">From classfile: the class is to be used as an independent app when reading
- *       annotations from classfile. It can be invoked via the command:
- *       <p>{@code java SignaturePrinter <class name>}
+ *              annotations from classfile. It can be invoked via the command:
+ *              <p>{@code java SignaturePrinter <class name>}
  * </ol>
  *
  * By default, only the annotations explicitly written by the user are emitted. To view the default
