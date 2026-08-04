@@ -127,14 +127,13 @@ public final class InferenceType extends AbstractType {
       return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
     }
 
-    if (typeMirror.getKind() == TypeKind.TYPEVAR && map.containsKey(type.getUnderlyingType())) {
+    Variable variable =
+        typeMirror.getKind() == TypeKind.TYPEVAR ? map.get(type.getUnderlyingType()) : null;
+    if (variable != null) {
       return new UseOfVariable(
-          (AnnotatedTypeVariable) type,
-          map.get(type.getUnderlyingType()),
-          qualifierVars,
-          context,
-          ignoreAnnotations);
-    } else if (AnnotatedContainsInferenceVariable.hasAnyTypeVariable(map.keySet(), type)) {
+          (AnnotatedTypeVariable) type, variable, qualifierVars, context, ignoreAnnotations);
+    } else if (AnnotatedContainsInferenceVariable.hasAnyTypeVariable(
+        map.getTypeVariables(), type)) {
       return new InferenceType(type, typeMirror, map, qualifierVars, context, ignoreAnnotations);
     } else {
       return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
@@ -166,13 +165,11 @@ public final class InferenceType extends AbstractType {
       return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
     }
 
-    if (typeMirror.getKind() == TypeKind.TYPEVAR && map.containsKey(type.getUnderlyingType())) {
+    Variable variable =
+        typeMirror.getKind() == TypeKind.TYPEVAR ? map.get(type.getUnderlyingType()) : null;
+    if (variable != null) {
       return new UseOfVariable(
-          (AnnotatedTypeVariable) type,
-          map.get(type.getUnderlyingType()),
-          qualifierVars,
-          context,
-          ignoreAnnotations);
+          (AnnotatedTypeVariable) type, variable, qualifierVars, context, ignoreAnnotations);
     } else if (AnnotatedContainsInferenceVariable.hasAnyTypeVariable(
         map.getNotInstantiated(), type)) {
       return new InferenceType(type, typeMirror, map, qualifierVars, context, ignoreAnnotations);
@@ -272,7 +269,7 @@ public final class InferenceType extends AbstractType {
   public Collection<Variable> getInferenceVariables() {
     LinkedHashSet<Variable> variables = new LinkedHashSet<>();
     for (TypeVariable typeVar :
-        ContainsInferenceVariable.getMentionedTypeVariables(map.keySet(), typeMirror)) {
+        ContainsInferenceVariable.getMentionedTypeVariables(map.getTypeVariables(), typeMirror)) {
       variables.add(map.get(typeVar));
     }
     return variables;
