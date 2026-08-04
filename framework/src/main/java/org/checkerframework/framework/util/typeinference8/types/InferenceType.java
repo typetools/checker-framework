@@ -340,7 +340,7 @@ public final class InferenceType extends AbstractType {
    * @return if {@code this} is a subtype of {@code superType}, then return {@link
    *     ConstraintSet#TRUE}; otherwise, a false bound is returned
    */
-  public ReductionResult isSubType(ProperType superType) {
+  public ReductionResult isSubType(AbstractType superType) {
     TypeMirror subType = getJavaType();
     TypeMirror superJavaType = superType.getJavaType();
     if (subType.getKind() == TypeKind.WILDCARD) {

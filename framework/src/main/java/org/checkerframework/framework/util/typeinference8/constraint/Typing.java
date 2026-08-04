@@ -243,7 +243,15 @@ public class Typing extends TypeConstraint {
     } else {
       // The constraint reduces to true if T is among the supertypes of S, and false
       // otherwise.
-      return ((InferenceType) S).isSubType((ProperType) T);
+      // S is not a use of an inference variable and T is neither the null type nor a use of an
+      // inference variable, because reduceSubtyping handled those cases before calling this
+      // method.  So S and T are each either a proper type or an inference type, and they are not
+      // both proper types.
+      if (S.isProper()) {
+        return ((ProperType) S).isSubType(T);
+      } else {
+        return ((InferenceType) S).isSubType(T);
+      }
     }
   }
 
