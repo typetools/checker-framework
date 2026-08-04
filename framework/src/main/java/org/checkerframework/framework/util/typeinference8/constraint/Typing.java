@@ -387,7 +387,6 @@ public class Typing extends TypeConstraint {
    *
    * @return the result of reducing the constraint
    */
-  @SuppressWarnings("interning:not.interned") // Checking for exact object.
   private ReductionResult reduceEquality() {
     if (S.isProper()) {
       if (T.isProper()) {
@@ -425,7 +424,10 @@ public class Typing extends TypeConstraint {
       // the same erasure
       ConstraintSet constraintSet = new ConstraintSet();
       for (int i = 0; i < tTypeArgs.size(); i++) {
-        if (tTypeArgs.get(i) != sTypeArgs.get(i)) {
+        // The constraint between two equal type arguments is trivially true, so do not create it.
+        // (It is not always reducible to true: an equality constraint between two inference types
+        // that are type variables reduces to false.)
+        if (!tTypeArgs.get(i).equals(sTypeArgs.get(i))) {
           constraintSet.add(
               new Typing(this, tTypeArgs.get(i), sTypeArgs.get(i), Kind.TYPE_EQUALITY));
         }
