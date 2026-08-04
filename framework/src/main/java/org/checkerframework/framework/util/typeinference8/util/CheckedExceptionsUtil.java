@@ -67,7 +67,7 @@ public final class CheckedExceptionsUtil {
 
   /**
    * Helper class for gathering the types of checked exceptions in a lambda. See
-   * https://docs.oracle.com/javase/specs/jls/se9/html/jls-11.html#jls-11.2.2
+   * https://docs.oracle.com/javase/specs/jls/se25/html/jls-11.html#jls-11.2.2
    */
   private static final class CheckedExceptionATMVisitor
       extends TreeScanner<@Nullable List<AnnotatedTypeMirror>, Void> {
