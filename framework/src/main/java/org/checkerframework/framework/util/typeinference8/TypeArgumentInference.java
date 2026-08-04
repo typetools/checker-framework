@@ -25,7 +25,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
  *
  * <p>For the Checker Framework we also need to infer reasonable annotations for these type
  * arguments. For information on inferring type arguments see the documentation in JLS8:
- * https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html
+ * https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html
  */
 public interface TypeArgumentInference {
 
