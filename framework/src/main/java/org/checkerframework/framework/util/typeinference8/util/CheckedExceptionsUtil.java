@@ -26,12 +26,10 @@ public final class CheckedExceptionsUtil {
   private CheckedExceptionsUtil() {}
 
   /**
-   * Returns {@code list}, or an empty list if {@code list} is null. {@code
-   * TreeScanner.scan(Iterable, P)} returns null for an empty iterable, and {@code
-   * TreeScanner.scan(Tree, P)} returns null for a null tree.
+   * Returns {@code list}, or an empty list if {@code list} is null.
    *
-   * @param list a list or null
    * @param <T> the element type of {@code list}
+   * @param list a list or null
    * @return {@code list}, or an empty list if {@code list} is null
    */
   private static <T> List<T> nullToEmptyList(@Nullable List<T> list) {
