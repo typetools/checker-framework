@@ -996,6 +996,7 @@ public class WholeProgramInferenceScenesStorage
    */
   public static class AnnotationsInContexts
       extends HashMap<IPair<String, TypeUseLocation>, Set<String>> {
+    /** UID for serialization. */
     private static final long serialVersionUID = 20200321L;
   }
 }
