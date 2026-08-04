@@ -1,6 +1,8 @@
 package org.checkerframework.framework.testchecker.lubglb;
 
+import com.sun.source.util.TreePath;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -12,6 +14,7 @@ import org.checkerframework.framework.testchecker.lubglb.quals.LubglbE;
 import org.checkerframework.framework.testchecker.lubglb.quals.LubglbF;
 import org.checkerframework.framework.testchecker.lubglb.quals.PolyLubglb;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -27,6 +30,13 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class LubGlbChecker extends BaseTypeChecker {
 
   private AnnotationMirror A, B, C, D, E, F, POLY;
+
+  /**
+   * Checks invariants of {@link ProperType}, or null if it has not been created yet. It is created
+   * lazily, because it needs the type factory, which does not exist when this checker is
+   * constructed.
+   */
+  private ProperTypeEqualityScanner properTypeEqualityScanner = null;
 
   @Override
   public void initChecker() {
@@ -57,6 +67,29 @@ public class LubGlbChecker extends BaseTypeChecker {
     lubAssert(POLY, B, A);
     lubAssert(POLY, F, POLY);
     lubAssert(POLY, A, A);
+  }
+
+  @Override
+  public void typeProcess(TypeElement element, TreePath path) {
+    super.typeProcess(element, path);
+    if (path != null) {
+      if (properTypeEqualityScanner == null) {
+        properTypeEqualityScanner =
+            new ProperTypeEqualityScanner(((BaseTypeVisitor<?>) visitor).getTypeFactory());
+      }
+      properTypeEqualityScanner.checkClass(path);
+    }
+  }
+
+  @Override
+  public void typeProcessingOver() {
+    super.typeProcessingOver();
+    if (properTypeEqualityScanner == null || properTypeEqualityScanner.getNumChecks() == 0) {
+      throw new AssertionError(
+          "ProperTypeEqualityScanner checked no proper type; the test files contain no invocation"
+              + " of a method whose declared return type is a type variable, and no instantiation"
+              + " of a generic class.");
+    }
   }
 
   /**

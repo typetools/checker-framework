@@ -1,6 +1,7 @@
 // Test that two ProperTypes that stand for the same Java type are equal, even when they were
 // created from different TypeMirrors.  The checking is done by
-// org.checkerframework.framework.testchecker.typeinference8.ProperTypeChecker.
+// org.checkerframework.framework.testchecker.lubglb.ProperTypeEqualityScanner, which
+// LubGlbChecker runs.
 
 import java.util.ArrayList;
 import java.util.Arrays;

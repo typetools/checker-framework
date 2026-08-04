@@ -1,74 +1,41 @@
-package org.checkerframework.framework.testchecker.typeinference8;
+package org.checkerframework.framework.testchecker.lubglb;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.util.TreePath;
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import com.sun.source.util.TreeScanner;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.common.subtyping.qual.Bottom;
-import org.checkerframework.common.subtyping.qual.Unqualified;
-import org.checkerframework.framework.qual.TypeUseLocation;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.NoElementQualifierHierarchy;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.DefaultQualifierKindHierarchy;
-import org.checkerframework.framework.util.QualifierKindHierarchy;
-import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
-import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A checker that verifies invariants of {@link
- * org.checkerframework.framework.util.typeinference8.types.ProperType}, which are not observable
- * through ordinary type-checking. It issues no errors of its own; it throws an {@code
- * AssertionError} if an invariant is violated.
+ * Verifies invariants of {@link ProperType}, which are not observable through ordinary
+ * type-checking. It issues no errors of its own; it throws an {@code AssertionError} if an
+ * invariant is violated.
  *
- * <p>This checker should only be used for testing the framework.
+ * <p>{@link LubGlbChecker} runs this scanner over each class that it processes. The invariants hold
+ * for every Java program, so this scanner needs no test input of its own; {@code
+ * framework/tests/lubglb/ProperTypeEquality.java} exists only to exercise many kinds of
+ * invocations.
  */
-public final class ProperTypeChecker extends BaseTypeChecker {
+public class ProperTypeEqualityScanner extends TreeScanner<Void, Void> {
 
-  /** Creates a ProperTypeChecker. */
-  public ProperTypeChecker() {}
-
-  @Override
-  protected BaseTypeVisitor<?> createSourceVisitor() {
-    return new ProperTypeVisitor(this);
-  }
-
-  @Override
-  public void typeProcessingOver() {
-    super.typeProcessingOver();
-    int numChecks = ((ProperTypeVisitor) getVisitor()).numChecks;
-    if (numChecks == 0) {
-      throw new AssertionError(
-          "ProperTypeChecker checked no proper type; the test files contain no invocation of a"
-              + " method whose declared return type is a type variable, and no instantiation of a"
-              + " generic class.");
-    }
-  }
-}
-
-/** The visitor for {@link ProperTypeChecker}. */
-class ProperTypeVisitor extends BaseTypeVisitor<ProperTypeAnnotatedTypeFactory> {
+  /** The type factory of the checker that runs this scanner. */
+  private final AnnotatedTypeFactory atypeFactory;
 
   /** The number of proper types on which checking has been attempted. */
-  int numChecks = 0;
+  private int numChecks = 0;
 
   /**
    * A context, or null if none has been created yet. Only {@link Java8InferenceContext#object} is
@@ -78,17 +45,35 @@ class ProperTypeVisitor extends BaseTypeVisitor<ProperTypeAnnotatedTypeFactory> 
   private @Nullable Java8InferenceContext context = null;
 
   /**
-   * Creates a ProperTypeVisitor.
+   * Creates a ProperTypeEqualityScanner.
    *
-   * @param checker the checker
+   * @param atypeFactory the type factory of the checker that runs this scanner
    */
-  public ProperTypeVisitor(BaseTypeChecker checker) {
-    super(checker);
+  public ProperTypeEqualityScanner(AnnotatedTypeFactory atypeFactory) {
+    this.atypeFactory = atypeFactory;
   }
 
-  @Override
-  protected ProperTypeAnnotatedTypeFactory createTypeFactory() {
-    return new ProperTypeAnnotatedTypeFactory(checker);
+  /**
+   * Checks every method invocation and class instantiation under {@code path}.
+   *
+   * @param path a path to a class
+   */
+  public void checkClass(TreePath path) {
+    if (context == null) {
+      // The InvocationTypeInference is needed only because Java8InferenceContext requires one.
+      InvocationTypeInference inference = new InvocationTypeInference(atypeFactory, path);
+      context = new Java8InferenceContext(atypeFactory, path, inference);
+    }
+    scan(path.getLeaf(), null);
+  }
+
+  /**
+   * Returns the number of proper types on which checking has been attempted.
+   *
+   * @return the number of proper types on which checking has been attempted
+   */
+  public int getNumChecks() {
+    return numChecks;
   }
 
   @Override
@@ -138,18 +123,11 @@ class ProperTypeVisitor extends BaseTypeVisitor<ProperTypeAnnotatedTypeFactory> 
     }
 
     Java8InferenceContext localContext = context;
-    if (localContext == null) {
-      TreePath path = getCurrentPath();
-      // The InvocationTypeInference is needed only because Java8InferenceContext requires one.
-      InvocationTypeInference inference = new InvocationTypeInference(atypeFactory, path);
-      localContext = new Java8InferenceContext(atypeFactory, path, inference);
-      context = localContext;
-    }
     // localContext.object is a proper type; it is used only to call AbstractType#create.
     AbstractType fromUse = localContext.object.create(atm, atm.getUnderlyingType(), false);
     AbstractType fromDeclaration = localContext.object.create(atm, declaredType, false);
     // Count the check before making the assertions, so that a failed assertion is not masked by
-    // the check in ProperTypeChecker#typeProcessingOver.
+    // the check in LubGlbChecker#typeProcessingOver.
     numChecks++;
 
     if (!atypeFactory
@@ -173,44 +151,5 @@ class ProperTypeVisitor extends BaseTypeVisitor<ProperTypeAnnotatedTypeFactory> 
               "For %s, proper types %s and %s are equal, but their hash codes differ: %d and %d",
               tree, fromUse, fromDeclaration, fromUse.hashCode(), fromDeclaration.hashCode()));
     }
-  }
-}
-
-/** The type factory for {@link ProperTypeChecker}. Its type hierarchy is Bottom <: Unqualified. */
-class ProperTypeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-
-  /**
-   * Creates a ProperTypeAnnotatedTypeFactory.
-   *
-   * @param checker the checker
-   */
-  @SuppressWarnings("this-escape")
-  public ProperTypeAnnotatedTypeFactory(BaseTypeChecker checker) {
-    super(checker);
-    this.postInit();
-  }
-
-  @Override
-  protected void addCheckedCodeDefaults(QualifierDefaults defs) {
-    defs.addCheckedCodeDefault(
-        AnnotationBuilder.fromClass(elements, Bottom.class), TypeUseLocation.LOWER_BOUND);
-    defs.addCheckedCodeDefault(
-        AnnotationBuilder.fromClass(elements, Unqualified.class), TypeUseLocation.OTHERWISE);
-  }
-
-  @Override
-  protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    return new HashSet<>(Arrays.asList(Unqualified.class, Bottom.class));
-  }
-
-  @Override
-  protected QualifierHierarchy createQualifierHierarchy() {
-    return new NoElementQualifierHierarchy(getSupportedTypeQualifiers(), elements, this) {
-      @Override
-      protected QualifierKindHierarchy createQualifierKindHierarchy(
-          Collection<Class<? extends Annotation>> qualifierClasses) {
-        return new DefaultQualifierKindHierarchy(qualifierClasses, Bottom.class);
-      }
-    };
   }
 }
