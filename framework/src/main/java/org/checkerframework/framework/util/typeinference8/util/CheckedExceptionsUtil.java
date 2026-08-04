@@ -28,12 +28,12 @@ public final class CheckedExceptionsUtil {
   /**
    * Returns {@code list}, or an empty list if {@code list} is null.
    *
-   * @param list a possibly-null list
-   * @param <T> the type of the list elements
+   * @param <T> the element type of {@code list}
+   * @param list a list or null
    * @return {@code list}, or an empty list if {@code list} is null
    */
   private static <T> List<T> nullToEmptyList(@Nullable List<T> list) {
-    return list == null ? Collections.emptyList() : list;
+    return list != null ? list : Collections.emptyList();
   }
 
   /**
