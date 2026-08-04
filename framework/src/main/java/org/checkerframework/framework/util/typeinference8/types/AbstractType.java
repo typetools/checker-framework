@@ -305,7 +305,7 @@ public abstract class AbstractType {
 
   /**
    * Make {@code type} ground, which is basically changing any wildcards to their bounds. <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.27.3">JLS section
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.27.3">JLS section
    * 15.27.3</a>
    *
    * @param type a type to ground
@@ -314,8 +314,8 @@ public abstract class AbstractType {
    */
   // TODO: This method is named make ground, but actually implements non-wildcard
   // parameterization as defined in
-  // https://docs.oracle.com/javase/specs/jls/se11/html/jls-9.html#jls-9.9
-  // https://docs.oracle.com/javase/specs/jls/se19/html/jls-15.html#jls-15.13.2
+  // https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9
+  // https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.2
   static AnnotatedDeclaredType makeGround(
       AnnotatedDeclaredType type, AnnotatedTypeFactory typeFactory) {
     Element e = type.getUnderlyingType().asElement();
