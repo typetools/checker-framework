@@ -1060,11 +1060,9 @@ public class WholeProgramInferenceJavaParserStorage
       } else {
         packageDir =
             inferOutputDirectory.resolve(
-                root.compilationUnit
-                    .getPackageDeclaration()
-                    .get()
-                    .getNameAsString()
-                    .replaceAll("\\.", File.separator));
+                packageNameToDirectory(
+                    root.compilationUnit.getPackageDeclaration().get().getNameAsString(),
+                    File.separatorChar));
       }
 
       try {
@@ -1092,6 +1090,19 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     modifiedFiles.clear();
+  }
+
+  /**
+   * Returns the relative directory that corresponds to a package name. For example, if {@code
+   * separatorChar} is {@code '/'}, then the package name {@code "org.example"} yields {@code
+   * "org/example"}.
+   *
+   * @param packageName a package name, whose components are separated by {@code '.'}
+   * @param separatorChar the file name separator character, such as {@link File#separatorChar}
+   * @return the relative directory that corresponds to {@code packageName}
+   */
+  /*package-private*/ static String packageNameToDirectory(String packageName, char separatorChar) {
+    return packageName.replace('.', separatorChar);
   }
 
   /**
