@@ -4,7 +4,7 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 
 /**
  * A constraint. See <a
- * href="https://docs.oracle.com/javase/specs/jls/se20/html/jls-18.html#jls-18.1.2">JLS</a>.
+ * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.1.2">JLS</a>.
  */
 public interface Constraint extends ReductionResult {
 
@@ -20,7 +20,7 @@ public interface Constraint extends ReductionResult {
    * produce new bounds and/or new constraints.
    *
    * <p>Reduction is documented in <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.2">JLS section
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2">JLS section
    * 18.2</a>
    *
    * @param context Java8InferenceContext
