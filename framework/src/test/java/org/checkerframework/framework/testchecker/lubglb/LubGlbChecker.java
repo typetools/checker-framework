@@ -1,6 +1,8 @@
 package org.checkerframework.framework.testchecker.lubglb;
 
+import com.sun.source.util.TreePath;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -27,6 +29,13 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class LubGlbChecker extends BaseTypeChecker {
 
   private AnnotationMirror A, B, C, D, E, F, POLY;
+
+  /**
+   * Tests invariants of package {@code org.checkerframework.framework.util.typeinference8}, or null
+   * if it has not been created yet. It is created lazily, because it needs the type factory, which
+   * does not exist when this checker is constructed.
+   */
+  private Typeinference8InvariantTests typeinference8InvariantTests = null;
 
   @Override
   public void initChecker() {
@@ -57,6 +66,18 @@ public class LubGlbChecker extends BaseTypeChecker {
     lubAssert(POLY, B, A);
     lubAssert(POLY, F, POLY);
     lubAssert(POLY, A, A);
+  }
+
+  @Override
+  public void typeProcess(TypeElement element, TreePath path) {
+    super.typeProcess(element, path);
+    if (path != null) {
+      if (typeinference8InvariantTests == null) {
+        typeinference8InvariantTests =
+            new Typeinference8InvariantTests(((BaseTypeVisitor<?>) visitor).getTypeFactory());
+      }
+      typeinference8InvariantTests.run(path);
+    }
   }
 
   /**

@@ -4,11 +4,11 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 // This file contains no test code of its own.  The actual tests are performed by
-// Typeinference8InvariantVisitor, which builds inference types and constraints out of the
+// Typeinference8InvariantTests, which builds inference types and constraints out of the
 // declarations below and then checks that violating an invariant of package
 // org.checkerframework.framework.util.typeinference8 fails loudly.
 //
-// The declarations are here, rather than being synthesized by the visitor, because building an
+// The declarations are here, rather than being synthesized by the test code, because building an
 // AnnotatedTypeMirror requires a real declaration to read it from.
 public class Typeinference8Invariants {
 

@@ -1,4 +1,4 @@
-package org.checkerframework.framework.testchecker.typeinference8;
+package org.checkerframework.framework.testchecker.lubglb;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -12,9 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
@@ -42,8 +40,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * violates one invariant and checks for the corresponding failure; before the fix, each test
  * instead observed an {@code AssertionError} (or, with assertions disabled, no failure at all).
  *
- * <p>The tests are driven by the declarations in {@code
- * framework/tests/typeinference8invariant/Typeinference8Invariants.java}.
+ * <p>{@link LubGlbChecker} runs these tests, which are driven by the declarations in {@code
+ * framework/tests/lubglb/Typeinference8Invariants.java}.
  *
  * <p>Not every {@code assert} that was replaced is tested here. {@code
  * InvocationTypeInference.createB2}, {@code InvocationTypeInference.createB2MethodRef}, {@code
@@ -53,26 +51,38 @@ import org.checkerframework.javacutil.TreeUtils;
  * check is reached; incorporation of a well-formed bound set terminates; and two parameterized
  * supertypes of the same generic class always have the same number of type arguments.
  */
-public class Typeinference8InvariantVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
+public class Typeinference8InvariantTests {
 
   /** The simple name of the class in the test input that holds the declarations used here. */
   private static final String TEST_CLASS_NAME = "Typeinference8Invariants";
 
+  /** The type factory of the checker that runs these tests. */
+  private final AnnotatedTypeFactory atypeFactory;
+
+  /** A path to the class that is currently being processed. */
+  private TreePath classPath;
+
   /**
-   * Creates a {@code Typeinference8InvariantVisitor}.
+   * Creates a {@code Typeinference8InvariantTests}.
    *
-   * @param checker the checker
+   * @param atypeFactory the type factory of the checker that runs these tests
    */
-  public Typeinference8InvariantVisitor(BaseTypeChecker checker) {
-    super(checker);
+  public Typeinference8InvariantTests(AnnotatedTypeFactory atypeFactory) {
+    this.atypeFactory = atypeFactory;
   }
 
-  @Override
-  public void processClassTree(ClassTree classTree) {
-    super.processClassTree(classTree);
+  /**
+   * Runs the tests, if {@code path} is a path to the test input class. Throws an {@code
+   * AssertionError} if a test fails.
+   *
+   * @param path a path to a class
+   */
+  public void run(TreePath path) {
+    ClassTree classTree = (ClassTree) path.getLeaf();
     if (!classTree.getSimpleName().contentEquals(TEST_CLASS_NAME)) {
       return;
     }
+    this.classPath = path;
 
     List<String> failures = new ArrayList<>();
     testResolveVariable(classTree, failures);
@@ -392,7 +402,6 @@ public class Typeinference8InvariantVisitor extends BaseTypeVisitor<BaseAnnotate
     Fixture(ClassTree classTree) {
       this.classTree = classTree;
       this.holderClass = nestedClass(classTree, "Holder");
-      TreePath classPath = atypeFactory.getPath(classTree);
       InvocationTypeInference inference = new InvocationTypeInference(atypeFactory, classPath);
       this.context = new Java8InferenceContext(atypeFactory, classPath, inference);
       // `Holder<String>`; its type parameter Z becomes the inference variable.
