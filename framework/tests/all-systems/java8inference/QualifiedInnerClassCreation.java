@@ -7,9 +7,6 @@
 // cast applied to the `NONE`-kinded enclosing type of a top-level class, and threw a
 // ClassCastException.
 
-// This test deliberately has no `@SuppressWarnings`, because a `@SuppressWarnings("all")` would
-// also suppress the `type.argument.inference.crashed` error that the ClassCastException produces.
-
 public class QualifiedInnerClassCreation {
 
   class Inner<T> {
