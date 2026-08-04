@@ -1,18 +1,10 @@
 // Incorporation (JLS 18.3) must run until the bound set reaches a fixed point.
-// `BoundSet.incorporateToFixedPoint` used to assign, rather than or, the "did any bound change"
-// flag inside its loop over the inference variables, so only the *last* variable decided whether
-// another pass was made.
 //
 // Below, `m` has a chain of four inference variables α1 :> α2 :> α3 :> α4 plus the unused variable
 // αZz.  The argument gives α4 the lower bound `@Nullable String`, and each incorporation pass
 // propagates that bound one link up the chain, towards a variable that has already been visited in
 // the current pass.  αZz is declared last and participates in no constraint at all, so its bounds
-// never change; with the flag assigned rather than or-ed, incorporation stopped after a single
-// pass and `@Nullable String` never reached α1, which is the method's return type.
-//
-// Reaching the fixed point is what lets α1 be instantiated to `@Nullable String`, which is why the
-// [assignment] error below is issued only once incorporation runs to completion.  The chain must
-// have at least four links, and removing `Zz` also makes the two behaviors agree.
+// never change.
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;

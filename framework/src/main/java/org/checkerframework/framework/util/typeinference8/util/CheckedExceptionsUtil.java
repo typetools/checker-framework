@@ -28,11 +28,6 @@ public final class CheckedExceptionsUtil {
   /**
    * Returns {@code list}, or an empty list if {@code list} is null.
    *
-   * <p>{@code TreeScanner.scan} returns null both for an empty iterable and for a null tree, so
-   * every use of its result needs this. The {@code reduce} methods below also tolerate a null
-   * argument, but they can return null, whereas this method cannot; using this method keeps the
-   * lists that the visitors build up provably non-null.
-   *
    * @param <T> the element type of {@code list}
    * @param list a list or null
    * @return {@code list}, or an empty list if {@code list} is null
