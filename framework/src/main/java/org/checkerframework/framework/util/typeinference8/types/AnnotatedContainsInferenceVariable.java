@@ -57,15 +57,17 @@ public final class AnnotatedContainsInferenceVariable {
     }
 
     /**
-     * Returns true if {@code typeVar} is a type variable in {@code typeVariables}. As in {@link
-     * ContainsInferenceVariable}, the comparison is {@link TypesUtils#areSame(TypeVariable,
-     * TypeVariable)} rather than {@code equals}, because the same type variable is represented by
-     * different objects after type variable substitution.
+     * Returns true if {@code typeVar} is the same type variable as one in {@code typeVariables}.
+     * The comparison is {@link TypesUtils#areSame(TypeVariable, TypeVariable)}, which compares the
+     * name and the enclosing element; the two type variables need not be the same object.
      *
      * @param typeVar a type variable
-     * @return true if {@code typeVar} is a type variable in {@code typeVariables}
+     * @return true if {@code typeVar} is the same type variable as one in {@code typeVariables}
      */
     private boolean isTypeVariableOfInterest(AnnotatedTypeVariable typeVar) {
+      // Do not use `Collection.contains`, which compares object references: a use of a type
+      // variable that is written with a type annotation is a different object than the type
+      // variable in the declaration.
       TypeVariable underlyingTypeVar = typeVar.getUnderlyingType();
       for (TypeVariable tv : typeVariables) {
         if (TypesUtils.areSame(tv, underlyingTypeVar)) {
