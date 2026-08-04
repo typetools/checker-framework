@@ -165,7 +165,8 @@ public class VariableBounds {
   }
 
   /**
-   * Adds {@code otherType} as bound against this variable.
+   * Adds {@code otherType} as bound against this variable. A proper {@code EQUAL} bound is boxed
+   * before it is added.
    *
    * @param parent the constraint whose reduction created this bound
    * @param kind the kind of bound
@@ -176,18 +177,20 @@ public class VariableBounds {
     if (otherType.isUseOfVariable() && ((UseOfVariable) otherType).getVariable() == variable) {
       return false;
     }
+    AbstractType boundType = otherType;
     if (kind == BoundKind.EQUAL && otherType.isProper()) {
       // An inference variable can only be instantiated to a reference type, so box the bound
-      // before storing it.  This keeps the stored bound consistent with the instantiation, so
-      // that recomputing the instantiation from the bounds, as restore() does, yields a
-      // reference type.
-      otherType = ((ProperType) otherType).boxType();
-      setInstantiation((ProperType) otherType);
+      // before storing it.  Storing the boxed type keeps the bound consistent with the
+      // instantiation, so that recomputing the instantiation from the bounds, as restore() does,
+      // yields a reference type.
+      ProperType boxedType = ((ProperType) otherType).boxType();
+      boundType = boxedType;
+      setInstantiation(boxedType);
     }
-    if (bounds.get(kind).add(otherType)) {
-      addConstraintsFromComplementaryBounds(parent, kind, otherType);
-      if (!otherType.ignoreAnnotations) {
-        Set<AbstractQualifier> aQuals = otherType.getQualifiers();
+    if (bounds.get(kind).add(boundType)) {
+      addConstraintsFromComplementaryBounds(parent, kind, boundType);
+      if (!boundType.ignoreAnnotations) {
+        Set<AbstractQualifier> aQuals = boundType.getQualifiers();
         addConstraintsFromComplementaryQualifierBounds(kind, aQuals);
       }
       return true;
