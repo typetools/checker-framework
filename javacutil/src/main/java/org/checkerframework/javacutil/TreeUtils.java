@@ -2099,7 +2099,7 @@ public final class TreeUtils {
 
   /**
    * Returns true if the binary operator may do a widening primitive conversion. See <a
-   * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-5.html">JLS chapter 5</a>.
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-5.html">JLS chapter 5</a>.
    *
    * @param tree a binary tree
    * @return true if the tree's operator does numeric promotion on its arguments
@@ -2370,7 +2370,7 @@ public final class TreeUtils {
 
   /**
    * Returns true if the given switch statement tree is an enhanced switch statement, as described
-   * in <a href="https://docs.oracle.com/javase/specs/jls/se21/html/jls-14.html#jls-14.11.2">JSL
+   * in <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-14.html#jls-14.11.2">JSL
    * 14.11.2</a>.
    *
    * @param switchTree the switch statement to check
@@ -2647,7 +2647,7 @@ public final class TreeUtils {
     // Seems like overloaded means the same thing as inexact.
     // overloadKind is set
     // com.sun.tools.javac.comp.DeferredAttr.DeferredChecker.visitReference()
-    // IsExact: https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.13.1-400
+    // IsExact: https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.1-400
     // Treat OverloadKind.ERROR as overloaded.
     return ((JCMemberReference) ref).getOverloadKind() == OverloadKind.UNOVERLOADED;
   }
