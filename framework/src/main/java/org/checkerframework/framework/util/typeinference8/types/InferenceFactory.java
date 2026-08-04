@@ -1018,15 +1018,15 @@ public class InferenceFactory {
     if (es.isEmpty()) {
       return ConstraintSet.TRUE;
     }
+    // Each element's underlying type is the corresponding X1...Xm of JLS 18.2.5.
     List<? extends AnnotatedTypeMirror> thrownTypes;
-    List<? extends TypeMirror> thrownTypeMirrors;
     if (expression instanceof LambdaExpressionTree let) {
-      thrownTypeMirrors = CheckedExceptionsUtil.thrownCheckedExceptions(let, context);
-      thrownTypes = CheckedExceptionsUtil.thrownCheckedExceptionsATM(let, context);
+      thrownTypes = CheckedExceptionsUtil.thrownCheckedExceptions(let, context);
     } else {
       CompileTimeDeclarationType compileTimeDeclaration =
           compileTimeDeclarationType((MemberReferenceTree) expression);
-      thrownTypeMirrors = compileTimeDeclaration.getJavaType().getThrownTypes();
+      List<? extends TypeMirror> thrownTypeMirrors =
+          compileTimeDeclaration.getJavaType().getThrownTypes();
       thrownTypes = compileTimeDeclaration.getAnnotatedType().getThrownTypes();
       if (thrownTypes.size() != thrownTypeMirrors.size()) {
         // TODO: the thrown types are not stored in the ExecutableElements, so the above
@@ -1045,9 +1045,8 @@ public class InferenceFactory {
       }
     }
 
-    Iterator<? extends AnnotatedTypeMirror> iter2 = thrownTypes.iterator();
-    for (TypeMirror xi : thrownTypeMirrors) {
-      AnnotatedTypeMirror xiAnnotated = iter2.next();
+    for (AnnotatedTypeMirror xiAnnotated : thrownTypes) {
+      TypeMirror xi = xiAnnotated.getUnderlyingType();
       boolean isSubtypeOfProper = false;
       for (ProperType properType : properTypes) {
         if (context.env.getTypeUtils().isSubtype(xi, properType.getJavaType())) {
