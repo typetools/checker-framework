@@ -189,7 +189,7 @@ public class Expression extends TypeConstraint {
    * @param context the context
    * @return the result of reducing this constraint
    */
-  // https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.2.1-300
+  // https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2.1-300
   private ReductionResult reduceMethodRef(Java8InferenceContext context) {
     MemberReferenceTree memRef = (MemberReferenceTree) expression;
     if (TreeUtils.isExactMethodReference(memRef)) {
@@ -243,7 +243,7 @@ public class Expression extends TypeConstraint {
       return ConstraintSet.TRUE;
     }
 
-    // https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.2.1-300-D-B-BC
+    // https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2.1-300-D-B-BC
     // Otherwise, if the method reference expression elides TypeArguments, and the
     // compile-time declaration is a generic method, and
     // the return type of the compile-time declaration mentions at least one of the method's
@@ -267,7 +267,7 @@ public class Expression extends TypeConstraint {
       b2 = new BoundSet(context);
     }
 
-    // https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.2.1-300-D-B-C
+    // https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2.1-300-D-B-C
     // Otherwise, let R be the return type of the function type, and let R' be the result
     // of applying capture conversion (5.1.10) to the return type of the invocation type
     // (15.12.2.6) of the compile-time declaration. If R' is void, the constraint reduces
@@ -288,7 +288,7 @@ public class Expression extends TypeConstraint {
    * @param context the context
    * @return the result of reducing this constraint
    */
-  // See https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.2.1-200
+  // See https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2.1-200
   private ReductionResultPair reduceLambda(Java8InferenceContext context) {
     LambdaExpressionTree lambda = (LambdaExpressionTree) expression;
     IPair<AbstractType, BoundSet> pair = getGroundTargetType(T, lambda, context);
@@ -360,7 +360,7 @@ public class Expression extends TypeConstraint {
       // If T is a wildcard-parameterized functional interface type and the lambda expression
       // is implicitly typed, then the ground target type is the non-wildcard parameterization
       // (9.9) of T.
-      // https://docs.oracle.com/javase/specs/jls/se8/html/jls-9.html#jls-9.9-200-C
+      // https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9-200-C
       return IPair.of(nonWildcardParameterization(t, context), null);
     }
   }
