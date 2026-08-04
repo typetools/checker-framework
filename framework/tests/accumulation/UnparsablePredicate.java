@@ -16,7 +16,7 @@ public class UnparsablePredicate {
 
   // These tests check that valid Java identifiers don't cause problems
   // when evaluating predicates. Examples of identifiers from
-  // https://docs.oracle.com/javase/specs/jls/se8/html/jls-3.html#jls-3.8
+  // https://docs.oracle.com/javase/specs/jls/se25/html/jls-3.html#jls-3.8
 
   void jls0Example(@TestAccumulationPredicate("String") Object x) {}
 
