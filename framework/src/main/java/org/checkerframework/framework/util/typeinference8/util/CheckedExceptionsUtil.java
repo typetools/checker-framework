@@ -26,6 +26,19 @@ public final class CheckedExceptionsUtil {
   private CheckedExceptionsUtil() {}
 
   /**
+   * A checked exception that a lambda body can throw, viewed both as a {@link TypeMirror} and as an
+   * {@link AnnotatedTypeMirror}.
+   *
+   * <p>For an exception thrown by a method invocation, {@code javaType} is the exception type as
+   * declared by the invoked method, whereas {@code annotatedType} is the exception type of the
+   * invocation, in which the method's type variables have been substituted.
+   *
+   * @param javaType the exception type
+   * @param annotatedType the exception type, with annotations
+   */
+  public record ThrownCheckedException(TypeMirror javaType, AnnotatedTypeMirror annotatedType) {}
+
+  /**
    * Returns {@code list}, or an empty list if {@code list} is null. {@code
    * TreeScanner.scan(Iterable, P)} returns null for an empty iterable, and {@code
    * TreeScanner.scan(Tree, P)} returns null for a null tree.
