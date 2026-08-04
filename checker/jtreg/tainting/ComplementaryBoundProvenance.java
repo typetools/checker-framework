@@ -6,10 +6,10 @@
  *
  * This test compares the full text of the diagnostic, because the "// :: error:" test harness
  * matches only the message key and so cannot detect a misattributed constraint history.  That makes
- * ComplementaryBoundProvenance.out sensitive to how a constraint renders itself; regenerate the
+ * ComplementaryBoundProvenance.goal sensitive to how a constraint renders itself; regenerate the
  * reference file whenever Constraint.toString or TypeConstraint.constraintHistory changes.
  *
- * @compile/fail/ref=ComplementaryBoundProvenance.out -XDrawDiagnostics -processor org.checkerframework.checker.tainting.TaintingChecker ComplementaryBoundProvenance.java
+ * @compile/fail/ref=ComplementaryBoundProvenance.goal -XDrawDiagnostics -processor org.checkerframework.checker.tainting.TaintingChecker ComplementaryBoundProvenance.java
  */
 
 import java.util.ArrayList;

@@ -45,7 +45,7 @@ public final class TestDiagnosticUtils {
   public static final Pattern DIAGNOSTIC_WARNING_PATTERN =
       Pattern.compile(DIAGNOSTIC_WARNING_REGEX);
 
-  // How the diagnostics appear in diagnostic files (.out).
+  // How the diagnostics appear in diagnostic files (.goal).
   public static final String DIAGNOSTIC_FILE_REGEX = ".+\\.java" + DIAGNOSTIC_REGEX;
   public static final Pattern DIAGNOSTIC_FILE_PATTERN = Pattern.compile(DIAGNOSTIC_FILE_REGEX);
 
