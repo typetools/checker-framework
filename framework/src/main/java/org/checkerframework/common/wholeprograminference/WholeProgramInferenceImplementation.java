@@ -668,11 +668,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
-    // Don't infer types for code that isn't presented as source.
-    if (!ElementUtils.isElementFromSourceCode(element)) {
-      return;
-    }
-
     String file = storage.getFileForElement(element);
 
     AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(lhsTree);
