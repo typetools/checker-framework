@@ -82,7 +82,7 @@ public class IncorporationFixedPoint {
   void diamondConstructor(@Tainted MyEdge e) {
     // N is inferred as @Tainted MyNode, which is not within its declared bound,
     // @Untainted Node<...>.
-    // :: error: (type.arguments.not.inferred)
+    // :: error: [type.arguments.not.inferred]
     new Holder<>(e);
   }
 
@@ -91,7 +91,7 @@ public class IncorporationFixedPoint {
   void genericMethod(@Tainted MyEdge e) {
     // N is inferred as @Tainted MyNode, which is not within its declared bound,
     // @Untainted Node<...>.
-    // :: error: (type.arguments.not.inferred)
+    // :: error: [type.arguments.not.inferred]
     m(e);
   }
 
