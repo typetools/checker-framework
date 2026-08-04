@@ -39,19 +39,6 @@ public final class CheckedExceptionsUtil {
   public record ThrownCheckedException(TypeMirror javaType, AnnotatedTypeMirror annotatedType) {}
 
   /**
-   * Returns {@code list}, or an empty list if {@code list} is null. {@code
-   * TreeScanner.scan(Iterable, P)} returns null for an empty iterable, and {@code
-   * TreeScanner.scan(Tree, P)} returns null for a null tree.
-   *
-   * @param list a possibly-null list
-   * @param <T> the element type of {@code list}
-   * @return {@code list}, or an empty list if {@code list} is null
-   */
-  private static <T> List<T> nullToEmptyList(@Nullable List<T> list) {
-    return list != null ? list : Collections.emptyList();
-  }
-
-  /**
    * Returns a list of checked exception types that can be thrown by the lambda.
    *
    * @param lambda an expression
@@ -335,5 +322,16 @@ public final class CheckedExceptionsUtil {
   private static boolean isCheckedException(
       AnnotatedTypeMirror type, Java8InferenceContext context) {
     return isCheckedException(type.getUnderlyingType(), context);
+  }
+
+  /**
+   * Returns {@code list}, or an empty list if {@code list} is null.
+   *
+   * @param list a possibly-null list
+   * @param <T> the element type of {@code list}
+   * @return {@code list}, or an empty list if {@code list} is null
+   */
+  private static <T> List<T> nullToEmptyList(@Nullable List<T> list) {
+    return list != null ? list : Collections.emptyList();
   }
 }
