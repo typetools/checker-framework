@@ -318,16 +318,9 @@ public class BoundSet implements ReductionResult {
     int count = 0;
     do {
       count++;
-      List<Variable> instantiations = getInstantiatedVariables();
-      boolean boundsChangeInst = false;
-      if (!instantiations.isEmpty()) {
-        for (Variable var : variables) {
-          boundsChangeInst = var.getBounds().applyInstantiationsToBounds();
-        }
-      }
-      boundsChangeInst |= captures.addAll(newBounds.captures);
+      boolean boundsChangeInst = captures.addAll(newBounds.captures);
       for (Variable alpha : variables) {
-        boundsChangeInst = alpha.getBounds().applyInstantiationsToBounds();
+        boundsChangeInst |= alpha.getBounds().applyInstantiationsToBounds();
 
         while (!alpha.getBounds().constraints.isEmpty()) {
           boundsChangeInst = true;
