@@ -354,7 +354,7 @@ public final class TestUtilities {
 
   public static File findComparisonFile(File testFile) {
     File comparisonFile =
-        new File(testFile.getParent(), testFile.getName().replace(".java", ".out"));
+        new File(testFile.getParent(), testFile.getName().replace(".java", ".goal"));
     return comparisonFile;
   }
 

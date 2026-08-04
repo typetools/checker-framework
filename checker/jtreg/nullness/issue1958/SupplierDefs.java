@@ -3,7 +3,7 @@
  * @summary Test annotations on type parameters in extends.
  *
  * @compile -processor org.checkerframework.checker.nullness.NullnessChecker SupplierDefs.java
- * @compile/fail/ref=NPE2Test.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker NPE2Test.java -Anomsgtext
+ * @compile/fail/ref=NPE2Test.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker NPE2Test.java -Anomsgtext
  */
 
 import java.util.function.Supplier;
