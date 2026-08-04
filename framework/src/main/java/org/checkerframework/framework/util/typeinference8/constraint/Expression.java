@@ -481,10 +481,10 @@ public class Expression extends TypeConstraint {
   }
 
   /**
-   * Returns a new bound set that contains the false bound.
+   * Returns a new bound set that contains only the false bound.
    *
    * @param context the context
-   * @return a new bound set that contains the false bound
+   * @return a new bound set that contains only the false bound
    */
   private static BoundSet falseBoundSet(Java8InferenceContext context) {
     BoundSet boundSet = new BoundSet(context);

@@ -346,8 +346,6 @@ public class BoundSet implements ReductionResult {
 
       containsFalse |= newBounds.containsFalse;
       if (count >= MAX_INCORPORATION_STEPS) {
-        // Exiting the loop here would leave this bound set at a non-fixed point, which would
-        // silently produce wrong inference results, so fail loudly instead.
         throw new BugInCF(
             "Max incorporation steps (%d) reached without reaching a fixed point.",
             MAX_INCORPORATION_STEPS);

@@ -107,13 +107,10 @@ public final class Resolution {
   }
 
   /**
-   * Throws {@link BugInCF} if {@code boundSet} contains the false bound. Resolution is only applied
-   * to bound sets that do not contain false, and it does not itself introduce false: {@link
-   * #resolveWithoutCapture(Set, BoundSet)} may produce false, but {@link #resolveSmallestSet(Set,
-   * BoundSet)} discards that bound set and resolves with capture instead.
+   * Throws {@link BugInCF} if {@code boundSet} contains the false bound.
    *
    * @param boundSet a bound set that should not contain the false bound
-   * @param where a description of where the check is performed, for the error message
+   * @param where the location where the check is performed, for the error message
    * @param vars the variables being resolved, for the error message
    */
   private static void checkNoFalse(BoundSet boundSet, String where, Collection<Variable> vars) {
