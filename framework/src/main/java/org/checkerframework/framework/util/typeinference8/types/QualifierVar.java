@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.QualifierTyping;
@@ -34,8 +35,8 @@ public class QualifierVar extends AbstractQualifier {
   public final EnumMap<BoundKind, Set<AbstractQualifier>> qualifierBounds =
       new EnumMap<>(BoundKind.class);
 
-  /** The instantiation of this variable. This is set during inference. */
-  protected AnnotationMirror instantiation;
+  /** The instantiation of this variable, or null if it has none. This is set during inference. */
+  protected @Nullable AnnotationMirror instantiation;
 
   /**
    * Creates a {@link QualifierVar}.
@@ -64,6 +65,8 @@ public class QualifierVar extends AbstractQualifier {
       return false;
     }
     QualifierVar that = (QualifierVar) o;
+    // `id` is unique only within one inference problem, so `invocation` and `polyQualifier` are
+    // also compared, to distinguish variables that were created for different inference problems.
     return id == that.id
         && Objects.equals(invocation, that.invocation)
         && Objects.equals(polyQualifier, that.polyQualifier);
@@ -152,8 +155,13 @@ public class QualifierVar extends AbstractQualifier {
     return constraints;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>If no bound determines the instantiation of this variable, this method returns null.
+   */
   @Override
-  AnnotationMirror getInstantiation() {
+  @Nullable AnnotationMirror getInstantiation() {
     if (instantiation == null) {
       AnnotationMirror lub = null;
       for (AbstractQualifier lower : qualifierBounds.get(BoundKind.LOWER)) {
@@ -187,6 +195,7 @@ public class QualifierVar extends AbstractQualifier {
           }
         }
       }
+      instantiation = glb;
       return glb;
     }
     return instantiation;

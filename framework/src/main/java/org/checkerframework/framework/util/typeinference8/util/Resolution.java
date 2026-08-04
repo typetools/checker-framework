@@ -32,7 +32,7 @@ import org.checkerframework.framework.util.typeinference8.types.VariableBounds.B
  * the resolution algorithm for captured variables is used.
  *
  * <p>Resolution is discussed in <a
- * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.4">JLS Section
+ * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.4">JLS Section
  * 18.4</a>.
  *
  * <p>Entry point is two static methods, {@link #resolve(Collection, BoundSet,
@@ -44,7 +44,9 @@ public final class Resolution {
   /**
    * Instantiates a set of variables, {@code as}.
    *
-   * @param as the set of variables to resolve
+   * <p>This method removes from {@code as} every variable that already has an instantiation.
+   *
+   * @param as the set of variables to resolve; this method removes elements from it
    * @param boundSet the bound set that includes {@code as}
    * @param context Java8InferenceContext
    * @return bound set where {@code as} have instantiations
@@ -369,7 +371,6 @@ public final class Resolution {
       Set<Variable> as, BoundSet boundSet, Java8InferenceContext context) {
     assert !boundSet.containsFalse();
     boundSet.removeCaptures(as);
-    BoundSet resolvedBoundSet = new BoundSet(context);
     List<Variable> asList = new ArrayList<>();
     List<TypeVariable> typeVar = new ArrayList<>();
     List<AbstractType> typeArg = new ArrayList<>();
@@ -411,7 +412,7 @@ public final class Resolution {
         lowerBoundAnnos = Collections.emptySet();
       }
 
-      Set<AbstractType> upperBounds = ai.getBounds().upperBounds();
+      Set<AbstractType> upperBounds = ai.getBounds().nonVariableUpperBounds();
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
       Set<? extends AnnotationMirror> upperBoundAnnos;
       Set<AbstractQualifier> qualifierUpperBounds =
@@ -447,7 +448,7 @@ public final class Resolution {
       ai.getBounds().addBound(null, VariableBounds.BoundKind.EQUAL, subsTypeArg.get(i));
     }
 
-    boundSet.incorporateToFixedPoint(resolvedBoundSet);
+    boundSet.reachFixedPoint();
     return boundSet;
   }
 }

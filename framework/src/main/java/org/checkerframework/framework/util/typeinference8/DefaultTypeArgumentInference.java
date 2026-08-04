@@ -127,7 +127,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       }
       throw BugInCF.addLocation(outerTree, ex);
     } finally {
-      if (pushedToInferenceStack && !java8InferenceStack.isEmpty()) {
+      if (pushedToInferenceStack) {
         java8InferenceStack.pop();
       }
     }
@@ -192,7 +192,14 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return tree;
       case CASE:
       case YIELD:
-        parentPath = TreePathUtil.pathTillOfKind(parentPath, Kind.SWITCH_EXPRESSION);
+        TreePath switchExpressionPath =
+            TreePathUtil.pathTillOfKind(parentPath, Kind.SWITCH_EXPRESSION);
+        if (switchExpressionPath == null) {
+          // The case or yield is in a switch statement rather than a switch expression, so
+          // there is no outer inference.
+          return tree;
+        }
+        parentPath = switchExpressionPath;
         parentTree = parentPath.getLeaf();
       // parentTree is a switch expression, so fall through
       case SWITCH_EXPRESSION:

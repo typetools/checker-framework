@@ -22,10 +22,9 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +57,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.ConstraintS
 import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.util.CheckedExceptionsUtil;
+import org.checkerframework.framework.util.typeinference8.util.CheckedExceptionsUtil.ThrownCheckedException;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
@@ -167,8 +167,7 @@ public class InferenceFactory {
         return new ProperType(res, res.getUnderlyingType(), this.context);
       }
       case RETURN -> {
-        HashSet<Kind> kinds =
-            new HashSet<>(Arrays.asList(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD));
+        Set<Kind> kinds = EnumSet.of(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD);
         Tree enclosing = TreePathUtil.enclosingOfKind(path, kinds);
         if (enclosing instanceof MethodTree methodTree) {
           AnnotatedTypeMirror res = factory.getMethodReturnType(methodTree);
@@ -729,7 +728,7 @@ public class InferenceFactory {
   /**
    * Returns the compile-time declaration of the method reference that is the method to which the
    * expression refers. See <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.13.1">JLS section
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.1">JLS section
    * 15.13.1</a> for a complete definition.
    *
    * <p>The type of a member reference is a functional interface. The function type of a member
@@ -809,14 +808,16 @@ public class InferenceFactory {
 
   /**
    * Returns the pair of {@code a} as the least upper bound of {@code a} and {@code b} and {@code b}
-   * as the least upper bound of {@code a} and {@code b}.
+   * as the least upper bound of {@code a} and {@code b}, or null if that least upper bound is not a
+   * parameterized type.
    *
    * @param a type
    * @param b type
    * @return the pair of {@code a} as the least upper bound of {@code a} and {@code b} and {@code b}
-   *     as the least upper bound of {@code a} and {@code b}
+   *     as the least upper bound of {@code a} and {@code b}, or null
    */
-  public IPair<AbstractType, AbstractType> getParameterizedSupers(AbstractType a, AbstractType b) {
+  public @Nullable IPair<AbstractType, AbstractType> getParameterizedSupers(
+      AbstractType a, AbstractType b) {
     TypeMirror aTypeMirror = a.getJavaType();
     TypeMirror bTypeMirror = b.getJavaType();
     // com.sun.tools.javac.comp.Infer#getParameterizedSupers
@@ -873,12 +874,12 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns the least upper bounds of {@code properTypes}.
+   * Returns the least upper bounds of {@code properTypes}, or null if {@code properTypes} is empty.
    *
    * @param properTypes types to lub
-   * @return the least upper bounds of {@code properTypes}
+   * @return the least upper bounds of {@code properTypes}, or null
    */
-  public ProperType lub(Set<ProperType> properTypes) {
+  public @Nullable ProperType lub(Set<ProperType> properTypes) {
     if (properTypes.isEmpty()) {
       return null;
     }
@@ -912,12 +913,13 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns the greatest lower bound of {@code abstractTypes}.
+   * Returns the greatest lower bound of {@code abstractTypes}, or null if {@code abstractTypes} is
+   * empty.
    *
    * @param abstractTypes types to glb
-   * @return the greatest lower bound of {@code abstractTypes}
+   * @return the greatest lower bound of {@code abstractTypes}, or null
    */
-  public AbstractType glb(Set<AbstractType> abstractTypes) {
+  public @Nullable AbstractType glb(Set<AbstractType> abstractTypes) {
     AbstractType ti = null;
     for (AbstractType liProperType : abstractTypes) {
       AbstractType li = liProperType;
@@ -1018,15 +1020,13 @@ public class InferenceFactory {
     if (es.isEmpty()) {
       return ConstraintSet.TRUE;
     }
-    List<? extends AnnotatedTypeMirror> thrownTypes;
-    List<? extends TypeMirror> thrownTypeMirrors;
+    List<ThrownCheckedException> thrownExceptions;
     if (expression instanceof LambdaExpressionTree let) {
-      thrownTypeMirrors = CheckedExceptionsUtil.thrownCheckedExceptions(let, context);
-      thrownTypes = CheckedExceptionsUtil.thrownCheckedExceptionsATM(let, context);
+      thrownExceptions = CheckedExceptionsUtil.thrownCheckedExceptions(let, context);
     } else {
-      thrownTypeMirrors =
+      List<? extends TypeMirror> thrownTypeMirrors =
           TypesUtils.findFunctionType(TreeUtils.typeOf(expression), context.env).getThrownTypes();
-      thrownTypes =
+      List<? extends AnnotatedTypeMirror> thrownTypes =
           compileTimeDeclarationType((MemberReferenceTree) expression)
               .getAnnotatedType()
               .getThrownTypes();
@@ -1045,11 +1045,16 @@ public class InferenceFactory {
         }
         thrownTypes = thrownTypesNew;
       }
+      thrownExceptions = new ArrayList<>(thrownTypeMirrors.size());
+      Iterator<? extends AnnotatedTypeMirror> iter2 = thrownTypes.iterator();
+      for (TypeMirror thrown : thrownTypeMirrors) {
+        thrownExceptions.add(new ThrownCheckedException(thrown, iter2.next()));
+      }
     }
 
-    Iterator<? extends AnnotatedTypeMirror> iter2 = thrownTypes.iterator();
-    for (TypeMirror xi : thrownTypeMirrors) {
-      AnnotatedTypeMirror xiAnnotated = iter2.next();
+    for (ThrownCheckedException thrownException : thrownExceptions) {
+      TypeMirror xi = thrownException.javaType();
+      AnnotatedTypeMirror xiAnnotated = thrownException.annotatedType();
       boolean isSubtypeOfProper = false;
       for (ProperType properType : properTypes) {
         if (context.env.getTypeUtils().isSubtype(xi, properType.getJavaType())) {

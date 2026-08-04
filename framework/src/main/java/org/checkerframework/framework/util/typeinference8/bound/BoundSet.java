@@ -181,12 +181,12 @@ public class BoundSet implements ReductionResult {
    *     capture(G<...>)} for any variable in {@code as}
    */
   public boolean containsCapture(Collection<Variable> as) {
-    List<Variable> list = new ArrayList<>();
+    Set<Variable> lhsVariables = new LinkedHashSet<>();
     for (CaptureBound c : captures) {
-      list.addAll(c.getAllVariablesOnLHS());
+      lhsVariables.addAll(c.getAllVariablesOnLHS());
     }
     for (Variable ai : as) {
-      if (list.contains(ai)) {
+      if (lhsVariables.contains(ai)) {
         return true;
       }
     }
@@ -304,8 +304,8 @@ public class BoundSet implements ReductionResult {
    * <p>Incorporation creates new constraints that are then reduced to a bound set which is further
    * incorporated into this bound set. Incorporation terminates when the bounds set has reached a
    * fixed point. <a
-   * href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.3">JLS 18 .1</a>
-   * defines this fixed point and further explains incorporation.
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.3">JLS section
+   * 18.3</a> defines this fixed point and further explains incorporation.
    *
    * @param newBounds bounds to incorporate
    */
@@ -342,12 +342,21 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
+   * Incorporates this bound set into itself until it reaches a fixed point. Use this method after
+   * adding bounds directly to the variables of this bound set, rather than via a {@link BoundSet}
+   * that can be passed to {@link #incorporateToFixedPoint}.
+   */
+  public void reachFixedPoint() {
+    incorporateToFixedPoint(new BoundSet(context));
+  }
+
+  /**
    * Remove any capture bound that mentions any variable in {@code as}.
    *
    * @param as a set of variables
    */
   public void removeCaptures(Set<Variable> as) {
-    captures.removeIf((CaptureBound c) -> c.isCaptureMentionsAny(as));
+    captures.removeIf((CaptureBound c) -> c.mentionsAny(as));
   }
 
   @Override

@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.function.BinaryOperator;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
@@ -50,11 +51,12 @@ public abstract class AbstractQualifier {
   }
 
   /**
-   * Returns the instantiation of this.
+   * Returns the instantiation of this, or null if this is a qualifier variable with no
+   * instantiation.
    *
-   * @return the instantiation of this
+   * @return the instantiation of this, or null
    */
-  abstract AnnotationMirror getInstantiation();
+  abstract @Nullable AnnotationMirror getInstantiation();
 
   /**
    * Returns the least upper bounds of {@code quals}.
