@@ -1,4 +1,4 @@
-package org.checkerframework.framework.testchecker.typeinference8dependencies;
+package org.checkerframework.framework.testchecker.lubglb;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -11,8 +11,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
 import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
@@ -35,10 +34,10 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
  * <p>Each test method throws an {@code AssertionError} on failure, so that the stack trace points
  * at the failing check.
  *
- * <p>The tests are driven by the declarations in {@code
- * framework/tests/typeinference8dependencies/Typeinference8Dependencies.java}.
+ * <p>{@link LubGlbChecker} runs these tests, which are driven by the declarations in {@code
+ * framework/tests/lubglb/Typeinference8Dependencies.java}.
  */
-public class DependenciesVisitor extends BaseTypeVisitor<DependenciesAnnotatedTypeFactory> {
+public class DependenciesTests {
 
   /** The simple name of the class in the test input that holds the declarations used here. */
   static final String TEST_CLASS_NAME = "Typeinference8Dependencies";
@@ -46,29 +45,26 @@ public class DependenciesVisitor extends BaseTypeVisitor<DependenciesAnnotatedTy
   /** True if the tests have been run. */
   static boolean testsRan = false;
 
+  /** This class is a collection of static methods; it is not instantiated. */
+  private DependenciesTests() {
+    throw new AssertionError("do not instantiate");
+  }
+
   /**
-   * Creates a {@code DependenciesVisitor}.
+   * Runs the tests, if {@code path} is a path to the test input class. Throws an {@code
+   * AssertionError} if a test fails.
    *
-   * @param checker the checker
+   * @param atypeFactory the type factory of the checker that runs these tests
+   * @param path a path to a class
    */
-  public DependenciesVisitor(BaseTypeChecker checker) {
-    super(checker);
-  }
-
-  @Override
-  protected DependenciesAnnotatedTypeFactory createTypeFactory() {
-    return new DependenciesAnnotatedTypeFactory(checker);
-  }
-
-  @Override
-  public void processClassTree(ClassTree classTree) {
-    super.processClassTree(classTree);
+  public static void run(AnnotatedTypeFactory atypeFactory, TreePath path) {
+    ClassTree classTree = (ClassTree) path.getLeaf();
     if (!classTree.getSimpleName().contentEquals(TEST_CLASS_NAME)) {
       return;
     }
 
     // The three inference variables, for the type variables Z1, Z2, and Z3 of Holder.
-    List<Variable> variables = createVariables(classTree);
+    List<Variable> variables = createVariables(atypeFactory, path, classTree);
     Variable alpha = variables.get(0);
     Variable beta = variables.get(1);
     Variable gamma = variables.get(2);
@@ -190,11 +186,13 @@ public class DependenciesVisitor extends BaseTypeVisitor<DependenciesAnnotatedTy
    * Creates the inference variables that the tests use: one for each type parameter of the class
    * {@code Holder} of the test input.
    *
+   * @param atypeFactory the type factory of the checker that runs these tests
+   * @param classPath a path to {@code classTree}
    * @param classTree the class tree of the test input
    * @return three distinct inference variables
    */
-  private List<Variable> createVariables(ClassTree classTree) {
-    TreePath classPath = atypeFactory.getPath(classTree);
+  private static List<Variable> createVariables(
+      AnnotatedTypeFactory atypeFactory, TreePath classPath, ClassTree classTree) {
     // The InvocationTypeInference is needed only because Java8InferenceContext requires one.
     InvocationTypeInference inference = new InvocationTypeInference(atypeFactory, classPath);
     Java8InferenceContext context = new Java8InferenceContext(atypeFactory, classPath, inference);

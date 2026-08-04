@@ -1,9 +1,9 @@
 // This file contains no test code of its own.  The actual tests are performed by
-// DependenciesVisitor, which builds inference variables out of the declarations below and then
+// DependenciesTests, which builds inference variables out of the declarations below and then
 // checks the behavior of
 // org.checkerframework.framework.util.typeinference8.types.Dependencies.
 //
-// The declarations are here, rather than being synthesized by the visitor, because creating an
+// The declarations are here, rather than being synthesized by the test code, because creating an
 // inference variable requires a real declaration to read an AnnotatedTypeMirror from.
 public class Typeinference8Dependencies {
 

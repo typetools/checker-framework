@@ -1,6 +1,8 @@
 package org.checkerframework.framework.testchecker.lubglb;
 
+import com.sun.source.util.TreePath;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -32,6 +34,10 @@ public class LubGlbChecker extends BaseTypeChecker {
   public void initChecker() {
     super.initChecker();
 
+    // Reset the flag, so that a second run of this checker in the same JVM cannot pass merely
+    // because an earlier run set the flag.
+    DependenciesTests.testsRan = false;
+
     Elements elements = processingEnv.getElementUtils();
 
     A = AnnotationBuilder.fromClass(elements, LubglbA.class);
@@ -57,6 +63,25 @@ public class LubGlbChecker extends BaseTypeChecker {
     lubAssert(POLY, B, A);
     lubAssert(POLY, F, POLY);
     lubAssert(POLY, A, A);
+  }
+
+  @Override
+  public void typeProcess(TypeElement element, TreePath path) {
+    super.typeProcess(element, path);
+    if (path != null) {
+      DependenciesTests.run(((BaseTypeVisitor<?>) visitor).getTypeFactory(), path);
+    }
+  }
+
+  @Override
+  public void typeProcessingOver() {
+    if (!DependenciesTests.testsRan) {
+      throw new AssertionError(
+          "LubGlbChecker ran no Dependencies test; the test input contains no class "
+              + DependenciesTests.TEST_CLASS_NAME
+              + ".");
+    }
+    super.typeProcessingOver();
   }
 
   /**
