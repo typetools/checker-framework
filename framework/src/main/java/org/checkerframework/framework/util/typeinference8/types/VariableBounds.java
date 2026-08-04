@@ -113,7 +113,7 @@ public class VariableBounds {
     bounds.put(BoundKind.LOWER, new LinkedHashSet<>(savedBounds.get(BoundKind.LOWER)));
     for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
       if (t.isProper()) {
-        instantiation = (ProperType) t;
+        instantiation = ((ProperType) t).boxType();
       }
     }
     qualifierBounds.clear();
