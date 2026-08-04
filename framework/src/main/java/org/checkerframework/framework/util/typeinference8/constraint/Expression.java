@@ -310,7 +310,7 @@ public class Expression extends TypeConstraint {
     if (!TreeUtils.isImplicitlyTypedLambda(lambda)) {
       // Explicitly typed lambda
       List<? extends VariableTree> parameters = lambda.getParameters();
-      List<AbstractType> gs = T.getFunctionTypeParameterTypes();
+      List<AbstractType> gs = tPrime.getFunctionTypeParameterTypes();
       assert parameters.size() == gs.size();
 
       for (int i = 0; i < gs.size(); i++) {
@@ -429,9 +429,9 @@ public class Expression extends TypeConstraint {
     // alpham>, where alpha1, ..., alpham are fresh inference variables.
     Theta map = context.inferenceTypeFactory.createThetaForLambda(lambda, t);
     List<Variable> alphas = new ArrayList<>(map.values());
-    AbstractType tprime = InferenceType.create(t.getAnnotatedType(), t.getJavaType(), map, context);
+    AbstractType tPrime = InferenceType.create(t.getAnnotatedType(), t.getJavaType(), map, context);
 
-    List<AbstractType> qs = tprime.getFunctionTypeParameterTypes();
+    List<AbstractType> qs = tPrime.getFunctionTypeParameterTypes();
     assert qs.size() == ps.size();
 
     // A set of constraint formulas is formed with, for all i (1 <= i <= n), <Pi = Qi>.
