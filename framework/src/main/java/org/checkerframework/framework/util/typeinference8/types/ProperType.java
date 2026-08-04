@@ -170,16 +170,7 @@ public class ProperType extends AbstractType {
 
     if (context.typeFactory.types.isAssignable(subJavaType, superJavaType)
         || context.typeFactory.types.isAssignable(subErasedJavaType, superErasedJavaType)) {
-      if (ignoreAnnotations || superType.ignoreAnnotations) {
-        return ConstraintSet.TRUE;
-      }
-      AnnotatedTypeMirror superATM = superType.getAnnotatedType();
-      AnnotatedTypeMirror subATM = this.getAnnotatedType();
-      if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
-        return ConstraintSet.TRUE;
-      } else {
-        return ConstraintSet.TRUE_ANNO_FAIL;
-      }
+      return compareAnnotations(superType);
     } else {
       return ConstraintSet.FALSE;
     }
@@ -197,16 +188,7 @@ public class ProperType extends AbstractType {
     TypeMirror superJavaType = superType.getJavaType();
 
     if (context.types.isSubtypeUnchecked((Type) subType, (Type) superJavaType)) {
-      if (ignoreAnnotations || superType.ignoreAnnotations) {
-        return ConstraintSet.TRUE;
-      }
-      AnnotatedTypeMirror superATM = superType.getAnnotatedType();
-      AnnotatedTypeMirror subATM = this.getAnnotatedType();
-      if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
-        return ConstraintSet.TRUE;
-      } else {
-        return ConstraintSet.TRUE_ANNO_FAIL;
-      }
+      return compareAnnotations(superType);
     } else {
       return ConstraintSet.FALSE;
     }
@@ -224,16 +206,7 @@ public class ProperType extends AbstractType {
     TypeMirror superJavaType = superType.getJavaType();
 
     if (context.types.isAssignable((Type) subType, (Type) superJavaType)) {
-      if (ignoreAnnotations || superType.ignoreAnnotations) {
-        return ConstraintSet.TRUE;
-      }
-      AnnotatedTypeMirror superATM = superType.getAnnotatedType();
-      AnnotatedTypeMirror subATM = this.getAnnotatedType();
-      if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
-        return ConstraintSet.TRUE;
-      } else {
-        return ConstraintSet.TRUE_ANNO_FAIL;
-      }
+      return compareAnnotations(superType);
     } else {
       return ConstraintSet.FALSE;
     }

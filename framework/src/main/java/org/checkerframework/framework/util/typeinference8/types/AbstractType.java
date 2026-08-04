@@ -32,6 +32,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
+import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -636,6 +638,29 @@ public abstract class AbstractType {
    * @return the primary qualifiers on this type
    */
   public abstract Set<AbstractQualifier> getQualifiers();
+
+  /**
+   * Compares the annotations of {@code this} and {@code superType}, assuming that their underlying
+   * Java types have already been found to be in the required relationship. If either type is marked
+   * as having annotations that should be ignored, then the annotations are not compared.
+   *
+   * @param superType the potential supertype
+   * @return {@link ConstraintSet#TRUE} if the annotations are ignored or if the annotations of
+   *     {@code this} are a subtype of those of {@code superType}; otherwise {@link
+   *     ConstraintSet#TRUE_ANNO_FAIL}
+   */
+  protected final ReductionResult compareAnnotations(ProperType superType) {
+    if (ignoreAnnotations || superType.ignoreAnnotations) {
+      return ConstraintSet.TRUE;
+    }
+    AnnotatedTypeMirror superATM = superType.getAnnotatedType();
+    AnnotatedTypeMirror subATM = this.getAnnotatedType();
+    if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
+      return ConstraintSet.TRUE;
+    } else {
+      return ConstraintSet.TRUE_ANNO_FAIL;
+    }
+  }
 
   @Override
   public boolean equals(Object o) {
