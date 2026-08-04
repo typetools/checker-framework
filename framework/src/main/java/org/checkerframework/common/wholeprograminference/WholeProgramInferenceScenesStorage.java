@@ -39,7 +39,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.dataflow.analysis.Analysis;
-import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
@@ -154,20 +153,31 @@ public class WholeProgramInferenceScenesStorage
 
   @Override
   public String getFileForElement(Element elt) {
-    String className =
-        switch (elt.getKind()) {
-          case CONSTRUCTOR, METHOD -> ElementUtils.getEnclosingClassName((ExecutableElement) elt);
-          case LOCAL_VARIABLE -> getEnclosingClassName((LocalVariableNode) elt);
-          case FIELD, ENUM_CONSTANT -> {
-            ClassSymbol enclosingClass = ((VarSymbol) elt).enclClass();
-            yield enclosingClass.flatname.toString();
-          }
-          case CLASS -> ElementUtils.getBinaryName((TypeElement) elt);
-          case PARAMETER -> ElementUtils.getEnclosingClassName((VariableElement) elt);
-          default -> throw new BugInCF("What element? %s %s", elt.getKind(), elt);
-        };
+    String className = getEnclosingClassName(elt);
     String file = getJaifPath(className);
     return file;
+  }
+
+  /**
+   * Returns the binary name of the class that contains {@code elt}, or of {@code elt} itself if
+   * {@code elt} is a class.
+   *
+   * @param elt an element
+   * @return the binary name of the class that contains {@code elt}
+   */
+  /*package-private*/ static @BinaryName String getEnclosingClassName(Element elt) {
+    return switch (elt.getKind()) {
+      case CONSTRUCTOR, METHOD -> ElementUtils.getEnclosingClassName((ExecutableElement) elt);
+      case FIELD, ENUM_CONSTANT -> {
+        ClassSymbol enclosingClass = ((VarSymbol) elt).enclClass();
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @BinaryName String className = enclosingClass.flatname.toString();
+        yield className;
+      }
+      case CLASS -> ElementUtils.getBinaryName((TypeElement) elt);
+      case LOCAL_VARIABLE, PARAMETER -> ElementUtils.getEnclosingClassName((VariableElement) elt);
+      default -> throw new BugInCF("What element? %s %s", elt.getKind(), elt);
+    };
   }
 
   /**
@@ -987,16 +997,5 @@ public class WholeProgramInferenceScenesStorage
   public static class AnnotationsInContexts
       extends HashMap<IPair<String, TypeUseLocation>, Set<String>> {
     private static final long serialVersionUID = 20200321L;
-  }
-
-  /**
-   * Returns the "flatname" of the class enclosing {@code localVariableNode}.
-   *
-   * @param localVariableNode the {@link LocalVariableNode}
-   * @return the "flatname" of the class enclosing {@code localVariableNode}
-   */
-  private static @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
-    return ElementUtils.getBinaryName(
-        ElementUtils.enclosingTypeElement(localVariableNode.getElement()));
   }
 }
