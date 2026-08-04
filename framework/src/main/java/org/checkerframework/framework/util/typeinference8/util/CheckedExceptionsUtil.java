@@ -26,7 +26,9 @@ public final class CheckedExceptionsUtil {
   private CheckedExceptionsUtil() {}
 
   /**
-   * Returns {@code list}, or an empty list if {@code list} is null.
+   * Returns {@code list}, or an empty list if {@code list} is null. {@code
+   * TreeScanner.scan(Iterable, P)} returns null for an empty iterable, and {@code
+   * TreeScanner.scan(Tree, P)} returns null for a null tree.
    *
    * @param list a list or null
    * @param <T> the element type of {@code list}
