@@ -37,7 +37,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * This class represents "types" that "include type-like syntax that contains inference variables"
- * (see <a href="https://docs.oracle.com/javase/specs/jls/se26/html/jls-18.html#jls-18.1.1">Section
+ * (see <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.1.1">Section
  * 18.1</a>). Three subclasses of this class are:
  *
  * <ul>
@@ -178,9 +178,10 @@ public abstract class AbstractType {
    * parameters. (A type parameter of a declared type, can't refer to any type being inferred, so
    * they are proper types.)
    *
-   * @return the upper bounds of the type parameter of this type
+   * @return the upper bounds of the type parameter of this type, or null if this type is a use of
+   *     an inference variable
    */
-  public List<ProperType> getTypeParameterBounds() {
+  public @Nullable List<ProperType> getTypeParameterBounds() {
     TypeElement typeelem = (TypeElement) ((DeclaredType) getJavaType()).asElement();
     List<ProperType> bounds = new ArrayList<>();
     List<AnnotatedTypeParameterBounds> typeVars =

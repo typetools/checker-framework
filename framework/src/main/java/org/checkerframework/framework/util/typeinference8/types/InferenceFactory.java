@@ -809,7 +809,8 @@ public class InferenceFactory {
 
   /**
    * Returns the pair of {@code a} as the least upper bound of {@code a} and {@code b} and {@code b}
-   * as the least upper bound of {@code a} and {@code b}.
+   * as the least upper bound of {@code a} and {@code b}, or null if that least upper bound is not a
+   * parameterized type.
    *
    * @param a type
    * @param b type

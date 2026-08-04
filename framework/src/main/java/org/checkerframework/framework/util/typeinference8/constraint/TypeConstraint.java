@@ -142,7 +142,7 @@ public abstract class TypeConstraint implements Constraint {
   /**
    * Implementation of {@link #getInputVariables()} that is used both by expressions constraints and
    * checked exception constraints
-   * https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2-200
+   * https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2
    *
    * @param tree an expression tree
    * @param T the type of the right-hand side of the constraint
