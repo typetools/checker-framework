@@ -6,8 +6,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -29,11 +27,12 @@ import org.checkerframework.javacutil.TypesUtils;
 public class Theta {
 
   /**
-   * A key of {@link #map}: a type variable whose {@code equals} method is {@link
-   * TypesUtils#areSame(TypeVariable, TypeVariable)}.
+   * A key of {@link #map}: a wrapper around a type variable, whose {@code equals} method is {@link
+   * TypesUtils#areSame(TypeVariable, TypeVariable)} rather than {@code TypeVariable.equals}.
    *
    * <p>This is not a record, because a record's generated {@code equals} would compare {@link
-   * #typeVariable}, which is exactly the comparison that this class exists to avoid.
+   * #typeVariable} using {@code equals}, which is exactly the comparison that this class exists to
+   * avoid.
    */
   private static class Key {
 
@@ -57,9 +56,7 @@ public class Theta {
 
     @Override
     public int hashCode() {
-      // TypesUtils.areSame depends on asElement()'s getSimpleName() and getEnclosingElement().
-      Element element = typeVariable.asElement();
-      return Objects.hash(element.getSimpleName().toString(), element.getEnclosingElement());
+      return TypesUtils.hashCodeForAreSame(typeVariable);
     }
 
     @Override
@@ -82,8 +79,16 @@ public class Theta {
   public Theta() {}
 
   /**
-   * Maps {@code typeVariable} to {@code variable}. Any existing mapping for a type variable that is
-   * {@link TypesUtils#areSame(TypeVariable, TypeVariable)} as {@code typeVariable} is replaced.
+   * Maps {@code typeVariable} to {@code variable}. If some type variable that is {@link
+   * TypesUtils#areSame(TypeVariable, TypeVariable)} as {@code typeVariable} is already mapped, then
+   * its inference variable is replaced, but {@link #getTypeVariables} continues to return the type
+   * variable that was passed to the earlier call. That distinction does not matter to clients,
+   * which compare type variables using {@code areSame}.
+   *
+   * <p>Callers that iterate over {@link #values} in lockstep with the type variables they passed to
+   * this method, such as {@code CaptureBound}, depend on each call adding an entry rather than
+   * replacing one. That holds because the type variables of a single declaration have distinct
+   * simple names and the same enclosing element, so no two of them are {@code areSame}.
    *
    * @param typeVariable a type variable
    * @param variable the inference variable for {@code typeVariable}
@@ -133,6 +138,11 @@ public class Theta {
   /**
    * Returns the type variables that have an inference variable, in the order in which they were
    * added. The result is unmodifiable.
+   *
+   * <p>The result's {@code contains} method uses {@code equals}, which for a type variable is
+   * reference equality. A client that wants this class's notion of key equality must compare the
+   * elements using {@link TypesUtils#areSame(TypeVariable, TypeVariable)} itself, or call {@link
+   * #get}.
    *
    * @return the type variables that have an inference variable
    */

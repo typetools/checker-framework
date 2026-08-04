@@ -127,9 +127,12 @@ public final class InferenceType extends AbstractType {
       return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
     }
 
-    // The kind test is of `typeMirror`, but the lookup key is `type`.  Both are required: a
-    // UseOfVariable describes `typeMirror`, so it is created only when `typeMirror` is a type
-    // variable, but the mapping is keyed by the type variables of `type`.
+    // The kind test is of `typeMirror`, but the lookup key is from `type`.  The two can disagree,
+    // because `type` and `typeMirror` come from different sources; for example, `typeMirror` may
+    // have been substituted while `type` was not.  This is a use of an inference variable only if
+    // both agree that this position holds a type variable.  If only `type` is a mapped type
+    // variable, the fall-through below creates an InferenceType, whose `applyInstantiations`
+    // substitutes for the type variable later.
     Variable variable =
         typeMirror.getKind() == TypeKind.TYPEVAR ? map.get(type.getUnderlyingType()) : null;
     if (variable != null) {
@@ -168,9 +171,7 @@ public final class InferenceType extends AbstractType {
       return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
     }
 
-    // The kind test is of `typeMirror`, but the lookup key is `type`.  Both are required: a
-    // UseOfVariable describes `typeMirror`, so it is created only when `typeMirror` is a type
-    // variable, but the mapping is keyed by the type variables of `type`.
+    // See the comment about this test in `create`.
     Variable variable =
         typeMirror.getKind() == TypeKind.TYPEVAR ? map.get(type.getUnderlyingType()) : null;
     if (variable != null) {
