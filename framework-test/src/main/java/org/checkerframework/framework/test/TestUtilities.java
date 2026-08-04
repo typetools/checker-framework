@@ -352,6 +352,14 @@ public final class TestUtilities {
     return new File("tests", fileRelativeToTestsDir);
   }
 
+  /**
+   * Returns the file that contains the expected diagnostics for the given test file: a file in the
+   * same directory, whose name is the test file's name with ".java" replaced by ".goal". The
+   * returned file might not exist.
+   *
+   * @param testFile a Java test file
+   * @return the file containing the expected diagnostics for {@code testFile}
+   */
   public static File findComparisonFile(File testFile) {
     File comparisonFile =
         new File(testFile.getParent(), testFile.getName().replace(".java", ".goal"));
