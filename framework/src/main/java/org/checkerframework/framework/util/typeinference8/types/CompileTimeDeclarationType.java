@@ -15,7 +15,7 @@ import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 /**
  * Represents the compile-time declaration type of the method reference that is the method to which
  * the method reference refers. See <a
- * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.13.1">JLS section
+ * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.1">JLS section
  * 15.13.1</a> for a complete definition.
  *
  * <p>The type of a member reference is a functional interface. The function type of a member

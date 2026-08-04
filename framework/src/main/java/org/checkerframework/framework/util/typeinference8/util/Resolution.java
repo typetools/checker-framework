@@ -33,7 +33,7 @@ import org.checkerframework.javacutil.BugInCF;
  * the resolution algorithm for captured variables is used.
  *
  * <p>Resolution is discussed in <a
- * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.4">JLS Section
+ * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.4">JLS Section
  * 18.4</a>.
  *
  * <p>Entry point is two static methods, {@link #resolve(Collection, BoundSet,
