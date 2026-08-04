@@ -44,7 +44,9 @@ public final class Resolution {
   /**
    * Instantiates a set of variables, {@code as}.
    *
-   * @param as the set of variables to resolve
+   * <p>This method removes from {@code as} every variable that already has an instantiation.
+   *
+   * @param as the set of variables to resolve; this method removes elements from it
    * @param boundSet the bound set that includes {@code as}
    * @param context Java8InferenceContext
    * @return bound set where {@code as} have instantiations
@@ -411,7 +413,7 @@ public final class Resolution {
         lowerBoundAnnos = Collections.emptySet();
       }
 
-      Set<AbstractType> upperBounds = ai.getBounds().upperBounds();
+      Set<AbstractType> upperBounds = ai.getBounds().nonVariableUpperBounds();
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
       Set<? extends AnnotationMirror> upperBoundAnnos;
       Set<AbstractQualifier> qualifierUpperBounds =
