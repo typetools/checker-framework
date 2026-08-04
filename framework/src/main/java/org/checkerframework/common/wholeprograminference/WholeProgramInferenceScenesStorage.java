@@ -48,7 +48,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -82,17 +81,6 @@ public class WholeProgramInferenceScenesStorage
   /** Annotations that should not be output to a .jaif or stub file. */
   private final AnnotationsInContexts annosToIgnore = new AnnotationsInContexts();
 
-  /**
-   * If true, assignments where the rhs is null are be ignored.
-   *
-   * <p>If all assignments to a variable are null (because inference is being done with respect to a
-   * limited set of uses) then the variable is inferred to have bottom type. That inference is
-   * unlikely to be correct. To avoid that inference, set this variable to true. When the variable
-   * is true, if all assignments are null, then none are recorded, no inference is done, and the
-   * variable remains at its default type.
-   */
-  private final boolean ignoreNullAssignments;
-
   /** Maps .jaif file paths (Strings) to Scenes. Relative to inferOutputDirectory. */
   public final Map<String, ASceneWrapper> scenes = new HashMap<>();
 
@@ -104,7 +92,7 @@ public class WholeProgramInferenceScenesStorage
    *
    * <p>Modifying a Scene means adding (or changing) a type annotation for a field, method return
    * type, or method parameter type in the Scene. (Scenes are modified by the method {@link
-   * #updateAnnotationSetInScene}.)
+   * #updateStorageLocationFromAtm}.)
    */
   public final Set<String> modifiedScenes = new HashSet<>();
 
@@ -142,9 +130,6 @@ public class WholeProgramInferenceScenesStorage
   public WholeProgramInferenceScenesStorage(
       AnnotatedTypeFactory atypeFactory, String inferOutputDirectory) {
     this.atypeFactory = atypeFactory;
-    boolean isNullness =
-        atypeFactory.getClass().getSimpleName().equals("NullnessAnnotatedTypeFactory");
-    this.ignoreNullAssignments = !isNullness;
     try {
       this.inferOutputDirectory = Path.of(inferOutputDirectory);
     } catch (InvalidPathException e) {
@@ -465,7 +450,7 @@ public class WholeProgramInferenceScenesStorage
 
   /**
    * Write all modified scenes into files. (Scenes are modified by the method {@link
-   * #updateAnnotationSetInScene}.)
+   * #updateStorageLocationFromAtm}.)
    *
    * @param outputFormat the output format to use when writing files
    * @param checker the checker from which this method is called, for naming stub files
@@ -519,148 +504,6 @@ public class WholeProgramInferenceScenesStorage
     } else {
       return scenes.get(jaifPath);
     }
-  }
-
-  /**
-   * Returns the scene-lib representation of the given className in the scene identified by the
-   * given jaifPath.
-   *
-   * @param className the name of the class to get, in binary form
-   * @param jaifPath the path to the jaif file that would represent that class (must end in ".jaif")
-   * @param classSymbol optionally, the ClassSymbol representing the class. Used to set the symbol
-   *     information stored on an AClass.
-   * @return a version of the scene-lib representation of the class, augmented with symbol
-   *     information if {@code classSymbol} was non-null
-   */
-  protected AClass getAClass(
-      @BinaryName String className, String jaifPath, @Nullable ClassSymbol classSymbol) {
-    // Possibly reads .jaif file to obtain a Scene.
-    ASceneWrapper scene = getScene(jaifPath);
-    AClass aClass = scene.getAScene().classes.getVivify(className);
-    scene.updateSymbolInformation(aClass, classSymbol);
-    return aClass;
-  }
-
-  /**
-   * Returns the scene-lib representation of the given className in the scene identified by the
-   * given jaifPath.
-   *
-   * @param className the name of the class to get, in binary form
-   * @param jaifPath the path to the jaif file that would represent that class (must end in ".jaif")
-   * @return the scene-lib representation of the class, possibly augmented with symbol information
-   *     if {@link #getAClass(String, String, com.sun.tools.javac.code.Symbol.ClassSymbol)} has
-   *     already been called with a non-null third argument
-   */
-  protected AClass getAClass(@BinaryName String className, String jaifPath) {
-    return getAClass(className, jaifPath, null);
-  }
-
-  /**
-   * Updates the set of annotations in a location of a Scene, as the result of a pseudo-assignment.
-   *
-   * <ul>
-   *   <li>If there was no previous annotation for that location, then the updated set will be the
-   *       annotations in rhsATM.
-   *   <li>If there was a previous annotation, the updated set will be the LUB between the previous
-   *       annotation and rhsATM.
-   * </ul>
-   *
-   * @param type the ATypeElement of the Scene which will be modified
-   * @param jaifPath path to a .jaif file for a Scene; used for marking the scene as modified
-   *     (needing to be written to disk)
-   * @param rhsATM the RHS of the annotated type on the source code
-   * @param lhsATM the LHS of the annotated type on the source code
-   * @param defLoc the location where the annotation will be added
-   * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
-   *     source code
-   */
-  protected void updateAnnotationSetInScene(
-      ATypeElement type,
-      TypeUseLocation defLoc,
-      AnnotatedTypeMirror rhsATM,
-      AnnotatedTypeMirror lhsATM,
-      String jaifPath,
-      boolean ignoreIfAnnotated) {
-    if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
-      return;
-    }
-    TypeMirror rhsTM = rhsATM.getUnderlyingType();
-    AnnotatedTypeMirror atmFromScene = atmFromStorageLocation(rhsTM, type);
-    updateAtmWithLub(rhsATM, atmFromScene);
-    if (lhsATM instanceof AnnotatedTypeVariable atv) {
-      AnnotationMirrorSet upperAnnos = atv.getUpperBound().getAnnotations();
-      // If the inferred type is a subtype of the upper bounds of the
-      // current type on the source code, halt.
-      if (upperAnnos.size() == rhsATM.getPrimaryAnnotations().size()
-          && atypeFactory
-              .getQualifierHierarchy()
-              .isSubtypeShallow(
-                  rhsATM.getPrimaryAnnotations(), rhsTM, upperAnnos, lhsATM.getUnderlyingType())) {
-        return;
-      }
-    }
-    updateTypeElementFromATM(type, defLoc, rhsATM, lhsATM, ignoreIfAnnotated);
-    modifiedScenes.add(jaifPath);
-  }
-
-  /**
-   * Updates sourceCodeATM to contain the LUB between sourceCodeATM and jaifATM, ignoring missing
-   * AnnotationMirrors from jaifATM -- it considers the LUB between an AnnotationMirror am and a
-   * missing AnnotationMirror to be am. The results are stored in sourceCodeATM.
-   *
-   * @param sourceCodeATM the annotated type on the source code
-   * @param jaifATM the annotated type on the .jaif file
-   */
-  private void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror jaifATM) {
-
-    switch (sourceCodeATM.getKind()) {
-      case TYPEVAR -> {
-        updateAtmWithLub(
-            ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
-            ((AnnotatedTypeVariable) jaifATM).getLowerBound());
-        updateAtmWithLub(
-            ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
-            ((AnnotatedTypeVariable) jaifATM).getUpperBound());
-      }
-      //        case WILDCARD:
-      // Because inferring type arguments is not supported, wildcards won't be encountered
-      //            updateAtmWithLub(((AnnotatedWildcardType)
-      // sourceCodeATM).getExtendsBound(),
-      //                              ((AnnotatedWildcardType)
-      // jaifATM).getExtendsBound());
-      //            updateAtmWithLub(((AnnotatedWildcardType)
-      // sourceCodeATM).getSuperBound(),
-      //                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
-      case ARRAY ->
-          updateAtmWithLub(
-              ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
-              ((AnnotatedArrayType) jaifATM).getComponentType());
-      // case DECLARED:
-      // inferring annotations on type arguments is not supported, so no need to recur on
-      // generic types. If this was every implemented, this method would need VisitHistory
-      // object to prevent infinite recursion on types such as T extends List<T>.
-      default -> {} // ATM only has primary annotations
-    }
-
-    // LUB primary annotations
-    AnnotationMirrorSet annosToReplace = new AnnotationMirrorSet();
-    for (AnnotationMirror amSource : sourceCodeATM.getPrimaryAnnotations()) {
-      AnnotationMirror amJaif = jaifATM.getPrimaryAnnotationInHierarchy(amSource);
-      // amJaif only contains annotations from the jaif, so it might be missing
-      // an annotation in the hierarchy
-      if (amJaif != null) {
-        amSource =
-            atypeFactory
-                .getQualifierHierarchy()
-                .leastUpperBoundShallow(
-                    amSource,
-                    sourceCodeATM.getUnderlyingType(),
-                    amJaif,
-                    jaifATM.getUnderlyingType());
-      }
-      annosToReplace.add(amSource);
-    }
-    sourceCodeATM.replaceAnnotations(annosToReplace);
   }
 
   /**
