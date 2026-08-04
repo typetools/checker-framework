@@ -131,7 +131,8 @@ public class WholeProgramInferenceJavaParserStorage
 
   /**
    * Files containing classes for which an annotation has been inferred since the last time files
-   * were written to disk.
+   * were written to disk. Every element of this set is a key in {@link #sourceToAnnos}; {@link
+   * #setFileModified} maintains that invariant.
    */
   private Set<String> modifiedFiles = new HashSet<>();
 
@@ -201,6 +202,12 @@ public class WholeProgramInferenceJavaParserStorage
 
   @Override
   public void setFileModified(String path) {
+    if (!sourceToAnnos.containsKey(path)) {
+      // No wrappers were created for this file, so there is nothing to write out for it.  This
+      // happens for a file whose top-level class is an annotation declaration; see the comment
+      // in addClassesForElement.
+      return;
+    }
     modifiedFiles.add(path);
   }
 
@@ -323,8 +330,7 @@ public class WholeProgramInferenceJavaParserStorage
       VariableElement ve,
       AnnotatedTypeFactory atypeFactory) {
     if (index_1based == 0) {
-      throw new TypeSystemError(
-          "0 is illegal as index argument to addDeclarationAnnotationToFormalParameter");
+      throw new TypeSystemError("0 is illegal as index argument to getParameterAnnotations");
     }
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
     if (methodAnnos == null) {
@@ -480,7 +486,7 @@ public class WholeProgramInferenceJavaParserStorage
     }
     boolean isNewAnnotation = methodAnnos.addDeclarationAnnotation(anno);
     if (isNewAnnotation) {
-      modifiedFiles.add(getFileForElement(methodElt));
+      setFileModified(getFileForElement(methodElt));
     }
     return isNewAnnotation;
   }
@@ -504,7 +510,7 @@ public class WholeProgramInferenceJavaParserStorage
     }
     boolean isNewAnnotation = fieldAnnos.addDeclarationAnnotation(anno);
     if (isNewAnnotation) {
-      modifiedFiles.add(getFileForElement(field));
+      setFileModified(getFileForElement(field));
     }
     return isNewAnnotation;
   }
@@ -524,7 +530,7 @@ public class WholeProgramInferenceJavaParserStorage
     boolean isNewAnnotation =
         methodAnnos.addDeclarationAnnotationToFormalParameter(anno, index_1based);
     if (isNewAnnotation) {
-      modifiedFiles.add(getFileForElement(methodElt));
+      setFileModified(getFileForElement(methodElt));
     }
     return isNewAnnotation;
   }
@@ -539,7 +545,7 @@ public class WholeProgramInferenceJavaParserStorage
     }
     boolean isNewAnnotation = classAnnos.addAnnotationToClassDeclaration(anno);
     if (isNewAnnotation) {
-      modifiedFiles.add(getFileForElement(classElt));
+      setFileModified(getFileForElement(classElt));
     }
     return isNewAnnotation;
   }
@@ -921,6 +927,7 @@ public class WholeProgramInferenceJavaParserStorage
       // for the annotation declaration. The rest of WholeProgramInferenceJavaParserStorage
       // already needs to handle classes without entries in the various tables (because of the
       // possibility of classes outside the current compilation unit), so this is safe.
+      // In particular, `path` is not a key in `sourceToAnnos`, so `setFileModified` ignores it.
       return path;
     }
     if (classToAnnos.containsKey(ElementUtils.getBinaryName(toplevelClass))) {
@@ -1804,9 +1811,7 @@ public class WholeProgramInferenceJavaParserStorage
         postconditions.put(expression, new InferredDeclared(postconditionsType, declaredType));
       }
 
-      InferredDeclared postAndDecl = postconditions.get(expression);
-      AnnotatedTypeMirror result = postAndDecl.inferred;
-      return result;
+      return postconditions.get(expression).inferred;
     }
 
     /**
@@ -1915,7 +1920,6 @@ public class WholeProgramInferenceJavaParserStorage
       return null;
     }
     Map<String, InferredDeclared> result = new HashMap<>(MapsP.mapCapacity(orig.size()));
-    result.clear();
     for (Map.Entry<String, InferredDeclared> entry : orig.entrySet()) {
       String javaExpression = entry.getKey();
       InferredDeclared atms = entry.getValue();
