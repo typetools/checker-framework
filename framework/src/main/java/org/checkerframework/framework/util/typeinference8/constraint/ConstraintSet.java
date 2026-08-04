@@ -294,9 +294,11 @@ public class ConstraintSet implements ReductionResult {
       }
     }
 
-    // `consideredConstraints` is nonempty:  `subset` is empty only if every constraint in `c` is a
-    // TypeConstraint (the loop above adds every other kind of constraint to `subset`), and the loop
-    // just above adds the first TypeConstraint in `c` because `inputDependencies` starts out empty.
+    // `consideredConstraints` is nonempty:  `c` is nonempty (checked at the top of this method),
+    // and `subset` is empty only if every constraint in `c` is a TypeConstraint (the first loop in
+    // this method adds every other kind of constraint to `subset`).  The loop that populates
+    // `consideredConstraints` adds the first TypeConstraint in `c`, because `inputDependencies`
+    // starts out empty.
     return new ConstraintSet(consideredConstraints.get(0));
   }
 

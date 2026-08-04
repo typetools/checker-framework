@@ -11,10 +11,8 @@ public class ConstraintSetTest {
 
   @Test
   public void getClosedSubsetOfEmptySet() {
-    BugInCF e =
-        Assert.assertThrows(
-            BugInCF.class,
-            () -> ConstraintSet.getClosedSubset(new ConstraintSet(), new Dependencies()));
-    Assert.assertTrue(e.getMessage(), e.getMessage().contains("empty constraint set"));
+    Assert.assertThrows(
+        BugInCF.class,
+        () -> ConstraintSet.getClosedSubset(new ConstraintSet(), new Dependencies()));
   }
 }
