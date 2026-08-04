@@ -708,21 +708,17 @@ public class WholeProgramInferenceScenesStorage
         }
       }
     }
-    DefaultFor defaultQualForLocation = elt.getAnnotation(DefaultFor.class);
-    if (defaultQualForLocation != null) {
-      for (TypeUseLocation loc : defaultQualForLocation.value()) {
+    DefaultFor defaultFor = elt.getAnnotation(DefaultFor.class);
+    if (defaultFor != null) {
+      // Checks if am is the default for the given location.
+      for (TypeUseLocation loc : defaultFor.value()) {
         if (loc == TypeUseLocation.ALL || loc == location) {
           return true;
         }
       }
-    }
-
-    // Checks if am is a default annotation.
-    // This case checks if it is meta-annotated with @DefaultFor.
-    // TODO: Handle cases of annotations added via an
-    // org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator.
-    DefaultFor defaultFor = elt.getAnnotation(DefaultFor.class);
-    if (defaultFor != null) {
+      // Checks if am is the default for the kind of atm.
+      // TODO: Handle cases of annotations added via an
+      // org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator.
       org.checkerframework.framework.qual.TypeKind[] types = defaultFor.typeKinds();
       TypeKind atmKind = atm.getUnderlyingType().getKind();
       if (hasMatchingTypeKind(atmKind, types)) {
