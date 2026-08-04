@@ -284,3 +284,10 @@ annotation-file-utilities/*.png
 
 # Obtained via Git
 .plume-scripts
+
+# Created by Claude
+annotation-file-utilities/bin/test/
+checker-qual/bin/
+checker/bin/main/
+checker/bin/test/
+framework/bin/
