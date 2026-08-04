@@ -243,7 +243,7 @@ public class Expression extends TypeConstraint {
       return ConstraintSet.TRUE;
     }
 
-    // https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2.1-300-D-B-BC
+    // https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2.1-300-D-B-B
     // Otherwise, if the method reference expression elides TypeArguments, and the
     // compile-time declaration is a generic method, and
     // the return type of the compile-time declaration mentions at least one of the method's
@@ -268,10 +268,10 @@ public class Expression extends TypeConstraint {
     }
 
     // https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2.1-300-D-B-C
-    // Otherwise, let R be the return type of the function type, and let R' be the result
-    // of applying capture conversion (5.1.10) to the return type of the invocation type
-    // (15.12.2.6) of the compile-time declaration. If R' is void, the constraint reduces
-    // to false; otherwise, the constraint reduces to <R' -> R>.
+    // Otherwise, let R' be the result of applying capture conversion (5.1.10) to the
+    // return type of the invocation type (15.12.2.6) of the compile-time declaration.
+    // If R' is void, the constraint reduces to false; otherwise, the constraint reduces
+    // to <R' -> R>.  R, the result of the function type, is the local variable `r`.
     return ReductionResultPair.of(
         new ConstraintSet(
             new Typing(
@@ -373,8 +373,14 @@ public class Expression extends TypeConstraint {
    * @return the non-wildcard parameterization of {@code t}
    */
   private AbstractType nonWildcardParameterization(AbstractType t, Java8InferenceContext context) {
+    // The caller only calls this method when t.isWildcardParameterizedType() is true, so t is a
+    // declared type and both of the following are non-null.
     List<AbstractType> As = t.getTypeArguments();
-    Iterator<ProperType> Bs = t.getTypeParameterBounds().iterator();
+    assert As != null : "@AssumeAssertion(nullness): t is a wildcard-parameterized declared type";
+    List<ProperType> typeParameterBounds = t.getTypeParameterBounds();
+    assert typeParameterBounds != null
+        : "@AssumeAssertion(nullness): t is a wildcard-parameterized declared type";
+    Iterator<ProperType> Bs = typeParameterBounds.iterator();
     List<AbstractType> Ts = new ArrayList<>();
     for (AbstractType Ai : As) {
       ProperType bi = Bs.next();
