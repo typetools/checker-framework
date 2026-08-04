@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.QualifierTyping;
@@ -34,8 +35,8 @@ public class QualifierVar extends AbstractQualifier {
   public final EnumMap<BoundKind, Set<AbstractQualifier>> qualifierBounds =
       new EnumMap<>(BoundKind.class);
 
-  /** The instantiation of this variable. This is set during inference. */
-  protected AnnotationMirror instantiation;
+  /** The instantiation of this variable, or null if it has none. This is set during inference. */
+  protected @Nullable AnnotationMirror instantiation;
 
   /**
    * Creates a {@link QualifierVar}.
@@ -153,7 +154,7 @@ public class QualifierVar extends AbstractQualifier {
   }
 
   @Override
-  AnnotationMirror getInstantiation() {
+  @Nullable AnnotationMirror getInstantiation() {
     if (instantiation == null) {
       AnnotationMirror lub = null;
       for (AbstractQualifier lower : qualifierBounds.get(BoundKind.LOWER)) {

@@ -216,7 +216,7 @@ public abstract class AbstractType {
    * @return super type of this type that is the same class as {@code superType} or null if one
    *     doesn't exist
    */
-  public AbstractType asSuper(TypeMirror superType) {
+  public @Nullable AbstractType asSuper(TypeMirror superType) {
     TypeMirror typeJava = getJavaType();
     if (typeJava.getKind() == TypeKind.WILDCARD) {
       typeJava = ((WildcardType) typeJava).getExtendsBound();
@@ -270,7 +270,7 @@ public abstract class AbstractType {
    *
    * @return the return type of the function type of this type or null if one doesn't exist
    */
-  public AbstractType getFunctionTypeReturnType() {
+  public @Nullable AbstractType getFunctionTypeReturnType() {
     if (TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
       AnnotatedExecutableType aet = getFunctionType();
       AnnotatedTypeMirror returnType = aet.getReturnType();
@@ -290,7 +290,7 @@ public abstract class AbstractType {
    * @return the parameter types of the function type of this type or null if no function type
    *     exists
    */
-  public List<AbstractType> getFunctionTypeParameterTypes() {
+  public @Nullable List<AbstractType> getFunctionTypeParameterTypes() {
     if (TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
       AnnotatedExecutableType functionType = getFunctionType();
       List<AbstractType> params = new ArrayList<>();
@@ -404,16 +404,16 @@ public abstract class AbstractType {
    * @return the most specific array type that is a super type of this type or null if one doesn't
    *     exist
    */
-  public AbstractType getMostSpecificArrayType() {
+  public @Nullable AbstractType getMostSpecificArrayType() {
     if (getTypeKind() == TypeKind.ARRAY) {
       return this;
     } else if (TypesUtils.isObject(getJavaType())) {
       return null;
     } else {
       AnnotatedTypeMirror msat = mostSpecificArrayType(getAnnotatedType());
-      TypeMirror typeMirror =
-          TypesUtils.getMostSpecificArrayType(getJavaType(), context.modelTypes);
       if (msat != null) {
+        TypeMirror typeMirror =
+            TypesUtils.getMostSpecificArrayType(getJavaType(), context.modelTypes);
         return create(msat, typeMirror, ignoreAnnotations);
       }
       return null;
@@ -427,7 +427,7 @@ public abstract class AbstractType {
    * @param type annotated type mirror
    * @return the first supertype of {@code type} that is an array
    */
-  private static AnnotatedTypeMirror mostSpecificArrayType(AnnotatedTypeMirror type) {
+  private static @Nullable AnnotatedTypeMirror mostSpecificArrayType(AnnotatedTypeMirror type) {
     if (type.getKind() == TypeKind.ARRAY) {
       return type;
     } else if (TypesUtils.isObject(type.getUnderlyingType())) {
@@ -523,7 +523,7 @@ public abstract class AbstractType {
    *
    * @return this type's type arguments or null if this type isn't a declared type
    */
-  public List<AbstractType> getTypeArguments() {
+  public @Nullable List<AbstractType> getTypeArguments() {
     if (getJavaType().getKind() != TypeKind.DECLARED) {
       return null;
     }
@@ -572,7 +572,7 @@ public abstract class AbstractType {
    *
    * @return if this type is a wildcard return its lower bound; otherwise, return null
    */
-  public AbstractType getWildcardLowerBound() {
+  public @Nullable AbstractType getWildcardLowerBound() {
     if (getJavaType().getKind() == TypeKind.WILDCARD) {
       WildcardType wild = (WildcardType) getJavaType();
       return create(
@@ -588,7 +588,7 @@ public abstract class AbstractType {
    *
    * @return if this type is a wildcard return its upper bound; otherwise, return null
    */
-  public AbstractType getWildcardUpperBound() {
+  public @Nullable AbstractType getWildcardUpperBound() {
     if (getJavaType().getKind() == TypeKind.WILDCARD) {
       TypeMirror upperBoundJava = ((WildcardType) getJavaType()).getExtendsBound();
       if (upperBoundJava == null) {
@@ -618,7 +618,7 @@ public abstract class AbstractType {
    *
    * @return the array component type of this type or null if one does not exist
    */
-  public final AbstractType getComponentType() {
+  public final @Nullable AbstractType getComponentType() {
     if (getJavaType().getKind() == TypeKind.ARRAY) {
       TypeMirror javaType = ((ArrayType) getJavaType()).getComponentType();
       return create(

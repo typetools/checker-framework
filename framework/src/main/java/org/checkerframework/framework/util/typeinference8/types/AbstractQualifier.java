@@ -50,11 +50,12 @@ public abstract class AbstractQualifier {
   }
 
   /**
-   * Returns the instantiation of this.
+   * Returns the instantiation of this, or null if this is a qualifier variable with no
+   * instantiation.
    *
-   * @return the instantiation of this
+   * @return the instantiation of this, or null
    */
-  abstract AnnotationMirror getInstantiation();
+  abstract @Nullable AnnotationMirror getInstantiation();
 
   /**
    * Returns the least upper bounds of {@code quals}.

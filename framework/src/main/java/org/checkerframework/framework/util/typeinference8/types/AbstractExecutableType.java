@@ -154,7 +154,7 @@ public abstract class AbstractExecutableType {
    *     size}
    */
   protected final List<AbstractType> getParameterTypes(
-      Theta map, int size, AnnotatedTypeMirror firstParam, boolean isVarargsCall) {
+      Theta map, int size, @Nullable AnnotatedTypeMirror firstParam, boolean isVarargsCall) {
     List<AnnotatedTypeMirror> params = new ArrayList<>(size);
     List<TypeMirror> paramsJava = new ArrayList<>(size);
 
