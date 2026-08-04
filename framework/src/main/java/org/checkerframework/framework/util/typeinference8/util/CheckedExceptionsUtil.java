@@ -85,6 +85,9 @@ public final class CheckedExceptionsUtil {
       if (results == null) {
         results = new ArrayList<>();
       }
+      // The catch clauses catch exceptions thrown by the resource expressions, so collect those
+      // before removing the caught exceptions.
+      results.addAll(nullToEmptyList(scan(node.getResources(), aVoid)));
 
       if (!results.isEmpty()) {
         for (CatchTree catchTree : node.getCatches()) {
@@ -92,7 +95,7 @@ public final class CheckedExceptionsUtil {
           removeAssignable(TreeUtils.typeOf(catchTree.getParameter()), results);
         }
       }
-      results.addAll(nullToEmptyList(scan(node.getResources(), aVoid)));
+      // The catch clauses do not catch exceptions thrown by the catch blocks or the finally block.
       results.addAll(nullToEmptyList(scan(node.getCatches(), aVoid)));
       results.addAll(nullToEmptyList(scan(node.getFinallyBlock(), aVoid)));
 
@@ -225,6 +228,9 @@ public final class CheckedExceptionsUtil {
       if (results == null) {
         results = new ArrayList<>();
       }
+      // The catch clauses catch exceptions thrown by the resource expressions, so collect those
+      // before removing the caught exceptions.
+      results.addAll(nullToEmptyList(scan(node.getResources(), aVoid)));
 
       if (!results.isEmpty()) {
         for (CatchTree catchTree : node.getCatches()) {
@@ -232,7 +238,7 @@ public final class CheckedExceptionsUtil {
           removeAssignable(TreeUtils.typeOf(catchTree.getParameter()), results);
         }
       }
-      results.addAll(nullToEmptyList(scan(node.getResources(), aVoid)));
+      // The catch clauses do not catch exceptions thrown by the catch blocks or the finally block.
       results.addAll(nullToEmptyList(scan(node.getCatches(), aVoid)));
       results.addAll(nullToEmptyList(scan(node.getFinallyBlock(), aVoid)));
 

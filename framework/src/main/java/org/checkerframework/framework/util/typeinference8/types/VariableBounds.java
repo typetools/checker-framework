@@ -439,18 +439,13 @@ public class VariableBounds {
   }
 
   /**
-   * Returns all upper bounds.
+   * Returns all upper bounds, including those that are uses of inference variables. JLS 18.4
+   * requires the greatest lower bound of all the upper bounds, not just the proper ones.
    *
    * @return all upper bounds
    */
   public Set<AbstractType> upperBounds() {
-    LinkedHashSet<AbstractType> set = new LinkedHashSet<>();
-    for (AbstractType bound : bounds.get(BoundKind.UPPER)) {
-      if (!bound.isUseOfVariable()) {
-        set.add(bound);
-      }
-    }
-    return set;
+    return new LinkedHashSet<>(bounds.get(BoundKind.UPPER));
   }
 
   /**

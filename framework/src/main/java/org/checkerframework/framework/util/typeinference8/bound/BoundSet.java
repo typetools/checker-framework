@@ -340,7 +340,7 @@ public class BoundSet implements ReductionResult {
       }
 
       containsFalse |= newBounds.containsFalse;
-      if (count >= MAX_INCORPORATION_STEPS) {
+      if (count >= MAX_INCORPORATION_STEPS && !containsFalse) {
         // Throw rather than assert, so that this is reported as a
         // "type.argument.inference.crashed" error for this one expression, rather than as an
         // AssertionError that aborts the entire compilation.

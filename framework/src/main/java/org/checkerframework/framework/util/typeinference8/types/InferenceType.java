@@ -66,7 +66,10 @@ public final class InferenceType extends AbstractType {
       Java8InferenceContext context,
       boolean ignoreAnnotations) {
     super(context, ignoreAnnotations);
-    assert type.getKind() == typeMirror.getKind();
+    assert type.getKind() == typeMirror.getKind()
+        : String.format(
+            "type=%s [%s], typeMirror=%s [%s]",
+            type, type.getKind(), typeMirror, typeMirror.getKind());
     this.type = type.asUse();
     this.typeMirror = typeMirror;
     this.qualifierVars = qualifierVars;

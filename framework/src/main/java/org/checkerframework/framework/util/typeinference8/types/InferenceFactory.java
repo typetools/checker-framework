@@ -945,6 +945,12 @@ public class InferenceFactory {
     AnnotatedTypeMirror aAtm = a.getAnnotatedType();
     AnnotatedTypeMirror bAtm = b.getAnnotatedType();
     AnnotatedTypeMirror glbATM = AnnotatedTypes.annotatedGLB(typeFactory, aAtm, bAtm);
+    if (glb.getKind() == TypeKind.ERROR) {
+      // Javac cannot express the greatest lower bound; this happens for two type variables whose
+      // bounds are mutually recursive.  AnnotatedTypes#annotatedGLB falls back to one of its
+      // arguments, so use that same type here, to keep `glbATM` and `glb` consistent.
+      glb = glbATM.getUnderlyingType();
+    }
     if (a.ignoreAnnotations != b.ignoreAnnotations) {
       if (a.ignoreAnnotations) {
         glbATM.replaceAnnotations(bAtm.getPrimaryAnnotations());
