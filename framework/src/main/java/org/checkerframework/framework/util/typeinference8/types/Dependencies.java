@@ -72,17 +72,31 @@ public class Dependencies {
   }
 
   /**
-   * Returns the set of dependencies of {@code alpha}.
+   * Returns the set of dependencies of {@code alpha}. If no dependency of {@code alpha} has been
+   * added to this, the result is {@code {alpha}}, because JLS 18.4 says that an inference variable
+   * depends on the resolution of itself.
+   *
+   * <p>The result is a new, mutable set; the caller may modify it.
    *
    * @param alpha a variable
    * @return the set of dependencies of {@code alpha}
    */
   public Set<Variable> get(Variable alpha) {
-    return new LinkedHashSet<>(map.get(alpha));
+    LinkedHashSet<Variable> alphaDependencies = map.get(alpha);
+    if (alphaDependencies == null) {
+      // JLS 18.4: "An inference variable alpha depends on the resolution of itself."
+      LinkedHashSet<Variable> result = new LinkedHashSet<>();
+      result.add(alpha);
+      return result;
+    }
+    return new LinkedHashSet<>(alphaDependencies);
   }
 
   /**
-   * Returns the set of dependencies for all variables in {@code variables}.
+   * Returns the set of dependencies for all variables in {@code variables}. A variable to which no
+   * dependency has been added contributes only itself; see {@link #get(Variable)}.
+   *
+   * <p>The result is a new, mutable set; the caller may modify it.
    *
    * @param variables list of variables
    * @return the set of dependencies for all variables in {@code variables}
