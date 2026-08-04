@@ -333,13 +333,7 @@ public final class InferenceType extends AbstractType {
         getAnnotatedType().getPrimaryAnnotations(), qualifierVars, context);
   }
 
-  /**
-   * Is {@code this} a subtype of {@code superType}?
-   *
-   * @param superType the potential supertype; is a declared type with no parameters
-   * @return if {@code this} is a subtype of {@code superType}, then return {@link
-   *     ConstraintSet#TRUE}; otherwise, a false bound is returned
-   */
+  @Override
   public ReductionResult isSubType(AbstractType superType) {
     TypeMirror subType = getJavaType();
     TypeMirror superJavaType = superType.getJavaType();

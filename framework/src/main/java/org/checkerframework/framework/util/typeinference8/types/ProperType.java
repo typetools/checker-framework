@@ -151,13 +151,7 @@ public class ProperType extends AbstractType {
     return this;
   }
 
-  /**
-   * Is {@code this} a subtype of {@code superType}?
-   *
-   * @param superType super type
-   * @return if {@code this} is a subtype of {@code superType}, then return {@link
-   *     ConstraintSet#TRUE}; otherwise, a false bound is returned
-   */
+  @Override
   public ReductionResult isSubType(AbstractType superType) {
     TypeMirror subJavaType = getJavaType();
     TypeMirror superJavaType = superType.getJavaType();

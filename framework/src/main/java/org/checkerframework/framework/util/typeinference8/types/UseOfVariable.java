@@ -13,10 +13,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
+import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A use of an inference variable. This class keeps track of whether the use of this variable has a
@@ -125,6 +127,20 @@ public class UseOfVariable extends AbstractType {
     }
 
     return this;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>A subtyping constraint whose subtype or supertype is a use of an inference variable is
+   * reduced to a bound on that variable rather than by testing subtyping, so this method is never
+   * called on a {@link UseOfVariable}.
+   *
+   * @throws BugInCF always
+   */
+  @Override
+  public ReductionResult isSubType(AbstractType superType) {
+    throw new BugInCF("UseOfVariable.isSubType(%s) called on %s", superType, this);
   }
 
   /**

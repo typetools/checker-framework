@@ -10,7 +10,6 @@ import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
-import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -154,7 +153,7 @@ public class Typing extends TypeConstraint {
    */
   private ReductionResult reduceSubtyping(Java8InferenceContext context) {
     if (S.isProper() && T.isProper()) {
-      ReductionResult isSubtype = ((ProperType) S).isSubType((ProperType) T);
+      ReductionResult isSubtype = S.isSubType(T);
       if (isSubtype == ConstraintSet.TRUE) {
         return ConstraintSet.TRUE;
       } else if (((ProperType) S).isSubTypeUnchecked((ProperType) T) == ConstraintSet.TRUE) {
@@ -243,15 +242,9 @@ public class Typing extends TypeConstraint {
     } else {
       // The constraint reduces to true if T is among the supertypes of S, and false
       // otherwise.
-      // S is not a use of an inference variable and T is neither the null type nor a use of an
-      // inference variable, because reduceSubtyping handled those cases before calling this
-      // method.  So S and T are each either a proper type or an inference type, and they are not
-      // both proper types.
-      if (S.isProper()) {
-        return ((ProperType) S).isSubType(T);
-      } else {
-        return ((InferenceType) S).isSubType(T);
-      }
+      // S is not a use of an inference variable, because reduceSubtyping handled that case
+      // before calling this method.
+      return S.isSubType(T);
     }
   }
 
