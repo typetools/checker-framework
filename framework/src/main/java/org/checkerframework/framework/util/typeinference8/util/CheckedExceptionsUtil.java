@@ -45,7 +45,7 @@ public final class CheckedExceptionsUtil {
    * @param context the context
    * @return true iff {@code type} is a checked exception
    */
-  private static boolean isCheckedException(TypeMirror type, Java8InferenceContext context) {
+  public static boolean isCheckedException(TypeMirror type, Java8InferenceContext context) {
     Types types = context.env.getTypeUtils();
     return !types.isSubtype(type, context.runtimeException)
         && !types.isSubtype(type, context.error);
@@ -192,7 +192,7 @@ public final class CheckedExceptionsUtil {
    * @param context the context
    * @return true iff {@code type} is a checked exception
    */
-  private static boolean isCheckedException(
+  public static boolean isCheckedException(
       AnnotatedTypeMirror type, Java8InferenceContext context) {
     return isCheckedException(type.getUnderlyingType(), context);
   }

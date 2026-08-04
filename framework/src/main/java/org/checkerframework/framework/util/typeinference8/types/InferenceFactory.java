@@ -1025,9 +1025,21 @@ public class InferenceFactory {
     } else {
       CompileTimeDeclarationType compileTimeDeclaration =
           compileTimeDeclarationType((MemberReferenceTree) expression);
-      List<? extends TypeMirror> thrownTypeMirrors =
-          compileTimeDeclaration.getJavaType().getThrownTypes();
-      thrownTypes = compileTimeDeclaration.getAnnotatedType().getThrownTypes();
+      // Only the checked exceptions are the X1...Xm of JLS 18.2.5.
+      List<TypeMirror> thrownTypeMirrors = new ArrayList<>();
+      for (TypeMirror thrown : compileTimeDeclaration.getJavaType().getThrownTypes()) {
+        if (CheckedExceptionsUtil.isCheckedException(thrown, context)) {
+          thrownTypeMirrors.add(thrown);
+        }
+      }
+      List<AnnotatedTypeMirror> thrownCheckedTypes = new ArrayList<>();
+      for (AnnotatedTypeMirror thrown :
+          compileTimeDeclaration.getAnnotatedType().getThrownTypes()) {
+        if (CheckedExceptionsUtil.isCheckedException(thrown, context)) {
+          thrownCheckedTypes.add(thrown);
+        }
+      }
+      thrownTypes = thrownCheckedTypes;
       if (thrownTypes.size() != thrownTypeMirrors.size()) {
         // TODO: the thrown types are not stored in the ExecutableElements, so the above
         // method doesn't find any thrown types.  Below gets the types thrown type from the
