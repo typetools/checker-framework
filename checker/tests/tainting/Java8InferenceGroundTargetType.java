@@ -8,8 +8,7 @@
 //
 // When T is a wildcard-parameterized functional interface type, T' is inferred as described in
 // JLS 18.5.3 and may differ from the non-wildcard parameterization of T that
-// AbstractType.getFunctionType() computes.  Using T rather than T' can therefore equate a lambda
-// parameter type with an inference variable that T' has already instantiated differently.
+// AbstractType.getFunctionType() computes.
 
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
@@ -21,39 +20,39 @@ public class Java8InferenceGroundTargetType {
 
     // The target type of the `s` argument is `BiSink<? extends B, U>`.  It mentions the inference
     // variable for `U`, so it is not a proper type and the lambda constraint really is reduced.
-    // It is wildcard-parameterized, so its ground target type is inferred per JLS 18.5.3.  `B` is
-    // BiSink's own type parameter, so the fresh variable that 18.5.3 creates for `B` does get an
-    // instantiation: the wildcard `? extends B` grounds to `B`, which is the type of the function
-    // type's first parameter, so that fresh variable is equated with the lambda's first declared
-    // parameter type.  That instantiation becomes the second type argument of the ground target
-    // type, replacing `U`.
+    // It is wildcard-parameterized, so its ground target type is inferred per JLS 18.5.3: fresh
+    // inference variables alpha1 and alpha2 are created for BiSink's type parameters `A` and `B`;
+    // the function type of `BiSink<alpha1, alpha2>` has parameter types `(alpha1, alpha2)`; and
+    // reducing <Pi = alphai>, where Pi is the i'th declared parameter type of the lambda,
+    // instantiates alpha1 and alpha2 to the lambda's declared parameter types.  Each instantiation
+    // becomes the corresponding type argument of the ground target type, replacing `? extends B`
+    // and `U`.
     //
     // Concretely, for the call in `mismatchedSecondParameter` below:
     //   T  = BiSink<? extends B, U>, whose function type has parameter types (B, U)
-    //   T' = BiSink<B, @Untainted B>, whose function type has parameter types (B, @Untainted B)
+    //   T' = BiSink<@Untainted B, @Tainted B>, whose function type has parameter types
+    //        (@Untainted B, @Tainted B)
     default <U> U foo(BiSink<? extends B, U> s, U u) {
       return u;
     }
 
-    // The second lambda parameter is @Tainted, but the ground target type's second function type
-    // parameter is @Untainted B (taken from the first lambda parameter).  So <F2 = P2> is
-    // <@Tainted B = @Untainted B>, a constraint between two proper types, which is dropped.
-    // Inference of `U` therefore succeeds, driven by `<T' <: T>` and by the argument `b`, and the
-    // only remaining error is the genuine mismatch that the lambda's parameter types are not the
-    // parameter types of the function type.
-    //
-    // Before the fix, `T` was used instead of `T'`, so the constraint was <@Tainted B = U>, where
-    // `U` is still an inference variable.  That added `U = @Tainted B` to the bound set, which
-    // contradicts `U = @Untainted B` from `<T' <: T>`, and inference failed with
-    // (type.arguments.not.inferred).
+    // The parameter types of the ground target type's function type are the lambda's declared
+    // parameter types, so <F1 = P1> and <F2 = P2> are trivially true.  JLS 18.5.3 also requires
+    // T' <: T; because T mentions the inference variable `U`, that requirement is reduced as a
+    // constraint, and it yields U = @Tainted B.  The call therefore returns @Tainted B, which is
+    // not assignable to the @Untainted B variable and which contradicts the bound U <: @Untainted B
+    // that the assignment context imposes, so inference has no solution.
     default void mismatchedSecondParameter(@Untainted B b) {
-      // :: error: [lambda.param]
+      // :: error: [assignment] :: error: [type.arguments.not.inferred]
       @Untainted B r = foo((@Untainted B x, @Tainted B y) -> {}, b);
     }
 
-    // Control: both declared lambda parameter types are the same, so <F2 = P2> and <F2 = U> agree
-    // and inference succeeds either way.  This shows that `mismatchedSecondParameter` is sensitive
-    // to the second parameter's qualifier and not merely to the shape of the call.
+    // Control: both declared lambda parameter types are the same, so T' is
+    // BiSink<@Untainted B, @Untainted B> and T' <: T yields U = @Untainted B, which agrees with the
+    // argument `b` and with the assignment context.  Inference therefore succeeds, and the only
+    // remaining error is the genuine mismatch that the lambda's parameter types are not the
+    // parameter types of the function type.  This shows that `mismatchedSecondParameter` is
+    // sensitive to the second parameter's qualifier and not merely to the shape of the call.
     default void matchingSecondParameter(@Untainted B b) {
       // :: error: [lambda.param]
       @Untainted B r = foo((@Untainted B x, @Untainted B y) -> {}, b);
@@ -64,7 +63,8 @@ public class Java8InferenceGroundTargetType {
       B r = foo((B x, B y) -> {}, b);
     }
 
-    // Control: an implicitly typed lambda does not go through the <Fi = Pi> constraints at all.
+    // Control: an implicitly typed lambda does not go through JLS 18.5.3 or the <Fi = Pi>
+    // constraints at all.  Its ground target type is the non-wildcard parameterization of T.
     default void implicitlyTyped(@Untainted B b) {
       @Untainted B r = foo((x, y) -> {}, b);
     }
