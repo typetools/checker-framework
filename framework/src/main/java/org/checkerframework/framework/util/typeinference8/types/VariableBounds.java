@@ -111,11 +111,7 @@ public class VariableBounds {
     bounds.put(BoundKind.EQUAL, new LinkedHashSet<>(savedBounds.get(BoundKind.EQUAL)));
     bounds.put(BoundKind.UPPER, new LinkedHashSet<>(savedBounds.get(BoundKind.UPPER)));
     bounds.put(BoundKind.LOWER, new LinkedHashSet<>(savedBounds.get(BoundKind.LOWER)));
-    for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
-      if (t.isProper()) {
-        instantiation = ((ProperType) t).boxType();
-      }
-    }
+    setInstantiationFromEqualBounds();
     qualifierBounds.clear();
     qualifierBounds.put(
         BoundKind.EQUAL, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.EQUAL)));
@@ -123,6 +119,29 @@ public class VariableBounds {
         BoundKind.UPPER, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.UPPER)));
     qualifierBounds.put(
         BoundKind.LOWER, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.LOWER)));
+  }
+
+  /**
+   * Sets {@code instantiation} to {@code type}, boxed if it is a primitive type. An inference
+   * variable can only be instantiated to a reference type.
+   *
+   * @param type the proper type to which this variable is instantiated
+   */
+  private void setInstantiation(ProperType type) {
+    instantiation = type.boxType();
+  }
+
+  /**
+   * Sets {@code instantiation} from a proper {@code EQUAL} bound, if this variable has one. If
+   * there is more than one such bound, the last one is used, as when bounds are added one at a time
+   * by {@link #addBound}.
+   */
+  private void setInstantiationFromEqualBounds() {
+    for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
+      if (t.isProper()) {
+        setInstantiation((ProperType) t);
+      }
+    }
   }
 
   /**
@@ -156,7 +175,7 @@ public class VariableBounds {
       return false;
     }
     if (kind == BoundKind.EQUAL && otherType.isProper()) {
-      instantiation = ((ProperType) otherType).boxType();
+      setInstantiation((ProperType) otherType);
     }
     if (bounds.get(kind).add(otherType)) {
       addConstraintsFromComplementaryBounds(parent, kind, otherType);
@@ -478,11 +497,7 @@ public class VariableBounds {
     constraints.applyInstantiations();
 
     if (changed && instantiation == null) {
-      for (AbstractType bound : bounds.get(BoundKind.EQUAL)) {
-        if (bound.isProper()) {
-          instantiation = ((ProperType) bound).boxType();
-        }
-      }
+      setInstantiationFromEqualBounds();
     }
     return changed;
   }
