@@ -352,6 +352,9 @@ public final class InferenceType extends AbstractType {
     }
 
     if (context.types.isSubtype((Type) subType, (Type) superJavaType)) {
+      if (ignoreAnnotations || superType.ignoreAnnotations) {
+        return ConstraintSet.TRUE;
+      }
       AnnotatedTypeMirror superATM = superType.getAnnotatedType();
       AnnotatedTypeMirror subATM = this.getAnnotatedType();
       if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
