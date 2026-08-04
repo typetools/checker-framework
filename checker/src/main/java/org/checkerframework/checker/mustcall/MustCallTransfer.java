@@ -272,7 +272,7 @@ public class MustCallTransfer extends CFTransfer {
    *
    * <p>Note that error reporting code assumes that the names of temporary variables are not legal
    * Java identifiers (see <a
-   * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-3.html#jls-3.8">JLS 3.8</a>). The
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-3.html#jls-3.8">JLS 3.8</a>). The
    * temporary variable names generated here include an {@code '-'} character to make the names
    * invalid.
    *
