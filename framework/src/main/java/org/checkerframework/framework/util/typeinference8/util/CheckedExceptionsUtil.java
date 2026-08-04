@@ -52,19 +52,6 @@ public final class CheckedExceptionsUtil {
   }
 
   /**
-   * Returns {@code list}, or an empty list if {@code list} is null. {@code
-   * TreeScanner.scan(Iterable, P)} returns null for an empty iterable, and {@code
-   * TreeScanner.scan(Tree, P)} returns null for a null tree.
-   *
-   * @param list a possibly-null list
-   * @param <T> the element type of {@code list}
-   * @return {@code list}, or an empty list if {@code list} is null
-   */
-  private static <T> List<T> nullToEmptyList(@Nullable List<T> list) {
-    return list != null ? list : Collections.emptyList();
-  }
-
-  /**
    * Returns true iff {@code type} is a checked exception.
    *
    * @param type an exception type to check (that is, Throwable or a subtype of it)
@@ -210,5 +197,16 @@ public final class CheckedExceptionsUtil {
         }
       }
     }
+  }
+
+  /**
+   * Returns {@code list}, or an empty list if {@code list} is null.
+   *
+   * @param list a possibly-null list
+   * @param <T> the element type of {@code list}
+   * @return {@code list}, or an empty list if {@code list} is null
+   */
+  private static <T> List<T> nullToEmptyList(@Nullable List<T> list) {
+    return list != null ? list : Collections.emptyList();
   }
 }
