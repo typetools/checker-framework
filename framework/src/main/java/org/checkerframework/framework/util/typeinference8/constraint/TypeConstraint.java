@@ -38,7 +38,8 @@ public abstract class TypeConstraint implements Constraint {
 
   /**
    * A string that describes where this constraint is from. If null, then the constraint came from
-   * reducing {@code parent}.
+   * reducing {@code parent}. If both this and {@code parent} are nonnull, then this describes how
+   * {@code parent} gave rise to this constraint.
    */
   public @Nullable String source;
 

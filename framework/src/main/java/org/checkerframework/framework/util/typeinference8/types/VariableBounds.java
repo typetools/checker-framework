@@ -241,48 +241,45 @@ public class VariableBounds {
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public void addConstraintsFromComplementaryBounds(
       Constraint parent, BoundKind kind, AbstractType boundType) {
-    if (parent instanceof TypeConstraint tc) {
-      tc.source = "From complementary bound.";
-    }
     switch (kind) {
       case EQUAL -> {
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
-            constraints.add(new Typing(parent, boundType, t, Kind.TYPE_EQUALITY));
+            addComplementaryBoundConstraint(parent, boundType, t, Kind.TYPE_EQUALITY);
           }
         }
         for (AbstractType t : bounds.get(BoundKind.LOWER)) {
           if (boundType != t) {
-            constraints.add(new Typing(parent, t, boundType, Kind.SUBTYPE));
+            addComplementaryBoundConstraint(parent, t, boundType, Kind.SUBTYPE);
           }
         }
         for (AbstractType t : bounds.get(BoundKind.UPPER)) {
           if (boundType != t) {
-            constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
+            addComplementaryBoundConstraint(parent, boundType, t, Kind.SUBTYPE);
           }
         }
       }
       case LOWER -> {
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
-            constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
+            addComplementaryBoundConstraint(parent, boundType, t, Kind.SUBTYPE);
           }
         }
         for (AbstractType t : bounds.get(BoundKind.UPPER)) {
           if (boundType != t) {
-            constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
+            addComplementaryBoundConstraint(parent, boundType, t, Kind.SUBTYPE);
           }
         }
       }
       case UPPER -> {
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
-            constraints.add(new Typing(parent, t, boundType, Kind.SUBTYPE));
+            addComplementaryBoundConstraint(parent, t, boundType, Kind.SUBTYPE);
           }
         }
         for (AbstractType t : bounds.get(BoundKind.LOWER)) {
           if (boundType != t) {
-            constraints.add(new Typing(parent, t, boundType, Kind.SUBTYPE));
+            addComplementaryBoundConstraint(parent, t, boundType, Kind.SUBTYPE);
           }
         }
       }
@@ -320,6 +317,21 @@ public class VariableBounds {
         }
       }
     }
+  }
+
+  /**
+   * Adds to {@link #constraints} a constraint that is implied by a complementary pair of bounds.
+   *
+   * @param parent the constraint whose reduction created the bound that implies the new constraint
+   * @param s left-hand side type of the new constraint
+   * @param t right-hand side type of the new constraint
+   * @param kind the kind of the new constraint
+   */
+  private void addComplementaryBoundConstraint(
+      Constraint parent, AbstractType s, AbstractType t, Kind kind) {
+    Typing constraint = new Typing(parent, s, t, kind);
+    constraint.source = "From complementary bound.";
+    constraints.add(constraint);
   }
 
   /**
