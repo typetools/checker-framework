@@ -122,19 +122,21 @@ public class VariableBounds {
   }
 
   /**
-   * Sets {@code instantiation} to {@code type}, boxed if it is a primitive type. An inference
-   * variable can only be instantiated to a reference type.
+   * Sets {@code instantiation} to {@code type}.
    *
-   * @param type the proper type to which this variable is instantiated
+   * @param type the proper type to which this variable is instantiated; it must be a reference
+   *     type, because an inference variable can only be instantiated to a reference type
    */
   private void setInstantiation(ProperType type) {
-    instantiation = type.boxType();
+    assert !type.getTypeKind().isPrimitive()
+        : "instantiation of " + variable + " is the primitive type " + type;
+    instantiation = type;
   }
 
   /**
    * Sets {@code instantiation} from a proper {@code EQUAL} bound, if this variable has one. If
-   * there is more than one such bound, the last one is used, as when bounds are added one at a time
-   * by {@link #addBound}.
+   * there is more than one such bound, the last one is used, matching {@link #addBound}, which
+   * overwrites the instantiation for each proper {@code EQUAL} bound that it adds.
    */
   private void setInstantiationFromEqualBounds() {
     for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
@@ -175,6 +177,11 @@ public class VariableBounds {
       return false;
     }
     if (kind == BoundKind.EQUAL && otherType.isProper()) {
+      // An inference variable can only be instantiated to a reference type, so box the bound
+      // before storing it.  This keeps the stored bound consistent with the instantiation, so
+      // that recomputing the instantiation from the bounds, as restore() does, yields a
+      // reference type.
+      otherType = ((ProperType) otherType).boxType();
       setInstantiation((ProperType) otherType);
     }
     if (bounds.get(kind).add(otherType)) {
