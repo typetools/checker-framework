@@ -294,7 +294,7 @@ public class VariableBounds {
       if (boundType.isInferenceType() || boundType.isProper()) {
         for (AbstractType t : bounds.get(BoundKind.LOWER)) {
           if (t.isProper() || t.isInferenceType()) {
-            constraints.addAll(getConstraintsFromParameterized(boundType, t));
+            constraints.addAll(getConstraintsFromParameterized(parent, boundType, t));
           }
         }
       }
@@ -322,16 +322,38 @@ public class VariableBounds {
   /**
    * Adds to {@link #constraints} a constraint that is implied by a complementary pair of bounds.
    *
-   * @param parent the constraint whose reduction created the bound that implies the new constraint
+   * @param parent the constraint whose reduction created the bound that implies the new constraint,
+   *     or null if no constraint did
    * @param s left-hand side type of the new constraint
    * @param t right-hand side type of the new constraint
    * @param kind the kind of the new constraint
    */
   private void addComplementaryBoundConstraint(
       Constraint parent, AbstractType s, AbstractType t, Kind kind) {
+    constraints.add(createImpliedConstraint(parent, "From complementary bound", s, t, kind));
+  }
+
+  /**
+   * Creates a constraint that incorporating a bound of this variable implies, recording how the
+   * constraint came about so that {@link TypeConstraint#constraintHistory} can explain it.
+   *
+   * @param parent the constraint whose reduction created the bound that implies the new constraint,
+   *     or null if no constraint did
+   * @param description how the bound gave rise to the new constraint
+   * @param s left-hand side type of the new constraint
+   * @param t right-hand side type of the new constraint
+   * @param kind the kind of the new constraint
+   * @return the new constraint
+   */
+  private Typing createImpliedConstraint(
+      Constraint parent, String description, AbstractType s, AbstractType t, Kind kind) {
     Typing constraint = new Typing(parent, s, t, kind);
-    constraint.source = "From complementary bound.";
-    constraints.add(constraint);
+    if (parent == null) {
+      constraint.source = description;
+    } else {
+      constraint.derivation = description;
+    }
+    return constraint;
   }
 
   /**
@@ -377,12 +399,15 @@ public class VariableBounds {
    * ({@code 1 <= i <= n}), if Si and Ti are types (not wildcards), the constraint formula {@code
    * <Si = Ti>} is implied.
    *
+   * @param parent the constraint whose reduction created the bound that implies the returned
+   *     constraints, or null if no constraint did
    * @param s a type argument
    * @param t a type argument
    * @return the constraints between the type arguments to {@code s} and {@code t}
    */
-  private List<Typing> getConstraintsFromParameterized(AbstractType s, AbstractType t) {
-    String source = "Constraint from parameterized bound.";
+  private List<Typing> getConstraintsFromParameterized(
+      Constraint parent, AbstractType s, AbstractType t) {
+    String description = "Constraint from parameterized bound";
 
     IPair<AbstractType, AbstractType> pair =
         context.inferenceTypeFactory.getParameterizedSupers(s, t);
@@ -400,7 +425,7 @@ public class VariableBounds {
       AbstractType si = ss.get(i);
       AbstractType ti = ts.get(i);
       if (si.getTypeKind() != TypeKind.WILDCARD && ti.getTypeKind() != TypeKind.WILDCARD) {
-        constraints.add(new Typing(source, si, ti, Kind.TYPE_EQUALITY));
+        constraints.add(createImpliedConstraint(parent, description, si, ti, Kind.TYPE_EQUALITY));
       }
     }
     return constraints;
@@ -649,7 +674,7 @@ public class VariableBounds {
    */
   public ConstraintSet getWildcardConstraints(AbstractType Ai, AbstractType Bi) {
     ConstraintSet constraintSet = new ConstraintSet();
-    String source = "Constraint from wildcard bound.";
+    String source = "Constraint from wildcard bound";
 
     // Only concerned with bounds against proper types or inference types.
     List<AbstractType> upperBoundsNonVar = new ArrayList<>();
