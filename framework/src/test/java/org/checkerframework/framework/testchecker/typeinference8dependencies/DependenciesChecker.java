@@ -21,6 +21,14 @@ public class DependenciesChecker extends BaseTypeChecker {
   }
 
   @Override
+  public void initChecker() {
+    super.initChecker();
+    // Reset the flag, so that a second run of this checker in the same JVM cannot pass merely
+    // because an earlier run set the flag.
+    DependenciesVisitor.testsRan = false;
+  }
+
+  @Override
   public void typeProcessingOver() {
     if (!DependenciesVisitor.testsRan) {
       throw new AssertionError(

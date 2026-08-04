@@ -8,13 +8,13 @@
 public class Typeinference8Dependencies {
 
   /**
-   * Used to create a proper type whose two type arguments can be replaced by inference variables.
+   * Used to create a proper type whose three type arguments can be replaced by inference variables.
    */
-  Holder<String, String> holder;
+  Holder<String, String, String> holder;
 
   /** Used only as the key under which the {@code Theta} of {@link #holder} is cached. */
   Runnable thetaKeyLambda = () -> {};
 
-  /** Declares the two type variables that become inference variables. */
-  static class Holder<Z1, Z2> {}
+  /** Declares the three type variables that become inference variables. */
+  static class Holder<Z1, Z2, Z3> {}
 }
