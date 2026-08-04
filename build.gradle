@@ -6,8 +6,6 @@ plugins {
   id("java")
   // https://github.com/tbroyer/gradle-errorprone-plugin
   alias(libs.plugins.net.ltgt.errorprone)
-  // https://docs.gradle.org/current/userguide/eclipse_plugin.html
-  id("eclipse")
   // This is a locally built "plugin" that contains the spotless configuration. It is in
   // buildSrc/src/main/groovy/cf-spotless.gradle.
   id("cf-spotless")
@@ -158,7 +156,6 @@ allprojects { currentProj ->
   }
 
   apply plugin: "java"
-  apply plugin: "eclipse"
   apply plugin: "de.undercouch.download"
   apply plugin: "net.ltgt.errorprone"
   // apply plugin: "pmd"
@@ -190,20 +187,6 @@ allprojects { currentProj ->
     errorprone(rootProject.libs.error.prone.core)
 
     allProjects(subprojects)
-  }
-
-  eclipse.classpath {
-    defaultOutputDir = file("build/default")
-    file.whenMerged { cp ->
-      cp.entries.forEach { cpe ->
-        if (cpe instanceof org.gradle.plugins.ide.eclipse.model.SourceFolder) {
-          cpe.output = cpe.output.replace("bin/", "build/classes/java/")
-        }
-        if (cpe instanceof org.gradle.plugins.ide.eclipse.model.Output) {
-          cpe.path = cpe.path.replace("bin/", "build/")
-        }
-      }
-    }
   }
 
   ext {
