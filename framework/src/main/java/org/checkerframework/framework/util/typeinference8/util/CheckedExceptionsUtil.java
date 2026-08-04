@@ -40,7 +40,7 @@ public final class CheckedExceptionsUtil {
 
   /**
    * Helper class for gathering the types of checked exceptions in a lambda. See
-   * https://docs.oracle.com/javase/specs/jls/se9/html/jls-11.html#jls-11.2.2
+   * https://docs.oracle.com/javase/specs/jls/se25/html/jls-11.html#jls-11.2.2
    */
   private static final class CheckedExceptionVisitor
       extends TreeScanner<@Nullable List<TypeMirror>, Void> {
@@ -82,9 +82,9 @@ public final class CheckedExceptionsUtil {
           removeAssignable(TreeUtils.typeOf(catchTree.getParameter()), results);
         }
       }
-      results.addAll(scan(node.getResources(), aVoid));
-      results.addAll(scan(node.getCatches(), aVoid));
-      results.addAll(scan(node.getFinallyBlock(), aVoid));
+      results.addAll(nullToEmptyList(scan(node.getResources(), aVoid)));
+      results.addAll(nullToEmptyList(scan(node.getCatches(), aVoid)));
+      results.addAll(nullToEmptyList(scan(node.getFinallyBlock(), aVoid)));
 
       return results;
     }
@@ -181,7 +181,7 @@ public final class CheckedExceptionsUtil {
 
   /**
    * Helper class for gathering the types of checked exceptions in a lambda. See
-   * https://docs.oracle.com/javase/specs/jls/se9/html/jls-11.html#jls-11.2.2
+   * https://docs.oracle.com/javase/specs/jls/se25/html/jls-11.html#jls-11.2.2
    */
   private static final class CheckedExceptionATMVisitor
       extends TreeScanner<@Nullable List<AnnotatedTypeMirror>, Void> {
@@ -224,9 +224,9 @@ public final class CheckedExceptionsUtil {
           removeAssignable(TreeUtils.typeOf(catchTree.getParameter()), results);
         }
       }
-      results.addAll(scan(node.getResources(), aVoid));
-      results.addAll(scan(node.getCatches(), aVoid));
-      results.addAll(scan(node.getFinallyBlock(), aVoid));
+      results.addAll(nullToEmptyList(scan(node.getResources(), aVoid)));
+      results.addAll(nullToEmptyList(scan(node.getCatches(), aVoid)));
+      results.addAll(nullToEmptyList(scan(node.getFinallyBlock(), aVoid)));
 
       return results;
     }
@@ -309,5 +309,16 @@ public final class CheckedExceptionsUtil {
   private static boolean isCheckedException(
       AnnotatedTypeMirror type, Java8InferenceContext context) {
     return isCheckedException(type.getUnderlyingType(), context);
+  }
+
+  /**
+   * Returns {@code list}, or an empty list if {@code list} is null.
+   *
+   * @param list a possibly-null list
+   * @param <T> the element type of {@code list}
+   * @return {@code list}, or an empty list if {@code list} is null
+   */
+  private static <T> List<T> nullToEmptyList(@Nullable List<T> list) {
+    return list != null ? list : Collections.emptyList();
   }
 }
