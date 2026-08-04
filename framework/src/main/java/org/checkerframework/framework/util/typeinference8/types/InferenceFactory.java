@@ -1100,9 +1100,11 @@ public class InferenceFactory {
    * Creates a fresh type variable using the upper and lower bounds provided.
    *
    * @param lowerBound a proper type or null
-   * @param lowerBoundAnnos annotations to use if {@code lowerBound} is null
+   * @param lowerBoundAnnos annotations to use if {@code lowerBound} is null; a hierarchy that it
+   *     does not mention gets the default qualifier for an implicit lower bound
    * @param upperBound an abstract type or null
-   * @param upperBoundAnnos annotations to use if {@code upperBound} is null
+   * @param upperBoundAnnos annotations to use if {@code upperBound} is null; a hierarchy that it
+   *     does not mention gets the default qualifier for an implicit upper bound
    * @return a fresh type variable with the provided upper and lower bounds
    */
   public AbstractType createFreshTypeVariable(
@@ -1131,6 +1133,11 @@ public class InferenceFactory {
     } else {
       typeVariable.getUpperBound().addAnnotations(upperBoundAnnos);
     }
+    // Each bound of the fresh type variable must have an annotation in every hierarchy; otherwise a
+    // later comparison against the bound crashes.  A bound that the caller did not supply is
+    // `Object` or the null type, for which the caller's annotations might mention no hierarchy at
+    // all, so fill in the defaults for the hierarchies that are still missing.
+    typeFactory.addDefaultAnnotations(typeVariable);
     context.typeFactory.capturedTypeVarSubstitutor.substitute(
         typeVariable, Collections.singletonMap(typeVariable.getUnderlyingType(), typeVariable));
     AbstractType template = upperBound != null ? upperBound : lowerBound;

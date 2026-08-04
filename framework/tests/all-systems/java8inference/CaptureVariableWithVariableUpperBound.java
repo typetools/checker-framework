@@ -1,5 +1,5 @@
-// Test input for TypeInference8FreshTypeVariableTest, which checks finding 1.16:
-// `InferenceFactory.createFreshTypeVariable` must accept a null `upperBound`.
+// `InferenceFactory.createFreshTypeVariable` must accept a null `upperBound`, and the fresh type
+// variable it creates must have an annotation on each of its bounds.
 //
 // The upper bound of `G`'s type parameter `T` is the type parameter `S`.  The return type of
 // `make` is wildcard-parameterized and mentions the inference variable for `X`, so JLS 18.5.2.1
@@ -7,9 +7,6 @@
 // has no lower bound, and its only upper bound is a use of the capture variable `a2`, which
 // `VariableBounds.upperBounds()` filters out.  `Resolution.resolveWithCapture` therefore passes a
 // null upper bound (and a null lower bound) to `InferenceFactory.createFreshTypeVariable`.
-//
-// This file is not part of any per-directory test suite; the directory `framework/tests/
-// typeinference8` is read only by TypeInference8FreshTypeVariableTest.
 
 public class CaptureVariableWithVariableUpperBound {
 
