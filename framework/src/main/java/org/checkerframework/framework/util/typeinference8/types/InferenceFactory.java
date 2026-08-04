@@ -1092,31 +1092,30 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns the result of substituting {@code typeArg} for the type variables of {@code types} in
-   * {@code typeArg}.
+   * Returns {@code typeArgs}, in which every use of a variable in {@code variables} has been
+   * replaced by the corresponding element of {@code typeArgs}. An instantiation may mention another
+   * variable that is being resolved at the same time, so the instantiations are not final until
+   * this substitution has been performed.
    *
-   * @param typeArg type arguments
-   * @param types the variables that {@code typeArg} instantiates
-   * @return the result of substituting {@code typeArg} for the type variables of {@code types} in
-   *     {@code typeArg}
+   * <p>{@code typeArgs} and {@code variables} are parallel lists: {@code typeArgs.get(i)} is the
+   * instantiation of {@code variables.get(i)}.
+   *
+   * @param typeArgs the instantiations of {@code variables}
+   * @param variables the variables that {@code typeArgs} instantiates
+   * @return {@code typeArgs}, with uses of {@code variables} replaced by their instantiations
    */
-  public List<AbstractType> getSubsTypeArgs(List<AbstractType> typeArg, List<Variable> types) {
+  public List<AbstractType> getSubsTypeArgs(List<AbstractType> typeArgs, List<Variable> variables) {
     Map<TypeVariable, AnnotatedTypeMirror> map = new HashMap<>();
-
-    // TODO: If the instantiation of a variable refers to that same variable, then the type is
-    // recursive and cannot be written as a Java type.
-    List<AnnotatedTypeMirror> typeArgsATM = new ArrayList<>();
-    for (int i = 0; i < typeArg.size(); i++) {
-      Variable ai = types.get(i);
-      AbstractType inst = typeArg.get(i);
-      typeArgsATM.add(inst.getAnnotatedType());
-      TypeVariable typeVariableI = ai.getJavaType();
-      map.put(typeVariableI, inst.getAnnotatedType());
+    for (int i = 0; i < typeArgs.size(); i++) {
+      map.put(variables.get(i).getJavaType(), typeArgs.get(i).getAnnotatedType());
     }
 
-    // Instantiations that refer to another variable
-    List<AbstractType> subsTypeArg = new ArrayList<>();
-    for (AnnotatedTypeMirror type : typeArgsATM) {
+    // TODO: If the instantiation of a variable mentions that same variable, then substitution does
+    // not terminate the mention: the result still refers to the variable, because such a recursive
+    // type cannot be written as a Java type.
+    List<AbstractType> subsTypeArgs = new ArrayList<>();
+    for (AbstractType typeArg : typeArgs) {
+      AnnotatedTypeMirror type = typeArg.getAnnotatedType();
       TypeVariableSubstitutor typeVarSubstitutor = typeFactory.getTypeVarSubstitutor();
       AnnotatedTypeMirror subs;
       if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
@@ -1133,8 +1132,8 @@ public class InferenceFactory {
       } else {
         subs = typeVarSubstitutor.substituteWithoutCopyingTypeArguments(map, type);
       }
-      subsTypeArg.add(new ProperType(subs, context));
+      subsTypeArgs.add(new ProperType(subs, context));
     }
-    return subsTypeArg;
+    return subsTypeArgs;
   }
 }

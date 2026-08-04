@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
@@ -67,7 +66,7 @@ public class ProperType extends AbstractType {
     super(context, ignoreAnnotations);
     this.type = type;
     this.qualifierVars = qualifierVars;
-    verifyType(type);
+    verifyType();
   }
 
   /**
@@ -80,7 +79,7 @@ public class ProperType extends AbstractType {
     super(context, false);
     this.type = context.typeFactory.getAnnotatedType(tree);
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
-    verifyType(type);
+    verifyType();
   }
 
   /**
@@ -93,16 +92,12 @@ public class ProperType extends AbstractType {
     super(context, false);
     this.type = context.typeFactory.getAnnotatedType(varTree);
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
-    verifyType(type);
+    verifyType();
   }
 
-  /**
-   * Asserts that {@code atm} is a type that a proper type can represent.
-   *
-   * @param atm annotated type mirror
-   */
-  private static void verifyType(AnnotatedTypeMirror atm) {
-    assert atm != null && atm.getKind() != TypeKind.VOID;
+  /** Asserts that this type is not void, which a proper type cannot represent. */
+  private void verifyType() {
+    assert type.getKind() != TypeKind.VOID : "ProperType created for void type: " + type;
   }
 
   @Override
@@ -227,7 +222,6 @@ public class ProperType extends AbstractType {
     }
   }
 
-  @SuppressWarnings("interning:not.interned") // Checking for exact object.
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -237,27 +231,10 @@ public class ProperType extends AbstractType {
       return false;
     }
 
-    ProperType otherProperType = (ProperType) o;
-
-    if (!type.equals(otherProperType.type)) {
-      return false;
-    }
-
-    TypeMirror javaType = getJavaType();
-    TypeMirror otherJavaType = otherProperType.getJavaType();
-
-    @SuppressWarnings("TypeEquals") // fast path in equals method
-    boolean sameJavaType = (javaType == otherJavaType);
-    if (sameJavaType) {
-      return true;
-    }
-    if (javaType.getKind() != otherJavaType.getKind()) {
-      return false;
-    }
-    if (javaType.getKind() == TypeKind.TYPEVAR) {
-      return TypesUtils.areSame((TypeVariable) javaType, (TypeVariable) otherJavaType);
-    }
-    return context.env.getTypeUtils().isSameType(javaType, otherJavaType);
+    // Comparing the annotated types also compares the Java types: AnnotatedTypeMirror#equals
+    // requires the underlying types to be the same object, and the Java type of a proper type is
+    // the underlying type of its annotated type.
+    return type.equals(((ProperType) o).type);
   }
 
   @Override
