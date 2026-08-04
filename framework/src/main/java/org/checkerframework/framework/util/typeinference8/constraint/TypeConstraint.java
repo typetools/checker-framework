@@ -22,7 +22,7 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * Constraints are between either an expression and a type, two types, or an expression and a thrown
  * type. Defined in <a
- * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.1.2">JLS section
+ * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.1.2">JLS section
  * 18.1.2</a>
  */
 public abstract class TypeConstraint implements Constraint {
@@ -120,7 +120,7 @@ public abstract class TypeConstraint implements Constraint {
    * input variables of its subexpressions. For all other constraints, no input variables exist.
    *
    * <p>Defined in <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS section
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS section
    * 18.5.2.2</a>
    *
    * @return input variables for this constraint
@@ -132,7 +132,7 @@ public abstract class TypeConstraint implements Constraint {
    * type on the right-hand side of the constraint, T, that are not input variables."
    *
    * <p>As defined in <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS section
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS section
    * 18.5.2.2</a>
    *
    * @return output variables for this constraint
@@ -142,7 +142,7 @@ public abstract class TypeConstraint implements Constraint {
   /**
    * Implementation of {@link #getInputVariables()} that is used both by expressions constraints and
    * checked exception constraints
-   * https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.5.2-200
+   * https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2-200
    *
    * @param tree an expression tree
    * @param T the type of the right-hand side of the constraint
