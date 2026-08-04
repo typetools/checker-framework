@@ -304,7 +304,7 @@ public class BoundSet implements ReductionResult {
    * <p>Incorporation creates new constraints that are then reduced to a bound set which is further
    * incorporated into this bound set. Incorporation terminates when the bounds set has reached a
    * fixed point. <a
-   * href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.3">JLS 18 .1</a>
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.3">JLS 18.1</a>
    * defines this fixed point and further explains incorporation.
    *
    * @param newBounds bounds to incorporate
@@ -318,16 +318,9 @@ public class BoundSet implements ReductionResult {
     int count = 0;
     do {
       count++;
-      List<Variable> instantiations = getInstantiatedVariables();
-      boolean boundsChangeInst = false;
-      if (!instantiations.isEmpty()) {
-        for (Variable var : variables) {
-          boundsChangeInst = var.getBounds().applyInstantiationsToBounds();
-        }
-      }
-      boundsChangeInst |= captures.addAll(newBounds.captures);
+      boolean boundsChangeInst = captures.addAll(newBounds.captures);
       for (Variable alpha : variables) {
-        boundsChangeInst = alpha.getBounds().applyInstantiationsToBounds();
+        boundsChangeInst |= alpha.getBounds().applyInstantiationsToBounds();
 
         while (!alpha.getBounds().constraints.isEmpty()) {
           boundsChangeInst = true;

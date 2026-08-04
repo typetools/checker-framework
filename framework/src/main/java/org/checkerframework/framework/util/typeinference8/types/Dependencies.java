@@ -9,7 +9,7 @@ import java.util.Set;
 
 /**
  * A data structure to hold the dependencies between variables. Dependencies are defined in <a
- * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.4">JLS section
+ * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.4">JLS section
  * 18.4</a> and impact the order in which variables are resolved.
  */
 public class Dependencies {
