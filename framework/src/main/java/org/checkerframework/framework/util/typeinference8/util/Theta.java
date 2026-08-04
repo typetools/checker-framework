@@ -2,6 +2,7 @@ package org.checkerframework.framework.util.typeinference8.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,19 +30,15 @@ public class Theta {
 
   /**
    * A key of {@link #map}: a type variable whose {@code equals} method is {@link
-   * TypesUtils#areSame(TypeVariable, TypeVariable)}, that is, whose declaration has the same simple
-   * name and the same enclosing element.
+   * TypesUtils#areSame(TypeVariable, TypeVariable)}.
+   *
+   * <p>This is not a record, because a record's generated {@code equals} would compare {@link
+   * #typeVariable}, which is exactly the comparison that this class exists to avoid.
    */
   private static class Key {
 
     /** The type variable that this key stands for. */
     private final TypeVariable typeVariable;
-
-    /** The simple name of the type variable's declaration. */
-    private final String name;
-
-    /** The element that encloses the type variable's declaration. */
-    private final @Nullable Element enclosingElement;
 
     /**
      * Creates a key for {@code typeVariable}.
@@ -49,22 +46,20 @@ public class Theta {
      * @param typeVariable a type variable
      */
     Key(TypeVariable typeVariable) {
-      Element element = typeVariable.asElement();
       this.typeVariable = typeVariable;
-      this.name = element.getSimpleName().toString();
-      this.enclosingElement = element.getEnclosingElement();
     }
 
     @Override
     public boolean equals(@Nullable Object other) {
       return other instanceof Key otherKey
-          && name.equals(otherKey.name)
-          && Objects.equals(enclosingElement, otherKey.enclosingElement);
+          && TypesUtils.areSame(typeVariable, otherKey.typeVariable);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(name, enclosingElement);
+      // TypesUtils.areSame depends on asElement()'s getSimpleName() and getEnclosingElement().
+      Element element = typeVariable.asElement();
+      return Objects.hash(element.getSimpleName().toString(), element.getEnclosingElement());
     }
 
     @Override
@@ -75,6 +70,13 @@ public class Theta {
 
   /** The mapping, from type variable to inference variable. */
   private final Map<Key, Variable> map = new LinkedHashMap<>();
+
+  /**
+   * The value that {@link #getTypeVariables} returns, or null if it has not been computed since the
+   * most recent call to {@link #put}. A Theta is written once and then read many times, on hot
+   * paths of inference, so it is worth caching.
+   */
+  private @Nullable Collection<? extends TypeVariable> typeVariables = null;
 
   /** Creates Theta. */
   public Theta() {}
@@ -89,6 +91,7 @@ public class Theta {
    *     it was not mapped
    */
   public @Nullable Variable put(TypeVariable typeVariable, Variable variable) {
+    typeVariables = null;
     return map.put(new Key(typeVariable), variable);
   }
 
@@ -118,41 +121,46 @@ public class Theta {
   }
 
   /**
-   * Returns the inference variables, in the order in which they were added.
+   * Returns the inference variables, in the order in which they were added. The result is
+   * unmodifiable.
    *
    * @return the inference variables, in the order in which they were added
    */
   public Collection<Variable> values() {
-    return map.values();
+    return Collections.unmodifiableCollection(map.values());
   }
 
   /**
    * Returns the type variables that have an inference variable, in the order in which they were
-   * added.
+   * added. The result is unmodifiable.
    *
    * @return the type variables that have an inference variable
    */
   public Collection<? extends TypeVariable> getTypeVariables() {
-    List<TypeVariable> list = new ArrayList<>(map.size());
-    for (Key key : map.keySet()) {
-      list.add(key.typeVariable);
+    if (typeVariables == null) {
+      List<TypeVariable> list = new ArrayList<>(map.size());
+      for (Key key : map.keySet()) {
+        list.add(key.typeVariable);
+      }
+      typeVariables = Collections.unmodifiableList(list);
     }
-    return list;
+    return typeVariables;
   }
 
   /**
-   * Returns a list of type variables that do not yet have a value.
+   * Returns the type variables that do not yet have a value, in the order in which they were added.
+   * Unlike {@link #getTypeVariables}, the result is not cached, because a type variable acquires a
+   * value without any call to {@link #put}.
    *
-   * @return a list of type variables that do not yet have a value
+   * @return the type variables that do not yet have a value
    */
   public Collection<? extends TypeVariable> getNotInstantiated() {
     List<TypeVariable> list = new ArrayList<>();
-    map.forEach(
-        (key, var) -> {
-          if (var.getInstantiation() == null) {
-            list.add(key.typeVariable);
-          }
-        });
+    for (Map.Entry<Key, Variable> entry : map.entrySet()) {
+      if (entry.getValue().getInstantiation() == null) {
+        list.add(entry.getKey().typeVariable);
+      }
+    }
     return list;
   }
 

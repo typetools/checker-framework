@@ -4,6 +4,8 @@ import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -26,16 +28,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Tests that {@link Theta} treats two type variables that are {@link
- * TypesUtils#areSame(TypeVariable, TypeVariable)} as the same key, no matter which of its methods
- * performs the lookup.
+ * Tests the key equality of {@link Theta}: two type variables are the same key exactly when {@link
+ * TypesUtils#areSame(TypeVariable, TypeVariable)} returns true for them, no matter which of {@code
+ * Theta}'s methods performs the lookup.
  *
- * <p>{@link Theta} used to be a {@code LinkedHashMap} subclass that overrode only {@code
- * containsKey} and {@code get}. Every other lookup method &mdash; {@code put} among them &mdash;
- * used {@code TypeVariable.equals}, which javac's {@code Type.TypeVar} does not override and which
- * is therefore reference equality. So {@code theta.put(typeVar1, v1); theta.put(typeVar2, v2);} put
- * two entries in the map for one type variable, even when {@code typeVar1} and {@code typeVar2} are
- * the same type variable.
+ * <p>This is not the same as {@code TypeVariable.equals}, which javac's {@code Type.TypeVar} does
+ * not override and which is therefore reference equality.
  */
 public class ThetaTest {
 
@@ -111,7 +109,9 @@ public class ThetaTest {
 
   /**
    * An inference variable that is used only as a value in a {@link Theta}. Its context and bounds
-   * are not set up, which is enough for the lookup methods that this test exercises.
+   * are not set up, which is enough for the lookup methods that this test exercises. In particular,
+   * it never has an instantiation, because creating one requires a {@code Java8InferenceContext},
+   * which in turn requires a path into compiled source code.
    */
   private static class ValueOnlyVariable extends Variable {
 
@@ -133,7 +133,7 @@ public class ThetaTest {
    */
   @Test
   public void putUsesAreSame() {
-    AnnotatedTypeVariable annotatedTypeVariable = typeVariableOfGenericMethod();
+    AnnotatedTypeVariable annotatedTypeVariable = typeVariableOfGenericMethod("singletonList");
     TypeVariable typeVariable = annotatedTypeVariable.getUnderlyingType();
     TypeVariable alias = new AliasTypeVariable(typeVariable);
     Assert.assertTrue(TypesUtils.areSame(typeVariable, alias));
@@ -154,7 +154,7 @@ public class ThetaTest {
   /** {@code get} finds an entry that was made under an {@code areSame} key. */
   @Test
   public void lookupUsesAreSame() {
-    AnnotatedTypeVariable annotatedTypeVariable = typeVariableOfGenericMethod();
+    AnnotatedTypeVariable annotatedTypeVariable = typeVariableOfGenericMethod("singletonList");
     TypeVariable typeVariable = annotatedTypeVariable.getUnderlyingType();
     TypeVariable alias = new AliasTypeVariable(typeVariable);
 
@@ -171,7 +171,7 @@ public class ThetaTest {
   /** {@code get} returns null for a type that is not a type variable. */
   @Test
   public void lookupOfNonTypeVariable() {
-    AnnotatedTypeVariable annotatedTypeVariable = typeVariableOfGenericMethod();
+    AnnotatedTypeVariable annotatedTypeVariable = typeVariableOfGenericMethod("singletonList");
     TypeVariable typeVariable = annotatedTypeVariable.getUnderlyingType();
     TypeMirror upperBound = typeVariable.getUpperBound();
     Assert.assertNotEquals(TypeKind.TYPEVAR, upperBound.getKind());
@@ -183,32 +183,97 @@ public class ThetaTest {
   }
 
   /**
-   * Returns the annotated type variable of {@code java.util.Collections.singletonList}, which is a
-   * generic method, that is, one whose {@code getTypeVariables()} is non-empty.
-   *
-   * @return the annotated type variable of a generic method
+   * Two type variables that have the same simple name but different enclosing elements are
+   * different keys. This is the guard against the key equality being too coarse.
    */
-  private static AnnotatedTypeVariable typeVariableOfGenericMethod() {
+  @Test
+  public void distinctTypeVariablesAreDistinctKeys() {
+    AnnotatedTypeVariable singletonListT = typeVariableOfGenericMethod("singletonList");
+    AnnotatedTypeVariable emptyListT = typeVariableOfGenericMethod("emptyList");
+    TypeVariable typeVariable1 = singletonListT.getUnderlyingType();
+    TypeVariable typeVariable2 = emptyListT.getUnderlyingType();
+    // The two type variables have the same name, so only the enclosing element distinguishes them.
+    Assert.assertEquals(
+        typeVariable1.asElement().getSimpleName(), typeVariable2.asElement().getSimpleName());
+    Assert.assertFalse(TypesUtils.areSame(typeVariable1, typeVariable2));
+
+    Variable variable1 = new ValueOnlyVariable(singletonListT, typeVariable1, 1);
+    Variable variable2 = new ValueOnlyVariable(emptyListT, typeVariable2, 2);
+
+    Theta theta = new Theta();
+    theta.put(typeVariable1, variable1);
+    theta.put(typeVariable2, variable2);
+
+    Assert.assertEquals(2, theta.values().size());
+    Assert.assertEquals(2, theta.getTypeVariables().size());
+    Assert.assertSame(variable1, theta.get(typeVariable1));
+    Assert.assertSame(variable2, theta.get(typeVariable2));
+  }
+
+  /**
+   * {@code getNotInstantiated} and {@code getTypeVariables} return the type variables that were
+   * put, in the order in which they were put. No variable here has an instantiation, so the two
+   * methods return the same type variables.
+   */
+  @Test
+  public void typeVariablesAreReturnedInInsertionOrder() {
+    AnnotatedTypeVariable singletonListT = typeVariableOfGenericMethod("singletonList");
+    AnnotatedTypeVariable emptyListT = typeVariableOfGenericMethod("emptyList");
+    TypeVariable typeVariable1 = singletonListT.getUnderlyingType();
+    TypeVariable typeVariable2 = emptyListT.getUnderlyingType();
+
+    Theta theta = new Theta();
+    theta.put(typeVariable1, new ValueOnlyVariable(singletonListT, typeVariable1, 1));
+    theta.put(typeVariable2, new ValueOnlyVariable(emptyListT, typeVariable2, 2));
+
+    List<TypeVariable> expected = Arrays.asList(typeVariable1, typeVariable2);
+    Assert.assertEquals(expected, new ArrayList<>(theta.getTypeVariables()));
+    Assert.assertEquals(expected, new ArrayList<>(theta.getNotInstantiated()));
+    // getTypeVariables caches its result; a second call returns the same type variables.
+    Assert.assertEquals(expected, new ArrayList<>(theta.getTypeVariables()));
+  }
+
+  /**
+   * The processing environment for {@link #typeFactory}. All the tests share one, because setting
+   * one up is slow and the tests only read from it.
+   */
+  private static final ProcessingEnvironment env;
+
+  /** Creates the annotated types that the tests use as keys. */
+  private static final AnnotatedTypeFactory typeFactory;
+
+  static {
     Context context = new Context();
-    ProcessingEnvironment env = JavacProcessingEnvironment.instance(context);
+    env = JavacProcessingEnvironment.instance(context);
     JavaCompiler javac = JavaCompiler.instance(context);
     // The list of modules must be initialized before entering symbols.
     javac.initModules(com.sun.tools.javac.util.List.nil());
     javac.enterDone();
 
+    // Any concrete checker would do; ValueChecker is one that the framework tests already depend
+    // on.
     ValueChecker checker = new ValueChecker();
     checker.init(env);
-    AnnotatedTypeFactory typeFactory = new AnnotatedTypeFactory(checker);
+    typeFactory = new AnnotatedTypeFactory(checker);
+  }
 
+  /**
+   * Returns the first annotated type variable of the given method of {@code java.util.Collections}.
+   *
+   * @param methodName the simple name of a generic method of {@code java.util.Collections}, that
+   *     is, one whose {@code getTypeVariables()} is non-empty
+   * @return the first annotated type variable of the given method
+   */
+  private static AnnotatedTypeVariable typeVariableOfGenericMethod(String methodName) {
     TypeElement collections = env.getElementUtils().getTypeElement("java.util.Collections");
     for (ExecutableElement method : ElementFilter.methodsIn(collections.getEnclosedElements())) {
-      if (method.getSimpleName().contentEquals("singletonList")) {
+      if (method.getSimpleName().contentEquals(methodName)) {
         AnnotatedExecutableType methodType =
             (AnnotatedExecutableType)
                 AnnotatedTypeMirror.createType(method.asType(), typeFactory, true);
         return methodType.getTypeVariables().get(0);
       }
     }
-    throw new AssertionError("java.util.Collections.singletonList not found");
+    throw new AssertionError("java.util.Collections." + methodName + " not found");
   }
 }

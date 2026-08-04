@@ -127,6 +127,9 @@ public final class InferenceType extends AbstractType {
       return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
     }
 
+    // The kind test is of `typeMirror`, but the lookup key is `type`.  Both are required: a
+    // UseOfVariable describes `typeMirror`, so it is created only when `typeMirror` is a type
+    // variable, but the mapping is keyed by the type variables of `type`.
     Variable variable =
         typeMirror.getKind() == TypeKind.TYPEVAR ? map.get(type.getUnderlyingType()) : null;
     if (variable != null) {
@@ -165,6 +168,9 @@ public final class InferenceType extends AbstractType {
       return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
     }
 
+    // The kind test is of `typeMirror`, but the lookup key is `type`.  Both are required: a
+    // UseOfVariable describes `typeMirror`, so it is created only when `typeMirror` is a type
+    // variable, but the mapping is keyed by the type variables of `type`.
     Variable variable =
         typeMirror.getKind() == TypeKind.TYPEVAR ? map.get(type.getUnderlyingType()) : null;
     if (variable != null) {
@@ -270,7 +276,9 @@ public final class InferenceType extends AbstractType {
     LinkedHashSet<Variable> variables = new LinkedHashSet<>();
     for (TypeVariable typeVar :
         ContainsInferenceVariable.getMentionedTypeVariables(map.getTypeVariables(), typeMirror)) {
-      variables.add(map.get(typeVar));
+      @SuppressWarnings("nullness:assignment") // getMentionedTypeVariables returns keys of `map`
+      Variable variable = map.get(typeVar);
+      variables.add(variable);
     }
     return variables;
   }
