@@ -15,17 +15,16 @@ import org.checkerframework.framework.util.typeinference8.constraint.ConstraintS
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
-import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** A type that does not contain any inference variables. */
 public class ProperType extends AbstractType {
 
-  /** The annotated type mirror. */
+  /**
+   * The annotated type. Its underlying type is the Java type of this proper type; that is, {@link
+   * #getJavaType()} returns {@code type.getUnderlyingType()}.
+   */
   private final AnnotatedTypeMirror type;
-
-  /** The Java type. */
-  private final TypeMirror properType;
 
   /** A mapping from polymorphic annotation to {@link QualifierVar}. */
   private final AnnotationMirrorMap<QualifierVar> qualifierVars;
@@ -34,50 +33,41 @@ public class ProperType extends AbstractType {
    * Creates a proper type.
    *
    * @param type the annotated type
-   * @param properType the Java type
    * @param context the context
    */
-  public ProperType(
-      AnnotatedTypeMirror type, TypeMirror properType, Java8InferenceContext context) {
-    this(type, properType, AnnotationMirrorMap.emptyMap(), context, false);
+  public ProperType(AnnotatedTypeMirror type, Java8InferenceContext context) {
+    this(type, AnnotationMirrorMap.emptyMap(), context, false);
   }
 
   /**
    * Creates a proper type.
    *
    * @param type the annotated type
-   * @param properType the Java type
    * @param context the context
    * @param ignoreAnnotations true if the annotations on this type should be ignored
    */
   public ProperType(
-      AnnotatedTypeMirror type,
-      TypeMirror properType,
-      Java8InferenceContext context,
-      boolean ignoreAnnotations) {
-    this(type, properType, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations);
+      AnnotatedTypeMirror type, Java8InferenceContext context, boolean ignoreAnnotations) {
+    this(type, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations);
   }
 
   /**
    * Creates a proper type.
    *
    * @param type the annotated type
-   * @param properType the Java type
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
    * @param ignoreAnnotations true if the annotations on this type should be ignored
    */
   public ProperType(
       AnnotatedTypeMirror type,
-      TypeMirror properType,
       AnnotationMirrorMap<QualifierVar> qualifierVars,
       Java8InferenceContext context,
       boolean ignoreAnnotations) {
     super(context, ignoreAnnotations);
-    this.properType = properType;
     this.type = type;
     this.qualifierVars = qualifierVars;
-    verifyTypeKinds(type, properType);
+    verifyType(type);
   }
 
   /**
@@ -89,9 +79,8 @@ public class ProperType extends AbstractType {
   public ProperType(ExpressionTree tree, Java8InferenceContext context) {
     super(context, false);
     this.type = context.typeFactory.getAnnotatedType(tree);
-    this.properType = type.getUnderlyingType();
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
-    verifyTypeKinds(type, properType);
+    verifyType(type);
   }
 
   /**
@@ -103,24 +92,17 @@ public class ProperType extends AbstractType {
   public ProperType(VariableTree varTree, Java8InferenceContext context) {
     super(context, false);
     this.type = context.typeFactory.getAnnotatedType(varTree);
-    this.properType = TreeUtils.typeOf(varTree);
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
-    verifyTypeKinds(type, properType);
+    verifyType(type);
   }
 
   /**
-   * Asserts that the underlying type of {@code atm} is the same kind as {@code typeMirror}.
+   * Asserts that {@code atm} is a type that a proper type can represent.
    *
    * @param atm annotated type mirror
-   * @param typeMirror java type
    */
-  private static void verifyTypeKinds(AnnotatedTypeMirror atm, TypeMirror typeMirror) {
-    assert typeMirror != null && typeMirror.getKind() != TypeKind.VOID && atm != null;
-
-    if (typeMirror.getKind() != atm.getKind()) {
-      //      throw new BugInCF("type: %s annotated type: %s", typeMirror,
-      // atm.getUnderlyingType());
-    }
+  private static void verifyType(AnnotatedTypeMirror atm) {
+    assert atm != null && atm.getKind() != TypeKind.VOID;
   }
 
   @Override
@@ -128,9 +110,16 @@ public class ProperType extends AbstractType {
     return Kind.PROPER;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>{@code type} is ignored, because the Java type of a proper type is the underlying type of
+   * its annotated type. (Callers such as {@link AbstractType#getErased()} do not always pass {@code
+   * atm.getUnderlyingType()} as {@code type}.)
+   */
   @Override
   public AbstractType create(AnnotatedTypeMirror atm, TypeMirror type, boolean ignoreAnnotations) {
-    return new ProperType(atm, type, qualifierVars, context, ignoreAnnotations);
+    return new ProperType(atm, qualifierVars, context, ignoreAnnotations);
   }
 
   /**
@@ -141,10 +130,9 @@ public class ProperType extends AbstractType {
    *     exists
    */
   public ProperType boxType() {
-    if (properType.getKind().isPrimitive()) {
+    if (getJavaType().getKind().isPrimitive()) {
       return new ProperType(
           typeFactory.getBoxedType((AnnotatedPrimitiveType) getAnnotatedType()),
-          context.types.boxedClass((Type) properType).asType(),
           context,
           ignoreAnnotations);
     }
@@ -251,30 +239,30 @@ public class ProperType extends AbstractType {
 
     ProperType otherProperType = (ProperType) o;
 
-    // Need to check two fields: `type` and `properType`.
-
     if (!type.equals(otherProperType.type)) {
       return false;
     }
 
+    TypeMirror javaType = getJavaType();
+    TypeMirror otherJavaType = otherProperType.getJavaType();
+
     @SuppressWarnings("TypeEquals") // fast path in equals method
-    boolean sameProperType = (properType == otherProperType.properType);
-    if (sameProperType) {
+    boolean sameJavaType = (javaType == otherJavaType);
+    if (sameJavaType) {
       return true;
     }
-    if (properType.getKind() != otherProperType.properType.getKind()) {
+    if (javaType.getKind() != otherJavaType.getKind()) {
       return false;
     }
-    if (properType.getKind() == TypeKind.TYPEVAR) {
-      return TypesUtils.areSame(
-          (TypeVariable) properType, (TypeVariable) otherProperType.properType);
+    if (javaType.getKind() == TypeKind.TYPEVAR) {
+      return TypesUtils.areSame((TypeVariable) javaType, (TypeVariable) otherJavaType);
     }
-    return context.env.getTypeUtils().isSameType(properType, otherProperType.properType);
+    return context.env.getTypeUtils().isSameType(javaType, otherJavaType);
   }
 
   @Override
   public int hashCode() {
-    int result = properType.toString().hashCode();
+    int result = getJavaType().toString().hashCode();
     result = 31 * result + Kind.PROPER.hashCode();
     return result;
   }
@@ -291,7 +279,7 @@ public class ProperType extends AbstractType {
 
   @Override
   public boolean isObject() {
-    return TypesUtils.isObject(properType);
+    return TypesUtils.isObject(getJavaType());
   }
 
   @Override

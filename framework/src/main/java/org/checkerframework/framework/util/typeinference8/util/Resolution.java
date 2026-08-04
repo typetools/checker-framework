@@ -11,7 +11,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
@@ -371,7 +370,6 @@ public final class Resolution {
     boundSet.removeCaptures(as);
     BoundSet resolvedBoundSet = new BoundSet(context);
     List<Variable> asList = new ArrayList<>();
-    List<TypeVariable> typeVar = new ArrayList<>();
     List<AbstractType> typeArg = new ArrayList<>();
 
     for (Variable ai : as) {
@@ -431,15 +429,13 @@ public final class Resolution {
         upperBoundAnnos = Collections.emptySet();
       }
 
-      typeVar.add(ai.getJavaType());
       AbstractType freshTypeVar =
           context.inferenceTypeFactory.createFreshTypeVariable(
               lowerBound, lowerBoundAnnos, upperBound, upperBoundAnnos);
       typeArg.add(freshTypeVar);
     }
 
-    List<AbstractType> subsTypeArg =
-        context.inferenceTypeFactory.getSubsTypeArgs(typeVar, typeArg, asList);
+    List<AbstractType> subsTypeArg = context.inferenceTypeFactory.getSubsTypeArgs(typeArg, asList);
 
     // Create the new bounds.
     for (int i = 0; i < asList.size(); i++) {

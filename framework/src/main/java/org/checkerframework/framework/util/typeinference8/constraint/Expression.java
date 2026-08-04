@@ -211,7 +211,7 @@ public class Expression extends TypeConstraint {
           if (MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound()) {
             AnnotatedTypeMirror atm =
                 context.typeFactory.getAnnotatedTypeFromTypeTree(preColonTree);
-            referenceType = new ProperType(atm, atm.getUnderlyingType(), context);
+            referenceType = new ProperType(atm, context);
           } else {
             referenceType = new ProperType(preColonTree, context);
           }

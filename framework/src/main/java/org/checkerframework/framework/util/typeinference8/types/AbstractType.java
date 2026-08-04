@@ -14,7 +14,6 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.IntersectionType;
@@ -185,13 +184,8 @@ public abstract class AbstractType {
     List<ProperType> bounds = new ArrayList<>();
     List<AnnotatedTypeParameterBounds> typeVars =
         typeFactory.typeVariablesFromUse((AnnotatedDeclaredType) getAnnotatedType(), typeelem);
-    Iterator<? extends TypeParameterElement> javaEle = typeelem.getTypeParameters().iterator();
-
     for (AnnotatedTypeParameterBounds bound : typeVars) {
-      TypeVariable typeVariable = (TypeVariable) javaEle.next().asType();
-      bounds.add(
-          new ProperType(
-              bound.getUpperBound(), typeVariable.getUpperBound(), context, ignoreAnnotations));
+      bounds.add(new ProperType(bound.getUpperBound(), context, ignoreAnnotations));
     }
     return bounds;
   }
