@@ -315,7 +315,7 @@ public class Expression extends TypeConstraint {
     if (!TreeUtils.isImplicitlyTypedLambda(lambda)) {
       // Explicitly typed lambda
       List<? extends VariableTree> parameters = lambda.getParameters();
-      List<AbstractType> gs = T.getFunctionTypeParameterTypes();
+      List<AbstractType> gs = tPrime.getFunctionTypeParameterTypes();
       if (gs == null) {
         // T is not a functional interface type, so it has no function type. JLS 18.2.1 says that
         // the constraint reduces to false in that case.
