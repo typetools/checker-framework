@@ -21,7 +21,7 @@ public class AClass extends ADeclaration {
   public final VivifyingMap<BoundLocation, ATypeElement> bounds =
       ATypeElement.<BoundLocation>newVivifyingLHMap_ATE();
 
-  // -1 maps to superclass, non-negative integers map to implemented interfaces
+  /** -1 maps to superclass, non-negative integers map to implemented or extended interfaces. */
   public final VivifyingMap<TypeIndexLocation, ATypeElement> extendsImplements =
       ATypeElement.<TypeIndexLocation>newVivifyingLHMap_ATE();
 
