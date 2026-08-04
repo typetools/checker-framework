@@ -13,6 +13,7 @@ import java.net.URI;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
@@ -98,6 +99,9 @@ public class TypingTest {
    */
   private Theta theta;
 
+  /** {@code BaseStream}'s type parameter {@code S}. Initialized by {@link #setUp}. */
+  private TypeVariable typeVariableS;
+
   /** The type {@code java.util.List<S>}. Initialized by {@link #setUp}. */
   private DeclaredType listOfS;
 
@@ -139,6 +143,7 @@ public class TypingTest {
     Assert.assertTrue(theta.containsKey(t));
     Assert.assertTrue(theta.containsKey(s));
     theta.remove(s);
+    typeVariableS = s;
 
     TypeElement list = env.getElementUtils().getTypeElement("java.util.List");
     listOfS = env.getTypeUtils().getDeclaredType(list, s);
@@ -152,9 +157,23 @@ public class TypingTest {
    * @param javaType a Java type
    * @return an abstract type for {@code javaType}
    */
-  private AbstractType abstractTypeFor(DeclaredType javaType) {
+  private AbstractType abstractTypeFor(TypeMirror javaType) {
     AnnotatedTypeMirror atm = AnnotatedTypeMirror.createType(javaType, typeFactory, false);
     return InferenceType.create(atm, javaType, theta, context);
+  }
+
+  /** Reducing {@code ‹S = S›} yields true, as required by JLS 18.2.4. */
+  @Test
+  public void reduceEqualityOfSameTypeVariableIsTrue() {
+    setUp();
+    AbstractType s = abstractTypeFor(typeVariableS);
+    AbstractType t = abstractTypeFor(typeVariableS);
+    Assert.assertTrue("expected an inference type, found " + s.getKind(), s.isInferenceType());
+    Assert.assertNotSame(s, t);
+
+    ReductionResult result = new Typing("test", s, t, Kind.TYPE_EQUALITY).reduce(context);
+
+    Assert.assertSame("expected true, found " + result, ConstraintSet.TRUE, result);
   }
 
   /** Reducing {@code ‹List<S> = List<S>›} creates no constraint. */
@@ -178,9 +197,9 @@ public class TypingTest {
   /**
    * Reducing {@code ‹List<S> = List<S>›} does not reduce to false.
    *
-   * <p>This is the consequence of creating a constraint between two equal type arguments: reducing
-   * {@code ‹S = S›} yields false, which {@code ConstraintSet#reduceOneStep} reports by throwing
-   * {@code FalseBoundException}.
+   * <p>If reducing the constraint between the two type arguments yielded false, {@code
+   * ConstraintSet#reduceOneStep} would report that by throwing {@code FalseBoundException}, so this
+   * test would fail with an exception rather than at its assertion.
    */
   @Test
   public void reduceEqualityOfEqualTypeArgumentsIsNotFalse() {
