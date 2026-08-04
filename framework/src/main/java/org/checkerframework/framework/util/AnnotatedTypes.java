@@ -449,7 +449,7 @@ public final class AnnotatedTypes {
    */
   private static boolean isRawCall(AnnotatedDeclaredType receiver, Element method, Types types) {
     // Section 4.8, "Raw Types".
-    // (https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.8)
+    // (https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.8)
     //
     // The type of a constructor (§8.8), instance method (8.4, 9.4), or non-static field
     // (8.3) of a raw type C that is not inherited from its superclasses or superinterfaces
