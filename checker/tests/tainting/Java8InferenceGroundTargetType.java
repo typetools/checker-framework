@@ -47,7 +47,7 @@ public class Java8InferenceGroundTargetType {
     // contradicts `U = @Untainted B` from `<T' <: T>`, and inference failed with
     // (type.arguments.not.inferred).
     default void mismatchedSecondParameter(@Untainted B b) {
-      // :: error: (lambda.param)
+      // :: error: [lambda.param]
       @Untainted B r = foo((@Untainted B x, @Tainted B y) -> {}, b);
     }
 
@@ -55,7 +55,7 @@ public class Java8InferenceGroundTargetType {
     // and inference succeeds either way.  This shows that `mismatchedSecondParameter` is sensitive
     // to the second parameter's qualifier and not merely to the shape of the call.
     default void matchingSecondParameter(@Untainted B b) {
-      // :: error: (lambda.param)
+      // :: error: [lambda.param]
       @Untainted B r = foo((@Untainted B x, @Untainted B y) -> {}, b);
     }
 
