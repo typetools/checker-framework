@@ -57,6 +57,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.ConstraintS
 import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.util.CheckedExceptionsUtil;
+import org.checkerframework.framework.util.typeinference8.util.CheckedExceptionsUtil.ThrownCheckedException;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
@@ -1019,15 +1020,13 @@ public class InferenceFactory {
     if (es.isEmpty()) {
       return ConstraintSet.TRUE;
     }
-    List<? extends AnnotatedTypeMirror> thrownTypes;
-    List<? extends TypeMirror> thrownTypeMirrors;
+    List<ThrownCheckedException> thrownExceptions;
     if (expression instanceof LambdaExpressionTree let) {
-      thrownTypeMirrors = CheckedExceptionsUtil.thrownCheckedExceptions(let, context);
-      thrownTypes = CheckedExceptionsUtil.thrownCheckedExceptionsATM(let, context);
+      thrownExceptions = CheckedExceptionsUtil.thrownCheckedExceptions(let, context);
     } else {
-      thrownTypeMirrors =
+      List<? extends TypeMirror> thrownTypeMirrors =
           TypesUtils.findFunctionType(TreeUtils.typeOf(expression), context.env).getThrownTypes();
-      thrownTypes =
+      List<? extends AnnotatedTypeMirror> thrownTypes =
           compileTimeDeclarationType((MemberReferenceTree) expression)
               .getAnnotatedType()
               .getThrownTypes();
@@ -1046,11 +1045,16 @@ public class InferenceFactory {
         }
         thrownTypes = thrownTypesNew;
       }
+      thrownExceptions = new ArrayList<>(thrownTypeMirrors.size());
+      Iterator<? extends AnnotatedTypeMirror> iter2 = thrownTypes.iterator();
+      for (TypeMirror thrown : thrownTypeMirrors) {
+        thrownExceptions.add(new ThrownCheckedException(thrown, iter2.next()));
+      }
     }
 
-    Iterator<? extends AnnotatedTypeMirror> iter2 = thrownTypes.iterator();
-    for (TypeMirror xi : thrownTypeMirrors) {
-      AnnotatedTypeMirror xiAnnotated = iter2.next();
+    for (ThrownCheckedException thrownException : thrownExceptions) {
+      TypeMirror xi = thrownException.javaType();
+      AnnotatedTypeMirror xiAnnotated = thrownException.annotatedType();
       boolean isSubtypeOfProper = false;
       for (ProperType properType : properTypes) {
         if (context.env.getTypeUtils().isSubtype(xi, properType.getJavaType())) {
