@@ -263,15 +263,7 @@ public class WholeProgramInferenceJavaParserStorage
 
   @Override
   public AnnotationMirrorSet getMethodDeclarationAnnotations(ExecutableElement methodElt) {
-    String className = ElementUtils.getEnclosingClassName(methodElt);
-    // Read in classes for the element.
-    getFileForElement(methodElt);
-    ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
-    if (classAnnos == null) {
-      return AnnotationMirrorSet.emptySet();
-    }
-    CallableDeclarationAnnos methodAnnos =
-        classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
+    CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
     if (methodAnnos == null) {
       return AnnotationMirrorSet.emptySet();
     }
