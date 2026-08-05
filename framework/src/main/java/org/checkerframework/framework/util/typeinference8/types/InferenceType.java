@@ -352,9 +352,9 @@ public final class InferenceType extends AbstractType {
     }
 
     if (context.types.isSubtype((Type) subType, (Type) superJavaType)) {
-      // If this is a wildcard, then the annotations of the wildcard itself are compared, not those
-      // of the extends bound that `subType` was narrowed to above.  TODO: Should the extends
-      // bound's annotations be compared instead?
+      // If this is a wildcard, then `checkAnnotationSubtype` compares the annotations of the
+      // extends bound, matching the narrowing of `subType` above:  the type hierarchy descends
+      // into a wildcard subtype's extends bound.
       return checkAnnotationSubtype(superType);
     } else {
       return ConstraintSet.FALSE;
