@@ -1027,44 +1027,22 @@ public class InferenceFactory {
       return ConstraintSet.TRUE;
     }
     List<? extends AnnotatedTypeMirror> thrownTypes;
-    List<? extends TypeMirror> thrownTypeMirrors;
     if (expression instanceof LambdaExpressionTree let) {
-      thrownTypeMirrors = CheckedExceptionsUtil.thrownCheckedExceptions(let, context);
       thrownTypes = CheckedExceptionsUtil.thrownCheckedExceptionsATM(let, context);
     } else {
-      thrownTypeMirrors =
-          TypesUtils.findFunctionType(TreeUtils.typeOf(expression), context.env).getThrownTypes();
       thrownTypes =
           compileTimeDeclarationType((MemberReferenceTree) expression)
               .getAnnotatedType()
               .getThrownTypes();
     }
-    if (thrownTypes.size() != thrownTypeMirrors.size()) {
-      // The two lists cannot be paired up element by element, so discard `thrownTypes`: create
-      // annotated types from `thrownTypeMirrors` and add default annotations to them.  The sizes
-      // differ for a method reference, because the thrown types are not stored in the
-      // ExecutableElements, so the above code doesn't find any thrown types.  The sizes can also
-      // differ for a lambda, because `thrownCheckedExceptions` and `thrownCheckedExceptionsATM`
-      // are independent traversals that can classify a thrown type differently: the former tests
-      // the declared type of the exception and the latter tests its type after substitution.
-      // TODO: This is just a work around.  We need to figure out how to get the types with the
-      // correct annotations.
-      List<AnnotatedTypeMirror> thrownTypesNew = new ArrayList<>(thrownTypeMirrors.size());
-      for (TypeMirror thrown : thrownTypeMirrors) {
-        AnnotatedTypeMirror thrownATM =
-            AnnotatedTypeMirror.createType(thrown, context.typeFactory, false);
-        context.typeFactory.addDefaultAnnotations(thrownATM);
-        thrownTypesNew.add(thrownATM);
-      }
-      thrownTypes = thrownTypesNew;
-    }
 
-    for (int i = 0; i < thrownTypeMirrors.size(); i++) {
-      TypeMirror xi = thrownTypeMirrors.get(i);
-      AnnotatedTypeMirror xiAnnotated = thrownTypes.get(i);
+    for (AnnotatedTypeMirror xiAnnotated : thrownTypes) {
       boolean isSubtypeOfProper = false;
       for (ProperType properType : properTypes) {
-        if (context.env.getTypeUtils().isSubtype(xi, properType.getJavaType())) {
+        if (context
+            .env
+            .getTypeUtils()
+            .isSubtype(xiAnnotated.getUnderlyingType(), properType.getJavaType())) {
           isSubtypeOfProper = true;
         }
       }
@@ -1073,7 +1051,7 @@ public class InferenceFactory {
           constraintSet.add(
               new Typing(
                   "Exception constraint for " + expression,
-                  new ProperType(xiAnnotated, xi, context),
+                  new ProperType(xiAnnotated, xiAnnotated.getUnderlyingType(), context),
                   ei,
                   TypeConstraint.Kind.SUBTYPE));
           ei.setHasThrowsBound(true);
