@@ -91,6 +91,49 @@ public class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
   }
 
   // ----------------------------------------------------------
+  // Test Case - D2
+  // Expression.reduceProperType does not check the qualifiers, and Expression.reduceLambda does
+  // not check them when the function type's return type is proper.  These tests pin the
+  // resulting behavior: a qualifier mismatch is still reported, by BaseTypeVisitor rather than
+  // by inference, and with a more informative message than "type.arguments.not.inferred".
+
+  interface StringSupplier {
+    @H1S1 @H2S1 String get();
+  }
+
+  interface StringFn<A> {
+    @H1S1 @H2S1 String apply(A a);
+  }
+
+  // The parameter's type mentions no type variable, so the constraint <argument -> parameter> is
+  // reduced by Expression.reduceProperType.
+  <D2> void methodD2Proper(D2 d2, @H1S1 @H2S1 String proper) {}
+
+  // The lambda's target type mentions no type variable, so the constraint <lambda -> target> is
+  // also reduced by Expression.reduceProperType, which does not even examine the lambda body.
+  <D2> void methodD2ProperLambda(D2 d2, StringSupplier supplier) {}
+
+  // The lambda's target type mentions the inference variable for D2, so the constraint is
+  // reduced by Expression.reduceLambda.  The function type's return type is proper, so the
+  // returned expression takes reduceLambda's R.isProper() branch, which checks only the Java
+  // type.
+  <D2> void methodD2LambdaProperReturn(D2 d2, StringFn<D2> fn) {}
+
+  void contextD2Proper(@H1S1 @H2S1 String s1, @H1Top @H2Top String top) {
+    methodD2Proper("", s1);
+    // :: error: [argument]
+    methodD2Proper("", top);
+
+    methodD2ProperLambda("", () -> s1);
+    // :: error: [return]
+    methodD2ProperLambda("", () -> top);
+
+    methodD2LambdaProperReturn("", x -> s1);
+    // :: error: [return]
+    methodD2LambdaProperReturn("", x -> top);
+  }
+
+  // ----------------------------------------------------------
   // Test Case - E
   <E> E methodE(E e1, E[] aos2) {
     return null;
