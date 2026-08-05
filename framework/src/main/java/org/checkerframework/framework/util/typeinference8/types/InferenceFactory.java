@@ -1027,40 +1027,22 @@ public class InferenceFactory {
       return ConstraintSet.TRUE;
     }
     List<? extends AnnotatedTypeMirror> thrownTypes;
-    List<? extends TypeMirror> thrownTypeMirrors;
     if (expression instanceof LambdaExpressionTree let) {
-      thrownTypeMirrors = CheckedExceptionsUtil.thrownCheckedExceptions(let, context);
       thrownTypes = CheckedExceptionsUtil.thrownCheckedExceptionsATM(let, context);
     } else {
-      thrownTypeMirrors =
-          TypesUtils.findFunctionType(TreeUtils.typeOf(expression), context.env).getThrownTypes();
       thrownTypes =
           compileTimeDeclarationType((MemberReferenceTree) expression)
               .getAnnotatedType()
               .getThrownTypes();
-      if (thrownTypes.size() != thrownTypeMirrors.size()) {
-        // TODO: the thrown types are not stored in the ExecutableElements, so the above
-        // method doesn't find any thrown types.  Below gets the types thrown type from the
-        // ExecutableType and just adds default annotations.  This is just a work around for
-        // this problem.  We need to figure out how to get the type with the correct
-        // annotations.
-        List<AnnotatedTypeMirror> thrownTypesNew = new ArrayList<>(thrownTypeMirrors.size());
-        for (TypeMirror thrown : thrownTypeMirrors) {
-          AnnotatedTypeMirror thrownATM =
-              AnnotatedTypeMirror.createType(thrown, context.typeFactory, false);
-          context.typeFactory.addDefaultAnnotations(thrownATM);
-          thrownTypesNew.add(thrownATM);
-        }
-        thrownTypes = thrownTypesNew;
-      }
     }
 
-    Iterator<? extends AnnotatedTypeMirror> iter2 = thrownTypes.iterator();
-    for (TypeMirror xi : thrownTypeMirrors) {
-      AnnotatedTypeMirror xiAnnotated = iter2.next();
+    for (AnnotatedTypeMirror xiAnnotated : thrownTypes) {
       boolean isSubtypeOfProper = false;
       for (ProperType properType : properTypes) {
-        if (context.env.getTypeUtils().isSubtype(xi, properType.getJavaType())) {
+        if (context
+            .env
+            .getTypeUtils()
+            .isSubtype(xiAnnotated.getUnderlyingType(), properType.getJavaType())) {
           isSubtypeOfProper = true;
         }
       }
@@ -1069,7 +1051,7 @@ public class InferenceFactory {
           constraintSet.add(
               new Typing(
                   "Exception constraint for " + expression,
-                  new ProperType(xiAnnotated, xi, context),
+                  new ProperType(xiAnnotated, xiAnnotated.getUnderlyingType(), context),
                   ei,
                   TypeConstraint.Kind.SUBTYPE));
           ei.setHasThrowsBound(true);
