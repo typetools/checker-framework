@@ -3,15 +3,15 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 4.2.2 (2026-08-01)
-
-### User-visible changes
+## Version 4.2.2 (2026-08-04)
 
 ### Implementation details
 
 Renamed `CFAbstractValue.validateSet()` to `hasAnnotationFromEveryHierarchy()`.
 
 ### Closed issues
+
+\#7723, #7784, #7806.
 
 ## Version 4.2.1 (2026-07-01)
 
