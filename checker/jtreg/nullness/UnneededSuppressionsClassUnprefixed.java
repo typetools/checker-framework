@@ -2,7 +2,7 @@
  * @test
  * @summary Test -AwarnUnneededSuppressions
  *
- * @compile/ref=UnneededSuppressionsClassUnprefixed.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AwarnUnneededSuppressions UnneededSuppressionsClassUnprefixed.java
+ * @compile/ref=UnneededSuppressionsClassUnprefixed.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AwarnUnneededSuppressions UnneededSuppressionsClassUnprefixed.java
  */
 
 @SuppressWarnings("unneeded.suppression")
