@@ -93,6 +93,8 @@ public class ConstraintSet implements ReductionResult {
    * it is already in {@link #list}. This method is private so that it can be called from the
    * constructor.
    *
+   * <p>This method is final because constructors call it.
+   *
    * @param c a constraint to add to this set, or null
    */
   private void addIfAbsent(Constraint c) {
@@ -103,8 +105,6 @@ public class ConstraintSet implements ReductionResult {
 
   /**
    * Adds {@code c} to this set, if c isn't already in the list.
-   *
-   * <p>This method is final because constructors call it.
    *
    * @param c a constraint to add to this set
    */
