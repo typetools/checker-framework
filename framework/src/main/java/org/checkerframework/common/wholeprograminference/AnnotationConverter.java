@@ -19,7 +19,6 @@ import org.checkerframework.afu.scenelib.field.BasicAFT;
 import org.checkerframework.afu.scenelib.field.ClassTokenAFT;
 import org.checkerframework.afu.scenelib.field.EnumAFT;
 import org.checkerframework.afu.scenelib.field.ScalarAFT;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -109,7 +108,7 @@ public class AnnotationConverter {
    * @param ee an element (that is, a field) of an annotation
    * @return the type of the given annotation field
    */
-  protected static @Nullable AnnotationFieldType getAnnotationFieldType(ExecutableElement ee) {
+  protected static AnnotationFieldType getAnnotationFieldType(ExecutableElement ee) {
     return typeMirrorToAnnotationFieldType(ee.getReturnType());
   }
 
