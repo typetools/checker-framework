@@ -393,7 +393,7 @@ public class Typing extends TypeConstraint {
       if (T.isProper()) {
         // If S and T are proper types, the constraint reduces to true if S is the same
         // as T (4.3.4), and false otherwise.
-        return ((ProperType) S).isSameType((ProperType) T);
+        return ((ProperType) S).isSameJavaTypeAndIsSubtypeAnontated((ProperType) T);
       }
       ProperType sProper = (ProperType) S;
       if (sProper.getTypeKind() == TypeKind.NULL || sProper.getTypeKind().isPrimitive()) {

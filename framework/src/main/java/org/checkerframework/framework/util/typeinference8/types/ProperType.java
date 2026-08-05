@@ -241,14 +241,8 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Is {@code this} the same type as {@code other}? See JLS 4.3.4.
-   *
-   * <p>The Java types must be the same. The annotated types need only be comparable: one must be a
-   * subtype of the other. Requiring the annotated types to be subtypes of one another would issue
-   * false positive errors, because inference is deliberately biased toward the annotations of the
-   * target type: when the target type's annotation is a supertype of the annotation that would
-   * otherwise be inferred, the supertype annotation is chosen. See {@link
-   * org.checkerframework.framework.type.AnnotatedTypeFactory#getDummyAssignedTo(ExpressionTree)}.
+   * Is {@code this} the same type as {@code other}? See JLS 4.3.4. The Java types must be the same.
+   * The annotated types need only be comparable: one must be a subtype of the other.
    *
    * <p>This method is unrelated to {@link #equals}, which tests whether two {@code ProperType}s
    * represent the same type in the sense used by the constraint machinery.
@@ -258,7 +252,7 @@ public class ProperType extends AbstractType {
    *     ConstraintSet#TRUE_ANNO_FAIL} if the Java types are the same but the annotated types are
    *     incomparable; {@link ConstraintSet#FALSE} if the Java types differ
    */
-  public ReductionResult isSameType(ProperType other) {
+  public ReductionResult isSameJavaTypeAndIsSubtypeAnontated(ProperType other) {
     TypeMirror thisJavaType = getJavaType();
     TypeMirror otherJavaType = other.getJavaType();
 
@@ -282,7 +276,12 @@ public class ProperType extends AbstractType {
     AnnotatedTypeMirror thisATM = this.getAnnotatedType();
     AnnotatedTypeMirror otherATM = other.getAnnotatedType();
     TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
-    if (typeHierarchy.isSubtype(thisATM, otherATM) && typeHierarchy.isSubtype(otherATM, thisATM)) {
+    // Requiring the annotated types to *both* be subtypes of one another would issue false positive
+    // errors, because inference is biased toward the annotations of the target type:  when the
+    // target type's annotation is a supertype of the annotation that would otherwise be inferred,
+    // the supertype annotation is chosen. See {@link
+    // org.checkerframework.framework.type.AnnotatedTypeFactory#getDummyAssignedTo(ExpressionTree)}.
+    if (typeHierarchy.isSubtype(thisATM, otherATM) || typeHierarchy.isSubtype(otherATM, thisATM)) {
       return ConstraintSet.TRUE;
     } else {
       return ConstraintSet.TRUE_ANNO_FAIL;
