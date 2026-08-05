@@ -282,7 +282,7 @@ public class ProperType extends AbstractType {
     AnnotatedTypeMirror thisATM = this.getAnnotatedType();
     AnnotatedTypeMirror otherATM = other.getAnnotatedType();
     TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
-    if (typeHierarchy.isSubtype(thisATM, otherATM) || typeHierarchy.isSubtype(otherATM, thisATM)) {
+    if (typeHierarchy.isSubtype(thisATM, otherATM) && typeHierarchy.isSubtype(otherATM, thisATM)) {
       return ConstraintSet.TRUE;
     } else {
       return ConstraintSet.TRUE_ANNO_FAIL;
