@@ -1031,16 +1031,13 @@ public class InferenceFactory {
     if (expression instanceof LambdaExpressionTree let) {
       thrownExceptions = CheckedExceptionsUtil.thrownCheckedExceptions(let, context);
     } else {
-      List<? extends TypeMirror> thrownTypeMirrors =
-          TypesUtils.findFunctionType(TreeUtils.typeOf(expression), context.env).getThrownTypes();
       List<? extends AnnotatedTypeMirror> thrownTypes =
           compileTimeDeclarationType((MemberReferenceTree) expression)
               .getAnnotatedType()
               .getThrownTypes();
-      thrownExceptions = new ArrayList<>(thrownTypeMirrors.size());
-      Iterator<? extends AnnotatedTypeMirror> iter2 = thrownTypes.iterator();
-      for (TypeMirror thrown : thrownTypeMirrors) {
-        thrownExceptions.add(new ThrownCheckedException(thrown, iter2.next()));
+      thrownExceptions = new ArrayList<>(thrownTypes.size());
+      for (AnnotatedTypeMirror thrown : thrownTypes) {
+        thrownExceptions.add(new ThrownCheckedException(thrown.getUnderlyingType(), thrown));
       }
     }
 
