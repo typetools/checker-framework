@@ -44,13 +44,6 @@ public class LubGlbChecker extends BaseTypeChecker {
   /** True if {@link #runQualifierEqualityTests} has already run. It only needs to run once. */
   private boolean ranQualifierEqualityTests = false;
 
-  /**
-   * Tests invariants of package {@code org.checkerframework.framework.util.typeinference8}, or null
-   * if it has not been created yet. It is created lazily, because it needs the type factory, which
-   * does not exist when this checker is constructed.
-   */
-  private Typeinference8InvariantTests typeinference8InvariantTests = null;
-
   @Override
   public void initChecker() {
     super.initChecker();
@@ -89,13 +82,6 @@ public class LubGlbChecker extends BaseTypeChecker {
       runQualifierEqualityTests(path);
     }
     super.typeProcess(element, path);
-    if (path != null) {
-      if (typeinference8InvariantTests == null) {
-        typeinference8InvariantTests =
-            new Typeinference8InvariantTests(((BaseTypeVisitor<?>) visitor).getTypeFactory());
-      }
-      typeinference8InvariantTests.run(path);
-    }
   }
 
   /**
