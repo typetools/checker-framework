@@ -352,9 +352,18 @@ public final class TestUtilities {
     return new File("tests", fileRelativeToTestsDir);
   }
 
+  /**
+   * Returns the ".goal" file that corresponds to the given Java test file: a file in the same
+   * directory, whose name is the test file's name with ".java" replaced by ".goal". The ".goal"
+   * file contains the diagnostics that the test file is expected to produce. This method does not
+   * check whether the ".goal" file exists.
+   *
+   * @param testFile a Java test file
+   * @return the ".goal" file that corresponds to the given Java test file
+   */
   public static File findComparisonFile(File testFile) {
     File comparisonFile =
-        new File(testFile.getParent(), testFile.getName().replace(".java", ".out"));
+        new File(testFile.getParent(), testFile.getName().replace(".java", ".goal"));
     return comparisonFile;
   }
 
