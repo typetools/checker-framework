@@ -623,9 +623,23 @@ tasks.register("ainferIndexGenerateAjava", Test) {
     exceptionFormat = "full"
     events("passed", "skipped", "failed")
   }
+  // Resolve these directories at configuration time, and delete them with `File.deleteDir()`
+  // rather than with `Project.delete()`, because the Gradle configuration cache forbids using
+  // a project object from within a task action.
+  List<File> ainferIndexDirsToDelete = [
+    file("tests/ainfer-index/annotated"),
+    layout.buildDirectory.dir("ainfer-index").get().asFile,
+  ]
   doFirst {
-    delete("tests/ainfer-index/annotated")
-    delete("${layout.buildDir}/ainfer-index/")
+    ainferIndexDirsToDelete.forEach { dirToDelete ->
+      // Unlike `Project.delete()`, `File.deleteDir()` reports failure by returning false rather
+      // than by throwing.  (It returns true if the directory does not exist, and false if the
+      // path exists but is not a directory.)  Without this test, this task would run against
+      // stale output after a failed deletion.
+      if (!dirToDelete.deleteDir()) {
+        throw new GradleException("Could not delete ${dirToDelete}")
+      }
+    }
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-index")
