@@ -6,7 +6,7 @@
  *
  * @ignore Temporarily, until safe defaults fon unannotated libraries are the default
  * @compile -Xlint:unchecked BinaryDefaultTestBinary.java
- * @compile/fail/ref=BinaryDefaultTestWithStub.out -XDrawDiagnostics -Xlint:unchecked -Astubs=binary.astub -processor org.checkerframework.checker.nullness.NullnessChecker BinaryDefaultTest.java
+ * @compile/fail/ref=BinaryDefaultTestWithStub.goal -XDrawDiagnostics -Xlint:unchecked -Astubs=binary.astub -processor org.checkerframework.checker.nullness.NullnessChecker BinaryDefaultTest.java
  */
 
 import org.checkerframework.checker.nullness.qual.NonNull;
