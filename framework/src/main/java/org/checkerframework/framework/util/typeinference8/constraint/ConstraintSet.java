@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util.typeinference8.constraint;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -16,32 +15,30 @@ import org.checkerframework.framework.util.typeinference8.util.FalseBoundExcepti
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.BugInCF;
 
-/** A set of constraints and the operations that can be performed on them. */
+/**
+ * A set of constraints and the operations that can be performed on them.
+ *
+ * <p>If you add a method that modifies a constraint set, override that method in {@code
+ * ImmutableConstraintSet}, so that the constant constraint sets {@link #TRUE} and {@link
+ * #TRUE_ANNO_FAIL} remain immutable.
+ */
 public class ConstraintSet implements ReductionResult {
 
-  /** The result given when a constraint set reduces to true. */
+  /** The result given when a constraint set reduces to true. It is empty and immutable. */
   @SuppressWarnings("interning:assignment")
   public static final @InternedDistinct ConstraintSet TRUE =
-      new ConstraintSet() {
-        @Override
-        public String toString() {
-          return "TRUE";
-        }
-      };
+      new ImmutableConstraintSet("TRUE", false);
 
   /**
    * The Java types are correct, but the qualifiers are not in the correct relationship. Return this
    * rather than throwing an exception so that type arguments with the correct Java type are still
    * inferred.
+   *
+   * <p>It is empty and immutable.
    */
   @SuppressWarnings("interning:assignment")
   public static final @InternedDistinct ConstraintSet TRUE_ANNO_FAIL =
-      new ConstraintSet(true) {
-        @Override
-        public String toString() {
-          return "TRUE_ANNO_FAIL";
-        }
-      };
+      new ImmutableConstraintSet("TRUE_ANNO_FAIL", true);
 
   /** The result given when a constraint set reduces to false. */
   @SuppressWarnings("interning:assignment")
@@ -64,13 +61,14 @@ public class ConstraintSet implements ReductionResult {
   private boolean annotationFailure = false;
 
   /**
-   * Creates a new constraint set.
+   * Creates an empty constraint set whose list of constraints cannot be modified. Only {@code
+   * ImmutableConstraintSet} calls this constructor.
    *
    * @param annotationFailure inference failed because the qualifiers were not in the correct
    *     relationship
    */
   private ConstraintSet(boolean annotationFailure) {
-    this();
+    this.list = List.of();
     this.annotationFailure = annotationFailure;
   }
 
@@ -82,9 +80,26 @@ public class ConstraintSet implements ReductionResult {
   public ConstraintSet(Constraint... constraints) {
     if (constraints != null) {
       list = new ArrayList<>(constraints.length);
-      list.addAll(Arrays.asList(constraints));
+      for (Constraint constraint : constraints) {
+        addIfAbsent(constraint);
+      }
     } else {
       list = new ArrayList<>();
+    }
+  }
+
+  /**
+   * Adds {@code c} to the end of {@link #list}, if {@code c} is non-null and no constraint equal to
+   * it is already in {@link #list}. This method is private so that it can be called from the
+   * constructor.
+   *
+   * <p>This method is final because constructors call it.
+   *
+   * @param c a constraint to add to this set, or null
+   */
+  private void addIfAbsent(Constraint c) {
+    if (c != null && !list.contains(c)) {
+      list.add(c);
     }
   }
 
@@ -94,9 +109,7 @@ public class ConstraintSet implements ReductionResult {
    * @param c a constraint to add to this set
    */
   public void add(Constraint c) {
-    if (c != null && !list.contains(c)) {
-      list.add(c);
-    }
+    addIfAbsent(c);
   }
 
   /**
@@ -112,12 +125,12 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
-   * Adds all constraints in {@code constraintSet} to this constraint set.
+   * Adds all constraints in {@code constraints} to this constraint set.
    *
-   * @param constraintSet a collection of constraints to add to this set
+   * @param constraints a collection of constraints to add to this set
    */
-  public void addAll(Collection<? extends Constraint> constraintSet) {
-    list.addAll(constraintSet);
+  public void addAll(Collection<? extends Constraint> constraints) {
+    constraints.forEach(this::add);
   }
 
   /**
@@ -434,5 +447,85 @@ public class ConstraintSet implements ReductionResult {
       }
     }
     return boundSet;
+  }
+
+  /** An empty {@code ConstraintSet} that cannot be modified. */
+  private static final class ImmutableConstraintSet extends ConstraintSet {
+
+    /** The name of this constraint set; it is the value returned by {@link #toString}. */
+    private final String name;
+
+    /**
+     * Creates an immutable constraint set.
+     *
+     * @param name the name of this constraint set; it is the value returned by {@link #toString}
+     * @param annotationFailure inference failed because the qualifiers were not in the correct
+     *     relationship
+     */
+    ImmutableConstraintSet(String name, boolean annotationFailure) {
+      super(annotationFailure);
+      this.name = name;
+    }
+
+    /**
+     * Returns an exception to throw because this constraint set cannot be modified.
+     *
+     * @return an exception to throw because this constraint set cannot be modified
+     */
+    private BugInCF cannotModify() {
+      return new BugInCF("Attempted to modify an immutable constraint set: %s", name);
+    }
+
+    @Override
+    public void add(Constraint c) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void addAll(ConstraintSet constraintSet) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void addAll(Collection<? extends Constraint> constraintSet) {
+      throw cannotModify();
+    }
+
+    @Override
+    public Constraint pop() {
+      throw cannotModify();
+    }
+
+    @Override
+    public void push(Constraint constraint) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void pushAll(ConstraintSet constraints) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void remove(ConstraintSet subset) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void applyInstantiations() {
+      throw cannotModify();
+    }
+
+    // This method is overridden so that the error message describes reduction, rather than the
+    // modification that the inherited implementation's call to pop() would report.
+    @Override
+    public BoundSet reduceOneStep(Java8InferenceContext context) {
+      throw new BugInCF("Attempt to reduce the empty constraint set %s.", name);
+    }
+
+    @Override
+    public String toString() {
+      return name;
+    }
   }
 }
