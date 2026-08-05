@@ -1013,7 +1013,7 @@ public class InferenceFactory {
           constraintSet.add(
               new Typing(
                   "Exception constraint for " + expression,
-                  new ProperType(xiAnnotated, xiAnnotated.getUnderlyingType(), context),
+                  new ProperType(xiAnnotated, context),
                   ei,
                   TypeConstraint.Kind.SUBTYPE));
           ei.setHasThrowsBound(true);
@@ -1094,7 +1094,7 @@ public class InferenceFactory {
         typeVariable, Collections.singletonMap(typeVariable.getUnderlyingType(), typeVariable));
     AbstractType template = upperBound != null ? upperBound : lowerBound;
     if (template == null) {
-      return new ProperType(typeVariable, freshTypeVariable, context);
+      return new ProperType(typeVariable, context);
     }
     return template.create(typeVariable, freshTypeVariable, false);
   }
