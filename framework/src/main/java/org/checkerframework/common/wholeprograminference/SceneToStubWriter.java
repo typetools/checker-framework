@@ -749,7 +749,7 @@ public final class SceneToStubWriter {
               fileWriter = new FileWriter(filename, StandardCharsets.UTF_8);
               printWriter = new PrintWriter(fileWriter);
             } catch (IOException e) {
-              throw new BugInCF("error writing file during WPI: " + filename);
+              throw new BugInCF(e, "error opening file during WPI: %s", filename);
             }
 
             // Write out all imports
@@ -778,6 +778,13 @@ public final class SceneToStubWriter {
       } catch (IOException e) {
         // Nothing to do since exceptions thrown from a finally block have no effect.
       }
+    }
+
+    // A PrintWriter never throws IOException; it records the fact that an error occurred, and
+    // checkError() returns it.  Closing the PrintWriter above flushed all output, so an error
+    // during writing or closing has been recorded by now.
+    if (printWriter != null && printWriter.checkError()) {
+      throw new BugInCF("error writing file during WPI: %s", filename);
     }
   }
 
