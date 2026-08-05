@@ -2,8 +2,8 @@
  * @test
  * @summary Test -ArequirePrefixInWarningSuppressions
  *
- * @compile/fail/ref=RequireCheckerPrefix.1.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -ArequirePrefixInWarningSuppressions RequireCheckerPrefix.java
- * @compile/fail/ref=RequireCheckerPrefix.2.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker RequireCheckerPrefix.java
+ * @compile/fail/ref=RequireCheckerPrefix.1.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -ArequirePrefixInWarningSuppressions RequireCheckerPrefix.java
+ * @compile/fail/ref=RequireCheckerPrefix.2.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker RequireCheckerPrefix.java
  */
 
 import org.checkerframework.checker.nullness.qual.NonNull;
