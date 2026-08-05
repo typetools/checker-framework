@@ -13,7 +13,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.el.AClass;
@@ -215,9 +214,10 @@ public class ASceneWrapper {
       }
     }
 
+    // Mark this class and each of its enclosing classes, because a stub file must print the
+    // declaration of every enclosing class, using the right keyword for each one.
     ClassSymbol outerClass = classSymbol;
-    ClassSymbol previous = classSymbol;
-    do {
+    while (outerClass != null) {
       if (outerClass.getKind() == ElementKind.ANNOTATION_TYPE) {
         aClass.markAsAnnotation(outerClass.getSimpleName().toString());
       } else if (outerClass.isEnum()) {
@@ -227,16 +227,12 @@ public class ASceneWrapper {
         // } else if (outerClass.isRecord()) {
         //   aClass.markAsRecord(outerClass.getSimpleName().toString());
       }
-      Element element = classSymbol.getEnclosingElement();
+      Element element = outerClass.getEnclosingElement();
       if (element == null || element.getKind() == ElementKind.PACKAGE) {
         break;
       }
-      TypeElement t = ElementUtils.enclosingTypeElement(element);
-      previous = outerClass;
-      outerClass = (ClassSymbol) t;
-      // It is necessary to check that previous isn't equal to outer class because
-      // otherwise this loop will sometimes run forever.
-    } while (outerClass != null && !previous.equals(outerClass));
+      outerClass = (ClassSymbol) ElementUtils.enclosingTypeElement(element);
+    }
 
     aClass.setTypeElement(classSymbol);
   }
