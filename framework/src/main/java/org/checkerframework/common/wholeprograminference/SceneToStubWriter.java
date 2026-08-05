@@ -251,9 +251,6 @@ public final class SceneToStubWriter {
     }
   }
 
-  /** Static mutable variable to improve performance of getNextArrayLevel. */
-  private static List<TypePathEntry> location;
-
   /**
    * Gets the outermost array level (or the component if not an array) from the given type element,
    * or null if scene-lib is not storing any more information about this array (for example, when
@@ -269,7 +266,7 @@ public final class SceneToStubWriter {
     }
 
     for (Map.Entry<List<TypePathEntry>, ATypeElement> ite : e.innerTypes.entrySet()) {
-      location = ite.getKey();
+      List<TypePathEntry> location = ite.getKey();
       if (location.contains(TypePathEntry.ARRAY_ELEMENT)) {
         return ite.getValue();
       }
@@ -749,7 +746,7 @@ public final class SceneToStubWriter {
               fileWriter = new FileWriter(filename, StandardCharsets.UTF_8);
               printWriter = new PrintWriter(fileWriter);
             } catch (IOException e) {
-              throw new BugInCF("error writing file during WPI: " + filename);
+              throw new BugInCF(e, "error opening file during WPI: %s", filename);
             }
 
             // Write out all imports
@@ -778,6 +775,13 @@ public final class SceneToStubWriter {
       } catch (IOException e) {
         // Nothing to do since exceptions thrown from a finally block have no effect.
       }
+    }
+
+    // A PrintWriter never throws IOException; it records the fact that an error occurred, and
+    // checkError() returns it.  Closing the PrintWriter above flushed all output, so an error
+    // during writing or closing has been recorded by now.
+    if (printWriter != null && printWriter.checkError()) {
+      throw new BugInCF("error writing file during WPI: %s", filename);
     }
   }
 
