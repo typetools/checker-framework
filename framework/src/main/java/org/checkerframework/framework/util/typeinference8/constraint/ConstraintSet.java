@@ -81,7 +81,7 @@ public class ConstraintSet implements ReductionResult {
     if (constraints != null) {
       list = new ArrayList<>(constraints.length);
       for (Constraint constraint : constraints) {
-        add(constraint);
+        addIfAbsent(constraint);
       }
     } else {
       list = new ArrayList<>();
@@ -89,16 +89,27 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
-   * Adds {@code c} to this set, if c isn't already in the list.
+   * Adds {@code c} to the end of {@link #list}, if {@code c} is non-null and no constraint equal to
+   * it is already in {@link #list}. This method is private so that it can be called from the
+   * constructor.
    *
    * <p>This method is final because constructors call it.
    *
-   * @param c a constraint to add to this set
+   * @param c a constraint to add to this set, or null
    */
-  public final void add(Constraint c) {
+  private void addIfAbsent(Constraint c) {
     if (c != null && !list.contains(c)) {
       list.add(c);
     }
+  }
+
+  /**
+   * Adds {@code c} to this set, if c isn't already in the list.
+   *
+   * @param c a constraint to add to this set
+   */
+  public void add(Constraint c) {
+    addIfAbsent(c);
   }
 
   /**
