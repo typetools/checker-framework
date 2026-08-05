@@ -39,7 +39,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.dataflow.analysis.Analysis;
-import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
@@ -83,7 +82,7 @@ public class WholeProgramInferenceScenesStorage
   private final AnnotationsInContexts annosToIgnore = new AnnotationsInContexts();
 
   /**
-   * If true, assignments where the rhs is null are be ignored.
+   * If true, assignments where the rhs is null are ignored.
    *
    * <p>If all assignments to a variable are null (because inference is being done with respect to a
    * limited set of uses) then the variable is inferred to have bottom type. That inference is
@@ -154,20 +153,31 @@ public class WholeProgramInferenceScenesStorage
 
   @Override
   public String getFileForElement(Element elt) {
-    String className =
-        switch (elt.getKind()) {
-          case CONSTRUCTOR, METHOD -> ElementUtils.getEnclosingClassName((ExecutableElement) elt);
-          case LOCAL_VARIABLE -> getEnclosingClassName((LocalVariableNode) elt);
-          case FIELD, ENUM_CONSTANT -> {
-            ClassSymbol enclosingClass = ((VarSymbol) elt).enclClass();
-            yield enclosingClass.flatname.toString();
-          }
-          case CLASS -> ElementUtils.getBinaryName((TypeElement) elt);
-          case PARAMETER -> ElementUtils.getEnclosingClassName((VariableElement) elt);
-          default -> throw new BugInCF("What element? %s %s", elt.getKind(), elt);
-        };
+    String className = getEnclosingClassName(elt);
     String file = getJaifPath(className);
     return file;
+  }
+
+  /**
+   * Returns the binary name of the class that contains {@code elt}, or of {@code elt} itself if
+   * {@code elt} is a class.
+   *
+   * @param elt an element
+   * @return the binary name of the class that contains {@code elt}
+   */
+  /*package-private*/ static @BinaryName String getEnclosingClassName(Element elt) {
+    return switch (elt.getKind()) {
+      case CONSTRUCTOR, METHOD -> ElementUtils.getEnclosingClassName((ExecutableElement) elt);
+      case FIELD, ENUM_CONSTANT -> {
+        ClassSymbol enclosingClass = ((VarSymbol) elt).enclClass();
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @BinaryName String className = enclosingClass.flatname.toString();
+        yield className;
+      }
+      case CLASS -> ElementUtils.getBinaryName((TypeElement) elt);
+      case LOCAL_VARIABLE, PARAMETER -> ElementUtils.getEnclosingClassName((VariableElement) elt);
+      default -> throw new BugInCF("What element? %s %s", elt.getKind(), elt);
+    };
   }
 
   /**
@@ -369,7 +379,7 @@ public class WholeProgramInferenceScenesStorage
     if (!preconditionsToDeclaredTypes.containsKey(key)) {
       throw new BugInCF(
           "attempted to retrieve the declared type of a precondition expression for which"
-              + "nothing was inferred: "
+              + " nothing was inferred: "
               + key);
     }
     return preconditionsToDeclaredTypes.get(key);
@@ -388,7 +398,7 @@ public class WholeProgramInferenceScenesStorage
     if (!postconditionsToDeclaredTypes.containsKey(key)) {
       throw new BugInCF(
           "attempted to retrieve the declared type of a postcondition expression for which"
-              + "nothing was inferred: "
+              + " nothing was inferred: "
               + key);
     }
     return postconditionsToDeclaredTypes.get(key);
@@ -637,7 +647,7 @@ public class WholeProgramInferenceScenesStorage
               ((AnnotatedArrayType) jaifATM).getComponentType());
       // case DECLARED:
       // inferring annotations on type arguments is not supported, so no need to recur on
-      // generic types. If this was every implemented, this method would need VisitHistory
+      // generic types. If this was ever implemented, this method would need VisitHistory
       // object to prevent infinite recursion on types such as T extends List<T>.
       default -> {} // ATM only has primary annotations
     }
@@ -708,21 +718,17 @@ public class WholeProgramInferenceScenesStorage
         }
       }
     }
-    DefaultFor defaultQualForLocation = elt.getAnnotation(DefaultFor.class);
-    if (defaultQualForLocation != null) {
-      for (TypeUseLocation loc : defaultQualForLocation.value()) {
+    DefaultFor defaultFor = elt.getAnnotation(DefaultFor.class);
+    if (defaultFor != null) {
+      // Checks if am is the default for the given location.
+      for (TypeUseLocation loc : defaultFor.value()) {
         if (loc == TypeUseLocation.ALL || loc == location) {
           return true;
         }
       }
-    }
-
-    // Checks if am is a default annotation.
-    // This case checks if it is meta-annotated with @DefaultFor.
-    // TODO: Handle cases of annotations added via an
-    // org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator.
-    DefaultFor defaultFor = elt.getAnnotation(DefaultFor.class);
-    if (defaultFor != null) {
+      // Checks if am is the default for the kind of atm.
+      // TODO: Handle cases of annotations added via an
+      // org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator.
       org.checkerframework.framework.qual.TypeKind[] types = defaultFor.typeKinds();
       TypeKind atmKind = atm.getUnderlyingType().getKind();
       if (hasMatchingTypeKind(atmKind, types)) {
@@ -733,7 +739,13 @@ public class WholeProgramInferenceScenesStorage
     return false;
   }
 
-  /** Returns true, iff a matching TypeKind is found. */
+  /**
+   * Returns true if {@code atmKind} appears in {@code types}.
+   *
+   * @param atmKind the kind of the type being tested
+   * @param types the type kinds to test against
+   * @return true iff {@code atmKind} appears in {@code types}
+   */
   private boolean hasMatchingTypeKind(
       TypeKind atmKind, org.checkerframework.framework.qual.TypeKind[] types) {
     for (org.checkerframework.framework.qual.TypeKind tk : types) {
@@ -750,7 +762,7 @@ public class WholeProgramInferenceScenesStorage
    * but they may lack elements (fields).
    *
    * @param annosSet a set of annotations
-   * @return the annoattions supported by this object's AnnotatedTypeFactory
+   * @return the annotations supported by this object's AnnotatedTypeFactory
    */
   private Set<Annotation> getSupportedAnnosInSet(Set<Annotation> annosSet) {
     Set<Annotation> output = new HashSet<>(1);
@@ -986,17 +998,10 @@ public class WholeProgramInferenceScenesStorage
    */
   public static class AnnotationsInContexts
       extends HashMap<IPair<String, TypeUseLocation>, Set<String>> {
+    /** UID for serialization. */
     private static final long serialVersionUID = 20200321L;
-  }
 
-  /**
-   * Returns the "flatname" of the class enclosing {@code localVariableNode}.
-   *
-   * @param localVariableNode the {@link LocalVariableNode}
-   * @return the "flatname" of the class enclosing {@code localVariableNode}
-   */
-  private static @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
-    return ElementUtils.getBinaryName(
-        ElementUtils.enclosingTypeElement(localVariableNode.getElement()));
+    /** Creates a new, empty AnnotationsInContexts. */
+    public AnnotationsInContexts() {}
   }
 }
