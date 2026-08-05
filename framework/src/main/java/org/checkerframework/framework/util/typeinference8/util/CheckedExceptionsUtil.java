@@ -27,8 +27,10 @@ public final class CheckedExceptionsUtil {
   private CheckedExceptionsUtil() {}
 
   /**
-   * A checked exception that a lambda body can throw, viewed both as a {@link TypeMirror} and as an
-   * {@link AnnotatedTypeMirror}.
+   * A checked exception that a functional expression can throw, viewed both as a {@link TypeMirror}
+   * and as an {@link AnnotatedTypeMirror}. For a lambda, these are the checked exceptions that the
+   * lambda body can throw; for a method reference, they are the checked exceptions in the throws
+   * clause of the compile-time declaration.
    *
    * <p>For an exception thrown by a method invocation, {@code javaType} is the exception type as
    * declared by the invoked method, whereas {@code annotatedType} is the exception type of the
@@ -58,7 +60,7 @@ public final class CheckedExceptionsUtil {
    * @param context the context
    * @return true iff {@code type} is a checked exception
    */
-  private static boolean isCheckedException(TypeMirror type, Java8InferenceContext context) {
+  public static boolean isCheckedException(TypeMirror type, Java8InferenceContext context) {
     Types types = context.env.getTypeUtils();
     return !types.isSubtype(type, context.runtimeException)
         && !types.isSubtype(type, context.error);
