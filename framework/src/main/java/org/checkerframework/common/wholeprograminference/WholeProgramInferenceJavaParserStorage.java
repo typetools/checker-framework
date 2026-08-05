@@ -243,7 +243,7 @@ public class WholeProgramInferenceJavaParserStorage
   /**
    * For every modified file, consider its subclasses and superclasses modified, too. The reason is
    * that an annotation change in a class might require annotations in its superclasses and
-   * supclasses to be modified, in order to preserve behavioral subtyping. Setting it modified will
+   * subclasses to be modified, in order to preserve behavioral subtyping. Setting it modified will
    * cause it to be written out, and while writing out, the annotations will be made consistent
    * across the class hierarchy by {@link #wpiPrepareCompilationUnitForWriting}.
    */
@@ -1523,9 +1523,9 @@ public class WholeProgramInferenceJavaParserStorage
     private @MonotonicNonNull Map<String, InferredDeclared> preconditions = null;
 
     /**
-     * Mapping from expression strings to pairs of (inferred postcondition, declared type). The
-     * okeys are strings representing JavaExpressions, using the same format as a user would in an
-     * {@link org.checkerframework.framework.qual.EnsuresQualifier} annotation.
+     * Mapping from expression strings to pairs of (inferred postcondition, declared type). The keys
+     * are strings representing JavaExpressions, using the same format as a user would in an {@link
+     * org.checkerframework.framework.qual.EnsuresQualifier} annotation.
      */
     private @MonotonicNonNull Map<String, InferredDeclared> postconditions = null;
 
@@ -1765,6 +1765,7 @@ public class WholeProgramInferenceJavaParserStorage
      * @return an {@code AnnotatedTypeMirror} containing the annotations for the inferred
      *     preconditions for the given expression
      */
+    @SuppressWarnings("UnusedVariable")
     public AnnotatedTypeMirror getPreconditionsForExpression(
         String className,
         String methodName,
@@ -1798,6 +1799,7 @@ public class WholeProgramInferenceJavaParserStorage
      * @return an {@code AnnotatedTypeMirror} containing the annotations for the inferred
      *     postconditions for the given expression
      */
+    @SuppressWarnings("UnusedVariable")
     public AnnotatedTypeMirror getPostconditionsForExpression(
         String className,
         String methodName,

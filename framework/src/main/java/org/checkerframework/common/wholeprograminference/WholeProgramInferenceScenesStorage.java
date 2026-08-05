@@ -83,7 +83,7 @@ public class WholeProgramInferenceScenesStorage
   private final AnnotationsInContexts annosToIgnore = new AnnotationsInContexts();
 
   /**
-   * If true, assignments where the rhs is null are be ignored.
+   * If true, assignments where the rhs is null are ignored.
    *
    * <p>If all assignments to a variable are null (because inference is being done with respect to a
    * limited set of uses) then the variable is inferred to have bottom type. That inference is
@@ -637,7 +637,7 @@ public class WholeProgramInferenceScenesStorage
               ((AnnotatedArrayType) jaifATM).getComponentType());
       // case DECLARED:
       // inferring annotations on type arguments is not supported, so no need to recur on
-      // generic types. If this was every implemented, this method would need VisitHistory
+      // generic types. If this was ever implemented, this method would need VisitHistory
       // object to prevent infinite recursion on types such as T extends List<T>.
       default -> {} // ATM only has primary annotations
     }
@@ -729,7 +729,13 @@ public class WholeProgramInferenceScenesStorage
     return false;
   }
 
-  /** Returns true, iff a matching TypeKind is found. */
+  /**
+   * Returns true if {@code atmKind} appears in {@code types}.
+   *
+   * @param atmKind the kind of the type being tested
+   * @param types the type kinds to test against
+   * @return true iff {@code atmKind} appears in {@code types}
+   */
   private boolean hasMatchingTypeKind(
       TypeKind atmKind, org.checkerframework.framework.qual.TypeKind[] types) {
     for (org.checkerframework.framework.qual.TypeKind tk : types) {
@@ -746,7 +752,7 @@ public class WholeProgramInferenceScenesStorage
    * but they may lack elements (fields).
    *
    * @param annosSet a set of annotations
-   * @return the annoattions supported by this object's AnnotatedTypeFactory
+   * @return the annotations supported by this object's AnnotatedTypeFactory
    */
   private Set<Annotation> getSupportedAnnosInSet(Set<Annotation> annosSet) {
     Set<Annotation> output = new HashSet<>(1);
