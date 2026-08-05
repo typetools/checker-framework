@@ -413,6 +413,7 @@ public class InferenceFactory {
           if (expressionTree instanceof NewClassTree) {
             // No receiver for the constructor.
             executableType = (ExecutableType) ele.asType();
+            break;
           } else {
             throw new BugInCF("Method not found");
           }
