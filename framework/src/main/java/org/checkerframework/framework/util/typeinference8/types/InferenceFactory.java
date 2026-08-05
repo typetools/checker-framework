@@ -263,14 +263,7 @@ public class InferenceFactory {
       ExpressionTree invocation,
       List<? extends ExpressionTree> arguments,
       Java8InferenceContext context) {
-    int treeIndex = -1;
-    for (int i = 0; i < arguments.size(); ++i) {
-      ExpressionTree argumentTree = arguments.get(i);
-      if (isArgument(path, argumentTree)) {
-        treeIndex = i;
-        break;
-      }
-    }
+    int treeIndex = argumentIndex(path, invocation, arguments);
 
     ExecutableType executableType = getTypeOfMethodAdaptedToUse(invocation, context);
     if (treeIndex >= executableType.getParameterTypes().size() - 1
@@ -297,14 +290,7 @@ public class InferenceFactory {
       ExpressionTree invocation,
       List<? extends ExpressionTree> arguments,
       AnnotatedExecutableType executableType) {
-    int treeIndex = -1;
-    for (int i = 0; i < arguments.size(); ++i) {
-      ExpressionTree argumentTree = arguments.get(i);
-      if (isArgument(path, argumentTree)) {
-        treeIndex = i;
-        break;
-      }
-    }
+    int treeIndex = argumentIndex(path, invocation, arguments);
 
     if (treeIndex >= executableType.getParameterTypes().size() - 1
         && TreeUtils.isVarargsCall(invocation)) {
@@ -314,6 +300,27 @@ public class InferenceFactory {
     }
 
     return executableType.getParameterTypes().get(treeIndex);
+  }
+
+  /**
+   * Returns the index in {@code arguments} of the argument that contains the tree at the leaf of
+   * {@code path}. Throws {@link BugInCF} if no argument contains that tree.
+   *
+   * @param path path to an expression whose target type is being computed
+   * @param invocation a method or constructor invocation; used only in the error message
+   * @param arguments the argument expression trees of {@code invocation}
+   * @return the index in {@code arguments} of the argument that contains the tree at the leaf of
+   *     {@code path}
+   */
+  private static int argumentIndex(
+      TreePath path, ExpressionTree invocation, List<? extends ExpressionTree> arguments) {
+    for (int i = 0; i < arguments.size(); ++i) {
+      if (isArgument(path, arguments.get(i))) {
+        return i;
+      }
+    }
+    throw new BugInCF(
+        "Not an argument of the invocation. tree: %s invocation: %s", path.getLeaf(), invocation);
   }
 
   /**
