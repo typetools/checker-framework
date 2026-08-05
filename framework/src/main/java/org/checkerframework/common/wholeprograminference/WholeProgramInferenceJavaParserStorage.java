@@ -131,7 +131,8 @@ public class WholeProgramInferenceJavaParserStorage
 
   /**
    * Files containing classes for which an annotation has been inferred since the last time files
-   * were written to disk.
+   * were written to disk. Every element of this set is a key in {@link #sourceToAnnos}; {@link
+   * #setFileModified} maintains that invariant.
    */
   private Set<String> modifiedFiles = new HashSet<>();
 
@@ -201,6 +202,12 @@ public class WholeProgramInferenceJavaParserStorage
 
   @Override
   public void setFileModified(String path) {
+    if (!sourceToAnnos.containsKey(path)) {
+      // No wrappers were created for this file, so there is nothing to write out for it.  This
+      // happens for a file whose top-level class is an annotation declaration; see the comment
+      // in addClassesForElement.
+      return;
+    }
     modifiedFiles.add(path);
   }
 
@@ -236,7 +243,7 @@ public class WholeProgramInferenceJavaParserStorage
   /**
    * For every modified file, consider its subclasses and superclasses modified, too. The reason is
    * that an annotation change in a class might require annotations in its superclasses and
-   * supclasses to be modified, in order to preserve behavioral subtyping. Setting it modified will
+   * subclasses to be modified, in order to preserve behavioral subtyping. Setting it modified will
    * cause it to be written out, and while writing out, the annotations will be made consistent
    * across the class hierarchy by {@link #wpiPrepareCompilationUnitForWriting}.
    */
@@ -263,15 +270,7 @@ public class WholeProgramInferenceJavaParserStorage
 
   @Override
   public AnnotationMirrorSet getMethodDeclarationAnnotations(ExecutableElement methodElt) {
-    String className = ElementUtils.getEnclosingClassName(methodElt);
-    // Read in classes for the element.
-    getFileForElement(methodElt);
-    ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
-    if (classAnnos == null) {
-      return AnnotationMirrorSet.emptySet();
-    }
-    CallableDeclarationAnnos methodAnnos =
-        classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
+    CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
     if (methodAnnos == null) {
       return AnnotationMirrorSet.emptySet();
     }
@@ -323,8 +322,7 @@ public class WholeProgramInferenceJavaParserStorage
       VariableElement ve,
       AnnotatedTypeFactory atypeFactory) {
     if (index_1based == 0) {
-      throw new TypeSystemError(
-          "0 is illegal as index argument to addDeclarationAnnotationToFormalParameter");
+      throw new TypeSystemError("0 is illegal as index argument to getParameterAnnotations");
     }
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
     if (methodAnnos == null) {
@@ -480,7 +478,7 @@ public class WholeProgramInferenceJavaParserStorage
     }
     boolean isNewAnnotation = methodAnnos.addDeclarationAnnotation(anno);
     if (isNewAnnotation) {
-      modifiedFiles.add(getFileForElement(methodElt));
+      setFileModified(getFileForElement(methodElt));
     }
     return isNewAnnotation;
   }
@@ -504,7 +502,7 @@ public class WholeProgramInferenceJavaParserStorage
     }
     boolean isNewAnnotation = fieldAnnos.addDeclarationAnnotation(anno);
     if (isNewAnnotation) {
-      modifiedFiles.add(getFileForElement(field));
+      setFileModified(getFileForElement(field));
     }
     return isNewAnnotation;
   }
@@ -524,7 +522,7 @@ public class WholeProgramInferenceJavaParserStorage
     boolean isNewAnnotation =
         methodAnnos.addDeclarationAnnotationToFormalParameter(anno, index_1based);
     if (isNewAnnotation) {
-      modifiedFiles.add(getFileForElement(methodElt));
+      setFileModified(getFileForElement(methodElt));
     }
     return isNewAnnotation;
   }
@@ -539,7 +537,7 @@ public class WholeProgramInferenceJavaParserStorage
     }
     boolean isNewAnnotation = classAnnos.addAnnotationToClassDeclaration(anno);
     if (isNewAnnotation) {
-      modifiedFiles.add(getFileForElement(classElt));
+      setFileModified(getFileForElement(classElt));
     }
     return isNewAnnotation;
   }
@@ -921,6 +919,7 @@ public class WholeProgramInferenceJavaParserStorage
       // for the annotation declaration. The rest of WholeProgramInferenceJavaParserStorage
       // already needs to handle classes without entries in the various tables (because of the
       // possibility of classes outside the current compilation unit), so this is safe.
+      // In particular, `path` is not a key in `sourceToAnnos`, so `setFileModified` ignores it.
       return path;
     }
     if (classToAnnos.containsKey(ElementUtils.getBinaryName(toplevelClass))) {
@@ -1060,11 +1059,9 @@ public class WholeProgramInferenceJavaParserStorage
       } else {
         packageDir =
             inferOutputDirectory.resolve(
-                root.compilationUnit
-                    .getPackageDeclaration()
-                    .get()
-                    .getNameAsString()
-                    .replaceAll("\\.", File.separator));
+                packageNameToDirectory(
+                    root.compilationUnit.getPackageDeclaration().get().getNameAsString(),
+                    File.separatorChar));
       }
 
       try {
@@ -1092,6 +1089,19 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     modifiedFiles.clear();
+  }
+
+  /**
+   * Returns the relative directory that corresponds to a package name. For example, if {@code
+   * separatorChar} is {@code '/'}, then the package name {@code "org.example"} yields {@code
+   * "org/example"}.
+   *
+   * @param packageName a package name, whose components are separated by {@code '.'}
+   * @param separatorChar the file name separator character, such as {@link File#separatorChar}
+   * @return the relative directory that corresponds to {@code packageName}
+   */
+  /*package-private*/ static String packageNameToDirectory(String packageName, char separatorChar) {
+    return packageName.replace('.', separatorChar);
   }
 
   /**
@@ -1513,9 +1523,9 @@ public class WholeProgramInferenceJavaParserStorage
     private @MonotonicNonNull Map<String, InferredDeclared> preconditions = null;
 
     /**
-     * Mapping from expression strings to pairs of (inferred postcondition, declared type). The
-     * okeys are strings representing JavaExpressions, using the same format as a user would in an
-     * {@link org.checkerframework.framework.qual.EnsuresQualifier} annotation.
+     * Mapping from expression strings to pairs of (inferred postcondition, declared type). The keys
+     * are strings representing JavaExpressions, using the same format as a user would in an {@link
+     * org.checkerframework.framework.qual.EnsuresQualifier} annotation.
      */
     private @MonotonicNonNull Map<String, InferredDeclared> postconditions = null;
 
@@ -1755,6 +1765,7 @@ public class WholeProgramInferenceJavaParserStorage
      * @return an {@code AnnotatedTypeMirror} containing the annotations for the inferred
      *     preconditions for the given expression
      */
+    @SuppressWarnings("UnusedVariable")
     public AnnotatedTypeMirror getPreconditionsForExpression(
         String className,
         String methodName,
@@ -1788,6 +1799,7 @@ public class WholeProgramInferenceJavaParserStorage
      * @return an {@code AnnotatedTypeMirror} containing the annotations for the inferred
      *     postconditions for the given expression
      */
+    @SuppressWarnings("UnusedVariable")
     public AnnotatedTypeMirror getPostconditionsForExpression(
         String className,
         String methodName,
@@ -1804,9 +1816,7 @@ public class WholeProgramInferenceJavaParserStorage
         postconditions.put(expression, new InferredDeclared(postconditionsType, declaredType));
       }
 
-      InferredDeclared postAndDecl = postconditions.get(expression);
-      AnnotatedTypeMirror result = postAndDecl.inferred;
-      return result;
+      return postconditions.get(expression).inferred;
     }
 
     /**
@@ -1915,7 +1925,6 @@ public class WholeProgramInferenceJavaParserStorage
       return null;
     }
     Map<String, InferredDeclared> result = new HashMap<>(MapsP.mapCapacity(orig.size()));
-    result.clear();
     for (Map.Entry<String, InferredDeclared> entry : orig.entrySet()) {
       String javaExpression = entry.getKey();
       InferredDeclared atms = entry.getValue();
