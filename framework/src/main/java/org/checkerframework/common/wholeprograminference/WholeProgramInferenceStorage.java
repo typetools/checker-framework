@@ -116,7 +116,8 @@ public interface WholeProgramInferenceStorage<T> {
    * postconditions only).
    *
    * @param className the class that contains the method, for diagnostics only
-   * @param preOrPost true if to get the precondition or postcondition
+   * @param preOrPost what to get: the precondition ({@code BEFORE}) or the postcondition ({@code
+   *     AFTER})
    * @param methodElement the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
