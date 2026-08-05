@@ -1037,7 +1037,10 @@ public class InferenceFactory {
               .getThrownTypes();
       thrownExceptions = new ArrayList<>(thrownTypes.size());
       for (AnnotatedTypeMirror thrown : thrownTypes) {
-        thrownExceptions.add(new ThrownCheckedException(thrown.getUnderlyingType(), thrown));
+        TypeMirror thrownJavaType = thrown.getUnderlyingType();
+        if (CheckedExceptionsUtil.isCheckedException(thrownJavaType, context)) {
+          thrownExceptions.add(new ThrownCheckedException(thrownJavaType, thrown));
+        }
       }
     }
 
