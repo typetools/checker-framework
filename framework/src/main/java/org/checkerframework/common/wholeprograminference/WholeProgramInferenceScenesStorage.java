@@ -1000,5 +1000,8 @@ public class WholeProgramInferenceScenesStorage
       extends HashMap<IPair<String, TypeUseLocation>, Set<String>> {
     /** UID for serialization. */
     private static final long serialVersionUID = 20200321L;
+
+    /** Creates a new, empty AnnotationsInContexts. */
+    public AnnotationsInContexts() {}
   }
 }
