@@ -237,7 +237,8 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Returns the dependencies between variables.
+   * Returns the dependencies between variables. This method has the same side effect on this bound
+   * set as {@link #getDependencies(Collection)}.
    *
    * @return the dependencies between variables
    */
@@ -246,13 +247,21 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Adds the {@code additionalVars} to this bound set and returns the dependencies between all
-   * variables in this bound set.
+   * Returns the dependencies between all variables in this bound set and in {@code additionalVars}.
+   * The {@code additionalVars} are used only to compute the result; they are not added to this
+   * bound set.
    *
-   * @param additionalVars variables to add to this bound set
-   * @return the dependencies between all variables in this bound set
+   * <p>As a side effect, this method adds to this bound set every variable of every {@link Theta}
+   * created so far in this inference context. That is how variables created by a nested inference
+   * problem become part of this bound set and therefore get resolved by {@link Resolution}; without
+   * that side effect, those variables would never be instantiated.
+   *
+   * @param additionalVars variables to include in the dependency computation, in addition to the
+   *     variables of this bound set
+   * @return the dependencies between all variables in this bound set and in {@code additionalVars}
    */
   public Dependencies getDependencies(Collection<Variable> additionalVars) {
+    // This is a side effect on `variables`; see the method's Javadoc.
     for (Theta t : context.maps.values()) {
       variables.addAll(t.values());
     }
