@@ -263,14 +263,7 @@ public class InferenceFactory {
       ExpressionTree invocation,
       List<? extends ExpressionTree> arguments,
       Java8InferenceContext context) {
-    int treeIndex = -1;
-    for (int i = 0; i < arguments.size(); ++i) {
-      ExpressionTree argumentTree = arguments.get(i);
-      if (isArgument(path, argumentTree)) {
-        treeIndex = i;
-        break;
-      }
-    }
+    int treeIndex = argumentIndex(path, invocation, arguments);
 
     ExecutableType executableType = getTypeOfMethodAdaptedToUse(invocation, context);
     if (treeIndex >= executableType.getParameterTypes().size() - 1
@@ -297,14 +290,7 @@ public class InferenceFactory {
       ExpressionTree invocation,
       List<? extends ExpressionTree> arguments,
       AnnotatedExecutableType executableType) {
-    int treeIndex = -1;
-    for (int i = 0; i < arguments.size(); ++i) {
-      ExpressionTree argumentTree = arguments.get(i);
-      if (isArgument(path, argumentTree)) {
-        treeIndex = i;
-        break;
-      }
-    }
+    int treeIndex = argumentIndex(path, invocation, arguments);
 
     if (treeIndex >= executableType.getParameterTypes().size() - 1
         && TreeUtils.isVarargsCall(invocation)) {
@@ -314,6 +300,27 @@ public class InferenceFactory {
     }
 
     return executableType.getParameterTypes().get(treeIndex);
+  }
+
+  /**
+   * Returns the index in {@code arguments} of the argument that contains the tree at the leaf of
+   * {@code path}. Throws {@link BugInCF} if no argument contains that tree.
+   *
+   * @param path path to an expression whose target type is being computed
+   * @param invocation a method or constructor invocation; used only in the error message
+   * @param arguments the argument expression trees of {@code invocation}
+   * @return the index in {@code arguments} of the argument that contains the tree at the leaf of
+   *     {@code path}
+   */
+  private static int argumentIndex(
+      TreePath path, ExpressionTree invocation, List<? extends ExpressionTree> arguments) {
+    for (int i = 0; i < arguments.size(); ++i) {
+      if (isArgument(path, arguments.get(i))) {
+        return i;
+      }
+    }
+    throw new BugInCF(
+        "Not an argument of the invocation. tree: %s invocation: %s", path.getLeaf(), invocation);
   }
 
   /**
@@ -1100,15 +1107,17 @@ public class InferenceFactory {
    * Creates a fresh type variable using the upper and lower bounds provided.
    *
    * @param lowerBound a proper type or null
-   * @param lowerBoundAnnos annotations to use if {@code lowerBound} is null
+   * @param lowerBoundAnnos annotations to use if {@code lowerBound} is null; a hierarchy that it
+   *     does not mention gets the default qualifier for an implicit lower bound
    * @param upperBound an abstract type or null
-   * @param upperBoundAnnos annotations to use if {@code upperBound} is null
+   * @param upperBoundAnnos annotations to use if {@code upperBound} is null; a hierarchy that it
+   *     does not mention gets the default qualifier for an implicit upper bound
    * @return a fresh type variable with the provided upper and lower bounds
    */
   public AbstractType createFreshTypeVariable(
-      ProperType lowerBound,
+      @Nullable ProperType lowerBound,
       Set<? extends AnnotationMirror> lowerBoundAnnos,
-      AbstractType upperBound,
+      @Nullable AbstractType upperBound,
       Set<? extends AnnotationMirror> upperBoundAnnos) {
     TypeMirror freshTypeVariable =
         TypesUtils.freshTypeVariable(
@@ -1131,9 +1140,18 @@ public class InferenceFactory {
     } else {
       typeVariable.getUpperBound().addAnnotations(upperBoundAnnos);
     }
+    // Each bound of the fresh type variable must have an annotation in every hierarchy; otherwise a
+    // later comparison against the bound crashes.  A bound that the caller did not supply is
+    // `Object` or the null type, for which the caller's annotations might mention no hierarchy at
+    // all, so fill in the defaults for the hierarchies that are still missing.
+    typeFactory.addDefaultAnnotations(typeVariable);
     context.typeFactory.capturedTypeVarSubstitutor.substitute(
         typeVariable, Collections.singletonMap(typeVariable.getUnderlyingType(), typeVariable));
-    return upperBound.create(typeVariable, freshTypeVariable, false);
+    AbstractType template = upperBound != null ? upperBound : lowerBound;
+    if (template == null) {
+      return new ProperType(typeVariable, freshTypeVariable, context);
+    }
+    return template.create(typeVariable, freshTypeVariable, false);
   }
 
   /**
