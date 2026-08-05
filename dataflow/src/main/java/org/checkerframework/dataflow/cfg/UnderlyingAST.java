@@ -7,7 +7,7 @@ import com.sun.source.tree.Tree;
 import java.util.concurrent.atomic.AtomicLong;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.plumelib.util.StringsP;
+import org.plumelib.util.StringsPlume;
 import org.plumelib.util.UniqueId;
 
 /**
@@ -114,7 +114,7 @@ public abstract class UnderlyingAST implements UniqueId {
 
     @Override
     public String toString() {
-      return StringsP.joinLines("CFGMethod(", method, ")");
+      return StringsPlume.joinLines("CFGMethod(", method, ")");
     }
   }
 
@@ -198,7 +198,7 @@ public abstract class UnderlyingAST implements UniqueId {
 
     @Override
     public String toString() {
-      return StringsP.joinLines("CFGLambda(", lambda, ")");
+      return StringsPlume.joinLines("CFGLambda(", lambda, ")");
     }
   }
 
@@ -239,7 +239,7 @@ public abstract class UnderlyingAST implements UniqueId {
 
     @Override
     public String toString() {
-      return StringsP.joinLines("CFGStatement(", code, ")");
+      return StringsPlume.joinLines("CFGStatement(", code, ")");
     }
   }
 }

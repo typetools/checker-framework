@@ -1,7 +1,7 @@
 // test case for https://github.com/typetools/checker-framework/issues/5486
 
 public class TooWideRange {
-  // From StringsP
+  // From StringsPlume
   @org.checkerframework.dataflow.qual.Pure
   public static @org.checkerframework.common.value.qual.IntRange(
       from = -2147483648,
@@ -15,7 +15,7 @@ public class TooWideRange {
     return result;
   }
 
-  // From ArraysP
+  // From ArraysPlume
   @org.checkerframework.dataflow.qual.Pure
   public static @org.checkerframework.common.value.qual.IntRange(
       from = -2147483648,

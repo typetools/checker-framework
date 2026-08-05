@@ -5,7 +5,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TypeKindUtils;
-import org.plumelib.util.CollectionsP;
+import org.plumelib.util.CollectionsPlume;
 
 /** Utility routines for manipulating numbers. */
 public final class NumberUtils {
@@ -48,38 +48,38 @@ public final class NumberUtils {
     switch (typeKind) {
       case BYTE -> {
         if (isUnsigned) {
-          return CollectionsP.<Number, Short>mapList(
+          return CollectionsPlume.<Number, Short>mapList(
               NumberUtils::byteValueUnsigned, (Iterable<Number>) numbers);
         } else {
-          return CollectionsP.mapList(Number::byteValue, numbers);
+          return CollectionsPlume.mapList(Number::byteValue, numbers);
         }
       }
       case CHAR -> {
-        return CollectionsP.mapList(Number::intValue, numbers);
+        return CollectionsPlume.mapList(Number::intValue, numbers);
       }
       case DOUBLE -> {
-        return CollectionsP.mapList(Number::doubleValue, numbers);
+        return CollectionsPlume.mapList(Number::doubleValue, numbers);
       }
       case FLOAT -> {
-        return CollectionsP.mapList(Number::floatValue, numbers);
+        return CollectionsPlume.mapList(Number::floatValue, numbers);
       }
       case INT -> {
         if (isUnsigned) {
-          return CollectionsP.<Number, Long>mapList(
+          return CollectionsPlume.<Number, Long>mapList(
               NumberUtils::intValueUnsigned, (Iterable<Number>) numbers);
         } else {
-          return CollectionsP.mapList(Number::intValue, numbers);
+          return CollectionsPlume.mapList(Number::intValue, numbers);
         }
       }
       case LONG -> {
-        return CollectionsP.mapList(Number::longValue, numbers);
+        return CollectionsPlume.mapList(Number::longValue, numbers);
       }
       case SHORT -> {
         if (isUnsigned) {
-          return CollectionsP.<Number, Integer>mapList(
+          return CollectionsPlume.<Number, Integer>mapList(
               NumberUtils::shortValueUnsigned, (Iterable<Number>) numbers);
         } else {
-          return CollectionsP.mapList(Number::shortValue, numbers);
+          return CollectionsPlume.mapList(Number::shortValue, numbers);
         }
       }
       default -> throw new UnsupportedOperationException(typeKind + ": " + type);

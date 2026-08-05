@@ -10,7 +10,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
 import org.checkerframework.framework.test.diagnostics.TestDiagnosticUtils;
-import org.plumelib.util.StringsP;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Represents the test results from typechecking one or more Java files using the given
@@ -137,7 +137,7 @@ public class TypecheckResult {
         errorHeaders.add(
             numFound
                 + " out of "
-                + StringsP.nvPlural(numExpected, "expected diagnostic", "was")
+                + StringsPlume.nvPlural(numExpected, "expected diagnostic", "was")
                 + " found.");
       }
     }
@@ -155,21 +155,21 @@ public class TypecheckResult {
       return "";
     }
     StringJoiner summaryBuilder = new StringJoiner(System.lineSeparator());
-    summaryBuilder.add(StringsP.joinLines(getErrorHeaders()));
+    summaryBuilder.add(StringsPlume.joinLines(getErrorHeaders()));
 
     int numUnexpected = unexpectedDiagnostics.size();
     int numMissing = missingDiagnostics.size();
 
     if (numUnexpected != 0) {
       summaryBuilder.add(
-          StringsP.nvPlural(numUnexpected, "unexpected diagnostic", "was") + " found:");
+          StringsPlume.nvPlural(numUnexpected, "unexpected diagnostic", "was") + " found:");
       for (TestDiagnostic unexpected : unexpectedDiagnostics) {
         summaryBuilder.add("  " + unexpected.toString());
       }
     }
 
     if (numMissing != 0) {
-      String msg = StringsP.nvPlural(numMissing, "expected diagnostic", "was") + " not found";
+      String msg = StringsPlume.nvPlural(numMissing, "expected diagnostic", "was") + " not found";
       if (numUnexpected != 0 && numMissing == expectedDiagnostics.size()) {
         // There were unexpected diagnostics and every expected diagnostic is missing.
         summaryBuilder.add("All " + msg + ".");

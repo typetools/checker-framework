@@ -13,7 +13,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.CollectionsP;
+import org.plumelib.util.CollectionsPlume;
 
 /** The visitor for the Less Than Checker. */
 public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactory> {
@@ -126,7 +126,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
 
       if (initialAnnotations != null) {
         List<String> updatedAnnotations =
-            CollectionsP.mapList(
+            CollectionsPlume.mapList(
                 annotation -> OffsetEquation.createOffsetFromJavaExpression(annotation).toString(),
                 initialAnnotations);
 

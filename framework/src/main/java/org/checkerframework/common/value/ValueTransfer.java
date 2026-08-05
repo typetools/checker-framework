@@ -68,7 +68,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsP;
+import org.plumelib.util.CollectionsPlume;
 
 /** The transfer class for the Value Checker. */
 public class ValueTransfer extends CFTransfer {
@@ -247,7 +247,7 @@ public class ValueTransfer extends CFTransfer {
     if (values == null) {
       return null;
     }
-    List<String> stringValues = CollectionsP.mapList(Object::toString, values);
+    List<String> stringValues = CollectionsPlume.mapList(Object::toString, values);
     // Empty list means bottom value
     return stringValues.isEmpty() ? Collections.singletonList("null") : stringValues;
   }
@@ -687,19 +687,19 @@ public class ValueTransfer extends CFTransfer {
       // Both operands have known string values, compute set of results
       if (!nonNullStringsConcatenation) {
         if (isNullable(leftOperand)) {
-          leftValues = CollectionsP.append(leftValues, "null");
+          leftValues = CollectionsPlume.append(leftValues, "null");
         }
         if (isNullable(rightOperand)) {
-          rightValues = CollectionsP.append(rightValues, "null");
+          rightValues = CollectionsPlume.append(rightValues, "null");
         }
       } else {
         if (leftOperand instanceof StringConversionNode scn
             && scn.getOperand().getType().getKind() == TypeKind.NULL) {
-          leftValues = CollectionsP.append(leftValues, "null");
+          leftValues = CollectionsPlume.append(leftValues, "null");
         }
         if (rightOperand instanceof StringConversionNode scn
             && scn.getOperand().getType().getKind() == TypeKind.NULL) {
-          rightValues = CollectionsP.append(rightValues, "null");
+          rightValues = CollectionsPlume.append(rightValues, "null");
         }
       }
 
@@ -1569,7 +1569,7 @@ public class ValueTransfer extends CFTransfer {
     // This list can contain duplicates.  It is deduplicated later by createBooleanAnnotation.
     List<Boolean> resultValues = new ArrayList<>(2);
     return switch (op) {
-      case NOT -> CollectionsP.mapList((Boolean left) -> !left, lefts);
+      case NOT -> CollectionsPlume.mapList((Boolean left) -> !left, lefts);
       case OR -> {
         for (Boolean left : lefts) {
           for (Boolean right : rights) {

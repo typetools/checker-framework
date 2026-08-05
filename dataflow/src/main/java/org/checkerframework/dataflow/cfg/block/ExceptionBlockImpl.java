@@ -10,7 +10,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
-import org.plumelib.util.CollectionsP;
+import org.plumelib.util.CollectionsPlume;
 
 /** Implementation of {@link ExceptionBlock}. */
 public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements ExceptionBlock {
@@ -80,7 +80,7 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
   public Set<Block> getSuccessors() {
     Set<Block> result = new ArraySet<>(super.getSuccessors());
     for (Set<? extends Block> blocks : getExceptionalSuccessors().values()) {
-      CollectionsP.adjoinAll(result, blocks);
+      CollectionsPlume.adjoinAll(result, blocks);
     }
     return result;
   }

@@ -12,7 +12,7 @@ import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
-import org.plumelib.util.StringsP;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Manages a set of bounds. Bounds are stored in the variable to which they apply, except for
@@ -359,7 +359,7 @@ public class BoundSet implements ReductionResult {
     } else if (variables.isEmpty()) {
       return "EMPTY";
     }
-    String vars = StringsP.join(", ", getInstantiatedVariables());
+    String vars = StringsPlume.join(", ", getInstantiatedVariables());
     if (vars.isEmpty()) {
       return "No instantiated variables";
     } else {

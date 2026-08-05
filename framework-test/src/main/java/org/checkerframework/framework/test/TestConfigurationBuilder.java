@@ -14,7 +14,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.StringsP;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Used to create an instance of TestConfiguration. TestConfigurationBuilder is fluent: it returns
@@ -522,9 +522,9 @@ public class TestConfigurationBuilder {
 
   @Override
   public String toString() {
-    return StringsP.joinLines(
+    return StringsPlume.joinLines(
         "TestConfigurationBuilder:",
-        "testSourceFiles=" + StringsP.join(" ", testSourceFiles),
+        "testSourceFiles=" + StringsPlume.join(" ", testSourceFiles),
         "processors=" + String.join(", ", processors),
         "options=" + String.join(", ", options.getOptionsAsList()),
         "shouldEmitDebugInfo=" + shouldEmitDebugInfo);

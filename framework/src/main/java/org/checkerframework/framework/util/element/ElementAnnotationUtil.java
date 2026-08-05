@@ -34,7 +34,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.StringsP;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Utility methods for adding the annotations that are stored in an Element to the type that
@@ -66,10 +66,10 @@ public class ElementAnnotationUtil {
       throw new BugInCF(
           "Number of types and elements don't match. "
               + "types ( "
-              + StringsP.join(", ", types)
+              + StringsPlume.join(", ", types)
               + " ) "
               + "element ( "
-              + StringsP.join(", ", elements)
+              + StringsPlume.join(", ", elements)
               + " ) ");
     }
 

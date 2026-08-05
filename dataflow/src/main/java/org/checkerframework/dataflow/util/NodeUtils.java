@@ -16,7 +16,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsP;
+import org.plumelib.util.CollectionsPlume;
 
 /** A utility class to operate on a given {@link Node}. */
 public final class NodeUtils {
@@ -99,7 +99,8 @@ public final class NodeUtils {
       return false;
     }
     ExecutableElement invoked = methodInvocationNode.getTarget().getMethod();
-    return CollectionsP.anyMatch(methods, method -> ElementUtils.isMethod(invoked, method, env));
+    return CollectionsPlume.anyMatch(
+        methods, method -> ElementUtils.isMethod(invoked, method, env));
   }
 
   /**

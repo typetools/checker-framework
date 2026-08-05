@@ -50,7 +50,7 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.javacparse.JavacParse;
 import org.plumelib.javacparse.JavacParseResult;
-import org.plumelib.util.CollectionsP;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * A visitor class that converts a javac {@link ExpressionTree} to a {@link JavaExpression}. This
@@ -632,7 +632,8 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
 
     // Convert argument expressions
     List<JavaExpression> arguments =
-        CollectionsP.mapList(argument -> argument.accept(this, null), invocation.getArguments());
+        CollectionsPlume.mapList(
+            argument -> argument.accept(this, null), invocation.getArguments());
 
     // Resolve method
     ExecutableElement methodElement;
@@ -729,7 +730,7 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
       Resolver resolver)
       throws JavaExpressionParseException {
 
-    List<TypeMirror> argumentTypes = CollectionsP.mapList(JavaExpression::getType, arguments);
+    List<TypeMirror> argumentTypes = CollectionsPlume.mapList(JavaExpression::getType, arguments);
 
     if (receiverType.getKind() == TypeKind.ARRAY) {
       ExecutableElement element =

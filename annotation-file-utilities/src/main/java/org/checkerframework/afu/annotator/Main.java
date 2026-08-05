@@ -72,9 +72,9 @@ import org.objectweb.asm.TypePath;
 import org.plumelib.options.Option;
 import org.plumelib.options.OptionGroup;
 import org.plumelib.options.Options;
-import org.plumelib.reflection.ReflectionP;
+import org.plumelib.reflection.ReflectionPlume;
 import org.plumelib.util.FileIOException;
-import org.plumelib.util.FilesP;
+import org.plumelib.util.FilesPlume;
 import org.plumelib.util.IPair;
 
 /**
@@ -706,7 +706,7 @@ public final class Main {
                     + causeMessage.substring(22)
                     + " to the classpath.");
             System.err.println("The classpath is:");
-            System.err.println(ReflectionP.classpathToString());
+            System.err.println(ReflectionPlume.classpathToString());
           }
         }
         if (print_error_stack) {
@@ -759,7 +759,7 @@ public final class Main {
       String fileLineSep;
       try {
         // fileLineSep is set here so that exceptions can be caught
-        fileLineSep = FilesP.inferLineSeparator(javafilename);
+        fileLineSep = FilesPlume.inferLineSeparator(javafilename);
       } catch (IOException e) {
         throw new Error("Cannot read " + javafilename, e);
       }

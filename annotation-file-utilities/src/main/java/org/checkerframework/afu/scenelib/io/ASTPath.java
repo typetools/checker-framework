@@ -61,7 +61,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.StringJoiner;
-import org.plumelib.util.ArraysP;
+import org.plumelib.util.ArraysPlume;
 
 /** A path through the AST. */
 public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
@@ -595,7 +595,8 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
       String s = strVal();
       for (String arg : legalChildSelectors) {
         if (s.equals(arg)) {
-          if (argumentChildSelectors != null && ArraysP.indexOf(argumentChildSelectors, arg) >= 0) {
+          if (argumentChildSelectors != null
+              && ArraysPlume.indexOf(argumentChildSelectors, arg) >= 0) {
             getTok();
             return new ASTEntry(kind, arg, intVal());
           } else {

@@ -17,7 +17,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.StringsP;
+import org.plumelib.util.StringsPlume;
 
 /**
  * {@link PropagationTypeAnnotator} adds qualifiers to types, where the qualifier to add should be
@@ -199,7 +199,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
         AnnotationMirror typeParamAnno = typeParamBound.getPrimaryAnnotationInHierarchy(top);
         if (typeParamAnno == null) {
           throw new BugInCF(
-              StringsP.joinLines(
+              StringsPlume.joinLines(
                   "Missing annotation on type parameter",
                   "top=" + top,
                   "wildcardBound=" + wildcardBound,

@@ -30,9 +30,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
-import org.plumelib.util.CollectionsP;
-import org.plumelib.util.StringsP;
-import org.plumelib.util.SystemP;
+import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.StringsPlume;
+import org.plumelib.util.SystemPlume;
 
 /** Utilities for testing. */
 public final class TestUtilities {
@@ -203,7 +203,7 @@ public final class TestUtilities {
    * @return the file names, each with {@code parent} prepended
    */
   public static List<Object[]> findFilesInParent(File parent, String... fileNames) {
-    return CollectionsP.mapList(
+    return CollectionsPlume.mapList(
         (String fileName) -> new Object[] {new File(parent, fileName)}, fileNames);
   }
 
@@ -438,19 +438,19 @@ public final class TestUtilities {
       pw.println("#Missing: " + missing.size() + "      #Unexpected: " + unexpected.size());
 
       pw.println("Expected:");
-      pw.println(StringsP.joinLines(expected));
+      pw.println(StringsPlume.joinLines(expected));
       pw.println();
 
       pw.println("Actual:");
-      pw.println(StringsP.joinLines(actual));
+      pw.println(StringsPlume.joinLines(actual));
       pw.println();
 
       pw.println("Missing:");
-      pw.println(StringsP.joinLines(missing));
+      pw.println(StringsPlume.joinLines(missing));
       pw.println();
 
       pw.println("Unexpected:");
-      pw.println(StringsP.joinLines(unexpected));
+      pw.println(StringsPlume.joinLines(unexpected));
       pw.println();
 
       pw.println();
@@ -562,6 +562,6 @@ public final class TestUtilities {
    */
   @SuppressWarnings("PMD.BooleanGetMethodName")
   public static boolean getShouldEmitDebugInfo() {
-    return SystemP.getBooleanSystemProperty("emit.test.debug");
+    return SystemPlume.getBooleanSystemProperty("emit.test.debug");
   }
 }

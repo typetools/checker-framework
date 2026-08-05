@@ -28,8 +28,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsP;
-import org.plumelib.util.StringsP;
+import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Generates a stub file from a single class or an entire package.
@@ -236,7 +236,7 @@ public class StubGenerator {
       boolean isInterface = typeElement.getKind() == ElementKind.INTERFACE;
       out.print(isInterface ? " extends " : " implements ");
       List<String> ls =
-          CollectionsP.mapList(StubGenerator::formatType, typeElement.getInterfaces());
+          CollectionsPlume.mapList(StubGenerator::formatType, typeElement.getInterfaces());
       out.print(formatList(ls));
     }
 
@@ -368,7 +368,8 @@ public class StubGenerator {
 
     if (!method.getThrownTypes().isEmpty()) {
       out.print(" throws ");
-      List<String> ltt = CollectionsP.mapList(StubGenerator::formatType, method.getThrownTypes());
+      List<String> ltt =
+          CollectionsPlume.mapList(StubGenerator::formatType, method.getThrownTypes());
       out.print(formatList(ltt));
     }
     out.println(';');
@@ -387,7 +388,7 @@ public class StubGenerator {
    * @return a string representation of the list, without surrounding square brackets
    */
   private String formatList(@MustCallUnknown List<? extends @MustCallUnknown Object> lst) {
-    return StringsP.join(", ", lst);
+    return StringsPlume.join(", ", lst);
   }
 
   /** Returns true if the element is public or protected element. */
