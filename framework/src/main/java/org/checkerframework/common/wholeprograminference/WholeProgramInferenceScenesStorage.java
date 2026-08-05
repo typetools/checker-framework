@@ -369,7 +369,7 @@ public class WholeProgramInferenceScenesStorage
     if (!preconditionsToDeclaredTypes.containsKey(key)) {
       throw new BugInCF(
           "attempted to retrieve the declared type of a precondition expression for which"
-              + "nothing was inferred: "
+              + " nothing was inferred: "
               + key);
     }
     return preconditionsToDeclaredTypes.get(key);
@@ -388,7 +388,7 @@ public class WholeProgramInferenceScenesStorage
     if (!postconditionsToDeclaredTypes.containsKey(key)) {
       throw new BugInCF(
           "attempted to retrieve the declared type of a postcondition expression for which"
-              + "nothing was inferred: "
+              + " nothing was inferred: "
               + key);
     }
     return postconditionsToDeclaredTypes.get(key);
