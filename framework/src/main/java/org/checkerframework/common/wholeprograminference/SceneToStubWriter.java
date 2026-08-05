@@ -288,7 +288,8 @@ public final class SceneToStubWriter {
    *     argument is exactly the String "this".
    * @return the formatted formal parameter, as if it were written in Java source code
    */
-  private static String formatParameter(AField param, String parameterName, String basename) {
+  // Package-private rather than private so that SceneToStubWriterTest can call it.
+  static String formatParameter(AField param, String parameterName, String basename) {
     StringBuilder sb = new StringBuilder();
     formatParameter(sb, param, parameterName, basename);
     return sb.toString();
@@ -307,12 +308,9 @@ public final class SceneToStubWriter {
    */
   private static void formatParameter(
       StringBuilder sb, AField param, String parameterName, String basename) {
-    if (!param.tlAnnotationsHere.isEmpty()) {
-      for (Annotation declAnno : param.tlAnnotationsHere) {
-        formatAnnotation(sb, declAnno);
-        sb.append(' ');
-      }
-      sb.delete(sb.length() - 1, sb.length());
+    for (Annotation declAnno : param.tlAnnotationsHere) {
+      formatAnnotation(sb, declAnno);
+      sb.append(' ');
     }
     formatAFieldImpl(sb, param, parameterName, basename);
   }

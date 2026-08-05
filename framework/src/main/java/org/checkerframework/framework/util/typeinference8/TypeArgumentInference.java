@@ -24,7 +24,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
  * Java, if T(A) = the type argument for a, in the above example T(A) == String and T(B) == Integer
  *
  * <p>For the Checker Framework we also need to infer reasonable annotations for these type
- * arguments. For information on inferring type arguments see the documentation in JLS8:
+ * arguments. For information on inferring type arguments see JLS chapter 18:
  * https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html
  */
 public interface TypeArgumentInference {
