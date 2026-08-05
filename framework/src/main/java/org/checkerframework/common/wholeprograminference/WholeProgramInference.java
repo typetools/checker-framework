@@ -150,9 +150,9 @@ public interface WholeProgramInference {
       Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM);
 
   /**
-   * Updates the return type of the method {@code methodTree} based on {@code returnedExpression}.
-   * Also updates the return types of any methods that this method overrides that are available as
-   * source code.
+   * Updates the return type of the method {@code methodTree} based on the expression returned by
+   * {@code retNode}. Also updates the return types of any methods that this method overrides that
+   * are available as source code.
    *
    * <p>If there is no stored annotated return type for the method methodTree, then the type of the
    * return expression will be added to the return type of that method. If there is a stored
@@ -176,7 +176,8 @@ public interface WholeProgramInference {
    *
    * @param className the name of the class, for debugging only
    * @param methodElement the method or constructor whose preconditions or postconditions to update
-   * @param preOrPost true if to update preconditions or postconditions
+   * @param preOrPost what to update: preconditions ({@code BEFORE}) or postconditions ({@code
+   *     AFTER})
    * @param store the store at the method's entry or normal exit, for reading types of expressions
    */
   void updateContracts(
