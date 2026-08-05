@@ -144,6 +144,16 @@ public class Expression extends TypeConstraint {
     // Assume the constraint reduces to TRUE, if it did not the code wouldn't compile with
     // javac.
 
+    // The qualifiers are not checked either, even though this constraint might not hold for
+    // them.  Because T is proper, this constraint mentions no inference variable, so whether it
+    // holds does not depend on the type arguments that are inferred; no other choice of type
+    // arguments would make it hold.  BaseTypeVisitor separately checks the qualifiers -- in
+    // checkArguments for an argument, and in a common assignment check for a lambda body -- and
+    // issues a more informative error message than inference could.  Returning TRUE_ANNO_FAIL
+    // here would replace that message by "type.arguments.not.inferred" and would also suppress
+    // every other check that BaseTypeVisitor performs on the invocation, because
+    // BaseTypeVisitor.visitMethodInvocation returns as soon as inference fails.
+
     // TODO: This should return false in some cases.
     // com.sun.tools.javac.code.Types.isConvertible(com.sun.tools.javac.code.Type,
     // com.sun.tools.javac.code.Type)
@@ -323,6 +333,7 @@ public class Expression extends TypeConstraint {
     if (R != null && R.getTypeKind() != TypeKind.VOID) {
       for (ExpressionTree e : TreeUtils.getReturnedExpressions(lambda)) {
         if (R.isProper()) {
+          // Only the Java types are checked, for the reason given in reduceProperType().
           if (!context.env.getTypeUtils().isAssignable(TreeUtils.typeOf(e), R.getJavaType())) {
             boundSet.addFalse();
             return ReductionResultPair.of(constraintSet, boundSet);
