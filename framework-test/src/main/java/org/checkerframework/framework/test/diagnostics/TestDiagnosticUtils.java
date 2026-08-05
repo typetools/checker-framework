@@ -24,32 +24,71 @@ public final class TestDiagnosticUtils {
     throw new Error("Do not instantiate");
   }
 
-  /** How the diagnostics appear in Java source files. */
+  /**
+   * How the diagnostics appear in Java source files: the text of an expected-diagnostic comment,
+   * without the leading "// ::". An example is "error: [assignment]". Capturing group 1 is the
+   * diagnostic kind and group 2 is the rest of the diagnostic (its message key, its message, or
+   * both).
+   */
   public static final String DIAGNOSTIC_IN_JAVA_REGEX =
       "\\s*(error|fixable-error|warning|fixable-warning|other):\\s*(.*)\\s*";
 
-  /** How the diagnostics appear in Java source files. */
+  /** A compiled version of {@link #DIAGNOSTIC_IN_JAVA_REGEX}. */
   public static final Pattern DIAGNOSTIC_IN_JAVA_PATTERN =
       Pattern.compile(DIAGNOSTIC_IN_JAVA_REGEX);
 
+  /**
+   * How a warning appears in Java source files. An example is "warning: [unchecked] unchecked
+   * cast". Capturing group 1 is the warning message, which (unlike a message matched by {@link
+   * #DIAGNOSTIC_IN_JAVA_REGEX}) may contain a line separator.
+   */
   public static final String DIAGNOSTIC_WARNING_IN_JAVA_REGEX = "\\s*warning:\\s*(.*\\s*.*)\\s*";
+
+  /** A compiled version of {@link #DIAGNOSTIC_WARNING_IN_JAVA_REGEX}. */
   public static final Pattern DIAGNOSTIC_WARNING_IN_JAVA_PATTERN =
       Pattern.compile(DIAGNOSTIC_WARNING_IN_JAVA_REGEX);
 
-  // How the diagnostics appear in javax tools diagnostics from the compiler.
+  /**
+   * How the diagnostics appear in javax tools diagnostics from the compiler, after the file name
+   * has been stripped off. An example is ":12: error: [assignment]". Capturing group 1 is the line
+   * number, group 2 is the diagnostic kind, and group 3 is the rest of the diagnostic.
+   */
   public static final String DIAGNOSTIC_REGEX = ":(\\d+):" + DIAGNOSTIC_IN_JAVA_REGEX;
+
+  /** A compiled version of {@link #DIAGNOSTIC_REGEX}. */
   public static final Pattern DIAGNOSTIC_PATTERN = Pattern.compile(DIAGNOSTIC_REGEX);
 
+  /**
+   * How a warning appears in javax tools diagnostics from the compiler, after the file name has
+   * been stripped off. An example is ":12: warning: [unchecked] unchecked cast". Capturing group 1
+   * is the line number and group 2 is the warning message.
+   */
   public static final String DIAGNOSTIC_WARNING_REGEX =
       ":(\\d+):" + DIAGNOSTIC_WARNING_IN_JAVA_REGEX;
+
+  /** A compiled version of {@link #DIAGNOSTIC_WARNING_REGEX}. */
   public static final Pattern DIAGNOSTIC_WARNING_PATTERN =
       Pattern.compile(DIAGNOSTIC_WARNING_REGEX);
 
-  // How the diagnostics appear in diagnostic files (.out).
+  /**
+   * How the diagnostics appear in diagnostic files ({@code .goal} files), each of which contains
+   * one expected diagnostic per line. An example line is "MyTest.java:12: error: [assignment]".
+   * Capturing group 1 is the line number, group 2 is the diagnostic kind, and group 3 is the rest
+   * of the diagnostic.
+   */
   public static final String DIAGNOSTIC_FILE_REGEX = ".+\\.java" + DIAGNOSTIC_REGEX;
+
+  /** A compiled version of {@link #DIAGNOSTIC_FILE_REGEX}. */
   public static final Pattern DIAGNOSTIC_FILE_PATTERN = Pattern.compile(DIAGNOSTIC_FILE_REGEX);
 
+  /**
+   * How a warning appears in diagnostic files ({@code .goal} files). An example line is {@code
+   * "MyTest.java:12: warning: [unchecked] unchecked cast"}. Capturing group 1 is the line number
+   * and group 2 is the warning message.
+   */
   public static final String DIAGNOSTIC_FILE_WARNING_REGEX = ".+\\.java" + DIAGNOSTIC_WARNING_REGEX;
+
+  /** A compiled version of {@link #DIAGNOSTIC_FILE_WARNING_REGEX}. */
   public static final Pattern DIAGNOSTIC_FILE_WARNING_PATTERN =
       Pattern.compile(DIAGNOSTIC_FILE_WARNING_REGEX);
 
