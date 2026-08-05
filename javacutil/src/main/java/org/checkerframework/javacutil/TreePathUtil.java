@@ -2,6 +2,7 @@ package org.checkerframework.javacutil;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
@@ -322,7 +323,19 @@ public final class TreePathUtil {
         // Otherwise use the context of the ConditionalExpressionTree.
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
       }
-      case PARENTHESIZED, CASE -> {
+      case PARENTHESIZED -> {
+        return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
+      }
+      case CASE -> {
+        @SuppressWarnings("interning:not.interned") // AST node comparison
+        boolean guardIsLeaf =
+            TreeUtilsAfterJava17.CaseUtils.getGuard((CaseTree) parent) == treePath.getLeaf();
+        if (guardIsLeaf) {
+          // The assignment context for the guard is simply boolean.
+          // No point in going on.
+          return null;
+        }
+        // Otherwise use the context of the CaseTree.
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
       }
       case YIELD -> {

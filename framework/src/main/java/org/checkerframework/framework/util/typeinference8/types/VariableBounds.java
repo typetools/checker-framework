@@ -219,12 +219,11 @@ public class VariableBounds {
    * @param setS a set of abstract qualifiers on the right side of the constraint
    * @param kind the kind of constraint
    */
-  @SuppressWarnings("interning:not.interned") // Checking for exact object.
   private void addQualifierConstraint(
       Set<? extends AbstractQualifier> setT, Set<? extends AbstractQualifier> setS, Kind kind) {
     for (AbstractQualifier t : setT) {
       for (AbstractQualifier s : setS) {
-        if (s != t && s.sameHierarchy(t)) {
+        if (!s.equals(t) && s.sameHierarchy(t)) {
           constraints.add(new QualifierTyping(t, s, kind));
         }
       }
