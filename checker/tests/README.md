@@ -182,7 +182,7 @@ a warning from the same line of code:
 ```
 
 As an alternative to writing expected errors in the source file using "// ::"
-syntax, expected errors can be specified in a separate file using the .out
+syntax, expected errors can be specified in a separate file using the .goal
 file extension.  These files contain lines of the following format:
 
 ```output
