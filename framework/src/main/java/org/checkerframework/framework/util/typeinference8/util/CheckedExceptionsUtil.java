@@ -54,19 +54,6 @@ public final class CheckedExceptionsUtil {
   }
 
   /**
-   * Returns true iff {@code type} is a checked exception.
-   *
-   * @param type an exception type to check (that is, Throwable or a subtype of it)
-   * @param context the context
-   * @return true iff {@code type} is a checked exception
-   */
-  public static boolean isCheckedException(TypeMirror type, Java8InferenceContext context) {
-    Types types = context.env.getTypeUtils();
-    return !types.isSubtype(type, context.runtimeException)
-        && !types.isSubtype(type, context.error);
-  }
-
-  /**
    * Helper class for gathering the types of checked exceptions in a lambda. See <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-11.html#jls-11.2.2">JLS section
    * 11.2.2</a>.
@@ -199,6 +186,19 @@ public final class CheckedExceptionsUtil {
         }
       }
     }
+  }
+
+  /**
+   * Returns true iff {@code type} is a checked exception.
+   *
+   * @param type an exception type to check (that is, Throwable or a subtype of it)
+   * @param context the context
+   * @return true iff {@code type} is a checked exception
+   */
+  public static boolean isCheckedException(TypeMirror type, Java8InferenceContext context) {
+    Types types = context.env.getTypeUtils();
+    return !types.isSubtype(type, context.runtimeException)
+        && !types.isSubtype(type, context.error);
   }
 
   /**
