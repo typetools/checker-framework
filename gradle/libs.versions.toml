@@ -82,4 +82,4 @@ com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-propertie
 
 biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.3.0" }
 
-gradle-nexus-publish-plugin = { id = "io.github.gradle-nexus.publish-plugin", version = "2.0.0"}
+gradle-nexus-publish-plugin = { id = "io.github.gradle-nexus.publish-plugin", version = "2.0.0" }
