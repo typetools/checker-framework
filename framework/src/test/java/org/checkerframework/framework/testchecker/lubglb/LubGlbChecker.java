@@ -29,7 +29,6 @@ import org.checkerframework.framework.util.typeinference8.types.QualifierVar;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
-import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.trees.TreeParser;
 
@@ -88,6 +87,10 @@ public class LubGlbChecker extends BaseTypeChecker {
     if (!ranQualifierEqualityTests && path != null) {
       ranQualifierEqualityTests = true;
       runQualifierEqualityTests(path);
+    }
+    if (!ranConstraintEqualityTests && path != null) {
+      ranConstraintEqualityTests = true;
+      runConstraintEqualityTests(path);
     }
     super.typeProcess(element, path);
   }
@@ -151,13 +154,13 @@ public class LubGlbChecker extends BaseTypeChecker {
    * Creates a {@code Qualifier} that wraps {@code anno}. Each call returns a distinct object.
    *
    * @param anno an annotation supported by this checker
-   * @param context the context
+   * @param context the inference context
    * @return a newly-created {@code Qualifier} that wraps {@code anno}
    */
   private AbstractQualifier createQualifier(AnnotationMirror anno, Java8InferenceContext context) {
     Set<AbstractQualifier> created =
         AbstractQualifier.create(
-            new AnnotationMirrorSet(anno), new AnnotationMirrorMap<>(), context);
+            Collections.singleton(anno), new AnnotationMirrorMap<QualifierVar>(), context);
     assertTrue(created.size() == 1, "creating a qualifier for %s produced %s", anno, created);
     return created.iterator().next();
   }
@@ -173,15 +176,6 @@ public class LubGlbChecker extends BaseTypeChecker {
     if (!condition) {
       throw new AssertionError(String.format(format, args));
     }
-  }
-
-  @Override
-  public void typeProcess(TypeElement element, TreePath path) {
-    if (!ranConstraintEqualityTests && path != null) {
-      ranConstraintEqualityTests = true;
-      runConstraintEqualityTests(path);
-    }
-    super.typeProcess(element, path);
   }
 
   /**
@@ -257,20 +251,6 @@ public class LubGlbChecker extends BaseTypeChecker {
     ConstraintSet removeSet = new ConstraintSet(subtype);
     removeSet.remove(new ConstraintSet(sameSubtype));
     check(removeSet.isEmpty(), "ConstraintSet.remove did not remove an equal constraint");
-  }
-
-  /**
-   * Returns a newly-created {@link AbstractQualifier} for the given annotation.
-   *
-   * @param anno an annotation that this checker supports
-   * @param context the inference context
-   * @return an {@link AbstractQualifier} for {@code anno}
-   */
-  private AbstractQualifier createQualifier(AnnotationMirror anno, Java8InferenceContext context) {
-    return AbstractQualifier.create(
-            Collections.singleton(anno), new AnnotationMirrorMap<QualifierVar>(), context)
-        .iterator()
-        .next();
   }
 
   /**
