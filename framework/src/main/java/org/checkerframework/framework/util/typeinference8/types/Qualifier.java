@@ -48,14 +48,19 @@ public class Qualifier extends AbstractQualifier {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    return AnnotationUtils.areSame(annotation, ((Qualifier) o).annotation);
+
+    Qualifier that = (Qualifier) o;
+
+    return AnnotationUtils.areSame(annotation, that.annotation);
   }
 
   @Override
   public int hashCode() {
-    // This ignores the annotation's element values, which `equals` does compare.  That is
-    // permitted, just less discriminating.  Hashing the element values is not easy, because
-    // `AnnotationUtils.areSame` treats an explicitly-written value as the same as a defaulted one.
+    // AnnotationMirror does not define hashCode, so hash the annotation's name. Annotations that
+    // areSame() have the same name, so this is consistent with equals(), though it does not
+    // distinguish annotations that differ only in their element values.  Hashing the element values
+    // is not easy, because `AnnotationUtils.areSame` treats an explicitly-written value as the same
+    // as a defaulted one.
     return annotationName.hashCode();
   }
 
