@@ -146,7 +146,7 @@ def stage_maven_artifacts_in_maven_central() -> None:
     )
     execute(
         (
-            "./gradlew publish -Prelease=true --no-parallel"
+            "./gradlew publishToSonatype -Prelease=true --no-parallel"
             " -Psigning.gnupg.keyName=checker-framework-dev@googlegroups.com"
             f" -Psigning.gnupg.passphrase={gnupg_passphrase}"
         ),
