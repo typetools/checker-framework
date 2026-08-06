@@ -28,9 +28,9 @@ public final class CheckedExceptionsUtil {
 
   /**
    * A checked exception that a functional expression can throw, viewed both as a {@link TypeMirror}
-   * and as an {@link Throwncheckedexceptions}. For a lambda, these are the checked exceptions that
-   * the lambda body can throw; for a method reference, they are the checked exceptions in the
-   * throws clause of the compile-time declaration.
+   * and as an {@link AnnotatedTypeMirror}. For a lambda, these are the checked exceptions that the
+   * lambda body can throw; for a method reference, they are the checked exceptions in the throws
+   * clause of the compile-time declaration.
    *
    * <p>For an exception thrown by a method invocation, {@code javaType} is the exception type as
    * declared by the invoked method, whereas {@code annotatedType} is the exception type of the
@@ -39,8 +39,7 @@ public final class CheckedExceptionsUtil {
    * @param javaType the exception type
    * @param annotatedType the exception type, with annotations
    */
-  public record ThrownCheckedException(
-      TypeMirror javaType, Throwncheckedexceptions annotatedType) {}
+  public record ThrownCheckedException(TypeMirror javaType, AnnotatedTypeMirror annotatedType) {}
 
   /**
    * Returns the checked exception types that can be thrown by the lambda.
@@ -165,32 +164,6 @@ public final class CheckedExceptionsUtil {
           context.typeFactory.constructorFromUse(node).executableType();
       addCheckedExceptions(TreeUtils.elementFromUse(node).getThrownTypes(), constructor, result);
       return result;
-    }
-
-    /**
-     * Returns true iff {@code type} is a checked exception.
-     *
-     * @param type an exception type to check (that is, Throwable or a subtype of it)
-     * @param context the context
-     * @return true iff {@code type} is a checked exception
-     */
-    public static boolean isCheckedException(TypeMirror type, Java8InferenceContext context) {
-      Types types = context.env.getTypeUtils();
-      return !types.isSubtype(type, context.runtimeException)
-          && !types.isSubtype(type, context.error);
-    }
-
-    /**
-     * Returns true iff {@code type} is a checked exception.
-     *
-     * @param type an exception type to check (that is, Throwable or a subtype of it)
-     * @param context the context
-     * @return true iff {@code type} is a checked exception
-     */
-    public static boolean isCheckedException(TypeMirror type, Java8InferenceContext context) {
-      Types types = context.env.getTypeUtils();
-      return !types.isSubtype(type, context.runtimeException)
-          && !types.isSubtype(type, context.error);
     }
 
     /**
