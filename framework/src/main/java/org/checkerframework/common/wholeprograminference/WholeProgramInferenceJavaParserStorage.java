@@ -973,6 +973,12 @@ public class WholeProgramInferenceJavaParserStorage
       return;
     }
 
+    // fields
+    for (Map.Entry<String, FieldAnnos> fieldEntry : classAnnos.fields.entrySet()) {
+      fieldEntry.getValue().removePrimaryTopAnnotations();
+    }
+
+    // methods
     for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
         classAnnos.callableDeclarations.entrySet()) {
       String jvmSignature = methodEntry.getKey();
@@ -1113,7 +1119,7 @@ public class WholeProgramInferenceJavaParserStorage
   private void writeAjavaFile(Path outputPath, CompilationUnitAnnos root) {
     try (Writer writer = Files.newBufferedWriter(outputPath, StandardCharsets.UTF_8)) {
 
-      // This commented implementation uses JavaParser's lexical preserving printing, which
+      // This commented one-line implementation uses JavaParser's lexical preserving printing, which
       // writes the file such that its formatting is close to the original source file it was
       // parsed from as possible. It is commented out because the JavaParser feature is very buggy
       // and crashes when adding annotations in certain locations.
@@ -1895,6 +1901,21 @@ public class WholeProgramInferenceJavaParserStorage
       }
     }
 
+    /** Removes the primary annotations in the signature that are the top in their hierarchy. */
+    public void removePrimaryTopAnnotations() {
+      if (returnType != null) {
+        returnType.removePrimaryTopAnnotations();
+      }
+      if (receiverType != null) {
+        receiverType.removePrimaryTopAnnotations();
+      }
+      if (parameterTypes != null) {
+        for (AnnotatedTypeMirror atm : parameterTypes) {
+          atm.removePrimaryTopAnnotations();
+        }
+      }
+    }
+
     @Override
     public String toString() {
       StringJoiner sj =
@@ -2054,6 +2075,13 @@ public class WholeProgramInferenceJavaParserStorage
       Type newType = (Type) declaration.getType().accept(new CloneVisitor(), null);
       WholeProgramInferenceJavaParserStorage.transferAnnotations(type, newType);
       declaration.setType(newType);
+    }
+
+    /** Removes the top annotations from this. */
+    public void removePrimaryTopAnnotations() {
+      if (type != null) {
+        type.removePrimaryTopAnnotations();
+      }
     }
 
     @Override
