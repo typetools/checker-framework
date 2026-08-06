@@ -58,6 +58,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.ConstraintS
 import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.util.CheckedExceptionsUtil;
+import org.checkerframework.framework.util.typeinference8.util.CheckedExceptionsUtil.ThrownCheckedException;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
@@ -1026,17 +1027,25 @@ public class InferenceFactory {
     if (es.isEmpty()) {
       return ConstraintSet.TRUE;
     }
-    List<? extends AnnotatedTypeMirror> thrownTypes;
+    List<ThrownCheckedException> thrownExceptions;
     if (expression instanceof LambdaExpressionTree let) {
-      thrownTypes = CheckedExceptionsUtil.thrownCheckedExceptionsATM(let, context);
+      thrownExceptions = CheckedExceptionsUtil.thrownCheckedExceptions(let, context);
     } else {
-      thrownTypes =
+      List<? extends AnnotatedTypeMirror> thrownTypes =
           compileTimeDeclarationType((MemberReferenceTree) expression)
               .getAnnotatedType()
               .getThrownTypes();
+      thrownExceptions = new ArrayList<>(thrownTypes.size());
+      for (AnnotatedTypeMirror thrown : thrownTypes) {
+        TypeMirror thrownJavaType = thrown.getUnderlyingType();
+        if (CheckedExceptionsUtil.isCheckedException(thrownJavaType, context)) {
+          thrownExceptions.add(new ThrownCheckedException(thrownJavaType, thrown));
+        }
+      }
     }
 
-    for (AnnotatedTypeMirror xiAnnotated : thrownTypes) {
+    for (ThrownCheckedException thrownException : thrownExceptions) {
+      AnnotatedTypeMirror xiAnnotated = thrownException.annotatedType();
       boolean isSubtypeOfProper = false;
       for (ProperType properType : properTypes) {
         if (context

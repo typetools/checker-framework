@@ -18,7 +18,7 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 public class AdditionalArgument implements Constraint {
 
   /** The tree for the method or constructor invocation for this constraint. */
-  private ExpressionTree methodOrConstructorInvocation;
+  private final ExpressionTree methodOrConstructorInvocation;
 
   /**
    * Creates a new constraint.
@@ -60,5 +60,32 @@ public class AdditionalArgument implements Constraint {
       set.applyInstantiations();
       return set;
     }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Two {@code AdditionalArgument}s are equal if they are for the same invocation. Because
+   * {@code JCTree} does not override {@code equals}, this compares the two trees by reference:
+   * constraints for two textually identical invocations at different places in the source code are
+   * not equal.
+   */
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    AdditionalArgument that = (AdditionalArgument) o;
+
+    return methodOrConstructorInvocation.equals(that.methodOrConstructorInvocation);
+  }
+
+  @Override
+  public int hashCode() {
+    return methodOrConstructorInvocation.hashCode();
   }
 }
