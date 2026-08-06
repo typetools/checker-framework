@@ -27,20 +27,20 @@ public class ProperTypeEquality {
   // <@IntVal(2) Integer = @IntVal(1) Integer> between two proper types.  The Java types are the
   // same, but the qualifiers are incomparable, so inference fails.
   void argumentConstraintIncomparable(Map<@IntVal(2) Integer, String> arg) {
-    // :: error: [type.arguments.not.inferred]
+    // :: error: [argument]
     takesMap(arg);
   }
 
   // As above, but the proper types are array types.
   void argumentConstraintIncomparableArray(Map<@IntVal(2) Integer[], String> arg) {
-    // :: error: [type.arguments.not.inferred]
+    // :: error: [argument]
     takesArrayMap(arg);
   }
 
   // The constraint between the method call's type and the target type reduces to the equality
   // constraint <@IntVal(1) Integer = @IntVal(2) Integer> between two proper types.
   void targetTypeConstraintIncomparable() {
-    // :: error: [assignment] :: error: [type.arguments.not.inferred]
+    // :: error: [assignment] :: error: [arguments]
     Map<@IntVal(2) Integer, String> m = returnsMap();
   }
 
