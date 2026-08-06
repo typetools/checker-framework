@@ -152,13 +152,14 @@ def stage_maven_artifacts_in_maven_central() -> None:
         ),
         working_dir=CHECKER_FRAMEWORK,
     )
-def close_maven_artifacts_in_maven_central() -> None:
-    """Close the Checker Framework artifacts on Maven Central.
-    """
 
+
+def close_maven_artifacts_in_maven_central() -> None:
+    """Close the Checker Framework artifacts on Maven Central."""
     execute(
         (
-            "./gradlew findSonatypeStagingRepository closeSonatypeStagingRepository -Prelease=true --no-parallel"
+            "./gradlew findSonatypeStagingRepository closeSonatypeStagingRepository "
+            "-Prelease=true --no-parallel"
         ),
         working_dir=CHECKER_FRAMEWORK,
     )
@@ -415,9 +416,11 @@ def main(argv: list[str]) -> None:
         # I've tried to do this via the command line using curl, but the commands do nothing. I was
         # able to close the artifacts by doing the following:
         continue_or_exit(
-            "Maven artifacts have been staged! After you hit continue, the artifacts will be closed.\n"
+            "Maven artifacts have been staged! "
+            "After you hit continue, the artifacts will be closed.\n"
             "If something goes wrong with this step you can manually delete release here by "
-            "browsing to https://ossrh-staging-api.central.sonatype.com/swagger-ui/#/default/manual_search_repositories\n"
+            "browsing to "
+            "https://ossrh-staging-api.central.sonatype.com/swagger-ui/#/default/manual_search_repositories\n"
             "Log in with the value for SONATYPE_NEXUS_{USERNAME,PASSWORD} "
             "in file ~/.gradle/gradle.properties .\n\n"
             "After this step, to https://central.sonatype.com/publishing and make sure you see"
@@ -426,11 +429,11 @@ def main(argv: list[str]) -> None:
         close_maven_artifacts_in_maven_central()
 
     ## I can't find a URL to copy anymore.
-        # print_step("Step 5c: Run Maven sanity test on Maven Central artifacts.")
-        # if prompt_yes_no("Run Maven sanity test on Maven Central artifacts?", True):
-        #     repo_url = input("Please enter the repo URL of the closed artifacts:\n")
-        #
-        #     maven_sanity_check("maven-staging", repo_url)
+    # print_step("Step 5c: Run Maven sanity test on Maven Central artifacts.")
+    # if prompt_yes_no("Run Maven sanity test on Maven Central artifacts?", True):
+    #     repo_url = input("Please enter the repo URL of the closed artifacts:\n")
+    #
+    #     maven_sanity_check("maven-staging", repo_url)
 
     # This step copies the development release directories to the live release directories.
     # It then adds the appropriate permissions to the release. Symlinks need to be updated to point
