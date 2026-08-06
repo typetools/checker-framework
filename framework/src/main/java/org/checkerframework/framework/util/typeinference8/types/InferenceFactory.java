@@ -1031,7 +1031,7 @@ public class InferenceFactory {
     if (expression instanceof LambdaExpressionTree let) {
       thrownTypes = CheckedExceptionsUtil.thrownCheckedExceptions(let, context);
     } else {
-      allThrownTypes =
+      List<? extends AnnotatedTypeMirror> allThrownTypes =
           compileTimeDeclarationType((MemberReferenceTree) expression)
               .getAnnotatedType()
               .getThrownTypes();
