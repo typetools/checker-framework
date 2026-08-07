@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
@@ -29,7 +30,7 @@ public class VariableBounds {
     /** {@code this <: other type } */
     UPPER,
     /** {@code this = other type } */
-    EQUAL;
+    EQUAL
   }
 
   /** The variable whose bounds this class represents. */
@@ -38,8 +39,8 @@ public class VariableBounds {
   /** The context. */
   private final Java8InferenceContext context;
 
-  /** The type to which this variable is instantiated. */
-  private ProperType instantiation = null;
+  /** The type to which this variable is instantiated, or null if it has no instantiation. */
+  private @Nullable ProperType instantiation = null;
 
   /**
    * Bounds on this variable. Stored as a map from kind of bound (upper, lower, equal) to a set of
@@ -530,11 +531,11 @@ public class VariableBounds {
   }
 
   /**
-   * Returns the instantiation of this variable.
+   * Returns the instantiation of this variable, or null if this variable has no instantiation.
    *
-   * @return the instantiation of this variable
+   * @return the instantiation of this variable, or null
    */
-  public ProperType getInstantiation() {
+  public @Nullable ProperType getInstantiation() {
     return instantiation;
   }
 
@@ -656,13 +657,15 @@ public class VariableBounds {
   }
 
   /**
-   * Returns the constraints generated when incorporating a capture bound. See JLS 18.3.2.
+   * Returns the constraints generated when incorporating a capture bound, or null if the
+   * incorporation implies the bound false. See JLS 18.3.2.
    *
    * @param Ai the captured type argument
    * @param Bi the bound of the type variable
-   * @return constraints generated when incorporating a capture bound
+   * @return constraints generated when incorporating a capture bound, or null if the bound false is
+   *     implied
    */
-  public ConstraintSet getWildcardConstraints(AbstractType Ai, AbstractType Bi) {
+  public @Nullable ConstraintSet getWildcardConstraints(AbstractType Ai, AbstractType Bi) {
     ConstraintSet constraintSet = new ConstraintSet();
     String source = "Constraint from wildcard bound.";
 

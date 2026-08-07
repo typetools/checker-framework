@@ -816,14 +816,16 @@ public class InferenceFactory {
 
   /**
    * Returns the pair of {@code a} as the least upper bound of {@code a} and {@code b} and {@code b}
-   * as the least upper bound of {@code a} and {@code b}.
+   * as the least upper bound of {@code a} and {@code b}, or null if that least upper bound is not a
+   * parameterized type.
    *
    * @param a type
    * @param b type
    * @return the pair of {@code a} as the least upper bound of {@code a} and {@code b} and {@code b}
-   *     as the least upper bound of {@code a} and {@code b}
+   *     as the least upper bound of {@code a} and {@code b}, or null
    */
-  public IPair<AbstractType, AbstractType> getParameterizedSupers(AbstractType a, AbstractType b) {
+  public @Nullable IPair<AbstractType, AbstractType> getParameterizedSupers(
+      AbstractType a, AbstractType b) {
     TypeMirror aTypeMirror = a.getJavaType();
     TypeMirror bTypeMirror = b.getJavaType();
     // com.sun.tools.javac.comp.Infer#getParameterizedSupers
@@ -880,12 +882,12 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns the least upper bounds of {@code properTypes}.
+   * Returns the least upper bounds of {@code properTypes}, or null if {@code properTypes} is empty.
    *
    * @param properTypes types to lub
-   * @return the least upper bounds of {@code properTypes}
+   * @return the least upper bounds of {@code properTypes}, or null
    */
-  public ProperType lub(Set<ProperType> properTypes) {
+  public @Nullable ProperType lub(Set<ProperType> properTypes) {
     if (properTypes.isEmpty()) {
       return null;
     }
@@ -919,12 +921,13 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns the greatest lower bound of {@code abstractTypes}.
+   * Returns the greatest lower bound of {@code abstractTypes}, or null if {@code abstractTypes} is
+   * empty.
    *
    * @param abstractTypes types to glb
-   * @return the greatest lower bound of {@code abstractTypes}
+   * @return the greatest lower bound of {@code abstractTypes}, or null
    */
-  public AbstractType glb(Set<AbstractType> abstractTypes) {
+  public @Nullable AbstractType glb(Set<AbstractType> abstractTypes) {
     AbstractType ti = null;
     for (AbstractType liProperType : abstractTypes) {
       AbstractType li = liProperType;
