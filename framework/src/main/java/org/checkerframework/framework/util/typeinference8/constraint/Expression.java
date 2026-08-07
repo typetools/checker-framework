@@ -78,7 +78,7 @@ public class Expression extends TypeConstraint {
 
   @Override
   public List<Variable> getInputVariables() {
-    return getInputVariablesForExpression(expression, getT());
+    return getInputVariablesForExpression(expression);
   }
 
   @Override
@@ -333,17 +333,28 @@ public class Expression extends TypeConstraint {
 
     ConstraintSet constraintSet = new ConstraintSet();
 
+    if (boundSet.containsFalse()) {
+      // No valid parameterization of the functional interface exists (18.5.3), so the constraint
+      // reduces to false.
+      return ReductionResultPair.of(constraintSet, boundSet);
+    }
+
     if (!TreeUtils.isImplicitlyTypedLambda(lambda)) {
       // Explicitly typed lambda
       List<? extends VariableTree> parameters = lambda.getParameters();
       List<AbstractType> gs = tPrime.getFunctionTypeParameterTypes();
+      if (parameters.size() != gs.size()) {
+        // If the number of lambda parameters differs from the number of parameter types of the
+        // function type, the constraint reduces to false.
+        boundSet.addFalse();
+        return ReductionResultPair.of(constraintSet, boundSet);
+      }
       if (gs == null) {
         // T is not a functional interface type, so it has no function type. JLS 18.2.1 says that
         // the constraint reduces to false in that case.
         boundSet.addFalse();
         return ReductionResultPair.of(constraintSet, boundSet);
       }
-      assert parameters.size() == gs.size();
 
       for (int i = 0; i < gs.size(); i++) {
         VariableTree parameter = parameters.get(i);
@@ -472,9 +483,12 @@ public class Expression extends TypeConstraint {
             context.typeFactory.getAnnotatedType(fElement), fElement.asType(), map, context);
 
     List<AbstractType> qs = tPrime.getFunctionTypeParameterTypes();
+    if (qs.size() != ps.size()) {
+      // 18.5.3: If n != k, no valid parameterization exists.
+      return IPair.of(t, falseBoundSet(context));
+    }
     // tPrime is a parameterization of t, which is a wildcard-parameterized functional interface.
     assert qs != null : "@AssumeAssertion(nullness): tPrime is a functional interface";
-    assert qs.size() == ps.size();
 
     // A set of constraint formulas is formed with, for all i (1 <= i <= n), <Pi = Qi>.
     ConstraintSet constraintSet = new ConstraintSet();
@@ -579,6 +593,18 @@ public class Expression extends TypeConstraint {
       }
     }
     return true;
+  }
+
+  /**
+   * Returns a new bound set that contains only the false bound.
+   *
+   * @param context the context
+   * @return a new bound set that contains only the false bound
+   */
+  private static BoundSet falseBoundSet(Java8InferenceContext context) {
+    BoundSet boundSet = new BoundSet(context);
+    boundSet.addFalse();
+    return boundSet;
   }
 
   @Override
