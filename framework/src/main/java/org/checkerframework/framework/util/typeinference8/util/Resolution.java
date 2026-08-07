@@ -307,12 +307,13 @@ public final class Resolution {
    */
   private void resolveWithUpperBounds(Variable ai, Set<ProperType> upperBounds) {
     ProperType ti = null;
-    boolean useRuntimeException = false;
+    // Per JLS 18.4, use RuntimeException only if the bound set contains "throws ai" and *each*
+    // proper upper bound of ai is a supertype of RuntimeException.
+    boolean useRuntimeException = ai.getBounds().hasThrowsBound();
     for (ProperType liProperType : upperBounds) {
       TypeMirror li = liProperType.getJavaType();
-      if (ai.getBounds().hasThrowsBound()
-          && context.env.getTypeUtils().isSubtype(context.runtimeException, li)) {
-        useRuntimeException = true;
+      if (useRuntimeException) {
+        useRuntimeException = context.env.getTypeUtils().isSubtype(context.runtimeException, li);
       }
       if (ti == null) {
         ti = liProperType;
