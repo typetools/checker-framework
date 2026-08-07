@@ -103,7 +103,6 @@ public final class CheckedExceptionsUtil {
         }
       }
       // The catch clauses do not catch exceptions thrown by the catch blocks or the finally block.
-      results.addAll(nullToEmptyList(scan(node.getResources(), aVoid)));
       results.addAll(nullToEmptyList(scan(node.getCatches(), aVoid)));
       results.addAll(nullToEmptyList(scan(node.getFinallyBlock(), aVoid)));
 
