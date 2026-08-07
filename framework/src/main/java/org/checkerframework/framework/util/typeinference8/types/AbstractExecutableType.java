@@ -11,6 +11,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -154,7 +155,7 @@ public abstract class AbstractExecutableType {
    *     size}
    */
   protected final List<AbstractType> getParameterTypes(
-      Theta map, int size, AnnotatedTypeMirror firstParam, boolean isVarargsCall) {
+      Theta map, int size, @Nullable AnnotatedTypeMirror firstParam, boolean isVarargsCall) {
     List<AnnotatedTypeMirror> params = new ArrayList<>(size);
     List<TypeMirror> paramsJava = new ArrayList<>(size);
 

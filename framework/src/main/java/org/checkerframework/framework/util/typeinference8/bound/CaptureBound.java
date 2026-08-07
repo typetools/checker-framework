@@ -178,7 +178,7 @@ public final class CaptureBound {
    * @param variables inference variables
    * @return true if this bound contains any {@code variables}
    */
-  public boolean isCaptureMentionsAny(Collection<Variable> variables) {
+  public boolean mentionsAny(Collection<Variable> variables) {
     for (Variable a : variables) {
       if (map.containsValue(a)) {
         return true;

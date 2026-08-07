@@ -22,6 +22,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.ReductionRe
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -66,7 +67,11 @@ public final class InferenceType extends AbstractType {
       Java8InferenceContext context,
       boolean ignoreAnnotations) {
     super(context, ignoreAnnotations);
-    assert type.getKind() == typeMirror.getKind();
+    if (type.getKind() != typeMirror.getKind()) {
+      throw new BugInCF(
+          "Mismatched kinds: annotated type %s has kind %s, but type %s has kind %s.",
+          type, type.getKind(), typeMirror, typeMirror.getKind());
+    }
     this.type = type.asUse();
     this.typeMirror = typeMirror;
     this.qualifierVars = qualifierVars;
@@ -124,7 +129,7 @@ public final class InferenceType extends AbstractType {
       boolean ignoreAnnotations) {
     assert type != null;
     if (map == null) {
-      return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
+      return new ProperType(type, qualifierVars, context, ignoreAnnotations);
     }
 
     if (typeMirror.getKind() == TypeKind.TYPEVAR && map.containsKey(type.getUnderlyingType())) {
@@ -137,7 +142,7 @@ public final class InferenceType extends AbstractType {
     } else if (AnnotatedContainsInferenceVariable.hasAnyTypeVariable(map.keySet(), type)) {
       return new InferenceType(type, typeMirror, map, qualifierVars, context, ignoreAnnotations);
     } else {
-      return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
+      return new ProperType(type, qualifierVars, context, ignoreAnnotations);
     }
   }
 
@@ -163,7 +168,7 @@ public final class InferenceType extends AbstractType {
       boolean ignoreAnnotations) {
     assert type != null;
     if (map == null) {
-      return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
+      return new ProperType(type, qualifierVars, context, ignoreAnnotations);
     }
 
     if (typeMirror.getKind() == TypeKind.TYPEVAR && map.containsKey(type.getUnderlyingType())) {
@@ -177,7 +182,7 @@ public final class InferenceType extends AbstractType {
         map.getNotInstantiated(), type)) {
       return new InferenceType(type, typeMirror, map, qualifierVars, context, ignoreAnnotations);
     } else {
-      return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
+      return new ProperType(type, qualifierVars, context, ignoreAnnotations);
     }
   }
 
