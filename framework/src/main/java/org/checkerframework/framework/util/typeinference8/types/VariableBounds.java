@@ -444,11 +444,11 @@ public class VariableBounds {
   }
 
   /**
-   * Returns all upper bounds.
+   * Returns all upper bounds that are not uses of an inference variable.
    *
-   * @return all upper bounds
+   * @return all upper bounds that are not uses of an inference variable
    */
-  public Set<AbstractType> upperBounds() {
+  public Set<AbstractType> nonVariableUpperBounds() {
     LinkedHashSet<AbstractType> set = new LinkedHashSet<>();
     for (AbstractType bound : bounds.get(BoundKind.UPPER)) {
       if (!bound.isUseOfVariable()) {

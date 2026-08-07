@@ -71,7 +71,7 @@ public class Expression extends TypeConstraint {
 
   @Override
   public List<Variable> getInputVariables() {
-    return getInputVariablesForExpression(expression, getT());
+    return getInputVariablesForExpression(expression);
   }
 
   @Override

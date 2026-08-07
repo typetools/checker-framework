@@ -368,7 +368,7 @@ public class BoundSet implements ReductionResult {
    * @param as a set of variables
    */
   public void removeCaptures(Set<Variable> as) {
-    captures.removeIf((CaptureBound c) -> c.isCaptureMentionsAny(as));
+    captures.removeIf((CaptureBound c) -> c.mentionsAny(as));
   }
 
   @Override
