@@ -154,16 +154,7 @@ public class ProperType extends AbstractType {
 
     if (context.typeFactory.types.isAssignable(subJavaType, superJavaType)
         || context.typeFactory.types.isAssignable(subErasedJavaType, superErasedJavaType)) {
-      if (ignoreAnnotations || superType.ignoreAnnotations) {
-        return ConstraintSet.TRUE;
-      }
-      AnnotatedTypeMirror superATM = superType.getAnnotatedType();
-      AnnotatedTypeMirror subATM = this.getAnnotatedType();
-      if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
-        return ConstraintSet.TRUE;
-      } else {
-        return ConstraintSet.TRUE_ANNO_FAIL;
-      }
+      return checkAnnotatedSubType(superType);
     } else {
       return ConstraintSet.FALSE;
     }
@@ -181,16 +172,7 @@ public class ProperType extends AbstractType {
     TypeMirror superJavaType = superType.getJavaType();
 
     if (context.types.isSubtypeUnchecked((Type) subType, (Type) superJavaType)) {
-      if (ignoreAnnotations || superType.ignoreAnnotations) {
-        return ConstraintSet.TRUE;
-      }
-      AnnotatedTypeMirror superATM = superType.getAnnotatedType();
-      AnnotatedTypeMirror subATM = this.getAnnotatedType();
-      if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
-        return ConstraintSet.TRUE;
-      } else {
-        return ConstraintSet.TRUE_ANNO_FAIL;
-      }
+      return checkAnnotatedSubType(superType);
     } else {
       return ConstraintSet.FALSE;
     }
@@ -208,18 +190,31 @@ public class ProperType extends AbstractType {
     TypeMirror superJavaType = superType.getJavaType();
 
     if (context.types.isAssignable((Type) subType, (Type) superJavaType)) {
-      if (ignoreAnnotations || superType.ignoreAnnotations) {
-        return ConstraintSet.TRUE;
-      }
-      AnnotatedTypeMirror superATM = superType.getAnnotatedType();
-      AnnotatedTypeMirror subATM = this.getAnnotatedType();
-      if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
-        return ConstraintSet.TRUE;
-      } else {
-        return ConstraintSet.TRUE_ANNO_FAIL;
-      }
+      return checkAnnotatedSubType(superType);
     } else {
       return ConstraintSet.FALSE;
+    }
+  }
+
+  /**
+   * Returns the result of checking the annotations of {@code this} against those of {@code
+   * superType}. The caller has already established that the Java types are related.
+   *
+   * @param superType super type
+   * @return {@link ConstraintSet#TRUE} if the annotations of {@code this} are subtypes of those of
+   *     {@code superType} or if either type ignores annotations; otherwise {@link
+   *     ConstraintSet#TRUE_ANNO_FAIL}
+   */
+  private ReductionResult checkAnnotatedSubType(ProperType superType) {
+    if (ignoreAnnotations || superType.ignoreAnnotations) {
+      return ConstraintSet.TRUE;
+    }
+    AnnotatedTypeMirror superATM = superType.getAnnotatedType();
+    AnnotatedTypeMirror subATM = this.getAnnotatedType();
+    if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
+      return ConstraintSet.TRUE;
+    } else {
+      return ConstraintSet.TRUE_ANNO_FAIL;
     }
   }
 
