@@ -8,6 +8,7 @@ import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
@@ -188,11 +189,11 @@ import org.checkerframework.javacutil.TypesUtils;
   }
 
   /**
-   * Returns the instantiation for this variable.
+   * Returns the instantiation for this variable, or null if this variable has no instantiation.
    *
-   * @return the instantiation for this variable
+   * @return the instantiation for this variable, or null
    */
-  public ProperType getInstantiation() {
+  public @Nullable ProperType getInstantiation() {
     return variableBounds.getInstantiation();
   }
 

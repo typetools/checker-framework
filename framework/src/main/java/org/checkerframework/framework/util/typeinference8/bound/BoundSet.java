@@ -184,12 +184,12 @@ public class BoundSet implements ReductionResult {
    *     capture(G<...>)} for any variable in {@code as}
    */
   public boolean containsCapture(Collection<Variable> as) {
-    List<Variable> list = new ArrayList<>();
+    Set<Variable> lhsVariables = new LinkedHashSet<>();
     for (CaptureBound c : captures) {
-      list.addAll(c.getAllVariablesOnLHS());
+      lhsVariables.addAll(c.getAllVariablesOnLHS());
     }
     for (Variable ai : as) {
-      if (list.contains(ai)) {
+      if (lhsVariables.contains(ai)) {
         return true;
       }
     }
@@ -356,7 +356,7 @@ public class BoundSet implements ReductionResult {
         // "type.argument.inference.crashed" error for this one expression, rather than as an
         // AssertionError that aborts the entire compilation.
         throw new BugInCF(
-            "MAX INCORPORATION STEPS (%d) REACHED: %s",
+            "Max incorporation steps (%d) reached without reaching a fixed point: %s",
             MAX_INCORPORATION_STEPS, context.pathToExpression.getLeaf());
       }
     } while (!containsFalse);
@@ -368,7 +368,7 @@ public class BoundSet implements ReductionResult {
    * @param as a set of variables
    */
   public void removeCaptures(Set<Variable> as) {
-    captures.removeIf((CaptureBound c) -> c.isCaptureMentionsAny(as));
+    captures.removeIf((CaptureBound c) -> c.mentionsAny(as));
   }
 
   @Override
