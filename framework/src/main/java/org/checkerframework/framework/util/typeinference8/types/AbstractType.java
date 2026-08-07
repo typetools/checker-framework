@@ -37,7 +37,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * This class represents "types" that "include type-like syntax that contains inference variables"
- * (see <a href="https://docs.oracle.com/javase/specs/jls/se26/html/jls-18.html#jls-18.1.1">Section
+ * (see <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.1.1">Section
  * 18.1</a>). Three subclasses of this class are:
  *
  * <ul>
@@ -404,11 +404,15 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns true if the proper type is a parameterized class or interface type, or an inner class
-   * type of a parameterized class or interface type (directly or indirectly)
+   * Returns true if this type is a parameterized class or interface type, an inner class type of a
+   * parameterized class or interface type (directly or indirectly), or a raw type.
    *
-   * @return true if T is a parameterized type
+   * @return true if this type is a parameterized type or a raw type
    */
+  // A raw type is not a parameterized type as JLS 4.5 defines the term, so this method is more
+  // permissive than the "parameterized type" of JLS 18.2.3 and 18.5.2.1.
+  // TODO: Determine whether those two rules should treat raw types as parameterized types, and if
+  // not, use a different predicate there.
   public boolean isParameterizedType() {
     // TODO this isn't matching the JavaDoc.
     return ((Type) getJavaType()).isParameterized() || ((Type) getJavaType()).isRaw();
