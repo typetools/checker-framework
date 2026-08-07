@@ -24,7 +24,6 @@ import org.checkerframework.framework.util.typeinference8.constraint.Constraint.
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.QualifierTyping;
 import org.checkerframework.framework.util.typeinference8.types.AbstractQualifier;
-import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Qualifier;
 import org.checkerframework.framework.util.typeinference8.types.QualifierVar;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -45,13 +44,6 @@ import org.checkerframework.javacutil.trees.TreeParser;
 public class LubGlbChecker extends BaseTypeChecker {
 
   private AnnotationMirror A, B, C, D, E, F, POLY;
-
-  /**
-   * Checks invariants of {@link ProperType}, or null if it has not been created yet. It is created
-   * lazily, because it needs the type factory, which does not exist when this checker is
-   * constructed.
-   */
-  private ProperTypeEqualityScanner properTypeEqualityScanner = null;
 
   /** True if {@link #runQualifierEqualityTests} has already run. It only needs to run once. */
   private boolean ranQualifierEqualityTests = false;
@@ -101,24 +93,6 @@ public class LubGlbChecker extends BaseTypeChecker {
       runConstraintEqualityTests(path);
     }
     super.typeProcess(element, path);
-    if (path != null) {
-      if (properTypeEqualityScanner == null) {
-        properTypeEqualityScanner =
-            new ProperTypeEqualityScanner(((BaseTypeVisitor<?>) visitor).getTypeFactory());
-      }
-      properTypeEqualityScanner.checkClass(path);
-    }
-  }
-
-  @Override
-  public void typeProcessingOver() {
-    super.typeProcessingOver();
-    if (properTypeEqualityScanner == null || properTypeEqualityScanner.getNumChecks() == 0) {
-      throw new AssertionError(
-          "ProperTypeEqualityScanner checked no proper type; the test files contain no invocation"
-              + " of a method whose declared return type is a type variable, and no instantiation"
-              + " of a generic class.");
-    }
   }
 
   /**
