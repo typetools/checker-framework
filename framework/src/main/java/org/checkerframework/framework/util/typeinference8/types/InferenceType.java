@@ -129,7 +129,7 @@ public final class InferenceType extends AbstractType {
       boolean ignoreAnnotations) {
     assert type != null;
     if (map == null) {
-      return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
+      return new ProperType(type, qualifierVars, context, ignoreAnnotations);
     }
 
     if (typeMirror.getKind() == TypeKind.TYPEVAR && map.containsKey(type.getUnderlyingType())) {
@@ -142,7 +142,7 @@ public final class InferenceType extends AbstractType {
     } else if (AnnotatedContainsInferenceVariable.hasAnyTypeVariable(map.keySet(), type)) {
       return new InferenceType(type, typeMirror, map, qualifierVars, context, ignoreAnnotations);
     } else {
-      return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
+      return new ProperType(type, qualifierVars, context, ignoreAnnotations);
     }
   }
 
@@ -168,7 +168,7 @@ public final class InferenceType extends AbstractType {
       boolean ignoreAnnotations) {
     assert type != null;
     if (map == null) {
-      return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
+      return new ProperType(type, qualifierVars, context, ignoreAnnotations);
     }
 
     if (typeMirror.getKind() == TypeKind.TYPEVAR && map.containsKey(type.getUnderlyingType())) {
@@ -182,7 +182,7 @@ public final class InferenceType extends AbstractType {
         map.getNotInstantiated(), type)) {
       return new InferenceType(type, typeMirror, map, qualifierVars, context, ignoreAnnotations);
     } else {
-      return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
+      return new ProperType(type, qualifierVars, context, ignoreAnnotations);
     }
   }
 
