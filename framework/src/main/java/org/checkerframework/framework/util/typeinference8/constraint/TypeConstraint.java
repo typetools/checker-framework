@@ -31,22 +31,16 @@ public abstract class TypeConstraint implements Constraint {
   protected AbstractType T;
 
   /**
-   * The constraint whose reduction created this constraint, or null if this constraint is the root
-   * of a constraint history. If null, then {@code source} should be nonnull.
+   * The constraint whose reduction created this constraint or null if this constraint isn't from a
+   * reduction from another. If null, then {@code source} should be nonnull.
    */
   public @Nullable Constraint parent;
 
   /**
-   * A string that describes where this constraint is from, for a constraint that has no {@code
-   * parent}. Null if this constraint has a {@code parent}.
+   * A string that describes where this constraint is from. If null, then the constraint came from
+   * reducing {@code parent}.
    */
   public @Nullable String source;
-
-  /**
-   * A string that describes how {@code parent} gave rise to this constraint. Null if {@code parent}
-   * is null, or if this constraint came from an ordinary reduction of {@code parent}.
-   */
-  public @Nullable String derivation;
 
   /**
    * Creates a type constraint.
@@ -59,7 +53,6 @@ public abstract class TypeConstraint implements Constraint {
     this.T = T;
     this.parent = null;
     this.source = source;
-    this.derivation = null;
   }
 
   /**
@@ -73,7 +66,6 @@ public abstract class TypeConstraint implements Constraint {
     this.T = T;
     this.parent = parent;
     this.source = null;
-    this.derivation = null;
   }
 
   /**
@@ -85,17 +77,20 @@ public abstract class TypeConstraint implements Constraint {
     StringJoiner constraintStack = new StringJoiner(System.lineSeparator());
     constraintStack.add(this.toString());
 
-    // Each iteration prints the parent of `child`, labeled by how it gave rise to `child`.
-    TypeConstraint child = this;
-    while (child.parent != null) {
-      constraintStack.add((child.derivation != null ? child.derivation + ": " : "") + child.parent);
-      if (!(child.parent instanceof TypeConstraint tc)) {
-        return constraintStack.toString();
+    Constraint parent = this.parent;
+    String source = this.source;
+    while (parent != null) {
+      constraintStack.add((source != null ? source + ": " : "") + parent);
+
+      if (parent instanceof TypeConstraint) {
+        source = ((TypeConstraint) parent).source;
+        parent = ((TypeConstraint) parent).parent;
+      } else {
+        parent = null;
       }
-      child = tc;
     }
-    if (child.source != null) {
-      constraintStack.add("From: " + child.source);
+    if (source != null) {
+      constraintStack.add("From: " + source);
     }
     return constraintStack.toString();
   }

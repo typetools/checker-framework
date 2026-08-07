@@ -353,11 +353,13 @@ public final class TestUtilities {
   }
 
   /**
-   * Returns the file that contains the expected output for the given test file: a file in the same
-   * directory, with the ".java" extension replaced by ".goal". The result might not exist.
+   * Returns the ".goal" file that corresponds to the given Java test file: a file in the same
+   * directory, whose name is the test file's name with ".java" replaced by ".goal". The ".goal"
+   * file contains the diagnostics that the test file is expected to produce. This method does not
+   * check whether the ".goal" file exists.
    *
-   * @param testFile a Java file that is a test input
-   * @return the file that contains the expected output for {@code testFile}
+   * @param testFile a Java test file
+   * @return the ".goal" file that corresponds to the given Java test file
    */
   public static File findComparisonFile(File testFile) {
     File comparisonFile =
