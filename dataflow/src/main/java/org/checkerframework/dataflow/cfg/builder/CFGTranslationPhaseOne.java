@@ -4008,7 +4008,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         } else if (leftInfo.isBoolean()
             && rightInfo.isBoolean()
             && !(leftInfo.isBoxed() && rightInfo.isBoxed())) {
-          // JSL 15.21.2 boolean equality
+          // JLS 15.21.2 boolean equality
           left = unboxAsNeeded(left, leftInfo.isBoxed());
           right = unboxAsNeeded(right, rightInfo.isBoxed());
         }
