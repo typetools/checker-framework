@@ -101,9 +101,15 @@ public abstract class AbstractQualifier {
 
     for (AbstractQualifier qual : quals) {
       AnnotationMirror soFar = m.get(qual.hierarchyName);
-      AnnotationMirror combined =
-          soFar == null ? qual.getInstantiation() : combine.apply(soFar, qual.getInstantiation());
-      m.put(qual.hierarchyName, combined);
+      AnnotationMirror qualAnno = qual.getInstantiation();
+      if (qualAnno == null) {
+        // continue;
+      } else if (soFar == null) {
+        m.put(qual.hierarchyName, qualAnno);
+      } else {
+        AnnotationMirror combined = combine.apply(soFar, qualAnno);
+        m.put(qual.hierarchyName, combined);
+      }
     }
     return new AnnotationMirrorSet(m.values());
   }

@@ -38,7 +38,7 @@ import org.checkerframework.javacutil.TypesUtils;
 /**
  * This class represents "types" that "include type-like syntax that contains inference variables"
  * (see <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.1.1">Section
- * 18.1</a>). Three subclasses of this class are:
+ * 18.1.1</a>). Three subclasses of this class are:
  *
  * <ul>
  *   <li>{@link ProperType}: types that do not contain inference variables

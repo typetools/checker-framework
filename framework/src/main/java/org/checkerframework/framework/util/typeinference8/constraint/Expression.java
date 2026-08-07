@@ -379,7 +379,7 @@ public class Expression extends TypeConstraint {
   /**
    * Returns the non-wildcard parameterization of {@code t} as defined in JLS 9.9.
    *
-   * @param t a type
+   * @param t a wildcard parameterized type
    * @param context the context
    * @return the non-wildcard parameterization of {@code t}
    */
