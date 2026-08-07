@@ -5,6 +5,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Type;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -239,9 +240,7 @@ public class ProperType extends AbstractType {
 
   @Override
   public int hashCode() {
-    int result = getJavaType().toString().hashCode();
-    result = 31 * result + Kind.PROPER.hashCode();
-    return result;
+    return Objects.hash(type, Kind.PROPER);
   }
 
   @Override
