@@ -208,6 +208,16 @@ public class Expression extends TypeConstraint {
 
       ConstraintSet constraintSet = new ConstraintSet();
       List<AbstractType> ps = T.getFunctionTypeParameterTypes();
+      if (ps == null) {
+        // T is not a functional interface type, so it has no function type. JLS 18.2.1 says that
+        // the constraint reduces to false in that case.
+        //
+        // (reduce() handles proper types before calling this method, so T mentions at least one
+        // inference variable. If T is an inference variable that has not yet been instantiated,
+        // then reducing this constraint now is premature -- JLS 18.5.2.2 makes that variable an
+        // input variable of this constraint, so it should have been instantiated first.)
+        return ConstraintSet.FALSE;
+      }
       List<AbstractType> fs = typeOfPoAppMethod.getParameterTypes(null);
 
       if (ps.size() == fs.size() + 1) {
@@ -247,9 +257,14 @@ public class Expression extends TypeConstraint {
     if (compileTimeDecl.isVoid()) {
       return ConstraintSet.TRUE;
     }
+    if (!T.isFunctionalInterface()) {
+      // T has no function type, so JLS 18.2.1 says that the constraint reduces to false.
+      return ConstraintSet.FALSE;
+    }
     AbstractType r = T.getFunctionTypeReturnType();
     if (r == null || r.getTypeKind() == TypeKind.VOID) {
-      // getFunctionTypeReturnType() returns null if the function type's return type is void.
+      // Because T is a functional interface, getFunctionTypeReturnType() returns null only if the
+      // function type's return type is void.
       return ConstraintSet.TRUE;
     }
 
@@ -267,9 +282,9 @@ public class Expression extends TypeConstraint {
     AbstractType compileTimeReturn = compileTimeDecl.getReturnType(map);
     BoundSet b2;
     if (TreeUtils.needsTypeArgInference(memRef)) {
-      b2 =
-          context.inference.createB2MethodRef(
-              compileTimeDecl, T.getFunctionTypeParameterTypes(), map);
+      List<AbstractType> functionTypeParams = T.getFunctionTypeParameterTypes();
+      assert functionTypeParams != null : "@AssumeAssertion(nullness): T is a functional interface";
+      b2 = context.inference.createB2MethodRef(compileTimeDecl, functionTypeParams, map);
       if (!compileTimeReturn.isProper()) {
         return context.inference.createB3(b2, memRef, compileTimeDecl, r, map);
       }
@@ -311,6 +326,12 @@ public class Expression extends TypeConstraint {
       // Explicitly typed lambda
       List<? extends VariableTree> parameters = lambda.getParameters();
       List<AbstractType> gs = tPrime.getFunctionTypeParameterTypes();
+      if (gs == null) {
+        // T is not a functional interface type, so it has no function type. JLS 18.2.1 says that
+        // the constraint reduces to false in that case.
+        boundSet.addFalse();
+        return ReductionResultPair.of(constraintSet, boundSet);
+      }
       assert parameters.size() == gs.size();
 
       for (int i = 0; i < gs.size(); i++) {
@@ -432,6 +453,8 @@ public class Expression extends TypeConstraint {
     AbstractType tPrime = InferenceType.create(t.getAnnotatedType(), t.getJavaType(), map, context);
 
     List<AbstractType> qs = tPrime.getFunctionTypeParameterTypes();
+    // tPrime is a parameterization of t, which is a wildcard-parameterized functional interface.
+    assert qs != null : "@AssumeAssertion(nullness): tPrime is a functional interface";
     assert qs.size() == ps.size();
 
     // A set of constraint formulas is formed with, for all i (1 <= i <= n), <Pi = Qi>.
