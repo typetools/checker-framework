@@ -423,8 +423,8 @@ def main(argv: list[str]) -> None:
             "https://ossrh-staging-api.central.sonatype.com/swagger-ui/#/default/manual_search_repositories\n"
             "Log in with the value for SONATYPE_NEXUS_{USERNAME,PASSWORD} "
             "in file ~/.gradle/gradle.properties .\n\n"
-            "After this step, to https://central.sonatype.com/publishing and make sure you see"
-            " a deployment org.checkerframework (via OSSRH Staging API)\n"
+            "After this step, go to https://central.sonatype.com/publishing and make sure you see"
+            " a deployment named org.checkerframework (via OSSRH Staging API)\n"
         )
         close_maven_artifacts_in_maven_central()
 
