@@ -285,20 +285,17 @@ public class VariableBounds {
             constraints.add(new Typing(parent, t, boundType, Kind.SUBTYPE));
           }
         }
-      }
-    }
-
-    if (kind == BoundKind.UPPER) {
-      // When a bound set contains a pair of bounds var <: S and var <: T, and there exists
-      // a supertype of S of the form G<S1, ..., Sn> and
-      // a supertype of T of the form G<T1,..., Tn> (for some generic class or interface, G),
-      // then for all i (1 <= i <= n), if Si and Ti are types (not wildcards),
-      // the constraint formula <Si = Ti> is implied.
-      if (boundType.isInferenceType() || boundType.isProper()) {
-        for (AbstractType t : bounds.get(BoundKind.UPPER)) {
-          // `boundType` has already been added to the upper bounds.
-          if (boundType != t && (t.isProper() || t.isInferenceType())) {
-            constraints.addAll(getConstraintsFromParameterized(boundType, t));
+        // When a bound set contains a pair of bounds var <: S and var <: T, and there exists
+        // a supertype of S of the form G<S1, ..., Sn> and
+        // a supertype of T of the form G<T1,..., Tn> (for some generic class or interface, G),
+        // then for all i (1 <= i <= n), if Si and Ti are types (not wildcards),
+        // the constraint formula <Si = Ti> is implied.
+        if (boundType.isInferenceType() || boundType.isProper()) {
+          for (AbstractType t : bounds.get(BoundKind.UPPER)) {
+            // `boundType` has already been added to the upper bounds.
+            if (boundType != t && (t.isProper() || t.isInferenceType())) {
+              constraints.addAll(getConstraintsFromParameterized(boundType, t));
+            }
           }
         }
       }
