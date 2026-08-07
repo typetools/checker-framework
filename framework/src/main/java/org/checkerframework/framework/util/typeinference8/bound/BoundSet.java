@@ -320,6 +320,8 @@ public class BoundSet implements ReductionResult {
    * defines this fixed point and further explains incorporation.
    *
    * @param newBounds bounds to incorporate
+   * @throws BugInCF if incorporation does not reach a fixed point within {@link
+   *     #MAX_INCORPORATION_STEPS} steps
    */
   public void incorporateToFixedPoint(final BoundSet newBounds) {
     this.containsFalse |= newBounds.containsFalse;
@@ -349,10 +351,13 @@ public class BoundSet implements ReductionResult {
       }
 
       containsFalse |= newBounds.containsFalse;
-      if (count >= MAX_INCORPORATION_STEPS) {
+      if (!containsFalse && count >= MAX_INCORPORATION_STEPS) {
+        // Throw rather than assert, so that this is reported as a
+        // "type.argument.inference.crashed" error for this one expression, rather than as an
+        // AssertionError that aborts the entire compilation.
         throw new BugInCF(
-            "Max incorporation steps (%d) reached without reaching a fixed point.",
-            MAX_INCORPORATION_STEPS);
+            "Max incorporation steps (%d) reached without reaching a fixed point: %s",
+            MAX_INCORPORATION_STEPS, context.pathToExpression.getLeaf());
       }
     } while (!containsFalse);
   }
