@@ -2,15 +2,16 @@
  * @test
  * @summary Test that defaulted types are stored in bytecode.
  *
+ * @requires jdk.version.major >= 24
  * @compile ../PersistUtil.java Driver.java ReferenceInfoUtil.java Constructors.java
  * @run main Driver Constructors
  */
 
-import static com.sun.tools.classfile.TypeAnnotation.TargetType.METHOD_FORMAL_PARAMETER;
-import static com.sun.tools.classfile.TypeAnnotation.TargetType.METHOD_RECEIVER;
-import static com.sun.tools.classfile.TypeAnnotation.TargetType.METHOD_TYPE_PARAMETER;
-import static com.sun.tools.classfile.TypeAnnotation.TargetType.METHOD_TYPE_PARAMETER_BOUND;
-import static com.sun.tools.classfile.TypeAnnotation.TargetType.THROWS;
+import static java.lang.classfile.TypeAnnotation.TargetType.METHOD_FORMAL_PARAMETER;
+import static java.lang.classfile.TypeAnnotation.TargetType.METHOD_RECEIVER;
+import static java.lang.classfile.TypeAnnotation.TargetType.METHOD_TYPE_PARAMETER;
+import static java.lang.classfile.TypeAnnotation.TargetType.METHOD_TYPE_PARAMETER_BOUND;
+import static java.lang.classfile.TypeAnnotation.TargetType.THROWS;
 
 public class Constructors {
 

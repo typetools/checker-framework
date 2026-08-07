@@ -1028,11 +1028,7 @@ subprojects {
           "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
         ]
         args += [
-          // checker/jtreg/nullness/defaultsPersist/ReferenceInfoUtil.java
-          // uses the jdk.jdeps module.
-          "-javacoptions:--add-modules jdk.jdeps",
-          "-javacoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
-          "-vmoptions:--add-opens=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
+          // checker/jtreg/nullness/PersistUtil.java uses the jdk.compiler module.
           "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
           "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
           "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
