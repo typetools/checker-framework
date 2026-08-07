@@ -150,11 +150,11 @@ public abstract class TypeConstraint implements Constraint {
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS
    * 18.5.2.2</a>.
    *
-   * @param tree an expression tree
-   * @param T the type of the right-hand side of the constraint
+   * @param tree an expression tree; its target type is {@code T}, the type of the right-hand side
+   *     of this constraint
    * @return the input variables for this constraint
    */
-  protected List<Variable> getInputVariablesForExpression(ExpressionTree tree, AbstractType T) {
+  protected List<Variable> getInputVariablesForExpression(ExpressionTree tree) {
     switch (tree.getKind()) {
       case LAMBDA_EXPRESSION -> {
         if (T.isUseOfVariable()) {
@@ -163,14 +163,12 @@ public abstract class TypeConstraint implements Constraint {
           LambdaExpressionTree lambdaTree = (LambdaExpressionTree) tree;
           List<Variable> inputs = new ArrayList<>();
           if (TreeUtils.isImplicitlyTypedLambda(lambdaTree)) {
-            List<AbstractType> params = this.T.getFunctionTypeParameterTypes();
-            if (params == null) {
+            List<Variable> paramVariables = functionTypeParameterVariables();
+            if (paramVariables == null) {
               // T is not a function type.
               return Collections.emptyList();
             }
-            for (AbstractType param : params) {
-              inputs.addAll(param.getInferenceVariables());
-            }
+            inputs.addAll(paramVariables);
           }
           AbstractType R = this.T.getFunctionTypeReturnType();
           if (R == null || R.getTypeKind() == TypeKind.NONE) {
@@ -189,43 +187,58 @@ public abstract class TypeConstraint implements Constraint {
         } else if (TreeUtils.isExactMethodReference((MemberReferenceTree) tree)) {
           return Collections.emptyList();
         } else {
-          List<AbstractType> params = this.T.getFunctionTypeParameterTypes();
-          if (params == null) {
+          List<Variable> paramVariables = functionTypeParameterVariables();
+          if (paramVariables == null) {
             // T is not a function type.
             return Collections.emptyList();
           }
-          List<Variable> inputs = new ArrayList<>();
-          for (AbstractType param : params) {
-            inputs.addAll(param.getInferenceVariables());
-          }
-          return inputs;
+          return paramVariables;
         }
       }
       case PARENTHESIZED -> {
-        return getInputVariablesForExpression(TreeUtils.withoutParens(tree), T);
+        return getInputVariablesForExpression(TreeUtils.withoutParens(tree));
       }
       case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) tree;
         List<Variable> inputs = new ArrayList<>();
-        inputs.addAll(getInputVariablesForExpression(conditional.getTrueExpression(), T));
-        inputs.addAll(getInputVariablesForExpression(conditional.getFalseExpression(), T));
+        inputs.addAll(getInputVariablesForExpression(conditional.getTrueExpression()));
+        inputs.addAll(getInputVariablesForExpression(conditional.getFalseExpression()));
         return inputs;
       }
       case SWITCH_EXPRESSION -> {
-        List<Variable> inputs2 = new ArrayList<>();
+        List<Variable> inputs = new ArrayList<>();
 
         SwitchExpressionScanner<Boolean, Void> scanner =
             new FunctionalSwitchExpressionScanner<>(
                 (ExpressionTree exTree, Void unused) ->
-                    inputs2.addAll(getInputVariablesForExpression(exTree, T)),
+                    inputs.addAll(getInputVariablesForExpression(exTree)),
                 (r1, r2) -> null);
         scanner.scanSwitchExpression((SwitchExpressionTree) tree, null);
-        return inputs2;
+        return inputs;
       }
       default -> {
         return Collections.emptyList();
       }
     }
+  }
+
+  /**
+   * Returns the inference variables mentioned by the parameter types of the function type of {@code
+   * T}, or null if {@code T} is not a functional interface type.
+   *
+   * @return the inference variables mentioned by the parameter types of the function type of {@code
+   *     T}, or null if {@code T} is not a functional interface type
+   */
+  protected @Nullable List<Variable> functionTypeParameterVariables() {
+    List<AbstractType> params = T.getFunctionTypeParameterTypes();
+    if (params == null) {
+      return null;
+    }
+    List<Variable> inputs = new ArrayList<>();
+    for (AbstractType param : params) {
+      inputs.addAll(param.getInferenceVariables());
+    }
+    return inputs;
   }
 
   /**
