@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
@@ -29,7 +30,7 @@ public class VariableBounds {
     /** {@code this <: other type } */
     UPPER,
     /** {@code this = other type } */
-    EQUAL;
+    EQUAL
   }
 
   /** The variable whose bounds this class represents. */
@@ -38,8 +39,8 @@ public class VariableBounds {
   /** The context. */
   private final Java8InferenceContext context;
 
-  /** The type to which this variable is instantiated. */
-  private ProperType instantiation = null;
+  /** The type to which this variable is instantiated, or null if it has no instantiation. */
+  private @Nullable ProperType instantiation = null;
 
   /**
    * Bounds on this variable. Stored as a map from kind of bound (upper, lower, equal) to a set of
@@ -112,11 +113,7 @@ public class VariableBounds {
     bounds.put(BoundKind.EQUAL, new LinkedHashSet<>(savedBounds.get(BoundKind.EQUAL)));
     bounds.put(BoundKind.UPPER, new LinkedHashSet<>(savedBounds.get(BoundKind.UPPER)));
     bounds.put(BoundKind.LOWER, new LinkedHashSet<>(savedBounds.get(BoundKind.LOWER)));
-    for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
-      if (t.isProper()) {
-        instantiation = (ProperType) t;
-      }
-    }
+    setInstantiationFromEqualBounds();
     qualifierBounds.clear();
     qualifierBounds.put(
         BoundKind.EQUAL, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.EQUAL)));
@@ -124,6 +121,31 @@ public class VariableBounds {
         BoundKind.UPPER, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.UPPER)));
     qualifierBounds.put(
         BoundKind.LOWER, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.LOWER)));
+  }
+
+  /**
+   * Sets {@code instantiation} to {@code type}.
+   *
+   * @param type the proper type to which this variable is instantiated; it must be a reference
+   *     type, because an inference variable can only be instantiated to a reference type
+   */
+  private void setInstantiation(ProperType type) {
+    assert !type.getTypeKind().isPrimitive()
+        : "instantiation of " + variable + " is the primitive type " + type;
+    instantiation = type;
+  }
+
+  /**
+   * Sets {@code instantiation} from a proper {@code EQUAL} bound, if this variable has one. If
+   * there is more than one such bound, the last one is used, matching {@link #addBound}, which
+   * overwrites the instantiation for each proper {@code EQUAL} bound that it adds.
+   */
+  private void setInstantiationFromEqualBounds() {
+    for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
+      if (t.isProper()) {
+        setInstantiation((ProperType) t);
+      }
+    }
   }
 
   /**
@@ -145,7 +167,8 @@ public class VariableBounds {
   }
 
   /**
-   * Adds {@code otherType} as bound against this variable.
+   * Adds {@code otherType} as bound against this variable. A proper {@code EQUAL} bound is boxed
+   * before it is added.
    *
    * @param parent the constraint whose reduction created this bound
    * @param kind the kind of bound
@@ -156,13 +179,20 @@ public class VariableBounds {
     if (otherType.isUseOfVariable() && ((UseOfVariable) otherType).getVariable() == variable) {
       return false;
     }
+    AbstractType boundType = otherType;
     if (kind == BoundKind.EQUAL && otherType.isProper()) {
-      instantiation = ((ProperType) otherType).boxType();
+      // An inference variable can only be instantiated to a reference type, so box the bound
+      // before storing it.  Storing the boxed type keeps the bound consistent with the
+      // instantiation, so that recomputing the instantiation from the bounds, as restore() does,
+      // yields a reference type.
+      ProperType boxedType = ((ProperType) otherType).boxType();
+      boundType = boxedType;
+      setInstantiation(boxedType);
     }
-    if (bounds.get(kind).add(otherType)) {
-      addConstraintsFromComplementaryBounds(parent, kind, otherType);
-      if (!otherType.ignoreAnnotations) {
-        Set<AbstractQualifier> aQuals = otherType.getQualifiers();
+    if (bounds.get(kind).add(boundType)) {
+      addConstraintsFromComplementaryBounds(parent, kind, boundType);
+      if (!boundType.ignoreAnnotations) {
+        Set<AbstractQualifier> aQuals = boundType.getQualifiers();
         addConstraintsFromComplementaryQualifierBounds(kind, aQuals);
       }
       return true;
@@ -480,11 +510,7 @@ public class VariableBounds {
     constraints.applyInstantiations();
 
     if (changed && instantiation == null) {
-      for (AbstractType bound : bounds.get(BoundKind.EQUAL)) {
-        if (bound.isProper()) {
-          instantiation = ((ProperType) bound).boxType();
-        }
-      }
+      setInstantiationFromEqualBounds();
     }
     return changed;
   }
@@ -505,11 +531,11 @@ public class VariableBounds {
   }
 
   /**
-   * Returns the instantiation of this variable.
+   * Returns the instantiation of this variable, or null if this variable has no instantiation.
    *
-   * @return the instantiation of this variable
+   * @return the instantiation of this variable, or null
    */
-  public ProperType getInstantiation() {
+  public @Nullable ProperType getInstantiation() {
     return instantiation;
   }
 
@@ -631,13 +657,15 @@ public class VariableBounds {
   }
 
   /**
-   * Returns the constraints generated when incorporating a capture bound. See JLS 18.3.2.
+   * Returns the constraints generated when incorporating a capture bound, or null if the
+   * incorporation implies the bound false. See JLS 18.3.2.
    *
    * @param Ai the captured type argument
    * @param Bi the bound of the type variable
-   * @return constraints generated when incorporating a capture bound
+   * @return constraints generated when incorporating a capture bound, or null if the bound false is
+   *     implied
    */
-  public ConstraintSet getWildcardConstraints(AbstractType Ai, AbstractType Bi) {
+  public @Nullable ConstraintSet getWildcardConstraints(AbstractType Ai, AbstractType Bi) {
     ConstraintSet constraintSet = new ConstraintSet();
     String source = "Constraint from wildcard bound.";
 
