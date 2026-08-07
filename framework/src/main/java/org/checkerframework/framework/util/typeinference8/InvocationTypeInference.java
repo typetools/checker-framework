@@ -209,7 +209,12 @@ public class InvocationTypeInference {
     Theta map =
         context.inferenceTypeFactory.createThetaForMethodReference(
             invocation, compileTimeDecl, context);
-    BoundSet b2 = createB2MethodRef(compileTimeDecl, target.getFunctionTypeParameterTypes(), map);
+    List<AbstractType> functionTypeParams = target.getFunctionTypeParameterTypes();
+    if (functionTypeParams == null) {
+      throw new BugInCF(
+          "Target of method reference is not a functional interface: %s: %s", invocation, target);
+    }
+    BoundSet b2 = createB2MethodRef(compileTimeDecl, functionTypeParams, map);
     AbstractType r = target.getFunctionTypeReturnType();
     BoundSet b3;
     if (r == null || r.getTypeKind() == TypeKind.VOID) {
@@ -276,7 +281,9 @@ public class InvocationTypeInference {
     }
 
     BoundSet newBounds = c.reduce(context);
-    assert !newBounds.containsFalse();
+    if (newBounds.containsFalse()) {
+      throw new BugInCF("Applicability constraints reduced to false for %s.", executableType);
+    }
     b1.incorporateToFixedPoint(newBounds);
 
     return b1;
@@ -329,7 +336,11 @@ public class InvocationTypeInference {
     }
 
     BoundSet newBounds = c.reduce(context);
-    assert !newBounds.containsFalse();
+    if (newBounds.containsFalse()) {
+      throw new BugInCF(
+          "Applicability constraints reduced to false for method reference %s.",
+          executableType.getMethodRef());
+    }
     b1.incorporateToFixedPoint(newBounds);
 
     return b1;
@@ -618,6 +629,12 @@ public class InvocationTypeInference {
           // An explicitly typed lambda expression whose body is an expression that is
           // not pertinent to applicability.
           AbstractType funcReturn = formalParameterType.getFunctionTypeReturnType();
+          if (funcReturn == null) {
+            // Either formalParameterType is not a functional interface, or its function type
+            // returns void. In the latter case the lambda has no result expressions, so it is
+            // pertinent to applicability.
+            return false;
+          }
           for (ExpressionTree result : TreeUtils.getReturnedExpressions(lambda)) {
             if (notPertinentToApplicability(result, funcReturn)) {
               return true;
