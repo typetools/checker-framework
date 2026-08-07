@@ -2370,7 +2370,7 @@ public final class TreeUtils {
 
   /**
    * Returns true if the given switch statement tree is an enhanced switch statement, as described
-   * in <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-14.html#jls-14.11.2">JSL
+   * in <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-14.html#jls-14.11.2">JLS
    * 14.11.2</a>.
    *
    * @param switchTree the switch statement to check
