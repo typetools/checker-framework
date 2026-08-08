@@ -1,13 +1,18 @@
 /*
  * @test
+ * @requires jdk.version.major >= 25
  * @summary Test that defaulted types are stored in bytecode.
  *
  * @compile  ../PersistUtil.java Driver.java ReferenceInfoUtil.java Classes.java
  * @run main Driver Classes
  */
 
-import static com.sun.tools.classfile.TypeAnnotation.TargetType.CLASS_TYPE_PARAMETER;
-import static com.sun.tools.classfile.TypeAnnotation.TargetType.CLASS_TYPE_PARAMETER_BOUND;
+// Keep in sync with ../../jdk24/defaultsPersist/Classes.java, which uses the
+// com.sun.tools.classfile API that was removed in Java 25.  This version uses the
+// java.lang.classfile API.
+
+import static java.lang.classfile.TypeAnnotation.TargetType.CLASS_TYPE_PARAMETER;
+import static java.lang.classfile.TypeAnnotation.TargetType.CLASS_TYPE_PARAMETER_BOUND;
 
 public class Classes {
 

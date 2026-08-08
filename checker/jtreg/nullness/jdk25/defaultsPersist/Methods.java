@@ -1,18 +1,24 @@
 /*
  * @test
+ * @requires jdk.version.major >= 25
  * @summary Test that defaulted types are stored in bytecode.
  *
- * @compile ../PersistUtil.java Driver.java ReferenceInfoUtil.java Constructors.java
- * @run main Driver Constructors
+ * @compile ../PersistUtil.java Driver.java ReferenceInfoUtil.java Methods.java
+ * @run main Driver Methods
  */
 
-import static com.sun.tools.classfile.TypeAnnotation.TargetType.METHOD_FORMAL_PARAMETER;
-import static com.sun.tools.classfile.TypeAnnotation.TargetType.METHOD_RECEIVER;
-import static com.sun.tools.classfile.TypeAnnotation.TargetType.METHOD_TYPE_PARAMETER;
-import static com.sun.tools.classfile.TypeAnnotation.TargetType.METHOD_TYPE_PARAMETER_BOUND;
-import static com.sun.tools.classfile.TypeAnnotation.TargetType.THROWS;
+// Keep in sync with ../../jdk24/defaultsPersist/Methods.java, which uses the
+// com.sun.tools.classfile API that was removed in Java 25.  This version uses the
+// java.lang.classfile API.
 
-public class Constructors {
+import static java.lang.classfile.TypeAnnotation.TargetType.METHOD_FORMAL_PARAMETER;
+import static java.lang.classfile.TypeAnnotation.TargetType.METHOD_RECEIVER;
+import static java.lang.classfile.TypeAnnotation.TargetType.METHOD_RETURN;
+import static java.lang.classfile.TypeAnnotation.TargetType.METHOD_TYPE_PARAMETER;
+import static java.lang.classfile.TypeAnnotation.TargetType.METHOD_TYPE_PARAMETER_BOUND;
+import static java.lang.classfile.TypeAnnotation.TargetType.THROWS;
+
+public class Methods {
 
   @TADescriptions({
     @TADescription(
@@ -29,20 +35,22 @@ public class Constructors {
         paramIndex = 0),
   })
   public String paramDefault1() {
-    return "Test(Object o) {}";
+    return "void pm1(Object o) {}";
   }
 
   @TADescriptions({
-    // Should there be defaults?
-    // @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull",
-    //     type = METHOD_RETURN),
-    // @TADescription(annotation =
-    //    "org/checkerframework/checker/initialization/qual/Initialized", type = METHOD_RETURN),
-    // @TADescription(annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
-    //     type = METHOD_RETURN),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/NonNull",
+        type = METHOD_RETURN),
+    @TADescription(
+        annotation = "org/checkerframework/checker/initialization/qual/Initialized",
+        type = METHOD_RETURN),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = METHOD_RETURN),
   })
   public String retDefault1() {
-    return "Test() {}";
+    return "Object rm1() { return new Object(); }";
   }
 
   @TADescriptions({
@@ -60,7 +68,7 @@ public class Constructors {
         typeIndex = 0),
   })
   public String throwsDefault1() {
-    return "Test() throws Throwable {}";
+    return "void tm1() throws Throwable {}";
   }
 
   @TADescriptions({
@@ -75,7 +83,7 @@ public class Constructors {
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
         type = THROWS,
-        typeIndex = 0),
+        typeIndex = 0), // from KeyFor
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/NonNull",
         type = THROWS,
@@ -90,7 +98,7 @@ public class Constructors {
         typeIndex = 1),
   })
   public String throwsDefault2() {
-    return "Test() throws ArrayIndexOutOfBoundsException, NullPointerException {}";
+    return "void tm2() throws ArrayIndexOutOfBoundsException, NullPointerException {}";
   }
 
   @TADescriptions({
@@ -104,9 +112,8 @@ public class Constructors {
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
         type = METHOD_RECEIVER),
   })
-  @TestClass("Outer$Inner")
   public String recvDefault1() {
-    return "class Outer {" + "  class Inner {" + "    Inner(Outer Outer.this) {}" + "  }" + "}";
+    return "void rd1(Test this) {}";
   }
 
   @TADescriptions({
@@ -139,7 +146,7 @@ public class Constructors {
         boundIndex = 0),
   })
   public String typeParams1() {
-    return "<M1> Test(M1 p) {}";
+    return "<M1> void foo(M1 p) {}";
   }
 
   @TADescriptions({
@@ -172,7 +179,7 @@ public class Constructors {
         boundIndex = 0),
   })
   public String typeParams2() {
-    return "<M1 extends Object> Test(M1 p) {}";
+    return "<M1 extends Object> void foo(M1 p) {}";
   }
 
   @TADescriptions({
@@ -205,6 +212,6 @@ public class Constructors {
         boundIndex = 1),
   })
   public String typeParams3() {
-    return "<M2 extends Comparable<M2>> Test(M2 p) {}";
+    return "<M2 extends Comparable<M2>> void bar(M2 p) {}";
   }
 }

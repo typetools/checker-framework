@@ -1,3 +1,6 @@
+// Keep in sync with ../../jdk25/defaultsPersist/ReferenceInfoUtil.java, which uses the
+// java.lang.classfile API in place of the com.sun.tools.classfile API that was removed in Java 25.
+
 // Keep somewhat in sync with
 // langtools/test/tools/javac/annotations/typeAnnotations/referenceinfos/ReferenceInfoUtil.java
 // Adapted to handle the same type qualifier appearing multiple times.
@@ -146,7 +149,7 @@ public class ReferenceInfoUtil {
     }
 
     for (int i = 0; i < length; i++) {
-      if (areEquals(a[i], a2[i])) {
+      if (!areEquals(a[i], a2[i])) {
         return false;
       }
     }
@@ -255,7 +258,7 @@ class ComparisonException extends RuntimeException {
 
   public String toString() {
     return String.format(
-        "%s%n  Expected (%d): %s%s  Found (%d): %s",
+        "%s%n  Expected (%d): %s%n  Found (%d): %s",
         super.toString(), expected.size(), expected, found.size(), found);
   }
 }

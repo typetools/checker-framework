@@ -1,10 +1,15 @@
 /*
  * @test
+ * @requires jdk.version.major >= 25
  * @summary Test that inherited declaration annotations are stored in bytecode.
  *
  * @compile ../PersistUtil.java Driver.java ReferenceInfoUtil.java Extends.java Super.java
  * @run main Driver Extends
  */
+
+// Keep in sync with ../../jdk24/inheritDeclAnnoPersist/Extends.java, which uses the
+// com.sun.tools.classfile API that was removed in Java 25.  This version uses the
+// java.lang.classfile API.
 
 public class Extends {
 

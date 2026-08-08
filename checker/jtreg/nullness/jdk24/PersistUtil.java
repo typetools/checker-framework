@@ -1,3 +1,6 @@
+// Keep in sync with ../jdk25/PersistUtil.java, which uses the java.lang.classfile API in place of
+// the com.sun.tools.classfile API that was removed in Java 25.
+
 // Note that "-processor org/checkerframework/checker.nullness.NullnessChecker"
 // is added to the invocation of the compiler!
 // TODO: add a @Processor method-annotation to parameterize
