@@ -2,7 +2,6 @@
 // is added to the invocation of the compiler!
 // TODO: add a @Processor method-annotation to parameterize
 
-import com.sun.tools.classfile.ClassFile;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -13,6 +12,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.classfile.ClassFile;
+import java.lang.classfile.ClassModel;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -33,10 +34,10 @@ public class PersistUtil {
     }
   }
 
-  public static ClassFile compileAndReturn(String fullFile, String testClass) throws Exception {
+  public static ClassModel compileAndReturn(String fullFile, String testClass) throws Exception {
     File source = writeTestFile(fullFile);
     File clazzFile = compileTestFile(source, testClass);
-    return ClassFile.read(clazzFile);
+    return ClassFile.of().parse(clazzFile.toPath());
   }
 
   public static File writeTestFile(String fullFile) throws IOException {

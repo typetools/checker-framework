@@ -1,13 +1,13 @@
 // Keep somewhat in sync with
 // ../defaultsPersist/Driver.java and ../PersistUtil.
 
-import com.sun.tools.classfile.Annotation;
-import com.sun.tools.classfile.ClassFile;
 import java.io.PrintStream;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.classfile.Annotation;
+import java.lang.classfile.ClassModel;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,8 +45,8 @@ public class Driver {
       try {
         String compact = (String) method.invoke(object);
         String fullFile = PersistUtil.wrap(compact);
-        ClassFile cf = PersistUtil.compileAndReturn(fullFile, testClass);
-        List<Annotation> actual = ReferenceInfoUtil.extendedAnnotationsOf(cf);
+        ClassModel cm = PersistUtil.compileAndReturn(fullFile, testClass);
+        List<Annotation> actual = ReferenceInfoUtil.extendedAnnotationsOf(cm);
         String diagnostic =
             String.join(
                 "; ",
@@ -54,7 +54,7 @@ public class Driver {
                 "compact=" + compact,
                 "fullFile=" + fullFile,
                 "testClass=" + testClass);
-        ReferenceInfoUtil.compare(expected, actual, cf, diagnostic);
+        ReferenceInfoUtil.compare(expected, actual, diagnostic);
         out.println("PASSED:  " + method.getName());
         ++passed;
       } catch (Throwable e) {
