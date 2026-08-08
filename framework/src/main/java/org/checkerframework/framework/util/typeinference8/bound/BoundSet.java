@@ -363,6 +363,15 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
+   * Incorporates this bound set into itself until it reaches a fixed point. Use this method after
+   * adding bounds directly to the variables of this bound set, rather than via a {@link BoundSet}
+   * that can be passed to {@link #incorporateToFixedPoint}.
+   */
+  public void reachFixedPoint() {
+    incorporateToFixedPoint(new BoundSet(context));
+  }
+
+  /**
    * Remove any capture bound that mentions any variable in {@code as}.
    *
    * @param as a set of variables

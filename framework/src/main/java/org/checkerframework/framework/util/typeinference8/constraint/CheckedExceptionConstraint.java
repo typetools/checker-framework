@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -55,55 +54,47 @@ public class CheckedExceptionConstraint extends TypeConstraint {
         : Kind.METHOD_REF_EXCEPTION;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>The input variables of a checked exception constraint are those of the corresponding
+   * expression constraint, plus the inference variables mentioned by the function type's return
+   * type.
+   */
   @Override
   public List<Variable> getInputVariables() {
+    if (T.isUseOfVariable()) {
+      return Collections.singletonList(((UseOfVariable) T).getVariable());
+    }
+
+    List<Variable> inputs = new ArrayList<>();
     if (getKind() == Kind.LAMBDA_EXCEPTION) {
-      if (T.isUseOfVariable()) {
-        return Collections.singletonList(((UseOfVariable) T).getVariable());
-      } else {
-        LambdaExpressionTree lambdaTree = (LambdaExpressionTree) expression;
-        List<Variable> inputs = new ArrayList<>();
-        if (TreeUtils.isImplicitlyTypedLambda(lambdaTree)) {
-          List<AbstractType> params = this.T.getFunctionTypeParameterTypes();
-          if (params == null) {
-            // T is not a function type.
-            return Collections.emptyList();
-          }
-          for (AbstractType param : params) {
-            inputs.addAll(param.getInferenceVariables());
-          }
-        }
-        AbstractType R = this.T.getFunctionTypeReturnType();
-        if (R == null || R.getTypeKind() == TypeKind.NONE) {
-          return inputs;
-        }
-        inputs.addAll(R.getInferenceVariables());
-        return inputs;
-      }
-    } else if (getKind() == Kind.METHOD_REF_EXCEPTION) {
-      if (T.isUseOfVariable()) {
-        return Collections.singletonList(((UseOfVariable) T).getVariable());
-      } else if (TreeUtils.isExactMethodReference((MemberReferenceTree) expression)) {
-        return Collections.emptyList();
-      } else {
-        List<AbstractType> params = this.T.getFunctionTypeParameterTypes();
-        if (params == null) {
+      if (TreeUtils.isImplicitlyTypedLambda((LambdaExpressionTree) expression)) {
+        List<Variable> paramVariables = functionTypeParameterVariables();
+        if (paramVariables == null) {
           // T is not a function type.
           return Collections.emptyList();
         }
-        List<Variable> inputs = new ArrayList<>();
-        for (AbstractType param : params) {
-          inputs.addAll(param.getInferenceVariables());
-        }
-        AbstractType R = this.T.getFunctionTypeReturnType();
-        if (R == null || R.getTypeKind() == TypeKind.NONE) {
-          return inputs;
-        }
-        inputs.addAll(R.getInferenceVariables());
-        return inputs;
+        inputs.addAll(paramVariables);
       }
+    } else { // getKind() == Kind.METHOD_REF_EXCEPTION
+      if (TreeUtils.isExactMethodReference((MemberReferenceTree) expression)) {
+        return Collections.emptyList();
+      }
+      List<Variable> paramVariables = functionTypeParameterVariables();
+      if (paramVariables == null) {
+        // T is not a function type.
+        return Collections.emptyList();
+      }
+      inputs.addAll(paramVariables);
     }
-    return getInputVariablesForExpression(expression);
+
+    AbstractType R = this.T.getFunctionTypeReturnType();
+    if (R != null) {
+      // R is null if the function type's return type is void.
+      inputs.addAll(R.getInferenceVariables());
+    }
+    return inputs;
   }
 
   @Override

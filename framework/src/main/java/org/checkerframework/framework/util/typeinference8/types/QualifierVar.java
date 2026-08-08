@@ -65,6 +65,8 @@ public class QualifierVar extends AbstractQualifier {
       return false;
     }
     QualifierVar that = (QualifierVar) o;
+    // `id` is unique only within one inference problem, so `invocation` and `polyQualifier` are
+    // also compared, to distinguish variables that were created for different inference problems.
     return id == that.id
         && Objects.equals(invocation, that.invocation)
         && Objects.equals(polyQualifier, that.polyQualifier);
@@ -151,6 +153,11 @@ public class QualifierVar extends AbstractQualifier {
     return constraints;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>If no bound determines the instantiation of this variable, this method returns null.
+   */
   @Override
   @Nullable AnnotationMirror getInstantiation() {
     if (instantiation == null) {
@@ -186,6 +193,7 @@ public class QualifierVar extends AbstractQualifier {
           }
         }
       }
+      instantiation = glb;
       return glb;
     }
     return instantiation;
