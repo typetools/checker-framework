@@ -157,6 +157,11 @@ public class MethodCall extends JavaExpression {
   }
 
   @Override
+  public boolean containsAsReceiver(JavaExpression other) {
+    return syntacticEquals(other) || receiver.containsAsReceiver(other);
+  }
+
+  @Override
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
     if (receiver.containsModifiableAliasOf(store, other)) {
       return true;

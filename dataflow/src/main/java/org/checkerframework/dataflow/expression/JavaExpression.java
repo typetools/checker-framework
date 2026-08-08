@@ -45,6 +45,7 @@ import org.checkerframework.dataflow.cfg.node.UnaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -217,6 +218,51 @@ public abstract class JavaExpression {
       List<? extends @Nullable JavaExpression> list, JavaExpression other) {
     return list.stream()
         .anyMatch(je -> je != null && je.containsSyntacticEqualJavaExpression(other));
+  }
+
+  /**
+   * Returns true if the given expression is equal to this or equal to the receiver of this,
+   * recursively. For example, {@code a.f.g} contains {@code a.f} and {@code a} as receivers.
+   *
+   * <p>This relation is reflexive and transitive, but <b>not symmetric</b>: {@code a.f} contains
+   * {@code a} as a receiver, but not the converse. Callers must therefore pass the arguments in the
+   * intended order, and must not rely on it as an equivalence relation.
+   *
+   * @param receiver a JavaExpression that might be the receiver of this
+   * @return true if the given expression is equal to this or equal to the receiver of this,
+   *     recursively
+   */
+  @Pure
+  public boolean containsAsReceiver(JavaExpression receiver) {
+    return syntacticEquals(receiver);
+  }
+
+  /**
+   * Returns the given expression with every use of {@code super} replaced by {@code this}. The two
+   * denote the same object, and a {@link FieldAccess} or {@link MethodCall} stores the element it
+   * refers to, so the result denotes exactly what the argument does.
+   *
+   * <p>This is useful for an expression that was view-adapted to a call site of the form {@code
+   * super.m()}, which yields a {@link SuperReference} even though the caller would write the same
+   * object as {@code this}. Rewriting makes such an expression comparable to expressions written in
+   * the caller, which never mention the callee's {@code super}.
+   *
+   * @param expr an expression
+   * @return the expression, with every use of {@code super} replaced by {@code this}
+   */
+  @SideEffectFree
+  public static JavaExpression superToThis(JavaExpression expr) {
+    if (!expr.containsOfClass(SuperReference.class)) {
+      return expr;
+    }
+    JavaExpressionConverter converter =
+        new JavaExpressionConverter() {
+          @Override
+          protected JavaExpression visitSuperReference(SuperReference superExpr, Void unused) {
+            return new ThisReference(superExpr.getType());
+          }
+        };
+    return converter.convert(expr);
   }
 
   /**

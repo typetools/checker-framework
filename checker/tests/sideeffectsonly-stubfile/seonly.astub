@@ -1,0 +1,12 @@
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
+
+package sideeffectsonly.stubfile;
+
+class Library {
+    // `noSuchField` does not exist, so this expression cannot be parsed.  Because `Library` is
+    // not compiled from source, the annotation is never checked at its declaration; the error
+    // surfaces only at a call site.
+    @SideEffectsOnly("this.noSuchField") void unparseable();
+
+    @SideEffectsOnly("this") void parseable();
+}

@@ -1,6 +1,7 @@
 import java.util.Iterator;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
@@ -102,11 +103,13 @@ public class DefaultAnnotation {
     }
 
     @Override
+    @SideEffectsOnly("this")
     public void remove() {
       throw new UnsupportedOperationException();
     }
 
     @Override
+    @SideEffectsOnly("this")
     public String next() {
       throw new UnsupportedOperationException();
     }
