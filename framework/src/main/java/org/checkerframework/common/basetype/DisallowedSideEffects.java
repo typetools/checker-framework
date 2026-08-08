@@ -3,27 +3,50 @@ package org.checkerframework.common.basetype;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TryTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.IntersectionType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.expression.ArrayAccess;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
@@ -54,10 +77,28 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   protected final List<JavaExpression> sideEffectsOnlyExpressionsFromAnnotation;
 
   /**
+   * Alias-graph nodes for {@link #sideEffectsOnlyExpressionsFromAnnotation}. Computed once, so that
+   * each such expression is one node even if it is not {@link #isStable stable}.
+   */
+  protected final List<AliasNode> sideEffectsOnlyNodesFromAnnotation;
+
+  /**
    * Groups expressions into sets, where all the elements in each set might be aliased to one other.
    */
-  protected final UnionFind<JavaExpression> aliasedExpressions =
-      new UnionFind<>(null, JavaExpression::containsAsReceiver);
+  protected final UnionFind<AliasNode> aliasedExpressions =
+      new UnionFind<>(null, DisallowedSideEffects::isReachedThrough);
+
+  /**
+   * The number of alias-graph nodes that {@link #aliasNode} has created for expressions that are
+   * not {@link #isStable stable}. Used to give each such node a distinct identity.
+   */
+  private int freshValueCount = 0;
+
+  /**
+   * The local variables that always hold an object that the method being checked created. Modifying
+   * such an object is not a side effect that is visible to the caller.
+   */
+  protected final Set<VariableElement> freshLocals;
 
   /** The checker to use. */
   protected final BaseTypeChecker checker;
@@ -76,22 +117,31 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    *
    * @param sideEffectsOnlyExpressions the arguments/values of the {@link SideEffectsOnly}
    *     annotation of the method being checked
+   * @param freshLocals the local variables that always hold an object that the method being checked
+   *     created
    * @param checker the checker to use
    * @param sideEffectsOnlyValueElement the {@code SideEffectsOnly.value} argument/element
    * @param assumeSideEffectFree true if every method should be assumed to be side-effect-free
    * @param assumePureGetters true if every getter should be assumed to be side-effect-free
    */
+  @SuppressWarnings("this-escape") // `aliasNode` reads only fields that are already initialized
   protected DisallowedSideEffects(
       List<JavaExpression> sideEffectsOnlyExpressions,
+      Set<VariableElement> freshLocals,
       BaseTypeChecker checker,
       ExecutableElement sideEffectsOnlyValueElement,
       boolean assumeSideEffectFree,
       boolean assumePureGetters) {
     this.sideEffectsOnlyExpressionsFromAnnotation = sideEffectsOnlyExpressions;
+    this.freshLocals = freshLocals;
     this.checker = checker;
     this.sideEffectsOnlyValueElement = sideEffectsOnlyValueElement;
     this.assumeSideEffectFree = assumeSideEffectFree;
     this.assumePureGetters = assumePureGetters;
+    this.sideEffectsOnlyNodesFromAnnotation = new ArrayList<>(sideEffectsOnlyExpressions.size());
+    for (JavaExpression sideEffectsOnlyExpression : sideEffectsOnlyExpressions) {
+      sideEffectsOnlyNodesFromAnnotation.add(aliasNode(sideEffectsOnlyExpression));
+    }
   }
 
   /**
@@ -117,6 +167,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       boolean assumeSideEffectFree,
       boolean assumePureGetters) {
     List<JavaExpression> seOnlyExpressions = sideEffectsOnlyExpressions;
+    CharSequence methodName = methodTree.getName();
     if (TreeUtils.isConstructor(methodTree)) {
       // A constructor implicitly side-effects the object under construction, which did not exist
       // before the call, so modifying it is not a side effect that is visible to the caller.  The
@@ -125,10 +176,12 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       ExecutableElement constructorElt = TreeUtils.elementFromDeclaration(methodTree);
       seOnlyExpressions = new ArrayList<>(sideEffectsOnlyExpressions);
       seOnlyExpressions.add(new ThisReference(constructorElt.getEnclosingElement().asType()));
+      methodName = constructorName(constructorElt);
     }
     DisallowedSideEffects scanner =
         new DisallowedSideEffects(
             seOnlyExpressions,
+            freshLocals(statement.getLeaf()),
             checker,
             sideEffectsOnlyValueElement,
             assumeSideEffectFree,
@@ -137,7 +190,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
 
     for (IPair<Tree, JavaExpression> s : scanner.disallowedSideEffects) {
       checker.reportError(
-          s.first, "purity.incorrect.sideeffectsonly", methodTree.getName(), s.second.toString());
+          s.first, "purity.incorrect.sideeffectsonly", methodName, s.second.toString());
     }
   }
 
@@ -236,6 +289,182 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     return result;
   }
 
+  // An enhanced `for` loop and a try-with-resources statement contain calls that appear only after
+  // the compiler desugars them.  `visitEnhancedForLoop` and `visitTry` check those calls.
+
+  @Override
+  public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void aVoid) {
+    if (assumeSideEffectFree) {
+      // The user asked that every callee be assumed to modify nothing.
+      return super.visitEnhancedForLoop(node, aVoid);
+    }
+    ExpressionTree iterableExpr = node.getExpression();
+    TypeMirror iterableType = TreeUtils.typeOf(iterableExpr);
+    if (iterableType.getKind() != TypeKind.ARRAY) {
+      // The loop is compiled to
+      //   `Iterator<T> i = expr.iterator(); while (i.hasNext()) { T x = i.next(); ... }`.
+      // The loop creates the iterator, so no caller can observe a modification of it; only what
+      // `iterator()` modifies is visible outside the method.
+      ExecutableElement iteratorMethod = noArgumentMethod(iterableType, "iterator");
+      if (iteratorMethod == null) {
+        checker.reportError(node, "purity.unknown.sideeffectsonly", "iterator");
+        return super.visitEnhancedForLoop(node, aVoid);
+      }
+      checkImplicitCall(node, iteratorMethod, expressionFromTree(iterableExpr));
+      TypeMirror iteratorType = iteratorMethod.getReturnType();
+      for (String iteratorMethodName : new String[] {"hasNext", "next"}) {
+        ExecutableElement iteratorElem = noArgumentMethod(iteratorType, iteratorMethodName);
+        if (iteratorElem == null) {
+          checker.reportError(node, "purity.unknown.sideeffectsonly", iteratorMethodName);
+        } else {
+          checkImplicitCall(node, iteratorElem, null);
+        }
+      }
+    }
+    return super.visitEnhancedForLoop(node, aVoid);
+  }
+
+  @Override
+  public Void visitTry(TryTree node, Void aVoid) {
+    if (assumeSideEffectFree) {
+      // The user asked that every callee be assumed to modify nothing.
+      return super.visitTry(node, aVoid);
+    }
+    for (Tree resource : node.getResources()) {
+      // Each resource's `close()` method is called when the block exits.
+      JavaExpression resourceExpr;
+      if (resource instanceof VariableTree variableTree) {
+        resourceExpr = JavaExpression.fromVariableTree(variableTree);
+      } else {
+        resourceExpr = expressionFromTree((ExpressionTree) resource);
+      }
+      ExecutableElement closeMethod = noArgumentMethod(TreeUtils.typeOf(resource), "close");
+      if (closeMethod == null) {
+        checker.reportError(resource, "purity.unknown.sideeffectsonly", "close");
+      } else {
+        checkImplicitCall(resource, closeMethod, resourceExpr);
+      }
+    }
+    return super.visitTry(node, aVoid);
+  }
+
+  /**
+   * Checks a call that the compiler introduces when it desugars the source code, and records any
+   * side effect of it that is beyond what the {@link SideEffectsOnly} annotation of the method
+   * being checked permits.
+   *
+   * <p>This method requires that {@code invokedElem} takes no arguments, so that its annotation's
+   * expressions can mention no formal parameter and only {@code this} needs to be view-adapted.
+   *
+   * @param node the tree to report an error at
+   * @param invokedElem the implicitly invoked method, which takes no arguments
+   * @param receiver the receiver of the call, or null if the receiver is an object that the
+   *     desugaring created and that therefore no caller can refer to
+   */
+  protected void checkImplicitCall(
+      Tree node, ExecutableElement invokedElem, @Nullable JavaExpression receiver) {
+    if (assumeSideEffectFree || (assumePureGetters && ElementUtils.isGetter(invokedElem))) {
+      // The user asked that the callee be assumed to modify nothing.
+      return;
+    }
+    AnnotatedTypeFactory atypeFactory = checker.getTypeFactory();
+    if (atypeFactory.getDeclAnnotation(invokedElem, Pure.class) != null
+        || atypeFactory.getDeclAnnotation(invokedElem, SideEffectFree.class) != null) {
+      // The callee modifies nothing.
+      return;
+    }
+
+    AnnotationMirror seOnlyAnnotation =
+        atypeFactory.getDeclAnnotation(invokedElem, SideEffectsOnly.class);
+    if (seOnlyAnnotation == null) {
+      // The callee has no side-effect annotation, so it might modify arbitrary state.
+      checker.reportError(node, "purity.unknown.sideeffectsonly", invokedElem.getSimpleName());
+      return;
+    }
+
+    List<String> exprStrings =
+        AnnotationUtils.getElementValueArray(
+            seOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
+    for (String exprString : exprStrings) {
+      JavaExpression atDeclaration;
+      try {
+        atDeclaration = StringToJavaExpression.atMethodDecl(exprString, invokedElem, checker);
+      } catch (JavaExpressionParseException ex) {
+        // The parse error itself is reported at the callee's declaration, by
+        // BaseTypeVisitor.checkPurityAnnotations.
+        checker.reportError(node, "purity.unknown.sideeffectsonly", invokedElem.getSimpleName());
+        return;
+      }
+      if (receiver == null) {
+        if (atDeclaration.containedOfClass(ThisReference.class) != null) {
+          // The expression is the object that the desugaring created, or is reached through it.
+          continue;
+        }
+      } else {
+        atDeclaration = atReceiver(atDeclaration, receiver);
+      }
+      if (isDisallowedSideEffectedExpression(atDeclaration)) {
+        disallowedSideEffects.add(IPair.of(node, atDeclaration));
+      }
+    }
+  }
+
+  /**
+   * Returns the given expression with every use of {@code this} replaced by the given receiver.
+   * This is view adaptation for a call that takes no arguments, so no formal parameter needs to be
+   * replaced.
+   *
+   * @param expr an expression written at a method's declaration
+   * @param receiver the receiver of a call to that method
+   * @return the expression, written at the call site
+   */
+  protected static JavaExpression atReceiver(JavaExpression expr, JavaExpression receiver) {
+    if (!expr.containsOfClass(ThisReference.class)) {
+      return expr;
+    }
+    JavaExpressionConverter converter =
+        new JavaExpressionConverter() {
+          @Override
+          protected JavaExpression visitThisReference(ThisReference thisExpr, Void unused) {
+            return receiver;
+          }
+        };
+    return converter.convert(expr);
+  }
+
+  /**
+   * Returns the no-argument method with the given name that a call on an expression of the given
+   * type invokes, or null if there is no such method.
+   *
+   * @param receiverType the type of the receiver of the call
+   * @param methodName the name of the method
+   * @return the invoked method, or null if the type has no such method
+   */
+  protected @Nullable ExecutableElement noArgumentMethod(
+      TypeMirror receiverType, String methodName) {
+    TypeMirror upperBound = TypesUtils.upperBound(receiverType);
+    if (upperBound instanceof IntersectionType intersectionType) {
+      for (TypeMirror bound : intersectionType.getBounds()) {
+        ExecutableElement result = noArgumentMethod(bound, methodName);
+        if (result != null) {
+          return result;
+        }
+      }
+      return null;
+    }
+    if (!(upperBound instanceof DeclaredType declaredType)) {
+      return null;
+    }
+    Elements elements = checker.getElementUtils();
+    for (ExecutableElement method :
+        ElementFilter.methodsIn(elements.getAllMembers((TypeElement) declaredType.asElement()))) {
+      if (method.getParameters().isEmpty() && method.getSimpleName().contentEquals(methodName)) {
+        return method;
+      }
+    }
+    return null;
+  }
+
   @Override
   public Void visitNewClass(NewClassTree node, Void aVoid) {
     ExecutableElement constructorElt = TreeUtils.elementFromUse(node);
@@ -324,7 +553,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * @param constructorElt a constructor
    * @return the simple name of the class that the constructor constructs
    */
-  private CharSequence constructorName(ExecutableElement constructorElt) {
+  private static CharSequence constructorName(ExecutableElement constructorElt) {
     TypeElement classElt = (TypeElement) constructorElt.getEnclosingElement();
     Name simpleName = classElt.getSimpleName();
     if (!simpleName.isEmpty()) {
@@ -343,6 +572,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    *
    * <ul>
    *   <li>The expression's value is modifiable by other code.
+   *   <li>The expression is not an object that the method being checked created, in the sense of
+   *       {@link #isFreshlyAllocated}.
    *   <li>The expression is not covered by the {@link SideEffectsOnly} annotation, in the sense of
    *       {@link #isCoveredByAnnotation}.
    * </ul>
@@ -356,7 +587,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    *     {@link SideEffectsOnly} annotation
    */
   protected boolean isDisallowedSideEffectedExpression(JavaExpression expr) {
-    return expr.isModifiableByOtherCode() && !isCoveredByAnnotation(expr);
+    return expr.isModifiableByOtherCode()
+        && !isFreshlyAllocated(expr)
+        && !isCoveredByAnnotation(expr);
   }
 
   /**
@@ -366,6 +599,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * <ul>
    *   <li>The expression is assignable by other code; equivalently, the assignment is visible
    *       outside the method being checked. (Assigning to a local variable is not.)
+   *   <li>The expression is not part of an object that the method being checked created, in the
+   *       sense of {@link #isPartOfFreshlyAllocated}.
    *   <li>The expression is not covered by the {@link SideEffectsOnly} annotation, in the sense of
    *       {@link #isCoveredByAnnotation}.
    * </ul>
@@ -375,7 +610,50 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    *     {@link SideEffectsOnly} annotation
    */
   protected boolean isDisallowedAssignmentTarget(JavaExpression expr) {
-    return expr.isAssignableByOtherCode() && !isCoveredByAnnotation(expr);
+    return expr.isAssignableByOtherCode()
+        && !isPartOfFreshlyAllocated(expr)
+        && !isCoveredByAnnotation(expr);
+  }
+
+  /**
+   * Returns true if the given expression is a local variable that always holds an object that the
+   * method being checked created. The object did not exist before the call, so modifying it is not
+   * a side effect that is visible to the caller.
+   *
+   * <p>If the object escapes -- if the method stores it into pre-existing state -- then that store
+   * is itself a side effect, which is reported unless the annotation covers it. If it is covered,
+   * then so is every modification of the object, because the object is then reached through a
+   * listed expression.
+   *
+   * @param expr an expression
+   * @return true if the given expression is a local variable holding an object that this method
+   *     created
+   */
+  protected boolean isFreshlyAllocated(JavaExpression expr) {
+    return expr instanceof LocalVariable localVariable
+        && freshLocals.contains(localVariable.getElement());
+  }
+
+  /**
+   * Returns true if the given expression is a field or an array element of an object that the
+   * method being checked created. Assigning to it is not visible to the caller.
+   *
+   * <p>Only the object's own fields and elements qualify. A field of a field does not: {@code
+   * fresh.f} may be an object that existed before the call, so assigning to {@code fresh.f.g} is
+   * visible to the caller.
+   *
+   * @param expr an expression
+   * @return true if the given expression is a field or array element of an object that this method
+   *     created
+   */
+  protected boolean isPartOfFreshlyAllocated(JavaExpression expr) {
+    if (expr instanceof FieldAccess fieldAccess) {
+      return isFreshlyAllocated(fieldAccess.getReceiver());
+    } else if (expr instanceof ArrayAccess arrayAccess) {
+      return isFreshlyAllocated(arrayAccess.getArray());
+    } else {
+      return false;
+    }
   }
 
   /**
@@ -386,16 +664,96 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * @return true if the given expression is covered by the {@link SideEffectsOnly} annotation
    */
   protected boolean isCoveredByAnnotation(JavaExpression expr) {
-    aliasedExpressions.add(expr);
-    for (JavaExpression seOnlyExpr : sideEffectsOnlyExpressionsFromAnnotation) {
-      aliasedExpressions.add(seOnlyExpr);
+    AliasNode node = aliasNode(expr);
+    aliasedExpressions.add(node);
+    for (AliasNode seOnlyNode : sideEffectsOnlyNodesFromAnnotation) {
+      aliasedExpressions.add(seOnlyNode);
       // Argument order matters: `test` lifts the asymmetric `containsAsReceiver` relation over
       // the two elements' alias sets, and `expr` must be the potential sub-expression.
-      if (aliasedExpressions.test(expr, seOnlyExpr)) {
+      if (aliasedExpressions.test(node, seOnlyNode)) {
         return true;
       }
     }
     return false;
+  }
+
+  /**
+   * Returns the alias-graph node for one occurrence of the given expression.
+   *
+   * <p>All the nodes for a given {@link #isStable stable} expression are equal, because every
+   * evaluation of such an expression yields the same location or value. Every node for any other
+   * expression is distinct, because two evaluations may yield unrelated values. Without that
+   * distinction, {@link UnionFind}, which groups elements that are {@code equals()}, would put
+   * {@code x} and {@code y} in a single alias set in {@code List<String> x = mk(); List<String> y =
+   * mk();}.
+   *
+   * @param expression an expression
+   * @return the alias-graph node for this occurrence of the expression
+   */
+  protected AliasNode aliasNode(JavaExpression expression) {
+    return new AliasNode(expression, isStable(expression) ? 0 : ++freshValueCount);
+  }
+
+  /**
+   * Returns true if every evaluation of the given expression yields the same location or value: the
+   * expression is a variable, a field access, an array access, a literal, or a class name,
+   * recursively. Any other expression, such as a method call or an object creation, may yield an
+   * unrelated value each time it is evaluated.
+   *
+   * @param expression an expression
+   * @return true if every evaluation of the expression yields the same location or value
+   */
+  protected static boolean isStable(JavaExpression expression) {
+    if (expression instanceof LocalVariable
+        || expression instanceof FormalParameter
+        || expression instanceof ThisReference
+        || expression instanceof SuperReference
+        || expression instanceof ClassName
+        || expression instanceof ValueLiteral) {
+      return true;
+    } else if (expression instanceof FieldAccess fieldAccess) {
+      return isStable(fieldAccess.getReceiver());
+    } else if (expression instanceof ArrayAccess arrayAccess) {
+      return isStable(arrayAccess.getArray()) && isStable(arrayAccess.getIndex());
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Returns true if the given expression's value is a reference through which other code might
+   * observe a modification. Only such an expression can be an alias of another one.
+   *
+   * <p>A literal is not, even a literal of reference type: {@code null} is not an object, and the
+   * value of a literal such as {@code ""} cannot be modified. Neither is a primitive value. Without
+   * this test, the two initializers in {@code List<String> x = null; List<String> y = null;} would
+   * be one alias-graph node, which would put {@code x} and {@code y} in a single alias set.
+   *
+   * @param expression an expression
+   * @return true if the expression's value is a reference that might be aliased
+   */
+  protected static boolean canBeAliased(JavaExpression expression) {
+    return !(expression instanceof ValueLiteral) && !expression.getType().getKind().isPrimitive();
+  }
+
+  /**
+   * Returns true if the first node's value is the second node's value or is reached through it.
+   * This is the relation that {@link #aliasedExpressions} lifts to alias sets.
+   *
+   * <p>It is {@link JavaExpression#containsAsReceiver}, except that a node for an expression that
+   * is not {@link #isStable stable} is reached only through itself. {@code containsAsReceiver}
+   * matches receivers syntactically, but two evaluations of, say, {@code mk()} may yield unrelated
+   * values, so matching them would be unjustified.
+   *
+   * @param node1 a node
+   * @param node2 a node that might be {@code node1} or a receiver of it
+   * @return true if {@code node1}'s value is {@code node2}'s value or is reached through it
+   */
+  protected static boolean isReachedThrough(AliasNode node1, AliasNode node2) {
+    if (node2.occurrence != 0 && !node1.equals(node2)) {
+      return false;
+    }
+    return node1.expression.containsAsReceiver(node2.expression);
   }
 
   @Override
@@ -422,7 +780,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     if (isDisallowedAssignmentTarget(lhs)) {
       disallowedSideEffects.add(IPair.of(node, lhs));
     }
-    aliasedExpressions.union(lhs, rhs);
+    recordAlias(lhs, rhs);
     return super.visitAssignment(node, aVoid);
   }
 
@@ -433,11 +791,23 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       // A declaration with no initializer, such as `int x;`, creates no alias.
       return super.visitVariable(node, aVoid);
     }
-    JavaExpression name = JavaExpression.fromVariableTree(node);
-    JavaExpression expr = expressionFromTree(initializer);
-    // `union` adds both arguments, so they need not be added first.
-    aliasedExpressions.union(name, expr);
+    recordAlias(JavaExpression.fromVariableTree(node), expressionFromTree(initializer));
     return super.visitVariable(node, aVoid);
+  }
+
+  /**
+   * Records that the two sides of an assignment may be aliases: they may refer to the same object.
+   * Does nothing if either side's value is not a reference that can be aliased, in the sense of
+   * {@link #canBeAliased}.
+   *
+   * @param lhs the left-hand side of an assignment or the name in a variable declaration
+   * @param rhs the right-hand side of an assignment or the initializer in a variable declaration
+   */
+  protected void recordAlias(JavaExpression lhs, JavaExpression rhs) {
+    if (canBeAliased(lhs) && canBeAliased(rhs)) {
+      // `union` adds both arguments, so they need not be added first.
+      aliasedExpressions.union(aliasNode(lhs), aliasNode(rhs));
+    }
   }
 
   @Override
@@ -463,5 +833,149 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       disallowedSideEffects.add(IPair.of(node, lhs));
     }
     return super.visitCompoundAssignment(node, aVoid);
+  }
+
+  /**
+   * Returns the local variables that always hold an object that the given code created: those that
+   * are assigned only {@code new} expressions.
+   *
+   * @param tree the body of the method being checked
+   * @return the local variables that always hold an object that {@code tree} created
+   */
+  protected static Set<VariableElement> freshLocals(Tree tree) {
+    FreshLocalScanner scanner = new FreshLocalScanner();
+    scanner.scan(tree, null);
+    scanner.freshlyAssigned.removeAll(scanner.otherwiseAssigned);
+    return scanner.freshlyAssigned;
+  }
+
+  /**
+   * Finds the local variables that are assigned only {@code new} expressions. The result is {@link
+   * #freshlyAssigned} minus {@link #otherwiseAssigned}.
+   *
+   * <p>A local variable that a lambda or a local class assigns is not effectively final, so it
+   * cannot be captured; therefore, scanning the whole method body -- including such bodies, which
+   * {@link DisallowedSideEffects} itself does not scan -- cannot miss an assignment.
+   */
+  private static class FreshLocalScanner extends TreeScanner<Void, Void> {
+
+    /** The local variables that are assigned a {@code new} expression. */
+    final Set<VariableElement> freshlyAssigned = new HashSet<>(2);
+
+    /** The local variables that are assigned something other than a {@code new} expression. */
+    final Set<VariableElement> otherwiseAssigned = new HashSet<>(2);
+
+    /** Creates a FreshLocalScanner. */
+    FreshLocalScanner() {}
+
+    @Override
+    public Void visitVariable(VariableTree node, Void aVoid) {
+      ExpressionTree initializer = node.getInitializer();
+      if (initializer != null) {
+        // A declaration with no initializer says nothing about what the variable holds.
+        record(TreeUtils.elementFromDeclaration(node), initializer);
+      }
+      return super.visitVariable(node, aVoid);
+    }
+
+    @Override
+    public Void visitAssignment(AssignmentTree node, Void aVoid) {
+      record(TreeUtils.elementFromTree(node.getVariable()), node.getExpression());
+      return super.visitAssignment(node, aVoid);
+    }
+
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree node, Void aVoid) {
+      // The result of `+=`, the only compound assignment that applies to a reference type, is a
+      // new String rather than an object that this code created.
+      VariableElement local = localVariable(TreeUtils.elementFromTree(node.getVariable()));
+      if (local != null) {
+        otherwiseAssigned.add(local);
+      }
+      return super.visitCompoundAssignment(node, aVoid);
+    }
+
+    /**
+     * Records one assignment of a value to a variable. Does nothing if the variable is not a local
+     * variable.
+     *
+     * @param element the variable that is assigned to, or null if the assignment target is not a
+     *     variable
+     * @param value the assigned value
+     */
+    private void record(@Nullable Element element, ExpressionTree value) {
+      VariableElement local = localVariable(element);
+      if (local == null) {
+        return;
+      }
+      Tree.Kind valueKind = TreeUtils.withoutParens(value).getKind();
+      if (valueKind == Tree.Kind.NEW_CLASS || valueKind == Tree.Kind.NEW_ARRAY) {
+        freshlyAssigned.add(local);
+      } else {
+        otherwiseAssigned.add(local);
+      }
+    }
+
+    /**
+     * Returns the given element if it is a local variable or a try-with-resources resource
+     * variable, and null otherwise.
+     *
+     * @param element an element, or null
+     * @return the element if it is a local variable, otherwise null
+     */
+    private static @Nullable VariableElement localVariable(@Nullable Element element) {
+      if (element != null
+          && (element.getKind() == ElementKind.LOCAL_VARIABLE
+              || element.getKind() == ElementKind.RESOURCE_VARIABLE)) {
+        return (VariableElement) element;
+      }
+      return null;
+    }
+  }
+
+  /**
+   * One occurrence of an expression, for use as an element of {@link #aliasedExpressions}. See
+   * {@link #aliasNode} for when two occurrences are the same node.
+   */
+  protected static class AliasNode {
+
+    /** The expression. */
+    protected final JavaExpression expression;
+
+    /**
+     * Distinguishes occurrences of an expression that is not {@link #isStable stable}. It is 0 for
+     * a stable expression, and a distinct positive number for each occurrence of any other.
+     */
+    protected final int occurrence;
+
+    /**
+     * Creates an AliasNode. Use {@link DisallowedSideEffects#aliasNode} rather than calling this
+     * directly.
+     *
+     * @param expression the expression
+     * @param occurrence 0 for a stable expression, otherwise a number that is distinct for each
+     *     occurrence
+     */
+    protected AliasNode(JavaExpression expression, int occurrence) {
+      this.expression = expression;
+      this.occurrence = occurrence;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object other) {
+      return other instanceof AliasNode otherNode
+          && occurrence == otherNode.occurrence
+          && expression.equals(otherNode.expression);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(expression, occurrence);
+    }
+
+    @Override
+    public String toString() {
+      return expression.toString();
+    }
   }
 }

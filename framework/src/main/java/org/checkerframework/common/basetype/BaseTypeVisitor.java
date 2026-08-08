@@ -87,10 +87,14 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.JavaExpressionScanner;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Impure;
 import org.checkerframework.dataflow.qual.Pure;
@@ -4357,7 +4361,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * <p>Both annotations' arguments are parsed at their own method declaration, so {@code this}
      * and {@code #1}-style parameter references are compared as the expressions they stand for
      * rather than as strings. For example, {@code @SideEffectsOnly("#1")} permits everything that
-     * {@code @SideEffectsOnly("#1.f")} does.
+     * {@code @SideEffectsOnly("#1.f")} does. For a method reference, whose parameters do not
+     * necessarily correspond positionally to the functional interface method's, the overrider's
+     * expressions are first translated by {@link #atFunctionalInterfaceMethod}.
      *
      * <p>This method requires that both the overrider and the overridden method are annotated with
      * {@code @SideEffectsOnly}.
@@ -4389,6 +4395,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return seOnlySuperStrings.containsAll(seOnlySubStrings);
       }
 
+      if (isMethodReference) {
+        seOnlySubExpressions = atFunctionalInterfaceMethod(seOnlySubExpressions);
+        if (seOnlySubExpressions == null) {
+          return false;
+        }
+      }
+
       for (JavaExpression seOnlySubExpression : seOnlySubExpressions) {
         boolean covered = false;
         for (JavaExpression seOnlySuperExpression : seOnlySuperExpressions) {
@@ -4404,6 +4417,77 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
       }
       return true;
+    }
+
+    /**
+     * Translates expressions written at the declaration of the method that a method reference
+     * refers to, into the frame of the functional interface method that the reference implements.
+     *
+     * <p>The two methods' parameters do not necessarily correspond positionally. For an unbound
+     * reference such as {@code Collection::clear}, the interface method's first parameter is the
+     * referenced method's receiver, and the interface method's parameter {@code #(i+1)} is the
+     * referenced method's parameter {@code #i}.
+     *
+     * <p>An expression that mentions the referenced method's {@code this} is dropped if the
+     * reference is a constructor reference, because the object under construction did not exist
+     * before the call. Otherwise, for a bound or {@code super} reference, {@code this} is the bound
+     * receiver, which the interface method's annotation cannot name; this method returns null in
+     * that case.
+     *
+     * <p>This method requires that {@link #overriderTree} is a method reference.
+     *
+     * @param subExpressions expressions written at the referenced method's declaration
+     * @return the expressions written at the interface method's declaration, or null if some
+     *     expression has no counterpart there
+     */
+    private @Nullable List<JavaExpression> atFunctionalInterfaceMethod(
+        List<JavaExpression> subExpressions) {
+      MemberReferenceKind methodRefKind =
+          MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree);
+      List<FormalParameter> superParameters =
+          JavaExpression.getFormalParameters(overridden.getElement());
+      // For an unbound reference, the interface method has one extra leading parameter, which is
+      // the referenced method's receiver.
+      int shift = methodRefKind.isUnbound() ? 1 : 0;
+      if (superParameters.size() != overrider.getElement().getParameters().size() + shift) {
+        // The parameters do not correspond one-to-one, as when a varargs method implements a
+        // fixed-arity interface method.  Do not guess at a correspondence.
+        return null;
+      }
+
+      JavaExpressionConverter converter =
+          new JavaExpressionConverter() {
+            @Override
+            protected JavaExpression visitFormalParameter(FormalParameter parameter, Void unused) {
+              return superParameters.get(parameter.getIndex() - 1 + shift);
+            }
+
+            @Override
+            protected JavaExpression visitThisReference(ThisReference thisExpr, Void unused) {
+              if (methodRefKind.isUnbound()) {
+                return superParameters.get(0);
+              }
+              // The receiver is fixed by the method reference itself, so no expression at the
+              // interface method's declaration denotes it.  `Unknown` is never covered.
+              return new Unknown(thisExpr.getType());
+            }
+          };
+
+      List<JavaExpression> result = new ArrayList<>(subExpressions.size());
+      for (JavaExpression subExpression : subExpressions) {
+        if (methodRefKind.isConstructorReference()
+            && subExpression.containsOfClass(ThisReference.class)) {
+          // The object under construction did not exist before the call, so modifying it is not a
+          // side effect that is visible to the caller.
+          continue;
+        }
+        JavaExpression converted = converter.convert(subExpression);
+        if (converted.containsOfClass(Unknown.class)) {
+          return null;
+        }
+        result.add(converted);
+      }
+      return result;
     }
 
     /**

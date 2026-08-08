@@ -54,4 +54,60 @@ public class MethodRefSideEffectsOnly {
     // :: error: (purity.methodref)
     DeterministicMutator m = MethodRefSideEffectsOnly::mutatesArgumentNondeterministically;
   }
+
+  // For an unbound method reference (`Type::instanceMethod`), the interface method's first
+  // parameter is the referenced method's receiver, and the interface method's parameter `#(i+1)`
+  // is the referenced method's parameter `#i`.  The two annotations must be compared with that
+  // shift.
+
+  void unboundOk() {
+    // `Collection.clear()` is `@SideEffectsOnly("this")` in the annotated JDK.  Its receiver is
+    // `Mutator.apply`'s `#1`, which `Mutator.apply`'s annotation lists.
+    Mutator m = Collection<Integer>::clear;
+  }
+
+  static class Cell {
+    Collection<Integer> coll = new java.util.ArrayList<>();
+
+    @SideEffectsOnly("this.coll")
+    void mutatesOwnField(Collection<Integer> unused) {
+      coll.add(1);
+    }
+
+    @SideEffectsOnly("#1")
+    void mutatesArgument(Collection<Integer> c) {
+      c.add(1);
+    }
+  }
+
+  interface CellMutator {
+    @SideEffectsOnly("#2")
+    void apply(Cell cell, Collection<Integer> c);
+  }
+
+  void unboundShiftOk() {
+    // `#1` of `mutatesArgument` is `#2` of `CellMutator.apply`, which the interface method's
+    // annotation lists.
+    CellMutator m = Cell::mutatesArgument;
+  }
+
+  void unboundShiftNotOk() {
+    // `this.coll` of `mutatesOwnField` is `#1.coll` of `CellMutator.apply`, which
+    // `@SideEffectsOnly("#2")` does not cover.
+    // :: error: (purity.methodref)
+    CellMutator m = Cell::mutatesOwnField;
+  }
+
+  interface CellReader {
+    @SideEffectsOnly("#1")
+    void apply(Cell cell);
+  }
+
+  void boundNotOk() {
+    Cell cell = new Cell();
+    // For a bound reference, the receiver is fixed by the reference itself, so no expression at
+    // the interface method's declaration denotes what `mutatesOwnField` modifies.
+    // :: error: (purity.methodref)
+    Mutator m = cell::mutatesOwnField;
+  }
 }

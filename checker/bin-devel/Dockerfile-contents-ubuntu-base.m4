@@ -40,7 +40,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   wget
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& cd $HOME \
-&& wget https://dlcdn.apache.org/maven/maven-4/4.0.0-rc-5/binaries/apache-maven-4.0.0-rc-5-bin.tar.gz \
-&& tar xzf apache-maven-4.0.0-rc-5-bin.tar.gz
-ENV PATH="$HOME/apache-maven-4.0.0-rc-5/bin:$PATH"
+&& cd /opt \
+&& wget https://dlcdn.apache.org/maven/maven-4/4.0.0-rc-6/binaries/apache-maven-4.0.0-rc-6-bin.tar.gz \
+&& tar xzf apache-maven-4.0.0-rc-6-bin.tar.gz \
+&& rm apache-maven-4.0.0-rc-6-bin.tar.gz
+ENV PATH="/opt/apache-maven-4.0.0-rc-6/bin:$PATH"
