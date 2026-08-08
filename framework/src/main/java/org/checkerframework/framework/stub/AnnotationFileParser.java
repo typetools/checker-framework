@@ -588,7 +588,7 @@ public final class AnnotationFileParser {
 
           TypeElement importType = elements.getTypeElement(imported);
           if (importType == null && !importDecl.isStatic()) {
-            // Class or nested class (according to JSL), but we can't resolve
+            // Class or nested class (according to JLS), but we can't resolve
 
             stubWarnNotFound(importDecl, "Imported type not found: " + imported);
           } else if (importType == null) {
@@ -1481,6 +1481,12 @@ public final class AnnotationFileParser {
     }
   }
 
+  /**
+   * Returns a ClassOrInterfaceType for the given type, possibly unwrapping a reference type.
+   *
+   * @param type a type
+   * @return a ClassOrInterfaceType for the given type
+   */
   private @Nullable ClassOrInterfaceType unwrapDeclaredType(Type type) {
     if (type instanceof ClassOrInterfaceType coit) {
       return coit;

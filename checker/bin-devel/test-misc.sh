@@ -32,13 +32,8 @@ if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --e
   exit 1
 fi
 
-# Under CI, there are two CPUs, but limit to 1 to avoid out-of-memory error.
-if [ -n "$("$CHECKERFRAMEWORK"/checker/bin-devel/is-ci.sh)" ]; then
-  num_jobs=1
-else
-  num_jobs="$(nproc || sysctl -n hw.ncpu || getconf _NPROCESSORS_ONLN || echo 1)"
-fi
-make style-check --jobs="${num_jobs}"
+# The rest of the code style is handled by prek, which is run as a
+# pre-commit hook and in GitHub Actions.
 
 declare -a failures=()
 

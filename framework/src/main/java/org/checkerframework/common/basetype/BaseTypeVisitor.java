@@ -889,15 +889,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * <ol>
    *   <!-- The item numbering is referred to in the body of the method.-->
    *   <li value="1">If the superclass of {@code classTree} has a field invariant, then the field
-   *       invariant for {@code classTree} must include all the fields in the superclass invariant
-   *       and those fields' annotations must be a subtype (or equal) to the annotations for those
-   *       fields in the superclass.
+   *                 invariant for {@code classTree} must include all the fields in the superclass
+   *                 invariant and those fields' annotations must be a subtype (or equal) to the
+   *                 annotations for those fields in the superclass.
    *   <li value="2">The fields in the invariant must be a.) final and b.) declared in a superclass
-   *       of {@code classTree}.
+   *                 of {@code classTree}.
    *   <li value="3">The qualifier for each field must be a subtype of the annotation on the
-   *       declaration of that field.
+   *                 declaration of that field.
    *   <li value="4">The field invariant has an equal number of fields and qualifiers, or it has one
-   *       qualifier and at least one field.
+   *                 qualifier and at least one field.
    * </ol>
    *
    * @param classTree class that might have a field invariant
@@ -1146,11 +1146,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, tree);
 
-    if (!checkPurityAnnotations) {
-      return;
-    }
+    // If the method is already @Pure, there is nothing to suggest.
+    boolean needToSuggest =
+        suggestPureMethods
+            && !(purityKinds.contains(PurityKind.SIDE_EFFECT_FREE)
+                && purityKinds.contains(PurityKind.DETERMINISTIC));
+    boolean needToCheck = checkPurityAnnotations && !purityKinds.isEmpty();
 
-    if (!suggestPureMethods && !PurityUtils.hasPurityAnnotation(atypeFactory, tree)) {
+    if (!needToSuggest && !needToCheck) {
       // There is no work to do.
       return;
     }
@@ -1159,91 +1162,72 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       checker.reportWarning(tree, "purity.effectively.pure", tree.getName());
     }
 
-    // `body` is lazily assigned.
-    TreePath body = null;
-    boolean bodyAssigned = false;
-
-    if (suggestPureMethods
-        || purityKinds.contains(PurityKind.SIDE_EFFECT_FREE)
-        || purityKinds.contains(PurityKind.DETERMINISTIC)) {
-
-      // check "no" purity
-      boolean isDeterministic = purityKinds.contains(PurityKind.DETERMINISTIC);
-      if (isDeterministic) {
-        // @Deterministic makes no sense for a void method or constructor
-        if (TreeUtils.isConstructor(tree)) {
-          checker.reportWarning(tree, "purity.deterministic.constructor");
-        } else if (TreeUtils.isVoidReturn(tree)) {
-          checker.reportWarning(tree, "purity.deterministic.void.method");
-        }
+    // check "no" purity
+    boolean isDeterministic = purityKinds.contains(PurityKind.DETERMINISTIC);
+    if (isDeterministic) {
+      // @Deterministic makes no sense for a void method or constructor
+      if (TreeUtils.isConstructor(tree)) {
+        checker.reportWarning(tree, "purity.deterministic.constructor");
+      } else if (TreeUtils.isVoidReturn(tree)) {
+        checker.reportWarning(tree, "purity.deterministic.void.method");
       }
+    }
 
-      body = atypeFactory.getPath(tree.getBody());
-      bodyAssigned = true;
-      PurityResult r;
-      if (body == null) {
-        r = new PurityResult();
+    TreePath body = atypeFactory.getPath(tree.getBody());
+    PurityResult r;
+    if (body == null) {
+      r = new PurityResult();
+    } else {
+      r =
+          PurityChecker.checkPurity(
+              body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
+    }
+    if (!r.isPure(purityKinds)) {
+      reportPurityErrors(r, tree, purityKinds);
+    }
+
+    if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
+      // Issue a warning if the method is pure, but not annotated as such.
+      EnumSet<PurityKind> additionalKinds = r.getKinds().clone();
+      if (!infer) {
+        // During WPI, propagate all purity kinds, even those that are already
+        // present (because they were inferred in a previous WPI round).
+        additionalKinds.removeAll(purityKinds);
+      }
+      if (TreeUtils.isConstructor(tree) || TreeUtils.isVoidReturn(tree)) {
+        additionalKinds.remove(PurityKind.DETERMINISTIC);
+      }
+      if (infer) {
+        WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
+        inferPurityAnno(additionalKinds, wpi, methodElt);
+        // The purity of overridden methods is impacted by the purity of this method. If
+        // a superclass method is pure, but an implementation in a subclass is not, WPI
+        // ought to treat **neither** as pure. The purity kind of the superclass method
+        // is the LUB of its own purity and the purity of all the methods that override
+        // it. Logically, this rule is the same as the WPI rule for overrides, but
+        // purity isn't a type system and therefore must be special-cased.
+        Set<? extends ExecutableElement> overriddenMethods =
+            ElementUtils.getOverriddenMethods(methodElt, types);
+        for (ExecutableElement overriddenElt : overriddenMethods) {
+          inferPurityAnno(additionalKinds, wpi, overriddenElt);
+        }
+      } else if (additionalKinds.isEmpty()) {
+        // No need to suggest @Impure, since it is equivalent to no annotation.
       } else {
-        r =
-            PurityChecker.checkPurity(
-                body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
-      }
-      if (!r.isPure(purityKinds)) {
-        reportPurityErrors(r, tree, purityKinds);
-      }
-
-      if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
-        // Issue a warning if the method is pure, but not annotated as such.
-        EnumSet<PurityKind> additionalKinds = r.getKinds().clone();
-        if (!infer) {
-          // During WPI, propagate all purity kinds, even those that are already
-          // present (because they were inferred in a previous WPI round).
-          additionalKinds.removeAll(purityKinds);
-        }
-        if (TreeUtils.isConstructor(tree) || TreeUtils.isVoidReturn(tree)) {
-          additionalKinds.remove(PurityKind.DETERMINISTIC);
-        }
-        if (infer) {
-          WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
-          ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
-          inferPurityAnno(additionalKinds, wpi, methodElt);
-          // The purity of overridden methods is impacted by the purity of this method. If
-          // a superclass method is pure, but an implementation in a subclass is not, WPI
-          // ought to treat **neither** as pure. The purity kind of the superclass method
-          // is the LUB of its own purity and the purity of all the methods that override
-          // it. Logically, this rule is the same as the WPI rule for overrides, but
-          // purity isn't a type system and therefore must be special-cased.
-          Set<? extends ExecutableElement> overriddenMethods =
-              ElementUtils.getOverriddenMethods(methodElt, types);
-          for (ExecutableElement overriddenElt : overriddenMethods) {
-            inferPurityAnno(additionalKinds, wpi, overriddenElt);
-          }
-        } else if (additionalKinds.isEmpty()) {
-          // No need to suggest @Impure, since it is equivalent to no annotation.
+        boolean isSef = additionalKinds.contains(PurityKind.SIDE_EFFECT_FREE);
+        boolean isDet = additionalKinds.contains(PurityKind.DETERMINISTIC);
+        if (isSef && isDet) {
+          checker.reportWarning(tree, "purity.more.pure", tree.getName());
+        } else if (isSef) {
+          checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
+        } else if (isDet) {
+          checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
         } else {
-          boolean isSef = additionalKinds.contains(PurityKind.SIDE_EFFECT_FREE);
-          boolean isDet = additionalKinds.contains(PurityKind.DETERMINISTIC);
-          if (isSef && isDet) {
-            checker.reportWarning(tree, "purity.more.pure", tree.getName());
-          } else if (isSef) {
-            checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
-          } else if (isDet) {
-            checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
-          } else {
-            throw new BugInCF("Unexpected purity kind in " + additionalKinds);
-          }
+          throw new BugInCF("Unexpected purity kind in " + additionalKinds);
         }
       }
     }
-
-    // There will be code here that *may* use `body` (and may set `body` before using it).
-    // The below is just a placeholder so `bodyAssigned` is not a dead variable.
-    // ...
-    if (!bodyAssigned) {
-      body = atypeFactory.getPath(tree.getBody());
-      bodyAssigned = true;
-    }
-    // ...
   }
 
   /**
@@ -4183,23 +4167,44 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               overriderTree,
               "purity.methodref",
               overriderType,
-              subPurity,
+              purityKindsToString(subPurity),
               overrider,
               overriddenType,
-              superPurity,
+              purityKindsToString(superPurity),
               overridden);
         } else {
           checker.reportError(
               overriderTree,
               "purity.overriding",
               overriderType,
-              subPurity,
+              purityKindsToString(subPurity),
               overrider,
               overriddenType,
-              superPurity,
+              purityKindsToString(superPurity),
               overridden);
         }
       }
+    }
+
+    /**
+     * Formats purity kinds for a diagnostic message, as the annotations that a user writes rather
+     * than as the enum constant names that {@code EnumSet.toString} would produce.
+     *
+     * @param purityKinds a set of purity kinds
+     * @return the annotations corresponding to {@code purityKinds}, space-separated
+     */
+    private String purityKindsToString(EnumSet<PurityKind> purityKinds) {
+      if (purityKinds.isEmpty()) {
+        return "(no side effect annotation)";
+      }
+      StringJoiner result = new StringJoiner(" ");
+      for (PurityKind purityKind : purityKinds) {
+        switch (purityKind) {
+          case SIDE_EFFECT_FREE -> result.add("@SideEffectFree");
+          case DETERMINISTIC -> result.add("@Deterministic");
+        }
+      }
+      return result.toString();
     }
 
     /**
@@ -4407,7 +4412,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       List<AnnotatedTypeMirror> overriddenParams = overridden.getParameterTypes();
 
       // Fix up method reference parameters.
-      // See https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.13.1
+      // See https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.1
       if (isMethodReference) {
         // The functional interface of an unbound member reference has an extra parameter
         // (the receiver).

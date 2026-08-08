@@ -1,5 +1,9 @@
-all default: config.yml
-# TODO: all default: config.yml config-daily.yml
+.PHONY: all test clean default validate
+default: all
+all: config.yml
+# TODO: all: config.yml config-daily.yml
+
+test: all
 
 PLUME_SCRIPTS=../checker/bin-devel/.plume-scripts
 

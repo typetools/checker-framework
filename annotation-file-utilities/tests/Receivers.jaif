@@ -137,4 +137,3 @@ class Closer:
 method close()V:
 insert-annotation Method.parameter -1: @checkers.inference.quals.VarAnnot(5)
 insert-annotation Method.parameter -1, ParameterizedType.typeArgument 0: @checkers.inference.quals.VarAnnot(6)
-

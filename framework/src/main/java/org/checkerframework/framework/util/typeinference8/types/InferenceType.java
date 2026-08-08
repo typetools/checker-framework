@@ -15,12 +15,14 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -65,7 +67,11 @@ public final class InferenceType extends AbstractType {
       Java8InferenceContext context,
       boolean ignoreAnnotations) {
     super(context, ignoreAnnotations);
-    assert type.getKind() == typeMirror.getKind();
+    if (type.getKind() != typeMirror.getKind()) {
+      throw new BugInCF(
+          "Mismatched kinds: annotated type %s has kind %s, but type %s has kind %s.",
+          type, type.getKind(), typeMirror, typeMirror.getKind());
+    }
     this.type = type.asUse();
     this.typeMirror = typeMirror;
     this.qualifierVars = qualifierVars;
@@ -123,7 +129,7 @@ public final class InferenceType extends AbstractType {
       boolean ignoreAnnotations) {
     assert type != null;
     if (map == null) {
-      return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
+      return new ProperType(type, qualifierVars, context, ignoreAnnotations);
     }
 
     if (typeMirror.getKind() == TypeKind.TYPEVAR && map.containsKey(type.getUnderlyingType())) {
@@ -136,7 +142,7 @@ public final class InferenceType extends AbstractType {
     } else if (AnnotatedContainsInferenceVariable.hasAnyTypeVariable(map.keySet(), type)) {
       return new InferenceType(type, typeMirror, map, qualifierVars, context, ignoreAnnotations);
     } else {
-      return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
+      return new ProperType(type, qualifierVars, context, ignoreAnnotations);
     }
   }
 
@@ -162,7 +168,7 @@ public final class InferenceType extends AbstractType {
       boolean ignoreAnnotations) {
     assert type != null;
     if (map == null) {
-      return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
+      return new ProperType(type, qualifierVars, context, ignoreAnnotations);
     }
 
     if (typeMirror.getKind() == TypeKind.TYPEVAR && map.containsKey(type.getUnderlyingType())) {
@@ -176,7 +182,7 @@ public final class InferenceType extends AbstractType {
         map.getNotInstantiated(), type)) {
       return new InferenceType(type, typeMirror, map, qualifierVars, context, ignoreAnnotations);
     } else {
-      return new ProperType(type, typeMirror, qualifierVars, context, ignoreAnnotations);
+      return new ProperType(type, qualifierVars, context, ignoreAnnotations);
     }
   }
 
@@ -305,9 +311,20 @@ public final class InferenceType extends AbstractType {
       mapping.put(alpha.getJavaType(), instantiation);
     }
 
-    AnnotatedTypeMirror newType = typeFactory.getTypeVarSubstitutor().substitute(mapping, type);
-    return createIgnoreInstantiated(
-        newType, newTypeJava, map, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations);
+    AnnotatedTypeMirror newATM = typeFactory.getTypeVarSubstitutor().substitute(mapping, type);
+    AbstractType newAbstractType =
+        createIgnoreInstantiated(
+            newATM, newTypeJava, map, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations);
+
+    // Also apply instantiations to function type.
+    AnnotatedExecutableType unsubedFunctionType = getFunctionType();
+    if (unsubedFunctionType != null) {
+      newAbstractType.functionType =
+          (AnnotatedExecutableType)
+              typeFactory.getTypeVarSubstitutor().substitute(mapping, unsubedFunctionType);
+    }
+
+    return newAbstractType;
   }
 
   @Override

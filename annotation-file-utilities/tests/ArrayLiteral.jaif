@@ -24,4 +24,3 @@ field s3:
 insert-annotation Variable.initializer: @checkers.inference.quals.VarAnnot(10)
 insert-annotation Variable.type, ArrayType.type: @checkers.inference.quals.VarAnnot(11)
 insert-annotation Variable.type: @checkers.inference.quals.VarAnnot(12)
-

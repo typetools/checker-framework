@@ -15,7 +15,7 @@ import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 /**
  * Represents the compile-time declaration type of the method reference that is the method to which
  * the method reference refers. See <a
- * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.13.1">JLS section
+ * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.1">JLS section
  * 15.13.1</a> for a complete definition.
  *
  * <p>The type of a member reference is a functional interface. The function type of a member
@@ -42,10 +42,10 @@ public class CompileTimeDeclarationType extends AbstractExecutableType {
    * The type of the receiver. Its value may be different than {@code
    * this.annotatedExecutableType.getReceiver()}.
    */
-  AnnotatedTypeMirror receiver;
+  private final AnnotatedTypeMirror receiver;
 
   /** The method reference tree. */
-  MemberReferenceTree methodRef;
+  private final MemberReferenceTree methodRef;
 
   /**
    * Creates a compile-time declaration type for a method reference.
@@ -92,7 +92,7 @@ public class CompileTimeDeclarationType extends AbstractExecutableType {
     }
 
     if (map == null) {
-      return new ProperType(annotatedReturnType, returnType, context);
+      return new ProperType(annotatedReturnType, context);
     } else {
       return InferenceType.create(annotatedReturnType, returnType, map, context);
     }

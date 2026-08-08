@@ -14,4 +14,3 @@ class IntCell:
     method get()I:
         return:
         insert-annotation Method.parameter -1: @java.lang.Tainted
-

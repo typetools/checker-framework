@@ -29,9 +29,9 @@ public class BoxingInterning {
     @Interned Character c2 = c;
 
     char cprimitive2 = (char) 0x2202;
-    // :: (argument)
+    // :: error: [argument]
     needsInterned(cprimitive2);
-    // :: (assignment)
+    // :: error: [assignment]
     @Interned Character cboxed2 = cprimitive2;
 
     short dprimitive = 5;
@@ -39,9 +39,9 @@ public class BoxingInterning {
     @Interned Short dboxed = dprimitive;
 
     short dprimitive2 = 500;
-    // :: (argument)
+    // :: error: [argument]
     needsInterned(dprimitive2);
-    // :: (assignment)
+    // :: error: [assignment]
     @Interned Short dboxed2 = dprimitive2;
 
     int eprimitive = 5;
@@ -49,9 +49,9 @@ public class BoxingInterning {
     @Interned Integer eboxed = eprimitive;
 
     int eprimitive2 = 500;
-    // :: (argument)
+    // :: error: [argument]
     needsInterned(eprimitive2);
-    // :: (assignment)
+    // :: error: [assignment]
     @Interned Integer eboxed2 = eprimitive2;
 
     long fprimitive = 5;
@@ -59,21 +59,21 @@ public class BoxingInterning {
     @Interned Long fboxed = fboxed;
 
     long fprimitive2 = 500;
-    // :: (argument)
+    // :: error: [argument]
     needsInterned(fprimitive2);
-    // :: (assignment)
+    // :: error: [assignment]
     @Interned Long fboxed2 = fboxed2;
 
     float g = (float) 3.14;
-    // :: (argument)
+    // :: error: [argument]
     needsInterned(g);
-    // :: (assignment)
+    // :: error: [assignment]
     @Interned Float gboxed = g;
 
     double h = 3.14;
-    // :: (argument)
+    // :: error: [argument]
     needsInterned(h);
-    // :: (assignment)
+    // :: error: [assignment]
     @Interned Double hboxed = h;
   }
 }

@@ -46,7 +46,7 @@ public class Typing extends TypeConstraint {
   private final Kind kind;
 
   /** True if this constraint is for a covariant type argument. */
-  private boolean isCovarTypeArg;
+  private final boolean isCovarTypeArg;
 
   /**
    * Creates a typing constraint.
@@ -214,16 +214,16 @@ public class Typing extends TypeConstraint {
       // constraint reduces to the following new constraints:
       // for all i (1 <= i <= n), <Bi <= Ai>.
 
-      // Capturing is not in the JLS, but otherwise wildcards appear in the constraints
-      // against the type arguments, which causes crashes.
-      AbstractType sAsSuper = S.asSuper(T.getJavaType()).capture(context);
+      AbstractType sAsSuper = S.asSuper(T.getJavaType());
       if (sAsSuper == null) {
         return ConstraintSet.FALSE;
       } else if (sAsSuper.isRaw() || T.isRaw()) {
         return ReductionResult.UNCHECKED_CONVERSION;
       }
-
-      List<AbstractType> Bs = sAsSuper.getTypeArguments();
+      // Capturing is not in the JLS, but otherwise wildcards appear in the constraints
+      // against the type arguments, which causes crashes.
+      AbstractType aAsSuperCaptured = sAsSuper.capture(context);
+      List<AbstractType> Bs = aAsSuperCaptured.getTypeArguments();
       Iterator<AbstractType> As = T.getTypeArguments().iterator();
       List<Integer> covariantArgIndexes =
           context

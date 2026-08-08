@@ -1,0 +1,15 @@
+name: Prek checks
+"on": [push, pull_request]
+jobs:
+  prek:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          cache: 'gradle'
+      - run: curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/main/install.sh | sudo bash
+      - uses: j178/prek-action@v3.0.0

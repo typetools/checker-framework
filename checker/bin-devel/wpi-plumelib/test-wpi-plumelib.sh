@@ -34,26 +34,26 @@ clean_compile_output() {
   in="$1"
   out="$2"
 
-  cp -f "$in" "$out" || exit 1
+  # This is a single `sed` script, rather than a sequence of `sed -i` commands,
+  # because `sed -i` is not portable.  The `#` lines are `sed` comments.
+  sed_script='
+# Remove "Running ..." line
+/^Running /d
+# Remove comments starting with "#" and blank lines
+/^#/d
+/^$/d
+# Remove uninteresting output
+/^warning: \[path\] bad path element /d
+/^warning: \[options\] bootstrap class path not set/d
+/^warning: \[options\] system modules path not set in conjunction with -source 11/d
+# Remove warning count because it can differ between JDK 8 and later JDKs due to the bootstrap warning:
+/^[0-9]* warning/d
+# Remove directory names and line numbers
+s/^[^ ]*\///
+s/:[0-9][0-9]*: /: /
+'
 
-  # Remove "Running ..." line
-  sed -i '/^Running /d' "$out"
-
-  # Remove comments starting with "#" and blank lines
-  sed -i '/^#/d' "$out"
-  sed -i '/^$/d' "$out"
-
-  # Remove uninteresting output
-  sed -i '/^warning: \[path\] bad path element /d' "$out"
-  sed -i '/^warning: \[options\] bootstrap class path not set/d' "$out"
-  sed -i '/^warning: \[options\] system modules path not set in conjunction with -source 11/d' "$out"
-
-  # Remove warning count because it can differ between JDK 8 and later JDKs due to the bootstrap warning:
-  sed -i '/^[0-9]* warning/d' "$out"
-
-  # Remove directory names and line numbers
-  sed -i 's/^[^ ]*\///' "$out"
-  sed -i 's/:[0-9]+: /: /' "$out"
+  sed "$sed_script" "$in" > "$out" || exit 1
 }
 
 # Takes two arguments, the project name and the comma-separated list of checkers to run.

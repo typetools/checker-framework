@@ -105,4 +105,3 @@ class ConstructorReceivers$P1$C9:
         insert-annotation Method.parameter -1, Variable.type, ParameterizedType.type, MemberSelect.expression: @checkers.tainting.quals.Tainted
         insert-annotation Method.parameter -1, Variable.type, ParameterizedType.typeArgument 0: @annotation.Inner(value=0)
         insert-annotation Method.parameter -1, Variable.type, ParameterizedType.typeArgument 1: @annotation.Inner(value=1)
-

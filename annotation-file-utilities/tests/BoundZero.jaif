@@ -41,4 +41,3 @@ class BoundZero$Inner:
 
 class Outer:
     bound 0&0: @A @B @C
-

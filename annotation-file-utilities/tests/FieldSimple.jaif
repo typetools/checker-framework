@@ -8,4 +8,3 @@ class FieldSimple:
       type: @java.lang.UnderInitialization
 
     method <init>()V:
-
