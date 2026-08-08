@@ -58,7 +58,7 @@ junit = { group = "junit", name = "junit", version.ref = "junit-junit" }
 
 lombok = "org.projectlombok:lombok:1.18.46"
 
-options = "org.plumelib:options:2.0.3"
+options = "org.plumelib:options:3.0.0"
 
 plume-util = "org.plumelib:plume-util:2.0.0"
 
