@@ -1202,9 +1202,15 @@ assumes that the method may side-effect any expressions (including fields and ar
 Under \<-AcheckPurityAnnotations>, the Checker Framework verifies that the body of a
 \<@SideEffectsOnly> method modifies at most the listed expressions.  An expression is
 covered by the annotation if it is listed, if it is reached through a listed expression
-(\<@SideEffectsOnly("\#1")> permits modifying \<\#1.f.g>), or if the method body assigns
+(\<@SideEffectsOnly("\#1")> permits modifying \<\#1.f.g> and, if \<\#1> is an array,
+\<\#1[i]>), or if the method body assigns
 it to or from a listed expression.  Assigning to a local variable is never a side effect,
-because it is not visible outside the method.
+because it is not visible outside the method.  Because \<super> and \<this> denote the same
+object, \<@SideEffectsOnly("this")> also covers \<super.f> and a call to \<super.m()>.
+
+The body of a lambda, and the body of a method of a class that is declared within the
+method being checked, are not side effects of that method:  they run when the lambda or
+the method is invoked, and each such invocation is checked where it appears.
 
 Every method that a \<@SideEffectsOnly> method calls must itself be annotated
 \<@Pure>, \<@SideEffectFree>, or \<@SideEffectsOnly>.  A call to a method with none of
@@ -1220,8 +1226,10 @@ side-effect annotation, a \<@SideEffectsOnly> method that creates an object ofte
 \<purity.unknown.sideeffectsonly>.
 
 On a constructor, \<@SideEffectsOnly> constrains what the constructor modifies besides
-the object being constructed; list \<this> to permit assigning to the new object's own
-fields.  At a \<new> expression, the expressions that are reached through \<this> are
+the object being constructed.  Assigning to the new object's own fields is always
+permitted and need not be listed, because the object did not exist before the call;
+writing \<this> in the annotation is legal but has no additional effect.
+At a \<new> expression, the expressions that are reached through \<this> are
 ignored, because the object being constructed did not exist before the call and therefore
 no expression at the call site refers to it.  A constructor's \<@SideEffectsOnly>
 annotation does not yet affect type refinement at \<new> expressions.

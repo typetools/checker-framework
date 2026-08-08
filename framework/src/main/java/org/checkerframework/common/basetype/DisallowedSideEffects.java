@@ -1,8 +1,10 @@
 package org.checkerframework.common.basetype;
 
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -16,6 +18,9 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.ThisReference;
@@ -27,6 +32,7 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.IPair;
 import org.plumelib.util.UnionFind;
 
@@ -91,6 +97,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   /**
    * Issues warnings about side effects beyond the {@code @SideEffectsOnly} annotation.
    *
+   * <p>When {@code methodTree} is a constructor, {@code this} is treated as if it appeared in the
+   * annotation, whether or not it does.
+   *
    * @param statement the statement to check; currently, at the only call site it is a method body
    * @param sideEffectsOnlyExpressions the values in the {@link SideEffectsOnly} annotation
    * @param checker the checker to use
@@ -107,9 +116,19 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       ExecutableElement sideEffectsOnlyValueElement,
       boolean assumeSideEffectFree,
       boolean assumePureGetters) {
+    List<JavaExpression> seOnlyExpressions = sideEffectsOnlyExpressions;
+    if (TreeUtils.isConstructor(methodTree)) {
+      // A constructor implicitly side-effects the object under construction, which did not exist
+      // before the call, so modifying it is not a side effect that is visible to the caller.  The
+      // effect is the same as if the programmer had written `this` in the annotation, which is
+      // also permitted.
+      ExecutableElement constructorElt = TreeUtils.elementFromDeclaration(methodTree);
+      seOnlyExpressions = new ArrayList<>(sideEffectsOnlyExpressions);
+      seOnlyExpressions.add(new ThisReference(constructorElt.getEnclosingElement().asType()));
+    }
     DisallowedSideEffects scanner =
         new DisallowedSideEffects(
-            sideEffectsOnlyExpressions,
+            seOnlyExpressions,
             checker,
             sideEffectsOnlyValueElement,
             assumeSideEffectFree,
@@ -120,6 +139,20 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       checker.reportError(
           s.first, "purity.incorrect.sideeffectsonly", methodTree.getName(), s.second.toString());
     }
+  }
+
+  /**
+   * Returns the JavaExpression for the given tree, with every use of {@code super} replaced by
+   * {@code this}. {@code super.f} and {@code this.f} are the same location, so they must be
+   * compared alike against the {@link SideEffectsOnly} annotation, which cannot mention {@code
+   * super}.
+   *
+   * @param tree an expression tree
+   * @return the JavaExpression for the tree, written in terms of {@code this} rather than {@code
+   *     super}
+   */
+  protected static JavaExpression expressionFromTree(ExpressionTree tree) {
+    return JavaExpression.superToThis(JavaExpression.fromTree(tree));
   }
 
   // A `this(...)` or `super(...)` call is a MethodInvocationTree, so `visitMethodInvocation`
@@ -187,7 +220,12 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     List<JavaExpression> result = new ArrayList<>(exprStrings.size());
     for (String exprString : exprStrings) {
       try {
-        result.add(StringToJavaExpression.atMethodInvocation(exprString, node, checker));
+        // At a call of the form `super.m()`, view-adapting the callee's `this` yields `super`,
+        // which denotes the same object that the caller writes as `this`.  See
+        // `expressionFromTree`.
+        result.add(
+            JavaExpression.superToThis(
+                StringToJavaExpression.atMethodInvocation(exprString, node, checker)));
       } catch (JavaExpressionParseException ex) {
         // The parse error itself is reported at the callee's declaration, by
         // BaseTypeVisitor.checkPurityAnnotations.
@@ -287,7 +325,16 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * @return the simple name of the class that the constructor constructs
    */
   private CharSequence constructorName(ExecutableElement constructorElt) {
-    return constructorElt.getEnclosingElement().getSimpleName();
+    TypeElement classElt = (TypeElement) constructorElt.getEnclosingElement();
+    Name simpleName = classElt.getSimpleName();
+    if (!simpleName.isEmpty()) {
+      return simpleName;
+    }
+    // An anonymous class has an empty simple name, so name it by its supertype: the interface it
+    // implements if there is one, and otherwise the class it extends.
+    List<? extends TypeMirror> interfaces = classElt.getInterfaces();
+    TypeMirror supertype = interfaces.isEmpty() ? classElt.getSuperclass() : interfaces.get(0);
+    return "anonymous " + TypesUtils.simpleTypeName(supertype);
   }
 
   /**
@@ -352,9 +399,26 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   }
 
   @Override
+  public Void visitLambdaExpression(LambdaExpressionTree node, Void aVoid) {
+    // The body of a lambda runs when the lambda is invoked, which is not necessarily within the
+    // method being checked.  Wherever it is invoked, the invocation is a call to a method of a
+    // functional interface, and `visitMethodInvocation` checks that call.
+    return null;
+  }
+
+  @Override
+  public Void visitClass(ClassTree node, Void aVoid) {
+    // Likewise for the methods of an anonymous, local, or nested class that is declared within
+    // the method being checked.  Their bodies run when those methods are called, and each such
+    // call is checked where it appears.  (Instance initializers run when the class is
+    // instantiated, and `visitNewClass` checks that.)
+    return null;
+  }
+
+  @Override
   public Void visitAssignment(AssignmentTree node, Void aVoid) {
-    JavaExpression lhs = JavaExpression.fromTree(node.getVariable());
-    JavaExpression rhs = JavaExpression.fromTree(node.getExpression());
+    JavaExpression lhs = expressionFromTree(node.getVariable());
+    JavaExpression rhs = expressionFromTree(node.getExpression());
     if (isDisallowedAssignmentTarget(lhs)) {
       disallowedSideEffects.add(IPair.of(node, lhs));
     }
@@ -370,7 +434,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       return super.visitVariable(node, aVoid);
     }
     JavaExpression name = JavaExpression.fromVariableTree(node);
-    JavaExpression expr = JavaExpression.fromTree(initializer);
+    JavaExpression expr = expressionFromTree(initializer);
     // `union` adds both arguments, so they need not be added first.
     aliasedExpressions.union(name, expr);
     return super.visitVariable(node, aVoid);
@@ -380,7 +444,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   public Void visitUnary(UnaryTree node, Void aVoid) {
     switch (node.getKind()) {
       case POSTFIX_INCREMENT, POSTFIX_DECREMENT, PREFIX_INCREMENT, PREFIX_DECREMENT -> {
-        JavaExpression operand = JavaExpression.fromTree(node.getExpression());
+        JavaExpression operand = expressionFromTree(node.getExpression());
         if (isDisallowedAssignmentTarget(operand)) {
           disallowedSideEffects.add(IPair.of(node, operand));
         }
@@ -394,7 +458,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   public Void visitCompoundAssignment(CompoundAssignmentTree node, Void aVoid) {
     // Does not make the left-hand side an alias of the right-hand side,
     // because the rhs expression uses the lhs.
-    JavaExpression lhs = JavaExpression.fromTree(node.getVariable());
+    JavaExpression lhs = expressionFromTree(node.getVariable());
     if (isDisallowedAssignmentTarget(lhs)) {
       disallowedSideEffects.add(IPair.of(node, lhs));
     }

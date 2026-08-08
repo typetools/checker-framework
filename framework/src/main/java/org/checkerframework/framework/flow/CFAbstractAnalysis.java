@@ -224,7 +224,10 @@ public abstract class CFAbstractAnalysis<
       try {
         JavaExpression exprJe =
             StringToJavaExpression.atMethodInvocation(st, methodInvocationNode, checker);
-        seOnlyExpressions.add(exprJe);
+        // At a call of the form `super.m()`, view-adapting the callee's `this` yields `super`.
+        // The caller refers to that same object as `this`, so rewrite it that way; otherwise the
+        // refinements of `this` and of its fields would not be discarded.
+        seOnlyExpressions.add(JavaExpression.superToThis(exprJe));
       } catch (JavaExpressionParseException ex) {
         // Report at the call site rather than at the callee's declaration.  The callee may be
         // declared in a different compilation unit, or (as for an annotation that comes from a

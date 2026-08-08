@@ -1308,7 +1308,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       } catch (JavaExpressionParseException ex) {
         DiagMessage diagMessage = new DiagMessage(ex);
         if (diagMessage.getMessageKey().equals("flowexpr.parse.error")) {
-          checker.reportError(tree, "flowexpr.parse.error", st);
+          String s =
+              String.format(
+                  "'%s' in the @SideEffectsOnly annotation on the declaration of method '%s': ",
+                  st, tree.getName());
+          checker.reportError(tree, "flowexpr.parse.error", s + diagMessage.getArgs()[0]);
         } else {
           checker.report(tree, diagMessage);
         }
