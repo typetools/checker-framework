@@ -199,7 +199,7 @@ public class ProperType extends AbstractType {
    *     {@code superType} or if either type ignores annotations; otherwise {@link
    *     ConstraintSet#TRUE_ANNO_FAIL}
    */
-  private ReductionResult checkAnnotatedSubType(ProperType superType) {
+  private ReductionResult checkAnnotatedSubType(AbstractType superType) {
     if (ignoreAnnotations || superType.ignoreAnnotations) {
       return ConstraintSet.TRUE;
     }

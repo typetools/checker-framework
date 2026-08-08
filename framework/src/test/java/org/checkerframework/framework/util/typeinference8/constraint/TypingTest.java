@@ -151,7 +151,7 @@ public class TypingTest {
     TypeMirror javaType = elements.getTypeElement(className).asType();
     AnnotatedTypeMirror atm = AnnotatedTypeMirror.createType(javaType, typeFactory, false);
     atm.addMissingAnnotations(typeFactory.getQualifierHierarchy().getTopAnnotations());
-    return new ProperType(atm, javaType, context);
+    return new ProperType(atm, context);
   }
 
   /**
