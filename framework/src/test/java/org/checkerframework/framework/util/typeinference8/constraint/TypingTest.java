@@ -136,8 +136,7 @@ public class TypingTest {
     // S. During inference, some of the type variables in scope are inference variables and some
     // are not.
     AnnotatedDeclaredType baseStreamType = typeFactory.getAnnotatedType(baseStream);
-    ProperType capturedType =
-        new ProperType(baseStreamType, baseStreamType.getUnderlyingType(), context);
+    ProperType capturedType = new ProperType(baseStreamType, context);
     theta =
         context.inferenceTypeFactory.createThetaForCapture(new DummyExpressionTree(), capturedType);
     Assert.assertTrue(theta.containsKey(t));
