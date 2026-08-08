@@ -64,7 +64,7 @@ plume-util = "org.plumelib:plume-util:2.0.0"
 
 reflection-util = "org.plumelib:reflection-util:2.0.0"
 
-require-javadoc = "org.plumelib:require-javadoc:2.0.0"
+require-javadoc = "org.plumelib:require-javadoc:3.0.0"
 
 stubparser = "org.checkerframework:stubparser:3.28.1"
 
