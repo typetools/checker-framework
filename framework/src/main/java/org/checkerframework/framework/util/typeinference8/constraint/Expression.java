@@ -398,7 +398,7 @@ public class Expression extends TypeConstraint {
    * @param t the target type of {@code lambda}
    * @param lambda a lambda to infer functional interface parameterization
    * @param context the context
-   * @return the ground target type, or null if no valid parameterization of {@code t} exists
+   * @return a pair of the ground target type and the additional bounds it created, if any
    */
   private @Nullable IPair<AbstractType, BoundSet> getGroundTargetType(
       AbstractType t, LambdaExpressionTree lambda, Java8InferenceContext context) {
