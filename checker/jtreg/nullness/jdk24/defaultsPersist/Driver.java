@@ -1,3 +1,6 @@
+// Keep in sync with ../../jdk25/defaultsPersist/Driver.java, which uses the java.lang.classfile
+// API in place of the com.sun.tools.classfile API that was removed in Java 25.
+
 // Keep somewhat in sync with
 // langtools/test/tools/javac/annotations/typeAnnotations/referenceinfos/Driver.java
 

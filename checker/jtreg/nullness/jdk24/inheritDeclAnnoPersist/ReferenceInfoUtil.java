@@ -1,3 +1,6 @@
+// Keep in sync with ../../jdk25/inheritDeclAnnoPersist/ReferenceInfoUtil.java, which uses the
+// java.lang.classfile API in place of the com.sun.tools.classfile API that was removed in Java 25.
+
 // Keep somewhat in sync with
 // langtools/test/tools/javac/annotations/typeAnnotations/referenceinfos/ReferenceInfoUtil.java
 // Adapted to handle the same type qualifier appearing multiple times.
