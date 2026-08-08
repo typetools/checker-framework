@@ -193,12 +193,15 @@ public class ConstraintSet implements ReductionResult {
    * influence an output variable of another constraint in C. If that subset is empty, returns a set
    * containing a single constraint that participates in a constraint cycle. (See JLS 18.5.2.2)
    *
-   * @param c a constraint set
+   * @param c a nonempty constraint set
    * @param dependencies an object describing the dependencies of inference variables
    * @return a subset of constraints in {@code c} whose inputs do not affect {@code c}'s outputs, or
    *     a singleton constraint from a constraint cycle
    */
   public static ConstraintSet getClosedSubset(ConstraintSet c, Dependencies dependencies) {
+    if (c.isEmpty()) {
+      throw new BugInCF("ConstraintSet.getClosedSubset was passed an empty constraint set.");
+    }
     ConstraintSet subset = new ConstraintSet();
     // Collection of all outputs of c.
     Set<Variable> allOutputsOfC = new LinkedHashSet<>();
@@ -304,6 +307,11 @@ public class ConstraintSet implements ReductionResult {
       }
     }
 
+    // `consideredConstraints` is nonempty:  `c` is nonempty (checked at the top of this method),
+    // and `subset` is empty only if every constraint in `c` is a TypeConstraint (the first loop in
+    // this method adds every other kind of constraint to `subset`).  The loop that populates
+    // `consideredConstraints` adds the first TypeConstraint in `c`, because `inputDependencies`
+    // starts out empty.
     return new ConstraintSet(consideredConstraints.get(0));
   }
 
