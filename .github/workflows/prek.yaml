@@ -11,4 +11,5 @@ jobs:
           distribution: 'temurin'
           java-version: '25'
           cache: 'gradle'
+      - run: curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/main/install.sh | sudo bash
       - uses: j178/prek-action@v3.0.0
