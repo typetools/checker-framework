@@ -7,16 +7,16 @@
 
 ### User-visible changes
 
+New annotation `@SideEffectsOnly` permits more precise purity specifications.
+
+The `-AsuggestPureMethods` command-line option and the `purity.effectively.pure`
+warning no longer require `-AcheckPurityAnnotations` to also be supplied.
+
 ### Implementation details
 
 ### Closed issues
 
 ## Version 4.2.2 (2026-08-06)
-
-New annotation `@SideEffectsOnly` permits more precise purity specifications.
-
-The `-AsuggestPureMethods` command-line option and the `purity.effectively.pure`
-warning no longer require `-AcheckPurityAnnotations` to also be supplied.
 
 ### Implementation details
 
