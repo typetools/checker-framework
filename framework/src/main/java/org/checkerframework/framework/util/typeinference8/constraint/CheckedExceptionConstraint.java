@@ -103,7 +103,7 @@ public class CheckedExceptionConstraint extends TypeConstraint {
         return inputs;
       }
     }
-    return getInputVariablesForExpression(expression, getT());
+    return getInputVariablesForExpression(expression);
   }
 
   @Override

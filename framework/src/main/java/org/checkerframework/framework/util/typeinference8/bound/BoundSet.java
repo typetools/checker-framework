@@ -12,6 +12,7 @@ import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
+import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.StringsP;
 
 /**
@@ -73,6 +74,8 @@ public class BoundSet implements ReductionResult {
     this.captures = new LinkedHashSet<>(toCopy.captures);
     this.variables = new LinkedHashSet<>(toCopy.variables);
     this.uncheckedConversion = toCopy.uncheckedConversion;
+    this.annoInferenceFailed = toCopy.annoInferenceFailed;
+    this.errorMsg = toCopy.errorMsg;
   }
 
   /**
@@ -181,12 +184,12 @@ public class BoundSet implements ReductionResult {
    *     capture(G<...>)} for any variable in {@code as}
    */
   public boolean containsCapture(Collection<Variable> as) {
-    List<Variable> list = new ArrayList<>();
+    Set<Variable> lhsVariables = new LinkedHashSet<>();
     for (CaptureBound c : captures) {
-      list.addAll(c.getAllVariablesOnLHS());
+      lhsVariables.addAll(c.getAllVariablesOnLHS());
     }
     for (Variable ai : as) {
-      if (list.contains(ai)) {
+      if (lhsVariables.contains(ai)) {
         return true;
       }
     }
@@ -235,7 +238,8 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Returns the dependencies between variables.
+   * Returns the dependencies between variables. This method has the same side effect on this bound
+   * set as {@link #getDependencies(Collection)}.
    *
    * @return the dependencies between variables
    */
@@ -244,13 +248,21 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Adds the {@code additionalVars} to this bound set and returns the dependencies between all
-   * variables in this bound set.
+   * Returns the dependencies between all variables in this bound set and in {@code additionalVars}.
+   * The {@code additionalVars} are used only to compute the result; they are not added to this
+   * bound set.
    *
-   * @param additionalVars variables to add to this bound set
-   * @return the dependencies between all variables in this bound set
+   * <p>As a side effect, this method adds to this bound set every variable of every {@link Theta}
+   * created so far in this inference context. That is how variables created by a nested inference
+   * problem become part of this bound set and therefore get resolved by {@link Resolution}; without
+   * that side effect, those variables would never be instantiated.
+   *
+   * @param additionalVars variables to include in the dependency computation, in addition to the
+   *     variables of this bound set
+   * @return the dependencies between all variables in this bound set and in {@code additionalVars}
    */
   public Dependencies getDependencies(Collection<Variable> additionalVars) {
+    // This is a side effect on `variables`; see the method's Javadoc.
     for (Theta t : context.maps.values()) {
       variables.addAll(t.values());
     }
@@ -308,6 +320,8 @@ public class BoundSet implements ReductionResult {
    * defines this fixed point and further explains incorporation.
    *
    * @param newBounds bounds to incorporate
+   * @throws BugInCF if incorporation does not reach a fixed point within {@link
+   *     #MAX_INCORPORATION_STEPS} steps
    */
   public void incorporateToFixedPoint(final BoundSet newBounds) {
     this.containsFalse |= newBounds.containsFalse;
@@ -337,8 +351,15 @@ public class BoundSet implements ReductionResult {
       }
 
       containsFalse |= newBounds.containsFalse;
-      assert count < MAX_INCORPORATION_STEPS : "Max incorporation steps reached.";
-    } while (!containsFalse && count < MAX_INCORPORATION_STEPS);
+      if (!containsFalse && count >= MAX_INCORPORATION_STEPS) {
+        // Throw rather than assert, so that this is reported as a
+        // "type.argument.inference.crashed" error for this one expression, rather than as an
+        // AssertionError that aborts the entire compilation.
+        throw new BugInCF(
+            "Max incorporation steps (%d) reached without reaching a fixed point: %s",
+            MAX_INCORPORATION_STEPS, context.pathToExpression.getLeaf());
+      }
+    } while (!containsFalse);
   }
 
   /**
@@ -347,7 +368,7 @@ public class BoundSet implements ReductionResult {
    * @param as a set of variables
    */
   public void removeCaptures(Set<Variable> as) {
-    captures.removeIf((CaptureBound c) -> c.isCaptureMentionsAny(as));
+    captures.removeIf((CaptureBound c) -> c.mentionsAny(as));
   }
 
   @Override

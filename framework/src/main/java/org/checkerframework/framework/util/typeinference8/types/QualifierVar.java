@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.QualifierTyping;
@@ -34,8 +35,8 @@ public class QualifierVar extends AbstractQualifier {
   public final EnumMap<BoundKind, Set<AbstractQualifier>> qualifierBounds =
       new EnumMap<>(BoundKind.class);
 
-  /** The instantiation of this variable. This is set during inference. */
-  protected AnnotationMirror instantiation;
+  /** The instantiation of this variable, or null if it has none. This is set during inference. */
+  protected @Nullable AnnotationMirror instantiation;
 
   /**
    * Creates a {@link QualifierVar}.
@@ -86,9 +87,8 @@ public class QualifierVar extends AbstractQualifier {
    * @param otherQual the bound to add
    * @return a set of constraints generated from adding this bound
    */
-  @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public ConstraintSet addBound(BoundKind kind, AbstractQualifier otherQual) {
-    if (otherQual == this) {
+    if (this.equals(otherQual)) {
       return ConstraintSet.TRUE;
     }
     if (kind == BoundKind.EQUAL && otherQual instanceof Qualifier q) {
@@ -107,27 +107,26 @@ public class QualifierVar extends AbstractQualifier {
    * @param s other abstract qualifier
    * @return the constraints
    */
-  @SuppressWarnings("interning:not.interned") // Checking for exact object.
   private ConstraintSet addConstraintsFromComplementaryBounds(BoundKind kind, AbstractQualifier s) {
     ConstraintSet constraints = new ConstraintSet();
     switch (kind) {
       case EQUAL -> {
         for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
-          if (s != t) {
+          if (!s.equals(t)) {
             constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_EQUALITY));
           }
         }
       }
       case LOWER -> {
         for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
-          if (s != t) {
+          if (!s.equals(t)) {
             constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_SUBTYPE));
           }
         }
       }
       case UPPER -> {
         for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
-          if (s != t) {
+          if (!s.equals(t)) {
             constraints.add(new QualifierTyping(t, s, Kind.QUALIFIER_SUBTYPE));
           }
         }
@@ -136,7 +135,7 @@ public class QualifierVar extends AbstractQualifier {
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
       for (AbstractQualifier t : qualifierBounds.get(BoundKind.LOWER)) {
-        if (s != t) {
+        if (!s.equals(t)) {
           constraints.add(new QualifierTyping(t, s, Kind.QUALIFIER_SUBTYPE));
         }
       }
@@ -144,7 +143,7 @@ public class QualifierVar extends AbstractQualifier {
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.LOWER) {
       for (AbstractQualifier t : qualifierBounds.get(BoundKind.UPPER)) {
-        if (s != t) {
+        if (!s.equals(t)) {
           constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_SUBTYPE));
         }
       }
@@ -153,7 +152,7 @@ public class QualifierVar extends AbstractQualifier {
   }
 
   @Override
-  AnnotationMirror getInstantiation() {
+  @Nullable AnnotationMirror getInstantiation() {
     if (instantiation == null) {
       AnnotationMirror lub = null;
       for (AbstractQualifier lower : qualifierBounds.get(BoundKind.LOWER)) {

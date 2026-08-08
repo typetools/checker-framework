@@ -44,7 +44,7 @@ google-java-format = "com.google.googlejavaformat:google-java-format:1.36.1"
 
 guava = "org.checkerframework.annotatedlib:guava:33.1.0.2-jre"
 
-hashmap-util = "org.plumelib:hashmap-util:0.0.1"
+hashmap-util = "org.plumelib:hashmap-util:2.0.0"
 
 javac-parse = "org.plumelib:javac-parse:0.9.0"
 
@@ -60,9 +60,9 @@ lombok = "org.projectlombok:lombok:1.18.46"
 
 options = "org.plumelib:options:2.0.3"
 
-plume-util = "org.plumelib:plume-util:1.15.0-SNAPSHOT"
+plume-util = "org.plumelib:plume-util:2.0.0"
 
-reflection-util = "org.plumelib:reflection-util:2.0.0-SNAPSHOT"
+reflection-util = "org.plumelib:reflection-util:2.0.0"
 
 require-javadoc = "org.plumelib:require-javadoc:2.0.0"
 
@@ -81,3 +81,5 @@ com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.9.0" }
 com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "4.0.1" }
 
 biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.3.0" }
+
+gradle-nexus-publish-plugin = { id = "io.github.gradle-nexus.publish-plugin", version = "2.0.0" }

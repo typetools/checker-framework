@@ -209,7 +209,12 @@ public class InvocationTypeInference {
     Theta map =
         context.inferenceTypeFactory.createThetaForMethodReference(
             invocation, compileTimeDecl, context);
-    BoundSet b2 = createB2MethodRef(compileTimeDecl, target.getFunctionTypeParameterTypes(), map);
+    List<AbstractType> functionTypeParams = target.getFunctionTypeParameterTypes();
+    if (functionTypeParams == null) {
+      throw new BugInCF(
+          "Target of method reference is not a functional interface: %s: %s", invocation, target);
+    }
+    BoundSet b2 = createB2MethodRef(compileTimeDecl, functionTypeParams, map);
     AbstractType r = target.getFunctionTypeReturnType();
     BoundSet b3;
     if (r == null || r.getTypeKind() == TypeKind.VOID) {
@@ -276,7 +281,9 @@ public class InvocationTypeInference {
     }
 
     BoundSet newBounds = c.reduce(context);
-    assert !newBounds.containsFalse();
+    if (newBounds.containsFalse()) {
+      throw new BugInCF("Applicability constraints reduced to false for %s.", executableType);
+    }
     b1.incorporateToFixedPoint(newBounds);
 
     return b1;
@@ -329,7 +336,11 @@ public class InvocationTypeInference {
     }
 
     BoundSet newBounds = c.reduce(context);
-    assert !newBounds.containsFalse();
+    if (newBounds.containsFalse()) {
+      throw new BugInCF(
+          "Applicability constraints reduced to false for method reference %s.",
+          executableType.getMethodRef());
+    }
     b1.incorporateToFixedPoint(newBounds);
 
     return b1;
@@ -380,29 +391,31 @@ public class InvocationTypeInference {
       return b2;
     } else if (r.isUseOfVariable()) {
       Variable alpha = ((UseOfVariable) r).getVariable();
-      // Should a type compatibility constraint be added?
-      boolean compatibility = false;
-      // If the target type is a reference type, but is not a wildcard-parameterized type.
-      if (!target.isWildcardParameterizedType()) {
+      // Should a type compatibility constraint be added?  The JLS gives three independent
+      // alternatives, any one of which suffices.
+      boolean compatibility;
+      if (target.getTypeKind().isPrimitive()) {
+        // The target type is a primitive type, and one of the primitive wrapper classes
+        // mentioned in 5.1.7 is an instantiation, upper bound, or lower bound for alpha in B2.
+        compatibility = alpha.getBounds().hasPrimitiveWrapperBound();
+      } else {
+        // The target type is a reference type, but is not a wildcard-parameterized type, and
+        // either
         // i) B2 contains a bound of one of the forms alpha = S or S <: alpha, where S is a
         // wildcard-parameterized type, or
-        compatibility = alpha.getBounds().hasWildcardParameterizedLowerOrEqualBound();
-        // ii) B2 contains two bounds of the forms S1 <: alpha and S2 <: alpha, where S1
-        // and S2 have supertypes that are two different parameterizations of the same
-        // generic class or interface.
-        compatibility |= alpha.getBounds().hasLowerBoundDifferentParam();
-      } else if (target.isParameterizedType()) {
+        // ii) B2 contains two bounds of the forms S1 <: alpha and S2 <: alpha, where S1 and S2
+        // have supertypes that are two different parameterizations of the same generic class or
+        // interface.
+        compatibility =
+            !target.isWildcardParameterizedType()
+                && (alpha.getBounds().hasWildcardParameterizedLowerOrEqualBound()
+                    || alpha.getBounds().hasLowerBoundDifferentParam());
         // The target type is a parameterization of a generic class or interface, G, and B2
-        // contains a
-        // bound of one of the forms alpha = S or S <: alpha, where there exists no type of
-        // the form G<...> that is a supertype of S, but the raw type |G<...>| is a
+        // contains a bound of one of the forms alpha = S or S <: alpha, where there exists no
+        // type of the form G<...> that is a supertype of S, but the raw type |G<...>| is a
         // supertype of S.
-        compatibility = alpha.getBounds().hasRawTypeLowerOrEqualBound(target);
-      } else if (target.getTypeKind().isPrimitive()) {
-        // The target is a primitive type, and one of the primitive wrapper classes
-        // mentioned in
-        // 5.1.7 is an instantiation, upper bound, or lower bound for alpha in B2.
-        compatibility = alpha.getBounds().hasPrimitiveWrapperBound();
+        compatibility |=
+            target.isParameterizedType() && alpha.getBounds().hasRawTypeLowerOrEqualBound(target);
       }
       if (compatibility) {
         BoundSet resolve = Resolution.resolve(alpha, b2, context);
@@ -418,10 +431,13 @@ public class InvocationTypeInference {
         resolve.incorporateToFixedPoint(newBounds);
         return resolve;
       }
-      if (target.isProper() && target.getJavaType().getKind().isPrimitive()) {
-        // From the JLS:
-        // "T is a primitive type, and one of the primitive wrapper classes mentioned in
-        // 5.1.7 is an instantiation, upper bound, or lower bound for [the variable] in B2."
+      if (target.getTypeKind().isPrimitive()) {
+        // None of the three cases above applies, so the JLS reduces the constraint formula
+        // <R theta -> T>.  Because T is primitive, that reduces to the equality constraint
+        // <R theta = B>, where B is the result of boxing conversion applied to T.  Equality
+        // requires the qualifiers on R theta to be the same as the qualifiers on B, which is
+        // too strong; a qualifier on a boxed primitive type is often not a legal instantiation
+        // of the method's type variable.  So, reduce a subtyping constraint instead.
         String source =
             "Constraint between method call type and target type for method call: " + invocation;
 
@@ -613,6 +629,12 @@ public class InvocationTypeInference {
           // An explicitly typed lambda expression whose body is an expression that is
           // not pertinent to applicability.
           AbstractType funcReturn = formalParameterType.getFunctionTypeReturnType();
+          if (funcReturn == null) {
+            // Either formalParameterType is not a functional interface, or its function type
+            // returns void. In the latter case the lambda has no result expressions, so it is
+            // pertinent to applicability.
+            return false;
+          }
           for (ExpressionTree result : TreeUtils.getReturnedExpressions(lambda)) {
             if (notPertinentToApplicability(result, funcReturn)) {
               return true;
@@ -664,9 +686,10 @@ public class InvocationTypeInference {
    * @return the result of reducing and incorporating the set of constraints
    */
   private BoundSet getB4(BoundSet b3, ConstraintSet c) {
-    // C might contain new variables that have not yet been added to the b3 bound set.
-    Set<Variable> newVariables = c.getAllInferenceVariables();
     while (!c.isEmpty()) {
+      // C might contain new variables that have not yet been added to the b3 bound set.
+      // Each iteration might create a new Theta and new variables.
+      Set<Variable> newVariables = c.getAllInferenceVariables();
 
       ConstraintSet subset = ConstraintSet.getClosedSubset(c, b3.getDependencies(newVariables));
       Set<Variable> alphas = subset.getAllInputVariables();
