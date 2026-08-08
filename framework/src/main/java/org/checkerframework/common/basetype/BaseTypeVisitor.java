@@ -4303,26 +4303,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           ok = true;
         } else if (subPurity.contains(PurityKind.SIDE_EFFECTS_ONLY)) {
           // Both methods are annotated with @SideEffectsOnly.
-
-          ExecutableElement superElement = overridden.getElement();
-          AnnotationMirror seOnlySuper =
-              atypeFactory.getDeclAnnotation(superElement, SideEffectsOnly.class);
-          List<String> seOnlySuperExpressions =
-              AnnotationUtils.getElementValueArray(
-                  seOnlySuper, sideEffectsOnlyValueElement, String.class);
-          ExecutableElement subElement = overrider.getElement();
-          AnnotationMirror seOnlySub =
-              atypeFactory.getDeclAnnotation(subElement, SideEffectsOnly.class);
-          List<String> seOnlySubExpressions =
-              AnnotationUtils.getElementValueArray(
-                  seOnlySub, sideEffectsOnlyValueElement, String.class);
-
           // The subclass method (the overrider) is allowed to perform fewer side effects.
-          // TODO: This compares the annotations' string arguments rather than the Java
-          // expressions they stand for, so it does not recognize that (say) `@SideEffectsOnly("a")`
-          // permits everything that `@SideEffectsOnly("a.f")` does.  Such a comparison is
-          // conservative: it reports an error where none is warranted.
-          ok = seOnlySuperExpressions.containsAll(seOnlySubExpressions);
+          ok = sideEffectsOnlyIsNarrowed();
         } else {
           // Superclass method has @SideEffectsOnly, subclass method has no side-effect annotation.
           // This is normally unreachable, because @SideEffectsOnly is inherited: the overrider
@@ -4364,6 +4346,85 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               overridden);
         }
       }
+    }
+
+    /**
+     * Returns true if the overriding method's {@code @SideEffectsOnly} annotation permits no more
+     * side effects than the overridden method's does. That is the case when every expression in the
+     * overrider's annotation is covered by some expression in the overridden method's annotation:
+     * it is that expression, or it is reached through it.
+     *
+     * <p>Both annotations' arguments are parsed at their own method declaration, so {@code this}
+     * and {@code #1}-style parameter references are compared as the expressions they stand for
+     * rather than as strings. For example, {@code @SideEffectsOnly("#1")} permits everything that
+     * {@code @SideEffectsOnly("#1.f")} does.
+     *
+     * <p>This method requires that both the overrider and the overridden method are annotated with
+     * {@code @SideEffectsOnly}.
+     *
+     * @return true if the overrider's side effects are within the overridden method's
+     */
+    private boolean sideEffectsOnlyIsNarrowed() {
+      ExecutableElement superElement = overridden.getElement();
+      AnnotationMirror seOnlySuper =
+          atypeFactory.getDeclAnnotation(superElement, SideEffectsOnly.class);
+      List<String> seOnlySuperStrings =
+          AnnotationUtils.getElementValueArray(
+              seOnlySuper, sideEffectsOnlyValueElement, String.class);
+      ExecutableElement subElement = overrider.getElement();
+      AnnotationMirror seOnlySub =
+          atypeFactory.getDeclAnnotation(subElement, SideEffectsOnly.class);
+      List<String> seOnlySubStrings =
+          AnnotationUtils.getElementValueArray(
+              seOnlySub, sideEffectsOnlyValueElement, String.class);
+
+      List<JavaExpression> seOnlySuperExpressions =
+          sideEffectsOnlyExpressions(seOnlySuperStrings, superElement);
+      List<JavaExpression> seOnlySubExpressions =
+          sideEffectsOnlyExpressions(seOnlySubStrings, subElement);
+      if (seOnlySuperExpressions == null || seOnlySubExpressions == null) {
+        // An argument could not be parsed, so compare the annotations' strings.  The parse error
+        // itself is reported at the declaration that contains it, by
+        // `checkSideEffectsOnlyAnnotation`.
+        return seOnlySuperStrings.containsAll(seOnlySubStrings);
+      }
+
+      for (JavaExpression seOnlySubExpression : seOnlySubExpressions) {
+        boolean covered = false;
+        for (JavaExpression seOnlySuperExpression : seOnlySuperExpressions) {
+          // Argument order matters: `containsAsReceiver` is asymmetric, and
+          // `seOnlySubExpression` is the potential subexpression.
+          if (seOnlySubExpression.containsAsReceiver(seOnlySuperExpression)) {
+            covered = true;
+            break;
+          }
+        }
+        if (!covered) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    /**
+     * Parses the arguments of a {@code @SideEffectsOnly} annotation, at the declaration of the
+     * method that the annotation is written on.
+     *
+     * @param expressionStrings the arguments of a {@code @SideEffectsOnly} annotation
+     * @param method the method that the annotation is written on
+     * @return the expressions that the strings stand for, or null if one cannot be parsed
+     */
+    private @Nullable List<JavaExpression> sideEffectsOnlyExpressions(
+        List<String> expressionStrings, ExecutableElement method) {
+      List<JavaExpression> result = new ArrayList<>(expressionStrings.size());
+      for (String expressionString : expressionStrings) {
+        try {
+          result.add(StringToJavaExpression.atMethodDecl(expressionString, method, checker));
+        } catch (JavaExpressionParseException e) {
+          return null;
+        }
+      }
+      return result;
     }
 
     /**

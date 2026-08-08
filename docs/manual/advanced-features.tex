@@ -1188,7 +1188,11 @@ Like the other purity annotations, \<@SideEffectsOnly> is inherited by overridin
 methods, so an overriding method that is not annotated is checked against the
 overridden method's \<@SideEffectsOnly> annotation.  In the annotation's arguments,
 \<this> and \<\#1>-style parameter references are interpreted in the overriding
-method.  An overriding method may be annotated \<@SideEffectFree>, which is a
+method.  An overriding method may list fewer expressions than the overridden method
+does, or an expression that is reached through one that the overridden method lists
+(an override of a \<@SideEffectsOnly("\#1")> method may be annotated
+\<@SideEffectsOnly("\#1.f")>).
+An overriding method may be annotated \<@SideEffectFree>, which is a
 stronger guarantee than any \<@SideEffectsOnly> annotation; that is not a conflict.
 The annotation \<@SideEffectsOnly(\{\})> (i.e., a \<@SideEffectsOnly> annotation
 with an empty list of expressions) is illegal; write \<@SideEffectFree> instead.

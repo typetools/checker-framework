@@ -18,10 +18,12 @@ import org.checkerframework.framework.qual.JavaExpression;
  * {@code @InheritedAnnotation}.
  *
  * <p>On a constructor, this annotation constrains what the constructor modifies besides the object
- * being constructed; list {@code this} to permit assigning to the new object's own fields. At a
- * {@code new} expression, the expressions that are reached through {@code this} are ignored,
- * because the object being constructed did not exist before the call. A constructor's annotation
- * does not yet affect type refinement at {@code new} expressions.
+ * being constructed. Assigning to the new object's own fields is always permitted and need not be
+ * listed, because the object did not exist before the call; writing {@code this} in the annotation
+ * is legal but has no additional effect. At a {@code new} expression, the expressions that are
+ * reached through {@code this} are ignored, because the object being constructed did not exist
+ * before the call. A constructor's annotation does not yet affect type refinement at {@code new}
+ * expressions.
  *
  * @checker_framework.manual #side-effects-only-checking Checking {@code @SideEffectsOnly}
  */
