@@ -208,6 +208,16 @@ public class Expression extends TypeConstraint {
 
       ConstraintSet constraintSet = new ConstraintSet();
       List<AbstractType> ps = T.getFunctionTypeParameterTypes();
+      if (ps == null) {
+        // T is not a functional interface type, so it has no function type. JLS 18.2.1 says that
+        // the constraint reduces to false in that case.
+        //
+        // (reduce() handles proper types before calling this method, so T mentions at least one
+        // inference variable. If T is an inference variable that has not yet been instantiated,
+        // then reducing this constraint now is premature -- JLS 18.5.2.2 makes that variable an
+        // input variable of this constraint, so it should have been instantiated first.)
+        return ConstraintSet.FALSE;
+      }
       List<AbstractType> fs = typeOfPoAppMethod.getParameterTypes(null);
 
       if (ps.size() == fs.size() + 1) {
@@ -221,7 +231,7 @@ public class Expression extends TypeConstraint {
           if (MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound()) {
             AnnotatedTypeMirror atm =
                 context.typeFactory.getAnnotatedTypeFromTypeTree(preColonTree);
-            referenceType = new ProperType(atm, atm.getUnderlyingType(), context);
+            referenceType = new ProperType(atm, context);
           } else {
             referenceType = new ProperType(preColonTree, context);
           }
@@ -247,9 +257,14 @@ public class Expression extends TypeConstraint {
     if (compileTimeDecl.isVoid()) {
       return ConstraintSet.TRUE;
     }
+    if (!T.isFunctionalInterface()) {
+      // T has no function type, so JLS 18.2.1 says that the constraint reduces to false.
+      return ConstraintSet.FALSE;
+    }
     AbstractType r = T.getFunctionTypeReturnType();
     if (r == null || r.getTypeKind() == TypeKind.VOID) {
-      // getFunctionTypeReturnType() returns null if the function type's return type is void.
+      // Because T is a functional interface, getFunctionTypeReturnType() returns null only if the
+      // function type's return type is void.
       return ConstraintSet.TRUE;
     }
 
@@ -267,9 +282,9 @@ public class Expression extends TypeConstraint {
     AbstractType compileTimeReturn = compileTimeDecl.getReturnType(map);
     BoundSet b2;
     if (TreeUtils.needsTypeArgInference(memRef)) {
-      b2 =
-          context.inference.createB2MethodRef(
-              compileTimeDecl, T.getFunctionTypeParameterTypes(), map);
+      List<AbstractType> functionTypeParams = T.getFunctionTypeParameterTypes();
+      assert functionTypeParams != null : "@AssumeAssertion(nullness): T is a functional interface";
+      b2 = context.inference.createB2MethodRef(compileTimeDecl, functionTypeParams, map);
       if (!compileTimeReturn.isProper()) {
         return context.inference.createB3(b2, memRef, compileTimeDecl, r, map);
       }
@@ -307,11 +322,28 @@ public class Expression extends TypeConstraint {
 
     ConstraintSet constraintSet = new ConstraintSet();
 
+    if (boundSet.containsFalse()) {
+      // No valid parameterization of the functional interface exists (18.5.3), so the constraint
+      // reduces to false.
+      return ReductionResultPair.of(constraintSet, boundSet);
+    }
+
     if (!TreeUtils.isImplicitlyTypedLambda(lambda)) {
       // Explicitly typed lambda
       List<? extends VariableTree> parameters = lambda.getParameters();
       List<AbstractType> gs = tPrime.getFunctionTypeParameterTypes();
-      assert parameters.size() == gs.size();
+      if (parameters.size() != gs.size()) {
+        // If the number of lambda parameters differs from the number of parameter types of the
+        // function type, the constraint reduces to false.
+        boundSet.addFalse();
+        return ReductionResultPair.of(constraintSet, boundSet);
+      }
+      if (gs == null) {
+        // T is not a functional interface type, so it has no function type. JLS 18.2.1 says that
+        // the constraint reduces to false in that case.
+        boundSet.addFalse();
+        return ReductionResultPair.of(constraintSet, boundSet);
+      }
 
       for (int i = 0; i < gs.size(); i++) {
         VariableTree parameter = parameters.get(i);
@@ -379,7 +411,7 @@ public class Expression extends TypeConstraint {
   /**
    * Returns the non-wildcard parameterization of {@code t} as defined in JLS 9.9.
    *
-   * @param t a type
+   * @param t a wildcard parameterized type
    * @param context the context
    * @return the non-wildcard parameterization of {@code t}
    */
@@ -438,7 +470,12 @@ public class Expression extends TypeConstraint {
     AbstractType tPrime = InferenceType.create(t.getAnnotatedType(), t.getJavaType(), map, context);
 
     List<AbstractType> qs = tPrime.getFunctionTypeParameterTypes();
-    assert qs.size() == ps.size();
+    if (qs.size() != ps.size()) {
+      // 18.5.3: If n != k, no valid parameterization exists.
+      return IPair.of(t, falseBoundSet(context));
+    }
+    // tPrime is a parameterization of t, which is a wildcard-parameterized functional interface.
+    assert qs != null : "@AssumeAssertion(nullness): tPrime is a functional interface";
 
     // A set of constraint formulas is formed with, for all i (1 <= i <= n), <Pi = Qi>.
     ConstraintSet constraintSet = new ConstraintSet();
@@ -449,8 +486,10 @@ public class Expression extends TypeConstraint {
     }
     // This constraint formula set is reduced to form the bound set B.
     BoundSet b = constraintSet.reduce(context);
-    assert !b.containsFalse()
-        : "Bound set contains false during Functional Interface Parameterization Inference";
+    if (b.containsFalse()) {
+      // 18.5.3: If B contains the bound false, no valid parameterization exists.
+      return IPair.of(t, b);
+    }
 
     // A new parameterization of the functional interface type, F<A'1, ..., A'm>, is constructed
     // as follows, for 1 <= i <= m:
@@ -479,6 +518,18 @@ public class Expression extends TypeConstraint {
       return IPair.of(nonWildcardParameterization(target, context), b);
     }
     return IPair.of(target, b);
+  }
+
+  /**
+   * Returns a new bound set that contains only the false bound.
+   *
+   * @param context the context
+   * @return a new bound set that contains only the false bound
+   */
+  private static BoundSet falseBoundSet(Java8InferenceContext context) {
+    BoundSet boundSet = new BoundSet(context);
+    boundSet.addFalse();
+    return boundSet;
   }
 
   @Override

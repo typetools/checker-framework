@@ -14,7 +14,6 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.IntersectionType;
@@ -37,8 +36,8 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * This class represents "types" that "include type-like syntax that contains inference variables"
- * (see <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.1.1">Section
- * 18.1</a>). Three subclasses of this class are:
+ * (see <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.1.1">JLS
+ * section 18.1.1</a>). Three subclasses of this class are:
  *
  * <ul>
  *   <li>{@link ProperType}: types that do not contain inference variables
@@ -186,13 +185,8 @@ public abstract class AbstractType {
     List<ProperType> bounds = new ArrayList<>();
     List<AnnotatedTypeParameterBounds> typeVars =
         typeFactory.typeVariablesFromUse((AnnotatedDeclaredType) getAnnotatedType(), typeelem);
-    Iterator<? extends TypeParameterElement> javaEle = typeelem.getTypeParameters().iterator();
-
     for (AnnotatedTypeParameterBounds bound : typeVars) {
-      TypeVariable typeVariable = (TypeVariable) javaEle.next().asType();
-      bounds.add(
-          new ProperType(
-              bound.getUpperBound(), typeVariable.getUpperBound(), context, ignoreAnnotations));
+      bounds.add(new ProperType(bound.getUpperBound(), context, ignoreAnnotations));
     }
     return bounds;
   }
@@ -248,6 +242,15 @@ public abstract class AbstractType {
   protected AnnotatedExecutableType functionType = null;
 
   /**
+   * Returns true if this {@link AbstractType} is a functional interface type.
+   *
+   * @return true if this {@link AbstractType} is a functional interface type
+   */
+  public boolean isFunctionalInterface() {
+    return TypesUtils.isFunctionalInterface(getJavaType(), context.env);
+  }
+
+  /**
    * If this {@link AbstractType} is a functional interface type, then its function type is
    * returned. Otherwise, returns null.
    *
@@ -266,14 +269,19 @@ public abstract class AbstractType {
   }
 
   /**
-   * If this type is a functional interface, then this method returns the return type of the
-   * function type of that functional interface. Otherwise, returns null.
+   * If this type is a functional interface whose function type has a non-void return type, then
+   * this method returns that return type. Otherwise, returns null.
    *
-   * @return the return type of the function type of this type or null if one doesn't exist
+   * <p>Note that a null result does not distinguish between the two reasons for it: this type is
+   * not a functional interface, or the return type of its function type is void.
+   *
+   * @return the return type of the function type of this type, or null if this type is not a
+   *     functional interface or its function type returns void
    */
   public @Nullable AbstractType getFunctionTypeReturnType() {
-    if (TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
+    if (isFunctionalInterface()) {
       AnnotatedExecutableType aet = getFunctionType();
+      assert aet != null : "@AssumeAssertion(nullness): this is a functional interface";
       AnnotatedTypeMirror returnType = aet.getReturnType();
       if (returnType.getKind() == TypeKind.VOID) {
         return null;
@@ -288,12 +296,15 @@ public abstract class AbstractType {
    * If this type is a functional interface, then this method returns the parameter types of the
    * function type of that functional interface. Otherwise, it returns null.
    *
+   * <p>Each call returns a new list, which the caller may modify.
+   *
    * @return the parameter types of the function type of this type or null if no function type
    *     exists
    */
   public @Nullable List<AbstractType> getFunctionTypeParameterTypes() {
-    if (TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
+    if (isFunctionalInterface()) {
       AnnotatedExecutableType functionType = getFunctionType();
+      assert functionType != null : "@AssumeAssertion(nullness): this is a functional interface";
       List<AbstractType> params = new ArrayList<>();
       for (AnnotatedTypeMirror param : functionType.getParameterTypes()) {
         params.add(create(param, param.getUnderlyingType(), ignoreAnnotations));
