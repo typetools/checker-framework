@@ -18,9 +18,11 @@ exclude = { glob = [
   "**/*.ps",
   "**/*.ps-*",
   "**/*.svg",
-  "**/COPYING",
   "**/*expected*",
+  "**/COPYING",
   "src/main/resources/specifications/jdk/*",
+  "src/test/resources/end-to-end/**/*",
+  "tests/kvasir-tests/povray/*",
 ] }
 
 [[repos]]
@@ -36,9 +38,7 @@ hooks = [
   ] } },
   { id = "check-json" },
   { id = "check-merge-conflict" },
-  { id = "check-shebang-scripts-are-executable", exclude = { glob = [
-    "tests/kvasir-tests/povray/source/**",
-  ] } },
+  { id = "check-shebang-scripts-are-executable" },
   { id = "check-symlinks", exclude = { glob = [
     ".subversion/auth",
     "dots/.subversion/auth",
@@ -59,7 +59,6 @@ hooks = [
     "**/tests/squeeze-blank-lines-test/**",
     "bugs/jikes-patches/*",
     "java/jtb/**",
-    "src/main/resources/specifications/jdk",
     "tests/kvasir-tests/**",
   ] } },
   { id = "file-contents-sorter", files = { glob = [
@@ -87,6 +86,17 @@ hooks = [
   ] } },
 ]
 
+## CircleCI
+
+# This doesn't install the tool!  It fails with "Circleci CLI could not be
+# found." unless you have installed the CircleCI CLI.  Using `snap` to install
+# leads to permission problems due to snap confinement.  To install:
+# - run: curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/main/install.sh | sudo bash
+[[repos]]
+repo = "https://github.com/zahorniak/pre-commit-circleci"
+rev = "v1.3.0"
+hooks = [{ id = "circleci_validate" }]
+
 ## GitHub Actions
 
 [[repos]]
@@ -105,6 +115,8 @@ hooks = [
     "**/pubs-bytopic-headfoot.html",
     "**/pubs-bytopic-underreview-headfoot.html",
     "google04aaa4eb05fd668b.html",
+    "pubs/*-abstract.html",
+    "pubs/index.html",
     "tests/sources/six170/huffman.html",
     "tools/hierarchical/clustering.html",
   ] } },
@@ -117,13 +129,16 @@ hooks = [
 [[repos]]
 repo = "local"
 hooks = [
-  { id = "gradle-spotless", name = "spotless formatting", language = "unsupported", entry = "bash -c 'if [ -f ./gradlew ] ; then ./gradlew spotlessApply; fi'", files = "\\.java$", pass_filenames = false },
+  { id = "gradle-spotless", name = "spotless formatting", language = "unsupported", entry = "bash -c 'if [ -f ./gradlew ] ; then ./gradlew spotlessApply; fi'", files = { glob = [
+    "**/*.java",
+    "**/*.gradle.kts",
+  ] }, pass_filenames = false },
 ]
 
 ## Makefiles
 
 [[repos]]
-repo = "https://github.com/checkmake/checkmake.git"
+repo = "https://github.com/checkmake/checkmake"
 rev = "0.2.2"
 hooks = [
   { id = "checkmake", args = [
@@ -214,7 +229,6 @@ hooks = [
     "tests/kvasir-tests/tot_info/tests.sh",
     "cronic-orig",
     "classfile_check_version",
-    "tests/kvasir-tests/povray/**/*",
   ] } },
 ]
 
@@ -321,6 +335,6 @@ hooks = [
 ]
 
 [[repos]]
-repo = "https://github.com/adrienverge/yamllint.git"
-rev = "v1.29.0"
+repo = "https://github.com/adrienverge/yamllint"
+rev = "v1.38.0"
 hooks = [{ id = "yamllint" }]
