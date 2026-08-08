@@ -1014,7 +1014,13 @@ subprojects {
         String name = "all"
         String tests = "."
         executable = "jtreg"
+        // Without this, jtreg compiles and runs the tests under the JDK that jtreg itself runs
+        // under (JTREG_JAVA or JAVA_HOME), which may differ from testJdkVersion.
+        String testJdkHome = javaToolchains.launcherFor {
+          languageVersion = JavaLanguageVersion.of(rootProject.ext.testJdkVersion)
+        }.get().metadata.installationPath.asFile.absolutePath
         args = [
+          "-jdk:${testJdkHome}",
           "-dir:${projectDir}/jtreg",
           "-workDir:${jtregOutput}/${name}/work",
           "-reportDir:${jtregOutput}/${name}/report",
