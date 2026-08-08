@@ -31,6 +31,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
+import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -164,6 +166,15 @@ public abstract class AbstractType {
    *     have been replaced by their instantiation
    */
   public abstract AbstractType applyInstantiations();
+
+  /**
+   * Is {@code this} a subtype of {@code superType}?
+   *
+   * @param superType the potential supertype
+   * @return if {@code this} is a subtype of {@code superType}, then return {@link
+   *     ConstraintSet#TRUE}; otherwise, a false bound is returned
+   */
+  public abstract ReductionResult isSubType(AbstractType superType);
 
   /**
    * Returns true if this type is java.lang.Object.
