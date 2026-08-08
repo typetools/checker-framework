@@ -65,7 +65,7 @@ public class AbstractInvocationType extends AbstractExecutableType {
     }
 
     if (map == null) {
-      return new ProperType(annotatedReturnType, returnType, context);
+      return new ProperType(annotatedReturnType, context);
     } else {
       return InferenceType.create(annotatedReturnType, returnType, map, context);
     }

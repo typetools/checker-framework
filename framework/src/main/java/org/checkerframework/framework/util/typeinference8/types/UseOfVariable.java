@@ -9,6 +9,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -86,7 +87,7 @@ public class UseOfVariable extends AbstractType {
   }
 
   @Override
-  public List<ProperType> getTypeParameterBounds() {
+  public @Nullable List<ProperType> getTypeParameterBounds() {
     return null;
   }
 
