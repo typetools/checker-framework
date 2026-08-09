@@ -5,11 +5,13 @@ import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Options;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import javax.tools.JavaFileManager;
@@ -334,6 +336,13 @@ public final class CFGVisualizeLauncher {
         System.err.println("dot exited with status " + exitCode);
       }
     } catch (InterruptedException | IOException e) {
+      String msg = e.getMessage();
+      if (msg != null && msg.contains("Exec failed, error: 2 (No such file or directory)")) {
+        System.out.printf("Cannot find `dot` program.");
+        System.out.printf("PATH=%s%n", System.getenv("PATH"));
+        System.out.printf(
+            "Contents of /usr/bin/: %s%n", Arrays.toString(new File("/usr/bin/").listFiles()));
+      }
       e.printStackTrace();
       System.exit(1);
     }

@@ -30,6 +30,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   ant \
   cpp \
   git \
+  graphviz \
   jq \
   jtreg7 \
   libcurl3-gnutls \
