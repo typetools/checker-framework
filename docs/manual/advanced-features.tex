@@ -1066,6 +1066,16 @@ the method has no side effects, so calling it does not invalidate any
 dataflow facts. Alternately, the \refqualclass{dataflow/qual}{SideEffectsOnly}
 annotation specifies all the expressions that the method might side-effect.
 
+After a call to a \<@SideEffectsOnly> method, a checker discards what it knows about an
+expression \<e> if \<e> contains a listed expression:  modifying \<x> can change \<x.f>,
+but not the other way around.  If \<e> is a call to a \<@Pure> method, then a checker also
+discards what it knows when a listed expression is reached through the call's receiver or
+one of its arguments.  A \<@Pure> method's result depends on the state that the method
+reads, which no annotation declares, so a checker approximates that state by what is
+reachable from the call's receiver and arguments.  For example, a call to a
+\<@SideEffectsOnly("x.f")> method discards what is known about \<x.getF()>, but not what is
+known about \<y.getF()>.
+
 Calling a method twice might have different results, so facts known about
 one call cannot be relied upon at another call.
 The \refqualclass{dataflow/qual}{Deterministic} annotation indicates that
@@ -1222,6 +1232,17 @@ it to or from a listed expression.  Assigning to a local variable is never a sid
 because it is not visible outside the method.  Because \<super> and \<this> denote the same
 object, \<@SideEffectsOnly("this")> also covers \<super.f> and a call to \<super.m()>.
 
+Each expression in the annotation must denote the same location every time it is
+evaluated:  it must be a variable, a field access, an array access, a literal, a class
+name, or a call to a \refqualclass{dataflow/qual}{Pure} method, recursively.  A
+\<@Pure> method returns the same value every time it is called with the same arguments, so a
+call to one denotes the same location every time it is evaluated, so long as its receiver
+and its arguments do.  An expression such as \<\#1.getList()>, where \<getList> is not
+\<@Pure>, is rejected with \<purity.unstable.sideeffectsonly>, because two evaluations of
+it may yield unrelated values, so no method body could satisfy it --- not even one whose
+only side effect is written identically.  So is \<\#1.get(\#1.index())>, where \<get> is
+\<@Pure> but \<index> is not.
+
 Modifying an object that the method itself created is not a side effect that is visible to
 the caller, because the object did not exist before the call.  The checker recognizes this
 for a local variable that is assigned only \<new> expressions.  It permits modifying that
@@ -1234,6 +1255,15 @@ it.
 The body of a lambda, and the body of a method of a class that is declared within the
 method being checked, are not side effects of that method:  they run when the lambda or
 the method is invoked, and each such invocation is checked where it appears.
+
+A lambda's body is instead checked against the \<@SideEffectsOnly> annotation of the
+functional interface method that the lambda implements.  (A method of a class declared
+within a method needs no such special treatment:  it is a method declaration, and it
+inherits the annotation of the method it overrides.)  In the interface method's annotation,
+\<\#1>-style parameter references denote the lambda's own parameters, and \<this> is
+ignored:  it denotes the object that evaluating the lambda expression creates, which has no
+state that the body can modify.  A lambda whose interface method is \<@SideEffectFree> or
+\<@Pure> is not checked.
 
 Every method that a \<@SideEffectsOnly> method calls must itself be annotated
 \<@Pure>, \<@SideEffectFree>, or \<@SideEffectsOnly>.  A call to a method with none of
@@ -1266,8 +1296,11 @@ reasons syntactically, and treats two expressions as possibly aliased only when 
 assignment of a reference relating them appears in the method body.  Assigning a literal,
 such as \<null>, relates nothing, because a literal is not a reference to an object that
 other code can modify.  Two evaluations of an expression that computes a new value, such
-as a method call or an array creation, are treated as unrelated, even when the two
-expressions are written identically.  The method body is scanned once,
+as a call to a method that is not \<@Pure> or an array creation, are treated as unrelated,
+even when the two expressions are written identically.  Conversely, two evaluations of a
+call to a \<@Pure> method with stable arguments are treated as the same location; this is
+unsound if the method body changes state that the callee reads, because \<@Pure> promises
+the same return value only in the same environment.  The method body is scanned once,
 in source order, so an alias is visible only after the assignment that creates it; and
 alias sets grow but are never split, even when a later assignment makes the aliasing
 impossible.  A method that modifies a listed expression through an alias is therefore

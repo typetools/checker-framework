@@ -8,4 +8,11 @@ public class Library {
   public void unparseable() {}
 
   public void parseable() {}
+
+  // `seonly.astub` declares this method `@SideEffectFree`.  Both annotations are written on the
+  // declaration -- an annotation file is as much a declaration as source code is -- so this is a
+  // conflict, just as if both appeared in this file.
+  @org.checkerframework.dataflow.qual.SideEffectsOnly("this")
+  // :: error: (purity.incorrect.annotation.conflict)
+  public void conflictsWithStub() {}
 }

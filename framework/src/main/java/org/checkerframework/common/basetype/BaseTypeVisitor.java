@@ -1284,8 +1284,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // @SideEffectFree annotation.  It is not an error if one of the two is inherited: an
       // overriding method may promise more than the method it overrides, so @SideEffectFree on an
       // override of a @SideEffectsOnly method is legal (and checkPurity() permits it).
-      if (isWrittenOn(methodDeclElem, seOnlyAnnotation)
-          && isWrittenOn(methodDeclElem, pureOrSideEffectFreeAnnotation)) {
+      if (atypeFactory.isDeclAnnotationWrittenOn(methodDeclElem, seOnlyAnnotation)
+          && atypeFactory.isDeclAnnotationWrittenOn(
+              methodDeclElem, pureOrSideEffectFreeAnnotation)) {
         checker.reportError(
             tree,
             "purity.incorrect.annotation.conflict",
@@ -1308,6 +1309,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     for (String st : seOnlyExpressionStrings) {
       try {
         JavaExpression exprJe = StringToJavaExpression.atMethodBody(st, tree, checker);
+        if (!DisallowedSideEffects.isStable(atypeFactory, exprJe)) {
+          // Two evaluations of such an expression may denote unrelated values, so nothing that
+          // the method body modifies is ever recognized as being the expression, and every
+          // modification would be reported.  Reject the annotation instead.
+          checker.reportError(tree, "purity.unstable.sideeffectsonly", st);
+          return;
+        }
         seOnlyExpressions.add(exprJe);
       } catch (JavaExpressionParseException ex) {
         DiagMessage diagMessage = new DiagMessage(ex);
@@ -1352,21 +1360,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return pureAnnotation;
     }
     return atypeFactory.getDeclAnnotation(methodDeclaration, SideEffectFree.class);
-  }
-
-  /**
-   * Returns true if {@code anno} is written on {@code elt} itself, as opposed to being inherited
-   * from a method that {@code elt} overrides.
-   *
-   * <p>This consults only the element's own annotations, so it is accurate only for a declaration
-   * that appears in source code, which is the only case in which it is used.
-   *
-   * @param elt an element
-   * @param anno an annotation that applies to {@code elt}
-   * @return true if {@code anno} is written on {@code elt} itself
-   */
-  private boolean isWrittenOn(Element elt, AnnotationMirror anno) {
-    return AnnotationUtils.containsSameByName(elt.getAnnotationMirrors(), anno);
   }
 
   /**
@@ -2451,7 +2444,83 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // TODO: Postconditions?
     // https://github.com/typetools/checker-framework/issues/801
 
+    checkLambdaSideEffectsOnly(tree);
+
     return super.visitLambdaExpression(tree, p);
+  }
+
+  /**
+   * If the functional interface method that the given lambda implements is annotated
+   * {@code @SideEffectsOnly}, checks that the lambda's body side-effects at most the expressions
+   * that the annotation lists. Nothing else checks a lambda's body against that annotation: unlike
+   * an overriding method, a lambda does not inherit the annotation, and unlike a method reference,
+   * a lambda has no declaration to compare the annotation against.
+   *
+   * <p>An expression that mentions the interface method's {@code this} is ignored. It denotes the
+   * object that evaluating the lambda expression creates, and that object has no state that the
+   * body can modify.
+   *
+   * <p>A lambda whose interface method is {@code @SideEffectFree} or {@code @Pure} is not checked.
+   *
+   * @param tree a lambda expression
+   */
+  protected void checkLambdaSideEffectsOnly(LambdaExpressionTree tree) {
+    if (!checkPurityAnnotationsOption) {
+      return;
+    }
+    ExecutableElement interfaceMethod = atypeFactory.getFunctionTypeFromTree(tree).getElement();
+    AnnotationMirror seOnlyAnnotation =
+        atypeFactory.getDeclAnnotation(interfaceMethod, SideEffectsOnly.class);
+    if (seOnlyAnnotation == null || getPureOrSideEffectFreeAnnotation(interfaceMethod) != null) {
+      return;
+    }
+    List<? extends VariableTree> lambdaParameters = tree.getParameters();
+    if (interfaceMethod.getParameters().size() != lambdaParameters.size()) {
+      // The parameters do not correspond one-to-one, so do not guess at a correspondence.
+      return;
+    }
+    TreePath body = atypeFactory.getPath(tree.getBody());
+    if (body == null) {
+      return;
+    }
+
+    // Rewrite each of the interface method's formal parameters as the lambda's corresponding
+    // parameter, which is what the lambda's body names it.
+    JavaExpressionConverter converter =
+        new JavaExpressionConverter() {
+          @Override
+          protected JavaExpression visitFormalParameter(FormalParameter parameter, Void unused) {
+            return JavaExpression.fromVariableTree(lambdaParameters.get(parameter.getIndex() - 1));
+          }
+        };
+
+    List<String> seOnlyExpressionStrings =
+        AnnotationUtils.getElementValueArray(
+            seOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
+    List<JavaExpression> seOnlyExpressions = new ArrayList<>(seOnlyExpressionStrings.size());
+    for (String st : seOnlyExpressionStrings) {
+      JavaExpression atDeclaration;
+      try {
+        atDeclaration = StringToJavaExpression.atMethodDecl(st, interfaceMethod, checker);
+      } catch (JavaExpressionParseException ex) {
+        // The parse error itself is reported at the interface method's declaration, by
+        // `checkPurityAnnotations`.
+        return;
+      }
+      if (atDeclaration.containsOfClass(ThisReference.class)) {
+        continue;
+      }
+      seOnlyExpressions.add(converter.convert(atDeclaration));
+    }
+
+    DisallowedSideEffects.checkSideEffectsOnly(
+        body,
+        seOnlyExpressions,
+        checker,
+        interfaceMethod.getSimpleName(),
+        sideEffectsOnlyValueElement,
+        assumeSideEffectFree,
+        assumePureGetters);
   }
 
   @Override

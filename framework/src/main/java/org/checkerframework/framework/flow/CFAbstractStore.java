@@ -302,11 +302,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * refinement should be discarded.
    *
    * <p>When {@code sideEffectsOnlyExpressions} is non-null (the method has a
-   * {@code @SideEffectsOnly} annotation), {@code expr} is side-effected only if it
-   * <em>contains</em> one of those expressions as a subexpression: modifying {@code x} can change
-   * {@code x.f}, but not the other way around. This is the counterpart of the exact-equality test
-   * used at the declaration site in {@code DisallowedSideEffects}, which checks what the method
-   * body actually modifies.
+   * {@code @SideEffectsOnly} annotation), {@code expr} is side-effected only if {@link
+   * #mayChangeValue} holds of it and one of those expressions. This is the counterpart of the
+   * exact-equality test used at the declaration site in {@code DisallowedSideEffects}, which checks
+   * what the method body actually modifies.
    *
    * <p>Some side effects are ignored: {@code notSideEffectedExpression} is treated as if it cannot
    * change. Concretely, the implementation evaluates to false if {@code expr} is strictly equal to
@@ -315,8 +314,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * @param expr an expression
    * @param notSideEffectedExpression an expression that is never considered to be side-effected, or
    *     null
-   * @param sideEffectsOnlyExpressions if non-null, only these expressions (and expressions built
-   *     from them) are considered to be side-effected
+   * @param sideEffectsOnlyExpressions if non-null, only these expressions (and expressions whose
+   *     value they may change) are considered to be side-effected
    * @return true if the abstract value of the expression might have changed
    */
   private boolean isSideEffected(
@@ -330,10 +329,59 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return false;
     }
     if (sideEffectsOnlyExpressions != null) {
-      return sideEffectsOnlyExpressions.stream()
-          .anyMatch(expr::containsSyntacticEqualJavaExpression);
+      return sideEffectsOnlyExpressions.stream().anyMatch(seOnly -> mayChangeValue(expr, seOnly));
     }
     return true;
+  }
+
+  /**
+   * Returns true if modifying {@code seOnlyExpr}, or anything reached through it, might change the
+   * value of {@code expr}.
+   *
+   * <p>That is the case when {@code expr} contains {@code seOnlyExpr} as a subexpression: modifying
+   * {@code x} can change {@code x.f}, but not the other way around.
+   *
+   * <p>It is also the case when {@code expr} is a method call and {@code seOnlyExpr} is reached
+   * through one of the call's receiver and arguments. The value of a call to a {@code @Pure} method
+   * depends on the state that the method reads, which no annotation declares; this approximates
+   * that state by what is reachable from the call's receiver and arguments. If {@code getF()}
+   * returns {@code this.f}, then a call to a {@code @SideEffectsOnly("x.f")} method can change the
+   * value of {@code x.getF()}, even though {@code x.getF()} does not contain {@code x.f}.
+   *
+   * @param expr an expression whose value is stored in this store
+   * @param seOnlyExpr an expression that a callee may modify
+   * @return true if modifying {@code seOnlyExpr} might change the value of {@code expr}
+   */
+  private static boolean mayChangeValue(JavaExpression expr, JavaExpression seOnlyExpr) {
+    if (expr.containsSyntacticEqualJavaExpression(seOnlyExpr)) {
+      return true;
+    }
+    if (expr instanceof MethodCall methodCall) {
+      if (mayReach(seOnlyExpr, methodCall.getReceiver())) {
+        return true;
+      }
+      for (JavaExpression argument : methodCall.getArguments()) {
+        if (mayReach(seOnlyExpr, argument)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if {@code seOnlyExpr} may be reached through {@code input}, which is the receiver
+   * or an argument of a stored method call.
+   *
+   * @param seOnlyExpr an expression that a callee may modify
+   * @param input the receiver or an argument of a stored method call
+   * @return true if {@code seOnlyExpr} may be reached through {@code input}
+   */
+  private static boolean mayReach(JavaExpression seOnlyExpr, JavaExpression input) {
+    // The recursive call handles a nested call such as `x.getA().getB()`, whose receiver is
+    // itself a method call.
+    return seOnlyExpr.containsSyntacticEqualJavaExpression(input)
+        || mayChangeValue(input, seOnlyExpr);
   }
 
   /**

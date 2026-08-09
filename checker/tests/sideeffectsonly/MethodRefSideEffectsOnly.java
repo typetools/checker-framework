@@ -98,11 +98,6 @@ public class MethodRefSideEffectsOnly {
     CellMutator m = Cell::mutatesOwnField;
   }
 
-  interface CellReader {
-    @SideEffectsOnly("#1")
-    void apply(Cell cell);
-  }
-
   void boundNotOk() {
     Cell cell = new Cell();
     // For a bound reference, the receiver is fixed by the reference itself, so no expression at

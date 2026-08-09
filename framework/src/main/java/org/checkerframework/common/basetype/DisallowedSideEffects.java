@@ -44,14 +44,17 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
+import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.StringToJavaExpression;
+import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -178,9 +181,43 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       seOnlyExpressions.add(new ThisReference(constructorElt.getEnclosingElement().asType()));
       methodName = constructorName(constructorElt);
     }
+    checkSideEffectsOnly(
+        statement,
+        seOnlyExpressions,
+        checker,
+        methodName,
+        sideEffectsOnlyValueElement,
+        assumeSideEffectFree,
+        assumePureGetters);
+  }
+
+  /**
+   * Issues warnings about side effects beyond the given expressions, which come from a
+   * {@code @SideEffectsOnly} annotation.
+   *
+   * <p>Unlike the other overload, this one does not treat the code as a constructor body: the
+   * caller has already put every permitted expression in {@code sideEffectsOnlyExpressions}.
+   *
+   * @param statement the statement to check; a method body or the body of a lambda
+   * @param sideEffectsOnlyExpressions the expressions that the code may side-effect, written in
+   *     terms of the code being checked
+   * @param checker the checker to use
+   * @param methodName the name to use in diagnostics for the code being checked
+   * @param sideEffectsOnlyValueElement the {@code SideEffectsOnly.value} argument/element
+   * @param assumeSideEffectFree true if every method should be assumed to be side-effect-free
+   * @param assumePureGetters true if every getter should be assumed to be side-effect-free
+   */
+  public static void checkSideEffectsOnly(
+      TreePath statement,
+      List<JavaExpression> sideEffectsOnlyExpressions,
+      BaseTypeChecker checker,
+      CharSequence methodName,
+      ExecutableElement sideEffectsOnlyValueElement,
+      boolean assumeSideEffectFree,
+      boolean assumePureGetters) {
     DisallowedSideEffects scanner =
         new DisallowedSideEffects(
-            seOnlyExpressions,
+            sideEffectsOnlyExpressions,
             freshLocals(statement.getLeaf()),
             checker,
             sideEffectsOnlyValueElement,
@@ -691,19 +728,25 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * @return the alias-graph node for this occurrence of the expression
    */
   protected AliasNode aliasNode(JavaExpression expression) {
-    return new AliasNode(expression, isStable(expression) ? 0 : ++freshValueCount);
+    return new AliasNode(
+        expression, isStable(checker.getTypeFactory(), expression) ? 0 : ++freshValueCount);
   }
 
   /**
    * Returns true if every evaluation of the given expression yields the same location or value: the
-   * expression is a variable, a field access, an array access, a literal, or a class name,
-   * recursively. Any other expression, such as a method call or an object creation, may yield an
-   * unrelated value each time it is evaluated.
+   * expression is a variable, a field access, an array access, a literal, a class name, or a call
+   * to a {@code @Pure} method, recursively. Any other expression, such as a call to a method that
+   * is not {@code @Pure} or an object creation, may yield an unrelated value each time it is
+   * evaluated.
    *
+   * <p>A {@code @Pure} method returns the same value every time it is called with the same
+   * arguments, so a call to one is stable so long as its receiver and its arguments are.
+   *
+   * @param provider how to get annotations
    * @param expression an expression
    * @return true if every evaluation of the expression yields the same location or value
    */
-  protected static boolean isStable(JavaExpression expression) {
+  protected static boolean isStable(AnnotationProvider provider, JavaExpression expression) {
     if (expression instanceof LocalVariable
         || expression instanceof FormalParameter
         || expression instanceof ThisReference
@@ -712,9 +755,26 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         || expression instanceof ValueLiteral) {
       return true;
     } else if (expression instanceof FieldAccess fieldAccess) {
-      return isStable(fieldAccess.getReceiver());
+      return isStable(provider, fieldAccess.getReceiver());
     } else if (expression instanceof ArrayAccess arrayAccess) {
-      return isStable(arrayAccess.getArray()) && isStable(arrayAccess.getIndex());
+      return isStable(provider, arrayAccess.getArray())
+          && isStable(provider, arrayAccess.getIndex());
+    } else if (expression instanceof MethodCall methodCall) {
+      ExecutableElement method = methodCall.getElement();
+      if (!PurityUtils.isDeterministic(provider, method)
+          || !PurityUtils.isSideEffectFree(provider, method)) {
+        return false;
+      }
+      // For a static method, the receiver is a ClassName, which is stable.
+      if (!isStable(provider, methodCall.getReceiver())) {
+        return false;
+      }
+      for (JavaExpression argument : methodCall.getArguments()) {
+        if (!isStable(provider, argument)) {
+          return false;
+        }
+      }
+      return true;
     } else {
       return false;
     }
@@ -760,7 +820,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   public Void visitLambdaExpression(LambdaExpressionTree node, Void aVoid) {
     // The body of a lambda runs when the lambda is invoked, which is not necessarily within the
     // method being checked.  Wherever it is invoked, the invocation is a call to a method of a
-    // functional interface, and `visitMethodInvocation` checks that call.
+    // functional interface, and `visitMethodInvocation` checks that call.  The body itself is
+    // checked against that interface method's annotation, by
+    // `BaseTypeVisitor.checkLambdaSideEffectsOnly`.
     return null;
   }
 

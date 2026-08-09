@@ -36,6 +36,13 @@ public @interface SideEffectsOnly {
   /**
    * An upper bound on the expressions that this method might change the value of.
    *
+   * <p>Each expression must denote the same location every time it is evaluated: it must be a
+   * variable, a field access, an array access, a literal, a class name, or a call to a {@link Pure}
+   * method, recursively. A {@code @Pure} method returns the same value every time it is called with
+   * the same arguments, so a call to one qualifies so long as its receiver and its arguments do. An
+   * expression such as {@code "#1.getList()"}, where {@code getList} is not {@code @Pure}, may
+   * denote a different value each time it is evaluated, so no method body could satisfy it.
+   *
    * @return the Java expressions that the annotated method might side-effect
    * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
    */

@@ -37,6 +37,39 @@ public class NestedCodeSeonly {
     }
   }
 
+  // When the functional interface method is annotated, the lambda's body is checked against that
+  // annotation, at the lambda.
+
+  interface AnnotatedRunner {
+    @SideEffectsOnly("this")
+    void run();
+  }
+
+  interface Adder {
+    @SideEffectsOnly("#1")
+    void add(java.util.List<String> lst);
+  }
+
+  @SideEffectsOnly("this")
+  void lambdaModifiesStaticField() {
+    // `this` in `AnnotatedRunner.run`'s annotation is the object that evaluating the lambda
+    // expression creates, so the body may modify nothing at all.
+    // :: error: (purity.incorrect.sideeffectsonly)
+    AnnotatedRunner r = () -> staticField = 1;
+  }
+
+  @SideEffectsOnly("this")
+  void lambdaModifiesItsParameter() {
+    // `#1` of `Adder.add` is the lambda's own parameter.
+    Adder a = lst -> lst.add("x");
+  }
+
+  @SideEffectsOnly("this")
+  void lambdaModifiesAnotherList(java.util.List<String> other) {
+    // :: error: (purity.incorrect.sideeffectsonly)
+    Adder a = lst -> other.add("x");
+  }
+
   @SideEffectsOnly("this")
   void createsAnAnonymousClass() {
     // Creating the object runs the anonymous class's constructor, which has no side-effect

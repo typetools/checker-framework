@@ -47,4 +47,11 @@ public class NotCheckedWithoutOption {
   void unparseableAnnotation(Collection<Integer> a) {
     a.add(1);
   }
+
+  // Would report `purity.unstable.sideeffectsonly`:  two evaluations of `#1.iterator()` may
+  // yield unrelated values.
+  @SideEffectsOnly("#1.iterator()")
+  void unstableAnnotation(Collection<Integer> a) {
+    a.add(1);
+  }
 }

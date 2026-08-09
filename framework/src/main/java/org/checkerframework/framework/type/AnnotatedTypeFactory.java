@@ -4118,6 +4118,36 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Returns true if the given declaration annotation is written on the given element itself --
+   * either in source code or in an annotation file -- rather than being inherited from a method
+   * that the element overrides or from a supertype.
+   *
+   * @param elt an element
+   * @param anno a declaration annotation that applies to {@code elt}
+   * @return true if {@code anno} is written on {@code elt} itself
+   */
+  public boolean isDeclAnnotationWrittenOn(Element elt, AnnotationMirror anno) {
+    return AnnotationUtils.containsSameByName(elt.getAnnotationMirrors(), anno)
+        || containsSameByName(stubTypes.getDeclAnnotations(elt), anno)
+        || containsSameByName(ajavaTypes.getDeclAnnotations(elt), anno)
+        || (currentFileAjavaTypes != null
+            && containsSameByName(currentFileAjavaTypes.getDeclAnnotations(elt), anno));
+  }
+
+  /**
+   * Returns true if the given collection contains an annotation with the same name as the given
+   * one. Returns false if the collection is null.
+   *
+   * @param annos a collection of annotations, or null
+   * @param anno an annotation
+   * @return true if {@code annos} contains an annotation with the same name as {@code anno}
+   */
+  private static boolean containsSameByName(
+      @Nullable Collection<? extends AnnotationMirror> annos, AnnotationMirror anno) {
+    return annos != null && AnnotationUtils.containsSameByName(annos, anno);
+  }
+
+  /**
    * Adds into {@code results} the inherited declaration annotations found in all elements of the
    * super types of {@code typeMirror}. (Both superclasses and superinterfaces.)
    *
