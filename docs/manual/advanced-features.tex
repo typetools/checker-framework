@@ -1076,6 +1076,11 @@ reachable from the call's receiver and arguments.  For example, a call to a
 \<@SideEffectsOnly("x.f")> method discards what is known about \<x.getF()>, but not what is
 known about \<y.getF()>.
 
+Each listed expression is viewpoint-adapted to the call site.  If the adaptation yields an
+expression that the checker cannot represent --- as when an argument is a conditional
+expression or a cast --- then the checker does not know what the call modifies, so it
+discards every refinement, exactly as for a method with no side-effect annotation.
+
 Calling a method twice might have different results, so facts known about
 one call cannot be relied upon at another call.
 The \refqualclass{dataflow/qual}{Deterministic} annotation indicates that
@@ -1263,7 +1268,10 @@ inherits the annotation of the method it overrides.)  In the interface method's 
 \<\#1>-style parameter references denote the lambda's own parameters, and \<this> is
 ignored:  it denotes the object that evaluating the lambda expression creates, which has no
 state that the body can modify.  A lambda whose interface method is \<@SideEffectFree> or
-\<@Pure> is not checked.
+\<@Pure> is not checked.  An expression in the interface method's annotation that does not
+denote the same location every time it is evaluated is rejected at the lambda, with
+\<purity.unstable.sideeffectsonly>, just as it is at a method declaration; otherwise the
+lambda's every modification would be reported.
 
 Every method that a \<@SideEffectsOnly> method calls must itself be annotated
 \<@Pure>, \<@SideEffectFree>, or \<@SideEffectsOnly>.  A call to a method with none of
@@ -1286,10 +1294,23 @@ On a constructor, \<@SideEffectsOnly> constrains what the constructor modifies b
 the object being constructed.  Assigning to the new object's own fields is always
 permitted and need not be listed, because the object did not exist before the call;
 writing \<this> in the annotation is legal but has no additional effect.
-At a \<new> expression, the expressions that are reached through \<this> are
-ignored, because the object being constructed did not exist before the call and therefore
-no expression at the call site refers to it.  A constructor's \<@SideEffectsOnly>
+At a \<new> expression, \<this> in the constructor's annotation is ignored, because the
+object being constructed did not exist before the call and therefore no expression at the
+call site refers to it.  A larger expression that contains \<this>, such as \<this.f>, is
+not ignored:  its value may be an object that existed before the call, as it does for a
+constructor whose body contains \<this.f = p;> where \<p> is a formal parameter.  No
+expression at the call site denotes such a value either, so the \<new> expression reports
+\<purity.unknown.sideeffectsonly>.  A constructor's \<@SideEffectsOnly>
 annotation does not yet affect type refinement at \<new> expressions.
+
+Calling a constructor runs more than its body.  Unless the constructor delegates to
+another constructor of the same class with \<this(...)>, the class's instance field
+initializers and instance initializer blocks run first; and unless the constructor
+contains an explicit constructor call of either kind, the superclass's no-argument
+constructor runs before those.  All of that code is checked against the constructor's
+\<@SideEffectsOnly> annotation.  In particular, if the superclass's no-argument
+constructor has no side-effect annotation, then the constructor reports
+\<purity.unknown.sideeffectsonly>, just as an explicit \<super()> call would.
 
 Checking of \<@SideEffectsOnly> is unsound in the presence of aliasing.  The checker
 reasons syntactically, and treats two expressions as possibly aliased only when an

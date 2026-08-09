@@ -1,14 +1,17 @@
 package org.checkerframework.common.basetype;
 
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.UnaryTree;
@@ -26,6 +29,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -145,13 +149,16 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     for (JavaExpression sideEffectsOnlyExpression : sideEffectsOnlyExpressions) {
       sideEffectsOnlyNodesFromAnnotation.add(aliasNode(sideEffectsOnlyExpression));
     }
+    aliasedExpressions.addAll(sideEffectsOnlyNodesFromAnnotation);
   }
 
   /**
    * Issues warnings about side effects beyond the {@code @SideEffectsOnly} annotation.
    *
    * <p>When {@code methodTree} is a constructor, {@code this} is treated as if it appeared in the
-   * annotation, whether or not it does.
+   * annotation, whether or not it does. Also, the code that runs before the constructor's body --
+   * the superclass constructor and the enclosing class's instance initializers -- is checked along
+   * with the body.
    *
    * @param statement the statement to check; currently, at the only call site it is a method body
    * @param sideEffectsOnlyExpressions the values in the {@link SideEffectsOnly} annotation
@@ -169,26 +176,167 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       ExecutableElement sideEffectsOnlyValueElement,
       boolean assumeSideEffectFree,
       boolean assumePureGetters) {
-    List<JavaExpression> seOnlyExpressions = sideEffectsOnlyExpressions;
-    CharSequence methodName = methodTree.getName();
-    if (TreeUtils.isConstructor(methodTree)) {
-      // A constructor implicitly side-effects the object under construction, which did not exist
-      // before the call, so modifying it is not a side effect that is visible to the caller.  The
-      // effect is the same as if the programmer had written `this` in the annotation, which is
-      // also permitted.
-      ExecutableElement constructorElt = TreeUtils.elementFromDeclaration(methodTree);
-      seOnlyExpressions = new ArrayList<>(sideEffectsOnlyExpressions);
-      seOnlyExpressions.add(new ThisReference(constructorElt.getEnclosingElement().asType()));
-      methodName = constructorName(constructorElt);
+    if (!TreeUtils.isConstructor(methodTree)) {
+      checkSideEffectsOnly(
+          statement,
+          sideEffectsOnlyExpressions,
+          checker,
+          methodTree.getName(),
+          sideEffectsOnlyValueElement,
+          assumeSideEffectFree,
+          assumePureGetters);
+      return;
     }
-    checkSideEffectsOnly(
-        statement,
-        seOnlyExpressions,
-        checker,
-        methodName,
-        sideEffectsOnlyValueElement,
-        assumeSideEffectFree,
-        assumePureGetters);
+
+    // A constructor implicitly side-effects the object under construction, which did not exist
+    // before the call, so modifying it is not a side effect that is visible to the caller.  The
+    // effect is the same as if the programmer had written `this` in the annotation, which is also
+    // permitted.
+    ExecutableElement constructorElt = TreeUtils.elementFromDeclaration(methodTree);
+    List<JavaExpression> seOnlyExpressions = new ArrayList<>(sideEffectsOnlyExpressions);
+    seOnlyExpressions.add(new ThisReference(constructorElt.getEnclosingElement().asType()));
+
+    // Calling a constructor runs more than its body.  Unless the constructor delegates to another
+    // constructor of the same class, the class's instance initializers run first, and unless the
+    // constructor contains an explicit constructor call of either kind, the superclass's
+    // no-argument constructor runs before those.  javac does not put either in the constructor's
+    // AST until after the Checker Framework has run, so check them here.
+    MethodInvocationTree explicitCall = explicitConstructorCall(methodTree);
+    List<TreePath> initializers =
+        explicitCall != null && TreeUtils.isThisConstructorCall(explicitCall)
+            ? Collections.emptyList()
+            : instanceInitializers(statement);
+
+    List<Tree> checkedCode = new ArrayList<>(initializers.size() + 1);
+    for (TreePath initializer : initializers) {
+      checkedCode.add(initializer.getLeaf());
+    }
+    checkedCode.add(statement.getLeaf());
+    DisallowedSideEffects scanner =
+        new DisallowedSideEffects(
+            seOnlyExpressions,
+            freshLocals(checkedCode),
+            checker,
+            sideEffectsOnlyValueElement,
+            assumeSideEffectFree,
+            assumePureGetters);
+    if (explicitCall == null) {
+      scanner.checkImplicitSuperCall(methodTree, constructorElt);
+    }
+    // Scan in execution order, because the alias analysis depends on the order of scanning.
+    for (TreePath initializer : initializers) {
+      scanner.scan(initializer, null);
+    }
+    scanner.scan(statement, null);
+    scanner.report(constructorName(constructorElt));
+  }
+
+  /**
+   * Returns the explicit {@code this(...)} or {@code super(...)} call in the given constructor's
+   * body, or null if it contains neither.
+   *
+   * @param methodTree a constructor
+   * @return the explicit constructor call in the constructor's body, or null
+   */
+  private static @Nullable MethodInvocationTree explicitConstructorCall(MethodTree methodTree) {
+    BlockTree body = methodTree.getBody();
+    if (body == null) {
+      return null;
+    }
+    // The call need not be the first statement:  since Java 25, a constructor may run other
+    // statements before it.
+    for (StatementTree statement : body.getStatements()) {
+      if (statement instanceof ExpressionStatementTree expressionStatement
+          && expressionStatement.getExpression() instanceof MethodInvocationTree invocation
+          && (TreeUtils.isThisConstructorCall(invocation)
+              || TreeUtils.isSuperConstructorCall(invocation))) {
+        return invocation;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the instance field initializers and instance initializer blocks of the class that
+   * encloses the given code. They run as part of every constructor that does not delegate to
+   * another constructor of the same class.
+   *
+   * @param statement the body of a constructor
+   * @return paths to the instance initializers of the class that encloses {@code statement}
+   */
+  private static List<TreePath> instanceInitializers(TreePath statement) {
+    TreePath classPath = statement;
+    while (classPath != null && !(classPath.getLeaf() instanceof ClassTree)) {
+      classPath = classPath.getParentPath();
+    }
+    if (classPath == null) {
+      return Collections.emptyList();
+    }
+    List<TreePath> result = new ArrayList<>(2);
+    for (Tree member : ((ClassTree) classPath.getLeaf()).getMembers()) {
+      if (member instanceof VariableTree variable) {
+        // A static field's initializer runs at class initialization rather than at construction.
+        // (This also excludes an enum constant, which is static.)
+        if (variable.getInitializer() != null
+            && !variable.getModifiers().getFlags().contains(Modifier.STATIC)) {
+          result.add(new TreePath(classPath, member));
+        }
+      } else if (member instanceof BlockTree block && !block.isStatic()) {
+        result.add(new TreePath(classPath, member));
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Checks the call to the superclass's no-argument constructor that the compiler inserts in a
+   * constructor that contains no explicit {@code this(...)} or {@code super(...)} call, and records
+   * any side effect of it that is beyond what the {@link SideEffectsOnly} annotation of the
+   * constructor being checked permits.
+   *
+   * @param node the tree to report an error at
+   * @param constructorElt the constructor being checked
+   */
+  protected void checkImplicitSuperCall(Tree node, ExecutableElement constructorElt) {
+    TypeElement classElt = (TypeElement) constructorElt.getEnclosingElement();
+    TypeMirror superclass = classElt.getSuperclass();
+    if (superclass.getKind() != TypeKind.DECLARED) {
+      // The class has no superclass, so it is `java.lang.Object`, and no call is inserted.
+      return;
+    }
+    ElementKind classKind = classElt.getKind();
+    if (classKind == ElementKind.ENUM || classKind == ElementKind.RECORD) {
+      // The inserted call is to the constructor of `java.lang.Enum` or of `java.lang.Record`,
+      // which modifies only the object under construction.
+      return;
+    }
+    ExecutableElement superConstructor = noArgumentConstructor(superclass);
+    if (superConstructor == null) {
+      checker.reportError(
+          node, "purity.unknown.sideeffectsonly", TypesUtils.simpleTypeName(superclass));
+      return;
+    }
+    checkImplicitCall(node, superConstructor, null);
+  }
+
+  /**
+   * Returns the no-argument constructor of the given type, or null if it has none. A constructor is
+   * not inherited, so only the type's own constructors are considered.
+   *
+   * @param type a class type
+   * @return the type's no-argument constructor, or null if it has none
+   */
+  protected @Nullable ExecutableElement noArgumentConstructor(TypeMirror type) {
+    if (!(type instanceof DeclaredType declaredType)) {
+      return null;
+    }
+    for (ExecutableElement constructor :
+        ElementFilter.constructorsIn(declaredType.asElement().getEnclosedElements())) {
+      if (constructor.getParameters().isEmpty()) {
+        return constructor;
+      }
+    }
+    return null;
   }
 
   /**
@@ -218,14 +366,23 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     DisallowedSideEffects scanner =
         new DisallowedSideEffects(
             sideEffectsOnlyExpressions,
-            freshLocals(statement.getLeaf()),
+            freshLocals(Collections.singletonList(statement.getLeaf())),
             checker,
             sideEffectsOnlyValueElement,
             assumeSideEffectFree,
             assumePureGetters);
     scanner.scan(statement, null);
+    scanner.report(methodName);
+  }
 
-    for (IPair<Tree, JavaExpression> s : scanner.disallowedSideEffects) {
+  /**
+   * Reports an error for each side effect that this scanner found and that the {@link
+   * SideEffectsOnly} annotation does not permit.
+   *
+   * @param methodName the name to use in diagnostics for the code that was checked
+   */
+  protected void report(CharSequence methodName) {
+    for (IPair<Tree, JavaExpression> s : disallowedSideEffects) {
       checker.reportError(
           s.first, "purity.incorrect.sideeffectsonly", methodName, s.second.toString());
     }
@@ -275,7 +432,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       // static state and other state not reachable from its receiver and arguments.
       // A different message key than `purity.incorrect.sideeffectsonly` is used because the
       // subject of this message is the callee, not the method being checked.
-      checker.reportError(node, "purity.unknown.sideeffectsonly", invokedElem.getSimpleName());
+      checker.reportError(node, "purity.unknown.sideeffectsonly", calleeName(invokedElem));
       return super.visitMethodInvocation(node, aVoid);
     }
 
@@ -319,7 +476,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       } catch (JavaExpressionParseException ex) {
         // The parse error itself is reported at the callee's declaration, by
         // BaseTypeVisitor.checkPurityAnnotations.
-        checker.reportError(node, "purity.unknown.sideeffectsonly", invokedElem.getSimpleName());
+        checker.reportError(node, "purity.unknown.sideeffectsonly", calleeName(invokedElem));
         return Collections.emptyList();
       }
     }
@@ -394,7 +551,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * expressions can mention no formal parameter and only {@code this} needs to be view-adapted.
    *
    * @param node the tree to report an error at
-   * @param invokedElem the implicitly invoked method, which takes no arguments
+   * @param invokedElem the implicitly invoked method or constructor, which takes no arguments
    * @param receiver the receiver of the call, or null if the receiver is an object that the
    *     desugaring created and that therefore no caller can refer to
    */
@@ -415,7 +572,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         atypeFactory.getDeclAnnotation(invokedElem, SideEffectsOnly.class);
     if (seOnlyAnnotation == null) {
       // The callee has no side-effect annotation, so it might modify arbitrary state.
-      checker.reportError(node, "purity.unknown.sideeffectsonly", invokedElem.getSimpleName());
+      checker.reportError(node, "purity.unknown.sideeffectsonly", calleeName(invokedElem));
       return;
     }
 
@@ -429,13 +586,21 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       } catch (JavaExpressionParseException ex) {
         // The parse error itself is reported at the callee's declaration, by
         // BaseTypeVisitor.checkPurityAnnotations.
-        checker.reportError(node, "purity.unknown.sideeffectsonly", invokedElem.getSimpleName());
+        checker.reportError(node, "purity.unknown.sideeffectsonly", calleeName(invokedElem));
         return;
       }
       if (receiver == null) {
-        if (atDeclaration.containedOfClass(ThisReference.class) != null) {
-          // The expression is the object that the desugaring created, or is reached through it.
+        if (atDeclaration instanceof ThisReference) {
+          // The expression is the object that the desugaring created, which no caller can refer
+          // to, so modifying it is not a side effect that is visible to the caller.
           continue;
+        }
+        if (atDeclaration.containedOfClass(ThisReference.class) != null) {
+          // The expression is reached through the object that the desugaring created.  That object
+          // is not nameable here, so the expression cannot be view-adapted; and its value may be an
+          // object that existed before the call, so it cannot be dismissed as unobservable either.
+          checker.reportError(node, "purity.unknown.sideeffectsonly", calleeName(invokedElem));
+          return;
         }
       } else {
         atDeclaration = atReceiver(atDeclaration, receiver);
@@ -545,9 +710,12 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * Returns the expressions that the invoked constructor side-effects: the arguments/elements of
    * its {@link SideEffectsOnly} annotation, view-adapted to the given call site.
    *
-   * <p>An expression that mentions {@code this} is omitted from the result. In a constructor's
-   * annotation, {@code this} is the object being constructed, which did not exist before the call,
-   * so modifying it is not a side effect that is visible to the caller.
+   * <p>The expression {@code this} is omitted from the result. In a constructor's annotation,
+   * {@code this} is the object being constructed, which did not exist before the call, so modifying
+   * it is not a side effect that is visible to the caller. A larger expression that merely
+   * <em>contains</em> {@code this}, such as {@code this.f}, gets no such exemption: its value may
+   * be an object that existed before the call, as it does for a constructor whose body contains
+   * {@code this.f = p;} where {@code p} is a formal parameter.
    *
    * <p>If an expression cannot be parsed, this reports {@code purity.unknown.sideeffectsonly} and
    * returns an empty list, just as {@link #calleeSideEffectedExpressions} does.
@@ -574,13 +742,32 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
             node, "purity.unknown.sideeffectsonly", constructorName(constructorElt));
         return Collections.emptyList();
       }
-      if (atDeclaration.containedOfClass(ThisReference.class) != null) {
-        // The expression is the object under construction, or is reached through it.
+      if (atDeclaration instanceof ThisReference) {
+        // The expression is the object under construction, which no caller can refer to, so
+        // modifying it is not a side effect that is visible to the caller.
         continue;
+      }
+      if (atDeclaration.containedOfClass(ThisReference.class) != null) {
+        // The expression is reached through the object under construction.  That object is not
+        // nameable at the call site, so the expression cannot be view-adapted; and its value may be
+        // an object that existed before the call, so it cannot be dismissed as unobservable either.
+        checker.reportError(
+            node, "purity.unknown.sideeffectsonly", constructorName(constructorElt));
+        return Collections.emptyList();
       }
       result.add(atDeclaration.atConstructorInvocation(node));
     }
     return result;
+  }
+
+  /**
+   * Returns a name for the given method or constructor, for use in a diagnostic message.
+   *
+   * @param elt a method or constructor
+   * @return the name of the method, or the name of the class that the constructor constructs
+   */
+  private static CharSequence calleeName(ExecutableElement elt) {
+    return elt.getKind() == ElementKind.CONSTRUCTOR ? constructorName(elt) : elt.getSimpleName();
   }
 
   /**
@@ -702,13 +889,26 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    */
   protected boolean isCoveredByAnnotation(JavaExpression expr) {
     AliasNode node = aliasNode(expr);
-    aliasedExpressions.add(node);
+    // Argument order matters below: the relation `isReachedThrough` is asymmetric, and `expr` must
+    // be the potential sub-expression.
+    if (aliasedExpressions.contains(node)) {
+      for (AliasNode seOnlyNode : sideEffectsOnlyNodesFromAnnotation) {
+        // `test` lifts `isReachedThrough` over the two elements' alias sets, and caches the result.
+        if (aliasedExpressions.test(node, seOnlyNode)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    // `node` is not in the alias graph: this expression was never assigned or used as an
+    // initializer, so nothing is known to be aliased to it and its alias set would be just itself.
+    // Do not add it, which would create a new set on each call to this method; the union-find's
+    // predicate cache holds an entry per ordered pair of sets, so the sets must not proliferate.
     for (AliasNode seOnlyNode : sideEffectsOnlyNodesFromAnnotation) {
-      aliasedExpressions.add(seOnlyNode);
-      // Argument order matters: `test` lifts the asymmetric `containsAsReceiver` relation over
-      // the two elements' alias sets, and `expr` must be the potential sub-expression.
-      if (aliasedExpressions.test(node, seOnlyNode)) {
-        return true;
+      for (AliasNode seOnlyAlias : aliasedExpressions.elementsInSameSetAs(seOnlyNode)) {
+        if (isReachedThrough(node, seOnlyAlias)) {
+          return true;
+        }
       }
     }
     return false;
@@ -901,12 +1101,15 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * Returns the local variables that always hold an object that the given code created: those that
    * are assigned only {@code new} expressions.
    *
-   * @param tree the body of the method being checked
-   * @return the local variables that always hold an object that {@code tree} created
+   * @param trees the code being checked: the body of the method, plus the instance initializers if
+   *     the method is a constructor
+   * @return the local variables that always hold an object that {@code trees} created
    */
-  protected static Set<VariableElement> freshLocals(Tree tree) {
+  protected static Set<VariableElement> freshLocals(List<? extends Tree> trees) {
     FreshLocalScanner scanner = new FreshLocalScanner();
-    scanner.scan(tree, null);
+    for (Tree tree : trees) {
+      scanner.scan(tree, null);
+    }
     scanner.freshlyAssigned.removeAll(scanner.otherwiseAssigned);
     return scanner.freshlyAssigned;
   }

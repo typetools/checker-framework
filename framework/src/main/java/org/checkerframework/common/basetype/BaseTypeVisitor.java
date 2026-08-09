@@ -2462,6 +2462,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * <p>A lambda whose interface method is {@code @SideEffectFree} or {@code @Pure} is not checked.
    *
+   * <p>An expression that is not {@link DisallowedSideEffects#isStable stable} is rejected, as it
+   * is on a method declaration.
+   *
    * @param tree a lambda expression
    */
   protected void checkLambdaSideEffectsOnly(LambdaExpressionTree tree) {
@@ -2510,7 +2513,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (atDeclaration.containsOfClass(ThisReference.class)) {
         continue;
       }
-      seOnlyExpressions.add(converter.convert(atDeclaration));
+      JavaExpression seOnlyExpression = converter.convert(atDeclaration);
+      if (!DisallowedSideEffects.isStable(atypeFactory, seOnlyExpression)) {
+        // As in `checkPurityAnnotations`, nothing that the body modifies could ever be recognized
+        // as such an expression, so every modification would be reported.  Report the annotation
+        // instead.  This is reported here as well as at the interface method's declaration,
+        // because that declaration may be in a stub file or in another compilation unit.
+        checker.reportError(tree, "purity.unstable.sideeffectsonly", st);
+        return;
+      }
+      seOnlyExpressions.add(seOnlyExpression);
     }
 
     DisallowedSideEffects.checkSideEffectsOnly(

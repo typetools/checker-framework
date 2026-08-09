@@ -186,7 +186,7 @@ public abstract class CFAbstractAnalysis<
    * @param methodInvocationNode the call site at which the side-effecting expressions will be used
    * @return the expressions that the method side-effects, view-adapted to the given invocation; or
    *     null if the method has no {@code @SideEffectsOnly} annotation or an expression in it cannot
-   *     be parsed
+   *     be parsed or cannot be represented at the call site
    */
   public @Nullable List<JavaExpression> getSideEffectsOnlyExpressions(
       ExecutableElement method, MethodInvocationNode methodInvocationNode) {
@@ -224,6 +224,14 @@ public abstract class CFAbstractAnalysis<
       try {
         JavaExpression exprJe =
             StringToJavaExpression.atMethodInvocation(st, methodInvocationNode, checker);
+        if (exprJe.containsUnknown()) {
+          // View adaptation yielded no expression for some part of the annotation, because the
+          // receiver or an argument at the call site is a construct that JavaExpression does not
+          // model, such as a conditional expression or a cast.  Nothing in the store can match an
+          // `Unknown`, so returning the expression would discard no refinement at all.  Instead,
+          // return null, which makes the caller discard every refinement.
+          return null;
+        }
         // At a call of the form `super.m()`, view-adapting the callee's `this` yields `super`.
         // The caller refers to that same object as `this`, so rewrite it that way; otherwise the
         // refinements of `this` and of its fields would not be discarded.
