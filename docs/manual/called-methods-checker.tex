@@ -219,7 +219,9 @@ There are also method annotations:
   \end{Verbatim}
 
   If \<m()> might have side-effects (i.e., it is not annotated as
-  \refqualclass{dataflow/qual}{SideEffectFree} or \refqualclass{dataflow/qual}{Pure}),
+  \refqualclass{dataflow/qual}{SideEffectFree},
+  \refqualclass{dataflow/qual}{SideEffectsOnly}, or
+  \refqualclass{dataflow/qual}{Pure}),
   then the Called Methods Checker issues an error because
   it cannot make any assumptions about the call to \<m()>, and therefore assumes
   the worst: that all information it knows about in-scope variables (including
@@ -227,7 +229,9 @@ There are also method annotations:
   There are two possible fixes:
 
   \begin{itemize}
-  \item add a \<@SideEffectFree> or \<@Pure> annotation to \<m()>, if \<m()> is
+  \item add a \refqualclass{dataflow/qual}{SideEffectFree},
+  \refqualclass{dataflow/qual}{SideEffectsOnly}, or
+  \refqualclass{dataflow/qual}{Pure} annotation to \<m()>, if \<m()> is
     in fact side-effect free or pure; or
   \item re-order the calls to \<sock.close()> and \<m()> so that the call
     to \<sock.close()> appears last in \<closeSocket()>.

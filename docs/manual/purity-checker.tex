@@ -27,6 +27,9 @@ whole-program inference.
 \item[\refqualclass{dataflow/qual}{SideEffectFree}]
   indicates that the method has no externally-visible side effects.
 
+\item[\refqualclass{dataflow/qual}{SideEffectsOnly}]
+  indicates that the method has limited externally-visible side effects.
+
 \item[\refqualclass{dataflow/qual}{Deterministic}]
   indicates that if the method is called multiple times with identical
   arguments, then it returns the identical result according to \<==>
@@ -45,7 +48,10 @@ methods affect type-checking of client code.  However, you can make a
 mistake
 %
 by writing \<\refqualclass{dataflow/qual}{SideEffectFree}> on the
-declaration of a method that is not side-effect-free
+declaration of a method that is not side-effect-free,
+%
+by writing \<\refqualclass{dataflow/qual}{SideEffectsOnly}> on the
+declaration of a method that side-effects more than the listed expressions,
 or
 %
 by writing \<\refqualclass{dataflow/qual}{Deterministic}> on the
