@@ -4498,8 +4498,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       for (JavaExpression seOnlySubExpression : seOnlySubExpressions) {
         boolean covered = false;
         for (JavaExpression seOnlySuperExpression : seOnlySuperExpressions) {
-          // Argument order matters: `containsAsReceiver` is asymmetric, and
-          // `seOnlySubExpression` is the potential subexpression.
           if (seOnlySubExpression.containsAsReceiver(atypeFactory, seOnlySuperExpression)) {
             covered = true;
             break;
