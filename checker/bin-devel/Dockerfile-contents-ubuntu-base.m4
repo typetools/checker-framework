@@ -30,12 +30,23 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   ant \
   cpp \
   git \
+  graphviz \
   jq \
   jtreg7 \
   libcurl3-gnutls \
   make \
-  maven \
   python3-requests \
   python3-setuptools \
   unzip \
   wget
+
+define(`maven_version', `4.0.0-rc-6')dnl
+# The checksum is the .sha512 file beside the tarball in the URL below.
+# Update it whenever the Maven version defined above changes.
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& cd /opt \
+&& wget https://archive.apache.org/dist/maven/maven-4/maven_version/binaries/apache-maven-maven_version-bin.tar.gz \
+&& echo "3fba58e1c345a5aa1dbacfa7aceaf7b1a0fa9626e368eec4814fa7a7ebf0fe74f0e41481faef77f95d8738f9c1365f918c8b8c94d7c28656f067db61a8af7f2e  apache-maven-maven_version-bin.tar.gz" | sha512sum --check --strict \
+&& tar xzf apache-maven-maven_version-bin.tar.gz \
+&& rm apache-maven-maven_version-bin.tar.gz
+ENV PATH="/opt/apache-maven-maven_version/bin:$PATH"
