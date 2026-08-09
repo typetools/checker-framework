@@ -330,6 +330,8 @@ public final class CFGVisualizeLauncher {
   private static void producePDF(String file) {
     try {
       ProcessBuilder pb = new ProcessBuilder("dot", "-Tpdf", file, "-o", file + ".pdf");
+      // Without this, `dot` blocks forever if it writes more output than fits in a pipe buffer.
+      pb.inheritIO();
       Process child = pb.start();
       int exitCode = child.waitFor();
       if (exitCode != 0) {
@@ -340,9 +342,9 @@ public final class CFGVisualizeLauncher {
       // JDK 21+ words this as "Exec failed, error: 2 (No such file or directory)", earlier JDKs as
       // "error=2, No such file or directory".
       if (msg != null && msg.contains("No such file or directory")) {
-        System.out.printf("Cannot find `dot` program.%n");
-        System.out.printf("PATH=%s%n", System.getenv("PATH"));
-        System.out.printf(
+        System.err.printf("Cannot find `dot` program.%n");
+        System.err.printf("PATH=%s%n", System.getenv("PATH"));
+        System.err.printf(
             "Contents of /usr/bin/: %s%n", Arrays.toString(new File("/usr/bin/").listFiles()));
       }
       e.printStackTrace();
