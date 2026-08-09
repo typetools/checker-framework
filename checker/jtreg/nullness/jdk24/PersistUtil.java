@@ -76,7 +76,7 @@ public class PersistUtil {
         // actually creates a file in addition to returning its name.
         Files.copy(f.toPath(), fCopy.toPath(), StandardCopyOption.REPLACE_EXISTING);
         Files.copy(result.toPath(), resultCopy.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        System.out.printf("comileTestFile: copied to %s %s%n", fCopy, resultCopy);
+        System.out.printf("compileTestFile: copied to %s %s%n", fCopy, resultCopy);
       } catch (IOException e) {
         throw new UncheckedIOException(e);
       }
