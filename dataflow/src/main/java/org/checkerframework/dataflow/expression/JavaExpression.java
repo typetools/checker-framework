@@ -228,12 +228,17 @@ public abstract class JavaExpression {
    * {@code a} as a receiver, but not the converse. Callers must therefore pass the arguments in the
    * intended order, and must not rely on it as an equivalence relation.
    *
+   * <p>A {@link MethodCall} whose method is not side-effect-free contains only itself: {@code
+   * a.m()} may evaluate to an object that has nothing to do with {@code a}, so its result is not
+   * reached through {@code a}.
+   *
+   * @param provider how to get annotations
    * @param receiver a JavaExpression that might be the receiver of this
    * @return true if the given expression is equal to this or equal to the receiver of this,
    *     recursively
    */
   @Pure
-  public boolean containsAsReceiver(JavaExpression receiver) {
+  public boolean containsAsReceiver(AnnotationProvider provider, JavaExpression receiver) {
     return syntacticEquals(receiver);
   }
 

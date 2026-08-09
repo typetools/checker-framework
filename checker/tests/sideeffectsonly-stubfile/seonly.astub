@@ -15,3 +15,9 @@ class Library {
 
     @SideEffectsOnly("this") void parseable();
 }
+
+interface Callback {
+    // `noSuchField` does not exist here either.  A lambda that implements this method must fail
+    // closed at the lambda, rather than leave the lambda's body unchecked.
+    @SideEffectsOnly("this.noSuchField") void run();
+}

@@ -16,3 +16,9 @@ public class Library {
   // :: error: (purity.incorrect.annotation.conflict)
   public void conflictsWithStub() {}
 }
+
+interface Callback {
+  // `seonly.astub` declares this method `@SideEffectsOnly("this.noSuchField")`.
+  // :: error: (flowexpr.parse.error)
+  void run();
+}

@@ -131,8 +131,8 @@ public class FieldAccess extends JavaExpression {
   }
 
   @Override
-  public boolean containsAsReceiver(JavaExpression other) {
-    return syntacticEquals(other) || receiver.containsAsReceiver(other);
+  public boolean containsAsReceiver(AnnotationProvider provider, JavaExpression other) {
+    return syntacticEquals(other) || receiver.containsAsReceiver(provider, other);
   }
 
   @Override

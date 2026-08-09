@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 public class DesugaredCalls {
@@ -64,6 +66,43 @@ public class DesugaredCalls {
     // `iterator()` has no side-effect annotation, so it might modify arbitrary state.
     // :: error: (purity.unknown.sideeffectsonly)
     for (String s : u) {}
+  }
+
+  // `StringIterator.next()` returns `String` where `Iterator<String>.next()` erases to `Object`,
+  // and `CovariantRegistry.iterator()` returns `StringIterator` where `Iterable.iterator()` erases
+  // to `Iterator`, so javac adds a bridge method to each class.  A bridge carries none of the
+  // annotations of the method it forwards to, so the loop below would report
+  // `purity.unknown.sideeffectsonly` if a member lookup returned one.  Which of the two members a
+  // lookup encounters first is unspecified, so this test exercises the lookup rather than pinning
+  // down its order.
+  static class StringIterator implements Iterator<String> {
+    @SideEffectFree
+    StringIterator() {}
+
+    @Override
+    @Pure
+    public boolean hasNext() {
+      return false;
+    }
+
+    @Override
+    @SideEffectsOnly("this")
+    public String next() {
+      throw new java.util.NoSuchElementException();
+    }
+  }
+
+  static class CovariantRegistry implements Iterable<String> {
+    @Override
+    @SideEffectFree
+    public StringIterator iterator() {
+      return new StringIterator();
+    }
+  }
+
+  @SideEffectsOnly("this")
+  void enhancedForOverCovariantIterator(CovariantRegistry r) {
+    for (String s : r) {}
   }
 
   static class Resource implements AutoCloseable {

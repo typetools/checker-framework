@@ -25,4 +25,14 @@ public class UseSiteParseError {
   void callParseable(Library lib) {
     lib.parseable();
   }
+
+  static int staticField;
+
+  @SideEffectsOnly("#1")
+  void lambdaForUnparseable(Library lib) {
+    // `Callback.run`'s annotation cannot be parsed, so it does not say what the lambda's body may
+    // modify.  Failing closed reports it here rather than leaving the body unchecked.
+    // :: error: (flowexpr.parse.error)
+    Callback c = () -> staticField = 1;
+  }
 }

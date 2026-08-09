@@ -2506,8 +2506,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       try {
         atDeclaration = StringToJavaExpression.atMethodDecl(st, interfaceMethod, checker);
       } catch (JavaExpressionParseException ex) {
-        // The parse error itself is reported at the interface method's declaration, by
-        // `checkPurityAnnotations`.
+        // Fail closed:  the annotation does not say what the body may modify, so do not treat the
+        // body as unconstrained.  This is reported here as well as at the interface method's
+        // declaration, because that declaration may be in a stub file or in another compilation
+        // unit, where no error would be issued.
+        DiagMessage diagMessage = new DiagMessage(ex);
+        if (diagMessage.getMessageKey().equals("flowexpr.parse.error")) {
+          String s =
+              String.format(
+                  "'%s' in the @SideEffectsOnly annotation on the declaration of method '%s': ",
+                  st, interfaceMethod.getSimpleName());
+          checker.reportError(tree, "flowexpr.parse.error", s + diagMessage.getArgs()[0]);
+        } else {
+          checker.report(tree, diagMessage);
+        }
         return;
       }
       if (atDeclaration.containsOfClass(ThisReference.class)) {
@@ -4414,20 +4426,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               overriderTree,
               "purity.methodref",
               overriderType,
-              purityKindsToString(subPurity),
+              purityKindsToString(subPurity, overrider.getElement()),
               overrider,
               overriddenType,
-              purityKindsToString(superPurity),
+              purityKindsToString(superPurity, overridden.getElement()),
               overridden);
         } else {
           checker.reportError(
               overriderTree,
               "purity.overriding",
               overriderType,
-              purityKindsToString(subPurity),
+              purityKindsToString(subPurity, overrider.getElement()),
               overrider,
               overriddenType,
-              purityKindsToString(superPurity),
+              purityKindsToString(superPurity, overridden.getElement()),
               overridden);
         }
       }
@@ -4488,7 +4500,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (JavaExpression seOnlySuperExpression : seOnlySuperExpressions) {
           // Argument order matters: `containsAsReceiver` is asymmetric, and
           // `seOnlySubExpression` is the potential subexpression.
-          if (seOnlySubExpression.containsAsReceiver(seOnlySuperExpression)) {
+          if (seOnlySubExpression.containsAsReceiver(atypeFactory, seOnlySuperExpression)) {
             covered = true;
             break;
           }
@@ -4597,9 +4609,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * than as the enum constant names that {@code EnumSet.toString} would produce.
      *
      * @param purityKinds a set of purity kinds
+     * @param method the method that {@code purityKinds} are the purity kinds of, used to print the
+     *     arguments of its {@link SideEffectsOnly} annotation
      * @return the annotations corresponding to {@code purityKinds}, space-separated
      */
-    private String purityKindsToString(EnumSet<PurityKind> purityKinds) {
+    private String purityKindsToString(EnumSet<PurityKind> purityKinds, ExecutableElement method) {
       if (purityKinds.isEmpty()) {
         return "(no side effect annotation)";
       }
@@ -4607,11 +4621,38 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       for (PurityKind purityKind : purityKinds) {
         switch (purityKind) {
           case SIDE_EFFECT_FREE -> result.add("@SideEffectFree");
-          case SIDE_EFFECTS_ONLY -> result.add("@SideEffectsOnly");
+          case SIDE_EFFECTS_ONLY -> result.add(sideEffectsOnlyToString(method));
           case DETERMINISTIC -> result.add("@Deterministic");
         }
       }
       return result.toString();
+    }
+
+    /**
+     * Formats the given method's {@link SideEffectsOnly} annotation, with its arguments, as a user
+     * would write it. The arguments are printed because two {@code @SideEffectsOnly} annotations
+     * that permit different side effects differ only in them.
+     *
+     * @param method a method that is annotated with {@link SideEffectsOnly}
+     * @return the method's {@link SideEffectsOnly} annotation, as a user would write it
+     */
+    private String sideEffectsOnlyToString(ExecutableElement method) {
+      AnnotationMirror seOnlyAnnotation =
+          atypeFactory.getDeclAnnotation(method, SideEffectsOnly.class);
+      if (seOnlyAnnotation == null) {
+        return "@SideEffectsOnly";
+      }
+      List<String> expressionStrings =
+          AnnotationUtils.getElementValueArray(
+              seOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
+      StringJoiner quoted = new StringJoiner(", ");
+      for (String expressionString : expressionStrings) {
+        quoted.add("\"" + expressionString + "\"");
+      }
+      if (expressionStrings.size() == 1) {
+        return "@SideEffectsOnly(" + quoted + ")";
+      }
+      return "@SideEffectsOnly({" + quoted + "})";
     }
 
     /**

@@ -98,9 +98,9 @@ public class ArrayAccess extends JavaExpression {
   }
 
   @Override
-  public boolean containsAsReceiver(JavaExpression other) {
+  public boolean containsAsReceiver(AnnotationProvider provider, JavaExpression other) {
     // The index is not consulted: `a[i]` is reached through `a`, but not through `i`.
-    return syntacticEquals(other) || array.containsAsReceiver(other);
+    return syntacticEquals(other) || array.containsAsReceiver(provider, other);
   }
 
   @Override

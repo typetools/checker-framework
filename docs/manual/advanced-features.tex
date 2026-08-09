@@ -1237,6 +1237,12 @@ it to or from a listed expression.  Assigning to a local variable is never a sid
 because it is not visible outside the method.  Because \<super> and \<this> denote the same
 object, \<@SideEffectsOnly("this")> also covers \<super.f> and a call to \<super.m()>.
 
+The result of a method call is reached through the call's receiver only if the method is
+\<@SideEffectFree>.  \<@SideEffectsOnly("\#1")> covers \<\#1.subList(0, 1)>, because
+\<List.subList> is \<@SideEffectFree> and is therefore assumed to return a part of its
+receiver; it does not cover \<\#1.m()> for a method \<m> that is not \<@SideEffectFree>,
+because such a method may return an object that its receiver does not reach.
+
 Each expression in the annotation must denote the same location every time it is
 evaluated:  it must be a variable, a field access, an array access, a literal, a class
 name, or a call to a \refqualclass{dataflow/qual}{Pure} method, recursively.  A
@@ -1271,7 +1277,20 @@ state that the body can modify.  A lambda whose interface method is \<@SideEffec
 \<@Pure> is not checked.  An expression in the interface method's annotation that does not
 denote the same location every time it is evaluated is rejected at the lambda, with
 \<purity.unstable.sideeffectsonly>, just as it is at a method declaration; otherwise the
-lambda's every modification would be reported.
+lambda's every modification would be reported.  An expression that cannot be parsed is
+likewise reported at the lambda, with \<flowexpr.parse.error>, because the annotation then
+does not say what the lambda's body may modify.  Both are reported at the lambda as well as
+at the interface method's declaration, because that declaration may be in an annotation
+file or in another compilation unit, where no error would be issued.
+
+An argument of a call whose type is a functional interface is a possible callback:  the
+callee might invoke it before returning, so whatever the invocation modifies is a side
+effect of the calling method.  When the functional interface method has a side-effect
+annotation, the callee's own annotation accounts for the invocation, just as it does for
+every other call the callee makes.  Otherwise --- as for \<Predicate.test>, which has no
+side-effect annotation --- a lambda argument's body is checked as part of the calling
+method, and any other argument, such as a variable that holds a lambda, reports
+\<purity.unknown.sideeffectsonly>, because its body is not at hand to be checked.
 
 Every method that a \<@SideEffectsOnly> method calls must itself be annotated
 \<@Pure>, \<@SideEffectFree>, or \<@SideEffectsOnly>.  A call to a method with none of
@@ -1321,7 +1340,10 @@ as a call to a method that is not \<@Pure> or an array creation, are treated as 
 even when the two expressions are written identically.  Conversely, two evaluations of a
 call to a \<@Pure> method with stable arguments are treated as the same location; this is
 unsound if the method body changes state that the callee reads, because \<@Pure> promises
-the same return value only in the same environment.  The method body is scanned once,
+the same return value only in the same environment.  Treating the result of a
+\<@SideEffectFree> call as reached through the call's receiver is unsound for a method that
+returns state the receiver does not reach, such as a static field; no annotation expresses
+the difference between that and a view such as \<List.subList>.  The method body is scanned once,
 in source order, so an alias is visible only after the assignment that creates it; and
 alias sets grow but are never split, even when a later assignment makes the aliasing
 impossible.  A method that modifies a listed expression through an alias is therefore

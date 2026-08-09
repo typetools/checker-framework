@@ -70,6 +70,40 @@ public class NestedCodeSeonly {
     Adder a = lst -> other.add("x");
   }
 
+  // A lambda that is passed to a call might run before the call returns.  When the functional
+  // interface method has no side-effect annotation -- as `Predicate.test` does not -- the callee's
+  // own annotation does not account for what the invocation modifies, so the lambda's body is
+  // checked as part of this method.
+
+  @SideEffectsOnly("#1")
+  void passesALambdaThatModifiesAStaticField(java.util.List<String> lst) {
+    lst.removeIf(
+        s -> {
+          // :: error: (purity.incorrect.sideeffectsonly)
+          staticField = 1;
+          return true;
+        });
+  }
+
+  @SideEffectsOnly("#1")
+  void passesAHarmlessLambda(java.util.List<String> lst) {
+    lst.removeIf(s -> s.isEmpty());
+  }
+
+  @SideEffectsOnly("#1")
+  void passesAPureMethodReference(java.util.List<String> lst) {
+    lst.removeIf(String::isEmpty);
+  }
+
+  @SideEffectsOnly("#1")
+  void passesAPredicateVariable(
+      java.util.List<String> lst, java.util.function.Predicate<String> p) {
+    // The body that `p` holds is not at hand to be checked, so what invoking it modifies is
+    // unknown.
+    // :: error: (purity.unknown.sideeffectsonly)
+    lst.removeIf(p);
+  }
+
   @SideEffectsOnly("this")
   void createsAnAnonymousClass() {
     // Creating the object runs the anonymous class's constructor, which has no side-effect

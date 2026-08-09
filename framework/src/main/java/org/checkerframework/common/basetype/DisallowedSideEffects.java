@@ -1,5 +1,6 @@
 package org.checkerframework.common.basetype;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -8,6 +9,7 @@ import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -25,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -92,8 +95,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   /**
    * Groups expressions into sets, where all the elements in each set might be aliased to one other.
    */
-  protected final UnionFind<AliasNode> aliasedExpressions =
-      new UnionFind<>(null, DisallowedSideEffects::isReachedThrough);
+  protected final UnionFind<AliasNode> aliasedExpressions;
 
   /**
    * The number of alias-graph nodes that {@link #aliasNode} has created for expressions that are
@@ -106,6 +108,12 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * such an object is not a side effect that is visible to the caller.
    */
   protected final Set<VariableElement> freshLocals;
+
+  /**
+   * The lambdas whose bodies this scanner scans, because they are passed to a call that might
+   * invoke them. See {@link #checkCallbackArguments}.
+   */
+  protected final Set<LambdaExpressionTree> scannedLambdas = new HashSet<>(2);
 
   /** The checker to use. */
   protected final BaseTypeChecker checker;
@@ -145,6 +153,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     this.sideEffectsOnlyValueElement = sideEffectsOnlyValueElement;
     this.assumeSideEffectFree = assumeSideEffectFree;
     this.assumePureGetters = assumePureGetters;
+    // `isReachedThrough` reads only `checker`, which is set above, and is not called until an
+    // expression is added to the union-find.
+    this.aliasedExpressions = new UnionFind<>(null, this::isReachedThrough);
     this.sideEffectsOnlyNodesFromAnnotation = new ArrayList<>(sideEffectsOnlyExpressions.size());
     for (JavaExpression sideEffectsOnlyExpression : sideEffectsOnlyExpressions) {
       sideEffectsOnlyNodesFromAnnotation.add(aliasNode(sideEffectsOnlyExpression));
@@ -442,7 +453,72 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         disallowedSideEffects.add(IPair.of(node, expr));
       }
     }
+    checkCallbackArguments(node.getArguments());
     return super.visitMethodInvocation(node, aVoid);
+  }
+
+  /**
+   * Checks each argument of a call that the callee might invoke as a callback: one whose type is a
+   * functional interface whose method has no side-effect annotation. Such an invocation might
+   * modify anything, and the callee's own {@link SideEffectsOnly} annotation does not account for
+   * it, because the annotation is written at the callee's declaration where the callback's body is
+   * not known.
+   *
+   * <p>When the functional interface method <em>is</em> annotated, this method does nothing: the
+   * callee's annotation accounts for the invocation just as it does for every other call the callee
+   * makes, and {@code BaseTypeVisitor.checkLambdaSideEffectsOnly} checks a lambda's body against
+   * the interface method's annotation.
+   *
+   * <p>Otherwise, a lambda argument's body is scanned as part of the code being checked, because
+   * the callee might run it before returning. Any other argument, such as a variable that holds a
+   * lambda, is reported: its body is not at hand to be scanned.
+   *
+   * @param arguments the arguments of a call to a method or constructor that is annotated with
+   *     {@link SideEffectsOnly}
+   */
+  protected void checkCallbackArguments(List<? extends ExpressionTree> arguments) {
+    ProcessingEnvironment processingEnv = checker.getProcessingEnvironment();
+    AnnotatedTypeFactory atypeFactory = checker.getTypeFactory();
+    for (ExpressionTree argument : arguments) {
+      ExpressionTree arg = TreeUtils.withoutParens(argument);
+      TypeMirror argType = TreeUtils.typeOf(arg);
+      if (!TypesUtils.isFunctionalInterface(argType, processingEnv)) {
+        continue;
+      }
+      ExecutableElement functionalMethod = TypesUtils.findFunction(argType, processingEnv);
+      if (atypeFactory.getDeclAnnotation(functionalMethod, SideEffectsOnly.class) != null
+          || modifiesNothing(functionalMethod)) {
+        continue;
+      }
+      if (arg instanceof LambdaExpressionTree lambda) {
+        // The body is at hand, so check it as part of the code being checked.
+        scannedLambdas.add(lambda);
+        continue;
+      }
+      if (arg instanceof MemberReferenceTree memberReference) {
+        ExecutableElement referenced = TreeUtils.elementFromUse(memberReference);
+        if (referenced != null && modifiesNothing(referenced)) {
+          continue;
+        }
+      }
+      checker.reportError(arg, "purity.unknown.sideeffectsonly", calleeName(functionalMethod));
+    }
+  }
+
+  /**
+   * Returns true if the given method promises to modify nothing that existed before it was called.
+   *
+   * @param elt a method or constructor
+   * @return true if the given method modifies nothing
+   */
+  protected boolean modifiesNothing(ExecutableElement elt) {
+    AnnotatedTypeFactory atypeFactory = checker.getTypeFactory();
+    if (assumeSideEffectFree || (assumePureGetters && ElementUtils.isGetter(elt))) {
+      // The user asked that the method be assumed to modify nothing.
+      return true;
+    }
+    return atypeFactory.getDeclAnnotation(elt, Pure.class) != null
+        || atypeFactory.getDeclAnnotation(elt, SideEffectFree.class) != null;
   }
 
   /**
@@ -638,6 +714,11 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * Returns the no-argument method with the given name that a call on an expression of the given
    * type invokes, or null if there is no such method.
    *
+   * <p>A static method is not a candidate, because the desugared call has a receiver. Neither is a
+   * synthetic method: a covariant-return override such as {@code MyIterator iterator()} makes javac
+   * add a bridge method {@code Iterator iterator()} to the member closure, and the bridge carries
+   * none of the declaration annotations that the method it forwards to does.
+   *
    * @param receiverType the type of the receiver of the call
    * @param methodName the name of the method
    * @return the invoked method, or null if the type has no such method
@@ -660,7 +741,10 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     Elements elements = checker.getElementUtils();
     for (ExecutableElement method :
         ElementFilter.methodsIn(elements.getAllMembers((TypeElement) declaredType.asElement()))) {
-      if (method.getParameters().isEmpty() && method.getSimpleName().contentEquals(methodName)) {
+      if (method.getParameters().isEmpty()
+          && method.getSimpleName().contentEquals(methodName)
+          && !method.getModifiers().contains(Modifier.STATIC)
+          && !TreeUtils.isSynthetic(method)) {
         return method;
       }
     }
@@ -703,6 +787,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         disallowedSideEffects.add(IPair.of(node, expr));
       }
     }
+    checkCallbackArguments(node.getArguments());
     return super.visitNewClass(node, aVoid);
   }
 
@@ -1009,15 +1094,20 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * @param node2 a node that might be {@code node1} or a receiver of it
    * @return true if {@code node1}'s value is {@code node2}'s value or is reached through it
    */
-  protected static boolean isReachedThrough(AliasNode node1, AliasNode node2) {
+  protected boolean isReachedThrough(AliasNode node1, AliasNode node2) {
     if (node2.occurrence != 0 && !node1.equals(node2)) {
       return false;
     }
-    return node1.expression.containsAsReceiver(node2.expression);
+    return node1.expression.containsAsReceiver(checker.getTypeFactory(), node2.expression);
   }
 
   @Override
   public Void visitLambdaExpression(LambdaExpressionTree node, Void aVoid) {
+    if (scannedLambdas.contains(node)) {
+      // The lambda is passed to a call that might invoke it before it returns, and no annotation
+      // constrains what the invocation modifies.  See `checkCallbackArguments`.
+      return super.visitLambdaExpression(node, aVoid);
+    }
     // The body of a lambda runs when the lambda is invoked, which is not necessarily within the
     // method being checked.  Wherever it is invoked, the invocation is a call to a method of a
     // functional interface, and `visitMethodInvocation` checks that call.  The body itself is
@@ -1032,6 +1122,14 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     // the method being checked.  Their bodies run when those methods are called, and each such
     // call is checked where it appears.  (Instance initializers run when the class is
     // instantiated, and `visitNewClass` checks that.)
+    return null;
+  }
+
+  @Override
+  public Void visitAnnotation(AnnotationTree node, Void aVoid) {
+    // An annotation is not code that runs, so it has no side effect.  Its arguments must not be
+    // scanned: an argument such as the `value = 1` of `@A(value = 1)` is an AssignmentTree whose
+    // left-hand side stands for an annotation element rather than for a variable.
     return null;
   }
 
@@ -1120,7 +1218,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    *
    * <p>A local variable that a lambda or a local class assigns is not effectively final, so it
    * cannot be captured; therefore, scanning the whole method body -- including such bodies, which
-   * {@link DisallowedSideEffects} itself does not scan -- cannot miss an assignment.
+   * {@link DisallowedSideEffects} itself does not always scan -- cannot miss an assignment.
    */
   private static class FreshLocalScanner extends TreeScanner<Void, Void> {
 
@@ -1132,6 +1230,12 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
 
     /** Creates a FreshLocalScanner. */
     FreshLocalScanner() {}
+
+    @Override
+    public Void visitAnnotation(AnnotationTree node, Void aVoid) {
+      // An annotation assigns nothing; see `DisallowedSideEffects.visitAnnotation`.
+      return null;
+    }
 
     @Override
     public Void visitVariable(VariableTree node, Void aVoid) {
