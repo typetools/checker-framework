@@ -337,8 +337,10 @@ public final class CFGVisualizeLauncher {
       }
     } catch (InterruptedException | IOException e) {
       String msg = e.getMessage();
-      if (msg != null && msg.contains("Exec failed, error: 2 (No such file or directory)")) {
-        System.out.printf("Cannot find `dot` program.");
+      // JDK 21+ words this as "Exec failed, error: 2 (No such file or directory)", earlier JDKs as
+      // "error=2, No such file or directory".
+      if (msg != null && msg.contains("No such file or directory")) {
+        System.out.printf("Cannot find `dot` program.%n");
         System.out.printf("PATH=%s%n", System.getenv("PATH"));
         System.out.printf(
             "Contents of /usr/bin/: %s%n", Arrays.toString(new File("/usr/bin/").listFiles()));

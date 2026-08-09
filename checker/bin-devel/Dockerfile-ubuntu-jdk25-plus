@@ -46,8 +46,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   unzip \
   wget
 
-# The checksum is from https://archive.apache.org/dist/maven/maven-4/4.0.0-rc-6/binaries/ .
-# Update it whenever the Maven version above changes.
+# The checksum is the .sha512 file beside the tarball in the URL below.
+# Update it whenever the Maven version defined above changes.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && cd /opt \
 && wget https://archive.apache.org/dist/maven/maven-4/4.0.0-rc-6/binaries/apache-maven-4.0.0-rc-6-bin.tar.gz \
