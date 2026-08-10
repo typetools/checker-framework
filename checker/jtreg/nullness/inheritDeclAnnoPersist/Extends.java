@@ -2,6 +2,7 @@
  * @test
  * @summary Test that inherited declaration annotations are stored in bytecode.
  *
+ * @requires jdk.version.major >= 24
  * @compile ../PersistUtil.java Driver.java ReferenceInfoUtil.java Extends.java Super.java
  * @run main Driver Extends
  */
