@@ -7,6 +7,9 @@
 
 ### User-visible changes
 
+The `-AsuggestPureMethods` command-line option and the `purity.effectively.pure`
+warning no longer require `-AcheckPurityAnnotations` to also be supplied.
+
 ### Implementation details
 
 ### Closed issues
