@@ -812,7 +812,7 @@ public class InferenceFactory {
    */
   public AbstractType getTypeOfElement(Element element, Theta map) {
     AnnotatedTypeMirror atm = typeFactory.getAnnotatedType(element).asUse();
-    return InferenceType.create(atm, element.asType(), map, context);
+    return InferenceType.create(atm, map, context);
   }
 
   /**
@@ -825,8 +825,7 @@ public class InferenceFactory {
    */
   public AbstractType getTypeOfBound(TypeParameterElement pEle, Theta map) {
     AnnotatedTypeVariable atm = (AnnotatedTypeVariable) typeFactory.getAnnotatedType(pEle);
-    return InferenceType.create(
-        atm.getUpperBound(), ((TypeVariable) pEle.asType()).getUpperBound(), map, context);
+    return InferenceType.create(atm.getUpperBound(), map, context);
   }
 
   /**
@@ -981,7 +980,7 @@ public class InferenceFactory {
             context.modelTypes, context.typeFactory, targetType.getAnnotatedType(), ele);
     Iterator<AnnotatedTypeMirror> iter = functionType.getThrownTypes().iterator();
     for (TypeMirror thrownType : ele.getThrownTypes()) {
-      AbstractType ei = InferenceType.create(iter.next(), thrownType, map, context);
+      AbstractType ei = InferenceType.create(iter.next(), map, context);
       if (ei.isProper()) {
         properTypes.add((ProperType) ei);
       } else {

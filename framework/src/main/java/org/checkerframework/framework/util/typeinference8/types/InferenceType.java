@@ -75,17 +75,12 @@ public final class InferenceType extends AbstractType {
    * mapped to an inference variable, a {@link ProperType} is returned.
    *
    * @param type the annotated type mirror
-   * @param typeMirror the Java type
    * @param map a mapping from type variable to inference variable
    * @param context the context
    * @return the abstract type for the given TypeMirror and AnnotatedTypeMirror
    */
   public static AbstractType create(
-      AnnotatedTypeMirror type,
-      TypeMirror typeMirror,
-      @Nullable Theta map,
-      Java8InferenceContext context) {
-
+      AnnotatedTypeMirror type, @Nullable Theta map, Java8InferenceContext context) {
     return create(type, map, AnnotationMirrorMap.emptyMap(), context, false);
   }
 

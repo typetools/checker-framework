@@ -94,7 +94,7 @@ public class CompileTimeDeclarationType extends AbstractExecutableType {
     if (map == null) {
       return new ProperType(annotatedReturnType, context);
     } else {
-      return InferenceType.create(annotatedReturnType, returnType, map, context);
+      return InferenceType.create(annotatedReturnType, map, context);
     }
   }
 
