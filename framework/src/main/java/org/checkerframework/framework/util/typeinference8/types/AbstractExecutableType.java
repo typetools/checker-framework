@@ -89,6 +89,15 @@ public abstract class AbstractExecutableType {
   }
 
   /**
+   * Returns the Java method or constructor type.
+   *
+   * @return the Java method or constructor type
+   */
+  public ExecutableType getJavaType() {
+    return annotatedExecutableType.getUnderlyingType();
+  }
+
+  /**
    * Returns the thrown types of this.
    *
    * @param map a mapping from type variable to inference variable
