@@ -357,13 +357,10 @@ public final class InferenceType extends AbstractType {
     }
 
     if (context.types.isSubtype((Type) subType, (Type) superJavaType)) {
-      AnnotatedTypeMirror superATM = superType.getAnnotatedType();
-      AnnotatedTypeMirror subATM = this.getAnnotatedType();
-      if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
-        return ConstraintSet.TRUE;
-      } else {
-        return ConstraintSet.TRUE_ANNO_FAIL;
-      }
+      // If this is a wildcard, then `checkAnnotationSubtype` compares the annotations of the
+      // extends bound, matching the narrowing of `subType` above:  the type hierarchy descends
+      // into a wildcard subtype's extends bound.
+      return checkAnnotationSubtype(superType);
     } else {
       return ConstraintSet.FALSE;
     }
