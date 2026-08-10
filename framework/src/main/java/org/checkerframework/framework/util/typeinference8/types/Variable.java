@@ -135,13 +135,6 @@ import org.checkerframework.javacutil.TypesUtils;
         variableBounds.addBound(null, BoundKind.UPPER, t1);
       }
     }
-    if (variableBounds.findProperUpperBounds().isEmpty()) {
-      // Every bound added above mentions an inference variable, so this resulted in no proper
-      // upper bounds for al (only dependencies).  Therefore, add the bound al <: Object, per the
-      // last clause of the comment above.  This happens for a type parameter such as the P1 of
-      // <P1 extends P2, P2>, whose only upper bound is a dependency.
-      variableBounds.addBound(null, BoundKind.UPPER, context.object);
-    }
 
     Set<? extends AbstractQualifier> quals =
         AbstractQualifier.create(
@@ -177,11 +170,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
   @Override
   public int hashCode() {
-    // TypesUtils.areSame depends on asElement().getSimpleName(), asElement().getEnclosingElement().
-    return Objects.hash(
-        typeVariableJava.asElement().getSimpleName(),
-        typeVariableJava.asElement().getEnclosingElement(),
-        invocation);
+    return Objects.hash(TypesUtils.hashCodeForAreSame(typeVariableJava), invocation);
   }
 
   @Override
