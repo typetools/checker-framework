@@ -37,7 +37,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   git \
   graphviz \
   jq \
-  jtreg7 \
+  jtreg8 \
   libcurl3-gnutls \
   make \
   python3-requests \
