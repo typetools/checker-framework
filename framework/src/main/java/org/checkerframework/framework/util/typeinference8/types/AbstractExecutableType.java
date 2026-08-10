@@ -177,7 +177,7 @@ public abstract class AbstractExecutableType {
       }
     }
 
-    return InferenceType.create(params, paramsJava, map, qualifierVars, context);
+    return InferenceType.create(params, map, qualifierVars, context);
   }
 
   /**

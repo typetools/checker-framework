@@ -931,17 +931,17 @@ public class InferenceFactory {
       }
     }
     if (context.types.isSameType(aJavaType, (Type) glb)) {
-      return a.create(glbATM, glb, false);
+      return a.create(glbATM, false);
     }
 
     if (context.types.isSameType(bJavaType, (Type) glb)) {
-      return b.create(glbATM, glb, false);
+      return b.create(glbATM, false);
     }
 
     if (a.isInferenceType()) {
-      return a.create(glbATM, glb, false);
+      return a.create(glbATM, false);
     } else if (b.isInferenceType()) {
-      return b.create(glbATM, glb, false);
+      return b.create(glbATM, false);
     }
 
     assert a.isProper() && b.isProper();
@@ -1112,7 +1112,7 @@ public class InferenceFactory {
     if (template == null) {
       return new ProperType(typeVariable, context);
     }
-    return template.create(typeVariable, freshTypeVariable, false);
+    return template.create(typeVariable, false);
   }
 
   /**
