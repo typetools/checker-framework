@@ -12,7 +12,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.types.AbstractExecutableType;
@@ -21,6 +26,7 @@ import org.checkerframework.framework.util.typeinference8.types.CompileTimeDecla
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
+import org.checkerframework.framework.util.typeinference8.util.FalseBoundException;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
@@ -28,6 +34,7 @@ import org.checkerframework.javacutil.SwitchExpressionScanner;
 import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.IPair;
 
 /**
@@ -231,7 +238,7 @@ public class Expression extends TypeConstraint {
           if (MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound()) {
             AnnotatedTypeMirror atm =
                 context.typeFactory.getAnnotatedTypeFromTypeTree(preColonTree);
-            referenceType = new ProperType(atm, atm.getUnderlyingType(), context);
+            referenceType = new ProperType(atm, context);
           } else {
             referenceType = new ProperType(preColonTree, context);
           }
@@ -268,7 +275,7 @@ public class Expression extends TypeConstraint {
       return ConstraintSet.TRUE;
     }
 
-    // https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2.1-300-D-B-BC
+    // https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2.1-300-D-B-B
     // Otherwise, if the method reference expression elides TypeArguments, and the
     // compile-time declaration is a generic method, and
     // the return type of the compile-time declaration mentions at least one of the method's
@@ -293,10 +300,10 @@ public class Expression extends TypeConstraint {
     }
 
     // https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2.1-300-D-B-C
-    // Otherwise, let R be the return type of the function type, and let R' be the result
-    // of applying capture conversion (5.1.10) to the return type of the invocation type
-    // (15.12.2.6) of the compile-time declaration. If R' is void, the constraint reduces
-    // to false; otherwise, the constraint reduces to <R' -> R>.
+    // Otherwise, let R' be the result of applying capture conversion (5.1.10) to the
+    // return type of the invocation type (15.12.2.6) of the compile-time declaration.
+    // If R' is void, the constraint reduces to false; otherwise, the constraint reduces
+    // to <R' -> R>.  R, the result of the function type, is the local variable `r`.
     return ReductionResultPair.of(
         new ConstraintSet(
             new Typing(
@@ -314,9 +321,13 @@ public class Expression extends TypeConstraint {
    * @return the result of reducing this constraint
    */
   // See https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2.1-200
-  private ReductionResultPair reduceLambda(Java8InferenceContext context) {
+  private ReductionResult reduceLambda(Java8InferenceContext context) {
     LambdaExpressionTree lambda = (LambdaExpressionTree) expression;
     IPair<AbstractType, BoundSet> pair = getGroundTargetType(T, lambda, context);
+    if (pair == null) {
+      // JLS 18.2.1: "If no valid function type can be found, the constraint reduces to false."
+      return ConstraintSet.FALSE;
+    }
     AbstractType tPrime = pair.first;
     BoundSet boundSet = pair.second == null ? new BoundSet(context) : pair.second;
 
@@ -387,9 +398,9 @@ public class Expression extends TypeConstraint {
    * @param t the target type of {@code lambda}
    * @param lambda a lambda to infer functional interface parameterization
    * @param context the context
-   * @return the ground target type
+   * @return a pair of the ground target type and the additional bounds it created, if any
    */
-  private IPair<AbstractType, BoundSet> getGroundTargetType(
+  private @Nullable IPair<AbstractType, BoundSet> getGroundTargetType(
       AbstractType t, LambdaExpressionTree lambda, Java8InferenceContext context) {
     if (!t.isWildcardParameterizedType()) {
       return IPair.of(t, null);
@@ -411,13 +422,19 @@ public class Expression extends TypeConstraint {
   /**
    * Returns the non-wildcard parameterization of {@code t} as defined in JLS 9.9.
    *
-   * @param t a type
+   * @param t a wildcard parameterized type
    * @param context the context
    * @return the non-wildcard parameterization of {@code t}
    */
   private AbstractType nonWildcardParameterization(AbstractType t, Java8InferenceContext context) {
+    // The caller only calls this method when t.isWildcardParameterizedType() is true, so t is a
+    // declared type and both of the following are non-null.
     List<AbstractType> As = t.getTypeArguments();
-    Iterator<ProperType> Bs = t.getTypeParameterBounds().iterator();
+    assert As != null : "@AssumeAssertion(nullness): t is a wildcard-parameterized declared type";
+    List<ProperType> typeParameterBounds = t.getTypeParameterBounds();
+    assert typeParameterBounds != null
+        : "@AssumeAssertion(nullness): t is a wildcard-parameterized declared type";
+    Iterator<ProperType> Bs = typeParameterBounds.iterator();
     List<AbstractType> Ts = new ArrayList<>();
     for (AbstractType Ai : As) {
       ProperType bi = Bs.next();
@@ -444,9 +461,10 @@ public class Expression extends TypeConstraint {
    * @param t the target type of the lambda
    * @param lambda a lambda expression
    * @param context the context
-   * @return a pair of the type of the lambda and the bound set that needs to be resolved
+   * @return a pair of the type of the lambda and the bound set that needs to be resolved, or null
+   *     if no valid parameterization exists
    */
-  private IPair<AbstractType, BoundSet> explicitlyTypedLambdaWithWildcard(
+  private @Nullable IPair<AbstractType, BoundSet> explicitlyTypedLambdaWithWildcard(
       AbstractType t, LambdaExpressionTree lambda, Java8InferenceContext context) {
     // Where a lambda expression with explicit parameter types P1, ..., Pn targets a functional
     // interface type F<A1, ..., Am> with at least one wildcard type argument, then a
@@ -461,7 +479,14 @@ public class Expression extends TypeConstraint {
     // alpham>, where alpha1, ..., alpham are fresh inference variables.
     Theta map = context.inferenceTypeFactory.createThetaForLambda(lambda, t);
     List<Variable> alphas = new ArrayList<>(map.values());
-    AbstractType tPrime = InferenceType.create(t.getAnnotatedType(), t.getJavaType(), map, context);
+    // F<alpha1, ..., alpham> is built from the declaration of F, whose type arguments are F's own
+    // type parameters, which is what `map` maps to the fresh inference variables.  Building it
+    // from t instead would be a no-op: t is F<A1, ..., Am>, which does not mention F's type
+    // parameters, so `map` would substitute nothing and tPrime would be t itself.
+    TypeElement fElement = (TypeElement) ((DeclaredType) t.getJavaType()).asElement();
+    AbstractType tPrime =
+        InferenceType.create(
+            context.typeFactory.getAnnotatedType(fElement), fElement.asType(), map, context);
 
     List<AbstractType> qs = tPrime.getFunctionTypeParameterTypes();
     if (qs.size() != ps.size()) {
@@ -479,10 +504,17 @@ public class Expression extends TypeConstraint {
       constraintSet.add(new Typing(this, pi, qi, TypeConstraint.Kind.TYPE_EQUALITY));
     }
     // This constraint formula set is reduced to form the bound set B.
-    BoundSet b = constraintSet.reduce(context);
+    // If B contains the bound false, no valid parameterization exists.  Reduction signals the
+    // false bound by throwing FalseBoundException rather than by returning a bound set that
+    // contains false, so both possibilities are handled here.
+    BoundSet b;
+    try {
+      b = constraintSet.reduce(context);
+    } catch (FalseBoundException ex) {
+      return null;
+    }
     if (b.containsFalse()) {
-      // 18.5.3: If B contains the bound false, no valid parameterization exists.
-      return IPair.of(t, b);
+      return null;
     }
 
     // A new parameterization of the functional interface type, F<A'1, ..., A'm>, is constructed
@@ -503,15 +535,70 @@ public class Expression extends TypeConstraint {
       }
     }
 
+    AbstractType target = t.replaceTypeArgs(APrimes);
+
+    // If F<A'1, ..., A'm> is not a well-formed type (that is, the type arguments are not within
+    // their bounds), no valid parameterization exists.
+    if (!typeArgsWithinBounds(target, context)) {
+      return null;
+    }
+    // 18.5.3 also requires that F<A'1, ..., A'm> be a subtype of F<A1, ..., Am>, but that test
+    // is not performed here.  JLS 18.2.1, which is the only caller of 18.5.3 in this
+    // implementation, says: "If 18.5.3 is used to derive a functional interface type which is
+    // parameterized, then the test that F<A'1, ..., A'm> is a subtype of F<A1, ..., Am> is not
+    // performed (instead, it is asserted with a constraint formula below)."  That constraint
+    // formula, <T' <: T>, is added by reduceLambda.
+
     // The inferred parameterization is either F<A'1, ..., A'm>, if all the type arguments
     // are types, or the non-wildcard parameterization (9.9) of F<A'1, ..., A'm>, if one or more
     // type arguments are still wildcards.
-
-    AbstractType target = t.replaceTypeArgs(APrimes);
     if (hasWildcard) {
       return IPair.of(nonWildcardParameterization(target, context), b);
     }
     return IPair.of(target, b);
+  }
+
+  /**
+   * Returns true if {@code type} is a well-formed type, that is, if its type arguments are within
+   * their bounds. Only the Java types are checked, not the qualifiers.
+   *
+   * <p>From <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.5">JLS
+   * 4.5</a>: "When subjected to capture conversion (5.1.10) resulting in the type
+   * C&lt;X1,...,Xn&gt;, each type argument Xi is a subtype of S[F1:=X1,...,Fn:=Xn] for each bound
+   * type S in Bi."
+   *
+   * @param type a type
+   * @param context the context
+   * @return true if the type arguments of {@code type} are within their bounds
+   */
+  private boolean typeArgsWithinBounds(AbstractType type, Java8InferenceContext context) {
+    TypeMirror javaType = type.getJavaType();
+    if (javaType.getKind() != TypeKind.DECLARED) {
+      return true;
+    }
+    TypeElement element = (TypeElement) ((DeclaredType) javaType).asElement();
+    List<? extends TypeParameterElement> typeParams = element.getTypeParameters();
+    List<? extends TypeMirror> capturedArgs =
+        ((DeclaredType) context.modelTypes.capture(javaType)).getTypeArguments();
+    if (capturedArgs.size() != typeParams.size()) {
+      // The type is raw, so it has no type arguments to check.
+      return true;
+    }
+    List<TypeMirror> typeVars = new ArrayList<>(typeParams.size());
+    for (TypeParameterElement typeParam : typeParams) {
+      typeVars.add(typeParam.asType());
+    }
+    for (int i = 0; i < capturedArgs.size(); i++) {
+      TypeMirror capturedArg = capturedArgs.get(i);
+      for (TypeMirror bound : typeParams.get(i).getBounds()) {
+        TypeMirror substitutedBound =
+            TypesUtils.substitute(bound, typeVars, capturedArgs, context.env);
+        if (!context.modelTypes.isSubtype(capturedArg, substitutedBound)) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   /**
