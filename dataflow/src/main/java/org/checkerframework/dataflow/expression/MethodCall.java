@@ -157,6 +157,23 @@ public class MethodCall extends JavaExpression {
   }
 
   @Override
+  public boolean containsAsReceiver(AnnotationProvider provider, JavaExpression other) {
+    if (syntacticEquals(other)) {
+      return true;
+    }
+    // A method that is not side-effect-free may create the object it returns, or may fetch it from
+    // state that has nothing to do with the receiver, so its result is not reached through the
+    // receiver.  A side-effect-free method is assumed to return a part of its receiver, such as
+    // the view that `List.subList` returns.  That assumption is unsound for a side-effect-free
+    // method that returns pre-existing state that the receiver does not reach, such as a static
+    // field; no annotation expresses the difference.
+    if (!PurityUtils.isSideEffectFree(provider, method) && !provider.isSideEffectFree(method)) {
+      return false;
+    }
+    return receiver.containsAsReceiver(provider, other);
+  }
+
+  @Override
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
     if (receiver.containsModifiableAliasOf(store, other)) {
       return true;

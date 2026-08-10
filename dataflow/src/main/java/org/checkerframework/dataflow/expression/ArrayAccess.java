@@ -98,6 +98,12 @@ public class ArrayAccess extends JavaExpression {
   }
 
   @Override
+  public boolean containsAsReceiver(AnnotationProvider provider, JavaExpression other) {
+    // The index is not consulted: `a[i]` is reached through `a`, but not through `i`.
+    return syntacticEquals(other) || array.containsAsReceiver(provider, other);
+  }
+
+  @Override
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
     if (array.containsModifiableAliasOf(store, other)) {
       return true;
