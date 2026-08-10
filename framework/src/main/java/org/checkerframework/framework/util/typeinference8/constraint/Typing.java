@@ -387,7 +387,6 @@ public class Typing extends TypeConstraint {
    *
    * @return the result of reducing the constraint
    */
-  @SuppressWarnings("interning:not.interned") // Checking for exact object.
   private ReductionResult reduceEquality() {
     if (S.isProper()) {
       if (T.isProper()) {
@@ -425,7 +424,9 @@ public class Typing extends TypeConstraint {
       // the same erasure
       ConstraintSet constraintSet = new ConstraintSet();
       for (int i = 0; i < tTypeArgs.size(); i++) {
-        if (tTypeArgs.get(i) != sTypeArgs.get(i)) {
+        // The constraint between two equal type arguments reduces to true (JLS 18.2.4), so do
+        // not create it.
+        if (!tTypeArgs.get(i).equals(sTypeArgs.get(i))) {
           constraintSet.add(
               new Typing(this, tTypeArgs.get(i), sTypeArgs.get(i), Kind.TYPE_EQUALITY));
         }
@@ -437,6 +438,11 @@ public class Typing extends TypeConstraint {
     AbstractType tComponentType = T.getComponentType();
     if (sComponentType != null && tComponentType != null) {
       return new Typing(this, sComponentType, tComponentType, Kind.TYPE_EQUALITY);
+    }
+
+    if (S.getTypeKind() == TypeKind.TYPEVAR && T.getTypeKind() == TypeKind.TYPEVAR && S.equals(T)) {
+      // If S and T are the same type variable, the constraint reduces to true.
+      return ConstraintSet.TRUE;
     }
 
     if (T.getTypeKind() == TypeKind.WILDCARD && S.getTypeKind() == TypeKind.WILDCARD) {
