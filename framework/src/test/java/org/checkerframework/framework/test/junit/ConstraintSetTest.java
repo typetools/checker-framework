@@ -8,7 +8,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
+import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.javacutil.BugInCF;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -151,5 +153,12 @@ public class ConstraintSetTest {
     viaConstraintSet.addAll(source);
 
     Assert.assertEquals(drain(viaConstraintSet), drain(viaCollection));
+  }
+
+  @Test
+  public void getClosedSubsetOfEmptySet() {
+    Assert.assertThrows(
+        BugInCF.class,
+        () -> ConstraintSet.getClosedSubset(new ConstraintSet(), new Dependencies()));
   }
 }

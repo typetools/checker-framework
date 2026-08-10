@@ -271,48 +271,45 @@ public class VariableBounds {
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public void addConstraintsFromComplementaryBounds(
       Constraint parent, BoundKind kind, AbstractType boundType) {
-    if (parent instanceof TypeConstraint tc) {
-      tc.source = "From complementary bound.";
-    }
     switch (kind) {
       case EQUAL -> {
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
-            constraints.add(new Typing(parent, boundType, t, Kind.TYPE_EQUALITY));
+            addComplementaryBoundConstraint(parent, boundType, t, Kind.TYPE_EQUALITY);
           }
         }
         for (AbstractType t : bounds.get(BoundKind.LOWER)) {
           if (boundType != t) {
-            constraints.add(new Typing(parent, t, boundType, Kind.SUBTYPE));
+            addComplementaryBoundConstraint(parent, t, boundType, Kind.SUBTYPE);
           }
         }
         for (AbstractType t : bounds.get(BoundKind.UPPER)) {
           if (boundType != t) {
-            constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
+            addComplementaryBoundConstraint(parent, boundType, t, Kind.SUBTYPE);
           }
         }
       }
       case LOWER -> {
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
-            constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
+            addComplementaryBoundConstraint(parent, boundType, t, Kind.SUBTYPE);
           }
         }
         for (AbstractType t : bounds.get(BoundKind.UPPER)) {
           if (boundType != t) {
-            constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
+            addComplementaryBoundConstraint(parent, boundType, t, Kind.SUBTYPE);
           }
         }
       }
       case UPPER -> {
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
-            constraints.add(new Typing(parent, t, boundType, Kind.SUBTYPE));
+            addComplementaryBoundConstraint(parent, t, boundType, Kind.SUBTYPE);
           }
         }
         for (AbstractType t : bounds.get(BoundKind.LOWER)) {
           if (boundType != t) {
-            constraints.add(new Typing(parent, t, boundType, Kind.SUBTYPE));
+            addComplementaryBoundConstraint(parent, t, boundType, Kind.SUBTYPE);
           }
         }
         // When a bound set contains a pair of bounds var <: S and var <: T, and there exists
@@ -324,7 +321,7 @@ public class VariableBounds {
           for (AbstractType t : bounds.get(BoundKind.UPPER)) {
             // `boundType` has already been added to the upper bounds.
             if (boundType != t && (t.isProper() || t.isInferenceType())) {
-              constraints.addAll(getConstraintsFromParameterized(boundType, t));
+              constraints.addAll(getConstraintsFromParameterized(parent, boundType, t));
             }
           }
         }
@@ -348,6 +345,43 @@ public class VariableBounds {
         }
       }
     }
+  }
+
+  /**
+   * Adds to {@link #constraints} a constraint that is implied by a complementary pair of bounds.
+   *
+   * @param parent the constraint whose reduction created the bound that implies the new constraint,
+   *     or null if no constraint did
+   * @param s left-hand side type of the new constraint
+   * @param t right-hand side type of the new constraint
+   * @param kind the kind of the new constraint
+   */
+  private void addComplementaryBoundConstraint(
+      Constraint parent, AbstractType s, AbstractType t, Kind kind) {
+    constraints.add(createImpliedConstraint(parent, "From complementary bound", s, t, kind));
+  }
+
+  /**
+   * Creates a constraint that incorporating a bound of this variable implies, recording how the
+   * constraint came about so that {@link TypeConstraint#constraintHistory} can explain it.
+   *
+   * @param parent the constraint whose reduction created the bound that implies the new constraint,
+   *     or null if no constraint did
+   * @param description how the bound gave rise to the new constraint
+   * @param s left-hand side type of the new constraint
+   * @param t right-hand side type of the new constraint
+   * @param kind the kind of the new constraint
+   * @return the new constraint
+   */
+  private Typing createImpliedConstraint(
+      Constraint parent, String description, AbstractType s, AbstractType t, Kind kind) {
+    Typing constraint = new Typing(parent, s, t, kind);
+    if (parent == null) {
+      constraint.source = description;
+    } else {
+      constraint.derivation = description;
+    }
+    return constraint;
   }
 
   /**
@@ -393,12 +427,15 @@ public class VariableBounds {
    * ({@code 1 <= i <= n}), if Si and Ti are types (not wildcards), the constraint formula {@code
    * <Si = Ti>} is implied.
    *
+   * @param parent the constraint whose reduction created the bound that implies the returned
+   *     constraints, or null if no constraint did
    * @param s a type argument
    * @param t a type argument
    * @return the constraints between the type arguments to {@code s} and {@code t}
    */
-  private List<Typing> getConstraintsFromParameterized(AbstractType s, AbstractType t) {
-    String source = "Constraint from parameterized bound.";
+  private List<Typing> getConstraintsFromParameterized(
+      Constraint parent, AbstractType s, AbstractType t) {
+    String description = "Constraint from parameterized bound";
 
     IPair<AbstractType, AbstractType> pair =
         context.inferenceTypeFactory.getParameterizedSupers(s, t);
@@ -420,7 +457,7 @@ public class VariableBounds {
       AbstractType si = ss.get(i);
       AbstractType ti = ts.get(i);
       if (si.getTypeKind() != TypeKind.WILDCARD && ti.getTypeKind() != TypeKind.WILDCARD) {
-        constraints.add(new Typing(source, si, ti, Kind.TYPE_EQUALITY));
+        constraints.add(createImpliedConstraint(parent, description, si, ti, Kind.TYPE_EQUALITY));
       }
     }
     return constraints;
@@ -473,18 +510,13 @@ public class VariableBounds {
   }
 
   /**
-   * Returns all upper bounds that are not uses of an inference variable.
+   * Returns all upper bounds, including those that are uses of inference variables. JLS 18.4
+   * requires the greatest lower bound of all the upper bounds, not just the proper ones.
    *
-   * @return all upper bounds that are not uses of an inference variable
+   * @return all upper bounds
    */
-  public Set<AbstractType> nonVariableUpperBounds() {
-    LinkedHashSet<AbstractType> set = new LinkedHashSet<>();
-    for (AbstractType bound : bounds.get(BoundKind.UPPER)) {
-      if (!bound.isUseOfVariable()) {
-        set.add(bound);
-      }
-    }
-    return set;
+  public Set<AbstractType> upperBounds() {
+    return new LinkedHashSet<>(bounds.get(BoundKind.UPPER));
   }
 
   /**
@@ -667,7 +699,7 @@ public class VariableBounds {
    */
   public @Nullable ConstraintSet getWildcardConstraints(AbstractType Ai, AbstractType Bi) {
     ConstraintSet constraintSet = new ConstraintSet();
-    String source = "Constraint from wildcard bound.";
+    String source = "Constraint from wildcard bound";
 
     // Only concerned with bounds against proper types or inference types.
     List<AbstractType> upperBoundsNonVar = new ArrayList<>();
