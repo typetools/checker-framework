@@ -68,7 +68,13 @@ public abstract class AbstractType {
   /** The {@link AnnotatedTypeFactory}. */
   protected final AnnotatedTypeFactory typeFactory;
 
-  /** True if the annotations on this type should be ignored. */
+  /**
+   * True if the annotations on this type should be ignored.
+   *
+   * <p>This field applies to every qualifier hierarchy at once, even when it was set because of a
+   * primary annotation that appears in only some of the hierarchies. TODO: Make this per-hierarchy,
+   * so that the hierarchies without such a primary annotation are still compared.
+   */
   public final boolean ignoreAnnotations;
 
   /**
@@ -663,6 +669,30 @@ public abstract class AbstractType {
    * @return the primary qualifiers on this type
    */
   public abstract Set<AbstractQualifier> getQualifiers();
+
+  /**
+   * Checks whether the annotations of {@code this} are a subtype of those of {@code superType},
+   * assuming that their underlying Java types have already been found to be in the required
+   * relationship. If either type is marked as having annotations that should be ignored, then the
+   * annotations are not compared.
+   *
+   * @param superType the potential supertype
+   * @return {@link ConstraintSet#TRUE} if the annotations are ignored or if the annotations of
+   *     {@code this} are a subtype of those of {@code superType}; otherwise {@link
+   *     ConstraintSet#TRUE_ANNO_FAIL}
+   */
+  protected final ConstraintSet checkAnnotationSubtype(ProperType superType) {
+    if (ignoreAnnotations || superType.ignoreAnnotations) {
+      return ConstraintSet.TRUE;
+    }
+    AnnotatedTypeMirror subATM = getAnnotatedType();
+    AnnotatedTypeMirror superATM = superType.getAnnotatedType();
+    if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
+      return ConstraintSet.TRUE;
+    } else {
+      return ConstraintSet.TRUE_ANNO_FAIL;
+    }
+  }
 
   @Override
   public boolean equals(Object o) {
