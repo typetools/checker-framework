@@ -978,9 +978,9 @@ public class InferenceFactory {
     AnnotatedExecutableType functionType =
         AnnotatedTypes.asMemberOf(
             context.modelTypes, context.typeFactory, targetType.getAnnotatedType(), ele);
-    Iterator<AnnotatedTypeMirror> iter = functionType.getThrownTypes().iterator();
-    for (TypeMirror thrownType : ele.getThrownTypes()) {
-      AbstractType ei = InferenceType.create(iter.next(), map, context);
+
+    for (AnnotatedTypeMirror thrownType : functionType.getThrownTypes()) {
+      AbstractType ei = InferenceType.create(thrownType, map, context);
       if (ei.isProper()) {
         properTypes.add((ProperType) ei);
       } else {
