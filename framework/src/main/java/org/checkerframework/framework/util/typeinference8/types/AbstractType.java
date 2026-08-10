@@ -685,9 +685,8 @@ public abstract class AbstractType {
     }
   }
 
-  // equals and hashCode are abstract so that a subclass cannot inherit an implementation that
-  // ignores the type itself.  A subclass that needs to compare the fields of this class can use
-  // sameInferenceProblem and inferenceProblemHashCode.
+  // equals and hashCode are abstract so that a subclass must implement them.  A subclass that needs
+  // to compare the fields of this class can use sameInferenceProblem and inferenceProblemHashCode.
   @Override
   public abstract boolean equals(Object o);
 
