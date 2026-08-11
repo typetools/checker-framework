@@ -1030,7 +1030,7 @@ subprojects {
           "-keywords:!ignore",
           "-samevm",
           "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
-          // Required for checker/jtreg/nullness/jdk24/PersistUtil.java and other tests
+          // Required for checker/jtreg/nullness/jdk2{4,5}/PersistUtil.java and other tests
           "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
         ]
         if (testJdkVersion <= 24) {
@@ -1046,6 +1046,7 @@ subprojects {
           ]
         }
         args += [
+          // checker/jtreg/nullness/jdk2{4,5}/PersistUtil.java uses the jdk.compiler module.
           "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
           "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
           "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",

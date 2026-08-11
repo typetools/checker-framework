@@ -34,7 +34,7 @@ public class ReferenceInfoUtil {
   }
 
   /**
-   * Test the result of Attributes.getIndex according to expectations encoded in the method's name.
+   * Adds to {@code annos} the declaration annotations in the {@code name} attribute of {@code m}.
    */
   private static void findAnnotations(ClassFile cf, Method m, String name, List<Annotation> annos) {
     int index = m.attributes.getIndex(cf.constant_pool, name);
@@ -95,7 +95,7 @@ public class ReferenceInfoUtil {
         }
       }
     } catch (Exception e) {
-      throw new RuntimeException();
+      throw new RuntimeException(e);
     }
     return false;
   }
