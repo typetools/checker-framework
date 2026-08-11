@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -74,7 +73,7 @@ public class CheckedExceptionConstraint extends TypeConstraint {
           }
         }
         AbstractType R = this.T.getFunctionTypeReturnType();
-        if (R == null || R.getTypeKind() == TypeKind.NONE) {
+        if (R == null) {
           return inputs;
         }
         inputs.addAll(R.getInferenceVariables());
@@ -96,7 +95,7 @@ public class CheckedExceptionConstraint extends TypeConstraint {
           inputs.addAll(param.getInferenceVariables());
         }
         AbstractType R = this.T.getFunctionTypeReturnType();
-        if (R == null || R.getTypeKind() == TypeKind.NONE) {
+        if (R == null) {
           return inputs;
         }
         inputs.addAll(R.getInferenceVariables());
