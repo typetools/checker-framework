@@ -5,7 +5,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   autoconf \
   devscripts \
   dia \
-  graphviz \
   hevea \
   imagemagick \
   junit \
