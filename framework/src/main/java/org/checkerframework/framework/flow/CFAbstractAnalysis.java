@@ -1,10 +1,11 @@
 package org.checkerframework.framework.flow;
 
-import com.sun.source.tree.MethodInvocationTree;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -117,6 +118,19 @@ public abstract class CFAbstractAnalysis<
       sideEffectsOnlyExpressionsCache = new IdentityHashMap<>();
 
   /**
+   * The call sites at which {@link #computeSideEffectsOnlyExpressions} has reported a parse error,
+   * so that each such error is reported once rather than once per dataflow iteration.
+   *
+   * <p>Unlike {@link #sideEffectsOnlyExpressionsCache}, this is not cleared by {@link
+   * #performAnalysis}: {@link org.checkerframework.dataflow.analysis.AnalysisResult#runAnalysisFor}
+   * re-runs transfer functions over the nodes of a control flow graph that was analyzed earlier,
+   * which would otherwise report the error a second time. It stays small because it holds only call
+   * sites whose callee has a malformed {@code @SideEffectsOnly} annotation.
+   */
+  private final Set<MethodInvocationNode> sideEffectsOnlyErrorsReported =
+      Collections.newSetFromMap(new IdentityHashMap<>());
+
+  /**
    * Create a CFAbstractAnalysis.
    *
    * @param checker a checker that contains command-line arguments and other information
@@ -222,8 +236,13 @@ public abstract class CFAbstractAnalysis<
 
     for (String st : seOnlyExpressionStrings) {
       try {
+        // Do not use `StringToJavaExpression.atMethodInvocation(st, methodInvocationNode,
+        // checker)`, which obtains the invoked method from `methodInvocationNode.getTree()`; that
+        // tree is null for a call that corresponds to no AST tree, such as the `Iterator.next()`
+        // that an enhanced for loop is desugared to.  `method` is that same element.
         JavaExpression exprJe =
-            StringToJavaExpression.atMethodInvocation(st, methodInvocationNode, checker);
+            StringToJavaExpression.atMethodDecl(st, method, checker)
+                .atMethodInvocation(methodInvocationNode);
         if (exprJe.containsUnknown()) {
           // View adaptation yielded no expression for some part of the annotation, because the
           // receiver or an argument at the call site is a construct that JavaExpression does not
@@ -240,10 +259,14 @@ public abstract class CFAbstractAnalysis<
         // Report at the call site rather than at the callee's declaration.  The callee may be
         // declared in a different compilation unit, or (as for an annotation that comes from a
         // stub file) in no compilation unit at all, in which case a diagnostic positioned at its
-        // declaration would be discarded.  Because the result is cached, this is reported once per
-        // call site rather than once per dataflow iteration.
-        MethodInvocationTree callTree = methodInvocationNode.getTree();
-        checker.report(callTree != null ? callTree : method, new DiagMessage(ex));
+        // declaration would be discarded.
+        // Use the leaf of the call's tree path rather than `methodInvocationNode.getTree()`, which
+        // may be null and which is an artificial tree for a desugared call.  An error about a tree
+        // that is not in the AST cannot be suppressed, because
+        // `SourceChecker.shouldSuppressWarnings` finds no path to such a tree.
+        if (sideEffectsOnlyErrorsReported.add(methodInvocationNode)) {
+          checker.report(methodInvocationNode.getTreePath().getLeaf(), new DiagMessage(ex));
+        }
         return null;
       }
     }

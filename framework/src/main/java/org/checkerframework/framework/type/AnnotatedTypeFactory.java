@@ -49,6 +49,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -95,6 +96,7 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJa
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.InferredDeclared;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.DoesNotUnrefineReceiver;
 import org.checkerframework.framework.qual.EnsuresQualifier;
@@ -261,6 +263,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /** The RequiresQualifier.List.value field/element. */
   protected final ExecutableElement requiresQualifierListValueElement;
+
+  /** The SideEffectsOnly.value field/element. */
+  protected final ExecutableElement sideEffectsOnlyValueElement;
 
   /** The RequiresQualifier type. */
   protected final TypeMirror requiresQualifierTM;
@@ -704,6 +709,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TreeUtils.getMethod(RequiresQualifier.class, "expression", 0, processingEnv);
     requiresQualifierListValueElement =
         TreeUtils.getMethod(RequiresQualifier.List.class, "value", 0, processingEnv);
+    sideEffectsOnlyValueElement =
+        TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, processingEnv);
 
     requiresQualifierTM =
         ElementUtils.getTypeElement(processingEnv, RequiresQualifier.class).asType();
@@ -4167,30 +4174,58 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
         AnnotatedTypes.overriddenMethods(elements, this, elt);
 
-    if (overriddenMethods != null) {
-      for (ExecutableElement superElt : overriddenMethods.values()) {
-        AnnotationMirrorSet superAnnos = getDeclAnnotations(superElt);
+    if (overriddenMethods == null) {
+      return;
+    }
 
-        for (AnnotationMirror annotation : superAnnos) {
-          List<? extends AnnotationMirror> annotationsOnAnnotation;
-          try {
-            annotationsOnAnnotation =
-                annotation.getAnnotationType().asElement().getAnnotationMirrors();
-          } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
-            // Fix for Issue 348: If a CompletionFailure occurs, issue a warning.
-            checker.reportWarning(
-                annotation.getAnnotationType().asElement(),
-                "annotation.not.completed",
-                ElementUtils.getQualifiedName(elt),
-                annotation);
-            continue;
-          }
-          if (containsSameByClass(annotationsOnAnnotation, InheritedAnnotation.class)
-              || AnnotationUtils.containsSameByName(inheritedAnnotations, annotation)) {
+    // `@SideEffectsOnly` is not subject to the "first one wins" rule of `addOrMerge`, because its
+    // `value` element is significant, unlike that of the other inherited declaration annotations.
+    // A method that overrides methods in two supertypes inherits the union of what they permit it
+    // to side-effect; `BaseTypeVisitor.OverrideChecker` reports any override that thereby
+    // side-effects more than a supertype permits.  A `@SideEffectsOnly` written on `elt` itself is
+    // authoritative, so in that case nothing is inherited.
+    boolean mergeSideEffectsOnly = !containsSameByClass(results, SideEffectsOnly.class);
+    // The union of the supertypes' `@SideEffectsOnly` expressions, or null if no supertype has a
+    // `@SideEffectsOnly` annotation.  A `LinkedHashSet` for determinism and to avoid duplicates.
+    Set<String> inheritedSideEffectsOnly = null;
+
+    for (ExecutableElement superElt : overriddenMethods.values()) {
+      AnnotationMirrorSet superAnnos = getDeclAnnotations(superElt);
+
+      for (AnnotationMirror annotation : superAnnos) {
+        List<? extends AnnotationMirror> annotationsOnAnnotation;
+        try {
+          annotationsOnAnnotation =
+              annotation.getAnnotationType().asElement().getAnnotationMirrors();
+        } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
+          // Fix for Issue 348: If a CompletionFailure occurs, issue a warning.
+          checker.reportWarning(
+              annotation.getAnnotationType().asElement(),
+              "annotation.not.completed",
+              ElementUtils.getQualifiedName(elt),
+              annotation);
+          continue;
+        }
+        if (containsSameByClass(annotationsOnAnnotation, InheritedAnnotation.class)
+            || AnnotationUtils.containsSameByName(inheritedAnnotations, annotation)) {
+          if (mergeSideEffectsOnly && areSameByClass(annotation, SideEffectsOnly.class)) {
+            if (inheritedSideEffectsOnly == null) {
+              inheritedSideEffectsOnly = new LinkedHashSet<>();
+            }
+            inheritedSideEffectsOnly.addAll(
+                AnnotationUtils.getElementValueArray(
+                    annotation, sideEffectsOnlyValueElement, String.class));
+          } else {
             addOrMerge(results, annotation);
           }
         }
       }
+    }
+
+    if (inheritedSideEffectsOnly != null) {
+      AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SideEffectsOnly.class);
+      builder.setValue("value", inheritedSideEffectsOnly.toArray(new String[0]));
+      results.add(builder.build());
     }
   }
 

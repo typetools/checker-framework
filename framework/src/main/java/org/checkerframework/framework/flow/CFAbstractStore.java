@@ -341,21 +341,40 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * <p>That is the case when {@code expr} contains {@code seOnlyExpr} as a subexpression: modifying
    * {@code x} can change {@code x.f}, but not the other way around.
    *
-   * <p>It is also the case when {@code expr} is a method call and {@code seOnlyExpr} is reached
-   * through one of the call's receiver and arguments. The value of a call to a {@code @Pure} method
-   * depends on the state that the method reads, which no annotation declares; this approximates
-   * that state by what is reachable from the call's receiver and arguments. If {@code getF()}
-   * returns {@code this.f}, then a call to a {@code @SideEffectsOnly("x.f")} method can change the
-   * value of {@code x.getF()}, even though {@code x.getF()} does not contain {@code x.f}.
+   * <p>It is also the case when {@code expr} contains a method call through which {@code
+   * seOnlyExpr} is reached; see {@link #callMayChangeValue}.
    *
    * @param expr an expression whose value is stored in this store
    * @param seOnlyExpr an expression that a callee may modify
    * @return true if modifying {@code seOnlyExpr} might change the value of {@code expr}
    */
   private static boolean mayChangeValue(JavaExpression expr, JavaExpression seOnlyExpr) {
-    if (expr.containsSyntacticEqualJavaExpression(seOnlyExpr)) {
-      return true;
-    }
+    return expr.containsSyntacticEqualJavaExpression(seOnlyExpr)
+        || callMayChangeValue(expr, seOnlyExpr);
+  }
+
+  /**
+   * Returns true if {@code expr} contains a method call whose value modifying {@code seOnlyExpr}
+   * might change.
+   *
+   * <p>The value of a call to a {@code @Pure} method depends on the state that the method reads,
+   * which no annotation declares; this approximates that state by what is reachable from the call's
+   * receiver and arguments. If {@code getF()} returns {@code this.f}, then a call to a
+   * {@code @SideEffectsOnly("x.f")} method can change the value of {@code x.getF()}, even though
+   * {@code x.getF()} does not contain {@code x.f}.
+   *
+   * <p>The call need not be {@code expr} itself: the value of {@code x.getF().g} and of {@code
+   * x.getArr()[0]} also changes when the value of the call within them does. Such an expression
+   * contains no method call as a <em>subexpression</em> in the sense of {@link
+   * JavaExpression#containsSyntacticEqualJavaExpression}, because a receiver or array is not
+   * compared against {@code seOnlyExpr} but is descended into here.
+   *
+   * @param expr an expression whose value is stored in this store
+   * @param seOnlyExpr an expression that a callee may modify
+   * @return true if modifying {@code seOnlyExpr} might change the value of a call within {@code
+   *     expr}
+   */
+  private static boolean callMayChangeValue(JavaExpression expr, JavaExpression seOnlyExpr) {
     if (expr instanceof MethodCall methodCall) {
       if (mayReach(seOnlyExpr, methodCall.getReceiver())) {
         return true;
@@ -365,8 +384,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           return true;
         }
       }
+      return false;
+    } else if (expr instanceof FieldAccess fieldAccess) {
+      return callMayChangeValue(fieldAccess.getReceiver(), seOnlyExpr);
+    } else if (expr instanceof ArrayAccess arrayAccess) {
+      return callMayChangeValue(arrayAccess.getArray(), seOnlyExpr)
+          || callMayChangeValue(arrayAccess.getIndex(), seOnlyExpr);
+    } else {
+      return false;
     }
-    return false;
   }
 
   /**

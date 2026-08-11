@@ -95,6 +95,7 @@ import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Impure;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
 import org.checkerframework.dataflow.util.PurityKind;
@@ -242,6 +243,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** The {@code when} element/field of the @Unused annotation. */
   protected final ExecutableElement unusedWhenElement;
 
+  /** The SideEffectsOnly.value field/element. */
+  protected final ExecutableElement sideEffectsOnlyValueElement;
+
   /** True if "-Ashowchecks" was passed on the command line. */
   protected final boolean showchecks;
 
@@ -321,6 +325,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         atypeFactory.fromElement(elements.getTypeElement(Vector.class.getCanonicalName()));
     targetValueElement = TreeUtils.getMethod(Target.class, "value", 0, env);
     unusedWhenElement = TreeUtils.getMethod(Unused.class, "when", 0, env);
+    sideEffectsOnlyValueElement = TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, env);
     showchecks = checker.hasOption("showchecks");
     infer = checker.hasOption("infer");
     suggestPureMethods = checker.hasOption("suggestPureMethods") || infer;
@@ -4150,8 +4155,60 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
       checkPreAndPostConditions();
       checkPurity();
+      // TODO in a later PR: checkSideEffectsOnly();
 
       return result;
+    }
+
+    /**
+     * Parses the expressions of a {@code @SideEffectsOnly} annotation that is written on {@code
+     * methodType}, and viewpoint-adapts them to {@link #methodTree}, which is the override being
+     * checked.
+     *
+     * @param sideEffectsOnly a {@code @SideEffectsOnly} annotation, or null
+     * @param methodType the type of the method that {@code sideEffectsOnly} is written on
+     * @return the annotation's expressions, or null if {@code sideEffectsOnly} is null or one of
+     *     its expressions cannot be parsed
+     */
+    private @Nullable List<JavaExpression> parseSideEffectsOnly(
+        @Nullable AnnotationMirror sideEffectsOnly, AnnotatedExecutableType methodType) {
+      if (sideEffectsOnly == null) {
+        return null;
+      }
+      List<String> expressionStrings =
+          AnnotationUtils.getElementValueArray(
+              sideEffectsOnly, sideEffectsOnlyValueElement, String.class);
+      List<JavaExpression> result = new ArrayList<>(expressionStrings.size());
+      for (String expressionString : expressionStrings) {
+        try {
+          // methodType.getElement() is not necessarily the same method as methodTree, so
+          // viewpoint-adapt it to methodTree.
+          result.add(
+              StringToJavaExpression.atMethodDecl(
+                      expressionString, methodType.getElement(), checker)
+                  .atMethodBody(methodTree));
+        } catch (JavaExpressionParseException e) {
+          checker.report(methodTree, new DiagMessage(e));
+          return null;
+        }
+      }
+      return result;
+    }
+
+    /**
+     * Formats side-effected expressions for a diagnostic message, as the annotation that a user
+     * writes.
+     *
+     * @param expressions the expressions of a {@code @SideEffectsOnly} annotation
+     * @return the annotation corresponding to {@code expressions}
+     */
+    private String sideEffectsOnlyToString(List<JavaExpression> expressions) {
+      StringJoiner result = new StringJoiner("\", \"", "@SideEffectsOnly({\"", "\"})");
+      result.setEmptyValue("@SideEffectsOnly({})");
+      for (JavaExpression expression : expressions) {
+        result.add(expression.toString());
+      }
+      return result.toString();
     }
 
     /** Check that an override respects purity. */

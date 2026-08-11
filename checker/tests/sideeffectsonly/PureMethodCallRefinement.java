@@ -56,6 +56,40 @@ public class PureMethodCallRefinement {
   // :: error: contracts.postcondition
   void makeUntaintedNested(PureMethodCallRefinement o) {}
 
+  @Tainted Object g;
+
+  @Tainted Object @Tainted [] arr = new @Tainted Object[10];
+
+  @Pure
+  Object @Tainted [] getArr() {
+    return arr;
+  }
+
+  @EnsuresQualifier(expression = "#1.getSelf().g", qualifier = Untainted.class)
+  // :: error: contracts.postcondition
+  void makeUntaintedFieldOfCall(PureMethodCallRefinement o) {}
+
+  @EnsuresQualifier(expression = "#1.getArr()[0]", qualifier = Untainted.class)
+  // :: error: contracts.postcondition
+  void makeUntaintedElementOfCall(PureMethodCallRefinement o) {}
+
+  void testFieldOfCall(PureMethodCallRefinement o) {
+    makeUntaintedFieldOfCall(o);
+    // The stored expression is a field access, not a call, but its receiver is a call, so the
+    // search for the modified location must recur through the receiver.
+    modifyField(o);
+    // :: error: assignment
+    @Untainted Object y = o.getSelf().g;
+  }
+
+  void testElementOfCall(PureMethodCallRefinement o) {
+    makeUntaintedElementOfCall(o);
+    // The stored expression is an array access whose array is a call.
+    modifyField(o);
+    // :: error: assignment
+    @Untainted Object y = o.getArr()[0];
+  }
+
   void testUnrelatedReceiver(PureMethodCallRefinement o) {
     makeUntainted(o);
     // `modifyThis` modifies `this`, which is unrelated to `o` and to `o`'s fields.  Like every
