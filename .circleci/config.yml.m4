@@ -16,6 +16,16 @@ jobs:
     steps:
       - run: /bin/true
 
+  # Passes only if all other jobs passed.
+  all_green:
+    docker:
+      - image: 'cimg/base:2026.08'
+    resource_class: small
+    environment:
+      TERM: dumb
+    steps:
+      - run: /bin/true
+
 include([../.azure/jobs.m4])dnl
 
 # The "workflows" section determines which jobs run and what other jobs they depend on.
@@ -60,7 +70,7 @@ job_dependences_not_in_canary(canary_jdk, guava_part1)
 job_dependences_not_in_canary(canary_jdk, guava_part2)
 job_dependences_not_in_canary(canary_jdk, plume_lib)
 
-      - all-green:
+      - all_green:
           requires:
             - canary_jobs
             - junit_part1_jdk25
