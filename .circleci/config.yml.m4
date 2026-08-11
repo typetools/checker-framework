@@ -70,7 +70,7 @@ job_dependences_not_in_canary(canary_jdk, guava_part1)
 job_dependences_not_in_canary(canary_jdk, guava_part2)
 job_dependences_not_in_canary(canary_jdk, plume_lib)
 
-      - all-green:
+      - all_green:
           requires:
             - canary_jobs
             - junit_part1_jdk25
