@@ -411,10 +411,6 @@ def main(argv: list[str]) -> None:
         stage_maven_artifacts_in_maven_central()
 
         print_step("Step 5b: Close staged artifacts at Maven Central.")
-        ## TODO: previously we could 'close' the artifacts vi Sonatype's UI, but now a POST request
-        # has to be made instead.  (Documentation here: https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/#ensuring-deployment-visibility-in-the-central-publisher-portal)
-        # I've tried to do this via the command line using curl, but the commands do nothing. I was
-        # able to close the artifacts by doing the following:
         continue_or_exit(
             "Maven artifacts have been staged! "
             "After you hit continue, the artifacts will be closed.\n"
