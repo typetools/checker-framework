@@ -812,7 +812,7 @@ public class InferenceFactory {
    */
   public AbstractType getTypeOfElement(Element element, Theta map) {
     AnnotatedTypeMirror atm = typeFactory.getAnnotatedType(element).asUse();
-    return InferenceType.create(atm, element.asType(), map, context);
+    return InferenceType.create(atm, map, context);
   }
 
   /**
@@ -825,8 +825,7 @@ public class InferenceFactory {
    */
   public AbstractType getTypeOfBound(TypeParameterElement pEle, Theta map) {
     AnnotatedTypeVariable atm = (AnnotatedTypeVariable) typeFactory.getAnnotatedType(pEle);
-    return InferenceType.create(
-        atm.getUpperBound(), ((TypeVariable) pEle.asType()).getUpperBound(), map, context);
+    return InferenceType.create(atm.getUpperBound(), map, context);
   }
 
   /**
@@ -931,17 +930,17 @@ public class InferenceFactory {
       }
     }
     if (context.types.isSameType(aJavaType, (Type) glb)) {
-      return a.create(glbATM, glb, false);
+      return a.create(glbATM, false);
     }
 
     if (context.types.isSameType(bJavaType, (Type) glb)) {
-      return b.create(glbATM, glb, false);
+      return b.create(glbATM, false);
     }
 
     if (a.isInferenceType()) {
-      return a.create(glbATM, glb, false);
+      return a.create(glbATM, false);
     } else if (b.isInferenceType()) {
-      return b.create(glbATM, glb, false);
+      return b.create(glbATM, false);
     }
 
     assert a.isProper() && b.isProper();
@@ -979,9 +978,9 @@ public class InferenceFactory {
     AnnotatedExecutableType functionType =
         AnnotatedTypes.asMemberOf(
             context.modelTypes, context.typeFactory, targetType.getAnnotatedType(), ele);
-    Iterator<AnnotatedTypeMirror> iter = functionType.getThrownTypes().iterator();
-    for (TypeMirror thrownType : ele.getThrownTypes()) {
-      AbstractType ei = InferenceType.create(iter.next(), thrownType, map, context);
+
+    for (AnnotatedTypeMirror thrownType : functionType.getThrownTypes()) {
+      AbstractType ei = InferenceType.create(thrownType, map, context);
       if (ei.isProper()) {
         properTypes.add((ProperType) ei);
       } else {
@@ -1112,7 +1111,7 @@ public class InferenceFactory {
     if (template == null) {
       return new ProperType(typeVariable, context);
     }
-    return template.create(typeVariable, freshTypeVariable, false);
+    return template.create(typeVariable, false);
   }
 
   /**
