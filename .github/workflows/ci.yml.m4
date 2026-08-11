@@ -66,7 +66,7 @@ jobs:
 
 include([../../.azure/jobs.m4])dnl
 
-  all-green:
+  all_green:
     if: always()
     needs:
       - junit_jdk17
