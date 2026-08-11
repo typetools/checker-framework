@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
@@ -171,7 +170,8 @@ public abstract class TypeConstraint implements Constraint {
             inputs.addAll(paramVariables);
           }
           AbstractType R = this.T.getFunctionTypeReturnType();
-          if (R == null || R.getTypeKind() == TypeKind.NONE) {
+          if (R == null) {
+            // The function type's return type is void.
             return inputs;
           }
           for (ExpressionTree e : TreeUtils.getReturnedExpressions(lambdaTree)) {

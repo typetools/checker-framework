@@ -4,7 +4,6 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import java.util.List;
 import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -79,22 +78,19 @@ public class CompileTimeDeclarationType extends AbstractExecutableType {
   @Override
   public AbstractType getReturnType(Theta map) {
     AnnotatedTypeMirror annotatedReturnType;
-    TypeMirror returnType;
 
     if (methodRef.getMode() == ReferenceMode.NEW) {
       annotatedReturnType =
           context.typeFactory.getResultingTypeOfConstructorMemberReference(
               methodRef, annotatedExecutableType);
-      returnType = annotatedReturnType.getUnderlyingType();
     } else {
       annotatedReturnType = annotatedExecutableType.getReturnType();
-      returnType = executableType.getReturnType();
     }
 
     if (map == null) {
       return new ProperType(annotatedReturnType, context);
     } else {
-      return InferenceType.create(annotatedReturnType, returnType, map, context);
+      return InferenceType.create(annotatedReturnType, map, context);
     }
   }
 

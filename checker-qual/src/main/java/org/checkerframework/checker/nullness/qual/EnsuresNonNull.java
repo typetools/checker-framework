@@ -26,7 +26,7 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
  * </code></pre>
  *
  * It can also be used for a method that fails if a given expression is null, indicating that the
- * argument is null if the method returns normally:
+ * argument is non-null if the method returns normally:
  *
  * <pre><code>
  *  /** Throws an exception if the argument is null. *&#47;

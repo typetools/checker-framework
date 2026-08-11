@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -75,8 +74,8 @@ public class UseOfVariable extends AbstractType {
   }
 
   @Override
-  public AbstractType create(AnnotatedTypeMirror atm, TypeMirror type, boolean ignoreAnnotations) {
-    return InferenceType.create(atm, type, variable.map, qualifierVars, context, ignoreAnnotations);
+  public AbstractType create(AnnotatedTypeMirror atm, boolean ignoreAnnotations) {
+    return InferenceType.create(atm, variable.map, qualifierVars, context, ignoreAnnotations);
   }
 
   @Override
@@ -84,6 +83,12 @@ public class UseOfVariable extends AbstractType {
     return false;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>An inference variable is not a declared type, so it has no type parameters; this
+   * implementation returns null.
+   */
   @Override
   public @Nullable List<ProperType> getTypeParameterBounds() {
     return null;
@@ -174,7 +179,7 @@ public class UseOfVariable extends AbstractType {
       // the bounds of a variable have annotations to be ignored, the instantiation of that variable
       // is as flexible as possible.
       AnnotatedTypeMirror boundCopyATM = bound.getAnnotatedType().deepCopy();
-      AbstractType boundCopy = bound.create(boundCopyATM, bound.getJavaType(), true);
+      AbstractType boundCopy = bound.create(boundCopyATM, true);
       if (boundCopyATM.getKind() == TypeKind.TYPEVAR && kind == BoundKind.EQUAL) {
         variable.getBounds().addBound(parent, kind, boundCopy);
       } else if (kind == BoundKind.LOWER) {
@@ -188,7 +193,7 @@ public class UseOfVariable extends AbstractType {
         variable.getBounds().addBound(parent, BoundKind.UPPER, boundCopy);
 
         AnnotatedTypeMirror boundCopyATM2 = bound.getAnnotatedType().deepCopy();
-        AbstractType boundCopy2 = bound.create(boundCopyATM2, bound.getJavaType(), true);
+        AbstractType boundCopy2 = bound.create(boundCopyATM2, true);
         boundCopyATM2.replaceAnnotations(bots);
         variable.getBounds().addBound(parent, BoundKind.LOWER, boundCopy2);
       }
@@ -218,12 +223,12 @@ public class UseOfVariable extends AbstractType {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    if (!super.equals(o)) {
-      return false;
-    }
 
     UseOfVariable that = (UseOfVariable) o;
 
+    if (!sameInferenceProblem(that)) {
+      return false;
+    }
     if (hasPrimaryAnno != that.hasPrimaryAnno) {
       return false;
     }
@@ -242,6 +247,6 @@ public class UseOfVariable extends AbstractType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), variable, hasPrimaryAnno, bots, tops, type);
+    return Objects.hash(inferenceProblemHashCode(), variable, hasPrimaryAnno, bots, tops, type);
   }
 }

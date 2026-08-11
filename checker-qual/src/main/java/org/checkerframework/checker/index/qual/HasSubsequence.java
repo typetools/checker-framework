@@ -42,7 +42,7 @@ import org.checkerframework.framework.qual.JavaExpression;
  *   <li>{@code start} is {@code @NonNegative}.
  *   <li>{@code end} is {@code @LTEqLengthOf("a")}.
  *   <li>{@code start} is {@code @LessThan("end + 1")}.
- *   <li>the value of {@code this} equals {@code array[start..end-1]}
+ *   <li>The value of {@code this} equals {@code array[start..end-1]}.
  * </ul>
  *
  * The Index Checker verifies the first 3 facts, but always issues a warning because it cannot prove

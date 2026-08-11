@@ -21,7 +21,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * {@code @UnderInitialization(B.class)}.
  *
  * <p>Code is allowed to store potentially not-fully-initialized objects in the fields of a
- * partially-initialized object, as long as all initialization is complete by the end of the
+ * partially initialized object, as long as all initialization is complete by the end of the
  * constructor.
  *
  * <p>What type qualifiers on the field are considered depends on the checker; for instance, the
