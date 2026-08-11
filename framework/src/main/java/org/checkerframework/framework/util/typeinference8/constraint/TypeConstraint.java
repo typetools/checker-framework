@@ -171,6 +171,7 @@ public abstract class TypeConstraint implements Constraint {
           }
           AbstractType R = this.T.getFunctionTypeReturnType();
           if (R == null) {
+            // The function type's return type is void.
             return inputs;
           }
           for (ExpressionTree e : TreeUtils.getReturnedExpressions(lambdaTree)) {
