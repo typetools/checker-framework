@@ -12,8 +12,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * The annotated expression evaluates to an integer whose value is less than or equal to the lengths
  * of all the given sequences. ("LTEq" stands for "Less than or equal to".)
  *
- * <p>For example, an expression with type {@code @LTLengthOf({"a", "b"})} is less than or equal to
- * both {@code a.length} and {@code b.length}. The sequences {@code a} and {@code b} might have
+ * <p>For example, an expression with type {@code @LTEqLengthOf({"a", "b"})} is less than or equal
+ * to both {@code a.length} and {@code b.length}. The sequences {@code a} and {@code b} might have
  * different lengths.
  *
  * <p>{@code @LTEqLengthOf({"a"})} = {@code @LTLengthOf(value={"a"}, offset=-1)}, and<br>
