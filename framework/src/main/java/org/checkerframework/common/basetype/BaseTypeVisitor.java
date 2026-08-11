@@ -4170,6 +4170,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @return the annotation's expressions, or null if {@code sideEffectsOnly} is null or one of
      *     its expressions cannot be parsed
      */
+    @SuppressWarnings("UnusedMethod") // Will be used in a future PR.
     private @Nullable List<JavaExpression> parseSideEffectsOnly(
         @Nullable AnnotationMirror sideEffectsOnly, AnnotatedExecutableType methodType) {
       if (sideEffectsOnly == null) {
@@ -4202,6 +4203,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param expressions the expressions of a {@code @SideEffectsOnly} annotation
      * @return the annotation corresponding to {@code expressions}
      */
+    @SuppressWarnings("UnusedMethod") // Will be used in a future PR.
     private String sideEffectsOnlyToString(List<JavaExpression> expressions) {
       StringJoiner result = new StringJoiner("\", \"", "@SideEffectsOnly({\"", "\"})");
       result.setEmptyValue("@SideEffectsOnly({})");
