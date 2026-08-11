@@ -15,6 +15,7 @@ import java.lang.classfile.MethodModel;
 import java.lang.classfile.TypeAnnotation;
 import java.lang.classfile.attribute.CodeAttribute;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.ToIntFunction;
 
@@ -156,9 +157,9 @@ public class ReferenceInfoUtil {
         System.lineSeparator(),
         "type = " + p1.type + ", " + p2.type,
         "offset = " + p1.offset + ", " + p2.offset,
-        "lvarOffset = " + p1.lvarOffset + ", " + p2.lvarOffset,
-        "lvarLength = " + p1.lvarLength + ", " + p2.lvarLength,
-        "lvarIndex = " + p1.lvarIndex + ", " + p2.lvarIndex,
+        "lvarOffset = " + Arrays.toString(p1.lvarOffset) + ", " + Arrays.toString(p2.lvarOffset),
+        "lvarLength = " + Arrays.toString(p1.lvarLength) + ", " + Arrays.toString(p2.lvarLength),
+        "lvarIndex = " + Arrays.toString(p1.lvarIndex) + ", " + Arrays.toString(p2.lvarIndex),
         "boundIndex = " + p1.boundIndex + ", " + p2.boundIndex,
         "parameterIndex = " + p1.parameterIndex + ", " + p2.parameterIndex,
         "typeIndex = " + p1.typeIndex + ", " + p2.typeIndex,
@@ -170,11 +171,6 @@ public class ReferenceInfoUtil {
       String descriptor, Position expected, List<AnnoPosPair> annotations) {
     for (AnnoPosPair anno : annotations) {
       String actualName = anno.first;
-
-      if (descriptor.equals(actualName)) {
-        System.out.println("For Anno: " + actualName);
-      }
-
       if (descriptor.equals(actualName) && areEquals(expected, anno.second)) {
         return anno;
       }
@@ -194,10 +190,12 @@ public class ReferenceInfoUtil {
           actualAnnos);
     }
 
+    // Each expected annotation must be matched by a different actual annotation.
+    List<AnnoPosPair> unmatched = new ArrayList<>(actualAnnos);
     for (AnnoPosPair e : expectedAnnos) {
       String aName = e.first;
       Position expected = e.second;
-      AnnoPosPair actual = findAnnotation(aName, expected, actualAnnos);
+      AnnoPosPair actual = findAnnotation(aName, expected, unmatched);
       if (actual == null) {
         throw new ComparisonException(
             "Expected annotation not found: "
@@ -209,6 +207,7 @@ public class ReferenceInfoUtil {
             expectedAnnos,
             actualAnnos);
       }
+      unmatched.remove(actual);
     }
     return true;
   }

@@ -74,6 +74,7 @@ include([../../.azure/jobs.m4])dnl
       - junit_part1_jdk25
       - junit_part2_jdk25
       - junit_jdk26
+      - nonjunit_jdk21
       - nonjunit_jdk25
       - inference_part1_jdk25
       - inference_part2_jdk25

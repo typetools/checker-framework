@@ -61,14 +61,17 @@ public class ReferenceInfoUtil {
       throw new ComparisonException(
           "Wrong number of annotations; " + diagnostic, expectedAnnos, actualAnnos);
     }
+    // Each expected annotation must be matched by a different actual annotation.
+    List<Annotation> unmatched = new ArrayList<>(actualAnnos);
     for (String annoName : expectedAnnos) {
-      Annotation anno = findAnnotation(annoName, actualAnnos);
+      Annotation anno = findAnnotation(annoName, unmatched);
       if (anno == null) {
         throw new ComparisonException(
             "Expected annotation not found: " + annoName + "; " + diagnostic,
             expectedAnnos,
             actualAnnos);
       }
+      unmatched.remove(anno);
     }
     return true;
   }

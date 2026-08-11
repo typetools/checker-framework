@@ -5,52 +5,57 @@
 // langtools/test/tools/javac/annotations/typeAnnotations/referenceinfos/ReferenceInfoUtil.java
 // Adapted to handle the same type qualifier appearing multiple times.
 
-import java.lang.classfile.Annotation;
-import java.lang.classfile.Attributes;
-import java.lang.classfile.ClassModel;
-import java.lang.classfile.MethodModel;
+import com.sun.tools.classfile.Annotation;
+import com.sun.tools.classfile.Attribute;
+import com.sun.tools.classfile.ClassFile;
+import com.sun.tools.classfile.ConstantPool.InvalidIndex;
+import com.sun.tools.classfile.ConstantPool.UnexpectedEntry;
+import com.sun.tools.classfile.Method;
+import com.sun.tools.classfile.RuntimeAnnotations_attribute;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 
 public class ReferenceInfoUtil {
 
-  public static List<Annotation> extendedAnnotationsOf(ClassModel cm) {
+  public static final int IGNORE_VALUE = -321;
+
+  public static List<Annotation> extendedAnnotationsOf(ClassFile cf) {
     List<Annotation> annos = new ArrayList<>();
-    findAnnotations(cm, annos);
+    findAnnotations(cf, annos);
     return annos;
   }
 
   // /////////////////// Extract annotations //////////////////
-  private static void findAnnotations(ClassModel cm, List<Annotation> annos) {
-    for (MethodModel m : cm.methods()) {
-      findAnnotations(m, annos);
+  private static void findAnnotations(ClassFile cf, List<Annotation> annos) {
+    for (Method m : cf.methods) {
+      findAnnotations(cf, m, Attribute.RuntimeVisibleAnnotations, annos);
     }
   }
 
   /**
-   * Adds to {@code annos} the annotations in the method's {@code RuntimeVisibleAnnotations}
-   * attribute, skipping those whose name is already in {@code annos}.
-   *
-   * @param m a method
-   * @param annos the list to which the annotations are added
+   * Test the result of Attributes.getIndex according to expectations encoded in the method's name.
    */
-  private static void findAnnotations(MethodModel m, List<Annotation> annos) {
-    m.findAttribute(Attributes.runtimeVisibleAnnotations())
-        .ifPresent(
-            attr -> {
-              for (Annotation an : attr.annotations()) {
-                if (!containsName(annos, an)) {
-                  annos.add(an);
-                }
-              }
-            });
+  private static void findAnnotations(ClassFile cf, Method m, String name, List<Annotation> annos) {
+    int index = m.attributes.getIndex(cf.constant_pool, name);
+    if (index != -1) {
+      Attribute attr = m.attributes.get(index);
+      assert attr instanceof RuntimeAnnotations_attribute;
+      RuntimeAnnotations_attribute tAttr = (RuntimeAnnotations_attribute) attr;
+      for (Annotation an : tAttr.annotations) {
+        if (!containsName(annos, an, cf)) {
+          annos.add(an);
+        }
+      }
+    }
   }
 
-  private static Annotation findAnnotation(String name, List<Annotation> annotations) {
+  private static Annotation findAnnotation(String name, List<Annotation> annotations, ClassFile cf)
+      throws InvalidIndex, UnexpectedEntry {
     String properName = "L" + name + ";";
     for (Annotation anno : annotations) {
-      if (anno.className().equalsString(properName)) {
+      String actualName = cf.constant_pool.getUTF8Value(anno.type_index);
+      if (properName.equals(actualName)) {
         return anno;
       }
     }
@@ -58,28 +63,39 @@ public class ReferenceInfoUtil {
   }
 
   public static boolean compare(
-      List<String> expectedAnnos, List<Annotation> actualAnnos, String diagnostic) {
+      List<String> expectedAnnos, List<Annotation> actualAnnos, ClassFile cf, String diagnostic)
+      throws InvalidIndex, UnexpectedEntry {
     if (actualAnnos.size() != expectedAnnos.size()) {
       throw new ComparisonException(
-          "Wrong number of annotations; " + diagnostic, expectedAnnos, actualAnnos);
+          "Wrong number of annotations; " + diagnostic, expectedAnnos, actualAnnos, cf);
     }
+    // Each expected annotation must be matched by a different actual annotation.
+    List<Annotation> unmatched = new ArrayList<>(actualAnnos);
     for (String annoName : expectedAnnos) {
-      Annotation anno = findAnnotation(annoName, actualAnnos);
+      Annotation anno = findAnnotation(annoName, unmatched, cf);
       if (anno == null) {
         throw new ComparisonException(
             "Expected annotation not found: " + annoName + "; " + diagnostic,
             expectedAnnos,
-            actualAnnos);
+            actualAnnos,
+            cf);
       }
+      unmatched.remove(anno);
     }
     return true;
   }
 
-  private static boolean containsName(List<Annotation> annos, Annotation anno) {
-    for (Annotation an : annos) {
-      if (an.className().equalsString(anno.className().stringValue())) {
-        return true;
+  private static boolean containsName(List<Annotation> annos, Annotation anno, ClassFile cf) {
+    try {
+      for (Annotation an : annos) {
+        if (cf.constant_pool
+            .getUTF8Value(an.type_index)
+            .equals(cf.constant_pool.getUTF8Value(anno.type_index))) {
+          return true;
+        }
       }
+    } catch (Exception e) {
+      throw new RuntimeException();
     }
     return false;
   }
@@ -90,17 +106,24 @@ class ComparisonException extends RuntimeException {
 
   public final List<String> expected;
   public final List<Annotation> found;
+  public final ClassFile cf;
 
-  public ComparisonException(String message, List<String> expected, List<Annotation> found) {
+  public ComparisonException(
+      String message, List<String> expected, List<Annotation> found, ClassFile cf) {
     super(message);
     this.expected = expected;
     this.found = found;
+    this.cf = cf;
   }
 
   public String toString() {
     StringJoiner foundString = new StringJoiner(",");
     for (Annotation anno : found) {
-      foundString.add(anno.className().stringValue());
+      try {
+        foundString.add(cf.constant_pool.getUTF8Value(anno.type_index));
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
     }
     return String.join(
         System.lineSeparator(),

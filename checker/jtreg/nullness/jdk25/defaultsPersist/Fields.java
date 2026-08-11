@@ -5,7 +5,7 @@
  *
  * @compile ../PersistUtil.java Driver.java ReferenceInfoUtil.java Fields.java
  * @run main Driver Fields
- * @ignore This fails for Java 11. See Issue 2816.
+ * @ignore The wildcards1 and wildcards2 tests fail.  See Issue 2816.
  */
 
 // Keep in sync with ../../jdk24/defaultsPersist/Fields.java, which uses the

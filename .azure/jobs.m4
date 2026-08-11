@@ -3,6 +3,9 @@ junit_job(21)
 junit_jobs(canary_jdk)
 junit_job(latest_jdk)
 
+ifelse([The jdk21 job runs the jtreg tests under checker/jtreg/nullness/jdk24/, which use the
+com.sun.tools.classfile API that was removed in Java 25.])dnl
+nonjunit_job(21)
 nonjunit_job(canary_jdk)
 
   # Sometimes one of the invocations of wpi-many in `./gradlew wpiManyTest`

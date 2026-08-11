@@ -1040,6 +1040,8 @@ subprojects {
           args += [
             "-javacoptions:--add-modules jdk.jdeps",
             "-javacoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
+            "-vmoptions:--add-modules jdk.jdeps",
+            "-vmoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
             "-vmoptions:--add-opens=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
           ]
         }

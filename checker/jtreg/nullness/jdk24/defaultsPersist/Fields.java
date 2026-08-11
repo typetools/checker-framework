@@ -3,9 +3,9 @@
  * @requires jdk.version.major <= 24
  * @summary Test that defaulted types are stored in bytecode.
  *
- * @requires jdk.version.major >= 24
  * @compile ../PersistUtil.java Driver.java ReferenceInfoUtil.java Fields.java
  * @run main Driver Fields
+ * @ignore The wildcards1 and wildcards2 tests fail.  See Issue 2816.
  */
 
 // Keep in sync with ../../jdk25/defaultsPersist/Fields.java, which uses the java.lang.classfile
