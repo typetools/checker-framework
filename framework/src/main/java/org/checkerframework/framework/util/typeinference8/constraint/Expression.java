@@ -420,12 +420,18 @@ public class Expression extends TypeConstraint {
   }
 
   /**
-   * Returns the non-wildcard parameterization of {@code t} as defined in JLS 9.9.
+   * Returns the non-wildcard parameterization of {@code t} as defined in <a
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9">JLS section
+   * 9.9</a>.
+   *
+   * <p>{@code AbstractType.makeGround} implements the same JLS rule for an {@code
+   * AnnotatedDeclaredType}.
    *
    * @param t a wildcard parameterized type
    * @param context the context
    * @return the non-wildcard parameterization of {@code t}
    */
+  // TODO: Unify this method with AbstractType.makeGround.
   private AbstractType nonWildcardParameterization(AbstractType t, Java8InferenceContext context) {
     // The caller only calls this method when t.isWildcardParameterizedType() is true, so t is a
     // declared type and both of the following are non-null.

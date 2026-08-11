@@ -130,8 +130,8 @@ tasks.register("installGitHooks", Copy) {
   dependsOn("installPrekGitHook")
   description = "Copies git hooks to the local git hooks directory"
   from(files("checker/bin-devel/git.pre-commit"))
-  rename("git\\.(.*)", "\$1.legacy")
   into(localHooksDir)
+  rename("git\\.pre-commit", "pre-commit.legacy")
 }
 tasks.register("installPrekGitHook", Exec) {
   // `prek install` is idempotent, so it is harmless to run it on every build.
