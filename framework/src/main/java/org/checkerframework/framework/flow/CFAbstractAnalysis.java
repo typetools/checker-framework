@@ -168,9 +168,9 @@ public abstract class CFAbstractAnalysis<
   }
 
   /**
-   * Returns the expressions that the method side-effects (specified as arguments/elements of
-   * {@code @SideEffectsOnly}), view-adapted to the given method invocation. Returns null if the
-   * method has no {@code @SideEffectsOnly} annotation.
+   * Returns the expressions that the invoked method side-effects (specified as arguments/elements
+   * of {@code @SideEffectsOnly}), view-adapted to the given method invocation. Returns null if the
+   * invoked method has no {@code @SideEffectsOnly} annotation.
    *
    * <p>Also returns null if any of the annotation's expressions cannot be parsed at the call site.
    * Null means "the method might side-effect anything", which is the conservative result; returning
@@ -182,17 +182,17 @@ public abstract class CFAbstractAnalysis<
    * parsing an expression is not cheap. Clients should not side-effect the returned value, which is
    * aliased to internal state.
    *
-   * @param method a method
    * @param methodInvocationNode the call site at which the side-effecting expressions will be used
    * @return the expressions that the method side-effects, view-adapted to the given invocation; or
    *     null if the method has no {@code @SideEffectsOnly} annotation or an expression in it cannot
    *     be parsed or cannot be represented at the call site
    */
   public @Nullable List<JavaExpression> getSideEffectsOnlyExpressions(
-      ExecutableElement method, MethodInvocationNode methodInvocationNode) {
+      MethodInvocationNode methodInvocationNode) {
     if (sideEffectsOnlyExpressionsCache.containsKey(methodInvocationNode)) {
       return sideEffectsOnlyExpressionsCache.get(methodInvocationNode);
     }
+    ExecutableElement method = methodInvocationNode.getTarget().getMethod();
     List<JavaExpression> result = computeSideEffectsOnlyExpressions(method, methodInvocationNode);
     sideEffectsOnlyExpressionsCache.put(methodInvocationNode, result);
     return result;

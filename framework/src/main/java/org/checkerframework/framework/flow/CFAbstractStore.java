@@ -244,7 +244,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           hasDoesNotUnrefineReceiver ? JavaExpression.fromNode(receiver) : null;
 
       @Nullable List<JavaExpression> seOnlyExpressions =
-          analysis.getSideEffectsOnlyExpressions(method, methodInvocationNode);
+          analysis.getSideEffectsOnlyExpressions(methodInvocationNode);
 
       // TODO: Also remove if any element/argument to the annotation is not
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
