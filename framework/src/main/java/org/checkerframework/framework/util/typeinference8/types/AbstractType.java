@@ -339,14 +339,16 @@ public abstract class AbstractType {
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.27.3">JLS section
    * 15.27.3</a>
    *
+   * <p>This method implements the non-wildcard parameterization of <a
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9">JLS section
+   * 9.9</a>, for an {@link AnnotatedDeclaredType}. The method {@code
+   * Expression.nonWildcardParameterization} implements the same rule for an {@link AbstractType}.
+   *
    * @param type a type to ground
    * @param typeFactory type factory
    * @return the ground type
    */
-  // TODO: This method is named make ground, but actually implements non-wildcard
-  // parameterization as defined in
-  // https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9
-  // https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.2
+  // TODO: Unify this method with Expression.nonWildcardParameterization.
   static AnnotatedDeclaredType makeGround(
       AnnotatedDeclaredType type, AnnotatedTypeFactory typeFactory) {
     Element e = type.getUnderlyingType().asElement();
@@ -428,7 +430,6 @@ public abstract class AbstractType {
   // TODO: Determine whether those two rules should treat raw types as parameterized types, and if
   // not, use a different predicate there.
   public boolean isParameterizedType() {
-    // TODO this isn't matching the JavaDoc.
     return ((Type) getJavaType()).isParameterized() || ((Type) getJavaType()).isRaw();
   }
 
@@ -665,28 +666,36 @@ public abstract class AbstractType {
     }
   }
 
+  // equals and hashCode are abstract so that a subclass must implement them.  A subclass that needs
+  // to compare the fields of this class can use sameInferenceProblem and inferenceProblemHashCode.
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
+  public abstract boolean equals(Object o);
 
-    AbstractType that = (AbstractType) o;
-    if (ignoreAnnotations != that.ignoreAnnotations) {
-      return false;
-    }
+  @Override
+  public abstract int hashCode();
 
-    if (!context.equals(that.context)) {
-      return false;
-    }
-    return typeFactory.equals(that.typeFactory);
+  /**
+   * Returns true if {@code that} belongs to the same inference problem as this type and treats
+   * annotations the same way as this type does. This is a helper method for {@link #equals}; it
+   * says nothing about the types themselves.
+   *
+   * @param that another abstract type
+   * @return true if {@code that} belongs to the same inference problem as this type and treats
+   *     annotations the same way as this type does
+   */
+  protected final boolean sameInferenceProblem(AbstractType that) {
+    return ignoreAnnotations == that.ignoreAnnotations
+        && context.equals(that.context)
+        && typeFactory.equals(that.typeFactory);
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(context, typeFactory);
+  /**
+   * Returns a hash code for the fields that {@link #sameInferenceProblem} compares. This is a
+   * helper method for {@link #hashCode}.
+   *
+   * @return a hash code for the fields that {@link #sameInferenceProblem} compares
+   */
+  protected final int inferenceProblemHashCode() {
+    return Objects.hash(ignoreAnnotations, context, typeFactory);
   }
 }

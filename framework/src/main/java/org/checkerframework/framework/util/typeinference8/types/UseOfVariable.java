@@ -83,6 +83,12 @@ public class UseOfVariable extends AbstractType {
     return false;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>An inference variable is not a declared type, so it has no type parameters; this
+   * implementation returns null.
+   */
   @Override
   public @Nullable List<ProperType> getTypeParameterBounds() {
     return null;
@@ -217,12 +223,12 @@ public class UseOfVariable extends AbstractType {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    if (!super.equals(o)) {
-      return false;
-    }
 
     UseOfVariable that = (UseOfVariable) o;
 
+    if (!sameInferenceProblem(that)) {
+      return false;
+    }
     if (hasPrimaryAnno != that.hasPrimaryAnno) {
       return false;
     }
@@ -241,6 +247,6 @@ public class UseOfVariable extends AbstractType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), variable, hasPrimaryAnno, bots, tops, type);
+    return Objects.hash(inferenceProblemHashCode(), variable, hasPrimaryAnno, bots, tops, type);
   }
 }
