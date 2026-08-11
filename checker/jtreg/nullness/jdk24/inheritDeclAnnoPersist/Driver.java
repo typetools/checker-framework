@@ -48,8 +48,8 @@ public class Driver {
       try {
         String compact = (String) method.invoke(object);
         String fullFile = PersistUtil.wrap(compact);
-        ClassFile cf = PersistUtil.compileAndReturn(fullFile, testClass);
-        List<Annotation> actual = ReferenceInfoUtil.extendedAnnotationsOf(cf);
+        ClassFile c = PersistUtil.compileAndReturn(fullFile, testClass);
+        List<Annotation> actual = ReferenceInfoUtil.extendedAnnotationsOf(c);
         String diagnostic =
             String.join(
                 "; ",
@@ -57,7 +57,7 @@ public class Driver {
                 "compact=" + compact,
                 "fullFile=" + fullFile,
                 "testClass=" + testClass);
-        ReferenceInfoUtil.compare(expected, actual, cf, diagnostic);
+        ReferenceInfoUtil.compare(expected, actual, c, diagnostic);
         out.println("PASSED:  " + method.getName());
         ++passed;
       } catch (Throwable e) {

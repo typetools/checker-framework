@@ -14,6 +14,7 @@ import com.sun.tools.classfile.Field;
 import com.sun.tools.classfile.Method;
 import com.sun.tools.classfile.RuntimeTypeAnnotations_attribute;
 import com.sun.tools.classfile.TypeAnnotation;
+import com.sun.tools.classfile.TypeAnnotation.Position;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,25 +36,25 @@ public class ReferenceInfoUtil {
   }
 
   public static List<TypeAnnotation> extendedAnnotationsOf(
-      ClassFile cf, boolean ignoreConstructors) {
+      ClassFile c, boolean ignoreConstructors) {
     ReferenceInfoUtil riu = new ReferenceInfoUtil(ignoreConstructors);
     List<TypeAnnotation> annos = new ArrayList<>();
-    riu.findAnnotations(cf, annos);
+    riu.findAnnotations(c, annos);
     return annos;
   }
 
   // /////////////////// Extract type annotations //////////////////
-  private void findAnnotations(ClassFile cf, List<TypeAnnotation> annos) {
-    findAnnotations(cf, Attribute.RuntimeVisibleTypeAnnotations, annos);
-    findAnnotations(cf, Attribute.RuntimeInvisibleTypeAnnotations, annos);
+  private void findAnnotations(ClassFile c, List<TypeAnnotation> annos) {
+    findAnnotations(c, Attribute.RuntimeVisibleTypeAnnotations, annos);
+    findAnnotations(c, Attribute.RuntimeInvisibleTypeAnnotations, annos);
 
-    for (Field f : cf.fields) {
-      findAnnotations(cf, f, annos);
+    for (Field f : c.fields) {
+      findAnnotations(c, f, annos);
     }
-    for (Method m : cf.methods) {
+    for (Method m : c.methods) {
       String methodName;
       try {
-        methodName = m.getName(cf.constant_pool);
+        methodName = m.getName(c.constant_pool);
       } catch (Exception e) {
         throw new Error(e);
       }
@@ -61,27 +62,27 @@ public class ReferenceInfoUtil {
         continue;
       }
 
-      findAnnotations(cf, m, annos);
+      findAnnotations(c, m, annos);
     }
   }
 
-  private static void findAnnotations(ClassFile cf, Method m, List<TypeAnnotation> annos) {
-    findAnnotations(cf, m, Attribute.RuntimeVisibleTypeAnnotations, annos);
-    findAnnotations(cf, m, Attribute.RuntimeInvisibleTypeAnnotations, annos);
+  private static void findAnnotations(ClassFile c, Method m, List<TypeAnnotation> annos) {
+    findAnnotations(c, m, Attribute.RuntimeVisibleTypeAnnotations, annos);
+    findAnnotations(c, m, Attribute.RuntimeInvisibleTypeAnnotations, annos);
   }
 
-  private static void findAnnotations(ClassFile cf, Field m, List<TypeAnnotation> annos) {
-    findAnnotations(cf, m, Attribute.RuntimeVisibleTypeAnnotations, annos);
-    findAnnotations(cf, m, Attribute.RuntimeInvisibleTypeAnnotations, annos);
+  private static void findAnnotations(ClassFile c, Field m, List<TypeAnnotation> annos) {
+    findAnnotations(c, m, Attribute.RuntimeVisibleTypeAnnotations, annos);
+    findAnnotations(c, m, Attribute.RuntimeInvisibleTypeAnnotations, annos);
   }
 
   /**
    * Test the result of Attributes.getIndex according to expectations encoded in the method's name.
    */
-  private static void findAnnotations(ClassFile cf, String name, List<TypeAnnotation> annos) {
-    int index = cf.attributes.getIndex(cf.constant_pool, name);
+  private static void findAnnotations(ClassFile c, String name, List<TypeAnnotation> annos) {
+    int index = c.attributes.getIndex(c.constant_pool, name);
     if (index != -1) {
-      Attribute attr = cf.attributes.get(index);
+      Attribute attr = c.attributes.get(index);
       assert attr instanceof RuntimeTypeAnnotations_attribute;
       RuntimeTypeAnnotations_attribute tAttr = (RuntimeTypeAnnotations_attribute) attr;
       annos.addAll(Arrays.asList(tAttr.annotations));
@@ -92,8 +93,8 @@ public class ReferenceInfoUtil {
    * Test the result of Attributes.getIndex according to expectations encoded in the method's name.
    */
   private static void findAnnotations(
-      ClassFile cf, Method m, String name, List<TypeAnnotation> annos) {
-    int index = m.attributes.getIndex(cf.constant_pool, name);
+      ClassFile c, Method m, String name, List<TypeAnnotation> annos) {
+    int index = m.attributes.getIndex(c.constant_pool, name);
     if (index != -1) {
       Attribute attr = m.attributes.get(index);
       assert attr instanceof RuntimeTypeAnnotations_attribute;
@@ -101,12 +102,12 @@ public class ReferenceInfoUtil {
       annos.addAll(Arrays.asList(tAttr.annotations));
     }
 
-    int cindex = m.attributes.getIndex(cf.constant_pool, Attribute.Code);
+    int cindex = m.attributes.getIndex(c.constant_pool, Attribute.Code);
     if (cindex != -1) {
       Attribute cattr = m.attributes.get(cindex);
       assert cattr instanceof Code_attribute;
       Code_attribute cAttr = (Code_attribute) cattr;
-      index = cAttr.attributes.getIndex(cf.constant_pool, name);
+      index = cAttr.attributes.getIndex(c.constant_pool, name);
       if (index != -1) {
         Attribute attr = cAttr.attributes.get(index);
         assert attr instanceof RuntimeTypeAnnotations_attribute;
@@ -120,8 +121,8 @@ public class ReferenceInfoUtil {
    * Test the result of Attributes.getIndex according to expectations encoded in the method's name.
    */
   private static void findAnnotations(
-      ClassFile cf, Field m, String name, List<TypeAnnotation> annos) {
-    int index = m.attributes.getIndex(cf.constant_pool, name);
+      ClassFile c, Field m, String name, List<TypeAnnotation> annos) {
+    int index = m.attributes.getIndex(c.constant_pool, name);
     if (index != -1) {
       Attribute attr = m.attributes.get(index);
       assert attr instanceof RuntimeTypeAnnotations_attribute;
@@ -157,7 +158,7 @@ public class ReferenceInfoUtil {
     return true;
   }
 
-  public static boolean areEquals(TypeAnnotation.Position p1, TypeAnnotation.Position p2) {
+  public static boolean areEquals(Position p1, Position p2) {
     if (p1 == p2) {
       return true;
     }
@@ -179,7 +180,7 @@ public class ReferenceInfoUtil {
     return result;
   }
 
-  public static String positionCompareStr(TypeAnnotation.Position p1, TypeAnnotation.Position p2) {
+  public static String positionCompareStr(Position p1, Position p2) {
     return String.join(
         System.lineSeparator(),
         "type = " + p1.type + ", " + p2.type,
@@ -195,11 +196,11 @@ public class ReferenceInfoUtil {
   }
 
   private static TypeAnnotation findAnnotation(
-      String name, TypeAnnotation.Position expected, List<TypeAnnotation> annotations, ClassFile cf)
+      String name, Position expected, List<TypeAnnotation> annotations, ClassFile c)
       throws InvalidIndex, UnexpectedEntry {
     String properName = "L" + name + ";";
     for (TypeAnnotation anno : annotations) {
-      String actualName = cf.constant_pool.getUTF8Value(anno.annotation.type_index);
+      String actualName = c.constant_pool.getUTF8Value(anno.annotation.type_index);
       if (properName.equals(actualName) && areEquals(expected, anno.position)) {
         return anno;
       }
@@ -210,20 +211,20 @@ public class ReferenceInfoUtil {
   public static boolean compare(
       List<AnnoPosPair> expectedAnnos,
       List<TypeAnnotation> actualAnnos,
-      ClassFile cf,
+      ClassFile c,
       String diagnostic)
       throws InvalidIndex, UnexpectedEntry {
     if (actualAnnos.size() != expectedAnnos.size()) {
       throw new ComparisonException(
-          "Wrong number of annotations in " + cf + "; " + diagnostic, expectedAnnos, actualAnnos);
+          "Wrong number of annotations in " + c + "; " + diagnostic, expectedAnnos, actualAnnos);
     }
 
     // Each expected annotation must be matched by a different actual annotation.
     List<TypeAnnotation> unmatched = new ArrayList<>(actualAnnos);
     for (AnnoPosPair e : expectedAnnos) {
       String aName = e.first;
-      TypeAnnotation.Position expected = e.second;
-      TypeAnnotation actual = findAnnotation(aName, expected, unmatched, cf);
+      Position expected = e.second;
+      TypeAnnotation actual = findAnnotation(aName, expected, unmatched, c);
       if (actual == null) {
         throw new ComparisonException(
             "Expected annotation not found: "

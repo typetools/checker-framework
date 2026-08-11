@@ -58,9 +58,9 @@ public class Driver {
       try {
         String compact = (String) method.invoke(object);
         String fullFile = PersistUtil.wrap(compact);
-        ClassModel cm = PersistUtil.compileAndReturn(fullFile, testClass);
+        ClassModel c = PersistUtil.compileAndReturn(fullFile, testClass);
         boolean ignoreConstructors = !clazz.getName().equals("Constructors");
-        List<AnnoPosPair> actual = ReferenceInfoUtil.extendedAnnotationsOf(cm, ignoreConstructors);
+        List<AnnoPosPair> actual = ReferenceInfoUtil.extendedAnnotationsOf(c, ignoreConstructors);
         String diagnostic =
             String.join(
                 "; ",
@@ -68,7 +68,7 @@ public class Driver {
                 "compact=" + compact,
                 "fullFile=" + fullFile,
                 "testClass=" + testClass);
-        ReferenceInfoUtil.compare(expected, actual, cm, diagnostic);
+        ReferenceInfoUtil.compare(expected, actual, c, diagnostic);
         out.println("PASSED:  " + method.getName());
         ++passed;
       } catch (Throwable e) {
@@ -275,7 +275,7 @@ class Position {
   }
 }
 
-/** A pair of an annotation descriptor and a position. */
+/** A pair of an annotation and a position. */
 class AnnoPosPair {
   /** The first element of the pair. */
   public final String first;

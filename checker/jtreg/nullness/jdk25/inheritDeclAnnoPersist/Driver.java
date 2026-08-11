@@ -49,8 +49,8 @@ public class Driver {
       try {
         String compact = (String) method.invoke(object);
         String fullFile = PersistUtil.wrap(compact);
-        ClassModel cm = PersistUtil.compileAndReturn(fullFile, testClass);
-        List<Annotation> actual = ReferenceInfoUtil.extendedAnnotationsOf(cm);
+        ClassModel c = PersistUtil.compileAndReturn(fullFile, testClass);
+        List<Annotation> actual = ReferenceInfoUtil.extendedAnnotationsOf(c);
         String diagnostic =
             String.join(
                 "; ",

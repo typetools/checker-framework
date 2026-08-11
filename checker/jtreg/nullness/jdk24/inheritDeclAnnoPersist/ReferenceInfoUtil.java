@@ -20,41 +20,41 @@ public class ReferenceInfoUtil {
 
   public static final int IGNORE_VALUE = -321;
 
-  public static List<Annotation> extendedAnnotationsOf(ClassFile cf) {
+  public static List<Annotation> extendedAnnotationsOf(ClassFile c) {
     List<Annotation> annos = new ArrayList<>();
-    findAnnotations(cf, annos);
+    findAnnotations(c, annos);
     return annos;
   }
 
   // /////////////////// Extract annotations //////////////////
-  private static void findAnnotations(ClassFile cf, List<Annotation> annos) {
-    for (Method m : cf.methods) {
-      findAnnotations(cf, m, Attribute.RuntimeVisibleAnnotations, annos);
+  private static void findAnnotations(ClassFile c, List<Annotation> annos) {
+    for (Method m : c.methods) {
+      findAnnotations(c, m, Attribute.RuntimeVisibleAnnotations, annos);
     }
   }
 
   /**
    * Adds to {@code annos} the declaration annotations in the {@code name} attribute of {@code m}.
    */
-  private static void findAnnotations(ClassFile cf, Method m, String name, List<Annotation> annos) {
-    int index = m.attributes.getIndex(cf.constant_pool, name);
+  private static void findAnnotations(ClassFile c, Method m, String name, List<Annotation> annos) {
+    int index = m.attributes.getIndex(c.constant_pool, name);
     if (index != -1) {
       Attribute attr = m.attributes.get(index);
       assert attr instanceof RuntimeAnnotations_attribute;
       RuntimeAnnotations_attribute tAttr = (RuntimeAnnotations_attribute) attr;
       for (Annotation an : tAttr.annotations) {
-        if (!containsName(annos, an, cf)) {
+        if (!containsName(annos, an, c)) {
           annos.add(an);
         }
       }
     }
   }
 
-  private static Annotation findAnnotation(String name, List<Annotation> annotations, ClassFile cf)
+  private static Annotation findAnnotation(String name, List<Annotation> annotations, ClassFile c)
       throws InvalidIndex, UnexpectedEntry {
     String properName = "L" + name + ";";
     for (Annotation anno : annotations) {
-      String actualName = cf.constant_pool.getUTF8Value(anno.type_index);
+      String actualName = c.constant_pool.getUTF8Value(anno.type_index);
       if (properName.equals(actualName)) {
         return anno;
       }
@@ -63,34 +63,34 @@ public class ReferenceInfoUtil {
   }
 
   public static boolean compare(
-      List<String> expectedAnnos, List<Annotation> actualAnnos, ClassFile cf, String diagnostic)
+      List<String> expectedAnnos, List<Annotation> actualAnnos, ClassFile c, String diagnostic)
       throws InvalidIndex, UnexpectedEntry {
     if (actualAnnos.size() != expectedAnnos.size()) {
       throw new ComparisonException(
-          "Wrong number of annotations; " + diagnostic, expectedAnnos, actualAnnos, cf);
+          "Wrong number of annotations; " + diagnostic, expectedAnnos, actualAnnos, c);
     }
     // Each expected annotation must be matched by a different actual annotation.
     List<Annotation> unmatched = new ArrayList<>(actualAnnos);
     for (String annoName : expectedAnnos) {
-      Annotation anno = findAnnotation(annoName, unmatched, cf);
+      Annotation anno = findAnnotation(annoName, unmatched, c);
       if (anno == null) {
         throw new ComparisonException(
             "Expected annotation not found: " + annoName + "; " + diagnostic,
             expectedAnnos,
             actualAnnos,
-            cf);
+            c);
       }
       unmatched.remove(anno);
     }
     return true;
   }
 
-  private static boolean containsName(List<Annotation> annos, Annotation anno, ClassFile cf) {
+  private static boolean containsName(List<Annotation> annos, Annotation anno, ClassFile c) {
     try {
       for (Annotation an : annos) {
-        if (cf.constant_pool
+        if (c.constant_pool
             .getUTF8Value(an.type_index)
-            .equals(cf.constant_pool.getUTF8Value(anno.type_index))) {
+            .equals(c.constant_pool.getUTF8Value(anno.type_index))) {
           return true;
         }
       }
@@ -106,21 +106,21 @@ class ComparisonException extends RuntimeException {
 
   public final List<String> expected;
   public final List<Annotation> found;
-  public final ClassFile cf;
+  public final ClassFile c;
 
   public ComparisonException(
-      String message, List<String> expected, List<Annotation> found, ClassFile cf) {
+      String message, List<String> expected, List<Annotation> found, ClassFile c) {
     super(message);
     this.expected = expected;
     this.found = found;
-    this.cf = cf;
+    this.c = c;
   }
 
   public String toString() {
     StringJoiner foundString = new StringJoiner(",");
     for (Annotation anno : found) {
       try {
-        foundString.add(cf.constant_pool.getUTF8Value(anno.type_index));
+        foundString.add(c.constant_pool.getUTF8Value(anno.type_index));
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

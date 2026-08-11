@@ -18,15 +18,15 @@ public class ReferenceInfoUtil {
 
   public static final int IGNORE_VALUE = -321;
 
-  public static List<Annotation> extendedAnnotationsOf(ClassModel cm) {
+  public static List<Annotation> extendedAnnotationsOf(ClassModel c) {
     List<Annotation> annos = new ArrayList<>();
-    findAnnotations(cm, annos);
+    findAnnotations(c, annos);
     return annos;
   }
 
   // /////////////////// Extract annotations //////////////////
-  private static void findAnnotations(ClassModel cm, List<Annotation> annos) {
-    for (MethodModel m : cm.methods()) {
+  private static void findAnnotations(ClassModel c, List<Annotation> annos) {
+    for (MethodModel m : c.methods()) {
       findAnnotations(m, annos);
     }
   }

@@ -44,21 +44,21 @@ public class ReferenceInfoUtil {
     this.ignoreConstructors = ignoreConstructors;
   }
 
-  public static List<AnnoPosPair> extendedAnnotationsOf(ClassModel cm, boolean ignoreConstructors) {
+  public static List<AnnoPosPair> extendedAnnotationsOf(ClassModel c, boolean ignoreConstructors) {
     ReferenceInfoUtil riu = new ReferenceInfoUtil(ignoreConstructors);
     List<AnnoPosPair> annos = new ArrayList<>();
-    riu.findAnnotations(cm, annos);
+    riu.findAnnotations(c, annos);
     return annos;
   }
 
   // /////////////////// Extract type annotations //////////////////
-  private void findAnnotations(ClassModel cm, List<AnnoPosPair> annos) {
-    findAnnotations(cm, NO_LABELS, annos);
+  private void findAnnotations(ClassModel c, List<AnnoPosPair> annos) {
+    findAnnotations(c, NO_LABELS, annos);
 
-    for (FieldModel f : cm.fields()) {
+    for (FieldModel f : c.fields()) {
       findAnnotations(f, NO_LABELS, annos);
     }
-    for (MethodModel m : cm.methods()) {
+    for (MethodModel m : c.methods()) {
       if (ignoreConstructors && m.methodName().equalsString("<init>")) {
         continue;
       }
@@ -181,11 +181,11 @@ public class ReferenceInfoUtil {
   public static boolean compare(
       List<AnnoPosPair> expectedAnnos,
       List<AnnoPosPair> actualAnnos,
-      ClassModel cm,
+      ClassModel c,
       String diagnostic) {
     if (actualAnnos.size() != expectedAnnos.size()) {
       throw new ComparisonException(
-          "Wrong number of annotations in " + cm.thisClass().asInternalName() + "; " + diagnostic,
+          "Wrong number of annotations in " + c.thisClass().asInternalName() + "; " + diagnostic,
           expectedAnnos,
           actualAnnos);
     }

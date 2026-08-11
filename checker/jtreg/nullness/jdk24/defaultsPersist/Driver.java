@@ -10,6 +10,7 @@
 
 import com.sun.tools.classfile.ClassFile;
 import com.sun.tools.classfile.TypeAnnotation;
+import com.sun.tools.classfile.TypeAnnotation.Position;
 import com.sun.tools.classfile.TypeAnnotation.TargetType;
 import java.io.PrintStream;
 import java.lang.annotation.ElementType;
@@ -53,10 +54,10 @@ public class Driver {
       try {
         String compact = (String) method.invoke(object);
         String fullFile = PersistUtil.wrap(compact);
-        ClassFile cf = PersistUtil.compileAndReturn(fullFile, testClass);
+        ClassFile c = PersistUtil.compileAndReturn(fullFile, testClass);
         boolean ignoreConstructors = !clazz.getName().equals("Constructors");
         List<TypeAnnotation> actual =
-            ReferenceInfoUtil.extendedAnnotationsOf(cf, ignoreConstructors);
+            ReferenceInfoUtil.extendedAnnotationsOf(c, ignoreConstructors);
         String diagnostic =
             String.join(
                 "; ",
@@ -64,7 +65,7 @@ public class Driver {
                 "compact=" + compact,
                 "fullFile=" + fullFile,
                 "testClass=" + testClass);
-        ReferenceInfoUtil.compare(expected, actual, cf, diagnostic);
+        ReferenceInfoUtil.compare(expected, actual, c, diagnostic);
         out.println("PASSED:  " + method.getName());
         ++passed;
       } catch (Throwable e) {
@@ -111,7 +112,7 @@ public class Driver {
   private AnnoPosPair expectedOf(TADescription d) {
     String annoName = d.annotation();
 
-    TypeAnnotation.Position p = new TypeAnnotation.Position();
+    Position p = new Position();
     p.type = d.type();
     if (d.offset() != NOT_SET) {
       p.offset = d.offset();
@@ -138,7 +139,7 @@ public class Driver {
       p.exception_index = d.exceptionIndex();
     }
     if (d.genericLocation().length != 0) {
-      p.location = TypeAnnotation.Position.getTypePathFromBinary(wrapIntArray(d.genericLocation()));
+      p.location = Position.getTypePathFromBinary(wrapIntArray(d.genericLocation()));
     }
 
     return AnnoPosPair.of(annoName, p);
@@ -155,13 +156,13 @@ public class Driver {
   public static final int NOT_SET = -888;
 }
 
-/** A pair of an annotation name and a position. */
+/** A pair of an annotation and a position. */
 class AnnoPosPair {
   /** The first element of the pair. */
   public final String first;
 
   /** The second element of the pair. */
-  public final TypeAnnotation.Position second;
+  public final Position second;
 
   /**
    * Creates a new immutable pair. Clients should use {@link #of}.
@@ -169,7 +170,7 @@ class AnnoPosPair {
    * @param first the first element of the pair
    * @param second the second element of the pair
    */
-  private AnnoPosPair(String first, TypeAnnotation.Position second) {
+  private AnnoPosPair(String first, Position second) {
     this.first = first;
     this.second = second;
   }
@@ -181,8 +182,13 @@ class AnnoPosPair {
    * @param second second argument
    * @return a pair of the values (first, second)
    */
-  public static AnnoPosPair of(String first, TypeAnnotation.Position second) {
+  public static AnnoPosPair of(String first, Position second) {
     return new AnnoPosPair(first, second);
+  }
+
+  @Override
+  public String toString() {
+    return first + " @ " + second;
   }
 }
 
