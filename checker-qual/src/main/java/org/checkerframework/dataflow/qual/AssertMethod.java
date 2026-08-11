@@ -57,7 +57,7 @@ public @interface AssertMethod {
    *
    * <p>For example, JUnit's <a
    * href="https://docs.junit.org/current/api/org.junit.jupiter.api/org/junit/jupiter/api/Assertions.html#assertFalse(boolean)">Assertions.assertFalse(...)</a>
-   * throws an exception if the first argument is false. So it is annotated as follows:
+   * throws an exception if the first argument is not false. So it is annotated as follows:
    *
    * <pre>{@code @AssertMethod(value = AssertionFailedError.class, isAssertFalse = true)
    * public static void assertFalse(boolean condition);
