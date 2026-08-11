@@ -49,6 +49,7 @@ import org.checkerframework.javacutil.Resolver;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.javacparse.JavacParse;
+import org.plumelib.javacparse.JavacParseResult;
 import org.plumelib.util.CollectionsP;
 
 /**
@@ -922,7 +923,11 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
   private @Nullable TypeMirror convertTreeToTypeMirror(JCTree typeTree) {
     if (typeTree instanceof MemberSelectTree memberSelectTree) {
       String identifier = memberSelectTree.getIdentifier().toString();
-      ExpressionTree parsed = JavacParse.parseExpression(identifier);
+      JavacParseResult<ExpressionTree> jpr = JavacParse.parseExpression(identifier);
+      if (jpr.hasParseError()) {
+        throw new Error(identifier + " :" + jpr.getParseErrorMessages());
+      }
+      ExpressionTree parsed = jpr.getTree();
 
       if (parsed instanceof IdentifierTree identTree) {
         return identTree.accept(this, null).getType();
