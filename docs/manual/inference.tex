@@ -266,13 +266,19 @@ The requirements to run \<wpi.sh> and \<wpi-many.sh> are the same:
 \begin{itemize}
 \item The project on which inference is run must contain an Ant, Gradle,
   or Maven buildfile that compiles the project.
-\item At least one of the \verb|JAVA_HOME|, \verb|JAVA17_HOME|, or \verb|JAVA21_HOME|
+\item At least one of the \verb|JAVA_HOME|, \verb|JAVA8_HOME|,
+  \verb|JAVA11_HOME|, \verb|JAVA17_HOME|, \verb|JAVA21_HOME|,
+  \verb|JAVA24_HOME|, \verb|JAVA25_HOME|, or \verb|JAVA26_HOME|
   environment variables must be set.
 \item If set, the \verb|JAVA_HOME| environment variable must point to a
   Java JDK.
+\item If set, the \verb|JAVA8_HOME| environment variable must point to a Java 8 JDK.
+\item If set, the \verb|JAVA11_HOME| environment variable must point to a Java 11 JDK.
 \item If set, the \verb|JAVA17_HOME| environment variable must point to a Java 17 JDK.
 \item If set, the \verb|JAVA21_HOME| environment variable must point to a Java 21 JDK.
-\item If set, the \verb|JAVA22_HOME| environment variable must point to a Java 22 JDK.
+\item If set, the \verb|JAVA24_HOME| environment variable must point to a Java 24 JDK.
+\item If set, the \verb|JAVA25_HOME| environment variable must point to a Java 25 JDK.
+\item If set, the \verb|JAVA26_HOME| environment variable must point to a Java 26 JDK.
 \item The \<CHECKERFRAMEWORK> environment variable must point to a built copy of the Checker Framework.
 \item If set, the \verb|DLJC| environment variable must point to a copy of the \<dljc> script
 from \ahreforurl{https://github.com/kelloggm/do-like-javac}{do-like-javac}. (If this variable is not

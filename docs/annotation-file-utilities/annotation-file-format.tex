@@ -388,10 +388,17 @@ type of the field.
 
 The \bnfnt{expression-annotations} production specifies annotations on the
 initialization expression of a field. If a field is initialized at declaration,
-then in bytecode the initialization is moved to the constructor when the class
-is compiled. Therefore, for bytecode, annotations on the initialization
-expression go in the constructor (see Section~\ref{method-definitions}), rather
-than the field definition. Source code annotations for the field initialization
+then in bytecode the initialization is moved out of the field definition when
+the class is compiled: the initialization of an instance field is moved to each
+constructor, and the initialization of a static field is moved to the class
+initialization method \code{<clinit>()V}\@.  Therefore, for bytecode,
+annotations on the initialization expression of an instance field go in each
+constructor, and annotations on the initialization expression of a static field
+go in \code{<clinit>()V} (see Section~\ref{method-definitions}), rather than in
+the field definition.  (The \bnfnt{staticinit} and \bnfnt{instanceinit}
+productions do not apply: they represent only explicit initializer blocks, not
+field initializers.)
+Source code annotations for the field initialization
 expression are valid on the field definition.
 
 
@@ -1415,15 +1422,15 @@ described in this document primarily for method bodies.
 The Checker Framework~\cite{DietlDEMS2011,CF} defines a format
 called ``stub files''. A stub file is similar
 to the \code{.spec}/\code{.jml} files described in the previous paragraph. It
-uses Java syntax, only allows annotations on method signatures, and does not require
-method bodies. A stub file is used to add annotations to method signatures of
+uses Java syntax, allows annotations on class declarations, fields, and method
+signatures, and omits method bodies. A stub file is used to add annotations to
 existing Java classes. For example, the Checker Framework uses stub files to add
-annotations to method signatures of libraries (such as the JDK) without modifying
+annotations to libraries (such as the JDK) without modifying
 the source code or bytecode of the library. A single stub file can contain
-multiple packages and classes. This format only allows annotations on method
-signatures, not class signatures, fields, or method bodies, as a \code{.jaif}
-file does. Further, stub files are only used by the Checker Framework at run
-time; they cannot be used to insert annotations into a source or classfile.
+multiple packages and classes. Unlike a \code{.jaif} file, a stub file cannot
+express annotations within method bodies. Further, stub files are only read by
+the Checker Framework during type checking; they cannot be used to insert
+annotations into a source file or classfile.
 
 
 Eclipse defines its own file format for external nullness annotations:

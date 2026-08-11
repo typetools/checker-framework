@@ -11,7 +11,7 @@ New section on concepts and annotations that apply to all type systems and check
 Where would a good place be for this?  At the beginning/end?  Split into multiple sections?
 
 - Pre-/postconditions from a user perspective:
-  - Explain the generic pre- and postcondition annotations: @EnsuresAnnotation/@EnsuresAnnotations, @EnsuresAnnotationIf/@EnsuresAnnotationsIf and @RequiresAnnotation/@RequiresAnnotations.
+  - Explain the generic pre- and postcondition annotations: @EnsuresQualifier/@EnsuresQualifier.List, @EnsuresQualifierIf/@EnsuresQualifierIf.List and @RequiresQualifier/@RequiresQualifier.List.
   - Explain what kind of strings are supported (see text near the end of this document; use that to augment the existing Checker Framework documentation).
 
 - Pre-/postconditions from a developer perspective:

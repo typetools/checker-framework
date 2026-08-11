@@ -3,8 +3,11 @@
 
 The Property File Checker ensures that a property file or resource bundle (both
 of which act like maps from keys to values) is only accessed with valid keys.
-Accesses without a valid key return either \code{null} or a default value, which
-can lead to a \code{NullPointerException} or hard-to-trace behavior.
+An access without a valid key does not fail in an obvious way:
+\code{ResourceBundle.getString} throws a \code{MissingResourceException}, and
+\code{Properties.getProperty} returns \code{null} or the default value supplied
+by the caller.  This can lead to a \code{NullPointerException} or
+hard-to-trace behavior.
 The Property File Checker (Section \refwithpage{genpropkey-checker}) ensures
 that the keys used are found in the corresponding property file or resource
 bundle.

@@ -1717,8 +1717,10 @@ a transfer class.)
 
 Decide what source code syntax is relevant to the run-time checks or
 run-time operations you are trying to support.  The CFG (control flow
-graph) represents source code as \refclass{dataflow/cfg/node}{Node}s, each a
-node in the abstract syntax tree of the program being checked (see
+graph) represents source code as \refclass{dataflow/cfg/node}{Node}s.  Some
+\refclass{dataflow/cfg/node}{Node}s correspond to a node in the abstract syntax
+tree of the program being checked, while others are synthesized during CFG
+construction and have no corresponding AST node (see
 Section~\ref{creating-dataflow-representation}).
 
 In your extended \refclass{framework/flow}{CFTransfer},
@@ -1863,10 +1865,10 @@ the result of \code{RegexUtil.asRegex} invocations:
     if (receiver instanceof ClassNameNode) {
       String receiverName = ((ClassNameNode) receiver).getElement().toString();
 
-      // Is this a call to static method isRegex(s, groups) in a class named RegexUtil?
+      // Is this a call to static method asRegex(s, groups) in a class named RegexUtil?
       if (receiverName.equals("RegexUtil")
           && ElementUtils.matchesElement(method,
-                 "isRegex", String.class, int.class)) {
+                 "asRegex", String.class, int.class)) {
             ...
 \end{Verbatim}
 %BEGIN LATEX
@@ -2577,7 +2579,7 @@ no tree is available for classes read from bytecode.
 
 There is a \<Tree> interface for each Java source structure, e.g.,
 \code{ClassTree} for class declaration, \code{MethodInvocationTree}
-for a method invocation, and \code{ForEachTree} for an enhanced \<for>
+for a method invocation, and \code{EnhancedForLoopTree} for an enhanced \<for>
 statement (also known as a foreach loop).
 
 You should limit your use of trees. A checker uses \<Tree>s mainly to
@@ -2585,10 +2587,16 @@ traverse the source code and retrieve the types/elements corresponding to
 them.  Then, the checker performs any needed checks on the types/elements instead.
 
 To obtain the position (line number and column number) of a \<Tree>,
-cast the \<Tree> to a \<com.sun.tools.javac.tree.JCTree> and then use one of
-its methods, such as \<pos()>, which returns a \<JCDiagnostic.DiagnosticPosition>.
+use a \<com.sun.source.util.Trees> instance to obtain a
+\<com.sun.source.util.SourcePositions> via \<getSourcePositions()>, then call
+\<getStartPosition(...)> (or \<getEndPosition(...)>) on it.
 \<com.sun.source.tree.CompilationUnitTree> has a \<LineMap> that lets you convert
 positions to line numbers.
+Alternatively, you can cast the \<Tree> to the javac-internal type
+\<com.sun.tools.javac.tree.JCTree> and call its \<pos()> method, which returns a
+\<JCDiagnostic.DiagnosticPosition>; doing so requires your code to be compiled
+and run with \<-{}-add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED>
+and \<-{}-add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED>\@.
 
 
 \subsubsectionAndLabel{Using the APIs}{creating-using-the-apis}

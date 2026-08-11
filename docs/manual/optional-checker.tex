@@ -132,9 +132,9 @@ More specifically, the Optional Checker will issue an error if you call
 \sunjavadoc{java.base/java/util/Optional.html\#get()}{get}
 or
 \sunjavadoc{java.base/java/util/Optional.html\#orElseThrow()}{orElseThrow()}
-on a \<@MaybePresent Optional> receiver, because each of these methods
-throws a \<NoSuchElementException> if the receiver is a possibly-absent
-\<Optional>.
+on a \<@MaybePresent Optional> receiver, because the receiver may be absent and
+each of these methods throws a \<NoSuchElementException> if the receiver is
+empty at run time.
 
 By contrast, the Optional Checker does not issue an error if you call
 \sunjavadoc{java.base/java/util/Optional.html\#orElseThrow(java.util.function.Supplier)}{orElseThrow(Supplier)}

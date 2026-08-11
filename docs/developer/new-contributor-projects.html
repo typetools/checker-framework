@@ -905,9 +905,9 @@ running <code>./gradlew checkNullness</code> (run it in the top-level <code>chec
 </p>
 
 <p>
-  The best approach may be to have the Nullness Checker run the Nonempty
+  The best approach may be to have the Nullness Checker run the Non-Empty
   Checker as a subchecker but suppress the Non-Empty Checker warnings.  That
-  is, the Nullness Checker takes advantage of information that the Nonempty
+  is, the Nullness Checker takes advantage of information that the Non-Empty
   Checker verifies, without caring about code that the Non-Empty Checker
   cannot verify.  The Optional Checker takes this approach in its
   integration with the Non-Empty Checker.
@@ -923,7 +923,7 @@ running <code>./gradlew checkNullness</code> (run it in the top-level <code>chec
 <p>
   The Checker Framework contains a checker named the Non-Empty Checker (<a href="https://github.com/typetools/checker-framework/tree/master/checker/src/main/java/org/checkerframework/checker/nonempty">code</a>,
   <a href="https://github.com/typetools/checker-framework/tree/master/checker/tests/nonempty">tests</a>,
-  which can be run via <code>gradlew NonemptyTest</code>).
+  which can be run via <code>gradlew NonEmptyTest</code>).
 Its types are:
 </p>
 <ul>
@@ -1705,6 +1705,7 @@ simple example is the following, which triggers a false positive
 in
 the <a href="https://checkerframework.org/manual/#resource-leak-checker">Resource
 Leak Checker (RLC)</a>:
+</p>
 
 <pre>
 @EnsuresCalledMethods(value={"this.f1", "this.f2"}, methods={"close"})
