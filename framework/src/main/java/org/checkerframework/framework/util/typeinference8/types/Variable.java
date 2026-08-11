@@ -3,6 +3,7 @@ package org.checkerframework.framework.util.typeinference8.types;
 import com.sun.source.tree.ExpressionTree;
 import java.util.Objects;
 import java.util.Set;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.interning.qual.Interned;
@@ -118,17 +119,14 @@ import org.checkerframework.javacutil.TypesUtils;
     // for each type T delimited by & in the TypeBound, the bound {@literal al <: T[P1:=a1,...,
     // Pp:=ap]} appears in the set; if this results in no proper upper bounds for al (only
     // dependencies), then the bound {@literal al <: Object} also appears in the set.
-    switch (upperBound.getKind()) {
-      case INTERSECTION -> {
-        for (AnnotatedTypeMirror bound : typeVariable.getUpperBound().directSupertypes()) {
-          AbstractType t1 = InferenceType.create(bound, map, context);
-          variableBounds.addBound(null, BoundKind.UPPER, t1);
-        }
-      }
-      default -> {
-        AbstractType t1 = InferenceType.create(typeVariable.getUpperBound(), map, context);
+    if (upperBound.getKind() == TypeKind.INTERSECTION) {
+      for (AnnotatedTypeMirror bound : typeVariable.getUpperBound().directSupertypes()) {
+        AbstractType t1 = InferenceType.create(bound, map, context);
         variableBounds.addBound(null, BoundKind.UPPER, t1);
       }
+    } else {
+      AbstractType t1 = InferenceType.create(typeVariable.getUpperBound(), map, context);
+      variableBounds.addBound(null, BoundKind.UPPER, t1);
     }
     if (variableBounds.findProperUpperBounds().isEmpty()) {
       // Every bound added above mentions an inference variable, so this resulted in no proper
