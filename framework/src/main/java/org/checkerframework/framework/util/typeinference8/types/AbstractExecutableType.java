@@ -2,7 +2,6 @@ package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.ExpressionTree;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -11,6 +10,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -104,9 +104,8 @@ public abstract class AbstractExecutableType {
    */
   public List<? extends AbstractType> getThrownTypes(Theta map) {
     List<AbstractType> thrown = new ArrayList<>();
-    Iterator<? extends TypeMirror> iter = executableType.getThrownTypes().iterator();
     for (AnnotatedTypeMirror t : annotatedExecutableType.getThrownTypes()) {
-      thrown.add(InferenceType.create(t, iter.next(), map, context));
+      thrown.add(InferenceType.create(t, map, context));
     }
     return thrown;
   }
@@ -154,7 +153,7 @@ public abstract class AbstractExecutableType {
    *     size}
    */
   protected final List<AbstractType> getParameterTypes(
-      Theta map, int size, AnnotatedTypeMirror firstParam, boolean isVarargsCall) {
+      Theta map, int size, @Nullable AnnotatedTypeMirror firstParam, boolean isVarargsCall) {
     List<AnnotatedTypeMirror> params = new ArrayList<>(size);
     List<TypeMirror> paramsJava = new ArrayList<>(size);
 
@@ -176,7 +175,7 @@ public abstract class AbstractExecutableType {
       }
     }
 
-    return InferenceType.create(params, paramsJava, map, qualifierVars, context);
+    return InferenceType.create(params, map, qualifierVars, context);
   }
 
   /**
