@@ -11,7 +11,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
  * Indicates that no other value is {@code equals()} to the given value. Therefore, it is correct to
- * use == to test an InternedDistinct value for equality against any other value.
+ * use {@code ==} to test an InternedDistinct value for equality against any other value.
  *
  * <p>This is a stronger property than {@link Interned}, but a weaker property than every value of a
  * Java type being interned.

@@ -13,7 +13,7 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * A type that represents a newly-constructed object. It can be treated as having any
+ * A type that represents a newly constructed object. It can be treated as having any
  * {@code @}{@link GuardedBy} type. Typically, it is only written on factory method return types.
  *
  * @checker_framework.manual #lock-checker Lock Checker

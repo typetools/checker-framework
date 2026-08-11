@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
  * names may be used in E and P, if a {@link QualifierArgument} in E gives the name of the
  * corresponding element in P.
  *
- * <p>For example, the following code declares a postcondition annotation for the {@link
+ * <p>For example, the following code declares a conditional postcondition annotation for the {@link
  * org.checkerframework.common.value.qual.MinLen} qualifier:
  *
  * <pre><code>
@@ -45,11 +45,11 @@ import java.lang.annotation.Target;
  * }
  * </code></pre>
  *
- * The {@code expression} element holds the expressions to which the qualifier applies and {@code
+ * The {@code expression} element holds the expressions to which the qualifier applies, and {@code
  * targetValue} holds the value for the {@code value} argument of {@link
  * org.checkerframework.common.value.qual.MinLen}.
  *
- * <p>The following code then uses the annotation on a method that ensures {@code field} to be
+ * <p>The following code then uses the annotation on a method that ensures that {@code field} is
  * {@code @MinLen(4)} upon returning {@code true}.
  *
  * <pre><code>
