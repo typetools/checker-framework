@@ -338,7 +338,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
-  all-green:
+  all_green:
     if: always()
     needs:
       - junit_jdk17
