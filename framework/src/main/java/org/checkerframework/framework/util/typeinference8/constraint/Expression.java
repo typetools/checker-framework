@@ -250,7 +250,7 @@ public class Expression extends TypeConstraint {
         constraintSet.add(new Typing(this, ps.get(i), fs.get(i), TypeConstraint.Kind.SUBTYPE));
       }
       AbstractType r = T.getFunctionTypeReturnType();
-      if (r != null && r.getTypeKind() != TypeKind.VOID) {
+      if (r != null) {
         AbstractType rPrime = typeOfPoAppMethod.getReturnType(null).capture(context);
         constraintSet.add(new Typing(this, rPrime, r, TypeConstraint.Kind.TYPE_COMPATIBILITY));
       }
@@ -269,7 +269,7 @@ public class Expression extends TypeConstraint {
       return ConstraintSet.FALSE;
     }
     AbstractType r = T.getFunctionTypeReturnType();
-    if (r == null || r.getTypeKind() == TypeKind.VOID) {
+    if (r == null) {
       // Because T is a functional interface, getFunctionTypeReturnType() returns null only if the
       // function type's return type is void.
       return ConstraintSet.TRUE;
@@ -372,7 +372,7 @@ public class Expression extends TypeConstraint {
     }
 
     AbstractType R = tPrime.getFunctionTypeReturnType();
-    if (R != null && R.getTypeKind() != TypeKind.VOID) {
+    if (R != null) {
       for (ExpressionTree e : TreeUtils.getReturnedExpressions(lambda)) {
         if (R.isProper()) {
           // Only the Java types are checked, for the reason given in reduceProperType().

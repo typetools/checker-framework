@@ -290,7 +290,7 @@ public abstract class AbstractType {
       AnnotatedExecutableType aet = getFunctionType();
       assert aet != null : "@AssumeAssertion(nullness): this is a functional interface";
       AnnotatedTypeMirror returnType = aet.getReturnType();
-      if (returnType.getKind() == TypeKind.VOID) {
+      if (returnType.getKind() == TypeKind.VOID || returnType.getKind() == TypeKind.NONE) {
         return null;
       }
       return create(returnType, returnType.getUnderlyingType(), ignoreAnnotations);
