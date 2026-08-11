@@ -204,7 +204,7 @@ are illegal.  Other uses of operators are prohibited for similar reasons.
 \subsectionAndLabel{Permitted shifts}{signedness-checker-permitted-shifts}
 
 As exceptions to the rules given above, the Signedness Checker permits
-certain right shifts which are immediately followed by a cast or
+certain right shifts that are immediately followed by a cast or
 masking operation.
 
 For example, right shift by 8 then mask by 0xFF evaluates to the same value
@@ -289,7 +289,8 @@ Note that type-checking produces a different result for \<int x = u1 / u2;>
 here than in the similar example in
 Section~\ref{signedness-checker-rationale}.  In
 Section~\ref{signedness-checker-rationale}, the method is reading fields,
-and all it knows is the declared type of the field.  In 20.4, the method is
+and all it knows is the declared type of the field.  In
+Section~\ref{signedness-refinement}, the method is
 reading a local variable, and dataflow (that is, flow-sensitive type
 refinement) refines the types of local variables.
 

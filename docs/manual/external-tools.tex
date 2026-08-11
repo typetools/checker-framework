@@ -8,7 +8,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 % copy of the list in file introduction.tex .
 \begin{itemize}
 \item Android (Section~\ref{android})
-\item Android Gradle Plugin (Section~\ref{android-gradle})
+\item Android Studio and the Android Gradle Plugin (Section~\ref{android-gradle})
 \item Ant (Section~\ref{ant-task})
 \item Bazel (Section~\ref{bazel})
 \item Buck (Section~\ref{buck})
@@ -17,7 +17,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 \item Eclipse (Section~\ref{eclipse})
 \item Gradle (Section~\ref{gradle})
 \item IntelliJ IDEA (Section~\ref{intellij})
-\item javac Diagnostics Wrapper (Section~\ref{javac-diagnostics-wrapper})
+\item javac diagnostics wrapper (Section~\ref{javac-diagnostics-wrapper})
 \item Lombok (Section~\ref{lombok})
 \item Maven (Section~\ref{maven})
 \item NetBeans (Section~\ref{netbeans})
@@ -36,7 +36,7 @@ inform us via the
 \href{https://github.com/typetools/checker-framework/issues}{issue tracker} so
 we can add it to this manual.
 
-All examples in this chapter are in the public domain, with no copyright nor
+All examples in this chapter are in the public domain, with no copyright or
 licensing restrictions.
 
 
@@ -67,10 +67,10 @@ the module's \<build.gradle> file --- not the project's \<build.gradle> file.
 \item Add a build variant for running checkers:
 
  \begin{Verbatim}
- android {
+android {
     ...
-      buildTypes {
-      ...
+    buildTypes {
+        ...
         checkTypes {
             javaCompileOptions.annotationProcessorOptions.
                     classNames.add("org.checkerframework.checker.nullness.NullnessChecker")
@@ -271,7 +271,7 @@ For example, you might run
 ./buck build --verbose 8 //app:main
 \end{Verbatim}
 
-However, the command lines that buck prints with \<-v 8> are \emph{not} what
+However, the command lines that Buck prints with \<-v 8> are \emph{not} what
 Buck actually executes.  Buck's invocation of the Checker Framework may
 produce errors that cannot be reproduced from the command line.  This is
 because Buck uses
@@ -453,7 +453,7 @@ These instructions should work on JDK 17 or later, but we only test with support
 versions of Java: JDK 17, JDK 21, and JDK 25.
 
 
-\subsubsectionAndLabel{Non-modularized code}{javac-jdk11-non-modularized}
+\subsectionAndLabel{Non-modularized code}{javac-jdk11-non-modularized}
 
 To compile non-modularized code:
 
@@ -481,7 +481,7 @@ The arguments are explained above, except for two of them:
 \begin{enumerate}
 
 \item \<-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED> which
-opens the \<jdk.compiler/com.sun.tools.java.comp> package.  This is
+opens the \<jdk.compiler/com.sun.tools.javac.comp> package.  This is
 required because the Checker Framework reflectively accesses private members of this package.
 
 \item \<-J--add-exports=...=ALL-UNNAMED> which exports the listed packages.  This is
@@ -489,7 +489,7 @@ required because the Checker Framework accesses non-exported members of these pa
 
 \end{enumerate}
 
-If this option is missing, \<javac> may issue one of the below warnings:
+If these options are missing, \<javac> may issue one of the following warnings:
 \begin{Verbatim}
 WARNING: An illegal reflective access operation has occurred
 WARNING: Illegal reflective access by org.checkerframework.javacutil.Resolver
@@ -507,7 +507,7 @@ java.lang.IllegalAccessError: class org.checkerframework.javacutil.AbstractTypeP
 \end{Verbatim}
 
 
-\subsubsectionAndLabel{Modularized code}{javac-jdk11-modularized}
+\subsectionAndLabel{Modularized code}{javac-jdk11-modularized}
 
 To compile a module, first add \<requires
 org.checkerframework.checker.qual;> to your \<module-info.java>.  The Checker
@@ -531,8 +531,8 @@ javac \
   -processor org.checkerframework.checker.nullness.NullnessChecker
 \end{Verbatim}
 
-\<checker-qual.jar> must be on the module path rather than the class path, but
-do not put \<checker.jar> on the processor module path as it is not
+\<checker-qual.jar> must be on the module path rather than the classpath, but
+do not put \<checker.jar> on the processor module path, as it is not
 modularized.
 
 
@@ -577,7 +577,7 @@ run the Ant target by executing the following steps
   for this Ant buildfile.
 
 \item
-  In the {\bf Targets} tab, select the new ant task (e.g., check-interning).
+  In the {\bf Targets} tab, select the new Ant task (e.g., check-interning).
 
 \item
   Click {\bf Run}.
@@ -650,8 +650,8 @@ When configuring the profile:
   ``org.checkerframework.checker.nullness.NullnessChecker''.
 \end{enumerate}
 
-\item Add \<.../checker-framework/checker/dist/checker-qual.jar>, as a dependency to all
-modules you wish to type check. (They should all have been associated with
+\item Add \<.../checker-framework/checker/dist/checker-qual.jar> as a dependency to all
+modules you wish to type-check. (They should all have been associated with
 the annotation profile above.)
 Instructions appear at
 \url{https://www.jetbrains.com/help/idea/creating-and-managing-projects.html}.
@@ -753,9 +753,9 @@ Checker Framework on that.  The
   Framework Gradle plugin} does this for you automatically.
 
 
-\subsectionAndLabel{Maven Projects using Lombok}{lombok-maven}
+\subsectionAndLabel{Maven projects using Lombok}{lombok-maven}
 
-\href{https://anthonywhitford.com/lombok.maven/lombok-maven-plugin/}{Lombok Maven Plugin}
+The \href{https://anthonywhitford.com/lombok.maven/lombok-maven-plugin/}{Lombok Maven Plugin}
 can be used to delombok source code for Maven projects. The
 \href{https://anthonywhitford.com/lombok.maven/lombok-maven-plugin/faq.html#alt-src-setup}
 {Lombok Maven Plugin FAQ} discusses how to configure the plugin when code
@@ -930,7 +930,7 @@ may suppress warnings from the stub parser.
 \end{enumerate}
 
 If you use \<animal-sniffer-maven-plugin>, you must upgrade to version 1.20
-or later.  Version 1.19 and earlier are broken.  If necessary, you can
+or later.  Versions 1.19 and earlier are broken.  If necessary, you can
 disable animal sniffer by modifying your POM file's properties:
 
 \begin{mysmall}
@@ -984,8 +984,8 @@ then perhaps you have omitted this line from your \<pom.xml>:
 
 \sectionAndLabel{NetBeans}{netbeans}
 
-There are two approaches to running a checker in NetBeans:  via modifying the
-project properties, or via a custom ant target.
+There are two approaches to running a checker in NetBeans:  modifying the
+project properties, or using a custom Ant target.
 
 Note: The ``compile and save'' action in NetBeans 8.1 automatically
 runs the Checker Framework, but this functionality has not yet
@@ -1025,8 +1025,8 @@ are currently unavailable on NetBeans 8.1 and 8.2.
 \item
   Enable annotation processor underlining in the editor. Go to
   ``Build>Compiling'' and check the box ``Enable Annotation
-  Processing,'' and under that, ``Enable Annotation Processing in
-  Editor.''
+  Processing'', and under that, ``Enable Annotation Processing in
+  Editor''.
 
 \item
   Add the checker to run, by clicking ``Add'' next to the box labeled
@@ -1041,7 +1041,7 @@ Compile on Save is enabled), or when the project is built, and
 annotation processor output will appear in the editor.
 
 
-\subsectionAndLabel{Adding a checker via an ant target}{netbeans-ant-target}
+\subsectionAndLabel{Adding a checker via an Ant target}{netbeans-ant-target}
 
 \begin{enumerate}
 \item
@@ -1171,8 +1171,9 @@ javacOptions ++= Seq(
 
 \subsectionAndLabel{For modularized code}{sbt-modularized-code}
 
-\begin{Verbatim}
 For compiling modularized code:
+
+\begin{Verbatim}
 javacOptions ++= Seq(
     "-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
     "-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
