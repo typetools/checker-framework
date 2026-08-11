@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -196,7 +195,6 @@ public class InvocationTypeInference {
     AbstractType target1 =
         InferenceType.create(
             target.getAnnotatedType(),
-            target.getJavaType(),
             context.maps.get(context.pathToExpression.getParentPath().getLeaf()),
             context);
     target = (ProperType) target1.applyInstantiations();
@@ -217,7 +215,7 @@ public class InvocationTypeInference {
     BoundSet b2 = createB2MethodRef(compileTimeDecl, functionTypeParams, map);
     AbstractType r = target.getFunctionTypeReturnType();
     BoundSet b3;
-    if (r == null || r.getTypeKind() == TypeKind.VOID) {
+    if (r == null) {
       b3 = b2;
     } else {
       b3 = createB3(b2, invocation, compileTimeDecl, r, map);

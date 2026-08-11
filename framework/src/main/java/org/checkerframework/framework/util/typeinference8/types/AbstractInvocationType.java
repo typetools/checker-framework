@@ -6,7 +6,6 @@ import com.sun.source.tree.NewClassTree;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -50,24 +49,20 @@ public class AbstractInvocationType extends AbstractExecutableType {
   @Override
   public AbstractType getReturnType(Theta map) {
     AnnotatedTypeMirror annotatedReturnType;
-    TypeMirror returnType;
 
     if (TreeUtils.isDiamondTree(invocation)) {
       Element e = ElementUtils.enclosingTypeElement(TreeUtils.elementFromUse(invocation));
       annotatedReturnType = typeFactory.getAnnotatedType(e);
-      returnType = e.asType();
     } else if (invocation instanceof MethodInvocationTree) {
       annotatedReturnType = annotatedExecutableType.getReturnType();
-      returnType = executableType.getReturnType();
     } else {
       annotatedReturnType = typeFactory.getAnnotatedType(invocation);
-      returnType = TreeUtils.typeOf(invocation);
     }
 
     if (map == null) {
       return new ProperType(annotatedReturnType, context);
     } else {
-      return InferenceType.create(annotatedReturnType, returnType, map, context);
+      return InferenceType.create(annotatedReturnType, map, context);
     }
   }
 
