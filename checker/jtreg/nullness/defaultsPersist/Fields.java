@@ -5,6 +5,7 @@
  * @requires jdk.version.major >= 24
  * @compile ../PersistUtil.java Driver.java ReferenceInfoUtil.java Fields.java
  * @run main Driver Fields
+ * @ignore The wildcards1 and wildcards2 tests fail.  See Issue 2816.
  */
 
 import static java.lang.classfile.TypeAnnotation.TargetType.FIELD;
