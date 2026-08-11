@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -1514,5 +1515,25 @@ public final class TypesUtils {
 
     return typeVariable1.asElement().getSimpleName().contentEquals(otherName)
         && otherEnclosingElement.equals(typeVariable1.asElement().getEnclosingElement());
+  }
+
+  /**
+   * Returns a hash code that is consistent with {@link #areSame(TypeVariable, TypeVariable)}: if
+   * {@code areSame} returns true for two type variables, then this method returns the same value
+   * for both of them.
+   *
+   * <p>Use this method wherever type variables are compared using {@code areSame} but are also
+   * hashed, such as in a hash table or in a {@code hashCode} method whose {@code equals} method
+   * uses {@code areSame}.
+   *
+   * @param typeVariable a type variable
+   * @return a hash code consistent with {@code areSame}
+   */
+  public static int hashCodeForAreSame(TypeVariable typeVariable) {
+    // areSame compares asElement()'s getSimpleName() and getEnclosingElement().  The name is
+    // converted to a String because areSame compares names with Name.contentEquals, and Name does
+    // not specify that its hashCode is consistent with contentEquals.
+    Element element = typeVariable.asElement();
+    return Objects.hash(element.getSimpleName().toString(), element.getEnclosingElement());
   }
 }
