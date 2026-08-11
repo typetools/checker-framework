@@ -114,7 +114,7 @@ public class ProperType extends AbstractType {
    * atm.getUnderlyingType()} as {@code type}.)
    */
   @Override
-  public AbstractType create(AnnotatedTypeMirror atm, TypeMirror type, boolean ignoreAnnotations) {
+  public AbstractType create(AnnotatedTypeMirror atm, boolean ignoreAnnotations) {
     return new ProperType(atm, qualifierVars, context, ignoreAnnotations);
   }
 

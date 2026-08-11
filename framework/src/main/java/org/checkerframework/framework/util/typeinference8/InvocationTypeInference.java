@@ -195,7 +195,6 @@ public class InvocationTypeInference {
     AbstractType target1 =
         InferenceType.create(
             target.getAnnotatedType(),
-            target.getJavaType(),
             context.maps.get(context.pathToExpression.getParentPath().getLeaf()),
             context);
     target = (ProperType) target1.applyInstantiations();
