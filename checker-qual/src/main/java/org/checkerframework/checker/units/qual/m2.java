@@ -19,5 +19,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SuppressWarnings("checkstyle:typename")
 public @interface m2 {
   // Does this make sense? Is it a multiple of (m^2)? Or (multiple of m)^2?
+  /**
+   * The coefficient that multiplies the unit.
+   *
+   * @return the coefficient that multiplies the unit
+   */
   Prefix value() default Prefix.one;
 }
