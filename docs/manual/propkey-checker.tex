@@ -3,10 +3,13 @@
 
 The Property File Checker ensures that a property file or resource bundle (both
 of which act like maps from keys to values) is only accessed with valid keys.
-Accesses without a valid key either return \code{null} or a default value, which
-can lead to a \code{NullPointerException} or hard-to-trace behavior.
+An access without a valid key does not fail in an obvious way:
+\code{ResourceBundle.getString} throws a \code{MissingResourceException}, and
+\code{Properties.getProperty} returns \code{null} or the default value supplied
+by the caller.  This can lead to a \code{NullPointerException} or
+hard-to-trace behavior.
 The Property File Checker (Section \refwithpage{genpropkey-checker}) ensures
-that the used keys are found in the corresponding property file or resource
+that the keys used are found in the corresponding property file or resource
 bundle.
 
 We also provide two specialized checkers.
@@ -18,7 +21,7 @@ declared in a property file.
 This is an example of a simple specialization of the property
 file checker, and the Checker Framework source code shows how it is used.
 
-It is easy to customize the property key checker for other related purposes.
+It is easy to customize the Property Key Checker for other related purposes.
 Take a look at the source code of the Compiler Message Key Checker and adapt it for
 your purposes.
 
@@ -68,7 +71,7 @@ following two command-line options:
   % WAS:  http://java.sun.com/developer/technicalArticles/Intl/ResourceBundles/
   % https://docs.oracle.com/javase/tutorial/ui/features/i18n.html is not what
   % I am looking for to replace it.
-  Multiple resource bundle names are separated by colons '\code{:}'.
+  Multiple resource bundle names are separated by colons ``\code{:}''.
 
 \item \code{-Apropfiles=\emph{prop\_file}}
 
@@ -185,7 +188,7 @@ or property files using the
 \sectionAndLabel{Compiler Message Key Checker}{compilermsgs-checker}
 
 The Checker Framework uses compiler message keys to output error messages.
-These keys are substituted by localized strings for user-visible error messages.
+These keys are replaced by localized strings for user-visible error messages.
 Using keys instead of the localized strings in the source code enables easier
 testing, as the expected message keys can stay unchanged while the localized
 strings can still be modified.
@@ -197,9 +200,9 @@ giving us more precise documentation of the intended use of \code{String}s.
 The single annotation used by this checker is
 \refqualclass{checker/compilermsgs/qual}{CompilerMessageKey}.
 The Checker Framework is completely annotated;
-for example, class \code{org.checkerframework.framework.source.Result}
-uses \code{@CompilerMessageKey} in methods \code{failure} and \code{warning}.
-For most users of the Checker Framework there will be no need to annotate any
+for example, class \code{org.checkerframework.framework.source.DiagMessage}
+uses \code{@CompilerMessageKey} in its constructor and in method \code{error}.
+For most users of the Checker Framework, there will be no need to annotate any
 \code{String}s, as the checker looks up all \code{String} literals and adds
 annotations as appropriate.
 
@@ -212,7 +215,7 @@ command:
 \end{Verbatim}
 
 You must specify the resource, which maps compiler message keys to user-visible
-text.  The checker supports the same options as the general property key checker.
+text.  The checker supports the same options as the general Property Key Checker.
 Within the Checker Framework we only use property files,
 so the \code{-Apropfiles=\emph{prop\_file}} option should be used.
 

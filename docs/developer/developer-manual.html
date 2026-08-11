@@ -81,10 +81,10 @@ repository</a> contains several related projects:
 
 <dl>
   <dt><code>framework</code></dt>
-  <dd>the framework that enables building pluggable type checkers</dd>
+  <dd>the framework that enables building pluggable type-checkers</dd>
 
   <dt><code>checker</code></dt>
-  <dd>the type checkers provided with the Checker Framework</dd>
+  <dd>the type-checkers provided with the Checker Framework</dd>
 
   <dt><code>javacutil</code></dt>
   <dd>utilities for integrating with javac</dd>
@@ -172,7 +172,7 @@ Frequently-used tasks:
   <li> <code>spotlessApply</code>: reformats Java files.
   <li> <code>spotlessCheck</code>: checks formatting of Java files.
   <li> <code><em>NameOfJUnitTest</em></code>: runs the JUnit test with that name; for example, <code>NullnessTest</code>.
-  <li> <code>task</code>: lists tasks; use <code>--all</code> to see all tasks.
+  <li> <code>tasks</code>: lists tasks; use <code>--all</code> to see all tasks.
 </ul>
 
 <p>
@@ -199,7 +199,7 @@ Below are some steps you might try to resolve this issue (in order):
 </p>
 <ul>
   <li><code>./gradlew --no-build-cache assemble</code>: attempts to rebuild the Checker Framework without the build cache.
-  <li>Kill any Gradle daemons; run <code>./gradlew --status</code> to get a list of pids for Gradle.
+  <li>Kill any Gradle daemons; run <code>./gradlew --status</code> to get a list of PIDs for Gradle.
   <li><code>git clean -fdx</code>: removes all files that are not under version control. <b>Add or stash files that you would like to
       keep before running this command</b>.
   <li>Delete the Gradle build cache, usually located at <code>~/.gradle/caches</code>. Note: this will delete the entire build
@@ -248,7 +248,7 @@ your IDE</a> (Eclipse or IntelliJ) to use the formatting.
 
 <p>
 We don't use <code>@author</code> Javadoc tags in code files.
-Doing so clutters the code, and is misleading once that individual
+Doing so clutters the code and is misleading once the author
 is no longer maintaining the code.
 Authorship (and who has made changes recently) can be obtained from the
 version control system, such as by running <code>git annotate <em>filename</em></code>.
@@ -295,8 +295,8 @@ necessary) revert.
 <p>
 The pull request title should clearly explain the change.  It will be used
 as the commit message for your change.  If the pull request fixes an issue
-in the issue tracker, its title should end with "; fixes #NNN" where NNN is
-the fixed issue.
+in the issue tracker, its title should end with "; fixes #NNN", where NNN is
+the number of the fixed issue.
 </p>
 
 <p>
@@ -493,7 +493,7 @@ to ask Azure to lift all three restrictions.  Send mail such as the following:
 <p>
   Thank you for granting me free tier access to Azure Pipelines.
   I am working on the open-source <a href="https://github.com/typetools/checker-framework">Checker Framework</a>.
-  Therefore could you please make the following changes, per the policies at https://azure.microsoft.com/en-us/products/devops/pipelines/?
+  Therefore, could you please make the following changes, per the policies at https://azure.microsoft.com/en-us/products/devops/pipelines/?
 </p>
   <ul>
     <li>Increase parallelism beyond 1 job.</li>
@@ -539,7 +539,7 @@ free for open-source projects; you have to apply for an Open Source Sponsorship.
 <h3 id="ci-related-projects">Continuous Integration failures in related projects (daikon, plume-lib, etc.)</h3>
 
 <p>
-  Continuous integration type-checks external projects such as daikon and
+  Continuous integration type-checks external projects such as the daikon and
   plume-lib libraries.  If you change the Checker Framework, then you might need
   to change code being type-checked &mdash; for example, to fix a newly-revealed
   defect (bug) or to remove a warning suppression that is no longer necessary.
@@ -577,7 +577,7 @@ free for open-source projects; you have to apply for an Open Source Sponsorship.
 <p>
   When CI runs for the new pull request, it will use your fork and branch of the
   Checker Framework.  When CI runs for your Checker Framework pull request, it
-  will typecheck the newly-created branch.  When all the CI runs pass, merge all
+  will type-check the newly-created branch.  When all the CI runs pass, merge all
   the branches in quick succession &mdash; that is, click the squash-and-merge
   buttons one after another.
 </p>
@@ -601,7 +601,7 @@ generally just invoke gradle to run particular tasks.
 Sometimes, CI tests for your pull request may fail even though the same command
 passed locally.  First, ensure you are using the same JDK.  Second, all CI tests
 are run in a Docker container, and you can use that container if necessary.  The
-container names are in top-level
+container names are in
 file <a href="https://github.com/typetools/checker-framework/blob/master/.azure/azure-pipelines.yml"><code>azure-pipelines.yml</code></a>,
 on lines starting with <code>container:</code>.
 </p>
@@ -611,8 +611,8 @@ on lines starting with <code>container:</code>.
 
 <p>
 Don't open issues for code improvement ideas (such as potential refactorings).
-If it can be described concisely and is unlikely to be rediscovered by other
-people, write a TODO comment in the code.  The code comment is more likely to be
+If the idea can be described concisely and is unlikely to be rediscovered by
+other people, write a TODO comment in the code.  The code comment is more likely to be
 noticed by someone
 working with the code, and it is equally easy to search for.  Furthermore,
 it doesn't clutter the issue tracker.  Clutter in the issue tracker reduces
@@ -653,7 +653,7 @@ for example to 6.2.0.2.
 
 <p>
 See a separate document about the Checker Framework release process:
-<a href="https://htmlpreview.github.io/?https://github.com/typetools/checker-framework/master/docs/developer/release/README-release-process.html">web version (from previous release)</a> or
+<a href="https://htmlpreview.github.io/?https://github.com/typetools/checker-framework/blob/master/docs/developer/release/README-release-process.html">web version (from previous release)</a> or
 <!-- This relative URL works from a clone, but not from the web. -->
 <a href="release/README-release-process.html">local version (link works if
   you are reading the Checker Framework Developer Manual from a clone of the
@@ -727,7 +727,7 @@ done
 </pre>
 
     If there are more than about 10 warning suppressions, prefix each one by a
-    category followed by a colon (as with "dynamic check:") above, to aid in
+    category followed by a colon (as with "dynamic check:" above), to aid in
     computing statistics about the causes of false positive warnings.
 
   </li>
@@ -800,7 +800,7 @@ branch is deleted.
   </li>
   <li>
     Recently, any Stubparser change that breaks building the Checker
-    Framework, should have a new version number. So you should check out
+    Framework should have a new version number.  So you should check out
     Stubparser to the commit that changed the version number (to what it is
     in <code>checker-framework/build.gradle</code>).
   </li>

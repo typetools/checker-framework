@@ -43,13 +43,13 @@
 <p>
   This document explains how to make a release of the Checker Framework.
 The process takes around 2 hours (including manual steps) when all goes according to plan.
-  However, the lengthiest steps are automatic so you will be able to work on other tasks.
+  However, the lengthiest steps are automatic, so you will be able to work on other tasks.
 </p>
 
 <div class="alert alert-success">
   <strong>Note:</strong> If you have never read this document before, please read
   the section <a href="#pre_release_checklist">Pre-release Checklist</a> first.
-  It is also recommended that you read sections  <a href="#release_process_overview">Release Process Overview</a>
+  It is also recommended that you read sections <a href="#release_process_overview">Release Process Overview</a>
   and <a href="#changelog_guide">Changelog Guidelines</a> to familiarize yourself
   with the process.
 </div>
@@ -181,6 +181,7 @@ TreeAnnotator
         <b>Commit and push</b> these changes to typetools/master.
       </li>
     </ul>
+  </li>
   <li>
       <strong>Log into a machine on the CSE file system, such as tern.</strong><br/>
       <code>ssh $USER@tern.cs.washington.edu<br/></code>
@@ -198,7 +199,7 @@ TreeAnnotator
       <code>&nbsp;  git clone --quiet https://github.com/typetools/checker-framework.git<br/></code>
       <code>fi<br/></code>
   </li>
-  <li><strong>Run release_build</strong> to create the release artifacts and place them in the development website<br/>
+  <li><strong>Run release_build</strong> to create the release artifacts and place them on the development website<br/>
       <code>cd /scratch/$USER/cf-release/checker-framework/docs/developer/release<br/></code>
       <code>git pull && python3 release_build.py</code><br/><br/>
       For verbose debugging output, use the <code>--debug</code> option.<br/><br/>
@@ -213,7 +214,7 @@ TreeAnnotator
       </p>
 
       If you get an obscure error about permissions, try running the release_push script several times
-      in a row. This will sometimes update the repository permissions such that the script can proceed
+      in a row.  This will sometimes update the repository permissions such that the script can proceed
       further each time.
   </li>
   <li> <strong>Update list of qualifiers in Project Lombok.</strong>
@@ -223,7 +224,7 @@ TreeAnnotator
   </li>
   <li> <strong>Make Daikon use the latest Checker Framework version.</strong>
 
-    Follow the  instructions in
+    Follow the instructions in
     <a href="https://github.com/codespecs/daikon/blob/master/java/lib/README">java/lib/README</a> to update the Checker Framework version number in Daikon.
   </li>
 </ol>
@@ -244,7 +245,7 @@ TreeAnnotator
   <h2 id="maven_local">Deploy to local Maven repository</h2>
   <p>
     To deploy to a <b>local</b> Maven repository, run <code>./gradlew
-    PublishToMavenLocal</code> in <code>checker-framework</code>.
+    publishToMavenLocal</code> in <code>checker-framework</code>.
   </p>
 
   <p>
@@ -332,19 +333,19 @@ configurations.all({
   <pre>
     &lt;repository&gt;
       &lt;id&gt;snapshots-repo&lt;/id&gt;
-      &lt;url&gt;https://central.sonatype.com/repository/maven-snapshots/s&lt;/url&gt;
+      &lt;url&gt;https://central.sonatype.com/repository/maven-snapshots/&lt;/url&gt;
       &lt;releases&gt;&lt;enabled&gt;false&lt;/enabled&gt;&lt;/releases&gt;
       &lt;snapshots&gt;&lt;enabled&gt;true&lt;/enabled&gt;&lt;/snapshots&gt;
     &lt;/repository&gt;</pre>
 
   <h2 id="pre_release_checklist">Pre-release Checklist</h2>
-  <p>If you have not performed a release before you must follow these steps.</p>
+  <p>If you have not performed a release before, you must follow these steps.</p>
   <table class="table">
     <tr>
       <td>1.</td>
       <td><strong>Ensure you are a member of the types_www and pl_gang groups</strong><br/>
         Run the command "groups" on the CSE file system (perhaps on tern).
-        If the group types_www or pl_gang do not appear in the list, email the appropriate
+        If the group types_www or pl_gang does not appear in the list, email the appropriate
         person to be added (currently Michael Ernst).
       </td>
     </tr>
@@ -357,30 +358,31 @@ configurations.all({
         <code>/projects/swlab1/checker-framework/hosting-info/release-private.password<br/></code>
         and is used by the release_push script to sign Maven artifacts.<br/>
       </td>
+    </tr>
     <tr>
       <td>3.</td>
       <td><strong>Sign up for a Sonatype Account</strong><br/>
         You will likely want to do this a few days in advance.
         Directions can be found <a href="https://central.sonatype.org/pages/ossrh-guide.html">here</a>.
-        Remember to be asked to be added to the org.checkerframework repository by creating
+        Remember to ask to be added to the org.checkerframework repository by creating
         a ticket (see the note
         <a href="https://central.sonatype.org/pages/ossrh-guide.html#create-a-ticket-with-sonatype">here</a>).
         If after signing up for a Sonatype JIRA account you are not able to sign in to
         <a href="https://issues.sonatype.org">https://issues.sonatype.org</a>
-        to create a ticket, there may be a configuration problem with your account. In that case, sign up for a
+        to create a ticket, there may be a configuration problem with your account.  In that case, sign up for a
         second Sonatype account, and use that account to file a ticket indicating that you cannot sign in
         with your first account.
       </td>
     </tr>
     <tr>
       <td>4.</td>
-      <td><strong>Add your user token information to gradle/build.properties in your home directory.</strong><br/>
+      <td><strong>Add your user token information to <code>~/.gradle/gradle.properties</code>.</strong><br/>
         Follow the <a href="https://central.sonatype.org/publish/generate-token/">instructions</a> to generate a user token.
         Create a <code>~/.gradle/gradle.properties</code> file with the following:
         <pre>
 SONATYPE_NEXUS_USERNAME=your_tokenuser
 SONATYPE_NEXUS_PASSWORD=your_tokenkey</pre>
- Since the file contains your password, make it non-readable:  <code>chmod og-rw ~/.gradle/gradle.properties</code>
+ Since the file contains your password, make it unreadable by others:  <code>chmod og-rw ~/.gradle/gradle.properties</code>
       </td>
     </tr>
     <tr>
@@ -429,7 +431,7 @@ git clone git@github.com:typetools/checker-framework.git checker-framework</pre>
     <tr>
       <td>10.</td>
       <td><strong>Run release_build.py once</strong><br/>
-        To save time on release day addressing potential configuration issues, before your first
+        To avoid addressing potential configuration issues on release day, before your first
         release day, ensure that <code>release_build.py</code> is working correctly
         by following the initial steps of the <a href="#step_by_step">Step by Step</a> section.
         <code>release_build.py</code> still needs to be re-run on release day (even if no changes
@@ -472,7 +474,7 @@ docs/developer/release/release_build.py</pre>
           checker-framework, git-scripts, plume-bib, plume-scripts<br/>
           The repositories in build are clones of repositories in interm.  The repositories
           in interm are clones of the GitHub repositories.  This is so that
-          we can test and push the release to the interm repositories then check the
+          we can test and push the release to the interm repositories, then check the
           release before we have made any irreversible changes.  Then, when the release
           is validated, all we do is run &quot;git push&quot; on all of the repositories in interm.
         </td>
@@ -507,7 +509,7 @@ docs/developer/release/release_build.py</pre>
       <tr>
         <td></td>
         <td colspan="2">m2-repo</td>
-        <td>The location of the in-house Maven repository.  It is accessed through URL: <br/>
+        <td>The location of the in-house Maven repository.  It is accessed through the URL: <br/>
           <a href="https://checkerframework.org/m2-repo">https://checkerframework.org/m2-repo</a>
         </td>
       </tr>
@@ -528,14 +530,14 @@ docs/developer/release/release_build.py</pre>
       <tr>
         <td></td>
         <td colspan="2">&lt;project&gt;/current</td>
-        <td>The staging analogue to /cse/www2/types/&lt;project&gt;/current directory.  The latest release is copied from this directory
-          to the /cse/www2/types/&lt;project&gt;/current by the release_push script after a prompt.
+        <td>The staging analogue to the /cse/www2/types/&lt;project&gt;/current directory.  The latest release is copied from this directory
+          to /cse/www2/types/&lt;project&gt;/current by the release_push script after a prompt.
         </td>
       </tr>
       <tr>
         <td></td>
         <td colspan="2">m2-repo</td>
-        <td>The location of the in-house staging version of the Maven repository.  It is accessed through URL: <br/>
+        <td>The location of the in-house staging version of the Maven repository.  It is accessed through the URL: <br/>
           <a href="https://checkerframework.org/dev/m2-repo">https://checkerframework.org/dev/m2-repo</a>
         </td>
       </tr>
@@ -543,7 +545,7 @@ docs/developer/release/release_build.py</pre>
 
     <h3 id="release_scripts">Release Scripts</h3>
     <p>As mentioned above, in order to release the Checker Framework you must run two scripts,
-      release_build.py and release_push.py but there are supporting scripts and files in the
+      release_build.py and release_push.py, but there are also supporting scripts and files in the
       release directory.  Some of these files are described below.
     </p>
 
@@ -553,7 +555,7 @@ docs/developer/release/release_build.py</pre>
         <td>Reverts the build/interm repositories to the state of their master repositories in GitHub.
           It then builds the projects and all their artifacts and then stages a development
           version of all websites to
-          <a href="https://checkerframework.org/dev/">https://checkerframework.org/dev/</a>
+          <a href="https://checkerframework.org/dev/">https://checkerframework.org/dev/</a>.
           This script is thoroughly documented in code comments located in its <code>main()</code> function.
         </td>
       </tr>
@@ -561,8 +563,8 @@ docs/developer/release/release_build.py</pre>
         <td>release_push.py</td>
         <td>Verifies the release at
           <a href="https://checkerframework.org/dev/">https://checkerframework.org/dev/</a>
-          is correct through scripts and manual steps.  When the user is satisfied the website
-          is correct it deploys the website to the live website:
+          is correct through scripts and manual steps.  When the user is satisfied that the website
+          is correct, it deploys the website to the live website:
           <a href="https://checkerframework.org/">https://checkerframework.org/</a>.
           It also pushes Maven artifacts to Maven Central.
           This script is thoroughly documented in code comments located in its <code>main()</code> function.
@@ -574,7 +576,7 @@ docs/developer/release/release_build.py</pre>
       </tr>
       <tr>
         <td>sanity_checks.py</td>
-        <td>Contains methods to run various sanity checks.  These methods are called from release_push.py
+        <td>Contains methods to run various sanity checks.  These methods are called from release_push.py.
         </td>
       </tr>
       <tr>
@@ -589,10 +591,10 @@ docs/developer/release/release_build.py</pre>
 
   <h2 id="changelog_guide">Changelog Guidelines</h2>
   <p> Each developer is responsible for updating project changelogs to reflect changes they
-    have made each month.  The changelogs should be updated by "feature freeze" though at the
+    have made each month.  The changelogs should be updated by "feature freeze", though at the
     latest this should be done before "code freeze".  Before releasing, the person performing
     the release will be asked to verify the changelogs.  Please check that
-    there aren't typos (i.e. missing release date/version information, spelling errors, etc...).
+    there aren't typos (e.g., missing release date/version information, spelling errors, etc.).
     Also check that the changelog obeys the guidelines below.
   </p>
 
@@ -631,14 +633,14 @@ docs/developer/release/release_build.py</pre>
       <li>Changes are written from the user's perspective.  Don't include implementation details that users
         don't care about.
       </li>
-      <li>To be consistent, write in the past tense (e.g. &quot;Added option for verbose error messages&quot;).</li>
-      <li>Lines should not exceed 80 characters wide.</li>
+      <li>To be consistent, write in the past tense (e.g., &quot;Added option for verbose error messages&quot;).</li>
+      <li>Lines should not exceed 80 characters.</li>
       <li>Break the different programs into their own sections.  See notes on release 1.7.0 and 1.5.0 for an
         example.  Tools should have their own section within the
         Checker Framework release notes (excluding issue fixes from the issue tracker).
       </li>
       <li>Be specific.  Don't write something like "added a few options to Eclipse plugin".  Do write "added
-        options to the Eclipse plugin to include stub files, ignore warnings, and show verbose output."
+        options to the Eclipse plugin to include stub files, ignore warnings, and show verbose output".
       </li>
     </ul>
 
@@ -693,9 +695,9 @@ docs/developer/release/release_build.py</pre>
   </p>
 
   <h2 id="future_improvements">Future Improvements</h2>
-  <p>Below is a roughly priority-ordered list of future improvements.  In a perfect world we would do
-    all of these.  At the moment, I believe only the first 2 (Open JDK Javadoc Fixes,
-    and More Sanity Checks) should have any appreciable priority.
+  <p>Below is a roughly priority-ordered list of future improvements.  In a perfect world, we would do
+    all of these.  At the moment, we believe only the first 2 (More Sanity Checks
+    and Release in Continuous Integration) should have any appreciable priority.
   </p>
 
     <h3 id="future_more_sanity_checks">More Sanity Checks</h3> <!-- omit from toc -->
@@ -713,7 +715,7 @@ docs/developer/release/release_build.py</pre>
     </ul>
     <h3 id="future_continuous_integration">Release in Continuous Integration</h3> <!-- omit from toc -->
     If we could run the release_build script nightly, we could head off broken links and other
-    release related errors.
+    release-related errors.
     <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
       <li>Create a tern task to run the release_build script without prompting.</li>
@@ -743,7 +745,7 @@ docs/developer/release/release_build.py</pre>
     </ul>
     <h3 id="future_option_projects">Optional Projects</h3> <!-- omit from toc -->
     A user might want to test the release_build script only on a specific project.  Some work has gone into
-    the ability to select a project to build.  However, this currently doesn't take into consideration of dependencies.
+    the ability to select a project to build.  However, this currently doesn't take dependencies into consideration.
     It might be more hassle than it's worth to implement this feature.  We should either complete the implementation
     or remove the partial implementation that already exists.  See <a href="#future_repl_mode">REPL Mode</a>.
     <h4>Tasks:</h4> <!-- omit from toc -->
@@ -758,7 +760,7 @@ docs/developer/release/release_build.py</pre>
     would create methods or objects that further encapsulate the current set of steps.  We could then provide
     an easy way to execute these steps from the Python REPL.  This would allow the user to execute individual steps
     in whatever order they saw fit from the Python REPL.  This could also be used to
-    automatically back out the current release or the ability to edit/debug the release steps more easily.
+    automatically back out the current release, or to edit/debug the release steps more easily.
     <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
       <li>Further separate the steps of the release process.</li>

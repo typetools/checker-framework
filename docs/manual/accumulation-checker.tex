@@ -44,7 +44,7 @@ of whatever you are accumulating. For example, when accumulating which methods h
 been called, you might choose to accumulate method names.
 
 The accumulator
-qualifier should have no supertypes (\<@SubtypeOf({})>) and should
+qualifier should have no supertypes (\<@SubtypeOf(\{\})>) and should
 be the default qualifier in the hierarchy (\<@DefaultQualifierInHierarchy>).
 
 An example of such a qualifier can be found in the Checker Framework's tests:
@@ -64,7 +64,7 @@ The predicate syntax supports
 \item \<||> disjunctions
 \item \<\&\&> conjunctions
 \item \<!> logical complement.  \<"!x"> means
-``it is not true that \<x> was definitely accumulated'' or, equivalently, ``there is no path on which \<x> was accumulated''.
+``it is not true that \<x> was definitely accumulated'' or, equivalently, ``there is some path on which \<x> was not accumulated''.
 Note that this does \textbf{not} mean ``\<x> was not accumulated'' --- it is not a violation of the specification \<"!x"> if \<x> is accumulated
 on some paths, but not others.
 \item \<(...)> parentheses for precedence
