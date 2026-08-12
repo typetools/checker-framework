@@ -3644,11 +3644,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     int size = paramBounds.size();
-    assert size == typeargs.size()
-        : "BaseTypeVisitor.checkTypeArguments: mismatch between type arguments: "
-            + typeargs
-            + " and type parameter bounds"
-            + paramBounds;
+    if (size != typeargs.size()) {
+      // Type argument inference did not produce a type argument for every type parameter --
+      // for example, because the invocation happened through a raw receiver, or because
+      // inference found no constraint from which to solve a type parameter (see
+      // AnnotatedTypeFactory#methodFromUse and AnnotatedTypes#findTypeArguments). There is
+      // nothing meaningful to check in that case, so skip it rather than crash trying to zip
+      // the two lists together.
+      return;
+    }
 
     for (int i = 0; i < size; i++) {
 
