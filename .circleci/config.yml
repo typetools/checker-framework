@@ -141,6 +141,29 @@ jobs:
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 26
 
+  nonjunit_jdk21:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk21'
+    resource_class: large
+    environment:
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+          name: test-cftests-nonjunit.sh
+          command: ./checker/bin-devel/test-cftests-nonjunit.sh
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 21
+
   nonjunit_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -463,6 +486,11 @@ workflows:
             - canary_jobs
             - misc_jdk25
 
+      - nonjunit_jdk21:
+          requires:
+            - canary_jobs
+            - nonjunit_jdk25
+
       - junit_jdk17:
           requires:
             - canary_jobs
@@ -500,6 +528,7 @@ workflows:
       - all_green:
           requires:
             - misc_jdk21
+            - nonjunit_jdk21
             - junit_jdk17
             - junit_jdk21
             - junit_jdk26

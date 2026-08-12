@@ -147,6 +147,23 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "26"
 
+  nonjunit_jdk21:
+    needs:
+      - canary_jobs
+      - nonjunit_jdk25
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk21:latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+      - name: test-cftests-nonjunit.sh
+        run: ./checker/bin-devel/test-cftests-nonjunit.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "21"
+
   nonjunit_jdk25:
     runs-on: ubuntu-latest
     container:
@@ -344,6 +361,7 @@ jobs:
       - junit_jdk17
       - junit_jdk21
       - junit_jdk26
+      - nonjunit_jdk21
       - misc_jdk21
       - guava_part1_jdk25
       - guava_part2_jdk25
