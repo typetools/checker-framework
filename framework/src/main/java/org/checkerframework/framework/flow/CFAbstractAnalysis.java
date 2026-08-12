@@ -1,5 +1,6 @@
 package org.checkerframework.framework.flow;
 
+import com.sun.source.tree.CompilationUnitTree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -23,7 +24,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
-import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -36,9 +36,7 @@ import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -97,9 +95,6 @@ public abstract class CFAbstractAnalysis<
   /** Instance of the types utility. */
   protected final Types types;
 
-  /** The {@code SideEffectsOnly.value} argument/element. */
-  protected final ExecutableElement sideEffectsOnlyValueElement;
-
   /**
    * Cache for {@link #getSideEffectsOnlyExpressions}, which would otherwise re-parse the
    * annotation's expressions once per dataflow iteration per call site. A key that is mapped to
@@ -119,16 +114,24 @@ public abstract class CFAbstractAnalysis<
 
   /**
    * The call sites at which {@link #computeSideEffectsOnlyExpressions} has reported a parse error,
-   * so that each such error is reported once rather than once per dataflow iteration.
+   * so that each such error is reported once rather than once per dataflow iteration. All the call
+   * sites are within {@link #sideEffectsOnlyErrorsCompilationUnit}.
    *
    * <p>Unlike {@link #sideEffectsOnlyExpressionsCache}, this is not cleared by {@link
    * #performAnalysis}: {@link org.checkerframework.dataflow.analysis.AnalysisResult#runAnalysisFor}
    * re-runs transfer functions over the nodes of a control flow graph that was analyzed earlier,
-   * which would otherwise report the error a second time. It stays small because it holds only call
-   * sites whose callee has a malformed {@code @SideEffectsOnly} annotation.
+   * which would otherwise report the error a second time.
+   *
+   * @see #addSideEffectsOnlyErrorReported
    */
   private final Set<MethodInvocationNode> sideEffectsOnlyErrorsReported =
       Collections.newSetFromMap(new IdentityHashMap<>());
+
+  /**
+   * The compilation unit that contains the call sites in {@link #sideEffectsOnlyErrorsReported}, or
+   * null if that set is empty.
+   */
+  private @Nullable CompilationUnitTree sideEffectsOnlyErrorsCompilationUnit = null;
 
   /**
    * Create a CFAbstractAnalysis.
@@ -152,7 +155,6 @@ public abstract class CFAbstractAnalysis<
     this.checker = checker;
     this.transferFunction = createTransferFunction();
     this.fieldValues = new ArrayList<>();
-    this.sideEffectsOnlyValueElement = TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, env);
   }
 
   /**
@@ -222,16 +224,13 @@ public abstract class CFAbstractAnalysis<
    */
   private @Nullable List<JavaExpression> computeSideEffectsOnlyExpressions(
       ExecutableElement method, MethodInvocationNode methodInvocationNode) {
-    AnnotationMirror seOnlyAnnotation =
-        atypeFactory.getDeclAnnotation(method, SideEffectsOnly.class);
-    if (seOnlyAnnotation == null) {
+    Map<ExecutableElement, List<String>> seOnlyExpressionStrings =
+        atypeFactory.getSideEffectsOnlyExpressionStrings(method);
+    if (seOnlyExpressionStrings == null) {
       return null;
     }
 
-    List<String> seOnlyExpressionStrings =
-        AnnotationUtils.getElementValueArray(
-            seOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
-    List<JavaExpression> seOnlyExpressions = new ArrayList<>(seOnlyExpressionStrings.size());
+    List<JavaExpression> seOnlyExpressions = new ArrayList<>();
 
     // For deciding whether to issue a warning about viewpoint adaptation.
     String goodDeclExpr = null;
@@ -239,38 +238,46 @@ public abstract class CFAbstractAnalysis<
     String badDeclExpr = null;
     JavaExpression badCallExpr = null;
 
-    for (String seOnlyExpr : seOnlyExpressionStrings) {
-      try {
-        // Do not use `StringToJavaExpression.atMethodInvocation(seOnlyExpr, methodInvocationNode,
-        // checker)`, which obtains the invoked method from `methodInvocationNode.getTree()`; that
-        // tree is null for a call that corresponds to no AST tree, such as the `Iterator.next()`
-        // that an enhanced for loop is desugared to.  `method` is that same element.
-        JavaExpression exprJe =
-            StringToJavaExpression.atMethodDecl(seOnlyExpr, method, checker)
-                .atMethodInvocation(methodInvocationNode);
+    for (Map.Entry<ExecutableElement, List<String>> entry : seOnlyExpressionStrings.entrySet()) {
+      // The method whose `@SideEffectsOnly` annotation contains the expressions.  It is `method`
+      // itself, unless `method` inherits the annotation.
+      ExecutableElement declaringMethod = entry.getKey();
+      for (String seOnlyExpr : entry.getValue()) {
+        try {
+          // An expression is parsed in the scope of the method that declares it, which is not
+          // necessarily the scope of `method`:  a field that the declaring method's class declares
+          // might be shadowed or inaccessible in `method`'s class.
+          // Do not use `StringToJavaExpression.atMethodInvocation(seOnlyExpr,
+          // methodInvocationNode, checker)`, which obtains the invoked method from
+          // `methodInvocationNode.getTree()`; that tree is null for a call that corresponds to no
+          // AST tree, such as the `Iterator.next()` that an enhanced for loop is desugared to.
+          JavaExpression exprJe =
+              StringToJavaExpression.atMethodDecl(seOnlyExpr, declaringMethod, checker)
+                  .atMethodInvocation(methodInvocationNode);
 
-        if (exprJe.containsUnknown()) {
-          badDeclExpr = seOnlyExpr;
-          badCallExpr = exprJe;
-        } else {
-          // At a call of the form `super.m()`, viewpoint-adapting the callee's `this` yields
-          // `super`.
-          // The caller refers to that same object as `this`, so rewrite it that way; otherwise the
-          // refinements of `this` and of its fields would not be discarded.
-          exprJe = JavaExpression.superToThis(exprJe);
-          seOnlyExpressions.add(exprJe);
-          goodDeclExpr = seOnlyExpr;
-          goodCallExpr = exprJe;
+          if (exprJe.containsUnknown()) {
+            badDeclExpr = seOnlyExpr;
+            badCallExpr = exprJe;
+          } else {
+            // At a call of the form `super.m()`, viewpoint-adapting the callee's `this` yields
+            // `super`.
+            // The caller refers to that same object as `this`, so rewrite it that way; otherwise
+            // the refinements of `this` and of its fields would not be discarded.
+            exprJe = JavaExpression.superToThis(exprJe);
+            seOnlyExpressions.add(exprJe);
+            goodDeclExpr = seOnlyExpr;
+            goodCallExpr = exprJe;
+          }
+        } catch (JavaExpressionParseException ex) {
+          // Report at the call site rather than at the callee's declaration.  The callee may be
+          // declared in a different compilation unit that is not currently being compiled.
+          // Use the leaf of the call's tree path rather than `methodInvocationNode.getTree()`,
+          // which may be null and which is an artificial tree (where errors cannot be suppressed).
+          if (addSideEffectsOnlyErrorReported(methodInvocationNode)) {
+            checker.report(methodInvocationNode.getTreePath().getLeaf(), new DiagMessage(ex));
+          }
+          return null;
         }
-      } catch (JavaExpressionParseException ex) {
-        // Report at the call site rather than at the callee's declaration.  The callee may be
-        // declared in a different compilation unit that is not currently being compiled.
-        // Use the leaf of the call's tree path rather than `methodInvocationNode.getTree()`, which
-        // may be null and which is an artificial tree (where errors cannot be suppressed).
-        if (sideEffectsOnlyErrorsReported.add(methodInvocationNode)) {
-          checker.report(methodInvocationNode.getTreePath().getLeaf(), new DiagMessage(ex));
-        }
-        return null;
       }
     }
 
@@ -291,6 +298,25 @@ public abstract class CFAbstractAnalysis<
     }
 
     return seOnlyExpressions;
+  }
+
+  /**
+   * Records that a {@code @SideEffectsOnly} parse error has been reported at the given call site.
+   *
+   * @param methodInvocationNode a call site at which a parse error is about to be reported
+   * @return true if no such error has been reported at that call site
+   */
+  private boolean addSideEffectsOnlyErrorReported(MethodInvocationNode methodInvocationNode) {
+    // Retaining a `MethodInvocationNode` retains its tree path and therefore its whole compilation
+    // unit, so retain only the call sites of the compilation unit that is being processed.  A
+    // control flow graph is re-analyzed only while its own compilation unit is being processed, so
+    // discarding the other compilation units' call sites does not cause a duplicate error.
+    CompilationUnitTree compilationUnit = methodInvocationNode.getTreePath().getCompilationUnit();
+    if (compilationUnit != sideEffectsOnlyErrorsCompilationUnit) {
+      sideEffectsOnlyErrorsReported.clear();
+      sideEffectsOnlyErrorsCompilationUnit = compilationUnit;
+    }
+    return sideEffectsOnlyErrorsReported.add(methodInvocationNode);
   }
 
   /**

@@ -621,7 +621,9 @@ More sound (strict) checking: enable errors that are disabled by default
 \item \<-AcheckPurityAnnotations>
   Check the bodies of methods and constructors marked
   \refqualclass{dataflow/qual}{SideEffectFree},
+\iffalse
   \refqualclass{dataflow/qual}{SideEffectsOnly},
+\fi
   \refqualclass{dataflow/qual}{Deterministic},
   and \refqualclass{dataflow/qual}{Pure}
   to ensure the method or constructor satisfies the annotation.  By default,
