@@ -1,12 +1,16 @@
 /*
  * @test
+ * @requires jdk.version.major >= 25
  * @summary Test that defaulted types are stored in bytecode.
  *
- * @requires jdk.version.major >= 24
  * @compile ../PersistUtil.java Driver.java ReferenceInfoUtil.java Fields.java
  * @run main Driver Fields
  * @ignore The wildcards1 and wildcards2 tests fail.  See Issue 2816.
  */
+
+// Keep in sync with ../../jdk24/defaultsPersist/Fields.java, which uses the
+// com.sun.tools.classfile API that was removed in Java 25.  This version uses the
+// java.lang.classfile API.
 
 import static java.lang.classfile.TypeAnnotation.TargetType.FIELD;
 

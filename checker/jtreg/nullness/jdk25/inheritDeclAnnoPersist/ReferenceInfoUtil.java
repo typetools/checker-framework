@@ -1,3 +1,7 @@
+// Keep in sync with ../../jdk24/inheritDeclAnnoPersist/ReferenceInfoUtil.java, which uses the
+// com.sun.tools.classfile API that was removed in Java 25.  This version uses the
+// java.lang.classfile API.
+
 // Keep somewhat in sync with
 // langtools/test/tools/javac/annotations/typeAnnotations/referenceinfos/ReferenceInfoUtil.java
 // Adapted to handle the same type qualifier appearing multiple times.
@@ -12,26 +16,22 @@ import java.util.StringJoiner;
 
 public class ReferenceInfoUtil {
 
-  public static List<Annotation> extendedAnnotationsOf(ClassModel cm) {
+  public static final int IGNORE_VALUE = -321;
+
+  public static List<Annotation> extendedAnnotationsOf(ClassModel c) {
     List<Annotation> annos = new ArrayList<>();
-    findAnnotations(cm, annos);
+    findAnnotations(c, annos);
     return annos;
   }
 
   // /////////////////// Extract annotations //////////////////
-  private static void findAnnotations(ClassModel cm, List<Annotation> annos) {
-    for (MethodModel m : cm.methods()) {
+  private static void findAnnotations(ClassModel c, List<Annotation> annos) {
+    for (MethodModel m : c.methods()) {
       findAnnotations(m, annos);
     }
   }
 
-  /**
-   * Adds to {@code annos} the annotations in the method's {@code RuntimeVisibleAnnotations}
-   * attribute, skipping those whose name is already in {@code annos}.
-   *
-   * @param m a method
-   * @param annos the list to which the annotations are added
-   */
+  /** Adds to {@code annos} the runtime-visible declaration annotations on {@code m}. */
   private static void findAnnotations(MethodModel m, List<Annotation> annos) {
     m.findAttribute(Attributes.runtimeVisibleAnnotations())
         .ifPresent(
@@ -47,7 +47,8 @@ public class ReferenceInfoUtil {
   private static Annotation findAnnotation(String name, List<Annotation> annotations) {
     String properName = "L" + name + ";";
     for (Annotation anno : annotations) {
-      if (anno.className().equalsString(properName)) {
+      String actualName = anno.className().stringValue();
+      if (properName.equals(actualName)) {
         return anno;
       }
     }
@@ -60,21 +61,24 @@ public class ReferenceInfoUtil {
       throw new ComparisonException(
           "Wrong number of annotations; " + diagnostic, expectedAnnos, actualAnnos);
     }
+    // Each expected annotation must be matched by a different actual annotation.
+    List<Annotation> unmatched = new ArrayList<>(actualAnnos);
     for (String annoName : expectedAnnos) {
-      Annotation anno = findAnnotation(annoName, actualAnnos);
+      Annotation anno = findAnnotation(annoName, unmatched);
       if (anno == null) {
         throw new ComparisonException(
             "Expected annotation not found: " + annoName + "; " + diagnostic,
             expectedAnnos,
             actualAnnos);
       }
+      unmatched.remove(anno);
     }
     return true;
   }
 
   private static boolean containsName(List<Annotation> annos, Annotation anno) {
     for (Annotation an : annos) {
-      if (an.className().equalsString(anno.className().stringValue())) {
+      if (an.className().stringValue().equals(anno.className().stringValue())) {
         return true;
       }
     }
