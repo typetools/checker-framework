@@ -1,11 +1,15 @@
 /*
  * @test
+ * @requires jdk.version.major >= 25
  * @summary Test that inherited declaration annotations are stored in bytecode.
  *
- * @requires jdk.version.major >= 24
  * @compile ../PersistUtil.java Driver.java ReferenceInfoUtil.java Implements.java AbstractClass.java
  * @run main Driver Implements
  */
+
+// Keep in sync with ../../jdk24/inheritDeclAnnoPersist/Implements.java, which uses the
+// com.sun.tools.classfile API that was removed in Java 25.  This version uses the
+// java.lang.classfile API.
 
 public class Implements {
 
