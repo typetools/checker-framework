@@ -22,7 +22,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Converts a field or method tree into an AnnotatedTypeMirror.
@@ -119,7 +118,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       }
     }
 
-    AnnotatedTypeMirror lambdaParamType = inferLambdaParamAnnotations(f, result, elt);
+    AnnotatedTypeMirror lambdaParamType = inferLambdaParamAnnotations(f, elt);
     if (lambdaParamType != null) {
       return lambdaParamType;
     }
@@ -157,7 +156,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
    * @return the type of the lambda parameter, or null if paramElement is not a lambda parameter
    */
   private static @Nullable AnnotatedTypeMirror inferLambdaParamAnnotations(
-      AnnotatedTypeFactory f, AnnotatedTypeMirror lambdaParam, Element paramElement) {
+      AnnotatedTypeFactory f, Element paramElement) {
     if (paramElement.getKind() != ElementKind.PARAMETER
         || f.declarationFromElement(paramElement) == null
         || f.getPath(f.declarationFromElement(paramElement)) == null
@@ -195,18 +194,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       }
 
       AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
-      AnnotatedTypeMirror funcTypeParam = functionType.getParameterTypes().get(index);
-      // During type argument inference, the type of the parameters is assumed to be the
-      // same as the function parameter.
-      // (https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2.1).  So if
-      // the underlying types are not the same type, then assume the lambda parameter is the
-      // same as the function type. (Use the erased types because the type arguments are not
-      // substituted when the annotated type arguments are.)
-      if (TypesUtils.isErasedSubtype(
-          funcTypeParam.underlyingType, lambdaParam.underlyingType, f.types)) {
-        return AnnotatedTypes.asSuper(f, funcTypeParam, lambdaParam);
-      }
-      return funcTypeParam;
+      return functionType.getParameterTypes().get(index);
     }
     return null;
   }
