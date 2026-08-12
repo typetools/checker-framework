@@ -9,7 +9,7 @@ Purity analysis aids type refinement (Section~\ref{type-refinement}).
 All checkers utilize purity annotations on called methods.
 You do not need to run the Purity Checker directly.
 However, you may run just the Purity Checker by
-supplying the following command-line options to javac:
+supplying the following command-line option to javac:
 \code{-processor org.checkerframework.framework.util.PurityChecker}.
 
 The Checker Framework can infer purity annotations.
@@ -70,7 +70,7 @@ annotations.
 If a method in a superclass has a purity annotation, then every overriding
 definition must also have that purity annotation (or a stronger one).
 
-Here is an example error if this requirement is violated:
+Here is an example of the error that is issued if this requirement is violated:
 
 \begin{mysmall}
 \begin{Verbatim}
@@ -127,10 +127,10 @@ is defined as an instance method with no formal parameters, whose name
 starts with ``get'', ``is'', ``not'', or ``has'' followed by an uppercase
 letter.
 
-This can make
+These options can make
 flow-sensitive type refinement much more effective, since method calls will
 not cause the analysis to discard information that it has learned.
-However, this option can mask real errors.  It is most appropriate when one
+However, these options can mask real errors.  They are most appropriate when one
 of the following is true:
 \begin{itemize}
 \item

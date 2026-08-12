@@ -154,6 +154,17 @@ def stage_maven_artifacts_in_maven_central() -> None:
     )
 
 
+def close_maven_artifacts_in_maven_central() -> None:
+    """Close the Checker Framework artifacts on Maven Central."""
+    execute(
+        (
+            "./gradlew findSonatypeStagingRepository closeSonatypeStagingRepository "
+            "-Prelease=true --no-parallel"
+        ),
+        working_dir=CHECKER_FRAMEWORK,
+    )
+
+
 def is_file_empty(filename: Path) -> bool:
     """Return true if the given file has size 0.
 
@@ -400,36 +411,25 @@ def main(argv: list[str]) -> None:
         stage_maven_artifacts_in_maven_central()
 
         print_step("Step 5b: Close staged artifacts at Maven Central.")
-        ## TODO: previously we could 'close' the artifacts vi Sonatype's UI, but now a POST request
-        # has to be made instead.  (Documentation here: https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/#ensuring-deployment-visibility-in-the-central-publisher-portal)
-        # I've tried to do this via the command line using curl, but the commands do nothing. I was
-        # able to close the artifacts by doing the following:
         continue_or_exit(
-            "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n"
-            "Browse to https://ossrh-staging-api.central.sonatype.com/swagger-ui/#/default/manual_search_repositories\n"
-            "Expand GET manual/search/repositories\n"
-            'Click "Try it out".\n'
-            "Type any in the IP field.\n"
-            "Click Execute\n"
+            "Maven artifacts have been staged! "
+            "After you hit continue, the artifacts will be closed.\n"
+            "If something goes wrong with this step you can manually delete release here by "
+            "browsing to "
+            "https://ossrh-staging-api.central.sonatype.com/swagger-ui/#/default/manual_search_repositories\n"
             "Log in with the value for SONATYPE_NEXUS_{USERNAME,PASSWORD} "
-            "in file ~/.gradle/gradle.properties .\n"
-            "Scroll down until you see a JSON block that includes a key like this:\n"
-            '           "key": "user/ip/org.checkerframework--default-repository"\n'
-            "Copy the key field\n"
-            "Expand POST manual/upload/repositories/{repository_key}\n"
-            'Click "Try it out".\n'
-            "Copy key field from above into repository_key\n"
-            "Click Execute, it may take a minute or two to update\n"
-            "Under Server response it should say Code 200\n"
-            "Go to https://central.sonatype.com/publishing and make sure you see"
-            " a deployment org.checkerframework (via OSSRH Staging API)\n"
+            "in file ~/.gradle/gradle.properties .\n\n"
+            "After this step, go to https://central.sonatype.com/publishing and make sure you see"
+            " a deployment named org.checkerframework (via OSSRH Staging API)\n"
         )
-        ## I can't find a URL to copy anymore.
-        # print_step("Step 5c: Run Maven sanity test on Maven Central artifacts.")
-        # if prompt_yes_no("Run Maven sanity test on Maven Central artifacts?", True):
-        #     repo_url = input("Please enter the repo URL of the closed artifacts:\n")
-        #
-        #     maven_sanity_check("maven-staging", repo_url)
+        close_maven_artifacts_in_maven_central()
+
+    ## I can't find a URL to copy anymore.
+    # print_step("Step 5c: Run Maven sanity test on Maven Central artifacts.")
+    # if prompt_yes_no("Run Maven sanity test on Maven Central artifacts?", True):
+    #     repo_url = input("Please enter the repo URL of the closed artifacts:\n")
+    #
+    #     maven_sanity_check("maven-staging", repo_url)
 
     # This step copies the development release directories to the live release directories.
     # It then adds the appropriate permissions to the release. Symlinks need to be updated to point

@@ -71,10 +71,9 @@ public final class TestDiagnosticUtils {
       Pattern.compile(DIAGNOSTIC_WARNING_REGEX);
 
   /**
-   * How the diagnostics appear in diagnostic files ({@code .goal} files), each of which contains
-   * one expected diagnostic per line. An example line is "MyTest.java:12: error: [assignment]".
-   * Capturing group 1 is the line number, group 2 is the diagnostic kind, and group 3 is the rest
-   * of the diagnostic.
+   * How a diagnostic appears in a diagnostic file ({@code .goal}), such as "MyTest.java:12: error:
+   * [assignment]". Capturing group 1 is the line number, group 2 is the kind of diagnostic, and
+   * group 3 is the diagnostic message.
    */
   public static final String DIAGNOSTIC_FILE_REGEX = ".+\\.java" + DIAGNOSTIC_REGEX;
 
@@ -82,9 +81,9 @@ public final class TestDiagnosticUtils {
   public static final Pattern DIAGNOSTIC_FILE_PATTERN = Pattern.compile(DIAGNOSTIC_FILE_REGEX);
 
   /**
-   * How a warning appears in diagnostic files ({@code .goal} files). An example line is {@code
-   * "MyTest.java:12: warning: [unchecked] unchecked cast"}. Capturing group 1 is the line number
-   * and group 2 is the warning message.
+   * How a warning diagnostic appears in a diagnostic file (.goal), such as "MyTest.java:12:
+   * warning: [cast.unsafe]". Capturing group 1 is the line number and group 2 is the diagnostic
+   * message.
    */
   public static final String DIAGNOSTIC_FILE_WARNING_REGEX = ".+\\.java" + DIAGNOSTIC_WARNING_REGEX;
 

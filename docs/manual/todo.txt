@@ -6,13 +6,13 @@ can be used to suppress that warning.
 Update all example output in the manual to account for this.
 ------------------------------------------------------
 
-New section on concepts and annotations that apply to all type-systems and checkers
+New section on concepts and annotations that apply to all type systems and checkers
 
 Where would a good place be for this?  At the beginning/end?  Split into multiple sections?
 
 - Pre-/postconditions from a user perspective:
-  - Explain the generic pre- and postcondition annotations: @EnsuresAnnotation/@EnsuresAnnotations, @EnsuresAnnotationIf/@EnsuresAnnotationsIf and @RequiresAnnotation/@RequiresAnnotations.
-  - Explain what kind of strings are supported (see text near the end of this documentat; use that to augment the existing Checker Framework documentation).
+  - Explain the generic pre- and postcondition annotations: @EnsuresQualifier/@EnsuresQualifier.List, @EnsuresQualifierIf/@EnsuresQualifierIf.List and @RequiresQualifier/@RequiresQualifier.List.
+  - Explain what kind of strings are supported (see text near the end of this document; use that to augment the existing Checker Framework documentation).
 
 - Pre-/postconditions from a developer perspective:
   - Explain the meta-annotations @PreconditionAnnotation, @ConditionalPostconditionAnnotation and @PostconditionAnnotation.

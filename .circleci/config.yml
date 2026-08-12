@@ -12,6 +12,16 @@ jobs:
     steps:
       - run: /bin/true
 
+  # Passes only if all other jobs passed.
+  all_green:
+    docker:
+      - image: 'cimg/base:2026.08'
+    resource_class: small
+    environment:
+      TERM: dumb
+    steps:
+      - run: /bin/true
+
   junit_jdk17:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk17'
@@ -486,3 +496,13 @@ workflows:
       - plume_lib_jdk25:
           requires:
             - canary_jobs
+
+      - all_green:
+          requires:
+            - misc_jdk21
+            - junit_jdk17
+            - junit_jdk21
+            - junit_jdk26
+            - guava_part1_jdk25
+            - guava_part2_jdk25
+            - plume_lib_jdk25

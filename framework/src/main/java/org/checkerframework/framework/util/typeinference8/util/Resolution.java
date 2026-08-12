@@ -385,7 +385,6 @@ public final class Resolution {
       Set<Variable> as, BoundSet boundSet, Java8InferenceContext context) {
     checkNoFalse(boundSet, "on entry to resolveWithCapture for", as);
     boundSet.removeCaptures(as);
-    BoundSet resolvedBoundSet = new BoundSet(context);
     List<Variable> asList = new ArrayList<>();
     List<AbstractType> typeArg = new ArrayList<>();
 
@@ -426,7 +425,7 @@ public final class Resolution {
         lowerBoundAnnos = Collections.emptySet();
       }
 
-      Set<AbstractType> upperBounds = ai.getBounds().nonVariableUpperBounds();
+      Set<AbstractType> upperBounds = ai.getBounds().upperBounds();
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
       Set<? extends AnnotationMirror> upperBoundAnnos;
       Set<AbstractQualifier> qualifierUpperBounds =
@@ -460,7 +459,7 @@ public final class Resolution {
       ai.getBounds().addBound(null, VariableBounds.BoundKind.EQUAL, subsTypeArg.get(i));
     }
 
-    boundSet.incorporateToFixedPoint(resolvedBoundSet);
+    boundSet.reachFixedPoint();
     return boundSet;
   }
 }

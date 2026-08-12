@@ -15,7 +15,7 @@ pluggable type-checking.  More resources are given at the end.
 
 <p>
 A pluggable type-checker, or &ldquo;checker&rdquo; for short, prevents certain run-time errors.  For example, it can prove that your code never suffers a
-NullPointerException.  Choose which checker you want to run from the <a href="https://checkerframework.org/manual/#introduction">list
+<code>NullPointerException</code>.  Choose which checker you want to run from the <a href="https://checkerframework.org/manual/#introduction">list
 of checkers</a>.
 </p>
 
@@ -33,7 +33,7 @@ To <a href="https://checkerframework.org/manual/#running">run a checker</a>, sup
 </p>
 
 <pre>
-  $CHECKERFRAMEWORK/bin/checker/javac -processor nullness MyFile1.java MyFile2.java
+  $CHECKERFRAMEWORK/checker/bin/javac -processor nullness MyFile1.java MyFile2.java
 </pre>
 
 <p>
@@ -86,7 +86,7 @@ Furthermore, each checker applies certain defaults to further reduce your
 annotation burden; for example, using the
 <a href="https://checkerframework.org/manual/#nullness-checker">Nullness
   Checker</a>, you do not need to write <code>@NonNull</code>, only
-  <code>@Nullable</code> which appears less often.
+  <code>@Nullable</code>, which appears less often.
 See the manual for more
 <a href="https://checkerframework.org/manual/#tips-about-writing-annotations">tips
   about writing annotations</a>.

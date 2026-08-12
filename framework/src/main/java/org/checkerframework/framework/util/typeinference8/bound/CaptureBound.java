@@ -129,7 +129,7 @@ public final class CaptureBound {
     ConstraintSet set = new ConstraintSet(new Typing(source, lhs, target, Kind.TYPE_COMPATIBILITY));
     // Reduce and incorporate so that the capture variables bounds are set.
     BoundSet b1 = set.reduce(context);
-    b1.incorporateToFixedPoint(new BoundSet(context));
+    b1.reachFixedPoint();
 
     // Then create constraints implied by captured type args that are wildcards.
     boolean containsFalse = false;

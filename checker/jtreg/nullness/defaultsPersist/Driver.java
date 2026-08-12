@@ -5,14 +5,15 @@
 // I changed expected logic to handle multiple appearances
 // of the same qualifier in different positions.
 
-import com.sun.tools.classfile.ClassFile;
-import com.sun.tools.classfile.TypeAnnotation;
-import com.sun.tools.classfile.TypeAnnotation.TargetType;
 import java.io.PrintStream;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.classfile.ClassModel;
+import java.lang.classfile.TypeAnnotation;
+import java.lang.classfile.TypeAnnotation.TargetType;
+import java.lang.classfile.TypeAnnotation.TypePathComponent;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,10 +51,10 @@ public class Driver {
       try {
         String compact = (String) method.invoke(object);
         String fullFile = PersistUtil.wrap(compact);
-        ClassFile cf = PersistUtil.compileAndReturn(fullFile, testClass);
+        ClassModel cm = PersistUtil.compileAndReturn(fullFile, testClass);
         boolean ignoreConstructors = !clazz.getName().equals("Constructors");
         List<TypeAnnotation> actual =
-            ReferenceInfoUtil.extendedAnnotationsOf(cf, ignoreConstructors);
+            ReferenceInfoUtil.extendedAnnotationsOf(cm, ignoreConstructors);
         String diagnostic =
             String.join(
                 "; ",
@@ -61,7 +62,7 @@ public class Driver {
                 "compact=" + compact,
                 "fullFile=" + fullFile,
                 "testClass=" + testClass);
-        ReferenceInfoUtil.compare(expected, actual, cf, diagnostic);
+        ReferenceInfoUtil.compare(expected, actual, diagnostic);
         out.println("PASSED:  " + method.getName());
         ++passed;
       } catch (Throwable e) {
@@ -108,48 +109,88 @@ public class Driver {
   private AnnoPosPair expectedOf(TADescription d) {
     String annoName = d.annotation();
 
-    TypeAnnotation.Position p = new TypeAnnotation.Position();
+    Position p = new Position();
     p.type = d.type();
-    if (d.offset() != NOT_SET) {
-      p.offset = d.offset();
-    }
-    if (d.lvarOffset().length != 0) {
-      p.lvarOffset = d.lvarOffset();
-    }
-    if (d.lvarLength().length != 0) {
-      p.lvarLength = d.lvarLength();
-    }
-    if (d.lvarIndex().length != 0) {
-      p.lvarIndex = d.lvarIndex();
-    }
     if (d.boundIndex() != NOT_SET) {
-      p.bound_index = d.boundIndex();
+      p.boundIndex = d.boundIndex();
     }
     if (d.paramIndex() != NOT_SET) {
-      p.parameter_index = d.paramIndex();
+      p.parameterIndex = d.paramIndex();
     }
     if (d.typeIndex() != NOT_SET) {
-      p.type_index = d.typeIndex();
-    }
-    if (d.exceptionIndex() != NOT_SET) {
-      p.exception_index = d.exceptionIndex();
+      p.typeIndex = d.typeIndex();
     }
     if (d.genericLocation().length != 0) {
-      p.location = TypeAnnotation.Position.getTypePathFromBinary(wrapIntArray(d.genericLocation()));
+      p.location = Position.typePathFromBinary(d.genericLocation());
     }
 
     return AnnoPosPair.of(annoName, p);
   }
 
-  private List<Integer> wrapIntArray(int[] ints) {
-    List<Integer> list = new ArrayList<>(ints.length);
-    for (int i : ints) {
-      list.add(i);
+  public static final int NOT_SET = -888;
+}
+
+/** The position of a type annotation: what it applies to, and where within that type it appears. */
+class Position {
+
+  /** Indicates that an index is not applicable to the target that this position denotes. */
+  public static final int NOT_APPLICABLE = Integer.MIN_VALUE;
+
+  /** The kind of program element that the annotation applies to. */
+  public TargetType type = TargetType.METHOD_RETURN;
+
+  /** The path from the target's type to the annotated type; empty if they are the same type. */
+  public List<TypePathComponent> location = List.of();
+
+  /** The index of the annotated type parameter or formal parameter. */
+  public int parameterIndex = NOT_APPLICABLE;
+
+  /** The index of the annotated bound of a type parameter. */
+  public int boundIndex = NOT_APPLICABLE;
+
+  /** The index of the annotated type within a {@code throws} clause. */
+  public int typeIndex = NOT_APPLICABLE;
+
+  /**
+   * Converts a type path from its class file representation -- a sequence of (kind tag, type
+   * argument index) pairs -- into a list of type path components.
+   *
+   * @param binary alternating type path kind tags and type argument indices
+   * @return the type path that {@code binary} represents
+   */
+  public static List<TypePathComponent> typePathFromBinary(int[] binary) {
+    List<TypePathComponent> result = new ArrayList<>(binary.length / 2);
+    for (int i = 0; i < binary.length; i += 2) {
+      result.add(TypePathComponent.of(kindOfTag(binary[i]), binary[i + 1]));
     }
-    return list;
+    return result;
   }
 
-  public static final int NOT_SET = -888;
+  /**
+   * Returns the type path kind with the given class file tag.
+   *
+   * @param tag a type path kind tag
+   * @return the type path kind whose tag is {@code tag}
+   */
+  private static TypePathComponent.Kind kindOfTag(int tag) {
+    for (TypePathComponent.Kind kind : TypePathComponent.Kind.values()) {
+      if (kind.tag() == tag) {
+        return kind;
+      }
+    }
+    throw new IllegalArgumentException("No type path kind with tag " + tag);
+  }
+
+  @Override
+  public String toString() {
+    return String.join(
+        ", ",
+        "type = " + type,
+        "location = " + location,
+        "parameterIndex = " + parameterIndex,
+        "boundIndex = " + boundIndex,
+        "typeIndex = " + typeIndex);
+  }
 }
 
 /** A pair of an annotation name and a position. */
@@ -158,7 +199,7 @@ class AnnoPosPair {
   public final String first;
 
   /** The second element of the pair. */
-  public final TypeAnnotation.Position second;
+  public final Position second;
 
   /**
    * Creates a new immutable pair. Clients should use {@link #of}.
@@ -166,7 +207,7 @@ class AnnoPosPair {
    * @param first the first element of the pair
    * @param second the second element of the pair
    */
-  private AnnoPosPair(String first, TypeAnnotation.Position second) {
+  private AnnoPosPair(String first, Position second) {
     this.first = first;
     this.second = second;
   }
@@ -178,7 +219,7 @@ class AnnoPosPair {
    * @param second second argument
    * @return a pair of the values (first, second)
    */
-  public static AnnoPosPair of(String first, TypeAnnotation.Position second) {
+  public static AnnoPosPair of(String first, Position second) {
     return new AnnoPosPair(first, second);
   }
 }
@@ -190,21 +231,11 @@ class AnnoPosPair {
 
   TargetType type();
 
-  int offset() default Driver.NOT_SET;
-
-  int[] lvarOffset() default {};
-
-  int[] lvarLength() default {};
-
-  int[] lvarIndex() default {};
-
   int boundIndex() default Driver.NOT_SET;
 
   int paramIndex() default Driver.NOT_SET;
 
   int typeIndex() default Driver.NOT_SET;
-
-  int exceptionIndex() default Driver.NOT_SET;
 
   int[] genericLocation() default {};
 }

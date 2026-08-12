@@ -2,12 +2,13 @@
  * @test
  * @summary Test that defaulted types are stored in bytecode.
  *
+ * @requires jdk.version.major >= 24
  * @compile ../PersistUtil.java Driver.java ReferenceInfoUtil.java Fields.java
  * @run main Driver Fields
- * @ignore This fails for Java 11. See Issue 2816.
+ * @ignore The wildcards1 and wildcards2 tests fail.  See Issue 2816.
  */
 
-import static com.sun.tools.classfile.TypeAnnotation.TargetType.FIELD;
+import static java.lang.classfile.TypeAnnotation.TargetType.FIELD;
 
 public class Fields {
 

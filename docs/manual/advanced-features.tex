@@ -21,7 +21,7 @@ following example:
   String[] strings = new String[] {"hello"};
   Object[] objects = strings;
   objects[0] = new Object();
-  String myString = strs[0];
+  String myString = strings[0];
 \end{Verbatim}
 
 \noindent
@@ -57,7 +57,7 @@ precise possible type, depending on the particular expression or value.
 For example, when using the Regex Checker (\chapterpageref{regex-checker}),
 the string \<"hello"> is given type \<@Regex String> because it is a legal
 regular expression (whether it is meant to be used as one or not) and the
-string \<"(foo"> is given the type \<@RegexBottom String> because it is not
+string \<"(foo"> is given the type \<@PartialRegex String> because it is not
 a legal regular expression.
 
 Array constructors work differently.  When you create an array with the
@@ -95,7 +95,7 @@ with some qualifier --- that is, by writing an annotation on a class declaration
 \end{Verbatim}
 
 This means that \<@B MyClass> is an invalid type.  (Annotations on class declarations may also specify
-default annotations for uses of the type; see Section~\ref{default-for-use})
+default annotations for uses of the type; see Section~\ref{default-for-use}.)
 
 If it is not possible to annotate the class's definition (e.g., for
 primitives and some library classes),
@@ -237,7 +237,7 @@ rules are used in order, until one applies.
 \end{enumerate}
 
 If the unannotated type is the type of a local variable, then the first 5 rules are skipped and only
-rules 6 and 7 apply. If rule 6 applies, it makes the type of local variables top so they can be refined.
+rules 6 and 7 apply. If rule 7 applies, it makes the type of local variables top so they can be refined.
 
 % (Implementation detail:  setting defaults is implemented by the
 % \refclass{framework/util}{QualifierDefaults} class.)
@@ -263,7 +263,7 @@ Interaction between qualifier bounds and \<DefaultQualifierForUse>:
 \item
   If a type declaration is annotated with a qualifier bound, but not a \<@DefaultQualifierForUse>,
   then the qualifier bound is added to all unannotated uses of that type (except locals).
-  For example, \<@C class MyClass {}> is equivalent to
+  For example, \<@C class MyClass \{\}> is equivalent to
 \begin{Verbatim}
 @DefaultQualifierForUse(C.class)
 @C class MyClass {}
@@ -311,7 +311,7 @@ class MyClass {
   }
 
   @DefaultQualifier(Tainted.class)
-  public boolean isJavaFile(File myfile) {  // myFile has type "@Tainted File"
+  public boolean isJavaFile(File myFile) {  // myFile has type "@Tainted File"
     ...
   }
 }
@@ -402,7 +402,7 @@ its containing instance, such as tainting.  Example: a user passes a secret
 regex to the JDK, and the JDK throws a format exception that includes the
 regex.  This could be caught by a \<catch> clause in the program whose
 exception parameter is not annotated as secret.  As another example, the
-user passes a secret integer and the JDK throws a DivideByZeroException
+user passes a secret integer and the JDK throws an ArithmeticException
 that reveals the value.
 
 % (An even more precise analysis would be for the Checker Framework to
@@ -470,7 +470,7 @@ public @interface Nullable {}
 \end{Verbatim}
 
 \noindent
- As mentioned above, the exception parameters are always non-null, so
+As mentioned above, exception parameters are always non-null, so
 \<@DefaultFor(\{ TypeUseLocation.EXCEPTION\_PARAMETER \})> on \<@NonNull> overrides
 the CLIMB-to-top rule.
 
@@ -496,7 +496,7 @@ be automatically inherited by subclasses that override it.
 
 The alternate design would reduce annotation effort.
 
-The alternate design would reduce program comprehensibility.
+However, the alternate design would reduce program comprehensibility.
 Currently, a user can determine the annotation on a parameter or return
 value by looking at a single file.  If annotations could be inherited from
 supertypes, then a user would have to examine all supertypes, and do
@@ -550,7 +550,7 @@ MyList<?> listOfRegexes;
 MyList<@Regex(5) ? extends @Regex(1) Object> listOfRegexes;
 \end{Verbatim}
 
-Note, this copying of annotations for a wildcard's bounds applies only to
+Note that this copying of annotations for a wildcard's bounds applies only to
 unbounded wildcards.  The two wildcards in the
 following example are equivalent.
 
@@ -561,11 +561,11 @@ MyList<? extends Object> listOfNonNulls;
 MyList<@NonNull ? extends @NonNull Object> listOfNonNulls2;
 \end{Verbatim}
 
-Note, the upper bound of the wildcard \code{?~extends Object} is defaulted to
+Note that the upper bound of the wildcard \code{?~extends Object} is defaulted to
 \code{@NonNull} using the CLIMB-to-top rule (see Section~\ref{climb-to-top}).
 Also note that the \code{MyList} class declaration could have been more succinctly
 written as: \code{class MyList<T extends @Nullable Object>} where the lower bound
-is implicitly the bottom annotation: \code {@NonNull}.
+is implicitly the bottom annotation: \code{@NonNull}.
 
 \subsectionAndLabel{Default qualifiers for \<.class> files (library defaults)}{defaults-classfile}
 
@@ -813,7 +813,7 @@ checkers that you write.  Here is an example for the Regex Checker
 (\chapterpageref{regex-checker}):
 
 \begin{Verbatim}
-  void m2(@Unannotated String s) {
+  void m2(String s) {
     s = RegexUtil.asRegex(s, 2);  // asRegex throws an exception if its argument is not
                                   // a regex with the given number of capturing groups
     ...   // s now has type "@Regex(2) String"
@@ -981,7 +981,7 @@ Type systems that support a run-time test are:
 
 
 Type systems that do not currently support a run-time test, but could do so with some
-additional implementation work, are
+additional implementation work, are:
 
 \begin{itemize}
 \item
@@ -994,14 +994,14 @@ additional implementation work, are
 \item
   \ahrefloc{i18n-checker}{Internationalization Checker} to
   ensure that code is properly internationalized (see
-  \chapterpageref{i18n-checker})
+  \sectionpageref{i18n-checker})
 % The Compiler Message Key Checker is neither here nor in the introduction
 % chapter because it is really meant for Checker Framework developers and
 % as sample code, and is not meant for Checker Framework users at large.
 \item
   \ahrefloc{signature-checker}{Signature String Checker} to ensure that the
   string representation of a type is properly used, for example in
-  \<Class.forName> (see \chapterpageref{signature-checker}).
+  \<Class.forName> (see \chapterpageref{signature-checker})
 \item
   \ahrefloc{constant-value-checker}{Constant Value Checker} to determine
   whether an expression's value can be known at compile time
@@ -1015,7 +1015,7 @@ Type systems that cannot support a run-time test are:
 \item
   \ahrefloc{initialization-checker}{Initialization Checker} to ensure all
   fields are set in the constructor (see
-  \chapterpageref{initialization-checker})
+  \sectionpageref{initialization-checker})
 \item
   \ahrefloc{called-methods-checker}{Called Methods Checker} for
   the builder pattern (see \chapterpageref{called-methods-checker})
@@ -1043,7 +1043,7 @@ Type systems that cannot support a run-time test are:
 \item
   \ahrefloc{initialized-fields-checker}{Initialized Fields Checker} to ensure all
   fields are set in the constructor (see
-  \chapterpageref{initialization-checker})
+  \chapterpageref{initialized-fields-checker})
 \item
   \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
   expressions have aliases (see \chapterpageref{aliasing-checker})
@@ -1076,7 +1076,7 @@ arguments.
 \refqualclass{dataflow/qual}{SideEffectFree} and
 \refqualclass{dataflow/qual}{Deterministic}.
 The \refqualclass{dataflow/qual}{TerminatesExecution} annotation
-indicates that a given method never returns.  This can enable the
+indicates that a given method never returns.  This can enable
 type refinement to be more precise.
 
 Chapter~\ref{purity-checker} gives more information about these annotations.
@@ -1204,7 +1204,7 @@ that it returned non-null on the first call.
 
 To indicate that a method returns the same value each time it is called on
 the same arguments, use the \refqualclass{dataflow/qual}{Deterministic} annotation.
-Actually, it is necessary to use \refqualclass{dataflow/qual}{Pure} which
+Actually, it is necessary to use \refqualclass{dataflow/qual}{Pure}, which
 means both \<@Deterministic> and \<@SideEffectFree>, because otherwise the
 first call might change a value that the method depends on.
 
@@ -1252,7 +1252,7 @@ statements whose message contains the text \<@AssumeAssertion>; see
 Section~\ref{assumeassertion}.
 
 
-\subsectionAndLabel{Var Keyword}{type-refinement-var}
+\subsectionAndLabel{The \<var> keyword}{type-refinement-var}
 
 The initial type of a variable declared with \code{var} is exactly
 the type of the initializer expression at the declaration.
@@ -1369,7 +1369,7 @@ systems) ``\code{<self>}''.
   an array access.  For example:  \<this.myArray[i]>, \<vals[\#1]>.
 
 \item
-  an array creation. For example: \<new int[10]>, \<new String[] {"a", "b"}>.
+  an array creation. For example: \<new int[10]>, \<new String[] \{"a", "b"\}>.
 
 \item literals: string, integer, char, long, float, double, null, class literals.
 
@@ -1475,17 +1475,17 @@ class Rapper extends Person {
 }
 \end{Verbatim}
  A field invariant annotation can refer to more than one field. For example,
-\<@FieldInvariant(qualifier = NonNull.class, field = \{fieldA, fieldB\})> means
+\<@FieldInvariant(qualifier = NonNull.class, field = \{"fieldA", "fieldB"\})> means
 that \<fieldA> and \<fieldB> are both non-null in the class upon which the
 annotation is written.  A field invariant annotation
 can also apply different qualifiers to different fields. For example,
 \<@FieldInvariant(qualifier = \{NonNull.class, Untainted.class\}, field =
-\{fieldA, fieldB\})> means that \<fieldA> is non-null and \<fieldB> is untainted.
+\{"fieldA", "fieldB"\})> means that \<fieldA> is non-null and \<fieldB> is untainted.
 
 This annotation is inherited:  if a superclass is annotated with
 \<@FieldInvariant>, its subclasses have the same annotation. If a subclass has its
 own \<@FieldInvariant>, then it must include the fields in the superclass
-annotation and those fields' annotations must be a subtype (or equal) to the
+annotation, and those fields' annotations must be subtypes of (or equal to) the
 annotations for those fields in the superclass \<@FieldInvariant>.
 
 Currently, the \<@FieldInvariant> annotation is trusted rather than
@@ -1499,7 +1499,7 @@ such as manual examination.
 
 In an inheritance hierarchy, subclasses often introduce new methods and
 fields.  For example, a \<Marsupial> (and its subclasses such as
-\<Kangaroo>) might have a variable \<pouchSize> indicating the size of the animal's
+\<Kangaroo>) might have a field \<pouchSize> indicating the size of the animal's
 pouch.  The field does not exist in superclasses such as
 \<Mammal> and \<Animal>, so Java issues a compile-time
 error if a program tries to access \<myMammal.pouchSize>.
@@ -1526,8 +1526,8 @@ type-checks only if the actual receiver is of the specified type.
 % which the qualifier of a field depends on the qualifier of the expression
 % from which the field was accessed.
 
-Also see the discussion of typestate checkers, in
-Chapter~\ref{typestate-checker}.
+Also see the discussion of typestate checkers in
+Section~\ref{typestate-checker}.
 
 
 % \subsectionAndLabel{Unused fields}{unused-fields}
@@ -1679,7 +1679,7 @@ class @Marsupial-Animal {
 
 
 % LocalWords:  MyClass qual DefaultQualifier subpackages lang de package1
-% LocalWords:  actuals toArray CollectionToArrayHeuristics nn RegexBottom
+% LocalWords:  actuals toArray CollectionToArrayHeuristics nn PartialRegex
 % LocalWords:  MyList Nullness DefaultLocation nullness PolyNull util TODO
 % LocalWords:  QualifierDefaults nullable lub persistData updatedAt nble KeyFor
 % LocalWords:  subtype's RequiresNonNull EnsuresNonNull EnsuresNonNullIf
@@ -1697,7 +1697,7 @@ class @Marsupial-Animal {
 % LocalWords:  AssumeAssertion AsafeDefaultsForUnannotatedBytecode
 % LocalWords:  I18nFormatFor AunsafeDefaultsForUnannotatedBytecode
 % LocalWords:  AuseConservativeDefaultsForUncheckedCode DefaultFor TypeUseLocation
-% LocalWords:  EnsuresKeyFor EnsuresKeyForIf DivideByZeroException
+% LocalWords:  EnsuresKeyFor EnsuresKeyForIf ArithmeticException
 % LocalWords:  EnsuresLockHeld EnsuresLockHeldIf FieldInvariant fieldA
 % LocalWords:  fieldB myMethod SomeType runtime typedefs signedness
 % LocalWords:  Signedness MonotonicNonNull UpperBoundFor enableassertions

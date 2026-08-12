@@ -23,7 +23,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *  }
  * </pre>
  *
- * In this example method descriptor for method 'method': (Ljava/lang/Object;I)Z
+ * In this example, the method descriptor for method {@code method} is {@code
+ * (Ljava/lang/Object;I)V}.
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */

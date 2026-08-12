@@ -66,6 +66,22 @@ jobs:
 
 include([../../.azure/jobs.m4])dnl
 
+  all_green:
+    if: always()
+    needs:
+      - junit_jdk17
+      - junit_jdk21
+      - junit_jdk26
+      - misc_jdk21
+      - guava_part1_jdk25
+      - guava_part2_jdk25
+      - plume_lib_jdk25
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any dependency failed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
+
 ifelse([
 Local Variables:
 eval: (add-hook 'after-save-hook '(lambda () (run-command nil "make")) nil 'local)
