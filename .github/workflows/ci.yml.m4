@@ -13,14 +13,10 @@ name: CI
     branches:
       - "**"
 
-# concurrency:
-#   group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
-#   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
-
-# Cancel in-progress jobs that originate from a fork.
+# Auto-cancel any in-progress jobs from the same branch or PR.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.fork && github.event.pull_request.head.ref || github.ref }}
-  cancel-in-progress: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
