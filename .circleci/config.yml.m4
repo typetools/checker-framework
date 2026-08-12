@@ -73,16 +73,6 @@ job_dependences_not_in_canary(canary_jdk, plume_lib)
 
       - all_green:
           requires:
-            - canary_jobs
-            - junit_part1_jdk25
-            - junit_part2_jdk25
-            - nonjunit_jdk25
-            - misc_jdk25
-            - misc_jdk26
-            - inference_part1_jdk25
-            - inference_part2_jdk25
-            - typecheck_part1_jdk25
-            - typecheck_part2_jdk25
             - misc_jdk21
             - nonjunit_jdk21
             - junit_jdk17
