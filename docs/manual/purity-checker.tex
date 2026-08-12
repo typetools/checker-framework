@@ -27,8 +27,10 @@ whole-program inference.
 \item[\refqualclass{dataflow/qual}{SideEffectFree}]
   indicates that the method has no externally-visible side effects.
 
+\iffalse
 \item[\refqualclass{dataflow/qual}{SideEffectsOnly}]
   indicates that the method has limited externally-visible side effects.
+\fi
 
 \item[\refqualclass{dataflow/qual}{Deterministic}]
   indicates that if the method is called multiple times with identical
@@ -50,8 +52,10 @@ mistake
 by writing \<\refqualclass{dataflow/qual}{SideEffectFree}> on the
 declaration of a method that is not side-effect-free,
 %
+\iffalse
 by writing \<\refqualclass{dataflow/qual}{SideEffectsOnly}> on the
 declaration of a method that side-effects more than the listed expressions,
+\fi
 or
 %
 by writing \<\refqualclass{dataflow/qual}{Deterministic}> on the
