@@ -2,9 +2,12 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -167,6 +170,28 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     if (declaredInTree instanceof LambdaExpressionTree lambdaDecl
         && TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
       int index = lambdaDecl.getParameters().indexOf(f.declarationFromElement(paramElement));
+
+      TreePath pathToLambda = f.getPath(lambdaDecl);
+      Tree enclosingTree =
+          pathToLambda == null || pathToLambda.getParentPath() == null
+              ? null
+              : pathToLambda.getParentPath().getLeaf();
+      if ((enclosingTree instanceof MethodInvocationTree || enclosingTree instanceof NewClassTree)
+          && f.getTypeArgumentInference().isCurrentlyInferring(enclosingTree)) {
+        // Type argument inference for the invocation that this lambda is passed to is
+        // already running further up the call stack: we were reached while that inference
+        // was computing the type of an expression in this lambda's body. Calling
+        // f.getFunctionTypeFromTree(lambdaDecl) below would re-derive the lambda's target
+        // type by re-invoking applicability/inference for the same invocation from an
+        // incomplete state, which can produce a different (and incorrect) answer than the
+        // one the outer, in-progress inference will eventually settle on -- see
+        // https://github.com/typetools/checker-framework/issues/7678. Fall back to the real,
+        // already fully-resolved Java type that javac assigned to this parameter instead.
+        AnnotatedTypeMirror result = f.toAnnotatedType(paramElement.asType(), false);
+        f.addDefaultAnnotations(result);
+        return result;
+      }
+
       AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
       AnnotatedTypeMirror funcTypeParam = functionType.getParameterTypes().get(index);
       // During type argument inference, the type of the parameters is assumed to be the
