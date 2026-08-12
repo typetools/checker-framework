@@ -63,7 +63,7 @@ that ensures that a certain expression is a key for a map:
   When the method with this annotation returns, the expression (or all the
   expressions) given in the \code{value} element is a key for the given
   maps. More precisely, the expression has the \code{@KeyFor} qualifier
-  with the \code{value} arguments taken from the \code{targetValue} element
+  with the \code{value} arguments taken from the \code{map} element
   of this annotation.
 \item[\refqualclasswithparams{checker/nullness/qual}{EnsuresKeyForIf}{String[] expression, boolean result, String[] map}]
   If the method with this annotation returns the given boolean value,
@@ -138,7 +138,7 @@ Here is a comparison of two choices for lower bounds:
 If lower bounds are defaulted to \code{@KeyForBottom} (which is not
 currently the case), then whenever \<null> is assigned to a variable whose
 type is a type variable, programmers must write an \<@UnknownKeyFor>
-annotation on either the type variable declaration or on variable
+annotation on either the type variable declaration or the variable
 declarations, as shown in \<MyClass1> and
 \<MyClass2>.
 A disadvantage of this default is that the Map Key Checker may issue
@@ -198,7 +198,7 @@ Map<String,Date> m, n;
 @KeyFor("m") String km;
 @KeyFor("n") String kn;
 @KeyFor({"m", "n"}) String kmn;
-km = kmn;   // OK - a key for maps m and n is also a key for map m
+km = kmn;   // OK: a key for maps m and n is also a key for map m
 km = kn;    // error: a key for map n is not necessarily a key for map m
 \end{verbatim}
 
@@ -244,7 +244,7 @@ For more details about type refinement, see Section~\ref{type-refinement}.
 Suppose we have these declarations:
 
 \begin{verbatim}
-Map<String,Date> m = new Map<>();
+Map<String,Date> m = new HashMap<>();
 String k = "key";
 @KeyFor("m") String km;
 \end{verbatim}
