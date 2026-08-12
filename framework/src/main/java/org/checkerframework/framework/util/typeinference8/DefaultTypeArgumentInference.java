@@ -134,14 +134,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
   }
 
   @Override
-  @SuppressWarnings("interning:not.interned") // Checking for exact object.
-  public boolean isCurrentlyInferring(Tree invocation) {
-    for (InvocationTypeInference i : java8InferenceStack) {
-      if (i.getInferenceExpression() == invocation) {
-        return true;
-      }
-    }
-    return false;
+  public boolean isAnyInferenceInProgress() {
+    return !java8InferenceStack.isEmpty();
   }
 
   /**

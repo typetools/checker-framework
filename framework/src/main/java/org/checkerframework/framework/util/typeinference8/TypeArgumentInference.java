@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util.typeinference8;
 
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
@@ -46,22 +45,22 @@ public interface TypeArgumentInference {
       AnnotatedExecutableType executableType);
 
   /**
-   * Returns true if type argument inference for {@code invocation} is currently in progress, that
-   * is, if this method is called while inference is in the middle of computing the result of a
-   * previous, not-yet-returned call to {@link #inferTypeArgs} for the same {@code invocation}.
+   * Returns true if type argument inference for some method or constructor invocation is currently
+   * in progress anywhere on the call stack, that is, if this method is called while a previous,
+   * not-yet-returned call to {@link #inferTypeArgs} is running.
    *
-   * <p>Code that needs the type of an expression that is only meaningful once {@code invocation}'s
+   * <p>Code that needs the type of an expression that is only meaningful once some invocation's
    * type arguments are known (for example, the type of an implicitly typed lambda parameter whose
-   * lambda is an argument to {@code invocation}) must check this method first. Re-deriving that
-   * type via the normal target-type machinery (which re-invokes method applicability/inference for
-   * {@code invocation}) while inference for {@code invocation} is already running can re-run parts
-   * of that inference from an incomplete state and produce a different, incorrect answer than the
-   * one the outer, in-progress inference will eventually settle on.
+   * lambda is an argument to a still-uninferred invocation) must check this method first.
+   * Re-deriving that type via the normal target-type machinery -- which re-invokes method
+   * applicability/inference for the invocation, and in turn needs the types of that invocation's
+   * receiver and arguments -- can revisit an invocation whose own inference is mid-flight further
+   * up the stack (not necessarily the immediately enclosing one) and compute a different,
+   * incomplete answer than the one the in-progress inference will eventually settle on.
    *
-   * @param invocation a method or constructor invocation tree
-   * @return true if type argument inference for {@code invocation} is currently in progress
+   * @return true if type argument inference for some invocation is currently in progress
    */
-  default boolean isCurrentlyInferring(Tree invocation) {
+  default boolean isAnyInferenceInProgress() {
     return false;
   }
 }

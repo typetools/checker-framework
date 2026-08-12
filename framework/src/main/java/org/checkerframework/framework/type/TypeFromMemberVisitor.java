@@ -177,15 +177,17 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
               ? null
               : pathToLambda.getParentPath().getLeaf();
       if ((enclosingTree instanceof MethodInvocationTree || enclosingTree instanceof NewClassTree)
-          && f.getTypeArgumentInference().isCurrentlyInferring(enclosingTree)) {
-        // Type argument inference for the invocation that this lambda is passed to is
-        // already running further up the call stack: we were reached while that inference
-        // was computing the type of an expression in this lambda's body. Calling
-        // f.getFunctionTypeFromTree(lambdaDecl) below would re-derive the lambda's target
-        // type by re-invoking applicability/inference for the same invocation from an
-        // incomplete state, which can produce a different (and incorrect) answer than the
-        // one the outer, in-progress inference will eventually settle on -- see
-        // https://github.com/typetools/checker-framework/issues/7678. Fall back to the real,
+          && f.getTypeArgumentInference().isAnyInferenceInProgress()) {
+        // Below, f.getFunctionTypeFromTree(lambdaDecl) re-derives this lambda's target type by
+        // re-invoking method applicability/inference for the enclosing invocation, which in turn
+        // needs the type of that invocation's receiver and arguments. If any type argument
+        // inference is already running further up the call stack -- not necessarily for this
+        // exact enclosing invocation, but for any invocation that the re-derivation ends up
+        // revisiting while resolving those receivers/arguments (e.g. a call nested a few levels
+        // out whose own inference has not returned yet) -- redoing that work here can compute a
+        // different, incomplete answer than the one the in-progress inference will eventually
+        // settle on. See https://github.com/typetools/checker-framework/issues/7678 and
+        // https://github.com/typetools/checker-framework/issues/7698. Fall back to the real,
         // already fully-resolved Java type that javac assigned to this parameter instead.
         AnnotatedTypeMirror result = f.toAnnotatedType(paramElement.asType(), false);
         f.addDefaultAnnotations(result);
