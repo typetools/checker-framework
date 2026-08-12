@@ -1,20 +1,23 @@
 /*
  * @test
+ * @requires jdk.version.major >= 25
  * @summary Test that defaulted types are stored in bytecode.
  *
- * @requires jdk.version.major >= 24
- * @compile ../PersistUtil.java Driver.java ReferenceInfoUtil.java Methods.java
- * @run main Driver Methods
+ * @compile ../PersistUtil.java Driver.java ReferenceInfoUtil.java Constructors.java
+ * @run main Driver Constructors
  */
+
+// Keep in sync with ../../jdk24/defaultsPersist/Constructors.java, which uses the
+// com.sun.tools.classfile API that was removed in Java 25.  This version uses the
+// java.lang.classfile API.
 
 import static java.lang.classfile.TypeAnnotation.TargetType.METHOD_FORMAL_PARAMETER;
 import static java.lang.classfile.TypeAnnotation.TargetType.METHOD_RECEIVER;
-import static java.lang.classfile.TypeAnnotation.TargetType.METHOD_RETURN;
 import static java.lang.classfile.TypeAnnotation.TargetType.METHOD_TYPE_PARAMETER;
 import static java.lang.classfile.TypeAnnotation.TargetType.METHOD_TYPE_PARAMETER_BOUND;
 import static java.lang.classfile.TypeAnnotation.TargetType.THROWS;
 
-public class Methods {
+public class Constructors {
 
   @TADescriptions({
     @TADescription(
@@ -31,22 +34,20 @@ public class Methods {
         paramIndex = 0),
   })
   public String paramDefault1() {
-    return "void pm1(Object o) {}";
+    return "Test(Object o) {}";
   }
 
   @TADescriptions({
-    @TADescription(
-        annotation = "org/checkerframework/checker/nullness/qual/NonNull",
-        type = METHOD_RETURN),
-    @TADescription(
-        annotation = "org/checkerframework/checker/initialization/qual/Initialized",
-        type = METHOD_RETURN),
-    @TADescription(
-        annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
-        type = METHOD_RETURN),
+    // Should there be defaults?
+    // @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull",
+    //     type = METHOD_RETURN),
+    // @TADescription(annotation =
+    //    "org/checkerframework/checker/initialization/qual/Initialized", type = METHOD_RETURN),
+    // @TADescription(annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+    //     type = METHOD_RETURN),
   })
   public String retDefault1() {
-    return "Object rm1() { return new Object(); }";
+    return "Test() {}";
   }
 
   @TADescriptions({
@@ -64,7 +65,7 @@ public class Methods {
         typeIndex = 0),
   })
   public String throwsDefault1() {
-    return "void tm1() throws Throwable {}";
+    return "Test() throws Throwable {}";
   }
 
   @TADescriptions({
@@ -79,7 +80,7 @@ public class Methods {
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
         type = THROWS,
-        typeIndex = 0), // from KeyFor
+        typeIndex = 0),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/NonNull",
         type = THROWS,
@@ -94,7 +95,7 @@ public class Methods {
         typeIndex = 1),
   })
   public String throwsDefault2() {
-    return "void tm2() throws ArrayIndexOutOfBoundsException, NullPointerException {}";
+    return "Test() throws ArrayIndexOutOfBoundsException, NullPointerException {}";
   }
 
   @TADescriptions({
@@ -108,8 +109,9 @@ public class Methods {
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
         type = METHOD_RECEIVER),
   })
+  @TestClass("Outer$Inner")
   public String recvDefault1() {
-    return "void rd1(Test this) {}";
+    return "class Outer {" + "  class Inner {" + "    Inner(Outer Outer.this) {}" + "  }" + "}";
   }
 
   @TADescriptions({
@@ -142,7 +144,7 @@ public class Methods {
         boundIndex = 0),
   })
   public String typeParams1() {
-    return "<M1> void foo(M1 p) {}";
+    return "<M1> Test(M1 p) {}";
   }
 
   @TADescriptions({
@@ -175,7 +177,7 @@ public class Methods {
         boundIndex = 0),
   })
   public String typeParams2() {
-    return "<M1 extends Object> void foo(M1 p) {}";
+    return "<M1 extends Object> Test(M1 p) {}";
   }
 
   @TADescriptions({
@@ -208,6 +210,6 @@ public class Methods {
         boundIndex = 1),
   })
   public String typeParams3() {
-    return "<M2 extends Comparable<M2>> void bar(M2 p) {}";
+    return "<M2 extends Comparable<M2>> Test(M2 p) {}";
   }
 }
