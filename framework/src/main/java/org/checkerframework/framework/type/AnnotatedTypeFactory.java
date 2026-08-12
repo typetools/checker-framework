@@ -4211,6 +4211,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         sideEffectsOnly, sideEffectsOnlyValueElement, String.class);
   }
 
+  /**
+   * Add the given annotation to the set, or (future feature) merge it with an existing annotation
+   * in the set.
+   *
+   * @param results a set to side-effect
+   * @param annotation an annotation to add to the set
+   */
   private void addOrMerge(AnnotationMirrorSet results, AnnotationMirror annotation) {
     if (AnnotationUtils.containsSameByName(results, annotation)) {
       /*
