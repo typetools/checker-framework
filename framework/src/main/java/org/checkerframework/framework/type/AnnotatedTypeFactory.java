@@ -95,6 +95,7 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJa
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.InferredDeclared;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.DoesNotUnrefineReceiver;
 import org.checkerframework.framework.qual.EnsuresQualifier;
@@ -261,6 +262,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /** The RequiresQualifier.List.value field/element. */
   protected final ExecutableElement requiresQualifierListValueElement;
+
+  /** The SideEffectsOnly.value field/element. */
+  protected final ExecutableElement sideEffectsOnlyValueElement;
 
   /** The RequiresQualifier type. */
   protected final TypeMirror requiresQualifierTM;
@@ -704,6 +708,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TreeUtils.getMethod(RequiresQualifier.class, "expression", 0, processingEnv);
     requiresQualifierListValueElement =
         TreeUtils.getMethod(RequiresQualifier.List.class, "value", 0, processingEnv);
+    sideEffectsOnlyValueElement =
+        TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, processingEnv);
 
     requiresQualifierTM =
         ElementUtils.getTypeElement(processingEnv, RequiresQualifier.class).asType();
@@ -4184,6 +4190,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
       }
     }
+  }
+
+  /**
+   * Returns the expressions written in the {@code @SideEffectsOnly} annotation on {@code method}.
+   * Returns null if {@code method} has no {@code @SideEffectsOnly} annotation.
+   *
+   * <p>Clients should not side-effect the returned value, which may be aliased to internal state.
+   *
+   * @param method a method or constructor
+   * @return the {@code @SideEffectsOnly} expressions written on {@code method}, or null if {@code
+   *     method} has no {@code @SideEffectsOnly} annotation
+   */
+  public @Nullable List<String> getSideEffectsOnlyExpressionStrings(ExecutableElement method) {
+    AnnotationMirror sideEffectsOnly = getDeclAnnotation(method, SideEffectsOnly.class);
+    if (sideEffectsOnly == null) {
+      return null;
+    }
+    return AnnotationUtils.getElementValueArray(
+        sideEffectsOnly, sideEffectsOnlyValueElement, String.class);
   }
 
   private void addOrMerge(AnnotationMirrorSet results, AnnotationMirror annotation) {
