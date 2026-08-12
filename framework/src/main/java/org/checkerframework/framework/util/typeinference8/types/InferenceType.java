@@ -109,14 +109,19 @@ public final class InferenceType extends AbstractType {
       return new ProperType(type, qualifierVars, context, ignoreAnnotations);
     }
 
-    if (type.getKind() == TypeKind.TYPEVAR && map.containsKey(type.getUnderlyingType())) {
+    // The kind test is of `typeMirror`, but the lookup key is from `type`.  The two can disagree,
+    // because `type` and `typeMirror` come from different sources; for example, `typeMirror` may
+    // have been substituted while `type` was not.  This is a use of an inference variable only if
+    // both agree that this position holds a type variable.  If only `type` is a mapped type
+    // variable, the fall-through below creates an InferenceType, whose `applyInstantiations`
+    // substitutes for the type variable later.
+    Variable variable =
+        type.getKind() == TypeKind.TYPEVAR ? map.get(type.getUnderlyingType()) : null;
+    if (variable != null) {
       return new UseOfVariable(
-          (AnnotatedTypeVariable) type,
-          map.get(type.getUnderlyingType()),
-          qualifierVars,
-          context,
-          ignoreAnnotations);
-    } else if (AnnotatedContainsInferenceVariable.hasAnyTypeVariable(map.keySet(), type)) {
+          (AnnotatedTypeVariable) type, variable, qualifierVars, context, ignoreAnnotations);
+    } else if (AnnotatedContainsInferenceVariable.hasAnyTypeVariable(
+        map.getTypeVariables(), type)) {
       return new InferenceType(type, map, qualifierVars, context, ignoreAnnotations);
     } else {
       return new ProperType(type, qualifierVars, context, ignoreAnnotations);
@@ -148,13 +153,12 @@ public final class InferenceType extends AbstractType {
       return new ProperType(type, qualifierVars, context, ignoreAnnotations);
     }
 
-    if (typeMirror.getKind() == TypeKind.TYPEVAR && map.containsKey(type.getUnderlyingType())) {
+    // See the comment about this test in `create`.
+    Variable variable =
+        typeMirror.getKind() == TypeKind.TYPEVAR ? map.get(type.getUnderlyingType()) : null;
+    if (variable != null) {
       return new UseOfVariable(
-          (AnnotatedTypeVariable) type,
-          map.get(type.getUnderlyingType()),
-          qualifierVars,
-          context,
-          ignoreAnnotations);
+          (AnnotatedTypeVariable) type, variable, qualifierVars, context, ignoreAnnotations);
     } else if (AnnotatedContainsInferenceVariable.hasAnyTypeVariable(
         map.getNotInstantiated(), type)) {
       return new InferenceType(type, map, qualifierVars, context, ignoreAnnotations);
@@ -245,8 +249,10 @@ public final class InferenceType extends AbstractType {
     LinkedHashSet<Variable> variables = new LinkedHashSet<>();
     for (TypeVariable typeVar :
         ContainsInferenceVariable.getMentionedTypeVariables(
-            map.keySet(), type.getUnderlyingType())) {
-      variables.add(map.get(typeVar));
+            map.getTypeVariables(), type.getUnderlyingType())) {
+      @SuppressWarnings("nullness:assignment") // getMentionedTypeVariables returns keys of `map`
+      Variable variable = map.get(typeVar);
+      variables.add(variable);
     }
     return variables;
   }
