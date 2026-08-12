@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The annotated expression evaluates to value that might be -2 or lower. This is the top type for
+ * The annotated expression evaluates to a value that might be -2 or lower. This is the top type for
  * the Lower Bound type system. It should not have to be written by a programmer.
  *
  * @checker_framework.manual #index-checker Index Checker

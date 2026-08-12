@@ -160,7 +160,7 @@ class ComparisonException extends RuntimeException {
 
   public String toString() {
     return String.format(
-        "%s%n  Expected (%d): %s%s  Found (%d): %s",
+        "%s%n  Expected (%d): %s%n  Found (%d): %s",
         super.toString(), expected.size(), expected, found.size(), found);
   }
 }

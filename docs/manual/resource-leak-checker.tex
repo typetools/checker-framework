@@ -52,7 +52,7 @@ javac -processor org.checkerframework.checker.resourceleak.ResourceLeakChecker M
 
 The Resource Leak Checker supports all the command-line arguments
 listed in Section~\ref{called-methods-run-checker} for
-the Called Methods Checker, plus four others:
+the Called Methods Checker, plus five others:
 
 \begin{description}
 \item[\<-ApermitStaticOwning>]
@@ -62,10 +62,10 @@ the Called Methods Checker, plus four others:
 \item[\<-ApermitInitializationLeak>]
   See Section~\ref{resource-leak-field-initialization}.
 \item[\<-AenableReturnsReceiverForRlc>]
-  Enables the Returns Receiver Checker (Section~\ref{returns-receiver-checker})
-  when running this checker. By default, the Returns Receiver checker is
+  Enables the Returns Receiver Checker (Chapter~\ref{returns-receiver-checker})
+  when running this checker. By default, the Returns Receiver Checker is
   disabled when running the Called Methods Checker as part of the RLC,
-  because it has a significant runtime cost but provides little benefit in the common case,
+  because it has a significant type-checking cost but provides little benefit in the common case,
   since resources are rarely combined with fluent builders.
 \item[\<-AenableWpiForRlc>]
   See Section~\ref{resource-leak-checker-references}.
@@ -130,7 +130,7 @@ fields or re-opening resources:
 
 \item[\refqualclasswithparams{checker/mustcall/qual}{CreatesMustCallFor}{String value}]
   is a declaration annotation that indicates that after a call to a method
-  with this annotation none of the must-call obligations of the in-scope, owning expression
+  with this annotation, none of the must-call obligations of the in-scope, owning expression
   listed in \<value> have been met.
   In other words, the annotated method ``resets'' the must-call obligations of the expression.
   Multiple \<@CreatesMustCallFor>
@@ -224,7 +224,7 @@ it. The \<@Owning> annotation on \<t>'s declaration expresses this fact; it
 tells the Resource Leak Checker that \<t> is the reference that must be
 closed, and its alias \<s> need not be closed.
 
-Constructor returns are always \<@Owning>.
+Constructor results are always \<@Owning>.
 Method returns default to \<@Owning>,
 and parameters and fields default to \<@NotOwning>. This treatment of parameter and
 return types ensures sound handling of unannotated third-party libraries: any
@@ -284,7 +284,7 @@ For \textbf{final, non-static owning fields},
 the Resource Leak Checker enforces the ``resource acquisition is
 initialization (RAII)'' programming idiom.  Some
 destructor-like method \<d()> must satisfy the field's must-call obligation
-(and this fact must be expressed via a \<@EnsuresCalledMethods> annotation on \<d()>),
+(and this fact must be expressed via an \<@EnsuresCalledMethods> annotation on \<d()>),
 and the enclosing class must have a \<@MustCall("d")> obligation to
 ensure the destructor is called. In addition to the \<@EnsuresCalledMethods> annotation,
 which guarantees that the field(s) it references have their must-call obligations satisfied
@@ -337,7 +337,7 @@ satisfied.  When those fields are used throughout execution, until the
 program exits, there is no good place to dispose of them, so these warnings
 might not be useful.  The \<-ApermitStaticOwning> command-line argument
 suppresses warnings related to static owning fields.  This can help in
-checking legacy code.  It permits only a small number of resources retained
+checking legacy code.  It permits only a small number of resources to be retained
 throughout execution, related to the number of such fields and assignments
 to them.
 
@@ -431,7 +431,7 @@ the following example:
 
     public SocketContainer() { sock = ...; }
 
-    void close() { sock.close() };
+    void close() { sock.close(); }
 
     @CreatesMustCallFor("this")
     void reconnect() {
@@ -460,9 +460,9 @@ At a call site to a method annotated as
 \<@CreatesMustCallFor(>\emph{expr}\<)>, the Resource Leak Checker:
 \begin{enumerate}
 \item
-  Treats any existing \<@MustCall> obligations of \emph{expr} as \emph{satisfied},
+  Treats any existing \<@MustCall> obligations of \emph{expr} as \emph{satisfied}.
 \item
-  Creates a fresh obligation to check, as if \emph{expr} was assigned to a newly-allocated
+  Creates a fresh obligation to check, as if \emph{expr} were assigned to a newly-allocated
   object (i.e., as if \emph{expr} were a constructor result).
 \item
   Un-refines the type in the Called Methods Checker's type hierarchy for \emph{expr} to
@@ -471,7 +471,7 @@ At a call site to a method annotated as
   Requires that the expression corresponding to \emph{expr} (that is, \emph{expr}
   viewpoint-adapted to the method call site) is owned; that is, it is
   annotated or defaulted as \<@Owning>.  Otherwise, the checker
-  will issue a \<reset.not.owning> error at the call-site. You can avoid this
+  will issue a \<reset.not.owning> error at the call site. You can avoid this
   error by extracting \emph{expr} into a new local variable (because
   locals are \<@Owning> by default) and replacing all instances of \emph{expr}
   in the call with references to the new local variable.
@@ -481,16 +481,16 @@ Treating the obligation before the call as satisfied is sound: the
 checker creates a new obligation for calls to \<@CreatesMustCallFor> methods,
 and the Must Call Checker (\chapterpageref{must-call-checker}) ensures the
 \<@MustCall> type for the target expression will have a \emph{superset} of any methods
-present before the call. Intuitively, calling an \<@CreatesMustCallFor> method
+present before the call. Intuitively, calling a \<@CreatesMustCallFor> method
 ``resets'' the obligations of the target expression, so whether they were satisfied before
 the call or not is irrelevant.
 
-If an \<@CreatesMustCallFor>
-method \emph{n} is invoked within a method \emph{m} that has an \<@CreatesMustCallFor> annotation,
+If a \<@CreatesMustCallFor>
+method \emph{n} is invoked within a method \emph{m} that has a \<@CreatesMustCallFor> annotation,
 and the \<@CreatesMustCallFor> annotations on \emph{n} and \emph{m} have
-the same target expression---imposing the obligation produced by calling \emph{n} on the caller of \emph{m}---then
+the same target expression --- imposing the obligation produced by calling \emph{n} on the caller of \emph{m} --- then
 the newly-created obligation is treated as satisfied immediately
-at the call-site of \emph{n} in the body of \emph{m} (because it is imposed at call-sites of \emph{m}
+at the call site of \emph{n} in the body of \emph{m} (because it is imposed at call sites of \emph{m}
 instead).
 
 
@@ -514,8 +514,8 @@ sound:
 The first rule ensures that \<close()> is called after the last call
 to \<reconnect()>, and the second rule ensures that \<reconnect()>
 safely closes \<sock> before re-assigning it. Because the Called Methods Checker
-treats calls to an \<@CreatesMustCallFor> method like \<reconnect()> as if the call might
-cause arbitrary side-effects, after such a call the only method known to have been
+treats calls to a \<@CreatesMustCallFor> method like \<reconnect()> as if the call might
+cause arbitrary side effects, after such a call the only method known to have been
 definitely called is the \<@CreatesMustCallFor> method: previous called
 methods (including \<close()>) do not appear in the \<@CalledMethods> type qualifier.
 
@@ -546,7 +546,7 @@ The Resource Leak Checker ignores control flow due to some exceptions.
 
 \begin{itemize}
 \item
-By default the Resource Leak Checker ignores run-time errors that can occur
+By default, the Resource Leak Checker ignores run-time errors that can occur
 unpredictably at most points in the program. For example, the JVM can throw
 an \<OutOfMemoryError> on any allocation.  Similarly,
 \<ClassCircularityError>, \<ClassFormatError>, and \<NoClassDefFoundError>
@@ -575,14 +575,14 @@ The set of ignored exception types can be controlled with the option
 \<-AresourceLeakIgnoredExceptions=...>.  The option takes a comma-separated list of
 fully-qualified exception types.  A type can be prefixed with \<=> to ignore exactly
 that type and not its subclasses.  For example, for a very pedantic set of ignored
-exceptions use either of these, which have identical effect:
+exceptions, use either of these, which have the same effect:
 
 \begin{verbatim}
   -AresourceLeakIgnoredExceptions="java.lang.Error,=java.lang.NullPointerException"
   -AresourceLeakIgnoredExceptions="=java.lang.NullPointerException,java.lang.Error"
 \end{verbatim}
 
-which ignores \<java.lang.Error> (and all its subclasses) as well as
+Both of these ignore \<java.lang.Error> (and all its subclasses) as well as
 \<java.lang.NullPointerException> (but not its subclasses).
 
 The keyword \<default> will expand to the default set of ignored exceptions.  So,
@@ -620,7 +620,7 @@ limited to how many times the field is set.
 
 The Resource Leak Checker issues a \<required.method.not.known> error
 when a variable with the type \<@MustCallUnknown> has a must-call obligation.
-\<@MustCallUnknown> rarely occurs, but if you encounter this error usually
+\<@MustCallUnknown> rarely occurs, but if you encounter this error, usually
 the right thing to do is to write an explicit \<@MustCall> annotation
 on the indicated expression (e.g., as a cast), because the Must Call Checker
 will only use \<@MustCallUnknown> as a default when encountering a language
@@ -660,7 +660,7 @@ This is the best choice most of the time if the \<List> is not intended to
 be owning.
 \item Write \code{List<@MustCall Socket>}. This makes it an error to
 add a Socket to the list, since the type of the Socket is
-\<@MustCall("close")> but the list requires \<@MustCall()>.
+\<@MustCall("close")> but the list requires \<@MustCall(\{\})>.
 \item Suppress one or more warnings.
 \end{itemize}
 

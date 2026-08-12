@@ -183,7 +183,7 @@ Framework:
   Subtyping rules related to the type hierarchy, such as that in every
   assignment,
   % and pseudo-assignment
-  the type of the right-hand-side is a subtype of the type of the left-hand-side.
+  the type of the right-hand side is a subtype of the type of the left-hand side.
   Your checker automatically inherits these subtyping rules from the Base
   Checker (Chapter~\ref{subtyping-checker}), so there is nothing for you to do.
 \item
@@ -279,8 +279,8 @@ Here is a good way to proceed.
   \<@NonNegative>, then you could write a test case such as:
 
 \begin{Verbatim}
-import org.checkerframework.checker.mychecker.qual.UnknownSign;
-import org.checkerframework.checker.mychecker.qual.NonNegative;
+import org.checkerframework.checker.mycheckername.qual.UnknownSign;
+import org.checkerframework.checker.mycheckername.qual.NonNegative;
 
 class TestHierarchy {
   void testHierarchy(@UnknownSign int us, @NonNegative int nn) {
@@ -400,10 +400,10 @@ javacheck \
 
 \begin{Verbatim}
   void testTypeIntroduction(String[] myArray) {
-    @NonNegative nn1 = -1;  // expected error on this line
-    @NonNegative nn2 = 0;
-    @NonNegative nn3 = 1;
-    @NonNegative nn4 = myArray.length;
+    @NonNegative int nn1 = -1;  // expected error on this line
+    @NonNegative int nn2 = 0;
+    @NonNegative int nn3 = 1;
+    @NonNegative int nn4 = myArray.length;
   }
 \end{Verbatim}
 
@@ -420,18 +420,18 @@ javacheck \
 
 \begin{Verbatim}
   void testDataflow(@UnknownSign int us, @NonNegative int nn) {
-    @NonNegative nn2;
+    @NonNegative int nn2;
     nn2 = us;  // expected error on this line
-    if (us > j) {
+    if (us > 0) {
       nn2 = us;
     }
-    if (us >= j) {
+    if (us >= 0) {
       nn2 = us;
     }
-    if (j < us) {
+    if (0 < us) {
       nn2 = us;
     }
-    if (j <= us) {
+    if (0 <= us) {
       nn2 = us;
     }
     nn = us;  // expected error on this line
@@ -515,16 +515,16 @@ indicates the parent in the type hierarchy.
 The \sunjavadocanno{java.base/java/lang/annotation/Target.html}{Target}
 meta-annotation indicates where the annotation
 may be written. All type qualifiers that users can write in source code should
-have the value \<ElementType.TYPE\_USE> and optionally with the additional value
-of \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
+have the value \<ElementType.TYPE\_USE>, and optionally the additional value
+\<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
 %% This feels like clutter that distracts from the main point of the section.
 % (Terminological note:  a \emph{meta-annotation} is an annotation that
 % is written on an annotation definition, such as
 % \refqualclass{framework/qual}{SubtypeOf} and
 % \sunjavadocanno{java.base/java/lang/annotation/Target.html}{Target}.)
 
-The qualifiers should be in a \<qual> subpackage of the type checker package ---
-by default, the checker reflectively determines the qualifiers and the only thing that matters for that is the package name.
+The qualifiers should be in a \<qual> subpackage of the type-checker package ---
+by default, the checker reflectively determines the qualifiers, and the only thing that matters for that is the package name.
 As mentioned in Section~\ref{creating-parts-of-a-checker}, the files for that \<qual> package can be
 either in a subdirectory or in a separate Gradle module, depending on whether
 they should be distributable separately.
@@ -563,7 +563,7 @@ their source code.
 The Javadoc of every type qualifier should include a precise English
 description and an example use of the qualifier.
 
-In source code, declaration qualifiers are written on their own line, and
+In source code, declaration annotations are written on their own line, and
 type qualifiers are written on the same line as the type they apply to.
 Section~\ref{faq-type-annotation-formatting} explains how to configure
 tools to format type annotations properly.
@@ -737,7 +737,7 @@ Date> is a subtype of \<@Nullable Date>.  The default \refclass{framework/type}{
 The default \refclass{framework/type}{TypeHierarchy} handles
 generic type arguments, array components, type variables, and
 wildcards in a similar manner to the Java standard subtype
-relationship but with taking qualifiers into consideration.  Some type
+relationship but taking qualifiers into consideration.  Some type
 systems may need to override that behavior.  For instance, the Java
 Language Specification specifies that two generic types are subtypes only
 if their type arguments are identical:  for example,
@@ -769,10 +769,10 @@ qualifier hierarchy.
 
 If the default qualifier in the type hierarchy requires a value, there are
 ways for the type system designer to specify a default value both
-declaratively and procedurally, as well.  To do so declaratively, append
-the string \<default \emph{value}> where \emph{value} is the actual value
-you want to be the default, after the declaration of the value in the
-qualifier file.  For instance, \code{int value() default 0;} would make
+declaratively and procedurally, as well.  To do so declaratively, after the
+declaration of the element in the qualifier file, append the string
+\<default \emph{value}>, where \emph{value} is the value you want to be the
+default.  For instance, \code{int value() default 0;} would make
 \code{value} default to zero. Alternatively, the procedural method
 described above can be used.
 
@@ -894,7 +894,7 @@ will not type-check unless \<null> has the bottom type:
 Some type systems have a special bottom type that is used \emph{only} for
 the \code{null} value, and for dead code and other erroneous situations.
 In this case, users should only write the bottom qualifier on explicit
-bounds.  In this case, the definition of the bottom qualifier should be
+bounds.  Also, the definition of the bottom qualifier should be
 meta-annotated with:
 
 % import java.lang.annotation.ElementType;
@@ -934,7 +934,7 @@ referred to.
 This section explains how to implement a dependent type annotation.
 
 A ``dependent type annotation''
-must have one attribute, \<value>, that is an
+must have one element, \<value>, that is an
 array of strings.  The Checker Framework verifies that the annotation's
 arguments are valid expressions according to the rules of
 Section~\ref{java-expressions-as-arguments}.  If
@@ -949,7 +949,7 @@ An advantage of this canonicalization is
 that comparisons, such as \<isSubtype>, can be implemented as string comparisons.
 
 The Checker Framework viewpoint-adapts type annotations on method, constructor,
-and field declarations at uses for those methods.  For example, given the
+and field declarations at uses of those methods, constructors, and fields.  For example, given the
 following class
 
 \begin{Verbatim}
@@ -1032,14 +1032,14 @@ compiled.  The checker uses
 \refmethod{framework/source}{SourceChecker}{reportError}{(java.lang.Object,java.lang.String,java.lang.Object...)}
 and
 \refmethod{framework/source}{SourceChecker}{reportWarning}{(java.lang.Object,java.lang.String,java.lang.Object...)}
-to issue errors.
+to issue errors and warnings.
 
 Also, the checker class follows the factory method pattern to
 construct the concrete classes (e.g., visitor, factory) and annotation
 hierarchy representation.  It is a convention that, for
 a type system named Foo, the compiler
 interface (checker), the visitor, and the annotated type factory are
-named as \<FooChecker>, \<FooVisitor>, and \<FooAnnotatedTypeFactory>.
+named \<FooChecker>, \<FooVisitor>, and \<FooAnnotatedTypeFactory>.
 \refclass{common/basetype}{BaseTypeChecker} uses the convention to
 reflectively construct the components.  Otherwise, the checker writer
 must specify the component classes for construction.
@@ -1066,24 +1066,24 @@ when using a message key in a \<@SuppressWarnings> annotation.
 A checker must indicate the annotations that it supports (that make up its type
 hierarchy).
 
-By default, a checker supports all type annotations located in a
-subdirectory called \<qual> that's located in the same directory as the
+By default, a checker supports all type annotations in a
+subdirectory named \<qual> that is in the same directory as the
 checker (unless you are creating multiple distribution artifacts, one for your
 checker and one for its qualifiers).
 A type annotation is meta-annotated with either
 \<@Target(ElementType.TYPE\_USE)>
 or
-\<@Target({ElementType.TYPE\_USE, ElementType.TYPE\_PARAMETER})>.
+\<@Target(\{ElementType.TYPE\_USE, ElementType.TYPE\_PARAMETER\})>.
 
 To indicate support for annotations that are located outside of the \<qual>
-subdirectory, annotations that have other \<ElementType> values,
+subdirectory, or annotations that have other \<ElementType> values,
 checker writers can override the
 \refmethodterse{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{()}
 method (see its Javadoc for details).
 It is required to define \<createSupportedTypeQualifiers> if you are mixing
 qualifiers from multiple directories (including when extending an existing
-checker that has its own qualifiers) and when using the Buck build tool,
-whose class loader cannot find the qualifier directory.
+checker that has its own qualifiers), and if you are using the Buck build
+tool, whose class loader cannot find the qualifier directory.
 
 An aggregate checker (which extends
 \refclass{framework/source}{AggregateChecker}) does not need to specify its
@@ -1139,7 +1139,7 @@ the \<getSupportedCheckers> method, like the following:
 
 % This is the *only* example, as of July 2015.
 An example of an aggregate checker is \refclass{checker/i18n}{I18nChecker}
-(see \chapterpageref{i18n-checker}), which consists of
+(see \sectionpageref{i18n-checker}), which consists of
 \refclass{checker/i18n}{I18nSubchecker} and
 \refclass{checker/i18n}{LocalizableKeyChecker}.
 
@@ -1227,7 +1227,7 @@ To pass an option on the command line, call javac as follows:
 The value is returned as a single string and you have to perform the
 required parsing of the option.
 
-\subsubsectionAndLabel{Default Options}{creating-providing-command-line-options-default-options}
+\subsubsectionAndLabel{Default options}{creating-providing-command-line-options-default-options}
 
 The default options passed to a custom checker may be customized by overriding the
 \refmethodterse{common/basetype}{BaseTypeChecker}{getOptions}{()} method in the
@@ -1260,12 +1260,12 @@ These rules must be defined procedurally, not declaratively.
 Put them in a file \<\emph{MyChecker}Visitor.java> that extends
 \refclass{common/basetype}{BaseTypeVisitor}.
 
-BaseTypeVisitor performs type-checking at each node of a
+\<BaseTypeVisitor> performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
 \href{https://docs.oracle.com/en/java/javase/25/docs/api/jdk.compiler/module-summary.html}{jdk.compiler
 API},
-and it issues a warning (by calling
+and it issues an error or warning (by calling
 \refmethodterse{framework/source}{SourceChecker}{reportError}{(java.lang.Object,java.lang.String,java.lang.Object...)}
 or
 \refmethodterse{framework/source}{SourceChecker}{reportWarning}{(java.lang.Object,java.lang.String,java.lang.Object...)})
@@ -1413,7 +1413,7 @@ which is the Checker Framework's representation of an annotated type.
 \end{Verbatim}
 
   \noindent
-  In code like the above, you might choose to put your TreeAnnotator first.
+  In code like the above, you might choose to put your \<TreeAnnotator> first.
   Several tree annotators are run by
   default, and among them, \<PropagationTreeAnnotator>
   adds annotations to \<AnnotatedTypeMirror>s that do not have an annotation,
@@ -1437,7 +1437,7 @@ which is the Checker Framework's representation of an annotated type.
 \end{Verbatim}
 
   \noindent
-  (or put your TypeAnnotator last, depending on the behavior you want).
+  (or put your \<TypeAnnotator> last, depending on the behavior you want).
 
 \item
   Create a subclass of \refclass{framework/type}{AnnotatedTypeFactory} and
@@ -1458,8 +1458,8 @@ which is the Checker Framework's representation of an annotated type.
   concepts).
 
   The approach of overriding \<addComputedTypeAnnotations> is a last
-  resort, if your logic cannot be implemented using a TreeAnnotator or a
-  TypeAnnotator.  The implementation of \<addComputedTypeAnnotations> in
+  resort, if your logic cannot be implemented using a \<TreeAnnotator> or a
+  \<TypeAnnotator>.  The implementation of \<addComputedTypeAnnotations> in
   \<GenericAnnotatedTypeFactory> calls the tree annotator and the type
   annotator (in that order), but by overriding the method you can cause
   your logic to be run even earlier or even later.
@@ -1530,7 +1530,7 @@ structure that it uses, in the
   Manual}.
 
 
-\subsectionAndLabel{Determine expressions to refine the types of}{creating-dataflow-determine-expressions}
+\subsectionAndLabel{Determine which expressions to refine}{creating-dataflow-determine-expressions}
 
 A run-time check or run-time
 operation involves multiple expressions (arguments, results).
@@ -1571,11 +1571,11 @@ As an example, consider an equality test in the Nullness type system:
 
 \begin{Verbatim}
   @Nullable String s;
-    if (s != null) {
-      ...
-    } else {
-      ...
-    }
+  if (s != null) {
+    ...
+  } else {
+    ...
+  }
 \end{Verbatim}
 
 The type of \<s != null> is always \<boolean>.  However, in the
@@ -1717,11 +1717,13 @@ a transfer class.)
 
 Decide what source code syntax is relevant to the run-time checks or
 run-time operations you are trying to support.  The CFG (control flow
-graph) represents source code as \refclass{dataflow/cfg/node}{Node}, a
-node in the abstract syntax tree of the program being checked (see
+graph) represents source code as \refclass{dataflow/cfg/node}{Node}s.  Some
+\refclass{dataflow/cfg/node}{Node}s correspond to a node in the abstract syntax
+tree of the program being checked, while others are synthesized during CFG
+construction and have no corresponding AST node (see
 Section~\ref{creating-dataflow-representation}).
 
-In your extended \refclass{framework/flow}{CFTransfer}
+In your extended \refclass{framework/flow}{CFTransfer},
 override the visitor method that handles the \refclass{dataflow/cfg/node}{Node}s
 relevant to your run-time check or run-time operation.
 Leave the body of the overriding method empty for now.
@@ -1756,7 +1758,7 @@ For example, the Regex Checker refines the type based on a call to the
 The \refclass{dataflow/cfg/node}{Node} subclasses can be found in the
 \code{org.checkerframework.dataflow.cfg.node} package.  Some examples are
 \refclass{dataflow/cfg/node}{EqualToNode},
-\refclass{dataflow/cfg/node}{LeftShiftNode},
+\refclass{dataflow/cfg/node}{LeftShiftNode}, and
 \refclass{dataflow/cfg/node}{VariableDeclarationNode}.
 
 A \refclass{dataflow/cfg/node}{Node}
@@ -1805,9 +1807,9 @@ visited.  (Remember that \refclass{common/basetype}{BaseTypeVisitor} uses the
 \end{sloppypar}
 
 For example, when \refclass{checker/regex}{RegexTransfer} evaluates a
-\code{RegexUtils.asRegex} invocation, it updates the
+\code{RegexUtil.asRegex} invocation, it updates the
 \refclass{dataflow/analysis}{TransferResult}'s result type. This changes the
-type of the \code{RegexUtils.asRegex} invocation when its
+type of the \code{RegexUtil.asRegex} invocation when its
 \refTreeclass{tree}{Tree} is looked up by the
 \refclass{framework/type}{AnnotatedTypeFactory}.  See below for details.
 
@@ -1817,7 +1819,7 @@ having a refined type for the remainder of the method or conditional block. For
 example, when the Nullness Checker's dataflow evaluates \code{myvar != null}, it
 updates the \refclass{dataflow/analysis}{Store} to specify that the variable
 \code{myvar} should be treated as having type \code{@NonNull} for the rest of the
-then conditional block.  Not all kinds of expressions can be refined; currently
+then branch.  Not all kinds of expressions can be refined; currently
 method return values, local variables, fields, and array values can be stored in
 the \refclass{dataflow/analysis}{Store}.  Other kinds of expressions, like
 binary expressions or casts, cannot be stored in the
@@ -1848,7 +1850,7 @@ The visitor must inspect the
 instance of the desired run-time test or operation.  For example,
 \code{visitMethodInvocation} is called when dataflow processes any method
 invocation, but the \refclass{checker/regex}{RegexTransfer} should only refine
-the result of \code{RegexUtils.asRegex} invocations:
+the result of \code{RegexUtil.asRegex} invocations:
 
 %BEGIN LATEX
 \begin{smaller}
@@ -1863,10 +1865,10 @@ the result of \code{RegexUtils.asRegex} invocations:
     if (receiver instanceof ClassNameNode) {
       String receiverName = ((ClassNameNode) receiver).getElement().toString();
 
-      // Is this a call to static method isRegex(s, groups) in a class named RegexUtil?
+      // Is this a call to static method asRegex(s, groups) in a class named RegexUtil?
       if (receiverName.equals("RegexUtil")
           && ElementUtils.matchesElement(method,
-                 "isRegex", String.class, int.class)) {
+                 "asRegex", String.class, int.class)) {
             ...
 \end{Verbatim}
 %BEGIN LATEX
@@ -1878,7 +1880,7 @@ the result of \code{RegexUtils.asRegex} invocations:
 Sometimes the refined type is dependent on the parts of the operation,
 such as arguments passed to it.
 
-For example, the refined type of \code{RegexUtils.asRegex} is dependent on the
+For example, the refined type of \code{RegexUtil.asRegex} is dependent on the
 integer argument to the method call. The \refclass{checker/regex}{RegexTransfer}
 uses this argument to build the resulting type \code{@Regex(\emph{i})}, where \code{\emph{i}}
 is the value of the integer argument.  For simplicity the below code only uses
@@ -1931,7 +1933,7 @@ by dataflow:
 \end{smaller}
 %END LATEX
 
-Then, RegexTransfer's \code{visitMethodInvocation} creates and returns a
+Then, \<RegexTransfer>'s \code{visitMethodInvocation} creates and returns a
 \refclass{dataflow/analysis}{TransferResult} using \code{newResultValue} as the
 result type.
 
@@ -1946,7 +1948,7 @@ result type.
 %END LATEX
 
 As a result of this code, when the Regex Checker encounters a
-\code{RegexUtils.asRegex} method call, the checker will refine the return
+\code{RegexUtil.asRegex} method call, the checker will refine the return
 type of the method if it can determine the value of the integer parameter
 at compile time.
 
@@ -2006,7 +2008,7 @@ uses the JDK\@.  You have two options:
     an \refqualclass{framework/qual}{AnnotatedFor} annotation to each file you annotate.
   \item
     Whenever you add a file, fully annotate it, as described in
-    Section~\ref{library-tips}.
+    Section~\ref{library-tips-fully-annotate}.
   \item
     If you are only annotating fields and method signatures (but not
     ensuring that method bodies type-check), then you don't need to suppress
@@ -2038,7 +2040,7 @@ the stub file should appear in directory \<checker/src/main/resources/>.
 In the distribution, it will appear at the top level of the \<checker.jar> file.
 It will not be used automatically; a user must pass the
 \<-Astubs=checker.jar/\emph{stubfilename.astub}> command-line argument
-(see Section~\ref{annotated-libraries-using})
+(see Section~\ref{annotated-libraries-using}).
 
 While creating a stub file, you may find the debugging options described in
 Section~\ref{stub-troubleshooting} useful.
@@ -2113,9 +2115,9 @@ large codebase without being inundated in stack traces.
 impeding performance, issue a note rather than a warning.
 This prevents the message from being elevated to an error by \code{-Werror}.
 
-\item \code{-AdumpOnErrors}: Outputs a stack trace when reporting errors or warnings.
+\item \code{-AdumpOnErrors}: output a stack trace when reporting errors or warnings.
 
-\item \code{-AexceptionLineSeparator}: Controls what line separator is used when printing exceptions.
+\item \code{-AexceptionLineSeparator}: control what line separator is used when printing exceptions.
 This is useful when tools, such as Maven, only display the first line of exception messages. For
 example, \code{-AexceptionLineSeparator="    "}.
 
@@ -2135,7 +2137,7 @@ example, \code{-AexceptionLineSeparator="    "}.
 \end{itemize}
 
 The
-\ahreforurl{https://github.com/eisopux/javac-diagnostics-wrapper}{javac-diagnostic-wrapper}
+\ahreforurl{https://github.com/eisopux/javac-diagnostics-wrapper}{javac-diagnostics-wrapper}
 tool can transform javac's textual output into other formats, such as JSON
 in LSP (Language Server Protocol) format.
 
@@ -2156,7 +2158,7 @@ in LSP (Language Server Protocol) format.
   parse all JDK files at startup rather than as needed.
 
 \item \code{-AstubDebug}:
-  Print debugging messages while processing stub files.
+  print debugging messages while processing stub files.
   Section~\ref{stub-troubleshooting} describes more diagnostic command-line
   arguments.
 
@@ -2202,7 +2204,7 @@ using any of the following four techniques:
 
 \begin{itemize}
   \item From a different shell than the Checker Framework is running in
-    (running just \<jcmd> gives a list of pids or process ids):
+    (running just \<jcmd> gives a list of process IDs):
   \begin{itemize}
     \item \<jstack \emph{pid}>
     \item \<jcmd \emph{pid} Thread.print>
@@ -2220,7 +2222,7 @@ using any of the following four techniques:
 \begin{itemize}
 
 \item \code{-AoutputArgsToFile}:
-  This saves the final command-line parameters as passed to the compiler in a file.
+  This saves to a file the final command-line parameters as passed to the compiler.
   The file can be used as a script to re-execute the same compilation command.
   (The script file must be marked as executable on Unix, or
   must have a \code{.bat} extension on Windows.)
@@ -2284,7 +2286,7 @@ command-line options. \\
 \item \code{-Averbosecfg}:
   Enable additional output in the CFG visualization.
   Equivalent to passing \<verbose> to \<cfgviz>, e.g., as in
-  \<-Acfgviz=MyVisualizer,verbose>
+  \<-Acfgviz=MyVisualizer,verbose>.
 
 \item \code{-Acfgviz=\emph{VizClassName}[,\emph{opts},...]}:
   Mechanism to visualize the control flow graph (CFG) of
@@ -2301,7 +2303,7 @@ command-line options. \\
   \item \<org.checkerframework.dataflow.cfg.visualize.>\refclass{dataflow/cfg/visualize}{DOTCFGVisualizer}
   \item \<org.checkerframework.dataflow.cfg.visualize.>\refclass{dataflow/cfg/visualize}{StringCFGVisualizer}
   \end{itemize}
-  The remaining keys or key--value pairs are
+  The remaining keys or key-value pairs are
   passed to \<CFGVisualizer.init>.  Supported keys include
   \begin{itemize}
   \item \<verbose>
@@ -2377,7 +2379,7 @@ The following example demonstrates how these options are used:
 %END LATEX
 \begin{Verbatim}
 $ javac -processor org.checkerframework.checker.interning.InterningChecker \
-    docs/examples/InternedExampleWithWarnings.java -Ashowchecks -Anomsgtext -Afilenames
+    docs/examples/InterningExampleWithWarnings.java -Ashowchecks -Anomsgtext -Afilenames
 
 [InterningChecker] InterningExampleWithWarnings.java
  success (line  18): STRING_LITERAL "foo"
@@ -2441,7 +2443,7 @@ following sections:
   This section includes descriptions of the annotations with links to the
   Javadoc.  Separate type annotations from declaration annotations, and put
   any type annotations that a programmer may not write (they are only used
-  internally by the implementation) last within variety of annotation.
+  internally by the implementation) last within each variety of annotation.
 
   Draw a diagram of the type hierarchy.  A textual description of
   the hierarchy is not sufficient; the diagram really helps readers to
@@ -2479,7 +2481,7 @@ You will create a new \<belly-rub-checker.tex> file,
 then \verb|\input| it at a logical place in \<manual.tex> (not
 necessarily as the last checker-related chapter).  Also add two references
 to the checker's chapter:  one at the beginning of
-chapter~\ref{introduction}, and identical text in the appropriate part of
+Chapter~\ref{introduction}, and identical text in the appropriate part of
 Section~\ref{type-refinement-runtime-tests}.  Add the new file to
 \<docs/manual/Makefile>.  Keep the lists in
 the same order as the manual chapters, to help us notice if anything is
@@ -2505,7 +2507,7 @@ Also ensure that the Javadoc links back to the manual, using the
 
 \sectionAndLabel{javac implementation survival guide}{creating-javac-tips}
 
-Since this section of the manual was written, the useful ``The Hitchhiker's
+Since this section of the manual was written, the useful ``Hitchhiker's
 Guide to javac'' has become available at
 \url{https://openjdk.org/groups/compiler/doc/hhgtjavac/index.html}.
 See it first, and then refer to this section.  (This section of the manual
@@ -2575,20 +2577,26 @@ such as a method declaration, statement, block, \<for> loop, etc. Trees only
 represent source code to be compiled (or found in \code{-sourcepath});
 no tree is available for classes read from bytecode.
 
-There is a Tree interface for each Java source structure, e.g.,
+There is a \<Tree> interface for each Java source structure, e.g.,
 \code{ClassTree} for class declaration, \code{MethodInvocationTree}
-for a method invocation, and \code{ForEachTree} for an enhanced \<for>
+for a method invocation, and \code{EnhancedForLoopTree} for an enhanced \<for>
 statement (also known as a foreach loop).
 
-You should limit your use of trees. A checker uses Trees mainly to
+You should limit your use of trees. A checker uses \<Tree>s mainly to
 traverse the source code and retrieve the types/elements corresponding to
 them.  Then, the checker performs any needed checks on the types/elements instead.
 
-To obtain the position (line number and column number) of a Tree,
-cast the Tree to a \<com.sun.tools.javac.tree.JCTree> and then use one of
-its methods, such as \<pos()> which returns a \<JCDiagnostic.DiagnosticPosition>.
-\<com.sun.source.tree.CompilationUnitTree> has a LineMap that lets you convert
+To obtain the position (line number and column number) of a \<Tree>,
+use a \<com.sun.source.util.Trees> instance to obtain a
+\<com.sun.source.util.SourcePositions> via \<getSourcePositions()>, then call
+\<getStartPosition(...)> (or \<getEndPosition(...)>) on it.
+\<com.sun.source.tree.CompilationUnitTree> has a \<LineMap> that lets you convert
 positions to line numbers.
+Alternatively, you can cast the \<Tree> to the javac-internal type
+\<com.sun.tools.javac.tree.JCTree> and call its \<pos()> method, which returns a
+\<JCDiagnostic.DiagnosticPosition>; doing so requires your code to be compiled
+and run with \<-{}-add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED>
+and \<-{}-add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED>\@.
 
 
 \subsubsectionAndLabel{Using the APIs}{creating-using-the-apis}
@@ -2598,7 +2606,7 @@ help you to create your checker.
 
 \emph{Type-checking}:
 Do not use \code{instanceof Subinterface} to determine which kind of \<TypeMirror> or \<Element> an expression is,
-because some of the classes that implement the TypeMirror and Element subinterfaces implement multiple
+because some of the classes that implement the \<TypeMirror> and \<Element> subinterfaces implement multiple
 subinterfaces. For example, \<type instanceof DeclaredType> and \<type instanceof UnionType>
 both return true if \<type> is a \<com.sun.tools.javac.code.Type.UnionClassType> object.
 
@@ -2607,7 +2615,7 @@ Instead, use the
 or
 \sunjavadoc{java.compiler/javax/lang/model/element/Element.html\#getKind()}{Element.getKind()}
 method.  For example, if \<type> is a \<com.sun.tools.javac.code.Type.UnionClassType> object, then
-\<expr.getKind() == TypeKind.DECLARED> is false and \<expr.getKind() == TypeKind.UNION> is true.
+\<type.getKind() == TypeKind.DECLARED> is false and \<type.getKind() == TypeKind.UNION> is true.
 
 
 For \<Tree>s, you can use either \<Tree.getKind()> or \<instanceof>.
@@ -2656,8 +2664,8 @@ source file after the compiler confirms that the class is valid Java code.
 The most important methods of \refclass{javacutil}{AbstractTypeProcessor}
 are \code{typeProcess} and \code{getSupportedSourceVersion}. The former
 method is where you would insert any sort of method call to walk the AST\@,
-and the latter just returns a constant indicating that we are targeting
-version 8 of the compiler. Implementing these two methods should be enough
+and the latter just returns a constant indicating the source version that is
+supported. Implementing these two methods should be enough
 for a basic plugin; see the Javadoc for the class for other methods that
 you may find useful later on.
 
@@ -2677,8 +2685,8 @@ implement JSR~198.  Also see Section~\ref{creating-ast-traversal}.
 
 \subsubsectionAndLabel{Learning more about javac}{creating-learning-more-about-javac}
 
-Sun's javac compiler interfaces can be daunting to a
-newcomer, and its documentation is a bit sparse. The Checker Framework
+The javac compiler interfaces can be daunting to a
+newcomer, and their documentation is a bit sparse. The Checker Framework
 aims to abstract a lot of these complexities.
 You do not have to understand the implementation of javac to
 build powerful and useful checkers.
@@ -2749,7 +2757,7 @@ without warnings or errors.
 %%  LocalWords:  createTransferFunction RegexAnalysis createFlowAnalysis
 %%  LocalWords:  EqualToNode LeftShiftNode VariableDeclarationNode myvar
 %%  LocalWords:  MethodInvocationNode visitMethodInvocation TransferResult
-%%  LocalWords:  RegexUtils LockTransfer FormatterTransfer CFValue argfile
+%%  LocalWords:  RegexUtil LockTransfer FormatterTransfer CFValue argfile
 %%  LocalWords:  RegexTransfer's newResultValue subcheckers taglet tex XXX
 %%  LocalWords:  ParameterizedCheckerTest AoutputArgsToFile ManualTaglet
 %%  LocalWords:  Hevea Hitchhiker's compilermsgs args Poly MyTypeSystem

@@ -31,7 +31,7 @@ from failure to use interning.
 
 Interning is such an important design pattern that Java builds it in for
 these types: \<String>, \<Boolean>, \<Byte>, \<Character>, \<Integer>,
-\<Short>.  Every string literal in the program is guaranteed to be interned
+and \<Short>.  Every string literal in the program is guaranteed to be interned
 (\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-3.html#jls-3.10.5}{JLS
   \S3.10.5}), and the
 \sunjavadoc{java.base/java/lang/String.html\#intern()}{String.intern()} method
@@ -72,7 +72,7 @@ this property could hold:
   \item
     Some routines return either their argument, or a modified version of
     it.  Your code might compare \code{s == s.toLowerCase()} to see whether
-    a string contained any upper-case characters.
+    a string contains any upper-case characters.
   \end{itemize}
 \end{enumerate}
 
@@ -190,13 +190,13 @@ values can be assigned to \code{s2}.
 
 \sectionAndLabel{Interned classes}{interning-interned-classes}
 
-An interned annotation on a class declaration indicates that all objects of a
-type are interned \textit{except for newly created objects}. That means that
+An \<@Interned> annotation on a class declaration indicates that all objects of
+that type are interned \textit{except for newly created objects}. That means that
 all uses of such types are \<@Interned> by default and the type \<@UnknownInterned
 MyClass> is an invalid type.
 
 An exception is \textit{constructor results}. Constructor results and \<this> within the
-body of the constructor are \<@UnknownInterned> by default. Although \<@UnknownInterned InternClass>
+body of the constructor are \<@UnknownInterned> by default. Although \<@UnknownInterned InternedClass>
 is not a legal type, no ``type.invalid'' error is issued at constructor declarations.
 Instead, an ``interned.object.creation''
 error is issued at the invocation of the constructor. The user should inspect
@@ -211,7 +211,7 @@ For example:
     @Interned InternedClass that = this;
   }
 
-  @SuppressWarnings("intern") // Only creation of an InternedClass object.
+  @SuppressWarnings("interning") // Only creation of an InternedClass object.
   static final InternedClass ONE = new InternedClass();
 }
 \end{Verbatim}
@@ -253,13 +253,13 @@ of that class is interned.  For these classes, the user will have to manually
 inspect every constructor invocation and suppress the ``interned.object.creation''
 error.
 
-If every invocation of a constructor is guaranteed to be interned, then the
+If the result of every invocation of a constructor is guaranteed to be interned, then the
 user should annotate the constructor result with \<@Interned> and suppress a
 warning at the constructor.
 
 \begin{Verbatim}
 @Interned class AnotherInternedClass {
-  // manually verified that all constructor invocations used such that all
+  // manually verified that all constructor invocations are used such that all
   // new objects are interned
   @SuppressWarnings("super.invocation")
   @Interned AnotherInternedClass() {}
@@ -316,9 +316,9 @@ class MyType {
 it would be legal to write \<myValue == MyType.SPECIAL> rather than
 \<myValue.equals(MyType.SPECIAL)>.
 
-The \<@InternedDistinct> is trusted (not verified), because it would be too
+The \<@InternedDistinct> annotation is trusted (not verified), because it would be too
 complex to analyze the \<equals()> method to ensure that no other value is
-\<equals()> to a \<@InternedDistinct> value.  You will need to manually
+\<equals()> to an \<@InternedDistinct> value.  You will need to manually
 verify that it is only written in locations where its contract is satisfied.
 For example, here is one set of guidelines that you could check manually:
 \begin{itemize}
@@ -345,7 +345,7 @@ The checker issues an error in two cases:
 \item
   When a reference (in)equality operator (``\code{==}'' or ``\code{!=}'')
   has an operand of non-\refqualclass{checker/interning/qual}{Interned} type.
-  As a special case, the operation is permitted if either argument is of
+  As a special case, the operation is permitted if either operand is of
   \refqualclass{checker/interning/qual}{InternedDistinct} type.
 
 \item

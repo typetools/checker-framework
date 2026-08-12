@@ -112,7 +112,7 @@ Other type qualifiers are the intersection of two or more qualifiers listed
 above; for example, a
 \refqualclass{checker/signature/qual}{DotSeparatedIdentifiers} is a string
 that is a valid fully-qualified name \emph{and} a valid binary name.  A
-programmer should never or rarely use these qualifiers, and you can ignore
+programmer should rarely or never use these qualifiers, and you can ignore
 them as implementation details of the Signature Checker, though you might
 occasionally see them in an error message.  These qualifiers exist to give
 literals sufficiently precise types that they can be used in any
@@ -164,7 +164,7 @@ Java defines one format for the string representation of a method signature:
   A \emph{method descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-4.html#jvms-4.3.3}{JVMS \S
     4.3.3}) identifies a method's signature (its parameter and return
   types), just as a field descriptor identifies a
-  type.   The method descriptor for the method
+  type.  The method descriptor for the method
 \begin{Verbatim}
     Object mymethod(int i, double d, Thread t)
 \end{Verbatim}

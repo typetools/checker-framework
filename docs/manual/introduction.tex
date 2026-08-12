@@ -20,7 +20,7 @@ The Checker Framework comes with checkers for specific types of errors:
 \item
   \ahrefloc{initialization-checker}{Initialization Checker} to ensure all
   \<@NonNull> fields are set in the constructor (see
-  \chapterpageref{initialization-checker})
+  \sectionpageref{initialization-checker})
 \item
   \ahrefloc{map-key-checker}{Map Key Checker} to track which values are
   keys in a map (see \chapterpageref{map-key-checker})
@@ -75,7 +75,7 @@ The Checker Framework comes with checkers for specific types of errors:
 \item
   \ahrefloc{i18n-checker}{Internationalization Checker} to
   ensure that code is properly internationalized (see
-  \chapterpageref{i18n-checker})
+  \sectionpageref{i18n-checker})
 % The Compiler Message Key Checker is neither here nor in the advanced
 % type system features chapter because it is really meant for
 % Checker Framework developers and as sample code, and is not meant
@@ -110,7 +110,7 @@ The Checker Framework comes with checkers for specific types of errors:
 \item
   \ahrefloc{initialized-fields-checker}{Initialized Fields Checker} to ensure all
   fields are set in the constructor (see
-  \chapterpageref{initialization-checker})
+  \chapterpageref{initialized-fields-checker})
 \item
   \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
   expressions have aliases (see \chapterpageref{aliasing-checker})
@@ -169,7 +169,7 @@ code stays completely backward-compatible:  your code compiles with any
 Java compiler, it runs on any JVM, and your coworkers don't have to use the
 enhanced type system if they don't want to.  You can check part of
 your program, or the whole thing.  Type inference tools exist to help you annotate your
-code; see Section~\ref{type-inference}.
+code; see Chapter~\ref{type-inference}.
 
 Most programmers will use type systems created by other people, such as
 those listed at the start of the introduction (\chapterpageref{introduction}).
@@ -322,7 +322,7 @@ described in Sections~\ref{writing-annotations} and~\ref{running}.
 \item The programmer writes annotations, such as \refqualclass{checker/nullness/qual}{NonNull} and
   \refqualclass{checker/interning/qual}{Interned}, that specify additional information about Java types.
   (Or, the programmer uses an inference tool to automatically infer
-  annotations that are consistent with their code:  see Section~\ref{type-inference}.)
+  annotations that are consistent with their code:  see Chapter~\ref{type-inference}.)
   It is possible to annotate only part of your code:  see
   Section~\ref{unannotated-code}.
 
@@ -383,7 +383,7 @@ them.  Here are a few examples of type annotations:
 
 You only need to write type annotations on method signatures, fields, and some type arguments.
 Most annotations within method bodies are inferred for you; for more details,
-see  Section~\ref{type-refinement}.
+see Section~\ref{type-refinement}.
 
 The Java Language Specification also defines
 declaration annotations, such as \<@Deprecated> and \<@Override>, which apply
@@ -428,8 +428,8 @@ and about customizing other IDEs and build tools.
 
 The checker is run on only the Java files that javac compiles.
 This includes all Java files specified on the command line and those
-created by another annotation processor.  It may also include other of
-your Java files, if they are more recent than the corresponding \code{.class} file.
+created by another annotation processor.  It may also include other Java
+files of yours, if they are more recent than the corresponding \code{.class} file.
 Even when the checker does not analyze a class (say, the class was
 already compiled, or source code is not available), it does check
 the \emph{uses} of those classes in the source code being compiled.
@@ -708,7 +708,7 @@ Type-checking modes:  enable/disable functionality
 \item \<-AshowSuppressWarningsStrings>
   With each warning, show all possible strings to suppress that warning.
 \item \<-AwarnUnneededSuppressions>
-  Issue a \<unneeded.suppression> warning for each \<@SuppressWarnings>
+  Issue an \<unneeded.suppression> warning for each \<@SuppressWarnings>
   that did not suppress a warning
   issued by the checker.  This only warns about
   \<@SuppressWarnings> strings that contain a checker name
@@ -725,7 +725,7 @@ Type-checking modes:  enable/disable functionality
   contain a match for the regular expression.  Most users don't need this.
 \item \<-ArequirePrefixInWarningSuppressions>
   Require that the string in a warning suppression annotation begin with a checker
-  name.  Otherwise, the suppress warning annotation does not
+  name.  Otherwise, the warning suppression annotation does not
   suppress any warnings.  For example, if this command-line option is
   supplied, then \<@SuppressWarnings("assignment")> has no effect, but
   \<@SuppressWarnings("nullness:assignment")> does.
@@ -876,7 +876,7 @@ checker is an ``annotation processor''.
   checking, without any subsequent compilation; see
   Section~\ref{checker-auto-discovery}.
 \item \<-implicit:class> Suppresses warnings about implicitly compiled files
-  (not named on the command line); see Section~\ref{ant-task}
+  (not named on the command line); see Section~\ref{ant-task}.
 \item \<-J> Supply an argument to the JVM that is running javac;
   for example, \<-J-Xmx4g> to increase its maximum heap size.
 \item \<-doe> To ``dump on error'', that is, output a stack trace
@@ -974,7 +974,7 @@ guarantees that correct equality tests are performed.
 More precisely, it guarantees that
 every expression whose type is an \refqualclass{checker/interning/qual}{Interned} type
 evaluates to an interned value, and it forbids
-\<==>  on other expressions.
+\<==> on other expressions.
 
 The guarantee holds only if you run the checker on every part of your
 program and the checker issues no warnings anywhere in the code.
@@ -1002,7 +1002,7 @@ There are some limitations to the guarantee.
     \code{-AonlyFiles}
     command-line arguments (see Chapter~\ref{suppressing-warnings}).
   \item
-    Dynamically generated code, such as generated by Spring or MyBatis.
+    Dynamically generated code, such as code generated by Spring or MyBatis.
     Its bytecode is directly generated and run, not compiled by javac and
     not visible to the Checker Framework.
     % https://github.com/typetools/checker-framework/issues/3139
@@ -1054,7 +1054,7 @@ issuing the same warning multiple times.  For example, consider this code:
 
 \noindent
 The second call to \<toString> cannot possibly throw a null
-pointer warning --- \<x> is non-null if control flows to the second
+pointer exception --- \<x> is non-null if control flows to the second
 statement.
 In other cases, a checker avoids issuing later warnings with the same cause
 even when later code in a method might also fail.
@@ -1148,7 +1148,7 @@ and~\ref{annotations-are-a-contract} give more tips about writing
 specifications.
 
 For each class, read its Javadoc.  For instance, if you are adding
-annotations for the Nullness Checker (Section~\ref{nullness-checker}), then
+annotations for the Nullness Checker (Chapter~\ref{nullness-checker}), then
 you can search the documentation for ``null'' and then add \<@Nullable>
 anywhere appropriate.  Start by annotating signatures and fields, but not
 method bodies.  The only reason to even
@@ -1158,7 +1158,7 @@ for example, if the method returns null, you know its return type should be
 annotated \<@Nullable>, and a parameter that is compared against \<null>
 may need to be annotated \<@Nullable>.
 
-The specification should state all facts that are relevant to callees.
+The specification should state all facts that are relevant to callers.
 When checking a method, the checker uses only the specification, not the
 implementation, of other methods.  (Equivalently, type-checking is
 ``modular'' or ``intraprocedural''.)  When analyzing a variable use, the
@@ -1179,7 +1179,7 @@ you understand the code, of course).
 It is usually not a good idea to experiment with adding and removing
 annotations in order to understand their effect.  It is better to reason
 about the desired design.  However, to avoid having to manually examine all
-callees, a more automated approach is to save the checker output before
+callers, a more automated approach is to save the checker output before
 changing an annotation, then compare it to the checker output after
 changing the annotation.
 
@@ -1306,7 +1306,7 @@ if it receives \code{null} as an argument.  Examples include:
   org.junit.jupiter.api.Assert.assertNotNull(Object)
 \end{Verbatim}
 
-Their formal parameter type is annotated as \<@NonNull>, because otherwise the
+Their formal parameter types are annotated as \<@NonNull>, because otherwise the
 program might crash.  Adding a call to a method like \<requireNonNull>
 never prevents a crash:  your code still crashes, but with a slightly
 different stack trace.  In order to prevent all exceptions in your program
@@ -1464,7 +1464,7 @@ Then, the specification is more informative, and the Checker Framework is
 able to do more precise checking, than if line 141 has an annotation.
 
 It is a pleasant feature of the Checker Framework that in many cases, no
-annotations at all are needed on type parameters such as \code{E} in \<MultiSet>.
+annotations at all are needed on type parameters such as \code{E} in \<Multiset>.
 
 
 \subsectionAndLabel{What to do if a checker issues a warning about your code}{handling-warnings}
@@ -1529,7 +1529,7 @@ same methodology in different words.)
 
 
 \paragraphAndLabel{Step 1: Explain correctness:  write a proof}{handling-warnings-step1}
-Write an explanation of why your code is correct and it
+Write an explanation of why your code is correct and why it
 never suffers the error at run time.  In other words, this is an informal proof
 that the type-checker's warning is incorrect.  Write it in natural language,
 such as English.
@@ -1547,7 +1547,7 @@ in your code (you should fix the bug) or your code is too complex for you
 to understand (you should improve its documentation and/or design).
 
 
-\paragraphAndLabel{Step 2: Translate the proof into annotations.}{handling-warnings-step2}
+\paragraphAndLabel{Step 2: Translate the proof into annotations}{handling-warnings-step2}
 Here are some examples of the translation.
 
 \begin{itemize}
@@ -1604,7 +1604,7 @@ If there are complex facts in your proof that cannot be expressed as
 annotations, then that is a weakness in the type-checker.  For example,
 the Nullness Checker cannot express ``in list \<lst>, elements stored at
 even indices are always non-\<null>, but elements stored at odd indices
-might be \<null>.''  In this case, you have two choices.
+might be \<null>''.  In this case, you have two choices.
 %
 First, you can suppress the warning
 (\chapterpageref{suppressing-warnings}); be sure to write a comment
@@ -1650,7 +1650,7 @@ warnings.  For example, the Nullness Checker (Chapter~\ref{nullness-checker}) wi
 warn whenever an unannotated method result is used in a non-null context:
 
 \begin{Verbatim}
-  @NonNull myvar = unannotated_method();   // WARNING: unannotated_method may return null
+  @NonNull Object myvar = unannotated_method();   // WARNING: unannotated_method may return null
 \end{Verbatim}
 
 If the call \emph{can} return null, you should fix the bug in your program by
@@ -1665,7 +1665,7 @@ or suppress warnings.
     If the unannotated code is in your program, you can write annotations
     but not type-check them yet.  Two ways to prevent the type-checking are
     via a \code{@SuppressWarnings} annotation
-    (Section~\ref{suppresswarnings-annotation}) or by not running the
+    (Section~\ref{suppresswarnings-annotation}) or not running the
     checker on that file, for example via the \<-AskipDefs> command-line
     option (Section~\ref{askipdefs}).
   \item
