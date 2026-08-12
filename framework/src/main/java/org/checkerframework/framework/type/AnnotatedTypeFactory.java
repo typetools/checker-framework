@@ -815,8 +815,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotationBuilder sideEffectsOnlyBuilder =
         new AnnotationBuilder(
             processingEnv, org.checkerframework.dataflow.qual.SideEffectsOnly.class);
-    // Any value will do, because only the annotation's name is used.
-    sideEffectsOnlyBuilder.setValue("an arbitrary value", new String[0]);
+    // Any value will do (we use `new String[0]`), because only the annotation's name is used.
+    sideEffectsOnlyBuilder.setValue("value", new String[0]);
     addInheritedAnnotation(sideEffectsOnlyBuilder.build());
     addInheritedAnnotation(
         AnnotationBuilder.fromClass(
