@@ -1,9 +1,12 @@
 package org.checkerframework.framework.flow;
 
+import com.sun.source.tree.CompilationUnitTree;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -21,6 +24,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -109,6 +113,27 @@ public abstract class CFAbstractAnalysis<
       sideEffectsOnlyExpressionsCache = new IdentityHashMap<>();
 
   /**
+   * The call sites at which {@link #computeSideEffectsOnlyExpressions} has reported a parse error,
+   * so that each such error is reported once rather than once per dataflow iteration. All the call
+   * sites are within {@link #sideEffectsOnlyErrorsCompilationUnit}.
+   *
+   * <p>Unlike {@link #sideEffectsOnlyExpressionsCache}, this is not cleared by {@link
+   * #performAnalysis}: {@link org.checkerframework.dataflow.analysis.AnalysisResult#runAnalysisFor}
+   * re-runs transfer functions over the nodes of a control flow graph that was analyzed earlier,
+   * which would otherwise report the error a second time.
+   *
+   * @see #addSideEffectsOnlyErrorReported
+   */
+  private final Set<MethodInvocationNode> sideEffectsOnlyErrorsReported =
+      Collections.newSetFromMap(new IdentityHashMap<>());
+
+  /**
+   * The compilation unit that contains the call sites in {@link #sideEffectsOnlyErrorsReported}, or
+   * null if that set is empty.
+   */
+  private @Nullable CompilationUnitTree sideEffectsOnlyErrorsCompilationUnit = null;
+
+  /**
    * Create a CFAbstractAnalysis.
    *
    * @param checker a checker that contains command-line arguments and other information
@@ -166,7 +191,8 @@ public abstract class CFAbstractAnalysis<
    * <p>Also returns null if any of the annotation's expressions cannot be parsed at the call site.
    * Null means "the method might side-effect anything", which is the conservative result; returning
    * a list that omits the unparseable expression would treat the method as side-effecting
-   * <em>less</em> than it was declared to.
+   * <em>less</em> than it was declared to. The parse error itself is reported at the call site,
+   * since the callee's declaration may not be under compilation.
    *
    * <p>The result is cached, because dataflow calls this once per iteration per call site and
    * parsing an expression is not cheap. Clients should not side-effect the returned value, which is
@@ -206,6 +232,12 @@ public abstract class CFAbstractAnalysis<
 
     List<JavaExpression> seOnlyExpressions = new ArrayList<>();
 
+    // For deciding whether to issue a warning about viewpoint adaptation.
+    String goodDeclExpr = null;
+    JavaExpression goodCallExpr = null;
+    String badDeclExpr = null;
+    JavaExpression badCallExpr = null;
+
     for (Map.Entry<ExecutableElement, List<String>> entry : seOnlyExpressionStrings.entrySet()) {
       // The method whose `@SideEffectsOnly` annotation contains the expressions.  It is `method`
       // itself, unless `method` inherits the annotation.
@@ -224,27 +256,68 @@ public abstract class CFAbstractAnalysis<
                   .atMethodInvocation(methodInvocationNode);
 
           if (exprJe.containsUnknown()) {
-            // Nothing in the store can match an `Unknown`, so returning the expression would
-            // discard no refinement at all.  Returning null makes the caller discard every
-            // refinement.
-            return null;
+            badDeclExpr = seOnlyExpr;
+            badCallExpr = exprJe;
+          } else {
+            // At a call of the form `super.m()`, viewpoint-adapting the callee's `this` yields
+            // `super`.
+            // The caller refers to that same object as `this`, so rewrite it that way; otherwise
+            // the refinements of `this` and of its fields would not be discarded.
+            exprJe = JavaExpression.superToThis(exprJe);
+            seOnlyExpressions.add(exprJe);
+            goodDeclExpr = seOnlyExpr;
+            goodCallExpr = exprJe;
           }
-
-          // At a call of the form `super.m()`, viewpoint-adapting the callee's `this` yields
-          // `super`.
-          // The caller refers to that same object as `this`, so rewrite it that way; otherwise
-          // the refinements of `this` and of its fields would not be discarded.
-          exprJe = JavaExpression.superToThis(exprJe);
-          seOnlyExpressions.add(exprJe);
         } catch (JavaExpressionParseException ex) {
-          // The expression cannot be represented at the call site, so the caller must assume that
-          // the call might side-effect anything.  A future change will report the parse error.
+          // Report at the call site rather than at the callee's declaration.  The callee may be
+          // declared in a different compilation unit that is not currently being compiled.
+          // Use the leaf of the call's tree path rather than `methodInvocationNode.getTree()`,
+          // which may be null and which is an artificial tree (where errors cannot be suppressed).
+          if (addSideEffectsOnlyErrorReported(methodInvocationNode)) {
+            checker.report(methodInvocationNode.getTreePath().getLeaf(), new DiagMessage(ex));
+          }
           return null;
         }
       }
     }
 
+    // Nothing in the store can match an `Unknown`, so returning the expression would discard
+    // no refinement at all.  Returning null makes the caller discard every refinement.
+    if (goodDeclExpr != null && badDeclExpr != null) {
+      checker.reportWarning(
+          methodInvocationNode.getTreePath().getLeaf(),
+          "purity.viewpoint.adaptation",
+          goodDeclExpr,
+          goodCallExpr,
+          method,
+          badDeclExpr,
+          badCallExpr);
+    }
+    if (badDeclExpr != null) {
+      return null;
+    }
+
     return seOnlyExpressions;
+  }
+
+  /**
+   * Records that a {@code @SideEffectsOnly} parse error has been reported at the given call site.
+   *
+   * @param methodInvocationNode a call site at which a parse error is about to be reported
+   * @return true if no such error has been reported at that call site
+   */
+  @SuppressWarnings("interning:not.interned")
+  private boolean addSideEffectsOnlyErrorReported(MethodInvocationNode methodInvocationNode) {
+    // Retaining a `MethodInvocationNode` retains its tree path and therefore its whole compilation
+    // unit, so retain only the call sites of the compilation unit that is being processed.  A
+    // control flow graph is re-analyzed only while its own compilation unit is being processed, so
+    // discarding the other compilation units' call sites does not cause a duplicate error.
+    CompilationUnitTree compilationUnit = methodInvocationNode.getTreePath().getCompilationUnit();
+    if (compilationUnit != sideEffectsOnlyErrorsCompilationUnit) {
+      sideEffectsOnlyErrorsReported.clear();
+      sideEffectsOnlyErrorsCompilationUnit = compilationUnit;
+    }
+    return sideEffectsOnlyErrorsReported.add(methodInvocationNode);
   }
 
   /**
