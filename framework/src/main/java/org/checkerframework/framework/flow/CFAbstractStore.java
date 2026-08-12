@@ -257,10 +257,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
 
       // Update this value.
-      // `thisValue` is the abstract value of the expression `this`, which has no proper
-      // subexpression.  So, by the rule that `isSideEffected` implements, a callee with a
-      // `@SideEffectsOnly` annotation can change it only if the annotation lists `this` itself
-      // (after view-adaptation to this call site; `x.m()` adapts the callee's `this` to `x`).
+      // `thisValue` is the abstract value of the expression `this`.  A callee with a
+      // `@SideEffectsOnly` annotation can change it only if the annotation lists `this` itself.
+      // (At call site `x.m()`, the callee's `this` corresponds to `x`.)
       boolean thisIsSideEffected =
           seOnlyExpressions == null
               || seOnlyExpressions.stream().anyMatch(je -> je instanceof ThisReference);
@@ -339,13 +338,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * value of {@code expr}.
    *
    * <p>That is the case when {@code expr} contains {@code seOnlyExpr} as a subexpression: modifying
-   * {@code x} can change {@code x.f}, but not the other way around.
+   * {@code x} can change {@code x.f}.
    *
    * <p>It is also the case when {@code expr} contains a method call through which {@code
    * seOnlyExpr} is reached; see {@link #callMayChangeValue}.
    *
    * @param expr an expression whose value is stored in this store
-   * @param seOnlyExpr an expression that a callee may modify
+   * @param seOnlyExpr an expression that may be modified
    * @return true if modifying {@code seOnlyExpr} might change the value of {@code expr}
    */
   private static boolean mayChangeValue(JavaExpression expr, JavaExpression seOnlyExpr) {
@@ -354,12 +353,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Returns true if {@code expr} contains a method call whose value modifying {@code seOnlyExpr}
-   * might change.
+   * Returns true if {@code expr} contains a method call such that modifying {@code seOnlyExpr}
+   * might change the method call's value.
    *
    * <p>The value of a call to a {@code @Pure} method depends on the state that the method reads,
-   * which no annotation declares; this approximates that state by what is reachable from the call's
-   * receiver and arguments. If {@code getF()} returns {@code this.f}, then a call to a
+   * which no annotation declares; this method approximates the read state by what is reachable from
+   * the call's receiver and arguments. If {@code getF()} returns {@code this.f}, then a call to a
    * {@code @SideEffectsOnly("x.f")} method can change the value of {@code x.getF()}, even though
    * {@code x.getF()} does not contain {@code x.f}.
    *
@@ -370,9 +369,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * compared against {@code seOnlyExpr} but is descended into here.
    *
    * @param expr an expression whose value is stored in this store
-   * @param seOnlyExpr an expression that a callee may modify
-   * @return true if modifying {@code seOnlyExpr} might change the value of a call within {@code
-   *     expr}
+   * @param seOnlyExpr an expression that may be modified
+   * @return true if modifying {@code seOnlyExpr} might change the value of expr, by changing the
+   *     value of a call within {@code expr}
    */
   private static boolean callMayChangeValue(JavaExpression expr, JavaExpression seOnlyExpr) {
     if (expr instanceof MethodCall methodCall) {
@@ -396,10 +395,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Returns true if {@code seOnlyExpr} may be reached through {@code input}, which is the receiver
-   * or an argument of a stored method call.
+   * Returns true if {@code seOnlyExpr} may be reached through {@code input}.
    *
-   * @param seOnlyExpr an expression that a callee may modify
+   * @param seOnlyExpr an expression that may be modified
    * @param input the receiver or an argument of a stored method call
    * @return true if {@code seOnlyExpr} may be reached through {@code input}
    */
