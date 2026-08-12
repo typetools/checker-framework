@@ -233,6 +233,12 @@ public abstract class CFAbstractAnalysis<
             seOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
     List<JavaExpression> seOnlyExpressions = new ArrayList<>(seOnlyExpressionStrings.size());
 
+    // For deciding whether to issue a warning about viewpoint adaptation.
+    String goodDeclExpr = null;
+    JavaExpression goodCallExpr = null;
+    String badDeclExpr = null;
+    JavaExpression badCallExpr = null;
+
     for (String seOnlyExpr : seOnlyExpressionStrings) {
       try {
         // Do not use `StringToJavaExpression.atMethodInvocation(seOnlyExpr, methodInvocationNode,
@@ -242,23 +248,20 @@ public abstract class CFAbstractAnalysis<
         JavaExpression exprJe =
             StringToJavaExpression.atMethodDecl(seOnlyExpr, method, checker)
                 .atMethodInvocation(methodInvocationNode);
+
         if (exprJe.containsUnknown()) {
-          // Nothing in the store can match an `Unknown`, so returning the expression would discard
-          // no refinement at all.  Returning null makes the caller discard every refinement.
-          if (sideEffectsOnlyErrorsReported.add(methodInvocationNode)) {
-            checker.reportError(
-                methodInvocationNode.getTreePath().getLeaf(),
-                "viewpoint.adaptation",
-                seOnlyExpr,
-                method,
-                exprJe);
-          }
-          return null;
+          badDeclExpr = seOnlyExpr;
+          badCallExpr = exprJe;
+        } else {
+          // At a call of the form `super.m()`, viewpoint-adapting the callee's `this` yields
+          // `super`.
+          // The caller refers to that same object as `this`, so rewrite it that way; otherwise the
+          // refinements of `this` and of its fields would not be discarded.
+          exprJe = JavaExpression.superToThis(exprJe);
+          seOnlyExpressions.add(exprJe);
+          goodDeclExpr = seOnlyExpr;
+          goodCallExpr = exprJe;
         }
-        // At a call of the form `super.m()`, viewpoint-adapting the callee's `this` yields `super`.
-        // The caller refers to that same object as `this`, so rewrite it that way; otherwise the
-        // refinements of `this` and of its fields would not be discarded.
-        seOnlyExpressions.add(JavaExpression.superToThis(exprJe));
       } catch (JavaExpressionParseException ex) {
         // Report at the call site rather than at the callee's declaration.  The callee may be
         // declared in a different compilation unit that is not currently being compiled.
@@ -269,6 +272,22 @@ public abstract class CFAbstractAnalysis<
         }
         return null;
       }
+    }
+
+    // Nothing in the store can match an `Unknown`, so returning the expression would discard
+    // no refinement at all.  Returning null makes the caller discard every refinement.
+    if (goodDeclExpr != null && badDeclExpr != null) {
+      checker.reportWarning(
+          methodInvocationNode.getTreePath().getLeaf(),
+          "purity.viewpoint.adaptation",
+          goodDeclExpr,
+          goodCallExpr,
+          method,
+          badDeclExpr,
+          badCallExpr);
+    }
+    if (badDeclExpr != null) {
+      return null;
     }
 
     return seOnlyExpressions;
