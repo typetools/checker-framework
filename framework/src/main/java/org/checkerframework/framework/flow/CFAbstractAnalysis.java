@@ -306,6 +306,7 @@ public abstract class CFAbstractAnalysis<
    * @param methodInvocationNode a call site at which a parse error is about to be reported
    * @return true if no such error has been reported at that call site
    */
+  @SuppressWarnings("interning:not.interned")
   private boolean addSideEffectsOnlyErrorReported(MethodInvocationNode methodInvocationNode) {
     // Retaining a `MethodInvocationNode` retains its tree path and therefore its whole compilation
     // unit, so retain only the call sites of the compilation unit that is being processed.  A
