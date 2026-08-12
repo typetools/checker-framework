@@ -57,6 +57,7 @@ job_dependences(canary_jdk, typecheck_part2)
 
 ifelse([The following jobs are not canary jobs, so they run after canary jobs succeed.])dnl
 job_dependences(21, misc)
+job_dependences(21, nonjunit)
 job_dependences(17, junit)
 job_dependences(21, junit)
 job_dependences(latest_jdk, junit)
@@ -73,6 +74,7 @@ job_dependences_not_in_canary(canary_jdk, plume_lib)
       - all_green:
           requires:
             - misc_jdk21
+            - nonjunit_jdk21
             - junit_jdk17
             - junit_jdk21
             - junit_jdk26

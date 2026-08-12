@@ -1,3 +1,6 @@
+// Keep in sync with ../jdk24/PersistUtil.java, which uses the com.sun.tools.classfile API that was
+// removed in Java 25.  This version uses the java.lang.classfile API.
+
 // Note that "-processor org/checkerframework/checker.nullness.NullnessChecker"
 // is added to the invocation of the compiler!
 // TODO: add a @Processor method-annotation to parameterize
@@ -74,7 +77,7 @@ public class PersistUtil {
         // actually creates a file in addition to returning its name.
         Files.copy(f.toPath(), fCopy.toPath(), StandardCopyOption.REPLACE_EXISTING);
         Files.copy(result.toPath(), resultCopy.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        System.out.printf("comileTestFile: copied to %s %s%n", fCopy, resultCopy);
+        System.out.printf("compileTestFile: copied to %s %s%n", fCopy, resultCopy);
       } catch (IOException e) {
         throw new UncheckedIOException(e);
       }

@@ -1014,7 +1014,13 @@ subprojects {
         String name = "all"
         String tests = "."
         executable = "jtreg"
+        // Without this, jtreg compiles and runs the tests under the JDK that jtreg itself runs
+        // under (JTREG_JAVA or JAVA_HOME), which may differ from testJdkVersion.
+        String testJdkHome = javaToolchains.launcherFor {
+          languageVersion = JavaLanguageVersion.of(rootProject.ext.testJdkVersion)
+        }.get().metadata.installationPath.asFile.absolutePath
         args = [
+          "-jdk:${testJdkHome}",
           "-dir:${projectDir}/jtreg",
           "-workDir:${jtregOutput}/${name}/work",
           "-reportDir:${jtregOutput}/${name}/report",
@@ -1024,11 +1030,23 @@ subprojects {
           "-keywords:!ignore",
           "-samevm",
           "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
-          // Required for checker/jtreg/nullness/PersistUtil.java and other tests
+          // Required for checker/jtreg/nullness/jdk2{4,5}/PersistUtil.java and other tests
           "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
         ]
+        if (testJdkVersion <= 24) {
+          // The tests under checker/jtreg/nullness/jdk24/ use the jdk.jdeps module.  Package
+          // com.sun.tools.classfile was removed in JDK 25; the parallel tests under
+          // checker/jtreg/nullness/jdk25/ use java.lang.classfile instead.
+          args += [
+            "-javacoptions:--add-modules jdk.jdeps",
+            "-javacoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
+            "-vmoptions:--add-modules jdk.jdeps",
+            "-vmoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
+            "-vmoptions:--add-opens=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
+          ]
+        }
         args += [
-          // checker/jtreg/nullness/PersistUtil.java uses the jdk.compiler module.
+          // checker/jtreg/nullness/jdk2{4,5}/PersistUtil.java uses the jdk.compiler module.
           "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
           "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
           "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
