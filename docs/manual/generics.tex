@@ -34,9 +34,9 @@ type-checker does, and makes the Checker Framework's warnings easier to
 understand.
 
 If your code uses raw types, then the Checker Framework will do its best to
-infer the Java type arguments and the type qualifiers.  By default these
+infer the Java type arguments and the type qualifiers.  By default, these
 inferred types are ignored in subtyping checks. If you supply the
-command-line option \<-AignoreRawTypeArguments=false> you will see errors
+command-line option \<-AignoreRawTypeArguments=false>, you will see errors
 from raw types.
 
 
@@ -108,9 +108,9 @@ Figure~\refwithpage{fig-regex-hierarchy}) in which
 
 The above declaration states that the upper bound of the type variable
 is \<@Regex(1) String> and the lower bound is \<@Regex(5) void>.  That is,
-arguments that replace \code{T} in \code{MyList<T>} must be subtypes of
+arguments that replace \code{T} in \code{MyRegexes<T>} must be subtypes of
 \code{@Regex(1) String} and supertypes of \code{@Regex(5) void}.
-Since \<void> cannot be used to instantiate a generic class, \<MyList> may
+Since \<void> cannot be used to instantiate a generic class, \<MyRegexes> may
 be instantiated with \<@Regex(1) String> through \<@Regex(5) String>.
 
 
@@ -291,7 +291,7 @@ Conceptually, every wildcard has two bounds --- an upper bound and a lower
 bound.  Java only permits you to write one bound.
 You can specify the upper bound with \code{<?\ extends SomeType>}, in which
 case the lower bound is implicitly the bottom type \<void>.
-You can specify the lower bound (with \code{<?\ super OtherType>}), in
+You can specify the lower bound with \code{<?\ super OtherType>}, in
 which case the upper bound is implicitly the top type \<Object>.
 The Checker Framework is more flexible:  it lets you similarly write
 annotations on both the upper and lower bound.
@@ -392,7 +392,7 @@ has, in the ellipsis, these declarations:
 
 \begin{Verbatim}
   T t;
-  @Nullable T nble;      // Section "Type annotations on a use of a generic type variable", below,
+  @Nullable T nble;      // Section "Type annotations on a use of a generic type variable", above,
   @NonNull T nn;         // further explains the meaning of "@Nullable T" and "@NonNull T".
   void add(T arg) {}
   T get(int i) {}
@@ -404,7 +404,7 @@ implementation --- that is, also within the ellipses.
 (Compilable source code appears as file
 \<checker-framework/checker/tests/nullness/generics/GenericsExample.java>.)
 
-\begin{tabular}{|l|c|c|c|c|c|} \hline
+\begin{tabular}{|l|c|c|c|} \hline
                         & MyList1 & MyList2 & MyList3 \\ \hline
   t = null;             & OK      & error   & error   \\ \hline
   t = nble;             & OK      & error   & error   \\ \hline
@@ -776,7 +776,7 @@ generic.
 
 It is unusual, but permitted, to write just one polymorphic qualifier, on a return type.
 
-This is just like it is unusual, but permitted, to write just one
+Similarly, it is unusual, but permitted, to write just one
 occurrence of a generic type parameter, on a return type.  An example of
 such a method is
 \sunjavadoc{java.base/java/util/Collections.html\#emptyList()}{Collections.emptyList()}.
@@ -828,7 +828,7 @@ use collections.
 
 \subsubsectionAndLabel{Don't use a single polymorphic qualifier on a formal parameter type}{qualifier-polymorphism-formal-parameter}
 
-There is no point to writing just one polymorphic qualifier in a method
+There is no point in writing just one polymorphic qualifier in a method
 signature, as the main type qualifier on a formal parameter type.
 Consider this signature:
 
@@ -860,7 +860,7 @@ which is similar to
 \begin{Verbatim}
   void m2b(List<? extends @Nullable MySubClass> strings)
 \end{Verbatim}
-Method \<m2b()> can be called on (for example) \code{List<@Nullable
+Method \<m2b()> can be called with (for example) \code{List<@Nullable
   MySubClass>} and \code{List<@NonNull MySubClass>}, which are not legal
 arguments to method \<m2a()>.
 
@@ -868,7 +868,7 @@ arguments to method \<m2a()>.
 \sectionAndLabel{Class qualifier parameters}{class-qualifier-polymorphism}
 
 Class qualifier parameters permit you to supply a type qualifier (only,
-without a Java basetype) to any class (generic or not).
+without a Java base type) to any class (generic or not).
 
 When a generic class represents a collection, a user can write a type
 qualifier on the type argument, as in \code{List<@Tainted Character>}
@@ -879,7 +879,7 @@ distinguish \<StringBuffer>s that contain different types of characters.
 % (For a discussion of tainting, see \chapterpageref{tainting-checker}.)
 
 To add a qualifier parameter to a class, annotate its declaration with \refqualclass{framework/qual}{HasQualifierParameter}
-and write the class of the top qualifier as its element.
+and supply the class of the top qualifier as its argument.
 
 \begin{Verbatim}
 @HasQualifierParameter(Tainted.class)
@@ -912,7 +912,7 @@ the default qualifier for uses of that class is the polymorphic qualifier.
 
 \subsectionAndLabel{Resolving polymorphism when the receiver type has a polymorphic qualifier}{class-qual-param-method}
 
-Qualifier polymorphism changes the rules for instantiating polymorphic
+A class qualifier parameter changes the rules for instantiating polymorphic
 qualifiers (Section~\ref{method-qualifier-polymorphism}).
 If the receiver type has a qualifier parameter and is annotated with a polymorphic qualifier,
 then at a call site all polymorphic annotations are instantiated to
@@ -938,8 +938,8 @@ the receiver expression at call sites to \<append>. For example,
 @Tainted String taintedString = ...;
 untaintedBuffer.append(taintedString); // error: [argument]
 \end{Verbatim}
-The above \<append> call is illegal because the \<@PolyTainted> is instantiated to \<@Untainted> and
-the type of the argument is \<@Tainted> which is a supertype of \<@Untainted>.  If the type of
+The above \<append> call is illegal because the \<@PolyTainted> qualifier is instantiated to \<@Untainted> and
+the type of the argument is \<@Tainted>, which is a supertype of \<@Untainted>.  If the type of
 \<untaintedBuffer> were \<@Tainted> then the call would be legal.
 
 \subsectionAndLabel{Using class qualifier parameters in the type of a field}{class-qual-param-field}
@@ -964,7 +964,7 @@ is the same as that on \<myBuffer>.
 \subsectionAndLabel{Local variable defaults for types with qualifier parameters}{local-vars-qual-param-defaults}
 
 Local variables default to the top type (see
-Section~\ref{climb-to-top}). Type refinement determines if a variable can be
+Section~\ref{climb-to-top}). Type refinement determines whether a variable can be
 treated as a suitable subtype, and annotations on local variables are rarely
 needed as a result. However, since qualifier parameters add invariant subtyping,
 type refinement is no longer valid. For example, suppose in the following code
@@ -1014,7 +1014,7 @@ package mypackage;
 
 When using \<@HasQualifierParameter> on a package, it's possible to disable it
 for a specific class using \refqualclass{framework/qual}{NoQualifierParameter}.
-Writing this on a class indicates it has no class qualifier parameter and
+Writing this on a class indicates that it has no class qualifier parameter, and
 \<@HasQualifierParameter> will not be enabled by default. Like
 \<@HasQualifierParameter>, it takes one or more top annotations. It is illegal
 to explicitly write both \<@HasQualifierParameter> and \<@NoQualifierParameter>
@@ -1047,7 +1047,7 @@ on the same class for the same hierarchy.
 \subsectionAndLabel{Types with qualifier parameters as type arguments}{class-qual-param-type-arg}
 
 Types with qualifier parameters are only allowed as type arguments to type parameters whose upper bound
-have a qualifier parameter. If they were allowed for as type arguments for any type parameter, then
+has a qualifier parameter. If they were allowed as type arguments for any type parameter, then
 unsound casts would be permitted. For example:
 
 \begin{Verbatim}

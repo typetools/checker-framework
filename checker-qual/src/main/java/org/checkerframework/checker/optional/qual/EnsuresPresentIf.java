@@ -38,10 +38,10 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * that a method establishes a property, even though client code cannot directly affect the field.
  *
  * <p><b>Method postconditions:</b> Suppose that if a method {@code isRectangle()} returns true,
- * then {@code getRectangle()} will return a present Optional. You an express this relationship as:
+ * then {@code getRectangle()} will return a present Optional. You can express this relationship as:
  *
  * <pre>{@code  @EnsuresPresentIf(result=true, expression="getRectangle()")
- * public @Pure isRectangle() { ... }}</pre>
+ * public @Pure boolean isRectangle() { ... }}</pre>
  *
  * @see Present
  * @see EnsuresPresent

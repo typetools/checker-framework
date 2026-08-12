@@ -76,7 +76,7 @@ The document
 defines a textual format for annotations,
 and it also motivates reasons why such a file format is necessary in
 addition to the <code>.java</code> and <code>.class</code> formats.  The
-file format supports both the declaration annotations and type annotations.
+file format supports both declaration annotations and type annotations.
 </p>
 
 <p>
@@ -93,7 +93,7 @@ API methods for building and manipulating annotation files.
 <p>
 Programmers need to be able to transfer annotations
 between the three possible locations for annotations &mdash; source code, class files,
-and annotation files.   Programmers will want to extract
+and annotation files.  Programmers will want to extract
 annotations from source and class files to an annotation file in order to easily
 read annotations, while various tools will only read annotations from
 source and class files.  The Annotation File Utilities provide three tools
@@ -150,7 +150,7 @@ Add the <code>annotation-file-utilities/bin</code> directory to your path.
 
 <ul>
 <li>
-For <b>Unix</b> (including Linux and MacOS), add the directory to your PATH
+For <b>Unix</b> (including Linux and macOS), add the directory to your PATH
 environment variable.  If your shell is sh or bash, add to your
 <code>~/.bashrc</code> or <code>~/.bash_profile</code> file:
 <pre><code>export PATH=${PATH}:<em>/path/to</em>/checker-framework/annotation-file-utilities/bin</code></pre>
@@ -167,7 +167,7 @@ variable by going to
 <pre><code> Control Panel -> System -> Advanced -> Environment Variables </code></pre>
 
 From there, find the <code>PATH</code> variable under &ldquo;System variables&rdquo;
-and append to it the directory <code><em>path\to</em>\annotatation-tools\annotation-file-utilities\bin</code>.
+and append to it the directory <code><em>path\to</em>\checker-framework\annotation-file-utilities\bin</code>.
 </li>
 </ul>
 </li>
@@ -185,14 +185,14 @@ To update the annotation file utilities, simply download the most recent <code>a
 
 <p>
 The annotation file utilities are pre-compiled (a jar file is included in
-the distribution), so most users do not need to compile it themselves.
+the distribution), so most users do not need to compile them themselves.
 </p>
 
 <p>
 There are two ways to obtain the source code.
 Source code is provided in the
 <a href="https://github.com/typetools/checker-framework/releases">distribution</a>.
-Alternately, see the source code repository at
+Alternatively, see the source code repository at
 <a href="https://github.com/typetools/checker-framework">https://github.com/typetools/checker-framework</a>.
 </p>
 
@@ -207,9 +207,9 @@ subdirectory.
 <h2 id="using">Using the Annotation File Utilities</h2>
 
 <p>
-To use the tools, simply run them from the command-line with the
+To use the tools, simply run them from the command line with the
 appropriate arguments.  The following instructions are for running the
-tools on a Linux/Unix/MacOS machine.
+tools on a Linux/Unix/macOS machine.
 The tools work identically on Windows, except
 the extension <code>.bat</code> needs to be appended to the tool name (for
 example, Windows users would execute <code>insert-annotations.bat</code>
@@ -239,7 +239,7 @@ insert-annotations tool.  Running:
 <p>
 will read in all the annotations from the annotation file
 <code>indexFile.jaif</code> and insert those annotations pertaining to
-<code>mypackage.myClass</code> into the class file for
+<code>mypackage.MyClass</code> into the class file for
 <code>mypackage.MyClass</code>, outputting the final class file to
 <code>mypackage.MyClass.class</code> in the present working directory.
 Note that the class file for <code>mypackage.MyClass</code> must be located
@@ -278,14 +278,14 @@ will locate the class file for <code>mypackage.MyClass</code>, read all
 annotations from it, and write the results in annotation file format to
 <code>mypackage.MyClass.jaif</code> in the present working directory.  Note
 that <code>mypackage.MyClass</code> must be located on your classpath.
-Alternately, you can specify a classfile directly:
+Alternatively, you can specify a classfile directly:
 </p>
 
 <pre><code>extract-annotations /path/to/MyClass.class</code></pre>
 
 <p>
 Multiple classes or classfiles can be specified on a single command line; if the
-program exits normally, the results are the same as if the program was
+program exits normally, the results are the same as if the program were
 run once for each class in sequence.
 </p>
 
@@ -318,7 +318,7 @@ will read all the annotations from <code>index1.jaif</code> and
 appropriate locations in <code>mypackage/MyClass.java</code> and
 <code>yourpackage/YourClass.java</code>, and write the results to
 <code>annotated/mypackage/MyClass.java</code> and
-<code>annotated/mypackage/MyClass.java</code>, respectively.
+<code>annotated/yourpackage/YourClass.java</code>, respectively.
 </p>
 
 <p>
@@ -374,9 +374,9 @@ In the following cases, insert-annotations-to-source will generate
 code to provide a location for an annotation:
 </p>
 <ul>
-<li>method and constructor <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-8.html#jls-8.4-310">receivers;</a></li>
+<li>method and constructor <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-8.html#jls-8.4-310">receivers</a>;</li>
 <li>type parameter bounds (<code>extends Object</code>);</li>
-<li>type casts for expressions</li>
+<li>type casts for expressions;</li>
 <li>nullary constructor definitions; and</li>
 <li>explicit constructor invocations for literal arrays (e.g., <code>{"a", "b"}</code> becomes <code>new String[] {"a", "b"}</code>).</li>
 </ul>
@@ -437,7 +437,7 @@ running <code>insert-annotations-to-source --help</code>.
 <hr />
 <h2 id="implementation">Design and Implementation Details</h2>
 
-<p>This section describes some high level-design and implementation
+<p>This section describes some high-level design and implementation
 details of the Annotation File Utilities, including the different
 components of the Annotation File Utilities and how they fit together.
 It is intended for someone who is beginning work on the Annotation File
@@ -459,7 +459,7 @@ internal representation of a <code>.jaif</code> file to access and
 manipulate.</p>
 
 <p>Internally, a <code>.jaif</code> file is represented by the
-<code>scene-lib/src/annotations/el/AScene.java</code> class. The
+<code>annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/el/AScene.java</code> class. The
 <code>AScene</code> class (or &ldquo;annotated scene&rdquo;) roughly
 parallels the root of an abstract syntax tree. An <code>AScene</code>
 has a number of classes (<code>AClass</code>) as children. Each class
@@ -478,7 +478,7 @@ type, receiver parameters, and throws clause. Each of these fields
 holds the annotations stored on that part of the method. For details on
 the remainder of the classes in the type hierarchy, and their
 respective fields, see the documentation for each file in
-<code>scene-lib/src/annotations/el/</code>.</p>
+<code>annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/el/</code>.</p>
 
 <p>An <code>AScene</code> instance can be created in two ways. An empty
 <code>AScene</code> can be created by calling the <code>AScene</code>
@@ -502,7 +502,7 @@ list.</p><p>First, each <code>.jaif</code> file is parsed into an
 <code>ClassReader.java</code> parses the
 classfile.  As it is parsing the classfile, it passes the parsed
 bytecode off to the
-<code>scene-lib/src/annotations/io/classfile/ClassAnnotationSceneWriter.java</code>
+<code>annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassAnnotationSceneWriter.java</code>
 class. This class has a reference to the <code>AScene</code> parsed
 from the <code>.jaif</code> file. As this class receives the parsed
 bytecode it inserts the relevant annotations from the
@@ -519,7 +519,7 @@ files.</p><p>First, an empty <code>AScene</code> is constructed to store
 the annotations.
 ASM's <code>ClassReader.java</code> parses the
 classfile and passes the parsed bytecode off to the
-<code>scene-lib/src/annotations/io/classfile/ClassAnnotationSceneReader.java</code>
+<code>annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassAnnotationSceneReader.java</code>
 class. This class filters out the annotations in the bytecode and adds
 them to the correct part of the <code>AScene</code>. After this, the
 <code>AScene</code> is output to a <code>.jaif</code> file.</p>
@@ -530,27 +530,27 @@ them to the correct part of the <code>AScene</code>. After this, the
 code. It can be run by executing the
 <code>annotation-file-utilities/bin/insert-annotations-to-source</code>
 script.  The script takes one or more <code>.jaif</code> files, followed by one or more <code>.java</code> source files as arguments. The annotations in the <code>.jaif</code> files are inserted into the <code>.java</code> source files.</p><p>First, an instance of
-<code>annotation-file-utilities/src/org/checkerframework/afu/annotator/specification/IndexFileSpecification.java</code>
+<code>annotation-file-utilities/src/main/java/org/checkerframework/afu/annotator/specification/IndexFileSpecification.java</code>
 is created. Its <code>parse</code> method parses the <code>.jaif</code>
 file into an <code>AScene</code> (as described in
 <a href="#scene-lib">Scene-lib</a>).  The <code>parse</code> method
 calls the <code>parseScene</code> method, which traverses through the
 <code>AScene</code> and creates an
-<code>annotation-file-utilities/src/org/checkerframework/afu/annotator/specification/CriterionList.java.</code>
+<code>annotation-file-utilities/src/main/java/org/checkerframework/afu/annotator/specification/CriterionList.java</code>.
 A <code>CriterionList</code> identifies a unique AST node that is the
 location of an insertion. It contains objects that implement the
-<code>annotation-file-utilities/src/org/checkerframework/afu/annotator/find/Criterion.java</code>
+<code>annotation-file-utilities/src/main/java/org/checkerframework/afu/annotator/find/Criterion.java</code>
 interface.
-Each <code>Criterion</code> has an <code>isSatisifiedBy</code> method —
+Each <code>Criterion</code> has an <code>isSatisfiedBy</code> method &mdash;
 a predicate that takes an AST node and returns <code>true</code> if the
 AST node satisfies the <code>Criterion</code> and <code>false</code>
 otherwise. To determine if a given node matches a
 <code>CriterionList</code>, the node is passed to all of the
-<code>Criterion</code>s in the <code>CriteriaList</code>. If every
-<code>Criterion</code> returns <code>true</code> then it is match. If
-one or more <code>Criterion</code>s return <code>false</code> then it is
+<code>Criterion</code>s in the <code>CriterionList</code>. If every
+<code>Criterion</code> returns <code>true</code>, then it is a match. If
+one or more <code>Criterion</code>s return <code>false</code>, then it is
 not a match.  The various <code>Criterion</code> classes are in the
-<code>annotation-file-utilities/src/org/checkerframework/afu/annotator/find/</code> directory.
+<code>annotation-file-utilities/src/main/java/org/checkerframework/afu/annotator/find/</code> directory.
 For example, take the following source code:</p>
 
 <pre class="verbatim">package afu.example;
@@ -574,16 +574,16 @@ public class Test {
 </li></ul>
 
 <p>After this <code>CriterionList</code> is built up an
-<code>annotation-file-utilities/org/checkerframework/afu/src/annotator/find/Insertion.java</code>
+<code>annotation-file-utilities/src/main/java/org/checkerframework/afu/annotator/find/Insertion.java</code>
 is created.  An <code>Insertion</code> stores an
-<code>annotation-file-utilities/org/checkerframework/afu/src/annotator/find/Criteria.java</code>
+<code>annotation-file-utilities/src/main/java/org/checkerframework/afu/annotator/find/Criteria.java</code>
 (which is created from a <code>CriterionList</code>) and the text to be
 inserted. All of these <code>Insertion</code>s are then added to a
 list. The Java compiler then is called to parse the Java source into an
 abstract syntax tree. This is followed by a call to the
 <code>getPositions</code> method of
-<code>annotation-file-utilities/src/org/checkerframework/afu/annotator/find/TreeFinder.java</code>,
-which scans through each node of the abstract syntax trees. For each node,
+<code>annotation-file-utilities/src/main/java/org/checkerframework/afu/annotator/find/TreeFinder.java</code>,
+which scans through each node of the abstract syntax tree. For each node,
 it runs through the <code>Criteria</code> for each un-matched
 <code>Insertion</code>. If at least one of the <code>Criteria</code>
 does not match, then this is not the correct place for the
@@ -596,14 +596,14 @@ match, then this node is the correct place for the
 index in the file where the <code>Insertion</code> should be inserted.
 After the positions are found for all of the <code>Insertion</code>s,
 the <code>Insertion</code> text is inserted into the file. This happens
-backwards, with <code>Insertion</code>s at the end of the file (i.e.
+backwards, with <code>Insertion</code>s at the end of the file (i.e.,
 with higher positions) being inserted first. If <code>Insertion</code>s
-were instead inserted from the beginning of the file then a single
+were instead inserted from the beginning of the file, then a single
 <code>Insertion</code> would invalidate all of the positions for the
 following <code>Insertion</code>s.</p>
 
 <p>If there are remaining <code>Insertion</code>s that were not matched
-to a node in the abstract syntax tree then an error message is
+to a node in the abstract syntax tree, then an error message is
 displayed.</p>
 
 
@@ -613,7 +613,7 @@ displayed.</p>
 <p>
 To submit a bug report or request a new feature, use the
 <a href="https://github.com/typetools/checker-framework/issues">issue
-  tracker</a>.  When reporting a bug, please include exact instructions in
+  tracker</a>.  When reporting a bug, please include exact instructions on
 how to reproduce it, and please also attach relevant input files.  This
 will let us resolve the issue quickly.
 </p>

@@ -22,12 +22,12 @@ first and older ones appear last.
 
 %%% 2021
 
-\sectionAndLabel{Determinism checker}{deteriminism-checker}
+\sectionAndLabel{Determinism checker}{determinism-checker}
 
 The
 \ahreforurl{https://github.com/t-rasmud/checker-framework/tree/nondet-checker}{Determinism
   Checker} ensures that a program is deterministic across executions.  A
-deterministic program is easier to test, and it is easier to debug (such as
+deterministic program is easier to test and to debug (for example, by
 comparing executions).
 
 The Determinism Checker focuses on sequential programs.  It detects
@@ -60,17 +60,17 @@ Constant Value Inference.
 \sectionAndLabel{Crypto Checker}{crypto-checker}
 
 The \ahreforurl{https://github.com/vehiloco/crypto-checker}{Crypto Checker} can
-help you find whether there are any weak or unsupported crypto algorithms
-and the unsupported algorithm providers being used in your program. If the
+help you find whether your program uses any weak or unsupported crypto
+algorithms or unsupported algorithm providers. If the
 Crypto Checker issues no warnings for a given program, then you have a
-guarantee that your program at runtime will never have these issues.  This
+guarantee that your program at run time will never have these issues.  This
 is similar to the earlier AWS Crypto Policy Compliance Checker
 (Section~\ref{crypto-policy-compliance-checker}).
 
 The paper
 \href{https://vehiloco.github.io/crypto-checker/2021-06-04-Crypto-Checker-FTfJP-2021-preprint.pdf}{``Ensuring
   correct cryptographic algorithm and provider usage at compile
-  time''}~\cite{XingCD2021} (FTFjP 2021) and the thesis
+  time''}~\cite{XingCD2021} (FTfJP 2021) and the thesis
 \href{https://uwspace.uwaterloo.ca/bitstream/handle/10012/16555/Xing_Weitian.pdf}{``Light-weight
   verification of cryptographic API usage''}~\cite{Xing2020} describe the
 Crypto Checker.
@@ -188,7 +188,7 @@ Effect Checker.
 \sectionAndLabel{Practical Immutability For Classes And Objects (PICO)}{pico-checker}
 
 Practical Immutability For Classes And Objects (PICO) is a type system that
-supports class level and object level immutability based on Checker
+supports class-level and object-level immutability, based on the Checker
 Framework.
 The implementation is available at
 \url{https://github.com/opprop/immutability}, and
@@ -263,13 +263,13 @@ Glacier is described by the paper
 ``Glacier: Transitive class immutability for Java'' (ICSE
 2017)~\cite{CoblenzNAMS2017} and the PhD thesis
 \href{https://reports-archive.adm.cs.cmu.edu/anon/2020/CMU-CS-20-127.pdf}{``User-Centered
-  Design of Principled  Programming Languages''}~\cite{Coblenz2020}.
+  Design of Principled Programming Languages''}~\cite{Coblenz2020}.
 
 
-\sectionAndLabel{SQL checker that supports multiple dialects}{sql-schecker}
+\sectionAndLabel{SQL checker that supports multiple dialects}{sql-checker}
 
 \href{https://www.jooq.org/}{jOOQ} is a database API that lets you build
-typesafe SQL queries.  jOOQ version 3.0.9 and later ships with a SQL
+typesafe SQL queries.  jOOQ version 3.9.0 and later ships with a SQL
 checker that provides even more safety:  it ensures that you don't use SQL
 features that are not supported by your database implementation.  You can
 learn about the SQL checker at
@@ -288,7 +288,7 @@ If you wish to use them, install
 \href{https://checkerframework.org/releases/1.9.13/}{Checker
   Framework version 1.9.13}.
 
-They were removed from the main distribution on June 1, 2016 because the
+They were removed from the main distribution on 2016-06-01 because the
 implementations were not being maintained as the Checker Framework evolved.
 The type systems are valuable, and some people found the type-checkers
 useful.  However,
@@ -376,7 +376,7 @@ The paper
 \href{https://www.cs.rpi.edu/~milanova/docs/FASE14.pdf}{``Type-based
   taint analysis for Java web applications''} (FASE 2014) and the thesis
 ``An Inference And Checking Framework For Context-Sensitive Pluggable
-Types'' (PhD thesis, 2014) describe SFlow and SFlowInfer.
+Types'' (2014) describe SFlow and SFlowInfer.
 
 
 %%% 2013
@@ -492,7 +492,7 @@ A checker for units and dimensions was available at
 \nolinkurl{https://www.lexspoon.org/expannots/}.
 
 Unlike the Units Checker that is distributed with the Checker Framework
-(see Section~\ref{units-checker}), this checker includes dynamic checks and
+(see Chapter~\ref{units-checker}), this checker includes dynamic checks and
 permits annotation arguments that are Java expressions.  This added
 flexibility, however, requires that you use a special version both of the
 Checker Framework and of the javac compiler.
