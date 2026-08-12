@@ -28,4 +28,37 @@ public class Issue7678 {
     Function<String, Integer> length = String::length;
     items.collect(BiStream.toBiStream(MyMap.toMyMap(length, s -> s))).mapValues(byLen -> byLen);
   }
+
+  // Same as test(), but with the lambda parenthesized when passed as an argument. The
+  // enclosing-tree lookup used to see the immediate PARENTHESIZED wrapper instead of the
+  // enclosing invocation, so the re-entrancy guard never triggered for this case.
+  private void testParenthesized(Stream<String> items) {
+    Function<String, Integer> length = String::length;
+    items.collect(BiStream.toBiStream(MyMap.toMyMap(length, (s -> s)))).mapValues((byLen -> byLen));
+  }
+
+  // Same as test(), but with the lambda as a branch of a conditional expression passed as an
+  // argument. The enclosing-tree lookup used to see the immediate CONDITIONAL_EXPRESSION
+  // wrapper instead of the enclosing invocation, so the re-entrancy guard never triggered for
+  // this case.
+  private void testConditional(Stream<String> items, boolean cond) {
+    Function<String, Integer> length = String::length;
+    items
+        .collect(BiStream.toBiStream(MyMap.toMyMap(length, s -> s)))
+        .mapValues(cond ? byLen -> byLen : byLen2 -> byLen2);
+  }
+
+  // Same as test(), but with the lambda as the result of a switch expression passed as an
+  // argument. The enclosing-tree lookup used to see the immediate CASE wrapper instead of the
+  // enclosing invocation, so the re-entrancy guard never triggered for this case.
+  private void testSwitch(Stream<String> items, int cond) {
+    Function<String, Integer> length = String::length;
+    items
+        .collect(BiStream.toBiStream(MyMap.toMyMap(length, s -> s)))
+        .mapValues(
+            switch (cond) {
+              case 1 -> byLen -> byLen;
+              default -> byLen2 -> byLen2;
+            });
+  }
 }
