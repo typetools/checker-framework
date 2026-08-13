@@ -32,7 +32,7 @@ aws-java-sdk-ec2 = { module = "com.amazonaws:aws-java-sdk-ec2" }
 
 aws-java-sdk-kms = { module = "com.amazonaws:aws-java-sdk-kms" }
 
-classgraph = "io.github.classgraph:classgraph:4.8.189"
+classgraph = "io.github.classgraph:classgraph:4.8.190"
 
 commons-io = "commons-io:commons-io:2.22.0"
 
