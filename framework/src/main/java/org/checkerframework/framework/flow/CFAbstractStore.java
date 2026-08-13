@@ -343,6 +343,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * <p>It is also the case when {@code expr} contains a method call through which {@code
    * seOnlyExpr} is reached; see {@link #callMayChangeValue}.
    *
+   * <p>This method is unsound for two array accesses that may denote the same element without
+   * containing one another. It returns false for {@code a[i]} and {@code a[0]}, so the refinement
+   * of {@code a[i]} survives a call to a {@code @SideEffectsOnly("a[0]")} method even when {@code
+   * i} is 0. TODO: return true when both expressions are array accesses on arrays that may be the
+   * same, unless the two index expressions are known to differ.
+   *
    * @param expr an expression whose value is stored in this store
    * @param seOnlyExpr an expression that may be modified
    * @return true if modifying {@code seOnlyExpr} might change the value of {@code expr}
@@ -385,11 +391,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   private static boolean callMayChangeValue(JavaExpression expr, JavaExpression seOnlyExpr) {
     if (expr instanceof MethodCall methodCall) {
-      if (mayReach(seOnlyExpr, methodCall.getReceiver())) {
+      if (mayReach(methodCall.getReceiver(), seOnlyExpr)) {
         return true;
       }
       for (JavaExpression argument : methodCall.getArguments()) {
-        if (mayReach(seOnlyExpr, argument)) {
+        if (mayReach(argument, seOnlyExpr)) {
           return true;
         }
       }
@@ -407,11 +413,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /**
    * Returns true if {@code seOnlyExpr} may be reached through {@code input}.
    *
-   * @param seOnlyExpr an expression that may be modified
    * @param input the receiver or an argument of a stored method call
+   * @param seOnlyExpr an expression that may be modified
    * @return true if {@code seOnlyExpr} may be reached through {@code input}
    */
-  private static boolean mayReach(JavaExpression seOnlyExpr, JavaExpression input) {
+  private static boolean mayReach(JavaExpression input, JavaExpression seOnlyExpr) {
     // The recursive call handles a nested call such as `x.getA().getB()`, whose receiver is
     // itself a method call.
     return seOnlyExpr.containsSyntacticEqualJavaExpression(input)
