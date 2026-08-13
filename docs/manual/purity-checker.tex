@@ -49,16 +49,16 @@ By default, purity annotations are trusted.  Purity annotations on called
 methods affect type-checking of client code.  However, you can make a
 mistake
 %
-by writing \<\refqualclass{dataflow/qual}{SideEffectFree}> on the
+by writing \refqualclass{dataflow/qual}{SideEffectFree} on the
 declaration of a method that is not side-effect-free,
 %
 \iffalse
-by writing \<\refqualclass{dataflow/qual}{SideEffectsOnly}> on the
+by writing \refqualclass{dataflow/qual}{SideEffectsOnly} on the
 declaration of a method that side-effects more than the listed expressions,
 \fi
 or
 %
-by writing \<\refqualclass{dataflow/qual}{Deterministic}> on the
+by writing \refqualclass{dataflow/qual}{Deterministic} on the
 declaration of a method that is not deterministic.
 
 To enable

@@ -362,6 +362,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * {@code @SideEffectsOnly("x.f")} method can change the value of {@code x.getF()}, even though
    * {@code x.getF()} does not contain {@code x.f}.
    *
+   * <p>The approximation misses state that a call reads but does not reach through its receiver or
+   * arguments. Static state is the main such case: the receiver of a static call is a class name,
+   * which reaches nothing, so only the arguments contribute. If {@code Util.getField()} returns
+   * {@code Other.field}, this method returns false for {@code Util.getField()} and {@code
+   * Other.field}, even though a call to a {@code @SideEffectsOnly("Other.field")} method can change
+   * the call's value. (For a static call with no modifiable argument, the omission is masked by
+   * {@link #isSideEffected}, which returns false before reaching this method because such a call is
+   * not {@link JavaExpression#isModifiableByOtherCode}; its refinement survives every call, not
+   * just a {@code @SideEffectsOnly} one.)
+   *
    * <p>The call need not be {@code expr} itself: the value of {@code x.getF().g} and of {@code
    * x.getArr()[0]} also changes when the value of the call within them does. Such an expression
    * contains no method call as a <em>subexpression</em> in the sense of {@link
