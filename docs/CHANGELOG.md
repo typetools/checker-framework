@@ -12,6 +12,10 @@ warning no longer require `-AcheckPurityAnnotations` to also be supplied.
 
 ### Implementation details
 
+When the target type of a lambda expression or method reference is not a
+functional interface, `AnnotatedTypeFactory` throws the new exception
+`NotFunctionalInterfaceException`, which is a subclass of `BugInCF`.
+
 ### Closed issues
 
 ## Version 4.2.2 (2026-08-06)

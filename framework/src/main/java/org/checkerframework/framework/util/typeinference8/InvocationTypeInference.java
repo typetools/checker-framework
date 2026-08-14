@@ -17,6 +17,7 @@ import javax.lang.model.type.ExecutableType;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.NotFunctionalInterfaceException;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.bound.CaptureBound;
 import org.checkerframework.framework.util.typeinference8.constraint.AdditionalArgument;
@@ -572,11 +573,13 @@ public class InvocationTypeInference {
         if (TreeUtils.isPolyExpression(expression)) {
           try {
             c.addAll(new AdditionalArgument(expression).reduce(context));
-          } catch (Exception e) {
-            // Sometimes in order to create the additional argument constraint, other inference
-            // variables must be resolved first. This happens when a lambda parameter is used in the
-            // additional argument constraint.
-            // See framework/tests/all-systems/SimpleLambdaParameter.java
+          } catch (NotFunctionalInterfaceException e) {
+            // Creating the additional argument constraint requires the type of an implicit lambda
+            // parameter, and that type is the type of an inference variable that has not been
+            // resolved yet.  (That is why the target type of the enclosing lambda is not yet a
+            // functional interface.)  Defer the constraint; it is reduced again after resolution.
+            // See framework/tests/all-systems/SimpleLambdaParameter.java and
+            // framework/tests/all-systems/java8inference/DeferredAdditionalArg.java .
             c.add(new AdditionalArgument(expression));
           }
         }

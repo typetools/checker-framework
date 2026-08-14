@@ -4763,7 +4763,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Throws an exception if the type is not a functional interface.
+   * Throws a {@link NotFunctionalInterfaceException} if the type is not a functional interface.
    *
    * @param typeMirror a type that must be a functional interface
    * @param contextTree the tree that has the given type; used only for diagnostic messages
@@ -4789,7 +4789,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
     }
 
-    throw new BugInCF(
+    throw new NotFunctionalInterfaceException(
         "Expected the type of %s tree in assignment context to be a functional interface. "
             + "Found type: %s for tree: %s in lambda tree: %s",
         contextTree.getKind(), type, contextTree, tree);
