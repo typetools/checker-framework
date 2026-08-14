@@ -247,10 +247,10 @@ public abstract class JavaExpression {
    * denote the same object, and a {@link FieldAccess} or {@link MethodCall} stores the element it
    * refers to, so the result denotes exactly what the argument does.
    *
-   * <p>This is useful for an expression that was view-adapted to a call site of the form {@code
-   * super.m()}, which yields a {@link SuperReference} even though the caller would write the same
-   * object as {@code this}. Rewriting makes such an expression comparable to expressions written in
-   * the caller, which never mention the callee's {@code super}.
+   * <p>This is useful for an expression that was viewpoint-adapted to a call site of the form
+   * {@code super.m()}, which yields a {@link SuperReference} even though the caller would write the
+   * same object as {@code this}. Rewriting makes such an expression comparable to expressions
+   * written in the caller, which never mention the callee's {@code super}.
    *
    * @param expr an expression
    * @return the expression, with every use of {@code super} replaced by {@code this}
