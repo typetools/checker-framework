@@ -394,6 +394,14 @@ public class Typing extends TypeConstraint {
         // same as T (4.3.4), and false otherwise."
         // The Java types are the same, because javac accepted the program and therefore reduced
         // this same constraint to true.  So only the qualifiers are compared.
+        //
+        // Expression.reduceProperType makes the opposite choice for a constraint between an
+        // expression and a proper type: it ignores the qualifiers.  That reasoning does not
+        // apply here.  There, the constraint comes directly from an expression, whose qualifiers
+        // BaseTypeVisitor separately checks with a more informative message.  Here, the
+        // constraint is implied by bounds on inference variables -- see
+        // VariableBounds.getConstraintsFromParameterized -- so if it does not hold, then no
+        // instantiation of those variables exists, and no later check would report that.
         return ((ProperType) S).isSameType((ProperType) T);
       }
       ProperType sProper = (ProperType) S;
