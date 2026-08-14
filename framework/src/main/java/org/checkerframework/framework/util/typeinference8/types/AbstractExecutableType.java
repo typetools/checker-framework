@@ -110,38 +110,45 @@ public abstract class AbstractExecutableType {
   public abstract AbstractType getReturnType(Theta map);
 
   /**
-   * Returns a list of the parameter types of {@code AbstractExecutableType} where the vararg
-   * parameter has been replaced by individual parameters so the result has length {@code size}.
+   * Returns the formal parameter types of this executable.
+   *
+   * <p>If this invocation uses varargs, then the vararg parameter is replaced by individual
+   * parameters and the result has length {@code size}. Otherwise, {@code size} is ignored and the
+   * result contains one element per declared formal parameter, plus one for the receiver if this is
+   * an unbound method reference.
    *
    * @param map a mapping from type variable to inference variable
-   * @param size the number of parameters to return; used to expand the vararg
-   * @return a list of the parameter types of {@code AbstractExecutableType}, of length {@code size}
+   * @param size the number of parameters to return; used to expand the vararg. It is ignored if
+   *     this invocation does not use varargs.
+   * @return the formal parameter types of this executable
    */
   public abstract List<AbstractType> getParameterTypes(Theta map, int size);
 
   /**
-   * Returns the parameter types of this. (Varags are not expanded.)
+   * Returns the formal parameter types of this executable, without expanding the vararg parameter.
+   * Call this method only for an invocation that does not use varargs.
    *
    * @param map a mapping from type variable to inference variable
-   * @return the parameter types
+   * @return the formal parameter types of this executable
    */
   public List<AbstractType> getParameterTypes(Theta map) {
     return getParameterTypes(map, annotatedExecutableType.getParameterTypes().size());
   }
 
   /**
-   * Returns a list of the parameter types of {@code InferenceExecutableType} where the vararg
-   * parameter has been replaced by individual parameters so the result has length {@code size}.
+   * Returns the formal parameter types of this executable. If {@code isVarargsCall} is true, then
+   * the vararg parameter is replaced by individual parameters so that the result has length {@code
+   * size}; otherwise, {@code size} is ignored.
    *
    * <p>This is a helper method for {@link #getParameterTypes(Theta, int)}.
    *
    * @param map a mapping from type variable to inference variable
-   * @param size the number of parameters to return; used to expand the vararg
+   * @param size the number of parameters to return; used to expand the vararg. It is ignored if
+   *     {@code isVarargsCall} is false.
    * @param firstParam an extra first parameter to add at the beginning of the returned list, or
    *     null
    * @param isVarargsCall true if this invocation uses varargs
-   * @return a list of the parameter types of {@code InferenceExecutableType}, of length {@code
-   *     size}
+   * @return the formal parameter types of this executable
    */
   protected final List<AbstractType> getParameterTypes(
       Theta map, int size, @Nullable AnnotatedTypeMirror firstParam, boolean isVarargsCall) {
@@ -164,6 +171,12 @@ public abstract class AbstractExecutableType {
         params.add(eltATM);
         paramsJava.add(eltTM);
       }
+      // A varargs invocation passes at least as many arguments as the method has formal
+      // parameters, not counting the vararg parameter itself, so the loop above never leaves
+      // `params` longer than `size`.
+      assert params.size() == size
+          : String.format(
+              "Expected %d parameters but found %d in %s", size, params.size(), executableType);
     }
 
     return InferenceType.create(params, map, qualifierVars, context);
