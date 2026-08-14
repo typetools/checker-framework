@@ -205,15 +205,20 @@ public class ProperType extends AbstractType {
       return false;
     }
 
+    ProperType that = (ProperType) o;
+    if (!sameInferenceProblem(that)) {
+      return false;
+    }
+
     // Comparing the annotated types also compares the Java types: AnnotatedTypeMirror#equals
     // requires the underlying types to be the same object, and the Java type of a proper type is
     // the underlying type of its annotated type.
-    return type.equals(((ProperType) o).type);
+    return type.equals(that.type);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(type, Kind.PROPER);
+    return Objects.hash(inferenceProblemHashCode(), type, Kind.PROPER);
   }
 
   @Override

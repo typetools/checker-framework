@@ -208,10 +208,10 @@ public final class InferenceType extends AbstractType {
     }
 
     InferenceType variable = (InferenceType) o;
-    if (map != variable.map) {
+    if (!sameInferenceProblem(variable)) {
       return false;
     }
-    if (!type.equals(variable.type)) {
+    if (map != variable.map) {
       return false;
     }
     return type.equals(variable.type);
@@ -219,7 +219,8 @@ public final class InferenceType extends AbstractType {
 
   @Override
   public int hashCode() {
-    int result = type.hashCode();
+    int result = inferenceProblemHashCode();
+    result = 31 * result + type.hashCode();
     result = 31 * result + Kind.INFERENCE_TYPE.hashCode();
     return result;
   }
