@@ -805,6 +805,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     addInheritedAnnotation(
         AnnotationBuilder.fromClass(
             elements, org.checkerframework.dataflow.qual.SideEffectFree.class));
+    // `AnnotationBuilder.fromClass` cannot build a `@SideEffectsOnly`, because its `value` element
+    // has no default.  Any value will do: `inheritedAnnotations` is consulted via
+    // `AnnotationUtils.containsSameByName`, so only the annotation's name is used.
+    AnnotationBuilder sideEffectsOnlyBuilder =
+        new AnnotationBuilder(
+            processingEnv, org.checkerframework.dataflow.qual.SideEffectsOnly.class);
+    sideEffectsOnlyBuilder.setValue("value", new String[0]);
+    addInheritedAnnotation(sideEffectsOnlyBuilder.build());
     addInheritedAnnotation(
         AnnotationBuilder.fromClass(
             elements, org.checkerframework.dataflow.qual.Deterministic.class));
@@ -4107,6 +4115,36 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Add the element and its annotations to the cache.
     cacheDeclAnnos.put(elt, results);
     return results;
+  }
+
+  /**
+   * Returns true if the given declaration annotation is written on the given element itself --
+   * either in source code or in an annotation file -- rather than being inherited from a method
+   * that the element overrides or from a supertype.
+   *
+   * @param elt an element
+   * @param anno a declaration annotation that applies to {@code elt}
+   * @return true if {@code anno} is written on {@code elt} itself
+   */
+  public boolean isDeclAnnotationWrittenOn(Element elt, AnnotationMirror anno) {
+    return AnnotationUtils.containsSameByName(elt.getAnnotationMirrors(), anno)
+        || containsSameByName(stubTypes.getDeclAnnotations(elt), anno)
+        || containsSameByName(ajavaTypes.getDeclAnnotations(elt), anno)
+        || (currentFileAjavaTypes != null
+            && containsSameByName(currentFileAjavaTypes.getDeclAnnotations(elt), anno));
+  }
+
+  /**
+   * Returns true if the given collection contains an annotation with the same name as the given
+   * one. Returns false if the collection is null.
+   *
+   * @param annos a collection of annotations, or null
+   * @param anno an annotation
+   * @return true if {@code annos} contains an annotation with the same name as {@code anno}
+   */
+  private static boolean containsSameByName(
+      @Nullable Collection<? extends AnnotationMirror> annos, AnnotationMirror anno) {
+    return annos != null && AnnotationUtils.containsSameByName(annos, anno);
   }
 
   /**

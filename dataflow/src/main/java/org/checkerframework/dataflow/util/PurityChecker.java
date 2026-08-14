@@ -91,7 +91,9 @@ public final class PurityChecker {
     /**
      * Contains the varieties of purity that the expression has. Starts out with the purities that a
      * method body can be analyzed for ({@link PurityKind#SIDE_EFFECT_FREE} and {@link
-     * PurityKind#DETERMINISTIC}), and elements are removed from it as violations are found.
+     * PurityKind#DETERMINISTIC}), and elements are removed from it as violations are found. {@link
+     * PurityKind#SIDE_EFFECTS_ONLY} is not tracked here; it is checked separately, since it does
+     * not correspond to a property that this analysis computes about a method body.
      */
     protected EnumSet<PurityKind> kinds =
         EnumSet.of(PurityKind.SIDE_EFFECT_FREE, PurityKind.DETERMINISTIC);
