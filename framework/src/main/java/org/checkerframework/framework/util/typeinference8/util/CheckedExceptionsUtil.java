@@ -58,10 +58,11 @@ public final class CheckedExceptionsUtil {
   /**
    * Helper class for gathering the types of checked exceptions that a lambda body can throw. See <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-11.html#jls-11.2.2">JLS section
-   * 11.2.2</a>. Apply this visitor to the body of the lambda, not to the lambda itself.
+   * 11.2.2</a>.
    *
-   * <p>The visitor does not descend into a nested lambda or class body, because an exception thrown
-   * there is attributed to that construct rather than to the lambda being scanned.
+   * <p>Apply this visitor to the body of the lambda, not to the lambda itself. The visitor does not
+   * descend into a nested lambda or class body, because an exception thrown there is attributed to
+   * that construct rather than to the lambda being scanned.
    */
   private static final class CheckedExceptionVisitor
       extends TreeScanner<@Nullable List<ThrownCheckedException>, Void> {
