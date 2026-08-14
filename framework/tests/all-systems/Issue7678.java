@@ -1,30 +1,31 @@
-// Hard crash
-public abstract class Issue7698 {
-  interface AsyncWork<R> {
-    Promise<R> apply(Promise<Iterable<Box<Long>>> promise) throws Exception;
+import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Stream;
+
+// Related to lambda parameters.
+@SuppressWarnings("all")
+public class Issue7678 {
+  static class MyMap<Z, Y> {
+    static <A, B, C> Collector<A, ?, MyMap<B, C>> toMyMap(
+        Function<? super A, ? extends B> keyFunction,
+        Function<? super A, ? extends C> valueFunction) {
+      return null;
+    }
   }
 
-  interface Box<T> {
-    T value();
+  static class BiStream<I, E> {
+    static <F, G, H> Collector<F, ?, BiStream<G, H>> toBiStream(
+        Collector<? super F, ?, H> valueCollector) {
+      return null;
+    }
+
+    <V2> BiStream<I, V2> mapValues(Function<? super E, ? extends V2> valueMapper) {
+      return null;
+    }
   }
 
-  interface Promise<T> {
-    <U> Promise<U> then(Function<? super T, ? extends U> function);
-  }
-
-  interface MyStream<E> {
-    <R> MyStream<R> map(Function<? super E, ? extends R> mapper);
-  }
-
-  interface Function<F, T> {
-    T apply(F f);
-  }
-
-  abstract <R> Promise<R> run(AsyncWork<R> work);
-
-  abstract <T> MyStream<T> myStream(Iterable<T> iterable);
-
-  Promise<MyStream<Long>> main() {
-    return run(promise -> promise.then(results -> myStream(results).map(result -> result.value())));
+  private void test(Stream<String> items) {
+    Function<String, Integer> length = String::length;
+    items.collect(BiStream.toBiStream(MyMap.toMyMap(length, s -> s))).mapValues(byLen -> byLen);
   }
 }
