@@ -100,15 +100,15 @@ public abstract class AbstractQualifier {
     Map<String, AnnotationMirror> m = new HashMap<>();
 
     for (AbstractQualifier qual : quals) {
-      AnnotationMirror soFar = m.get(qual.hierarchyName);
       AnnotationMirror qualAnno = qual.getInstantiation();
-      if (qualAnno == null) {
-        // continue;
-      } else if (soFar == null) {
-        m.put(qual.hierarchyName, qualAnno);
-      } else {
-        AnnotationMirror combined = combine.apply(soFar, qualAnno);
-        m.put(qual.hierarchyName, combined);
+      if (qualAnno != null) {
+        AnnotationMirror soFar = m.get(qual.hierarchyName);
+        if (soFar == null) {
+          m.put(qual.hierarchyName, qualAnno);
+        } else {
+          AnnotationMirror combined = combine.apply(soFar, qualAnno);
+          m.put(qual.hierarchyName, combined);
+        }
       }
     }
     return new AnnotationMirrorSet(m.values());

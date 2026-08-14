@@ -60,13 +60,20 @@ public class VariableBounds {
   public final ConstraintSet constraints = new ConstraintSet();
 
   /** True if this variable has a throws bound. */
-  public boolean hasThrowsBound = false;
+  private boolean hasThrowsBound = false;
 
-  /** Saved bounds used in the event the first attempt at resolution fails. */
-  public EnumMap<BoundKind, LinkedHashSet<AbstractType>> savedBounds = null;
+  /**
+   * Bounds saved by {@link #save}, for use in the event that the first attempt at resolution fails;
+   * null if {@link #save} has not been called.
+   */
+  private @Nullable EnumMap<BoundKind, LinkedHashSet<AbstractType>> savedBounds = null;
 
-  /** Saved qualifier bounds used in the event the first attempt at resolution fails. */
-  public EnumMap<BoundKind, LinkedHashSet<AbstractQualifier>> savedQualifierBounds = null;
+  /**
+   * Qualifier bounds saved by {@link #save}, for use in the event that the first attempt at
+   * resolution fails; null if {@link #save} has not been called.
+   */
+  private @Nullable EnumMap<BoundKind, LinkedHashSet<AbstractQualifier>> savedQualifierBounds =
+      null;
 
   /**
    * Creates bounds for {@code variable}.
@@ -107,7 +114,10 @@ public class VariableBounds {
    * resolution fails.
    */
   public void restore() {
-    assert savedBounds != null;
+    EnumMap<BoundKind, LinkedHashSet<AbstractType>> savedBounds = this.savedBounds;
+    EnumMap<BoundKind, LinkedHashSet<AbstractQualifier>> savedQualifierBounds =
+        this.savedQualifierBounds;
+    assert savedBounds != null && savedQualifierBounds != null : "restore() called before save()";
     instantiation = null;
     bounds.clear();
     bounds.put(BoundKind.EQUAL, new LinkedHashSet<>(savedBounds.get(BoundKind.EQUAL)));
