@@ -1046,7 +1046,8 @@ public class InferenceFactory {
    * @param upperBound an abstract type or null
    * @return a wildcard with the provided upper and lower bounds
    */
-  public ProperType createWildcard(ProperType lowerBound, AbstractType upperBound) {
+  public ProperType createWildcard(
+      @Nullable ProperType lowerBound, @Nullable AbstractType upperBound) {
     TypeMirror wildcard =
         TypesUtils.createWildcard(
             lowerBound == null ? null : lowerBound.getJavaType(),
