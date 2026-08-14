@@ -889,16 +889,11 @@ public class InferenceFactory {
    * @return the greatest lower bound of {@code abstractTypes}, or null
    */
   public @Nullable AbstractType glb(Set<AbstractType> abstractTypes) {
-    AbstractType ti = null;
-    for (AbstractType liProperType : abstractTypes) {
-      AbstractType li = liProperType;
-      if (ti == null) {
-        ti = li;
-      } else {
-        ti = glb(ti, li);
-      }
+    AbstractType glb = null;
+    for (AbstractType abstractType : abstractTypes) {
+      glb = (glb == null) ? abstractType : glb(glb, abstractType);
     }
-    return ti;
+    return glb;
   }
 
   /**
