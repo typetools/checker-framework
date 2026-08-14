@@ -72,6 +72,45 @@ public class BoundSetTest {
   }
 
   /**
+   * Tests that {@link BoundSet#restore} discards exactly the state that was recorded after {@link
+   * BoundSet#saveBounds} created the snapshot, and keeps the state that was recorded before it.
+   *
+   * <p>This is the situation that arises in {@code Resolution.resolveSmallestSet}. Incorporation
+   * has already recorded a qualifier violation in the bound set by the time resolution starts, and
+   * then the attempt at resolution without capture records a second one before it fails. Only the
+   * second one is undone; the caller -- {@code InvocationTypeInference.getB4}, which reads {@code
+   * annoInferenceFailed} and {@code errorMsg} off the bound set it passed to {@code
+   * Resolution.resolve} -- must see the first one and must not see the second one.
+   */
+  @Test
+  public void restoreDiscardsOnlyPostSnapshotState() {
+    String beforeSnapshot = "@Tainted MyNode <: @Untainted Node<@Tainted MyNode>";
+    BoundSet boundSet = new BoundSet(uninitializedContext());
+    boundSet.annoInferenceFailed = true;
+    boundSet.errorMsg = beforeSnapshot;
+
+    BoundSet snapshot = boundSet.saveBounds();
+
+    // The failed attempt at resolution without capture.
+    boundSet.errorMsg +=
+        System.lineSeparator() + "@Tainted Object <: @Untainted Tag<@Tainted Object>";
+    boundSet.addFalse();
+    boundSet.setUncheckedConversion(true);
+
+    // The snapshot is unaffected by the failed attempt.
+    Assert.assertEquals(beforeSnapshot, snapshot.errorMsg);
+    Assert.assertFalse(snapshot.containsFalse());
+    Assert.assertFalse(snapshot.isUncheckedConversion());
+
+    boundSet.restore(snapshot);
+
+    Assert.assertTrue(boundSet.annoInferenceFailed);
+    Assert.assertEquals(beforeSnapshot, boundSet.errorMsg);
+    Assert.assertFalse(boundSet.containsFalse());
+    Assert.assertFalse(boundSet.isUncheckedConversion());
+  }
+
+  /**
    * Returns a {@link Java8InferenceContext} on which no constructor has run, so all its fields are
    * null. Creating a real context requires a running compilation, which is far more than this test
    * needs: {@link BoundSet}'s constructors only store the reference and check that it is non-null.
