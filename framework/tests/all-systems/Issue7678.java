@@ -56,9 +56,19 @@ public class Issue7678 {
     items
         .collect(BiStream.toBiStream(MyMap.toMyMap(length, s -> s)))
         .mapValues(
+  private void testSwitchYield(Stream<String> items, int cond) {
+    Function<String, Integer> length = String::length;
+    items
+        .collect(BiStream.toBiStream(MyMap.toMyMap(length, s -> s)))
+        .mapValues(
             switch (cond) {
-              case 1 -> byLen -> byLen;
-              default -> byLen2 -> byLen2;
+              case 1 -> {
+                yield byLen -> byLen;
+              }
+              default -> {
+                yield byLen2 -> byLen2;
+              }
             });
+  }
   }
 }
