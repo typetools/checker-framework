@@ -328,20 +328,29 @@ public class VariableBounds {
       }
     }
     if (boundType.isUseOfVariable() && !boundType.ignoreAnnotations) {
+      // This variable's qualifier bounds imply qualifier bounds on `boundVar`.  Which ones is
+      // determined by the direction of the bound relating the two variables.  This is the same
+      // reasoning as in addConstraintsFromComplementaryBounds(BoundKind, Set), viewed from the
+      // other variable.
       UseOfVariable boundVar = (UseOfVariable) boundType;
       switch (kind) {
         case EQUAL -> {
+          // boundVar = this variable, so every qualifier bound holds of boundVar as well.
           boundVar.addQualifierBound(BoundKind.EQUAL, qualifierBounds.get(BoundKind.EQUAL));
           boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.LOWER));
           boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.UPPER));
         }
         case LOWER -> {
+          // boundVar <: this variable, so from `this variable = q` and `this variable <: q` it
+          // follows that boundVar <: q.  Nothing follows from `q <: this variable`.
           boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.EQUAL));
-          boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.LOWER));
+          boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.UPPER));
         }
         case UPPER -> {
+          // this variable <: boundVar, so from `this variable = q` and `q <: this variable` it
+          // follows that q <: boundVar.  Nothing follows from `this variable <: q`.
           boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.EQUAL));
-          boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.UPPER));
+          boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.LOWER));
         }
       }
     }
