@@ -595,16 +595,14 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns if this type is a wildcard return its upper bound; otherwise, return null.
+   * Returns if this type is a wildcard return its upper bound; otherwise, return null. If the
+   * wildcard has no explicit upper bound, the returned type is the upper bound of the type variable
+   * to which the wildcard is bound; see {@link AnnotatedWildcardType#getExtendsBound()}.
    *
    * @return if this type is a wildcard return its upper bound; otherwise, return null
    */
   public @Nullable AbstractType getWildcardUpperBound() {
     if (getJavaType().getKind() == TypeKind.WILDCARD) {
-      TypeMirror upperBoundJava = ((WildcardType) getJavaType()).getExtendsBound();
-      if (upperBoundJava == null) {
-        upperBoundJava = context.object.getJavaType();
-      }
       return create(
           ((AnnotatedWildcardType) getAnnotatedType()).getExtendsBound(), ignoreAnnotations);
     } else {
