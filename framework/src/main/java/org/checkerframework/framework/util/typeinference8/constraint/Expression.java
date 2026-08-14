@@ -343,15 +343,15 @@ public class Expression extends TypeConstraint {
       // Explicitly typed lambda
       List<? extends VariableTree> parameters = lambda.getParameters();
       List<AbstractType> gs = tPrime.getFunctionTypeParameterTypes();
-      if (parameters.size() != gs.size()) {
-        // If the number of lambda parameters differs from the number of parameter types of the
-        // function type, the constraint reduces to false.
-        boundSet.addFalse();
-        return ReductionResultPair.of(constraintSet, boundSet);
-      }
       if (gs == null) {
         // T is not a functional interface type, so it has no function type. JLS 18.2.1 says that
         // the constraint reduces to false in that case.
+        boundSet.addFalse();
+        return ReductionResultPair.of(constraintSet, boundSet);
+      }
+      if (parameters.size() != gs.size()) {
+        // If the number of lambda parameters differs from the number of parameter types of the
+        // function type, the constraint reduces to false.
         boundSet.addFalse();
         return ReductionResultPair.of(constraintSet, boundSet);
       }
