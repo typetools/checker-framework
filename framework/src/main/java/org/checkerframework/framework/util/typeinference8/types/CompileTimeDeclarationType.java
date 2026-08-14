@@ -4,6 +4,7 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import java.util.List;
 import javax.lang.model.type.ExecutableType;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -76,7 +77,7 @@ public class CompileTimeDeclarationType extends AbstractExecutableType {
   }
 
   @Override
-  public AbstractType getReturnType(Theta map) {
+  public AbstractType getReturnType(@Nullable Theta map) {
     AnnotatedTypeMirror annotatedReturnType;
 
     if (methodRef.getMode() == ReferenceMode.NEW) {
@@ -95,7 +96,7 @@ public class CompileTimeDeclarationType extends AbstractExecutableType {
   }
 
   @Override
-  public List<AbstractType> getParameterTypes(Theta map, int size) {
+  public List<AbstractType> getParameterTypes(@Nullable Theta map, int size) {
     AnnotatedTypeMirror receiverTM;
     if (MemberReferenceKind.getMemberReferenceKind(methodRef).isUnbound()) {
       // For unbound method references, i.e. Type::instanceMethod, the receiver is treated as the
