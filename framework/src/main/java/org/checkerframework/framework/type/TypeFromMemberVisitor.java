@@ -174,7 +174,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       int index = lambdaDecl.getParameters().indexOf(f.declarationFromElement(paramElement));
 
       TreePath pathToLambda = f.getPath(lambdaDecl);
-      Tree enclosingTree = pathToLambda == null ? null : effectiveEnclosingTree(pathToLambda);
+      Tree enclosingTree =
+          pathToLambda == null ? null : TreePathUtil.getContextForPolyExpression(pathToLambda);
       if ((enclosingTree instanceof MethodInvocationTree || enclosingTree instanceof NewClassTree)
           && f.getTypeArgumentInference().isAnyInferenceInProgress()) {
         // Below, f.getFunctionTypeFromTree(lambdaDecl) re-derives this lambda's target type by
@@ -195,44 +196,6 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
 
       AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
       return functionType.getParameterTypes().get(index);
-    }
-    return null;
-  }
-
-  /**
-   * Returns the nearest enclosing tree of the tree at {@code path}, skipping over parenthesized,
-   * conditional-expression, and switch-expression wrappers -- the same wrapper kinds that {@link
-   * org.checkerframework.framework.util.typeinference8.DefaultTypeArgumentInference#outerInference}
-   * sees through when locating the invocation whose inference determines a nested poly expression's
-   * target type. Without this, a lambda written as {@code foo((x -> x))}, as a branch of a
-   * conditional argument, or as a switch expression's result would report its immediate wrapper as
-   * its enclosing tree instead of the enclosing invocation, so the re-entrancy check in the caller
-   * would never trigger for it.
-   *
-   * @param path the path to a tree whose effective enclosing tree is needed
-   * @return the nearest enclosing tree that is not itself one of the wrapper kinds above, or {@code
-   *     null} if there is none
-   */
-  private static @Nullable Tree effectiveEnclosingTree(TreePath path) {
-    TreePath parentPath = path.getParentPath();
-    while (parentPath != null) {
-      Tree.Kind kind = parentPath.getLeaf().getKind();
-      if (kind == Tree.Kind.PARENTHESIZED || kind == Tree.Kind.CONDITIONAL_EXPRESSION) {
-        parentPath = parentPath.getParentPath();
-      } else if (kind == Tree.Kind.CASE || kind == Tree.Kind.YIELD) {
-        TreePath switchExpressionPath =
-            TreePathUtil.pathTillOfKind(parentPath, Tree.Kind.SWITCH_EXPRESSION);
-        if (switchExpressionPath == null) {
-          // The case or yield is in a switch statement, not a switch expression, so there is
-          // no enclosing invocation to find through it.
-          return null;
-        }
-        // Treat the switch expression itself as transparent too, and keep walking outward
-        // from its parent, mirroring outerInference's fall-through to SWITCH_EXPRESSION.
-        parentPath = switchExpressionPath.getParentPath();
-      } else {
-        return parentPath.getLeaf();
-      }
     }
     return null;
   }
