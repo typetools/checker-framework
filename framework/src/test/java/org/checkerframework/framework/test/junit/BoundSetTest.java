@@ -15,12 +15,13 @@ public class BoundSetTest {
    * the two fields that record that inference failed because of a type qualifier: {@code
    * annoInferenceFailed} and {@code errorMsg}.
    *
-   * <p>{@code Resolution.resolveSmallestSet} uses the copy constructor to snapshot the bound set
-   * before attempting resolution without capture, and it discards the bound set in favor of the
-   * snapshot when that attempt fails. A copy constructor that dropped the two annotation-failure
-   * fields would lose any qualifier violation that had been recorded before the snapshot was taken,
-   * so {@code InferenceResult.inferenceFailed()} could report success with an empty error message
-   * even though a qualifier relationship had been violated.
+   * <p>{@code BoundSet.saveBounds} uses the copy constructor to snapshot the bound set before
+   * {@code Resolution.resolveSmallestSet} attempts resolution without capture, and {@code
+   * BoundSet.restore} copies the snapshot back into the bound set when that attempt fails. A copy
+   * constructor that dropped the two annotation-failure fields would lose any qualifier violation
+   * that had been recorded before the snapshot was taken, so {@code
+   * InferenceResult.inferenceFailed()} could report success with an empty error message even though
+   * a qualifier relationship had been violated.
    */
   @Test
   public void copyConstructorCopiesAllFields() {
@@ -41,6 +42,33 @@ public class BoundSetTest {
     Assert.assertEquals("@Tainted String <: @Untainted String", copy.errorMsg);
     Assert.assertTrue(copy.containsFalse());
     Assert.assertTrue(copy.isUncheckedConversion());
+  }
+
+  /**
+   * Tests that {@link BoundSet#restore} undoes, in place, the changes that were made to the bound
+   * set after {@link BoundSet#saveBounds} created the snapshot.
+   *
+   * <p>{@code Resolution} hands the same bound set to every step of inference, so restoring must
+   * side-effect that bound set. If restoring instead returned the snapshot as a new bound set, then
+   * a client that holds a reference to the original one -- such as {@code
+   * InvocationTypeInference.getB4} -- would keep observing the state of the failed attempt.
+   */
+  @Test
+  public void restoreUndoesChangesInPlace() {
+    BoundSet boundSet = new BoundSet(uninitializedContext());
+    BoundSet snapshot = boundSet.saveBounds();
+
+    boundSet.addFalse();
+    boundSet.setUncheckedConversion(true);
+    boundSet.annoInferenceFailed = true;
+    boundSet.errorMsg = "@Tainted String <: @Untainted String";
+
+    boundSet.restore(snapshot);
+
+    Assert.assertFalse(boundSet.containsFalse());
+    Assert.assertFalse(boundSet.isUncheckedConversion());
+    Assert.assertFalse(boundSet.annoInferenceFailed);
+    Assert.assertEquals("", boundSet.errorMsg);
   }
 
   /**

@@ -47,18 +47,18 @@ public final class Resolution {
    * <p>This method removes from {@code as} every variable that already has an instantiation.
    *
    * @param as the set of variables to resolve; this method removes elements from it
-   * @param boundSet the bound set that includes {@code as}
+   * @param boundSet the bound set that includes {@code as}; this method side-effects it so that
+   *     {@code as} have instantiations
    * @param context Java8InferenceContext
-   * @return bound set where {@code as} have instantiations
    */
-  public static BoundSet resolve(
+  public static void resolve(
       Collection<Variable> as, BoundSet boundSet, Java8InferenceContext context) {
 
     // Remove any variables that already have instantiations
     List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
     as.removeAll(resolvedVars);
     if (as.isEmpty()) {
-      return boundSet;
+      return;
     }
     // Calculate the dependencies between variables. (A variable depends on another if it is
     // included in one of its bounds.)
@@ -75,36 +75,34 @@ public final class Resolution {
     // Remove any variables that already have instantiations
     unresolvedVars.removeAll(resolvedVars);
     if (unresolvedVars.isEmpty()) {
-      return boundSet;
+      return;
     }
 
     // Resolve the variables
     Resolution resolution = new Resolution(context, dependencies);
-    boundSet = resolution.resolve(boundSet, unresolvedVars);
+    resolution.resolve(boundSet, unresolvedVars);
     checkNoFalse(boundSet, "after resolving", as);
-    return boundSet;
   }
 
   /**
    * Instantiates the variable {@code a}.
    *
    * @param a the variable to resolve
-   * @param boundSet the bound set that includes {@code a}
+   * @param boundSet the bound set that includes {@code a}; this method side-effects it so that
+   *     {@code a} is instantiated
    * @param context Java8InferenceContext
-   * @return bound set where {@code a} is instantiated
    */
-  public static BoundSet resolve(Variable a, BoundSet boundSet, Java8InferenceContext context) {
+  public static void resolve(Variable a, BoundSet boundSet, Java8InferenceContext context) {
     if (a.getBounds().hasInstantiation()) {
-      return boundSet;
+      return;
     }
     Dependencies dependencies = boundSet.getDependencies();
 
     LinkedHashSet<Variable> unresolvedVars = new LinkedHashSet<>();
     unresolvedVars.add(a);
     Resolution resolution = new Resolution(context, dependencies);
-    boundSet = resolution.resolveSmallestSet(unresolvedVars, boundSet);
+    resolution.resolveSmallestSet(unresolvedVars, boundSet);
     checkNoFalse(boundSet, "after resolving", unresolvedVars);
-    return boundSet;
   }
 
   /**
@@ -140,11 +138,10 @@ public final class Resolution {
   /**
    * Resolve all the variables in {@code unresolvedVars}.
    *
-   * @param boundSet current bound set
+   * @param boundSet current bound set; side-effected by this method
    * @param unresolvedVars a set of unresolved variables that includes all dependencies
-   * @return the bounds set with the resolved bounds
    */
-  private BoundSet resolve(BoundSet boundSet, Queue<Variable> unresolvedVars) {
+  private void resolve(BoundSet boundSet, Queue<Variable> unresolvedVars) {
     List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
 
     while (!unresolvedVars.isEmpty()) {
@@ -153,12 +150,11 @@ public final class Resolution {
       Set<Variable> smallestDependencySet = getSmallestDependencySet(resolvedVars, unresolvedVars);
 
       // Resolve the smallest unresolved dependency set.
-      boundSet = resolveSmallestSet(smallestDependencySet, boundSet);
+      resolveSmallestSet(smallestDependencySet, boundSet);
 
       resolvedVars = boundSet.getInstantiatedVariables();
       unresolvedVars.removeAll(resolvedVars);
     }
-    return boundSet;
   }
 
   /**
@@ -197,33 +193,31 @@ public final class Resolution {
    *
    * @param as the smallest set of unresolved variables that includes any variable on which a
    *     variable in the set depends
-   * @param boundSet current bounds set
-   * @return current bound set
+   * @param boundSet current bounds set; side-effected by this method
    */
-  private BoundSet resolveSmallestSet(Set<Variable> as, BoundSet boundSet) {
+  private void resolveSmallestSet(Set<Variable> as, BoundSet boundSet) {
     checkNoFalse(boundSet, "on entry to resolveSmallestSet for", as);
 
     if (boundSet.containsCapture(as)) {
-      BoundSet resolvedBounds = resolveWithoutCapture(as, boundSet);
+      resolveWithoutCapture(as, boundSet);
       boundSet.getInstantiatedVariables().forEach(as::remove);
       // Then resolve the capture variables
-      return resolveWithCapture(as, resolvedBounds, context);
+      resolveWithCapture(as, boundSet, context);
     } else {
-      BoundSet copy = new BoundSet(boundSet);
-      // Save the current bounds in case the first attempt at resolution fails.
-      copy.saveBounds();
+      // Save the current state in case the first attempt at resolution fails.
+      BoundSet snapshot = boundSet.saveBounds();
       try {
-        BoundSet resolvedBounds = resolveWithoutCapture(as, boundSet);
-        if (!resolvedBounds.containsFalse()) {
-          return resolvedBounds;
+        resolveWithoutCapture(as, boundSet);
+        if (!boundSet.containsFalse()) {
+          return;
         }
       } catch (FalseBoundException ex) {
         // Try with capture.
       }
-      boundSet = copy;
-      // If resolveWithoutCapture fails, then undo all resolved variables from the failed attempt.
-      boundSet.restore();
-      return resolveWithCapture(as, boundSet, context);
+      // resolveWithoutCapture failed, so undo everything it did, including all the variables it
+      // resolved.
+      boundSet.restore(snapshot);
+      resolveWithCapture(as, boundSet, context);
     }
   }
 
@@ -274,10 +268,9 @@ public final class Resolution {
    * {@link #resolveWithCapture(Set, BoundSet, Java8InferenceContext)} should be used instead.
    *
    * @param as variables to resolve
-   * @param boundSet the bound set to use
-   * @return the resolved bound set
+   * @param boundSet the bound set to use; side-effected by this method
    */
-  private BoundSet resolveWithoutCapture(Set<Variable> as, BoundSet boundSet) {
+  private void resolveWithoutCapture(Set<Variable> as, BoundSet boundSet) {
     BoundSet resolvedBoundSet = new BoundSet(context);
     List<Variable> varsToResolve = new ArrayList<>(as);
     varsToResolve.removeIf(Variable::isCaptureVariable);
@@ -311,7 +304,6 @@ public final class Resolution {
       resolvedBoundSet.addFalse();
     }
     boundSet.incorporateToFixedPoint(resolvedBoundSet);
-    return boundSet;
   }
 
   /**
@@ -377,11 +369,10 @@ public final class Resolution {
    * the variables.
    *
    * @param as a set of variables to resolve
-   * @param boundSet the bounds set to use
+   * @param boundSet the bounds set to use; side-effected by this method
    * @param context the context
-   * @return the resolved bound set
    */
-  private static BoundSet resolveWithCapture(
+  private static void resolveWithCapture(
       Set<Variable> as, BoundSet boundSet, Java8InferenceContext context) {
     checkNoFalse(boundSet, "on entry to resolveWithCapture for", as);
     boundSet.removeCaptures(as);
@@ -460,6 +451,5 @@ public final class Resolution {
     }
 
     boundSet.reachFixedPoint();
-    return boundSet;
   }
 }

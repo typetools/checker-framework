@@ -79,20 +79,38 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Save the current state of the variables so they can be restored if the first attempt at
-   * resolution fails.
+   * Save the current state of this bound set and of its variables, so that {@link #restore} can
+   * undo any change made after this call. This method is called before the first attempt at
+   * resolution, which might fail.
+   *
+   * @return a snapshot of this bound set, to pass to {@link #restore}
    */
-  public void saveBounds() {
+  public BoundSet saveBounds() {
     for (Variable v : variables) {
       v.save();
     }
+    return new BoundSet(this);
   }
 
   /**
-   * Restore the bounds to the last saved state. This method is called if the first attempt at
-   * resolution fails.
+   * Restore this bound set and its variables to the state they were in when {@code snapshot} was
+   * created. This method is called if the first attempt at resolution fails.
+   *
+   * <p>This method side-effects this bound set rather than returning {@code snapshot}, so that a
+   * client that holds a reference to this bound set does not observe the state of the failed
+   * attempt.
+   *
+   * @param snapshot the result of a call to {@link #saveBounds} on this bound set
    */
-  public void restore() {
+  public void restore(BoundSet snapshot) {
+    containsFalse = snapshot.containsFalse;
+    uncheckedConversion = snapshot.uncheckedConversion;
+    annoInferenceFailed = snapshot.annoInferenceFailed;
+    errorMsg = snapshot.errorMsg;
+    captures.clear();
+    captures.addAll(snapshot.captures);
+    variables.clear();
+    variables.addAll(snapshot.variables);
     for (Variable v : variables) {
       v.restore();
     }
@@ -233,8 +251,8 @@ public class BoundSet implements ReductionResult {
    * @return a list of resolved variables in this bounds set
    */
   public List<Variable> resolve() {
-    BoundSet b = Resolution.resolve(new ArrayList<>(variables), this, context);
-    return b.getInstantiationsInAlphas(variables);
+    Resolution.resolve(new ArrayList<>(variables), this, context);
+    return getInstantiationsInAlphas(variables);
   }
 
   /**
