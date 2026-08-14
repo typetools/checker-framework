@@ -494,12 +494,12 @@ public class Expression extends TypeConstraint {
         InferenceType.create(context.typeFactory.getAnnotatedType(fElement), map, context);
 
     List<AbstractType> qs = tPrime.getFunctionTypeParameterTypes();
+    // tPrime is a parameterization of t, which is a wildcard-parameterized functional interface.
+    assert qs != null : "@AssumeAssertion(nullness): tPrime is a functional interface";
     if (qs.size() != ps.size()) {
       // 18.5.3: If n != k, no valid parameterization exists.
       return IPair.of(t, falseBoundSet(context));
     }
-    // tPrime is a parameterization of t, which is a wildcard-parameterized functional interface.
-    assert qs != null : "@AssumeAssertion(nullness): tPrime is a functional interface";
 
     // A set of constraint formulas is formed with, for all i (1 <= i <= n), <Pi = Qi>.
     ConstraintSet constraintSet = new ConstraintSet();
