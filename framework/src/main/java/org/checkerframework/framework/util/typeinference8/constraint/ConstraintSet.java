@@ -369,7 +369,7 @@ public class ConstraintSet implements ReductionResult {
     BoundSet boundSet = new BoundSet(context);
     while (!this.isEmpty()) {
       if (this.list.size() > BoundSet.MAX_INCORPORATION_STEPS) {
-        throw new BugInCF("TOO MANY CONSTRAINTS: %s", context.pathToExpression.getLeaf());
+        throw new BugInCF("TOO MANY CONSTRAINTS: %s", context.getPathToExpression().getLeaf());
       }
       BoundSet result = reduceOneStep(context);
       boundSet.merge(result);
@@ -388,7 +388,7 @@ public class ConstraintSet implements ReductionResult {
     BoundSet boundSet = new BoundSet(context);
     while (!this.isEmpty()) {
       if (this.list.size() > BoundSet.MAX_INCORPORATION_STEPS) {
-        throw new BugInCF("TOO MANY CONSTRAINTS: %s", context.pathToExpression.getLeaf());
+        throw new BugInCF("TOO MANY CONSTRAINTS: %s", context.getPathToExpression().getLeaf());
       }
       boolean foundAA = this.list.get(0).getKind() == Kind.ADDITIONAL_ARG;
       BoundSet result = reduceOneStep(context);

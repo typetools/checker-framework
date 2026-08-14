@@ -106,7 +106,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         InferenceResult result = java8Inference.infer(outerTree, outerMethodType);
         if (!result.getResults().containsKey(expressionTree)
             && expressionTree instanceof MemberReferenceTree mrt2) {
-          java8Inference.context.pathToExpression = typeFactory.getPath(expressionTree);
+          java8Inference.context.setPathToExpression(typeFactory.getPath(expressionTree));
           return java8Inference.infer(mrt2);
         }
         return result.swapTypeVariables(executableType, expressionTree);

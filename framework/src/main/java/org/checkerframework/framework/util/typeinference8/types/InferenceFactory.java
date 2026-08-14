@@ -96,7 +96,7 @@ public class InferenceFactory {
   public @Nullable ProperType getTargetType() {
     GenericAnnotatedTypeFactory<?, ?, ?, ?> factory =
         (GenericAnnotatedTypeFactory<?, ?, ?, ?>) context.typeFactory;
-    TreePath path = context.pathToExpression;
+    TreePath path = context.getPathToExpression();
     Tree contextTree = TreePathUtil.getContextForPolyExpression(path);
     if (contextTree == null) {
       AnnotatedTypeMirror dummy = factory.getDummyAssignedTo((ExpressionTree) path.getLeaf());
