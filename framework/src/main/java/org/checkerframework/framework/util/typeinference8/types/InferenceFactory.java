@@ -981,14 +981,17 @@ public class InferenceFactory {
 
     for (AnnotatedTypeMirror thrownType : functionType.getThrownTypes()) {
       AbstractType ei = InferenceType.create(thrownType, map, context);
+      // JLS 18.2.5 uses only the proper types and the inference variables among the function
+      // type's thrown types; any other thrown type contributes nothing.
       if (ei.isProper()) {
         properTypes.add((ProperType) ei);
-      } else {
+      } else if (ei.isUseOfVariable()) {
         UseOfVariable varEi = (UseOfVariable) ei;
-        if (varEi.getVariable().getInstantiation() != null) {
-          properTypes.add(varEi.getVariable().getInstantiation());
+        ProperType instantiation = varEi.getVariable().getInstantiation();
+        if (instantiation != null) {
+          properTypes.add(instantiation);
         } else {
-          es.add((UseOfVariable) ei);
+          es.add(varEi);
         }
       }
     }
