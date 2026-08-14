@@ -204,10 +204,34 @@ public final class Resolution {
     checkNoFalse(boundSet, "on entry to resolveSmallestSet for", as);
 
     if (boundSet.containsCapture(as)) {
-      BoundSet resolvedBounds = resolveWithoutCapture(as, boundSet);
-      boundSet.getInstantiatedVariables().forEach(as::remove);
-      // Then resolve the capture variables
-      return resolveWithCapture(as, resolvedBounds, context);
+      // A non-capture variable in `as` whose only useful bound is an EQUAL bound directly to a
+      // capture variable that is also in `as` (e.g. H2 = capture#1, where capture#1 is on the
+      // left-hand side of a G<...>=capture(G<...>) bound) must not be resolved below, in
+      // resolveWithoutCapture: findProperLowerBounds/findProperUpperBounds never look at EQUAL
+      // bounds, so it would otherwise be resolved from its trivial declared bound (e.g. Object)
+      // before the capture variable it actually equals has a value. Defer such variables until
+      // after the captures in `as` are resolved, then let them re-check their bounds.
+      //
+      // Variables whose EQUAL bound mentions another *non-capture* variable in `as` are not
+      // deferred: resolveWithoutCapture's own lower/upper-bound loop already resolves chains of
+      // those correctly by iterating to a fixed point, and folding them into the capture-only
+      // deferral below would split a group that needs to be resolved together (by
+      // resolveWithCapture, in one call, so its simultaneous substitution of fresh type variables
+      // sees all of them) into two separate resolveWithCapture calls instead.
+      Set<Variable> deferred = new LinkedHashSet<>();
+      for (Variable v : as) {
+        if (!v.isCaptureVariable() && hasUnresolvedEqualBoundToCaptureWithin(v, as)) {
+          deferred.add(v);
+        }
+      }
+      Set<Variable> toResolveNow = new LinkedHashSet<>(as);
+      toResolveNow.removeAll(deferred);
+
+      BoundSet resolvedBounds = resolveWithoutCapture(toResolveNow, boundSet);
+      toResolveNow.removeAll(boundSet.getInstantiatedVariables());
+      // Then resolve the capture variables (and any non-captures that depend on them directly).
+      deferred.addAll(toResolveNow);
+      return resolveWithCapture(deferred, resolvedBounds, context);
     } else {
       BoundSet copy = new BoundSet(boundSet);
       // Save the current bounds in case the first attempt at resolution fails.
@@ -225,6 +249,28 @@ public final class Resolution {
       boundSet.restore();
       return resolveWithCapture(as, boundSet, context);
     }
+  }
+
+  /**
+   * Returns true if {@code v} has an {@code EQUAL} bound that mentions a capture variable in {@code
+   * as} that does not yet have an instantiation.
+   *
+   * @param v a variable
+   * @param as a set of variables being resolved together
+   * @return true if {@code v} has an unresolved {@code EQUAL} bound to a capture variable in {@code
+   *     as}
+   */
+  private static boolean hasUnresolvedEqualBoundToCaptureWithin(Variable v, Set<Variable> as) {
+    for (AbstractType t : v.getBounds().bounds.get(VariableBounds.BoundKind.EQUAL)) {
+      for (Variable mentioned : t.getInferenceVariables()) {
+        if (mentioned.isCaptureVariable()
+            && as.contains(mentioned)
+            && !mentioned.getBounds().hasInstantiation()) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**
