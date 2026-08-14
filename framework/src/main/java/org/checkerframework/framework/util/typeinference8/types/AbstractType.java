@@ -595,9 +595,9 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns if this type is a wildcard return its upper bound; otherwise, return null. If the
-   * wildcard has no explicit upper bound, the returned type is the upper bound of the type variable
-   * to which the wildcard is bound; see {@link AnnotatedWildcardType#getExtendsBound()}.
+   * If this type is a wildcard, return its upper bound; otherwise, return null. If the wildcard has
+   * no explicit upper bound, the returned type is the upper bound of the type variable to which the
+   * wildcard is bound; see {@link AnnotatedWildcardType#getExtendsBound()}.
    *
    * @return if this type is a wildcard return its upper bound; otherwise, return null
    */
