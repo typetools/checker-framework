@@ -31,10 +31,12 @@ public class Issue289 {
 
   void complex() {
     Upper<@Nullable String> uns = new Lower1<>();
-    // :: error: [assignment]
+    // No L1 makes `Lower1<L1>` a subtype of `Upper<@NonNull String>`, because `Lower1` extends
+    // `Upper<@Nullable String>`; hence inference fails as well as the assignment.
+    // :: error: [assignment] :: error: [type.arguments.not.inferred]
     Upper<String> us = new Lower1<>();
 
-    // :: error: [assignment]
+    // :: error: [assignment] :: error: [type.arguments.not.inferred]
     uns = new Lower2<>();
     us = new Lower2<>();
   }

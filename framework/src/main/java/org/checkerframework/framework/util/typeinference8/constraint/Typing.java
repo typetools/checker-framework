@@ -390,9 +390,11 @@ public class Typing extends TypeConstraint {
   private ReductionResult reduceEquality() {
     if (S.isProper()) {
       if (T.isProper()) {
-        // If S and T are proper types, the constraint reduces to true if S is the same
-        // as T (4.3.4), and false otherwise.
-        return ConstraintSet.TRUE;
+        // JLS 18.2.4: "If S and T are proper types, the constraint reduces to true if S is the
+        // same as T (4.3.4), and false otherwise."
+        // The Java types are the same, because javac accepted the program and therefore reduced
+        // this same constraint to true.  So only the qualifiers are compared.
+        return ((ProperType) S).isSameType((ProperType) T);
       }
       ProperType sProper = (ProperType) S;
       if (sProper.getTypeKind() == TypeKind.NULL || sProper.getTypeKind().isPrimitive()) {
