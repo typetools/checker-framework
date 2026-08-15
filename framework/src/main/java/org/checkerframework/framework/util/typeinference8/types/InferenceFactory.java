@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
@@ -32,6 +33,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Parameterizable;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
@@ -50,6 +52,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.TypeVariableSubstitutor;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
@@ -99,8 +102,11 @@ public class InferenceFactory {
     TreePath path = context.pathToExpression;
     Tree contextTree = TreePathUtil.getContextForPolyExpression(path);
     if (contextTree == null) {
-      AnnotatedTypeMirror dummy = factory.getDummyAssignedTo((ExpressionTree) path.getLeaf());
-      if (dummy == null || dummy.containsCapturedTypes()) {
+      ExpressionTree expression = (ExpressionTree) path.getLeaf();
+      AnnotatedTypeMirror dummy = factory.getDummyAssignedTo(expression);
+      if (dummy == null
+          || dummy.containsCapturedTypes()
+          || mentionsUnsubstitutedTypeVariable(dummy, path)) {
         return null;
       }
       return new ProperType(dummy, this.context);
@@ -182,6 +188,90 @@ public class InferenceFactory {
         }
       }
     }
+  }
+
+  /**
+   * Returns true if {@code type} mentions a type variable that javac might have left unsubstituted
+   * in the type of the invocation at {@code pathToInvocation}: a type variable that is declared by
+   * the invoked method or constructor, or by the class being instantiated, and that is not in scope
+   * at the invocation.
+   *
+   * <p>When the result of an invocation is unused, javac may leave the type of the invocation as
+   * the declared return type, without substituting the type arguments that javac inferred. Such a
+   * type expresses no requirement on the invocation, and using it as the target type would require
+   * an inference variable to be a subtype of the very type variable that the inference variable
+   * stands for. Resolution can satisfy that bound only by chance, so inference reports a spurious
+   * failure.
+   *
+   * <p>A type variable that is in scope at the invocation is not evidence of such a missing
+   * substitution, because a correctly substituted type may mention it. For example, in {@code <T> T
+   * foo(T t) { foo(t); }} the type of the inner call is {@code T}, which is the result of
+   * substituting the enclosing method's {@code T} for the invoked method's {@code T}.
+   *
+   * @param type a type that inference might use as a target type
+   * @param pathToInvocation the path to the expression for which type arguments are being inferred
+   * @return true if {@code type} mentions a type variable that javac might have left unsubstituted
+   */
+  private static boolean mentionsUnsubstitutedTypeVariable(
+      AnnotatedTypeMirror type, TreePath pathToInvocation) {
+    Tree invocation = pathToInvocation.getLeaf();
+    // The elements whose type parameters javac might have left unsubstituted in `type`.
+    List<Parameterizable> declarers = new ArrayList<>(2);
+    if (invocation instanceof MethodInvocationTree methodInvocation) {
+      declarers.add(TreeUtils.elementFromUse(methodInvocation));
+    } else if (invocation instanceof NewClassTree newClass) {
+      ExecutableElement constructor = TreeUtils.elementFromUse(newClass);
+      declarers.add(constructor);
+      // For `new Foo<>(...)` where `Foo` is generic but its constructor is not, the unsubstituted
+      // type is `Foo<T>`, whose type variables are declared by the class rather than by the
+      // constructor.
+      if (constructor.getEnclosingElement() instanceof TypeElement classElement) {
+        declarers.add(classElement);
+      }
+    } else {
+      return false;
+    }
+    declarers.removeIf(
+        (Parameterizable declarer) ->
+            declarer.getTypeParameters().isEmpty() || isEnclosedBy(pathToInvocation, declarer));
+    if (declarers.isEmpty()) {
+      return false;
+    }
+    // The type variable's element is compared to a declarer via its enclosing element rather than
+    // to the elements in `declarer.getTypeParameters()`, because those are different objects than
+    // the elements of the type variables that appear in `type`.
+    return new SimpleAnnotatedTypeScanner<Boolean, Void>(
+            (t, p) ->
+                t.getKind() == TypeKind.TYPEVAR
+                    && declarers.contains(
+                        ((TypeVariable) t.getUnderlyingType()).asElement().getEnclosingElement()),
+            Boolean::logicalOr,
+            false)
+        .visit(type);
+  }
+
+  /**
+   * Returns true if the leaf of {@code path} is within the declaration of {@code element}, which is
+   * a method, a constructor, or a class.
+   *
+   * @param path a path
+   * @param element a method, constructor, or class element
+   * @return true if the leaf of {@code path} is within the declaration of {@code element}
+   */
+  private static boolean isEnclosedBy(TreePath path, Element element) {
+    for (TreePath p = path.getParentPath(); p != null; p = p.getParentPath()) {
+      Tree leaf = p.getLeaf();
+      if (leaf instanceof MethodTree methodTree) {
+        if (element.equals(TreeUtils.elementFromDeclaration(methodTree))) {
+          return true;
+        }
+      } else if (leaf instanceof ClassTree classTree) {
+        if (element.equals(TreeUtils.elementFromDeclaration(classTree))) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**
