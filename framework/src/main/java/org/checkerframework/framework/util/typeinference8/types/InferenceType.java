@@ -214,12 +214,17 @@ public final class InferenceType extends AbstractType {
     if (map != variable.map) {
       return false;
     }
+    // Two types with different qualifierVars have different qualifiers, as getQualifiers() shows.
+    if (!qualifierVars.equals(variable.qualifierVars)) {
+      return false;
+    }
     return type.equals(variable.type);
   }
 
   @Override
   public int hashCode() {
     int result = inferenceProblemHashCode();
+    result = 31 * result + qualifierVars.hashCode();
     result = 31 * result + type.hashCode();
     result = 31 * result + Kind.INFERENCE_TYPE.hashCode();
     return result;

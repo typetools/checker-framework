@@ -9,6 +9,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
@@ -642,15 +643,35 @@ public class VariableBounds {
         if (supers == null) {
           continue;
         }
-        List<AbstractType> s1TypeArgs = supers.first.getTypeArguments();
-        List<AbstractType> s2TypeArgs = supers.second.getTypeArguments();
-        if (!s1TypeArgs.equals(s2TypeArgs)) {
+        if (!annotatedTypeArguments(supers.first).equals(annotatedTypeArguments(supers.second))) {
           return true;
         }
       }
     }
 
     return false;
+  }
+
+  /**
+   * Returns the annotated types of the type arguments of {@code type}.
+   *
+   * <p>This is a helper method for {@link #hasLowerBoundDifferentParam}. It compares the annotated
+   * types rather than the {@link AbstractType}s because {@link AbstractType#equals} also compares
+   * {@code ignoreAnnotations}, which is a property of a bound rather than of a parameterization:
+   * two bounds that differ only in whether their annotations are ignored are the same
+   * parameterization.
+   *
+   * @param type a declared type
+   * @return the annotated types of the type arguments of {@code type}
+   */
+  private static List<AnnotatedTypeMirror> annotatedTypeArguments(AbstractType type) {
+    List<AbstractType> typeArgs = type.getTypeArguments();
+    assert typeArgs != null : "@AssumeAssertion(nullness): the caller passes a declared type";
+    List<AnnotatedTypeMirror> result = new ArrayList<>(typeArgs.size());
+    for (AbstractType typeArg : typeArgs) {
+      result.add(typeArg.getAnnotatedType());
+    }
+    return result;
   }
 
   /**

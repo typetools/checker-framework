@@ -209,6 +209,10 @@ public class ProperType extends AbstractType {
     if (!sameInferenceProblem(that)) {
       return false;
     }
+    // Two types with different qualifierVars have different qualifiers, as getQualifiers() shows.
+    if (!qualifierVars.equals(that.qualifierVars)) {
+      return false;
+    }
 
     // Comparing the annotated types also compares the Java types: AnnotatedTypeMirror#equals
     // requires the underlying types to be the same object, and the Java type of a proper type is
@@ -218,7 +222,7 @@ public class ProperType extends AbstractType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(inferenceProblemHashCode(), type, Kind.PROPER);
+    return Objects.hash(inferenceProblemHashCode(), qualifierVars, type, Kind.PROPER);
   }
 
   @Override
