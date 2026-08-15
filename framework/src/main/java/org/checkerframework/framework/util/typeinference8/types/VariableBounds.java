@@ -427,6 +427,9 @@ public class VariableBounds {
    * ({@code 1 <= i <= n}), if Si and Ti are types (not wildcards), the constraint formula {@code
    * <Si = Ti>} is implied.
    *
+   * <p>The implied constraints ignore the qualifiers of the type arguments of the {@code
+   * java.lang.Enum} supertype of an enum class; see {@link #isEnumSupertypeOfEnumClass}.
+   *
    * @param parent the constraint whose reduction created the bound that implies the returned
    *     constraints, or null if no constraint did
    * @param s a type argument
@@ -451,16 +454,43 @@ public class VariableBounds {
           "Parameterized supertypes %s and %s have different numbers of type arguments.",
           pair.first, pair.second);
     }
+    boolean ignoreAnnosInS = isEnumSupertypeOfEnumClass(s, pair.first);
+    boolean ignoreAnnosInT = isEnumSupertypeOfEnumClass(t, pair.second);
 
     List<Typing> constraints = new ArrayList<>();
     for (int i = 0; i < ss.size(); i++) {
       AbstractType si = ss.get(i);
       AbstractType ti = ts.get(i);
       if (si.getTypeKind() != TypeKind.WILDCARD && ti.getTypeKind() != TypeKind.WILDCARD) {
+        if (ignoreAnnosInS) {
+          si = si.create(si.getAnnotatedType(), true);
+        }
+        if (ignoreAnnosInT) {
+          ti = ti.create(ti.getAnnotatedType(), true);
+        }
         constraints.add(createImpliedConstraint(parent, description, si, ti, Kind.TYPE_EQUALITY));
       }
     }
     return constraints;
+  }
+
+  /**
+   * Returns true if {@code superType} is the {@code java.lang.Enum} supertype of the enum class
+   * {@code type}; that is, {@code superType} is {@code Enum<E>} where {@code E} is {@code type}.
+   *
+   * <p>The qualifier on the type argument {@code E} is a copy of the qualifier on {@code type}
+   * itself, rather than a qualifier that a programmer wrote; see {@code
+   * SupertypeFinder.createEnumSuperType}. Therefore, that type argument is not invariant, and its
+   * qualifier must not be compared to the qualifier of another type argument.
+   *
+   * @param type a type
+   * @param superType a supertype of {@code type}
+   * @return true if {@code superType} is the {@code java.lang.Enum} supertype of the enum class
+   *     {@code type}
+   */
+  private static boolean isEnumSupertypeOfEnumClass(AbstractType type, AbstractType superType) {
+    return TypesUtils.isDeclaredOfName(superType.getJavaType(), Enum.class.getCanonicalName())
+        && !TypesUtils.isDeclaredOfName(type.getJavaType(), Enum.class.getCanonicalName());
   }
 
   /**
