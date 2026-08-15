@@ -68,6 +68,12 @@ public class VariableBounds {
   /** Saved qualifier bounds used in the event the first attempt at resolution fails. */
   public EnumMap<BoundKind, LinkedHashSet<AbstractQualifier>> savedQualifierBounds = null;
 
+  /** Saved {@link #constraints} used in the event the first attempt at resolution fails. */
+  private @Nullable ConstraintSet savedConstraints = null;
+
+  /** Saved {@link #hasThrowsBound} used in the event the first attempt at resolution fails. */
+  private boolean savedHasThrowsBound = false;
+
   /**
    * Creates bounds for {@code variable}.
    *
@@ -100,6 +106,10 @@ public class VariableBounds {
         BoundKind.UPPER, new LinkedHashSet<>(qualifierBounds.get(BoundKind.UPPER)));
     savedQualifierBounds.put(
         BoundKind.LOWER, new LinkedHashSet<>(qualifierBounds.get(BoundKind.LOWER)));
+
+    savedConstraints = new ConstraintSet();
+    savedConstraints.addAll(constraints);
+    savedHasThrowsBound = hasThrowsBound;
   }
 
   /**
@@ -108,7 +118,16 @@ public class VariableBounds {
    */
   public void restore() {
     assert savedBounds != null;
+    assert savedConstraints != null;
     instantiation = null;
+    // Adding a bound can enqueue a constraint in `constraints`, and those constraints are not
+    // necessarily reduced before restoration: incorporation stops as soon as the bound set contains
+    // false, which is exactly when restoration happens. Any constraint left over from the failed
+    // attempt was derived from bounds that are about to be discarded, so discard it too; otherwise
+    // the next call to `BoundSet.reachFixedPoint` would reduce it.
+    constraints.clear();
+    constraints.addAll(savedConstraints);
+    hasThrowsBound = savedHasThrowsBound;
     bounds.clear();
     bounds.put(BoundKind.EQUAL, new LinkedHashSet<>(savedBounds.get(BoundKind.EQUAL)));
     bounds.put(BoundKind.UPPER, new LinkedHashSet<>(savedBounds.get(BoundKind.UPPER)));

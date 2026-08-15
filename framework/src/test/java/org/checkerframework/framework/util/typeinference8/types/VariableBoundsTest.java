@@ -1,0 +1,129 @@
+package org.checkerframework.framework.util.typeinference8.types;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
+import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.junit.Assert;
+import org.junit.Test;
+
+/** Tests of {@link VariableBounds#save} and {@link VariableBounds#restore}. */
+public class VariableBoundsTest {
+
+  /** Creates a new VariableBoundsTest. */
+  public VariableBoundsTest() {}
+
+  /** A constraint that is never reduced; only its identity matters. */
+  private static class DummyConstraint implements Constraint {
+
+    /** Creates a new DummyConstraint. */
+    DummyConstraint() {}
+
+    @Override
+    public Kind getKind() {
+      return Kind.SUBTYPE;
+    }
+
+    @Override
+    public ReductionResult reduce(Java8InferenceContext context) {
+      throw new AssertionError("VariableBoundsTest never reduces a constraint.");
+    }
+  }
+
+  /**
+   * Tests that {@link VariableBounds#restore} discards the constraints and the throws bound that
+   * were recorded after {@link VariableBounds#save}.
+   *
+   * <p>{@code Resolution.resolveWithoutCapture} adds an {@code EQUAL} bound for each variable it
+   * resolves, and incorporating such a bound can enqueue a constraint in {@link
+   * VariableBounds#constraints}. Those constraints are not always reduced before the attempt fails:
+   * {@code BoundSet.incorporateToFixedPoint} returns immediately when the bound set contains false.
+   * A constraint left over from the failed attempt was derived from bounds that restoration
+   * discards, so restoration must discard the constraint too. Otherwise the {@code
+   * BoundSet.reachFixedPoint} call at the end of {@code Resolution.resolveWithCapture} would reduce
+   * it, which can put false back into the bound set and make {@code Resolution.resolve} throw
+   * {@code BugInCF}.
+   */
+  @Test
+  public void restoreDiscardsConstraintsFromFailedAttempt() {
+    VariableBounds variableBounds = uninitializedVariableBounds();
+
+    variableBounds.save();
+
+    // The failed attempt at resolution without capture.
+    variableBounds.constraints.add(new DummyConstraint());
+    variableBounds.setHasThrowsBound(true);
+
+    variableBounds.restore();
+
+    Assert.assertTrue(variableBounds.constraints.isEmpty());
+    Assert.assertFalse(variableBounds.hasThrowsBound());
+  }
+
+  /**
+   * Tests that {@link VariableBounds#restore} keeps the constraints and the throws bound that were
+   * recorded before {@link VariableBounds#save}, which are not part of the failed attempt.
+   */
+  @Test
+  public void restoreKeepsStateFromBeforeTheSnapshot() {
+    VariableBounds variableBounds = uninitializedVariableBounds();
+    Constraint beforeSnapshot = new DummyConstraint();
+    variableBounds.constraints.add(beforeSnapshot);
+    variableBounds.setHasThrowsBound(true);
+
+    variableBounds.save();
+
+    // The failed attempt at resolution without capture.
+    variableBounds.constraints.add(new DummyConstraint());
+
+    variableBounds.restore();
+
+    Assert.assertTrue(variableBounds.hasThrowsBound());
+    Assert.assertSame(beforeSnapshot, variableBounds.constraints.pop());
+    Assert.assertTrue(variableBounds.constraints.isEmpty());
+  }
+
+  /**
+   * Returns bounds for a variable, where neither the variable nor the context has been initialized.
+   * Creating a real variable and a real context requires a running compilation, which is far more
+   * than this test needs: {@link VariableBounds}'s constructor only stores the two references.
+   *
+   * @return bounds for an uninitialized variable
+   */
+  private static VariableBounds uninitializedVariableBounds() {
+    return new VariableBounds(
+        uninitialized(Variable.class), uninitialized(Java8InferenceContext.class));
+  }
+
+  /**
+   * Returns an instance of {@code clazz} on which no constructor has run, so all its fields have
+   * their default values.
+   *
+   * <p>The instance is created the way deserialization creates one, via {@code
+   * sun.reflect.ReflectionFactory}. That class is used reflectively so that compiling this file
+   * does not produce a "internal proprietary API" warning, which {@code -Werror} would turn into an
+   * error.
+   *
+   * @param <T> the type of the returned instance
+   * @param clazz the class to instantiate
+   * @return an instance of {@code clazz} whose fields all have their default values
+   */
+  private static <T> T uninitialized(Class<T> clazz) {
+    try {
+      Class<?> reflectionFactoryClass = Class.forName("sun.reflect.ReflectionFactory");
+      Object reflectionFactory =
+          reflectionFactoryClass.getMethod("getReflectionFactory").invoke(null);
+      Method newConstructorForSerialization =
+          reflectionFactoryClass.getMethod(
+              "newConstructorForSerialization", Class.class, Constructor.class);
+      Constructor<?> constructor =
+          (Constructor<?>)
+              newConstructorForSerialization.invoke(
+                  reflectionFactory, clazz, Object.class.getDeclaredConstructor());
+      return clazz.cast(constructor.newInstance());
+    } catch (ReflectiveOperationException e) {
+      throw new AssertionError("Could not create a " + clazz.getSimpleName(), e);
+    }
+  }
+}

@@ -155,6 +155,25 @@ public class ConstraintSetTest {
     Assert.assertEquals(drain(viaConstraintSet), drain(viaCollection));
   }
 
+  /**
+   * {@code clear()} must remove every constraint, and must leave a set that behaves like a newly
+   * created one.
+   */
+  @Test
+  public void clearRemovesEveryConstraint() {
+    ConstraintSet set = new ConstraintSet();
+    set.addAll(Arrays.asList(new NamedConstraint("a"), new NamedConstraint("b")));
+
+    set.clear();
+
+    Assert.assertTrue(set.isEmpty());
+
+    // A constraint that the set contained before it was cleared is no longer a duplicate.
+    Constraint a = new NamedConstraint("a");
+    set.add(a);
+    Assert.assertEquals(Arrays.asList(a), drain(set));
+  }
+
   @Test
   public void getClosedSubsetOfEmptySet() {
     Assert.assertThrows(

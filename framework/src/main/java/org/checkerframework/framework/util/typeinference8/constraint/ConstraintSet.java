@@ -143,6 +143,15 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
+   * Removes every constraint from this set and forgets that inference failed because of qualifiers.
+   * That is, this returns this constraint set to the state of a newly created one.
+   */
+  public void clear() {
+    list.clear();
+    annotationFailure = false;
+  }
+
+  /**
    * Removes and returns the first constraint that was added to this set.
    *
    * @return first constraint that was added to this set
@@ -516,6 +525,11 @@ public class ConstraintSet implements ReductionResult {
 
     @Override
     public void remove(ConstraintSet subset) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void clear() {
       throw cannotModify();
     }
 
