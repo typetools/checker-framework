@@ -343,15 +343,15 @@ public class Expression extends TypeConstraint {
       // Explicitly typed lambda
       List<? extends VariableTree> parameters = lambda.getParameters();
       List<AbstractType> gs = tPrime.getFunctionTypeParameterTypes();
-      if (parameters.size() != gs.size()) {
-        // If the number of lambda parameters differs from the number of parameter types of the
-        // function type, the constraint reduces to false.
-        boundSet.addFalse();
-        return ReductionResultPair.of(constraintSet, boundSet);
-      }
       if (gs == null) {
         // T is not a functional interface type, so it has no function type. JLS 18.2.1 says that
         // the constraint reduces to false in that case.
+        boundSet.addFalse();
+        return ReductionResultPair.of(constraintSet, boundSet);
+      }
+      if (parameters.size() != gs.size()) {
+        // If the number of lambda parameters differs from the number of parameter types of the
+        // function type, the constraint reduces to false.
         boundSet.addFalse();
         return ReductionResultPair.of(constraintSet, boundSet);
       }
@@ -494,12 +494,12 @@ public class Expression extends TypeConstraint {
         InferenceType.create(context.typeFactory.getAnnotatedType(fElement), map, context);
 
     List<AbstractType> qs = tPrime.getFunctionTypeParameterTypes();
+    // tPrime is a parameterization of t, which is a wildcard-parameterized functional interface.
+    assert qs != null : "@AssumeAssertion(nullness): tPrime is a functional interface";
     if (qs.size() != ps.size()) {
       // 18.5.3: If n != k, no valid parameterization exists.
       return IPair.of(t, falseBoundSet(context));
     }
-    // tPrime is a parameterization of t, which is a wildcard-parameterized functional interface.
-    assert qs != null : "@AssumeAssertion(nullness): tPrime is a functional interface";
 
     // A set of constraint formulas is formed with, for all i (1 <= i <= n), <Pi = Qi>.
     ConstraintSet constraintSet = new ConstraintSet();

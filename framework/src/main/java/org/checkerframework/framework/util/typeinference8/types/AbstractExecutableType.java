@@ -104,28 +104,31 @@ public abstract class AbstractExecutableType {
   /**
    * Returns the return type of this.
    *
-   * @param map a mapping from type variable to inference variable
+   * @param map a mapping from type variable to inference variable, or null to treat no type
+   *     variable as an inference variable
    * @return the return type
    */
-  public abstract AbstractType getReturnType(Theta map);
+  public abstract AbstractType getReturnType(@Nullable Theta map);
 
   /**
    * Returns a list of the parameter types of {@code AbstractExecutableType} where the vararg
    * parameter has been replaced by individual parameters so the result has length {@code size}.
    *
-   * @param map a mapping from type variable to inference variable
+   * @param map a mapping from type variable to inference variable, or null to treat no type
+   *     variable as an inference variable
    * @param size the number of parameters to return; used to expand the vararg
    * @return a list of the parameter types of {@code AbstractExecutableType}, of length {@code size}
    */
-  public abstract List<AbstractType> getParameterTypes(Theta map, int size);
+  public abstract List<AbstractType> getParameterTypes(@Nullable Theta map, int size);
 
   /**
    * Returns the parameter types of this. (Varags are not expanded.)
    *
-   * @param map a mapping from type variable to inference variable
+   * @param map a mapping from type variable to inference variable, or null to treat no type
+   *     variable as an inference variable
    * @return the parameter types
    */
-  public List<AbstractType> getParameterTypes(Theta map) {
+  public List<AbstractType> getParameterTypes(@Nullable Theta map) {
     return getParameterTypes(map, annotatedExecutableType.getParameterTypes().size());
   }
 
@@ -135,7 +138,8 @@ public abstract class AbstractExecutableType {
    *
    * <p>This is a helper method for {@link #getParameterTypes(Theta, int)}.
    *
-   * @param map a mapping from type variable to inference variable
+   * @param map a mapping from type variable to inference variable, or null to treat no type
+   *     variable as an inference variable
    * @param size the number of parameters to return; used to expand the vararg
    * @param firstParam an extra first parameter to add at the beginning of the returned list, or
    *     null
@@ -144,7 +148,10 @@ public abstract class AbstractExecutableType {
    *     size}
    */
   protected final List<AbstractType> getParameterTypes(
-      Theta map, int size, @Nullable AnnotatedTypeMirror firstParam, boolean isVarargsCall) {
+      @Nullable Theta map,
+      int size,
+      @Nullable AnnotatedTypeMirror firstParam,
+      boolean isVarargsCall) {
     List<AnnotatedTypeMirror> params = new ArrayList<>(size);
     List<TypeMirror> paramsJava = new ArrayList<>(size);
 
