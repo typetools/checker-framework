@@ -12,6 +12,9 @@ warning no longer require `-AcheckPurityAnnotations` to also be supplied.
 
 ### Implementation details
 
+Made the field `Java8InferenceContext.pathToExpression` private; use
+`getPathToExpression()` and `setPathToExpression()` instead.
+
 ### Closed issues
 
 ## Version 4.2.2 (2026-08-06)
