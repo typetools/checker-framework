@@ -1,3 +1,6 @@
+// Test case for issue 7702:
+// https://github.com/typetools/checker-framework/issues/7702
+
 import java.lang.invoke.MethodHandle;
 
 public class Issue7702 {

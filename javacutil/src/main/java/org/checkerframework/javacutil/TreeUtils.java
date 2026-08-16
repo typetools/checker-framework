@@ -2470,9 +2470,31 @@ public final class TreeUtils {
         TypeMirror type = TreeUtils.typeOf(invok.getArguments().get(numParameters - 1));
         return type.getKind().isPrimitive() || TypesUtils.isBoxedPrimitive(type);
       }
+      // MethodHandle.invokeExact is signature-polymorphic. javac does not set varargsElement,
+      // so a single non-array argument is otherwise treated as the Object[] array itself.
+      // Nested generic inference then uses Object[] as the target type and crashes
+      // (FalseBoundException). See issue 7702.
+      if (isMethodHandleInvokeExact(e)) {
+        TypeMirror type = TreeUtils.typeOf(invok.getArguments().get(numParameters - 1));
+        return type.getKind() != TypeKind.ARRAY;
+      }
     }
 
     return false;
+  }
+
+  /**
+   * Returns true if {@code method} is {@link java.lang.invoke.MethodHandle#invokeExact}.
+   *
+   * @param method a method
+   * @return true if {@code method} is {@code MethodHandle.invokeExact}
+   */
+  public static boolean isMethodHandleInvokeExact(ExecutableElement method) {
+    if (!method.isVarArgs() || !method.getSimpleName().contentEquals("invokeExact")) {
+      return false;
+    }
+    Name className = ElementUtils.getQualifiedClassName(method);
+    return className != null && className.contentEquals("java.lang.invoke.MethodHandle");
   }
 
   /**
