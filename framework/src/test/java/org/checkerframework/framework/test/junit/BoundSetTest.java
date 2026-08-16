@@ -71,6 +71,9 @@ public class BoundSetTest {
     // the bound set that is being incorporated to a fixed point.
     BoundSet reductionResult = BoundSet.initialBounds(thetaFor(gamma), context);
     alpha.getBounds().constraints.add(new ConstantConstraint(reductionResult));
+    // Gamma has a constraint of its own, which is reduced only if gamma is processed after being
+    // added to the bound set.
+    gamma.getBounds().constraints.add(new ConstantConstraint(new BoundSet(context)));
 
     // The bound set contains beta as well as alpha, so that gamma is added to the bound set while
     // the iteration still has an element to yield.  A `LinkedHashSet` iterator does not notice an
@@ -79,6 +82,7 @@ public class BoundSetTest {
     boundSet.incorporateToFixedPoint(new BoundSet(context));
 
     Assert.assertTrue(alpha.getBounds().constraints.isEmpty());
+    Assert.assertTrue(gamma.getBounds().constraints.isEmpty());
   }
 
   /** A variable that can be created without a running compilation. */
