@@ -196,12 +196,12 @@ public class InferenceFactory {
    * the invoked method or constructor, or by the class being instantiated, and that is not in scope
    * at the invocation.
    *
-   * <p>When the result of an invocation is unused, javac may leave the type of the invocation as
-   * the declared return type, without substituting the type arguments that javac inferred. Such a
-   * type expresses no requirement on the invocation, and using it as the target type would require
-   * an inference variable to be a subtype of the very type variable that the inference variable
-   * stands for. Resolution can satisfy that bound only by chance, so inference reports a spurious
-   * failure.
+   * <p>When an invocation has no assignment context -- for example, when its result is unused or is
+   * used only as a receiver -- javac may leave some of the type arguments that it inferred
+   * unsubstituted in the type of the invocation. Such a type expresses no requirement on the
+   * invocation, and using it as the target type would require an inference variable to be a subtype
+   * of the very type variable that the inference variable stands for. Resolution can satisfy that
+   * bound only by chance, so inference reports a spurious failure.
    *
    * <p>A type variable that is in scope at the invocation is not evidence of such a missing
    * substitution, because a correctly substituted type may mention it. For example, in {@code <T> T
