@@ -1,12 +1,10 @@
 // The type argument for the function type's thrown type is a wildcard that mentions an inference
-// variable.  The thrown type of the function type is therefore neither a proper type nor a use of
-// an inference variable; it is an `InferenceType`.
-// `InferenceFactory.getCheckedExceptionConstraints` must not assume that every thrown type that is
-// not proper is a use of an inference variable.
-//
-// This file must not be annotated with `@SuppressWarnings("all")`, because that also suppresses
-// the `type.argument.inference.crashed` error that this test checks for.
+// variable.  `InferenceFactory.getCheckedExceptionConstraints` must derive the function type from
+// the non-wildcard parameterization (JLS 9.9) of the target type.  Otherwise the thrown type is
+// neither a proper type nor a use of an inference variable, so no checked exception constraint is
+// created for it.
 
+@SuppressWarnings("all") // Just check for crashes.
 class CheckedExceptionWildcardThrows {
 
   interface ThrowingSupplier<T, E extends Exception> {
@@ -21,11 +19,27 @@ class CheckedExceptionWildcardThrows {
     return "";
   }
 
+  static String throwsCheckedException() throws java.io.IOException {
+    return "";
+  }
+
   static void useLambda() throws Exception {
     String s = call(() -> "");
   }
 
   static void useMemberReference() throws Exception {
     String s = call(CheckedExceptionWildcardThrows::id);
+  }
+
+  // The lambda body throws a checked exception, so the inference variable for the function type's
+  // thrown type gets a checked exception constraint and `E` is inferred as IOException.  (If `E`
+  // were inferred as its upper bound, Exception, then `call` would throw Exception, which this
+  // method does not declare.)
+  static void useThrowingLambda() throws java.io.IOException {
+    String s = call(() -> throwsCheckedException());
+  }
+
+  static void useThrowingMemberReference() throws java.io.IOException {
+    String s = call(CheckedExceptionWildcardThrows::throwsCheckedException);
   }
 }
