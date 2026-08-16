@@ -293,4 +293,60 @@ public class ConstraintSetTest {
     constraintSet.add(new NumberedConstraint(1));
     Assert.assertEquals(Collections.singletonList(c0), drain(constraintSet));
   }
+
+  /**
+   * Applying instantiations can make two constraints in a set equal to one another. Only one of
+   * them is retained, because a constraint set does not contain two constraints that are equal.
+   */
+  @Test
+  public void applyInstantiationsDiscardsDuplicates() {
+    NumberedConstraint c0 = new NumberedConstraint(0);
+    NumberedConstraint c1 = new NumberedConstraint(1);
+    NumberedConstraint c2 = new NumberedConstraint(2);
+    ConstraintSet constraintSet = new ConstraintSet(c0, c1, c2);
+    // Make two constraints that are in the set equal, as applying an instantiation to a
+    // TypeConstraint can do.  The constraints are mutated directly, rather than by
+    // constraintSet.applyInstantiations(), because NumberedConstraint is not a TypeConstraint.
+    c1.id = 0;
+    constraintSet.applyInstantiations();
+    // The constraint that was added first is the one that is retained.
+    List<Constraint> constraints = drain(constraintSet);
+    Assert.assertEquals(2, constraints.size());
+    Assert.assertSame(c0, constraints.get(0));
+    Assert.assertSame(c2, constraints.get(1));
+  }
+
+  /**
+   * Removing constraints takes time linear in the sizes of the two constraint sets. An
+   * implementation that searches this set for each constraint that is being removed takes quadratic
+   * time; because {@code Constraint.equals} walks the structure of the constrained types, that
+   * search is expensive as well as quadratic.
+   */
+  @Test
+  public void removingConstraintsTakesLinearTime() {
+    int size = 500;
+    ConstraintSet constraintSet = new ConstraintSet();
+    ConstraintSet toRemove = new ConstraintSet();
+    for (int i = 0; i < size; i++) {
+      constraintSet.add(new NumberedConstraint(i));
+      if (i % 2 == 0) {
+        toRemove.add(new NumberedConstraint(i));
+      }
+    }
+    NumberedConstraint.equalsCalls = 0;
+    constraintSet.remove(toRemove);
+    int equalsCalls = NumberedConstraint.equalsCalls;
+    Assert.assertEquals(size / 2, drain(constraintSet).size());
+    // The current implementation makes two `equals` calls per removed constraint, or `size` calls
+    // in all.  A quadratic implementation makes about size*size/4 of them.
+    Assert.assertTrue(
+        "removing "
+            + (size / 2)
+            + " of "
+            + size
+            + " constraints made "
+            + equalsCalls
+            + " calls to Constraint.equals",
+        equalsCalls <= 2 * size);
+  }
 }

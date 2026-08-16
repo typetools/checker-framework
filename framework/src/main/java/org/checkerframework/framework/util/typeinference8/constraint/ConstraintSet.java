@@ -82,7 +82,7 @@ public class ConstraintSet implements ReductionResult {
    *     relationship
    */
   private ConstraintSet(boolean annotationFailure) {
-    this.queue = new ArrayDeque<>(0);
+    this.queue = new UnmodifiableEmptyDeque();
     this.members = Collections.emptySet();
     this.annotationFailure = annotationFailure;
   }
@@ -206,10 +206,12 @@ public class ConstraintSet implements ReductionResult {
       members.clear();
       return;
     }
-    for (Constraint constraint : subset.queue) {
-      members.remove(constraint);
-    }
-    queue.removeAll(subset.queue);
+    // Testing membership in a hash-based set, rather than calling `Deque.removeAll`, makes this
+    // method take time linear (rather than quadratic) in the sizes of the two constraint sets.
+    // `Constraint.equals` is expensive, because it walks the structure of the constrained types.
+    Set<Constraint> toRemove = new LinkedHashSet<>(subset.queue);
+    queue.removeIf(toRemove::contains);
+    members.removeAll(toRemove);
   }
 
   /**
@@ -376,9 +378,15 @@ public class ConstraintSet implements ReductionResult {
         tc.applyInstantiations();
       }
     }
-    // Applying instantiations changes the hash code of a constraint, so rebuild the index.
+    // Applying instantiations changes the hash code of a constraint, and can make two constraints
+    // in this set equal to one another.  Rebuild both the queue and the index, discarding every
+    // constraint that is now equal to an earlier one.
+    List<Constraint> constraints = new ArrayList<>(queue);
+    queue.clear();
     members.clear();
-    members.addAll(queue);
+    for (Constraint constraint : constraints) {
+      addIfAbsent(constraint);
+    }
   }
 
   @Override
@@ -561,6 +569,38 @@ public class ConstraintSet implements ReductionResult {
     @Override
     public String toString() {
       return name;
+    }
+  }
+
+  /**
+   * An empty deque that cannot be modified; every method that would add an element throws {@link
+   * BugInCF}. The immutable constraint sets {@link #TRUE} and {@link #TRUE_ANNO_FAIL} use it, so
+   * that a modifying method that is not overridden in {@link ImmutableConstraintSet} fails fast
+   * rather than corrupting a constraint set that every inference problem shares.
+   *
+   * <p>Only {@link #addFirst} and {@link #addLast} are overridden, because {@code ArrayDeque}
+   * specifies that every other method that adds an element is equivalent to one of them. The
+   * methods that remove an element need no override: on an empty deque, each of them either throws
+   * an exception or does nothing.
+   */
+  private static final class UnmodifiableEmptyDeque extends ArrayDeque<Constraint> {
+
+    /** Unique identifier for serialization. */
+    private static final long serialVersionUID = 20260815L;
+
+    /** Creates an UnmodifiableEmptyDeque. */
+    UnmodifiableEmptyDeque() {
+      super(0);
+    }
+
+    @Override
+    public void addFirst(Constraint constraint) {
+      throw new BugInCF("Attempted to modify an immutable constraint set.");
+    }
+
+    @Override
+    public void addLast(Constraint constraint) {
+      throw new BugInCF("Attempted to modify an immutable constraint set.");
     }
   }
 }
