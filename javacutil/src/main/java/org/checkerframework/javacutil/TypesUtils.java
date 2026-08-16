@@ -1457,15 +1457,15 @@ public final class TypesUtils {
    * upperBound} must be {@code null} or {@code Object}. If {@code upperBound} is non-null and not
    * {@code Object}, then {@code lowerBound} must be {@code null};
    *
-   * @param lowerBound the lower bound for the wildcard
-   * @param upperBound the upper bound for the wildcard
+   * @param lowerBound the lower bound for the wildcard, or null for an implicit lower bound
+   * @param upperBound the upper bound for the wildcard, or null for an implicit upper bound
    * @param types TypesUtils
    * @return a wildcard with the given bounds
    */
   public static TypeMirror createWildcard(
-      TypeMirror lowerBound, TypeMirror upperBound, Types types) {
+      @Nullable TypeMirror lowerBound, @Nullable TypeMirror upperBound, Types types) {
     TypeMirror nonObjectUpperBound = upperBound;
-    if (isObject(upperBound)) {
+    if (upperBound != null && isObject(upperBound)) {
       nonObjectUpperBound = null;
     }
 

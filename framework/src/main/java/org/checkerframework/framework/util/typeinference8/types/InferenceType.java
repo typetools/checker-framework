@@ -75,7 +75,8 @@ public final class InferenceType extends AbstractType {
    * mapped to an inference variable, a {@link ProperType} is returned.
    *
    * @param type the annotated type mirror
-   * @param map a mapping from type variable to inference variable
+   * @param map a mapping from type variable to inference variable, or null to treat no type
+   *     variable as an inference variable
    * @param context the context
    * @return the abstract type for the given TypeMirror and AnnotatedTypeMirror
    */
@@ -92,7 +93,8 @@ public final class InferenceType extends AbstractType {
    * mapped to an inference variable, a {@link ProperType} is returned.
    *
    * @param type the annotated type mirror
-   * @param map a mapping from type variable to inference variable
+   * @param map a mapping from type variable to inference variable, or null to treat no type
+   *     variable as an inference variable
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
    * @param ignoreAnnotations true if the annotations on this type should be ignored
@@ -135,7 +137,8 @@ public final class InferenceType extends AbstractType {
    *
    * @param type the annotated type mirror
    * @param typeMirror the Java type
-   * @param map a mapping from type variable to inference variable
+   * @param map a mapping from type variable to inference variable, or null to treat no type
+   *     variable as an inference variable
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
    * @param ignoreAnnotations true if the annotations on this type should be ignored
