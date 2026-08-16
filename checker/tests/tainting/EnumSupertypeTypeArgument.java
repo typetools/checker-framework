@@ -24,4 +24,14 @@ public class EnumSupertypeTypeArgument {
   void useSameQualifiers(@Untainted MyEnum arg) {
     @Untainted MyEnum x = id(arg);
   }
+
+  static <T extends Comparable<T>> T max(T a, T b) {
+    return a.compareTo(b) < 0 ? b : a;
+  }
+
+  void useComparableBound(@Untainted MyEnum a, @Untainted MyEnum b) {
+    // The synthesized type argument of `Enum<MyEnum>` also appears in `Comparable<MyEnum>`, which
+    // `Enum<MyEnum>` implements.
+    @Tainted MyEnum x = max(a, b);
+  }
 }

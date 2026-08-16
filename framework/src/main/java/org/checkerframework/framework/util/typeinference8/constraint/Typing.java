@@ -49,6 +49,14 @@ public class Typing extends TypeConstraint {
   private final boolean isCovarTypeArg;
 
   /**
+   * True if this constraint is implied by two parameterized bounds of an inference variable; see
+   * {@code VariableBounds#getConstraintsFromParameterized}. Reducing an equality constraint between
+   * two proper types compares their qualifiers only if this field is true; see {@link
+   * #reduceEquality()}.
+   */
+  private final boolean impliedByParameterizedBounds;
+
+  /**
    * Creates a typing constraint.
    *
    * @param parent the constraint whose reduction created this constraint
@@ -74,7 +82,8 @@ public class Typing extends TypeConstraint {
   }
 
   /**
-   * Creates a typing constraint.
+   * Creates a typing constraint. The constraint is implied by two parameterized bounds if and only
+   * if {@code parent} is, because reducing a constraint yields constraints about the same types.
    *
    * @param parent the constraint whose reduction created this constraint
    * @param S left-hand side type
@@ -84,6 +93,33 @@ public class Typing extends TypeConstraint {
    */
   public Typing(
       Constraint parent, AbstractType S, AbstractType t, Kind kind, boolean covarTypeArg) {
+    this(
+        parent,
+        S,
+        t,
+        kind,
+        covarTypeArg,
+        parent instanceof Typing typing && typing.impliedByParameterizedBounds);
+  }
+
+  /**
+   * Creates a typing constraint.
+   *
+   * @param parent the constraint whose reduction created this constraint
+   * @param S left-hand side type
+   * @param t right-hand side type
+   * @param kind the kind of constraint
+   * @param covarTypeArg true if the constraint is for a covariant type argument
+   * @param impliedByParameterizedBounds true if the constraint is implied by two parameterized
+   *     bounds of an inference variable
+   */
+  public Typing(
+      Constraint parent,
+      AbstractType S,
+      AbstractType t,
+      Kind kind,
+      boolean covarTypeArg,
+      boolean impliedByParameterizedBounds) {
     super(parent, t);
     assert S != null;
     switch (kind) {
@@ -93,6 +129,7 @@ public class Typing extends TypeConstraint {
     this.S = S;
     this.kind = kind;
     this.isCovarTypeArg = covarTypeArg;
+    this.impliedByParameterizedBounds = impliedByParameterizedBounds;
   }
 
   /**
@@ -393,15 +430,19 @@ public class Typing extends TypeConstraint {
         // JLS 18.2.4: "If S and T are proper types, the constraint reduces to true if S is the
         // same as T (4.3.4), and false otherwise."
         // The Java types are the same, because javac accepted the program and therefore reduced
-        // this same constraint to true.  So only the qualifiers are compared.
-        //
-        // Expression.reduceProperType makes the opposite choice for a constraint between an
-        // expression and a proper type: it ignores the qualifiers.  That reasoning does not
-        // apply here.  There, the constraint comes directly from an expression, whose qualifiers
-        // BaseTypeVisitor separately checks with a more informative message.  Here, the
-        // constraint is implied by bounds on inference variables -- see
-        // VariableBounds.getConstraintsFromParameterized -- so if it does not hold, then no
-        // instantiation of those variables exists, and no later check would report that.
+        // this same constraint to true.  So only the qualifiers might differ.
+        if (!impliedByParameterizedBounds) {
+          // Each of the types comes from a construct -- an argument, an assignment, ... -- whose
+          // qualifiers BaseTypeVisitor separately checks, issuing a more informative message than
+          // inference could.  See Expression.reduceProperType, which ignores the qualifiers of an
+          // expression and a proper type for the same reason.
+          return ConstraintSet.TRUE;
+        }
+        // The constraint relates the type arguments of two bounds of an inference variable -- see
+        // VariableBounds.getConstraintsFromParameterized -- rather than two types that appear in
+        // the program.  If the qualifiers differ, then no instantiation of the inference variable
+        // exists, and no other check would report that.  The qualifiers of a covariant type
+        // argument are unrelated, but getConstraintsFromParameterized already ignored them.
         return ((ProperType) S).isSameType((ProperType) T);
       }
       ProperType sProper = (ProperType) S;
@@ -497,11 +538,15 @@ public class Typing extends TypeConstraint {
 
     Typing typing = (Typing) o;
 
-    return S.equals(typing.S) && kind == typing.kind;
+    // Two constraints that reduce differently are not the same constraint, so also compare
+    // `impliedByParameterizedBounds`.  (`isCovarTypeArg` does not affect reduction.)
+    return S.equals(typing.S)
+        && kind == typing.kind
+        && impliedByParameterizedBounds == typing.impliedByParameterizedBounds;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), S, kind);
+    return Objects.hash(super.hashCode(), S, kind, impliedByParameterizedBounds);
   }
 }

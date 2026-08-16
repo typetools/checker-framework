@@ -121,11 +121,8 @@ public class Issue1218 {
     ints((@IntVal(1) int[]) null);
   }
 
-  // Inferred enumval types are incompatible with <E extends Enum<E>>, so inference fails for
-  // every call in this method.  Because the visitor stops after an inference failure, the
-  // [varargs] error on the first call is not issued.
   void testConstructorCallTypeInferred() {
-    // :: error: [type.arguments.not.inferred]
+    // :: error: [varargs]
     new ForEnum<>(MyEnum.A);
     // :: error: [type.arguments.not.inferred]
     new ForEnum<>(MyEnum.A, MyEnum.B);

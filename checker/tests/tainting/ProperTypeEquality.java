@@ -1,5 +1,6 @@
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
+import org.checkerframework.framework.qual.Covariant;
 
 // An equality constraint between two proper types compares their qualifiers.
 public class ProperTypeEquality {
@@ -23,5 +24,19 @@ public class ProperTypeEquality {
 
   void useSameQualifiers() {
     B<@Untainted String> x = m();
+  }
+
+  @Covariant(0)
+  interface CovariantSup<T> {}
+
+  <S extends CovariantSup<@Untainted String>> S covariantM() {
+    throw new RuntimeException();
+  }
+
+  void useCovariantTypeArgument() {
+    // The type argument of `CovariantSup` is covariant, so S can be a subtype of both
+    // CovariantSup<@Untainted String> and CovariantSup<@Tainted String>; the implied constraint
+    // between the two type arguments does not compare their qualifiers.
+    CovariantSup<@Tainted String> x = covariantM();
   }
 }

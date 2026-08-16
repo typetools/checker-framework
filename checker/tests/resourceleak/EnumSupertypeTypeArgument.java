@@ -15,4 +15,14 @@ public class EnumSupertypeTypeArgument {
   void use() {
     MyEnum x = get(MyEnum.class, MyEnum.ONE);
   }
+
+  static <T extends Comparable<T>> T max(T a, T b) {
+    return a.compareTo(b) < 0 ? b : a;
+  }
+
+  void useComparableBound() {
+    // The synthesized type argument of `Enum<MyEnum>` also appears in `Comparable<MyEnum>`, which
+    // `Enum<MyEnum>` implements.
+    MyEnum x = max(MyEnum.ONE, MyEnum.TWO);
+  }
 }
