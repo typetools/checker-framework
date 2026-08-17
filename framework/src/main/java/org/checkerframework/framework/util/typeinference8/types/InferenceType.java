@@ -210,6 +210,14 @@ public final class InferenceType extends AbstractType {
     }
 
     InferenceType that = (InferenceType) o;
+    if (!sameInferenceProblem(that)) {
+      return false;
+    }
+    // Two types with different qualifierVars have different qualifiers, as getQualifiers() shows.
+    if (!qualifierVars.equals(that.qualifierVars)) {
+      return false;
+    }
+
     return map == that.map && type.equals(that.type);
   }
 
