@@ -196,8 +196,10 @@ public abstract class AbstractType {
    * parameters. (A type parameter of a declared type, can't refer to any type being inferred, so
    * they are proper types.)
    *
-   * @return the upper bounds of the type parameter of this type, or null if this type is a use of
-   *     an inference variable
+   * <p>This implementation always returns a list. The return type is {@code @Nullable} only because
+   * {@link UseOfVariable#getTypeParameterBounds()} returns null.
+   *
+   * @return the upper bounds of the type parameters of this type
    */
   public @Nullable List<ProperType> getTypeParameterBounds() {
     TypeElement typeelem = (TypeElement) ((DeclaredType) getJavaType()).asElement();

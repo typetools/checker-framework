@@ -133,6 +133,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
   }
 
+  @Override
+  public boolean isAnyInferenceInProgress() {
+    return !java8InferenceStack.isEmpty();
+  }
+
   /**
    * Returns the outermost tree required to find the type of {@code tree}.
    *
