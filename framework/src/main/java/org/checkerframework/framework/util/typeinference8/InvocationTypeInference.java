@@ -468,13 +468,41 @@ public class InvocationTypeInference {
    */
   public ConstraintSet createC(
       AbstractExecutableType executableType, List<? extends ExpressionTree> args, Theta map) {
+    return createC(executableType, args, map, false);
+  }
+
+  /**
+   * Same as {@link #createC(AbstractExecutableType, List, Theta)}, but for a method or constructor
+   * invocation that is itself nested inside another expression whose own type argument inference is
+   * in progress (see {@link #createAdditionalArgConstraints(ExpressionTree, AbstractType, Theta)}).
+   * Such a nested invocation is not applicability-tested on its own (for example, because it
+   * appears inside the body of an implicitly typed lambda, which is skipped during its enclosing
+   * invocation's applicability inference (§15.12.2.2)), so, unlike the top-level invocation handled
+   * by {@link #infer(ExpressionTree, AnnotatedExecutableType)}, no bound set corresponding to
+   * §18.5.1 is ever separately computed for it. Constraints between its pertinent-to-applicability
+   * arguments and their formal parameter types (which would otherwise have been established while
+   * computing that bound set) are therefore included in {@code C} as well, so that they can still
+   * constrain the invocation's inference variables.
+   *
+   * @param executableType type of method invoked
+   * @param args argument expression trees
+   * @param map map from type variable to inference variable
+   * @param forNestedInvocation whether {@code executableType} is a nested invocation as described
+   *     above
+   * @return the constraints between the formal parameters and arguments
+   */
+  private ConstraintSet createC(
+      AbstractExecutableType executableType,
+      List<? extends ExpressionTree> args,
+      Theta map,
+      boolean forNestedInvocation) {
     ConstraintSet c = new ConstraintSet();
     List<AbstractType> formals = executableType.getParameterTypes(map, args.size());
 
     for (int i = 0; i < formals.size(); i++) {
       ExpressionTree ei = args.get(i);
       AbstractType fi = formals.get(i);
-      if (notPertinentToApplicability(ei, fi)) {
+      if (forNestedInvocation || notPertinentToApplicability(ei, fi)) {
         c.add(new Expression("Argument constraint", ei, fi));
       }
       c.addAll(createAdditionalArgConstraints(ei, fi, map));
@@ -531,7 +559,7 @@ public class InvocationTypeInference {
               context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(ei);
           Theta newMap =
               context.inferenceTypeFactory.createThetaForInvocation(ei, executableType, context);
-          ConstraintSet set = context.inference.createC(executableType, args, newMap);
+          ConstraintSet set = context.inference.createC(executableType, args, newMap, true);
           set.applyInstantiations();
           c.addAll(set);
         }
@@ -592,7 +620,7 @@ public class InvocationTypeInference {
           Theta newMap =
               context.inferenceTypeFactory.createThetaForInvocation(
                   expression, executableType, context);
-          ConstraintSet set = context.inference.createC(executableType, args, newMap);
+          ConstraintSet set = context.inference.createC(executableType, args, newMap, true);
           set.applyInstantiations();
           c.addAll(set);
         }
