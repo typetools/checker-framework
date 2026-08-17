@@ -5,10 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -153,23 +151,18 @@ public abstract class AbstractExecutableType {
   protected final List<AbstractType> getParameterTypes(
       Theta map, int size, @Nullable AnnotatedTypeMirror firstParam, boolean isVarargsCall) {
     List<AnnotatedTypeMirror> params = new ArrayList<>(size);
-    List<TypeMirror> paramsJava = new ArrayList<>(size);
 
     if (firstParam != null) {
       params.add(firstParam);
-      paramsJava.add(firstParam.getUnderlyingType());
     }
 
     params.addAll(annotatedExecutableType.getParameterTypes());
-    paramsJava.addAll(executableType.getParameterTypes());
 
     if (isVarargsCall) {
       AnnotatedTypeMirror eltATM =
           ((AnnotatedArrayType) params.remove(params.size() - 1)).getComponentType();
-      TypeMirror eltTM = ((ArrayType) paramsJava.remove(paramsJava.size() - 1)).getComponentType();
       for (int i = params.size(); i < size; i++) {
         params.add(eltATM);
-        paramsJava.add(eltTM);
       }
       // A varargs invocation passes at least as many arguments as the method has formal
       // parameters, not counting the vararg parameter itself, so the loop above never leaves
