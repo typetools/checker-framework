@@ -214,11 +214,7 @@ public final class InferenceType extends AbstractType {
 
   @Override
   public int hashCode() {
-    int result = inferenceProblemHashCode();
-    result = 31 * result + qualifierVars.hashCode();
-    result = 31 * result + type.hashCode();
-    result = 31 * result + Kind.INFERENCE_TYPE.hashCode();
-    return result;
+    return Objects.hash(inferenceProblemHashCode(), qualifierVars, type, Kind.INFERENCE_TYPE);
   }
 
   @Override
