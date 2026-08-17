@@ -620,6 +620,7 @@ tasks.register("ainferTestCheckerGenerateJaifsInsertAnnotations", InsertAnnotati
   afuDir = "../annotation-file-utilities"
   testDir = "tests/ainfer-testchecker"
   classpath = "${sourceSets.test.output.asPath}:${configurations.checkerQual.singleFile}:"
+  rerunTaskName = ":checker:ainferTestCheckerJaifTest"
 }
 
 tasks.register("ainferTestCheckerValidateJaifs", Test) {
@@ -859,6 +860,7 @@ tasks.register("ainferNullnessGenerateJaifsInsertAnnotations", InsertAnnotations
   afuDir = "../annotation-file-utilities"
   testDir = "tests/ainfer-nullness/"
   classpath = "${sourceSets.test.output.asPath}:${configurations.checkerQual.singleFile}:"
+  rerunTaskName = ":checker:ainferNullnessJaifTest"
 }
 
 tasks.register("ainferNullnessValidateJaifs", Test) {
