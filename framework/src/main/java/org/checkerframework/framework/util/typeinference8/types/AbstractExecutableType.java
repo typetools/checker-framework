@@ -102,10 +102,11 @@ public abstract class AbstractExecutableType {
   /**
    * Returns the return type of this.
    *
-   * @param map a mapping from type variable to inference variable
+   * @param map a mapping from type variable to inference variable, or null to treat no type
+   *     variable as an inference variable
    * @return the return type
    */
-  public abstract AbstractType getReturnType(Theta map);
+  public abstract AbstractType getReturnType(@Nullable Theta map);
 
   /**
    * Returns the formal parameter types of this executable.
@@ -115,21 +116,23 @@ public abstract class AbstractExecutableType {
    * result contains one element per declared formal parameter, plus one for the receiver if this is
    * an unbound method reference.
    *
-   * @param map a mapping from type variable to inference variable
+   * @param map a mapping from type variable to inference variable, or null to treat no type
+   *     variable as an inference variable
    * @param size the number of parameters to return; used to expand the vararg. It is ignored if
    *     this invocation does not use varargs.
    * @return the formal parameter types of this executable
    */
-  public abstract List<AbstractType> getParameterTypes(Theta map, int size);
+  public abstract List<AbstractType> getParameterTypes(@Nullable Theta map, int size);
 
   /**
    * Returns the formal parameter types of this executable, without expanding the vararg parameter.
    * Call this method only for an invocation that does not use varargs.
    *
-   * @param map a mapping from type variable to inference variable
+   * @param map a mapping from type variable to inference variable, or null to treat no type
+   *     variable as an inference variable
    * @return the formal parameter types of this executable
    */
-  public List<AbstractType> getParameterTypes(Theta map) {
+  public List<AbstractType> getParameterTypes(@Nullable Theta map) {
     return getParameterTypes(map, annotatedExecutableType.getParameterTypes().size());
   }
 
@@ -140,7 +143,8 @@ public abstract class AbstractExecutableType {
    *
    * <p>This is a helper method for {@link #getParameterTypes(Theta, int)}.
    *
-   * @param map a mapping from type variable to inference variable
+   * @param map a mapping from type variable to inference variable, or null to treat no type
+   *     variable as an inference variable
    * @param size the number of parameters to return; used to expand the vararg. It is ignored if
    *     {@code isVarargsCall} is false.
    * @param firstParam an extra first parameter to add at the beginning of the returned list, or
@@ -149,7 +153,10 @@ public abstract class AbstractExecutableType {
    * @return the formal parameter types of this executable
    */
   protected final List<AbstractType> getParameterTypes(
-      Theta map, int size, @Nullable AnnotatedTypeMirror firstParam, boolean isVarargsCall) {
+      @Nullable Theta map,
+      int size,
+      @Nullable AnnotatedTypeMirror firstParam,
+      boolean isVarargsCall) {
     List<AnnotatedTypeMirror> params = new ArrayList<>(size);
 
     if (firstParam != null) {
