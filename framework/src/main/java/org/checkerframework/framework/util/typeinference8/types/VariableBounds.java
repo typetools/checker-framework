@@ -677,11 +677,7 @@ public class VariableBounds {
   private static List<AnnotatedTypeMirror> annotatedTypeArguments(AbstractType type) {
     List<AbstractType> typeArgs = type.getTypeArguments();
     assert typeArgs != null : "@AssumeAssertion(nullness): the caller passes a declared type";
-    List<AnnotatedTypeMirror> result = new ArrayList<>(typeArgs.size());
-    for (AbstractType typeArg : typeArgs) {
-      result.add(typeArg.getAnnotatedType());
-    }
-    return result;
+    return CollectionsP.mapList(AbstractType::getAnnotatedType, typeArgs);
   }
 
   /**
