@@ -30,7 +30,10 @@ public class LambdaNestedConstructs {
     void run() throws IOException;
   }
 
-  /** The {@code throws E} makes inference generate a checked-exception constraint for a lambda. */
+  /**
+   * The {@code throws E} on {@code UncheckedRunnable.run()} makes inference generate a
+   * checked-exception constraint for a lambda.
+   */
   static <E extends RuntimeException> void runUnchecked(UncheckedRunnable<E> r) {}
 
   /** The {@code throws E} makes inference generate a checked-exception constraint for a lambda. */
