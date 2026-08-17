@@ -204,20 +204,8 @@ public final class Resolution {
     checkNoFalse(boundSet, "on entry to resolveSmallestSet for", as);
 
     if (boundSet.containsCapture(as)) {
-      // A non-capture variable in `as` whose only useful bound is an EQUAL bound directly to a
-      // capture variable that is also in `as` (e.g. H2 = capture#1, where capture#1 is on the
-      // left-hand side of a G<...>=capture(G<...>) bound) must not be resolved below, in
-      // resolveWithoutCapture: findProperLowerBounds/findProperUpperBounds never look at EQUAL
-      // bounds, so it would otherwise be resolved from its trivial declared bound (e.g. Object)
-      // before the capture variable it actually equals has a value. Defer such variables until
-      // after the captures in `as` are resolved, then let them re-check their bounds.
-      //
-      // Variables whose EQUAL bound mentions another *non-capture* variable in `as` are not
-      // deferred: resolveWithoutCapture's own lower/upper-bound loop already resolves chains of
-      // those correctly by iterating to a fixed point, and folding them into the capture-only
-      // deferral below would split a group that needs to be resolved together (by
-      // resolveWithCapture, in one call, so its simultaneous substitution of fresh type variables
-      // sees all of them) into two separate resolveWithCapture calls instead.
+      // Wait to resolve variables that have an equal bound to a capture variable that has not been
+      // resloved.
       Set<Variable> deferred = new LinkedHashSet<>();
       for (Variable v : as) {
         if (!v.isCaptureVariable() && hasUnresolvedEqualBoundToCaptureWithin(v, as)) {
