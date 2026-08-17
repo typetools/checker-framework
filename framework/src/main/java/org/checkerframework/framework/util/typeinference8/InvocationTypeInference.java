@@ -19,7 +19,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.bound.CaptureBound;
-import org.checkerframework.framework.util.typeinference8.constraint.AdditionalArgument;
 import org.checkerframework.framework.util.typeinference8.constraint.CheckedExceptionConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
@@ -522,7 +521,19 @@ public class InvocationTypeInference {
       }
       case METHOD_INVOCATION, NEW_CLASS -> {
         if (TreeUtils.isPolyExpression(ei)) {
-          c.addAll(new AdditionalArgument(ei).reduce(context));
+          List<? extends ExpressionTree> args;
+          if (ei instanceof NewClassTree newClassTree) {
+            args = newClassTree.getArguments();
+          } else {
+            args = ((MethodInvocationTree) ei).getArguments();
+          }
+          AbstractExecutableType executableType =
+              context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(ei);
+          Theta newMap =
+              context.inferenceTypeFactory.createThetaForInvocation(ei, executableType, context);
+          ConstraintSet set = context.inference.createC(executableType, args, newMap);
+          set.applyInstantiations();
+          c.addAll(set);
         }
       }
       case PARENTHESIZED ->
@@ -570,7 +581,20 @@ public class InvocationTypeInference {
       }
       case METHOD_INVOCATION, NEW_CLASS -> {
         if (TreeUtils.isPolyExpression(expression)) {
-          c.addAll(new AdditionalArgument(expression).reduce(context));
+          List<? extends ExpressionTree> args;
+          if (expression instanceof NewClassTree newClassTree) {
+            args = newClassTree.getArguments();
+          } else {
+            args = ((MethodInvocationTree) expression).getArguments();
+          }
+          AbstractExecutableType executableType =
+              context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(expression);
+          Theta newMap =
+              context.inferenceTypeFactory.createThetaForInvocation(
+                  expression, executableType, context);
+          ConstraintSet set = context.inference.createC(executableType, args, newMap);
+          set.applyInstantiations();
+          c.addAll(set);
         }
       }
       case PARENTHESIZED ->
@@ -700,14 +724,7 @@ public class InvocationTypeInference {
         c.applyInstantiations();
       }
       c.remove(subset);
-      BoundSet newBounds = subset.reduceAdditionalArgOnce(context);
-      if (!subset.isEmpty()) {
-        // The subset is not empty at this point if an additional argument constraint was
-        // found.  In this case, a new subset needs to be picked so that dependencies of
-        // the constraints from reducing the additional argument constraint can be taken
-        // into account.
-        c.addAll(subset);
-      }
+      BoundSet newBounds = subset.reduce(context);
       b3.incorporateToFixedPoint(newBounds);
     }
     return b3;
