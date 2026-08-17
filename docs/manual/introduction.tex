@@ -619,12 +619,15 @@ Unsound checking: ignore some errors
 More sound (strict) checking: enable errors that are disabled by default
 \begin{itemize}
 \item \<-AcheckPurityAnnotations>
-  Check the bodies of methods marked
+  Check the bodies of methods and constructors marked
   \refqualclass{dataflow/qual}{SideEffectFree},
+\iffalse
+  \refqualclass{dataflow/qual}{SideEffectsOnly},
+\fi
   \refqualclass{dataflow/qual}{Deterministic},
   and \refqualclass{dataflow/qual}{Pure}
-  to ensure the method satisfies the annotation.  By default,
-  the Checker Framework unsoundly trusts the method annotation.  See
+  to ensure the method or constructor satisfies the annotation.  By default,
+  the Checker Framework unsoundly trusts the annotation.  See
   Section~\ref{type-refinement-purity}.
 \item \<-AinvariantArrays>
   Make array subtyping invariant; that is, two arrays are subtypes of one
@@ -1577,6 +1580,14 @@ Here are some examples of the translation.
   If your proof includes ``method \<m> has no side effects'',
   then annotate \<m>'s declaration with
   \refqualclass{dataflow/qual}{SideEffectFree}.
+\iffalse
+\item
+  If your proof includes ``method \<m> modifies nothing but field \<f> of
+  its receiver'', then annotate \<m>'s declaration with
+  \refqualclasswithparams{dataflow/qual}{SideEffectsOnly}{"this.f"}.  The
+  annotation's required argument lists every expression that \<m> might
+  modify.
+\fi
 \item
   If your proof includes ``each call to method \<m> returns the same value'',
   then annotate \<m>'s declaration with
