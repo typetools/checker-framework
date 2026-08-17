@@ -199,10 +199,22 @@ public final class Resolution {
     checkNoFalse(boundSet, "on entry to resolveSmallestSet for", as);
 
     if (boundSet.containsCapture(as)) {
-      resolveWithoutCapture(as, boundSet);
-      boundSet.getInstantiatedVariables().forEach(as::remove);
-      // Then resolve the capture variables
-      resolveWithCapture(as, boundSet, context);
+      // Wait to resolve variables that have an equal bound to a capture variable that has not been
+      // resloved.
+      Set<Variable> deferred = new LinkedHashSet<>();
+      for (Variable v : as) {
+        if (!v.isCaptureVariable() && hasUnresolvedEqualBoundToCaptureWithin(v, as)) {
+          deferred.add(v);
+        }
+      }
+      Set<Variable> toResolveNow = new LinkedHashSet<>(as);
+      toResolveNow.removeAll(deferred);
+
+      resolveWithoutCapture(toResolveNow, boundSet);
+      toResolveNow.removeAll(boundSet.getInstantiatedVariables());
+      // Then resolve the capture variables (and any non-captures that depend on them directly).
+      deferred.addAll(toResolveNow);
+      resolveWithCapture(deferred, boundSet, context);
     } else {
       // Save the current state in case the first attempt at resolution fails.
       BoundSet snapshot = boundSet.saveBounds();
@@ -219,6 +231,28 @@ public final class Resolution {
       boundSet.restore(snapshot);
       resolveWithCapture(as, boundSet, context);
     }
+  }
+
+  /**
+   * Returns true if {@code v} has an {@code EQUAL} bound that mentions a capture variable in {@code
+   * as} that does not yet have an instantiation.
+   *
+   * @param v a variable
+   * @param as a set of variables being resolved together
+   * @return true if {@code v} has an unresolved {@code EQUAL} bound to a capture variable in {@code
+   *     as}
+   */
+  private static boolean hasUnresolvedEqualBoundToCaptureWithin(Variable v, Set<Variable> as) {
+    for (AbstractType t : v.getBounds().bounds.get(VariableBounds.BoundKind.EQUAL)) {
+      for (Variable mentioned : t.getInferenceVariables()) {
+        if (mentioned.isCaptureVariable()
+            && as.contains(mentioned)
+            && !mentioned.getBounds().hasInstantiation()) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**
