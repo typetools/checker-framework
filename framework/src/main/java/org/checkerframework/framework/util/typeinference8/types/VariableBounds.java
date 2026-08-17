@@ -451,8 +451,9 @@ public class VariableBounds {
    * <Si = Ti>} is implied.
    *
    * <p>The implied constraints ignore the qualifiers of a type argument that is {@link
-   * org.checkerframework.framework.qual.Covariant} or that was synthesized from an enum class; see
-   * {@link #isSynthesizedEnumTypeArgument}. Two bounds imply nothing about such a qualifier.
+   * org.checkerframework.framework.qual.Covariant} or that is a self-reference to one of the
+   * bounds; see {@link #isSelfReferentialTypeArgument}. Two bounds imply nothing about such a
+   * qualifier.
    *
    * @param parent the constraint whose reduction created the bound that implies the returned
    *     constraints, or null if no constraint did
@@ -491,12 +492,13 @@ public class VariableBounds {
       if (si.getTypeKind() != TypeKind.WILDCARD && ti.getTypeKind() != TypeKind.WILDCARD) {
         // If the type argument is covariant, then si and ti are merely supertypes of the
         // corresponding type argument of this variable; that relates each of their qualifiers to
-        // that type argument's qualifier, but not to one another.  If the type argument was
-        // synthesized from an enum class, then its qualifier is not one that a programmer wrote.
-        // In either case, the two bounds imply nothing about the two qualifiers.
+        // that type argument's qualifier, but not to one another.  If the type argument is a
+        // self-reference to the bound, then its qualifier is a copy of the bound's qualifier
+        // rather than one that a programmer wrote.  In either case, the two bounds imply nothing
+        // about the two qualifiers.
         if (covariantArgIndexes.contains(i)
-            || isSynthesizedEnumTypeArgument(s, si)
-            || isSynthesizedEnumTypeArgument(t, ti)) {
+            || isSelfReferentialTypeArgument(s, si)
+            || isSelfReferentialTypeArgument(t, ti)) {
           si = si.create(si.getAnnotatedType(), /* ignoreAnnotations= */ true);
           ti = ti.create(ti.getAnnotatedType(), /* ignoreAnnotations= */ true);
         }
@@ -514,25 +516,35 @@ public class VariableBounds {
   }
 
   /**
-   * Returns true if the qualifier on {@code typeArgument} is a copy of the qualifier on the enum
-   * class {@code type}, rather than a qualifier that a programmer wrote.
+   * Returns true if {@code typeArgument} is a self-reference to {@code type}, whose qualifier is a
+   * copy of the qualifier on {@code type} rather than a qualifier that a programmer wrote. There
+   * are two such cases.
    *
-   * <p>The supertype of an enum class {@code E} is {@code Enum<E>}, which in turn implements {@code
-   * Comparable<E>}. Both supertypes have the type argument {@code E}, whose qualifier {@code
-   * SupertypeFinder.createEnumSuperType} copies from {@code type}. Therefore, that type argument is
-   * not invariant, and its qualifier must not be compared to the qualifier of another type
-   * argument.
+   * <ul>
+   *   <li>{@code type} is a use of an F-bounded type variable, such as {@code S} declared as {@code
+   *       S extends Store<S>}. The upper bound of the use {@code @Nullable S} is {@code @Nullable
+   *       Store<@Nullable S>}, whose type argument bears the qualifier that was written on the use.
+   *   <li>{@code type} is an enum class {@code E}. Its supertype is {@code Enum<E>}, which in turn
+   *       implements {@code Comparable<E>}. Both supertypes have the type argument {@code E}, whose
+   *       qualifier {@code SupertypeFinder.createEnumSuperType} copies from {@code type}.
+   * </ul>
+   *
+   * In either case, the type argument is not invariant, and its qualifier must not be compared to
+   * the qualifier of another type argument.
    *
    * @param type one of the two types whose parameterized supertypes are being compared
    * @param typeArgument a type argument of a parameterized supertype of {@code type}
-   * @return true if the qualifier on {@code typeArgument} was synthesized from the enum class
-   *     {@code type}
+   * @return true if the qualifier on {@code typeArgument} was copied from {@code type}
    */
-  private boolean isSynthesizedEnumTypeArgument(AbstractType type, AbstractType typeArgument) {
+  private boolean isSelfReferentialTypeArgument(AbstractType type, AbstractType typeArgument) {
+    if (!context.typeFactory.types.isSameType(typeArgument.getJavaType(), type.getJavaType())) {
+      return false;
+    }
+    if (type.getTypeKind() == TypeKind.TYPEVAR) {
+      return true;
+    }
     TypeElement element = TypesUtils.getTypeElement(type.getJavaType());
-    return element != null
-        && element.getKind() == ElementKind.ENUM
-        && context.typeFactory.types.isSameType(typeArgument.getJavaType(), type.getJavaType());
+    return element != null && element.getKind() == ElementKind.ENUM;
   }
 
   /**
