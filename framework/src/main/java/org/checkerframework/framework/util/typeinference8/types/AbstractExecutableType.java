@@ -157,7 +157,9 @@ public abstract class AbstractExecutableType {
       int size,
       @Nullable AnnotatedTypeMirror firstParam,
       boolean isVarargsCall) {
-    List<AnnotatedTypeMirror> params = new ArrayList<>(size);
+    List<AnnotatedTypeMirror> params =
+        new ArrayList<>(
+            annotatedExecutableType.getParameterTypes().size() + (firstParam == null ? 0 : 1));
 
     if (firstParam != null) {
       params.add(firstParam);

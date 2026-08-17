@@ -39,8 +39,8 @@ public class VarargsExpansion {
     List<Supplier<String>> l = listOf(() -> "a", () -> "b");
   }
 
-  void varargsConstructor() {
-    Box<String> b = new Box<>("a", "b");
+  void varargsConstructor(String s, String t) {
+    Box<String> b = new Box<>(s, t);
   }
 
   void varargsMethodReference() {
