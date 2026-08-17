@@ -521,19 +521,7 @@ public class InvocationTypeInference {
       }
       case METHOD_INVOCATION, NEW_CLASS -> {
         if (TreeUtils.isPolyExpression(ei)) {
-          List<? extends ExpressionTree> args;
-          if (ei instanceof NewClassTree newClassTree) {
-            args = newClassTree.getArguments();
-          } else {
-            args = ((MethodInvocationTree) ei).getArguments();
-          }
-          AbstractExecutableType executableType =
-              context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(ei);
-          Theta newMap =
-              context.inferenceTypeFactory.createThetaForInvocation(ei, executableType, context);
-          ConstraintSet set = context.inference.createC(executableType, args, newMap);
-          set.applyInstantiations();
-          c.addAll(set);
+          c.addAll(createAdditionalArgConstraintsForInvocation(ei));
         }
       }
       case PARENTHESIZED ->
@@ -560,6 +548,32 @@ public class InvocationTypeInference {
   }
 
   /**
+   * Returns the additional argument constraints (See <a
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS
+   * 18.5.2.2</a>) produced by {@code invocation}, a poly method invocation or new class tree that
+   * is itself an argument (or, transitively, part of an argument) of another invocation under
+   * inference.
+   *
+   * @param invocation a poly method invocation tree or new class tree
+   * @return the additional argument constraints produced by {@code invocation}
+   */
+  private ConstraintSet createAdditionalArgConstraintsForInvocation(ExpressionTree invocation) {
+    List<? extends ExpressionTree> args;
+    if (invocation instanceof NewClassTree newClassTree) {
+      args = newClassTree.getArguments();
+    } else {
+      args = ((MethodInvocationTree) invocation).getArguments();
+    }
+    AbstractExecutableType executableType =
+        context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(invocation);
+    Theta newMap =
+        context.inferenceTypeFactory.createThetaForInvocation(invocation, executableType, context);
+    ConstraintSet set = context.inference.createC(executableType, args, newMap);
+    set.applyInstantiations();
+    return set;
+  }
+
+  /**
    * Recursively search for method invocations and new class trees. If any are found, the additional
    * variables, bounds, and constraints are returned. This method is called by {@link
    * #createAdditionalArgConstraints(ExpressionTree, AbstractType, Theta)} when that method
@@ -581,20 +595,7 @@ public class InvocationTypeInference {
       }
       case METHOD_INVOCATION, NEW_CLASS -> {
         if (TreeUtils.isPolyExpression(expression)) {
-          List<? extends ExpressionTree> args;
-          if (expression instanceof NewClassTree newClassTree) {
-            args = newClassTree.getArguments();
-          } else {
-            args = ((MethodInvocationTree) expression).getArguments();
-          }
-          AbstractExecutableType executableType =
-              context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(expression);
-          Theta newMap =
-              context.inferenceTypeFactory.createThetaForInvocation(
-                  expression, executableType, context);
-          ConstraintSet set = context.inference.createC(executableType, args, newMap);
-          set.applyInstantiations();
-          c.addAll(set);
+          c.addAll(createAdditionalArgConstraintsForInvocation(expression));
         }
       }
       case PARENTHESIZED ->
