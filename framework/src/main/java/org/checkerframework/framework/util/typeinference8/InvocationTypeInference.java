@@ -570,15 +570,7 @@ public class InvocationTypeInference {
       }
       case METHOD_INVOCATION, NEW_CLASS -> {
         if (TreeUtils.isPolyExpression(expression)) {
-          try {
-            c.addAll(new AdditionalArgument(expression).reduce(context));
-          } catch (Exception e) {
-            // Sometimes in order to create the additional argument constraint, other inference
-            // variables must be resolved first. This happens when a lambda parameter is used in the
-            // additional argument constraint.
-            // See framework/tests/all-systems/SimpleLambdaParameter.java
-            c.add(new AdditionalArgument(expression));
-          }
+          c.addAll(new AdditionalArgument(expression).reduce(context));
         }
       }
       case PARENTHESIZED ->
