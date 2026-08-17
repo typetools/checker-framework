@@ -175,14 +175,15 @@ public final class InferenceType extends AbstractType {
    * variable, a {@link ProperType} is returned.
    *
    * @param types the annotated type mirrors
-   * @param map a mapping from type variable to inference variable
+   * @param map a mapping from type variable to inference variable, or null to treat no type
+   *     variable as an inference variable
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
    * @return the abstract type for the given TypeMirror and AnnotatedTypeMirror
    */
   public static List<AbstractType> create(
       List<AnnotatedTypeMirror> types,
-      Theta map,
+      @Nullable Theta map,
       AnnotationMirrorMap<QualifierVar> qualifierVars,
       Java8InferenceContext context) {
     List<AbstractType> abstractTypes = new ArrayList<>();
@@ -207,18 +208,8 @@ public final class InferenceType extends AbstractType {
       return false;
     }
 
-    InferenceType variable = (InferenceType) o;
-    if (!sameInferenceProblem(variable)) {
-      return false;
-    }
-    if (map != variable.map) {
-      return false;
-    }
-    // Two types with different qualifierVars have different qualifiers, as getQualifiers() shows.
-    if (!qualifierVars.equals(variable.qualifierVars)) {
-      return false;
-    }
-    return type.equals(variable.type);
+    InferenceType that = (InferenceType) o;
+    return map == that.map && type.equals(that.type);
   }
 
   @Override

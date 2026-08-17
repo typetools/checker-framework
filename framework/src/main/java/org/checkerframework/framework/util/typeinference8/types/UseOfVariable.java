@@ -88,6 +88,8 @@ public class UseOfVariable extends AbstractType {
    *
    * <p>An inference variable is not a declared type, so it has no type parameters; this
    * implementation returns null.
+   *
+   * @return null, because this type is a use of an inference variable
    */
   @Override
   public @Nullable List<ProperType> getTypeParameterBounds() {
