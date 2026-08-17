@@ -14,6 +14,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -189,6 +190,22 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         // settle on. See https://github.com/typetools/checker-framework/issues/7678 and
         // https://github.com/typetools/checker-framework/issues/7698. Fall back to the real,
         // already fully-resolved Java type that javac assigned to this parameter instead.
+        // First ask the in-progress inference for the type it has already computed for this
+        // parameter.  That type carries the qualifiers inference derived, which the fallback
+        // below cannot reproduce.
+        AnnotatedTypeMirror fromInference =
+            f.getTypeArgumentInference().getLambdaParameterType((VariableElement) paramElement);
+        // Use it only if its Java type is exactly the one javac assigned to this parameter.
+        // In-progress inference state is not merely incomplete: a variable may already be
+        // instantiated to a value that later constraints would have refined (see the note at the
+        // end of JLS 18.5.2.1), so the structure can disagree with javac's final answer, and
+        // callers of this method require the two to agree.
+        if (fromInference != null
+            && f.getProcessingEnv()
+                .getTypeUtils()
+                .isSameType(fromInference.getUnderlyingType(), paramElement.asType())) {
+          return fromInference;
+        }
         AnnotatedTypeMirror result = f.toAnnotatedType(paramElement.asType(), false);
         f.addDefaultAnnotations(result);
         return result;

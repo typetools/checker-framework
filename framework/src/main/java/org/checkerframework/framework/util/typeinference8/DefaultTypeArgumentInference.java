@@ -14,12 +14,14 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.types.ContainsInferenceVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -136,6 +138,18 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
   @Override
   public boolean isAnyInferenceInProgress() {
     return !java8InferenceStack.isEmpty();
+  }
+
+  @Override
+  public @Nullable AnnotatedTypeMirror getLambdaParameterType(VariableElement param) {
+    // Iteration order of an ArrayDeque used as a stack is innermost inference problem first.
+    for (InvocationTypeInference inference : java8InferenceStack) {
+      AnnotatedTypeMirror result = inference.getLambdaParameterType(param);
+      if (result != null) {
+        return result;
+      }
+    }
+    return null;
   }
 
   /**

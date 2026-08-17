@@ -19,6 +19,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
+import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceFactory;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -81,6 +82,41 @@ public class Java8InferenceContext {
 
   /** There's no way to tell if an element is a parameter of a lambda, so keep track of them. */
   public final Set<VariableElement> lambdaParms = new HashSet<>();
+
+  /**
+   * Where an implicitly typed lambda parameter's type comes from: the target type of the lambda
+   * that declares it, and the parameter's index in the lambda's parameter list.
+   *
+   * <p>The lambda's target type is stored rather than the parameter's own type because, when this
+   * is recorded, the target type may still mention inference variables.
+   *
+   * @param lambdaTargetType the target type of the lambda that declares the parameter
+   * @param index the index of the parameter in the lambda's parameter list
+   */
+  public record LambdaParamTarget(AbstractType lambdaTargetType, int index) {}
+
+  /**
+   * Maps each implicitly typed lambda parameter encountered by this inference problem to the
+   * information needed to compute its type once inference has progressed far enough.
+   *
+   * @see InvocationTypeInference#getLambdaParameterType(VariableElement)
+   */
+  public final Map<VariableElement, LambdaParamTarget> lambdaParamTargets = new HashMap<>();
+
+  /**
+   * Records where each parameter of an implicitly typed lambda gets its type from.
+   *
+   * @param parameters the formal parameters of an implicitly typed lambda
+   * @param lambdaTargetType the target type of that lambda
+   */
+  public void addLambdaParamTargets(
+      List<? extends VariableTree> parameters, AbstractType lambdaTargetType) {
+    for (int i = 0; i < parameters.size(); i++) {
+      lambdaParamTargets.put(
+          TreeUtils.elementFromDeclaration(parameters.get(i)),
+          new LambdaParamTarget(lambdaTargetType, i));
+    }
+  }
 
   /**
    * Creates a context.

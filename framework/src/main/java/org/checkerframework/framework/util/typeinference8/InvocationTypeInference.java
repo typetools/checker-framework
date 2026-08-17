@@ -13,9 +13,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ExecutableType;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.bound.CaptureBound;
@@ -133,6 +136,51 @@ public class InvocationTypeInference {
    */
   public Tree getInferenceExpression() {
     return inferenceExpression;
+  }
+
+  /**
+   * If {@code param} is an implicitly typed lambda parameter whose type this inference problem has
+   * already determined, returns that type. Otherwise, returns null.
+   *
+   * <p>Only the lambda's parameter types need be known, not its whole target type. <a
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS
+   * 18.5.2.2</a> makes the same distinction: the input variables of an implicitly typed lambda's
+   * constraint are "the inference variables mentioned by the function type's parameter types", not
+   * those in its return type. Requiring the whole target type to be proper would give up whenever
+   * only the return type's variable is still uninstantiated, which is the common case.
+   *
+   * <p>This method never advances inference: it reports only instantiations that inference has
+   * already committed to, so it returns null while the parameter type is still uninstantiated.
+   *
+   * <p>The returned type is not guaranteed to agree with the type javac assigned to {@code param}:
+   * inference may have committed to an instantiation that later constraints would have refined (see
+   * the note at the end of <a
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.1">JLS
+   * 18.5.2.1</a>). Callers must check.
+   *
+   * @param param an element that might be an implicitly typed lambda parameter
+   * @return the type of {@code param}, or null if this inference problem cannot supply it
+   */
+  public @Nullable AnnotatedTypeMirror getLambdaParameterType(VariableElement param) {
+    Java8InferenceContext.LambdaParamTarget target = context.lambdaParamTargets.get(param);
+    if (target == null) {
+      return null;
+    }
+    AbstractType lambdaTarget = target.lambdaTargetType().applyInstantiations();
+    // getFunctionTypeParameterTypes() returns null if lambdaTarget is not a functional interface,
+    // which is the case while it is still just an inference variable.  It applies
+    // AbstractType.makeGround(), the non-wildcard parameterization of JLS 9.9 that JLS 15.27.3
+    // prescribes for an implicitly typed lambda; only implicitly typed lambdas are recorded in
+    // lambdaParamTargets, so that is the correct rule.
+    List<AbstractType> paramTypes = lambdaTarget.getFunctionTypeParameterTypes();
+    if (paramTypes == null || target.index() >= paramTypes.size()) {
+      return null;
+    }
+    AbstractType paramType = paramTypes.get(target.index()).applyInstantiations();
+    if (!paramType.isProper()) {
+      return null;
+    }
+    return paramType.getAnnotatedType();
   }
 
   /**
@@ -515,6 +563,11 @@ public class InvocationTypeInference {
       case LAMBDA_EXPRESSION -> {
         c.add(new CheckedExceptionConstraint(ei, fi, map));
         LambdaExpressionTree lambda = (LambdaExpressionTree) ei;
+        if (TreeUtils.isImplicitlyTypedLambda(lambda)) {
+          // Record where this lambda's parameters get their types from, so that
+          // getLambdaParameterType can answer for them while this inference is still running.
+          context.addLambdaParamTargets(lambda.getParameters(), fi);
+        }
         for (ExpressionTree expression : TreeUtils.getReturnedExpressions(lambda)) {
           c.addAll(createAdditionalArgConstraintsNoLambda(expression));
         }
