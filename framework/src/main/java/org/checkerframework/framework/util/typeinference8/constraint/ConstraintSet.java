@@ -379,7 +379,7 @@ public class ConstraintSet implements ReductionResult {
       // AssertionError that aborts the entire compilation.
       throw new BugInCF(
           "Max constraints (%d) exceeded while reducing: %s",
-          MAX_CONSTRAINTS, context.pathToExpression.getLeaf());
+          MAX_CONSTRAINTS, context.getPathToExpression().getLeaf());
     }
   }
 
@@ -395,28 +395,6 @@ public class ConstraintSet implements ReductionResult {
     while (!this.isEmpty()) {
       checkMaxConstraints(context);
       BoundSet result = reduceOneStep(context);
-      boundSet.merge(result);
-    }
-    return boundSet;
-  }
-
-  /**
-   * Reduces all the constraints in this set. (See JLS 18.2) If an {@link AdditionalArgument} is
-   * found it is reduced one step and then this method returns.
-   *
-   * @param context the context
-   * @return the bound set produced by reducing this constraint set
-   * @throws BugInCF if reduction creates more than {@link #MAX_CONSTRAINTS} constraints
-   */
-  public BoundSet reduceAdditionalArgOnce(Java8InferenceContext context) {
-    BoundSet boundSet = new BoundSet(context);
-    while (!this.isEmpty()) {
-      checkMaxConstraints(context);
-      boolean foundAA = this.list.get(0).getKind() == Kind.ADDITIONAL_ARG;
-      BoundSet result = reduceOneStep(context);
-      if (foundAA) {
-        return boundSet;
-      }
       boundSet.merge(result);
     }
     return boundSet;
