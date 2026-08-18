@@ -142,22 +142,6 @@ public class InvocationTypeInference {
    * If {@code param} is an implicitly typed lambda parameter whose type this inference problem has
    * already determined, returns that type. Otherwise, returns null.
    *
-   * <p>Only the lambda's parameter types need be known, not its whole target type. <a
-   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS
-   * 18.5.2.2</a> makes the same distinction: the input variables of an implicitly typed lambda's
-   * constraint are "the inference variables mentioned by the function type's parameter types", not
-   * those in its return type. Requiring the whole target type to be proper would give up whenever
-   * only the return type's variable is still uninstantiated, which is the common case.
-   *
-   * <p>This method never advances inference: it reports only instantiations that inference has
-   * already committed to, so it returns null while the parameter type is still uninstantiated.
-   *
-   * <p>The returned type is not guaranteed to agree with the type javac assigned to {@code param}:
-   * inference may have committed to an instantiation that later constraints would have refined (see
-   * the note at the end of <a
-   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.1">JLS
-   * 18.5.2.1</a>). Callers must check.
-   *
    * @param param an element that might be an implicitly typed lambda parameter
    * @return the type of {@code param}, or null if this inference problem cannot supply it
    */

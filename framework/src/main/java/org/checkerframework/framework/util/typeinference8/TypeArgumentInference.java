@@ -62,18 +62,6 @@ public interface TypeArgumentInference {
    * If {@code param} is an implicitly typed lambda parameter whose type an in-progress inference
    * has already determined, returns that type. Otherwise, returns null.
    *
-   * <p>This lets a caller that needs such a parameter's type while inference is running obtain the
-   * type the running inference computed, instead of re-deriving it through the normal target-type
-   * machinery, which would re-enter inference (see {@link #isAnyInferenceInProgress}).
-   *
-   * <p>This method never advances inference: it reports only instantiations that inference has
-   * already committed to, and returns null when the parameter's type is not yet determined, so
-   * callers must have a fallback. Callers must also verify that the returned type's underlying Java
-   * type is the one javac assigned to {@code param}: an in-progress inference may have committed to
-   * an instantiation that later constraints would have refined (see the note at the end of <a
-   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.1">JLS
-   * 18.5.2.1</a>), so the returned type's structure can differ from javac's.
-   *
    * @param param an element that might be an implicitly typed lambda parameter
    * @return the type of {@code param} as computed by an in-progress inference, or null
    */
