@@ -196,8 +196,10 @@ public abstract class AbstractType {
    * parameters. (A type parameter of a declared type, can't refer to any type being inferred, so
    * they are proper types.)
    *
-   * @return the upper bounds of the type parameter of this type, or null if this type is a use of
-   *     an inference variable
+   * <p>This implementation always returns a list. The return type is {@code @Nullable} only because
+   * {@link UseOfVariable#getTypeParameterBounds()} returns null.
+   *
+   * @return the upper bounds of the type parameters of this type
    */
   public @Nullable List<ProperType> getTypeParameterBounds() {
     TypeElement typeelem = (TypeElement) ((DeclaredType) getJavaType()).asElement();
@@ -582,9 +584,9 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns if this type is a wildcard return its lower bound; otherwise, return null.
+   * If this type is a wildcard, returns its lower bound; otherwise, returns null.
    *
-   * @return if this type is a wildcard return its lower bound; otherwise, return null
+   * @return the lower bound of this wildcard type, or null if this type is not a wildcard
    */
   public @Nullable AbstractType getWildcardLowerBound() {
     if (getJavaType().getKind() == TypeKind.WILDCARD) {
@@ -595,16 +597,14 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns if this type is a wildcard return its upper bound; otherwise, return null.
+   * If this type is a wildcard, returns its upper bound; otherwise, returns null. If the wildcard
+   * has no explicit upper bound, the returned type is the upper bound of the type variable to which
+   * the wildcard is bound; see {@link AnnotatedWildcardType#getExtendsBound()}.
    *
-   * @return if this type is a wildcard return its upper bound; otherwise, return null
+   * @return the upper bound of this wildcard type, or null if this type is not a wildcard
    */
   public @Nullable AbstractType getWildcardUpperBound() {
     if (getJavaType().getKind() == TypeKind.WILDCARD) {
-      TypeMirror upperBoundJava = ((WildcardType) getJavaType()).getExtendsBound();
-      if (upperBoundJava == null) {
-        upperBoundJava = context.object.getJavaType();
-      }
       return create(
           ((AnnotatedWildcardType) getAnnotatedType()).getExtendsBound(), ignoreAnnotations);
     } else {

@@ -19,7 +19,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.bound.CaptureBound;
-import org.checkerframework.framework.util.typeinference8.constraint.AdditionalArgument;
 import org.checkerframework.framework.util.typeinference8.constraint.CheckedExceptionConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
@@ -527,7 +526,7 @@ public class InvocationTypeInference {
       }
       case METHOD_INVOCATION, NEW_CLASS -> {
         if (TreeUtils.isPolyExpression(ei)) {
-          c.addAll(new AdditionalArgument(ei).reduce(context));
+          c.addAll(createAdditionalArgConstraintsForInvocation(ei));
         }
       }
       case PARENTHESIZED ->
@@ -554,6 +553,32 @@ public class InvocationTypeInference {
   }
 
   /**
+   * Returns the additional argument constraints (See <a
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS
+   * 18.5.2.2</a>) produced by {@code invocation}, a poly method invocation or new class tree that
+   * is itself an argument (or, transitively, part of an argument) of another invocation under
+   * inference.
+   *
+   * @param invocation a poly method invocation tree or new class tree
+   * @return the additional argument constraints produced by {@code invocation}
+   */
+  private ConstraintSet createAdditionalArgConstraintsForInvocation(ExpressionTree invocation) {
+    List<? extends ExpressionTree> args;
+    if (invocation instanceof NewClassTree newClassTree) {
+      args = newClassTree.getArguments();
+    } else {
+      args = ((MethodInvocationTree) invocation).getArguments();
+    }
+    AbstractExecutableType executableType =
+        context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(invocation);
+    Theta newMap =
+        context.inferenceTypeFactory.createThetaForInvocation(invocation, executableType, context);
+    ConstraintSet set = context.inference.createC(executableType, args, newMap);
+    set.applyInstantiations();
+    return set;
+  }
+
+  /**
    * Recursively search for method invocations and new class trees. If any are found, the additional
    * variables, bounds, and constraints are returned. This method is called by {@link
    * #createAdditionalArgConstraints(ExpressionTree, AbstractType, Theta)} when that method
@@ -575,15 +600,7 @@ public class InvocationTypeInference {
       }
       case METHOD_INVOCATION, NEW_CLASS -> {
         if (TreeUtils.isPolyExpression(expression)) {
-          try {
-            c.addAll(new AdditionalArgument(expression).reduce(context));
-          } catch (Exception e) {
-            // Sometimes in order to create the additional argument constraint, other inference
-            // variables must be resolved first. This happens when a lambda parameter is used in the
-            // additional argument constraint.
-            // See framework/tests/all-systems/SimpleLambdaParameter.java
-            c.add(new AdditionalArgument(expression));
-          }
+          c.addAll(createAdditionalArgConstraintsForInvocation(expression));
         }
       }
       case PARENTHESIZED ->
@@ -713,14 +730,7 @@ public class InvocationTypeInference {
         c.applyInstantiations();
       }
       c.remove(subset);
-      BoundSet newBounds = subset.reduceAdditionalArgOnce(context);
-      if (!subset.isEmpty()) {
-        // The subset is not empty at this point if an additional argument constraint was
-        // found.  In this case, a new subset needs to be picked so that dependencies of
-        // the constraints from reducing the additional argument constraint can be taken
-        // into account.
-        c.addAll(subset);
-      }
+      BoundSet newBounds = subset.reduce(context);
       b3.incorporateToFixedPoint(newBounds);
     }
     return b3;

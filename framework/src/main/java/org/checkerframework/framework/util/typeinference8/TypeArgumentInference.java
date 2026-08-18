@@ -43,4 +43,15 @@ public interface TypeArgumentInference {
       AnnotatedTypeFactory typeFactory,
       ExpressionTree invocation,
       AnnotatedExecutableType executableType);
+
+  /**
+   * Returns true if type argument inference for some method or constructor invocation is currently
+   * in progress anywhere on the call stack, that is, if this method is called while a previous,
+   * not-yet-returned call to {@link #inferTypeArgs} is running.
+   *
+   * @return true if type argument inference for some invocation is currently in progress
+   */
+  default boolean isAnyInferenceInProgress() {
+    return false;
+  }
 }
