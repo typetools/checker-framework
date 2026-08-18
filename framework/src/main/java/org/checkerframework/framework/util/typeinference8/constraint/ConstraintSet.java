@@ -379,7 +379,7 @@ public class ConstraintSet implements ReductionResult {
       // AssertionError that aborts the entire compilation.
       throw new BugInCF(
           "Max constraints (%d) exceeded while reducing: %s",
-          MAX_CONSTRAINTS, context.pathToExpression.getLeaf());
+          MAX_CONSTRAINTS, context.getPathToExpression().getLeaf());
     }
   }
 
