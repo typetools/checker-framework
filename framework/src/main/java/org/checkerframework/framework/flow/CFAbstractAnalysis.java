@@ -198,39 +198,49 @@ public abstract class CFAbstractAnalysis<
    */
   private @Nullable List<JavaExpression> computeSideEffectsOnlyExpressions(
       ExecutableElement method, MethodInvocationNode methodInvocationNode) {
-    List<String> seOnlyExpressionStrings = atypeFactory.getSideEffectsOnlyExpressionStrings(method);
+    Map<ExecutableElement, List<String>> seOnlyExpressionStrings =
+        atypeFactory.getSideEffectsOnlyExpressionStrings(method);
     if (seOnlyExpressionStrings == null) {
       return null;
     }
 
     List<JavaExpression> seOnlyExpressions = new ArrayList<>();
 
-    for (String seOnlyExpr : seOnlyExpressionStrings) {
-      try {
-        // Do not use `StringToJavaExpression.atMethodInvocation(seOnlyExpr,
-        // methodInvocationNode, checker)`, which obtains the invoked method from
-        // `methodInvocationNode.getTree()`; that tree is null for a call that corresponds to no
-        // AST tree, such as the `Iterator.next()` that an enhanced for loop is desugared to.
-        JavaExpression exprJe =
-            StringToJavaExpression.atMethodDecl(seOnlyExpr, method, checker)
-                .atMethodInvocation(methodInvocationNode);
+    for (Map.Entry<ExecutableElement, List<String>> entry : seOnlyExpressionStrings.entrySet()) {
+      // The method whose `@SideEffectsOnly` annotation contains the expressions.  It is `method`
+      // itself, unless `method` inherits the annotation.
+      ExecutableElement declaringMethod = entry.getKey();
+      for (String seOnlyExpr : entry.getValue()) {
+        try {
+          // An expression is parsed in the scope of the method that declares it, which is not
+          // necessarily the scope of `method`:  a field that the declaring method's class declares
+          // might be shadowed or inaccessible in `method`'s class.
+          // Do not use `StringToJavaExpression.atMethodInvocation(seOnlyExpr,
+          // methodInvocationNode, checker)`, which obtains the invoked method from
+          // `methodInvocationNode.getTree()`; that tree is null for a call that corresponds to no
+          // AST tree, such as the `Iterator.next()` that an enhanced for loop is desugared to.
+          JavaExpression exprJe =
+              StringToJavaExpression.atMethodDecl(seOnlyExpr, declaringMethod, checker)
+                  .atMethodInvocation(methodInvocationNode);
 
-        if (exprJe.containsUnknown()) {
-          // Nothing in the store can match an `Unknown`, so returning the expression would discard
-          // no refinement at all.  Returning null makes the caller discard every refinement.
+          if (exprJe.containsUnknown()) {
+            // Nothing in the store can match an `Unknown`, so returning the expression would
+            // discard no refinement at all.  Returning null makes the caller discard every
+            // refinement.
+            return null;
+          }
+
+          // At a call of the form `super.m()`, viewpoint-adapting the callee's `this` yields
+          // `super`.
+          // The caller refers to that same object as `this`, so rewrite it that way; otherwise
+          // the refinements of `this` and of its fields would not be discarded.
+          exprJe = JavaExpression.superToThis(exprJe);
+          seOnlyExpressions.add(exprJe);
+        } catch (JavaExpressionParseException ex) {
+          // The expression cannot be represented at the call site, so the caller must assume that
+          // the call might side-effect anything.  A future change will report the parse error.
           return null;
         }
-
-        // At a call of the form `super.m()`, viewpoint-adapting the callee's `this` yields
-        // `super`.
-        // The caller refers to that same object as `this`, so rewrite it that way; otherwise
-        // the refinements of `this` and of its fields would not be discarded.
-        exprJe = JavaExpression.superToThis(exprJe);
-        seOnlyExpressions.add(exprJe);
-      } catch (JavaExpressionParseException ex) {
-        // The expression cannot be represented at the call site, so the caller must assume that
-        // the call might side-effect anything.  A future change will report the parse error.
-        return null;
       }
     }
 
