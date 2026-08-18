@@ -868,8 +868,9 @@ public class InferenceFactory {
 
   /**
    * Returns the pair of {@code a} as the least upper bound of {@code a} and {@code b} and {@code b}
-   * as the least upper bound of {@code a} and {@code b}, or null if that least upper bound is not a
-   * parameterized type.
+   * as the least upper bound of {@code a} and {@code b}. Returns null if that least upper bound is
+   * not a parameterized type or if either {@code a} or {@code b} has no supertype that is the same
+   * class as that least upper bound.
    *
    * @param a type
    * @param b type
@@ -888,8 +889,17 @@ public class InferenceFactory {
 
     Type asSuperOfA = context.types.asSuper((Type) aTypeMirror, ((Type) lubResult).asElement());
     Type asSuperOfB = context.types.asSuper((Type) bTypeMirror, ((Type) lubResult).asElement());
+    if (asSuperOfA == null || asSuperOfB == null) {
+      return null;
+    }
 
-    return IPair.of(a.asSuper(asSuperOfA), b.asSuper(asSuperOfB));
+    AbstractType aAsSuper = a.asSuper(asSuperOfA);
+    AbstractType bAsSuper = b.asSuper(asSuperOfB);
+    if (aAsSuper == null || bAsSuper == null) {
+      return null;
+    }
+
+    return IPair.of(aAsSuper, bAsSuper);
   }
 
   /**
@@ -979,16 +989,11 @@ public class InferenceFactory {
    * @return the greatest lower bound of {@code abstractTypes}, or null
    */
   public @Nullable AbstractType glb(Set<AbstractType> abstractTypes) {
-    AbstractType ti = null;
-    for (AbstractType liProperType : abstractTypes) {
-      AbstractType li = liProperType;
-      if (ti == null) {
-        ti = li;
-      } else {
-        ti = glb(ti, li);
-      }
+    AbstractType glb = null;
+    for (AbstractType abstractType : abstractTypes) {
+      glb = (glb == null) ? abstractType : glb(glb, abstractType);
     }
-    return ti;
+    return glb;
   }
 
   /**
@@ -1065,20 +1070,32 @@ public class InferenceFactory {
     List<UseOfVariable> es = new ArrayList<>();
     List<ProperType> properTypes = new ArrayList<>();
 
+    AnnotatedTypeMirror functionalInterface = targetType.getAnnotatedType();
+    if (targetType.isWildcardParameterizedType()) {
+      // JLS 9.9: the function type of a wildcard-parameterized functional interface type is the
+      // function type of the type's non-wildcard parameterization.
+      functionalInterface =
+          AbstractType.makeGround((AnnotatedDeclaredType) functionalInterface, context.typeFactory);
+    }
     AnnotatedExecutableType functionType =
         AnnotatedTypes.asMemberOf(
-            context.modelTypes, context.typeFactory, targetType.getAnnotatedType(), ele);
+            context.modelTypes, context.typeFactory, functionalInterface, ele);
 
     for (AnnotatedTypeMirror thrownType : functionType.getThrownTypes()) {
       AbstractType ei = InferenceType.create(thrownType, map, context);
+      // JLS 18.2.5 uses the proper types and the inference variables among the function type's
+      // thrown types.  Every thrown type is one or the other, because no subclass of Throwable is
+      // generic (JLS 8.1.2) and because the function type is that of a non-wildcard
+      // parameterization; the `isUseOfVariable` test is defensive.
       if (ei.isProper()) {
         properTypes.add((ProperType) ei);
-      } else {
+      } else if (ei.isUseOfVariable()) {
         UseOfVariable varEi = (UseOfVariable) ei;
-        if (varEi.getVariable().getInstantiation() != null) {
-          properTypes.add(varEi.getVariable().getInstantiation());
+        ProperType instantiation = varEi.getVariable().getInstantiation();
+        if (instantiation != null) {
+          properTypes.add(instantiation);
         } else {
-          es.add((UseOfVariable) ei);
+          es.add(varEi);
         }
       }
     }
