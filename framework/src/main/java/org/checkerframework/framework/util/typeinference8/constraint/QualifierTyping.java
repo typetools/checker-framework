@@ -57,6 +57,12 @@ public class QualifierTyping implements Constraint {
   }
 
   @Override
+  public QualifierTyping copy() {
+    // A QualifierTyping is immutable, so it is its own copy.
+    return this;
+  }
+
+  @Override
   public ReductionResult reduce(Java8InferenceContext context) {
     return switch (getKind()) {
       case QUALIFIER_EQUALITY -> reduceEquality(context);

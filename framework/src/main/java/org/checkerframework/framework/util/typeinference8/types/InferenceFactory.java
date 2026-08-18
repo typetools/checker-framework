@@ -35,10 +35,10 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Parameterizable;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
@@ -289,10 +289,13 @@ public class InferenceFactory {
       } else if (leaf instanceof BlockTree blockTree && blockTree.isStatic()) {
         // A static initializer.
         return false;
-      } else if (leaf instanceof VariableTree variableTree
-          && variableTree.getModifiers().getFlags().contains(Modifier.STATIC)) {
-        // A static field's initializer.  (Only a field can be declared static.)
-        return false;
+      } else if (leaf instanceof VariableTree variableTree) {
+        // A static field's initializer.  (Only a field can be declared static.)  Test the element
+        // rather than the modifiers, because a field of an interface is implicitly static.
+        VariableElement fieldElement = TreeUtils.elementFromDeclaration(variableTree);
+        if (fieldElement != null && ElementUtils.isStatic(fieldElement)) {
+          return false;
+        }
       }
     }
     return false;

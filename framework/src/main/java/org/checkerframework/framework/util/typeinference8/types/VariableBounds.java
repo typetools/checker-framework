@@ -78,7 +78,12 @@ public class VariableBounds {
     /** A copy of {@link VariableBounds#qualifierBounds}. */
     private final EnumMap<BoundKind, Set<AbstractQualifier>> qualifierBounds;
 
-    /** A copy of {@link VariableBounds#constraints}. */
+    /**
+     * A copy of {@link VariableBounds#constraints}, in which each constraint is itself a copy.
+     * {@link ConstraintSet#applyInstantiations} changes a constraint in place, so sharing
+     * constraints with the live bounds would let a discarded resolution attempt change what is
+     * restored.
+     */
     private final ConstraintSet constraints;
 
     /** The value of {@link VariableBounds#hasThrowsBound}. */
@@ -92,8 +97,7 @@ public class VariableBounds {
     private Snapshot(VariableBounds variableBounds) {
       bounds = copyBounds(variableBounds.bounds);
       qualifierBounds = copyBounds(variableBounds.qualifierBounds);
-      constraints = new ConstraintSet();
-      constraints.addAll(variableBounds.constraints);
+      constraints = variableBounds.constraints.copy();
       hasThrowsBound = variableBounds.hasThrowsBound;
     }
 
@@ -167,9 +171,10 @@ public class VariableBounds {
     // necessarily reduced before restoration: incorporation stops as soon as the bound set contains
     // false, which is exactly when restoration happens. Any constraint left over from the failed
     // attempt was derived from bounds that are about to be discarded, so discard it too; otherwise
-    // the next call to `BoundSet.reachFixedPoint` would reduce it.
+    // the next call to `BoundSet.reachFixedPoint` would reduce it.  The restored constraints are
+    // copies, so that reducing one of them does not change the snapshot.
     constraints.clear();
-    constraints.addAll(snapshot.constraints);
+    constraints.addAll(snapshot.constraints.copy());
     hasThrowsBound = snapshot.hasThrowsBound;
     Snapshot.restoreBounds(bounds, snapshot.bounds);
     setInstantiationFromEqualBounds();

@@ -249,6 +249,21 @@ public abstract class TypeConstraint implements Constraint {
     T = T.applyInstantiations();
   }
 
+  /**
+   * Copies {@link #source} and {@link #derivation} from this constraint into {@code copy}, which a
+   * subtype's {@link #copy} method has just created. A constructor cannot set them, because which
+   * one of them is set depends on whether {@link #parent} is null.
+   *
+   * @param <C> the type of {@code copy}
+   * @param copy a newly created copy of this constraint
+   * @return {@code copy}
+   */
+  protected <C extends TypeConstraint> C copyHistory(C copy) {
+    copy.source = this.source;
+    copy.derivation = this.derivation;
+    return copy;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {

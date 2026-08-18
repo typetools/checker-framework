@@ -134,6 +134,11 @@ public class Typing extends TypeConstraint {
   }
 
   @Override
+  public Typing copy() {
+    return copyHistory(new Typing(parent, S, T, kind, isCovarTypeArg));
+  }
+
+  @Override
   public ReductionResult reduce(Java8InferenceContext context) {
 
     return switch (getKind()) {

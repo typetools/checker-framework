@@ -54,6 +54,11 @@ public class CheckedExceptionConstraint extends TypeConstraint {
         : Kind.METHOD_REF_EXCEPTION;
   }
 
+  @Override
+  public CheckedExceptionConstraint copy() {
+    return copyHistory(new CheckedExceptionConstraint(expression, T, map));
+  }
+
   /**
    * {@inheritDoc}
    *

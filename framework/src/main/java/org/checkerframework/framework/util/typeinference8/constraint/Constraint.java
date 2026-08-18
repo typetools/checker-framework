@@ -28,6 +28,15 @@ public interface Constraint extends ReductionResult {
    */
   ReductionResult reduce(Java8InferenceContext context);
 
+  /**
+   * Returns a constraint that is equal to this one and that can be mutated -- by {@link
+   * TypeConstraint#applyInstantiations}, say -- without changing this one. The returned constraint
+   * may be this one, if this kind of constraint is immutable.
+   *
+   * @return a constraint that is equal to this one and that can be mutated independently of it
+   */
+  Constraint copy();
+
   /** A kind of Constraint. */
   enum Kind {
     /**

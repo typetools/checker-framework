@@ -361,6 +361,22 @@ public class ConstraintSet implements ReductionResult {
     return vars;
   }
 
+  /**
+   * Returns a copy of this constraint set, in which each constraint is a copy of the corresponding
+   * constraint of this set. Mutating a constraint of this set does not change the returned set, and
+   * vice versa.
+   *
+   * @return a copy of this constraint set
+   */
+  public ConstraintSet copy() {
+    ConstraintSet result = new ConstraintSet();
+    result.annotationFailure = this.annotationFailure;
+    for (Constraint constraint : list) {
+      result.list.add(constraint.copy());
+    }
+    return result;
+  }
+
   /** Applies the instantiations to all the constraints in this set. */
   public void applyInstantiations() {
     for (Constraint constraint : list) {

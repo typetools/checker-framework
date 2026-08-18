@@ -399,6 +399,15 @@ public final class Resolution {
     if (!qualifierLowerBounds.isEmpty()) {
       QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
       Set<AnnotationMirror> lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
+      // When `lowerBounds` has a single element, `lub` returns a type whose annotated type is that
+      // element's, which is a bound of `ai`.  Copy the annotated type before changing its
+      // annotations below, so that the bound is unchanged if this resolution attempt fails and
+      // `BoundSet.restore` undoes it.
+      lubProperType =
+          new ProperType(
+              lubProperType.getAnnotatedType().deepCopy(),
+              context,
+              lubProperType.ignoreAnnotations);
       if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
         Set<? extends AnnotationMirror> newLubAnnos =
             qh.leastUpperBoundsQualifiersOnly(

@@ -44,6 +44,12 @@ public class ConstraintSetTest {
     }
 
     @Override
+    public NamedConstraint copy() {
+      // A NamedConstraint is immutable, so it is its own copy.
+      return this;
+    }
+
+    @Override
     public ReductionResult reduce(Java8InferenceContext context) {
       throw new UnsupportedOperationException("ConstraintSetTest never reduces a constraint.");
     }

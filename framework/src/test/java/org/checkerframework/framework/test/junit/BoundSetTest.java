@@ -245,6 +245,12 @@ public class BoundSetTest {
     }
 
     @Override
+    public ConstantConstraint copy() {
+      // A ConstantConstraint is immutable, so it is its own copy.
+      return this;
+    }
+
+    @Override
     public ReductionResult reduce(Java8InferenceContext context) {
       return reductionResult;
     }

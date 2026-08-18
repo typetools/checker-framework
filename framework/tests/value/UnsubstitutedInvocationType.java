@@ -5,9 +5,11 @@
 // variables that are in scope at the invocation.
 //
 // Without InferenceFactory.mentionsUnsubstitutedTypeVariable, the call to `unsatisfiableCycle`
-// below is issued a spurious "type.arguments.not.inferred" error.  The other invocations whose type
-// javac leaves unsubstituted do not currently produce a diagnostic either way; they are here so
-// that a change to which invocations the check applies to is a change to the test's behavior.
+// below is issued a spurious "type.arguments.not.inferred" error.  That is the only invocation in
+// this file that pins the check's behavior; for the other invocations whose type javac leaves
+// unsubstituted, the type is usable as a target type after all, so they produce no diagnostic
+// either way.  They are here so that each way that the check can classify an invocation is
+// exercised.
 
 import java.util.ArrayList;
 import java.util.List;
@@ -110,7 +112,12 @@ public class UnsubstitutedInvocationType {
   static class StaticUses<T extends S, S extends Comparable<T>> {
     StaticUses() {}
 
+    // A field initializer is an assignment context, so this invocation has a target type and the
+    // check is not consulted.  The invocation nested within the next initializer has no assignment
+    // context, so the check is consulted for it.
     static Object staticField = new StaticUses<>();
+
+    static int staticFieldNested = new StaticUses<>().hashCode();
 
     static {
       new StaticUses<>();
@@ -127,6 +134,10 @@ public class UnsubstitutedInvocationType {
     }
 
     interface NestedInterface {
+      // A field of an interface is implicitly static, so this is a static context even though the
+      // declaration has no `static` modifier.
+      Object interfaceField = new StaticUses<>().hashCode();
+
       default void inNestedInterface() {
         new StaticUses<>();
       }

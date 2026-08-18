@@ -26,6 +26,55 @@ public class VariableBoundsTest {
     }
 
     @Override
+    public DummyConstraint copy() {
+      // A DummyConstraint is immutable, so it is its own copy.
+      return this;
+    }
+
+    @Override
+    public ReductionResult reduce(Java8InferenceContext context) {
+      throw new AssertionError("VariableBoundsTest never reduces a constraint.");
+    }
+  }
+
+  /**
+   * A constraint that reduction changes in place, as {@code Typing} does when {@code
+   * ConstraintSet#applyInstantiations} replaces a variable by its instantiation.
+   */
+  private static class MutableConstraint implements Constraint {
+
+    /** The part of this constraint that {@link #mutate} changes. */
+    private String value;
+
+    /**
+     * Creates a constraint with the given value.
+     *
+     * @param value the value of the new constraint
+     */
+    MutableConstraint(String value) {
+      this.value = value;
+    }
+
+    /**
+     * Changes this constraint in place, as applying an instantiation to it does.
+     *
+     * @param newValue the new value of this constraint
+     */
+    void mutate(String newValue) {
+      this.value = newValue;
+    }
+
+    @Override
+    public Kind getKind() {
+      return Kind.SUBTYPE;
+    }
+
+    @Override
+    public MutableConstraint copy() {
+      return new MutableConstraint(value);
+    }
+
+    @Override
     public ReductionResult reduce(Java8InferenceContext context) {
       throw new AssertionError("VariableBoundsTest never reduces a constraint.");
     }
@@ -81,6 +130,44 @@ public class VariableBoundsTest {
 
     Assert.assertTrue(variableBounds.hasThrowsBound());
     Assert.assertSame(beforeSnapshot, variableBounds.constraints.pop());
+    Assert.assertTrue(variableBounds.constraints.isEmpty());
+  }
+
+  /**
+   * Tests that {@link VariableBounds#restore} undoes a change that the failed attempt made to a
+   * constraint that was recorded before {@link VariableBounds#save}.
+   *
+   * <p>Incorporating a bound calls {@code VariableBounds#applyInstantiationsToBounds}, which
+   * changes each of the constraints in place, replacing a variable by the instantiation that the
+   * attempt chose. If a snapshot shared its constraints with the bounds, restoration would
+   * reinstall a constraint that mentions an instantiation that restoration has just discarded, and
+   * the {@code BoundSet.reachFixedPoint} call at the end of {@code Resolution.resolveWithCapture}
+   * would reduce it.
+   */
+  @Test
+  public void restoreUndoesChangesToConstraintsFromBeforeTheSnapshot() {
+    VariableBounds variableBounds = uninitializedVariableBounds();
+    MutableConstraint beforeSnapshot = new MutableConstraint("original");
+    variableBounds.constraints.add(beforeSnapshot);
+
+    VariableBounds.Snapshot snapshot = variableBounds.save();
+
+    // The failed attempt at resolution without capture applies its instantiations to the
+    // constraints, which changes them in place.
+    beforeSnapshot.mutate("from the failed attempt");
+
+    variableBounds.restore(snapshot);
+
+    MutableConstraint restored = (MutableConstraint) variableBounds.constraints.pop();
+    Assert.assertEquals("original", restored.value);
+    Assert.assertTrue(variableBounds.constraints.isEmpty());
+
+    // Restoration did not hand out the snapshot's own constraint, so the snapshot is still
+    // restorable.
+    variableBounds.constraints.add(restored);
+    restored.mutate("from a later failed attempt");
+    variableBounds.restore(snapshot);
+    Assert.assertEquals("original", ((MutableConstraint) variableBounds.constraints.pop()).value);
     Assert.assertTrue(variableBounds.constraints.isEmpty());
   }
 
