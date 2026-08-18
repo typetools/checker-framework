@@ -596,7 +596,7 @@ public class InvocationTypeInference {
         context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(invocation);
     Theta newMap =
         context.inferenceTypeFactory.createThetaForInvocation(invocation, executableType, context);
-    ConstraintSet set = context.inference.createC(executableType, args, newMap);
+    ConstraintSet set = context.inference.createC(executableType, args, newMap, true);
     set.applyInstantiations();
     return set;
   }
