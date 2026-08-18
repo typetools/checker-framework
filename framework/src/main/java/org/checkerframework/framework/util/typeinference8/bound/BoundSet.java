@@ -361,7 +361,7 @@ public class BoundSet implements ReductionResult {
         // AssertionError that aborts the entire compilation.
         throw new BugInCF(
             "Max incorporation steps (%d) reached without reaching a fixed point: %s",
-            MAX_INCORPORATION_STEPS, context.pathToExpression.getLeaf());
+            MAX_INCORPORATION_STEPS, context.getPathToExpression().getLeaf());
       }
     } while (!containsFalse);
   }

@@ -199,7 +199,7 @@ public class InvocationTypeInference {
     AbstractType target1 =
         InferenceType.create(
             target.getAnnotatedType(),
-            context.maps.get(context.pathToExpression.getParentPath().getLeaf()),
+            context.maps.get(context.getPathToExpression().getParentPath().getLeaf()),
             context);
     target = (ProperType) target1.applyInstantiations();
     if (target == null) {
@@ -258,18 +258,21 @@ public class InvocationTypeInference {
    */
   public BoundSet createB2(
       AbstractExecutableType executableType, List<? extends ExpressionTree> args, Theta map) {
-    BoundSet b0 = BoundSet.initialBounds(map, context);
+
+    // boundSet starts as B0 and then is transformed into B2 and returned.
+    BoundSet boundSet = BoundSet.initialBounds(map, context);
 
     // For all i (1 <= i <= p), if Pi appears in the throws clause of m, then the bound throws
     // alphai is implied. These bounds, if any, are incorporated with B0 to produce a new bound
-    // set, B1.
+    // set, B1.  The incorporation is done by side-effecting the variables in boundSet, so after
+    // this
+    // loop boundSet is B1.
     for (AbstractType thrownType : executableType.getThrownTypes(map)) {
       if (thrownType.isUseOfVariable()) {
         ((UseOfVariable) thrownType).setHasThrowsBound(true);
       }
     }
 
-    BoundSet b1 = b0;
     ConstraintSet c = new ConstraintSet();
     List<AbstractType> formals = executableType.getParameterTypes(map, args.size());
 
@@ -286,9 +289,10 @@ public class InvocationTypeInference {
     if (newBounds.containsFalse()) {
       throw new BugInCF("Applicability constraints reduced to false for %s.", executableType);
     }
-    b1.incorporateToFixedPoint(newBounds);
+    // Incorporating the constraints into boundSet (which is B1) makes boundSet be B2.
+    boundSet.incorporateToFixedPoint(newBounds);
 
-    return b1;
+    return boundSet;
   }
 
   /**
@@ -307,14 +311,14 @@ public class InvocationTypeInference {
 
     // For all i (1 <= i <= p), if Pi appears in the throws clause of m, then the bound throws
     // alphai is implied. These bounds, if any, are incorporated with B0 to produce a new bound
-    // set, B1.
+    // set, B1.  The incorporation is done by side-effecting the variables in b0, so after this
+    // loop b0 is B1.
     for (AbstractType thrownType : executableType.getThrownTypes(map)) {
       if (thrownType.isUseOfVariable()) {
         ((UseOfVariable) thrownType).setHasThrowsBound(true);
       }
     }
 
-    BoundSet b1 = b0;
     ConstraintSet c = new ConstraintSet();
     List<AbstractType> formals = executableType.getParameterTypes(map, args.size());
     if (TreeUtils.isLikeDiamondMemberReference(executableType.getMethodRef())) {
@@ -343,9 +347,10 @@ public class InvocationTypeInference {
           "Applicability constraints reduced to false for method reference %s.",
           executableType.getMethodRef());
     }
-    b1.incorporateToFixedPoint(newBounds);
+    // Incorporating the constraints into b0 (which is B1) makes b0 be B2.
+    b0.incorporateToFixedPoint(newBounds);
 
-    return b1;
+    return b0;
   }
 
   /**
