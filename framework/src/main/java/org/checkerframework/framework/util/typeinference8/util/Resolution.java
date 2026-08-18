@@ -213,11 +213,26 @@ public final class Resolution {
       Set<Variable> toResolveNow = new LinkedHashSet<>(as);
       toResolveNow.removeAll(deferred);
 
-      resolveWithoutCapture(toResolveNow, boundSet);
-      toResolveNow.removeAll(boundSet.getInstantiatedVariables());
-      // Then resolve the capture variables (and any non-captures that depend on them directly).
-      deferred.addAll(toResolveNow);
-      resolveWithCapture(deferred, boundSet, context);
+      // Save the current state in case the first attempt at resolution fails.
+      BoundSet snapshot = boundSet.saveBounds();
+      boolean failed;
+      try {
+        resolveWithoutCapture(toResolveNow, boundSet);
+        failed = boundSet.containsFalse();
+      } catch (FalseBoundException ex) {
+        failed = true;
+      }
+      if (failed) {
+        // resolveWithoutCapture failed, so undo everything it did, including all the variables it
+        // resolved, and resolve every variable with capture.
+        boundSet.restore(snapshot);
+        resolveWithCapture(as, boundSet, context);
+      } else {
+        toResolveNow.removeAll(boundSet.getInstantiatedVariables());
+        // Then resolve the capture variables (and any non-captures that depend on them directly).
+        deferred.addAll(toResolveNow);
+        resolveWithCapture(deferred, boundSet, context);
+      }
     } else {
       // Save the current state in case the first attempt at resolution fails.
       BoundSet snapshot = boundSet.saveBounds();

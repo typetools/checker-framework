@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
@@ -16,6 +17,7 @@ import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
@@ -33,6 +35,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Parameterizable;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -233,7 +236,8 @@ public class InferenceFactory {
     }
     declarers.removeIf(
         (Parameterizable declarer) ->
-            declarer.getTypeParameters().isEmpty() || isEnclosedBy(pathToInvocation, declarer));
+            declarer.getTypeParameters().isEmpty()
+                || typeParametersAreInScope(pathToInvocation, declarer));
     if (declarers.isEmpty()) {
       return false;
     }
@@ -251,24 +255,44 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns true if the leaf of {@code path} is within the declaration of {@code element}, which is
-   * a method, a constructor, or a class.
+   * Returns true if the type parameters of {@code element}, which is a method, a constructor, or a
+   * class, are in scope at the leaf of {@code path}.
+   *
+   * <p>They are in scope if the leaf is within the declaration of {@code element} and no static
+   * declaration intervenes. A static method, a static initializer, a static field initializer, and
+   * a static nested type (including a nested interface, enum, or record, which are implicitly
+   * static) cannot mention the type parameters of the declarations that enclose them.
    *
    * @param path a path
    * @param element a method, constructor, or class element
-   * @return true if the leaf of {@code path} is within the declaration of {@code element}
+   * @return true if the type parameters of {@code element} are in scope at the leaf of {@code path}
    */
-  private static boolean isEnclosedBy(TreePath path, Element element) {
+  private static boolean typeParametersAreInScope(TreePath path, Element element) {
     for (TreePath p = path.getParentPath(); p != null; p = p.getParentPath()) {
       Tree leaf = p.getLeaf();
       if (leaf instanceof MethodTree methodTree) {
-        if (element.equals(TreeUtils.elementFromDeclaration(methodTree))) {
+        ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);
+        if (element.equals(methodElement)) {
           return true;
+        }
+        if (methodElement == null || ElementUtils.isStatic(methodElement)) {
+          return false;
         }
       } else if (leaf instanceof ClassTree classTree) {
-        if (element.equals(TreeUtils.elementFromDeclaration(classTree))) {
+        TypeElement classElement = TreeUtils.elementFromDeclaration(classTree);
+        if (element.equals(classElement)) {
           return true;
         }
+        if (classElement == null || ElementUtils.isStatic(classElement)) {
+          return false;
+        }
+      } else if (leaf instanceof BlockTree blockTree && blockTree.isStatic()) {
+        // A static initializer.
+        return false;
+      } else if (leaf instanceof VariableTree variableTree
+          && variableTree.getModifiers().getFlags().contains(Modifier.STATIC)) {
+        // A static field's initializer.  (Only a field can be declared static.)
+        return false;
       }
     }
     return false;

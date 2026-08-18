@@ -102,4 +102,54 @@ public class UnsubstitutedInvocationType {
       identity(t);
     }
   }
+
+  // A class's type variables are not in scope in its static members, so javac leaving them
+  // unsubstituted in the type of an invocation within one of them is a missing substitution, just
+  // as it is outside the class.  A nested interface, enum, or record is implicitly static, so its
+  // members are static contexts too.
+  static class StaticUses<T extends S, S extends Comparable<T>> {
+    StaticUses() {}
+
+    static Object staticField = new StaticUses<>();
+
+    static {
+      new StaticUses<>();
+    }
+
+    static void staticMethod() {
+      new StaticUses<>();
+    }
+
+    static class StaticNested {
+      void inStaticNestedClass() {
+        new StaticUses<>();
+      }
+    }
+
+    interface NestedInterface {
+      default void inNestedInterface() {
+        new StaticUses<>();
+      }
+    }
+
+    enum NestedEnum {
+      A;
+
+      void inNestedEnum() {
+        new StaticUses<>();
+      }
+    }
+
+    // By contrast, an instance member can mention the class's type variables, so the type of an
+    // invocation within one of them is not evidence of a missing substitution.
+    void instanceMethod() {
+      new StaticUses<>();
+    }
+
+    class Inner {
+      void inInnerClass() {
+        new StaticUses<>();
+      }
+    }
+  }
 }
