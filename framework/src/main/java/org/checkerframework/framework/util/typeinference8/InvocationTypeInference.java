@@ -470,21 +470,9 @@ public class InvocationTypeInference {
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS
    * 18.5.2.2</a>.)
    *
-   * @param executableType type of method invoked
-   * @param args argument expression trees
-   * @param map map from type variable to inference variable
-   * @return the constraints between the formal parameters and arguments that are not pertinent to
-   *     applicability
-   */
-  public ConstraintSet createC(
-      AbstractExecutableType executableType, List<? extends ExpressionTree> args, Theta map) {
-    return createC(executableType, args, map, new BoundSet(context));
-  }
-
-  /**
-   * Same as {@link #createC(AbstractExecutableType, List, Theta)}, but collects the bound sets of
-   * any nested poly invocations encountered along the way into {@code nestedBounds}. See {@link
-   * #createAdditionalArgConstraintsForInvocation(ExpressionTree, BoundSet)}.
+   * <p>The bound sets of any nested poly invocations encountered along the way are collected into
+   * {@code nestedBounds}. See {@link #createAdditionalArgConstraintsForInvocation(ExpressionTree,
+   * BoundSet)}.
    *
    * @param executableType type of method invoked
    * @param args argument expression trees
@@ -516,7 +504,8 @@ public class InvocationTypeInference {
 
   /**
    * Adds argument constraints for the argument {@code ei} and its subexpressions. These are in
-   * addition to the constraints added in {@link #createC(AbstractExecutableType, List, Theta)}.
+   * addition to the constraints added in {@link #createC(AbstractExecutableType, List, Theta,
+   * BoundSet)}.
    *
    * <p>It does this by traversing {@code ei} if it is a method reference, lambda, method
    * invocation, new class tree, conditional expression, switch expression, or parenthesized
