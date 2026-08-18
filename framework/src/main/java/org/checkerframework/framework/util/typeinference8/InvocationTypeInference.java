@@ -168,7 +168,12 @@ public class InvocationTypeInference {
     } else {
       b3 = b2;
     }
-    ConstraintSet c = createC(inferenceExecutableType, args, map);
+    // Nested poly invocations found while creating C contribute their own bound sets (JLS
+    // 18.5.1); see createAdditionalArgConstraintsForInvocation.  Incorporate them before
+    // getB4 resolves any constraint that mentions their inference variables.
+    BoundSet nestedBounds = new BoundSet(context);
+    ConstraintSet c = createC(inferenceExecutableType, args, map, nestedBounds);
+    b3.incorporateToFixedPoint(nestedBounds);
 
     BoundSet b4 = getB4(b3, c);
     b4.resolve();
@@ -468,44 +473,37 @@ public class InvocationTypeInference {
    */
   public ConstraintSet createC(
       AbstractExecutableType executableType, List<? extends ExpressionTree> args, Theta map) {
-    return createC(executableType, args, map, false);
+    return createC(executableType, args, map, new BoundSet(context));
   }
 
   /**
-   * Same as {@link #createC(AbstractExecutableType, List, Theta)}, but for a method or constructor
-   * invocation that is itself nested inside another expression whose own type argument inference is
-   * in progress (see {@link #createAdditionalArgConstraints(ExpressionTree, AbstractType, Theta)}).
-   * Such a nested invocation is not applicability-tested on its own (for example, because it
-   * appears inside the body of an implicitly typed lambda, which is skipped during its enclosing
-   * invocation's applicability inference (§15.12.2.2)), so, unlike the top-level invocation handled
-   * by {@link #infer(ExpressionTree, AnnotatedExecutableType)}, no bound set corresponding to
-   * §18.5.1 is ever separately computed for it. Constraints between its pertinent-to-applicability
-   * arguments and their formal parameter types (which would otherwise have been established while
-   * computing that bound set) are therefore included in {@code C} as well, so that they can still
-   * constrain the invocation's inference variables.
+   * Same as {@link #createC(AbstractExecutableType, List, Theta)}, but collects the bound sets of
+   * any nested poly invocations encountered along the way into {@code nestedBounds}. See {@link
+   * #createAdditionalArgConstraintsForInvocation(ExpressionTree, BoundSet)}.
    *
    * @param executableType type of method invoked
    * @param args argument expression trees
    * @param map map from type variable to inference variable
-   * @param forNestedInvocation whether {@code executableType} is a nested invocation as described
-   *     above
-   * @return the constraints between the formal parameters and arguments
+   * @param nestedBounds side-effected to add the bound set (JLS 18.5.1) of each nested poly
+   *     invocation encountered while creating these constraints
+   * @return the constraints between the formal parameters and arguments that are not pertinent to
+   *     applicability
    */
   private ConstraintSet createC(
       AbstractExecutableType executableType,
       List<? extends ExpressionTree> args,
       Theta map,
-      boolean forNestedInvocation) {
+      BoundSet nestedBounds) {
     ConstraintSet c = new ConstraintSet();
     List<AbstractType> formals = executableType.getParameterTypes(map, args.size());
 
     for (int i = 0; i < formals.size(); i++) {
       ExpressionTree ei = args.get(i);
       AbstractType fi = formals.get(i);
-      if (forNestedInvocation || notPertinentToApplicability(ei, fi)) {
+      if (notPertinentToApplicability(ei, fi)) {
         c.add(new Expression("Argument constraint", ei, fi));
       }
-      c.addAll(createAdditionalArgConstraints(ei, fi, map));
+      c.addAll(createAdditionalArgConstraints(ei, fi, map, nestedBounds));
     }
 
     return c;
@@ -532,10 +530,12 @@ public class InvocationTypeInference {
    * @param fi type that is the formal parameter to a method whose corresponding argument is {@code
    *     ei}
    * @param map map from type variable to inference variable
+   * @param nestedBounds side-effected to add the bound set (JLS 18.5.1) of each nested poly
+   *     invocation encountered
    * @return the additional argument constraints
    */
   private ConstraintSet createAdditionalArgConstraints(
-      ExpressionTree ei, AbstractType fi, Theta map) {
+      ExpressionTree ei, AbstractType fi, Theta map, BoundSet nestedBounds) {
     ConstraintSet c = new ConstraintSet();
 
     switch (ei.getKind()) {
@@ -544,26 +544,30 @@ public class InvocationTypeInference {
         c.add(new CheckedExceptionConstraint(ei, fi, map));
         LambdaExpressionTree lambda = (LambdaExpressionTree) ei;
         for (ExpressionTree expression : TreeUtils.getReturnedExpressions(lambda)) {
-          c.addAll(createAdditionalArgConstraintsNoLambda(expression));
+          c.addAll(createAdditionalArgConstraintsNoLambda(expression, nestedBounds));
         }
       }
       case METHOD_INVOCATION, NEW_CLASS -> {
         if (TreeUtils.isPolyExpression(ei)) {
-          c.addAll(createAdditionalArgConstraintsForInvocation(ei));
+          c.addAll(createAdditionalArgConstraintsForInvocation(ei, nestedBounds));
         }
       }
       case PARENTHESIZED ->
-          c.addAll(createAdditionalArgConstraints(TreeUtils.withoutParens(ei), fi, map));
+          c.addAll(
+              createAdditionalArgConstraints(TreeUtils.withoutParens(ei), fi, map, nestedBounds));
       case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) ei;
-        c.addAll(createAdditionalArgConstraints(conditional.getTrueExpression(), fi, map));
-        c.addAll(createAdditionalArgConstraints(conditional.getFalseExpression(), fi, map));
+        c.addAll(
+            createAdditionalArgConstraints(conditional.getTrueExpression(), fi, map, nestedBounds));
+        c.addAll(
+            createAdditionalArgConstraints(
+                conditional.getFalseExpression(), fi, map, nestedBounds));
       }
       case SWITCH_EXPRESSION -> {
         SwitchExpressionScanner<Void, Void> scanner =
             new FunctionalSwitchExpressionScanner<>(
                 (ExpressionTree tree, Void unused) -> {
-                  c.addAll(createAdditionalArgConstraints(tree, fi, map));
+                  c.addAll(createAdditionalArgConstraints(tree, fi, map, nestedBounds));
                   return null;
                 },
                 (c1, c2) -> null);
@@ -582,10 +586,23 @@ public class InvocationTypeInference {
    * is itself an argument (or, transitively, part of an argument) of another invocation under
    * inference.
    *
+   * <p>JLS 18.5.2.2 says only that {@code C} contains the constraint formulas of the set {@code C}
+   * that §18.5.2 would generate for {@code invocation}; the constraints for its
+   * pertinent-to-applicability arguments are not part of that set. The JLS supplies those through
+   * the invocation's own bound set B2 (§18.5.1), which reaches the enclosing inference when a
+   * constraint of the form &lt;{@code invocation} &rarr; T&gt; is reduced to B3 (§18.2.1). That
+   * reduction happens later than this method runs, so B2 is computed here and returned through
+   * {@code nestedBounds}, to be incorporated before any constraint mentioning {@code invocation}'s
+   * inference variables is resolved. Without it those variables would be unconstrained at
+   * resolution time and would instantiate to {@code Object}.
+   *
    * @param invocation a poly method invocation tree or new class tree
+   * @param nestedBounds side-effected to add the bound set (JLS 18.5.1) of {@code invocation} and
+   *     of any poly invocation nested within it
    * @return the additional argument constraints produced by {@code invocation}
    */
-  private ConstraintSet createAdditionalArgConstraintsForInvocation(ExpressionTree invocation) {
+  private ConstraintSet createAdditionalArgConstraintsForInvocation(
+      ExpressionTree invocation, BoundSet nestedBounds) {
     List<? extends ExpressionTree> args;
     if (invocation instanceof NewClassTree newClassTree) {
       args = newClassTree.getArguments();
@@ -596,7 +613,8 @@ public class InvocationTypeInference {
         context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(invocation);
     Theta newMap =
         context.inferenceTypeFactory.createThetaForInvocation(invocation, executableType, context);
-    ConstraintSet set = context.inference.createC(executableType, args, newMap, true);
+    nestedBounds.incorporateToFixedPoint(createB2(executableType, args, newMap));
+    ConstraintSet set = context.inference.createC(executableType, args, newMap, nestedBounds);
     set.applyInstantiations();
     return set;
   }
@@ -604,40 +622,47 @@ public class InvocationTypeInference {
   /**
    * Recursively search for method invocations and new class trees. If any are found, the additional
    * variables, bounds, and constraints are returned. This method is called by {@link
-   * #createAdditionalArgConstraints(ExpressionTree, AbstractType, Theta)} when that method
-   * encounters a lambda. This method is different because it does not add checked exception
+   * #createAdditionalArgConstraints(ExpressionTree, AbstractType, Theta, BoundSet)} when that
+   * method encounters a lambda. This method is different because it does not add checked exception
    * constraints for lambdas or method references.
    *
    * @param expression expression to search
+   * @param nestedBounds side-effected to add the bound set (JLS 18.5.1) of each nested poly
+   *     invocation encountered
    * @return additional constraints
    */
-  private ConstraintSet createAdditionalArgConstraintsNoLambda(ExpressionTree expression) {
+  private ConstraintSet createAdditionalArgConstraintsNoLambda(
+      ExpressionTree expression, BoundSet nestedBounds) {
     ConstraintSet c = new ConstraintSet();
 
     switch (expression.getKind()) {
       case LAMBDA_EXPRESSION -> {
         LambdaExpressionTree lambda = (LambdaExpressionTree) expression;
         for (ExpressionTree returnedExpression : TreeUtils.getReturnedExpressions(lambda)) {
-          c.addAll(createAdditionalArgConstraintsNoLambda(returnedExpression));
+          c.addAll(createAdditionalArgConstraintsNoLambda(returnedExpression, nestedBounds));
         }
       }
       case METHOD_INVOCATION, NEW_CLASS -> {
         if (TreeUtils.isPolyExpression(expression)) {
-          c.addAll(createAdditionalArgConstraintsForInvocation(expression));
+          c.addAll(createAdditionalArgConstraintsForInvocation(expression, nestedBounds));
         }
       }
       case PARENTHESIZED ->
-          c.addAll(createAdditionalArgConstraintsNoLambda(TreeUtils.withoutParens(expression)));
+          c.addAll(
+              createAdditionalArgConstraintsNoLambda(
+                  TreeUtils.withoutParens(expression), nestedBounds));
       case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) expression;
-        c.addAll(createAdditionalArgConstraintsNoLambda(conditional.getTrueExpression()));
-        c.addAll(createAdditionalArgConstraintsNoLambda(conditional.getFalseExpression()));
+        c.addAll(
+            createAdditionalArgConstraintsNoLambda(conditional.getTrueExpression(), nestedBounds));
+        c.addAll(
+            createAdditionalArgConstraintsNoLambda(conditional.getFalseExpression(), nestedBounds));
       }
       case SWITCH_EXPRESSION -> {
         SwitchExpressionScanner<Void, Void> scanner =
             new FunctionalSwitchExpressionScanner<>(
                 (ExpressionTree tree, Void unused) -> {
-                  c.addAll(createAdditionalArgConstraintsNoLambda(tree));
+                  c.addAll(createAdditionalArgConstraintsNoLambda(tree, nestedBounds));
                   return null;
                 },
                 (c1, c2) -> null);
