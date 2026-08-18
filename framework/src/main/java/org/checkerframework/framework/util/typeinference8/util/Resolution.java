@@ -166,7 +166,7 @@ public final class Resolution {
    * in the set depends.
    *
    * @param resolvedVars variables that have been resolved
-   * @param unresolvedVars variables that have not been resolved
+   * @param unresolvedVars variables that have not been resolved; must be non-empty
    * @return the smallest set of unresolved variable
    */
   private Set<Variable> getSmallestDependencySet(
@@ -188,6 +188,9 @@ public final class Resolution {
         // (A variable is always dependent on itself.) So, stop looking for smaller ones.
         break;
       }
+    }
+    if (smallestDependencySet == null) {
+      throw new BugInCF("getSmallestDependencySet: no unresolved variables");
     }
     return smallestDependencySet;
   }
