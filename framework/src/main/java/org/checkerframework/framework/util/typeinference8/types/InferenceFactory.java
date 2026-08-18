@@ -980,20 +980,32 @@ public class InferenceFactory {
     List<UseOfVariable> es = new ArrayList<>();
     List<ProperType> properTypes = new ArrayList<>();
 
+    AnnotatedTypeMirror functionalInterface = targetType.getAnnotatedType();
+    if (targetType.isWildcardParameterizedType()) {
+      // JLS 9.9: the function type of a wildcard-parameterized functional interface type is the
+      // function type of the type's non-wildcard parameterization.
+      functionalInterface =
+          AbstractType.makeGround((AnnotatedDeclaredType) functionalInterface, context.typeFactory);
+    }
     AnnotatedExecutableType functionType =
         AnnotatedTypes.asMemberOf(
-            context.modelTypes, context.typeFactory, targetType.getAnnotatedType(), ele);
+            context.modelTypes, context.typeFactory, functionalInterface, ele);
 
     for (AnnotatedTypeMirror thrownType : functionType.getThrownTypes()) {
       AbstractType ei = InferenceType.create(thrownType, map, context);
+      // JLS 18.2.5 uses the proper types and the inference variables among the function type's
+      // thrown types.  Every thrown type is one or the other, because no subclass of Throwable is
+      // generic (JLS 8.1.2) and because the function type is that of a non-wildcard
+      // parameterization; the `isUseOfVariable` test is defensive.
       if (ei.isProper()) {
         properTypes.add((ProperType) ei);
-      } else {
+      } else if (ei.isUseOfVariable()) {
         UseOfVariable varEi = (UseOfVariable) ei;
-        if (varEi.getVariable().getInstantiation() != null) {
-          properTypes.add(varEi.getVariable().getInstantiation());
+        ProperType instantiation = varEi.getVariable().getInstantiation();
+        if (instantiation != null) {
+          properTypes.add(instantiation);
         } else {
-          es.add((UseOfVariable) ei);
+          es.add(varEi);
         }
       }
     }
