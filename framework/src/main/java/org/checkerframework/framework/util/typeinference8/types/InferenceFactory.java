@@ -878,14 +878,20 @@ public class InferenceFactory {
         if (properType.ignoreAnnotations == ignoreAnnotations) {
           lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubATM, atm, lubTM);
         } else if (properType.ignoreAnnotations) {
+          // Only `lubATM`'s annotations are meaningful, so keep them.
           lubATM =
               AnnotatedTypes.asSuper(
                   typeFactory, lubATM, AnnotatedTypeMirror.createType(lubTM, typeFactory, false));
         } else {
+          // Only `atm`'s annotations are meaningful, so keep them.
           lubATM =
               AnnotatedTypes.asSuper(
                   typeFactory, atm, AnnotatedTypeMirror.createType(lubTM, typeFactory, false));
         }
+        // The annotations of a type that ignores annotations put no constraint on the result, so
+        // the result ignores annotations only if every type does.  This is the same rule as in
+        // `glb`.
+        ignoreAnnotations = ignoreAnnotations && properType.ignoreAnnotations;
       }
     }
     return new ProperType(lubATM, context, ignoreAnnotations);
