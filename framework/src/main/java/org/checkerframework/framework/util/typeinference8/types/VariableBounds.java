@@ -63,23 +63,70 @@ public class VariableBounds {
   private boolean hasThrowsBound = false;
 
   /**
-   * Bounds saved by {@link #save}, for use in the event that the first attempt at resolution fails;
-   * null if {@link #save} has not been called.
+   * A copy of the state of a {@link VariableBounds}, created by {@link VariableBounds#save} and
+   * passed to {@link VariableBounds#restore}. A snapshot is never modified after it is created.
+   *
+   * <p>All the saved state is held by the snapshot itself, rather than by the {@link
+   * VariableBounds} that created it, so that snapshots taken at different times are independent of
+   * one another.
    */
-  private @Nullable EnumMap<BoundKind, LinkedHashSet<AbstractType>> savedBounds = null;
+  public static class Snapshot {
 
-  /**
-   * Qualifier bounds saved by {@link #save}, for use in the event that the first attempt at
-   * resolution fails; null if {@link #save} has not been called.
-   */
-  private @Nullable EnumMap<BoundKind, LinkedHashSet<AbstractQualifier>> savedQualifierBounds =
-      null;
+    /** A copy of {@link VariableBounds#bounds}. */
+    private final EnumMap<BoundKind, Set<AbstractType>> bounds;
 
-  /** Saved {@link #constraints} used in the event the first attempt at resolution fails. */
-  private @Nullable ConstraintSet savedConstraints = null;
+    /** A copy of {@link VariableBounds#qualifierBounds}. */
+    private final EnumMap<BoundKind, Set<AbstractQualifier>> qualifierBounds;
 
-  /** Saved {@link #hasThrowsBound} used in the event the first attempt at resolution fails. */
-  private boolean savedHasThrowsBound = false;
+    /** A copy of {@link VariableBounds#constraints}. */
+    private final ConstraintSet constraints;
+
+    /** The value of {@link VariableBounds#hasThrowsBound}. */
+    private final boolean hasThrowsBound;
+
+    /**
+     * Creates a snapshot of the current state of {@code variableBounds}.
+     *
+     * @param variableBounds the bounds to copy
+     */
+    private Snapshot(VariableBounds variableBounds) {
+      bounds = copyBounds(variableBounds.bounds);
+      qualifierBounds = copyBounds(variableBounds.qualifierBounds);
+      constraints = new ConstraintSet();
+      constraints.addAll(variableBounds.constraints);
+      hasThrowsBound = variableBounds.hasThrowsBound;
+    }
+
+    /**
+     * Returns a copy of {@code toCopy}, whose values are also copies.
+     *
+     * @param <T> the type of the elements of the sets in {@code toCopy}
+     * @param toCopy a map from bound kind to a set of bounds
+     * @return a copy of {@code toCopy}, whose values are also copies
+     */
+    private static <T> EnumMap<BoundKind, Set<T>> copyBounds(EnumMap<BoundKind, Set<T>> toCopy) {
+      EnumMap<BoundKind, Set<T>> result = new EnumMap<>(BoundKind.class);
+      for (BoundKind kind : BoundKind.values()) {
+        result.put(kind, new LinkedHashSet<>(toCopy.get(kind)));
+      }
+      return result;
+    }
+
+    /**
+     * Copies {@code saved} into {@code toRestore}, which it first empties.
+     *
+     * @param <T> the type of the elements of the sets in {@code saved}
+     * @param toRestore a map from bound kind to a set of bounds; side-effected by this method
+     * @param saved the snapshotted bounds
+     */
+    private static <T> void restoreBounds(
+        EnumMap<BoundKind, Set<T>> toRestore, EnumMap<BoundKind, Set<T>> saved) {
+      toRestore.clear();
+      for (BoundKind kind : BoundKind.values()) {
+        toRestore.put(kind, new LinkedHashSet<>(saved.get(kind)));
+      }
+    }
+  }
 
   /**
    * Creates bounds for {@code variable}.
@@ -99,35 +146,22 @@ public class VariableBounds {
     qualifierBounds.put(BoundKind.LOWER, new LinkedHashSet<>());
   }
 
-  /** Save the current bounds in case the first attempt at resolution fails. */
-  public void save() {
-    savedBounds = new EnumMap<>(BoundKind.class);
-    savedBounds.put(BoundKind.EQUAL, new LinkedHashSet<>(bounds.get(BoundKind.EQUAL)));
-    savedBounds.put(BoundKind.UPPER, new LinkedHashSet<>(bounds.get(BoundKind.UPPER)));
-    savedBounds.put(BoundKind.LOWER, new LinkedHashSet<>(bounds.get(BoundKind.LOWER)));
-
-    savedQualifierBounds = new EnumMap<>(BoundKind.class);
-    savedQualifierBounds.put(
-        BoundKind.EQUAL, new LinkedHashSet<>(qualifierBounds.get(BoundKind.EQUAL)));
-    savedQualifierBounds.put(
-        BoundKind.UPPER, new LinkedHashSet<>(qualifierBounds.get(BoundKind.UPPER)));
-    savedQualifierBounds.put(
-        BoundKind.LOWER, new LinkedHashSet<>(qualifierBounds.get(BoundKind.LOWER)));
-
-    savedConstraints = new ConstraintSet();
-    savedConstraints.addAll(constraints);
-    savedHasThrowsBound = hasThrowsBound;
+  /**
+   * Returns a snapshot of the current bounds, in case the first attempt at resolution fails.
+   *
+   * @return a snapshot of the current bounds, to pass to {@link #restore}
+   */
+  public Snapshot save() {
+    return new Snapshot(this);
   }
 
   /**
-   * Restore the bounds to the state previously saved. This method is called if the first attempt at
-   * resolution fails.
+   * Restore the bounds to the state that {@code snapshot} recorded. This method is called if the
+   * first attempt at resolution fails.
+   *
+   * @param snapshot the result of a call to {@link #save} on these bounds
    */
-  public void restore() {
-    EnumMap<BoundKind, LinkedHashSet<AbstractType>> savedBounds = this.savedBounds;
-    EnumMap<BoundKind, LinkedHashSet<AbstractQualifier>> savedQualifierBounds =
-        this.savedQualifierBounds;
-    assert savedBounds != null && savedQualifierBounds != null : "restore() called before save()";
+  public void restore(Snapshot snapshot) {
     instantiation = null;
     // Adding a bound can enqueue a constraint in `constraints`, and those constraints are not
     // necessarily reduced before restoration: incorporation stops as soon as the bound set contains
@@ -135,20 +169,11 @@ public class VariableBounds {
     // attempt was derived from bounds that are about to be discarded, so discard it too; otherwise
     // the next call to `BoundSet.reachFixedPoint` would reduce it.
     constraints.clear();
-    constraints.addAll(savedConstraints);
-    hasThrowsBound = savedHasThrowsBound;
-    bounds.clear();
-    bounds.put(BoundKind.EQUAL, new LinkedHashSet<>(savedBounds.get(BoundKind.EQUAL)));
-    bounds.put(BoundKind.UPPER, new LinkedHashSet<>(savedBounds.get(BoundKind.UPPER)));
-    bounds.put(BoundKind.LOWER, new LinkedHashSet<>(savedBounds.get(BoundKind.LOWER)));
+    constraints.addAll(snapshot.constraints);
+    hasThrowsBound = snapshot.hasThrowsBound;
+    Snapshot.restoreBounds(bounds, snapshot.bounds);
     setInstantiationFromEqualBounds();
-    qualifierBounds.clear();
-    qualifierBounds.put(
-        BoundKind.EQUAL, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.EQUAL)));
-    qualifierBounds.put(
-        BoundKind.UPPER, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.UPPER)));
-    qualifierBounds.put(
-        BoundKind.LOWER, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.LOWER)));
+    Snapshot.restoreBounds(qualifierBounds, snapshot.qualifierBounds);
   }
 
   /**

@@ -49,13 +49,13 @@ public class VariableBoundsTest {
   public void restoreDiscardsConstraintsFromFailedAttempt() {
     VariableBounds variableBounds = uninitializedVariableBounds();
 
-    variableBounds.save();
+    VariableBounds.Snapshot snapshot = variableBounds.save();
 
     // The failed attempt at resolution without capture.
     variableBounds.constraints.add(new DummyConstraint());
     variableBounds.setHasThrowsBound(true);
 
-    variableBounds.restore();
+    variableBounds.restore(snapshot);
 
     Assert.assertTrue(variableBounds.constraints.isEmpty());
     Assert.assertFalse(variableBounds.hasThrowsBound());
@@ -72,15 +72,57 @@ public class VariableBoundsTest {
     variableBounds.constraints.add(beforeSnapshot);
     variableBounds.setHasThrowsBound(true);
 
-    variableBounds.save();
+    VariableBounds.Snapshot snapshot = variableBounds.save();
 
     // The failed attempt at resolution without capture.
     variableBounds.constraints.add(new DummyConstraint());
 
-    variableBounds.restore();
+    variableBounds.restore(snapshot);
 
     Assert.assertTrue(variableBounds.hasThrowsBound());
     Assert.assertSame(beforeSnapshot, variableBounds.constraints.pop());
+    Assert.assertTrue(variableBounds.constraints.isEmpty());
+  }
+
+  /**
+   * Tests that a snapshot keeps its own copy of the state, so that a snapshot can be restored even
+   * after a later snapshot of the same bounds has been taken.
+   *
+   * <p>{@code Resolution.resolveSmallestSet} takes a snapshot before each attempt at resolution
+   * without capture, and reducing the constraints of one such attempt can start inference for a
+   * nested expression, which resolves variables of its own and therefore takes a second snapshot of
+   * the very same bounds. If the state were stored in the {@link VariableBounds} rather than in the
+   * snapshot, the second snapshot would overwrite the first one, and restoring the first one would
+   * install the state of the failed attempt that the first snapshot was supposed to undo.
+   */
+  @Test
+  public void restoreOfEarlierSnapshotIsUnaffectedByLaterSave() {
+    VariableBounds variableBounds = uninitializedVariableBounds();
+    Constraint beforeOuterSnapshot = new DummyConstraint();
+    variableBounds.constraints.add(beforeOuterSnapshot);
+
+    VariableBounds.Snapshot outerSnapshot = variableBounds.save();
+
+    Constraint beforeInnerSnapshot = new DummyConstraint();
+    variableBounds.constraints.add(beforeInnerSnapshot);
+    variableBounds.setHasThrowsBound(true);
+
+    VariableBounds.Snapshot innerSnapshot = variableBounds.save();
+
+    variableBounds.constraints.add(new DummyConstraint());
+
+    // Restoring the inner snapshot undoes only what happened after it was taken.
+    variableBounds.restore(innerSnapshot);
+    Assert.assertTrue(variableBounds.hasThrowsBound());
+    Assert.assertSame(beforeOuterSnapshot, variableBounds.constraints.pop());
+    Assert.assertSame(beforeInnerSnapshot, variableBounds.constraints.pop());
+    Assert.assertTrue(variableBounds.constraints.isEmpty());
+
+    // Restoring the outer snapshot undoes everything that happened after it was taken, including
+    // the state that was current when the inner snapshot was taken.
+    variableBounds.restore(outerSnapshot);
+    Assert.assertFalse(variableBounds.hasThrowsBound());
+    Assert.assertSame(beforeOuterSnapshot, variableBounds.constraints.pop());
     Assert.assertTrue(variableBounds.constraints.isEmpty());
   }
 

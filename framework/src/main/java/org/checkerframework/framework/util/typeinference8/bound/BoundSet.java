@@ -2,13 +2,17 @@ package org.checkerframework.framework.util.typeinference8.bound;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.types.CaptureVariable;
 import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
+import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
@@ -50,6 +54,15 @@ public class BoundSet implements ReductionResult {
   private boolean uncheckedConversion;
 
   /**
+   * The bounds of each variable in {@link #variables}, as they were when {@link #saveBounds}
+   * created this bound set; null if this bound set was not created by {@link #saveBounds}.
+   *
+   * <p>Each snapshot holds its own copy of the variables' bounds, so a snapshot can be restored
+   * even after a later snapshot has been taken.
+   */
+  private final @Nullable Map<Variable, VariableBounds.Snapshot> savedVariableBounds;
+
+  /**
    * Creates a bound set.
    *
    * @param context the context
@@ -61,6 +74,7 @@ public class BoundSet implements ReductionResult {
     this.context = context;
     this.containsFalse = false;
     this.uncheckedConversion = false;
+    this.savedVariableBounds = null;
   }
 
   /**
@@ -69,6 +83,18 @@ public class BoundSet implements ReductionResult {
    * @param toCopy bound set to copy
    */
   public BoundSet(BoundSet toCopy) {
+    this(toCopy, toCopy.savedVariableBounds);
+  }
+
+  /**
+   * Creates a copy of {@code toCopy} whose saved variable bounds are {@code savedVariableBounds}.
+   *
+   * @param toCopy bound set to copy
+   * @param savedVariableBounds the bounds of each variable in {@code toCopy}, or null if this bound
+   *     set is not a snapshot
+   */
+  private BoundSet(
+      BoundSet toCopy, @Nullable Map<Variable, VariableBounds.Snapshot> savedVariableBounds) {
     this.context = toCopy.context;
     this.containsFalse = toCopy.containsFalse;
     this.captures = new LinkedHashSet<>(toCopy.captures);
@@ -76,6 +102,7 @@ public class BoundSet implements ReductionResult {
     this.uncheckedConversion = toCopy.uncheckedConversion;
     this.annoInferenceFailed = toCopy.annoInferenceFailed;
     this.errorMsg = toCopy.errorMsg;
+    this.savedVariableBounds = savedVariableBounds;
   }
 
   /**
@@ -83,13 +110,17 @@ public class BoundSet implements ReductionResult {
    * undo any change made after this call. This method is called before the first attempt at
    * resolution, which might fail.
    *
+   * <p>The returned snapshot holds all the saved state, including the bounds of each variable, so
+   * it remains valid even if this method is called again before the snapshot is restored.
+   *
    * @return a snapshot of this bound set, to pass to {@link #restore}
    */
   public BoundSet saveBounds() {
+    Map<Variable, VariableBounds.Snapshot> saved = new LinkedHashMap<>();
     for (Variable v : variables) {
-      v.save();
+      saved.put(v, v.save());
     }
-    return new BoundSet(this);
+    return new BoundSet(this, saved);
   }
 
   /**
@@ -103,6 +134,10 @@ public class BoundSet implements ReductionResult {
    * @param snapshot the result of a call to {@link #saveBounds} on this bound set
    */
   public void restore(BoundSet snapshot) {
+    Map<Variable, VariableBounds.Snapshot> saved = snapshot.savedVariableBounds;
+    if (saved == null) {
+      throw new BugInCF("BoundSet.restore called with a snapshot not created by saveBounds().");
+    }
     containsFalse = snapshot.containsFalse;
     uncheckedConversion = snapshot.uncheckedConversion;
     annoInferenceFailed = snapshot.annoInferenceFailed;
@@ -112,7 +147,11 @@ public class BoundSet implements ReductionResult {
     variables.clear();
     variables.addAll(snapshot.variables);
     for (Variable v : variables) {
-      v.restore();
+      VariableBounds.Snapshot variableSnapshot = saved.get(v);
+      if (variableSnapshot == null) {
+        throw new BugInCF("No saved bounds for variable %s.", v);
+      }
+      v.restore(variableSnapshot);
     }
   }
 

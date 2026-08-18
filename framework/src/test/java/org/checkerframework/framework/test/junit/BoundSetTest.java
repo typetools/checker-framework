@@ -111,6 +111,47 @@ public class BoundSetTest {
   }
 
   /**
+   * Tests that a snapshot keeps its own copy of the state, so that a snapshot can be restored even
+   * after {@link BoundSet#saveBounds} has taken a later snapshot of the same bound set.
+   *
+   * <p>{@code Resolution.resolveSmallestSet} takes a snapshot before each attempt at resolution
+   * without capture, and reducing the constraints of one such attempt can start inference for a
+   * nested expression, which resolves variables of its own and therefore takes a second snapshot of
+   * the very same bound set.
+   */
+  @Test
+  public void restoreOfEarlierSnapshotIsUnaffectedByLaterSaveBounds() {
+    String beforeOuterSnapshot = "@Tainted MyNode <: @Untainted Node<@Tainted MyNode>";
+    String beforeInnerSnapshot = "@Tainted Object <: @Untainted Tag<@Tainted Object>";
+    BoundSet boundSet = new BoundSet(uninitializedContext());
+    boundSet.annoInferenceFailed = true;
+    boundSet.errorMsg = beforeOuterSnapshot;
+
+    BoundSet outerSnapshot = boundSet.saveBounds();
+
+    boundSet.errorMsg = beforeInnerSnapshot;
+    boundSet.setUncheckedConversion(true);
+
+    BoundSet innerSnapshot = boundSet.saveBounds();
+
+    boundSet.addFalse();
+    boundSet.errorMsg = "@Tainted String <: @Untainted String";
+
+    // Restoring the inner snapshot undoes only what happened after it was taken.
+    boundSet.restore(innerSnapshot);
+    Assert.assertEquals(beforeInnerSnapshot, boundSet.errorMsg);
+    Assert.assertTrue(boundSet.isUncheckedConversion());
+    Assert.assertFalse(boundSet.containsFalse());
+
+    // Restoring the outer snapshot undoes everything that happened after it was taken, including
+    // the state that was current when the inner snapshot was taken.
+    boundSet.restore(outerSnapshot);
+    Assert.assertEquals(beforeOuterSnapshot, boundSet.errorMsg);
+    Assert.assertFalse(boundSet.isUncheckedConversion());
+    Assert.assertFalse(boundSet.containsFalse());
+  }
+
+  /**
    * Returns a {@link Java8InferenceContext} on which no constructor has run, so all its fields are
    * null. Creating a real context requires a running compilation, which is far more than this test
    * needs: {@link BoundSet}'s constructors only store the reference and check that it is non-null.
