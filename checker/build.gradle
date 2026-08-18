@@ -337,42 +337,6 @@ if (!rootProject.ext.skipDelombok) {
 // Tests of the -Ainfer command-line argument.  These are not whole-program inference tests.
 //
 
-/**
- * When a test fails, prints a message telling the user which task to run.  Register this on an
- * internal test task, whose name users should not have to know or type.
- */
-class RerunAdvice implements TestListener {
-
-  /** The name of the task to run, such as ":checker:ainferTestCheckerAjavaTest". */
-  private final String taskName
-
-  /**
-   * Creates a RerunAdvice.
-   *
-   * @param taskName the name of the task to run, such as ":checker:ainferTestCheckerAjavaTest"
-   */
-  RerunAdvice(String taskName) {
-    this.taskName = taskName
-  }
-
-  @Override
-  void beforeSuite(TestDescriptor suite) {}
-
-  @Override
-  void afterSuite(TestDescriptor suite, TestResult result) {
-    // A suite with no parent is the root suite, which completes after every test has run.
-    if (suite.parent == null && result.resultType == TestResult.ResultType.FAILURE) {
-      println("This is an internal task.  After fixing the problem, re-test by running:  ./gradlew ${taskName}")
-    }
-  }
-
-  @Override
-  void beforeTest(TestDescriptor testDescriptor) {}
-
-  @Override
-  void afterTest(TestDescriptor testDescriptor, TestResult result) {}
-}
-
 test {
   useJUnit {
     // These are run in task ainferTest.
