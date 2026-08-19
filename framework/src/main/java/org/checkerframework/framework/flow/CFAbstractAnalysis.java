@@ -13,6 +13,7 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.ForwardAnalysisImpl;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -169,8 +170,8 @@ public abstract class CFAbstractAnalysis<
    * <p>Also returns null if any of the annotation's expressions cannot be parsed at the call site.
    * Null means "the method might side-effect anything", which is the conservative result; returning
    * a list that omits the unparseable expression would treat the method as side-effecting
-   * <em>less</em> than it was declared to. The parse error itself is reported at the call site,
-   * since the callee's declaration may not be under compilation.
+   * <em>less</em> than it was declared to. The parse error itself is reported at the call site in
+   * addition to at the declaration, since the callee's declaration may not be under compilation.
    *
    * <p>The result is cached, because dataflow calls this once per iteration per call site and
    * parsing an expression is not cheap. Clients should not side-effect the returned value, which is
@@ -221,7 +222,9 @@ public abstract class CFAbstractAnalysis<
     List<JavaExpression> seOnlyExpressions = new ArrayList<>();
 
     // For deciding whether to issue a warning about viewpoint adaptation: an expression that can
-    // be represented at the call site, and one that cannot.
+    // be represented at the call site, and one that cannot.  Each records the method that declares
+    // it, because `method` may inherit `@SideEffectsOnly` from more than one supertype method, in
+    // which case the two expressions may come from different annotations.
     SideEffectsOnlyExpression representable = null;
     SideEffectsOnlyExpression unrepresentable = null;
 
@@ -254,12 +257,16 @@ public abstract class CFAbstractAnalysis<
             representable = new SideEffectsOnlyExpression(declaringMethod, seOnlyExpr, exprJe);
           }
         } catch (JavaExpressionParseException ex) {
-          // Report at the call site rather than at the callee's declaration.  The callee may be
-          // declared in a different compilation unit that is not currently being compiled.
+          // Report at the call site in addition to at the callee's declaration (see
+          // `BaseTypeVisitor.checkSideEffectsOnlyAnnotation`).  The callee may be declared in a
+          // different compilation unit that is not currently being compiled, in which case the
+          // declaration is never checked.
           // Report at the leaf of the call's tree path rather than at
           // `methodInvocationNode.getTree()`, which may be null and which is an artificial tree
           // (where errors cannot be suppressed).
-          checker.reportOnce(methodInvocationNode.getTreePath(), new DiagMessage(ex));
+          checker.reportOnce(
+              methodInvocationNode.getTreePath(),
+              BaseTypeVisitor.sideEffectsOnlyParseError(ex, declaringMethod, seOnlyExpr));
           return null;
         }
       }
@@ -267,7 +274,9 @@ public abstract class CFAbstractAnalysis<
 
     // Nothing in the store can match an `Unknown`, so returning the expression would discard
     // no refinement at all.  Returning null makes the caller discard every refinement.
-    if (representable != null && unrepresentable != null) {
+    if (representable != null
+        && unrepresentable != null
+        && checker.hasOption("checkPurityAnnotations")) {
       checker.reportOnce(
           methodInvocationNode.getTreePath(),
           new DiagMessage(
@@ -275,8 +284,9 @@ public abstract class CFAbstractAnalysis<
               "purity.viewpoint.adaptation",
               representable.declExpr(),
               representable.callExpr(),
-              ElementUtils.getSimpleDescription(unrepresentable.declaringMethod()),
+              ElementUtils.getSimpleDescription(representable.declaringMethod()),
               unrepresentable.declExpr(),
+              ElementUtils.getSimpleDescription(unrepresentable.declaringMethod()),
               unrepresentable.callExpr()));
     }
     if (unrepresentable != null) {

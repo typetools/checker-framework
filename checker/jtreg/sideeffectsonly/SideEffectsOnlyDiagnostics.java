@@ -5,6 +5,8 @@ import org.checkerframework.dataflow.qual.SideEffectsOnly;
  * though dataflow analyzes each call site once per iteration of the loop and every checker that
  * Main.java runs this file through analyzes each call site.
  *
+ * <p>The same holds of the diagnostic that {@code unparseable}'s declaration produces.
+ *
  * <p>The directory test checker/tests/sideeffectsonly/SideEffectsOnlyParseError.java cannot detect
  * a duplicate diagnostic, because the test framework discards duplicates before comparing the
  * diagnostics to the expected ones.

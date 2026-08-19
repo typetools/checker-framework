@@ -5,8 +5,8 @@
  * compound checker that runs its own dataflow analysis, and the Internationalization Checker is an
  * aggregate checker that does not.
  *
- * @compile/fail/ref=SideEffectsOnlyDiagnostics.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker SideEffectsOnlyDiagnostics.java
- * @compile/fail/ref=SideEffectsOnlyDiagnostics.goal -XDrawDiagnostics -processor org.checkerframework.checker.i18n.I18nChecker SideEffectsOnlyDiagnostics.java
+ * @compile/fail/ref=SideEffectsOnlyDiagnostics.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AcheckPurityAnnotations SideEffectsOnlyDiagnostics.java
+ * @compile/fail/ref=SideEffectsOnlyDiagnostics.goal -XDrawDiagnostics -processor org.checkerframework.checker.i18n.I18nChecker -AcheckPurityAnnotations SideEffectsOnlyDiagnostics.java
  */
 
 public class Main {}
