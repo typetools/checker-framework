@@ -24,6 +24,13 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class ConstraintSet implements ReductionResult {
 
+  /**
+   * Max number of constraints in a constraint set. Reducing a constraint can create new
+   * constraints, so a constraint set can grow during reduction; if it grows this large, then
+   * reduction is most likely not terminating.
+   */
+  public static final int MAX_CONSTRAINTS = 10000;
+
   /** The result given when a constraint set reduces to true. It is empty and immutable. */
   @SuppressWarnings("interning:assignment")
   public static final @InternedDistinct ConstraintSet TRUE =
@@ -360,41 +367,34 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
+   * Throws an exception if this set contains more than {@link #MAX_CONSTRAINTS} constraints.
+   *
+   * @param context the context
+   * @throws BugInCF if this set contains more than {@link #MAX_CONSTRAINTS} constraints
+   */
+  private void checkMaxConstraints(Java8InferenceContext context) {
+    if (this.list.size() > MAX_CONSTRAINTS) {
+      // Throw rather than assert, so that this is reported as a
+      // "type.argument.inference.crashed" error for this one expression, rather than as an
+      // AssertionError that aborts the entire compilation.
+      throw new BugInCF(
+          "Max constraints (%d) exceeded while reducing: %s",
+          MAX_CONSTRAINTS, context.getPathToExpression().getLeaf());
+    }
+  }
+
+  /**
    * Reduces all the constraints in this set. (See JLS 18.2)
    *
    * @param context the context
    * @return the bound set produced by reducing this constraint set
+   * @throws BugInCF if reduction creates more than {@link #MAX_CONSTRAINTS} constraints
    */
   public BoundSet reduce(Java8InferenceContext context) {
     BoundSet boundSet = new BoundSet(context);
     while (!this.isEmpty()) {
-      if (this.list.size() > BoundSet.MAX_INCORPORATION_STEPS) {
-        throw new BugInCF("TOO MANY CONSTRAINTS: %s", context.pathToExpression.getLeaf());
-      }
+      checkMaxConstraints(context);
       BoundSet result = reduceOneStep(context);
-      boundSet.merge(result);
-    }
-    return boundSet;
-  }
-
-  /**
-   * Reduces all the constraints in this set. (See JLS 18.2) If an {@link AdditionalArgument} is
-   * found it is reduced one step and then this method returns.
-   *
-   * @param context the context
-   * @return the bound set produced by reducing this constraint set
-   */
-  public BoundSet reduceAdditionalArgOnce(Java8InferenceContext context) {
-    BoundSet boundSet = new BoundSet(context);
-    while (!this.isEmpty()) {
-      if (this.list.size() > BoundSet.MAX_INCORPORATION_STEPS) {
-        throw new BugInCF("TOO MANY CONSTRAINTS: %s", context.pathToExpression.getLeaf());
-      }
-      boolean foundAA = this.list.get(0).getKind() == Kind.ADDITIONAL_ARG;
-      BoundSet result = reduceOneStep(context);
-      if (foundAA) {
-        return boundSet;
-      }
       boundSet.merge(result);
     }
     return boundSet;

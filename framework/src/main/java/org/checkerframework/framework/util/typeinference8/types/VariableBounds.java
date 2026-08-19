@@ -9,6 +9,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
@@ -18,6 +19,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
 
 /** Data structure that stores the bounds of a variable. */
@@ -60,13 +62,20 @@ public class VariableBounds {
   public final ConstraintSet constraints = new ConstraintSet();
 
   /** True if this variable has a throws bound. */
-  public boolean hasThrowsBound = false;
+  private boolean hasThrowsBound = false;
 
-  /** Saved bounds used in the event the first attempt at resolution fails. */
-  public EnumMap<BoundKind, LinkedHashSet<AbstractType>> savedBounds = null;
+  /**
+   * Bounds saved by {@link #save}, for use in the event that the first attempt at resolution fails;
+   * null if {@link #save} has not been called.
+   */
+  private @Nullable EnumMap<BoundKind, LinkedHashSet<AbstractType>> savedBounds = null;
 
-  /** Saved qualifier bounds used in the event the first attempt at resolution fails. */
-  public EnumMap<BoundKind, LinkedHashSet<AbstractQualifier>> savedQualifierBounds = null;
+  /**
+   * Qualifier bounds saved by {@link #save}, for use in the event that the first attempt at
+   * resolution fails; null if {@link #save} has not been called.
+   */
+  private @Nullable EnumMap<BoundKind, LinkedHashSet<AbstractQualifier>> savedQualifierBounds =
+      null;
 
   /**
    * Creates bounds for {@code variable}.
@@ -107,7 +116,10 @@ public class VariableBounds {
    * resolution fails.
    */
   public void restore() {
-    assert savedBounds != null;
+    EnumMap<BoundKind, LinkedHashSet<AbstractType>> savedBounds = this.savedBounds;
+    EnumMap<BoundKind, LinkedHashSet<AbstractQualifier>> savedQualifierBounds =
+        this.savedQualifierBounds;
+    assert savedBounds != null && savedQualifierBounds != null : "restore() called before save()";
     instantiation = null;
     bounds.clear();
     bounds.put(BoundKind.EQUAL, new LinkedHashSet<>(savedBounds.get(BoundKind.EQUAL)));
@@ -328,20 +340,29 @@ public class VariableBounds {
       }
     }
     if (boundType.isUseOfVariable() && !boundType.ignoreAnnotations) {
+      // This variable's qualifier bounds imply qualifier bounds on `boundVar`.  Which ones is
+      // determined by the direction of the bound relating the two variables.  This is the same
+      // reasoning as in addConstraintsFromComplementaryBounds(BoundKind, Set), viewed from the
+      // other variable.
       UseOfVariable boundVar = (UseOfVariable) boundType;
       switch (kind) {
         case EQUAL -> {
+          // boundVar = this variable, so every qualifier bound holds of boundVar as well.
           boundVar.addQualifierBound(BoundKind.EQUAL, qualifierBounds.get(BoundKind.EQUAL));
           boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.LOWER));
           boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.UPPER));
         }
         case LOWER -> {
+          // boundVar <: this variable, so from `this variable = q` and `this variable <: q` it
+          // follows that boundVar <: q.  Nothing follows from `q <: this variable`.
           boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.EQUAL));
-          boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.LOWER));
+          boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.UPPER));
         }
         case UPPER -> {
+          // this variable <: boundVar, so from `this variable = q` and `q <: this variable` it
+          // follows that q <: boundVar.  Nothing follows from `this variable <: q`.
           boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.EQUAL));
-          boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.UPPER));
+          boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.LOWER));
         }
       }
     }
@@ -642,15 +663,31 @@ public class VariableBounds {
         if (supers == null) {
           continue;
         }
-        List<AbstractType> s1TypeArgs = supers.first.getTypeArguments();
-        List<AbstractType> s2TypeArgs = supers.second.getTypeArguments();
-        if (!s1TypeArgs.equals(s2TypeArgs)) {
+        if (!annotatedTypeArguments(supers.first).equals(annotatedTypeArguments(supers.second))) {
           return true;
         }
       }
     }
 
     return false;
+  }
+
+  /**
+   * Returns the annotated types of the type arguments of {@code type}.
+   *
+   * <p>This is a helper method for {@link #hasLowerBoundDifferentParam}. It compares the annotated
+   * types rather than the {@link AbstractType}s because {@link AbstractType#equals} also compares
+   * {@code ignoreAnnotations}, which is a property of a bound rather than of a parameterization:
+   * two bounds that differ only in whether their annotations are ignored are the same
+   * parameterization.
+   *
+   * @param type a declared type
+   * @return the annotated types of the type arguments of {@code type}
+   */
+  private static List<AnnotatedTypeMirror> annotatedTypeArguments(AbstractType type) {
+    List<AbstractType> typeArgs = type.getTypeArguments();
+    assert typeArgs != null : "@AssumeAssertion(nullness): the caller passes a declared type";
+    return CollectionsP.mapList(AbstractType::getAnnotatedType, typeArgs);
   }
 
   /**

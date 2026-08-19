@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -175,14 +176,15 @@ public final class InferenceType extends AbstractType {
    * variable, a {@link ProperType} is returned.
    *
    * @param types the annotated type mirrors
-   * @param map a mapping from type variable to inference variable
+   * @param map a mapping from type variable to inference variable, or null to treat no type
+   *     variable as an inference variable
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
    * @return the abstract type for the given TypeMirror and AnnotatedTypeMirror
    */
   public static List<AbstractType> create(
       List<AnnotatedTypeMirror> types,
-      Theta map,
+      @Nullable Theta map,
       AnnotationMirrorMap<QualifierVar> qualifierVars,
       Java8InferenceContext context) {
     List<AbstractType> abstractTypes = new ArrayList<>();
@@ -207,21 +209,21 @@ public final class InferenceType extends AbstractType {
       return false;
     }
 
-    InferenceType variable = (InferenceType) o;
-    if (map != variable.map) {
+    InferenceType that = (InferenceType) o;
+    if (!sameInferenceProblem(that)) {
       return false;
     }
-    if (!type.equals(variable.type)) {
+    // Two types with different qualifierVars have different qualifiers, as getQualifiers() shows.
+    if (!qualifierVars.equals(that.qualifierVars)) {
       return false;
     }
-    return type.equals(variable.type);
+
+    return map == that.map && type.equals(that.type);
   }
 
   @Override
   public int hashCode() {
-    int result = type.hashCode();
-    result = 31 * result + Kind.INFERENCE_TYPE.hashCode();
-    return result;
+    return Objects.hash(inferenceProblemHashCode(), qualifierVars, type, Kind.INFERENCE_TYPE);
   }
 
   @Override
