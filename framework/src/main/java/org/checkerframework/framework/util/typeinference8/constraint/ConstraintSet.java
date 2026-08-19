@@ -401,6 +401,30 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
+   * Reduces the constraints in this set (see JLS 18.2), stopping after reducing an {@link
+   * AdditionalArgument}, if this set contains one. Reducing an {@code AdditionalArgument} can
+   * create constraints with new dependencies, so the caller must choose a new subset of constraints
+   * to reduce before continuing.
+   *
+   * @param context the context
+   * @return the bound set produced by reducing this constraint set
+   * @throws BugInCF if reduction creates more than {@link #MAX_CONSTRAINTS} constraints
+   */
+  public BoundSet reduceAdditionalArgOnce(Java8InferenceContext context) {
+    BoundSet boundSet = new BoundSet(context);
+    while (!this.isEmpty()) {
+      checkMaxConstraints(context);
+      boolean foundAA = this.list.get(0).getKind() == Kind.ADDITIONAL_ARG;
+      BoundSet result = reduceOneStep(context);
+      boundSet.merge(result);
+      if (foundAA) {
+        return boundSet;
+      }
+    }
+    return boundSet;
+  }
+
+  /**
    * Reduce one constraint in this set.
    *
    * @param context the context

@@ -19,6 +19,8 @@ import org.checkerframework.framework.testchecker.lubglb.quals.LubglbF;
 import org.checkerframework.framework.testchecker.lubglb.quals.PolyLubglb;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
@@ -30,9 +32,11 @@ import org.checkerframework.framework.util.typeinference8.types.InferenceFactory
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Qualifier;
 import org.checkerframework.framework.util.typeinference8.types.QualifierVar;
+import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -353,9 +357,11 @@ public class LubGlbChecker extends BaseTypeChecker {
     ProperType comparedList = new ProperType(list.asUse(), context, false);
     ProperType ignoredList = new ProperType(list.asUse(), context, true);
     check(comparedList.isParameterizedType(), "java.util.List is not a parameterized type");
-    // `hasLowerBoundDifferentParam` reads only the bounds and the context, so the variable whose
-    // bounds these are does not matter.
-    VariableBounds bounds = new VariableBounds(null, context);
+    // `hasLowerBoundDifferentParam` reads only the bounds and the context, so which variable
+    // these are the bounds of does not matter.
+    AnnotatedTypeVariable listTypeVariable =
+        (AnnotatedTypeVariable) ((AnnotatedDeclaredType) list).getTypeArguments().get(0);
+    VariableBounds bounds = new TestVariable(listTypeVariable, invocation, context).getBounds();
     Set<AbstractType> lowerBounds = bounds.bounds.get(BoundKind.LOWER);
     lowerBounds.add(comparedList);
     lowerBounds.add(ignoredList);
@@ -415,6 +421,34 @@ public class LubGlbChecker extends BaseTypeChecker {
     if (!AnnotationUtils.areSame(expected, result)) {
       throw new AssertionError(
           String.format("LUB of %s and %s should be %s, but is %s", arg1, arg2, expected, result));
+    }
+  }
+
+  /**
+   * An inference variable, so that a test can obtain a {@link VariableBounds}. The constructors of
+   * {@link Variable} are not public, and the ones that are visible here require inference to be
+   * under way.
+   */
+  private static class TestVariable extends Variable {
+
+    /**
+     * Creates a variable.
+     *
+     * @param typeVariable the type variable that this variable stands for
+     * @param invocation the invocation for which this variable is a type argument
+     * @param context the context
+     */
+    TestVariable(
+        AnnotatedTypeVariable typeVariable,
+        ExpressionTree invocation,
+        Java8InferenceContext context) {
+      super(
+          typeVariable,
+          typeVariable.getUnderlyingType(),
+          invocation,
+          context,
+          new Theta(),
+          context.getNextVariableId());
     }
   }
 }

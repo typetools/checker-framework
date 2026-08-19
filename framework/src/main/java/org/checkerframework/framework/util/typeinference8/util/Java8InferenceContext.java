@@ -32,8 +32,8 @@ import org.checkerframework.javacutil.TypesUtils;
 public class Java8InferenceContext {
 
   /**
-   * Path to the top level expression whose type arguments are inferred. This is the only mutable
-   * field in this class; see {@link #setPathToExpression}.
+   * Path to the top level expression whose type arguments are inferred. See {@link
+   * #setPathToExpression}.
    */
   private TreePath pathToExpression;
 

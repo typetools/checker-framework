@@ -19,10 +19,12 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.bound.CaptureBound;
+import org.checkerframework.framework.util.typeinference8.constraint.AdditionalArgument;
 import org.checkerframework.framework.util.typeinference8.constraint.CheckedExceptionConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Expression;
+import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult.ReductionResultPair;
 import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.AbstractExecutableType;
@@ -168,9 +170,9 @@ public class InvocationTypeInference {
     } else {
       b3 = b2;
     }
-    // Nested poly invocations found while creating C contribute their own bound sets (JLS
-    // 18.5.1); see createAdditionalArgConstraintsForInvocation.  Incorporate them before
-    // getB4 resolves any constraint that mentions their inference variables.
+    // A poly invocation in the body of a lambda argument contributes its own bound set (JLS
+    // 18.5.1); see createArgConstraintsWithB2.  Incorporate those bounds before getB4 resolves
+    // any variable that they constrain.
     BoundSet nestedBounds = new BoundSet(context);
     ConstraintSet c = createC(inferenceExecutableType, args, map, nestedBounds);
     b3.incorporateToFixedPoint(nestedBounds);
@@ -470,15 +472,11 @@ public class InvocationTypeInference {
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS
    * 18.5.2.2</a>.)
    *
-   * <p>The bound sets of any nested poly invocations encountered along the way are collected into
-   * {@code nestedBounds}. See {@link #createAdditionalArgConstraintsForInvocation(ExpressionTree,
-   * BoundSet)}.
-   *
    * @param executableType type of method invoked
    * @param args argument expression trees
    * @param map map from type variable to inference variable
-   * @param nestedBounds side-effected to add the bound set (JLS 18.5.1) of each nested poly
-   *     invocation encountered while creating these constraints
+   * @param nestedBounds side-effected to add the bound set (JLS 18.5.1) of each poly invocation in
+   *     the body of a lambda argument
    * @return the constraints between the formal parameters and arguments that are not pertinent to
    *     applicability
    */
@@ -524,8 +522,8 @@ public class InvocationTypeInference {
    * @param fi type that is the formal parameter to a method whose corresponding argument is {@code
    *     ei}
    * @param map map from type variable to inference variable
-   * @param nestedBounds side-effected to add the bound set (JLS 18.5.1) of each nested poly
-   *     invocation encountered
+   * @param nestedBounds side-effected to add the bound set (JLS 18.5.1) of each poly invocation in
+   *     the body of a lambda argument
    * @return the additional argument constraints
    */
   private ConstraintSet createAdditionalArgConstraints(
@@ -543,7 +541,10 @@ public class InvocationTypeInference {
       }
       case METHOD_INVOCATION, NEW_CLASS -> {
         if (TreeUtils.isPolyExpression(ei)) {
-          c.addAll(createAdditionalArgConstraintsForInvocation(ei, nestedBounds));
+          // The bound set B2 of `ei` is not needed here: because `ei` is pertinent to
+          // applicability, the enclosing createB2 has already reduced the constraint
+          // <ei -> fi>, which produced and incorporated B2.
+          c.addAll(createArgConstraints(ei, nestedBounds));
         }
       }
       case PARENTHESIZED ->
@@ -574,43 +575,83 @@ public class InvocationTypeInference {
   }
 
   /**
-   * Returns the additional argument constraints (See <a
-   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS
-   * 18.5.2.2</a>) produced by {@code invocation}, a poly method invocation or new class tree that
-   * is itself an argument (or, transitively, part of an argument) of another invocation under
-   * inference.
+   * Returns the arguments of {@code invocation}, which must be a method invocation tree or a new
+   * class tree.
    *
-   * <p>JLS 18.5.2.2 says only that {@code C} contains the constraint formulas of the set {@code C}
-   * that §18.5.2 would generate for {@code invocation}; the constraints for its
-   * pertinent-to-applicability arguments are not part of that set. The JLS supplies those through
-   * the invocation's own bound set B2 (§18.5.1), which reaches the enclosing inference when a
-   * constraint of the form &lt;{@code invocation} &rarr; T&gt; is reduced to B3 (§18.2.1). That
-   * reduction happens later than this method runs, so B2 is computed here and returned through
-   * {@code nestedBounds}, to be incorporated before any constraint mentioning {@code invocation}'s
-   * inference variables is resolved. Without it those variables would be unconstrained at
-   * resolution time and would instantiate to {@code Object}.
+   * @param invocation a method invocation tree or new class tree
+   * @return the arguments of {@code invocation}
+   */
+  private static List<? extends ExpressionTree> getArguments(ExpressionTree invocation) {
+    if (invocation instanceof NewClassTree newClassTree) {
+      return newClassTree.getArguments();
+    } else {
+      return ((MethodInvocationTree) invocation).getArguments();
+    }
+  }
+
+  /**
+   * Returns the constraints of the set {@code C} (See <a
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS
+   * 18.5.2.2</a>) that §18.5.2 generates for {@code invocation}, a poly method invocation or new
+   * class tree that is itself an argument (or, transitively, part of an argument) of another
+   * invocation under inference.
+   *
+   * <p>This does not produce the bound set B2 (§18.5.1) of {@code invocation}; the caller is
+   * responsible for it. See {@link #createArgConstraintsWithB2}.
    *
    * @param invocation a poly method invocation tree or new class tree
-   * @param nestedBounds side-effected to add the bound set (JLS 18.5.1) of {@code invocation} and
-   *     of any poly invocation nested within it
-   * @return the additional argument constraints produced by {@code invocation}
+   * @param nestedBounds side-effected to add the bound set (JLS 18.5.1) of each poly invocation in
+   *     the body of a lambda argument of {@code invocation}
+   * @return the constraints that §18.5.2 generates for {@code invocation}
    */
-  private ConstraintSet createAdditionalArgConstraintsForInvocation(
-      ExpressionTree invocation, BoundSet nestedBounds) {
-    List<? extends ExpressionTree> args;
-    if (invocation instanceof NewClassTree newClassTree) {
-      args = newClassTree.getArguments();
-    } else {
-      args = ((MethodInvocationTree) invocation).getArguments();
-    }
+  private ConstraintSet createArgConstraints(ExpressionTree invocation, BoundSet nestedBounds) {
+    List<? extends ExpressionTree> args = getArguments(invocation);
     AbstractExecutableType executableType =
         context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(invocation);
     Theta newMap =
         context.inferenceTypeFactory.createThetaForInvocation(invocation, executableType, context);
-    nestedBounds.incorporateToFixedPoint(createB2(executableType, args, newMap));
-    ConstraintSet set = context.inference.createC(executableType, args, newMap, nestedBounds);
+    ConstraintSet set = createC(executableType, args, newMap, nestedBounds);
     set.applyInstantiations();
     return set;
+  }
+
+  /**
+   * Returns both the bound set B2 (JLS 18.5.1) of {@code invocation} and the constraints that JLS
+   * 18.5.2 generates for it. It is called for an invocation in the body of a lambda argument,
+   * either directly or, if that fails, later through an {@link AdditionalArgument} constraint.
+   *
+   * <p>{@link #createArgConstraints} alone does not suffice for such an invocation. It is not
+   * itself an argument of the invocation under inference, so no constraint of the form &lt;{@code
+   * invocation} &rarr; T&gt; is ever reduced for it, and it is that reduction (JLS 18.2.1) that
+   * would otherwise produce B2. Without B2, {@code invocation}'s inference variables have no bounds
+   * from its own arguments and resolve to {@code Object}.
+   *
+   * @param invocation a poly method invocation tree or new class tree in the body of a lambda
+   * @return the bound set B2 of {@code invocation}, paired with the constraints that JLS 18.5.2
+   *     generates for it
+   */
+  public ReductionResultPair createArgConstraintsWithB2(ExpressionTree invocation) {
+    List<? extends ExpressionTree> args = getArguments(invocation);
+    AbstractExecutableType executableType =
+        context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(invocation);
+    Theta newMap =
+        context.inferenceTypeFactory.createThetaForInvocation(invocation, executableType, context);
+    BoundSet b2;
+    boolean oldShouldCache = context.typeFactory.shouldCache;
+    // Creating B2 computes the type of each argument of `invocation`.  An argument may mention a
+    // parameter of the enclosing lambda, which does not have a type until inference completes, so
+    // the computed type may be wrong.  Do not cache it, because the type-check of the lambda body
+    // -- which happens after inference has given the lambda's parameters their types -- would use
+    // the cached, wrong type and fail to issue errors.
+    context.typeFactory.shouldCache = false;
+    try {
+      b2 = createB2(executableType, args, newMap);
+    } finally {
+      context.typeFactory.shouldCache = oldShouldCache;
+    }
+    ConstraintSet set = createC(executableType, args, newMap, b2);
+    set.applyInstantiations();
+    return ReductionResultPair.of(set, b2);
   }
 
   /**
@@ -618,11 +659,12 @@ public class InvocationTypeInference {
    * variables, bounds, and constraints are returned. This method is called by {@link
    * #createAdditionalArgConstraints(ExpressionTree, AbstractType, Theta, BoundSet)} when that
    * method encounters a lambda. This method is different because it does not add checked exception
-   * constraints for lambdas or method references.
+   * constraints for lambdas or method references, and because an invocation it finds is not itself
+   * an argument of the invocation under inference, so the invocation needs its own bound set B2.
    *
    * @param expression expression to search
-   * @param nestedBounds side-effected to add the bound set (JLS 18.5.1) of each nested poly
-   *     invocation encountered
+   * @param nestedBounds side-effected to add the bound set (JLS 18.5.1) of each poly invocation
+   *     encountered
    * @return additional constraints
    */
   private ConstraintSet createAdditionalArgConstraintsNoLambda(
@@ -638,7 +680,17 @@ public class InvocationTypeInference {
       }
       case METHOD_INVOCATION, NEW_CLASS -> {
         if (TreeUtils.isPolyExpression(expression)) {
-          c.addAll(createAdditionalArgConstraintsForInvocation(expression, nestedBounds));
+          try {
+            ReductionResultPair pair = createArgConstraintsWithB2(expression);
+            nestedBounds.incorporateToFixedPoint(pair.boundSet());
+            c.addAll(pair.constraintSet());
+          } catch (Exception e) {
+            // Sometimes in order to create the additional argument constraint, other inference
+            // variables must be resolved first. This happens when a lambda parameter is used in the
+            // additional argument constraint.
+            // See framework/tests/all-systems/NestedLambdaParameter.java
+            c.add(new AdditionalArgument(expression));
+          }
         }
       }
       case PARENTHESIZED ->
@@ -772,7 +824,14 @@ public class InvocationTypeInference {
         c.applyInstantiations();
       }
       c.remove(subset);
-      BoundSet newBounds = subset.reduce(context);
+      BoundSet newBounds = subset.reduceAdditionalArgOnce(context);
+      if (!subset.isEmpty()) {
+        // The subset is not empty at this point if an additional argument constraint was
+        // found.  In this case, a new subset needs to be picked so that dependencies of
+        // the constraints from reducing the additional argument constraint can be taken
+        // into account.
+        c.addAll(subset);
+      }
       b3.incorporateToFixedPoint(newBounds);
     }
     return b3;
