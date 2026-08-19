@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -211,21 +212,21 @@ public final class InferenceType extends AbstractType {
       return false;
     }
 
-    InferenceType variable = (InferenceType) o;
-    if (map != variable.map) {
+    InferenceType that = (InferenceType) o;
+    if (!sameInferenceProblem(that)) {
       return false;
     }
-    if (!type.equals(variable.type)) {
+    // Two types with different qualifierVars have different qualifiers, as getQualifiers() shows.
+    if (!qualifierVars.equals(that.qualifierVars)) {
       return false;
     }
-    return type.equals(variable.type);
+
+    return map == that.map && type.equals(that.type);
   }
 
   @Override
   public int hashCode() {
-    int result = type.hashCode();
-    result = 31 * result + Kind.INFERENCE_TYPE.hashCode();
-    return result;
+    return Objects.hash(inferenceProblemHashCode(), qualifierVars, type, Kind.INFERENCE_TYPE);
   }
 
   @Override
