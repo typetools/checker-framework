@@ -10,8 +10,10 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.ForwardAnalysisImpl;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -21,6 +23,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -33,6 +36,7 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -166,7 +170,8 @@ public abstract class CFAbstractAnalysis<
    * <p>Also returns null if any of the annotation's expressions cannot be parsed at the call site.
    * Null means "the method might side-effect anything", which is the conservative result; returning
    * a list that omits the unparseable expression would treat the method as side-effecting
-   * <em>less</em> than it was declared to.
+   * <em>less</em> than it was declared to. The parse error itself is reported at the call site in
+   * addition to at the declaration, since the callee's declaration may not be under compilation.
    *
    * <p>The result is cached, because dataflow calls this once per iteration per call site and
    * parsing an expression is not cheap. Clients should not side-effect the returned value, which is
@@ -188,6 +193,16 @@ public abstract class CFAbstractAnalysis<
   }
 
   /**
+   * One expression of a {@code @SideEffectsOnly} annotation, viewpoint-adapted to a call site.
+   *
+   * @param declaringMethod the method on whose declaration the annotation appears
+   * @param declExpr the expression as written in the annotation
+   * @param callExpr the expression, viewpoint-adapted to the call site
+   */
+  private record SideEffectsOnlyExpression(
+      ExecutableElement declaringMethod, String declExpr, JavaExpression callExpr) {}
+
+  /**
    * Computes the value that {@link #getSideEffectsOnlyExpressions} caches and returns; see that
    * method for the specification.
    *
@@ -205,6 +220,13 @@ public abstract class CFAbstractAnalysis<
     }
 
     List<JavaExpression> seOnlyExpressions = new ArrayList<>();
+
+    // For deciding whether to issue a warning about viewpoint adaptation: an expression that can
+    // be represented at the call site, and one that cannot.  Each records the method that declares
+    // it, because `method` may inherit `@SideEffectsOnly` from more than one supertype method, in
+    // which case the two expressions may come from different annotations.
+    SideEffectsOnlyExpression representable = null;
+    SideEffectsOnlyExpression unrepresentable = null;
 
     for (Map.Entry<ExecutableElement, List<String>> entry : seOnlyExpressionStrings.entrySet()) {
       // The method whose `@SideEffectsOnly` annotation contains the expressions.  It is `method`
@@ -224,24 +246,51 @@ public abstract class CFAbstractAnalysis<
                   .atMethodInvocation(methodInvocationNode);
 
           if (exprJe.containsUnknown()) {
-            // Nothing in the store can match an `Unknown`, so returning the expression would
-            // discard no refinement at all.  Returning null makes the caller discard every
-            // refinement.
-            return null;
+            unrepresentable = new SideEffectsOnlyExpression(declaringMethod, seOnlyExpr, exprJe);
+          } else {
+            // At a call of the form `super.m()`, viewpoint-adapting the callee's `this` yields
+            // `super`.
+            // The caller refers to that same object as `this`, so rewrite it that way; otherwise
+            // the refinements of `this` and of its fields would not be discarded.
+            exprJe = JavaExpression.superToThis(exprJe);
+            seOnlyExpressions.add(exprJe);
+            representable = new SideEffectsOnlyExpression(declaringMethod, seOnlyExpr, exprJe);
           }
-
-          // At a call of the form `super.m()`, viewpoint-adapting the callee's `this` yields
-          // `super`.
-          // The caller refers to that same object as `this`, so rewrite it that way; otherwise
-          // the refinements of `this` and of its fields would not be discarded.
-          exprJe = JavaExpression.superToThis(exprJe);
-          seOnlyExpressions.add(exprJe);
         } catch (JavaExpressionParseException ex) {
-          // The expression cannot be represented at the call site, so the caller must assume that
-          // the call might side-effect anything.  A future change will report the parse error.
+          // Report at the call site in addition to at the callee's declaration (see
+          // `BaseTypeVisitor.checkSideEffectsOnlyAnnotation`).  The callee may be declared in a
+          // different compilation unit that is not currently being compiled, in which case the
+          // declaration is never checked.
+          // Report at the leaf of the call's tree path rather than at
+          // `methodInvocationNode.getTree()`, which may be null and which is an artificial tree
+          // (where errors cannot be suppressed).
+          checker.reportOnce(
+              methodInvocationNode.getTreePath(),
+              BaseTypeVisitor.sideEffectsOnlyParseError(ex, declaringMethod, seOnlyExpr));
           return null;
         }
       }
+    }
+
+    // Nothing in the store can match an `Unknown`, so returning the expression would discard
+    // no refinement at all.  Returning null makes the caller discard every refinement.
+    if (representable != null
+        && unrepresentable != null
+        && checker.hasOption("checkPurityAnnotations")) {
+      checker.reportOnce(
+          methodInvocationNode.getTreePath(),
+          new DiagMessage(
+              Diagnostic.Kind.MANDATORY_WARNING,
+              "purity.viewpoint.adaptation",
+              representable.declExpr(),
+              representable.callExpr(),
+              ElementUtils.getSimpleDescription(representable.declaringMethod()),
+              unrepresentable.declExpr(),
+              ElementUtils.getSimpleDescription(unrepresentable.declaringMethod()),
+              unrepresentable.callExpr()));
+    }
+    if (unrepresentable != null) {
+      return null;
     }
 
     return seOnlyExpressions;
