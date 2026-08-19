@@ -1,5 +1,8 @@
 // A `@SideEffectsOnly` expression that cannot be parsed at a call site is reported at the call
-// site, once per call site rather than once per dataflow iteration, and can be suppressed there.
+// site, and can be suppressed there.
+//
+// This test cannot check that the error is reported only once per call site, because the test
+// framework discards duplicate diagnostics.  checker/jtreg/sideeffectsonly/ checks that.
 
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 

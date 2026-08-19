@@ -93,6 +93,7 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
+import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
 import org.plumelib.util.SystemP;
 import org.plumelib.util.UtilP;
@@ -623,6 +624,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /** List of upstream checker names. Includes the current checker. */
   protected @MonotonicNonNull List<@FullyQualifiedName String> upstreamCheckerNames;
+
+  /**
+   * The diagnostics that {@link #reportOnce} has reported, as a (tree, message key) pair for each.
+   * All the trees are within {@link #reportOnceCompilationUnit}. Only the ultimate parent checker's
+   * set is consulted, so all the checkers of a compound checker share one set.
+   */
+  private final Set<IPair<Tree, String>> reportOnceReported = new HashSet<>();
+
+  /**
+   * The compilation unit that contains the trees in {@link #reportOnceReported}, or null if that
+   * set is empty.
+   */
+  private @Nullable CompilationUnitTree reportOnceCompilationUnit = null;
 
   /** True if the -Afilenames command-line argument was passed. */
   private boolean printFilenames;
@@ -1425,6 +1439,41 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   public void report(@Nullable Object source, DiagMessage d) {
     report(source, d.getKind(), d.getMessageKey(), d.getArgs());
+  }
+
+  /**
+   * Reports a diagnostic message at the leaf of the given path, unless this checker or another
+   * checker of the same compound checker has already handled a message with the same key at that
+   * tree. The first checker to reach the tree handles the message: it reports the message, or
+   * discards it if the message is suppressed there. The message is attributed to that checker, so
+   * that checker's {@code @SuppressWarnings} prefix is the one that suppresses the message.
+   *
+   * <p>Use this for a diagnostic that does not depend on which checker computes it, but that every
+   * checker of a compound checker computes independently -- such as one that is computed during
+   * dataflow analysis. {@link #printOrStoreMessage} cannot discard such a duplicate, because it
+   * distinguishes messages by the checker that issued them.
+   *
+   * @param path the path whose leaf is the tree at which to report the message
+   * @param d the diagnostic message
+   */
+  @SuppressWarnings("interning:not.interned") // each compilation unit is a distinct tree
+  public void reportOnce(TreePath path, DiagMessage d) {
+    SourceChecker ultimateParent = this;
+    while (ultimateParent.parentChecker != null) {
+      ultimateParent = ultimateParent.parentChecker;
+    }
+    // Retaining a tree retains its whole compilation unit, so retain only the trees of the
+    // compilation unit that is being processed.  A compilation unit is never processed again after
+    // the next one has been processed, so discarding the other compilation units' trees does not
+    // cause a duplicate message.
+    CompilationUnitTree root = path.getCompilationUnit();
+    if (root != ultimateParent.reportOnceCompilationUnit) {
+      ultimateParent.reportOnceReported.clear();
+      ultimateParent.reportOnceCompilationUnit = root;
+    }
+    if (ultimateParent.reportOnceReported.add(IPair.of(path.getLeaf(), d.getMessageKey()))) {
+      report(path.getLeaf(), d);
+    }
   }
 
   /**
