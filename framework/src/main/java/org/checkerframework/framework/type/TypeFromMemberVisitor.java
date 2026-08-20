@@ -152,6 +152,11 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
   /**
    * Returns the type of the lambda parameter, or null if paramElement is not a lambda parameter.
    *
+   * @param f the annotated type factory
+   * @param lambdaParam the type built from {@code paramElement}, which is javac's type for the
+   *     parameter plus default qualifiers; used to check that the type derived from the lambda's
+   *     function type is consistent with the type javac assigned
+   * @param paramElement an element that might be a lambda parameter
    * @return the type of the lambda parameter, or null if paramElement is not a lambda parameter
    */
   private static @Nullable AnnotatedTypeMirror inferLambdaParamAnnotations(
