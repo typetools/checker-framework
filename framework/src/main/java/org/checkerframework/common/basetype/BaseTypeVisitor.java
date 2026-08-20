@@ -77,6 +77,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -1059,6 +1060,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       checkPurityAnnotations(tree);
+      checkSideEffectsOnlyAnnotation(tree, methodElement);
 
       // Passing the whole method/constructor validates the return type
       validateTypeOf(tree);
@@ -1233,6 +1235,60 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
       }
     }
+  }
+
+  /**
+   * Issues an error for each expression of the method's {@code @SideEffectsOnly} annotation that
+   * cannot be parsed in the scope of the method declaration.
+   *
+   * <p>A call to the method also issues the error, because the callee's declaration might not be
+   * under compilation. This check issues the error where the programmer can fix it, and does so
+   * even if the method is never called.
+   *
+   * @param tree a method declaration
+   * @param methodElement the element for {@code tree}
+   */
+  protected void checkSideEffectsOnlyAnnotation(MethodTree tree, ExecutableElement methodElement) {
+    AnnotationMirror sideEffectsOnly =
+        atypeFactory.getDeclAnnotation(methodElement, SideEffectsOnly.class);
+    if (sideEffectsOnly == null) {
+      // An inherited annotation is checked at the declaration that writes it.
+      return;
+    }
+    for (String expression :
+        AnnotationUtils.getElementValueArray(
+            sideEffectsOnly, sideEffectsOnlyValueElement, String.class)) {
+      try {
+        StringToJavaExpression.atMethodDecl(expression, methodElement, checker);
+      } catch (JavaExpressionParseException ex) {
+        // Every checker of a compound checker performs this check, so report the error only once.
+        checker.reportOnce(
+            getCurrentPath(), sideEffectsOnlyParseError(ex, methodElement, expression));
+      }
+    }
+  }
+
+  /**
+   * Returns a diagnostic message for a {@code @SideEffectsOnly} expression that cannot be parsed.
+   * The message names the method whose annotation contains the expression, because the message
+   * might be issued at a call site, which may be far from that method's declaration.
+   *
+   * @param ex the parse failure
+   * @param declaringMethod the method on whose declaration the annotation appears
+   * @param declExpr the expression as written in the annotation
+   * @return a diagnostic message about the unparseable expression
+   */
+  public static DiagMessage sideEffectsOnlyParseError(
+      JavaExpressionParseException ex, ExecutableElement declaringMethod, String declExpr) {
+    if (!ex.isFlowParseError()) {
+      // Some other message key, whose format string this method does not know.
+      return new DiagMessage(ex);
+    }
+    Object[] args = new Object[ex.args.length + 2];
+    args[0] = declExpr;
+    args[1] = ElementUtils.getSimpleDescription(declaringMethod);
+    System.arraycopy(ex.args, 0, args, 2, ex.args.length);
+    return new DiagMessage(Diagnostic.Kind.ERROR, "flowexpr.parse.error.sideeffectsonly", args);
   }
 
   /**

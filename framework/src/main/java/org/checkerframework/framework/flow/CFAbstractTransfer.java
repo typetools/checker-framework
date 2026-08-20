@@ -437,7 +437,11 @@ public abstract class CFAbstractTransfer<
               .getTypeFactoryOfSubcheckerOrNull(AliasingChecker.class);
       if (aliasingAtf != null) {
         int indexOfLambdaActual = invok.getArguments().indexOf(lambdaTree);
-        VariableElement lambdaFormal = methodElt.getParameters().get(indexOfLambdaActual);
+        List<? extends VariableElement> formals = methodElt.getParameters();
+        // In a varargs invocation, the lambda may be an element of the vararg array, in which
+        // case its index among the arguments is beyond the last formal parameter.
+        VariableElement lambdaFormal =
+            formals.get(Math.min(indexOfLambdaActual, formals.size() - 1));
         return aliasingAtf.getAnnotatedType(lambdaFormal).getAnnotation(NonLeaked.class) == null;
       }
     }
