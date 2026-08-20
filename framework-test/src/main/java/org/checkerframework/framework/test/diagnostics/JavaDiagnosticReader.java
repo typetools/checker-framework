@@ -18,6 +18,7 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 /**
  * This class reads expected javac diagnostics from a single file. Its implementation is as an
@@ -226,12 +227,14 @@ public final class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>,
   }
 
   @Override
+  @SideEffectsOnly("this")
   public void remove() {
     throw new UnsupportedOperationException(
         "Cannot remove elements using JavaDiagnosticFileReader.");
   }
 
   @Override
+  @SideEffectsOnly("this")
   public TestDiagnosticLine next() {
     if (nextLine == null) {
       throw new NoSuchElementException();
