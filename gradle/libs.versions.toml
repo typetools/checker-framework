@@ -80,6 +80,6 @@ com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.10.0" }
 
 com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "4.0.1" }
 
-biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.3.0" }
+biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.4.0" }
 
 gradle-nexus-publish-plugin = { id = "io.github.gradle-nexus.publish-plugin", version = "2.0.0" }
