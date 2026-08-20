@@ -23,6 +23,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.CheckedExce
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Expression;
+import org.checkerframework.framework.util.typeinference8.constraint.LambdaBodyConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.AbstractExecutableType;
@@ -520,8 +521,16 @@ public class InvocationTypeInference {
       case LAMBDA_EXPRESSION -> {
         c.add(new CheckedExceptionConstraint(ei, fi, map));
         LambdaExpressionTree lambda = (LambdaExpressionTree) ei;
-        for (ExpressionTree expression : TreeUtils.getReturnedExpressions(lambda)) {
-          c.addAll(createAdditionalArgConstraintsNoLambda(expression));
+        if (LambdaBodyConstraint.mustDefer(lambda, fi)) {
+          // The lambda is implicitly typed and its parameters do not have types yet, so the body
+          // cannot be examined.  Defer the body's constraints; JLS 18.5.2.2 resolves this
+          // constraint's input variables -- the variables that the parameter types mention --
+          // before reducing it.  See LambdaBodyConstraint.
+          c.add(new LambdaBodyConstraint(lambda, fi));
+        } else {
+          for (ExpressionTree expression : TreeUtils.getReturnedExpressions(lambda)) {
+            c.addAll(createAdditionalArgConstraintsNoLambda(expression));
+          }
         }
       }
       case METHOD_INVOCATION, NEW_CLASS -> {
@@ -588,7 +597,7 @@ public class InvocationTypeInference {
    * @param expression expression to search
    * @return additional constraints
    */
-  private ConstraintSet createAdditionalArgConstraintsNoLambda(ExpressionTree expression) {
+  public ConstraintSet createAdditionalArgConstraintsNoLambda(ExpressionTree expression) {
     ConstraintSet c = new ConstraintSet();
 
     switch (expression.getKind()) {
