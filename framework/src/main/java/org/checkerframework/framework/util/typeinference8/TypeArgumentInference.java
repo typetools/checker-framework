@@ -1,7 +1,10 @@
 package org.checkerframework.framework.util.typeinference8;
 
 import com.sun.source.tree.ExpressionTree;
+import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
 /**
@@ -43,4 +46,15 @@ public interface TypeArgumentInference {
       AnnotatedTypeFactory typeFactory,
       ExpressionTree invocation,
       AnnotatedExecutableType executableType);
+
+  /**
+   * If {@code param} is an implicitly typed lambda parameter whose type an in-progress inference
+   * has already determined, returns that type. Otherwise, returns null.
+   *
+   * @param param an element that might be an implicitly typed lambda parameter
+   * @return the type of {@code param} as computed by an in-progress inference, or null
+   */
+  default @Nullable AnnotatedTypeMirror getLambdaParameterType(VariableElement param) {
+    return null;
+  }
 }

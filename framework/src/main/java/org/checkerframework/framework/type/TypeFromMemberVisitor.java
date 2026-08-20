@@ -11,6 +11,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -167,8 +168,17 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     if (declaredInTree instanceof LambdaExpressionTree lambdaDecl
         && TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
       int index = lambdaDecl.getParameters().indexOf(f.declarationFromElement(paramElement));
-      AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
-      AnnotatedTypeMirror funcTypeParam = functionType.getParameterTypes().get(index);
+      // If an inference that is currently running has already determined this parameter's type,
+      // use it.  Otherwise the type is obtained below by re-deriving the lambda's target type,
+      // which re-runs inference for the invocation that the lambda is an argument of; if that
+      // inference is itself running, the re-run answers with types that still mention inference
+      // variables, and two such invocations can end up waiting on each other.
+      AnnotatedTypeMirror funcTypeParam =
+          f.getTypeArgumentInference().getLambdaParameterType((VariableElement) paramElement);
+      if (funcTypeParam == null) {
+        AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
+        funcTypeParam = functionType.getParameterTypes().get(index);
+      }
       // During type argument inference, the type of the parameters is assumed to be the
       // same as the function parameter.
       // (https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2.1).  So if

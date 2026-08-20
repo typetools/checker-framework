@@ -13,9 +13,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ExecutableType;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.bound.CaptureBound;
@@ -134,6 +137,38 @@ public class InvocationTypeInference {
    */
   public Tree getInferenceExpression() {
     return inferenceExpression;
+  }
+
+  /**
+   * If {@code param} is an implicitly typed lambda parameter whose type this inference problem has
+   * already determined, returns that type. Otherwise, returns null.
+   *
+   * @param param an element that might be an implicitly typed lambda parameter
+   * @return the type of {@code param}, or null if this inference problem cannot supply it
+   */
+  public @Nullable AnnotatedTypeMirror getLambdaParameterType(VariableElement param) {
+    Java8InferenceContext.LambdaParamTarget target = context.lambdaParamTargets.get(param);
+    if (target == null) {
+      return null;
+    }
+    AbstractType lambdaTarget = target.lambdaTargetType().applyInstantiations();
+    // getFunctionTypeParameterTypes() returns null if lambdaTarget is not a functional interface,
+    // which is the case while it is still just an inference variable.  It applies
+    // AbstractType.makeGround(), the non-wildcard parameterization of JLS 9.9 that JLS 15.27.3
+    // prescribes for an implicitly typed lambda; only implicitly typed lambdas are recorded in
+    // lambdaParamTargets, so that is the correct rule.
+    List<AbstractType> paramTypes = lambdaTarget.getFunctionTypeParameterTypes();
+    if (paramTypes == null || target.index() >= paramTypes.size()) {
+      return null;
+    }
+    AbstractType paramType = paramTypes.get(target.index()).applyInstantiations();
+    if (!paramType.isProper()) {
+      return null;
+    }
+    // Copy, because AbstractType.getAnnotatedType() returns a type that inference itself uses: it
+    // is a component of the memoized AbstractType.functionType, and the caller is permitted to
+    // side-effect the type that this method returns.
+    return paramType.getAnnotatedType().deepCopy();
   }
 
   /**
@@ -521,6 +556,13 @@ public class InvocationTypeInference {
       case LAMBDA_EXPRESSION -> {
         c.add(new CheckedExceptionConstraint(ei, fi, map));
         LambdaExpressionTree lambda = (LambdaExpressionTree) ei;
+        if (TreeUtils.isImplicitlyTypedLambda(lambda)) {
+          // Record where this lambda's parameters get their types from, so that a request for one
+          // of them can be answered from this inference instead of re-deriving the lambda's target
+          // type, which would re-enter inference for the invocation that the lambda is an
+          // argument of.
+          context.addLambdaParamTargets(lambda.getParameters(), fi);
+        }
         if (LambdaBodyConstraint.mustDefer(lambda, fi)) {
           // The lambda is implicitly typed and its parameters do not have types yet, so the body
           // cannot be examined.  Defer the body's constraints; JLS 18.5.2.2 resolves this
