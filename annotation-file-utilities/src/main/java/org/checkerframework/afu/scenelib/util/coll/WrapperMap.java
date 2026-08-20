@@ -60,6 +60,7 @@ public class WrapperMap<K, V> implements Map<K, V> {
   }
 
   @Override
+  @SuppressWarnings({"keyfor:contracts.postcondition", "nullness:return"})
   @SideEffectsOnly("this")
   public V put(K key, V value) {
     return back.put(key, value);
@@ -72,6 +73,7 @@ public class WrapperMap<K, V> implements Map<K, V> {
   }
 
   @Override
+  @SuppressWarnings("nullness:return")
   @SideEffectsOnly("this")
   public V remove(Object key) {
     return back.remove(key);
