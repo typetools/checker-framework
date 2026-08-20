@@ -176,6 +176,11 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       AnnotatedTypeMirror funcTypeParam =
           f.getTypeArgumentInference().getLambdaParameterType((VariableElement) paramElement);
       if (funcTypeParam == null) {
+        // No inference is running, or none that is running determined this parameter's type.  An
+        // inference that has already finished may have.
+        funcTypeParam = f.getRecordedLambdaParameterType((VariableElement) paramElement);
+      }
+      if (funcTypeParam == null) {
         AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
         funcTypeParam = functionType.getParameterTypes().get(index);
       }

@@ -13,8 +13,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.IntersectionType;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.UnionType;
+import javax.lang.model.type.WildcardType;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -45,6 +53,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SwitchExpressionScanner;
 import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Performs invocation type inference as described in <a
@@ -165,10 +174,67 @@ public class InvocationTypeInference {
     if (!paramType.isProper()) {
       return null;
     }
+    // AbstractType.isProper() only means "mentions no inference variable of this problem".  The
+    // target type is derived from the lambda's context, which may include a method type variable
+    // belonging to a different, unfinished inference -- for example when the lambda is an argument
+    // of a call whose receiver is a generic invocation that is itself under inference and so was
+    // typed without substituting its type arguments.  Such a type variable is not this problem's
+    // to instantiate, so this problem has not determined the parameter's type.  Returning it would
+    // let the type variable escape as a lambda parameter's type, which later fails in
+    // AnnotatedTypes.asMemberOf.
+    if (mentionsMethodTypeVariable(paramType.getJavaType())) {
+      return null;
+    }
     // Copy, because AbstractType.getAnnotatedType() returns a type that inference itself uses: it
     // is a component of the memoized AbstractType.functionType, and the caller is permitted to
     // side-effect the type that this method returns.
     return paramType.getAnnotatedType().deepCopy();
+  }
+
+  /**
+   * Returns whether {@code type} mentions a type variable that is declared by a method or
+   * constructor, rather than by a class or interface.
+   *
+   * <p>Bounds of a type variable are not searched: a type variable is judged only by its own
+   * declaration, so that an F-bounded type variable does not cause infinite recursion.
+   *
+   * @param type a type
+   * @return whether {@code type} mentions a type variable declared by a method or constructor
+   */
+  private static boolean mentionsMethodTypeVariable(TypeMirror type) {
+    return switch (type.getKind()) {
+      case TYPEVAR ->
+          ((TypeVariable) type).asElement().getEnclosingElement() instanceof ExecutableElement;
+      case DECLARED -> anyMentionsMethodTypeVariable(((DeclaredType) type).getTypeArguments());
+      case ARRAY -> mentionsMethodTypeVariable(((ArrayType) type).getComponentType());
+      case WILDCARD -> {
+        WildcardType wildcard = (WildcardType) type;
+        yield (wildcard.getExtendsBound() != null
+                && mentionsMethodTypeVariable(wildcard.getExtendsBound()))
+            || (wildcard.getSuperBound() != null
+                && mentionsMethodTypeVariable(wildcard.getSuperBound()));
+      }
+      case INTERSECTION -> anyMentionsMethodTypeVariable(((IntersectionType) type).getBounds());
+      case UNION -> anyMentionsMethodTypeVariable(((UnionType) type).getAlternatives());
+      default -> false;
+    };
+  }
+
+  /**
+   * Returns whether any of {@code types} mentions a type variable that is declared by a method or
+   * constructor.
+   *
+   * @param types some types
+   * @return whether any of {@code types} mentions a type variable declared by a method or
+   *     constructor
+   */
+  private static boolean anyMentionsMethodTypeVariable(List<? extends TypeMirror> types) {
+    for (TypeMirror type : types) {
+      if (mentionsMethodTypeVariable(type)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -208,11 +274,45 @@ public class InvocationTypeInference {
 
     BoundSet b4 = getB4(b3, c);
     b4.resolve();
+    recordLambdaParameterTypes();
     return new InferenceResult(
         b4.getInstantiatedVariables(),
         b4.isUncheckedConversion(),
         b4.annoInferenceFailed,
         b4.errorMsg);
+  }
+
+  /**
+   * Records, on the type factory, the type of every implicitly typed lambda parameter that this
+   * inference problem determined.
+   *
+   * <p>Call this only after resolution, so that the recorded types are final. Until now the types
+   * were available only while this problem was on the inference stack, so a request made after it
+   * finished -- from the type-checking visitor, from dataflow, or from a different inference --
+   * re-derived the lambda's target type by re-running this inference. That re-derivation is what
+   * turns a dependency between two inference problems into a cycle.
+   */
+  private void recordLambdaParameterTypes() {
+    for (VariableElement param : context.lambdaParamTargets.keySet()) {
+      AnnotatedTypeMirror type = getLambdaParameterType(param);
+      if (type == null) {
+        continue;
+      }
+      // javac has already attributed the lambda, so its type for the parameter is authoritative
+      // for the Java type; inference only supplies the qualifiers.  This problem's view can be
+      // less precise, because a nested invocation's constraints are re-created here by
+      // createAdditionalArgConstraintsForInvocation, which calls only createC and so omits the
+      // applicability constraints that determine that invocation's type arguments.  In
+      // Issue1983.java the inference for the enclosing func1(transform(params, p -> ...)) sees the
+      // lambda's target type as Function<? super Object, ...>, where javac and the inference for
+      // transform(...) both have Function<? super Object[], ...>.  Recording the imprecise type
+      // would replace a correct record with a wrong one, and `p[0]` would then fail to type.
+      if (!TypesUtils.isErasedSubtype(
+          type.getUnderlyingType(), param.asType(), context.typeFactory.types)) {
+        continue;
+      }
+      context.typeFactory.recordLambdaParameterType(param, type);
+    }
   }
 
   /**
