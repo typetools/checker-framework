@@ -12,6 +12,7 @@ import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.returnsreceiver.qual.This;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 /**
  * The Map interface defines some of its methods with respect to the equals method. This
@@ -129,6 +130,7 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
     "keyfor:argument"
   }) // delegation
   @Override
+  @SideEffectsOnly("this")
   public @NotOwning @Nullable V put(AnnotationMirror key, V value) {
     V pre = get(key);
     remove(key);
@@ -137,6 +139,7 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
   }
 
   @Override
+  @SideEffectsOnly("this")
   public @Nullable V remove(Object key) {
     if (key instanceof AnnotationMirror am) {
       AnnotationMirror keyAnno = AnnotationUtils.getSame(shadowMap.keySet(), am);
@@ -148,6 +151,7 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
   }
 
   @Override
+  @SideEffectsOnly("this")
   public void putAll(Map<? extends AnnotationMirror, ? extends V> m) {
     for (Map.Entry<? extends AnnotationMirror, ? extends V> entry : m.entrySet()) {
       put(entry.getKey(), entry.getValue());
@@ -155,6 +159,7 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
   }
 
   @Override
+  @SideEffectsOnly("this")
   public void clear() {
     shadowMap.clear();
   }

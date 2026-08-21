@@ -129,7 +129,7 @@ public final class CaptureBound {
     ConstraintSet set = new ConstraintSet(new Typing(source, lhs, target, Kind.TYPE_COMPATIBILITY));
     // Reduce and incorporate so that the capture variables bounds are set.
     BoundSet b1 = set.reduce(context);
-    b1.incorporateToFixedPoint(new BoundSet(context));
+    b1.reachFixedPoint();
 
     // Then create constraints implied by captured type args that are wildcards.
     boolean containsFalse = false;
@@ -178,7 +178,7 @@ public final class CaptureBound {
    * @param variables inference variables
    * @return true if this bound contains any {@code variables}
    */
-  public boolean isCaptureMentionsAny(Collection<Variable> variables) {
+  public boolean mentionsAny(Collection<Variable> variables) {
     for (Variable a : variables) {
       if (map.containsValue(a)) {
         return true;

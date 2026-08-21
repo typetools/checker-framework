@@ -24,8 +24,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
  * Java, if T(A) = the type argument for a, in the above example T(A) == String and T(B) == Integer
  *
  * <p>For the Checker Framework we also need to infer reasonable annotations for these type
- * arguments. For information on inferring type arguments see the documentation in JLS8:
- * https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html
+ * arguments. For information on inferring type arguments see JLS chapter 18:
+ * https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html
  */
 public interface TypeArgumentInference {
 
@@ -43,4 +43,15 @@ public interface TypeArgumentInference {
       AnnotatedTypeFactory typeFactory,
       ExpressionTree invocation,
       AnnotatedExecutableType executableType);
+
+  /**
+   * Returns true if type argument inference for some method or constructor invocation is currently
+   * in progress anywhere on the call stack, that is, if this method is called while a previous,
+   * not-yet-returned call to {@link #inferTypeArgs} is running.
+   *
+   * @return true if type argument inference for some invocation is currently in progress
+   */
+  default boolean isAnyInferenceInProgress() {
+    return false;
+  }
 }

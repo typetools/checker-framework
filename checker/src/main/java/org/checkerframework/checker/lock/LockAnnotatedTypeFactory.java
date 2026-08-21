@@ -416,6 +416,9 @@ public class LockAnnotatedTypeFactory
     RELEASESNOLOCKS("@ReleasesNoLocks", ReleasesNoLocks.class),
     /** The method does not acquire or release any locks. */
     LOCKINGFREE("@LockingFree", LockingFree.class),
+    // `@SideEffectsOnly` is intentionally absent from this enum.  It constrains which expressions
+    // a method modifies, but it promises nothing about acquiring or releasing locks, so a
+    // `@SideEffectsOnly` method gets the same locking guarantee as an unannotated one.
     /** The method has no side effects. */
     SIDEEFFECTFREE("@SideEffectFree", SideEffectFree.class),
     /** The method has no side effects and is deterministic. */

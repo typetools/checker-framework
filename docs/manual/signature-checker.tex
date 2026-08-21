@@ -40,7 +40,7 @@ examples appear in a table below.
 \begin{description}
 
 \item[\refqualclass{checker/signature/qual}{FullyQualifiedName}]
-  A \emph{fully qualified name} (\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-6.html#jls-6.7}{JLS \S
+  A \emph{fully qualified name} (\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-6.html#jls-6.7}{JLS \S
     6.7}), such as
   \<mypackage.Outer.Inner>, is used in Java code and in messages to
   the user.
@@ -67,7 +67,7 @@ examples appear in a table below.
     \S 4.2}) for class names.  See examples below.
 
 \item[\refqualclass{checker/signature/qual}{BinaryName}]
-  A \emph{binary name} (\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-13.html#jls-13.1}{JLS \S 13.1}), such as
+  A \emph{binary name} (\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-13.html#jls-13.1}{JLS \S 13.1}), such as
   \<mypackage.Outer\$Inner>, is
   the conceptual name of a type in its own \<.class> file.
 
@@ -87,7 +87,7 @@ examples appear in a table below.
   method.  This format is not required by any method in the JDK, so you
   will rarely write it in source code.  The string can be empty.  This
   is not the same as the ``simple name'' defined in
-  (\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-6.html#jls-6.2}{JLS
+  (\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-6.html#jls-6.2}{JLS
     \S 6.2}), which is the same as
   \refqualclass{checker/signature/qual}{Identifier}.
 
@@ -103,7 +103,7 @@ examples appear in a table below.
   \refqualclass{checker/signature/qual}{FullyQualifiedName}, but some
   classes have multiple fully-qualified names, only one of which is
   canonical (see
-  \href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-6.html#jls-6.7}{JLS
+  \href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-6.html#jls-6.7}{JLS
     \S 6.7}).
 
 \end{description}
@@ -112,14 +112,14 @@ Other type qualifiers are the intersection of two or more qualifiers listed
 above; for example, a
 \refqualclass{checker/signature/qual}{DotSeparatedIdentifiers} is a string
 that is a valid fully-qualified name \emph{and} a valid binary name.  A
-programmer should never or rarely use these qualifiers, and you can ignore
+programmer should rarely or never use these qualifiers, and you can ignore
 them as implementation details of the Signature Checker, though you might
 occasionally see them in an error message.  These qualifiers exist to give
 literals sufficiently precise types that they can be used in any
 appropriate context.
 
 Java also defines other string formats for a type, notably qualified names
-(\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-6.html#jls-6.2}{JLS
+(\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-6.html#jls-6.2}{JLS
   \S 6.2}). The Signature Checker does not include annotations for these.
 
 \label{signature-annotations-table}
@@ -164,7 +164,7 @@ Java defines one format for the string representation of a method signature:
   A \emph{method descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-4.html#jvms-4.3.3}{JVMS \S
     4.3.3}) identifies a method's signature (its parameter and return
   types), just as a field descriptor identifies a
-  type.   The method descriptor for the method
+  type.  The method descriptor for the method
 \begin{Verbatim}
     Object mymethod(int i, double d, Thread t)
 \end{Verbatim}

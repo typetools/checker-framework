@@ -96,7 +96,7 @@ The Tainting Checker does not know the intended semantics of your program,
 so it cannot warn you if you mis-annotate a sensitive sink as taking
 \code{@Tainted} data, or if you mis-annotate external data as
 \code{@Untainted}.  So long as you correctly annotate the sensitive sinks
-and the places that untrusted data is read, the Tainting Checker will
+and the places where untrusted data is read, the Tainting Checker will
 ensure that all your other annotations are correct and that no undesired
 information flows exist.
 
@@ -194,7 +194,7 @@ The problem with the above annotation is that it permits the undesirable
 invocation:
 
 \begin{Verbatim}
-  usb.append(ts); // illegal invocation
+  usb.append(ts); // undesirable invocation
 \end{Verbatim}
 
 \noindent
@@ -208,10 +208,10 @@ Beware this problem both in code you write, and also in annotated libraries
 add a class qualifier parameter; see Section~\ref{class-qualifier-polymorphism}.
 
 (Side note:  if \code{append} were purely functional (had no side effects
-and returned a new \<StringBuffer>) the method call would be acceptable,
+and returned a new \<StringBuffer>), the method call would be acceptable,
 because the return type is instantiated to \<@Tainted StringBuffer> for the
 expression \<usb.append(ts)>.  However, the \code{append} method works via
-side-effect, and only returns a reference to the buffer as a convenience
+side effects, and only returns a reference to the buffer as a convenience
 for writing ``fluent'' client code.)
 
 % TODO: one could add a String[] value to @Untainted to distinguish different

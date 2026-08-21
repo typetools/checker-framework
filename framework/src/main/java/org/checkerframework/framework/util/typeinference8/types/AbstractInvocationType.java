@@ -6,7 +6,7 @@ import com.sun.source.tree.NewClassTree;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -44,35 +44,32 @@ public class AbstractInvocationType extends AbstractExecutableType {
   /**
    * Returns the return type of this.
    *
-   * @param map a mapping from type variable to inference variable
+   * @param map a mapping from type variable to inference variable, or null to treat no type
+   *     variable as an inference variable
    * @return the return type of this
    */
   @Override
-  public AbstractType getReturnType(Theta map) {
+  public AbstractType getReturnType(@Nullable Theta map) {
     AnnotatedTypeMirror annotatedReturnType;
-    TypeMirror returnType;
 
     if (TreeUtils.isDiamondTree(invocation)) {
       Element e = ElementUtils.enclosingTypeElement(TreeUtils.elementFromUse(invocation));
       annotatedReturnType = typeFactory.getAnnotatedType(e);
-      returnType = e.asType();
     } else if (invocation instanceof MethodInvocationTree) {
       annotatedReturnType = annotatedExecutableType.getReturnType();
-      returnType = executableType.getReturnType();
     } else {
       annotatedReturnType = typeFactory.getAnnotatedType(invocation);
-      returnType = TreeUtils.typeOf(invocation);
     }
 
     if (map == null) {
-      return new ProperType(annotatedReturnType, returnType, context);
+      return new ProperType(annotatedReturnType, context);
     } else {
-      return InferenceType.create(annotatedReturnType, returnType, map, context);
+      return InferenceType.create(annotatedReturnType, map, context);
     }
   }
 
   @Override
-  public List<AbstractType> getParameterTypes(Theta map, int size) {
+  public List<AbstractType> getParameterTypes(@Nullable Theta map, int size) {
     return getParameterTypes(map, size, null, TreeUtils.isVarargsCall(invocation));
   }
 }

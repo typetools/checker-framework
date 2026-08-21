@@ -12,8 +12,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * has this annotation, then at run time, the expression evaluates to one of the annotation's
  * arguments.
  *
- * <p>Annotation for values
- *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 @Documented

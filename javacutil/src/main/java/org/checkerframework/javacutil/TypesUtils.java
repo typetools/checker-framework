@@ -1,11 +1,13 @@
 package org.checkerframework.javacutil;
 
 import com.sun.tools.javac.code.BoundKind;
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Type.ClassType;
+import com.sun.tools.javac.code.Type.IntersectionClassType;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types.FunctionDescriptorLookupError;
 import com.sun.tools.javac.model.JavacTypes;
@@ -18,6 +20,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -632,16 +635,57 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if {@code type} is a functional interface type (as defined in JLS 9.8).
+   * Returns true if {@code type} is a functional interface type (as defined in JLS 9.9). This
+   * includes an intersection type that induces a notional functional interface, such as {@code
+   * Runnable & java.io.Serializable}.
    *
    * @param type possible functional interface type
    * @param env the processing environment
-   * @return true if {@code type} is a functional interface type (as defined in JLS 9.8)
+   * @return true if {@code type} is a functional interface type (as defined in JLS 9.9)
    */
   public static boolean isFunctionalInterface(TypeMirror type, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-    return javacTypes.isFunctionalInterface((Type) type);
+    Type javaType = (Type) type;
+    if (javaType.isIntersection()) {
+      javaType = notionalInterface((IntersectionClassType) javaType, javacTypes);
+    }
+    return javacTypes.isFunctionalInterface(javaType);
+  }
+
+  /**
+   * Returns the notional interface induced by the intersection type {@code type} (<a
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.9">JLS 4.9</a>). Per
+   * <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9">JLS 9.9</a>,
+   * the function type of an intersection type that induces a notional functional interface is the
+   * function type of that notional interface. If {@code type} has a component that is a class, then
+   * it induces a notional class rather than a notional interface, and {@code type} is returned
+   * unchanged.
+   *
+   * <p>javac does not represent the notional interface directly: the symbol of an intersection type
+   * is a synthetic compound class symbol that is never marked as an interface, so javac's function
+   * descriptor lookup rejects it. This method builds the notional interface the same way that
+   * {@code Attr.getTargetInfo} does when attributing a lambda expression or a method reference
+   * whose target type is an intersection type: it creates a fresh intersection of the non-wildcard
+   * parameterizations (JLS 9.9) of the components and marks its symbol as an interface. {@code
+   * type} itself is not modified.
+   *
+   * @param type an intersection type
+   * @param javacTypes the javac Types instance
+   * @return the notional interface induced by {@code type}, or {@code type} if it does not induce a
+   *     notional interface
+   */
+  private static Type notionalInterface(
+      IntersectionClassType type, com.sun.tools.javac.code.Types javacTypes) {
+    if (!type.allInterfaces) {
+      // The intersection induces a notional class, which is not a functional interface.
+      return type;
+    }
+    com.sun.tools.javac.util.List<Type> components =
+        type.getExplicitComponents().map(javacTypes::removeWildcards);
+    IntersectionClassType notionalInterface = javacTypes.makeIntersectionType(components);
+    notionalInterface.tsym.flags_field |= Flags.INTERFACE;
+    return notionalInterface;
   }
 
   /**
@@ -1345,7 +1389,9 @@ public final class TypesUtils {
 
   /**
    * This method returns the single abstract method declared by {@code functionalInterfaceType}.
-   * (The type of this method is referred to as the function type.)
+   * (The type of this method is referred to as the function type.) If {@code
+   * functionalInterfaceType} is an intersection type that induces a notional functional interface,
+   * then the single abstract method of that notional interface is returned (JLS 9.9).
    *
    * @param functionalInterfaceType a functional interface type
    * @param env the processing environment
@@ -1356,9 +1402,12 @@ public final class TypesUtils {
       TypeMirror functionalInterfaceType, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
+    Type javaType = (Type) functionalInterfaceType;
+    if (javaType.isIntersection()) {
+      javaType = notionalInterface((IntersectionClassType) javaType, javacTypes);
+    }
     try {
-      return (ExecutableElement)
-          javacTypes.findDescriptorSymbol(((Type) functionalInterfaceType).asElement());
+      return (ExecutableElement) javacTypes.findDescriptorSymbol(javaType.asElement());
     } catch (FunctionDescriptorLookupError ex) {
       // FunctionDescriptorLookupError does not have a stack trace, so catch it here and throw a
       // BugInCF.
@@ -1514,5 +1563,25 @@ public final class TypesUtils {
 
     return typeVariable1.asElement().getSimpleName().contentEquals(otherName)
         && otherEnclosingElement.equals(typeVariable1.asElement().getEnclosingElement());
+  }
+
+  /**
+   * Returns a hash code that is consistent with {@link #areSame(TypeVariable, TypeVariable)}: if
+   * {@code areSame} returns true for two type variables, then this method returns the same value
+   * for both of them.
+   *
+   * <p>Use this method wherever type variables are compared using {@code areSame} but are also
+   * hashed, such as in a hash table or in a {@code hashCode} method whose {@code equals} method
+   * uses {@code areSame}.
+   *
+   * @param typeVariable a type variable
+   * @return a hash code consistent with {@code areSame}
+   */
+  public static int hashCodeForAreSame(TypeVariable typeVariable) {
+    // areSame compares asElement()'s getSimpleName() and getEnclosingElement().  The name is
+    // converted to a String because areSame compares names with Name.contentEquals, and Name does
+    // not specify that its hashCode is consistent with contentEquals.
+    Element element = typeVariable.asElement();
+    return Objects.hash(element.getSimpleName().toString(), element.getEnclosingElement());
   }
 }

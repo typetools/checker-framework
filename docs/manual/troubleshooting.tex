@@ -12,7 +12,7 @@ For discussions of broad interest, you can use the mailing list,
 For archives and to subscribe, see \url{https://groups.google.com/forum/#!forum/checker-framework-discuss}.
 If you want to help out, you can give feedback (including on the
 documentation), choose a bug and fix it (start with those labeled
-\href{https://github.com/typetools/checker-framework/issues?q=is\%3Aissue+is\%3Aopen+label\%3A\%22good+first+issue%22}{``good
+\href{https://github.com/typetools/checker-framework/issues?q=is\%3Aissue+is\%3Aopen+label\%3A\%22good+first+issue\%22}{``good
 first
 issue''}),
 or select a
@@ -70,7 +70,7 @@ This section describes some possible problems and solutions.
 \begin{itemize}
 \item
   \label{no-such-field-error-release}
-  An error that includes \<java.lang.NoSuchFieldError: RELEASE"> means that
+  An error that includes \<java.lang.NoSuchFieldError: RELEASE> means that
   you are not using the correct compiler (you are not using a Java 9+ compiler).
 
 \item
@@ -280,7 +280,7 @@ give unexpected results.
   \item
     Perhaps your proof was incomplete or incorrect.  Your proof might
     depend on some fact you didn't write down, such as ``method
-    \<m> has no side effects.''  In this case, you should revise your proof
+    \<m> has no side effects''.  In this case, you should revise your proof
     and add more annotations to your Java code.
   \item
     Perhaps your proof is incorrect, and the errors indicate where.
@@ -345,9 +345,13 @@ the field \<currentOutgoing> to \<null>.
 
 If you want to communicate that
 \<isCompleted()> does not set the field \<currentOutgoing> to \<null>, you can use
-\<\refqualclass{dataflow/qual}{Pure}>,
-\<\refqualclass{dataflow/qual}{SideEffectFree}>,
-or \<\refqualclass{checker/nullness/qual}{EnsuresNonNull}> on the
+\refqualclass{dataflow/qual}{Pure},
+\refqualclass{dataflow/qual}{SideEffectFree},
+\iffalse
+\refqualclass{dataflow/qual}{SideEffectsOnly} (with no expression that can
+affect \<currentOutgoing>),
+\fi
+or \refqualclass{checker/nullness/qual}{EnsuresNonNull} on the
 declaration of \<isCompleted()>; see Sections~\ref{type-refinement-purity}
 and~\ref{nullness-method-annotations}.
 
@@ -359,9 +363,9 @@ been annotated, so default annotations are being used.
 
 To solve the problem, add the missing annotations to the library (see
 Chapter~\ref{annotating-libraries}).  The
-annotations might appear in stub files (which appear
-in an \code{.astub} file together with the checker's source code)
-or in the form of annotated libraries (which appear
+annotations might appear in stub files (\code{.astub} files distributed
+with the checker's source code)
+or in annotated libraries (which appear
 in \url{https://github.com/typetools/}).
 
 \item
@@ -507,6 +511,7 @@ public String(char value[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int c
     } catch (Throwable e) {
         t.toString(); // Nullness Checker issues spurious (dereference.of.nullable)
     }
+  }
 \end{Verbatim}
 \end{smaller}
 
@@ -556,7 +561,7 @@ fixes, new features, new checkers, and other improvements.
 Please ensure that your bug report is clear and that it is complete.
 Otherwise, we may be unable to understand it or to reproduce it, either of
 which would prevent us from helping you.  Your bug report should include at
-least the following 4 parts: commands, inputs, outputs, and expectation.
+least the following 4 parts: commands, inputs, output, and expectation.
 
 % If you update this, also update ../../.github/ISSUE_TEMPLATE
 \begin{description}
@@ -635,7 +640,7 @@ least the following 4 parts: commands, inputs, outputs, and expectation.
 
 When reporting bugs, please focus on realistic scenarios and well-written
 code.  We are sure that you can make up artificial code that stymies the
-type-checker!  Those aren't a good use of your time to report nor the
+type-checker!  That is not a good use of your time to report, nor of the
 maintainers' time to evaluate and fix.
 
 
@@ -698,8 +703,7 @@ You may need to log out and log back in for the setting to take effect.
   \<checker/bin-devel/Dockerfile-ubuntu-jdk\emph{XX}-plus>, where \emph{XX}
   is a JDK version such as 17, 21, 25, etc.:
 
-(This list should be the same as in
-\< checker/bin-devel/Dockerfile-ubuntu-jdk25-plus >; if your build fails
+(If your build fails
 because it is missing a package, try the commands there and report a bug
 in this manual.)
 
@@ -716,7 +720,7 @@ sudo apt -qqy install \
   cpp \
   git \
   jq \
-  jtreg7 \
+  jtreg8 \
   libcurl3-gnutls \
   make \
   maven \
@@ -725,7 +729,7 @@ sudo apt -qqy install \
   unzip \
   wget
 # Dependencies for developing the Checker Framework.
-apt -qqy install \
+sudo apt -qqy install \
   autoconf \
   devscripts \
   dia \
@@ -793,7 +797,7 @@ brew install --cask mactex
 Note: Running \<brew install --cask temurin17> is only necessary if you do not
 already have a JDK that is compatible with the Checker Framework installed.
 
-Make a \<latex> directory and copy \<hevea.sty> file into it.
+Make a \<latex> directory and copy the \<hevea.sty> file into it.
 (\url{https://hevea.inria.fr/} gives the current version number.)
 
 \begin{Verbatim}
@@ -892,8 +896,8 @@ Putting the Checker Framework's \<javac> earlier in your \<PATH> will
 ensure that the Checker Framework's version is used.
 
 \item
-If you wish to use Maven or Gradle, publish the Checker Framework artifacts to a local Maven repository, run
-\code{./gradlew publishToMavenLocal}
+If you wish to use Maven or Gradle, publish the Checker Framework artifacts
+to a local Maven repository by running \code{./gradlew publishToMavenLocal}:
 \begin{Verbatim}
   cd $CHECKERFRAMEWORK
   ./gradlew publishToMavenLocal
@@ -1079,7 +1083,7 @@ For details, see file
 Here are some papers that use the Checker Framework;
 for instance, they build a type-checker on top of the Checker Framework, or
 their methodology depends on using the Checker Framework.
-(It is not papers that merely cite the Checker Framework.)
+(The list does not include papers that merely cite the Checker Framework.)
 This list is \emph{incomplete}; if you know of a paper that
 is missing, please let us know so that we can add it.
 Most educational use of the Checker Framework is never published, and most
@@ -1153,7 +1157,7 @@ title.
 \item
   A type system for regular expressions (FTfJP 2012)~\cite{SpishakDE2012}
 \item
-  Verification games: making verification fun (FTfJF 2012)~\cite{DietlDEMWCPP2012}
+  Verification games: making verification fun (FTfJP 2012)~\cite{DietlDEMWCPP2012}
 \item
   Reim \& ReImInfer: checking and inference of reference immutability and
   method purity (OOPSLA 2012)~\cite{HuangMDE2012}
@@ -1331,7 +1335,7 @@ title.
   Java Typestate Checker (Coordination 2021)~\cite{MotaGR2021}
 \item
   Ensuring correct cryptographic algorithm and provider usage at compile time
-  (FTFjP 2021)~\cite{XingCD2021}
+  (FTfJP 2021)~\cite{XingCD2021}
 \item
   Scalability and Precision by Combining Expressive Type Systems and
   Deductive Verification (OOPSLA 2021)~\cite{LanzingerWUD2021}

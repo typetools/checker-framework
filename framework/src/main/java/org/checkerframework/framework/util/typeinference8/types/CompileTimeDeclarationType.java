@@ -4,7 +4,7 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import java.util.List;
 import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -15,7 +15,7 @@ import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 /**
  * Represents the compile-time declaration type of the method reference that is the method to which
  * the method reference refers. See <a
- * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.13.1">JLS section
+ * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.1">JLS section
  * 15.13.1</a> for a complete definition.
  *
  * <p>The type of a member reference is a functional interface. The function type of a member
@@ -77,29 +77,26 @@ public class CompileTimeDeclarationType extends AbstractExecutableType {
   }
 
   @Override
-  public AbstractType getReturnType(Theta map) {
+  public AbstractType getReturnType(@Nullable Theta map) {
     AnnotatedTypeMirror annotatedReturnType;
-    TypeMirror returnType;
 
     if (methodRef.getMode() == ReferenceMode.NEW) {
       annotatedReturnType =
           context.typeFactory.getResultingTypeOfConstructorMemberReference(
               methodRef, annotatedExecutableType);
-      returnType = annotatedReturnType.getUnderlyingType();
     } else {
       annotatedReturnType = annotatedExecutableType.getReturnType();
-      returnType = executableType.getReturnType();
     }
 
     if (map == null) {
-      return new ProperType(annotatedReturnType, returnType, context);
+      return new ProperType(annotatedReturnType, context);
     } else {
-      return InferenceType.create(annotatedReturnType, returnType, map, context);
+      return InferenceType.create(annotatedReturnType, map, context);
     }
   }
 
   @Override
-  public List<AbstractType> getParameterTypes(Theta map, int size) {
+  public List<AbstractType> getParameterTypes(@Nullable Theta map, int size) {
     AnnotatedTypeMirror receiverTM;
     if (MemberReferenceKind.getMemberReferenceKind(methodRef).isUnbound()) {
       // For unbound method references, i.e. Type::instanceMethod, the receiver is treated as the

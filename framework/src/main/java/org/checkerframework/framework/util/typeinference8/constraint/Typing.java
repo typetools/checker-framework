@@ -2,8 +2,8 @@ package org.checkerframework.framework.util.typeinference8.constraint;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -121,7 +121,9 @@ public class Typing extends TypeConstraint {
 
   @Override
   public List<Variable> getInferenceVariables() {
-    Set<Variable> vars = new HashSet<>();
+    // Use a LinkedHashSet because the iteration order of the result affects the result of
+    // inference; see ConstraintSet#getClosedSubset.
+    Set<Variable> vars = new LinkedHashSet<>();
     vars.addAll(T.getInferenceVariables());
     vars.addAll(S.getInferenceVariables());
     return new ArrayList<>(vars);
@@ -387,7 +389,6 @@ public class Typing extends TypeConstraint {
    *
    * @return the result of reducing the constraint
    */
-  @SuppressWarnings("interning:not.interned") // Checking for exact object.
   private ReductionResult reduceEquality() {
     if (S.isProper()) {
       if (T.isProper()) {
@@ -425,7 +426,9 @@ public class Typing extends TypeConstraint {
       // the same erasure
       ConstraintSet constraintSet = new ConstraintSet();
       for (int i = 0; i < tTypeArgs.size(); i++) {
-        if (tTypeArgs.get(i) != sTypeArgs.get(i)) {
+        // The constraint between two equal type arguments reduces to true (JLS 18.2.4), so do
+        // not create it.
+        if (!tTypeArgs.get(i).equals(sTypeArgs.get(i))) {
           constraintSet.add(
               new Typing(this, tTypeArgs.get(i), sTypeArgs.get(i), Kind.TYPE_EQUALITY));
         }
@@ -437,6 +440,11 @@ public class Typing extends TypeConstraint {
     AbstractType tComponentType = T.getComponentType();
     if (sComponentType != null && tComponentType != null) {
       return new Typing(this, sComponentType, tComponentType, Kind.TYPE_EQUALITY);
+    }
+
+    if (S.getTypeKind() == TypeKind.TYPEVAR && T.getTypeKind() == TypeKind.TYPEVAR && S.equals(T)) {
+      // If S and T are the same type variable, the constraint reduces to true.
+      return ConstraintSet.TRUE;
     }
 
     if (T.getTypeKind() == TypeKind.WILDCARD && S.getTypeKind() == TypeKind.WILDCARD) {

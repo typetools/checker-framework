@@ -32,7 +32,7 @@ import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Finds the direct supertypes of an input AnnotatedTypeMirror. See <a
- * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.10.2">JLS section
+ * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.10.2">JLS section
  * 4.10.2</a>.
  *
  * @see Types#directSupertypes(TypeMirror)
@@ -376,8 +376,6 @@ final class SupertypeFinder {
     }
 
     /**
-     *
-     *
      * <pre>{@code
      * For type = A[ ] ==>
      *  Object >: A[ ]

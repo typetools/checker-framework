@@ -4,6 +4,7 @@ import java.util.*;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 public class Issue6030 {
 
@@ -21,6 +22,7 @@ public class Issue6030 {
     // The @NotOwning annotation is required to be consistent with the superclass implementation.
     // The return type of Iterator#next is @NotOwning. Soundness is ensured by the RLC for
     // collections.
+    @SideEffectsOnly("this")
     public @NotOwning T next(@NotOwningCollection MyScanner<T, I> this) {
       return null;
     }

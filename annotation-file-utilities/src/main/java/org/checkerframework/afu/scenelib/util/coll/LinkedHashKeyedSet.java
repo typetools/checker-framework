@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 /**
  * A simple implementation of {@link KeyedSet} backed by an insertion-order {@link
@@ -53,11 +54,13 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
     }
 
     @Override
+    @SideEffectsOnly("this")
     public @NotOwning V next() {
       return itr.next();
     }
 
     @Override
+    @SideEffectsOnly("this")
     public void remove() {
       itr.remove();
     }
@@ -122,16 +125,19 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
   }
 
   @Override
+  @SideEffectsOnly("this")
   public boolean add(V o) {
     return add(o, THROW_EXCEPTION, IGNORE) == null;
   }
 
   @Override
+  @SideEffectsOnly("this")
   public boolean remove(@NotOwningCollection LinkedHashKeyedSet<K, V> this, Object o) {
     return theValues.remove(o);
   }
 
   @Override
+  @SideEffectsOnly("this")
   public boolean addAll(Collection<? extends V> c) {
     boolean changed = false;
     for (V o : c) {
@@ -141,6 +147,7 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
   }
 
   @Override
+  @SideEffectsOnly("this")
   public void clear() {
     theValues.clear();
   }

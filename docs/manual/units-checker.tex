@@ -4,7 +4,7 @@
 For many applications, it is important to use the correct units of
 measurement for primitive types.  For example, NASA's Mars Climate Orbiter
 (cost: \$327 million) was lost because of a discrepancy between use
-of the metric unit Newtons and the imperial measure Pound-force.
+of the metric unit newton and the imperial measure pound-force.
 
 The \emph{Units Checker} ensures consistent usage of units.
 For example, consider the following code:
@@ -86,12 +86,12 @@ measurement is defined:
 
 \begin{enumerate}
 \item For \code{@Acceleration}:
-  Meter Per Second Square \refqualclass{checker/units/qual}{mPERs2}
+  meters per second squared \refqualclass{checker/units/qual}{mPERs2}
 
 \item For \code{@Angle}:
-  Radians \refqualclass{checker/units/qual}{radians},
+  radians \refqualclass{checker/units/qual}{radians},
   and the derived unit
-  Degrees \refqualclass{checker/units/qual}{degrees}
+  degrees \refqualclass{checker/units/qual}{degrees}
 
 \item For \code{@Area}:
   the derived units
@@ -100,21 +100,21 @@ measurement is defined:
   square kilometers \refqualclass{checker/units/qual}{km2}
 
 \item For \code{@Current}:
-  Ampere \refqualclass{checker/units/qual}{A}
+  amperes \refqualclass{checker/units/qual}{A}
 
 \item For \code{@Force}:
-  Newton \refqualclass{checker/units/qual}{N}
+  newtons \refqualclass{checker/units/qual}{N}
   and the derived unit
   kilonewton \refqualclass{checker/units/qual}{kN}
 
 \item For \code{@Length}:
-  Meters \refqualclass{checker/units/qual}{m}
+  meters \refqualclass{checker/units/qual}{m}
   and the derived units
   millimeters \refqualclass{checker/units/qual}{mm} and
   kilometers \refqualclass{checker/units/qual}{km}
 
 \item For \code{@Luminance}:
-  Candela \refqualclass{checker/units/qual}{cd}
+  candelas \refqualclass{checker/units/qual}{cd}
 
 \item For \code{@Mass}:
   kilograms \refqualclass{checker/units/qual}{kg}
@@ -127,12 +127,12 @@ measurement is defined:
   kilometers per hour \refqualclass{checker/units/qual}{kmPERh}
 
 \item For \code{@Substance}:
-  Mole \refqualclass{checker/units/qual}{mol}
+  moles \refqualclass{checker/units/qual}{mol}
 
 \item For \code{@Temperature}:
-  Kelvin \refqualclass{checker/units/qual}{K}
+  kelvins \refqualclass{checker/units/qual}{K}
   and the derived unit
-  Celsius \refqualclass{checker/units/qual}{C}
+  degrees Celsius \refqualclass{checker/units/qual}{C}
 
 \item For \code{@Time}:
   seconds \refqualclass{checker/units/qual}{s}
@@ -153,7 +153,7 @@ The basic SI units
 (\code{@s}, \code{@m}, \code{@g}, \code{@A}, \code{@K},
  \code{@mol}, \code{@cd})
 take an optional \code{Prefix} enum as argument.
-For example, to use nanoseconds as unit, you could use
+For example, to use nanoseconds as a unit, you could use
 \code{@s(Prefix.nano)} as a unit type.
 You can sometimes use a different annotation instead of a prefix;
 for example, \<@mm> is equivalent to \<@m(Prefix.milli)>.
@@ -161,7 +161,7 @@ for example, \<@mm> is equivalent to \<@m(Prefix.milli)>.
 Class \code{UnitsTools} contains a constant for each SI unit.
 To create a value of the particular unit, multiply an unqualified
 value with one of these constants.
-By using static imports, this allows very natural notation; for
+Static imports allow very natural notation; for
 example, after statically importing \code{UnitsTools.m},
 the expression \code{5 * m} represents five meters.
 As all these unit constants are public, static, and final with value
@@ -206,11 +206,11 @@ behave equivalently and interchangeably.
 Most annotation definitions do not have a \<@UnitsMultiple> meta-annotation.
 
 Note that all custom annotations must have the
-\<@Target(ElementType.TYPE\_USE)> meta-annotation. See section
+\<@Target(ElementType.TYPE\_USE)> meta-annotation. See Section
 \ref{creating-define-type-qualifiers}.
 
 To take full advantage of the additional unit qualifier, you need to
-do two additional steps.
+take two additional steps.
 (1)~Provide constants that convert from unqualified types to types that use
 the new unit.
 See class \code{UnitsTools} for examples (you will need to suppress a
@@ -221,7 +221,7 @@ implementation of the \code{UnitsRelations} interface as a
 meta-annotation to one of the units.
 
 See demonstration \code{docs/examples/units-extension/} for an example
-extension that defines Hertz (hz) as scalar per second, and defines an
+extension that defines hertz (Hz) as scalar per second, and defines an
 implementation of \code{UnitsRelations} to enforce it.
 
 
@@ -238,7 +238,7 @@ different prefix.
 Subtyping between the units and the unit kinds is taken into account,
 as is the \code{@UnitsMultiple} meta-annotation.
 
-Multiplying a scalar with a unit type results in the same unit type.
+Multiplying a scalar by a unit type results in the same unit type.
 
 The division of a unit type by the same unit type
 results in the unqualified type.
@@ -324,7 +324,7 @@ Also, see the example project in the \<docs/examples/units-extension> directory.
 \sectionAndLabel{Suppressing warnings}{units-suppressing}
 
 One example of when you need to suppress warnings is when you
-initialize a variable with a unit type by a literal value.
+initialize a variable of a unit type with a literal value.
 To remove this warning message, it is best to introduce a
 constant that represents the unit and to
 add a \code{@SuppressWarnings}
@@ -345,6 +345,7 @@ For examples, see class \code{UnitsTools}.
 
 % LocalWords:  UnitsTools toMeter toSecond mPERs Candela cd kmPERh mol nano ns
 % LocalWords:  milli RetentionPolicy SubtypeOf UnitsMultiple hz PolyUnit
-% LocalWords:  UnitsRelations Aunits MyFile mm2 m2 km2 enum ElementType
+% LocalWords:  UnitsRelations Aunits MyFile mm2 m2 km2 enum ElementType kN
 %  LocalWords:  MixedUnits java mPERs2 api classpath bootclasspath RUNTIME
-%%  LocalWords:  AunitsDirs myProject myLibrary Luminance processorpath
+%%  LocalWords:  AunitsDirs myProject myLibrary Luminance processorpath m3
+% LocalWords:  util mm3 km3

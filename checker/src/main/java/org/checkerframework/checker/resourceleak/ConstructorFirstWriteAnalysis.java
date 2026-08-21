@@ -397,8 +397,8 @@ final class ConstructorFirstWriteAnalysis {
       Element lhsEl = TreeUtils.elementFromUse(node.getVariable());
       if (targetField == lhsEl) {
         // Found an assignment to the same field:
-        //   - current assignment → FIRST_ASSIGNMENT
-        //   - different assignment → REASSIGNMENT
+        //   - current assignment -> FIRST_ASSIGNMENT
+        //   - different assignment -> REASSIGNMENT
         return node == targetAssignment
             ? FirstWriteScanResult.FIRST_ASSIGNMENT
             : FirstWriteScanResult.REASSIGNMENT;

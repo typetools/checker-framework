@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  * the qualifier can be written on any type use.
  *
  * <p>This enables a type system designer to permit a qualifier to be written only in certain
- * locations. For example, some type systems' top and bottom qualifier (such as {@link
+ * locations. For example, some type systems' top and bottom qualifiers (such as {@link
  * org.checkerframework.checker.nullness.qual.KeyForBottom}) should only be written on an explicit
  * wildcard upper or lower bound. This meta-annotation is a declarative, coarse-grained approach to
  * enable that. For finer-grained control, override {@code visit*} methods that visit trees in

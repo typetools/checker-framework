@@ -33,7 +33,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * </code></pre>
  *
  * <p>While it would be natural to make {@code @This} the default annotation for receivers, it leads
- * to false positives warnings due to <a
+ * to false positive warnings due to <a
  * href="https://github.com/typetools/checker-framework/issues/2931">https://github.com/typetools/checker-framework/issues/2931</a>,
  * so this defaulting is currently elided.
  *

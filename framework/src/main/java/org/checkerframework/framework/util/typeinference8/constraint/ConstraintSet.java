@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util.typeinference8.constraint;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -16,32 +15,37 @@ import org.checkerframework.framework.util.typeinference8.util.FalseBoundExcepti
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.BugInCF;
 
-/** A set of constraints and the operations that can be performed on them. */
+/**
+ * A set of constraints and the operations that can be performed on them.
+ *
+ * <p>If you add a method that modifies a constraint set, override that method in {@code
+ * ImmutableConstraintSet}, so that the constant constraint sets {@link #TRUE} and {@link
+ * #TRUE_ANNO_FAIL} remain immutable.
+ */
 public class ConstraintSet implements ReductionResult {
 
-  /** The result given when a constraint set reduces to true. */
+  /**
+   * Max number of constraints in a constraint set. Reducing a constraint can create new
+   * constraints, so a constraint set can grow during reduction; if it grows this large, then
+   * reduction is most likely not terminating.
+   */
+  public static final int MAX_CONSTRAINTS = 10000;
+
+  /** The result given when a constraint set reduces to true. It is empty and immutable. */
   @SuppressWarnings("interning:assignment")
   public static final @InternedDistinct ConstraintSet TRUE =
-      new ConstraintSet() {
-        @Override
-        public String toString() {
-          return "TRUE";
-        }
-      };
+      new ImmutableConstraintSet("TRUE", false);
 
   /**
    * The Java types are correct, but the qualifiers are not in the correct relationship. Return this
    * rather than throwing an exception so that type arguments with the correct Java type are still
    * inferred.
+   *
+   * <p>It is empty and immutable.
    */
   @SuppressWarnings("interning:assignment")
   public static final @InternedDistinct ConstraintSet TRUE_ANNO_FAIL =
-      new ConstraintSet(true) {
-        @Override
-        public String toString() {
-          return "TRUE_ANNO_FAIL";
-        }
-      };
+      new ImmutableConstraintSet("TRUE_ANNO_FAIL", true);
 
   /** The result given when a constraint set reduces to false. */
   @SuppressWarnings("interning:assignment")
@@ -64,13 +68,14 @@ public class ConstraintSet implements ReductionResult {
   private boolean annotationFailure = false;
 
   /**
-   * Creates a new constraint set.
+   * Creates an empty constraint set whose list of constraints cannot be modified. Only {@code
+   * ImmutableConstraintSet} calls this constructor.
    *
    * @param annotationFailure inference failed because the qualifiers were not in the correct
    *     relationship
    */
   private ConstraintSet(boolean annotationFailure) {
-    this();
+    this.list = List.of();
     this.annotationFailure = annotationFailure;
   }
 
@@ -82,9 +87,26 @@ public class ConstraintSet implements ReductionResult {
   public ConstraintSet(Constraint... constraints) {
     if (constraints != null) {
       list = new ArrayList<>(constraints.length);
-      list.addAll(Arrays.asList(constraints));
+      for (Constraint constraint : constraints) {
+        addIfAbsent(constraint);
+      }
     } else {
       list = new ArrayList<>();
+    }
+  }
+
+  /**
+   * Adds {@code c} to the end of {@link #list}, if {@code c} is non-null and no constraint equal to
+   * it is already in {@link #list}. This method is private so that it can be called from the
+   * constructor.
+   *
+   * <p>This method is final because constructors call it.
+   *
+   * @param c a constraint to add to this set, or null
+   */
+  private void addIfAbsent(Constraint c) {
+    if (c != null && !list.contains(c)) {
+      list.add(c);
     }
   }
 
@@ -94,9 +116,7 @@ public class ConstraintSet implements ReductionResult {
    * @param c a constraint to add to this set
    */
   public void add(Constraint c) {
-    if (c != null && !list.contains(c)) {
-      list.add(c);
-    }
+    addIfAbsent(c);
   }
 
   /**
@@ -112,12 +132,12 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
-   * Adds all constraints in {@code constraintSet} to this constraint set.
+   * Adds all constraints in {@code constraints} to this constraint set.
    *
-   * @param constraintSet a collection of constraints to add to this set
+   * @param constraints a collection of constraints to add to this set
    */
-  public void addAll(Collection<? extends Constraint> constraintSet) {
-    list.addAll(constraintSet);
+  public void addAll(Collection<? extends Constraint> constraints) {
+    constraints.forEach(this::add);
   }
 
   /**
@@ -180,12 +200,15 @@ public class ConstraintSet implements ReductionResult {
    * influence an output variable of another constraint in C. If that subset is empty, returns a set
    * containing a single constraint that participates in a constraint cycle. (See JLS 18.5.2.2)
    *
-   * @param c a constraint set
+   * @param c a nonempty constraint set
    * @param dependencies an object describing the dependencies of inference variables
    * @return a subset of constraints in {@code c} whose inputs do not affect {@code c}'s outputs, or
    *     a singleton constraint from a constraint cycle
    */
   public static ConstraintSet getClosedSubset(ConstraintSet c, Dependencies dependencies) {
+    if (c.isEmpty()) {
+      throw new BugInCF("ConstraintSet.getClosedSubset was passed an empty constraint set.");
+    }
     ConstraintSet subset = new ConstraintSet();
     // Collection of all outputs of c.
     Set<Variable> allOutputsOfC = new LinkedHashSet<>();
@@ -291,6 +314,11 @@ public class ConstraintSet implements ReductionResult {
       }
     }
 
+    // `consideredConstraints` is nonempty:  `c` is nonempty (checked at the top of this method),
+    // and `subset` is empty only if every constraint in `c` is a TypeConstraint (the first loop in
+    // this method adds every other kind of constraint to `subset`).  The loop that populates
+    // `consideredConstraints` adds the first TypeConstraint in `c`, because `inputDependencies`
+    // starts out empty.
     return new ConstraintSet(consideredConstraints.get(0));
   }
 
@@ -339,41 +367,34 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
+   * Throws an exception if this set contains more than {@link #MAX_CONSTRAINTS} constraints.
+   *
+   * @param context the context
+   * @throws BugInCF if this set contains more than {@link #MAX_CONSTRAINTS} constraints
+   */
+  private void checkMaxConstraints(Java8InferenceContext context) {
+    if (this.list.size() > MAX_CONSTRAINTS) {
+      // Throw rather than assert, so that this is reported as a
+      // "type.argument.inference.crashed" error for this one expression, rather than as an
+      // AssertionError that aborts the entire compilation.
+      throw new BugInCF(
+          "Max constraints (%d) exceeded while reducing: %s",
+          MAX_CONSTRAINTS, context.getPathToExpression().getLeaf());
+    }
+  }
+
+  /**
    * Reduces all the constraints in this set. (See JLS 18.2)
    *
    * @param context the context
    * @return the bound set produced by reducing this constraint set
+   * @throws BugInCF if reduction creates more than {@link #MAX_CONSTRAINTS} constraints
    */
   public BoundSet reduce(Java8InferenceContext context) {
     BoundSet boundSet = new BoundSet(context);
     while (!this.isEmpty()) {
-      if (this.list.size() > BoundSet.MAX_INCORPORATION_STEPS) {
-        throw new BugInCF("TOO MANY CONSTRAINTS: %s", context.pathToExpression.getLeaf());
-      }
+      checkMaxConstraints(context);
       BoundSet result = reduceOneStep(context);
-      boundSet.merge(result);
-    }
-    return boundSet;
-  }
-
-  /**
-   * Reduces all the constraints in this set. (See JLS 18.2) If an {@link AdditionalArgument} is
-   * found it is reduced one step and then this method returns.
-   *
-   * @param context the context
-   * @return the bound set produced by reducing this constraint set
-   */
-  public BoundSet reduceAdditionalArgOnce(Java8InferenceContext context) {
-    BoundSet boundSet = new BoundSet(context);
-    while (!this.isEmpty()) {
-      if (this.list.size() > BoundSet.MAX_INCORPORATION_STEPS) {
-        throw new BugInCF("TOO MANY CONSTRAINTS: %s", context.pathToExpression.getLeaf());
-      }
-      boolean foundAA = this.list.get(0).getKind() == Kind.ADDITIONAL_ARG;
-      BoundSet result = reduceOneStep(context);
-      if (foundAA) {
-        return boundSet;
-      }
       boundSet.merge(result);
     }
     return boundSet;
@@ -434,5 +455,85 @@ public class ConstraintSet implements ReductionResult {
       }
     }
     return boundSet;
+  }
+
+  /** An empty {@code ConstraintSet} that cannot be modified. */
+  private static final class ImmutableConstraintSet extends ConstraintSet {
+
+    /** The name of this constraint set; it is the value returned by {@link #toString}. */
+    private final String name;
+
+    /**
+     * Creates an immutable constraint set.
+     *
+     * @param name the name of this constraint set; it is the value returned by {@link #toString}
+     * @param annotationFailure inference failed because the qualifiers were not in the correct
+     *     relationship
+     */
+    ImmutableConstraintSet(String name, boolean annotationFailure) {
+      super(annotationFailure);
+      this.name = name;
+    }
+
+    /**
+     * Returns an exception to throw because this constraint set cannot be modified.
+     *
+     * @return an exception to throw because this constraint set cannot be modified
+     */
+    private BugInCF cannotModify() {
+      return new BugInCF("Attempted to modify an immutable constraint set: %s", name);
+    }
+
+    @Override
+    public void add(Constraint c) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void addAll(ConstraintSet constraintSet) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void addAll(Collection<? extends Constraint> constraintSet) {
+      throw cannotModify();
+    }
+
+    @Override
+    public Constraint pop() {
+      throw cannotModify();
+    }
+
+    @Override
+    public void push(Constraint constraint) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void pushAll(ConstraintSet constraints) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void remove(ConstraintSet subset) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void applyInstantiations() {
+      throw cannotModify();
+    }
+
+    // This method is overridden so that the error message describes reduction, rather than the
+    // modification that the inherited implementation's call to pop() would report.
+    @Override
+    public BoundSet reduceOneStep(Java8InferenceContext context) {
+      throw new BugInCF("Attempt to reduce the empty constraint set %s.", name);
+    }
+
+    @Override
+    public String toString() {
+      return name;
+    }
   }
 }

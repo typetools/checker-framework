@@ -1,0 +1,2 @@
+Foo.java:15:18: compiler.err.proc.messager: [flowexpr.parse.error.contract]
+1 error

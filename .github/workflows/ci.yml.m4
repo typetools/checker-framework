@@ -13,14 +13,10 @@ name: CI
     branches:
       - "**"
 
-# concurrency:
-#   group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
-#   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
-
-# Cancel in-progress jobs that originate from a fork.
+# Auto-cancel any in-progress jobs from the same branch or PR.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.fork && github.event.pull_request.head.ref || github.ref }}
-  cancel-in-progress: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -38,15 +34,15 @@ jobs:
 
   canary_jobs:
     needs:
-      - junit_part1_jdk[]canary_version
-      - junit_part2_jdk[]canary_version
-      - nonjunit_jdk[]canary_version
-      - inference_part1_jdk[]canary_version
-      - inference_part2_jdk[]canary_version
-      - typecheck_part1_jdk[]canary_version
-      - typecheck_part2_jdk[]canary_version
-      - misc_jdk[]canary_version
-      - misc_jdk[]latest_version
+      - junit_part1_jdk[]canary_jdk
+      - junit_part2_jdk[]canary_jdk
+      - nonjunit_jdk[]canary_jdk
+      - inference_part1_jdk[]canary_jdk
+      - inference_part2_jdk[]canary_jdk
+      - typecheck_part1_jdk[]canary_jdk
+      - typecheck_part2_jdk[]canary_jdk
+      - misc_jdk[]canary_jdk
+      - misc_jdk[]latest_jdk
     runs-on: ubuntu-latest
     steps:
       - name: canary_jobs
@@ -65,6 +61,23 @@ jobs:
         run: /tmp/plume-scripts/ci-info --debug
 
 include([../../.azure/jobs.m4])dnl
+
+  all_green:
+    if: always()
+    needs:
+      - junit_jdk17
+      - junit_jdk21
+      - junit_jdk26
+      - nonjunit_jdk21
+      - misc_jdk21
+      - guava_part1_jdk25
+      - guava_part2_jdk25
+      - plume_lib_jdk25
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any dependency failed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
 
 ifelse([
 Local Variables:
