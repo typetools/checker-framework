@@ -2,7 +2,7 @@ import java.util.List;
 import java.util.stream.Collector;
 
 // Check for crashes.
-@SuppressWarnings("all")
+@SuppressWarnings({"all", "unchecked"})
 public class Issue7683 {
   static <E> Collector<E, ?, List<E>> toList() {
     throw new UnsupportedOperationException();
