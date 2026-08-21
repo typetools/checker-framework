@@ -236,12 +236,7 @@ public class InvocationTypeInference {
    *     constructor
    */
   private static boolean anyMentionsMethodTypeVariable(List<? extends TypeMirror> types) {
-    for (TypeMirror type : types) {
-      if (mentionsMethodTypeVariable(type)) {
-        return true;
-      }
-    }
-    return false;
+    return types.stream().anyMatch(InvocationTypeInference::mentionsMethodTypeVariable);
   }
 
   /**
