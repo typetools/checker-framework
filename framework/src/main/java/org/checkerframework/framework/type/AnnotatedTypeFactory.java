@@ -2540,20 +2540,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
       methodType =
           (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeParamToTypeArg, methodType);
-    } else if (receiverType != null
-        && receiverType.getKind() == TypeKind.DECLARED
-        && TypesUtils.isRaw(((AnnotatedDeclaredType) receiverType).getUnderlyingType())
-        && methodElt
-            .getEnclosingElement()
-            .equals(((AnnotatedDeclaredType) receiverType).getUnderlyingType().asElement())) {
-      // The method was invoked through a raw receiver of its own declaring type, so
-      // AnnotatedTypes#findTypeArguments returned no type arguments without attempting
-      // inference (see the check there for a raw receiver with the same enclosing element).
-      // Like any raw-type use, this erases the method's type parameters entirely (JLS 4.8).
-      // Erase methodType to match: otherwise methodType.getTypeVariables() stays
-      // non-empty while typeargs is empty, and BaseTypeVisitor#checkTypeArguments (which
-      // zips the two lists together) crashes with an out-of-bounds access.
-      methodType = methodType.getErased();
     }
 
     if (typeArguments.inferenceCrash() && tree instanceof MethodInvocationTree) {

@@ -1977,13 +1977,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     ParameterizedExecutableType preInference =
         atypeFactory.methodFromUseWithoutTypeArgInference(tree);
-    // The element's type parameters are the ones on the declaration; the executable type's
-    // type variables are the ones on the method as a member of the receiver type.  Those
-    // differ when the receiver is raw: the type of a member of a raw type is the erasure of
-    // its type in the generic class (JLS 4.8), and the erasure of the signature of a generic
-    // method has no type parameters (JLS 4.6).  JLS 15.12.2.6 infers an invocation type only
-    // "if the chosen method is generic", so there is nothing to infer in that case.
+
     if (!preInference.executableType().getElement().getTypeParameters().isEmpty()
+        // The type of a member of a raw type is the erasure of
+        // its type in the generic class (JLS 4.8), and the erasure of the signature of a generic
+        // method has no type parameters (JLS 4.6).  JLS 15.12.2.6 infers an invocation type only
+        // "if the chosen method is generic", so there is nothing to infer in that case.
         && !preInference.executableType().getTypeVariables().isEmpty()
         && preInference.typeArgs().isEmpty()) {
       if (!checkTypeArgumentInference(tree, preInference.executableType())) {
