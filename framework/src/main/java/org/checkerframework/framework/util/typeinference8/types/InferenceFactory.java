@@ -501,7 +501,7 @@ public class InferenceFactory {
     // Create inference variables for the type parameters to executableType
 
     for (AnnotatedTypeVariable pl : executableType.getAnnotatedTypeVariables()) {
-      @SuppressWarnings("interning:interned.object.creation")
+      @SuppressWarnings("interning:interned.object.creation") // no equal variable is created
       Variable al = new @Interned Variable(pl, pl.getUnderlyingType(), invocation, context, map);
       map.put(pl.getUnderlyingType(), al);
     }
@@ -528,7 +528,7 @@ public class InferenceFactory {
         }
         TypeVariable pl = (TypeVariable) typeMirror;
         AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-        @SuppressWarnings("interning:interned.object.creation")
+        @SuppressWarnings("interning:interned.object.creation") // no equal variable is created
         Variable al = new @Interned Variable(atv, pl, invocation, context, map);
         map.put(pl, al);
       }
@@ -585,7 +585,7 @@ public class InferenceFactory {
           }
           TypeVariable pl = (TypeVariable) typeMirror;
           AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-          @SuppressWarnings("interning:interned.object.creation")
+          @SuppressWarnings("interning:interned.object.creation") // no equal variable is created
           Variable al = new @Interned Variable(atv, pl, memRef, context, map);
           map.put(pl, al);
         }
@@ -597,7 +597,7 @@ public class InferenceFactory {
       Iterator<? extends AnnotatedTypeVariable> iter1 =
           compileTimeDecl.getAnnotatedTypeVariables().iterator();
       for (TypeVariable pl : compileTimeDecl.getTypeVariables()) {
-        @SuppressWarnings("interning:interned.object.creation")
+        @SuppressWarnings("interning:interned.object.creation") // no equal variable is created
         Variable al = new @Interned Variable(iter1.next(), pl, memRef, context, map);
         map.put(pl, al);
       }
@@ -635,7 +635,7 @@ public class InferenceFactory {
     for (TypeParameterElement param : typeEle.getTypeParameters()) {
       TypeVariable typeVar = (TypeVariable) param.asType();
       AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-      @SuppressWarnings("interning:interned.object.creation")
+      @SuppressWarnings("interning:interned.object.creation") // no equal variable is created
       Variable ai = new @Interned Variable(atv, typeVar, lambda, context, map);
       map.put(typeVar, ai);
     }
@@ -664,7 +664,7 @@ public class InferenceFactory {
     for (TypeParameterElement pEle : ele.getTypeParameters()) {
       TypeVariable pl = (TypeVariable) pEle.asType();
       AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-      @SuppressWarnings("interning:interned.object.creation")
+      @SuppressWarnings("interning:interned.object.creation") // equals is reference equality
       CaptureVariable al = new @Interned CaptureVariable(atv, pl, tree, context, map);
       map.put(pl, al);
     }
