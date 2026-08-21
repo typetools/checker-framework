@@ -1690,6 +1690,9 @@ public class MustCallConsistencyAnalyzer {
                     targetStrWithoutAdaptation, enclosingMethod, checker)
                 .toString();
       } catch (JavaExpressionParseException e) {
+        // Do not report the error here; that would duplicate the one that
+        // `CreatesMustCallForToJavaExpression` issues at the declaration of `enclosingMethod`,
+        // which is being compiled.  Compare the unadapted string instead.
         targetStr = targetStrWithoutAdaptation;
       }
       if (targetStr.equals(receiverString)) {
