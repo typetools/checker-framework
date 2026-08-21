@@ -1060,7 +1060,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       checkPurityAnnotations(tree);
-      checkSideEffectsOnlyAnnotation(tree, methodElement);
+      checkSideEffectsOnlyExpressions(tree, methodElement);
 
       // Passing the whole method/constructor validates the return type
       validateTypeOf(tree);
@@ -1248,7 +1248,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param tree a method declaration
    * @param methodElement the element for {@code tree}
    */
-  protected void checkSideEffectsOnlyAnnotation(MethodTree tree, ExecutableElement methodElement) {
+  protected void checkSideEffectsOnlyExpressions(MethodTree tree, ExecutableElement methodElement) {
     AnnotationMirror sideEffectsOnly =
         atypeFactory.getDeclAnnotation(methodElement, SideEffectsOnly.class);
     if (sideEffectsOnly == null) {
