@@ -4,6 +4,8 @@
 // a capture that extends T.
 
 import java.util.Iterator;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 public class Dataset6Crash {
 
@@ -21,6 +23,7 @@ public class Dataset6Crash {
         return true;
       }
 
+      @SideEffectsOnly("this")
       public T next() {
         fetch();
         T r = next;
@@ -28,6 +31,10 @@ public class Dataset6Crash {
         return r;
       }
 
+      // This annotation is imprecise: `fetch` may also side-effect `base`.  Writing "base" leads
+      // to an "identifier not found" error, and this test does not run with
+      // -AcheckPurityAnnotations, so the imprecision is not reported.
+      @SideEffectsOnly({"this"})
       private void fetch() {
         if (next == null && !end) {
           if (base.hasNext()) {
@@ -42,6 +49,7 @@ public class Dataset6Crash {
         }
       }
 
+      @SideEffectsOnly("this")
       public void remove() {
         throw new UnsupportedOperationException();
       }
@@ -49,6 +57,7 @@ public class Dataset6Crash {
   }
 
   private static class CountingPredicate<T> {
+    @Pure
     public boolean apply(int i, T next) {
       return false;
     }
