@@ -205,7 +205,14 @@ public class InvocationTypeInference {
     return switch (type.getKind()) {
       case TYPEVAR ->
           ((TypeVariable) type).asElement().getEnclosingElement() instanceof ExecutableElement;
-      case DECLARED -> anyMentionsMethodTypeVariable(((DeclaredType) type).getTypeArguments());
+      case DECLARED -> {
+        DeclaredType declared = (DeclaredType) type;
+        // The enclosing type carries type arguments of its own: in `Outer<T>.Inner`, `T` is
+        // mentioned only there.  It is a NoType, whose kind falls through to false below, when
+        // there is no enclosing type.
+        yield anyMentionsMethodTypeVariable(declared.getTypeArguments())
+            || mentionsMethodTypeVariable(declared.getEnclosingType());
+      }
       case ARRAY -> mentionsMethodTypeVariable(((ArrayType) type).getComponentType());
       case WILDCARD -> {
         WildcardType wildcard = (WildcardType) type;
