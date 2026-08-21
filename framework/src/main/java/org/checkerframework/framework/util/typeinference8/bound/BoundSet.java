@@ -333,7 +333,11 @@ public class BoundSet implements ReductionResult {
     do {
       count++;
       boolean boundsChangeInst = captures.addAll(newBounds.captures);
-      for (Variable alpha : variables) {
+      // Iterate over a copy of `variables`, because `merge`, which is called below, adds the
+      // variables of its argument to `variables`.  A variable that is added during this loop is
+      // processed by the next iteration of the do-loop, which is entered because
+      // `boundsChangeInst` is set to true whenever `merge` is called.
+      for (Variable alpha : new ArrayList<>(variables)) {
         boundsChangeInst |= alpha.getBounds().applyInstantiationsToBounds();
 
         while (!alpha.getBounds().constraints.isEmpty()) {
