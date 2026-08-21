@@ -400,7 +400,16 @@ public abstract class AbstractType {
         continue;
       }
       AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) pn;
-      if (wildcardType.getSuperBound().getKind() == TypeKind.NULL) {
+      if (wildcardType.isTypeArgOfRawType()) {
+        // The type arguments of a raw type are wildcards that the framework synthesizes from
+        // the type parameters' upper bounds (see AnnotatedDeclaredType#getTypeArguments); they
+        // are not written in the program and may have no qualifiers at all, so the glb below
+        // cannot be computed for them.  javac uses the erased function descriptor for a raw
+        // functional interface type, so use the bound itself, which is also what the glb would
+        // return for a synthesized wildcard whose bound is qualified.
+        typeVarToTypeArg.put(
+            typeVariable.getUnderlyingType(), typeVariable.getUpperBound().deepCopy());
+      } else if (wildcardType.getSuperBound().getKind() == TypeKind.NULL) {
         // › If Ai is a upper-bounded wildcard ? extends Ui, then Ti = glb(Ui, Bi)
         typeVarToTypeArg.put(
             typeVariable.getUnderlyingType(),

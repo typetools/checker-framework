@@ -2554,10 +2554,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // non-empty while typeargs is empty, and BaseTypeVisitor#checkTypeArguments (which
       // zips the two lists together) crashes with an out-of-bounds access.
       methodType = methodType.getErased();
-      // getErased() creates the erased type from scratch and copies over only the primary
-      // annotations, so the wildcards that a raw type synthesizes for its type arguments have
-      // no qualifiers at all.  Apply defaults so that the erased type is well-formed.
-      addDefaultAnnotations(methodType);
     }
 
     if (typeArguments.inferenceCrash() && tree instanceof MethodInvocationTree) {
