@@ -274,10 +274,11 @@ public class Typing extends TypeConstraint {
     if (lhsEnclosing == null || rhsEnclosing == null) {
       return;
     }
-    // If neither enclosing type mentions a type argument, the constraint reduces to true, so do
-    // not create it.  (isParameterizedType() is true for an inner class type whose enclosing type
-    // is parameterized, so this test also covers more deeply nested types.)
-    if (!lhsEnclosing.isParameterizedType() && !rhsEnclosing.isParameterizedType()) {
+    // The only purpose of this constraint is to bound an inference variable that occurs in an
+    // enclosing type, so do not create it if neither enclosing type mentions an inference
+    // variable.  Such a constraint would compare two types that inference does not govern; the
+    // type-checker compares them independently of inference.
+    if (lhsEnclosing.isProper() && rhsEnclosing.isProper()) {
       return;
     }
     if (lhsEnclosing.equals(rhsEnclosing)) {
