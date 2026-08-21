@@ -108,8 +108,15 @@ public final class TreePathUtil {
     if (pathOfClass == null) {
       return Collections.emptyList();
     }
+    ClassTree classTree = (ClassTree) pathOfClass.getLeaf();
+    if (classTree.getKind() == Kind.INTERFACE || classTree.getKind() == Kind.ANNOTATION_TYPE) {
+      // An interface has no instance initializers:  every field of an interface is static, and an
+      // interface may not contain an initializer block.  A field of an interface is implicitly
+      // static, so its modifiers do not necessarily contain `static`.
+      return Collections.emptyList();
+    }
     List<TreePath> result = new ArrayList<>(2);
-    for (Tree member : ((ClassTree) pathOfClass.getLeaf()).getMembers()) {
+    for (Tree member : classTree.getMembers()) {
       if (member instanceof VariableTree variable) {
         // A static field's initializer runs at class initialization rather than at construction.
         // (This also excludes an enum constant, which is static.)
