@@ -25,6 +25,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
@@ -281,12 +282,46 @@ public abstract class AbstractType {
   @Nullable AnnotatedExecutableType getFunctionType() {
     if (functionType == null && TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
       ExecutableElement element = TypesUtils.findFunction(getJavaType(), context.env);
-      AnnotatedDeclaredType groundType =
-          makeGround((AnnotatedDeclaredType) getAnnotatedType(), typeFactory);
+      AnnotatedTypeMirror groundType = makeGroundTargetType(getAnnotatedType(), typeFactory);
       functionType =
           AnnotatedTypes.asMemberOf(context.modelTypes, typeFactory, groundType, element);
     }
     return functionType;
+  }
+
+  /**
+   * Returns the ground target type of {@code type}, which is a functional interface type. For an
+   * {@link AnnotatedDeclaredType}, this is {@link #makeGround(AnnotatedDeclaredType,
+   * AnnotatedTypeFactory)}. For an intersection type that induces a notional functional interface
+   * (<a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9">JLS section
+   * 9.9</a>), each bound is made ground; this is the annotated-type analog of the notional
+   * interface that {@code TypesUtils.findFunction} creates for such a type. {@code
+   * AnnotatedTypes.asMemberOf} then finds the bound that declares the function, just as javac
+   * computes the function type as a member of the intersection type.
+   *
+   * @param type a functional interface type
+   * @param typeFactory the type factory
+   * @return the ground target type of {@code type}
+   */
+  private static AnnotatedTypeMirror makeGroundTargetType(
+      AnnotatedTypeMirror type, AnnotatedTypeFactory typeFactory) {
+    switch (type.getKind()) {
+      case DECLARED -> {
+        return makeGround((AnnotatedDeclaredType) type, typeFactory);
+      }
+      case INTERSECTION -> {
+        AnnotatedIntersectionType intersection = ((AnnotatedIntersectionType) type).shallowCopy();
+        List<AnnotatedTypeMirror> groundBounds = new ArrayList<>(intersection.getBounds().size());
+        for (AnnotatedTypeMirror bound : intersection.getBounds()) {
+          groundBounds.add(makeGroundTargetType(bound, typeFactory));
+        }
+        intersection.setBounds(groundBounds);
+        return intersection;
+      }
+      default -> {
+        return type;
+      }
+    }
   }
 
   /**

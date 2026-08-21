@@ -408,7 +408,7 @@ public class ConstraintSet implements ReductionResult {
    * @throws BugInCF if this set contains more than {@link #MAX_CONSTRAINTS} constraints
    */
   private void checkMaxConstraints(Java8InferenceContext context) {
-    if (this.list.size() > MAX_CONSTRAINTS) {
+    if (this.queue.size() > MAX_CONSTRAINTS) {
       // Throw rather than assert, so that this is reported as a
       // "type.argument.inference.crashed" error for this one expression, rather than as an
       // AssertionError that aborts the entire compilation.
