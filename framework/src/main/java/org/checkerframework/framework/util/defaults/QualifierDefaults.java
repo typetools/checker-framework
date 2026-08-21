@@ -324,6 +324,14 @@ public class QualifierDefaults {
     elementDefaults.put(elem, prevset);
   }
 
+  /**
+   * Throws an exception if the given location is not a valid location for an unchecked code
+   * default.
+   *
+   * @param uncheckedDefaultAnno the unchecked code default annotation; used only for the error
+   *     message
+   * @param location the location to check
+   */
   private void checkIsValidUncheckedCodeLocation(
       AnnotationMirror uncheckedDefaultAnno, TypeUseLocation location) {
     if (!validLocationsForUncheckedCodeDefaults().contains(location)) {
