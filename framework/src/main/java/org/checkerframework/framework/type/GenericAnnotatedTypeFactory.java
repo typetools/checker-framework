@@ -190,14 +190,26 @@ public abstract class GenericAnnotatedTypeFactory<
    * <p>Although a {@code Class<?>} object exists for every element, this does not contain those
    * {@code Class<?>} objects because the elements will be compared to TypeMirrors for which Class
    * objects may not exist (they might not be on the classpath).
+   *
+   * <p>For their names, see {@link #relevantJavaTypeNames}.
    */
   public final @Nullable Set<TypeMirror> relevantJavaTypes;
 
   /**
-   * True if users may write type annotations on arrays. Ignored unless {@link #relevantJavaTypes}
-   * is non-null.
+   * The simple and fully-qualified names of the types in {@link #relevantJavaTypes}. null means no
+   * restrictions. This is redundant with the value of {@link #relevantJavaTypes} but is included
+   * for efficiency.
    */
+  public final @Nullable Set<String> relevantJavaTypeNames;
+
+  /** Whether users may write type annotations on arrays. */
   protected final boolean arraysAreRelevant;
+
+  /**
+   * Whether users may write type annotations on non-primitives (classes, arrays, etc.). This is
+   * redundant with the value of {@link #relevantJavaTypes} but is included for efficiency.
+   */
+  protected final boolean nonprimitivesAreRelevant;
 
   // Flow related fields
 
@@ -368,16 +380,21 @@ public abstract class GenericAnnotatedTypeFactory<
         checker.getClass().getAnnotation(RelevantJavaTypes.class);
     if (relevantJavaTypesAnno == null) {
       this.relevantJavaTypes = null;
+      this.relevantJavaTypeNames = null;
       this.arraysAreRelevant = true;
+      this.nonprimitivesAreRelevant = true;
     } else {
       Types types = getChecker().getTypeUtils();
       Elements elements = getElementUtils();
       Class<?>[] classes = relevantJavaTypesAnno.value();
       Set<TypeMirror> relevantJavaTypesTemp = new HashSet<>(MapsP.mapCapacity(classes.length));
+      Set<String> relevantJavaTypeNamesTemp = new HashSet<>(MapsP.mapCapacity(classes.length));
       boolean arraysAreRelevantTemp = false;
+      boolean nonprimitivesAreRelevantTemp = false;
       for (Class<?> clazz : classes) {
         if (clazz == Object[].class) {
           arraysAreRelevantTemp = true;
+          nonprimitivesAreRelevantTemp = true;
         } else if (clazz.isArray()) {
           throw new TypeSystemError(
               "Don't use arrays other than Object[] in @RelevantJavaTypes on "
@@ -386,10 +403,23 @@ public abstract class GenericAnnotatedTypeFactory<
           TypeMirror relevantType = TypesUtils.typeFromClass(clazz, types, elements);
           TypeMirror erased = types.erasure(relevantType);
           relevantJavaTypesTemp.add(erased);
+          String typeString = erased.toString();
+          relevantJavaTypeNamesTemp.add(typeString);
+          if (!clazz.isPrimitive()) { // TODO: Check logic
+            nonprimitivesAreRelevantTemp = true;
+            int dotIndex = typeString.lastIndexOf('.');
+            if (dotIndex != -1) {
+              // It's a fully-qualified name.  Add the simple name as well.
+              // TODO: This might not handle a user writing a nested class like "Map.Entry".
+              relevantJavaTypeNamesTemp.add(typeString.substring(dotIndex + 1));
+            }
+          }
         }
       }
       this.relevantJavaTypes = Collections.unmodifiableSet(relevantJavaTypesTemp);
+      this.relevantJavaTypeNames = Collections.unmodifiableSet(relevantJavaTypeNamesTemp);
       this.arraysAreRelevant = arraysAreRelevantTemp;
+      this.nonprimitivesAreRelevant = nonprimitivesAreRelevantTemp;
     }
 
     contractsUtils = createContractsFromMethod();
@@ -2503,9 +2533,9 @@ public abstract class GenericAnnotatedTypeFactory<
     if (tm.getKind() != TypeKind.PACKAGE && tm.getKind() != TypeKind.MODULE) {
       tm = types.erasure(tm);
     }
-    Boolean cachedResult = isRelevantCache.get(tm);
-    if (cachedResult != null) {
-      return cachedResult;
+    Boolean resultBoxed = isRelevantCache.get(tm);
+    if (resultBoxed != null) {
+      return resultBoxed;
     }
     boolean result = isRelevantImpl(tm);
     isRelevantCache.put(tm, result);
@@ -2536,6 +2566,9 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>Clients should never call this. Call {@link #isRelevant} instead. This is a helper method
    * for {@link #isRelevant}.
+   *
+   * <p>This should <b>not</b> be called if {@code relevantJavaTypes == null ||
+   * relevantJavaTypes.contains(tm))}.
    *
    * @param tm a type
    * @return true if users can write type annotations from this type system on the given Java type
@@ -2621,6 +2654,43 @@ public abstract class GenericAnnotatedTypeFactory<
 
       default -> throw new BugInCF("isRelevantImpl(%s): Unexpected TypeKind %s", tm, tm.getKind());
     }
+  }
+
+  /**
+   * Returns true if users can write type annotations from this type system directly on the given
+   * Java type.
+   *
+   * <p>For a compound type, returns true only if it is permitted to write a type qualifier on the
+   * top level of the compound type. That is, this method may return false, when it is possible to
+   * write type qualifiers on elements of the type.
+   *
+   * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
+   *
+   * @param type a fully-qualified or simple type; should not be an array (use {@link
+   *     #arraysAreRelevant} instead)
+   * @return true if users can write type annotations from this type system directly on the given
+   *     Java type
+   */
+  public final boolean isRelevant(String type) {
+    return relevantJavaTypeNames == null || relevantJavaTypeNames.contains(type);
+  }
+
+  /**
+   * Returns true if users can write type annotations from this type system on array types.
+   *
+   * @return true if users can write type annotations from this type system on array types
+   */
+  public final boolean arraysAreRelevant() {
+    return arraysAreRelevant;
+  }
+
+  /**
+   * Returns true if users can write type annotations from this type system on non-primitive types.
+   *
+   * @return true if users can write type annotations from this type system on non-primitive types
+   */
+  public final boolean nonprimitivesAreRelevant() {
+    return nonprimitivesAreRelevant;
   }
 
   /** The cached message about relevant types. */
