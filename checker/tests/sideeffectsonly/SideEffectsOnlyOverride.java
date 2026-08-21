@@ -45,7 +45,7 @@ public class SideEffectsOnlyOverride {
   static class SubMore extends Super {
     @SideEffectsOnly({"#1.inner", "#1.g"})
     @Override
-    // TODO :: error: purity.sideeffectsonly.overriding
+    // :: error: (purity.sideeffectsonly.overriding)
     void m(Cell c) {}
   }
 
@@ -53,7 +53,7 @@ public class SideEffectsOnlyOverride {
   static class SubWhole extends Super {
     @SideEffectsOnly("#1")
     @Override
-    // TODO :: error: purity.sideeffectsonly.overriding
+    // :: error: (purity.sideeffectsonly.overriding)
     void m(Cell c) {}
   }
 
