@@ -327,14 +327,33 @@ public final class ElementUtils {
    * @return a user-friendly name for the method
    */
   public static CharSequence getSimpleDescription(ExecutableElement element) {
-    String enclosingTypeName =
-        ((TypeElement) element.getEnclosingElement()).getSimpleName().toString();
+    CharSequence enclosingTypeName =
+        getSimpleDescription((TypeElement) element.getEnclosingElement());
     Name methodName = element.getSimpleName();
     return switch (methodName.toString()) {
       case "<init>" -> enclosingTypeName + " constructor";
       case "<clinit>" -> "class initializer for " + enclosingTypeName;
       default -> enclosingTypeName + "." + methodName;
     };
+  }
+
+  /**
+   * Returns a user-friendly name for the given type. Does not return the empty string as {@link
+   * TypeElement#getSimpleName()} does for an anonymous class.
+   *
+   * @param element a type declaration
+   * @return a user-friendly name for the type
+   */
+  public static CharSequence getSimpleDescription(TypeElement element) {
+    Name simpleName = element.getSimpleName();
+    if (!simpleName.isEmpty()) {
+      return simpleName;
+    }
+    // An anonymous class has an empty simple name, so name it by its supertype: the interface it
+    // implements if there is one, and otherwise the class it extends.
+    List<? extends TypeMirror> interfaces = element.getInterfaces();
+    TypeMirror supertype = interfaces.isEmpty() ? element.getSuperclass() : interfaces.get(0);
+    return "anonymous " + TypesUtils.simpleTypeName(supertype);
   }
 
   /**
