@@ -2550,9 +2550,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // AnnotatedTypes#findTypeArguments returned no type arguments without attempting
       // inference (see the check there for a raw receiver with the same enclosing element).
       // Like any raw-type use, this erases the method's type parameters entirely (JLS 4.8).
-      // Erase methodType to match: otherwise methodType.getTypeVariables() stays
-      // non-empty while typeargs is empty, and BaseTypeVisitor#checkTypeArguments (which
-      // zips the two lists together) crashes with an out-of-bounds access.
       methodType = methodType.getErased();
     }
 
