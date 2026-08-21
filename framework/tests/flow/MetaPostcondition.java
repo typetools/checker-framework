@@ -27,11 +27,11 @@ public class MetaPostcondition {
   void oddF1_error() {}
 
   @EnsuresOdd("---")
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   void error() {}
 
   @EnsuresOdd("#1.#2")
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   void error2(final String p1, final String p2) {}
 
   @EnsuresOdd("f1")
