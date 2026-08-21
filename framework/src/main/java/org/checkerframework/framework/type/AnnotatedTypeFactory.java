@@ -5322,14 +5322,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       if (first == null) {
         first = candidate;
       }
-      boolean doesNotContain = true;
-      for (AnnotatedTypeVariable other : collection) {
-        if (candidate != other && captureScanner.visit(candidate, other.getUnderlyingType())) {
-          doesNotContain = false;
-          break;
-        }
-      }
-      if (doesNotContain) {
+      if (collection.stream()
+          .noneMatch(
+              other ->
+                  candidate != other
+                      && captureScanner.visit(candidate, other.getUnderlyingType()))) {
         return candidate;
       }
     }
