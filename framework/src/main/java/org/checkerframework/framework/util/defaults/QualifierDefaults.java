@@ -326,15 +326,7 @@ public class QualifierDefaults {
 
   private void checkIsValidUncheckedCodeLocation(
       AnnotationMirror uncheckedDefaultAnno, TypeUseLocation location) {
-    boolean isValidUntypeLocation = false;
-    for (TypeUseLocation validLoc : validLocationsForUncheckedCodeDefaults()) {
-      if (location == validLoc) {
-        isValidUntypeLocation = true;
-        break;
-      }
-    }
-
-    if (!isValidUntypeLocation) {
+    if (!validLocationsForUncheckedCodeDefaults().contains(location)) {
       throw new BugInCF(
           "Invalid unchecked code default location: " + location + " -> " + uncheckedDefaultAnno);
     }
