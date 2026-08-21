@@ -214,7 +214,7 @@ public abstract class CFAbstractAnalysis<
   private @Nullable List<JavaExpression> computeSideEffectsOnlyExpressions(
       ExecutableElement method, MethodInvocationNode methodInvocationNode) {
     Map<ExecutableElement, List<String>> seOnlyExpressionStrings =
-        atypeFactory.getSideEffectsOnlyExpressionStrings(method);
+        atypeFactory.getSideEffectsOnlyExpressionMap(method);
     if (seOnlyExpressionStrings == null) {
       return null;
     }
