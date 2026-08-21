@@ -2,8 +2,8 @@ package org.checkerframework.framework.util.typeinference8.constraint;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -121,7 +121,9 @@ public class Typing extends TypeConstraint {
 
   @Override
   public List<Variable> getInferenceVariables() {
-    Set<Variable> vars = new HashSet<>();
+    // Use a LinkedHashSet because the iteration order of the result affects the result of
+    // inference; see ConstraintSet#getClosedSubset.
+    Set<Variable> vars = new LinkedHashSet<>();
     vars.addAll(T.getInferenceVariables());
     vars.addAll(S.getInferenceVariables());
     return new ArrayList<>(vars);
