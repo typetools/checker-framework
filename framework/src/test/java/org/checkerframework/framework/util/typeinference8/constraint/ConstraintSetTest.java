@@ -30,6 +30,12 @@ public class ConstraintSetTest {
     }
 
     @Override
+    public DummyConstraint copy() {
+      // A DummyConstraint is immutable, so it is its own copy.
+      return this;
+    }
+
+    @Override
     public ReductionResult reduce(Java8InferenceContext context) {
       throw new AssertionError("DummyConstraint.reduce() should never be called.");
     }
@@ -75,6 +81,7 @@ public class ConstraintSetTest {
     checkThrowsBugInCF(failures, name + ".push()", () -> constraintSet.push(new DummyConstraint()));
     checkThrowsBugInCF(failures, name + ".pushAll()", () -> constraintSet.pushAll(other));
     checkThrowsBugInCF(failures, name + ".remove()", () -> constraintSet.remove(other));
+    checkThrowsBugInCF(failures, name + ".clear()", () -> constraintSet.clear());
     checkThrowsBugInCF(
         failures, name + ".applyInstantiations()", () -> constraintSet.applyInstantiations());
 

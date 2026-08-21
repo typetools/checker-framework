@@ -44,6 +44,12 @@ public class ConstraintSetTest {
     }
 
     @Override
+    public NamedConstraint copy() {
+      // A NamedConstraint is immutable, so it is its own copy.
+      return this;
+    }
+
+    @Override
     public ReductionResult reduce(Java8InferenceContext context) {
       throw new UnsupportedOperationException("ConstraintSetTest never reduces a constraint.");
     }
@@ -153,6 +159,25 @@ public class ConstraintSetTest {
     viaConstraintSet.addAll(source);
 
     Assert.assertEquals(drain(viaConstraintSet), drain(viaCollection));
+  }
+
+  /**
+   * {@code clear()} must remove every constraint, and must leave a set that behaves like a newly
+   * created one.
+   */
+  @Test
+  public void clearRemovesEveryConstraint() {
+    ConstraintSet set = new ConstraintSet();
+    set.addAll(Arrays.asList(new NamedConstraint("a"), new NamedConstraint("b")));
+
+    set.clear();
+
+    Assert.assertTrue(set.isEmpty());
+
+    // A constraint that the set contained before it was cleared is no longer a duplicate.
+    Constraint a = new NamedConstraint("a");
+    set.add(a);
+    Assert.assertEquals(Arrays.asList(a), drain(set));
   }
 
   @Test

@@ -1,6 +1,8 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
@@ -15,6 +17,7 @@ import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
@@ -32,8 +35,10 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Parameterizable;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
@@ -50,6 +55,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.TypeVariableSubstitutor;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
@@ -99,8 +105,11 @@ public class InferenceFactory {
     TreePath path = context.getPathToExpression();
     Tree contextTree = TreePathUtil.getContextForPolyExpression(path);
     if (contextTree == null) {
-      AnnotatedTypeMirror dummy = factory.getDummyAssignedTo((ExpressionTree) path.getLeaf());
-      if (dummy == null || dummy.containsCapturedTypes()) {
+      ExpressionTree expression = (ExpressionTree) path.getLeaf();
+      AnnotatedTypeMirror dummy = factory.getDummyAssignedTo(expression);
+      if (dummy == null
+          || dummy.containsCapturedTypes()
+          || mentionsUnsubstitutedTypeVariable(dummy, path)) {
         return null;
       }
       return new ProperType(dummy, this.context);
@@ -182,6 +191,114 @@ public class InferenceFactory {
         }
       }
     }
+  }
+
+  /**
+   * Returns true if {@code type} mentions a type variable that javac might have left unsubstituted
+   * in the type of the invocation at {@code pathToInvocation}: a type variable that is declared by
+   * the invoked method or constructor, or by the class being instantiated, and that is not in scope
+   * at the invocation.
+   *
+   * <p>When an invocation has no assignment context -- for example, when its result is unused or is
+   * used only as a receiver -- javac may leave some of the type arguments that it inferred
+   * unsubstituted in the type of the invocation. Such a type expresses no requirement on the
+   * invocation, and using it as the target type would require an inference variable to be a subtype
+   * of the very type variable that the inference variable stands for. Resolution can satisfy that
+   * bound only by chance, so inference reports a spurious failure.
+   *
+   * <p>A type variable that is in scope at the invocation is not evidence of such a missing
+   * substitution, because a correctly substituted type may mention it. For example, in {@code <T> T
+   * foo(T t) { foo(t); }} the type of the inner call is {@code T}, which is the result of
+   * substituting the enclosing method's {@code T} for the invoked method's {@code T}.
+   *
+   * @param type a type that inference might use as a target type
+   * @param pathToInvocation the path to the expression for which type arguments are being inferred
+   * @return true if {@code type} mentions a type variable that javac might have left unsubstituted
+   */
+  private static boolean mentionsUnsubstitutedTypeVariable(
+      AnnotatedTypeMirror type, TreePath pathToInvocation) {
+    Tree invocation = pathToInvocation.getLeaf();
+    // The elements whose type parameters javac might have left unsubstituted in `type`.
+    List<Parameterizable> declarers = new ArrayList<>(2);
+    if (invocation instanceof MethodInvocationTree methodInvocation) {
+      declarers.add(TreeUtils.elementFromUse(methodInvocation));
+    } else if (invocation instanceof NewClassTree newClass) {
+      ExecutableElement constructor = TreeUtils.elementFromUse(newClass);
+      declarers.add(constructor);
+      // For `new Foo<>(...)` where `Foo` is generic but its constructor is not, the unsubstituted
+      // type is `Foo<T>`, whose type variables are declared by the class rather than by the
+      // constructor.
+      if (constructor.getEnclosingElement() instanceof TypeElement classElement) {
+        declarers.add(classElement);
+      }
+    } else {
+      return false;
+    }
+    declarers.removeIf(
+        (Parameterizable declarer) ->
+            declarer.getTypeParameters().isEmpty()
+                || typeParametersAreInScope(pathToInvocation, declarer));
+    if (declarers.isEmpty()) {
+      return false;
+    }
+    // The type variable's element is compared to a declarer via its enclosing element rather than
+    // to the elements in `declarer.getTypeParameters()`, because those are different objects than
+    // the elements of the type variables that appear in `type`.
+    return new SimpleAnnotatedTypeScanner<Boolean, Void>(
+            (t, p) ->
+                t.getKind() == TypeKind.TYPEVAR
+                    && declarers.contains(
+                        ((TypeVariable) t.getUnderlyingType()).asElement().getEnclosingElement()),
+            Boolean::logicalOr,
+            false)
+        .visit(type);
+  }
+
+  /**
+   * Returns true if the type parameters of {@code element}, which is a method, a constructor, or a
+   * class, are in scope at the leaf of {@code path}.
+   *
+   * <p>They are in scope if the leaf is within the declaration of {@code element} and no static
+   * declaration intervenes. A static method, a static initializer, a static field initializer, and
+   * a static nested type (including a nested interface, enum, or record, which are implicitly
+   * static) cannot mention the type parameters of the declarations that enclose them.
+   *
+   * @param path a path
+   * @param element a method, constructor, or class element
+   * @return true if the type parameters of {@code element} are in scope at the leaf of {@code path}
+   */
+  private static boolean typeParametersAreInScope(TreePath path, Element element) {
+    for (TreePath p = path.getParentPath(); p != null; p = p.getParentPath()) {
+      Tree leaf = p.getLeaf();
+      if (leaf instanceof MethodTree methodTree) {
+        ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);
+        if (element.equals(methodElement)) {
+          return true;
+        }
+        if (methodElement == null || ElementUtils.isStatic(methodElement)) {
+          return false;
+        }
+      } else if (leaf instanceof ClassTree classTree) {
+        TypeElement classElement = TreeUtils.elementFromDeclaration(classTree);
+        if (element.equals(classElement)) {
+          return true;
+        }
+        if (classElement == null || ElementUtils.isStatic(classElement)) {
+          return false;
+        }
+      } else if (leaf instanceof BlockTree blockTree && blockTree.isStatic()) {
+        // A static initializer.
+        return false;
+      } else if (leaf instanceof VariableTree variableTree) {
+        // A static field's initializer.  (Only a field can be declared static.)  Test the element
+        // rather than the modifiers, because a field of an interface is implicitly static.
+        VariableElement fieldElement = TreeUtils.elementFromDeclaration(variableTree);
+        if (fieldElement != null && ElementUtils.isStatic(fieldElement)) {
+          return false;
+        }
+      }
+    }
+    return false;
   }
 
   /**

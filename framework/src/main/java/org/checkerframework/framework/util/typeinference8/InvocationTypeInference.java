@@ -171,12 +171,9 @@ public class InvocationTypeInference {
     ConstraintSet c = createC(inferenceExecutableType, args, map);
 
     BoundSet b4 = getB4(b3, c);
-    b4.resolve();
+    List<Variable> thetaPrime = b4.resolve();
     return new InferenceResult(
-        b4.getInstantiatedVariables(),
-        b4.isUncheckedConversion(),
-        b4.annoInferenceFailed,
-        b4.errorMsg);
+        thetaPrime, b4.isUncheckedConversion(), b4.annoInferenceFailed, b4.errorMsg);
   }
 
   /**
@@ -420,7 +417,7 @@ public class InvocationTypeInference {
             target.isParameterizedType() && alpha.getBounds().hasRawTypeLowerOrEqualBound(target);
       }
       if (compatibility) {
-        BoundSet resolve = Resolution.resolve(alpha, b2, context);
+        Resolution.resolve(alpha, b2, context);
         ProperType u = (ProperType) alpha.getBounds().getInstantiation().capture(context);
         String source =
             "Constraint between method call type and target type for method call (compatibility"
@@ -430,8 +427,8 @@ public class InvocationTypeInference {
         ConstraintSet constraintSet =
             new ConstraintSet(new Typing(source, u, target, Kind.TYPE_COMPATIBILITY));
         BoundSet newBounds = constraintSet.reduce(context);
-        resolve.incorporateToFixedPoint(newBounds);
-        return resolve;
+        b2.incorporateToFixedPoint(newBounds);
+        return b2;
       }
       if (target.getTypeKind().isPrimitive()) {
         // None of the three cases above applies, so the JLS reduces the constraint formula

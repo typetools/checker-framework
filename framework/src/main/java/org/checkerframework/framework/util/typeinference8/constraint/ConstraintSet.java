@@ -150,6 +150,15 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
+   * Removes every constraint from this set and forgets that inference failed because of qualifiers.
+   * That is, this returns this constraint set to the state of a newly created one.
+   */
+  public void clear() {
+    list.clear();
+    annotationFailure = false;
+  }
+
+  /**
    * Removes and returns the first constraint that was added to this set.
    *
    * @return first constraint that was added to this set
@@ -352,6 +361,22 @@ public class ConstraintSet implements ReductionResult {
     return vars;
   }
 
+  /**
+   * Returns a copy of this constraint set, in which each constraint is a copy of the corresponding
+   * constraint of this set. Mutating a constraint of this set does not change the returned set, and
+   * vice versa.
+   *
+   * @return a copy of this constraint set
+   */
+  public ConstraintSet copy() {
+    ConstraintSet result = new ConstraintSet();
+    result.annotationFailure = this.annotationFailure;
+    for (Constraint constraint : list) {
+      result.list.add(constraint.copy());
+    }
+    return result;
+  }
+
   /** Applies the instantiations to all the constraints in this set. */
   public void applyInstantiations() {
     for (Constraint constraint : list) {
@@ -516,6 +541,11 @@ public class ConstraintSet implements ReductionResult {
 
     @Override
     public void remove(ConstraintSet subset) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void clear() {
       throw cannotModify();
     }
 

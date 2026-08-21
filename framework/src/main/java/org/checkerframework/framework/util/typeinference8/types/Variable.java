@@ -193,17 +193,23 @@ import org.checkerframework.javacutil.TypesUtils;
     return variableBounds.getInstantiation();
   }
 
-  /** Saves the current bounds, in case the first attempt at resolution fails. */
-  public void save() {
-    variableBounds.save();
+  /**
+   * Returns a snapshot of the current bounds, in case the first attempt at resolution fails.
+   *
+   * @return a snapshot of the current bounds, to pass to {@link #restore}
+   */
+  public VariableBounds.Snapshot save() {
+    return variableBounds.save();
   }
 
   /**
-   * Restore the bounds to the state previously saved. This method is called if the first attempt at
-   * resolution fails.
+   * Restore the bounds to the state that {@code snapshot} recorded. This method is called if the
+   * first attempt at resolution fails.
+   *
+   * @param snapshot the result of a call to {@link #save} on this variable
    */
-  public void restore() {
-    variableBounds.restore();
+  public void restore(VariableBounds.Snapshot snapshot) {
+    variableBounds.restore(snapshot);
   }
 
   /**

@@ -77,6 +77,11 @@ public class Expression extends TypeConstraint {
   }
 
   @Override
+  public Expression copy() {
+    return copyHistory(new Expression(parent, expression, T));
+  }
+
+  @Override
   public List<Variable> getInputVariables() {
     return getInputVariablesForExpression(expression);
   }

@@ -1,7 +1,7 @@
 package org.checkerframework.framework.test.junit;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
+import static org.checkerframework.framework.util.typeinference8.UninitializedInstance.uninitialized;
+
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.List;
@@ -23,12 +23,13 @@ public class BoundSetTest {
    * the two fields that record that inference failed because of a type qualifier: {@code
    * annoInferenceFailed} and {@code errorMsg}.
    *
-   * <p>{@code Resolution.resolveSmallestSet} uses the copy constructor to snapshot the bound set
-   * before attempting resolution without capture, and it discards the bound set in favor of the
-   * snapshot when that attempt fails. A copy constructor that dropped the two annotation-failure
-   * fields would lose any qualifier violation that had been recorded before the snapshot was taken,
-   * so {@code InferenceResult.inferenceFailed()} could report success with an empty error message
-   * even though a qualifier relationship had been violated.
+   * <p>{@code BoundSet.saveBounds} uses the copy constructor to snapshot the bound set before
+   * {@code Resolution.resolveSmallestSet} attempts resolution without capture, and {@code
+   * BoundSet.restore} copies the snapshot back into the bound set when that attempt fails. A copy
+   * constructor that dropped the two annotation-failure fields would lose any qualifier violation
+   * that had been recorded before the snapshot was taken, so {@code
+   * InferenceResult.inferenceFailed()} could report success with an empty error message even though
+   * a qualifier relationship had been violated.
    */
   @Test
   public void copyConstructorCopiesAllFields() {
@@ -49,6 +50,113 @@ public class BoundSetTest {
     Assert.assertEquals("@Tainted String <: @Untainted String", copy.errorMsg);
     Assert.assertTrue(copy.containsFalse());
     Assert.assertTrue(copy.isUncheckedConversion());
+  }
+
+  /**
+   * Tests that {@link BoundSet#restore} undoes, in place, the changes that were made to the bound
+   * set after {@link BoundSet#saveBounds} created the snapshot.
+   *
+   * <p>{@code Resolution} hands the same bound set to every step of inference, so restoring must
+   * side-effect that bound set. If restoring instead returned the snapshot as a new bound set, then
+   * a client that holds a reference to the original one -- such as {@code
+   * InvocationTypeInference.getB4} -- would keep observing the state of the failed attempt.
+   */
+  @Test
+  public void restoreUndoesChangesInPlace() {
+    BoundSet boundSet = new BoundSet(uninitializedContext());
+    BoundSet snapshot = boundSet.saveBounds();
+
+    boundSet.addFalse();
+    boundSet.setUncheckedConversion(true);
+    boundSet.annoInferenceFailed = true;
+    boundSet.errorMsg = "@Tainted String <: @Untainted String";
+
+    boundSet.restore(snapshot);
+
+    Assert.assertFalse(boundSet.containsFalse());
+    Assert.assertFalse(boundSet.isUncheckedConversion());
+    Assert.assertFalse(boundSet.annoInferenceFailed);
+    Assert.assertEquals("", boundSet.errorMsg);
+  }
+
+  /**
+   * Tests that {@link BoundSet#restore} discards exactly the state that was recorded after {@link
+   * BoundSet#saveBounds} created the snapshot, and keeps the state that was recorded before it.
+   *
+   * <p>This is the situation that arises in {@code Resolution.resolveSmallestSet}. Incorporation
+   * has already recorded a qualifier violation in the bound set by the time resolution starts, and
+   * then the attempt at resolution without capture records a second one before it fails. Only the
+   * second one is undone; the caller -- {@code InvocationTypeInference.getB4}, which reads {@code
+   * annoInferenceFailed} and {@code errorMsg} off the bound set it passed to {@code
+   * Resolution.resolve} -- must see the first one and must not see the second one.
+   */
+  @Test
+  public void restoreDiscardsOnlyPostSnapshotState() {
+    String beforeSnapshot = "@Tainted MyNode <: @Untainted Node<@Tainted MyNode>";
+    BoundSet boundSet = new BoundSet(uninitializedContext());
+    boundSet.annoInferenceFailed = true;
+    boundSet.errorMsg = beforeSnapshot;
+
+    BoundSet snapshot = boundSet.saveBounds();
+
+    // The failed attempt at resolution without capture.
+    boundSet.errorMsg +=
+        System.lineSeparator() + "@Tainted Object <: @Untainted Tag<@Tainted Object>";
+    boundSet.addFalse();
+    boundSet.setUncheckedConversion(true);
+
+    // The snapshot is unaffected by the failed attempt.
+    Assert.assertEquals(beforeSnapshot, snapshot.errorMsg);
+    Assert.assertFalse(snapshot.containsFalse());
+    Assert.assertFalse(snapshot.isUncheckedConversion());
+
+    boundSet.restore(snapshot);
+
+    Assert.assertTrue(boundSet.annoInferenceFailed);
+    Assert.assertEquals(beforeSnapshot, boundSet.errorMsg);
+    Assert.assertFalse(boundSet.containsFalse());
+    Assert.assertFalse(boundSet.isUncheckedConversion());
+  }
+
+  /**
+   * Tests that a snapshot keeps its own copy of the state, so that a snapshot can be restored even
+   * after {@link BoundSet#saveBounds} has taken a later snapshot of the same bound set.
+   *
+   * <p>{@code Resolution.resolveSmallestSet} takes a snapshot before each attempt at resolution
+   * without capture, and reducing the constraints of one such attempt can start inference for a
+   * nested expression, which resolves variables of its own and therefore takes a second snapshot of
+   * the very same bound set.
+   */
+  @Test
+  public void restoreOfEarlierSnapshotIsUnaffectedByLaterSaveBounds() {
+    String beforeOuterSnapshot = "@Tainted MyNode <: @Untainted Node<@Tainted MyNode>";
+    String beforeInnerSnapshot = "@Tainted Object <: @Untainted Tag<@Tainted Object>";
+    BoundSet boundSet = new BoundSet(uninitializedContext());
+    boundSet.annoInferenceFailed = true;
+    boundSet.errorMsg = beforeOuterSnapshot;
+
+    BoundSet outerSnapshot = boundSet.saveBounds();
+
+    boundSet.errorMsg = beforeInnerSnapshot;
+    boundSet.setUncheckedConversion(true);
+
+    BoundSet innerSnapshot = boundSet.saveBounds();
+
+    boundSet.addFalse();
+    boundSet.errorMsg = "@Tainted String <: @Untainted String";
+
+    // Restoring the inner snapshot undoes only what happened after it was taken.
+    boundSet.restore(innerSnapshot);
+    Assert.assertEquals(beforeInnerSnapshot, boundSet.errorMsg);
+    Assert.assertTrue(boundSet.isUncheckedConversion());
+    Assert.assertFalse(boundSet.containsFalse());
+
+    // Restoring the outer snapshot undoes everything that happened after it was taken, including
+    // the state that was current when the inner snapshot was taken.
+    boundSet.restore(outerSnapshot);
+    Assert.assertEquals(beforeOuterSnapshot, boundSet.errorMsg);
+    Assert.assertFalse(boundSet.isUncheckedConversion());
+    Assert.assertFalse(boundSet.containsFalse());
   }
 
   /**
@@ -137,6 +245,12 @@ public class BoundSetTest {
     }
 
     @Override
+    public ConstantConstraint copy() {
+      // A ConstantConstraint is immutable, so it is its own copy.
+      return this;
+    }
+
+    @Override
     public ReductionResult reduce(Java8InferenceContext context) {
       return reductionResult;
     }
@@ -170,36 +284,5 @@ public class BoundSetTest {
    */
   private static Java8InferenceContext uninitializedContext() {
     return uninitialized(Java8InferenceContext.class);
-  }
-
-  /**
-   * Returns an instance of {@code clazz} on which no constructor has run, so all its fields are
-   * null or zero.
-   *
-   * <p>The instance is created the way deserialization creates one, via {@code
-   * sun.reflect.ReflectionFactory}. That class is used reflectively so that compiling this file
-   * does not produce a "internal proprietary API" warning, which {@code -Werror} would turn into an
-   * error.
-   *
-   * @param <T> the type of the instance to create
-   * @param clazz the class of the instance to create
-   * @return an instance of {@code clazz} whose fields all have their default values
-   */
-  private static <T> T uninitialized(Class<T> clazz) {
-    try {
-      Class<?> reflectionFactoryClass = Class.forName("sun.reflect.ReflectionFactory");
-      Object reflectionFactory =
-          reflectionFactoryClass.getMethod("getReflectionFactory").invoke(null);
-      Method newConstructorForSerialization =
-          reflectionFactoryClass.getMethod(
-              "newConstructorForSerialization", Class.class, Constructor.class);
-      Constructor<?> constructor =
-          (Constructor<?>)
-              newConstructorForSerialization.invoke(
-                  reflectionFactory, clazz, Object.class.getDeclaredConstructor());
-      return clazz.cast(constructor.newInstance());
-    } catch (ReflectiveOperationException e) {
-      throw new AssertionError("Could not create a " + clazz.getSimpleName(), e);
-    }
   }
 }
