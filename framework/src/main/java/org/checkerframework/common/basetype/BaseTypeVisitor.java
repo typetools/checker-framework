@@ -1977,7 +1977,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     ParameterizedExecutableType preInference =
         atypeFactory.methodFromUseWithoutTypeArgInference(tree);
-
     if (!preInference.executableType().getElement().getTypeParameters().isEmpty()
         // The type of a member of a raw type is the erasure of
         // its type in the generic class (JLS 4.8), and the erasure of the signature of a generic
@@ -3650,15 +3649,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     int size = paramBounds.size();
-    if (size != typeargs.size()) {
-      // Type argument inference did not produce a type argument for every type parameter --
-      // for example, because the invocation happened through a raw receiver, or because
-      // inference found no constraint from which to solve a type parameter (see
-      // AnnotatedTypeFactory#methodFromUse and AnnotatedTypes#findTypeArguments). There is
-      // nothing meaningful to check in that case, so skip it rather than crash trying to zip
-      // the two lists together.
-      return;
-    }
+    assert size == typeargs.size()
+        : "BaseTypeVisitor.checkTypeArguments: mismatch between type arguments: "
+            + typeargs
+            + " and type parameter bounds"
+            + paramBounds;
 
     for (int i = 0; i < size; i++) {
 
