@@ -190,7 +190,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         funcTypeParam = functionType.getParameterTypes().get(index);
       }
       // During type argument inference, the type of the parameters is assumed to be the
-      // same as the function parameter.
+      // same as the function parameter
       // (https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2.1).  So if
       // the underlying types are not the same type, then assume the lambda parameter is the
       // same as the function type. (Use the erased types because the type arguments are not
