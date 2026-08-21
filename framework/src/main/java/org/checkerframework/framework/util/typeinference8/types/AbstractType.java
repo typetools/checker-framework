@@ -25,6 +25,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
@@ -196,8 +197,10 @@ public abstract class AbstractType {
    * parameters. (A type parameter of a declared type, can't refer to any type being inferred, so
    * they are proper types.)
    *
-   * @return the upper bounds of the type parameter of this type, or null if this type is a use of
-   *     an inference variable
+   * <p>This implementation always returns a list. The return type is {@code @Nullable} only because
+   * {@link UseOfVariable#getTypeParameterBounds()} returns null.
+   *
+   * @return the upper bounds of the type parameters of this type
    */
   public @Nullable List<ProperType> getTypeParameterBounds() {
     TypeElement typeelem = (TypeElement) ((DeclaredType) getJavaType()).asElement();
@@ -279,12 +282,46 @@ public abstract class AbstractType {
   @Nullable AnnotatedExecutableType getFunctionType() {
     if (functionType == null && TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
       ExecutableElement element = TypesUtils.findFunction(getJavaType(), context.env);
-      AnnotatedDeclaredType groundType =
-          makeGround((AnnotatedDeclaredType) getAnnotatedType(), typeFactory);
+      AnnotatedTypeMirror groundType = makeGroundTargetType(getAnnotatedType(), typeFactory);
       functionType =
           AnnotatedTypes.asMemberOf(context.modelTypes, typeFactory, groundType, element);
     }
     return functionType;
+  }
+
+  /**
+   * Returns the ground target type of {@code type}, which is a functional interface type. For an
+   * {@link AnnotatedDeclaredType}, this is {@link #makeGround(AnnotatedDeclaredType,
+   * AnnotatedTypeFactory)}. For an intersection type that induces a notional functional interface
+   * (<a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9">JLS section
+   * 9.9</a>), each bound is made ground; this is the annotated-type analog of the notional
+   * interface that {@code TypesUtils.findFunction} creates for such a type. {@code
+   * AnnotatedTypes.asMemberOf} then finds the bound that declares the function, just as javac
+   * computes the function type as a member of the intersection type.
+   *
+   * @param type a functional interface type
+   * @param typeFactory the type factory
+   * @return the ground target type of {@code type}
+   */
+  private static AnnotatedTypeMirror makeGroundTargetType(
+      AnnotatedTypeMirror type, AnnotatedTypeFactory typeFactory) {
+    switch (type.getKind()) {
+      case DECLARED -> {
+        return makeGround((AnnotatedDeclaredType) type, typeFactory);
+      }
+      case INTERSECTION -> {
+        AnnotatedIntersectionType intersection = ((AnnotatedIntersectionType) type).shallowCopy();
+        List<AnnotatedTypeMirror> groundBounds = new ArrayList<>(intersection.getBounds().size());
+        for (AnnotatedTypeMirror bound : intersection.getBounds()) {
+          groundBounds.add(makeGroundTargetType(bound, typeFactory));
+        }
+        intersection.setBounds(groundBounds);
+        return intersection;
+      }
+      default -> {
+        return type;
+      }
+    }
   }
 
   /**
@@ -582,9 +619,9 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns if this type is a wildcard return its lower bound; otherwise, return null.
+   * If this type is a wildcard, returns its lower bound; otherwise, returns null.
    *
-   * @return if this type is a wildcard return its lower bound; otherwise, return null
+   * @return the lower bound of this wildcard type, or null if this type is not a wildcard
    */
   public @Nullable AbstractType getWildcardLowerBound() {
     if (getJavaType().getKind() == TypeKind.WILDCARD) {
@@ -595,16 +632,14 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns if this type is a wildcard return its upper bound; otherwise, return null.
+   * If this type is a wildcard, returns its upper bound; otherwise, returns null. If the wildcard
+   * has no explicit upper bound, the returned type is the upper bound of the type variable to which
+   * the wildcard is bound; see {@link AnnotatedWildcardType#getExtendsBound()}.
    *
-   * @return if this type is a wildcard return its upper bound; otherwise, return null
+   * @return the upper bound of this wildcard type, or null if this type is not a wildcard
    */
   public @Nullable AbstractType getWildcardUpperBound() {
     if (getJavaType().getKind() == TypeKind.WILDCARD) {
-      TypeMirror upperBoundJava = ((WildcardType) getJavaType()).getExtendsBound();
-      if (upperBoundJava == null) {
-        upperBoundJava = context.object.getJavaType();
-      }
       return create(
           ((AnnotatedWildcardType) getAnnotatedType()).getExtendsBound(), ignoreAnnotations);
     } else {

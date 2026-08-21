@@ -31,8 +31,11 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class Java8InferenceContext {
 
-  /** Path to the top level expression whose type arguments are inferred. */
-  public TreePath pathToExpression;
+  /**
+   * Path to the top level expression whose type arguments are inferred. This is the only mutable
+   * field in this class; see {@link #setPathToExpression}.
+   */
+  private TreePath pathToExpression;
 
   /** javax.annotation.processing.ProcessingEnvironment */
   public final ProcessingEnvironment env;
@@ -107,6 +110,35 @@ public class Java8InferenceContext {
         TypesUtils.typeFromClass(RuntimeException.class, env.getTypeUtils(), env.getElementUtils());
     this.inferenceTypeFactory = new InferenceFactory(this);
     this.object = inferenceTypeFactory.getObject();
+  }
+
+  /**
+   * Returns the path to the expression whose type arguments are inferred.
+   *
+   * @return the path to the expression whose type arguments are inferred
+   */
+  public TreePath getPathToExpression() {
+    return pathToExpression;
+  }
+
+  /**
+   * Sets the path to the expression whose type arguments are inferred.
+   *
+   * <p>This method exists because inference for an outer invocation does not always instantiate the
+   * type variables of a method reference that appears within one of its arguments. (The method
+   * reference need not be the argument itself; it might be nested, as {@code A::m} is in {@code
+   * foo(flag ? A::m : B::m)}.) In that case, inference is run a second time, on the method
+   * reference itself, in this same context: the variables and maps that the first run created are
+   * still needed, but the target type (see {@link
+   * org.checkerframework.framework.util.typeinference8.types.InferenceFactory#getTargetType}) must
+   * now be computed with respect to the method reference rather than the outer invocation. Calling
+   * this method is what makes that happen, so its effect depends on when it is called relative to
+   * the two inference runs.
+   *
+   * @param pathToExpression the path to the expression whose type arguments are inferred
+   */
+  public void setPathToExpression(TreePath pathToExpression) {
+    this.pathToExpression = pathToExpression;
   }
 
   /**

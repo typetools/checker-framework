@@ -333,10 +333,10 @@ public class BoundSet implements ReductionResult {
     do {
       count++;
       boolean boundsChangeInst = captures.addAll(newBounds.captures);
-      // Iterate over a copy of `variables`, because `merge`, which is called below, adds the
-      // variables of its argument to `variables`.  A variable that is added during this loop is
-      // processed by the next iteration of the do-loop, which is entered because
-      // `boundsChangeInst` is set to true whenever `merge` is called.
+      // Iterate over a copy of `variables`, because the call to `merge` below may add to
+      // `variables`.  Any variable added this way is processed by the next iteration of the
+      // enclosing do-while loop, which runs because `boundsChangeInst` is set to true whenever
+      // `merge` is called.
       for (Variable alpha : new ArrayList<>(variables)) {
         boundsChangeInst |= alpha.getBounds().applyInstantiationsToBounds();
 
@@ -361,7 +361,7 @@ public class BoundSet implements ReductionResult {
         // AssertionError that aborts the entire compilation.
         throw new BugInCF(
             "Max incorporation steps (%d) reached without reaching a fixed point: %s",
-            MAX_INCORPORATION_STEPS, context.pathToExpression.getLeaf());
+            MAX_INCORPORATION_STEPS, context.getPathToExpression().getLeaf());
       }
     } while (!containsFalse);
   }

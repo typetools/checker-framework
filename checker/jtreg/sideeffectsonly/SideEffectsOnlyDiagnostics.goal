@@ -1,0 +1,5 @@
+SideEffectsOnlyDiagnostics.java:18:8: compiler.err.proc.messager: [flowexpr.parse.error.sideeffectsonly] cannot parse the @SideEffectsOnly expression "nosuchfield" on the declaration of SideEffectsOnlyDiagnostics.unparseable: Invalid 'nosuchfield' because identifier not found
+SideEffectsOnlyDiagnostics.java:26:18: compiler.err.proc.messager: [flowexpr.parse.error.sideeffectsonly] cannot parse the @SideEffectsOnly expression "nosuchfield" on the declaration of SideEffectsOnlyDiagnostics.unparseable: Invalid 'nosuchfield' because identifier not found
+SideEffectsOnlyDiagnostics.java:27:22: compiler.warn.proc.messager: [purity.viewpoint.adaptation] @SideEffectsOnly(..., "this") annotation (here, it refers to this) on the declaration of SideEffectsOnlyDiagnostics.unrepresentable is ignored because expression #1 on the declaration of SideEffectsOnlyDiagnostics.unrepresentable is interpreted as new Object() at this call site, which might have any effect
+2 errors
+1 warning
