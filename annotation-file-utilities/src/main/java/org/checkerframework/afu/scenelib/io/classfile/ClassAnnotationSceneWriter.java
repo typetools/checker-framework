@@ -384,7 +384,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
           if (aft instanceof EnumAFT) {
             aav.visitEnum(null, ((EnumAFT) aft).typeName, o.toString());
           } else if (o instanceof Class) {
-            aav.visit(null, org.objectweb.asm.Type.getType((Class<?>) o));
+            aav.visit(null, org.objectweb.asm.Type.getType((Class) o));
           } else {
             aav.visit(null, o);
           }
