@@ -400,7 +400,16 @@ public abstract class AbstractType {
         continue;
       }
       AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) pn;
-      if (wildcardType.getSuperBound().getKind() == TypeKind.NULL) {
+      if (wildcardType.isTypeArgOfRawType()) {
+        // "The function type of the raw type of a generic functional interface I<...> is the
+        // erasure of the function type of the generic functional interface I<...>" (JLS 9.9).
+        // The rule below, which is the non-wildcard parameterization, does not apply to a raw
+        // type; nor could it be computed here, because the type arguments of a raw type are
+        // wildcards that the framework synthesizes from the type parameters' upper bounds (see
+        // AnnotatedDeclaredType#getTypeArguments) and that may have no qualifiers at all.
+        typeVarToTypeArg.put(
+            typeVariable.getUnderlyingType(), typeVariable.getUpperBound().getErased());
+      } else if (wildcardType.getSuperBound().getKind() == TypeKind.NULL) {
         // › If Ai is a upper-bounded wildcard ? extends Ui, then Ti = glb(Ui, Bi)
         typeVarToTypeArg.put(
             typeVariable.getUnderlyingType(),
