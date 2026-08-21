@@ -105,6 +105,12 @@ public final class TreePathUtil {
         && hasClassKind(path.getParentPath().getLeaf());
   }
 
+  /**
+   * Returns the path to the enclosing field initializer, or null if the argument is not within one.
+   *
+   * @param path a reference to some source code
+   * @return the path to the enclosing field initializer, or null
+   */
   public static @Nullable TreePath findEnclosingFieldInit(TreePath path) {
     while (!isFieldInit(path)) {
       path = path.getParentPath();
