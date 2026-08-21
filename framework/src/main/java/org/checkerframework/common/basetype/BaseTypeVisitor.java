@@ -1238,6 +1238,72 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
+   * Returns a diagnostic message for an annotation expression that cannot be parsed, describing
+   * where the expression appears in addition to why it cannot be parsed.
+   *
+   * <p>The message for {@code messageKey} takes {@code contextArgs} followed by the arguments of
+   * the parse failure, so the description precedes the explanation of the failure.
+   *
+   * @param ex the parse failure
+   * @param messageKey a message key whose message describes where the expression appears
+   * @param contextArgs the arguments to {@code messageKey} that precede those of {@code ex}
+   * @return a diagnostic message about the unparseable expression
+   */
+  private static DiagMessage parseErrorInContext(
+      JavaExpressionParseException ex,
+      @CompilerMessageKey String messageKey,
+      Object... contextArgs) {
+    if (!ex.isFlowParseError()) {
+      // Some other message key, whose format string this method does not know.
+      return new DiagMessage(ex);
+    }
+    Object[] args = new Object[contextArgs.length + ex.args.length];
+    System.arraycopy(contextArgs, 0, args, 0, contextArgs.length);
+    System.arraycopy(ex.args, 0, args, contextArgs.length, ex.args.length);
+    return new DiagMessage(Diagnostic.Kind.ERROR, messageKey, args);
+  }
+
+  /**
+   * Returns a diagnostic message for a {@code @SideEffectsOnly} expression that cannot be parsed.
+   * The message names the method whose annotation contains the expression, because the message
+   * might be issued at a call site, which may be far from that method's declaration.
+   *
+   * @param ex the parse failure
+   * @param declaringMethod the method on whose declaration the annotation appears
+   * @param declExpr the expression as written in the annotation
+   * @return a diagnostic message about the unparseable expression
+   */
+  public static DiagMessage sideEffectsOnlyParseError(
+      JavaExpressionParseException ex, ExecutableElement declaringMethod, String declExpr) {
+    return parseErrorInContext(
+        ex,
+        "flowexpr.parse.error.sideeffectsonly",
+        declExpr,
+        ElementUtils.getSimpleDescription(declaringMethod));
+  }
+
+  /**
+   * Returns a diagnostic message for a contract expression that cannot be parsed. The message names
+   * the contract annotation and the method that it appears on, because a method declaration may
+   * carry several contract annotations.
+   *
+   * @param ex the parse failure
+   * @param contract the contract whose expression cannot be parsed
+   * @param methodTree the method declaration on which the contract annotation appears
+   * @return a diagnostic message about the unparseable expression
+   */
+  private static DiagMessage contractParseError(
+      JavaExpressionParseException ex, Contract contract, MethodTree methodTree) {
+    return parseErrorInContext(
+        ex,
+        "flowexpr.parse.error.contract",
+        contract.kind.errorKey,
+        contract.expressionString,
+        contract.contractAnnotation.getAnnotationType().asElement().getSimpleName(),
+        ElementUtils.getSimpleDescription(TreeUtils.elementFromDeclaration(methodTree)));
+  }
+
+  /**
    * Issues an error for each expression of the method's {@code @SideEffectsOnly} annotation that
    * cannot be parsed in the scope of the method declaration.
    *
@@ -1266,29 +1332,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             getCurrentPath(), sideEffectsOnlyParseError(ex, methodElement, expression));
       }
     }
-  }
-
-  /**
-   * Returns a diagnostic message for a {@code @SideEffectsOnly} expression that cannot be parsed.
-   * The message names the method whose annotation contains the expression, because the message
-   * might be issued at a call site, which may be far from that method's declaration.
-   *
-   * @param ex the parse failure
-   * @param declaringMethod the method on whose declaration the annotation appears
-   * @param declExpr the expression as written in the annotation
-   * @return a diagnostic message about the unparseable expression
-   */
-  public static DiagMessage sideEffectsOnlyParseError(
-      JavaExpressionParseException ex, ExecutableElement declaringMethod, String declExpr) {
-    if (!ex.isFlowParseError()) {
-      // Some other message key, whose format string this method does not know.
-      return new DiagMessage(ex);
-    }
-    Object[] args = new Object[ex.args.length + 2];
-    args[0] = declExpr;
-    args[1] = ElementUtils.getSimpleDescription(declaringMethod);
-    System.arraycopy(ex.args, 0, args, 2, ex.args.length);
-    return new DiagMessage(Diagnostic.Kind.ERROR, "flowexpr.parse.error.sideeffectsonly", args);
   }
 
   /**
@@ -1448,19 +1491,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       try {
         exprJe = StringToJavaExpression.atMethodBody(expressionString, methodTree, checker);
       } catch (JavaExpressionParseException e) {
-        DiagMessage diagMessage = new DiagMessage(e);
-        if (diagMessage.getMessageKey().equals("flowexpr.parse.error")) {
-          String s =
-              String.format(
-                  "'%s' in the %s %s on the declaration of method '%s': ",
-                  expressionString,
-                  contract.kind.errorKey,
-                  contract.contractAnnotation.getAnnotationType().asElement().getSimpleName(),
-                  methodTree.getName().toString());
-          checker.reportError(methodTree, "flowexpr.parse.error", s + diagMessage.getArgs()[0]);
-        } else {
-          checker.report(methodTree, new DiagMessage(e));
-        }
+        checker.report(methodTree, contractParseError(e, contract, methodTree));
         continue;
       }
       if (!CFAbstractStore.canInsertJavaExpression(exprJe)) {
