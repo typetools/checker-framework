@@ -1147,12 +1147,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
         erasedEnclosing = erasedEnclosing.getEnclosingType();
         thisEnclosing = thisEnclosing.getEnclosingType();
       }
-      if (erased.isUnderlyingTypeRaw()) {
-        // Erasure drops the type arguments, and #getTypeArguments synthesizes a wildcard for
-        // each type parameter of a raw type. Fill in the defaults, so that code that
-        // reads the type arguments does not see a type with no qualifiers.
-        atypeFactory.addDefaultAnnotations(erased);
-      }
       return erased;
     }
 

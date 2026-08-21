@@ -2551,6 +2551,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // inference (see the check there for a raw receiver with the same enclosing element).
       // Like any raw-type use, this erases the method's type parameters entirely (JLS 4.8).
       methodType = methodType.getErased();
+      addDefaultAnnotations(methodType);
     }
 
     if (typeArguments.inferenceCrash() && tree instanceof MethodInvocationTree) {
