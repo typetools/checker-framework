@@ -59,9 +59,7 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
   private boolean capturedWildcard = true;
 
   /**
-   * Sets whether the type argument that this variable captures is a wildcard. Called by {@link
-   * org.checkerframework.framework.util.typeinference8.bound.CaptureBound} while it builds the
-   * bound, because the type argument is not known when this variable is created.
+   * Sets whether the type argument that this variable captures is a wildcard.
    *
    * @param capturedWildcard true if the captured type argument is a wildcard
    */
