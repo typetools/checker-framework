@@ -43,6 +43,9 @@ public @interface SideEffectsOnly {
    * expression such as {@code "#1.getList()"}, where {@code getList} is not {@code @Pure}, may
    * denote a different value each time it is evaluated, so no method body could satisfy it.
    *
+   * <p>The annotation {@code @SideEffectsOnly({})} (with an empty list of expressions) is illegal;
+   * write {@code @}{@link SideEffectFree} instead.
+   *
    * @return the Java expressions that the annotated method might side-effect
    * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
    */
