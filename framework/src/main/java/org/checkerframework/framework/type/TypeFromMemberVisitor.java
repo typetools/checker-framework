@@ -174,10 +174,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         && TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
       int index = lambdaDecl.getParameters().indexOf(f.declarationFromElement(paramElement));
       // If an inference that is currently running has already determined this parameter's type,
-      // use it.  Otherwise the type is obtained below by re-deriving the lambda's target type,
-      // which re-runs inference for the invocation that the lambda is an argument of; if that
-      // inference is itself running, the re-run answers with types that still mention inference
-      // variables, and two such invocations can end up waiting on each other.
+      // use it.  (Otherwise, inference would start again.)
       AnnotatedTypeMirror funcTypeParam =
           f.getTypeArgumentInference().getLambdaParameterType((VariableElement) paramElement);
       if (funcTypeParam == null) {

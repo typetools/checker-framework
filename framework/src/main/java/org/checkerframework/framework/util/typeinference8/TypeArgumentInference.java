@@ -51,6 +51,9 @@ public interface TypeArgumentInference {
    * If {@code param} is an implicitly typed lambda parameter whose type an in-progress inference
    * has already determined, returns that type. Otherwise, returns null.
    *
+   * <p>If an already completed inference, determined the type of the lambda parameter, null is
+   * returned.
+   *
    * @param param an element that might be an implicitly typed lambda parameter
    * @return the type of {@code param} as computed by an in-progress inference, or null
    */

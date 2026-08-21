@@ -293,11 +293,7 @@ public class InvocationTypeInference {
    * Records, on the type factory, the type of every implicitly typed lambda parameter that this
    * inference problem determined.
    *
-   * <p>Call this only after resolution, so that the recorded types are final. Until now the types
-   * were available only while this problem was on the inference stack, so a request made after it
-   * finished -- from the type-checking visitor, from dataflow, or from a different inference --
-   * re-derived the lambda's target type by re-running this inference. That re-derivation is what
-   * turns a dependency between two inference problems into a cycle.
+   * <p>Call this only after resolution, so that the recorded types are final.
    */
   private void recordLambdaParameterTypes() {
     for (VariableElement param : context.lambdaParamTargets.keySet()) {
@@ -305,15 +301,9 @@ public class InvocationTypeInference {
       if (type == null) {
         continue;
       }
-      // javac has already attributed the lambda, so its type for the parameter is authoritative
-      // for the Java type; inference only supplies the qualifiers.  This problem's view can be
-      // less precise, because a nested invocation's constraints are re-created here by
-      // createAdditionalArgConstraintsForInvocation, which calls only createC and so omits the
-      // applicability constraints that determine that invocation's type arguments.  In
-      // Issue1983.java the inference for the enclosing func1(transform(params, p -> ...)) sees the
-      // lambda's target type as Function<? super Object, ...>, where javac and the inference for
-      // transform(...) both have Function<? super Object[], ...>.  Recording the imprecise type
-      // would replace a correct record with a wrong one, and `p[0]` would then fail to type.
+
+      // `param.asType()` is the type of the lambda parameter according to javac. If `typ` is not a
+      // subtype of it, then don't record it because it is imprecise.
       if (!TypesUtils.isErasedSubtype(
           type.getUnderlyingType(), param.asType(), context.typeFactory.types)) {
         continue;
