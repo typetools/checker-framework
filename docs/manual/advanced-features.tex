@@ -1064,6 +1064,25 @@ the refined type, because the method might assign a field.
 The \refqualclass{dataflow/qual}{SideEffectFree} annotation indicates that
 the method has no side effects, so calling it does not invalidate any
 dataflow facts.
+\iffalse
+Alternately, the \refqualclass{dataflow/qual}{SideEffectsOnly}
+annotation specifies all the expressions that the method might side-effect.
+
+After a call to a \<@SideEffectsOnly> method, a checker discards what it knows about an
+expression \<e> if \<e> contains a listed expression:  modifying \<x> can change \<x.f>,
+but not the other way around.  If \<e> is a call to a \<@Pure> method, then a checker also
+discards what it knows when a listed expression is reached through the call's receiver or
+one of its arguments.  A \<@Pure> method's result depends on the state that the method
+reads, which no annotation declares, so a checker approximates that state by what is
+reachable from the call's receiver and arguments.  For example, a call to a
+\<@SideEffectsOnly("x.f")> method discards what is known about \<x.getF()>, but not what is
+known about \<y.getF()>.
+
+Each listed expression is viewpoint-adapted to the call site.  If the adaptation yields an
+expression that the checker cannot represent --- as when an argument is a conditional
+expression or a cast --- then the checker does not know what the call modifies, so it
+discards every refinement, exactly as for a method with no side-effect annotation.
+\fi
 
 Calling a method twice might have different results, so facts known about
 one call cannot be relied upon at another call.
@@ -1103,7 +1122,10 @@ Consider the following declarations and uses:
   }
 \end{Verbatim}
 
-There are three ways to express that \<computeValue> does not set
+There are three
+%% With @SideEffectsOnly:
+% four
+ways to express that \<computeValue> does not set
 \<myField> to \<null>, and thus to prevent the Nullness Checker from
 issuing a warning about the call \<myField.toString()>.
 
@@ -1121,6 +1143,17 @@ issuing a warning about the call \<myField.toString()>.
 The Nullness Checker issues no warnings, because it can reason that
 the second occurrence of \code{myField} has the same (non-null) value as
 the one in the test.
+
+\iffalse
+\item
+  If \<computeValue> has side effects, but they do not affect \<myField>,
+  declare the method as \refqualclass{dataflow/qual}{SideEffectsOnly}:
+
+\begin{Verbatim}
+  @SideEffectsOnly({"someOtherVariable1", "someOtherVariable2"})
+  int computeValue() { ... }
+\end{Verbatim}
+\fi
 
 \item
   If no method resets \<myField> to \<null> after it has been initialized
@@ -1277,6 +1310,7 @@ expression as an argument include:
 \item \refqualclass{framework/qual}{RequiresQualifier}
 \item \refqualclass{framework/qual}{EnsuresQualifier}
 \item \refqualclass{framework/qual}{EnsuresQualifierIf}
+\item \refqualclass{dataflow/qual}{SideEffectsOnly}
 \item \refqualclass{checker/nullness/qual}{RequiresNonNull}
 \item \refqualclass{checker/nullness/qual}{EnsuresNonNull}
 \item \refqualclass{checker/nullness/qual}{EnsuresNonNullIf}

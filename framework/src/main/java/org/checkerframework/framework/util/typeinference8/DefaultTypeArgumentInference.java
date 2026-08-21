@@ -100,14 +100,33 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           new InvocationTypeInference(typeFactory, pathToExpression);
       java8InferenceStack.push(java8Inference);
       pushedToInferenceStack = true;
-      if (outerTree instanceof MemberReferenceTree mrt) {
-        return java8Inference.infer(mrt);
+      if (outerTree instanceof MemberReferenceTree outerMemberRef) {
+        return java8Inference.infer(outerMemberRef);
       } else {
         InferenceResult result = java8Inference.infer(outerTree, outerMethodType);
         if (!result.getResults().containsKey(expressionTree)
-            && expressionTree instanceof MemberReferenceTree mrt2) {
-          java8Inference.context.pathToExpression = typeFactory.getPath(expressionTree);
-          return java8Inference.infer(mrt2);
+            && expressionTree instanceof MemberReferenceTree mrt) {
+          // The inference of the outer tree did not create any inference variables for the
+          // MemberReferenceTree,
+          // so its type arguments still need to be inferred. Reuse the same inference problem
+          // because the target type of the MemberReferenceTree
+          // was already inferred.
+          //
+          // This can happen in two cases:
+          //
+          //  1. By the time the constraint formula for expressionTree was reduced, its target
+          //     type had become a proper type, so JLS 18.2.1's rule for
+          //     <MethodReference -> T> (which requires that T mention an inference variable)
+          //     did not apply.  This happens when the target type's function type has a
+          //     parameter type that mentions one of the outer tree's inference variables: JLS
+          //     18.5.2.2 makes such a variable an input variable of the constraint, so it is
+          //     resolved and substituted into the constraint before the constraint is reduced.
+          //
+          //  2. The target type's function type has result void, in which case JLS 18.2.1 says
+          //     that <MethodReference -> T> reduces to true.
+
+          java8Inference.context.setPathToExpression(typeFactory.getPath(expressionTree));
+          return java8Inference.infer(mrt);
         }
         return result.swapTypeVariables(executableType, expressionTree);
       }
@@ -131,6 +150,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         java8InferenceStack.pop();
       }
     }
+  }
+
+  @Override
+  public boolean isAnyInferenceInProgress() {
+    return !java8InferenceStack.isEmpty();
   }
 
   /**

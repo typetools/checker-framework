@@ -24,9 +24,26 @@ abstract class InsertAnnotationsToSource extends DefaultTask {
   @Input
   def afuDir = project.objects.property(String)
 
+  /**
+   * The name of the task that users should run, such as ":checker:ainferTestCheckerJaifTest".  If
+   * this task fails, users are told to run that task.
+   */
+  @Input
+  def rerunTaskName = project.objects.property(String)
+
 
   @TaskAction
   void doTaskAction() {
+    try {
+      insertAnnotations()
+    } catch (Throwable t) {
+      println("This is an internal task.  After fixing the problem, re-test by running:  ./gradlew ${rerunTaskName}")
+      throw t
+    }
+  }
+
+  /** Inserts the annotations from the .jaif files into the .java files. */
+  private void insertAnnotations() {
     String jaifsDir = testDir+'/inference-output'
     List<File> jaifs = project.fileTree(jaifsDir).matching {
       include '*.jaif'
