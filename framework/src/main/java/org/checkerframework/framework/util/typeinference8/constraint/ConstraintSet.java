@@ -73,8 +73,11 @@ public class ConstraintSet implements ReductionResult {
    * constraint.
    *
    * <p>A constraint can be mutated through some other constraint set that contains it, which leaves
-   * a stale entry here. A stale entry is never found by a lookup, so the only consequence is that a
-   * constraint equal to it might be added to this set a second time.
+   * a stale entry here: one filed under the constraint's former hash code. A lookup never finds a
+   * stale entry, because a constraint equal to the mutated constraint has the mutated constraint's
+   * current hash code. So the only consequence is that a constraint equal to a mutated constraint
+   * might be added to this set a second time, which costs an extra reduction but does not change
+   * the result of reduction.
    */
   private final Set<Constraint> members;
 
