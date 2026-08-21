@@ -845,10 +845,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (analysis.atypeFactory.getSupportedMonotonicTypeQualifiers().isEmpty()) {
       return false;
     }
-    // TODO: This check for sequentialSemantics is an optimization that breaks the contract of
-    // the method, since the method name and documentation say nothing about sequential
-    // semantics.  This check should be performed by callers of this method when needed.
-    // TODO: Update the javadoc of this method when the above to-do item is addressed.
     if (sequentialSemantics) { // only compute if necessary
       return false;
     }
