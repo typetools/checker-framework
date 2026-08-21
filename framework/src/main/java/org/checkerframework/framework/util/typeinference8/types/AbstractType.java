@@ -538,7 +538,9 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns this type's type arguments or null if this type isn't a declared type.
+   * Returns this type's type arguments or null if this type isn't a declared type. For an inner
+   * class type such as {@code Outer<String>.Inner}, the result does not include the type arguments
+   * of the enclosing type; use {@link #getEnclosingType} to reach those.
    *
    * @return this type's type arguments or null if this type isn't a declared type
    */
@@ -552,6 +554,27 @@ public abstract class AbstractType {
     } else {
       return null;
     }
+  }
+
+  /**
+   * Returns this type's enclosing type, or null if this type is not an inner class type. (A static
+   * nested class type has no enclosing type, in the sense of JLS 4.5.)
+   *
+   * <p>The type arguments of an inner class type do not include those of its enclosing type, so a
+   * client that reasons about all the type arguments that a type mentions -- as JLS 18.2.3 and
+   * 18.2.4 do -- must recurse through this method as well as through {@link #getTypeArguments}.
+   *
+   * @return this type's enclosing type, or null if this type is not an inner class type
+   */
+  public @Nullable AbstractType getEnclosingType() {
+    AnnotatedTypeMirror atm = getAnnotatedType();
+    if (atm instanceof AnnotatedDeclaredType annotatedDeclaredType) {
+      AnnotatedDeclaredType enclosing = annotatedDeclaredType.getEnclosingType();
+      if (enclosing != null) {
+        return create(enclosing, ignoreAnnotations);
+      }
+    }
+    return null;
   }
 
   /**
