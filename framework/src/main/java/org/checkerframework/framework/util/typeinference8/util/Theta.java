@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
