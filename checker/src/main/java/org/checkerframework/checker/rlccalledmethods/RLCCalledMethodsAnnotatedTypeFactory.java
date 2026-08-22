@@ -36,8 +36,6 @@ import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
-import org.checkerframework.checker.resourceleak.MustCallInference;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.common.accumulation.AccumulationStore;
@@ -47,6 +45,7 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -162,40 +161,35 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     // This is a workaround for a bug that I tried and failed to fix.
     // See checker/tests/resourceleak/RLLambda.java.
     // This code really belongs in postAnalyze, but this code only works correctly when called after
-    // a method is analyzed the first time and before any containing lambdas are analyzed.
+    // a method is analyzed for the first time and before any containing lambdas are analyzed.
     // This workaround means there could be false positives when the type of a method invocation
     // depends on dataflow in a lambda.
-
-    if (cfg != null) {
+    if (cfg != null && ast.getKind() == UnderlyingAST.Kind.METHOD) {
       // The cfg is not null, so the analysis has been run before.  Don't rerun it.
       return cfg;
     }
-    cfg =
-        super.analyze(
-            classQueue,
-            lambdaQueue,
-            ast,
-            fieldValues,
-            cfg,
-            isInitializationCode,
-            updateInitializationStore,
-            isStatic,
-            capturedStore);
-    assert root != null : "@AssumeAssertion(nullness): at this point root is always nonnull";
-    rlc.setRoot(root);
-    MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer = new MustCallConsistencyAnalyzer(rlc);
-    mustCallConsistencyAnalyzer.analyze(cfg);
+    return super.analyze(
+        classQueue,
+        lambdaQueue,
+        ast,
+        fieldValues,
+        cfg,
+        isInitializationCode,
+        updateInitializationStore,
+        isStatic,
+        capturedStore);
+  }
 
-    // Inferring owning annotations for @Owning fields/parameters, @EnsuresCalledMethods for
-    // finalizer methods and @InheritableMustCall annotations for the class declarations.
-    if (getWholeProgramInference() != null) {
-      if (cfg.getUnderlyingAST().getKind() == UnderlyingAST.Kind.METHOD) {
-        MustCallInference.runMustCallInference(this, cfg, mustCallConsistencyAnalyzer);
-      }
+  @Override
+  protected void postCFGConstruction(ControlFlowGraph cfg, UnderlyingAST ast) {
+    // Run the disposal loop discovery before called method analysis runs, as the called-method
+    // store needs to be initialized for the iterated loop elements temp-vars e.g., col.pop(),
+    // col.get(i) in order for the called-method analysis to properly track must-call obligations
+    // on them.
+    if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
+      ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(this)
+          .discoverDisposalLoopInfos(cfg);
     }
-
-    tempVarToTree.clear();
-    return cfg;
   }
 
   @Override
@@ -432,6 +426,24 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   public boolean canCreateObligations() {
     // Precomputing this call to `hasOption` causes a NullPointerException, so leave it as is.
     return !rlc.hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
+  }
+
+  /**
+   * Returns the then or else store after {@code block} depending on the value of {@code then} is
+   * returned.
+   *
+   * @param block a conditional block
+   * @param then wether the then store should be returned
+   * @return the then or else store after {@code block} depending on the value of {@code then} is
+   *     returned
+   */
+  public AccumulationStore getStoreAfterConditionalBlock(ConditionalBlock block, boolean then) {
+    TransferInput<AccumulationValue, AccumulationStore> transferInput = flowResult.getInput(block);
+    assert transferInput != null : "@AssumeAssertion(nullness): transferInput should be non-null";
+    if (then) {
+      return transferInput.getThenStore();
+    }
+    return transferInput.getElseStore();
   }
 
   @Override
