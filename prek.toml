@@ -122,7 +122,7 @@ hooks = [
   ] } },
 ]
 
-## Java
+## Java and Kotlin
 
 # https://github.com/ORCID/pre-commit-spotless requires use of a spotless.xml file.
 
@@ -131,7 +131,8 @@ repo = "local"
 hooks = [
   { id = "gradle-spotless", name = "spotless formatting", language = "unsupported", entry = "bash -c 'if [ -f ./gradlew ] ; then ./gradlew spotlessApply; fi'", files = { glob = [
     "**/*.java",
-    "**/*.gradle.kts",
+    "**/*.kt",
+    "**/*.kts",
   ] }, pass_filenames = false },
 ]
 
@@ -312,15 +313,23 @@ hooks = [
 
 ## TOML
 
-[[repos]]
-repo = "https://github.com/ComPWA/taplo-pre-commit"
-rev = "v0.9.3"
-hooks = [
-  { id = "taplo-format" },
-  ## Issues error:
-  ## WARN taplo: failed to fetch catalog error=error decoding response body: data did not match any variant of untagged enum SchemaCatalog
-  # { id = "taplo-lint" }
-]
+# This doesn't affect .toml files. Maybe some different configuration is needed.
+# [[repos]]
+# repo = "https://github.com/oxc-project/mirrors-oxlint"
+# rev = "v1.79.0"
+# hooks = [
+#   { id = "oxlint", verbose = true }
+# ]
+
+# Taplo does not work on ARM and is not actively maintained.
+# repo = "https://github.com/ComPWA/taplo-pre-commit"
+# rev = "v0.9.3"
+# hooks = [
+#   { id = "taplo-format" },
+#   ## Issues error:
+#   ## WARN taplo: failed to fetch catalog error=error decoding response body: data did not match any variant of untagged enum SchemaCatalog
+#   # { id = "taplo-lint" }
+# ]
 
 ## YAML
 
