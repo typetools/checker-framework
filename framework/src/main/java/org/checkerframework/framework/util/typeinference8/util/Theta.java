@@ -109,7 +109,7 @@ public class Theta {
    * @param type a type; if it is not a type variable, then this method returns null
    * @return the inference variable for {@code type}, or null if there is none
    */
-  public @Nullable @NotOwning Variable get(TypeMirror type) {
+  public @NotOwning @Nullable Variable get(TypeMirror type) {
     if (type instanceof TypeVariable typeVariable) {
       return map.get(new Key(typeVariable));
     }
