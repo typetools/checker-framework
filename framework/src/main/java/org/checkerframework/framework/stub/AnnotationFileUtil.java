@@ -60,7 +60,9 @@ public class AnnotationFileUtil {
     /** Ajava file being parsed as if it is a stub file. */
     AJAVA_AS_STUB,
     /** Ajava file provided on command line. */
-    AJAVA;
+    AJAVA,
+    /** External annotations (IntelliJ annotations.xml format). */
+    EXTERNAL_ANNOTATIONS;
 
     /**
      * Returns true if this represents a stub file.
@@ -70,7 +72,7 @@ public class AnnotationFileUtil {
     public boolean isStub() {
       return switch (this) {
         case JDK_STUB, BUILTIN_STUB, COMMAND_LINE_STUB, AJAVA_AS_STUB -> true;
-        case AJAVA -> false;
+        case AJAVA, EXTERNAL_ANNOTATIONS -> false;
         default -> throw new BugInCF("unhandled case " + this);
       };
     }
@@ -83,7 +85,7 @@ public class AnnotationFileUtil {
     public boolean isBuiltIn() {
       return switch (this) {
         case JDK_STUB, BUILTIN_STUB -> true;
-        case COMMAND_LINE_STUB, AJAVA_AS_STUB, AJAVA -> false;
+        case COMMAND_LINE_STUB, AJAVA_AS_STUB, AJAVA, EXTERNAL_ANNOTATIONS -> false;
         default -> throw new BugInCF("unhandled case " + this);
       };
     }
@@ -96,7 +98,7 @@ public class AnnotationFileUtil {
     public boolean isCommandLine() {
       return switch (this) {
         case JDK_STUB, BUILTIN_STUB -> false;
-        case COMMAND_LINE_STUB, AJAVA_AS_STUB, AJAVA -> true;
+        case COMMAND_LINE_STUB, AJAVA_AS_STUB, AJAVA, EXTERNAL_ANNOTATIONS -> true;
         default -> throw new BugInCF("unhandled case " + this);
       };
     }
@@ -400,11 +402,20 @@ public class AnnotationFileUtil {
    *     otherwise
    */
   private static boolean isAnnotationFile(String path, AnnotationFileType fileType) {
+    if (fileType == AnnotationFileType.EXTERNAL_ANNOTATIONS) {
+      return path.endsWith("annotations.xml");
+    }
     return path.endsWith(fileType.isStub() ? ".astub" : ".ajava");
   }
 
-  private static boolean isJar(File f) {
-    return f.isFile() && f.getName().endsWith(".jar");
+  /**
+   * Returns true if {@code f} is a JAR or ZIP archive file.
+   *
+   * @param f the file to check
+   * @return true if {@code f} is a JAR or ZIP file
+   */
+  private static boolean isJarOrZip(File f) {
+    return f.isFile() && (f.getName().endsWith(".jar") || f.getName().endsWith(".zip"));
   }
 
   /**
@@ -427,12 +438,12 @@ public class AnnotationFileUtil {
       File location, List<AnnotationFileResource> resources, AnnotationFileType fileType) {
     if (isAnnotationFile(location, fileType)) {
       resources.add(new FileAnnotationFileResource(location));
-    } else if (isJar(location)) {
+    } else if (isJarOrZip(location)) {
       JarFile file;
       try {
         file = new JarFile(location);
       } catch (IOException e) {
-        System.err.println("AnnotationFileUtil: could not process JAR file: " + location);
+        System.err.println("AnnotationFileUtil: could not process archive: " + location);
         return;
       }
       Enumeration<JarEntry> entries = file.entries();

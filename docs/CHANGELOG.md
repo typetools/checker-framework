@@ -7,6 +7,9 @@
 
 ### User-visible changes
 
+Added support for IntelliJ IDEA external annotations (`annotations.xml`) via the
+`-AexternalAnnotations` command-line option.
+
 The `-AsuggestPureMethods` command-line option and the `purity.effectively.pure`
 warning no longer require `-AcheckPurityAnnotations` to also be supplied.
 
@@ -17,7 +20,7 @@ Made the field `Java8InferenceContext.pathToExpression` private; use
 
 ### Closed issues
 
-\#7684.
+\#6258, #7684.
 
 ## Version 4.2.2 (2026-08-06)
 

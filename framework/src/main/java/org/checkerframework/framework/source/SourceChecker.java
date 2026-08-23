@@ -271,6 +271,9 @@ import org.plumelib.util.UtilP;
   // Additional ajava files to use
   // org.checkerframework.framework.type.AnnotatedTypeFactory.parserAjavaFiles()
   "ajava",
+  // Additional external annotations (IntelliJ annotations.xml format)
+  // org.checkerframework.framework.stub.AnnotationFileElementTypes.parseExternalAnnotations()
+  "externalAnnotations",
   // Whether to print warnings about types/members in a stub file
   // that were not found on the class path
   // org.checkerframework.framework.stub.AnnotationFileParser.warnIfNotFound

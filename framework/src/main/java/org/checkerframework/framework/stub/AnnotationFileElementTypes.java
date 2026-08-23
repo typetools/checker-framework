@@ -202,6 +202,13 @@ public class AnnotationFileElementTypes {
           AnnotationFileType.COMMAND_LINE_STUB);
     }
 
+    // 6. External annotations provided via -AexternalAnnotations command-line option
+    String externalAnnotationsOption = checker.getOption("externalAnnotations");
+    if (externalAnnotationsOption != null) {
+      parseExternalAnnotations(
+          SystemUtil.pathSeparatorSplitter.splitToList(externalAnnotationsOption));
+    }
+
     parsing = false;
 
     if (stubDebug) {
@@ -285,6 +292,50 @@ public class AnnotationFileElementTypes {
       checker.message(Diagnostic.Kind.NOTE, "Could not read ajava file: " + ajavaPath);
     } finally {
       parsing = false;
+    }
+  }
+
+  /**
+   * Parses the external annotations files (IntelliJ annotations.xml format) at the given paths.
+   *
+   * @param externalAnnotationPaths list of files, directories, or jars/zips to parse
+   */
+  public void parseExternalAnnotations(List<String> externalAnnotationPaths) {
+    if (externalAnnotationPaths.isEmpty()) {
+      return;
+    }
+    SourceChecker checker = factory.getChecker();
+    ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+    if (stubDebug) {
+      AnnotationFileParser.stubDebugStatic(
+          processingEnv, "AFET.parseExternalAnnotations(%s)", externalAnnotationPaths);
+    }
+    for (String path : externalAnnotationPaths) {
+      String base = System.getProperty("test.src");
+      String fullPath = (base == null) ? path : base + "/" + path;
+
+      List<AnnotationFileResource> allFiles =
+          AnnotationFileUtil.allAnnotationFiles(fullPath, AnnotationFileType.EXTERNAL_ANNOTATIONS);
+      if (allFiles != null) {
+        for (AnnotationFileResource resource : allFiles) {
+          try (InputStream annotationFileStream =
+              new BufferedInputStream(resource.getInputStream())) {
+            IntelliJAnnotationParser.parseAnnotationsXml(
+                resource.getDescription(),
+                annotationFileStream,
+                factory,
+                processingEnv,
+                annotationFileAnnos);
+          } catch (IOException e) {
+            checker.message(
+                Diagnostic.Kind.NOTE,
+                "Could not read external annotations resource: " + resource.getDescription());
+          }
+        }
+      } else {
+        checker.message(
+            Diagnostic.Kind.WARNING, "External annotations location not found: " + path);
+      }
     }
   }
 
