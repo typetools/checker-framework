@@ -283,14 +283,16 @@ public class Expression extends TypeConstraint {
     // determine the method reference's invocation type when targeting the return type of the
     // function type, as defined in 18.5.2. B3 may contain new inference variables, as well as
     // dependencies between these new variables and the inference variables in T.
+    // P1, which for an unbound method reference acts as the target reference of the invocation.
+    List<AbstractType> functionTypeParams = T.getFunctionTypeParameterTypes();
+    assert functionTypeParams != null : "@AssumeAssertion(nullness): T is a functional interface";
+    AbstractType p1 = functionTypeParams.isEmpty() ? null : functionTypeParams.get(0);
     Theta map =
         context.inferenceTypeFactory.createThetaForMethodReference(
-            memRef, compileTimeDecl, context);
+            memRef, compileTimeDecl, p1, context);
     AbstractType compileTimeReturn = compileTimeDecl.getReturnType(map);
     BoundSet b2;
     if (TreeUtils.needsTypeArgInference(memRef)) {
-      List<AbstractType> functionTypeParams = T.getFunctionTypeParameterTypes();
-      assert functionTypeParams != null : "@AssumeAssertion(nullness): T is a functional interface";
       b2 = context.inference.createB2MethodRef(compileTimeDecl, functionTypeParams, map);
       if (!compileTimeReturn.isProper()) {
         return context.inference.createB3(b2, memRef, compileTimeDecl, r, map);
