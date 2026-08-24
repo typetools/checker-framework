@@ -266,7 +266,8 @@ public class ConstraintSet implements ReductionResult {
     for (Constraint constraint : c.queue) {
       if (constraint.getKind() == Kind.EXPRESSION
           || constraint.getKind() == Kind.LAMBDA_EXCEPTION
-          || constraint.getKind() == Kind.METHOD_REF_EXCEPTION) {
+          || constraint.getKind() == Kind.METHOD_REF_EXCEPTION
+          || constraint.getKind() == Kind.LAMBDA_BODY) {
         List<Variable> inputsOfSingleConstraint = ((TypeConstraint) constraint).getInputVariables();
         boolean foundInfluence = false;
         inputLoop:
