@@ -424,7 +424,7 @@ public class InvocationTypeInference {
    * parameters of function type of target type of the method reference.
    *
    * @param executableType the type of the method or constructor invoked
-   * @param args types to use as arguments
+   * @param args types to use as arguments; this method does not modify it
    * @param map map of type variables to (inference) variables
    * @return bound set used to determine whether a method is applicable
    */
@@ -444,6 +444,10 @@ public class InvocationTypeInference {
 
     ConstraintSet c = new ConstraintSet();
     List<AbstractType> formals = executableType.getParameterTypes(map, args.size());
+    // The arguments to use in the constraints below: the same as `args`, except that the first
+    // argument is capture converted for a like-diamond method reference.  This is a new list, so
+    // that the list passed by the caller is not modified.
+    List<AbstractType> capturedArgs;
     if (TreeUtils.isLikeDiamondMemberReference(executableType.getMethodRef())) {
       // https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.1
       //  If ReferenceType is a raw type, and there exists a parameterization of this type,
@@ -451,11 +455,16 @@ public class InvocationTypeInference {
       // conversion (§5.1.10) applied to G<...>; otherwise, the type to search is the same
       // as the type of the first search. Type arguments, if any, are given by the method
       // reference expression.
-      args.set(0, args.get(0).capture(context));
+      // A like-diamond method reference is an unbound one, such as `List::size`, so the function
+      // type of its target type has at least one parameter: the receiver, which is P1.
+      capturedArgs = new ArrayList<>(args);
+      capturedArgs.set(0, capturedArgs.get(0).capture(context));
+    } else {
+      capturedArgs = args;
     }
 
     for (int i = 0; i < formals.size(); i++) {
-      AbstractType ei = args.get(i);
+      AbstractType ei = capturedArgs.get(i);
       AbstractType fi = formals.get(i);
       String source =
           String.format(
