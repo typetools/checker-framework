@@ -94,8 +94,25 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
     return this == o;
   }
 
+  /** True if the type argument that this variable captures is a wildcard. */
+  private boolean capturedWildcard = true;
+
+  /**
+   * Sets whether the type argument that this variable captures is a wildcard.
+   *
+   * @param capturedWildcard true if the captured type argument is a wildcard
+   */
+  public void setCapturedWildcard(boolean capturedWildcard) {
+    this.capturedWildcard = capturedWildcard;
+  }
+
   @Override
   public boolean isCaptureVariable() {
     return true;
+  }
+
+  @Override
+  public boolean isCapturedWildcard() {
+    return capturedWildcard;
   }
 }

@@ -216,6 +216,16 @@ import org.checkerframework.javacutil.TypesUtils;
   }
 
   /**
+   * Returns true if this variable was created for a capture bound and the type argument it captures
+   * is a wildcard.
+   *
+   * @return true if this variable was created for a captured wildcard
+   */
+  public boolean isCapturedWildcard() {
+    return false;
+  }
+
+  /**
    * The Java type variable.
    *
    * @return the Java type variable
