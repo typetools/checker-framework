@@ -17,7 +17,7 @@ Made the field `Java8InferenceContext.pathToExpression` private; use
 
 ### Closed issues
 
-\#7684.
+\#7684, #8047.
 
 ## Version 4.2.2 (2026-08-06)
 

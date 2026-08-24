@@ -99,8 +99,21 @@ public class Expression extends TypeConstraint {
       if (!context.isLambdaParam(expression)) {
         s = new ProperType(expression, context);
       } else {
+        // javac does not record the type of an implicitly typed lambda parameter on its element,
+        // so ask the type factory, which consults inference for it.
         AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(expression);
-        s = getT().create(atm, false);
+        // The result is a proper type, because it comes from the program's scope rather than from
+        // the declaration of the method or constructor whose type arguments are being inferred: a
+        // type variable in it denotes itself, so the substitution theta of JLS 18.5.1 must not be
+        // applied to it.  Applying theta would be wrong for a class instance creation expression
+        // that uses the diamond form, because JLS 15.9.3 makes the type parameters of the
+        // instantiated class type parameters of the constructor, so theta maps them, and those
+        // same type variables can also be in scope at the expression -- as they are when a generic
+        // class constructs itself with a diamond inside one of its own methods.  Applying theta
+        // there would replace such a type variable by the inference variable that stands for the
+        // class's type argument, silently discarding the constraint that the expression's type
+        // places on that variable.
+        s = new ProperType(atm, context);
       }
       return new Typing(this, s, T, TypeConstraint.Kind.TYPE_COMPATIBILITY);
     }
@@ -233,7 +246,8 @@ public class Expression extends TypeConstraint {
         AbstractType referenceType;
         if (context.isLambdaParam(preColonTree)) {
           AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(preColonTree);
-          referenceType = T.create(atm, false);
+          // A proper type, for the reason given in reduce().
+          referenceType = new ProperType(atm, context);
         } else {
           if (MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound()) {
             AnnotatedTypeMirror atm =
