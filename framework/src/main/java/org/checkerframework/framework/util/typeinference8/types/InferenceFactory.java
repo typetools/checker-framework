@@ -610,8 +610,6 @@ public class InferenceFactory {
       AnnotatedDeclaredType classType =
           (AnnotatedDeclaredType) typeFactory.getAnnotatedType(classTypeMirror.asElement());
 
-      // `preColonTreeType` has no type arguments: `isDiamondMemberReference` requires that
-      // directly, and `isLikeDiamondMemberReference` requires `preColonTreeType` to be raw.
       Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
       for (TypeMirror typeMirror : classTypeMirror.getTypeArguments()) {
         if (typeMirror.getKind() != TypeKind.TYPEVAR) {
@@ -651,7 +649,10 @@ public class InferenceFactory {
       List<AnnotatedTypeMirror> typeToSearchArgs =
           ((AnnotatedDeclaredType) typeToSearch).getTypeArguments();
       if (typeToSearchArgs.size() != classTypeArgVars.size()) {
-        throw new BugInCF("");
+        throw new BugInCF(
+            "Type to search %s has %d type arguments, but %d inference variables were created for"
+                + " the class's type parameters of %s",
+            typeToSearch, typeToSearchArgs.size(), classTypeArgVars.size(), memRef);
       }
       // The class's type arguments are not inferred: JLS 15.13.1 fixes them to those of the type
       // to search.  Instantiating the variables, rather than omitting them, keeps the instantiation
