@@ -5,8 +5,7 @@ import java.nio.file.Paths;
 
 /**
  * Deletes {@code lib/Missing.class} from the test's class directory, so that the following
- * compilations run against a classpath from which one class file is absent. See
- * MissingClassFile.java.
+ * compilations run against a classpath from which one class file is absent. See Issue8055.java.
  */
 public class DeleteMissingClassFile {
 

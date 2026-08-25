@@ -4,7 +4,7 @@ import lib.MemberOnly;
 /**
  * The variants that do not crash, which pin down which ingredients the crash requires: the absent
  * class must appear in a type argument of the <em>supertype</em> of a classpath class that the
- * checked source uses as a type. See MissingClassFile.java.
+ * checked source uses as a type. See Issue8055.java.
  */
 public class Ok {
 

@@ -3,7 +3,7 @@ import lib.SuperTypeArg;
 
 /**
  * Naming a classpath class whose supertype has a type argument whose class file is absent, in an
- * expression that dataflow analyzes. See MissingClassFile.java.
+ * expression that dataflow analyzes. See Issue8055.java.
  */
 public class ClassLiteral {
 
