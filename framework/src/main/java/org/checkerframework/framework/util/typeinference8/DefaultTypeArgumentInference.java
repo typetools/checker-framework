@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -29,6 +30,7 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /** Implementation of type argument inference. */
 public class DefaultTypeArgumentInference implements TypeArgumentInference {
@@ -201,6 +203,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         if (methodElement.getTypeParameters().isEmpty()) {
           return tree;
         }
+        if (isRawCall(TreeUtils.getReceiverTree(methodInvocationTree), methodElement)) {
+          return tree;
+        }
         if (argumentNeedsInference(
             methodElement, methodInvocationTree.getArguments(), tree, null)) {
           return outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
@@ -212,6 +217,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           return tree;
         }
         ExecutableElement constructor = TreeUtils.elementFromUse(newClassTree);
+        if (isRawCall(newClassTree.getIdentifier(), constructor)) {
+          return tree;
+        }
         if (argumentNeedsInference(constructor, newClassTree.getArguments(), tree, newClassTree)) {
           return outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
         }
@@ -246,6 +254,43 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       default:
         return tree;
     }
+  }
+
+  /**
+   * Returns true if invoking {@code member} on a receiver of type {@code receiverTree} is a call on
+   * a raw type.
+   *
+   * <p>Per <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.8">JLS
+   * section 4.8, "Raw Types"</a>, the type of a constructor or instance method of a raw type {@code
+   * C} that is not inherited from a supertype is the erasure of its type. The erasure has no type
+   * variables, so there is nothing to infer, and an argument of such a call is not part of an outer
+   * inference problem. (Static members are excluded: the type of a static method of a raw type is
+   * the same as its type in the generic declaration.)
+   *
+   * <p>This method must agree with {@code AnnotatedTypes.isRawCall}, which is what actually erases
+   * the member's type. If this method returned false where that one returns true, inference would
+   * try to solve type variables that have already been erased away.
+   *
+   * @param receiverTree the receiver of the call, or null if the receiver is implicit; for a
+   *     constructor invocation, the class being instantiated
+   * @param member the method or constructor being invoked
+   * @return true if this is a call on a raw type
+   */
+  private static boolean isRawCall(@Nullable Tree receiverTree, ExecutableElement member) {
+    if (receiverTree == null) {
+      // An implicit receiver is `this`, which is never raw.
+      return false;
+    }
+    if (member.getModifiers().contains(Modifier.STATIC)) {
+      return false;
+    }
+    TypeMirror receiverType = TreeUtils.typeOf(receiverTree);
+    if (!TypesUtils.isRaw(receiverType)) {
+      return false;
+    }
+    // Only a member declared in the raw type is erased; an inherited one has the type it has in
+    // the supertype that declares it.
+    return member.getEnclosingElement().equals(((DeclaredType) receiverType).asElement());
   }
 
   /**
