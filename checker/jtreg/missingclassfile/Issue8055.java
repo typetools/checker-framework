@@ -26,7 +26,7 @@
  *   AnnotatedTypeFactory and ElementUtils#isElementFromByteCode already catch CompletionFailure
  *   and issue a warning instead (issues 309 and 348).  These paths do not.
  *
- * @ignore Re-enable once the CompletionFailure crash is fixed (issue number TBD)
+ * @ignore Re-enable once the CompletionFailure crash is fixed (issue number 8055)
  *
  * @compile libsrc/Box.java libsrc/Missing.java libsrc/SuperTypeArg.java libsrc/Factory.java libsrc/MemberOnly.java
  * @build DeleteMissingClassFile
@@ -58,4 +58,4 @@
  * attribution and reports a normal "error: cannot access Missing", so the Checker Framework never
  * runs: extending SuperTypeArg, and reading a MemberOnly member whose type is the absent class.
  */
-public class MissingClassFile {}
+public class Issue8055 {}
