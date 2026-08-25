@@ -2603,7 +2603,12 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns all expressions that might be the result of {@code lambda}.
+   * Returns all expressions that might be the result of {@code lambda}; that is, the result
+   * expressions of {@code lambda} as defined in JLS 15.27.2.
+   *
+   * <p>For a lambda with a block body, these are the operands of the return statements whose return
+   * target (JLS 14.17) is {@code lambda}. Return statements in a nested lambda, or in a member of a
+   * class declared in the body, have a different return target and are not included.
    *
    * @param lambda a lambda with or without a body
    * @return a list of expressions that are returned by {@code lambda}
@@ -2627,6 +2632,17 @@ public final class TreeUtils {
           @Override
           public Void visitLambdaExpression(LambdaExpressionTree node, Void unused) {
             // Don't visit inside anther lambda.
+            return null;
+          }
+
+          @Override
+          public Void visitClass(ClassTree node, Void unused) {
+            // Don't visit inside a class declared in the body.  The return target of a return
+            // statement is the innermost enclosing constructor, method, or lambda expression
+            // (JLS 14.17), so a return in a member of an anonymous or local class declared in
+            // the body belongs to that member, not to the lambda.  TreeScanner reaches the body
+            // of an anonymous class through ClassTree, so this covers `new C() { ... }` as well
+            // as `class Local { ... }`.
             return null;
           }
         };
