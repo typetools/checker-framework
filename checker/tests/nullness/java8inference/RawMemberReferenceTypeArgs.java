@@ -20,4 +20,28 @@ public class RawMemberReferenceTypeArgs {
   static void concreteElement(Stream<? extends List<? extends Number>> lists) {
     Stream<? extends Iterator<? extends Number>> s = lists.map(List::iterator);
   }
+
+  /**
+   * G&lt;...&gt; exists, so the rule applies and {@code List}'s type argument is taken from
+   * capture(G&lt;...&gt;) rather than inferred. P1 is a capture of {@code ? extends List<@Nullable
+   * String>}, so the type to search is {@code List<@Nullable String>} and the method reference has
+   * type {@code Iterator<@Nullable String>}.
+   */
+  static void parameterizedSupertype(Stream<? extends List<@Nullable String>> lists) {
+    Stream<? extends Iterator<@Nullable String>> nullable = lists.map(List::iterator);
+    // The type argument came from P1, so it is @Nullable String and not @NonNull String.
+    // :: error: (assignment) :: error: (type.arguments.not.inferred)
+    Stream<? extends Iterator<@NonNull String>> nonNull = lists.map(List::iterator);
+  }
+
+  /**
+   * P1's only supertype at {@code List} is the raw type, so no parameterization G&lt;...&gt;
+   * exists, the rule does not apply, and {@code List}'s type argument is inferred instead. Nothing
+   * constrains it to {@code @Nullable String}: both assignments below are accepted, whereas in
+   * {@link #parameterizedSupertype} the second is an error.
+   */
+  static void rawSupertype(Stream<? extends List> lists) {
+    Stream<? extends Iterator<@Nullable String>> nullable = lists.map(List::iterator);
+    Stream<? extends Iterator<@NonNull String>> nonNull = lists.map(List::iterator);
+  }
 }

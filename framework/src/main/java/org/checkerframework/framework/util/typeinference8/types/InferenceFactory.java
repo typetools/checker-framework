@@ -79,17 +79,6 @@ public class InferenceFactory {
   private final Java8InferenceContext context;
 
   /**
-   * Cache for {@link #getTypeToSearch}. A key is present once the type to search has been computed
-   * for that method reference; the value is null if JLS 15.13.1's rule for a raw {@code
-   * ReferenceType} does not apply. Computing this once per method reference keeps {@link
-   * #createThetaForMethodReference} and {@link
-   * org.checkerframework.framework.util.typeinference8.InvocationTypeInference#createB2MethodRef}
-   * in agreement, in the same way that {@link Java8InferenceContext#maps} does for Theta.
-   */
-  private final Map<MemberReferenceTree, @Nullable AnnotatedTypeMirror> typesToSearch =
-      new HashMap<>();
-
-  /**
    * Creates an inference factory.
    *
    * @param context the context
@@ -100,80 +89,31 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns the type to search for the compile-time declaration of {@code memRef}, as specified by
-   * the second search in <a
-   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.1">JLS
-   * 15.13.1</a>:
+   * Returns the type to search for the compile-time declaration of {@code memRef}: the result of
+   * capture conversion applied to {@code G<...>}, as specified by the second search in JLS 15.13.1.
    *
-   * <blockquote>
-   * If {@code ReferenceType} is a raw type, and there exists a parameterization of this type,
-   * {@code G<...>}, that is a supertype of P1, the type to search is the result of capture
-   * conversion (&sect;5.1.10) applied to {@code G<...>}.
-   * </blockquote>
-   *
-   * <p>Returns null if that rule does not apply: if {@code memRef} is not of the form {@code
-   * ReferenceType :: Identifier} with a raw {@code ReferenceType}, if P1 is not known, or if no
-   * such parameterization {@code G<...>} exists. The caller then falls back to creating inference
-   * variables for the type parameters of {@code ReferenceType}.
-   *
-   * <p>Deriving the type arguments from P1 rather than inferring them is what keeps a wildcard from
-   * reaching the type-argument constraints of JLS 18.2.3, where containment of a wildcard by a type
-   * reduces to false.
+   * <p>Returns null if no parameterization {@code G<...>} of the raw {@code ReferenceType} is a
+   * supertype of P1, in which case the class's type arguments are inferred after all.
    *
    * @param memRef a method reference
    * @param p1 the first parameter type of the function type of the target type of {@code memRef},
-   *     which acts as the target reference of the invocation; or null if it is not known
-   * @return the type to search, or null if JLS 15.13.1's rule for a raw {@code ReferenceType} does
-   *     not apply
+   *     which acts as the target reference of the invocation
+   * @return the type to search, or null if no parameterization {@code G<...>} exists
    */
   public @Nullable AnnotatedTypeMirror getTypeToSearch(
-      MemberReferenceTree memRef, @Nullable AbstractType p1) {
-    if (typesToSearch.containsKey(memRef)) {
-      return typesToSearch.get(memRef);
-    }
-    if (p1 == null) {
-      // Do not cache, because a later call that knows P1 may be able to compute the type to
-      // search.  A caller that does not know P1 does not use the class's type arguments.
+      MemberReferenceTree memRef, AbstractType p1) {
+    if (!TreeUtils.isLikeDiamondMemberReference(memRef)) {
       return null;
     }
-    AnnotatedTypeMirror typeToSearch = computeTypeToSearch(memRef, p1);
-    typesToSearch.put(memRef, typeToSearch);
-    return typeToSearch;
-  }
-
-  /**
-   * Computes the value that {@link #getTypeToSearch} caches; see that method for the specification.
-   *
-   * @param memRef a method reference
-   * @param p1 the first parameter type of the function type of the target type of {@code memRef},
-   *     or null if it is not known
-   * @return the type to search, or null if JLS 15.13.1's rule for a raw {@code ReferenceType} does
-   *     not apply
-   */
-  private @Nullable AnnotatedTypeMirror computeTypeToSearch(
-      MemberReferenceTree memRef, @Nullable AbstractType p1) {
-    // isLikeDiamondMemberReference is exactly the JLS 15.13.1 condition: the method reference has
-    // the form `ReferenceType :: Identifier` (so it is unbound, and P1 acts as the target
-    // reference) and ReferenceType is raw.
-    if (p1 == null || !TreeUtils.isLikeDiamondMemberReference(memRef)) {
-      return null;
-    }
-    TypeElement classEle =
-        (TypeElement) ((Type) TreeUtils.typeOf(memRef.getQualifierExpression())).asElement();
-    // `G<...>`, the parameterization of ReferenceType that is a supertype of P1.
-    Type gJava = context.types.asSuper((Type) p1.getJavaType(), (Symbol) classEle);
-    if (gJava == null || gJava.isRaw()) {
+    AbstractType p1AsSuper = p1.asSuper(TreeUtils.typeOf(memRef.getQualifierExpression()));
+    if (p1AsSuper == null || p1AsSuper.isRaw()) {
       // P1 is not a subtype of ReferenceType, or its only such supertype is raw, so there is no
       // parameterization `G<...>` to use.
       return null;
     }
-    AbstractType g = p1.asSuper(gJava);
-    if (g == null) {
-      return null;
-    }
     // JLS 15.13.1 capture-converts `G<...>`, so the signature of the compile-time declaration is
     // expressed in capture variables rather than in the wildcards of `G<...>`.
-    return g.capture(context).getAnnotatedType();
+    return p1AsSuper.capture(context).getAnnotatedType();
   }
 
   /**
@@ -643,8 +583,7 @@ public class InferenceFactory {
    * @param compileTimeDecl type of generic method
    * @param p1 the first parameter type of the function type of the target type of {@code memRef},
    *     which acts as the target reference of the invocation; or null if it is not known. It is
-   *     used only to determine the type to search when {@code ReferenceType} is raw; see {@link
-   *     #getTypeToSearch}.
+   *     used only to determine the type to search when {@code ReferenceType} is raw.
    * @param context Java8InferenceContext
    * @return a mapping of the type variables of {@code compileTimeDecl} to inference variables
    */
@@ -659,15 +598,6 @@ public class InferenceFactory {
 
     Theta map = new Theta();
     TypeMirror preColonTreeType = TreeUtils.typeOf(memRef.getQualifierExpression());
-    // For a method reference of the form `ReferenceType :: Identifier` where ReferenceType is raw,
-    // JLS 15.13.1 does not infer the class's type arguments; it takes them from the type to
-    // search, capture(G<...>), where G<...> is the parameterization of ReferenceType that is a
-    // supertype of P1.  This is null when that rule does not apply, in which case the class's type
-    // arguments are inferred, as they are for a diamond constructor reference such as HashSet::new
-    // (JLS 15.9.3, a different rule).
-    AnnotatedTypeMirror typeToSearch = getTypeToSearch(memRef, p1);
-    List<AnnotatedTypeMirror> typeToSearchArgs =
-        typeToSearch == null ? null : ((AnnotatedDeclaredType) typeToSearch).getTypeArguments();
     List<Variable> classTypeArgVars = new ArrayList<>();
     if (TreeUtils.isDiamondMemberReference(memRef)
         || TreeUtils.isLikeDiamondMemberReference(memRef)) {
@@ -680,26 +610,19 @@ public class InferenceFactory {
       AnnotatedDeclaredType classType =
           (AnnotatedDeclaredType) typeFactory.getAnnotatedType(classTypeMirror.asElement());
 
-      if (((Type) preColonTreeType).getTypeArguments().isEmpty()) {
-        Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
-        for (TypeMirror typeMirror : classTypeMirror.getTypeArguments()) {
-          if (typeMirror.getKind() != TypeKind.TYPEVAR) {
-            throw new BugInCF("Expected type variable, found: %s", typeMirror);
-          }
-          TypeVariable pl = (TypeVariable) typeMirror;
-          AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-          @SuppressWarnings("interning:interned.object.creation") // no equal variable is created
-          Variable al = new @Interned Variable(atv, pl, memRef, context, map);
-          map.put(pl, al);
-          classTypeArgVars.add(al);
+      // `preColonTreeType` has no type arguments: `isDiamondMemberReference` requires that
+      // directly, and `isLikeDiamondMemberReference` requires `preColonTreeType` to be raw.
+      Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
+      for (TypeMirror typeMirror : classTypeMirror.getTypeArguments()) {
+        if (typeMirror.getKind() != TypeKind.TYPEVAR) {
+          throw new BugInCF("Expected type variable, found: %s", typeMirror);
         }
-        if (typeToSearchArgs != null && typeToSearchArgs.size() != classTypeArgVars.size()) {
-          throw new BugInCF(
-              "Type to search %s has %s type arguments, but %s has %s type parameters",
-              typeToSearch, typeToSearchArgs.size(), classEle, classTypeArgVars.size());
-        }
-      } else {
-        typeToSearchArgs = null;
+        TypeVariable pl = (TypeVariable) typeMirror;
+        AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
+        @SuppressWarnings("interning:interned.object.creation") // no equal variable is created
+        Variable al = new @Interned Variable(atv, pl, memRef, context, map);
+        map.put(pl, al);
+        classTypeArgVars.add(al);
       }
     }
 
@@ -716,7 +639,20 @@ public class InferenceFactory {
     for (Variable v : map.values()) {
       v.initialBounds(map);
     }
-    if (typeToSearchArgs != null) {
+
+    // For a method reference of the form `ReferenceType :: Identifier` where ReferenceType is raw,
+    // JLS 15.13.1 does not infer the class's type arguments; it takes them from the type to
+    // search, capture(G<...>), where G<...> is the parameterization of ReferenceType that is a
+    // supertype of P1.  When that rule does not apply, the class's type arguments are inferred, as
+    // they are for a diamond constructor reference such as HashSet::new (JLS 15.9.3, a different
+    // rule).
+    AnnotatedTypeMirror typeToSearch = getTypeToSearch(memRef, p1);
+    if (typeToSearch != null) {
+      List<AnnotatedTypeMirror> typeToSearchArgs =
+          ((AnnotatedDeclaredType) typeToSearch).getTypeArguments();
+      if (typeToSearchArgs.size() != classTypeArgVars.size()) {
+        throw new BugInCF("");
+      }
       // The class's type arguments are not inferred: JLS 15.13.1 fixes them to those of the type
       // to search.  Instantiating the variables, rather than omitting them, keeps the instantiation
       // in the InferenceResult, where the caller of inference needs it in order to substitute for

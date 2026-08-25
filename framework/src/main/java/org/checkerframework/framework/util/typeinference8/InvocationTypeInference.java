@@ -451,22 +451,18 @@ public class InvocationTypeInference {
     //   G<...>, that is a supertype of P1, the type to search is the result of capture
     //   conversion (§5.1.10) applied to G<...>; otherwise, the type to search is the same
     //   as the type of the first search.
-    // When that rule applies, createThetaForMethodReference has already instantiated the
-    // receiver's type arguments to those of capture(G<...>), so formals.get(0) is determined by
-    // P1 and a constraint against it would add nothing to the bound set.  JLS 15.13.1's second
-    // search likewise drops P1: it requires only that P1 be a subtype of the raw ReferenceType,
-    // which holds by construction here.  JLS 18.2.1 generates no parameter constraints at all for
-    // an inexact method reference, and a method reference whose ReferenceType is raw is always
-    // inexact (JLS 15.13.1).  The constraint would in fact reduce to false, because capture
+    // Whichever of those two types is the type to search, no constraint is generated against P1.
+    // JLS 18.2.1 generates no parameter constraints at all for an inexact method reference, and a
+    // method reference whose ReferenceType is raw is always inexact (JLS 15.13.1).  JLS 15.13.1's
+    // second search likewise drops P1: it requires only that P1 be a subtype of the raw
+    // ReferenceType, which holds by construction here.  When G<...> exists,
+    // createThetaForMethodReference has additionally instantiated the receiver's type arguments to
+    // those of capture(G<...>), so formals.get(0) is determined by P1; a constraint against it
+    // would add nothing to the bound set, and would in fact reduce to false, because capture
     // conversion produces fresh capture variables that P1's own type arguments are not subtypes
     // of.
-    int firstArg =
-        !args.isEmpty()
-                && context.inferenceTypeFactory.getTypeToSearch(
-                        executableType.getMethodRef(), args.get(0))
-                    != null
-            ? 1
-            : 0;
+    MemberReferenceTree methodRef = executableType.getMethodRef();
+    int firstArg = !args.isEmpty() && TreeUtils.isLikeDiamondMemberReference(methodRef) ? 1 : 0;
 
     for (int i = firstArg; i < formals.size(); i++) {
       AbstractType ei = args.get(i);
