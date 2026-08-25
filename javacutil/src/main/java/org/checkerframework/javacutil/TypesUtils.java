@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.NestingKind;
@@ -1444,6 +1445,63 @@ public final class TypesUtils {
     DeclaredType declType = (DeclaredType) typeelem.asType();
     return !declType.getTypeArguments().isEmpty()
         && ((DeclaredType) type).getTypeArguments().isEmpty();
+  }
+
+  /**
+   * Returns true if invoking {@code member} on a receiver of type {@code receiverType} is a call on
+   * a raw type.
+   *
+   * <p>Per <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.8">JLS
+   * section 4.8, "Raw Types"</a>, the type of a constructor or instance method of a raw type {@code
+   * C} that is not inherited from a supertype is the erasure of its type. The erasure has no type
+   * variables, so there is nothing to infer, and an argument of such a call is not part of an outer
+   * inference problem. (Static members are excluded: the type of a static method of a raw type is
+   * the same as its type in the generic declaration.)
+   *
+   * @param receiverType the receiver of the call, or null if the receiver is implicit; for a
+   *     constructor invocation, the class being instantiated
+   * @param member the method or constructor being invoked
+   * @return true if this is a call on a raw type
+   */
+  public static boolean isRawCall(
+      @Nullable TypeMirror receiverType,
+      ExecutableElement member,
+      javax.lang.model.util.Types types) {
+    if (receiverType == null
+        || ElementUtils.isStatic(member)
+        || receiverType.getKind() != TypeKind.DECLARED) {
+      return false;
+    }
+    // Section 4.8, "Raw Types".
+    // (https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.8)
+    //
+    // The type of a constructor (§8.8), instance method (8.4, 9.4), or non-static field
+    // (8.3) of a raw type C that is not inherited from its superclasses or superinterfaces
+    // is the raw type that corresponds to the erasure of its type in the generic declaration
+    // corresponding to C.
+    if (member.getEnclosingElement().equals(((DeclaredType) receiverType).asElement())) {
+      return TypesUtils.isRaw(receiverType);
+    }
+
+    // The below is checking for a super() call where the super type is a raw type.
+    // See framework/tests/all-systems/RawSuper.java for an example.
+    if (member.getKind() == ElementKind.CONSTRUCTOR) {
+      ExecutableElement constructor = member;
+      TypeMirror constructorClass = types.erasure(constructor.getEnclosingElement().asType());
+      TypeMirror directSuper = types.directSupertypes(receiverType).get(0);
+      while (!types.isSameType(types.erasure(directSuper), constructorClass)
+          && !TypesUtils.isObject(directSuper)) {
+        directSuper = types.directSupertypes(directSuper).get(0);
+      }
+      if (directSuper.getKind() == TypeKind.DECLARED) {
+        DeclaredType declaredType = (DeclaredType) directSuper;
+        TypeElement typeelem = (TypeElement) declaredType.asElement();
+        DeclaredType declty = (DeclaredType) typeelem.asType();
+        return !declty.getTypeArguments().isEmpty() && declaredType.getTypeArguments().isEmpty();
+      }
+    }
+
+    return false;
   }
 
   /**

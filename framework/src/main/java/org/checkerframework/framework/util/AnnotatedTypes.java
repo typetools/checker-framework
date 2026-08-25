@@ -448,35 +448,9 @@ public final class AnnotatedTypes {
    * @return true if the call to {@code method} with {@code receiver} raw
    */
   private static boolean isRawCall(AnnotatedDeclaredType receiver, Element method, Types types) {
-    // Section 4.8, "Raw Types".
-    // (https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.8)
-    //
-    // The type of a constructor (§8.8), instance method (8.4, 9.4), or non-static field
-    // (8.3) of a raw type C that is not inherited from its superclasses or superinterfaces
-    // is the raw type that corresponds to the erasure of its type in the generic declaration
-    // corresponding to C.
-    if (method.getEnclosingElement().equals(receiver.getUnderlyingType().asElement())) {
-      return receiver.isUnderlyingTypeRaw();
+    if (method instanceof ExecutableElement methodAsEE) {
+      return TypesUtils.isRawCall(receiver.getUnderlyingType(), methodAsEE, types);
     }
-
-    // The below is checking for a super() call where the super type is a raw type.
-    // See framework/tests/all-systems/RawSuper.java for an example.
-    if ("<init>".contentEquals(method.getSimpleName())) {
-      ExecutableElement constructor = (ExecutableElement) method;
-      TypeMirror constructorClass = types.erasure(constructor.getEnclosingElement().asType());
-      TypeMirror directSuper = types.directSupertypes(receiver.getUnderlyingType()).get(0);
-      while (!types.isSameType(types.erasure(directSuper), constructorClass)
-          && !TypesUtils.isObject(directSuper)) {
-        directSuper = types.directSupertypes(directSuper).get(0);
-      }
-      if (directSuper.getKind() == TypeKind.DECLARED) {
-        DeclaredType declaredType = (DeclaredType) directSuper;
-        TypeElement typeelem = (TypeElement) declaredType.asElement();
-        DeclaredType declty = (DeclaredType) typeelem.asType();
-        return !declty.getTypeArguments().isEmpty() && declaredType.getTypeArguments().isEmpty();
-      }
-    }
-
     return false;
   }
 
