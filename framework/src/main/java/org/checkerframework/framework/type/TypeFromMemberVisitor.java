@@ -2,18 +2,16 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePath;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -21,8 +19,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Converts a field or method tree into an AnnotatedTypeMirror.
@@ -119,7 +117,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       }
     }
 
-    AnnotatedTypeMirror lambdaParamType = inferLambdaParamAnnotations(f, elt);
+    AnnotatedTypeMirror lambdaParamType = inferLambdaParamAnnotations(f, result, elt);
     if (lambdaParamType != null) {
       return lambdaParamType;
     }
@@ -155,11 +153,14 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
    * Returns the type of the lambda parameter, or null if paramElement is not a lambda parameter.
    *
    * @param f the annotated type factory
-   * @param paramElement that might be a lambda parameter
+   * @param lambdaParam the type built from {@code paramElement}, which is javac's type for the
+   *     parameter plus default qualifiers; used to check that the type derived from the lambda's
+   *     function type is consistent with the type javac assigned
+   * @param paramElement an element that might be a lambda parameter
    * @return the type of the lambda parameter, or null if paramElement is not a lambda parameter
    */
   private static @Nullable AnnotatedTypeMirror inferLambdaParamAnnotations(
-      AnnotatedTypeFactory f, Element paramElement) {
+      AnnotatedTypeFactory f, AnnotatedTypeMirror lambdaParam, Element paramElement) {
     if (paramElement.getKind() != ElementKind.PARAMETER
         || f.declarationFromElement(paramElement) == null
         || f.getPath(f.declarationFromElement(paramElement)) == null
@@ -172,30 +173,30 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     if (declaredInTree instanceof LambdaExpressionTree lambdaDecl
         && TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
       int index = lambdaDecl.getParameters().indexOf(f.declarationFromElement(paramElement));
-
-      TreePath pathToLambda = f.getPath(lambdaDecl);
-      Tree enclosingTree =
-          pathToLambda == null ? null : TreePathUtil.getContextForPolyExpression(pathToLambda);
-      if ((enclosingTree instanceof MethodInvocationTree || enclosingTree instanceof NewClassTree)
-          && f.getTypeArgumentInference().isAnyInferenceInProgress()) {
-        // Below, f.getFunctionTypeFromTree(lambdaDecl) re-derives this lambda's target type by
-        // re-invoking method applicability/inference for the enclosing invocation, which in turn
-        // needs the type of that invocation's receiver and arguments. If any type argument
-        // inference is already running further up the call stack -- not necessarily for this
-        // exact enclosing invocation, but for any invocation that the re-derivation ends up
-        // revisiting while resolving those receivers/arguments (e.g. a call nested a few levels
-        // out whose own inference has not returned yet) -- redoing that work here can compute a
-        // different, incomplete answer than the one the in-progress inference will eventually
-        // settle on. See https://github.com/typetools/checker-framework/issues/7678 and
-        // https://github.com/typetools/checker-framework/issues/7698. Fall back to the real,
-        // already fully-resolved Java type that javac assigned to this parameter instead.
-        AnnotatedTypeMirror result = f.toAnnotatedType(paramElement.asType(), false);
-        f.addDefaultAnnotations(result);
-        return result;
+      // If an inference that is currently running has already determined this parameter's type,
+      // use it.  (Otherwise, inference would start again.)
+      AnnotatedTypeMirror funcTypeParam =
+          f.getTypeArgumentInference().getLambdaParameterType((VariableElement) paramElement);
+      if (funcTypeParam == null) {
+        // No inference is running, or none that is running determined this parameter's type.  An
+        // inference that has already finished may have.
+        funcTypeParam = f.getRecordedLambdaParameterType((VariableElement) paramElement);
       }
-
-      AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
-      return functionType.getParameterTypes().get(index);
+      if (funcTypeParam == null) {
+        AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
+        funcTypeParam = functionType.getParameterTypes().get(index);
+      }
+      // During type argument inference, the type of the parameters is assumed to be the
+      // same as the function parameter
+      // (https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2.1).  So if
+      // the underlying types are not the same type, then assume the lambda parameter is the
+      // same as the function type. (Use the erased types because the type arguments are not
+      // substituted when the annotated type arguments are.)
+      if (TypesUtils.isErasedSubtype(
+          funcTypeParam.underlyingType, lambdaParam.underlyingType, f.types)) {
+        return AnnotatedTypes.asSuper(f, funcTypeParam, lambdaParam);
+      }
+      return funcTypeParam;
     }
     return null;
   }

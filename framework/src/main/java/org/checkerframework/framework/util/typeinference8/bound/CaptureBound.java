@@ -77,6 +77,7 @@ public final class CaptureBound {
       AbstractType Ai = args.next();
 
       CaptureVariable alphai = (CaptureVariable) alphas.next();
+      alphai.setCapturedWildcard(Ai.getTypeKind() == TypeKind.WILDCARD);
       captureVariables.add(alphai);
       alphai.initialBounds(map);
 
