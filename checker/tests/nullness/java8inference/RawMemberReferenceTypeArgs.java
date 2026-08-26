@@ -1,6 +1,8 @@
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * For a method reference {@code ReferenceType :: Identifier} with a raw {@code ReferenceType}, JLS
