@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.function.Function;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -249,6 +250,21 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     String qualName1 = AnnotationUtils.annotationName(a1);
     String qualName2 = AnnotationUtils.annotationName(a2);
 
+    if (qualName1.equals(qualName2)) {
+      // For most same-named kinds, the LUB can be computed directly from each side's
+      // value/range without calling isSubtypeQualifiers(): extract each side's value/range once
+      // and reuse that same extraction both to detect that one is a subtype of the other (in
+      // which case return that annotation unchanged, exactly as the isSubtypeQualifiers() calls
+      // below would have) and, if not, to compute the union. This avoids extracting each side's
+      // value/range three times (once in each direction of isSubtypeQualifiers, and again for
+      // the union below). Returns null, falling back to the general subtype-based computation
+      // below, for the one same-named kind (@DoesNotMatchRegex) this doesn't handle.
+      AnnotationMirror merged = mergeSameKind(qualName1, a1, a2);
+      if (merged != null) {
+        return merged;
+      }
+    }
+
     if (isSubtypeQualifiers(a1, qualName1, a2, qualName2)) {
       return a2;
     } else if (isSubtypeQualifiers(a2, qualName2, a1, qualName1)) {
@@ -256,56 +272,31 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     }
 
     if (qualName1.equals(qualName2)) {
-      // If both are the same type, determine the type and merge
+      // mergeSameKind() above handles every same-named kind except the two below and the
+      // "top"/"bottom"/"poly" qualifiers (which the isSubtypeQualifiers() calls above already
+      // resolved).
       switch (qualName1) {
-        case ValueAnnotatedTypeFactory.INTRANGE_NAME -> {
-          // special handling for IntRange
-          Range intrange1 = atypeFactory.getRange(a1);
-          Range intrange2 = atypeFactory.getRange(a2);
-          return atypeFactory.createIntRangeAnnotation(intrange1.union(intrange2));
-        }
-        case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME -> {
-          // special handling for ArrayLenRange
-          Range range1 = atypeFactory.getRange(a1);
-          Range range2 = atypeFactory.getRange(a2);
-          return atypeFactory.createArrayLenRangeAnnotation(range1.union(range2));
-        }
-        case ValueAnnotatedTypeFactory.INTVAL_NAME -> {
-          List<Long> longs = atypeFactory.getIntValues(a1);
-          CollectionsP.adjoinAll(longs, atypeFactory.getIntValues(a2));
-          return atypeFactory.createIntValAnnotation(longs);
-        }
-        case ValueAnnotatedTypeFactory.ARRAYLEN_NAME -> {
-          List<Integer> arrayLens = atypeFactory.getArrayLength(a1);
-          CollectionsP.adjoinAll(arrayLens, atypeFactory.getArrayLength(a2));
-          return atypeFactory.createArrayLenAnnotation(arrayLens);
-        }
-        case ValueAnnotatedTypeFactory.STRINGVAL_NAME -> {
-          List<String> strings = atypeFactory.getStringValues(a1);
-          CollectionsP.adjoinAll(strings, atypeFactory.getStringValues(a2));
-          return atypeFactory.createStringAnnotation(strings);
-        }
-        case ValueAnnotatedTypeFactory.BOOLVAL_NAME -> {
-          List<Boolean> bools = atypeFactory.getBooleanValues(a1);
-          CollectionsP.adjoinAll(bools, atypeFactory.getBooleanValues(a2));
-          return atypeFactory.createBooleanAnnotation(bools);
-        }
-        case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME -> {
-          List<Double> doubles = atypeFactory.getDoubleValues(a1);
-          CollectionsP.adjoinAll(doubles, atypeFactory.getDoubleValues(a2));
-          return atypeFactory.createDoubleAnnotation(doubles);
-        }
-        case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME -> {
-          List<@Regex String> regexes = atypeFactory.getMatchesRegexValues(a1);
-          CollectionsP.adjoinAll(regexes, atypeFactory.getMatchesRegexValues(a2));
-          return atypeFactory.createMatchesRegexAnnotation(regexes);
-        }
         case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME -> {
+          // @DoesNotMatchRegex's subtyping direction is reversed from the other kinds (a
+          // *smaller* set of excluded regexes is the supertype), so it can't use the
+          // superset-check short-circuit that mergeBySupersetCheck() relies on.
           // The LUB is the intersection of the sets.
           List<@Regex String> regexes1 = atypeFactory.getDoesNotMatchRegexValues(a1);
           List<@Regex String> regexes2 = atypeFactory.getDoesNotMatchRegexValues(a2);
           regexes1.retainAll(regexes2);
           return atypeFactory.createDoesNotMatchRegexAnnotation(regexes1);
+        }
+        case ValueAnnotatedTypeFactory.BOOLVAL_NAME -> {
+          // Unlike the other getXValues() methods, getBooleanValues() returns null (meaning
+          // "top") for a well-formed annotation whose own value list already contains both
+          // true and false, not only for a null argument -- so it can't be called unconditionally
+          // up front the way mergeBySupersetCheck() does. That case isn't reachable here: the
+          // isSubtypeQualifiers() calls above extract raw, non-collapsed value lists, so a side
+          // whose own list already contains both booleans trivially contains the other side's
+          // values, and isSubtypeQualifiers() already returned above in that case.
+          List<Boolean> bools = atypeFactory.getBooleanValues(a1);
+          CollectionsP.adjoinAll(bools, atypeFactory.getBooleanValues(a2));
+          return atypeFactory.createBooleanAnnotation(bools);
         }
         default -> throw new TypeSystemError("default case: %s %s %s%n", qualName1, a1, a2);
       }
@@ -405,6 +396,144 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
 
     // In all other cases, the LUB is UnknownVal.
     return atypeFactory.UNKNOWNVAL;
+  }
+
+  /**
+   * Computes the least upper bound of {@code a1} and {@code a2}, which have the same qualifier name
+   * {@code qualName}, without calling {@link #isSubtypeQualifiers}. Used by {@link
+   * #leastUpperBoundQualifiers} to avoid extracting each side's value/range multiple times.
+   *
+   * @param qualName the qualifier name of both {@code a1} and {@code a2}
+   * @param a1 an annotation named {@code qualName}
+   * @param a2 an annotation named {@code qualName}
+   * @return the least upper bound of {@code a1} and {@code a2}, or null if {@code qualName} is a
+   *     kind not handled by this method (in which case the caller should fall back to the general,
+   *     isSubtypeQualifiers()-based computation)
+   */
+  @SuppressWarnings({
+    "regex:assignment", // getMatchesRegexValues returns valid @Regex strings
+    "regex:argument"
+  })
+  private @Nullable AnnotationMirror mergeSameKind(
+      String qualName, AnnotationMirror a1, AnnotationMirror a2) {
+    switch (qualName) {
+      case ValueAnnotatedTypeFactory.INTRANGE_NAME -> {
+        return mergeRanges(
+            a1,
+            atypeFactory.getRange(a1),
+            a2,
+            atypeFactory.getRange(a2),
+            atypeFactory::createIntRangeAnnotation);
+      }
+      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME -> {
+        return mergeRanges(
+            a1,
+            atypeFactory.getRange(a1),
+            a2,
+            atypeFactory.getRange(a2),
+            atypeFactory::createArrayLenRangeAnnotation);
+      }
+      case ValueAnnotatedTypeFactory.INTVAL_NAME -> {
+        return mergeBySupersetCheck(
+            a1,
+            atypeFactory.getIntValues(a1),
+            a2,
+            atypeFactory.getIntValues(a2),
+            atypeFactory::createIntValAnnotation);
+      }
+      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME -> {
+        return mergeBySupersetCheck(
+            a1,
+            atypeFactory.getArrayLength(a1),
+            a2,
+            atypeFactory.getArrayLength(a2),
+            atypeFactory::createArrayLenAnnotation);
+      }
+      case ValueAnnotatedTypeFactory.STRINGVAL_NAME -> {
+        return mergeBySupersetCheck(
+            a1,
+            atypeFactory.getStringValues(a1),
+            a2,
+            atypeFactory.getStringValues(a2),
+            atypeFactory::createStringAnnotation);
+      }
+      case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME -> {
+        return mergeBySupersetCheck(
+            a1,
+            atypeFactory.getDoubleValues(a1),
+            a2,
+            atypeFactory.getDoubleValues(a2),
+            atypeFactory::createDoubleAnnotation);
+      }
+      case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME -> {
+        return mergeBySupersetCheck(
+            a1,
+            atypeFactory.getMatchesRegexValues(a1),
+            a2,
+            atypeFactory.getMatchesRegexValues(a2),
+            atypeFactory::createMatchesRegexAnnotation);
+      }
+      default -> {
+        return null;
+      }
+    }
+  }
+
+  /**
+   * If {@code values2} contains every element of {@code values1}, returns {@code a2} (unchanged);
+   * else if {@code values1} contains every element of {@code values2}, returns {@code a1}
+   * (unchanged); otherwise returns the annotation, built by {@code createAnnotation}, for the union
+   * of {@code values1} and {@code values2}.
+   *
+   * @param <T> the type of the elements
+   * @param a1 an annotation whose value element is {@code values1}
+   * @param values1 {@code a1}'s values; this list is side-effected (values from {@code values2} may
+   *     be added to it)
+   * @param a2 an annotation whose value element is {@code values2}
+   * @param values2 {@code a2}'s values
+   * @param createAnnotation builds an annotation from a list of values
+   * @return the least upper bound of {@code a1} and {@code a2}
+   */
+  private <T> AnnotationMirror mergeBySupersetCheck(
+      AnnotationMirror a1,
+      List<T> values1,
+      AnnotationMirror a2,
+      List<T> values2,
+      Function<List<T>, AnnotationMirror> createAnnotation) {
+    if (values2.containsAll(values1)) {
+      return a2;
+    } else if (values1.containsAll(values2)) {
+      return a1;
+    }
+    CollectionsP.adjoinAll(values1, values2);
+    return createAnnotation.apply(values1);
+  }
+
+  /**
+   * If {@code range2} contains {@code range1}, returns {@code a2} (unchanged); else if {@code
+   * range1} contains {@code range2}, returns {@code a1} (unchanged); otherwise returns the
+   * annotation, built by {@code createAnnotation}, for the union of {@code range1} and {@code
+   * range2}.
+   *
+   * @param a1 an annotation whose range is {@code range1}
+   * @param range1 {@code a1}'s range
+   * @param a2 an annotation whose range is {@code range2}
+   * @param range2 {@code a2}'s range
+   * @param createAnnotation builds an annotation from a range
+   * @return the least upper bound of {@code a1} and {@code a2}
+   */
+  private AnnotationMirror mergeRanges(
+      AnnotationMirror a1,
+      Range range1,
+      AnnotationMirror a2,
+      Range range2,
+      Function<Range, AnnotationMirror> createAnnotation) {
+    if (range2.contains(range1)) {
+      return a2;
+    } else if (range1.contains(range2)) {
+      return a1;
+    }
+    return createAnnotation.apply(range1.union(range2));
   }
 
   @Override
