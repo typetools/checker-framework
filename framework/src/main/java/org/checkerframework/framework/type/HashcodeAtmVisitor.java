@@ -16,12 +16,7 @@ public class HashcodeAtmVisitor extends SimpleAnnotatedTypeScanner<Integer, Void
 
   /** Creates a {@link HashcodeAtmVisitor}. */
   public HashcodeAtmVisitor() {
-    // Plain addition is a weak combiner: it is order-insensitive, so component types visited in
-    // different structural positions can cancel out or coincide, causing many unequal
-    // AnnotatedTypeMirrors to hash to the same value. That collapses HashMap-based caches (e.g.
-    // SubtypeVisitHistory) keyed on AnnotatedTypeMirror into a few huge buckets, making lookups
-    // that should be O(1) amortized cost O(bucket size) instead.
-    super((r1, r2) -> r1 * 31 + r2, 0);
+    super(Objects::hash, 0);
   }
 
   /**
