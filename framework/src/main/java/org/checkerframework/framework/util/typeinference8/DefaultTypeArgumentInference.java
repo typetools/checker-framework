@@ -174,6 +174,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    *
    * @param tree tree that may need an outer tree to find the type
    * @param parentPath path to the parent of {@code tree} or null if no such parent exists
+   * @param types the type utilities
    * @return the outermost tree required to find the type of {@code tree}
    */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.

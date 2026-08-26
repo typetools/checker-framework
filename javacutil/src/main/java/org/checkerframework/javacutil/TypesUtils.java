@@ -1461,6 +1461,7 @@ public final class TypesUtils {
    * @param receiverType the receiver of the call, or null if the receiver is implicit; for a
    *     constructor invocation, the class being instantiated
    * @param member the method or constructor being invoked
+   * @param types the type utilities
    * @return true if this is a call on a raw type
    */
   public static boolean isRawCall(
