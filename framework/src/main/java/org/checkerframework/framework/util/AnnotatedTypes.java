@@ -430,28 +430,13 @@ public final class AnnotatedTypes {
       }
       case DECLARED -> {
         AnnotatedDeclaredType receiverTypeDT = (AnnotatedDeclaredType) receiverType;
-        if (isRawCall(receiverTypeDT, member, types)) {
+        if (TypesUtils.isRawCall(receiverTypeDT.getUnderlyingType(), member, types)) {
           return memberType.getErased();
         }
         return substituteTypeVariables(types, atypeFactory, receiverType, member, memberType);
       }
       default -> throw new BugInCF("asMemberOf called on unexpected type.%nt: %s", receiverType);
     }
-  }
-
-  /**
-   * Is the call to {@code method} with {@code receiver} raw?
-   *
-   * @param receiver type of the receiver of the call
-   * @param method the element of a method or constructor
-   * @param types type utilities
-   * @return true if the call to {@code method} with {@code receiver} raw
-   */
-  private static boolean isRawCall(AnnotatedDeclaredType receiver, Element method, Types types) {
-    if (method instanceof ExecutableElement methodAsEE) {
-      return TypesUtils.isRawCall(receiver.getUnderlyingType(), methodAsEE, types);
-    }
-    return false;
   }
 
   /**

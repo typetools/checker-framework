@@ -1448,26 +1448,25 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if invoking {@code member} on a receiver of type {@code receiverType} is a call on
-   * a raw type.
+   * Returns true if accessing {@code member} through a receiver of type {@code receiverType} is an
+   * access on a raw type.
    *
    * <p>Per <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.8">JLS
-   * section 4.8, "Raw Types"</a>, the type of a constructor or instance method of a raw type {@code
-   * C} that is not inherited from a supertype is the erasure of its type. The erasure has no type
-   * variables, so there is nothing to infer, and an argument of such a call is not part of an outer
-   * inference problem. (Static members are excluded: the type of a static method of a raw type is
-   * the same as its type in the generic declaration.)
+   * section 4.8, "Raw Types"</a>, the type of a constructor, instance method, or non-static field
+   * of a raw type {@code C} that is not inherited from a supertype is the erasure of its type. The
+   * erasure has no type variables, so for a method or constructor there is nothing to infer, and an
+   * argument of such a call is not part of an outer inference problem. (Static members are
+   * excluded: the type of a static member of a raw type is the same as its type in the generic
+   * declaration.)
    *
-   * @param receiverType the receiver of the call, or null if the receiver is implicit; for a
+   * @param receiverType the receiver of the access, or null if the receiver is implicit; for a
    *     constructor invocation, the class being instantiated
-   * @param member the method or constructor being invoked
+   * @param member the method, constructor, or field being accessed
    * @param types the type utilities
-   * @return true if this is a call on a raw type
+   * @return true if this is an access on a raw type
    */
   public static boolean isRawCall(
-      @Nullable TypeMirror receiverType,
-      ExecutableElement member,
-      javax.lang.model.util.Types types) {
+      @Nullable TypeMirror receiverType, Element member, javax.lang.model.util.Types types) {
     if (receiverType == null
         || ElementUtils.isStatic(member)
         || receiverType.getKind() != TypeKind.DECLARED) {
@@ -1487,8 +1486,7 @@ public final class TypesUtils {
     // The below is checking for a super() call where the super type is a raw type.
     // See framework/tests/all-systems/RawSuper.java for an example.
     if (member.getKind() == ElementKind.CONSTRUCTOR) {
-      ExecutableElement constructor = member;
-      TypeMirror constructorClass = types.erasure(constructor.getEnclosingElement().asType());
+      TypeMirror constructorClass = types.erasure(member.getEnclosingElement().asType());
       TypeMirror directSuper = types.directSupertypes(receiverType).get(0);
       while (!types.isSameType(types.erasure(directSuper), constructorClass)
           && !TypesUtils.isObject(directSuper)) {
