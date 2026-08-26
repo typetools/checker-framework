@@ -29,6 +29,7 @@ public class RawMemberReferenceTypeArgs {
    * String>}, so the type to search is {@code List<@Nullable String>} and the method reference has
    * type {@code Iterator<@Nullable String>}.
    */
+  @SuppressWarnings("unchecked")
   static void parameterizedSupertype(Stream<? extends List<@Nullable String>> lists) {
     Stream<? extends Iterator<@Nullable String>> nullable = lists.map(List::iterator);
     // The type argument came from P1, so it is @Nullable String and not @NonNull String.
@@ -42,6 +43,7 @@ public class RawMemberReferenceTypeArgs {
    * constrains it to {@code @Nullable String}: both assignments below are accepted, whereas in
    * {@link #parameterizedSupertype} the second is an error.
    */
+  @SuppressWarnings("unchecked")
   static void rawSupertype(Stream<? extends List> lists) {
     Stream<? extends Iterator<@Nullable String>> nullable = lists.map(List::iterator);
     Stream<? extends Iterator<@NonNull String>> nonNull = lists.map(List::iterator);

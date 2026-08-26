@@ -89,8 +89,10 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns the type to search for the compile-time declaration of {@code memRef}: the result of
-   * capture conversion applied to {@code G<...>}, as specified by the second search in JLS 15.13.1.
+   * Returns the capture-converted parameterization {@code capture(G<...>)} of the qualifier type of
+   * {@code memRef} that is a supertype of P1, as specified by the second search in JLS 15.13.1.
+   * This is used to fix the class's type arguments for a method reference of the form {@code
+   * ReferenceType :: Identifier} where {@code ReferenceType} is raw.
    *
    * <p>Returns null if no parameterization {@code G<...>} of the raw {@code ReferenceType} is a
    * supertype of P1, in which case the class's type arguments are inferred after all.
@@ -98,9 +100,10 @@ public class InferenceFactory {
    * @param memRef a method reference
    * @param p1 the first parameter type of the function type of the target type of {@code memRef},
    *     which acts as the target reference of the invocation
-   * @return the type to search, or null if no parameterization {@code G<...>} exists
+   * @return the capture-converted supertype of the qualifier type, or null if no parameterization
+   *     {@code G<...>} exists
    */
-  public @Nullable AnnotatedTypeMirror getTypeToSearch(
+  private @Nullable AnnotatedTypeMirror getCapturedSupertype(
       MemberReferenceTree memRef, AbstractType p1) {
     if (!TreeUtils.isLikeDiamondMemberReference(memRef)) {
       return null;
@@ -639,33 +642,26 @@ public class InferenceFactory {
     }
 
     // For a method reference of the form `ReferenceType :: Identifier` where ReferenceType is raw,
-    // JLS 15.13.1 does not infer the class's type arguments; it takes them from the type to
-    // search, capture(G<...>), where G<...> is the parameterization of ReferenceType that is a
-    // supertype of P1.  When that rule does not apply, the class's type arguments are inferred, as
-    // they are for a diamond constructor reference such as HashSet::new (JLS 15.9.3, a different
-    // rule).
-    AnnotatedTypeMirror typeToSearch = getTypeToSearch(memRef, p1);
-    if (typeToSearch != null) {
-      List<AnnotatedTypeMirror> typeToSearchArgs =
-          ((AnnotatedDeclaredType) typeToSearch).getTypeArguments();
-      if (typeToSearchArgs.size() != classTypeArgVars.size()) {
+    // and p1 is non-null. (p1 is the first parameter type of the function type of the target type
+    // of {@code memRef}.)
+    // If ReferenceType is a super type of P1, then the type arguments to ReferenceType are not
+    // inferred, but rather taken from the capture of (P1 as the super type ReferenceType).
+    AnnotatedTypeMirror capturedSupertype = getCapturedSupertype(memRef, p1);
+    if (capturedSupertype != null) {
+      List<AnnotatedTypeMirror> capturedSupertypeArgs =
+          ((AnnotatedDeclaredType) capturedSupertype).getTypeArguments();
+      if (capturedSupertypeArgs.size() != classTypeArgVars.size()) {
         throw new BugInCF(
-            "Type to search %s has %d type arguments, but %d inference variables were created for"
-                + " the class's type parameters of %s",
-            typeToSearch, typeToSearchArgs.size(), classTypeArgVars.size(), memRef);
+            "Captured supertype %s has %d type arguments, but %d inference variables were created"
+                + " for the class's type parameters of %s",
+            capturedSupertype, capturedSupertypeArgs.size(), classTypeArgVars.size(), memRef);
       }
-      // The class's type arguments are not inferred: JLS 15.13.1 fixes them to those of the type
-      // to search.  Instantiating the variables, rather than omitting them, keeps the instantiation
-      // in the InferenceResult, where the caller of inference needs it in order to substitute for
-      // the class's type parameters in the type of the method reference.
+      // The class's type arguments are not inferred: JLS 15.13.1 fixes them to those of the
+      // captured supertype.
       for (int i = 0; i < classTypeArgVars.size(); i++) {
-        classTypeArgVars
-            .get(i)
-            .getBounds()
-            .addBound(
-                null,
-                VariableBounds.BoundKind.EQUAL,
-                new ProperType(typeToSearchArgs.get(i), context));
+        ProperType typeArg = new ProperType(capturedSupertypeArgs.get(i), context);
+        Variable variable = classTypeArgVars.get(i);
+        variable.getBounds().addBound(null, VariableBounds.BoundKind.EQUAL, typeArg);
       }
     }
     context.maps.put(memRef, map);
