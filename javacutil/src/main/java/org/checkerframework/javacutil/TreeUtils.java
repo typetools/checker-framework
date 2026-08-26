@@ -183,6 +183,30 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns the explicit {@code this(...)} or {@code super(...)} call in the given constructor's
+   * body, or null if it contains neither.
+   *
+   * @param methodTree a constructor
+   * @return the explicit constructor call in the constructor's body, or null
+   */
+  public static @Nullable MethodInvocationTree getExplicitConstructorCall(MethodTree methodTree) {
+    BlockTree body = methodTree.getBody();
+    if (body == null) {
+      return null;
+    }
+    // The call need not be the first statement:  since Java 25, a constructor may run other
+    // statements before it.
+    for (StatementTree statement : body.getStatements()) {
+      if (statement instanceof ExpressionStatementTree expressionStatement
+          && expressionStatement.getExpression() instanceof MethodInvocationTree invocation
+          && (isThisConstructorCall(invocation) || isSuperConstructorCall(invocation))) {
+        return invocation;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Checks if the method call is a call to the given method name.
    *
    * @param name a method name
