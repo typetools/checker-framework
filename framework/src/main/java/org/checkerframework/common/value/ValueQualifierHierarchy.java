@@ -101,18 +101,27 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
 
   @Override
   public AnnotationMirror greatestLowerBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
-    if (isSubtypeQualifiers(a1, a2)) {
+    // Converting and computing the qualifier names once and passing them to both
+    // isSubtypeQualifiers() calls below avoids redoing that work in each direction. (`a1` and
+    // `a2` themselves are intentionally left unconverted, since this method returns one of them
+    // verbatim below.)
+    AnnotationMirror converted1 = atypeFactory.convertSpecialIntRangeToStandardIntRange(a1);
+    AnnotationMirror converted2 = atypeFactory.convertSpecialIntRangeToStandardIntRange(a2);
+    String qualName1 = AnnotationUtils.annotationName(converted1);
+    String qualName2 = AnnotationUtils.annotationName(converted2);
+
+    if (isSubtypeQualifiers(converted1, qualName1, converted2, qualName2)) {
       return a1;
-    } else if (isSubtypeQualifiers(a2, a1)) {
+    } else if (isSubtypeQualifiers(converted2, qualName2, converted1, qualName1)) {
       return a2;
     } else {
 
       // Implementation of GLB where one of the annotations is StringVal is needed for
       // length-based refinement of constant string values. Other cases of length-based
       // refinement are handled by subtype check.
-      if (AnnotationUtils.areSameByName(a1, ValueAnnotatedTypeFactory.STRINGVAL_NAME)) {
+      if (qualName1.equals(ValueAnnotatedTypeFactory.STRINGVAL_NAME)) {
         return glbOfStringVal(a1, a2);
-      } else if (AnnotationUtils.areSameByName(a2, ValueAnnotatedTypeFactory.STRINGVAL_NAME)) {
+      } else if (qualName2.equals(ValueAnnotatedTypeFactory.STRINGVAL_NAME)) {
         return glbOfStringVal(a2, a1);
       }
 
@@ -234,14 +243,17 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
 
     a1 = atypeFactory.convertSpecialIntRangeToStandardIntRange(a1);
     a2 = atypeFactory.convertSpecialIntRangeToStandardIntRange(a2);
-
-    if (isSubtypeQualifiers(a1, a2)) {
-      return a2;
-    } else if (isSubtypeQualifiers(a2, a1)) {
-      return a1;
-    }
+    // Computing the qualifier names once and passing them to both isSubtypeQualifiers() calls
+    // below (instead of calling the 2-argument overload, which would recompute them and redo the
+    // conversion above) avoids redoing that work in each direction.
     String qualName1 = AnnotationUtils.annotationName(a1);
     String qualName2 = AnnotationUtils.annotationName(a2);
+
+    if (isSubtypeQualifiers(a1, qualName1, a2, qualName2)) {
+      return a2;
+    } else if (isSubtypeQualifiers(a2, qualName2, a1, qualName1)) {
+      return a1;
+    }
 
     if (qualName1.equals(qualName2)) {
       // If both are the same type, determine the type and merge
@@ -423,17 +435,43 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
    * @return true if subAnno is a subtype of superAnno, false otherwise
    */
   @Override
-  @SuppressWarnings(
-      "regex:argument") // AnnotationUtils.getElementValueArray returns @Regex strings from regex
-  // annotations
   public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
     subAnno = atypeFactory.convertSpecialIntRangeToStandardIntRange(subAnno);
     superAnno = atypeFactory.convertSpecialIntRangeToStandardIntRange(superAnno);
-    String subQualName = AnnotationUtils.annotationName(subAnno);
+    return isSubtypeQualifiers(
+        subAnno,
+        AnnotationUtils.annotationName(subAnno),
+        superAnno,
+        AnnotationUtils.annotationName(superAnno));
+  }
+
+  /**
+   * Same as {@link #isSubtypeQualifiers(AnnotationMirror, AnnotationMirror)}, but the caller has
+   * already converted {@code subAnno} and {@code superAnno} via {@link
+   * ValueAnnotatedTypeFactory#convertSpecialIntRangeToStandardIntRange(AnnotationMirror)} and
+   * computed their qualifier names. {@link #leastUpperBoundQualifiers} and {@link
+   * #greatestLowerBoundQualifiers} each need the result of {@code isSubtypeQualifiers} in both
+   * directions, so calling this overload instead of the public one avoids doing that conversion and
+   * name computation twice.
+   *
+   * @param subAnno a converted annotation mirror
+   * @param subQualName the qualifier name of {@code subAnno}
+   * @param superAnno a converted annotation mirror
+   * @param superQualName the qualifier name of {@code superAnno}
+   * @return true if subAnno is a subtype of superAnno, false otherwise
+   */
+  @SuppressWarnings(
+      "regex:argument") // AnnotationUtils.getElementValueArray returns @Regex strings from regex
+  // annotations
+  private boolean isSubtypeQualifiers(
+      AnnotationMirror subAnno,
+      String subQualName,
+      AnnotationMirror superAnno,
+      String superQualName) {
     if (subQualName.equals(ValueAnnotatedTypeFactory.UNKNOWN_NAME)) {
       superAnno = atypeFactory.convertToUnknown(superAnno);
+      superQualName = AnnotationUtils.annotationName(superAnno);
     }
-    String superQualName = AnnotationUtils.annotationName(superAnno);
     if (superQualName.equals(ValueAnnotatedTypeFactory.UNKNOWN_NAME)
         || subQualName.equals(ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
       return true;
