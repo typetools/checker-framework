@@ -104,8 +104,8 @@ public class InferenceFactory {
    *     {@code G<...>} exists
    */
   private @Nullable AnnotatedTypeMirror getCapturedSupertype(
-      MemberReferenceTree memRef, AbstractType p1) {
-    if (!TreeUtils.isLikeDiamondMemberReference(memRef)) {
+      MemberReferenceTree memRef, @Nullable AbstractType p1) {
+    if (p1 == null || !TreeUtils.isLikeDiamondMemberReference(memRef)) {
       return null;
     }
     AbstractType p1AsSuper = p1.asSuper(TreeUtils.typeOf(memRef.getQualifierExpression()));
