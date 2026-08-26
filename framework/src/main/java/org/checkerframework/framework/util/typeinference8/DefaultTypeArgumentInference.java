@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util.typeinference8;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
@@ -208,8 +209,21 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
 
         Tree receiverTree = TreeUtils.getReceiverTree(methodInvocationTree);
-        if (receiverTree != null
-            && TypesUtils.isRawCall(TreeUtils.typeOf(receiverTree), methodElement, types)) {
+        TypeMirror receiverTypeOfCall;
+        if (receiverTree != null) {
+          receiverTypeOfCall = TreeUtils.typeOf(receiverTree);
+        } else if (TreeUtils.isSuperConstructorCall(methodInvocationTree)) {
+          // An explicit super(...) call has no receiver tree.  The invoked constructor is a
+          // member of the superclass, which isRawCall finds by walking up from the subtype, so
+          // pass the enclosing class.
+          ClassTree enclosingClass = TreePathUtil.enclosingClass(parentPath);
+          receiverTypeOfCall = enclosingClass == null ? null : TreeUtils.typeOf(enclosingClass);
+        } else {
+          // Any other implicit receiver is `this`, which is never raw.
+          receiverTypeOfCall = null;
+        }
+        if (receiverTypeOfCall != null
+            && TypesUtils.isRawCall(receiverTypeOfCall, methodElement, types)) {
           return tree;
         }
         if (argumentNeedsInference(

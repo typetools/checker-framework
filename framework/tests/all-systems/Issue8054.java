@@ -108,6 +108,29 @@ public class Issue8054 {
     Holder unused = new Holder(new Desc<>(ser));
   }
 
+  // A generic constructor of a *raw superclass*, invoked through an explicit super(...) call.
+  // super(...) has no receiver tree, so the enclosing class is passed to
+  // TypesUtils.isRawCall, which walks up to the superclass.  (RawSuper.java covers a raw
+  // superclass whose constructor is not generic, which does not reach this code path.)
+
+  static class Sup<K> {
+    <U> Sup(Desc<U> d) {}
+  }
+
+  static class SubRaw extends Sup {
+    SubRaw(Ser<String> ser) {
+      super(new Desc<>(ser));
+    }
+  }
+
+  // Contrast: the superclass is parameterized rather than raw, so the outer inference still
+  // applies to the super(...) call.
+  static class SubParameterized extends Sup<Object> {
+    SubParameterized(Ser<String> ser) {
+      super(new Desc<>(ser));
+    }
+  }
+
   // Variants that did not crash before the fix, to pin down which ingredients are required and to
   // check that declining the outer inference does not change their results.
 
