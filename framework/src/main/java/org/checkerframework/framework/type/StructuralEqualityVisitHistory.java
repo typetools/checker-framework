@@ -89,4 +89,10 @@ public class StructuralEqualityVisitHistory {
     falseHistory.remove(type1, type2, hierarchy);
     trueHistory.remove(type1, type2, hierarchy);
   }
+
+  /** Removes all entries from this history. */
+  public void clear() {
+    trueHistory.clear();
+    falseHistory.clear();
+  }
 }

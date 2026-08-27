@@ -1,10 +1,8 @@
 package org.checkerframework.framework.type;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.IdentityHashMap;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.plumelib.util.IPair;
 
 /**
  * THIS CLASS IS DESIGNED FOR USE WITH DefaultTypeHierarchy, DefaultRawnessComparer, and
@@ -27,18 +25,29 @@ import org.plumelib.util.IPair;
  * infinite recursion within it; letting the map grow for the whole compilation unit only makes
  * every subsequent lookup slower, for no benefit, since unrelated calls do not repeat the same
  * (type1, type2) pair.
+ *
+ * <p>Keys are compared by reference identity, not by {@link AnnotatedTypeMirror#equals}. Using
+ * structural equality here is both unnecessary (this is a cache: a false miss only costs
+ * recomputing an answer, never an incorrect one) and expensive, since {@code equals}/{@code
+ * hashCode} on AnnotatedTypeMirror recursively re-traverse the whole type -- including, for deeply
+ * self-referential (F-bounded) type variables, exactly the recursive structure this history exists
+ * to bound. Looking up such a key with a content-based hash therefore costs time proportional to
+ * the size of the type being visited, at every one of the many recursive calls the history is meant
+ * to short-circuit, which can make lookups dominate over the recursion itself.
  */
 public class SubtypeVisitHistory {
 
   /**
-   * The keys are pairs of types; the value is the set of qualifier hierarchy roots for which the
-   * key is in a subtype relationship.
+   * The keys are pairs of types, compared by reference identity; the value is the set of qualifier
+   * hierarchy roots for which the key is in a subtype relationship.
    */
-  private final Map<IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>, AnnotationMirrorSet> visited;
+  private final IdentityHashMap<
+          AnnotatedTypeMirror, IdentityHashMap<AnnotatedTypeMirror, AnnotationMirrorSet>>
+      visited;
 
   /** Creates a new SubtypeVisitHistory. */
   public SubtypeVisitHistory() {
-    this.visited = new HashMap<>();
+    this.visited = new IdentityHashMap<>();
   }
 
   /**
@@ -61,27 +70,34 @@ public class SubtypeVisitHistory {
       // Only store information about subtype relations that hold.
       return;
     }
-    IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = IPair.of(type1, type2);
-    AnnotationMirrorSet hit = visited.get(key);
+    IdentityHashMap<AnnotatedTypeMirror, AnnotationMirrorSet> innerMap =
+        visited.computeIfAbsent(type1, __ -> new IdentityHashMap<>());
+    AnnotationMirrorSet hit = innerMap.get(type2);
 
     if (hit != null) {
       hit.add(currentTop);
     } else {
       hit = new AnnotationMirrorSet();
       hit.add(currentTop);
-      this.visited.put(key, hit);
+      innerMap.put(type2, hit);
     }
   }
 
   /** Remove {@code type1} and {@code type2}. */
   public void remove(
       AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, AnnotationMirror currentTop) {
-    IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = IPair.of(type1, type2);
-    AnnotationMirrorSet hit = visited.get(key);
+    IdentityHashMap<AnnotatedTypeMirror, AnnotationMirrorSet> innerMap = visited.get(type1);
+    if (innerMap == null) {
+      return;
+    }
+    AnnotationMirrorSet hit = innerMap.get(type2);
     if (hit != null) {
       hit.remove(currentTop);
       if (hit.isEmpty()) {
-        visited.remove(key);
+        innerMap.remove(type2);
+        if (innerMap.isEmpty()) {
+          visited.remove(type1);
+        }
       }
     }
   }
@@ -94,8 +110,11 @@ public class SubtypeVisitHistory {
    */
   public boolean contains(
       AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, AnnotationMirror currentTop) {
-    IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = IPair.of(type1, type2);
-    AnnotationMirrorSet hit = visited.get(key);
+    IdentityHashMap<AnnotatedTypeMirror, AnnotationMirrorSet> innerMap = visited.get(type1);
+    if (innerMap == null) {
+      return false;
+    }
+    AnnotationMirrorSet hit = innerMap.get(type2);
     return hit != null && hit.contains(currentTop);
   }
 

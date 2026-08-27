@@ -85,9 +85,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
   /**
    * The number of {@link #isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)} calls currently on
-   * the stack. Used to clear {@link #isSubtypeVisitHistory} once the outermost such call returns,
-   * so that the history does not accumulate entries -- and lookups against it do not slow down --
-   * over the course of an entire compilation unit. See {@link SubtypeVisitHistory}.
+   * the stack. Used to clear {@link #isSubtypeVisitHistory} and {@link #areEqualVisitHistory} once
+   * the outermost such call returns, so that the histories -- which are now keyed by reference
+   * identity rather than structural equality (see {@link SubtypeVisitHistory}) -- do not accumulate
+   * an unbounded number of entries over the course of an entire compilation unit.
    */
   private int isSubtypeCallDepth = 0;
 
@@ -155,6 +156,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       isSubtypeCallDepth--;
       if (isSubtypeCallDepth == 0) {
         isSubtypeVisitHistory.clear();
+        areEqualVisitHistory.clear();
       }
     }
   }
