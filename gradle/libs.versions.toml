@@ -74,7 +74,7 @@ com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.6.1" }
 
 de-undercouch-download = { id = "de.undercouch.download", version = "5.7.0" }
 
-net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "5.1.0" }
+net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "5.1.1" }
 
 com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.10.0" }
 
