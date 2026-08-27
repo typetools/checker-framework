@@ -75,9 +75,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   protected final TypeMirror underlyingType;
 
   /**
-   * Saves the result of {@code underlyingType.toString().hashCode()} to use when computing the hash
-   * code of this. (Because AnnotatedTypeMirrors are mutable, the hash code for this cannot be
-   * saved.) Call {@link #getUnderlyingTypeHashCode()} rather than using the field directly.
+   * Saves the result of {@code underlyingType.hashCode()} to use when computing the hash code of
+   * this. (Because AnnotatedTypeMirrors are mutable, the hash code for this cannot be saved.) Call
+   * {@link #getUnderlyingTypeHashCode()} rather than using the field directly.
    */
   private int underlyingTypeHashCode = -1;
 
@@ -888,14 +888,21 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Returns the result of calling {@code underlyingType.toString().hashcode()}. This method saves
-   * the result in a field so that it isn't recomputed each time.
+   * Returns the result of calling {@code underlyingType.hashCode()}. This method saves the result
+   * in a field so that it isn't recomputed each time.
    *
-   * @return the result of calling {@code underlyingType.toString().hashcode()}
+   * <p>This uses the underlying type's own hash code rather than the hash code of its string
+   * representation, because {@link #equals} compares underlying types with {@code
+   * TypeMirror.equals}, which in javac is reference equality (except for array types, whose {@code
+   * hashCode} is likewise structural). A string-based hash code makes every pair of distinct but
+   * identically-printing types collide, which turns hash sets of types into linear -- or, once a
+   * bin treeifies, worse than linear -- scans of failing structural comparisons.
+   *
+   * @return the result of calling {@code underlyingType.hashCode()}
    */
   public int getUnderlyingTypeHashCode() {
     if (underlyingTypeHashCode == -1) {
-      underlyingTypeHashCode = underlyingType.toString().hashCode();
+      underlyingTypeHashCode = underlyingType.hashCode();
     }
     return underlyingTypeHashCode;
   }
