@@ -15,6 +15,12 @@ warning no longer require `-AcheckPurityAnnotations` to also be supplied.
 Made the field `Java8InferenceContext.pathToExpression` private; use
 `getPathToExpression()` and `setPathToExpression()` instead.
 
+`AnnotatedTypeMirror.hashCode()` now hashes only the top-level type rather than
+recursively hashing component types.  Removed class `HashcodeAtmVisitor`, field
+`AnnotatedTypeMirror.HASHCODE_VISITOR`, and method
+`AnnotatedTypeMirror.getUnderlyingTypeHashCode()`, which existed only to compute
+the old hash code.
+
 ### Closed issues
 
 \#7684.
