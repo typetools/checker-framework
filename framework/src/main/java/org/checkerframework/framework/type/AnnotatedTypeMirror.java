@@ -76,10 +76,14 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
   /**
    * Saves the result of {@code underlyingType.hashCode()} to use when computing the hash code of
-   * this. (Because AnnotatedTypeMirrors are mutable, the hash code for this cannot be saved.) Call
-   * {@link #getUnderlyingTypeHashCode()} rather than using the field directly.
+   * this. (Because AnnotatedTypeMirrors are mutable, the hash code for this cannot be saved.) This
+   * field is meaningful only if {@link #underlyingTypeHashCodeComputed} is true. Call {@link
+   * #getUnderlyingTypeHashCode()} rather than using the field directly.
    */
-  private int underlyingTypeHashCode = -1;
+  private int underlyingTypeHashCode;
+
+  /** True if {@link #underlyingTypeHashCode} has been computed. */
+  private boolean underlyingTypeHashCodeComputed = false;
 
   /** The annotations on this type. */
   // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
@@ -901,8 +905,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * @return the result of calling {@code underlyingType.hashCode()}
    */
   public int getUnderlyingTypeHashCode() {
-    if (underlyingTypeHashCode == -1) {
+    if (!underlyingTypeHashCodeComputed) {
       underlyingTypeHashCode = underlyingType.hashCode();
+      underlyingTypeHashCodeComputed = true;
     }
     return underlyingTypeHashCode;
   }
