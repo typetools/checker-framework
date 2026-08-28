@@ -310,10 +310,15 @@ public class BoundSet implements ReductionResult {
         }
       } else {
         for (Variable beta : alphaDependencies) {
-          if (!beta.isCaptureVariable()) {
-            // Otherwise, alpha depends on the resolution of beta.
-            dependencies.putOrAdd(alpha, beta);
-          }
+          // Otherwise, alpha depends on the resolution of beta.
+          //
+          // A capture variable for a wildcard is included.  JLS 18.5.2.1 creates a fresh variable
+          // for each type argument of a wildcard-parameterized return type, so a bound such as
+          // `G<beta1, beta2> <: alpha` has to make alpha depend on beta1 and beta2.  Without the
+          // dependency, alpha is resolved first, its lower bound `G<beta1, beta2>` is not yet
+          // proper, and alpha resolves to its upper bound instead.  See
+          // tests/all-systems/Issue8053.java.
+          dependencies.putOrAdd(alpha, beta);
         }
       }
       // An inference variable alpha depends on the resolution of itself.
