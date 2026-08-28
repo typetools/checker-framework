@@ -258,7 +258,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
       // below would have) and, if not, to compute the union. This avoids extracting each side's
       // value/range three times (once in each direction of isSubtypeQualifiers, and again for
       // the union below). Returns null, falling back to the general subtype-based computation
-      // below, for the one same-named kind (@DoesNotMatchRegex) this doesn't handle.
+      // below, for the same-named kinds it doesn't handle (@DoesNotMatchRegex and @BoolVal).
       AnnotationMirror merged = mergeSameKind(qualName1, a1, a2);
       if (merged != null) {
         return merged;
