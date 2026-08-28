@@ -17,7 +17,7 @@ import org.junit.runners.Parameterized.Parameters;
  */
 public class NullnessSlowTypecheckingTest extends CheckerFrameworkPerDirectoryTest {
 
-  protected NullnessSlowTypecheckingTest(List<File> testFiles, String... checkerOptions) {
+  public NullnessSlowTypecheckingTest(List<File> testFiles) {
     super(
         testFiles,
         org.checkerframework.checker.nullness.NullnessChecker.class,
