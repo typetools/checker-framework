@@ -84,6 +84,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   final ExecutableElement covariantValueElement;
 
   /**
+   * The number of {@link #isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)} calls currently on
+   * the stack. Used to clear {@link #isSubtypeVisitHistory} once the outermost such call returns,
+   * so that the history does not accumulate entries -- and lookups against it do not slow down --
+   * over the course of an entire compilation unit. See {@link SubtypeVisitHistory}.
+   */
+  private int isSubtypeCallDepth = 0;
+
+  /**
    * Creates a DefaultTypeHierarchy.
    *
    * @param checker the type-checker that is associated with this
@@ -134,13 +142,21 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    */
   @Override
   public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
-    for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
-      if (!isSubtype(subtype, supertype, top)) {
-        return false;
+    isSubtypeCallDepth++;
+    try {
+      for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+        if (!isSubtype(subtype, supertype, top)) {
+          return false;
+        }
+      }
+
+      return true;
+    } finally {
+      isSubtypeCallDepth--;
+      if (isSubtypeCallDepth == 0) {
+        isSubtypeVisitHistory.clear();
       }
     }
-
-    return true;
   }
 
   /** A set of annotations and a {@link TypeMirror}. */
