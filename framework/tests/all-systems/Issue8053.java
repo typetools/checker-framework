@@ -81,11 +81,16 @@ public class Issue8053 {
   // VariableBounds#getWildcardConstraints.
   static native <P> Getter<P, ? extends Number> upperWild(P p);
 
-  static List<Getter<?, ?>> upperBoundedWildcard(List<String> types) {
+  static List<Getter<?, ? extends Number>> upperBoundedWildcard(List<String> types) {
     return types.stream().map(t -> upperWild(t)).collect(Collectors.toList());
   }
 
-  // A lower-bounded wildcard in the return type, which takes the third branch.
+  // A lower-bounded wildcard in the return type, which takes the third branch.  The target type
+  // is not tightened to `List<Getter<?, ? super Number>>`, the way upperBoundedWildcard's is:
+  // CaptureBound#incorporate gives the capture variable the wildcard's bound only for
+  // `? extends T`, so the capture variable here has no lower bound and the tighter target fails
+  // under the Value Checker.  See CapturedWildcardBound#twoLevelSuper for why the symmetric bound
+  // is not added.
   static native <P> Getter<P, ? super Number> lowerWild(P p);
 
   static List<Getter<?, ?>> lowerBoundedWildcard(List<String> types) {

@@ -985,7 +985,19 @@ public final class AnnotatedTypes {
           glb.addAnnotation(superAnno);
         } // else don't add any annotation.
       } else {
-        throw new BugInCF("GLB: subtype: %s, supertype: %s", subtype, supertype);
+        if (supertype.getKind() != TypeKind.TYPEVAR) {
+          throw new BugInCF("Missing primary annotations: supertype: %s", supertype);
+        }
+        // The supertype is a type variable with no primary annotation, so it stands for the
+        // range of its bounds.  The greatest lower bound is subAnno, unless that range tops out
+        // below subAnno, in which case it is the effective upper bound annotation.
+        AnnotationMirrorSet ub = findEffectiveAnnotations(qualHierarchy, supertype);
+        AnnotationMirror ubAnno = qualHierarchy.findAnnotationInHierarchy(ub, top);
+        if (ubAnno != null && !qualHierarchy.isSubtypeShallow(subAnno, subTM, ubAnno, superTM)) {
+          glb.addAnnotation(ubAnno);
+        } else {
+          glb.addAnnotation(subAnno);
+        }
       }
     }
     return glb;
