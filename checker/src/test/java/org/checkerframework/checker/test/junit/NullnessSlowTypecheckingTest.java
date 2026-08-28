@@ -32,7 +32,7 @@ public class NullnessSlowTypecheckingTest extends CheckerFrameworkPerDirectoryTe
         testFiles,
         org.checkerframework.checker.nullness.NullnessChecker.class,
         "nullness-slow-typechecking",
-        "-AslowTypecheckingSeconds=20");
+        "-AslowTypecheckingSeconds=15");
   }
 
   @Parameters
