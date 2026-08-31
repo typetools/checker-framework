@@ -20,7 +20,6 @@ import org.junit.runners.Parameterized.Parameters;
  * so the same file reports roughly twice as much here as it does in an otherwise idle {@code java
  * -jar checker.jar} run. Measured for {@code Issue7023.java}: 5-7 seconds from the command line but
  * 12 through this test, and 19-31 through this test without the fix it guards.
- *
  */
 public class NullnessSlowTypecheckingTest extends CheckerFrameworkPerDirectoryTest {
 
