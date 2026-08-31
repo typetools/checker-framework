@@ -463,7 +463,7 @@ public class InvocationTypeInference {
     // conversion produces fresh capture variables that P1's own type arguments are not subtypes
     // of.
     MemberReferenceTree methodRef = executableType.getMethodRef();
-    int firstArg = !args.isEmpty() && TreeUtils.isLikeDiamondMemberReference(methodRef) ? 1 : 0;
+    int firstArg = !args.isEmpty() && TreeUtils.isRawTypedMemberReference(methodRef) ? 1 : 0;
 
     for (int i = firstArg; i < formals.size(); i++) {
       AbstractType ei = args.get(i);

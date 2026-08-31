@@ -105,7 +105,7 @@ public class InferenceFactory {
    */
   private @Nullable AnnotatedTypeMirror getCapturedSupertype(
       MemberReferenceTree memRef, @Nullable AbstractType p1) {
-    if (p1 == null || !TreeUtils.isLikeDiamondMemberReference(memRef)) {
+    if (p1 == null || !TreeUtils.isRawTypedMemberReference(memRef)) {
       return null;
     }
     AbstractType p1AsSuper = p1.asSuper(TreeUtils.typeOf(memRef.getQualifierExpression()));
@@ -602,8 +602,7 @@ public class InferenceFactory {
     Theta map = new Theta();
     TypeMirror preColonTreeType = TreeUtils.typeOf(memRef.getQualifierExpression());
     List<Variable> classTypeArgVars = new ArrayList<>();
-    if (TreeUtils.isDiamondMemberReference(memRef)
-        || TreeUtils.isLikeDiamondMemberReference(memRef)) {
+    if (TreeUtils.isDiamondMemberReference(memRef) || TreeUtils.isRawTypedMemberReference(memRef)) {
       // If memRef is a constructor or method of a generic class whose type argument isn't
       // specified such as HashSet::new or HashSet::put
       // then add variables for the type arguments to the class.
@@ -644,8 +643,8 @@ public class InferenceFactory {
     // For a method reference of the form `ReferenceType :: Identifier` where ReferenceType is raw,
     // and p1 is non-null. (p1 is the first parameter type of the function type of the target type
     // of {@code memRef}.)
-    // If ReferenceType is a super type of P1, then the type arguments to ReferenceType are not
-    // inferred, but rather taken from the capture of (P1 as the super type ReferenceType).
+    // If ReferenceType is a super type of p1, then the type arguments to ReferenceType are not
+    // inferred, but rather taken from the capture of (p1 as the super type ReferenceType).
     AnnotatedTypeMirror capturedSupertype = getCapturedSupertype(memRef, p1);
     if (capturedSupertype != null) {
       List<AnnotatedTypeMirror> capturedSupertypeArgs =
