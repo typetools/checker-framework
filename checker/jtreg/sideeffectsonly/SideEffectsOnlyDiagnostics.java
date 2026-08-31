@@ -2,9 +2,9 @@ import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 /**
  * Each of the two {@code @SideEffectsOnly} diagnostics below is issued once per call site, even
- * though dataflow analyzes each call site once per iteration of the loop and every checker that
- * Main.java runs this file through analyzes each call site. The diagnostic about the lambda is
- * likewise issued once, though every checker checks the lambda.
+ * though dataflow analyzes each call site once per iteration of the loop and every checker analyzes
+ * each call site. The diagnostic about the lambda is likewise issued once, though every checker
+ * checks the lambda.
  *
  * <p>The same holds of the diagnostic that {@code unparseable}'s declaration produces. Two checks
  * detect that error -- checking the annotation itself, and parsing the expression in order to check

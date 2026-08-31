@@ -447,10 +447,11 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         checker.reportError(
             node,
             "purity.unparseable.sideeffectsonly",
-            ElementUtils.getSimpleDescription(invokedElem),
-            exprString);
+            exprString,
+            ElementUtils.getSimpleDescription(invokedElem));
         // If an expression cannot be parsed at the call site, the checker cannot tell what the
-        // callee modifies, so be conservative.
+        // callee modifies.  The error above informs the user; report no further side effect for
+        // this call, because none can be determined.
         return Collections.emptyList();
       }
     }
@@ -552,8 +553,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         checker.reportError(
             node,
             "purity.unparseable.sideeffectsonly",
-            ElementUtils.getSimpleDescription(invokedElem),
-            exprString);
+            exprString,
+            ElementUtils.getSimpleDescription(invokedElem));
         return;
       }
       if (receiver == null) {
@@ -711,8 +712,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         checker.reportError(
             node,
             "purity.unparseable.sideeffectsonly",
-            ElementUtils.getSimpleDescription(constructorElt),
-            exprString);
+            exprString,
+            ElementUtils.getSimpleDescription(constructorElt));
         return Collections.emptyList();
       }
       if (atDeclaration instanceof ThisReference) {
