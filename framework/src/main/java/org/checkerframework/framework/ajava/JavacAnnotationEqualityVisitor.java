@@ -1,29 +1,32 @@
 package org.checkerframework.framework.ajava;
 
-import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.ModuleTree;
-import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeParameterTree;
-import java.util.Collections;
 import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.IPair;
 
 /**
  * Given two javac ASTs representing the same Java file that may differ in annotations, tests if
  * they have the same annotations.
  *
- * <p>To use this class, call {@link #scan} with the roots of the two ASTs. Then, check {@link
- * #getAnnotationsMatch}.
+ * <p>To use this class, call {@link #findMismatch(Tree, Tree)}. The comparison is order-sensitive:
+ * nodes with the same annotations in a different order are considered to differ. Only the first
+ * mismatch is returned even if multiple mismatches exist.
+ *
+ * <p>This is the javac-based replacement for {@link AnnotationEqualityVisitor}.
  */
 public class JavacAnnotationEqualityVisitor extends DoubleJavacVisitor {
 
-  /** True if no node with mismatched annotations has been seen. */
-  private boolean annotationsMatch = true;
+  /** The most recently visited tree from the first AST. Set by {@link #defaultAction}. */
+  private @Nullable Tree currentTree1 = null;
+
+  /** The most recently visited tree from the second AST. Set by {@link #defaultAction}. */
+  private @Nullable Tree currentTree2 = null;
 
   /** If a node with mismatched annotations has been seen, stores the node from the first AST. */
   private @MonotonicNonNull Tree mismatchedNode1 = null;
@@ -32,109 +35,63 @@ public class JavacAnnotationEqualityVisitor extends DoubleJavacVisitor {
   private @MonotonicNonNull Tree mismatchedNode2 = null;
 
   /** Constructs a {@code JavacAnnotationEqualityVisitor}. */
-  public JavacAnnotationEqualityVisitor() {
-    annotationsMatch = true;
-  }
+  private JavacAnnotationEqualityVisitor() {}
 
   /**
-   * Returns true if all visited pairs of nodes had matching annotations.
+   * Returns null if the two ASTs have matching annotations everywhere, or the first pair of
+   * corresponding nodes where annotations differ. The comparison is order-sensitive: nodes with the
+   * same annotations in a different order are considered to differ. Only the first mismatch is
+   * returned even if multiple mismatches exist.
    *
-   * @return true if all visited pairs of nodes had matching annotations
+   * @param tree1 root of the first AST
+   * @param tree2 root of the second AST
+   * @return null if annotations match everywhere, or a pair of corresponding nodes where
+   *     annotations first differed, with the first element from {@code tree1}'s AST and the second
+   *     from {@code tree2}'s AST
    */
-  public boolean getAnnotationsMatch() {
-    return annotationsMatch;
-  }
-
-  /**
-   * If a visited pair of nodes has had mismatched annotations, returns the node from the first AST
-   * where annotations differed, or null otherwise.
-   *
-   * @return the node from the first AST with differing annotations, or null
-   */
-  public @Nullable Tree getMismatchedNode1() {
-    return mismatchedNode1;
-  }
-
-  /**
-   * If a visited pair of nodes has had mismatched annotations, returns the node from the second AST
-   * where annotations differed, or null otherwise.
-   *
-   * @return the node from the second AST with differing annotations, or null
-   */
-  public @Nullable Tree getMismatchedNode2() {
-    return mismatchedNode2;
-  }
-
-  /**
-   * Returns the annotation trees on the given tree, or an empty list if the tree type does not
-   * carry annotations.
-   *
-   * <p>In javac's AST, annotations appear on {@link ModifiersTree} (declaration annotations),
-   * {@link AnnotatedTypeTree} (type-use annotations), {@link TypeParameterTree}, {@link
-   * PackageTree}, {@link ModuleTree}, and {@link NewArrayTree}.
-   *
-   * @param tree a tree
-   * @return the annotations on the tree
-   */
-  public static List<? extends AnnotationTree> getAnnotations(Tree tree) {
-    if (tree instanceof ModifiersTree t) {
-      return t.getAnnotations();
+  public static @Nullable IPair<Tree, Tree> findMismatch(Tree tree1, Tree tree2) {
+    JavacAnnotationEqualityVisitor visitor = new JavacAnnotationEqualityVisitor();
+    visitor.scan(tree1, tree2);
+    Tree node1 = visitor.mismatchedNode1;
+    Tree node2 = visitor.mismatchedNode2;
+    if (node1 != null && node2 != null) {
+      return IPair.of(node1, node2);
     }
-    if (tree instanceof AnnotatedTypeTree t) {
-      return t.getAnnotations();
-    }
-    if (tree instanceof TypeParameterTree t) {
-      return t.getAnnotations();
-    }
-    if (tree instanceof PackageTree t) {
-      return t.getAnnotations();
-    }
-    if (tree instanceof ModuleTree t) {
-      return t.getAnnotations();
-    }
-    if (tree instanceof NewArrayTree t) {
-      return t.getAnnotations();
-    }
-    return Collections.emptyList();
-  }
-
-  /**
-   * Compares two lists of annotation trees by their string representations. Javac trees do not
-   * implement structural {@code equals}, so string comparison is used instead. Javac tree {@code
-   * toString} does not include comments, so no comment-stripping is needed.
-   *
-   * @param annos1 the first list of annotations
-   * @param annos2 the second list of annotations
-   * @return true if the two lists represent the same annotations
-   */
-  private static boolean annotationsEqual(
-      List<? extends AnnotationTree> annos1, List<? extends AnnotationTree> annos2) {
-    if (annos1.size() != annos2.size()) {
-      return false;
-    }
-    for (int i = 0; i < annos1.size(); i++) {
-      if (!annos1.get(i).toString().equals(annos2.get(i).toString())) {
-        return false;
-      }
-    }
-    return true;
+    return null;
   }
 
   @Override
   protected Void defaultAction(Tree tree1, Tree tree2) {
-    if (!annotationsMatch) {
-      return null;
-    }
-
-    List<? extends AnnotationTree> annos1 = getAnnotations(tree1);
-    List<? extends AnnotationTree> annos2 = getAnnotations(tree2);
-
-    if (!annotationsEqual(annos1, annos2)) {
-      annotationsMatch = false;
-      mismatchedNode1 = tree1;
-      mismatchedNode2 = tree2;
-    }
-
+    currentTree1 = tree1;
+    currentTree2 = tree2;
     return null;
+  }
+
+  @Override
+  protected void visitAnnotationList(
+      List<? extends AnnotationTree> annotations1, List<? extends AnnotationTree> annotations2) {
+    if (mismatchedNode1 != null) {
+      return;
+    }
+    // currentTree1/2 are always set by defaultAction before visitAnnotationList is called.
+    Tree ct1 = currentTree1;
+    Tree ct2 = currentTree2;
+    if (ct1 == null || ct2 == null) {
+      return;
+    }
+    if (annotations1.size() != annotations2.size()) {
+      mismatchedNode1 = ct1;
+      mismatchedNode2 = ct2;
+      return;
+    }
+    for (int i = 0; i < annotations1.size(); i++) {
+      AnnotationMirror mirror1 = TreeUtils.annotationFromAnnotationTree(annotations1.get(i));
+      AnnotationMirror mirror2 = TreeUtils.annotationFromAnnotationTree(annotations2.get(i));
+      if (!AnnotationUtils.areSame(mirror1, mirror2)) {
+        mismatchedNode1 = ct1;
+        mismatchedNode2 = ct2;
+        return;
+      }
+    }
   }
 }
