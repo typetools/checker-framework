@@ -1,6 +1,7 @@
 package org.checkerframework.afu.scenelib.el;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import org.checkerframework.afu.scenelib.io.ASTPath;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
@@ -11,7 +12,7 @@ public abstract class ADeclaration extends AElement {
    * The element's insert-annotation invocations; map key is the AST path to the insertion place.
    */
   public final VivifyingMap<ASTPath, ATypeElement> insertAnnotations =
-      new VivifyingMap<ASTPath, ATypeElement>(new TreeMap<>()) {
+      new VivifyingMap<>(new TreeMap<>()) {
         @Override
         public ATypeElement createValueFor(ASTPath k) {
           return new ATypeElement(k);
@@ -28,7 +29,7 @@ public abstract class ADeclaration extends AElement {
    * place
    */
   public final VivifyingMap<ASTPath, ATypeElementWithType> insertTypecasts =
-      new VivifyingMap<ASTPath, ATypeElementWithType>(new TreeMap<>()) {
+      new VivifyingMap<>(new TreeMap<>()) {
         @Override
         public ATypeElementWithType createValueFor(ASTPath k) {
           return new ATypeElementWithType(k);
@@ -69,9 +70,7 @@ public abstract class ADeclaration extends AElement {
 
   @Override
   public int hashCode() {
-    return super.hashCode()
-        + (insertAnnotations == null ? 0 : insertAnnotations.hashCode())
-        + (insertTypecasts == null ? 0 : insertTypecasts.hashCode());
+    return Objects.hash(super.hashCode(), insertAnnotations, insertTypecasts);
   }
 
   @Override

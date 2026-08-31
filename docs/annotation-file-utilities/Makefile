@@ -1,5 +1,8 @@
 
+.PHONY: all test clean
 all: annotation-file-format.pdf annotation-file-format.html
+
+test: all
 
 .PHONY: figures
 figures:
@@ -16,6 +19,7 @@ annotation-file-format.html: annotation-file-format.pdf
 plume-bib:
 	cd ../.. && ./gradlew getPlumeBib
 
+.PHONY: clean
 clean:
-	latexmk -C annotation-file-format.tex
-	make -C figures clean
+	@latexmk -silent -C annotation-file-format.tex || latexmk -C annotation-file-format.tex
+	@make -C figures --quiet clean

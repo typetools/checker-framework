@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -32,9 +33,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.plumelib.reflection.ReflectionPlume;
+import org.plumelib.reflection.ReflectionP;
 import org.plumelib.util.ArrayMap;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Builds an annotation mirror that may have some values.
@@ -48,10 +49,10 @@ import org.plumelib.util.StringsPlume;
  * </ol>
  *
  * Once an annotation is built, no further modification or calls to build can be made. Otherwise, a
- * {@link IllegalStateException} is thrown.
+ * {@link BugInCF} is thrown.
  *
- * <p>All setter methods throw {@link IllegalArgumentException} if the specified element is not
- * found, or if the given value is not a subtype of the expected type.
+ * <p>All setter methods throw {@link BugInCF} if the specified element is not found, or if the
+ * given value is not a subtype of the expected type.
  *
  * <p>TODO: Doesn't type-check arrays yet
  */
@@ -184,8 +185,7 @@ public class AnnotationBuilder {
               ? "Is the class in checker-qual.jar?"
               : "Is the class on the compilation classpath, which is:"
                   + System.lineSeparator()
-                  + ReflectionPlume.classpathToString();
-      new Error("Backtrace:").printStackTrace();
+                  + ReflectionP.classpathToString();
       throw new UserError("AnnotationBuilder: fromClass can't load class %s%n" + extra, name);
     }
     return res;
@@ -200,7 +200,7 @@ public class AnnotationBuilder {
    *
    * @param elements the element utilities to use
    * @param name the name of the annotation to create
-   * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't be
+   * @return an {@link AnnotationMirror} of type {@code name} or null if the annotation couldn't be
    *     loaded
    */
   public static @Nullable AnnotationMirror fromName(
@@ -219,7 +219,7 @@ public class AnnotationBuilder {
    * @param elements the element utilities to use
    * @param name the name of the annotation to create
    * @param elementNamesValues the values for the annotation's elements/fields
-   * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't be
+   * @return an {@link AnnotationMirror} of type {@code name} or null if the annotation couldn't be
    *     loaded
    */
   public static @Nullable AnnotationMirror fromName(
@@ -713,26 +713,22 @@ public class AnnotationBuilder {
         return toStringVal;
       }
       StringBuilder buf = new StringBuilder();
-      buf.append("@");
+      buf.append('@');
       buf.append(annotationName);
       int len = elementValues.size();
       if (len > 0) {
-        buf.append('(');
-        boolean first = true;
+        StringJoiner sj = new StringJoiner(", ", "(", ")");
         for (Map.Entry<ExecutableElement, AnnotationValue> pair : elementValues.entrySet()) {
-          if (!first) {
-            buf.append(", ");
-          }
-          first = false;
-
+          StringBuilder element = new StringBuilder();
           String name = pair.getKey().getSimpleName().toString();
           if (len > 1 || !name.equals("value")) {
-            buf.append(name);
-            buf.append('=');
+            element.append(name);
+            element.append('=');
           }
-          buf.append(pair.getValue());
+          element.append(pair.getValue());
+          sj.add(element);
         }
-        buf.append(')');
+        buf.append(sj);
       }
       toStringVal = buf.toString().intern();
       return toStringVal;
@@ -771,7 +767,7 @@ public class AnnotationBuilder {
       } else if (value instanceof Character) {
         toStringVal = "\'" + value + "\'";
       } else if (value instanceof List<?> list) {
-        toStringVal = "{" + StringsPlume.join(", ", list) + "}";
+        toStringVal = "{" + StringsP.join(", ", list) + "}";
       } else if (value instanceof VariableElement var) {
         // for Enums
         String encl = var.getEnclosingElement().toString();

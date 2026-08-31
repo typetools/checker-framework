@@ -19,4 +19,3 @@ class TypeParamMethod:
     method foo2(Ljava/util/Date;Ljava/util/Date;)V:
         return:
         insert-annotation Method.typeParameter 1: @java.lang.Tainted
-

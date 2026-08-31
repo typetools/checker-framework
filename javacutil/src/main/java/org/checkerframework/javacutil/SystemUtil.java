@@ -16,7 +16,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.qual.IntVal;
 
 /** This file contains basic utility functions. */
-public class SystemUtil {
+public final class SystemUtil {
 
   /** Do not instantiate. */
   private SystemUtil() {
@@ -141,12 +141,18 @@ public class SystemUtil {
    * @return the number of bytes for this UTF-* character
    * @throws IllegalArgumentException if the bit pattern is invalid
    */
-  private static @IntVal({1, 2, 3, 4}) int getByteCount(byte b) throws IllegalArgumentException {
-    if ((b >= 0)) return 1; // Pattern is 0xxxxxxx.
-    if ((b >= (byte) 0b11000000) && (b <= (byte) 0b11011111)) return 2; // Pattern is 110xxxxx.
-    if ((b >= (byte) 0b11100000) && (b <= (byte) 0b11101111)) return 3; // Pattern is 1110xxxx.
-    if ((b >= (byte) 0b11110000) && (b <= (byte) 0b11110111)) return 4; // Pattern is 11110xxx.
-    throw new IllegalArgumentException(); // Invalid first byte for UTF-8 character.
+  private static @IntVal({1, 2, 3, 4}) int getByteCount(byte b) {
+    if ((b >= 0)) {
+      return 1; // Pattern is 0xxxxxxx.
+    } else if ((b >= (byte) 0b11000000) && (b <= (byte) 0b11011111)) {
+      return 2; // Pattern is 110xxxxx.
+    } else if ((b >= (byte) 0b11100000) && (b <= (byte) 0b11101111)) {
+      return 3; // Pattern is 1110xxxx.
+    } else if ((b >= (byte) 0b11110000) && (b <= (byte) 0b11110111)) {
+      return 4; // Pattern is 11110xxx.
+    } else {
+      throw new IllegalArgumentException(); // Invalid first byte for UTF-8 character.
+    }
   }
 
   /** The major version number of the Java runtime (JRE), such as 17, 21, or 25. */

@@ -37,8 +37,10 @@ final class InPackageCriterion implements Criterion {
       return false;
     }
 
-    Criteria.dbug.debug(
-        "InPackageCriterion.isSatisfiedBy(%s); this=%s", Main.leafString(path), this.toString());
+    if (Criteria.dbug.isEnabled()) {
+      Criteria.dbug.debug(
+          "InPackageCriterion.isSatisfiedBy(%s); this=%s", Main.leafString(path), this.toString());
+    }
 
     do {
       Tree tree = path.getLeaf();
@@ -54,7 +56,9 @@ final class InPackageCriterion implements Criterion {
       path = path.getParentPath();
     } while (path != null && path.getLeaf() != null);
 
-    Criteria.dbug.debug("InPackageCriterion.isSatisfiedBy => false");
+    if (Criteria.dbug.isEnabled()) {
+      Criteria.dbug.debug("InPackageCriterion.isSatisfiedBy => false");
+    }
     return false;
   }
 

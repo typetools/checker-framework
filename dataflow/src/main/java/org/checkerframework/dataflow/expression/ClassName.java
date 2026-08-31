@@ -32,19 +32,6 @@ public class ClassName extends JavaExpression {
   }
 
   @Override
-  public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ClassName other)) {
-      return false;
-    }
-    return typeString.equals(other.typeString);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(typeString);
-  }
-
-  @Override
   public String toString() {
     return typeString + ".class";
   }
@@ -68,6 +55,19 @@ public class ClassName extends JavaExpression {
   @Override
   public boolean isModifiableByOtherCode() {
     return false;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof ClassName other)) {
+      return false;
+    }
+    return typeString.equals(other.typeString);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(typeString);
   }
 
   @Override

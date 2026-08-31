@@ -109,50 +109,84 @@ clean {
 test.dependsOn(testExample)
 test.dependsOn(testAnnotator)
 
+// The OptionsDoclet rewrites Main.java's Javadoc without regard to this project's formatting
+// conventions, so run `./gradlew spotlessApply` afterward, as a separate Gradle invocation.
+// (`finalizedBy("spotlessApply")` would not be reliable: if the same build also runs
+// spotlessApply for another reason, Gradle may schedule it before these tasks rather than
+// after, leaving Main.java unformatted.)
 tasks.register("updateUserOptions") {
-  dependsOn(
-      "updateUserOptionsJavadoc",
-      "updateUserOptionsHtml"
-      )
+  description = "Updates documentation of command-line arguments, in Javadoc and in the manual."
+  group = "documentation"
+  dependsOn("updateUserOptionsJavadoc", "updateUserOptionsHtml")
 }
 
-tasks.register("updateUserOptionsJavadoc", Javadoc) {
-  dependsOn("assemble")
-  description = "Updates documentation of command-line arguments in Javadoc."
+/**
+ * Creates a task named taskName that runs the OptionsDoclet to update the documentation of
+ * command-line arguments in docfile.
+ *
+ * @param taskName the name of the task to create
+ * @param taskDescription description of the task
+ * @param format the OptionsDoclet output format: "javadoc" or "html"
+ * @param docfile the file whose command-line argument documentation to update
+ * @return a TaskProvider for the new task
+ */
+def createUpdateUserOptionsTask(taskName, taskDescription, format, docfile) {
+  tasks.register(taskName, Javadoc) {
+    dependsOn("assemble")
+    // This task runs the OptionsDoclet rather than the standard doclet.  Under JDK 25 and
+    // JDK 26, running javadoc with a non-standard doclet throws "java.lang.AssertionError:
+    // ignored flag: -Xlint:-options".  JDK 21's javadoc works, so use it no matter which JDK
+    // runs Gradle.  This build configures no toolchain download resolver, so running this task
+    // requires a locally installed JDK 21; without one, it fails with "No matching toolchains
+    // found for requested specification".  Remove this pinning once javadoc again accepts a
+    // non-standard doclet under the JDK that runs Gradle.
+    // The OptionsDoclet loads the documented classes, so this JDK must be able to read them;
+    // that is, `targetCompatibility` (see the root build.gradle) must not exceed 21.
+    javadocTool = javaToolchains.javadocToolFor {
+      languageVersion = JavaLanguageVersion.of(21)
+    }
+    description = taskDescription
 
-  // Include only sources from annotation-file-utilities, not from scene-lib.
-  source = fileTree(dir: "src", include: "**/*.java")
-  exclude("org.checkerframework.afu.scenelib.io.classfile/**")
-  classpath = project.sourceSets.main.compileClasspath + project.sourceSets.main.runtimeClasspath
-  options.memberLevel = JavadocMemberLevel.PRIVATE
-  options.docletpath = project.sourceSets.main.runtimeClasspath as List
-  options.doclet = "org.plumelib.options.OptionsDoclet"
-  options.addStringOption("docfile", "${projectDir}/src/annotator/Main.java")
-  options.addStringOption("format", "javadoc")
-  options.addStringOption("i", "-quiet")
-  options.addStringOption("source", "8")
-  options.noTimestamp(false)
-  title = ""
+    // Exclude scene-lib's classfile package.  Otherwise the @Option fields of ClassFileReader
+    // and ClassFileWriter appear in the annotator's documentation.
+    source = sourceSets.main.allJava
+    exclude("org/checkerframework/afu/scenelib/io/classfile/**")
+    classpath = project.sourceSets.main.compileClasspath + project.sourceSets.main.runtimeClasspath
+    // The OptionsDoclet writes to docfile rather than to destinationDir, but Gradle requires
+    // every Javadoc task to have a destination.  Give each task its own, so that these tasks
+    // do not have overlapping outputs with one another or with the `javadoc` task, all of
+    // which the java plugin otherwise points at "build/docs/javadoc".
+    destinationDir = file(layout.buildDirectory.dir("docs/${taskName}"))
+    // Nothing is written to destinationDir, and docfile is not declared as an output, so
+    // Gradle's up-to-date check would skip this task whenever the source files are unchanged,
+    // even if docfile had been edited by hand.  docfile cannot be declared as an output,
+    // because for updateUserOptionsJavadoc it is also an input (it is one of the source
+    // files).  So, always run this task.
+    outputs.upToDateWhen { false }
+    options.memberLevel = JavadocMemberLevel.PRIVATE
+    options.docletpath = project.sourceSets.main.runtimeClasspath as List
+    options.doclet = "org.plumelib.options.OptionsDoclet"
+    options.addStringOption("docfile", docfile)
+    options.addStringOption("format", format)
+    options.addStringOption("i", "-quiet")
+    options.noTimestamp(false)
+    title = ""
+  }
 }
 
-tasks.register("updateUserOptionsHtml", Javadoc) {
-  dependsOn("assemble")
-  description = "Updates documentation of command-line arguments in the manual."
+createUpdateUserOptionsTask(
+    "updateUserOptionsJavadoc",
+    "Updates documentation of command-line arguments in Javadoc.",
+    "javadoc",
+    "${projectDir}/src/main/java/org/checkerframework/afu/annotator/Main.java")
 
-  // Include only sources from annotation-file-utilities, not from scene-lib.
-  source = fileTree(dir: "src", include: "**/*.java")
-  exclude("org.checkerframework.afu.scenelib.io.classfile/**")
-  classpath = project.sourceSets.main.compileClasspath + project.sourceSets.main.runtimeClasspath
-  options.memberLevel = JavadocMemberLevel.PRIVATE
-  options.docletpath = project.sourceSets.main.runtimeClasspath as List
-  options.doclet = "org.plumelib.options.OptionsDoclet"
-  options.addStringOption("docfile", "${projectDir}/annotation-file-utilities.html")
-  options.addStringOption("format", "html")
-  options.addStringOption("i", "-quiet")
-  options.addStringOption("source", "8")
-  options.noTimestamp(false)
-  title = ""
-}
+createUpdateUserOptionsTask(
+    "updateUserOptionsHtml",
+    "Updates documentation of command-line arguments in the manual.",
+    "html",
+    // Read `afuManualDir` through `rootProject.ext`.  An unqualified reference would be an
+    // implicit lookup of a property in a parent project, which Gradle 10 will reject.
+    rootProject.file("${rootProject.ext.afuManualDir}/annotation-file-utilities.html").toString())
 
 tasks.named("assemble") {
   dependsOn(shadowJar)

@@ -10,6 +10,8 @@ import org.checkerframework.afu.scenelib.util.EqualByStringRepresentation;
  * Each subclass represents one kind of type allowed by the Java language.
  */
 public abstract class AnnotationFieldType extends EqualByStringRepresentation {
+  /** Creates a AnnotationFieldType. */
+  public AnnotationFieldType() {}
 
   /**
    * Returns the string representation of the type that would appear in an index file. Used by

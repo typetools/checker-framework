@@ -26,7 +26,7 @@ apply from: rootProject.file("gradle-mvn-push.gradle")
 
 /** Adds information to the publication for uploading to Maven repositories. */
 final checkerUtilPom(publication) {
-  sharedPublicationConfiguration(publication)
+  rootProject.sharedPublicationConfiguration(publication)
   publication.from(components.java)
   publication.pom {
     name = "Checker Util"

@@ -13,4 +13,3 @@ class ExplicitUpper:
 package :
 class ImplicitUpper:
     insert-annotation Class.typeParameter 0, TypeParameter.bound 0: @B
-

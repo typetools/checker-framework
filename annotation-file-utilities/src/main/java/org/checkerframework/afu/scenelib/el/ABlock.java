@@ -1,6 +1,7 @@
 package org.checkerframework.afu.scenelib.el;
 
 import java.util.Map;
+import java.util.Objects;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
 
 /**
@@ -44,7 +45,7 @@ public class ABlock extends AExpression {
 
   @Override
   public int hashCode() {
-    return super.hashCode() + locals.hashCode();
+    return Objects.hash(super.hashCode(), locals);
   }
 
   @Override

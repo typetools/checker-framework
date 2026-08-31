@@ -1,10 +1,11 @@
 package org.checkerframework.afu.scenelib.test.classfile;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 import org.checkerframework.afu.scenelib.el.AScene;
@@ -172,7 +173,10 @@ public class AnnotationsTest {
   private void writeClass(String oldFileName, String newFileName, AScene scene, boolean overwrite) {
     try {
       ClassFileWriter.insert(
-          scene, new FileInputStream(oldFileName), new FileOutputStream(newFileName), overwrite);
+          scene,
+          Files.newInputStream(Paths.get(oldFileName)),
+          new FileOutputStream(newFileName),
+          overwrite);
     } catch (Throwable e) {
       System.err.printf(
           "caught exception in writeClass(oldFileName=%s, newFileName=%s, ...):%n",
@@ -222,9 +226,9 @@ public class AnnotationsTest {
   private void assertClassAnnotations(String correctClass, String generatedClass) {
 
     try {
-      InputStream correctIs = new FileInputStream(correctClass);
+      InputStream correctIs = Files.newInputStream(Paths.get(correctClass));
 
-      InputStream generatedIs = new FileInputStream(generatedClass);
+      InputStream generatedIs = Files.newInputStream(Paths.get(generatedClass));
 
       ClassReader crCorrect = new ClassReader(correctIs);
       ClassReader crGenerated = new ClassReader(generatedIs);

@@ -140,7 +140,11 @@ public class AField extends ADeclaration {
     StringBuilder sb = new StringBuilder();
     sb.append("AField ");
     sb.append(name);
-    sb.append(" [typeMirror=" + typeMirror + "; init=" + init + "; annos=");
+    sb.append(" [typeMirror=");
+    sb.append(typeMirror);
+    sb.append("; init=");
+    sb.append(init);
+    sb.append("; annos=");
     tlAnnotationsHereFormatted(sb);
     sb.append("; type=");
     type.tlAnnotationsHereFormatted(sb);
@@ -155,7 +159,7 @@ public class AField extends ADeclaration {
   }
 
   static <K extends Object> VivifyingMap<K, AField> newVivifyingLHMap_AF() {
-    return new VivifyingMap<K, AField>(new LinkedHashMap<>()) {
+    return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public AField createValueFor(K k) {
         return new AField(k.toString());

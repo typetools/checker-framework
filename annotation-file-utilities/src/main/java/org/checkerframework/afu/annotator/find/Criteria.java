@@ -73,14 +73,18 @@ public final class Criteria {
     assert path.getLeaf() == leaf;
     for (Criterion c : criteria.values()) {
       if (!c.isSatisfiedBy(path, leaf)) {
-        dbug.debug(
-            "UNsatisfied criterion of type %s [%s]:%n    leaf=%s%n",
-            c, c.getClass(), Main.leafString(path));
+        if (dbug.isEnabled()) {
+          dbug.debug(
+              "UNsatisfied criterion of type %s [%s]:%n    leaf=%s%n",
+              c, c.getClass(), Main.leafString(path));
+        }
         return false;
       } else {
-        dbug.debug(
-            "satisfied criterion of type %s [%s]:%n    leaf=%s%n",
-            c, c.getClass(), Main.leafString(path));
+        if (dbug.isEnabled()) {
+          dbug.debug(
+              "satisfied criterion of type %s [%s]:%n    leaf=%s%n",
+              c, c.getClass(), Main.leafString(path));
+        }
       }
     }
 
@@ -101,10 +105,14 @@ public final class Criteria {
   public boolean isSatisfiedBy(@Nullable TreePath path) {
     for (Criterion c : criteria.values()) {
       if (!c.isSatisfiedBy(path)) {
-        dbug.debug("UNsatisfied criterion: %s%n", c);
+        if (dbug.isEnabled()) {
+          dbug.debug("UNsatisfied criterion: %s%n", c);
+        }
         return false;
       } else {
-        dbug.debug("satisfied criterion: %s%n", c);
+        if (dbug.isEnabled()) {
+          dbug.debug("satisfied criterion: %s%n", c);
+        }
       }
     }
 

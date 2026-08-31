@@ -11,7 +11,7 @@ import org.plumelib.util.UniqueId;
 public interface Block extends UniqueId {
 
   /** The types of basic blocks. */
-  public static enum BlockType {
+  public enum BlockType {
 
     /** A regular basic block. */
     REGULAR_BLOCK,

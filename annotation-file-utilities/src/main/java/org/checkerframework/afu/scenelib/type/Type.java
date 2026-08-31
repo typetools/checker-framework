@@ -6,6 +6,7 @@ import java.util.List;
 /**
  * A representation of a Java type. Handles type parameters, bounded types, arrays and inner types.
  */
+@SuppressWarnings("PMD.ShortClassName")
 public abstract class Type {
 
   /** The different kinds of {@link Type}s. */
@@ -57,7 +58,7 @@ public abstract class Type {
    * @return the annotations
    */
   public List<String> getAnnotations() {
-    return new ArrayList<String>(annotations);
+    return new ArrayList<>(annotations);
   }
 
   /** Removes the annotations from this type. */

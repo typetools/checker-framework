@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /** Handle javac class {@code CommandLine} under all versions of the JDK. */
-public class CommandLineUtils {
+public final class CommandLineUtils {
 
   /** Do not instantiate. */
   private CommandLineUtils() {

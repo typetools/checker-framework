@@ -17,17 +17,18 @@ import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.ToStringComparator;
 
 /**
  * A store that extends {@code CFAbstractStore} and additionally tracks which fields of the 'self'
  * reference have been initialized.
  *
+ * @param <V> the type of values in the abstract store
+ * @param <S> the type of the abstract store
  * @see InitializationTransfer
  */
 public class InitializationStore<V extends CFAbstractValue<V>, S extends InitializationStore<V, S>>
@@ -102,14 +103,13 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
    * the 'invariant' annotation.
    */
   @Override
-  public void updateForMethodCall(
-      MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, V val) {
+  public void updateForMethodCall(MethodInvocationNode n, V val) {
     // Remove invariant annotated fields to avoid performance issue reported in #1438.
     for (FieldAccess invariantField : invariantFields.keySet()) {
       fieldValues.remove(invariantField);
     }
 
-    super.updateForMethodCall(n, atypeFactory, val);
+    super.updateForMethodCall(n, val);
 
     // Add invariant annotation again.
     fieldValues.putAll(invariantFields);
@@ -241,7 +241,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
             "initialized fields", ToStringComparator.sorted(initializedFields));
 
     List<VariableElement> invariantVars =
-        CollectionsPlume.mapList(FieldAccess::getField, invariantFields.keySet());
+        CollectionsP.mapList(FieldAccess::getField, invariantFields.keySet());
     String invariantVisualize =
         viz.visualizeStoreKeyVal("invariant fields", ToStringComparator.sorted(invariantVars));
 

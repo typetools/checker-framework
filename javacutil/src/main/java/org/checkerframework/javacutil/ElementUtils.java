@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -40,13 +39,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.plumelib.util.ArraySet;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * Utility methods for analyzing {@code Element}s. This complements {@link Elements}, providing
  * functionality that it does not.
  */
-public class ElementUtils {
+public final class ElementUtils {
 
   // Class cannot be instantiated.
   private ElementUtils() {
@@ -287,7 +286,7 @@ public class ElementUtils {
     if (enclosing == null) { // is this possible?
       return simpleName;
     }
-    if (ElementUtils.isTypeElement(enclosing)) {
+    if (isTypeElement(enclosing)) {
       return getBinaryName((TypeElement) enclosing) + "$" + simpleName;
     } else if (enclosing.getKind() == ElementKind.PACKAGE) {
       PackageElement pe = (PackageElement) enclosing;
@@ -313,30 +312,48 @@ public class ElementUtils {
   public static String getSimpleSignature(ExecutableElement element) {
     // note: constructor simple name is <init>
     StringJoiner sj = new StringJoiner(",", element.getSimpleName() + "(", ")");
-    for (Iterator<? extends VariableElement> i = element.getParameters().iterator();
-        i.hasNext(); ) {
-      sj.add(TypesUtils.simpleTypeName(i.next().asType()));
+    for (VariableElement paramElt : element.getParameters()) {
+      sj.add(TypesUtils.simpleTypeName(paramElt.asType()));
     }
     return sj.toString();
   }
 
   /**
    * Returns a user-friendly name for the given method, which includes the name of the enclosing
-   * type. Does not return {@code "<init>"} or {@code "<clinit>"} as
-   * ExecutableElement.getSimpleName() does.
+   * type. Does not return {@code "<init>"} or {@code "<clinit>"} as {@link
+   * ExecutableElement#getSimpleName()} does.
    *
    * @param element a method declaration
    * @return a user-friendly name for the method
    */
   public static CharSequence getSimpleDescription(ExecutableElement element) {
-    String enclosingTypeName =
-        ((TypeElement) element.getEnclosingElement()).getSimpleName().toString();
+    CharSequence enclosingTypeName =
+        getSimpleDescription((TypeElement) element.getEnclosingElement());
     Name methodName = element.getSimpleName();
     return switch (methodName.toString()) {
       case "<init>" -> enclosingTypeName + " constructor";
       case "<clinit>" -> "class initializer for " + enclosingTypeName;
       default -> enclosingTypeName + "." + methodName;
     };
+  }
+
+  /**
+   * Returns a user-friendly name for the given type. Does not return the empty string as {@link
+   * TypeElement#getSimpleName()} does for an anonymous class.
+   *
+   * @param element a type declaration
+   * @return a user-friendly name for the type
+   */
+  public static CharSequence getSimpleDescription(TypeElement element) {
+    Name simpleName = element.getSimpleName();
+    if (!simpleName.isEmpty()) {
+      return simpleName;
+    }
+    // An anonymous class has an empty simple name, so name it by its supertype: the interface it
+    // implements if there is one, and otherwise the class it extends.
+    List<? extends TypeMirror> interfaces = element.getInterfaces();
+    TypeMirror supertype = interfaces.isEmpty() ? element.getSuperclass() : interfaces.get(0);
+    return "anonymous " + TypesUtils.simpleTypeName(supertype);
   }
 
   /**
@@ -561,7 +578,7 @@ public class ElementUtils {
       TypeMirror t = element.getEnclosingElement().asType();
       return TypesUtils.hasEnclosingType(t);
     } else if (element.getKind() == ElementKind.FIELD) {
-      if (ElementUtils.isStatic(element)
+      if (isStatic(element)
           // Artificial fields in interfaces are not marked as static, so check that
           // the field is not declared in an interface.
           || element.getEnclosingElement().getKind().isInterface()) {
@@ -572,7 +589,7 @@ public class ElementUtils {
         return !element.getSimpleName().contentEquals("this");
       }
     }
-    return element.getKind() == ElementKind.METHOD && !ElementUtils.isStatic(element);
+    return element.getKind() == ElementKind.METHOD && !isStatic(element);
   }
 
   /**
@@ -628,7 +645,7 @@ public class ElementUtils {
       // For each direct supertype of the current type element, if it
       // hasn't already been visited, push it onto the stack and
       // add it to our superElems set.
-      TypeElement supercls = ElementUtils.getSuperClass(current);
+      TypeElement supercls = getSuperClass(current);
       if (supercls != null) {
         if (!superElems.contains(supercls)) {
           stack.push(supercls);
@@ -665,7 +682,7 @@ public class ElementUtils {
   public static List<TypeElement> getDirectSuperTypeElements(TypeElement type, Elements elements) {
     TypeMirror superclass = type.getSuperclass();
     List<? extends TypeMirror> interfaces = type.getInterfaces();
-    List<TypeElement> result = new ArrayList<TypeElement>(interfaces.size() + 1);
+    List<TypeElement> result = new ArrayList<>(interfaces.size() + 1);
     if (superclass.getKind() != TypeKind.NONE) {
       @SuppressWarnings("nullness:assignment") // Not null because the TypeKind is not NONE.
       @NonNull TypeElement superclassElement = TypesUtils.getTypeElement(superclass);
@@ -736,6 +753,21 @@ public class ElementUtils {
       meths.addAll(ElementFilter.methodsIn(atype.getEnclosedElements()));
     }
     return Collections.unmodifiableList(meths);
+  }
+
+  /**
+   * Returns the no-argument constructor of the given type, or null if it has none.
+   *
+   * @param type a type
+   * @return the type's no-argument constructor, or null if it has none
+   */
+  public static @Nullable ExecutableElement getNoArgumentConstructor(TypeElement type) {
+    for (ExecutableElement constructor : ElementFilter.constructorsIn(type.getEnclosedElements())) {
+      if (constructor.getParameters().isEmpty()) {
+        return constructor;
+      }
+    }
+    return null;
   }
 
   /**
@@ -963,7 +995,7 @@ public class ElementUtils {
   public static List<TypeElement> getAllSupertypes(TypeElement type, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-    return CollectionsPlume.<Type, TypeElement>mapList(
+    return CollectionsP.<Type, TypeElement>mapList(
         t -> (TypeElement) t.tsym, javacTypes.closure(((Symbol) type).type));
   }
 
@@ -1021,7 +1053,7 @@ public class ElementUtils {
    * @deprecated use {@link TypeElement#getRecordComponents}
    */
   @Deprecated(forRemoval = true, since = "4.0.0")
-  @SuppressWarnings({"unchecked", "nullness"}) // because of cast from reflection
+  @SuppressWarnings("unchecked")
   public static List<? extends Element> getRecordComponents(TypeElement element) {
     return element.getRecordComponents();
   }

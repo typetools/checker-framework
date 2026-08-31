@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.TreeSet;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeKind;
@@ -47,6 +48,7 @@ import org.checkerframework.afu.scenelib.type.BoundedType;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.objectweb.asm.TypePath;
 
 /**
@@ -178,7 +180,7 @@ public class Insertions implements Iterable<Insertion> {
 
   @Override
   public Iterator<Insertion> iterator() {
-    return new Iterator<Insertion>() {
+    return new Iterator<>() {
       private Iterator<Map<String, Set<Insertion>>> miter = store.values().iterator();
       // These two fields are initially empty iterators, but are set the first time that hasNext is
       // called.
@@ -202,6 +204,7 @@ public class Insertions implements Iterable<Insertion> {
       }
 
       @Override
+      @SideEffectsOnly("this")
       public Insertion next() {
         if (hasNext()) {
           return iiter.next();
@@ -210,6 +213,7 @@ public class Insertions implements Iterable<Insertion> {
       }
 
       @Override
+      @SideEffectsOnly("this")
       public void remove() {
         throw new UnsupportedOperationException();
       }
@@ -446,7 +450,7 @@ public class Insertions implements Iterable<Insertion> {
       }
 
       // First find the relevant "top-level" insertion, if any.
-      Deque<ASTPath> astack = new ArrayDeque<ASTPath>(localTypePath.size());
+      Deque<ASTPath> astack = new ArrayDeque<>(localTypePath.size());
       ASTPath topLevelTypePath = localTypePath;
       do {
         astack.push(topLevelTypePath);
@@ -1391,15 +1395,11 @@ public class Insertions implements Iterable<Insertion> {
 
       @Override
       public String toString() {
-        StringBuilder sb = new StringBuilder(base.toString());
-        String s = "<";
+        StringJoiner sj = new StringJoiner(", ", base.toString() + "<", ">");
         for (Tree t : typeArgs) {
-          sb.append(s);
-          sb.append(t.toString());
-          s = ", ";
+          sj.add(t.toString());
         }
-        sb.append('>');
-        return sb.toString();
+        return sj.toString();
       }
     }
 

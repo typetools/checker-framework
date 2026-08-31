@@ -1,15 +1,15 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.ExpressionTree;
-import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
-import javax.lang.model.type.IntersectionType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.util.typeinference8.types.AbstractType.Kind;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
@@ -35,10 +35,12 @@ import org.checkerframework.javacutil.TypesUtils;
    */
   protected final ExpressionTree invocation;
 
-  /** Type variable for which the instantiation of this variable is a type argument, */
+  /** The Java type variable for which the instantiation of this variable is a type argument. */
   protected final TypeVariable typeVariableJava;
 
-  /** Type variable for which the instantiation of this variable is a type argument, */
+  /**
+   * The annotated type variable for which the instantiation of this variable is a type argument.
+   */
   protected final AnnotatedTypeVariable typeVariable;
 
   /** A mapping from type variable to inference variable. */
@@ -117,20 +119,21 @@ import org.checkerframework.javacutil.TypesUtils;
     // for each type T delimited by & in the TypeBound, the bound {@literal al <: T[P1:=a1,...,
     // Pp:=ap]} appears in the set; if this results in no proper upper bounds for al (only
     // dependencies), then the bound {@literal al <: Object} also appears in the set.
-    switch (upperBound.getKind()) {
-      case INTERSECTION -> {
-        Iterator<? extends TypeMirror> iter =
-            ((IntersectionType) upperBound).getBounds().iterator();
-        for (AnnotatedTypeMirror bound : typeVariable.getUpperBound().directSupertypes()) {
-          AbstractType t1 = InferenceType.create(bound, iter.next(), map, context);
-          variableBounds.addBound(null, BoundKind.UPPER, t1);
-        }
-      }
-      default -> {
-        AbstractType t1 =
-            InferenceType.create(typeVariable.getUpperBound(), upperBound, map, context);
+    if (upperBound.getKind() == TypeKind.INTERSECTION) {
+      for (AnnotatedTypeMirror bound : typeVariable.getUpperBound().directSupertypes()) {
+        AbstractType t1 = InferenceType.create(bound, map, context);
         variableBounds.addBound(null, BoundKind.UPPER, t1);
       }
+    } else {
+      AbstractType t1 = InferenceType.create(typeVariable.getUpperBound(), map, context);
+      variableBounds.addBound(null, BoundKind.UPPER, t1);
+    }
+    if (variableBounds.findProperUpperBounds().isEmpty()) {
+      // Every bound added above mentions an inference variable, so this resulted in no proper
+      // upper bounds for al (only dependencies).  Therefore, add the bound al <: Object, per the
+      // last clause of the comment above.  This happens for a type parameter such as the P1 of
+      // <P1 extends P2, P2>, whose only upper bound is a dependency.
+      variableBounds.addBound(null, BoundKind.UPPER, context.object);
     }
 
     Set<? extends AbstractQualifier> quals =
@@ -167,10 +170,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
   @Override
   public int hashCode() {
-    int result = typeVariableJava.toString().hashCode();
-    result = 31 * result + Kind.USE_OF_VARIABLE.hashCode();
-    result = 31 * result + invocation.hashCode();
-    return result;
+    return Objects.hash(TypesUtils.hashCodeForAreSame(typeVariableJava), invocation);
   }
 
   @Override
@@ -185,15 +185,15 @@ import org.checkerframework.javacutil.TypesUtils;
   }
 
   /**
-   * Returns the instantiation for this variable.
+   * Returns the instantiation for this variable, or null if this variable has no instantiation.
    *
-   * @return the instantiation for this variable
+   * @return the instantiation for this variable, or null
    */
-  public ProperType getInstantiation() {
+  public @Nullable ProperType getInstantiation() {
     return variableBounds.getInstantiation();
   }
 
-  /** in case the first attempt at resolution fails. */
+  /** Saves the current bounds, in case the first attempt at resolution fails. */
   public void save() {
     variableBounds.save();
   }
@@ -212,6 +212,16 @@ import org.checkerframework.javacutil.TypesUtils;
    * @return true if this variable was created for a capture bound
    */
   public boolean isCaptureVariable() {
+    return false;
+  }
+
+  /**
+   * Returns true if this variable was created for a capture bound and the type argument it captures
+   * is a wildcard.
+   *
+   * @return true if this variable was created for a captured wildcard
+   */
+  public boolean isCapturedWildcard() {
     return false;
   }
 

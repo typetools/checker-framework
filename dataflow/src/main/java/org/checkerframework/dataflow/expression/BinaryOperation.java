@@ -104,6 +104,31 @@ public class BinaryOperation extends JavaExpression {
   }
 
   @Override
+  public boolean equals(@Nullable Object other) {
+    if (!(other instanceof BinaryOperation biOp)) {
+      return false;
+    }
+    if (operationKind != biOp.getOperationKind()) {
+      return false;
+    }
+    if (isCommutative()) {
+      return (left.equals(biOp.left) && right.equals(biOp.right))
+          || (left.equals(biOp.right) && right.equals(biOp.left));
+    }
+    return left.equals(biOp.left) && right.equals(biOp.right);
+  }
+
+  @Override
+  public int hashCode() {
+    if (isCommutative()) {
+      // Use a commutative combination of the operands' hash codes so that equal operands in
+      // swapped order (for which `equals()` returns true) hash identically.
+      return Objects.hash(operationKind, left.hashCode() + right.hashCode());
+    }
+    return Objects.hash(operationKind, left, right);
+  }
+
+  @Override
   public boolean syntacticEquals(JavaExpression je) {
     if (!(je instanceof BinaryOperation other)) {
       return false;
@@ -124,26 +149,6 @@ public class BinaryOperation extends JavaExpression {
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
     return left.containsModifiableAliasOf(store, other)
         || right.containsModifiableAliasOf(store, other);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(operationKind, left, right);
-  }
-
-  @Override
-  public boolean equals(@Nullable Object other) {
-    if (!(other instanceof BinaryOperation biOp)) {
-      return false;
-    }
-    if (!(operationKind == biOp.getOperationKind())) {
-      return false;
-    }
-    if (isCommutative()) {
-      return (left.equals(biOp.left) && right.equals(biOp.right))
-          || (left.equals(biOp.right) && right.equals(biOp.left));
-    }
-    return left.equals(biOp.left) && right.equals(biOp.right);
   }
 
   /**

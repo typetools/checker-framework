@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BinaryOperator;
-import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -44,7 +43,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
 import org.plumelib.util.ToStringComparator;
@@ -220,15 +219,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Furthermore, if the method is deterministic, we store its result {@code val} in the store.
    *
    * @param methodInvocationNode method whose information is being updated
-   * @param atypeFactory the type factory of the associated checker
    * @param val abstract value of the method call
    */
-  public void updateForMethodCall(
-      MethodInvocationNode methodInvocationNode, AnnotatedTypeFactory atypeFactory, V val) {
+  public void updateForMethodCall(MethodInvocationNode methodInvocationNode, V val) {
     ExecutableElement method = methodInvocationNode.getTarget().getMethod();
+
     @SuppressWarnings("unchecked")
-    GenericAnnotatedTypeFactory<V, S, ?, ?> gatypeFactory =
-        (GenericAnnotatedTypeFactory<V, S, ?, ?>) atypeFactory;
+    GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory = analysis.atypeFactory;
 
     // Case 1: The method is side-effect-free.
     boolean hasSideEffect =
@@ -237,37 +234,39 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             || atypeFactory.isSideEffectFree(method));
     if (hasSideEffect) {
 
-      boolean sideEffectsUnrefineAliases = gatypeFactory.sideEffectsUnrefineAliases;
+      boolean sideEffectsUnrefineAliases = atypeFactory.sideEffectsUnrefineAliases;
       Node receiver = methodInvocationNode.getTarget().getReceiver();
+
       boolean hasDoesNotUnrefineReceiver = atypeFactory.hasDoesNotUnrefineReceiver(method);
+      // This is an expression that is exempted from unrefinement, or null if no expression is
+      // exempted.
+      @Nullable JavaExpression unrefinableReceiverJe =
+          hasDoesNotUnrefineReceiver ? JavaExpression.fromNode(receiver) : null;
+
+      @Nullable List<JavaExpression> seOnlyExpressions =
+          analysis.getSideEffectsOnlyExpressions(methodInvocationNode);
 
       // TODO: Also remove if any element/argument to the annotation is not
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
-
-      // If @DoesNotUnrefineReceiver is present, compute the receiver as a JavaExpression so
-      // that it can be exempted from unrefinement in all expression categories below.
-      @Nullable JavaExpression receiverJe =
-          hasDoesNotUnrefineReceiver ? JavaExpression.fromNode(receiver) : null;
-      // Returns true if the expression should NOT be unrefined (because the method is
-      // annotated @DoesNotUnrefineReceiver and the expression is the receiver).
-      Predicate<JavaExpression> doNotUnrefine =
-          receiverJe != null ? je -> je.equals(receiverJe) : je -> false;
 
       // Update local variables.
       if (sideEffectsUnrefineAliases) {
         localVariableValues
             .entrySet()
-            .removeIf(
-                e -> {
-                  LocalVariable lv = e.getKey();
-                  return lv.isModifiableByOtherCode() && !doNotUnrefine.test(lv);
-                });
+            .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
       }
 
       // Update this value.
+      // `thisValue` is the abstract value of the expression `this`.  A callee with a
+      // `@SideEffectsOnly` annotation can change it only if the annotation lists `this` itself.
+      // (At call site `x.m()`, the callee's `this` corresponds to `x`.)
+      boolean thisIsSideEffected =
+          seOnlyExpressions == null
+              || seOnlyExpressions.stream().anyMatch(je -> je instanceof ThisReference);
       if (sideEffectsUnrefineAliases
-          && !(receiverJe instanceof ThisReference)
-          && !(receiverJe instanceof SuperReference)) {
+          && thisIsSideEffected
+          && !(unrefinableReceiverJe instanceof ThisReference)
+          && !(unrefinableReceiverJe instanceof SuperReference)) {
         thisValue = null;
       }
 
@@ -275,32 +274,154 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       if (sideEffectsUnrefineAliases) {
         fieldValues
             .entrySet()
-            .removeIf(
-                (Map.Entry<FieldAccess, V> e) -> {
-                  FieldAccess fa = e.getKey();
-                  return fa.isModifiableByOtherCode() && !doNotUnrefine.test(fa);
-                });
+            .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
       } else {
         // Case 2 (unassignable fields) and case 3 (monotonic fields).
-        updateFieldValuesForMethodCall(gatypeFactory, doNotUnrefine::test);
+        updateFieldValuesForMethodCall(atypeFactory, unrefinableReceiverJe, seOnlyExpressions);
       }
 
       // Update array values.
-      arrayValues.entrySet().removeIf(e -> !doNotUnrefine.test(e.getKey()));
+      arrayValues
+          .entrySet()
+          .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
 
       // Update information about method calls.
       methodCallExpressions
           .entrySet()
-          .removeIf(
-              e -> {
-                MethodCall mc = e.getKey();
-                return mc.isModifiableByOtherCode() && !doNotUnrefine.test(mc);
-              });
+          .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
     }
 
     // Store information about method calls if possible.
     JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
     replaceValue(methodCall, val);
+  }
+
+  /**
+   * Returns true if a method call might change the abstract value of the given expression, so its
+   * refinement should be discarded.
+   *
+   * <p>When {@code sideEffectsOnlyExpressions} is non-null (the method has a
+   * {@code @SideEffectsOnly} annotation), {@code expr} is side-effected only if {@link
+   * #mayChangeValue} holds of it and one of those expressions. This is the counterpart of the
+   * exact-equality test used at the declaration site in {@code DisallowedSideEffects}, which checks
+   * what the method body actually modifies.
+   *
+   * <p>Some side effects are ignored: {@code notSideEffectedExpression} is treated as if it cannot
+   * change. Concretely, the implementation evaluates to false if {@code expr} is strictly equal to
+   * {@code notSideEffectedExpression}.
+   *
+   * @param expr an expression
+   * @param notSideEffectedExpression an expression that is never considered to be side-effected, or
+   *     null
+   * @param sideEffectsOnlyExpressions if non-null, only these expressions (and expressions whose
+   *     value they may change) are considered to be side-effected
+   * @return true if the abstract value of the expression might have changed
+   */
+  private boolean isSideEffected(
+      JavaExpression expr,
+      @Nullable JavaExpression notSideEffectedExpression,
+      @Nullable List<JavaExpression> sideEffectsOnlyExpressions) {
+    if (!expr.isModifiableByOtherCode()) {
+      return false;
+    }
+    if (notSideEffectedExpression != null && expr.equals(notSideEffectedExpression)) {
+      return false;
+    }
+    if (sideEffectsOnlyExpressions != null) {
+      return sideEffectsOnlyExpressions.stream().anyMatch(seOnly -> mayChangeValue(expr, seOnly));
+    }
+    return true;
+  }
+
+  /**
+   * Returns true if modifying {@code seOnlyExpr}, or anything reached through it, might change the
+   * value of {@code expr}.
+   *
+   * <p>That is the case when {@code expr} contains {@code seOnlyExpr} as a subexpression: modifying
+   * {@code x} can change {@code x.f}.
+   *
+   * <p>It is also the case when {@code expr} contains a method call through which {@code
+   * seOnlyExpr} is reached; see {@link #callMayChangeValue}.
+   *
+   * <p>This method is unsound for two array accesses that may denote the same element without
+   * containing one another. It returns false for {@code a[i]} and {@code a[0]}, so the refinement
+   * of {@code a[i]} survives a call to a {@code @SideEffectsOnly("a[0]")} method even when {@code
+   * i} is 0. TODO: return true when both expressions are array accesses on arrays that may be the
+   * same, unless the two index expressions are known to differ.
+   *
+   * @param expr an expression whose value is stored in this store
+   * @param seOnlyExpr an expression that may be modified
+   * @return true if modifying {@code seOnlyExpr} might change the value of {@code expr}
+   */
+  private static boolean mayChangeValue(JavaExpression expr, JavaExpression seOnlyExpr) {
+    return expr.containsSyntacticEqualJavaExpression(seOnlyExpr)
+        || callMayChangeValue(expr, seOnlyExpr);
+  }
+
+  /**
+   * Returns true if {@code expr} contains a method call such that modifying {@code seOnlyExpr}
+   * might change the method call's value.
+   *
+   * <p>The value of a call to a {@code @Pure} method depends on the state that the method reads,
+   * which no annotation declares; this method approximates the read state by what is reachable from
+   * the call's receiver and arguments. If {@code getF()} returns {@code this.f}, then a call to a
+   * {@code @SideEffectsOnly("x.f")} method can change the value of {@code x.getF()}, even though
+   * {@code x.getF()} does not contain {@code x.f}.
+   *
+   * <p>The approximation misses state that a call reads but does not reach through its receiver or
+   * arguments. Static state is the main such case: the receiver of a static call is a class name,
+   * which reaches nothing, so only the arguments contribute. If {@code Util.getField()} returns
+   * {@code Other.field}, this method returns false for {@code Util.getField()} and {@code
+   * Other.field}, even though a call to a {@code @SideEffectsOnly("Other.field")} method can change
+   * the call's value. (For a static call with no modifiable argument, the omission is masked by
+   * {@link #isSideEffected}, which returns false before reaching this method because such a call is
+   * not {@link JavaExpression#isModifiableByOtherCode}; its refinement survives every call, not
+   * just a {@code @SideEffectsOnly} one.)
+   *
+   * <p>The call need not be {@code expr} itself: the value of {@code x.getF().g} and of {@code
+   * x.getArr()[0]} also changes when the value of the call within them does. Such an expression
+   * contains no method call as a <em>subexpression</em> in the sense of {@link
+   * JavaExpression#containsSyntacticEqualJavaExpression}, because a receiver or array is not
+   * compared against {@code seOnlyExpr} but is descended into here.
+   *
+   * @param expr an expression whose value is stored in this store
+   * @param seOnlyExpr an expression that may be modified
+   * @return true if modifying {@code seOnlyExpr} might change the value of expr, by changing the
+   *     value of a call within {@code expr}
+   */
+  private static boolean callMayChangeValue(JavaExpression expr, JavaExpression seOnlyExpr) {
+    if (expr instanceof MethodCall methodCall) {
+      if (mayReach(methodCall.getReceiver(), seOnlyExpr)) {
+        return true;
+      }
+      for (JavaExpression argument : methodCall.getArguments()) {
+        if (mayReach(argument, seOnlyExpr)) {
+          return true;
+        }
+      }
+      return false;
+    } else if (expr instanceof FieldAccess fieldAccess) {
+      return callMayChangeValue(fieldAccess.getReceiver(), seOnlyExpr);
+    } else if (expr instanceof ArrayAccess arrayAccess) {
+      return callMayChangeValue(arrayAccess.getArray(), seOnlyExpr)
+          || callMayChangeValue(arrayAccess.getIndex(), seOnlyExpr);
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Returns true if {@code seOnlyExpr} may be reached through {@code input}.
+   *
+   * @param input the receiver or an argument of a stored method call
+   * @param seOnlyExpr an expression that may be modified
+   * @return true if {@code seOnlyExpr} may be reached through {@code input}
+   */
+  private static boolean mayReach(JavaExpression input, JavaExpression seOnlyExpr) {
+    // The recursive call handles a nested call such as `x.getA().getB()`, whose receiver is
+    // itself a method call.
+    return seOnlyExpr.containsSyntacticEqualJavaExpression(input)
+        || mayChangeValue(input, seOnlyExpr);
   }
 
   /**
@@ -354,8 +475,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         atypeFactory.getAnnotationWithMetaAnnotation(
             fieldAccess.getField(), MonotonicQualifier.class);
     List<AnnotationMirror> metaAnnotations =
-        CollectionsPlume.withoutDuplicates(
-            CollectionsPlume.mapList(pair -> pair.second, fieldAnnotationPairs));
+        CollectionsP.withoutDuplicates(
+            CollectionsP.mapList(pair -> pair.second, fieldAnnotationPairs));
     List<AnnotationMirror> monotonicAnnotations = new ArrayList<>(metaAnnotations.size());
     for (AnnotationMirror metaAnnotation : metaAnnotations) {
       @SuppressWarnings("deprecation") // permitted for use in the framework
@@ -378,34 +499,41 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Helper for {@link #updateForMethodCall(MethodInvocationNode, AnnotatedTypeFactory,
-   * CFAbstractValue)}. Remove any information about field values that might not be valid any more
-   * after a method call, and add information guaranteed by the method.
+   * Helper for {@link #updateForMethodCall(MethodInvocationNode, CFAbstractValue)}. Remove any
+   * information about field values that might not be valid any more after a method call, and add
+   * information guaranteed by the method.
    *
    * <p>More specifically, remove all information about fields except for unassignable fields and
    * fields that have a monotonic annotation.
    *
+   * <p>A non-null {@code sideEffectsOnlyExpressions} indicates that the invoked method has limited
+   * side effects. In this case, remove information for fields that appear in the list of
+   * side-effected expressions.
+   *
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
-   * @param doNotUnrefine if true of a field access, don't unrefine it. This predicate indicates
-   *     exceptions: fields that are not updated by this method.
+   * @param unrefinableReceiverJe if non-null, the receiver, which should not be unrefined
+   * @param sideEffectsOnlyExpressions the expressions that are side-effected by a method call
    */
   private void updateFieldValuesForMethodCall(
-      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory, Predicate<FieldAccess> doNotUnrefine) {
+      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory,
+      @Nullable JavaExpression unrefinableReceiverJe,
+      @Nullable List<JavaExpression> sideEffectsOnlyExpressions) {
     Map<FieldAccess, V> newFieldValues = new HashMap<>(MapsP.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
       V previousValue = e.getValue();
 
-      V newValue;
-      boolean doNotUnrefineResult = doNotUnrefine.test(fieldAccess);
-      if (doNotUnrefineResult) {
-        newValue = previousValue;
+      if (!isSideEffected(fieldAccess, unrefinableReceiverJe, sideEffectsOnlyExpressions)) {
+        // If the field hasn't been side-effected, there is no need to compute a new value for it.
+        // For unmodifiable fields, this is safe because they are not assignable by other code.
+        // For the exempt receiver, skipping recomputation is necessary to preserve its value.
+        newFieldValues.put(fieldAccess, previousValue);
       } else {
-        newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
-      }
-      if (newValue != null) {
-        // Keep information for all hierarchies where we had a monotonic annotation.
-        newFieldValues.put(fieldAccess, newValue);
+        V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
+        if (newValue != null) {
+          // Keep information for all hierarchies where we had a monotonic annotation.
+          newFieldValues.put(fieldAccess, newValue);
+        }
       }
     }
     fieldValues = newFieldValues;
@@ -717,30 +845,24 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (analysis.atypeFactory.getSupportedMonotonicTypeQualifiers().isEmpty()) {
       return false;
     }
-    boolean isMonotonic = false;
-    // TODO: This check for !sequentialSemantics is an optimization that breaks the contract of
-    // the method, since the method name and documentation say nothing about sequential
-    // semantics.  This check should be performed by callers of this method when needed.
-    // TODO: Update the javadoc of this method when the above to-do item is addressed.
-    if (!sequentialSemantics) { // only compute if necessary
-      AnnotatedTypeFactory atypeFactory = this.analysis.atypeFactory;
-      List<IPair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
-          atypeFactory.getAnnotationWithMetaAnnotation(
-              fieldAcc.getField(), MonotonicQualifier.class);
-      for (IPair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
-        AnnotationMirror metaAnnotation = fieldAnnotation.second;
-        @SuppressWarnings("deprecation") // permitted for use in the framework
-        Name annoName = AnnotationUtils.getElementValueClassName(metaAnnotation, "value", false);
-        AnnotationMirror monotonicAnnotation =
-            AnnotationBuilder.fromName(atypeFactory.getElementUtils(), annoName);
-        // Make sure the 'target' annotation is present.
-        if (AnnotationUtils.containsSame(value.getAnnotations(), monotonicAnnotation)) {
-          isMonotonic = true;
-          break;
-        }
+    if (sequentialSemantics) { // only compute if necessary
+      return false;
+    }
+    AnnotatedTypeFactory atypeFactory = this.analysis.atypeFactory;
+    List<IPair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
+        atypeFactory.getAnnotationWithMetaAnnotation(fieldAcc.getField(), MonotonicQualifier.class);
+    for (IPair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
+      AnnotationMirror metaAnnotation = fieldAnnotation.second;
+      @SuppressWarnings("deprecation") // permitted for use in the framework
+      Name annoName = AnnotationUtils.getElementValueClassName(metaAnnotation, "value", false);
+      AnnotationMirror monotonicAnnotation =
+          AnnotationBuilder.fromName(atypeFactory.getElementUtils(), annoName);
+      // Make sure the 'target' annotation is present.
+      if (AnnotationUtils.containsSame(value.getAnnotations(), monotonicAnnotation)) {
+        return true;
       }
     }
-    return isMonotonic;
+    return false;
   }
 
   public void insertThisValue(AnnotationMirror a, TypeMirror underlyingType) {
@@ -984,15 +1106,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * <ol>
    *   <li value="1">Update the abstract value of other field accesses <em>b.g</em> where the field
-   *       is equal (that is, <em>f=g</em>), and the receiver <em>b</em> might alias the receiver of
-   *       {@code fieldAccess}, <em>a</em>. This update will raise the abstract value for such field
-   *       accesses to at least {@code val} (or the old value, if that was less precise). However,
-   *       this is only necessary if the field <em>g</em> is not final.
+   *                 is equal (that is, <em>f=g</em>), and the receiver <em>b</em> might alias the
+   *                 receiver of {@code fieldAccess}, <em>a</em>. This update will raise the
+   *                 abstract value for such field accesses to at least {@code val} (or the old
+   *                 value, if that was less precise). However, this is only necessary if the field
+   *                 <em>g</em> is not final.
    *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where {@code
-   *       fieldAccess} might alias any expression in the receiver <em>b</em>.
+   *                 fieldAccess} might alias any expression in the receiver <em>b</em>.
    *   <li value="3">Remove any information about method calls.
    *   <li value="4">Remove any abstract values an array access <em>b[i]</em> where {@code
-   *       fieldAccess} might alias any expression in the receiver <em>a</em> or index <em>i</em>.
+   *                 fieldAccess} might alias any expression in the receiver <em>a</em> or index
+   *                 <em>i</em>.
    * </ol>
    *
    * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
@@ -1046,11 +1170,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * <ol>
    *   <li value="1">Remove any abstract value for other array access <em>b[j]</em> where <em>a</em>
-   *       and <em>b</em> can be aliases, or where either <em>b</em> or <em>j</em> contains a
-   *       modifiable alias of <em>a[i]</em>.
+   *                 and <em>b</em> can be aliases, or where either <em>b</em> or <em>j</em>
+   *                 contains a modifiable alias of <em>a[i]</em>.
    *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where <em>a[i]</em>
-   *       might alias any expression in the receiver <em>b</em> and there is an array expression
-   *       somewhere in the receiver.
+   *                 might alias any expression in the receiver <em>b</em> and there is an array
+   *                 expression somewhere in the receiver.
    *   <li value="3">Remove any information about method calls.
    * </ol>
    *
@@ -1095,11 +1219,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * <ol>
    *   <li value="1">Remove any abstract values for field accesses <em>b.g</em> where {@code
-   *       localVar} might alias any expression in the receiver <em>b</em>.
+   *                 localVar} might alias any expression in the receiver <em>b</em>.
    *   <li value="2">Remove any abstract values for array accesses <em>a[i]</em> where {@code
-   *       localVar} might alias the receiver <em>a</em>.
+   *                 localVar} might alias the receiver <em>a</em>.
    *   <li value="3">Remove any information about method calls where the receiver or any of the
-   *       parameters contains {@code localVar}.
+   *                 parameters contains {@code localVar}.
    * </ol>
    */
   protected void removeConflicting(LocalVariable var) {

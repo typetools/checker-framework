@@ -172,7 +172,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
    * A helper method for asSuper(AMT, Wildcard) methods to use to annotate the wildcard's lower
    * bound.
    *
-   * <p>If the lower bound of superType is Null, then return copyPrimarayAnnos(type, superType)
+   * <p>If the lower bound of superType is Null, then return copyPrimaryAnnos(type, superType)
    *
    * <p>otherwise, return asSuper(type, superType.getLowerBound()
    *

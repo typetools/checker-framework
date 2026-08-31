@@ -61,7 +61,7 @@ public class ConstructorInsertion extends TypedInsertion {
           packageNames.addAll(i.getPackageNames());
         }
       }
-      b.append("public ").append(typeString).append("(");
+      b.append("public ").append(typeString).append('(');
       if (receiverInsertion != null && !receiverInsertion.isInserted()) {
         b.append(receiverInsertion.getText(abbreviate));
       }

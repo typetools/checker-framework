@@ -34,7 +34,7 @@ import org.checkerframework.afu.scenelib.util.CommandLineUtils;
 import org.plumelib.util.FileIOException;
 
 /** Utility for merging index files, including multiple versions for the same class. */
-public class IndexFileMerger {
+public final class IndexFileMerger {
 
   /** Do not instantiate. */
   private IndexFileMerger() {

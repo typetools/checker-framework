@@ -7,6 +7,8 @@ package org.checkerframework.dataflow.expression;
  * @param <P> the parameter passed to the visit methods
  */
 public abstract class JavaExpressionVisitor<R, P> {
+  /** Creates a JavaExpressionVisitor. */
+  public JavaExpressionVisitor() {}
 
   /**
    * Visits the given {@code javaExpr}.

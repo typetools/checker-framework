@@ -20,8 +20,11 @@ import org.checkerframework.checker.signature.qual.BinaryName;
  * This noninstantiable class provides useful static methods related to annotations, following the
  * convention of {@link java.util.Collections}.
  */
-public abstract class Annotations {
-  private Annotations() {}
+public final class Annotations {
+  /** Do not instantiate. */
+  private Annotations() {
+    throw new Error("Do not instantiate");
+  }
 
   public static Set<Annotation> noAnnotations;
   public static Map<String, ? extends AnnotationFieldType> noFieldTypes;

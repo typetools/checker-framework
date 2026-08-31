@@ -83,12 +83,12 @@ public final class BasicAFT extends ScalarAFT {
   @Override
   public void format(StringBuilder sb, Object o) {
     if (type == String.class) {
-      sb.append("\"");
+      sb.append('\"');
       sb.append(charEscaper.escape((String) o));
-      sb.append("\"");
+      sb.append('\"');
     } else if (type == long.class) {
       sb.append(o.toString());
-      sb.append("L");
+      sb.append('L');
     } else if (type == double.class && Double.isNaN((double) o)) {
       // Don't use "Double.NaN" because it is not parsable if the code imports a `Double` class
       // other than `java.lang.Double`.

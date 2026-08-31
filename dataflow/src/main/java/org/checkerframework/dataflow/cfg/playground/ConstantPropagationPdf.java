@@ -9,7 +9,7 @@ import org.checkerframework.dataflow.constantpropagation.ConstantPropagationStor
 import org.checkerframework.dataflow.constantpropagation.ConstantPropagationTransfer;
 
 /** Run constant propagation on a file and create a PDF of the CFG. */
-public class ConstantPropagationPdf {
+public final class ConstantPropagationPdf {
 
   /** Class cannot be instantiated. */
   private ConstantPropagationPdf() {

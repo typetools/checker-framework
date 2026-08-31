@@ -90,7 +90,7 @@ public class FieldAccessNode extends Node {
 
   @Override
   public String toString() {
-    if (Node.disambiguateOwner) {
+    if (disambiguateOwner) {
       return getReceiver() + "." + field + "{owner=" + ((Symbol) element).owner + "}";
     } else {
       return getReceiver() + "." + field;

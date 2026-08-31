@@ -25,7 +25,7 @@ public class GenericNull {
    * this test. For the Lock Checker, null's type is bottom for the @GuardedByUnknown hierarchy but
    * not for the @LockPossiblyHeld hierarchy.
    */
-  @SuppressWarnings({"nullness", "lock"})
+  @SuppressWarnings("nullness")
   <T> T f() {
     return null;
   }

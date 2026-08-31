@@ -261,7 +261,7 @@ public class BackwardAnalysisImpl<
       S newExceptionStore = (exceptionStore != null) ? exceptionStore.leastUpperBound(s) : s;
       if (!newExceptionStore.equals(exceptionStore)) {
         exceptionStores.put(ebPred, newExceptionStore);
-        inputs.put(ebPred, new TransferInput<V, S>(node, this, newExceptionStore));
+        inputs.put(ebPred, new TransferInput<>(node, this, newExceptionStore));
         addBlockToWorklist = true;
       }
     } else {

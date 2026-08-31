@@ -9,7 +9,7 @@ a method that might never return or that might throw an exception has
 definitely been called on every path after the call, including exceptional paths.
 The checker also assumes that the program is free of null-pointer dereferences.
 You can verify that all pointer dereferences are safe
-by running the Nullness Checker (Section~\ref{nullness-checker}).
+by running the Nullness Checker (\chapterpageref{nullness-checker}).
 
 The Called Methods Checker provides built-in support for one such property:
 that clients of the builder pattern for object
@@ -107,7 +107,7 @@ In some cases, you may need to specify your code. You do so by writing one of th
 annotations (Figure~\ref{fig-called-methods-types}):
 \begin{description}
 \item[\refqualclasswithparams{checker/calledmethods/qual}{CalledMethods}{String[] methodNames}]
-  The annotated type represents values on which all the given method were definitely called.
+  The annotated type represents values on which all the given methods were definitely called.
   (Other methods might also have been called.) \<@CalledMethods()>, with no
   arguments, is the default annotation.
 
@@ -121,7 +121,7 @@ annotations (Figure~\ref{fig-called-methods-types}):
 
   Then the receiver for any call to \<build()> must have had \<setX()> and \<setY()> called on it.
 
-  A typical case for Lombok users for manually writing this annotation is when performing extra
+  A typical case in which Lombok users must manually write this annotation is when performing extra
   builder input validation. Performing validation can be done through subclassing generated builders
   and overriding the generated \<build()> method as follows.
 
@@ -144,11 +144,11 @@ annotations (Figure~\ref{fig-called-methods-types}):
   conjunction (\<\&\&>), not (\<!>), and parentheses.
 
   For example, the annotation \<@CalledMethodsPredicate("x \&\& y || z")> on a type represents
-  objects such that either both the  \<x()> and \<y()> methods have been called on the object, \textbf{or}
+  objects such that either both the \<x()> and \<y()> methods have been called on the object, \textbf{or}
   the \<z()> method has been called on the object.
 
   A note on the not operator (\<!>): the annotation
-  \<@CalledMethodsPredicate("!m")> means ``it is not true \<m> was
+  \<@CalledMethodsPredicate("!m")> means ``it is not true that \<m> was
   definitely called''; equivalently ``there is some path on which \<m> was
   not called''.  The annotation \<@CalledMethodsPredicate("!m")> does
   \emph{not} mean ``\<m> was not called''.
@@ -183,7 +183,7 @@ annotations (Figure~\ref{fig-called-methods-types}):
 \item[\refqualclass{checker/calledmethods/qual}{CalledMethodsBottom}]
   The bottom type for the Called Methods hierarchy. Conceptually, this annotation
   means that all possible methods have been called on the object. Programmers should rarely,
-  if ever, need to write this annotation---write an appropriate \<@CalledMethods> annotation
+  if ever, need to write this annotation --- write an appropriate \<@CalledMethods> annotation
   instead. The type of \<null> is \<@CalledMethodsBottom>.
 
 \end{description}
@@ -218,17 +218,25 @@ There are also method annotations:
   }
   \end{Verbatim}
 
-  If \<m()> might have side-effects (i.e., it is not annotated as
-  \refqualclass{dataflow/qual}{SideEffectFree} or \refqualclass{dataflow/qual}{Pure}),
+  If \<m()> might have side-effects (i.e., it is not annotated
+  as \refqualclass{dataflow/qual}{SideEffectFree},
+  as \refqualclass{dataflow/qual}{Pure}\iffalse,
+  or as \refqualclass{dataflow/qual}{SideEffectsOnly} with no expression
+  that can affect the value of \<sock>\fi),
   then the Called Methods Checker issues an error because
   it cannot make any assumptions about the call to \<m()>, and therefore assumes
   the worst: that all information it knows about in-scope variables (including
   that \<close()> was called on \<sock>) is stale and must be discarded.
-  There are two possible fixes:
+  Here are possible fixes:
 
   \begin{itemize}
-  \item add a \<@SideEffectFree> or \<@Pure> annotation to \<m()>, if \<m()> is
-    in fact side-effect free or pure; or
+  \item add a \refqualclass{dataflow/qual}{SideEffectFree} or
+  \refqualclass{dataflow/qual}{Pure} annotation to \<m()>, if \<m()> is
+    in fact side-effect free or pure.
+  \iffalse
+  \item add a \refqualclass{dataflow/qual}{SideEffectsOnly} annotation if
+  \<m()> has side effects but cannot affect the value of \<sock>.
+  \fi
   \item re-order the calls to \<sock.close()> and \<m()> so that the call
     to \<sock.close()> appears last in \<closeSocket()>.
   \end{itemize}
@@ -251,7 +259,7 @@ There are also method annotations:
   This version of \<@EnsuresCalledMethods> always applies to the varargs parameter of the
   annotated method. It has only one argument, which is the list of methods that are guaranteed
   to be called on the varargs parameter's elements before the method returns. This annotation
-  currently cannot be verified, and a \<ensuresvarargs.unverified> error is always issued
+  currently cannot be verified, and an \<ensuresvarargs.unverified> error is always issued
   when it is used. When annotating a method as \<@EnsuresCalledMethodsVarargs>, you should verify
   that the named methods are actually called on every element of the varargs parameter via some
   other method (such as manual inspection) and then suppress the warning.
@@ -265,8 +273,8 @@ There are also method annotations:
   stronger specifications indicating that a method \emph{always} calls the given methods:
 
   \begin{Verbatim}
-    @EnsuresCalledMethods(expression = "#1", methods = {"close"})
-    @EnsuresCalledMethodsOnException(expression = "#1", methods = {"close"})
+    @EnsuresCalledMethods(value = "#1", methods = {"close"})
+    @EnsuresCalledMethodsOnException(value = "#1", methods = {"close"})
     void closeIfNonNull(Closeable p) {
       if (p != null) {
         p.close();
@@ -275,13 +283,13 @@ There are also method annotations:
   \end{Verbatim}
 
   \<@EnsuresCalledMethodsOnException> can also be used together with the Resource Leak Checker's
-  \<@Owning> annotation.  See~\ref{resource-leak-owning-parameters-and-exceptions}.
+  \<@Owning> annotation.  See Section~\ref{resource-leak-owning-parameters-and-exceptions}.
 
 \item[\refqualclass{checker/calledmethods/qual}{RequiresCalledMethods}]
   This declaration annotation specifies a pre-condition on a method, indicating that the expressions
   in its \<value> argument must have called-methods types that include all the methods named
   in its \<methods> argument. If the expression is a parameter of the annotated method, you should
-  use an \<@CalledMethods> annotation on the parameter instead.
+  use a \<@CalledMethods> annotation on the parameter instead.
 
 \end{description}
 
@@ -291,14 +299,14 @@ This section explains how the Called Methods Checker infers types for code
 that uses the Lombok and AutoValue frameworks. Most readers can skip these
 details.
 
-You can disable the builder framework support by specifying them in a
+You can disable support for builder frameworks by specifying them in a
 comma-separated lowercase list to the command-line flag
 \<disableBuilderFrameworkSupports>.  For example, to disable both Lombok
 and AutoValue support, use: \\
 \<-ACalledMethodsChecker\_disableBuilderFrameworkSupports=autovalue,lombok>
 
 The Called Methods Checker automatically assumes default annotations for code that uses builders generated
-by Lombok and AutoValue. There are three places annotations are usually assumed:
+by Lombok and AutoValue. There are three places where annotations are usually assumed:
 \begin{itemize}
 \item A \<@CalledMethods> annotation is placed on the receiver of the
   \<build()> method, indicating the setter methods that must be invoked on
@@ -335,10 +343,10 @@ The Called Methods Checker can be used to verify any property of the form
 
 For example, consider the AWS EC2 \<describeImages> API, which
 clients use during the process of initializing a new cloud instance.
-\href{https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-15869}{CVE-2018-15869}
+\href{https://www.cve.org/CVERecord?id=CVE-2018-15869}{CVE-2018-15869}
 describes how an improperly-configured request to this API can make the
 requesting client vulnerable to a ``machine-image sniping'' attack that
-would allow a malicious third-party to control the operating system image
+would allow a malicious third party to control the operating system image
 used to initialize the machine. To prevent this attack, clients must
 specify some trusted source for the image by calling the \<withOwners> or
 \<withImageIds> methods on the request prior to sending it to AWS\@. Using

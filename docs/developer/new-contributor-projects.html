@@ -66,7 +66,7 @@
         </ul></li>
       <li><a href="#dataflow">Dataflow enhancements</a></li>
       <li><a href="#SideEffectsOnly">More precise side effect annotations</a></li>
-      <li><a href="#unrefinement-warnings">Better error messages that are due to side effects</a></li>
+      <li><a href="#unrefinement-warnings">Better error messages for errors that are due to side effects</a></li>
       <li><a href="#purity-inference">Side effect inference, also known as purity inference</a></li>
       <li><a href="#javadoc">Javadoc support</a></li>
     </ul></li>
@@ -148,7 +148,7 @@
   <b>Prerequisites:</b> You should be very comfortable with the Java
   programming language and its type system.  You should know how a type
   system helps you and how it can hinder you.  You should be willing to
-  dive into a moderately-sized codebase.
+  dive into a moderately sized codebase.
   You should understand fundamental object-oriented programming concepts,
   such as
   <a href="https://en.wikipedia.org/wiki/Liskov_substitution_principle">behavioral
@@ -179,7 +179,7 @@ in depth.
   Framework:  that is, run the Checker Framework on some program.
   If you have already done so, you can skip this section.
   Otherwise, a case study gives you experience in using the Checker
-  Framework, and it may reveal bugs in either the Checker Framework or in
+  Framework, and it may reveal bugs either in the Checker Framework or in
   the program it is analyzing.
 </p>
 
@@ -191,8 +191,8 @@ Framework?
 -->
 <p>
 Before you can contribute to any project, you must
-understand the tool from a user point of view, including its strengths,
-weaknesses, and how to use it.
+understand the tool from a user point of view, including its strengths and
+weaknesses and how to use it.
 Using the Checker Framework is the best way to
 learn about it and determine whether you would enjoy
 contributing to it.
@@ -282,7 +282,7 @@ Increase your understanding of type systems and of the Checker Framework.
         the code is safe.
     </ul>
   <li>
-    Share it with us; we would be happy to give you feedback.
+    Share the case study with us; we would be happy to give you feedback.
 
     <p>
     The subject line should be descriptive (not just "Case study", but
@@ -343,7 +343,7 @@ descriptive subject line; don't put multiple different topics in a single
 email message; start a new thread with a new subject line
 when you change the topic; don't clutter discussions with irrelevant
 remarks; don't use screenshots (unless there is a problem with a GUI), but
-instead cut-and-paste the output or code into your message;
+instead cut and paste the output or code into your message;
 if you are making a guess, clearly indicate that it is a guess and
 your grounds for it.  Bug
 reports should be
@@ -361,7 +361,7 @@ to the issue tracker.
 </p>
 <ul>
   <li>
-    <a href="#evaluate-type-system">Evaluate</a> a recently-written type
+    <a href="#evaluate-type-system">Evaluate</a> a recently written type
     system, or a feature used by multiple type systems.
   </li>
   <li>
@@ -385,7 +385,7 @@ This document gives a few suggestions in each category.
 <h1 id="evaluate-type-system">Evaluate a type system or a Checker Framework feature</h1>
 
 <p>
-  These projects evaluate a recently-written type system or a feature used
+  These projects evaluate a recently written type system or a feature used
   by multiple type systems.
   Using the type systems on real code is our most important source of new ideas and improvements.
   Many people have started out &ldquo;just&rdquo; doing a case
@@ -416,7 +416,7 @@ One possible outcome is to identify
 <p>
   The <a href="https://checkerframework.org/manual/#signature-checker">Signature
   String Checker</a> ensures that string representations of types are used
-  correctly.  It has discovered bugs in the JDK, ASM, BCEL, and in clients
+  correctly.  It has discovered bugs in the JDK, ASM, BCEL, and clients
   of them.
 </p>
 
@@ -465,7 +465,7 @@ One possible outcome is to identify
   the Checker Framework's new-contributor-projects.html . -->
 
 <p>
-An unsigned integer's bits are interpreted differently than a signed
+An unsigned integer's bits are interpreted differently from a signed
 integer's bits.  It is meaningless to add a signed and an unsigned integer
 &mdash; the result will be nonsense bits.  The same is true of printing and
 of other numeric operators such as multiplication and comparison.
@@ -540,7 +540,7 @@ The methodology is:
   </li>
   <li>
     In Guava, see
-  its <a href="https://github.com/google/guava/wiki/PrimitivesExplained#unsigned-support">unsigned
+  its <a href="https://github.com/google/guava/wiki/PrimitivesExplained#user-content-unsigned-support">unsigned
   support</a>, such
   as <a href="https://guava.dev/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedBytes.html">UnsignedBytes</a>,
   <a href="https://guava.dev/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedLong.html">UnsignedLong</a>,
@@ -597,8 +597,8 @@ related to collections of resources.
 </p>
 
 <p>
-Maybe the case studies will be easy to do and this project is very quickly
-finished.  Or, maybe as the checker is run on more and more projects, we
+Maybe the case studies will be easy to do and this project will be finished
+very quickly.  Or, maybe as the checker is run on more and more projects, we
 will discover more and more different ways that real-world projects use
 collections of resources, and this will require improvements and extensions
 to the algorithm and implementation.
@@ -614,7 +614,7 @@ to the algorithm and implementation.
 <p>
 A type system is useful because it prevents certain errors.  The downside
 of a type system is the effort required to write the types.  Type inference
-is the process of writing the types for a program.
+is the process of automatically writing the types for a program.
 </p>
 
 <p>
@@ -656,8 +656,8 @@ use the checker at all, or would force them to simply disable those checks.
 </p>
 
 <p>
-We would like to do studies of these command-line options to see whether
-our concern is justified.  Is it prohibitive to enable sound checking?  Or can we
+We would like to do studies of the command-line options that enable sound
+checking, to see whether our concern is justified.  Is it prohibitive to enable sound checking?  Or can we
 think of enhancements that would let us turn on those checks that are
 currently disabled by default?
 </p>
@@ -666,7 +666,7 @@ currently disabled by default?
 There is no need to annotate new code for this project.  Just use existing
 annotated codebases, such as those that are type-checked as part of the
 Checker
-Framework's <a href="https://github.com/typetools/checker-framework/blob/master/azure-pipelines.yml">Azure
+Framework's <a href="https://github.com/typetools/checker-framework/blob/master/.azure/azure-pipelines.yml">Azure
     Pipeline</a>.  In other words, you can start by enabling Azure
 Pipelines for your fork and then changing the default behavior in a
 branch.  The Azure Pipelines job will show you what new warnings appear.
@@ -682,7 +682,7 @@ branch.  The Azure Pipelines job will show you what new warnings appear.
 <p>
 Android uses its own annotations that are similar to some in the Checker
 Framework.  Examples include the
-<a href="https://tips.seebrock3r.me/annotations-to-support-your-contracts-609ff259d5df">Android
+<a href="https://developer.android.com/studio/write/annotations">Android
   Studio support annotations</a>,
   including <code>@NonNull</code>, <code>@IntRange</code>, <code>@IntDef</code>,
   and others.
@@ -727,7 +727,7 @@ Checker Framework needs an annotated version of the library.
 The Checker Framework comes with a
 few <a href="https://central.sonatype.com/search?q=annotatedlib">annotated
 libraries</a>.  Increasing this number will make the Checker Framework even
-more useful, and easier to use.
+more useful and easier to use.
 </p>
 
 <p>
@@ -758,7 +758,7 @@ The best way to choose a library is to try to annotate a program and notice
 that library annotations are needed in order to type-check the program.
 </li>
 <li>
-Alternately, you can
+Alternatively, you can
     choose a <a href="https://docs.google.com/spreadsheets/d/17x_jKkGquEFq7LBQhS9HGXiG7iIl2AlXoPGfB6N5_bw">popular
       Java library</a>.
 </li>
@@ -803,9 +803,8 @@ Alternately, you can
   The Checker Framework ships with extensive annotations for the JDK.
   These annotations are useful in type-checking any program, since all
   programs use the JDK to some extent.  The JDK annotations need to be
-  updated from JDK 21 to JDK 25.  In particular, any new methods and
-  classes that have been recently introduced have no annotations.  They
-  need to be annotated.
+  updated from JDK 21 to JDK 25.  In particular, methods and classes that
+  were introduced recently have no annotations.  They need to be annotated.
 </p>
 
 <p>
@@ -815,7 +814,7 @@ Alternately, you can
 
 <p>
   This project would have high impact because the JDK is so widely used and
-  its annotations are so heavily depended on by the Checker Framework.
+  the Checker Framework depends so heavily on the JDK annotations.
 </p>
 
 <p>
@@ -894,8 +893,8 @@ value <a href="https://checkerframework.org/manual/#map-key-checker">is a key in
 </p>
 
 <p>
-It should be handled the same way:  by adding a new subchecker, called the
-Nonempty Checker, to the Nullness Checker.  The Nonempty Checker already
+It should be handled the same way:  by adding a subchecker, the
+Non-Empty Checker, to the Nullness Checker.  The Non-Empty Checker already
 exists in the Checker Framework, though it is not advertised.
 </p>
 
@@ -906,12 +905,12 @@ running <code>./gradlew checkNullness</code> (run it in the top-level <code>chec
 </p>
 
 <p>
-  The best approach may be to have the Nullness Checker run the Nonempty
-  Checker as a subchecker but suppress the Nonempty Checker warnings.  That
-  is, the Nullness Checker takes advantage of information that the Nonempty
-  Checker verifies, without caring about code that the Nonempty Checker
+  The best approach may be to have the Nullness Checker run the Non-Empty
+  Checker as a subchecker but suppress the Non-Empty Checker warnings.  That
+  is, the Nullness Checker takes advantage of information that the Non-Empty
+  Checker verifies, without caring about code that the Non-Empty Checker
   cannot verify.  The Optional Checker takes this approach in its
-  integration with the Nonempty Checker.
+  integration with the Non-Empty Checker.
 </p>
 
 <p>
@@ -922,9 +921,9 @@ running <code>./gradlew checkNullness</code> (run it in the top-level <code>chec
 <h2 id="non-empty-checker">Non-Empty Checker</h2>
 
 <p>
-  The Checker Framework contains a checker named the Nonempty Checker (<a href="https://github.com/typetools/checker-framework/tree/master/checker/src/main/java/org/checkerframework/checker/nonempty">code</a>,
-  <a href="https://github.com/typetools/checker-framework/tree/master/checker/tests/nonempty">tests</a>
-  which can be run via <code>gradlew NonemptyTest</code>).
+  The Checker Framework contains a checker named the Non-Empty Checker (<a href="https://github.com/typetools/checker-framework/tree/master/checker/src/main/java/org/checkerframework/checker/nonempty">code</a>,
+  <a href="https://github.com/typetools/checker-framework/tree/master/checker/tests/nonempty">tests</a>,
+  which can be run via <code>gradlew NonEmptyTest</code>).
 Its types are:
 </p>
 <ul>
@@ -961,9 +960,9 @@ There is a draft paper at $t/iteration-checking-paper/
 A Java program that uses an <code>Iterator</code> can
 throw <code>NoSuchElementException</code> if the program
 calls <code>next()</code> on the <code>Iterator</code> but
-the <code>Iterator</code> has no more elements to iterate over. Such
+the <code>Iterator</code> has no more elements to iterate over.  Such
 exceptions even occur in production code (for example,
-in <a href="https://github.com/eclipse/rdf4j/issues/3090">Eclipse's
+in <a href="https://github.com/eclipse-rdf4j/rdf4j/issues/3090">Eclipse's
 rdf4j</a>).
 </p>
 
@@ -985,7 +984,7 @@ the <a href="https://checkerframework.org/manual/#creating-a-checker">"How
 to create a new checker" chapter</a>).  The analysis can also permit some
 calls to <code>next()</code> even if the programmer has <em>not</em>
 called <code>hasNext()</code>.  For example, a call to <code>next()</code>
-is permitted on a newly-constructed iterator that is made from a non-empty
+is permitted on a newly constructed iterator that is made from a non-empty
 collection.  (This special case could build upon
 the <a href="#non-empty-checker">Non-Empty Checker</a> mentioned above.)
 There are probably other special cases, which experimentation will reveal.
@@ -997,7 +996,7 @@ In particular, it depends on the
 <a href="#SideEffectsOnly"><code>@SideEffectsOnly</code></a> annotation
 mentioned elsewhere in this document.
 Once
-case studies have demonstrated its effectiveness, then it can be released
+case studies have demonstrated its effectiveness, it can be released
 to the world, and a scientific paper can be written.
 </p>
 
@@ -1036,7 +1035,7 @@ vulnerabilities?  How much customization, if any, is needed?"
 
 <p>
 The generalized taint analysis is the Checker Framework's
-a <a href="https://checkerframework.org/manual/#tainting-checker">Tainting
+<a href="https://checkerframework.org/manual/#tainting-checker">Tainting
   Checker</a>.  It requires customization to a particular domain:
 </p>
 <ul>
@@ -1099,7 +1098,7 @@ studies showing the utility of compile-time taint checking.
 </ul>
 
 <p>
-For some microbenchmarks, see the Juliette test suite for Java from CWE.
+For some microbenchmarks, see the Juliet test suite for Java from CWE.
 </p>
 
 <p>
@@ -1142,7 +1141,7 @@ annotation erased</a>.
 <h2 id="overflow">Overflow checking</h2>
 
 <p>
-Overflow is when 32-bit arithmetic differs from ideal arithmetic.  For
+Overflow occurs when 32-bit arithmetic differs from ideal arithmetic.  For
 example, in Java the <code>int</code> computation 2,147,483,647 + 1 yields
 a negative number, -2,147,483,648.  The goal of this project is to detect
 and prevent problems such as these.
@@ -1189,7 +1188,7 @@ the <a href="https://checkerframework.org/manual/#index-checker">Index
 Checker</a> is currently unsound in the presence of integer overflow.  If
 an integer <code>i</code> is known to be <code>@Positive</code>, and 1 is
 added to it, then the Index Checker believes that its type
-remains <code>@Positive</code>. If <code>i</code> was
+remains <code>@Positive</code>.  If <code>i</code> was
 already <code>Integer.MAX_VALUE</code>, then the result is negative &mdash;
 that is, the Index Checker's approximation to it is unsound.
 </p>
@@ -1199,7 +1198,7 @@ This project involves removing this unsoundness by implementing a type system to
 integer value might overflow &mdash; but this only matters for values that
 are used as an array index.
 That is, checking can be restricted to computations that involve an operand
-of type <code>@IntRange</code>).
+of type <code>@IntRange</code>.
 Implementing such an analysis would permit the Index Checker
 to extend its guarantees even to programs that might overflow.
 </p>
@@ -1209,7 +1208,7 @@ This analysis is important for some indexing bugs in practice.
 Using the Index Checker, we found 5 bugs in Google
 Guava related to overflow.  Google marked these as high priority and
 fixed them immediately.  In practice, there would be a run-time exception
-only for an array of size approximately <code>Integer.MAX_INT</code>.
+only for an array of size approximately <code>Integer.MAX_VALUE</code>.
 </p>
 
 <p>
@@ -1238,9 +1237,9 @@ a loop (but maybe other approaches are possible):
     Make the default array size (the length of an unannotated array) be
     <code>@ArrayLenRange(0, Integer.MAX_VALUE-1)</code> rather
     than <code>@UnknownVal</code>, which is equivalent
-    to <code>@ArrayLenRange(0, Integer.MAX_VALUE-1)</code>.  Now, every
+    to <code>@ArrayLenRange(0, Integer.MAX_VALUE)</code>.  Now, every
     array construction requires the client to establish that the length is
-    not <code>Integer.MAX_VALUE</code>.  I don't have a feel for whether
+    not <code>Integer.MAX_VALUE</code>.  We don't know whether
     this would be unduly burdensome to users.
   </li>
 </ul>
@@ -1327,7 +1326,7 @@ It would behave similarly for other library methods.
   buggy and should not be incorporated into the Checker Framework.  Another
   challenge is that some EISOP enhancements do not conform to the Checker
   Framework's code quality and testing standards.  Nonetheless, most are
-  worthy of including in the Checker Framework.
+  worth including in the Checker Framework.
 </p>
 
 <p>
@@ -1368,7 +1367,7 @@ It would behave similarly for other library methods.
 <p>
 Clarity of compiler error
 messages is as important as the speed of the executable
-(<a href="https://www.brettbecker.com/wp-content/uploads/2016/06/Becker-Effective-2016-SIGCSE.pdf">1</a>, <a href="https://www.mville.edu/sites/default/files/p53-munson_1.pdf">2</a>,
+(<a href="https://dl.acm.org/doi/10.1145/2839509.2844584">1</a>, <a href="https://dl.acm.org/doi/10.5555/2835377.2835386">2</a>,
 <a href="https://se.inf.ethz.ch/~meyer/publications/teaching/compiler-errors.pdf">3</a>,
 <a href="https://static.barik.net/barik/publications/icse2017/PID4655707.pdf">4</a>).  This is especially true when the language or type system has rich features.
 </p>
@@ -1389,7 +1388,7 @@ some distinct challenges:
   <li>
     Compiler messages currently show
     the <a href="https://checkerframework.org/manual/#effective-qualifier">effective
-    type</a>, which may be different than what the user wrote due to
+    type</a>, which may be different from what the user wrote due to
     defaulting, inference, and syntactic sugar.  For example, a user-written
     <code>@IndexFor("a")</code> annotation is syntactic sugar for
     <code>@NonNegative @LTLengthOf("a")</code>, and those types are
@@ -1433,7 +1432,7 @@ yet parse such files.
 <p>
 A better Java parser exists:  the one in javac!  The goal of this project
 is to replace every use of JavaParser by a use of javac's parser.  Each use
-of JavaParser will be replaced by a use of the
+of JavaParser will be replaced by a use of
 the <a href="https://github.com/plume-lib/javac-parse">javac-parse</a>
 library, which invokes javac's parser.
 </p>
@@ -1504,8 +1503,8 @@ There is a lot of code to change, but each change should be simple.
 
 <p>
   The Checker Framework distribution contains a minimized copy of the
-  annotated JDK, where each file has been changed from a .java file to a
-  stub file.  This process is performed by
+  annotated JDK, where each file has been changed from a <code>.java</code>
+  file to a stub file.  This process is performed by
   class <code>JavaStubifier</code>.  These stub files are not readable by
   javac's parser (see the <a href="#javaparser-stub">next subproject</a>
   for an explanation).  To use javac's parser, the distributed annotated
@@ -1555,7 +1554,7 @@ a stub file is not necessarily a legal Java file.  A stub file looks like
 the concatenation of multiple Java files (for example, it can have
 multiple <code>package</code> declarations and multiple blocks
 of <code>import</code> statements).  Furthermore, a stub file may
-omit method bodies, replacing the body by ";".
+omit method bodies, replacing the body by "<code>;</code>".
 </p>
 
 <p>
@@ -1594,7 +1593,7 @@ Framework codebase.
 Is the <code>JavaExpression</code> class needed?  Would it be possible to
 skip the transformation from a javac tree into
 a <code>JavaExpression</code>, and instead have the Checker Framework
-codebase use a javac tree instead?
+codebase use a javac tree?
 </p>
 
 <p>
@@ -1607,14 +1606,14 @@ Here is a possible sequence of steps for this project:
     is <code>isUnassignableByOtherCode</code>.  Refactor these methods from
     instance methods of <code>JavaExpression</code> into static methods
     in <code>JavaExpressions</code>, making <code>JavaExpression</code>
-    more like a standard AST that can be replaced by JavaParser classes.
+    more like a standard AST that can be replaced by javac classes.
     This change can be pull-requested on its own.
   </li>
   <li>
     Replace every use
     of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code></a>
     by a use of the javac class
-    class <a href="https://www.javadoc.io/static/org.kohsuke.sorcerer/sorcerer-javac/0.11/com/sun/tools/javac/tree/JCTree.JCExpression.html"><code>com.sun.tools.javac.tree.JCTree.JCExpression.html</code></a>.
+    <a href="https://www.javadoc.io/static/org.kohsuke.sorcerer/sorcerer-javac/0.11/com/sun/tools/javac/tree/JCTree.JCExpression.html"><code>com.sun.tools.javac.tree.JCTree.JCExpression</code></a>.
     You also need to decide how to store the <code>type</code> field
     of <code>JavaExpression</code>, when <code>JavaExpression</code> is eliminated.
 
@@ -1622,16 +1621,16 @@ Here is a possible sequence of steps for this project:
     Replace every use of a subclass of <code>JavaExpression</code> (listed in the
     "Direct Known Subclasses" section of
     the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code>
-    API documentation)</a> by a use of a
+    API documentation</a>) by a use of a
     <a href="https://www.javadoc.io/static/org.kohsuke.sorcerer/sorcerer-javac/0.11/com/sun/tools/javac/tree/JCTree.JCExpression.html">subclass
-    of <code>JCTree.JCExpression.html</code></a>.
+    of <code>JCTree.JCExpression</code></a>.
     For example, replace every use
     of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/MethodCall.html"><code>MethodCall</code></a> by <a href="https://www.javadoc.io/static/org.kohsuke.sorcerer/sorcerer-javac/0.11/com/sun/tools/javac/tree/JCTree.JCMethodInvocation.html"><code>JCTree.JCMethodInvocation</code></a>.
     </p>
   </li>
   <li>
     Delete most or all of
-    the <a href="https://checkerframework.org/api/org/checkerframework/framework/util/JavaExpressionParseUtil.html"><code>JavaExpressionParseUtil</code></a>
+    the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpressionParseUtil.html"><code>JavaExpressionParseUtil</code></a>
     class; <code>ExpressionToJavaExpressionVisitor</code> will definitely
     be deleted.  The deletion of code is an advantage of this approach.
   </li>
@@ -1684,7 +1683,7 @@ use it.
 <p>
   This project would introduce a <code>@SideEffectsOnly</code>
   annotation.  <code>@SideEffectsOnly</code> indicates all the expressions
-  whose value can possibly be modified by a particular method.  This will
+  whose values can possibly be modified by a particular method.  This will
   make the Checker Framework more precise in many cases.
 </p>
 
@@ -1697,18 +1696,19 @@ use it.
 </p>
 
 
-<h2 id="unrefinement-warnings">Better error messages that are due to side effects</h2>
+<h2 id="unrefinement-warnings">Better error messages for errors that are due to side effects</h2>
 
 <p>
 A common and well-known cause of false positives from Checker Framework
-checkers is calls to impure methods, which unrefine dataflow facts. For
-example, a simple example is the following, which triggers a false positive
+checkers is calls to impure methods, which unrefine dataflow facts.  A
+simple example is the following, which triggers a false positive
 in
 the <a href="https://checkerframework.org/manual/#resource-leak-checker">Resource
 Leak Checker (RLC)</a>:
+</p>
 
 <pre>
-@EnsuresCalledMethods(value={“this.f1”, “this.f2”}, methods={“close”})
+@EnsuresCalledMethods(value={"this.f1", "this.f2"}, methods={"close"})
 void foo() {
   try { f1.close(); } catch (Exception e) { }
   try { f2.close(); } catch (Exception e) { }
@@ -1719,7 +1719,7 @@ void foo() {
 The call <code>f2.close()</code> unrefines the inferred dataflow fact
 that <code>f1.close()</code> has already been called, because it's possible
 that <code>f2.close()</code> re-assigns <code>f1</code>.  Therefore, the
-RLC reports that the <code>@EnsuresCalledMethods</code> annotation doesn’t
+RLC reports that the <code>@EnsuresCalledMethods</code> annotation doesn't
 verify because <code>f1</code> might not be closed at the moment of
 procedure exit.  Programmers who see the error message are mystified,
 because so far as they can see, <code>foo</code> closes
@@ -1727,8 +1727,8 @@ both <code>f1</code> and <code>f2</code>.
 </p>
 
 <p>
-Non-experts (even competent engineers!) consistently don’t recognize that
-purity is even an issue in dataflow until it’s pointed out to them.  The
+Non-experts (even competent engineers!) consistently don't recognize that
+purity is even an issue in dataflow until it's pointed out to them.  The
 goal of this project is to provide better error reporting, when an error
 message is reported only because unrefinement has removed a dataflow fact.
 For each warning that could have been avoided by having a purity annotation
@@ -1753,16 +1753,16 @@ on some called method, report that fact to the user.
     For the graph frontier of such locations,
     issue a new warning that includes both the original
     warning text and the side-effecting expression that prevented the code from
-    being verified. The new warning message for the example above might
+    being verified.  The new warning message for the example above might
     look something like this, where the &ldquo;found&rdquo; and
     &ldquo;required&rdquo; types refer to the type of <code>f1</code>.
 
 <pre>
-…postcondition of foo() is not satisfied.
+...postcondition of foo() is not satisfied.
 found   : @CalledMethods({}) Socket
-required: @CalledMethods({“close”}) Socket
+required: @CalledMethods({"close"}) Socket
 caused by:
-  this.f1 has type `@CalledMethods({“close”}) Socket` before a possible side-effect from the call to `f2.close()`,
+  this.f1 has type `@CalledMethods({"close"}) Socket` before a possible side-effect from the call to `f2.close()`,
   which has an implicit @Impure annotation (no purity annotation found for java.lang.AutoCloseable#close()):
       try { f2.close(); } catch (Exception e) { }
               ^
@@ -1790,7 +1790,7 @@ the Checker Framework's new-contributor-projects.html . -->
 A side effect analysis (or inference) reports what side effects a procedure may perform,
 such as what variable values it may modify.  A side effect analysis is
 essential to other program analyses.  A program analysis makes
-estimates about the current values of expressions. When a method call
+estimates about the current values of expressions.  When a method call
 occurs, the analysis has to throw away most of its estimates, because the
 method call might change any variable.  (This process of discarding
 information is called "unrefinement".)  However, if the method is known to
@@ -1807,7 +1807,7 @@ effective and to improve them.  The research questions include:
 <ul>
   <li>What side effect analysis algorithms are most effective?  What are their limitations?
   </li>
-  <li>Can the most effective algorithms be combined to become even effective?  Or can their limitations be overcome?
+  <li>Can the most effective algorithms be combined to become even more effective?  Or can their limitations be overcome?
   </li>
   <li>How much does accurate side effect analysis improve other programming tasks?
   </li>
@@ -1817,7 +1817,7 @@ effective and to improve them.  The research questions include:
 The methodology is to collect existing side effect analysis tools (two examples are
 <a href="https://github.com/soot-oss/soot/wiki/Using-Side-Effect-Attributes">Soot</a> and
 <a href="https://www.semanticscholar.org/paper/Precise-Interprocedural-Side-Effect-Analysis-Report-Geffken-Saffrich/d2bd29e20c99a10ab9d0c5ecf3acaf15606407d1?p2df">Geffken</a>);
-run them on open-source projects; examine the result; and then either
+run them on open-source projects; examine the results; and then either
 improve the best one or write a new, better one.
 </p>
 
@@ -1848,7 +1848,7 @@ Javadoc, showing the signatures after applying defaulting rules.
 
 <p>
 There are other type-annotation-related improvements to Javadoc that can be
-explored, e.g. using JavaScript to show or hide only the type annotations
+explored, e.g., using JavaScript to show or hide only the type annotations
 currently of interest.
 </p>
 

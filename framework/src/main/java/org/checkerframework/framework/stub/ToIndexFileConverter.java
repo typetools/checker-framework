@@ -37,7 +37,6 @@ import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,6 +44,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -162,7 +163,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       for (int i = 1; i < args.length; i++) {
         String f0 = args[i];
         String f1 = (f0.endsWith(".astub") ? f0.substring(0, f0.length() - 6) : f0) + ".jaif";
-        try (InputStream in = new BufferedInputStream(new FileInputStream(f0));
+        try (InputStream in = new BufferedInputStream(Files.newInputStream(Paths.get(f0)));
             OutputStream out = new BufferedOutputStream(new FileOutputStream(f1)); ) {
           convert(new AScene(scene), in, out);
         }

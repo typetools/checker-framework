@@ -1,12 +1,15 @@
 package org.checkerframework.javacutil;
 
 import com.sun.tools.javac.code.BoundKind;
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Type.ClassType;
+import com.sun.tools.javac.code.Type.IntersectionClassType;
 import com.sun.tools.javac.code.TypeTag;
+import com.sun.tools.javac.code.Types.FunctionDescriptorLookupError;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -17,6 +20,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -44,9 +48,9 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.ImmutableTypes;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * A utility class that helps with {@link TypeMirror}s. It complements {@link Types}, providing
@@ -141,7 +145,7 @@ public final class TypesUtils {
         // BUG: need to compute a @ClassGetName, but this code computes a
         // @CanonicalNameOrEmpty.  They are different for inner classes.
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Names.toString
-        @DotSeparatedIdentifiers String typeString = TypesUtils.getQualifiedName((DeclaredType) typeMirror).toString();
+        @DotSeparatedIdentifiers String typeString = getQualifiedName((DeclaredType) typeMirror);
         if (typeString.equals("<nulltype>")) {
           return void.class;
         }
@@ -349,8 +353,7 @@ public final class TypesUtils {
    * @return true if the type is {@code char} or {@code Character}
    */
   public static boolean isCharOrCharacter(TypeMirror type) {
-    return type.getKind() == TypeKind.CHAR
-        || TypesUtils.isDeclaredOfName(type, "java.lang.Character");
+    return type.getKind() == TypeKind.CHAR || isDeclaredOfName(type, "java.lang.Character");
   }
 
   /**
@@ -411,7 +414,7 @@ public final class TypesUtils {
   public static boolean isImmutableTypeInJdk(TypeMirror type) {
     return isPrimitive(type)
         || (type.getKind() == TypeKind.DECLARED
-            && ImmutableTypes.isImmutable(getQualifiedName((DeclaredType) type).toString()));
+            && ImmutableTypes.isImmutable(getQualifiedName((DeclaredType) type)));
   }
 
   /**
@@ -465,7 +468,7 @@ public final class TypesUtils {
     return switch (type.getKind()) {
       case BOOLEAN, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SHORT -> true;
       case DECLARED -> {
-        String qualifiedName = getQualifiedName((DeclaredType) type).toString();
+        String qualifiedName = getQualifiedName((DeclaredType) type);
         yield (qualifiedName.equals("java.lang.Boolean")
             || qualifiedName.equals("java.lang.Byte")
             || qualifiedName.equals("java.lang.Character")
@@ -509,7 +512,7 @@ public final class TypesUtils {
    */
   public static boolean isNumericBoxed(TypeMirror type) {
     return type.getKind() == TypeKind.DECLARED
-        && numericBoxedTypes.contains(getQualifiedName((DeclaredType) type).toString());
+        && numericBoxedTypes.contains(getQualifiedName((DeclaredType) type));
   }
 
   /**
@@ -568,7 +571,7 @@ public final class TypesUtils {
       return false;
     }
 
-    String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
+    String qualifiedName = getQualifiedName((DeclaredType) declaredType);
     return switch (primitiveType.getKind()) {
       case BOOLEAN -> qualifiedName.equals("java.lang.Boolean");
       case BYTE -> qualifiedName.equals("java.lang.Byte");
@@ -593,7 +596,7 @@ public final class TypesUtils {
       return false;
     }
 
-    String qualifiedName = getQualifiedName((DeclaredType) type).toString();
+    String qualifiedName = getQualifiedName((DeclaredType) type);
     return qualifiedName.equals("java.lang.Double") || qualifiedName.equals("java.lang.Float");
   }
 
@@ -632,16 +635,57 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if {@code type} is a functional interface type (as defined in JLS 9.8).
+   * Returns true if {@code type} is a functional interface type (as defined in JLS 9.9). This
+   * includes an intersection type that induces a notional functional interface, such as {@code
+   * Runnable & java.io.Serializable}.
    *
    * @param type possible functional interface type
    * @param env the processing environment
-   * @return true if {@code type} is a functional interface type (as defined in JLS 9.8)
+   * @return true if {@code type} is a functional interface type (as defined in JLS 9.9)
    */
   public static boolean isFunctionalInterface(TypeMirror type, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-    return javacTypes.isFunctionalInterface((Type) type);
+    Type javaType = (Type) type;
+    if (javaType.isIntersection()) {
+      javaType = notionalInterface((IntersectionClassType) javaType, javacTypes);
+    }
+    return javacTypes.isFunctionalInterface(javaType);
+  }
+
+  /**
+   * Returns the notional interface induced by the intersection type {@code type} (<a
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.9">JLS 4.9</a>). Per
+   * <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9">JLS 9.9</a>,
+   * the function type of an intersection type that induces a notional functional interface is the
+   * function type of that notional interface. If {@code type} has a component that is a class, then
+   * it induces a notional class rather than a notional interface, and {@code type} is returned
+   * unchanged.
+   *
+   * <p>javac does not represent the notional interface directly: the symbol of an intersection type
+   * is a synthetic compound class symbol that is never marked as an interface, so javac's function
+   * descriptor lookup rejects it. This method builds the notional interface the same way that
+   * {@code Attr.getTargetInfo} does when attributing a lambda expression or a method reference
+   * whose target type is an intersection type: it creates a fresh intersection of the non-wildcard
+   * parameterizations (JLS 9.9) of the components and marks its symbol as an interface. {@code
+   * type} itself is not modified.
+   *
+   * @param type an intersection type
+   * @param javacTypes the javac Types instance
+   * @return the notional interface induced by {@code type}, or {@code type} if it does not induce a
+   *     notional interface
+   */
+  private static Type notionalInterface(
+      IntersectionClassType type, com.sun.tools.javac.code.Types javacTypes) {
+    if (!type.allInterfaces) {
+      // The intersection induces a notional class, which is not a functional interface.
+      return type;
+    }
+    com.sun.tools.javac.util.List<Type> components =
+        type.getExplicitComponents().map(javacTypes::removeWildcards);
+    IntersectionClassType notionalInterface = javacTypes.makeIntersectionType(components);
+    notionalInterface.tsym.flags_field |= Flags.INTERFACE;
+    return notionalInterface;
   }
 
   /**
@@ -683,7 +727,7 @@ public final class TypesUtils {
    *     has no bounds
    */
   public static TypeMirror upperBound(TypeMirror type) {
-    do {
+    while (true) {
       if (type instanceof TypeVariable tvar) {
         if (tvar.getUpperBound() != null) {
           type = tvar.getUpperBound();
@@ -699,7 +743,7 @@ public final class TypesUtils {
       } else {
         break;
       }
-    } while (true);
+    }
     return type;
   }
 
@@ -818,7 +862,7 @@ public final class TypesUtils {
     while (true) {
       switch (effectiveUpper.getKind()) {
         case WILDCARD -> {
-          effectiveUpper = ((javax.lang.model.type.WildcardType) effectiveUpper).getExtendsBound();
+          effectiveUpper = ((WildcardType) effectiveUpper).getExtendsBound();
           if (effectiveUpper == null) {
             return null;
           }
@@ -1096,7 +1140,7 @@ public final class TypesUtils {
   private static com.sun.tools.javac.util.List<Type> typeMirrorListToTypeList(
       List<TypeMirror> typeMirrors) {
     @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
-    List<Type> typeList = CollectionsPlume.mapList(Type.class::cast, typeMirrors);
+    List<Type> typeList = CollectionsP.mapList(Type.class::cast, typeMirrors);
     return com.sun.tools.javac.util.List.from(typeList);
   }
 
@@ -1209,9 +1253,9 @@ public final class TypesUtils {
       List<? extends TypeMirror> typeArgs,
       ProcessingEnvironment env) {
     @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
-    List<Type> newP = CollectionsPlume.mapList(Type.class::cast, typeVariables);
+    List<Type> newP = CollectionsP.mapList(Type.class::cast, typeVariables);
     @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
-    List<Type> newT = CollectionsPlume.mapList(Type.class::cast, typeArgs);
+    List<Type> newT = CollectionsP.mapList(Type.class::cast, typeArgs);
 
     JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
     com.sun.tools.javac.code.Types types =
@@ -1269,7 +1313,7 @@ public final class TypesUtils {
     Names names = Names.instance(javacEnv.getContext());
     Symtab syms = Symtab.instance(javacEnv.getContext());
     com.sun.tools.javac.util.Name capturedName = names.fromString("<captured wildcard>");
-    WildcardType wildcardType = null;
+    WildcardType wildcardType;
     if (lower != null
         && (lower.getKind() == TypeKind.ARRAY
             || lower.getKind() == TypeKind.DECLARED
@@ -1322,7 +1366,10 @@ public final class TypesUtils {
    * @return the first TypeVariable in {@code collection} that does not contain any other type in
    *     the collection, but maybe itself
    */
-  @SuppressWarnings("interning:not.interned") // must be the same object from collection
+  @SuppressWarnings({
+    "interning:not.interned",
+    "TypeEquals"
+  }) // must be the same object from collection
   private static TypeVariable doesNotContainOthers(
       Collection<? extends TypeVariable> collection, Types types) {
     for (TypeVariable candidate : collection) {
@@ -1337,23 +1384,37 @@ public final class TypesUtils {
         return candidate;
       }
     }
-    throw new BugInCF("Not found: %s", StringsPlume.join(",", collection));
+    throw new BugInCF("Not found: %s", StringsP.join(",", collection));
   }
 
   /**
    * This method returns the single abstract method declared by {@code functionalInterfaceType}.
-   * (The type of this method is referred to as the function type.)
+   * (The type of this method is referred to as the function type.) If {@code
+   * functionalInterfaceType} is an intersection type that induces a notional functional interface,
+   * then the single abstract method of that notional interface is returned (JLS 9.9).
    *
    * @param functionalInterfaceType a functional interface type
    * @param env the processing environment
    * @return the single abstract method declared by the type
+   * @throws BugInCF if {@code functionalInterfaceType} is not a functional interface type.
    */
   public static ExecutableElement findFunction(
       TypeMirror functionalInterfaceType, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-    return (ExecutableElement)
-        javacTypes.findDescriptorSymbol(((Type) functionalInterfaceType).asElement());
+    Type javaType = (Type) functionalInterfaceType;
+    if (javaType.isIntersection()) {
+      javaType = notionalInterface((IntersectionClassType) javaType, javacTypes);
+    }
+    try {
+      return (ExecutableElement) javacTypes.findDescriptorSymbol(javaType.asElement());
+    } catch (FunctionDescriptorLookupError ex) {
+      // FunctionDescriptorLookupError does not have a stack trace, so catch it here and throw a
+      // BugInCF.
+      throw new BugInCF(
+          "%s is not a functional interface. Call TypesUtils.isFunctionalInterface() before calling TypesUtils.findFunction.",
+          functionalInterfaceType);
+    }
   }
 
   /**
@@ -1491,6 +1552,7 @@ public final class TypesUtils {
    * @param typeVariable2 a type variable
    * @return if the two type variables are the same type variable
    */
+  @SuppressWarnings("TypeEquals") // early exit from comparison method
   @EqualsMethod
   public static boolean areSame(TypeVariable typeVariable1, TypeVariable typeVariable2) {
     if (typeVariable1 == typeVariable2) {
@@ -1501,5 +1563,25 @@ public final class TypesUtils {
 
     return typeVariable1.asElement().getSimpleName().contentEquals(otherName)
         && otherEnclosingElement.equals(typeVariable1.asElement().getEnclosingElement());
+  }
+
+  /**
+   * Returns a hash code that is consistent with {@link #areSame(TypeVariable, TypeVariable)}: if
+   * {@code areSame} returns true for two type variables, then this method returns the same value
+   * for both of them.
+   *
+   * <p>Use this method wherever type variables are compared using {@code areSame} but are also
+   * hashed, such as in a hash table or in a {@code hashCode} method whose {@code equals} method
+   * uses {@code areSame}.
+   *
+   * @param typeVariable a type variable
+   * @return a hash code consistent with {@code areSame}
+   */
+  public static int hashCodeForAreSame(TypeVariable typeVariable) {
+    // areSame compares asElement()'s getSimpleName() and getEnclosingElement().  The name is
+    // converted to a String because areSame compares names with Name.contentEquals, and Name does
+    // not specify that its hashCode is consistent with contentEquals.
+    Element element = typeVariable.asElement();
+    return Objects.hash(element.getSimpleName().toString(), element.getEnclosingElement());
   }
 }

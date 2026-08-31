@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Represents all of the information needed to execute the Javac compiler for a given set of test
@@ -38,7 +38,7 @@ public class ImmutableTestConfiguration implements TestConfiguration {
   /**
    * The source files to compile. If the file is expected to emit errors on compilation, the file
    * should contain expected error diagnostics OR should have a companion file with the same
-   * path/name but with the extension .out instead of .java if they
+   * path/name but with the extension .goal instead of .java if they
    */
   private final List<File> testSourceFiles;
 
@@ -102,9 +102,9 @@ public class ImmutableTestConfiguration implements TestConfiguration {
 
   @Override
   public String toString() {
-    return StringsPlume.joinLines(
+    return StringsP.joinLines(
         "TestConfigurationBuilder:",
-        "testSourceFiles=" + StringsPlume.join(" ", testSourceFiles),
+        "testSourceFiles=" + StringsP.join(" ", testSourceFiles),
         "processors=" + String.join(", ", processors),
         "options=" + String.join(", ", getFlatOptions()),
         "shouldEmitDebugInfo=" + shouldEmitDebugInfo);

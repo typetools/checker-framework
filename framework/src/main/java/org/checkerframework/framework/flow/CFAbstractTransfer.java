@@ -73,6 +73,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.dataflow.util.PurityChecker;
+import org.checkerframework.dataflow.util.PurityKind;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -436,7 +437,11 @@ public abstract class CFAbstractTransfer<
               .getTypeFactoryOfSubcheckerOrNull(AliasingChecker.class);
       if (aliasingAtf != null) {
         int indexOfLambdaActual = invok.getArguments().indexOf(lambdaTree);
-        VariableElement lambdaFormal = methodElt.getParameters().get(indexOfLambdaActual);
+        List<? extends VariableElement> formals = methodElt.getParameters();
+        // In a varargs invocation, the lambda may be an element of the vararg array, in which
+        // case its index among the arguments is beyond the last formal parameter.
+        VariableElement lambdaFormal =
+            formals.get(Math.min(indexOfLambdaActual, formals.size() - 1));
         return aliasingAtf.getAnnotatedType(lambdaFormal).getAnnotation(NonLeaked.class) == null;
       }
     }
@@ -475,7 +480,7 @@ public abstract class CFAbstractTransfer<
             isAssumeSideEffectFreeEnabled,
             isAssumeDeterministicEnabled,
             aTypeFactory.getChecker().hasOption("assumePureGetters"));
-    return result.isPure(EnumSet.allOf(Pure.Kind.class));
+    return result.isPure(EnumSet.of(PurityKind.SIDE_EFFECT_FREE, PurityKind.DETERMINISTIC));
   }
 
   /**
@@ -1079,6 +1084,8 @@ public abstract class CFAbstractTransfer<
     S store = p.getRegularStore();
     // add new information based on postcondition
     processPostconditions(n, store, constructorElt, newClassTree);
+    // TODO: This does not call `store.updateForMethodCall`, so a constructor's
+    // `@SideEffectsOnly` annotation has no effect yet on type refinement at a `new` expression.
     return super.visitObjectCreation(n, p);
   }
 
@@ -1105,7 +1112,7 @@ public abstract class CFAbstractTransfer<
     V storeValue = store.getValue(n);
     V resValue = moreSpecificValue(factoryValue, storeValue);
 
-    store.updateForMethodCall(n, analysis.atypeFactory, resValue);
+    store.updateForMethodCall(n, resValue);
 
     // add new information based on postcondition
     processPostconditions(n, store, method, invocationTree);

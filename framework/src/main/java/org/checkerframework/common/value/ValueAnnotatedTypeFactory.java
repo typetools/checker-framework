@@ -76,7 +76,7 @@ import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArraySet;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.MapsP;
 
 /** AnnotatedTypeFactory for the Value type system. */
@@ -401,7 +401,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotationUtils.getElementValueArray(
             fieldInvarAnno, minLenFieldInvariantMinLenElement, Integer.class);
     List<AnnotationMirror> qualifiers =
-        CollectionsPlume.mapList(
+        CollectionsP.mapList(
             (Integer minlen) -> createArrayLenRangeAnnotation(minlen, Integer.MAX_VALUE), minlens);
 
     FieldInvariants superInvariants = super.getFieldInvariants(element);
@@ -595,7 +595,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   /*package-private*/ List<Long> getArrayLenOrIntValue(AnnotationMirror anno) {
     if (AnnotationUtils.areSameByName(anno, ARRAYLEN_NAME)) {
-      return CollectionsPlume.mapList(Integer::longValue, getArrayLength(anno));
+      return CollectionsP.mapList(Integer::longValue, getArrayLength(anno));
     } else {
       return getIntValues(anno);
     }
@@ -796,11 +796,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     if (TypesUtils.isString(resultType)) {
-      List<String> stringVals = CollectionsPlume.mapList((Object o) -> (String) o, values);
+      List<String> stringVals = CollectionsP.mapList((Object o) -> (String) o, values);
       return createStringAnnotation(stringVals);
     } else if (TypesUtils.getClassFromType(resultType) == char[].class) {
       List<String> stringVals =
-          CollectionsPlume.mapList(
+          CollectionsP.mapList(
               o -> {
                 if (o instanceof char[] ca) {
                   return new String(ca);
@@ -823,7 +823,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     switch (primitiveKind) {
       case BOOLEAN -> {
-        List<Boolean> boolVals = CollectionsPlume.mapList((Object o) -> (Boolean) o, values);
+        List<Boolean> boolVals = CollectionsP.mapList((Object o) -> (Boolean) o, values);
         return createBooleanAnnotation(boolVals);
       }
       case DOUBLE, FLOAT, INT, LONG, SHORT, BYTE -> {
@@ -873,7 +873,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicatesSorted(values);
+    values = CollectionsP.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       long valMin = values.get(0);
       long valMax = values.get(values.size() - 1);
@@ -913,7 +913,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicatesSorted(values);
+    values = CollectionsP.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
@@ -941,7 +941,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return a list of double floating-point values
    */
   /*package-private*/ List<Double> convertLongListToDoubleList(List<Long> intValues) {
-    return CollectionsPlume.mapList(Long::doubleValue, intValues);
+    return CollectionsP.mapList(Long::doubleValue, intValues);
   }
 
   /**
@@ -961,7 +961,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicatesSorted(values);
+    values = CollectionsP.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       // Too many strings are replaced by their lengths
       List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(values);
@@ -990,7 +990,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicatesSorted(values);
+    values = CollectionsP.withoutDuplicatesSorted(values);
     if (values.isEmpty() || Collections.min(values) < 0) {
       return BOTTOMVAL;
     } else if (values.size() > MAX_VALUES) {
@@ -1017,7 +1017,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicatesSorted(values);
+    values = CollectionsP.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
@@ -1046,11 +1046,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicatesSorted(values);
+    values = CollectionsP.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
-      List<Long> longValues = CollectionsPlume.mapList((Character value) -> (long) value, values);
+      List<Long> longValues = CollectionsP.mapList((Character value) -> (long) value, values);
       return createIntValAnnotation(longValues);
     }
   }
@@ -1070,7 +1070,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicatesSorted(values);
+    values = CollectionsP.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
@@ -1096,10 +1096,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         || first instanceof Short
         || first instanceof Long
         || first instanceof Byte) {
-      List<Long> intValues = CollectionsPlume.mapList(Number::longValue, values);
+      List<Long> intValues = CollectionsP.mapList(Number::longValue, values);
       return createIntValAnnotation(intValues);
     } else if (first instanceof Double || first instanceof Float) {
-      List<Double> doubleValues = CollectionsPlume.mapList(Number::doubleValue, values);
+      List<Double> doubleValues = CollectionsP.mapList(Number::doubleValue, values);
       return createDoubleValAnnotation(doubleValues);
     }
     throw new UnsupportedOperationException(
@@ -1278,7 +1278,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /*package-private*/ AnnotationMirror convertStringValToMatchesRegex(
       AnnotationMirror stringValAnno) {
     List<String> values = getStringValues(stringValAnno);
-    List<@Regex String> valuesAsRegexes = CollectionsPlume.mapList(Pattern::quote, values);
+    List<@Regex String> valuesAsRegexes = CollectionsP.mapList(Pattern::quote, values);
     return createMatchesRegexAnnotation(valuesAsRegexes);
   }
 
@@ -1343,7 +1343,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return null;
     }
     List<Long> list = AnnotationUtils.getElementValueArray(intAnno, intValValueElement, Long.class);
-    list = CollectionsPlume.withoutDuplicatesSorted(list);
+    list = CollectionsP.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1362,7 +1362,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     List<Double> list =
         AnnotationUtils.getElementValueArray(doubleAnno, doubleValValueElement, Double.class);
-    list = CollectionsPlume.withoutDuplicatesSorted(list);
+    list = CollectionsP.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1381,7 +1381,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     List<Integer> list =
         AnnotationUtils.getElementValueArray(arrayAnno, arrayLenValueElement, Integer.class);
-    list = CollectionsPlume.withoutDuplicatesSorted(list);
+    list = CollectionsP.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1400,8 +1400,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     List<Long> intValues =
         AnnotationUtils.getElementValueArray(intAnno, intValValueElement, Long.class);
-    List<Character> charValues =
-        CollectionsPlume.mapList((Long i) -> (char) i.intValue(), intValues);
+    List<Character> charValues = CollectionsP.mapList((Long i) -> (char) i.intValue(), intValues);
     Collections.sort(charValues);
     // TODO: Should this be an unmodifiable list?
     return new ArrayList<>(charValues);
@@ -1470,7 +1469,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     List<String> list =
         AnnotationUtils.getElementValueArray(stringAnno, stringValValueElement, String.class);
-    list = CollectionsPlume.withoutDuplicatesSorted(list);
+    list = CollectionsP.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1490,7 +1489,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     List<String> list =
         AnnotationUtils.getElementValueArray(
             matchesRegexAnno, matchesRegexValueElement, String.class);
-    list = CollectionsPlume.withoutDuplicatesSorted(list);
+    list = CollectionsP.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1511,7 +1510,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     List<String> list =
         AnnotationUtils.getElementValueArray(
             doesNotMatchRegexAnno, doesNotMatchRegexValueElement, String.class);
-    list = CollectionsPlume.withoutDuplicatesSorted(list);
+    list = CollectionsP.withoutDuplicatesSorted(list);
     return list;
   }
 

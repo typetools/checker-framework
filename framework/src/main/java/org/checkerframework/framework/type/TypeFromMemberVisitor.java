@@ -11,6 +11,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -22,7 +23,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Converts a field or methods tree into an AnnotatedTypeMirror.
+ * Converts a field or method tree into an AnnotatedTypeMirror.
  *
  * @see org.checkerframework.framework.type.TypeFromTree
  */
@@ -123,6 +124,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     return result;
   }
 
+  // This method has no effect on the result of ((MethodSymbol) elt).getRawTypeAttributes().  That
+  // is affected elsewhere.
   @Override
   public AnnotatedTypeMirror visitMethod(MethodTree tree, AnnotatedTypeFactory f) {
     ExecutableElement elt = TreeUtils.elementFromDeclaration(tree);
@@ -149,6 +152,11 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
   /**
    * Returns the type of the lambda parameter, or null if paramElement is not a lambda parameter.
    *
+   * @param f the annotated type factory
+   * @param lambdaParam the type built from {@code paramElement}, which is javac's type for the
+   *     parameter plus default qualifiers; used to check that the type derived from the lambda's
+   *     function type is consistent with the type javac assigned
+   * @param paramElement an element that might be a lambda parameter
    * @return the type of the lambda parameter, or null if paramElement is not a lambda parameter
    */
   private static @Nullable AnnotatedTypeMirror inferLambdaParamAnnotations(
@@ -165,11 +173,22 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     if (declaredInTree instanceof LambdaExpressionTree lambdaDecl
         && TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
       int index = lambdaDecl.getParameters().indexOf(f.declarationFromElement(paramElement));
-      AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
-      AnnotatedTypeMirror funcTypeParam = functionType.getParameterTypes().get(index);
+      // If an inference that is currently running has already determined this parameter's type,
+      // use it.  (Otherwise, inference would start again.)
+      AnnotatedTypeMirror funcTypeParam =
+          f.getTypeArgumentInference().getLambdaParameterType((VariableElement) paramElement);
+      if (funcTypeParam == null) {
+        // No inference is running, or none that is running determined this parameter's type.  An
+        // inference that has already finished may have.
+        funcTypeParam = f.getRecordedLambdaParameterType((VariableElement) paramElement);
+      }
+      if (funcTypeParam == null) {
+        AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
+        funcTypeParam = functionType.getParameterTypes().get(index);
+      }
       // During type argument inference, the type of the parameters is assumed to be the
-      // same as the function parameter.
-      // (https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.2.1).  So if
+      // same as the function parameter
+      // (https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2.1).  So if
       // the underlying types are not the same type, then assume the lambda parameter is the
       // same as the function type. (Use the erased types because the type arguments are not
       // substituted when the annotated type arguments are.)

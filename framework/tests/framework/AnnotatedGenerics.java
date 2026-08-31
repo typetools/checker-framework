@@ -1,3 +1,4 @@
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.testchecker.util.*;
 
 public class AnnotatedGenerics {
@@ -126,10 +127,12 @@ public class AnnotatedGenerics {
       return true;
     }
 
+    @SideEffectsOnly("this")
     public @Odd T next() {
       return null;
     }
 
+    @SideEffectsOnly("this")
     public void remove() {}
   }
 }

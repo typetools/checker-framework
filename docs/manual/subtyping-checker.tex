@@ -20,7 +20,7 @@ Framework.
 
 If you need typestate analysis, then you can extend a typestate checker.
 For more details (including a definition of ``typestate''), see
-Chapter~\ref{typestate-checker}.
+Section~\ref{typestate-checker}.
 See Section~\ref{faq-typestate} for a simpler alternative.
 
 For type systems that require special checks (e.g., warning about
@@ -95,7 +95,7 @@ confusion and makes it easier to search for uses.
 Consider a hypothetical \code{Encrypted} type qualifier, which denotes that the
 representation of an object (such as a \code{String}, \code{CharSequence}, or
 \code{byte[]}) is encrypted. To use the Subtyping Checker for the \code{Encrypted}
-type system, follow three steps.
+type system, follow these steps.
 
 (This example also appears in the
 \href{https://checkerframework.org/tutorial/webpages/encryption-checker-cmd.html}{Checker
@@ -111,6 +111,7 @@ package \textit{myPackage}.qual;
 
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
@@ -153,7 +154,7 @@ Don't forget to compile these classes:
 $ javac myPackage/qual/Encrypted.java myPackage/qual/PossiblyUnencrypted.java
 \end{Verbatim}
 
-The resulting \<.class> files should either be on the same path (the classpath or
+The resulting \<.class> files should be on the same path (the classpath or
 processor path) as the Checker Framework.
 
 \item
@@ -197,7 +198,7 @@ capability of any realistic type system.
   You should add the \code{Encrypted} classfile to the processor classpath:
 
 \begin{alltt}
-  javac -processorpath \textit{myqualpath} -processor org.checkerframework.common.subtyping.SubtypingChecker \
+  javac -processorpath \textit{myqualpath} -processor org.checkerframework.common.subtyping.SubtypingChecker \ttbs
         -Aquals=\textit{myPackage.qual.Encrypted},\textit{myPackage.qual.PossiblyUnencrypted} YourProgram.java
 
 YourProgram.java:42: incompatible types.
@@ -262,16 +263,16 @@ however~\cite{Goetz2006:typedef}.
 Primitive types and final types (including \<String>) cannot be extended.
 Equality and identity tests can return incorrect results when a wrapper
 object is used.  Existing return types in code would need to be changed,
-which is easy with an annotation but disruptive to change the Java type.
+which is easy with an annotation but disruptive when changing the Java type.
 Therefore, it is best to avoid the pseudo-typedef antipattern.
 
 The Units Checker (\chapterpageref{units-checker}) is useful for the
-particular case of units of measurement, such as kilometers verses miles.
+particular case of units of measurement, such as kilometers versus miles.
 
 The Fake Enum Checker (\chapterpageref{fenum-checker})
 builds in a set of assumptions.  If those fit your
 use case, then it's easiest to use the Fake Enum Checker (though you can
-achieve them using the Subtyping Checker).  The Fake Enum Checker forbids
+achieve the same effect using the Subtyping Checker).  The Fake Enum Checker forbids
 mixing of fenums of different types, or fenums and unannotated types.  For
 instance, binary operations other than string concatenations are forbidden,
 such as \<NORTH+1>, \<NORTH+MONDAY>, and \<NORTH==MONDAY>.  However,
@@ -325,7 +326,7 @@ may or may not exist in your type system.
 
 A downside of the stronger guarantee that comes from using \<@NotMyType> as
 the default is the need to write additional annotations.
-For example, if \<@NotMyType> is the default, this code does not typecheck:
+For example, if \<@NotMyType> is the default, this code does not type-check:
 
 \begin{Verbatim}
 void method(Object o) { ... }
@@ -339,7 +340,7 @@ Section~\ref{generics-defaults}), this is interpreted as
 
 \begin{Verbatim}
 void method(@NotMyType Object o) { ... }
-<@U extends @MyTypeUnknown Object> void use(List<U> list) {
+<U extends @MyTypeUnknown Object> void use(List<U> list) {
   // type error: list.get(0) has type @MyTypeUnknown, method expects @NotMyType
   method(list.get(0));
 }

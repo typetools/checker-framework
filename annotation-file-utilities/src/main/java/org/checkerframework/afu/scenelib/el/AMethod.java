@@ -242,6 +242,7 @@ public class AMethod extends ADeclaration {
    *
    * @param returnTypeMirror the return type
    */
+  @SuppressWarnings("TypeEquals") // checking for identical value
   public void setReturnTypeMirror(@FindDistinct @Nullable TypeMirror returnTypeMirror) {
     if (returnTypeMirror == null) {
       return;
@@ -364,16 +365,16 @@ public class AMethod extends ADeclaration {
     // int size = parameters.size();
     for (Map.Entry<Integer, AField> em : parameters.entrySet()) {
       Integer i = em.getKey();
-      sb.append(" ");
+      sb.append(' ');
       sb.append(i);
-      sb.append(":");
+      sb.append(':');
       AElement ae = em.getValue();
       sb.append(ae.toString());
-      sb.append(" ");
+      sb.append(' ');
       ATypeElement ate = ae.type;
       sb.append(ate.toString());
     }
-    sb.append(" ");
+    sb.append(' ');
     sb.append("ret:");
     sb.append(returnType.toString());
     sb.append(") ");

@@ -26,4 +26,3 @@ class GenericArg$Tricky:
     method argh(Ljava/lang/Object;)V:
         return:
         insert-annotation Method.body, Block.statement 0, Variable.type: @X
-

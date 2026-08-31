@@ -1,9 +1,9 @@
 This directory shows how to create:
- * a qualifier which denotes that the representation of an object (such as a String, CharSequence, or byte[]) is encrypted, @Encrypted
- * a qualifier which denotes that the representation of an object may be unencrypted, @PossiblyUnencrypted
+ * a qualifier that denotes that the representation of an object (such as a String, CharSequence, or byte[]) is encrypted, @Encrypted
+ * a qualifier that denotes that the representation of an object may be unencrypted, @PossiblyUnencrypted
 
-The make file shows how to invoke the Subtyping Checker to utilize the specialized annotation.
+The Makefile shows how to invoke the Subtyping Checker to use the specialized annotations.
 
-You can model your own new units and unit checkers after it.
+You can model your own new qualifiers and checkers after this example.
 
 To see the demo, run: make demo

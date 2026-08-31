@@ -30,7 +30,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * {@code BoundsInitializer} creates AnnotatedTypeMirrors (without annotations) for the bounds of
@@ -42,7 +42,7 @@ import org.plumelib.util.CollectionsPlume;
  * called for a particular bound, the entirety of that bound, including circular references, is
  * created.
  */
-public class BoundsInitializer {
+public final class BoundsInitializer {
 
   /** Class cannot be instantiated. */
   private BoundsInitializer() {
@@ -162,8 +162,8 @@ public class BoundsInitializer {
     /**
      * Sets the extends and super bounds of {@code annotatedWildcardType} to {@code
      * AnnotatedTypeMirror} that match the upper and lower bounds of the underlying type of {@code
-     * annotatedWildcardType} by calling visiting each bound. This method should only be called once
-     * per {@link WildcardType}.
+     * annotatedWildcardType} by visiting each bound. This method should only be called once per
+     * {@link WildcardType}.
      *
      * @param annotatedWildcardType an annotated wildcard type
      */
@@ -275,7 +275,7 @@ public class BoundsInitializer {
       AnnotatedUnionType annotatedUnionType = (AnnotatedUnionType) createAnnotatedType(t);
 
       annotatedUnionType.alternatives =
-          CollectionsPlume.mapList(
+          CollectionsP.mapList(
               alternative -> (AnnotatedDeclaredType) visit(alternative), t.getAlternatives());
       return annotatedUnionType;
     }
@@ -284,7 +284,7 @@ public class BoundsInitializer {
     public AnnotatedTypeMirror visitIntersection(IntersectionType t, Void unused) {
       AnnotatedIntersectionType annotatedIntersectionType =
           (AnnotatedIntersectionType) createAnnotatedType(t);
-      annotatedIntersectionType.bounds = CollectionsPlume.mapList(this::visit, t.getBounds());
+      annotatedIntersectionType.bounds = CollectionsP.mapList(this::visit, t.getBounds());
       return annotatedIntersectionType;
     }
 

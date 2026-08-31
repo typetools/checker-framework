@@ -25,33 +25,33 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  *
  * &nbsp; @RequiresPresent({"optId1", "#1.optId1"})
  *   void method1(MyClass other) {
- *     optId1.get().length()       // OK, this.optID1 is known to be present.
- *     optId2.get().length()       // error, might throw NoSuchElementException.
+ *     optId1.get().length();       // OK, this.optId1 is known to be present.
+ *     optId2.get().length();       // error, might throw NoSuchElementException.
  *
- *     other.optId1.get().length() // OK, this.optID1 is known to be present.
- *     other.optId2.get().length() // error, might throw NoSuchElementException.
+ *     other.optId1.get().length(); // OK, other.optId1 is known to be present.
+ *     other.optId2.get().length(); // error, might throw NoSuchElementException.
  *   }
  *
  *   void method2() {
  *     MyClass other = new MyClass();
  *
  *     optId1 = Optional.of("abc");
- *     other.optId1 = Optional.of("def")
+ *     other.optId1 = Optional.of("def");
  *     method1(other);                       // OK, satisfies method precondition.
  *
  *     optId1 = Optional.empty();
- *     other.optId1 = Optional.empty("abc");
+ *     other.optId1 = Optional.of("abc");
  *     method1(other);                       // error, does not satisfy this.optId1 method precondition.
  *
- *     optId1 = Optional.empty("abc");
+ *     optId1 = Optional.of("abc");
  *     other.optId1 = Optional.empty();
- *     method1(other);                       // error. does not satisfy other.optId1 method precondition.
+ *     method1(other);                       // error, does not satisfy other.optId1 method precondition.
  *   }
  * }
  * </pre>
  *
  * Do not use this annotation for formal parameters (instead, give them a {@code @Present} type).
- * The {@code @RequiresNonNull} annotation is intended for non-parameter expressions, such as field
+ * The {@code @RequiresPresent} annotation is intended for non-parameter expressions, such as field
  * accesses or method calls.
  *
  * @checker_framework.manual #optional-checker Optional Checker
@@ -63,7 +63,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 public @interface RequiresPresent {
 
   /**
-   * The Java expressions that that need to be {@link Present}.
+   * The Java expressions that need to be {@link Present}.
    *
    * @return the Java expressions that need to be {@link Present}
    * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions

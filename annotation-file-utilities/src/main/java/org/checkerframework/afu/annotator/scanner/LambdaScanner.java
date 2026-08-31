@@ -14,7 +14,7 @@ import java.util.Map;
  * instanceof check, where the i^th index corresponds to the i^th instanceof check, using 0-based
  * indexing.
  */
-public class LambdaScanner extends CommonScanner {
+public final class LambdaScanner extends CommonScanner {
 
   /**
    * Computes the index of the given lambda expression tree amongst all lambda expression trees

@@ -14,6 +14,9 @@ public abstract class BasicTypeProcessor extends AbstractTypeProcessor {
   /** The source tree that's being scanned. */
   protected @MonotonicNonNull CompilationUnitTree currentRoot;
 
+  /** Creates a BasicTypeProcessor. */
+  public BasicTypeProcessor() {}
+
   /**
    * Create a TreePathScanner at the given root.
    *
@@ -27,7 +30,7 @@ public abstract class BasicTypeProcessor extends AbstractTypeProcessor {
   public void typeProcess(TypeElement e, TreePath p) {
     currentRoot = p.getCompilationUnit();
 
-    TreePathScanner<?, ?> scanner = null;
+    TreePathScanner<?, ?> scanner;
     try {
       scanner = createTreePathScanner(currentRoot);
       scanner.scan(p, null);

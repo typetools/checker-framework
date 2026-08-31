@@ -37,8 +37,10 @@ DEBUG :=
 
 default : all
 
-.PHONY: all
+.PHONY: all test clean default
 all : $(DIFFS) results
+
+test: all
 
 # Display results of all .diff files.
 .PHONY: results
@@ -81,8 +83,8 @@ output: compile $(JAIF) ../../build/classes/java/main $(AFU_JARS)
 
 # Remove all .diff, .log files from the tests directory.
 .PHONY: clean
-clean :
-	rm -rf bin
-	rm -f *.diff
-	rm -f *.log
-	rm -f *.output
+clean:
+	@rm -rf bin
+	@rm -f *.diff
+	@rm -f *.log
+	@rm -f *.output

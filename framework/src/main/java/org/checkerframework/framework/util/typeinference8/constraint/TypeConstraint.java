@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
@@ -22,7 +21,7 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * Constraints are between either an expression and a type, two types, or an expression and a thrown
  * type. Defined in <a
- * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.1.2">JLS section
+ * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.1.2">JLS section
  * 18.1.2</a>
  */
 public abstract class TypeConstraint implements Constraint {
@@ -31,16 +30,22 @@ public abstract class TypeConstraint implements Constraint {
   protected AbstractType T;
 
   /**
-   * The constraint whose reduction created this constraint or null if this constraint isn't from a
-   * reduction from another. If null, then {@code source} should be nonnull.
+   * The constraint whose reduction created this constraint, or null if this constraint is the root
+   * of a constraint history. If null, then {@code source} should be nonnull.
    */
   public @Nullable Constraint parent;
 
   /**
-   * A string that describes where this constraint is from. If null, then the constraint came from
-   * reducing {@code parent}.
+   * A string that describes where this constraint is from, for a constraint that has no {@code
+   * parent}. Null if this constraint has a {@code parent}.
    */
   public @Nullable String source;
+
+  /**
+   * A string that describes how {@code parent} gave rise to this constraint. Null if {@code parent}
+   * is null, or if this constraint came from an ordinary reduction of {@code parent}.
+   */
+  public @Nullable String derivation;
 
   /**
    * Creates a type constraint.
@@ -53,6 +58,7 @@ public abstract class TypeConstraint implements Constraint {
     this.T = T;
     this.parent = null;
     this.source = source;
+    this.derivation = null;
   }
 
   /**
@@ -66,6 +72,7 @@ public abstract class TypeConstraint implements Constraint {
     this.T = T;
     this.parent = parent;
     this.source = null;
+    this.derivation = null;
   }
 
   /**
@@ -77,20 +84,17 @@ public abstract class TypeConstraint implements Constraint {
     StringJoiner constraintStack = new StringJoiner(System.lineSeparator());
     constraintStack.add(this.toString());
 
-    Constraint parent = this.parent;
-    String source = this.source;
-    while (parent != null) {
-      constraintStack.add((source != null ? source + ": " : "") + parent);
-
-      if (parent instanceof TypeConstraint) {
-        source = ((TypeConstraint) parent).source;
-        parent = ((TypeConstraint) parent).parent;
-      } else {
-        parent = null;
+    // Each iteration prints the parent of `child`, labeled by how it gave rise to `child`.
+    TypeConstraint child = this;
+    while (child.parent != null) {
+      constraintStack.add((child.derivation != null ? child.derivation + ": " : "") + child.parent);
+      if (!(child.parent instanceof TypeConstraint tc)) {
+        return constraintStack.toString();
       }
+      child = tc;
     }
-    if (source != null) {
-      constraintStack.add("From: " + source);
+    if (child.source != null) {
+      constraintStack.add("From: " + child.source);
     }
     return constraintStack.toString();
   }
@@ -115,12 +119,12 @@ public abstract class TypeConstraint implements Constraint {
 
   /**
    * For lambda and method references constraints, input variables are roughly the inference
-   * variables mentioned by they function type's parameter types and return types. For conditional
+   * variables mentioned by the function type's parameter types and return types. For conditional
    * expression constraints and switch expression constraints, input variables are the union of the
    * input variables of its subexpressions. For all other constraints, no input variables exist.
    *
    * <p>Defined in <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS section
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS section
    * 18.5.2.2</a>
    *
    * @return input variables for this constraint
@@ -132,7 +136,7 @@ public abstract class TypeConstraint implements Constraint {
    * type on the right-hand side of the constraint, T, that are not input variables."
    *
    * <p>As defined in <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS section
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS section
    * 18.5.2.2</a>
    *
    * @return output variables for this constraint
@@ -141,14 +145,15 @@ public abstract class TypeConstraint implements Constraint {
 
   /**
    * Implementation of {@link #getInputVariables()} that is used both by expressions constraints and
-   * checked exception constraints
-   * https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.5.2-200
+   * checked exception constraints. See <a
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS
+   * 18.5.2.2</a>.
    *
-   * @param tree an expression tree
-   * @param T the type of the right-hand side of the constraint
+   * @param tree an expression tree; its target type is {@code T}, the type of the right-hand side
+   *     of this constraint
    * @return the input variables for this constraint
    */
-  protected List<Variable> getInputVariablesForExpression(ExpressionTree tree, AbstractType T) {
+  protected List<Variable> getInputVariablesForExpression(ExpressionTree tree) {
     switch (tree.getKind()) {
       case LAMBDA_EXPRESSION -> {
         if (T.isUseOfVariable()) {
@@ -157,17 +162,16 @@ public abstract class TypeConstraint implements Constraint {
           LambdaExpressionTree lambdaTree = (LambdaExpressionTree) tree;
           List<Variable> inputs = new ArrayList<>();
           if (TreeUtils.isImplicitlyTypedLambda(lambdaTree)) {
-            List<AbstractType> params = this.T.getFunctionTypeParameterTypes();
-            if (params == null) {
+            List<Variable> paramVariables = functionTypeParameterVariables();
+            if (paramVariables == null) {
               // T is not a function type.
               return Collections.emptyList();
             }
-            for (AbstractType param : params) {
-              inputs.addAll(param.getInferenceVariables());
-            }
+            inputs.addAll(paramVariables);
           }
           AbstractType R = this.T.getFunctionTypeReturnType();
-          if (R == null || R.getTypeKind() == TypeKind.NONE) {
+          if (R == null) {
+            // The function type's return type is void.
             return inputs;
           }
           for (ExpressionTree e : TreeUtils.getReturnedExpressions(lambdaTree)) {
@@ -183,43 +187,58 @@ public abstract class TypeConstraint implements Constraint {
         } else if (TreeUtils.isExactMethodReference((MemberReferenceTree) tree)) {
           return Collections.emptyList();
         } else {
-          List<AbstractType> params = this.T.getFunctionTypeParameterTypes();
-          if (params == null) {
+          List<Variable> paramVariables = functionTypeParameterVariables();
+          if (paramVariables == null) {
             // T is not a function type.
             return Collections.emptyList();
           }
-          List<Variable> inputs = new ArrayList<>();
-          for (AbstractType param : params) {
-            inputs.addAll(param.getInferenceVariables());
-          }
-          return inputs;
+          return paramVariables;
         }
       }
       case PARENTHESIZED -> {
-        return getInputVariablesForExpression(TreeUtils.withoutParens(tree), T);
+        return getInputVariablesForExpression(TreeUtils.withoutParens(tree));
       }
       case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) tree;
         List<Variable> inputs = new ArrayList<>();
-        inputs.addAll(getInputVariablesForExpression(conditional.getTrueExpression(), T));
-        inputs.addAll(getInputVariablesForExpression(conditional.getFalseExpression(), T));
+        inputs.addAll(getInputVariablesForExpression(conditional.getTrueExpression()));
+        inputs.addAll(getInputVariablesForExpression(conditional.getFalseExpression()));
         return inputs;
       }
       case SWITCH_EXPRESSION -> {
-        List<Variable> inputs2 = new ArrayList<>();
+        List<Variable> inputs = new ArrayList<>();
 
         SwitchExpressionScanner<Boolean, Void> scanner =
             new FunctionalSwitchExpressionScanner<>(
                 (ExpressionTree exTree, Void unused) ->
-                    inputs2.addAll(getInputVariablesForExpression(exTree, T)),
+                    inputs.addAll(getInputVariablesForExpression(exTree)),
                 (r1, r2) -> null);
         scanner.scanSwitchExpression((SwitchExpressionTree) tree, null);
-        return inputs2;
+        return inputs;
       }
       default -> {
         return Collections.emptyList();
       }
     }
+  }
+
+  /**
+   * Returns the inference variables mentioned by the parameter types of the function type of {@code
+   * T}, or null if {@code T} is not a functional interface type.
+   *
+   * @return the inference variables mentioned by the parameter types of the function type of {@code
+   *     T}, or null if {@code T} is not a functional interface type
+   */
+  protected @Nullable List<Variable> functionTypeParameterVariables() {
+    List<AbstractType> params = T.getFunctionTypeParameterTypes();
+    if (params == null) {
+      return null;
+    }
+    List<Variable> inputs = new ArrayList<>();
+    for (AbstractType param : params) {
+      inputs.addAll(param.getInferenceVariables());
+    }
+    return inputs;
   }
 
   /**

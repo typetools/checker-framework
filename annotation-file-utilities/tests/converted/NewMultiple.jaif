@@ -14,4 +14,3 @@ class NewMultiple:
     method bar(Ljava/lang/Object;)V:
         return:
         insert-annotation Method.body, Block.statement 0, Variable.initializer, TypeCast.type: @java.lang.UnderInitialization
-

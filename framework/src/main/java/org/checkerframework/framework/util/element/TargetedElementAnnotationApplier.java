@@ -13,7 +13,7 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * TargetedElementAnnotationApplier filters annotations for an element into 3 groups. TARGETED
@@ -32,7 +32,7 @@ abstract class TargetedElementAnnotationApplier {
    * Three annotation groups that may be encountered when calling getRawTypeAttributes. See {@link
    * #sift}.
    */
-  protected static enum TargetClass {
+  protected enum TargetClass {
     /** The annotation that should be applied to the current object. */
     TARGETED,
     /** The annotation is valid but we will ignore it. */
@@ -140,8 +140,8 @@ abstract class TargetedElementAnnotationApplier {
         remainingInfo.add(r.toString() + " (" + r.position + ")");
       }
       msg.add(remainingInfo.toString());
-      msg.add("Targeted annotations: " + StringsPlume.join(", ", annotatedTargets()));
-      msg.add("Valid annotations: " + StringsPlume.join(", ", validTargets()));
+      msg.add("Targeted annotations: " + StringsP.join(", ", annotatedTargets()));
+      msg.add("Valid annotations: " + StringsP.join(", ", validTargets()));
 
       throw new BugInCF(msg.toString());
     }

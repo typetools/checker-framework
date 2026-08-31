@@ -56,25 +56,8 @@ public class Unknown extends JavaExpression {
   }
 
   @Override
-  public boolean equals(@Nullable Object obj) {
-    return obj == this;
-  }
-
-  // Overridden to avoid an error "overrides equals, but does not override hashCode"
-  @Override
-  public int hashCode() {
-    return System.identityHashCode(this);
-  }
-
-  @Override
   public String toString() {
     return originalExpression;
-  }
-
-  @SuppressWarnings("unchecked") // generic cast
-  @Override
-  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
-    return getClass() == clazz ? (T) this : null;
   }
 
   @Override
@@ -93,6 +76,17 @@ public class Unknown extends JavaExpression {
   }
 
   @Override
+  public boolean equals(@Nullable Object obj) {
+    return obj == this;
+  }
+
+  // Overridden to avoid an error "overrides equals, but does not override hashCode"
+  @Override
+  public int hashCode() {
+    return System.identityHashCode(this);
+  }
+
+  @Override
   public boolean syntacticEquals(JavaExpression je) {
     return this == je;
   }
@@ -105,6 +99,12 @@ public class Unknown extends JavaExpression {
   @Override
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
     return true;
+  }
+
+  @SuppressWarnings("unchecked") // generic cast
+  @Override
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
+    return getClass() == clazz ? (T) this : null;
   }
 
   @Override

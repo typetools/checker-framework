@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 import org.plumelib.util.UniqueId;
 
 /**
@@ -271,6 +271,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
     }
   }
 
+  // `equals()` and `hashCode()` ignore the `analysis` field.
   @Override
   public boolean equals(@Nullable Object o) {
     if (o instanceof TransferInput) {
@@ -292,18 +293,18 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.analysis, this.node, this.store, this.thenStore, this.elseStore);
+    return Objects.hash(this.store, this.thenStore, this.elseStore);
   }
 
   @Override
   public String toString() {
     if (store == null) {
       return "[then="
-          + StringsPlume.indentLinesExceptFirst(2, thenStore)
+          + StringsP.indentLinesExceptFirst(2, thenStore)
           + ","
           + System.lineSeparator()
           + "  else="
-          + StringsPlume.indentLinesExceptFirst(2, elseStore)
+          + StringsP.indentLinesExceptFirst(2, elseStore)
           + "]";
     } else {
       return "[" + store + "]";

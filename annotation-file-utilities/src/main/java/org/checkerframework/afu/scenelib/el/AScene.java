@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
@@ -57,7 +58,7 @@ public class AScene implements Cloneable {
 
   /** This scene's annotated classes; map key is class name. */
   public final VivifyingMap</*@BinaryName*/ String, AClass> classes =
-      new VivifyingMap<String, AClass>(new LinkedHashMap<>()) {
+      new VivifyingMap<>(new LinkedHashMap<>()) {
         @Override
         public AClass createValueFor(String k) {
           return new AClass(k);
@@ -124,7 +125,7 @@ public class AScene implements Cloneable {
 
   @Override
   public int hashCode() {
-    return classes.hashCode() + packages.hashCode();
+    return Objects.hash(classes, packages);
   }
 
   /**
@@ -152,11 +153,17 @@ public class AScene implements Cloneable {
     StringBuilder sb = new StringBuilder();
     sb.append("packages:\n");
     for (Map.Entry<String, AElement> entry : packages.entrySet()) {
-      sb.append("  " + entry.getKey() + " => " + entry.getValue() + "\n");
+      sb.append("  " + entry.getKey());
+      sb.append(" => ");
+      sb.append(entry.getValue());
+      sb.append("\n");
     }
     sb.append("classes:\n");
     for (Map.Entry<String, AClass> entry : classes.entrySet()) {
-      sb.append("  " + entry.getKey() + " => " + "\n");
+      sb.append("  ");
+      sb.append(entry.getKey());
+      sb.append(" => ");
+      sb.append("\n");
       sb.append(entry.getValue().unparse("    "));
     }
     return sb.toString();
@@ -291,7 +298,7 @@ public class AScene implements Cloneable {
    * AScene)} for explanation.)
    */
   private static ElementVisitor<Void, AElement> checkVisitor =
-      new ElementVisitor<Void, AElement>() {
+      new ElementVisitor<>() {
         @Override
         public Void visitAnnotationDef(AnnotationDef el, AElement arg) {
           return null;
@@ -403,11 +410,11 @@ public class AScene implements Cloneable {
     int status = 0;
     checkClones = true;
 
-    for (int i = 0; i < args.length; i++) {
+    for (String arg : args) {
       AScene s0 = new AScene();
-      System.out.print(args[i] + ": ");
+      System.out.print(arg + ": ");
       try {
-        IndexFileParser.parseFile(args[i], s0);
+        IndexFileParser.parseFile(arg, s0);
         @SuppressWarnings({
           "UnusedVariable",
           "PMD.UnusedLocalVariable"

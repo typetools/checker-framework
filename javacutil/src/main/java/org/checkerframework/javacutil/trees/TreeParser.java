@@ -66,9 +66,6 @@ public class TreeParser {
       return parseExpression(tokenizer, token).first;
     } catch (Exception e) {
       throw new ParseError(e);
-    } finally {
-      tokenizer = null;
-      token = null;
     }
   }
 

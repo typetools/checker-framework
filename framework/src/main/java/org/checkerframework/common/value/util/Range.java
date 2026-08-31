@@ -16,7 +16,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * <p>{@code Range} is immutable.
  */
-public class Range {
+public final class Range {
 
   /** The lower bound of the interval, inclusive. */
   public final long from;
@@ -111,7 +111,7 @@ public class Range {
    * @return the Range [from..to]
    */
   public static Range create(long from, long to) {
-    if (!(from <= to)) {
+    if (from > to) {
       throw new IllegalArgumentException(String.format("Invalid Range: %s %s", from, to));
     }
     return new Range(from, to);
@@ -538,7 +538,7 @@ public class Range {
       long resultFrom = from + right.from;
       long resultTo = to + right.to;
       if (from > to) {
-        return Range.EVERYTHING;
+        return EVERYTHING;
       } else {
         return create(resultFrom, resultTo);
       }
@@ -786,7 +786,7 @@ public class Range {
     // 1. create different methods for int type and long type and use them accordingly
     // 2. add an additional boolean parameter to indicate the type of the left-hand operand
     //
-    // see https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.19 for more
+    // see https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.19 for more
     // detail.
     if (right.isWithin(0, 31)) {
       if (this.isWithinInteger()) {

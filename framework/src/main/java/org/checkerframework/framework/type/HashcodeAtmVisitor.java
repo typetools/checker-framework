@@ -10,7 +10,7 @@ import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
  * <p>This class should be synchronized with EqualityAtmComparer.
  *
  * @see org.checkerframework.framework.type.EqualityAtmComparer for more details.
- *     <p>This is used by AnnotatedTypeMirror.hashcode.
+ *     <p>This is used by AnnotatedTypeMirror.hashCode.
  */
 public class HashcodeAtmVisitor extends SimpleAnnotatedTypeScanner<Integer, Void> {
 

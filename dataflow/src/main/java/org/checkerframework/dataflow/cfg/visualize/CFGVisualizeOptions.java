@@ -11,7 +11,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * can be retrieved by calling the appropriate getter method. See {@link
  * org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher} for an example.
  */
-public class CFGVisualizeOptions {
+public final class CFGVisualizeOptions {
 
   /** Default method name. */
   private static final String DEFAULT_METHOD = "test";

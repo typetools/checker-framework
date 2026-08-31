@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * Represents the top of the SQL Quotes qualifier hierarchy. Used to denote a String of which the
- * quoting is unknown. Using a SqlQuotesUnknown Strings within a SQL query may be, or lead to, a SQL
+ * quoting is unknown. Using a SqlQuotesUnknown String within a SQL query may be, or lead to, a SQL
  * injection vulnerability.
  *
  * <p>Common use cases include unsanitized user input.

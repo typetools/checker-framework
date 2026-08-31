@@ -44,7 +44,7 @@ The programmer does need to write field types and method pre-conditions or post-
 if a method's formal parameter is used as an index for
 \<myArray>, the programmer might need to
 write an \refqualclasswithparams{checker/index/qual}{IndexFor}{"myArray"}
-annotation on the formal parameter's types.
+annotation on the formal parameter's type.
 
 The Index Checker checks fixed-size data structures, whose size is never
 changed after creation.  A fixed-size data structure has no \<add> or
@@ -99,13 +99,13 @@ might be indices:
 and about sequence lengths:
 \begin{itemize}
 \item
-  the minimum length of a sequence, such ``\<myArray> contains at least 3
+  the minimum length of a sequence, such as ``\<myArray> contains at least 3
   elements'' (Section~\ref{index-minlen})
 \item
   whether two sequences have the same length (Section~\ref{index-samelen})
 \end{itemize}
 
-The Index Checker checks of all these properties at once, but
+The Index Checker checks all these properties at once, but
 this manual discusses each type system in a different section.
 There are some annotations that are shorthand for writing multiple
 annotations, each from a different type system:
@@ -221,8 +221,8 @@ qualifiers:
   There is no information about the value.
   It may not be used as an index for a sequence, because it might be too low.
 \item[\refqualclass{checker/index/qual}{LowerBoundBottom}]
-    The value cannot take on any integral types. The bottom type, which
-    should not need to be written by the programmer.
+    There are no values of this type. This is the bottom type, which
+    should never need to be written by the programmer.
 \end{description}
 
 \begin{figure}
@@ -257,12 +257,12 @@ too high. To do this, it maintains information about which expressions are
 safe indices for which sequences.
 The length of a sequence is \code{arr.length} for arrays and
 \code{str.length()} for strings.
-It uses a type system (Figure~\ref{fig-index-int-types}) with the following
-qualifiers:
-
 It issues an error when a sequence \code{arr}
 is indexed by an integer that is not of type \code{@LTLengthOf("arr")}
 or \code{@LTOMLengthOf("arr")}.
+
+It uses a type system (Figure~\ref{fig-index-int-types}) with the following
+qualifiers:
 
 \begin{description}
 
@@ -300,7 +300,7 @@ or \code{@LTOMLengthOf("arr")}.
 \item[\refqualclasswithparams{checker/index/qual}{LTOMLengthOf}{String[] names}]
   An expression with this type
   has value at least 2 less than the length of each sequence listed in \<names>.
-  It may always used as an index for a sequence listed in \<names>, if it is
+  It may always be used as an index for a sequence listed in \<names>, if it is
   non-negative.
 
   This type exists to allow the checker to infer the safety of loops of
@@ -325,8 +325,8 @@ or \code{@LTOMLengthOf("arr")}.
 \item[\refqualclass{checker/index/qual}{UpperBoundLiteral}]
   represents a constant value, typically a literal written in source code.
   Its subtyping relationship is:
-  \<@UpperBoundLiteral(lit)> <: \<LTLengthOf(value="myArray", offset=off)>
-  if \<lit>+\<offset> $\le$ -1.
+  \<@UpperBoundLiteral(lit)> <: \<@LTLengthOf(value="myArray", offset=off)>
+  if \<lit>+\<off> $\le$ -1.
 
 \item[\refqualclass{checker/index/qual}{PolyUpperBound}]
   indicates qualifier polymorphism.
@@ -368,7 +368,7 @@ two sequences:
     value, String[] from, String[] to}]
   indicates that a subsequence (from \code{from} to \code{to}) of the
   annotated sequence is equal to some other sequence, named by
-  \code{value}).
+  \code{value}.
 
 For example, to indicate that \<shorter> is a subsequence of \<longer>:
 
@@ -393,7 +393,7 @@ assigned to \code{longer}, three facts are checked: that \code{start} is
 non-negative, that \code{start} is less than or equal to \code{end}, and
 that \code{end} is less than or equal to the length of \code{longer}.  This
 ensures that the indices are valid. The programmer must manually verify
-that the value of \code{shorter} equals the subsequence that they describe.
+that the value of \code{shorter} equals the subsequence that the annotation describes.
 \end{description}
 
 
@@ -428,7 +428,7 @@ annotated as
 The MinLen type qualifier is implemented in practice by the Constant Value Checker,
 using \<@ArrayLenRange> annotations (see \chapterpageref{constant-value-checker}).
 This means that errors related to the minimum lengths of arrays must be suppressed using
-the "value" argument to \<@SuppressWarnings>.
+the ``value'' argument to \<@SuppressWarnings>.
 \refqualclass{common/value/qual}{ArrayLenRange} and \refqualclass{common/value/qual}{ArrayLen}
 annotations can also be used to establish the minimum length of a sequence, if a
 more precise estimate of length is known. For example,
@@ -449,13 +449,13 @@ can establish the minimum length of a sequence:
   \code{value} elements.  The default annotation is
   \code{@MinLen(0)}, and it may be applied to non-sequences.
   \code{@MinLen($x$)} is a subtype of \code{@MinLen($x-1$)}.
-  An \code{@MinLen} annotation is treated internally as an
+  A \code{@MinLen} annotation is treated internally as an
   \refqualclass{common/value/qual}{ArrayLenRange} with only its
   \code{from} field filled.
 \item[\refqualclasswithparams{common/value/qual}{ArrayLen}{int[] value}]
   The value of an expression of this type is a sequence whose
   length is exactly one of the integers listed in its argument.
-  The argument can contain at most ten integers; larger collections of
+  The argument can contain at most 10 integers; larger collections of
   integers are converted to \refqualclass{common/value/qual}{ArrayLenRange}
   annotations. The minimum length of a sequence with this annotation
   is the smallest element of the argument.
@@ -471,7 +471,7 @@ can establish the minimum length of a sequence:
   \includeimage{samelen}{5cm}
   \hfill
 \end{center}
-  \caption{The type hierarchy for arrays of equal length ("a" and "b" are
+  \caption{The type hierarchy for arrays of equal length (``a'' and ``b'' are
     assumed to be in-scope sequences).  Qualifiers
     written in gray should never be written in source code; they are used
     internally by the type system.}
@@ -558,11 +558,11 @@ The Search Index Checker's type hierarchy (Figure~\ref{fig-index-searchindex}) h
   produced by calling
   \sunjavadoc{java.base/java/util/Arrays.html\#binarySearch(java.lang.Object\%5B\%5D,java.lang.Object)}{Arrays.binarySearch}:
   for each array \<a> specified in the annotation, the annotated integer is
-  between \<-a.length-1> and \<a.length-1>, inclusive
+  between \<-a.length-1> and \<a.length-1>, inclusive.
 \item[\refqualclasswithparams{checker/index/qual}{NegativeIndexFor}{String[] names}]
   An expression with this type represents a ``negative index'' that is
-  between \<a.length-1> and \<-1>, inclusive; that is, a value that is both
-  a \<@SearchIndex> and is negative.  Applying the bitwise complement
+  between \<-a.length-1> and \<-1>, inclusive; that is, a value that is both
+  a \<@SearchIndexFor> and negative.  Applying the bitwise complement
   operator (\verb|~|) to an expression of this type produces an expression
   of type \refqualclass{checker/index/qual}{IndexOrHigh}.
 \item[\refqualclass{checker/index/qual}{SearchIndexBottom}]
@@ -599,7 +599,7 @@ stated here in three equivalent ways:
 
 The return type of methods \sunjavadoc{java.base/java/lang/String.html\#indexOf(java.lang.String)}{String.indexOf}
 and \sunjavadoc{java.base/java/lang/String.html\#lastIndexOf(java.lang.String)}{String.lastIndexOf} has the annotation
-\refqualclasswithparams{checker/index/qual}{SubstringIndexFor}{value="this", offset="\#1.length()-1")}.
+\refqualclasswithparams{checker/index/qual}{SubstringIndexFor}{value="this", offset="\#1.length()-1"}.
 This allows writing code such as the following with no warnings from the
 Index Checker:
 
@@ -646,7 +646,7 @@ qualifiers:
   produced by calling
   \sunjavadoc{java.base/java/lang/String.html\#indexOf(java.lang.String)}{String.indexOf}:
   the annotated integer is either -1, or it is non-negative and is less
-  than or equal to \<receiver.length - offset> (where the sequence
+  than \<receiver.length() - offset> (where the sequence
   \<receiver> and the offset \<offset> are corresponding elements of the
   annotation's arguments).
 \item[\refqualclass{checker/index/qual}{SubstringIndexBottom}]
@@ -722,7 +722,7 @@ is necessary.
 
 \sectionAndLabel{Inequalities}{index-inequalities}
 
-The Index Checker estimates which expression's values are less than other expressions' values.
+The Index Checker estimates which expressions' values are less than other expressions' values.
 
 \begin{description}
 
@@ -732,11 +732,11 @@ The Index Checker estimates which expression's values are less than other expres
   final or effectively final variables and constants.
 
 \item[\refqualclass{checker/index/qual}{LessThanUnknown}]
-  There is no information about the value of an expression this type relative to other expressions.
+  There is no information about the value of an expression of this type relative to other expressions.
   This is the top type, and should not be written by the programmer.
 
  \item[\refqualclass{checker/index/qual}{LessThanBottom}]
-   This is the bottom type for the less than type system. It should
+   This is the bottom type for the less-than type system. It should
    never need to be written by the programmer.
 
 \end{description}
@@ -746,8 +746,8 @@ The Index Checker estimates which expression's values are less than other expres
 The Index Checker has built-in support for Strings and arrays.
 You can add support for additional fixed-size data structures by writing
 annotations.
-This allows the Index Checker to typecheck the data structure's
-implementation and to typecheck uses of the class.
+This allows the Index Checker to type-check the data structure's
+implementation and to type-check uses of the class.
 
 This section gives an example:  a fixed-length collection.
 
@@ -779,11 +779,10 @@ public class ArrayWrapper<T> {
 }
 \end{Verbatim}
 
-The Index Checker treats methods annotated with \code{@LengthOf("this")}  as
-the length of a sequence like \code{arr.length} for arrays and
-\code{str.length()} for strings.
+The Index Checker treats a call to a method annotated with \code{@LengthOf("this")}
+like \code{arr.length} for arrays and \code{str.length()} for strings.
 
-With these annotations, client code like the following typechecks with no
+With these annotations, client code like the following type-checks with no
 warnings:
 \begin{Verbatim}
   public static void clearIndex1(ArrayWrapper<? extends Object> a, @IndexFor("#1") int i) {
@@ -878,10 +877,10 @@ a sequence might shrink.
   For the purposes of the Grow-Only Checker, this is treated exactly like
   \<@CanShrink>. It indicates that the collection can shrink. (Its special
   properties related to opting out of index checking are not relevant to the
-  GrowOnly Checker).
+  Grow-Only Checker).
 
 \item[\refqualclass{checker/index/qual}{PolyGrowShrink}]
-  is the polymorphic annotation for the Must Call type system.
+  is the polymorphic annotation for the Grow-Only type system.
   For a description of polymorphic qualifiers, see
   Section~\ref{method-qualifier-polymorphism}.
 

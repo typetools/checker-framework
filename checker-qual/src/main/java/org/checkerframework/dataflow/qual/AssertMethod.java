@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * {@code Assertions.assertTrue} is annotated as follows:
  *
  * <pre>{@code @AssertMethod(value = AssertionFailedError.class)
- * public static void assertFalse(boolean condition);
+ * public static void assertTrue(boolean condition);
  * }</pre>
  *
  * Then, in the code below, the Optional Checker can determine that {@code optional} has a value and
@@ -55,15 +55,15 @@ public @interface AssertMethod {
   /**
    * Returns true if this method asserts that the boolean expression is false.
    *
-   * <p>For example, Junit's <a
+   * <p>For example, JUnit's <a
    * href="https://docs.junit.org/current/api/org.junit.jupiter.api/org/junit/jupiter/api/Assertions.html#assertFalse(boolean)">Assertions.assertFalse(...)</a>
-   * throws an exception if the first argument is false. So it is annotated as follows:
+   * throws an exception if the first argument is not false. So it is annotated as follows:
    *
    * <pre>{@code @AssertMethod(value = AssertionFailedError.class, isAssertFalse = true)
    * public static void assertFalse(boolean condition);
    * }</pre>
    *
-   * @return the value for {@link #parameter} on which the method throws an exception
+   * @return true if this method asserts that the boolean expression is false
    */
   boolean isAssertFalse() default false;
 }

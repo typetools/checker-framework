@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
@@ -14,6 +15,8 @@ import org.plumelib.util.ArrayMap;
 
 /** A utility for converting AnnotationMirrors to Strings. It omits full package names. */
 public class DefaultAnnotationFormatter implements AnnotationFormatter {
+  /** Creates a DefaultAnnotationFormatter. */
+  public DefaultAnnotationFormatter() {}
 
   /**
    * Returns true if, by default, anno should not be printed.
@@ -55,7 +58,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
         continue;
       }
       formatAnnotationMirror(obj, sb);
-      sb.append(" ");
+      sb.append(' ');
     }
     return sb.toString();
   }
@@ -76,13 +79,18 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
     return sb.toString();
   }
 
-  /** A helper method to output a single AnnotationMirror, without showing full package names. */
+  /**
+   * A helper method to output a single AnnotationMirror, without showing full package names.
+   *
+   * @param am the annotation to format
+   * @param sb where to output the annotation's formatted representation
+   */
   protected void formatAnnotationMirror(AnnotationMirror am, StringBuilder sb) {
-    sb.append("@");
+    sb.append('@');
     sb.append(am.getAnnotationType().asElement().getSimpleName());
     Map<ExecutableElement, AnnotationValue> args = removeDefaultValues(am.getElementValues());
     if (!args.isEmpty()) {
-      sb.append("(");
+      sb.append('(');
       boolean oneValue = false;
       if (args.size() == 1) {
         Map.Entry<ExecutableElement, AnnotationValue> first = args.entrySet().iterator().next();
@@ -92,19 +100,19 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
         }
       }
       if (!oneValue) {
-        boolean notfirst = false;
+        StringJoiner sj = new StringJoiner(", ");
         for (Map.Entry<ExecutableElement, AnnotationValue> arg : args.entrySet()) {
           if (!"{}".equals(arg.getValue().toString())) {
-            if (notfirst) {
-              sb.append(", ");
-            }
-            notfirst = true;
-            sb.append(arg.getKey().getSimpleName() + "=");
-            formatAnnotationMirrorArg(arg.getValue(), sb);
+            StringBuilder argSb = new StringBuilder();
+            argSb.append(arg.getKey().getSimpleName());
+            argSb.append('=');
+            formatAnnotationMirrorArg(arg.getValue(), argSb);
+            sj.add(argSb);
           }
         }
+        sb.append(sj);
       }
-      sb.append(")");
+      sb.append(')');
     }
   }
 
@@ -139,20 +147,19 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
       if (vallist.size() == 1) {
         formatAnnotationMirrorArg(vallist.get(0), sb);
       } else {
-        sb.append('{');
-        boolean notfirst = false;
+        StringJoiner sj = new StringJoiner(", ", "{", "}");
         for (AnnotationValue nav : vallist) {
-          if (notfirst) {
-            sb.append(", ");
-          }
-          notfirst = true;
-          formatAnnotationMirrorArg(nav, sb);
+          StringBuilder navSb = new StringBuilder();
+          formatAnnotationMirrorArg(nav, navSb);
+          sj.add(navSb);
         }
-        sb.append('}');
+        sb.append(sj);
       }
     } else if (VariableElement.class.isAssignableFrom(val.getClass())) {
       VariableElement ve = (VariableElement) val;
-      sb.append(ve.getEnclosingElement().getSimpleName() + "." + ve.getSimpleName());
+      sb.append(ve.getEnclosingElement().getSimpleName());
+      sb.append('.');
+      sb.append(ve.getSimpleName());
     } else {
       sb.append(av.toString());
     }

@@ -2,7 +2,7 @@
 
 name: CI
 
-on:  # yamllint disable-line rule:truthy
+"on":
   push:
     branches:
       - "**"
@@ -10,9 +10,10 @@ on:  # yamllint disable-line rule:truthy
     branches:
       - "**"
 
+# Auto-cancel any in-progress jobs from the same branch or PR.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -27,6 +28,7 @@ jobs:
   # The needs clauses are:
   #  * Everything depends on the canary jobs (the main jdk25 jobs), except those jobs themselves.
   #  * Any other *_jdkNN job depends on the corresponding *_jdk25 job.
+
   canary_jobs:
     needs:
       - junit_part1_jdk25
@@ -42,6 +44,18 @@ jobs:
     steps:
       - name: canary_jobs
         run: true
+  ci_info:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          # Unlimited history for contributors.tex generation.
+          fetch-depth: 0
+      - name: clone_plume_scripts
+        run: git clone https://github.com/plume-lib/plume-scripts.git /tmp/plume-scripts
+      - name: ci_info
+        run: /tmp/plume-scripts/ci-info --debug
 
   junit_jdk17:
     needs:
@@ -53,7 +67,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk17:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -61,6 +75,7 @@ jobs:
         run: ./checker/bin-devel/test-cftests-junit.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "17"
+
   junit_jdk21:
     needs:
       - canary_jobs
@@ -71,7 +86,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk21:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -79,13 +94,14 @@ jobs:
         run: ./checker/bin-devel/test-cftests-junit.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "21"
+
   junit_part1_jdk25:
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -99,7 +115,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -107,6 +123,7 @@ jobs:
         run: ./checker/bin-devel/test-cftests-junit.sh part2
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+
   junit_jdk26:
     needs:
       - canary_jobs
@@ -117,7 +134,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk26:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -126,12 +143,29 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "26"
 
+  nonjunit_jdk21:
+    needs:
+      - canary_jobs
+      - nonjunit_jdk25
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk21:latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+      - name: test-cftests-nonjunit.sh
+        run: ./checker/bin-devel/test-cftests-nonjunit.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "21"
+
   nonjunit_jdk25:
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -151,7 +185,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -165,7 +199,7 @@ jobs:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -174,23 +208,6 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
-  misc_jdk17:
-    needs:
-      - canary_jobs
-      - misc_jdk25
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk17-plus:latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          set-safe-directory: true
-          # Unlimited history for contributors.tex generation.
-          fetch-depth: 0
-      - name: test-misc.sh
-        run: ./checker/bin-devel/test-misc.sh
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "17"
   misc_jdk21:
     needs:
       - canary_jobs
@@ -199,11 +216,17 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk21-plus:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - name: getPlumeScripts
+        run: ./gradlew -q getPlumeScripts
+      - name: ci-org-and-branch
+        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+      - name: git-changes
+        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:
@@ -213,11 +236,17 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25-plus:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - name: getPlumeScripts
+        run: ./gradlew -q getPlumeScripts
+      - name: ci-org-and-branch
+        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+      - name: git-changes
+        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:
@@ -227,26 +256,31 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk26-plus:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - name: getPlumeScripts
+        run: ./gradlew -q getPlumeScripts
+      - name: ci-org-and-branch
+        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+      - name: git-changes
+        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "26"
 
-  # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk25:
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
-          fetch-depth: 0
+          fetch-depth: 25
       - name: test-typecheck-part1.sh
         run: ./checker/bin-devel/test-typecheck-part1.sh
         env:
@@ -256,19 +290,19 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
-          fetch-depth: 0
+          fetch-depth: 25
       - name: test-typecheck-part2.sh
         run: ./checker/bin-devel/test-typecheck-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
   # TEMPORARILY commented until Daikon release 5.8.24.
-  # daikon_job(canary_version)
+  # daikon_job(canary_jdk)
 
-  guava_jdk25:
+  guava_part1_jdk25:
     needs:
       - canary_jobs
     runs-on: ubuntu-latest
@@ -276,12 +310,28 @@ jobs:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
-      - name: test-guava.sh
-        run: ./checker/bin-devel/test-guava.sh
+      - name: test-guava-part1.sh
+        run: ./checker/bin-devel/test-guava-part1.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+  guava_part2_jdk25:
+    needs:
+      - canary_jobs
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk25:latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+      - name: test-guava-part2.sh
+        run: ./checker/bin-devel/test-guava-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
@@ -292,7 +342,7 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
@@ -300,3 +350,20 @@ jobs:
         run: ./checker/bin-devel/test-plume-lib.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+
+  all_green:
+    if: always()
+    needs:
+      - junit_jdk17
+      - junit_jdk21
+      - junit_jdk26
+      - nonjunit_jdk21
+      - misc_jdk21
+      - guava_part1_jdk25
+      - guava_part2_jdk25
+      - plume_lib_jdk25
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any dependency failed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1

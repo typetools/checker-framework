@@ -34,7 +34,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  *
  * @see AnnotationUtils
  */
-public class TypeAnnotationUtils {
+public final class TypeAnnotationUtils {
 
   // Class cannot be instantiated.
   private TypeAnnotationUtils() {
@@ -506,7 +506,7 @@ public class TypeAnnotationUtils {
    * @param tpidx the type parameter index
    * @param bndidx the bound index
    * @param pos the source tree position
-   * @return a method parameter TypeAnnotationPosition
+   * @return a type parameter bound TypeAnnotationPosition
    */
   public static TypeAnnotationPosition typeParameterBoundTAPosition(
       int tpidx, int bndidx, int pos) {
@@ -520,7 +520,7 @@ public class TypeAnnotationUtils {
    * @param tpidx the type parameter index
    * @param bndidx the bound index
    * @param pos the source tree position
-   * @return a method parameter TypeAnnotationPosition
+   * @return a method type parameter bound TypeAnnotationPosition
    */
   public static TypeAnnotationPosition methodTypeParameterBoundTAPosition(
       int tpidx, int bndidx, int pos) {

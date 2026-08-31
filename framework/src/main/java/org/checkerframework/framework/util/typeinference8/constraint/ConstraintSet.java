@@ -1,9 +1,11 @@
 package org.checkerframework.framework.util.typeinference8.constraint;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,32 +18,37 @@ import org.checkerframework.framework.util.typeinference8.util.FalseBoundExcepti
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.BugInCF;
 
-/** A set of constraints and the operations that can be performed on them. */
+/**
+ * A set of constraints and the operations that can be performed on them.
+ *
+ * <p>If you add a method that modifies a constraint set, override that method in {@code
+ * ImmutableConstraintSet}, so that the constant constraint sets {@link #TRUE} and {@link
+ * #TRUE_ANNO_FAIL} remain immutable.
+ */
 public class ConstraintSet implements ReductionResult {
 
-  /** The result given when a constraint set reduces to true. */
+  /**
+   * Max number of constraints in a constraint set. Reducing a constraint can create new
+   * constraints, so a constraint set can grow during reduction; if it grows this large, then
+   * reduction is most likely not terminating.
+   */
+  public static final int MAX_CONSTRAINTS = 10000;
+
+  /** The result given when a constraint set reduces to true. It is empty and immutable. */
   @SuppressWarnings("interning:assignment")
   public static final @InternedDistinct ConstraintSet TRUE =
-      new ConstraintSet() {
-        @Override
-        public String toString() {
-          return "TRUE";
-        }
-      };
+      new ImmutableConstraintSet("TRUE", false);
 
   /**
    * The Java types are correct, but the qualifiers are not in the correct relationship. Return this
    * rather than throwing an exception so that type arguments with the correct Java type are still
    * inferred.
+   *
+   * <p>It is empty and immutable.
    */
   @SuppressWarnings("interning:assignment")
   public static final @InternedDistinct ConstraintSet TRUE_ANNO_FAIL =
-      new ConstraintSet(true) {
-        @Override
-        public String toString() {
-          return "TRUE_ANNO_FAIL";
-        }
-      };
+      new ImmutableConstraintSet("TRUE_ANNO_FAIL", true);
 
   /** The result given when a constraint set reduces to false. */
   @SuppressWarnings("interning:assignment")
@@ -54,23 +61,39 @@ public class ConstraintSet implements ReductionResult {
       };
 
   /**
-   * A list of constraints in this set. It does not contain constraints that are equal. This needs
-   * to be kept in the order created, which should be lexically left to right. This is so the {@link
+   * The constraints in this set. It does not contain constraints that are equal. This needs to be
+   * kept in the order created, which should be lexically left to right. This is so the {@link
    * #getClosedSubset(ConstraintSet, Dependencies)} is computed correctly.
    */
-  private final List<Constraint> list;
+  private final Deque<Constraint> queue;
 
-  /** True if inference failed because the qualifiers where not in the correct relationship. */
+  /**
+   * The same constraints as {@link #queue}, for constant-time membership tests. {@link
+   * #applyInstantiations} rebuilds it, because applying instantiations changes the hash code of a
+   * constraint.
+   *
+   * <p>A constraint can be mutated through some other constraint set that contains it, which leaves
+   * a stale entry here: one filed under the constraint's former hash code. A lookup never finds a
+   * stale entry, because a constraint equal to the mutated constraint has the mutated constraint's
+   * current hash code. So the only consequence is that a constraint equal to a mutated constraint
+   * might be added to this set a second time, which costs an extra reduction but does not change
+   * the result of reduction.
+   */
+  private final Set<Constraint> members;
+
+  /** True if inference failed because the qualifiers were not in the correct relationship. */
   private boolean annotationFailure = false;
 
   /**
-   * Creates a new constraint set.
+   * Creates an empty constraint set whose constraints cannot be modified. Only {@code
+   * ImmutableConstraintSet} calls this constructor.
    *
-   * @param annotationFailure inference failed because the qualifiers where not in the correct
+   * @param annotationFailure inference failed because the qualifiers were not in the correct
    *     relationship
    */
   private ConstraintSet(boolean annotationFailure) {
-    this();
+    this.queue = new UnmodifiableEmptyDeque();
+    this.members = Collections.emptySet();
     this.annotationFailure = annotationFailure;
   }
 
@@ -81,22 +104,39 @@ public class ConstraintSet implements ReductionResult {
    */
   public ConstraintSet(Constraint... constraints) {
     if (constraints != null) {
-      list = new ArrayList<>(constraints.length);
-      list.addAll(Arrays.asList(constraints));
+      queue = new ArrayDeque<>(constraints.length);
+      members = new LinkedHashSet<>(constraints.length);
+      for (Constraint constraint : constraints) {
+        addIfAbsent(constraint);
+      }
     } else {
-      list = new ArrayList<>();
+      queue = new ArrayDeque<>();
+      members = new LinkedHashSet<>();
     }
   }
 
   /**
-   * Adds {@code c} to this set, if c isn't already in the list.
+   * Adds {@code c} to the end of {@link #queue}, if {@code c} is non-null and no constraint equal
+   * to it is already in {@link #queue}. This method is private so that it can be called from the
+   * constructor.
+   *
+   * <p>This method is final because constructors call it.
+   *
+   * @param c a constraint to add to this set, or null
+   */
+  private void addIfAbsent(Constraint c) {
+    if (c != null && members.add(c)) {
+      queue.addLast(c);
+    }
+  }
+
+  /**
+   * Adds {@code c} to this set, if c isn't already in this set.
    *
    * @param c a constraint to add to this set
    */
   public void add(Constraint c) {
-    if (c != null && !list.contains(c)) {
-      list.add(c);
-    }
+    addIfAbsent(c);
   }
 
   /**
@@ -108,16 +148,16 @@ public class ConstraintSet implements ReductionResult {
     if (constraintSet.annotationFailure) {
       this.annotationFailure = true;
     }
-    constraintSet.list.forEach(this::add);
+    constraintSet.queue.forEach(this::add);
   }
 
   /**
-   * Adds all constraints in {@code constraintSet} to this constraint set.
+   * Adds all constraints in {@code constraints} to this constraint set.
    *
-   * @param constraintSet a collection of constraints to add to this set
+   * @param constraints a collection of constraints to add to this set
    */
-  public void addAll(Collection<? extends Constraint> constraintSet) {
-    list.addAll(constraintSet);
+  public void addAll(Collection<? extends Constraint> constraints) {
+    constraints.forEach(this::add);
   }
 
   /**
@@ -126,7 +166,7 @@ public class ConstraintSet implements ReductionResult {
    * @return true if this constraint set is empty
    */
   public boolean isEmpty() {
-    return list.isEmpty();
+    return queue.isEmpty();
   }
 
   /**
@@ -136,7 +176,9 @@ public class ConstraintSet implements ReductionResult {
    */
   public Constraint pop() {
     assert !isEmpty();
-    return list.remove(0);
+    Constraint result = queue.removeFirst();
+    members.remove(result);
+    return result;
   }
 
   /**
@@ -145,19 +187,20 @@ public class ConstraintSet implements ReductionResult {
    * @param constraint a constraint
    */
   public void push(Constraint constraint) {
-    if (constraint != null && !list.contains(constraint)) {
-      list.add(0, constraint);
+    if (constraint != null && members.add(constraint)) {
+      queue.addFirst(constraint);
     }
   }
 
   /**
    * Adds the constraints to the beginning of this set and maintains the order of the constraints.
    *
-   * @param constraints constraints
+   * @param constraints the constraints to add to the beginning of this set
    */
   public void pushAll(ConstraintSet constraints) {
-    for (int i = constraints.list.size() - 1; i > -1; i--) {
-      this.push(constraints.list.get(i));
+    Iterator<Constraint> itor = constraints.queue.descendingIterator();
+    while (itor.hasNext()) {
+      this.push(itor.next());
     }
   }
 
@@ -169,9 +212,16 @@ public class ConstraintSet implements ReductionResult {
   @SuppressWarnings("interning:not.interned")
   public void remove(ConstraintSet subset) {
     if (this == subset) {
-      list.clear();
+      queue.clear();
+      members.clear();
+      return;
     }
-    list.removeAll(subset.list);
+    // Testing membership in a hash-based set, rather than calling `Deque.removeAll`, makes this
+    // method take time linear (rather than quadratic) in the sizes of the two constraint sets.
+    // `Constraint.equals` is expensive, because it walks the structure of the constrained types.
+    Set<Constraint> toRemove = new LinkedHashSet<>(subset.queue);
+    queue.removeIf(toRemove::contains);
+    members.removeAll(toRemove);
   }
 
   /**
@@ -179,16 +229,19 @@ public class ConstraintSet implements ReductionResult {
    * influence an output variable of another constraint in C. If that subset is empty, returns a set
    * containing a single constraint that participates in a constraint cycle. (See JLS 18.5.2.2)
    *
-   * @param c a constraint set
+   * @param c a nonempty constraint set
    * @param dependencies an object describing the dependencies of inference variables
-   * @return s a subset of constraints in {@code c} whose inputs do not affect {@code c}'s outputs,
-   *     or a singleton constraint from a constraint cycle
+   * @return a subset of constraints in {@code c} whose inputs do not affect {@code c}'s outputs, or
+   *     a singleton constraint from a constraint cycle
    */
   public static ConstraintSet getClosedSubset(ConstraintSet c, Dependencies dependencies) {
+    if (c.isEmpty()) {
+      throw new BugInCF("ConstraintSet.getClosedSubset was passed an empty constraint set.");
+    }
     ConstraintSet subset = new ConstraintSet();
     // Collection of all outputs of c.
     Set<Variable> allOutputsOfC = new LinkedHashSet<>();
-    for (Constraint constraint : c.list) {
+    for (Constraint constraint : c.queue) {
       if (constraint instanceof TypeConstraint tc) {
         allOutputsOfC.addAll(tc.getOutputVariables());
       }
@@ -210,16 +263,18 @@ public class ConstraintSet implements ReductionResult {
     // The JLS does not specify whether this subset should be as large as possible, but this
     // implementation returns only one constraint. This seems to match the javac implementation.
     // Issue7019.java shows an example where returning the largest set fails.
-    for (Constraint constraint : c.list) {
+    for (Constraint constraint : c.queue) {
       if (constraint.getKind() == Kind.EXPRESSION
           || constraint.getKind() == Kind.LAMBDA_EXCEPTION
-          || constraint.getKind() == Kind.METHOD_REF_EXCEPTION) {
+          || constraint.getKind() == Kind.METHOD_REF_EXCEPTION
+          || constraint.getKind() == Kind.LAMBDA_BODY) {
         List<Variable> inputsOfSingleConstraint = ((TypeConstraint) constraint).getInputVariables();
         boolean foundInfluence = false;
         inputLoop:
         for (Variable in : inputsOfSingleConstraint) {
+          Set<Variable> inDependencies = dependencies.get(in);
           for (Variable out : allOutputsOfC) {
-            if (dependencies.get(in).contains(out) || dependencies.get(out).contains(in)) {
+            if (inDependencies.contains(out) || dependencies.get(out).contains(in)) {
               foundInfluence = true;
               break inputLoop;
             }
@@ -237,20 +292,20 @@ public class ConstraintSet implements ReductionResult {
 
     if (!subset.isEmpty()) {
       // Return the first expression constraint; if there are none, return the first constraint.
-      for (Constraint constraint : subset.list) {
+      for (Constraint constraint : subset.queue) {
         if (constraint.getKind() == Kind.EXPRESSION) {
           return new ConstraintSet(constraint);
         }
       }
 
-      return new ConstraintSet(subset.list.get(0));
+      return new ConstraintSet(subset.queue.getFirst());
     }
 
     // TODO: double check that this code is correct.
     // checker/tests/all-systems/java8inference/MapEntryGetFails.java is a test that uses this code.
 
     Set<Variable> inputDependencies = new LinkedHashSet<>();
-    Set<Variable> outDependencies = new LinkedHashSet<>();
+    Set<Variable> outputDependencies = new LinkedHashSet<>();
     // If this subset is empty then no closed subset was found and there is a cycle (or cycles) in
     // the graph of dependencies between constraints.
 
@@ -267,7 +322,7 @@ public class ConstraintSet implements ReductionResult {
     // is the considered constraint that contains the expression to the left of the expression
     // of every other considered constraint.
     List<Constraint> consideredConstraints = new ArrayList<>();
-    for (Constraint constraint : c.list) {
+    for (Constraint constraint : c.queue) {
       if (!(constraint instanceof TypeConstraint typeConstraint)) {
         continue;
       }
@@ -275,10 +330,10 @@ public class ConstraintSet implements ReductionResult {
       Set<Variable> newInputs = dependencies.get(typeConstraint.getInputVariables());
       Set<Variable> newOutputs = dependencies.get(typeConstraint.getOutputVariables());
       if (inputDependencies.isEmpty()
-          || !Collections.disjoint(newInputs, outDependencies)
+          || !Collections.disjoint(newInputs, outputDependencies)
           || !Collections.disjoint(newOutputs, inputDependencies)) {
         inputDependencies.addAll(newInputs);
-        outDependencies.addAll(newOutputs);
+        outputDependencies.addAll(newOutputs);
         consideredConstraints.add(typeConstraint);
       }
     }
@@ -289,6 +344,11 @@ public class ConstraintSet implements ReductionResult {
       }
     }
 
+    // `consideredConstraints` is nonempty:  `c` is nonempty (checked at the top of this method),
+    // and `subset` is empty only if every constraint in `c` is a TypeConstraint (the first loop in
+    // this method adds every other kind of constraint to `subset`).  The loop that populates
+    // `consideredConstraints` adds the first TypeConstraint in `c`, because `inputDependencies`
+    // starts out empty.
     return new ConstraintSet(consideredConstraints.get(0));
   }
 
@@ -299,7 +359,7 @@ public class ConstraintSet implements ReductionResult {
    */
   public Set<Variable> getAllInferenceVariables() {
     Set<Variable> vars = new LinkedHashSet<>();
-    for (Constraint c : list) {
+    for (Constraint c : queue) {
       if (c instanceof TypeConstraint tc) {
         vars.addAll(tc.getInferenceVariables());
       }
@@ -314,7 +374,7 @@ public class ConstraintSet implements ReductionResult {
    */
   public Set<Variable> getAllInputVariables() {
     Set<Variable> vars = new LinkedHashSet<>();
-    for (Constraint constraint : list) {
+    for (Constraint constraint : queue) {
       if (constraint instanceof TypeConstraint tc) {
         vars.addAll(tc.getInputVariables());
       }
@@ -324,16 +384,42 @@ public class ConstraintSet implements ReductionResult {
 
   /** Applies the instantiations to all the constraints in this set. */
   public void applyInstantiations() {
-    for (Constraint constraint : list) {
+    for (Constraint constraint : queue) {
       if (constraint instanceof TypeConstraint tc) {
         tc.applyInstantiations();
       }
+    }
+    // Applying instantiations changes the hash code of a constraint, and can make two constraints
+    // in this set equal to one another.  Rebuild both the queue and the index, discarding every
+    // constraint that is now equal to an earlier one.
+    List<Constraint> constraints = new ArrayList<>(queue);
+    queue.clear();
+    members.clear();
+    for (Constraint constraint : constraints) {
+      addIfAbsent(constraint);
     }
   }
 
   @Override
   public String toString() {
-    return "Size: " + list.size();
+    return "Size: " + queue.size();
+  }
+
+  /**
+   * Throws an exception if this set contains more than {@link #MAX_CONSTRAINTS} constraints.
+   *
+   * @param context the context
+   * @throws BugInCF if this set contains more than {@link #MAX_CONSTRAINTS} constraints
+   */
+  private void checkMaxConstraints(Java8InferenceContext context) {
+    if (this.queue.size() > MAX_CONSTRAINTS) {
+      // Throw rather than assert, so that this is reported as a
+      // "type.argument.inference.crashed" error for this one expression, rather than as an
+      // AssertionError that aborts the entire compilation.
+      throw new BugInCF(
+          "Max constraints (%d) exceeded while reducing: %s",
+          MAX_CONSTRAINTS, context.getPathToExpression().getLeaf());
+    }
   }
 
   /**
@@ -341,37 +427,13 @@ public class ConstraintSet implements ReductionResult {
    *
    * @param context the context
    * @return the bound set produced by reducing this constraint set
+   * @throws BugInCF if reduction creates more than {@link #MAX_CONSTRAINTS} constraints
    */
   public BoundSet reduce(Java8InferenceContext context) {
     BoundSet boundSet = new BoundSet(context);
     while (!this.isEmpty()) {
-      if (this.list.size() > BoundSet.MAX_INCORPORATION_STEPS) {
-        throw new BugInCF("TO MANY CONSTRAINTS: %s", context.pathToExpression.getLeaf());
-      }
+      checkMaxConstraints(context);
       BoundSet result = reduceOneStep(context);
-      boundSet.merge(result);
-    }
-    return boundSet;
-  }
-
-  /**
-   * Reduces all the constraints in this set. (See JLS 18.2) If an {@link AdditionalArgument} is
-   * found it is reduced one step and then this method returns.
-   *
-   * @param context the context
-   * @return the bound set produced by reducing this constraint set
-   */
-  public BoundSet reduceAdditionalArgOnce(Java8InferenceContext context) {
-    BoundSet boundSet = new BoundSet(context);
-    while (!this.isEmpty()) {
-      if (this.list.size() > BoundSet.MAX_INCORPORATION_STEPS) {
-        throw new BugInCF("TOO MANY CONSTRAINTS: %s", context.pathToExpression.getLeaf());
-      }
-      boolean foundAA = this.list.get(0).getKind() == Kind.ADDITIONAL_ARG;
-      BoundSet result = reduceOneStep(context);
-      if (foundAA) {
-        return boundSet;
-      }
       boundSet.merge(result);
     }
     return boundSet;
@@ -395,16 +457,16 @@ public class ConstraintSet implements ReductionResult {
         throw new FalseBoundException(constraint, result);
       }
       this.addAll(rrp.constraintSet());
-    } else if (result instanceof TypeConstraint) {
-      // Add the new constraints to the beginning of the list so they are reduced first. This is
+    } else if (result instanceof TypeConstraint tc2) {
+      // Add the new constraints to the beginning of this set so they are reduced first. This is
       // because each constraint is supposed to be reduced until no other constraints are produced
       // before moving onto another constraint.
-      this.push((Constraint) result);
+      this.push(tc2);
     } else if (result instanceof ConstraintSet cs) {
       if (result == TRUE_ANNO_FAIL) {
         this.annotationFailure = true;
       } else {
-        // Add the new constraints to the beginning of the list so they are reduced first. This is
+        // Add the new constraints to the beginning of this set so they are reduced first. This is
         // because each constraint is supposed to be reduced until no other constraints are produced
         // before moving onto another constraint.
         this.pushAll(cs);
@@ -432,5 +494,117 @@ public class ConstraintSet implements ReductionResult {
       }
     }
     return boundSet;
+  }
+
+  /** An empty {@code ConstraintSet} that cannot be modified. */
+  private static final class ImmutableConstraintSet extends ConstraintSet {
+
+    /** The name of this constraint set; it is the value returned by {@link #toString}. */
+    private final String name;
+
+    /**
+     * Creates an immutable constraint set.
+     *
+     * @param name the name of this constraint set; it is the value returned by {@link #toString}
+     * @param annotationFailure inference failed because the qualifiers were not in the correct
+     *     relationship
+     */
+    ImmutableConstraintSet(String name, boolean annotationFailure) {
+      super(annotationFailure);
+      this.name = name;
+    }
+
+    /**
+     * Returns an exception to throw because this constraint set cannot be modified.
+     *
+     * @return an exception to throw because this constraint set cannot be modified
+     */
+    private BugInCF cannotModify() {
+      return new BugInCF("Attempted to modify an immutable constraint set: %s", name);
+    }
+
+    @Override
+    public void add(Constraint c) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void addAll(ConstraintSet constraintSet) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void addAll(Collection<? extends Constraint> constraintSet) {
+      throw cannotModify();
+    }
+
+    @Override
+    public Constraint pop() {
+      throw cannotModify();
+    }
+
+    @Override
+    public void push(Constraint constraint) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void pushAll(ConstraintSet constraints) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void remove(ConstraintSet subset) {
+      throw cannotModify();
+    }
+
+    @Override
+    public void applyInstantiations() {
+      throw cannotModify();
+    }
+
+    // This method is overridden so that the error message describes reduction, rather than the
+    // modification that the inherited implementation's call to pop() would report.
+    @Override
+    public BoundSet reduceOneStep(Java8InferenceContext context) {
+      throw new BugInCF("Attempt to reduce the empty constraint set %s.", name);
+    }
+
+    @Override
+    public String toString() {
+      return name;
+    }
+  }
+
+  /**
+   * An empty deque that cannot be modified; every method that would add an element throws {@link
+   * BugInCF}. The immutable constraint sets {@link #TRUE} and {@link #TRUE_ANNO_FAIL} use it, so
+   * that a modifying method that is not overridden in {@link ImmutableConstraintSet} fails fast
+   * rather than corrupting a constraint set that every inference problem shares.
+   *
+   * <p>Only {@link #addFirst} and {@link #addLast} are overridden, because {@code ArrayDeque}
+   * specifies that every other method that adds an element is equivalent to one of them. The
+   * methods that remove an element need no override: on an empty deque, each of them either throws
+   * an exception or does nothing.
+   */
+  private static final class UnmodifiableEmptyDeque extends ArrayDeque<Constraint> {
+
+    /** Unique identifier for serialization. */
+    private static final long serialVersionUID = 20260815L;
+
+    /** Creates an UnmodifiableEmptyDeque. */
+    UnmodifiableEmptyDeque() {
+      super(0);
+    }
+
+    @Override
+    public void addFirst(Constraint constraint) {
+      throw new BugInCF("Attempted to modify an immutable constraint set.");
+    }
+
+    @Override
+    public void addLast(Constraint constraint) {
+      throw new BugInCF("Attempted to modify an immutable constraint set.");
+    }
   }
 }

@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Represents multiple type qualifier hierarchies. {@link #getWidth} gives the number of hierarchies
@@ -253,7 +253,7 @@ public abstract class QualifierHierarchy {
       if (superQual == null) {
         throw new BugInCF(
             "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
-            subQual, StringsPlume.join(",", superQualifiers));
+            subQual, StringsP.join(",", superQualifiers));
       }
       if (!isSubtypeShallow(subQual, subType, superQual, superType)) {
         return false;
@@ -287,7 +287,7 @@ public abstract class QualifierHierarchy {
       if (superQual == null) {
         throw new BugInCF(
             "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
-            subQual, StringsPlume.join(",", superQualifiers));
+            subQual, StringsP.join(",", superQualifiers));
       }
       if (!isSubtypeQualifiersOnly(subQual, superQual)) {
         return false;
@@ -512,7 +512,7 @@ public abstract class QualifierHierarchy {
    * @param newQualifier new qualifier dataflow computed for some expression; must be in the same
    *     hierarchy as {@code previousQualifier}
    * @param previousQualifier the previous qualifier dataflow computed on the last iteration; must
-   *     be in the same hierarchy as {@code previousQualifier}
+   *     be in the same hierarchy as {@code newQualifier}
    * @return an upper bound that is higher than the least upper bound of newQualifier and
    *     previousQualifier (or the lub if the qualifier hierarchy does not require this)
    */
@@ -582,7 +582,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Returns the greatest lower bound of the two sets of qualifiers. The result is the lub of the
+   * Returns the greatest lower bound of the two sets of qualifiers. The result is the glb of the
    * qualifier for the same hierarchy in each set.
    *
    * @param qualifiers1 a set of qualifiers; exactly one per hierarchy
@@ -613,7 +613,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Returns the greatest lower bound of the two sets of qualifiers. The result is the lub of the
+   * Returns the greatest lower bound of the two sets of qualifiers. The result is the glb of the
    * qualifier for the same hierarchy in each set.
    *
    * @param qualifiers1 a set of qualifiers; exactly one per hierarchy
@@ -648,8 +648,8 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Returns the greatest lower bound the all the collections of qualifiers. The result is the glb
-   * of the qualifier for the same hierarchy in each set.
+   * Returns the greatest lower bound of all the collections of qualifiers. The result is the glb of
+   * the qualifier for the same hierarchy in each set.
    *
    * @param qualifiers a collection of collections of qualifiers. Each inner collection has exactly
    *     one qualifier per hierarchy.
@@ -768,7 +768,7 @@ public abstract class QualifierHierarchy {
     if (c1.size() != c2.size()) {
       throw new BugInCF(
           "inconsistent sizes (%d, %d):%n  [%s]%n  [%s]",
-          c1.size(), c2.size(), StringsPlume.join(",", c1), StringsPlume.join(",", c2));
+          c1.size(), c2.size(), StringsP.join(",", c1), StringsP.join(",", c2));
     }
   }
 
@@ -789,9 +789,9 @@ public abstract class QualifierHierarchy {
           c1.size(),
           c2.size(),
           result.size(),
-          StringsPlume.join(",", c1),
-          StringsPlume.join(",", c2),
-          StringsPlume.join(",", result));
+          StringsP.join(",", c1),
+          StringsP.join(",", c2),
+          StringsP.join(",", result));
     }
   }
 }

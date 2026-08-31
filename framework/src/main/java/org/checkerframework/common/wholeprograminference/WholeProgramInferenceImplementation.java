@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -50,7 +51,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -198,7 +198,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       if (showWpiFailedInferences) {
         printFailedInferenceDebugMessage(
             "WPI could not store information"
-                + "about this constructor: "
+                + " about this constructor: "
                 + JVMNames.getJVMMethodSignature(constructorElt));
       }
       return;
@@ -296,7 +296,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     // have information inferred about their receivers.
     if (receiver != null
         && atypeFactory.wpiShouldInferTypesForReceivers()
-        && !methodElt.getSimpleName().contentEquals("<init>")) {
+        && methodElt.getKind() != ElementKind.CONSTRUCTOR) {
       AnnotatedTypeMirror receiverArgATM = atypeFactory.getReceiverType(invocationTree);
       AnnotatedExecutableType methodDeclType = atypeFactory.getAnnotatedType(methodElt);
       AnnotatedTypeMirror receiverParamATM = methodDeclType.getReceiverType();
@@ -745,9 +745,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     // Type of the expression returned
     AnnotatedTypeMirror rhsATM = atypeFactory.getAnnotatedType(retNode.getTree().getExpression());
     atypeFactory.wpiAdjustForUpdateNonField(rhsATM);
-    DependentTypesHelper dependentTypesHelper =
-        ((GenericAnnotatedTypeFactory) atypeFactory).getDependentTypesHelper();
-    dependentTypesHelper.delocalize(rhsATM, methodDeclTree);
+    if (this.atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf) {
+      gatf.getDependentTypesHelper().delocalize(rhsATM, methodDeclTree);
+    }
     T returnTypeAnnos = storage.getReturnAnnotations(methodElt, lhsATM, atypeFactory);
     updateAnnotationSet(returnTypeAnnos, TypeUseLocation.RETURN, rhsATM, lhsATM, file);
 
