@@ -446,7 +446,7 @@ public class InvocationTypeInference {
 
     ConstraintSet c = new ConstraintSet();
     List<AbstractType> formals = executableType.getParameterTypes(map, args.size());
-    // https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.1
+    // https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.1 says:
     //   If ReferenceType is a raw type, and there exists a parameterization of this type,
     //   G<...>, that is a supertype of P1, the type to search is the result of capture
     //   conversion (§5.1.10) applied to G<...>; otherwise, the type to search is the same
