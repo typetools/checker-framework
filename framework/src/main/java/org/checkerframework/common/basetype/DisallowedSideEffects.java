@@ -566,8 +566,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         if (atDeclaration.containedOfClass(ThisReference.class) != null) {
           // The expression is reached through the object that the desugaring created.  That object
           // is not nameable here, so the expression cannot be viewpoint-adapted; and its value may
-          // be an
-          // object that existed before the call, so it cannot be dismissed as unobservable either.
+          // be an object that existed before the call, so it cannot be dismissed as unobservable
+          // either.
           checker.reportError(
               node,
               "purity.unknown.sideeffectsonly",
