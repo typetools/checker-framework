@@ -1451,19 +1451,12 @@ public final class TypesUtils {
    * Returns true if accessing {@code member} through a receiver of type {@code receiverType} is an
    * access on a raw type.
    *
-   * <p>Per <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.8">JLS
-   * section 4.8, "Raw Types"</a>, the type of a constructor, instance method, or non-static field
-   * of a raw type {@code C} that is not inherited from a supertype is the erasure of its type. The
-   * erasure has no type variables, so for a method or constructor there is nothing to infer, and an
-   * argument of such a call is not part of an outer inference problem. (Static members are
-   * excluded: the type of a static member of a raw type is the same as its type in the generic
-   * declaration.)
-   *
    * @param receiverType the receiver of the access, or null if the receiver is implicit; for a
    *     constructor invocation, the class being instantiated
    * @param member the method, constructor, or field being accessed
    * @param types the type utilities
-   * @return true if this is an access on a raw type
+   * @return true if accessing {@code member} through a receiver of type {@code receiverType} is an
+   *     access on a raw type
    */
   public static boolean isRawCall(
       @Nullable TypeMirror receiverType, Element member, javax.lang.model.util.Types types) {
@@ -1492,12 +1485,7 @@ public final class TypesUtils {
           && !TypesUtils.isObject(directSuper)) {
         directSuper = types.directSupertypes(directSuper).get(0);
       }
-      if (directSuper.getKind() == TypeKind.DECLARED) {
-        DeclaredType declaredType = (DeclaredType) directSuper;
-        TypeElement typeelem = (TypeElement) declaredType.asElement();
-        DeclaredType declty = (DeclaredType) typeelem.asType();
-        return !declty.getTypeArguments().isEmpty() && declaredType.getTypeArguments().isEmpty();
-      }
+      return isRaw(directSuper);
     }
 
     return false;

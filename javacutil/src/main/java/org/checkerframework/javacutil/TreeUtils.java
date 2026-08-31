@@ -39,6 +39,7 @@ import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.YieldTree;
 import com.sun.source.util.SimpleTreeVisitor;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
@@ -2764,5 +2765,38 @@ public final class TreeUtils {
     return !element.getTypeParameters().isEmpty()
         && (memberReferenceTree.getTypeArguments() == null
             || memberReferenceTree.getTypeArguments().isEmpty());
+  }
+
+  /**
+   * Returns true if the receiver of {@code methodInvocationTree} is raw.
+   *
+   * @param methodInvocationTree the method invocation to check
+   * @param parentPath path to the parent of {@code methodInvocationTree}
+   * @param types the type utilities
+   * @return true if the receiver of {@code methodInvocationTree} is raw
+   */
+  public static boolean isRawCall(
+      MethodInvocationTree methodInvocationTree,
+      TreePath parentPath,
+      javax.lang.model.util.Types types) {
+    Tree receiverTree = TreeUtils.getReceiverTree(methodInvocationTree);
+    TypeMirror receiverType;
+    if (receiverTree != null) {
+      receiverType = TreeUtils.typeOf(receiverTree);
+    } else if (TreeUtils.isSuperConstructorCall(methodInvocationTree)) {
+      // An explicit super(...) call has no receiver tree.  The invoked constructor is a
+      // member of the superclass, which isRawCall finds by walking up from the subtype, so
+      // pass the enclosing class.
+      ClassTree enclosingClass = TreePathUtil.enclosingClass(parentPath);
+      assert enclosingClass != null
+          : "@AssumeAssertion(nullness): a super call must have an enclosing class.";
+      receiverType = TreeUtils.typeOf(enclosingClass);
+    } else {
+      // Any other implicit receiver is `this`, which is never raw.
+      return false;
+    }
+    ExecutableElement methodElement = TreeUtils.elementFromUse(methodInvocationTree);
+
+    return TypesUtils.isRawCall(receiverType, methodElement, types);
   }
 }
