@@ -48,4 +48,23 @@ public class RawMemberReferenceTypeArgs {
     Stream<? extends Iterator<@Nullable String>> nullable = lists.map(List::iterator);
     Stream<? extends Iterator<@NonNull String>> nonNull = lists.map(List::iterator);
   }
+
+  /**
+   * The raw ReferenceType is an inner class, and the compile-time declaration's return type
+   * mentions the enclosing class's type parameter rather than the inner class's. The enclosing
+   * class's type argument ({@code Outer}'s {@code A}) must be fixed from capture(G&lt;...&gt;) just
+   * like the inner class's ({@code Inner}'s {@code B}), so {@code getOuter()} resolves to {@code
+   * String} here.
+   */
+  static void innerClassOuterTypeParameter(Stream<? extends Outer<String>.Inner<Number>> s) {
+    Stream<? extends String> r = s.map(Outer.Inner::getOuter);
+  }
+
+  static class Outer<A> {
+    class Inner<B> {
+      A getOuter() {
+        throw new RuntimeException();
+      }
+    }
+  }
 }

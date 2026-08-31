@@ -114,9 +114,74 @@ public class InferenceFactory {
       // parameterization `G<...>` to use.
       return null;
     }
+
+    assert p1.isProper();
     // JLS 15.13.1 capture-converts `G<...>`, so the signature of the compile-time declaration is
     // expressed in capture variables rather than in the wildcards of `G<...>`.
     return p1AsSuper.capture(context).getAnnotatedType();
+  }
+
+  /**
+   * Creates a {@link Variable} for {@code typeMirror}'s type parameters and for the type parameters
+   * of every type lexically enclosing {@code typeMirror} (e.g. for {@code Outer<A>.Inner<B>}, both
+   * {@code A} and {@code B}), adding each to {@code map} and to {@code classTypeArgVars}. Enclosing
+   * types are added before {@code typeMirror}'s own type parameters, so that the order of {@code
+   * classTypeArgVars} matches the order produced by {@link #addCapturedTypeArguments}.
+   *
+   * @param typeMirror a possibly-nested declared type, e.g. the qualifier type of a raw or
+   *     diamond-instantiated method reference
+   * @param type the annotated version of {@code typeMirror}
+   * @param memRef the method reference for which {@code typeMirror} is the qualifier type
+   * @param context the context
+   * @param map the mapping from type variable to inference variable to add to
+   * @param classTypeArgVars the list of variables to add to
+   */
+  private static void addTypeArgumentVariables(
+      DeclaredType typeMirror,
+      AnnotatedDeclaredType type,
+      MemberReferenceTree memRef,
+      Java8InferenceContext context,
+      Theta map,
+      List<Variable> classTypeArgVars) {
+    TypeMirror enclosingTypeMirror = typeMirror.getEnclosingType();
+    if (enclosingTypeMirror.getKind() == TypeKind.DECLARED) {
+      addTypeArgumentVariables(
+          (DeclaredType) enclosingTypeMirror,
+          type.getEnclosingType(),
+          memRef,
+          context,
+          map,
+          classTypeArgVars);
+    }
+    Iterator<AnnotatedTypeMirror> iter = type.getTypeArguments().iterator();
+    for (TypeMirror typeArgMirror : typeMirror.getTypeArguments()) {
+      if (typeArgMirror.getKind() != TypeKind.TYPEVAR) {
+        throw new BugInCF("Expected type variable, found: %s", typeArgMirror);
+      }
+      TypeVariable pl = (TypeVariable) typeArgMirror;
+      AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
+      @SuppressWarnings("interning:interned.object.creation") // no equal variable is created
+      Variable al = new @Interned Variable(atv, pl, memRef, context, map);
+      map.put(pl, al);
+      classTypeArgVars.add(al);
+    }
+  }
+
+  /**
+   * Adds the type arguments of {@code type} and of every type lexically enclosing {@code type} to
+   * {@code result}, enclosing types first. Mirrors {@link #addTypeArgumentVariables} so that the
+   * resulting list lines up with {@code classTypeArgVars}.
+   *
+   * @param type a possibly-nested annotated declared type
+   * @param result the list of type arguments to add to
+   */
+  private static void addCapturedTypeArguments(
+      AnnotatedDeclaredType type, List<AnnotatedTypeMirror> result) {
+    AnnotatedDeclaredType enclosingType = type.getEnclosingType();
+    if (enclosingType != null) {
+      addCapturedTypeArguments(enclosingType, result);
+    }
+    result.addAll(type.getTypeArguments());
   }
 
   /**
@@ -612,18 +677,10 @@ public class InferenceFactory {
       AnnotatedDeclaredType classType =
           (AnnotatedDeclaredType) typeFactory.getAnnotatedType(classTypeMirror.asElement());
 
-      Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
-      for (TypeMirror typeMirror : classTypeMirror.getTypeArguments()) {
-        if (typeMirror.getKind() != TypeKind.TYPEVAR) {
-          throw new BugInCF("Expected type variable, found: %s", typeMirror);
-        }
-        TypeVariable pl = (TypeVariable) typeMirror;
-        AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-        @SuppressWarnings("interning:interned.object.creation") // no equal variable is created
-        Variable al = new @Interned Variable(atv, pl, memRef, context, map);
-        map.put(pl, al);
-        classTypeArgVars.add(al);
-      }
+      // ReferenceType may be a non-static member type, e.g. Outer<A>.Inner<B>. JLS 15.13.1 fixes
+      // the type arguments of the whole qualifier type, not just its innermost level, so create
+      // variables for the type parameters of every lexically enclosing type too.
+      addTypeArgumentVariables(classTypeMirror, classType, memRef, context, map, classTypeArgVars);
     }
 
     // Create inference variables for the type parameters to compileTimeDecl
@@ -647,8 +704,8 @@ public class InferenceFactory {
     // inferred, but rather taken from the capture of (p1 as the super type ReferenceType).
     AnnotatedTypeMirror capturedSupertype = getCapturedSupertype(memRef, p1);
     if (capturedSupertype != null) {
-      List<AnnotatedTypeMirror> capturedSupertypeArgs =
-          ((AnnotatedDeclaredType) capturedSupertype).getTypeArguments();
+      List<AnnotatedTypeMirror> capturedSupertypeArgs = new ArrayList<>();
+      addCapturedTypeArguments((AnnotatedDeclaredType) capturedSupertype, capturedSupertypeArgs);
       if (capturedSupertypeArgs.size() != classTypeArgVars.size()) {
         throw new BugInCF(
             "Captured supertype %s has %d type arguments, but %d inference variables were created"

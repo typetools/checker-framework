@@ -56,9 +56,21 @@ public class RawMemberReference {
     s.map(Outer.Inner::get);
   }
 
+  /**
+   * The raw ReferenceType is an inner class, and the compile-time declaration's return type
+   * mentions the enclosing class's type parameter rather than the inner class's.
+   */
+  static void innerClassOuterTypeParameter(Stream<? extends Outer<String>.Inner<Number>> s) {
+    s.map(Outer.Inner::getOuter).forEach(x -> {});
+  }
+
   static class Outer<A> {
     class Inner<B> {
       B get() {
+        throw new RuntimeException();
+      }
+
+      A getOuter() {
         throw new RuntimeException();
       }
     }
