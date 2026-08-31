@@ -2743,6 +2743,19 @@ public final class TreeUtils {
    *
    * @param tree a tree
    * @return true if {@code tree} is a method reference with a raw type to the left of {@code ::}
+   * @deprecated use {@link #isRawTypedMemberReference(ExpressionTree)}
+   */
+  @Deprecated // 2026-08-31
+  public static boolean isLikeDiamondMemberReference(ExpressionTree tree) {
+    return isRawTypedMemberReference(tree);
+  }
+
+  /**
+   * Returns true if {@code tree} is a method reference with a raw type to the left of {@code ::}.
+   * For example, {@code Class::getName}.
+   *
+   * @param tree a tree
+   * @return true if {@code tree} is a method reference with a raw type to the left of {@code ::}
    */
   public static boolean isRawTypedMemberReference(ExpressionTree tree) {
     if (!(tree instanceof MemberReferenceTree memberReferenceTree)) {
