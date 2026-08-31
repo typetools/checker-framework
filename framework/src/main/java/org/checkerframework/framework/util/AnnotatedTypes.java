@@ -430,13 +430,33 @@ public final class AnnotatedTypes {
       }
       case DECLARED -> {
         AnnotatedDeclaredType receiverTypeDT = (AnnotatedDeclaredType) receiverType;
-        if (TypesUtils.isRawCall(receiverTypeDT.getUnderlyingType(), member, types)) {
+        if (isRawCall(receiverTypeDT, member, types)) {
           return memberType.getErased();
         }
         return substituteTypeVariables(types, atypeFactory, receiverType, member, memberType);
       }
       default -> throw new BugInCF("asMemberOf called on unexpected type.%nt: %s", receiverType);
     }
+  }
+
+  /**
+   * Is the access to {@code member} through a receiver of type {@code receiver} an access on a raw
+   * type?
+   *
+   * @param receiver the type of the receiver of the access
+   * @param member the method, constructor, or field being accessed
+   * @param types the type utilities
+   * @return true if accessing {@code member} through {@code receiver} is an access on a raw type
+   */
+  private static boolean isRawCall(AnnotatedDeclaredType receiver, Element member, Types types) {
+    // SupertypeFinder sets isUnderlyingTypeRaw() on the supertypes of a raw type, whose
+    // underlying types still have their type arguments; TypesUtils.isRawCall cannot detect that
+    // case, because it looks only at underlying types.
+    if (receiver.isUnderlyingTypeRaw()
+        && member.getEnclosingElement().equals(receiver.getUnderlyingType().asElement())) {
+      return true;
+    }
+    return TypesUtils.isRawCall(receiver.getUnderlyingType(), member, types);
   }
 
   /**

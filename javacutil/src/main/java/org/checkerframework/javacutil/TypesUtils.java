@@ -14,9 +14,11 @@ import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -25,7 +27,6 @@ import java.util.Set;
 import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.NestingKind;
@@ -1471,24 +1472,88 @@ public final class TypesUtils {
     // The type of a constructor (§8.8), instance method (8.4, 9.4), or non-static field
     // (8.3) of a raw type C that is not inherited from its superclasses or superinterfaces
     // is the raw type that corresponds to the erasure of its type in the generic declaration
-    // corresponding to C.
-    if (member.getEnclosingElement().equals(((DeclaredType) receiverType).asElement())) {
-      return TypesUtils.isRaw(receiverType);
+    // corresponding to C.  A member that *is* inherited is erased too, because the supertypes
+    // of a raw type are the erasures of the supertypes of any of its parameterizations, so the
+    // member is a member of a raw supertype.
+    //
+    // Therefore, the member's type is erased exactly when the class that declares it, viewed as
+    // a supertype of receiverType, is raw.  Javac's directSupertypes() erases the supertypes of
+    // a raw type, so walking up from receiverType finds a raw type in that case.
+    TypeElement declaringClass = ElementUtils.enclosingTypeElement(member);
+    if (declaringClass == null) {
+      return false;
     }
-
-    // The below is checking for a super() call where the super type is a raw type.
-    // See framework/tests/all-systems/RawSuper.java for an example.
-    if (member.getKind() == ElementKind.CONSTRUCTOR) {
-      TypeMirror constructorClass = types.erasure(member.getEnclosingElement().asType());
-      TypeMirror directSuper = types.directSupertypes(receiverType).get(0);
-      while (!types.isSameType(types.erasure(directSuper), constructorClass)
-          && !TypesUtils.isObject(directSuper)) {
-        directSuper = types.directSupertypes(directSuper).get(0);
+    DeclaredType site = declaringSupertype((DeclaredType) receiverType, declaringClass, types);
+    if (site == null && isEnclosedBy(declaringClass, ((DeclaredType) receiverType).asElement())) {
+      // `receiverType` is not a subtype of the class that declares the member, but it encloses
+      // it, so `receiverType` is an enclosing instance rather than a receiver.  This happens for
+      // a qualified superclass constructor invocation `outer.super(...)` and for a qualified
+      // class instance creation expression `outer.new Inner(...)`.  The member is erased when
+      // the type of the enclosing instance is raw.
+      site = (DeclaredType) receiverType;
+    }
+    // A type is also raw if one of its enclosing types is raw; the members of `Outer.Inner` are
+    // erased when `Outer` is raw, even though `Inner` declares no type parameters.
+    for (TypeMirror enclosing = site;
+        enclosing != null && enclosing.getKind() == TypeKind.DECLARED;
+        enclosing = ((DeclaredType) enclosing).getEnclosingType()) {
+      if (isRaw(enclosing)) {
+        return true;
       }
-      return isRaw(directSuper);
     }
-
     return false;
+  }
+
+  /**
+   * Returns true if {@code inner} is {@code outer} or is nested, at any depth, within {@code
+   * outer}.
+   *
+   * @param inner a type declaration
+   * @param outer a type declaration
+   * @return true if {@code inner} is enclosed by {@code outer}
+   */
+  private static boolean isEnclosedBy(TypeElement inner, Element outer) {
+    for (Element enclosing = inner;
+        enclosing != null;
+        enclosing = enclosing.getEnclosingElement()) {
+      if (outer.equals(enclosing)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns the supertype of {@code type} that is declared by {@code declaringClass}, or null if
+   * {@code declaringClass} does not declare a supertype of {@code type}. Returns {@code type}
+   * itself if {@code type} is declared by {@code declaringClass}.
+   *
+   * @param type a type
+   * @param declaringClass the declaration of a supertype of {@code type}
+   * @param types the type utilities
+   * @return the supertype of {@code type} declared by {@code declaringClass}, or null
+   */
+  private static @Nullable DeclaredType declaringSupertype(
+      DeclaredType type, TypeElement declaringClass, javax.lang.model.util.Types types) {
+    Deque<DeclaredType> worklist = new ArrayDeque<>();
+    worklist.add(type);
+    Set<Element> visited = new HashSet<>();
+    while (!worklist.isEmpty()) {
+      DeclaredType current = worklist.remove();
+      Element currentElement = current.asElement();
+      if (declaringClass.equals(currentElement)) {
+        return current;
+      }
+      if (!visited.add(currentElement)) {
+        continue;
+      }
+      for (TypeMirror supertype : types.directSupertypes(current)) {
+        if (supertype.getKind() == TypeKind.DECLARED) {
+          worklist.add((DeclaredType) supertype);
+        }
+      }
+    }
+    return null;
   }
 
   /**

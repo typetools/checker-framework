@@ -1,13 +1,11 @@
 // A qualified superclass constructor invocation, `outer.super(...)`, where the qualifier is a raw
 // type.  The invoked constructor is a member of the raw type `Outer.Inner`, so javac erases its
-// signature; it accepts `o.super(new Desc<@NonNull String>())` for a constructor declared as
-// `Inner(Desc<@Nullable String>)`.
+// signature; it accepts `o.super(d)` for `d` of type `Desc<@NonNull String>` even though the
+// constructor is declared as `Inner(Desc<@Nullable String>)`.
 //
-// TreeUtils.isRawCall handles the unqualified `super(...)` form (see
-// framework/tests/all-systems/RawSuper.java), but for the qualified form
-// TreeUtils.getReceiverTree returns the enclosing-instance expression `o`, so the
-// isSuperConstructorCall branch is never reached and TypesUtils.isRawCall is asked whether
-// `Inner`'s constructor is a member of the raw type `Outer`, which it is not.
+// For this form, TreeUtils.getReceiverTree returns the enclosing-instance expression `o` rather
+// than a receiver, so the constructor is not a member of `o`'s type or of any of its supertypes;
+// it is a member of a class that `o`'s type encloses.
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -22,7 +20,7 @@ public class RawQualifiedSuperCall {
     }
   }
 
-  // Control: the qualifier is parameterized, so nothing is erased.
+  // The qualifier is parameterized, so nothing is erased.
   static class SubOfParameterized extends Outer<Object>.Inner {
     SubOfParameterized(Outer<Object> o, Desc<@Nullable String> d) {
       o.super(d);
@@ -31,9 +29,6 @@ public class RawQualifiedSuperCall {
 
   static class SubOfRaw extends Outer.Inner {
     SubOfRaw(Outer o, Desc<String> d) {
-      // TODO: This is a false positive.  javac erases the constructor's signature because the
-      // qualifier `o` is raw.
-      // :: error: [argument]
       o.super(d);
     }
   }

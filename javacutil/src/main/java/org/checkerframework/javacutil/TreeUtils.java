@@ -2786,21 +2786,30 @@ public final class TreeUtils {
       MethodInvocationTree methodInvocationTree,
       TreePath parentPath,
       javax.lang.model.util.Types types) {
-    Tree receiverTree = TreeUtils.getReceiverTree(methodInvocationTree);
     TypeMirror receiverType;
-    if (receiverTree != null) {
-      receiverType = TreeUtils.typeOf(receiverTree);
-    } else if (TreeUtils.isSuperConstructorCall(methodInvocationTree)) {
-      // An explicit super(...) call has no receiver tree.  The invoked constructor is a
-      // member of the superclass, which isRawCall finds by walking up from the subtype, so
-      // pass the enclosing class.
+    if (TreeUtils.isSuperConstructorCall(methodInvocationTree)) {
+      // For `super(...)` there is no receiver tree, and for the qualified form
+      // `outer.super(...)` the receiver tree is the enclosing instance rather than a receiver.
+      // In both cases the invoked constructor is a member of the superclass, which isRawCall
+      // finds by walking up from the subtype, so pass the enclosing class.
       ClassTree enclosingClass = TreePathUtil.enclosingClass(parentPath);
       assert enclosingClass != null
           : "@AssumeAssertion(nullness): a super call must have an enclosing class.";
       receiverType = TreeUtils.typeOf(enclosingClass);
     } else {
-      // Any other implicit receiver is `this`, which is never raw.
-      return false;
+      Tree receiverTree = TreeUtils.getReceiverTree(methodInvocationTree);
+      if (receiverTree != null) {
+        receiverType = TreeUtils.typeOf(receiverTree);
+      } else {
+        // The receiver is implicit: `this` or `Outer.this`.  A method inherited from a raw
+        // supertype is erased even when it is invoked without a receiver, so pass the
+        // enclosing class and let isRawCall walk up to the class that declares the method.
+        ClassTree enclosingClass = TreePathUtil.enclosingClass(parentPath);
+        if (enclosingClass == null) {
+          return false;
+        }
+        receiverType = TreeUtils.typeOf(enclosingClass);
+      }
     }
     ExecutableElement methodElement = TreeUtils.elementFromUse(methodInvocationTree);
 
