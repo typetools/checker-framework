@@ -4945,19 +4945,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     for (IPair<JavaExpression, AnnotationMirror> weak : mustSubset) {
       JavaExpression jexpr = weak.first;
-      boolean found = false;
+      TypeMirror jexprTM = jexpr.getType();
 
-      for (IPair<JavaExpression, AnnotationMirror> strong : set) {
-        // are we looking at a contract of the same receiver?
-        if (jexpr.equals(strong.first)) {
-          // check subtyping relationship of annotations
-          TypeMirror jexprTM = jexpr.getType();
-          if (qualHierarchy.isSubtypeShallow(strong.second, jexprTM, weak.second, jexprTM)) {
-            found = true;
-            break;
-          }
-        }
-      }
+      // Is there a contract of the same receiver, whose annotation is a subtype?
+      boolean found =
+          set.stream()
+              .anyMatch(
+                  strong ->
+                      jexpr.equals(strong.first)
+                          && qualHierarchy.isSubtypeShallow(
+                              strong.second, jexprTM, weak.second, jexprTM));
 
       if (!found) {
 

@@ -845,30 +845,24 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (analysis.atypeFactory.getSupportedMonotonicTypeQualifiers().isEmpty()) {
       return false;
     }
-    boolean isMonotonic = false;
-    // TODO: This check for !sequentialSemantics is an optimization that breaks the contract of
-    // the method, since the method name and documentation say nothing about sequential
-    // semantics.  This check should be performed by callers of this method when needed.
-    // TODO: Update the javadoc of this method when the above to-do item is addressed.
-    if (!sequentialSemantics) { // only compute if necessary
-      AnnotatedTypeFactory atypeFactory = this.analysis.atypeFactory;
-      List<IPair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
-          atypeFactory.getAnnotationWithMetaAnnotation(
-              fieldAcc.getField(), MonotonicQualifier.class);
-      for (IPair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
-        AnnotationMirror metaAnnotation = fieldAnnotation.second;
-        @SuppressWarnings("deprecation") // permitted for use in the framework
-        Name annoName = AnnotationUtils.getElementValueClassName(metaAnnotation, "value", false);
-        AnnotationMirror monotonicAnnotation =
-            AnnotationBuilder.fromName(atypeFactory.getElementUtils(), annoName);
-        // Make sure the 'target' annotation is present.
-        if (AnnotationUtils.containsSame(value.getAnnotations(), monotonicAnnotation)) {
-          isMonotonic = true;
-          break;
-        }
+    if (sequentialSemantics) { // only compute if necessary
+      return false;
+    }
+    AnnotatedTypeFactory atypeFactory = this.analysis.atypeFactory;
+    List<IPair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
+        atypeFactory.getAnnotationWithMetaAnnotation(fieldAcc.getField(), MonotonicQualifier.class);
+    for (IPair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
+      AnnotationMirror metaAnnotation = fieldAnnotation.second;
+      @SuppressWarnings("deprecation") // permitted for use in the framework
+      Name annoName = AnnotationUtils.getElementValueClassName(metaAnnotation, "value", false);
+      AnnotationMirror monotonicAnnotation =
+          AnnotationBuilder.fromName(atypeFactory.getElementUtils(), annoName);
+      // Make sure the 'target' annotation is present.
+      if (AnnotationUtils.containsSame(value.getAnnotations(), monotonicAnnotation)) {
+        return true;
       }
     }
-    return isMonotonic;
+    return false;
   }
 
   public void insertThisValue(AnnotationMirror a, TypeMirror underlyingType) {
