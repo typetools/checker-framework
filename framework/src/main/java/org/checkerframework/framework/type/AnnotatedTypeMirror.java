@@ -168,11 +168,14 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * <p>This hashes only the top-level type: its underlying type and its primary annotations. It
    * does not descend into component types, even though {@link #equals} does. That is permitted --
-   * unequal types may share a hash code -- and it is what makes this method constant-time. Because
-   * {@code equals} compares underlying types with {@link Object#equals} (which for all of javac's
-   * {@code Type}s but {@code ArrayType} is reference equality, and {@code ArrayType} overrides
-   * {@code hashCode} to match), two equal types always agree on {@code underlyingType.hashCode()},
-   * so the two methods stay consistent.
+   * unequal types may share a hash code -- and it is what makes this method constant-time for every
+   * underlying type but {@code ArrayType}. Because {@code equals} compares underlying types with
+   * {@link Object#equals} (which for all of javac's {@code Type}s but {@code ArrayType} is
+   * reference equality, and {@code ArrayType} overrides {@code hashCode} to match), two equal types
+   * always agree on {@code underlyingType.hashCode()}, so the two methods stay consistent. For an
+   * array type, {@code ArrayType#hashCode()} recurses into the component type's hash code, so this
+   * method's cost is proportional to the array's nesting depth rather than strictly constant -- in
+   * practice a small bound, since the JVM specification limits array nesting depth to 255.
    *
    * <p>A structural hash, which is what this method used to compute, is not just slower but
    * mismatched with {@code equals}: types that print alike but wrap distinct {@code Type} objects
