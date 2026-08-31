@@ -38,10 +38,12 @@ public class RawMemberReferenceTypeArgs {
   }
 
   /**
-   * P1's only supertype at {@code List} is the raw type, so no parameterization G&lt;...&gt;
-   * exists, the rule does not apply, and {@code List}'s type argument is inferred instead. Nothing
-   * constrains it to {@code @Nullable String}: both assignments below are accepted, whereas in
-   * {@link #parameterizedSupertype} the second is an error.
+   * P1's only supertype at {@code List} is the raw type, so no parameterization G&lt;...&gt; exists
+   * and the rule does not apply: JLS 15.13.1's second search falls back to the raw {@code List}
+   * itself. Using a raw type in place of a parameterization requires unchecked conversion (JLS
+   * 5.1.9), so {@code List}'s type argument is erased rather than inferred or fixed from capture.
+   * An erased type argument is accepted against any parameterization, so both assignments below are
+   * accepted, whereas in {@link #parameterizedSupertype} the second is an error.
    */
   @SuppressWarnings("unchecked")
   static void rawSupertype(Stream<? extends List> lists) {

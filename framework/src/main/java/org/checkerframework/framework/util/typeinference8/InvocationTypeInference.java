@@ -463,7 +463,19 @@ public class InvocationTypeInference {
     // conversion produces fresh capture variables that P1's own type arguments are not subtypes
     // of.
     MemberReferenceTree methodRef = executableType.getMethodRef();
-    int firstArg = !args.isEmpty() && TreeUtils.isRawTypedMemberReference(methodRef) ? 1 : 0;
+    boolean isRawTypedMemberReference =
+        !args.isEmpty() && TreeUtils.isRawTypedMemberReference(methodRef);
+    int firstArg = isRawTypedMemberReference ? 1 : 0;
+
+    if (isRawTypedMemberReference
+        && context.inferenceTypeFactory.getCapturedSupertype(methodRef, args.get(0)) == null) {
+      // No parameterization G<...> of the raw ReferenceType is a supertype of P1, so JLS
+      // 15.13.1's second search falls back to the raw ReferenceType itself: the compile-time
+      // declaration's type is used as-is, unparameterized. Using a raw type in place of its
+      // parameterization requires unchecked conversion (JLS 5.1.9), matching javac's
+      // rawtypes/unchecked warning for this reference.
+      b0.setUncheckedConversion(true);
+    }
 
     for (int i = firstArg; i < formals.size(); i++) {
       AbstractType ei = args.get(i);
