@@ -9,6 +9,12 @@
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+// Javaparsers fails on this file for Java 17, so just skip it on Java 17.
+// @below-java21-jdk-skip-test
+
+// @infer-jaifs-skip-test
+// @infer-ajava-skip-test
+// @infer-stubs-skip-test
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class RawQualifiedSuperCall {
 
