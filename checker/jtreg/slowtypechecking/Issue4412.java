@@ -1,3 +1,16 @@
+/*
+ * @test
+ * @summary Type-checking-performance regression test for issue #4412:
+ * https://github.com/typetools/checker-framework/issues/4412
+ * Four mutually recursive type variables, each bounded by a type parameterized with all four.
+ * Comparing these types used to recompute AnnotatedTypeMirror hash codes over and over.
+ *
+ * -AslowTypecheckingSeconds is set low enough that a performance regression produces a
+ * "slow.typechecking" warning, and -Werror turns that warning into a test failure.  Measured
+ * through jtreg on an otherwise idle machine: under 4 seconds.
+ *
+ * @compile/timeout=600 -Werror -processor org.checkerframework.checker.nullness.NullnessChecker -AslowTypecheckingSeconds=8 Issue4412.java
+ */
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.NonNull;
 

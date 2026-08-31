@@ -1,0 +1,31 @@
+Regression tests for type-checking performance.
+
+Each file in this directory is known to be slow to type-check unless a specific performance
+issue is fixed.  Each one runs a checker with `-AslowTypecheckingSeconds` set low enough that a
+performance regression produces a "slow.typechecking" warning, plus `-Werror` so that the
+warning fails the test rather than merely being logged.
+
+Each test names its own checker in its `@compile` line, so tests for different checkers can live
+side by side here.  Add a subdirectory per checker only if this directory becomes unwieldy;
+`othervm.dirs` (see below) applies to subdirectories too.
+
+`checker/jtreg/TEST.ROOT` lists this directory in `othervm.dirs`, so each file is compiled in a
+fresh JVM.  Without that, a JVM already warmed up by earlier tests in the run reports quite
+different times for the same file: Issue7023.java reported 14 seconds under `-samevm` and 11 in
+its own JVM.
+
+Each test file should document, in its `@summary`, which performance issue it guards against,
+how long it takes to type-check when that issue is fixed, and how long it took before the fix.
+
+Choosing a threshold:
+
+ * `slow.typechecking` measures wall-clock time, so a file reports more when the machine is
+   busy.  Measure on an otherwise idle machine, record the measurement in the file, and set the
+   threshold to roughly twice it -- but well below the time the file takes without the fix.
+ * Measure by running the test itself, not `javac` from the command line.  The two do not agree:
+   Issue7023.java reports 5 seconds from the command line and 11 through jtreg.
+ * The checker times nested scopes, and reports the innermost one that exceeds the threshold, so
+   the number to compare against a threshold is the whole-class total -- roughly the sum of the
+   members' times.  Lowering the threshold to 1 to "read off" the cost does not give it: an inner
+   tree then trips first and suppresses the enclosing report.  Instead, set a candidate threshold
+   and see whether the test passes.
