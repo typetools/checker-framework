@@ -40,7 +40,7 @@ public class AnnotationInBody {
   }
 
   @SideEffectsOnly("this")
-  void annotationOnTypeUse() {
+  void annotationOnTypeUseNamed() {
     @Marker2(value = "x")
     String local = "s";
   }
