@@ -275,9 +275,11 @@ public class Expression extends TypeConstraint {
     // determine the method reference's invocation type when targeting the return type of the
     // function type, as defined in 18.5.2. B3 may contain new inference variables, as well as
     // dependencies between these new variables and the inference variables in T.
-    // P1, which for an unbound method reference acts as the target reference of the invocation.
     List<AbstractType> functionTypeParams = T.getFunctionTypeParameterTypes();
     assert functionTypeParams != null : "@AssumeAssertion(nullness): T is a functional interface";
+
+    // The first parameter of the function type, `p1`, acts as the target reference of the
+    // invocation for an unbound method reference.
     AbstractType p1 = functionTypeParams.isEmpty() ? null : functionTypeParams.get(0);
     Theta map =
         context.inferenceTypeFactory.createThetaForMethodReference(
