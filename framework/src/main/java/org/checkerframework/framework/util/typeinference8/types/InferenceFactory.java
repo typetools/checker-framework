@@ -95,11 +95,7 @@ public class InferenceFactory {
    * ReferenceType :: Identifier} where {@code ReferenceType} is raw.
    *
    * <p>Returns null if no parameterization {@code G<...>} of the raw {@code ReferenceType} is a
-   * supertype of P1. In that case the class's type arguments are unconstrained inference variables
-   * rather than being fixed from capture, but {@link InvocationTypeInference} still uses that
-   * unconstrained state as a signal: it marks the bound set as needing unchecked conversion (JLS
-   * 5.1.9), so the eventual return type is erased rather than relying on whatever those
-   * unconstrained variables resolve to.
+   * supertype of P1, in which case the class's type arguments are inferred after all.
    *
    * @param memRef a method reference
    * @param p1 the first parameter type of the function type of the target type of {@code memRef},
