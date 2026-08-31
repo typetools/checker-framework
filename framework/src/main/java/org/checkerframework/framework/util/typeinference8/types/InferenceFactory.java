@@ -136,7 +136,7 @@ public class InferenceFactory {
    * @param map the mapping from type variable to inference variable to add to
    * @param classTypeArgVars the list of variables to add to
    */
-  private static void addTypeArgumentVariables(
+  private static void createVariables(
       DeclaredType typeMirror,
       AnnotatedDeclaredType type,
       MemberReferenceTree memRef,
@@ -145,7 +145,7 @@ public class InferenceFactory {
       List<Variable> classTypeArgVars) {
     TypeMirror enclosingTypeMirror = typeMirror.getEnclosingType();
     if (enclosingTypeMirror.getKind() == TypeKind.DECLARED) {
-      addTypeArgumentVariables(
+      createVariables(
           (DeclaredType) enclosingTypeMirror,
           type.getEnclosingType(),
           memRef,
@@ -169,8 +169,8 @@ public class InferenceFactory {
 
   /**
    * Adds the type arguments of {@code type} and of every type lexically enclosing {@code type} to
-   * {@code result}, enclosing types first. Mirrors {@link #addTypeArgumentVariables} so that the
-   * resulting list lines up with {@code classTypeArgVars}.
+   * {@code result}, enclosing types first. Mirrors {@link #createVariables} so that the resulting
+   * list lines up with {@code classTypeArgVars}.
    *
    * @param type a possibly-nested annotated declared type
    * @param result the list of type arguments to add to
@@ -676,11 +676,7 @@ public class InferenceFactory {
 
       AnnotatedDeclaredType classType =
           (AnnotatedDeclaredType) typeFactory.getAnnotatedType(classTypeMirror.asElement());
-
-      // ReferenceType may be a non-static member type, e.g. Outer<A>.Inner<B>. JLS 15.13.1 fixes
-      // the type arguments of the whole qualifier type, not just its innermost level, so create
-      // variables for the type parameters of every lexically enclosing type too.
-      addTypeArgumentVariables(classTypeMirror, classType, memRef, context, map, classTypeArgVars);
+      createVariables(classTypeMirror, classType, memRef, context, map, classTypeArgVars);
     }
 
     // Create inference variables for the type parameters to compileTimeDecl
