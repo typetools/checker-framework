@@ -771,8 +771,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   @SuppressWarnings("ModifyCollectionInEnhancedForLoop")
   protected void insertExtendedNodeAfter(ExtendedNode n, @FindDistinct Node pred) {
+    // Search backward from the end because `pred` is almost always the node most recently
+    // appended or inserted (e.g. the chained conversions in box()/unbox()/widen()/narrow()), so
+    // it is at or near the tail of `nodeList`.
     int index = -1;
-    for (int i = 0; i < nodeList.size(); i++) {
+    for (int i = nodeList.size() - 1; i >= 0; i--) {
       ExtendedNode inList = nodeList.get(i);
       if (inList instanceof NodeHolder || inList instanceof NodeWithExceptionsHolder) {
         if (inList.getNode() == pred) {
