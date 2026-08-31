@@ -2627,7 +2627,8 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns all expressions that might be the result of {@code lambda}.
+   * Returns all expressions that might be the result of {@code lambda}; that is, the result
+   * expressions of {@code lambda} as defined in JLS 15.27.2.
    *
    * @param lambda a lambda with or without a body
    * @return a list of expressions that are returned by {@code lambda}
@@ -2651,6 +2652,12 @@ public final class TreeUtils {
           @Override
           public Void visitLambdaExpression(LambdaExpressionTree node, Void unused) {
             // Don't visit inside anther lambda.
+            return null;
+          }
+
+          @Override
+          public Void visitClass(ClassTree node, Void unused) {
+            // Don't visit inside a class declared in the body.
             return null;
           }
         };

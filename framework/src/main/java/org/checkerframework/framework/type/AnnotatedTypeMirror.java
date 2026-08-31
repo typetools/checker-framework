@@ -1142,7 +1142,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       erased.addAnnotations(this.getPrimaryAnnotations());
       AnnotatedDeclaredType erasedEnclosing = erased.getEnclosingType();
       AnnotatedDeclaredType thisEnclosing = this.getEnclosingType();
-      while (erasedEnclosing != null) {
+      while (erasedEnclosing != null && thisEnclosing != null) {
         erasedEnclosing.addAnnotations(thisEnclosing.getPrimaryAnnotations());
         erasedEnclosing = erasedEnclosing.getEnclosingType();
         thisEnclosing = thisEnclosing.getEnclosingType();
