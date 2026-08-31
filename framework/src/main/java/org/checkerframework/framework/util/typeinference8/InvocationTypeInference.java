@@ -334,7 +334,8 @@ public class InvocationTypeInference {
       throw new BugInCF(
           "Target of method reference is not a functional interface: %s: %s", invocation, target);
     }
-    // P1, which for an unbound method reference acts as the target reference of the invocation.
+    // The first parameter of the function type, `p1`, acts as the target reference of the
+    // invocation for an unbound method reference.
     AbstractType p1 = functionTypeParams.isEmpty() ? null : functionTypeParams.get(0);
     CompileTimeDeclarationType compileTimeDecl =
         context.inferenceTypeFactory.compileTimeDeclarationType(invocation);

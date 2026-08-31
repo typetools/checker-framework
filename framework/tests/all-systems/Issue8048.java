@@ -1,5 +1,3 @@
-package beamcrash;
-
 import java.util.Collection;
 import java.util.List;
 
