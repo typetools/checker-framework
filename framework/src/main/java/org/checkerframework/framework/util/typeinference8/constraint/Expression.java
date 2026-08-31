@@ -96,12 +96,9 @@ public class Expression extends TypeConstraint {
       return reduceProperType();
     } else if (TreeUtils.isStandaloneExpression(expression)) {
       AbstractType s;
-      if (!context.isLambdaParam(expression)) {
-        s = new ProperType(expression, context);
-      } else {
-        AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(expression);
-        s = getT().create(atm, false);
-      }
+
+      s = new ProperType(expression, context);
+
       return new Typing(this, s, T, TypeConstraint.Kind.TYPE_COMPATIBILITY);
     }
     switch (expression.getKind()) {
@@ -231,18 +228,13 @@ public class Expression extends TypeConstraint {
         AbstractType targetReference = ps.remove(0);
         ExpressionTree preColonTree = memRef.getQualifierExpression();
         AbstractType referenceType;
-        if (context.isLambdaParam(preColonTree)) {
-          AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(preColonTree);
-          referenceType = T.create(atm, false);
+        if (MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound()) {
+          AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedTypeFromTypeTree(preColonTree);
+          referenceType = new ProperType(atm, context);
         } else {
-          if (MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound()) {
-            AnnotatedTypeMirror atm =
-                context.typeFactory.getAnnotatedTypeFromTypeTree(preColonTree);
-            referenceType = new ProperType(atm, context);
-          } else {
-            referenceType = new ProperType(preColonTree, context);
-          }
+          referenceType = new ProperType(preColonTree, context);
         }
+
         constraintSet.add(
             new Typing(this, targetReference, referenceType, TypeConstraint.Kind.SUBTYPE));
       }
