@@ -21,9 +21,6 @@ import org.junit.runners.Parameterized.Parameters;
  * -jar checker.jar} run. Measured for {@code Issue7023.java}: 5-7 seconds from the command line but
  * 12 through this test, and 19-31 through this test without the fix it guards.
  *
- * <p>Expect the reported line number to move as a file gets faster: once an inner tree drops below
- * the threshold it stops suppressing its ancestors, so the enclosing class declaration reports
- * instead, with a larger number. That is not the slow code moving.
  */
 public class NullnessSlowTypecheckingTest extends CheckerFrameworkPerDirectoryTest {
 
