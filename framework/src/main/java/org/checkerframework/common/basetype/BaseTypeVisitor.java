@@ -2582,8 +2582,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     TreePath body = atypeFactory.getPath(tree.getBody());
     if (body == null) {
-      // A lambda always has a body, within the compilation unit that is being processed.
-      throw new BugInCF("No path for the body of lambda: %s", tree);
+      // The body is not in the compilation unit that is being processed, so it cannot be checked.
+      // This is the same conservative treatment that `visitMethod` gives a method body.
+      return;
     }
 
     // Rewrite each of the interface method's formal parameters as the lambda's corresponding

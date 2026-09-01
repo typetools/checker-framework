@@ -630,8 +630,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       return null;
     }
     Elements elements = checker.getElementUtils();
-    for (ExecutableElement method :
-        ElementFilter.methodsIn(elements.getAllMembers((TypeElement) declaredType.asElement()))) {
+    TypeElement typeElement = (TypeElement) declaredType.asElement();
+    ExecutableElement result = null;
+    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(typeElement))) {
       // A static method is not a candidate, because the desugared call has a receiver. Neither is a
       // synthetic method: a covariant-return override such as {@code MyIterator iterator()} makes
       // javac add a bridge method {@code Iterator iterator()} to the member closure, and the bridge
@@ -640,10 +641,15 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
           && method.getSimpleName().contentEquals(methodName)
           && !method.getModifiers().contains(Modifier.STATIC)
           && !TreeUtils.isSynthetic(method)) {
-        return method;
+        // `Elements.getAllMembers` may return both a method and a method that overrides it, and it
+        // does not specify the order in which it returns them. The call invokes the most-derived
+        // one, whose annotations therefore are the ones to check the call against.
+        if (result == null || elements.overrides(method, result, typeElement)) {
+          result = method;
+        }
       }
     }
-    return null;
+    return result;
   }
 
   @Override
