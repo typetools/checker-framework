@@ -15,9 +15,12 @@ warning no longer require `-AcheckPurityAnnotations` to also be supplied.
 Made the field `Java8InferenceContext.pathToExpression` private; use
 `getPathToExpression()` and `setPathToExpression()` instead.
 
+Renamed `TreeUtils.isLikeDiamondMemberReference()` to `isRawTypedMemberReference()`.
+
 ### Closed issues
 
-\#7684.
+\#2816, #7677, #7678, #7681, #7682, #7684, #7693, #7694, #7696, #7698, #7701,
+\#7702, #7875, #8046, #8047, #8048, #8050, #8052.
 
 ## Version 4.2.2 (2026-08-06)
 

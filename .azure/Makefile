@@ -14,7 +14,7 @@ PLUME_SCRIPTS=../checker/bin-devel/.plume-scripts
 #	@chmod -w $@
 
 ${PLUME_SCRIPTS}:
-	make -C .. get-plume-scripts
+	cd .. && ./gradlew getPlumeScripts
 
 clean:
 	@rm -f azure-pipelines.yml azure-pipelines-daily.yml
