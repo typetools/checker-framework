@@ -120,11 +120,16 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * annotations may legitimately differ between a Java file and its corresponding {@code .ajava}
    * file. Subclasses may override this method to process annotations.
    *
+   * @param owner1 the tree from the first AST that the annotations are attached to
+   * @param owner2 the tree from the second AST that the annotations are attached to
    * @param annotations1 annotation list from the first AST
    * @param annotations2 annotation list from the second AST
    */
   protected void visitAnnotationList(
-      List<? extends AnnotationTree> annotations1, List<? extends AnnotationTree> annotations2) {}
+      Tree owner1,
+      Tree owner2,
+      List<? extends AnnotationTree> annotations1,
+      List<? extends AnnotationTree> annotations2) {}
 
   //
   // Assertion methods
@@ -393,7 +398,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     defaultAction(ptree1, ptree2);
 
     scan(ptree1.getPackageName(), ptree2.getPackageName());
-    visitAnnotationList(ptree1.getAnnotations(), ptree2.getAnnotations());
+    visitAnnotationList(ptree1, ptree2, ptree1.getAnnotations(), ptree2.getAnnotations());
     return null;
   }
 
@@ -893,11 +898,11 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     List<? extends List<? extends AnnotationTree>> dimAnnos2 = ntree2.getDimAnnotations();
     assertSameLength(dimAnnos1, dimAnnos2);
     for (int i = 0; i < dimAnnos1.size(); i++) {
-      visitAnnotationList(dimAnnos1.get(i), dimAnnos2.get(i));
+      visitAnnotationList(ntree1, ntree2, dimAnnos1.get(i), dimAnnos2.get(i));
     }
 
     scanList(ntree1.getInitializers(), ntree2.getInitializers());
-    visitAnnotationList(ntree1.getAnnotations(), ntree2.getAnnotations());
+    visitAnnotationList(ntree1, ntree2, ntree1.getAnnotations(), ntree2.getAnnotations());
     return null;
   }
 
@@ -1206,7 +1211,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     TypeParameterTree ttree2 = (TypeParameterTree) tree2;
     defaultAction(ttree1, ttree2);
 
-    visitAnnotationList(ttree1.getAnnotations(), ttree2.getAnnotations());
+    visitAnnotationList(ttree1, ttree2, ttree1.getAnnotations(), ttree2.getAnnotations());
     scanList(ttree1.getBounds(), ttree2.getBounds());
     return null;
   }
@@ -1241,7 +1246,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   public Void visitModifiers(ModifiersTree mtree1, Tree tree2) {
     ModifiersTree mtree2 = (ModifiersTree) tree2;
     defaultAction(mtree1, mtree2);
-    visitAnnotationList(mtree1.getAnnotations(), mtree2.getAnnotations());
+    visitAnnotationList(mtree1, mtree2, mtree1.getAnnotations(), mtree2.getAnnotations());
     return null;
   }
 
@@ -1274,7 +1279,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     AnnotatedTypeTree atree2 = (AnnotatedTypeTree) tree2;
     defaultAction(atree1, atree2);
 
-    visitAnnotationList(atree1.getAnnotations(), atree2.getAnnotations());
+    visitAnnotationList(atree1, atree2, atree1.getAnnotations(), atree2.getAnnotations());
     scan(atree1.getUnderlyingType(), atree2.getUnderlyingType());
     return null;
   }
@@ -1291,7 +1296,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     ModuleTree mtree2 = (ModuleTree) tree2;
     defaultAction(mtree1, mtree2);
 
-    visitAnnotationList(mtree1.getAnnotations(), mtree2.getAnnotations());
+    visitAnnotationList(mtree1, mtree2, mtree1.getAnnotations(), mtree2.getAnnotations());
     scan(mtree1.getName(), mtree2.getName());
     scanList(mtree1.getDirectives(), mtree2.getDirectives());
     return null;

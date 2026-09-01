@@ -18,12 +18,6 @@ import org.plumelib.util.IPair;
  */
 public class JavacAnnotationEqualityVisitor extends DoubleJavacVisitor {
 
-  /** The most recently visited tree from the first AST. Set by {@link #defaultAction}. */
-  private @Nullable Tree currentTree1 = null;
-
-  /** The most recently visited tree from the second AST. Set by {@link #defaultAction}. */
-  private @Nullable Tree currentTree2 = null;
-
   /** If a node with mismatched annotations has been seen, stores the node from the first AST. */
   private @MonotonicNonNull Tree mismatchedNode1 = null;
 
@@ -58,33 +52,29 @@ public class JavacAnnotationEqualityVisitor extends DoubleJavacVisitor {
 
   @Override
   protected Void defaultAction(Tree tree1, Tree tree2) {
-    currentTree1 = tree1;
-    currentTree2 = tree2;
     return null;
   }
 
   @Override
   protected void visitAnnotationList(
-      List<? extends AnnotationTree> annotations1, List<? extends AnnotationTree> annotations2) {
+      Tree owner1,
+      Tree owner2,
+      List<? extends AnnotationTree> annotations1,
+      List<? extends AnnotationTree> annotations2) {
     if (mismatchedNode1 != null) {
       return;
     }
-    // currentTree{1,2} are always set by defaultAction before visitAnnotationList is called.
-    assert (currentTree1 == null) == (currentTree2 == null);
-    if (currentTree1 == null || currentTree2 == null) {
-      return;
-    }
     if (annotations1.size() != annotations2.size()) {
-      mismatchedNode1 = currentTree1;
-      mismatchedNode2 = currentTree2;
+      mismatchedNode1 = owner1;
+      mismatchedNode2 = owner2;
       return;
     }
     for (int i = 0; i < annotations1.size(); i++) {
       AnnotationMirror mirror1 = TreeUtils.annotationFromAnnotationTree(annotations1.get(i));
       AnnotationMirror mirror2 = TreeUtils.annotationFromAnnotationTree(annotations2.get(i));
       if (!AnnotationUtils.areSame(mirror1, mirror2)) {
-        mismatchedNode1 = currentTree1;
-        mismatchedNode2 = currentTree2;
+        mismatchedNode1 = owner1;
+        mismatchedNode2 = owner2;
         return;
       }
     }
