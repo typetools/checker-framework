@@ -11,7 +11,7 @@ import org.checkerframework.afu.scenelib.type.Type;
  */
 public class ConstructorInsertion extends TypedInsertion {
   /** The insertion for the constructor's receiver parameter, or null if there is none. */
-  private ReceiverInsertion receiverInsertion = null;
+  private @Nullable ReceiverInsertion receiverInsertion = null;
 
   /** The declaration annotations to write on the generated constructor. */
   private Set<Insertion> declarationInsertions = new LinkedHashSet<>();
