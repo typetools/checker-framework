@@ -7,7 +7,8 @@
  *
  * -AslowTypecheckingSeconds is set low enough that a performance regression produces a
  * "slow.typechecking" warning, and -Werror turns that warning into a test failure.  Measured
- * through jtreg on an otherwise idle machine: 4-5 seconds.
+ * through jtreg on an otherwise idle machine: 4-5 seconds, versus roughly 16-17 seconds reported
+ * without the fix this test guards.
  *
  * @compile/timeout=600 -Werror -processor org.checkerframework.checker.nullness.NullnessChecker -AslowTypecheckingSeconds=10 Issue301.java
  */
