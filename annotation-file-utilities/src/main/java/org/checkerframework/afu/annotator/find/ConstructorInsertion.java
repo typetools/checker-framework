@@ -5,8 +5,15 @@ import java.util.List;
 import java.util.Set;
 import org.checkerframework.afu.scenelib.type.Type;
 
+/**
+ * An insertion for a default constructor, which is generated when a class has no explicit
+ * constructor but a receiver or a declaration annotation must be written on one.
+ */
 public class ConstructorInsertion extends TypedInsertion {
+  /** The insertion for the constructor's receiver parameter, or null if there is none. */
   private ReceiverInsertion receiverInsertion = null;
+
+  /** The declaration annotations to write on the generated constructor. */
   private Set<Insertion> declarationInsertions = new LinkedHashSet<>();
 
   /**
