@@ -222,10 +222,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           return tree;
         }
         ExecutableElement constructor = TreeUtils.elementFromUse(newClassTree);
-        // Use the type of the whole tree rather than of its identifier: for a qualified class
-        // instance creation expression, `o.new Inner(...)`, the rawness is contributed by the
-        // qualifier `o`, and the identifier's type is always the declared type `Outer<K>.Inner`.
-        // The type of the tree is `Outer.Inner` when `o` is raw or is a subtype of a raw type.
         if (TypesUtils.isRawCall(TreeUtils.typeOf(newClassTree), constructor, types)) {
           return tree;
         }
