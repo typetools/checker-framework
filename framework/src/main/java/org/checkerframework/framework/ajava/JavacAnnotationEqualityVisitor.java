@@ -11,12 +11,8 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.IPair;
 
 /**
- * Given two javac ASTs representing the same Java file that may differ in annotations, tests if
- * they have the same annotations.
- *
- * <p>To use this class, call {@link #findMismatch(Tree, Tree)}. The comparison is order-sensitive:
- * nodes with the same annotations in a different order are considered to differ. Only the first
- * mismatch is returned even if multiple mismatches exist.
+ * Given two javac ASTs representing the same Java file that may differ in annotations, {@link
+ * #findMismatch(Tree, Tree)} tests if they have the same annotations.
  *
  * <p>This is the javac-based replacement for {@link AnnotationEqualityVisitor}.
  */
@@ -45,15 +41,15 @@ public class JavacAnnotationEqualityVisitor extends DoubleJavacVisitor {
    *
    * @param tree1 root of the first AST
    * @param tree2 root of the second AST
-   * @return null if annotations match everywhere, or a pair of corresponding nodes where
-   *     annotations first differed, with the first element from {@code tree1}'s AST and the second
-   *     from {@code tree2}'s AST
+   * @return null if annotations match everywhere, or a pair of corresponding nodes from {@code
+   *     tree1} and {@code tree2} where annotations differ
    */
   public static @Nullable IPair<Tree, Tree> findMismatch(Tree tree1, Tree tree2) {
     JavacAnnotationEqualityVisitor visitor = new JavacAnnotationEqualityVisitor();
     visitor.scan(tree1, tree2);
     Tree node1 = visitor.mismatchedNode1;
     Tree node2 = visitor.mismatchedNode2;
+    assert (node1 == null) == (node2 == null);
     if (node1 != null && node2 != null) {
       return IPair.of(node1, node2);
     }
@@ -73,23 +69,22 @@ public class JavacAnnotationEqualityVisitor extends DoubleJavacVisitor {
     if (mismatchedNode1 != null) {
       return;
     }
-    // currentTree1/2 are always set by defaultAction before visitAnnotationList is called.
-    Tree ct1 = currentTree1;
-    Tree ct2 = currentTree2;
-    if (ct1 == null || ct2 == null) {
+    // currentTree{1,2} are always set by defaultAction before visitAnnotationList is called.
+    assert (currentTree1 == null) == (currentTree2 == null);
+    if (currentTree1 == null || currentTree2 == null) {
       return;
     }
     if (annotations1.size() != annotations2.size()) {
-      mismatchedNode1 = ct1;
-      mismatchedNode2 = ct2;
+      mismatchedNode1 = currentTree1;
+      mismatchedNode2 = currentTree2;
       return;
     }
     for (int i = 0; i < annotations1.size(); i++) {
       AnnotationMirror mirror1 = TreeUtils.annotationFromAnnotationTree(annotations1.get(i));
       AnnotationMirror mirror2 = TreeUtils.annotationFromAnnotationTree(annotations2.get(i));
       if (!AnnotationUtils.areSame(mirror1, mirror2)) {
-        mismatchedNode1 = ct1;
-        mismatchedNode2 = ct2;
+        mismatchedNode1 = currentTree1;
+        mismatchedNode2 = currentTree2;
         return;
       }
     }
