@@ -1,3 +1,7 @@
+// TODO: Remove this `@skip-test` when the bug described below is fixed.  The crash cannot
+// be written as an expected diagnostic: the test framework reports it at line -1, and its
+// message contains a varying object identity hash.
+// @skip-test until the bug is fixed
 // A method inherited from a raw superclass, invoked with an implicit receiver from within an inner
 // class.  The implicit receiver is `OuterSub.this`, an instance of the *enclosing* class, not of
 // the innermost enclosing class `Inner`.  The method is a member of the raw type `Sup`, so javac

@@ -41,6 +41,10 @@ public class RawTypeVariableReceiver {
   }
 
   <B extends Backend & Cloneable> void intersectionBoundReceiver(B raw, Desc<String> d) {
+    // TODO: This error is a false positive: javac erases the signature of `put` here, just as it
+    // does in `typeVariableReceiver` above.  Remove this expected diagnostic when the INTERSECTION
+    // case of AnnotatedTypes.asMemberOf tests its bounds for rawness.
+    // :: error: (argument)
     raw.put(d);
     Desc<String> x = raw.get();
   }

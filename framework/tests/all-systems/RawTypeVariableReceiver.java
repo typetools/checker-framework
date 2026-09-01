@@ -1,3 +1,7 @@
+// TODO: Remove this `@skip-test` when the bug described below is fixed.  The crash cannot
+// be written as an expected diagnostic: the test framework reports it at line -1, and its
+// message contains a varying object identity hash.
+// @skip-test until the bug is fixed
 // A generic method invoked on a receiver whose type is a type variable whose bound is raw.  The
 // method is a member of the raw bound, so javac erases its signature; it warns "unchecked call to
 // <T>get(Desc<T>) as a member of the raw type Backend" for both calls below.

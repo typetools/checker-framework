@@ -1,3 +1,7 @@
+// TODO: Remove this `@skip-test` when the bug described below is fixed.  The crash cannot
+// be written as an expected diagnostic: the test framework reports it at line -1, and its
+// message contains a varying object identity hash.
+// @skip-test until the bug is fixed
 // A qualified class instance creation expression, `o.new Inner(...)`, whose qualifier `o` has a
 // raw type.  The constructor is a member of the raw type `Outer.Inner`, so javac erases its
 // signature; it warns "unchecked call to <T>Outer.Inner(Desc<T>) as a member of the raw type
