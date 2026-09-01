@@ -28,7 +28,7 @@ jobs:
 
   ci_info:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk25-plus'
+      - image: 'mdernst/cf-ubuntu-jdk[]canary_jdk-plus'
     resource_class: small
     environment:
       TERM: dumb
@@ -108,9 +108,9 @@ job_dependences_not_in_canary(canary_jdk, plume_lib)
             - junit_jdk17
             - junit_jdk21
             - junit_jdk26
-            - guava_part1_jdk25
-            - guava_part2_jdk25
-            - plume_lib_jdk25
+            - guava_part1_jdk[]canary_jdk
+            - guava_part2_jdk[]canary_jdk
+            - plume_lib_jdk[]canary_jdk
 
 ifelse([
 Local Variables:

@@ -50,7 +50,7 @@ jobs:
   ci_info:
     runs-on: ubuntu-latest
     container:
-      image: mdernst/cf-ubuntu-jdk21-plus:latest
+      image: mdernst/cf-ubuntu-jdk[]canary_jdk-plus:latest
     steps:
       - uses: actions/checkout@v7
         with:
@@ -73,9 +73,9 @@ include([../../.azure/jobs.m4])dnl
       - junit_jdk26
       - nonjunit_jdk21
       - misc_jdk21
-      - guava_part1_jdk25
-      - guava_part2_jdk25
-      - plume_lib_jdk25
+      - guava_part1_jdk[]canary_jdk
+      - guava_part2_jdk[]canary_jdk
+      - plume_lib_jdk[]canary_jdk
     runs-on: ubuntu-latest
     steps:
       - name: Fail if any dependency failed

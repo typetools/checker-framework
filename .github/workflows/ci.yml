@@ -47,7 +47,7 @@ jobs:
   ci_info:
     runs-on: ubuntu-latest
     container:
-      image: mdernst/cf-ubuntu-jdk21-plus:latest
+      image: mdernst/cf-ubuntu-jdk25-plus:latest
     steps:
       - uses: actions/checkout@v7
         with:
