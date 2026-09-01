@@ -22,6 +22,34 @@ jobs:
     steps:
       - run: /bin/true
 
+  ci_info:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25-plus'
+    resource_class: small
+    environment:
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &sourcefull-cache source-v1full-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1full-{{ .Branch }}-'
+            - source-v1full-
+      - checkout:
+          method: full
+      - save_cache:
+          key: *sourcefull-cache
+          paths:
+            - .git
+      - run:
+          name: getPlumeScripts
+          command: ./gradlew -q getPlumeScripts
+      - run:
+          name: ci-org-and-branch
+          command: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+      - run:
+          name: git-changes
+          command: ./checker/bin-devel/.plume-scripts/git-changes --debug
+
   junit_jdk17:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk17'
@@ -259,12 +287,6 @@ jobs:
           name: getPlumeScripts
           command: ./gradlew -q getPlumeScripts
       - run:
-          name: ci-org-and-branch
-          command: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
-      - run:
-          name: git-changes
-          command: ./checker/bin-devel/.plume-scripts/git-changes --debug
-      - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
           environment:
@@ -292,12 +314,6 @@ jobs:
           name: getPlumeScripts
           command: ./gradlew -q getPlumeScripts
       - run:
-          name: ci-org-and-branch
-          command: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
-      - run:
-          name: git-changes
-          command: ./checker/bin-devel/.plume-scripts/git-changes --debug
-      - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
           environment:
@@ -324,12 +340,6 @@ jobs:
       - run:
           name: getPlumeScripts
           command: ./gradlew -q getPlumeScripts
-      - run:
-          name: ci-org-and-branch
-          command: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
-      - run:
-          name: git-changes
-          command: ./checker/bin-devel/.plume-scripts/git-changes --debug
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
@@ -470,6 +480,8 @@ workflows:
             - typecheck_part2_jdk25
             - misc_jdk25
             - misc_jdk26
+
+      - ci_info
 
       - junit_part1_jdk25
       - junit_part2_jdk25

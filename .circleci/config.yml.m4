@@ -26,6 +26,34 @@ jobs:
     steps:
       - run: /bin/true
 
+  ci_info:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25-plus'
+    resource_class: small
+    environment:
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &sourcefull-cache source-v1full-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1full-{{ .Branch }}-'
+            - source-v1full-
+      - checkout:
+          method: full
+      - save_cache:
+          key: *sourcefull-cache
+          paths:
+            - .git
+      - run:
+          name: getPlumeScripts
+          command: ./gradlew -q getPlumeScripts
+      - run:
+          name: ci-org-and-branch
+          command: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+      - run:
+          name: git-changes
+          command: ./checker/bin-devel/.plume-scripts/git-changes --debug
+
 include([../.azure/jobs.m4])dnl
 
 # The "workflows" section determines which jobs run and what other jobs they depend on.
@@ -44,6 +72,8 @@ workflows:
             - typecheck_part2_jdk[]canary_jdk
             - misc_jdk[]canary_jdk
             - misc_jdk[]latest_jdk
+
+      - ci_info
 
 job_dependences(canary_jdk, junit_part1)
 job_dependences(canary_jdk, junit_part2)

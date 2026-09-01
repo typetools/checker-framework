@@ -49,16 +49,19 @@ jobs:
         run: true
   ci_info:
     runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk21-plus:latest
     steps:
       - uses: actions/checkout@v7
         with:
           set-safe-directory: true
-          # Unlimited history for contributors.tex generation.
           fetch-depth: 0
       - name: clone_plume_scripts
-        run: git clone https://github.com/plume-lib/plume-scripts.git /tmp/plume-scripts
-      - name: ci_info
-        run: /tmp/plume-scripts/ci-info --debug
+        run: ./gradlew -q getPlumeScripts
+      - name: ci_org_and_branch
+        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+      - name: git_changes
+        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
 
 include([../../.azure/jobs.m4])dnl
 
