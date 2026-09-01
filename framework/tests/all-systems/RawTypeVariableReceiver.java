@@ -38,4 +38,9 @@ public class RawTypeVariableReceiver {
   void capturedWildcardReceiver(List<? extends Backend> l, Ser<String> ser) {
     l.get(0).get(new Desc<>(ser));
   }
+
+  // The upper bound is an intersection, one of whose bounds is raw.
+  <B extends Backend & Cloneable> void intersectionBoundReceiver(B raw, Ser<String> ser) {
+    raw.get(new Desc<>(ser));
+  }
 }

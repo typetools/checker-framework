@@ -4,9 +4,8 @@
 // "unchecked conversion ... found: Desc" for all three assignments.
 //
 // AnnotatedTypes.asMemberOf looks through a TYPEVAR (and a WILDCARD) to its upper bound before
-// testing whether the access is on a raw type, so `typeVariableReceiver` and
-// `capturedWildcardReceiver` are erased.  The INTERSECTION case substitutes into the member's type
-// for each bound without testing any of them for rawness, so `intersectionBoundReceiver` is not.
+// testing whether the access is on a raw type, and its INTERSECTION case tests each bound that
+// supplies the member, so all three receivers below are erased.
 
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -41,11 +40,13 @@ public class RawTypeVariableReceiver {
   }
 
   <B extends Backend & Cloneable> void intersectionBoundReceiver(B raw, Desc<String> d) {
-    // TODO: This error is a false positive: javac erases the signature of `put` here, just as it
-    // does in `typeVariableReceiver` above.  Remove this expected diagnostic when the INTERSECTION
-    // case of AnnotatedTypes.asMemberOf tests its bounds for rawness.
-    // :: error: (argument)
     raw.put(d);
     Desc<String> x = raw.get();
+  }
+
+  // The bound that supplies the member is parameterized, so nothing is erased.
+  <B extends Backend<Object> & Cloneable> void parameterizedIntersectionBound(B b, Desc<String> d) {
+    // :: error: (argument)
+    b.put(d);
   }
 }
