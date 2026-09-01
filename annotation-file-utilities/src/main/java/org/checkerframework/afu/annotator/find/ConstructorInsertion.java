@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.checkerframework.afu.scenelib.type.Type;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * An insertion for a default constructor, which is generated when a class has no explicit
