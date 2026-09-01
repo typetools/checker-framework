@@ -49,16 +49,19 @@ jobs:
         run: true
   ci_info:
     runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk[]canary_jdk-plus:latest
     steps:
       - uses: actions/checkout@v7
         with:
           set-safe-directory: true
-          # Unlimited history for contributors.tex generation.
           fetch-depth: 0
       - name: clone_plume_scripts
-        run: git clone https://github.com/plume-lib/plume-scripts.git /tmp/plume-scripts
-      - name: ci_info
-        run: /tmp/plume-scripts/ci-info --debug
+        run: ./gradlew -q getPlumeScripts
+      - name: ci_org_and_branch
+        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+      - name: git_changes
+        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
 
 include([../../.azure/jobs.m4])dnl
 
@@ -70,9 +73,9 @@ include([../../.azure/jobs.m4])dnl
       - junit_jdk26
       - nonjunit_jdk21
       - misc_jdk21
-      - guava_part1_jdk25
-      - guava_part2_jdk25
-      - plume_lib_jdk25
+      - guava_part1_jdk[]canary_jdk
+      - guava_part2_jdk[]canary_jdk
+      - plume_lib_jdk[]canary_jdk
     runs-on: ubuntu-latest
     steps:
       - name: Fail if any dependency failed
