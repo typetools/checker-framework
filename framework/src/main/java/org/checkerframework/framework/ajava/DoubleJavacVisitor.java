@@ -67,6 +67,7 @@ import com.sun.source.util.SimpleTreeVisitor;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17;
 import org.checkerframework.javacutil.UserError;
 
@@ -84,7 +85,8 @@ import org.checkerframework.javacutil.UserError;
  * <p>To use this class, extend it and override {@link #defaultAction(Tree, Tree)} to perform work
  * for each matched pair of trees. Subclasses may also override specific {@code visitXyz} methods to
  * customize behavior, but do not need to override root methods such as {@code visitCompilationUnit}
- * or {@code visitClass} unless they want to change traversal.
+ * or {@code visitClass} unless they want to change traversal. The one exception is {@link
+ * #visitModifiers}, which is never called; override {@link #scanModifiers} instead.
  *
  * <p><b>WARNING:</b> This class intentionally does <em>not</em> behave like {@link
  * com.sun.source.util.TreeScanner}. Although it subclasses {@link SimpleTreeVisitor}, recursion is
@@ -233,8 +235,10 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * Traverses the modifiers of a declaration, treating the declaration itself as the owner of its
    * declaration annotations.
    *
-   * <p>This method performs the same work as {@link #visitModifiers}, other than the choice of
-   * owner, so it does not dispatch through {@link #scan}.
+   * <p>This method does not dispatch through {@link #scan}, because {@link #scan} would report the
+   * {@link ModifiersTree} rather than the declaration as the owner. As a consequence, {@link
+   * #visitModifiers} is never called; a subclass that customizes the handling of modifiers must
+   * override this method instead.
    *
    * @param owner1 the declaration from the first AST that {@code mtree1} belongs to
    * @param owner2 the declaration from the second AST that {@code mtree2} belongs to
@@ -1255,20 +1259,21 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   }
 
   /**
-   * Visits a modifiers node. Declarations reach their modifiers through {@link #scanModifiers}
-   * instead, so that the declaration rather than the {@link ModifiersTree} is reported as the owner
-   * of the declaration annotations.
+   * Always throws an exception. Every declaration reaches its modifiers through {@link
+   * #scanModifiers}, so that the declaration rather than the {@link ModifiersTree} is reported as
+   * the owner of the declaration annotations. Therefore, this method is never called, and
+   * overriding it in a subclass has no effect.
    *
    * @param mtree1 modifiers tree from the first AST
    * @param tree2 modifiers tree from the second AST
-   * @return null
+   * @return never returns
+   * @throws BugInCF always
    */
   @Override
   public Void visitModifiers(ModifiersTree mtree1, Tree tree2) {
-    ModifiersTree mtree2 = (ModifiersTree) tree2;
-    defaultAction(mtree1, mtree2);
-    visitAnnotationList(mtree1, mtree2, mtree1.getAnnotations(), mtree2.getAnnotations());
-    return null;
+    throw new BugInCF(
+        "%s.visitModifiers should never be called; use scanModifiers. mtree1=%s tree2=%s",
+        this.getClass().getCanonicalName(), mtree1, tree2);
   }
 
   /**

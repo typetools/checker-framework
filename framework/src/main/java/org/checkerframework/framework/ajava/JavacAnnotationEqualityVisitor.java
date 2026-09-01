@@ -8,6 +8,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.IPair;
 
 /**
@@ -16,6 +17,11 @@ import org.plumelib.util.IPair;
  *
  * <p>Two annotations are compared as {@link AnnotationMirror}s when both ASTs have been attributed
  * by javac, and as source text otherwise; see {@link #sameAnnotation}.
+ *
+ * <p>Known gap: a receiver parameter is compared only if both ASTs have one, because a {@code
+ * .ajava} file may add an explicit receiver parameter that the Java file omits. As a consequence,
+ * if a receiver parameter appears in only one of the two ASTs, its annotations are ignored rather
+ * than reported as a mismatch. See {@link DoubleJavacVisitor#visitMethod}.
  *
  * <p>This is the javac-based replacement for {@link AnnotationEqualityVisitor}.
  */
@@ -40,6 +46,8 @@ public class JavacAnnotationEqualityVisitor extends DoubleJavacVisitor {
    * @param tree2 root of the second AST
    * @return null if annotations match everywhere, or a pair of corresponding nodes from {@code
    *     tree1} and {@code tree2} where annotations differ
+   * @throws UserError if the two ASTs differ other than in annotations; for example, if one
+   *     declares a member that the other does not
    */
   public static @Nullable IPair<Tree, Tree> findMismatch(Tree tree1, Tree tree2) {
     JavacAnnotationEqualityVisitor visitor = new JavacAnnotationEqualityVisitor();
