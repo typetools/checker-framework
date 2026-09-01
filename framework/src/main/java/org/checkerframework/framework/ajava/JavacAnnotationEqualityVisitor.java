@@ -14,6 +14,9 @@ import org.plumelib.util.IPair;
  * Given two javac ASTs representing the same Java file that may differ in annotations, {@link
  * #findMismatch(Tree, Tree)} tests if they have the same annotations.
  *
+ * <p>Two annotations are compared as {@link AnnotationMirror}s when both ASTs have been attributed
+ * by javac, and as source text otherwise; see {@link #sameAnnotation}.
+ *
  * <p>This is the javac-based replacement for {@link AnnotationEqualityVisitor}.
  */
 public class JavacAnnotationEqualityVisitor extends DoubleJavacVisitor {
@@ -70,13 +73,34 @@ public class JavacAnnotationEqualityVisitor extends DoubleJavacVisitor {
       return;
     }
     for (int i = 0; i < annotations1.size(); i++) {
-      AnnotationMirror mirror1 = TreeUtils.annotationFromAnnotationTree(annotations1.get(i));
-      AnnotationMirror mirror2 = TreeUtils.annotationFromAnnotationTree(annotations2.get(i));
-      if (!AnnotationUtils.areSame(mirror1, mirror2)) {
+      if (!sameAnnotation(annotations1.get(i), annotations2.get(i))) {
         mismatchedNode1 = owner1;
         mismatchedNode2 = owner2;
         return;
       }
     }
+  }
+
+  /**
+   * Returns true if the two trees represent the same annotation.
+   *
+   * <p>If both trees have been attributed by javac, this compares their {@link AnnotationMirror}s,
+   * which disregards how the annotation is written in source code; for example, a simple name and a
+   * fully-qualified name for the same annotation compare equal. {@link
+   * TreeUtils#annotationFromAnnotationTree} returns null for an unattributed tree, in which case
+   * this falls back to comparing source text, which does make those distinctions.
+   *
+   * @param annotationTree1 an annotation tree from the first AST
+   * @param annotationTree2 the corresponding annotation tree from the second AST
+   * @return true if the two trees represent the same annotation
+   */
+  private static boolean sameAnnotation(
+      AnnotationTree annotationTree1, AnnotationTree annotationTree2) {
+    AnnotationMirror mirror1 = TreeUtils.annotationFromAnnotationTree(annotationTree1);
+    AnnotationMirror mirror2 = TreeUtils.annotationFromAnnotationTree(annotationTree2);
+    if (mirror1 != null && mirror2 != null) {
+      return AnnotationUtils.areSame(mirror1, mirror2);
+    }
+    return annotationTree1.toString().equals(annotationTree2.toString());
   }
 }

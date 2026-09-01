@@ -229,6 +229,25 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     }
   }
 
+  /**
+   * Traverses the modifiers of a declaration, treating the declaration itself as the owner of its
+   * declaration annotations.
+   *
+   * <p>This method performs the same work as {@link #visitModifiers}, other than the choice of
+   * owner, so it does not dispatch through {@link #scan}.
+   *
+   * @param owner1 the declaration from the first AST that {@code mtree1} belongs to
+   * @param owner2 the declaration from the second AST that {@code mtree2} belongs to
+   * @param mtree1 modifiers tree from the first AST
+   * @param mtree2 modifiers tree from the second AST
+   */
+  protected final void scanModifiers(
+      Tree owner1, Tree owner2, ModifiersTree mtree1, ModifiersTree mtree2) {
+    assertSameKind(mtree1, mtree2);
+    defaultAction(mtree1, mtree2);
+    visitAnnotationList(owner1, owner2, mtree1.getAnnotations(), mtree2.getAnnotations());
+  }
+
   //
   // Visitor methods, in the same order as SimpleTreeVisitor.
   //
@@ -432,7 +451,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     ClassTree ctree2 = (ClassTree) tree2;
     defaultAction(ctree1, ctree2);
 
-    scan(ctree1.getModifiers(), ctree2.getModifiers());
+    scanModifiers(ctree1, ctree2, ctree1.getModifiers(), ctree2.getModifiers());
     scanList(ctree1.getTypeParameters(), ctree2.getTypeParameters());
     scan(ctree1.getExtendsClause(), ctree2.getExtendsClause());
     scanList(ctree1.getImplementsClause(), ctree2.getImplementsClause());
@@ -455,7 +474,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     MethodTree mtree2 = (MethodTree) tree2;
     defaultAction(mtree1, mtree2);
 
-    scan(mtree1.getModifiers(), mtree2.getModifiers());
+    scanModifiers(mtree1, mtree2, mtree1.getModifiers(), mtree2.getModifiers());
     scanList(mtree1.getTypeParameters(), mtree2.getTypeParameters());
 
     scan(mtree1.getReturnType(), mtree2.getReturnType());
@@ -488,7 +507,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     defaultAction(vtree1, vtree2);
 
     scan(vtree1.getNameExpression(), vtree2.getNameExpression());
-    scan(vtree1.getModifiers(), vtree2.getModifiers());
+    scanModifiers(vtree1, vtree2, vtree1.getModifiers(), vtree2.getModifiers());
     scan(vtree1.getType(), vtree2.getType());
     scan(vtree1.getInitializer(), vtree2.getInitializer());
     return null;
@@ -1236,7 +1255,9 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   }
 
   /**
-   * Visits a modifiers node.
+   * Visits a modifiers node. Declarations reach their modifiers through {@link #scanModifiers}
+   * instead, so that the declaration rather than the {@link ModifiersTree} is reported as the owner
+   * of the declaration annotations.
    *
    * @param mtree1 modifiers tree from the first AST
    * @param tree2 modifiers tree from the second AST
