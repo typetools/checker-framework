@@ -1452,6 +1452,9 @@ public final class TypesUtils {
    * Returns true if accessing {@code member} through a receiver of type {@code receiverType} is an
    * access on a raw type.
    *
+   * <p>If {@code receiverType} is a type variable, a wildcard, or an intersection type, then its
+   * bounds are tested, because the member is a member of a bound.
+   *
    * @param receiverType the receiver of the access, or null if the receiver is implicit; for a
    *     constructor invocation, the class being instantiated
    * @param member the method, constructor, or field being accessed
@@ -1461,10 +1464,37 @@ public final class TypesUtils {
    */
   public static boolean isRawCall(
       @Nullable TypeMirror receiverType, Element member, javax.lang.model.util.Types types) {
-    if (receiverType == null
-        || ElementUtils.isStatic(member)
-        || receiverType.getKind() != TypeKind.DECLARED) {
+    if (receiverType == null || ElementUtils.isStatic(member)) {
       return false;
+    }
+    switch (receiverType.getKind()) {
+      case DECLARED -> {
+        // Handled below.
+      }
+      case TYPEVAR -> {
+        // A member accessed through a type variable is a member of the type variable's upper
+        // bound, so the access is raw exactly when an access through that bound is raw.  This
+        // also covers a capture variable, whose upper bound is the captured wildcard's bound.
+        return isRawCall(((TypeVariable) receiverType).getUpperBound(), member, types);
+      }
+      case WILDCARD -> {
+        // getExtendsBound() returns null for `?` and for `? super X`, and isRawCall returns
+        // false for a null type; neither has a raw upper bound.
+        return isRawCall(((WildcardType) receiverType).getExtendsBound(), member, types);
+      }
+      case INTERSECTION -> {
+        // The member comes from whichever bound declares it, so the access is raw if any bound
+        // makes it raw.
+        for (TypeMirror bound : ((IntersectionType) receiverType).getBounds()) {
+          if (isRawCall(bound, member, types)) {
+            return true;
+          }
+        }
+        return false;
+      }
+      default -> {
+        return false;
+      }
     }
     // Section 4.8, "Raw Types".
     // (https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.8)
