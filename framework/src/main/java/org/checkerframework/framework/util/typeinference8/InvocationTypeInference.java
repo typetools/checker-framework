@@ -427,7 +427,7 @@ public class InvocationTypeInference {
    * parameters of function type of target type of the method reference.
    *
    * @param executableType the type of the method or constructor invoked
-   * @param args types to use as arguments
+   * @param args types to use as arguments; this method does not modify it
    * @param map map of type variables to (inference) variables
    * @return bound set used to determine whether a method is applicable
    */
