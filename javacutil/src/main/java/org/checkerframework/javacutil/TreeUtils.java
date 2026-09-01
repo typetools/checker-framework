@@ -2815,17 +2815,43 @@ public final class TreeUtils {
         receiverType = TreeUtils.typeOf(receiverTree);
       } else {
         // The receiver is implicit: `this` or `Outer.this`.  A method inherited from a raw
-        // supertype is erased even when it is invoked without a receiver, so pass the
-        // enclosing class and let isRawCall walk up to the class that declares the method.
-        ClassTree enclosingClass = TreePathUtil.enclosingClass(parentPath);
-        if (enclosingClass == null) {
-          return false;
-        }
-        receiverType = TreeUtils.typeOf(enclosingClass);
+        // supertype is erased even when it is invoked without a receiver.
+        return isRawImplicitReceiverCall(
+            TreeUtils.elementFromUse(methodInvocationTree), parentPath, types);
       }
     }
     ExecutableElement methodElement = TreeUtils.elementFromUse(methodInvocationTree);
 
     return TypesUtils.isRawCall(receiverType, methodElement, types);
+  }
+
+  /**
+   * Returns true if the implicit receiver of a call to {@code methodElement} is raw.
+   *
+   * <p>The implicit receiver is {@code this} or {@code Outer.this}: javac resolves it to the
+   * innermost enclosing class that has {@code methodElement} as a member, which is not necessarily
+   * the innermost enclosing class. Only that class's rawness matters, so this method walks outward
+   * and tests the first enclosing class that has the method as a member.
+   *
+   * @param methodElement the method being invoked with an implicit receiver
+   * @param parentPath path to the parent of the method invocation
+   * @param types the type utilities
+   * @return true if the implicit receiver of the call is raw
+   */
+  private static boolean isRawImplicitReceiverCall(
+      ExecutableElement methodElement, TreePath parentPath, javax.lang.model.util.Types types) {
+    TypeElement declaringClass = ElementUtils.enclosingTypeElement(methodElement);
+    if (declaringClass == null) {
+      return false;
+    }
+    for (TreePath path = TreePathUtil.pathTillClass(parentPath);
+        path != null;
+        path = TreePathUtil.pathTillClass(path.getParentPath())) {
+      TypeMirror enclosingType = TreeUtils.typeOf(path.getLeaf());
+      if (TypesUtils.isErasedSubtype(enclosingType, declaringClass.asType(), types)) {
+        return TypesUtils.isRawCall(enclosingType, methodElement, types);
+      }
+    }
+    return false;
   }
 }
