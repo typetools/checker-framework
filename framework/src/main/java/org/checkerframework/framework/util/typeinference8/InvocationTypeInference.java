@@ -329,16 +329,19 @@ public class InvocationTypeInference {
       throw new BugInCF("Target of method reference should not be null: %s", invocation);
     }
 
-    CompileTimeDeclarationType compileTimeDecl =
-        context.inferenceTypeFactory.compileTimeDeclarationType(invocation);
-    Theta map =
-        context.inferenceTypeFactory.createThetaForMethodReference(
-            invocation, compileTimeDecl, context);
     List<AbstractType> functionTypeParams = target.getFunctionTypeParameterTypes();
     if (functionTypeParams == null) {
       throw new BugInCF(
           "Target of method reference is not a functional interface: %s: %s", invocation, target);
     }
+    // The first parameter of the function type, `p1`, acts as the target reference of the
+    // invocation for an unbound method reference.
+    AbstractType p1 = functionTypeParams.isEmpty() ? null : functionTypeParams.get(0);
+    CompileTimeDeclarationType compileTimeDecl =
+        context.inferenceTypeFactory.compileTimeDeclarationType(invocation);
+    Theta map =
+        context.inferenceTypeFactory.createThetaForMethodReference(
+            invocation, compileTimeDecl, p1, context);
     BoundSet b2 = createB2MethodRef(compileTimeDecl, functionTypeParams, map);
     AbstractType r = target.getFunctionTypeReturnType();
     BoundSet b3;
@@ -444,27 +447,38 @@ public class InvocationTypeInference {
 
     ConstraintSet c = new ConstraintSet();
     List<AbstractType> formals = executableType.getParameterTypes(map, args.size());
-    // The arguments to use in the constraints below: the same as `args`, except that the first
-    // argument is capture converted for a like-diamond method reference.  This is a new list, so
-    // that the list passed by the caller is not modified.
-    List<AbstractType> capturedArgs;
-    if (TreeUtils.isLikeDiamondMemberReference(executableType.getMethodRef())) {
-      // https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.1
-      //  If ReferenceType is a raw type, and there exists a parameterization of this type,
-      // G<...>, that is a supertype of P1, the type to search is the result of capture
-      // conversion (§5.1.10) applied to G<...>; otherwise, the type to search is the same
-      // as the type of the first search. Type arguments, if any, are given by the method
-      // reference expression.
-      // A like-diamond method reference is an unbound one, such as `List::size`, so the function
-      // type of its target type has at least one parameter: the receiver, which is P1.
-      capturedArgs = new ArrayList<>(args);
-      capturedArgs.set(0, capturedArgs.get(0).capture(context));
-    } else {
-      capturedArgs = args;
+    // https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.1 says:
+    //   If ReferenceType is a raw type, and there exists a parameterization of this type,
+    //   G<...>, that is a supertype of P1, the type to search is the result of capture
+    //   conversion (§5.1.10) applied to G<...>; otherwise, the type to search is the same
+    //   as the type of the first search.
+    // Whichever of those two types is the type to search, no constraint is generated against P1.
+    // JLS 18.2.1 generates no parameter constraints at all for an inexact method reference, and a
+    // method reference whose ReferenceType is raw is always inexact (JLS 15.13.1).  JLS 15.13.1's
+    // second search likewise drops P1: it requires only that P1 be a subtype of the raw
+    // ReferenceType, which holds by construction here.  When G<...> exists,
+    // createThetaForMethodReference has additionally instantiated the receiver's type arguments to
+    // those of capture(G<...>), so formals.get(0) is determined by P1; a constraint against it
+    // would add nothing to the bound set, and would in fact reduce to false, because capture
+    // conversion produces fresh capture variables that P1's own type arguments are not subtypes
+    // of.
+    MemberReferenceTree methodRef = executableType.getMethodRef();
+    boolean isRawTypedMemberReference =
+        !args.isEmpty() && TreeUtils.isRawTypedMemberReference(methodRef);
+    int firstArg = isRawTypedMemberReference ? 1 : 0;
+
+    if (isRawTypedMemberReference
+        && context.inferenceTypeFactory.getCapturedSupertype(methodRef, args.get(0)) == null) {
+      // No parameterization G<...> of the raw ReferenceType is a supertype of P1, so JLS
+      // 15.13.1's second search falls back to the raw ReferenceType itself: the compile-time
+      // declaration's type is used as-is, unparameterized. Using a raw type in place of its
+      // parameterization requires unchecked conversion (JLS 5.1.9), matching javac's
+      // rawtypes/unchecked warning for this reference.
+      b0.setUncheckedConversion(true);
     }
 
-    for (int i = 0; i < formals.size(); i++) {
-      AbstractType ei = capturedArgs.get(i);
+    for (int i = firstArg; i < formals.size(); i++) {
+      AbstractType ei = args.get(i);
       AbstractType fi = formals.get(i);
       String source =
           String.format(

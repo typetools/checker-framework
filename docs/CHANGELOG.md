@@ -21,6 +21,8 @@ recursively hashing component types.  Removed class `HashcodeAtmVisitor`, field
 `AnnotatedTypeMirror.getUnderlyingTypeHashCode()`, which existed only to compute
 the old hash code.
 
+Renamed `TreeUtils.isLikeDiamondMemberReference()` to `isRawTypedMemberReference()`.
+
 ### Closed issues
 
 \#7684.
