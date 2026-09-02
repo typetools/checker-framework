@@ -4060,7 +4060,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     MemberReferenceKind memRefKind =
         MemberReferenceKind.getMemberReferenceKind(memberReferenceTree);
     AnnotatedTypeMirror enclosingType;
-    if (TreeUtils.isLikeDiamondMemberReference(memberReferenceTree)) {
+    if (TreeUtils.isRawTypedMemberReference(memberReferenceTree)) {
       TypeElement typeElt = TypesUtils.getTypeElement(TreeUtils.typeOf(preColonTree));
       enclosingType = atypeFactory.getAnnotatedType(typeElt);
     } else if (memberReferenceTree.getMode() == ReferenceMode.NEW
