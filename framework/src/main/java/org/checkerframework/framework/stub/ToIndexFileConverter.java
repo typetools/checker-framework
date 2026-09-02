@@ -72,7 +72,7 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
-import org.checkerframework.framework.util.JavaParserUtil;
+import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.reflection.Signatures;
 
@@ -189,7 +189,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       throws IOException, DefException, ParseException {
     StubUnit iu;
     try {
-      iu = JavaParserUtil.parseStubUnit(in);
+      iu = StaticJavaParserUtil.parseStubUnit(in);
     } catch (ParseProblemException e) {
       iu = null;
       throw new BugInCF(

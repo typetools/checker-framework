@@ -103,6 +103,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.JavaParserUtil;
+import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -755,7 +756,7 @@ public final class AnnotationFileParser {
     stubDebug(
         "started parsing annotation file %s for %s",
         filename, atypeFactory.getClass().getSimpleName());
-    stubUnit = JavaParserUtil.parseStubUnit(inputStream);
+    stubUnit = StaticJavaParserUtil.parseStubUnit(inputStream);
 
     // getImportedAnnotations() also modifies importedConstants and importedTypes. This should
     // be refactored to be nicer.
