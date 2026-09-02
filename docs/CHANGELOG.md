@@ -7,7 +7,7 @@
 
 ### User-visible changes
 
-### Implementation details
+### Changes visible to type system implementers
 
 ### Closed issues
 
@@ -18,7 +18,7 @@
 The `-AsuggestPureMethods` command-line option and the `purity.effectively.pure`
 warning no longer require `-AcheckPurityAnnotations` to also be supplied.
 
-### Implementation details
+### Changes visible to type system implementers
 
 Made the field `Java8InferenceContext.pathToExpression` private; use
 `getPathToExpression()` and `setPathToExpression()` instead.
