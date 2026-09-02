@@ -48,6 +48,7 @@ public final class JavaParserUtil {
    * type declarations and the compilation unit that contain it. Returns null if the name cannot be
    * resolved, which happens for a type variable and for a type that is not on the classpath.
    *
+   * @param elements used for looking up names
    * @param type a JavaParser class or interface type
    * @return the element for {@code type}, or null if it cannot be determined
    */
