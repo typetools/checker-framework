@@ -20,6 +20,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -414,7 +415,7 @@ public final class AnnotatedTypes {
         TypeMirror enclosingElementType = member.getEnclosingElement().asType();
         for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) receiverType).getBounds()) {
           if (TypesUtils.isErasedSubtype(bound.getUnderlyingType(), enclosingElementType, types)) {
-            if (isRawCall(bound, member, types)) {
+            if (isRawCall(bound, member, types, atypeFactory.getProcessingEnv())) {
               return memberType.getErased();
             }
             result =
@@ -433,7 +434,7 @@ public final class AnnotatedTypes {
       }
       case DECLARED -> {
         AnnotatedDeclaredType receiverTypeDT = (AnnotatedDeclaredType) receiverType;
-        if (isRawCall(receiverTypeDT, member, types)) {
+        if (isRawCall(receiverTypeDT, member, types, atypeFactory.getProcessingEnv())) {
           return memberType.getErased();
         }
         return substituteTypeVariables(types, atypeFactory, receiverType, member, memberType);
@@ -449,9 +450,11 @@ public final class AnnotatedTypes {
    * @param receiver the type of the receiver of the access
    * @param member the method, constructor, or field being accessed
    * @param types the type utilities
+   * @param env the processing environment
    * @return true if accessing {@code member} through {@code receiver} is an access on a raw type
    */
-  private static boolean isRawCall(AnnotatedTypeMirror receiver, Element member, Types types) {
+  private static boolean isRawCall(
+      AnnotatedTypeMirror receiver, Element member, Types types, ProcessingEnvironment env) {
     // SupertypeFinder sets isUnderlyingTypeRaw() on the supertypes of a raw type, whose
     // underlying types still have their type arguments; TypesUtils.isRawCall cannot detect that
     // case, because it looks only at underlying types.
@@ -469,7 +472,7 @@ public final class AnnotatedTypes {
         return true;
       }
     }
-    return TypesUtils.isRawCall(receiver.getUnderlyingType(), member, types);
+    return TypesUtils.isRawCall(receiver.getUnderlyingType(), member, env);
   }
 
   /**

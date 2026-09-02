@@ -12,6 +12,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -19,7 +20,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -54,7 +54,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     // So, first find the outermost tree that is required to infer the type arguments for
     // expressionTree
     ExpressionTree outerTree =
-        outerInference(expressionTree, pathToExpression.getParentPath(), typeFactory.types);
+        outerInference(
+            expressionTree, pathToExpression.getParentPath(), typeFactory.getProcessingEnv());
 
     for (InvocationTypeInference i : java8InferenceStack) {
       if (i.getInferenceExpression() == outerTree) {
@@ -174,12 +175,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    *
    * @param tree tree that may need an outer tree to find the type
    * @param parentPath path to the parent of {@code tree} or null if no such parent exists
-   * @param types the type utilities
+   * @param env the processing environment
    * @return the outermost tree required to find the type of {@code tree}
    */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public static ExpressionTree outerInference(
-      ExpressionTree tree, @Nullable TreePath parentPath, Types types) {
+      ExpressionTree tree, @Nullable TreePath parentPath, ProcessingEnvironment env) {
     if (parentPath == null) {
       return tree;
     }
@@ -192,7 +193,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       case PARENTHESIZED:
       case CONDITIONAL_EXPRESSION:
         ExpressionTree outer =
-            outerInference((ExpressionTree) parentTree, parentPath.getParentPath(), types);
+            outerInference((ExpressionTree) parentTree, parentPath.getParentPath(), env);
         if (outer == parentTree) {
           return tree;
         }
@@ -207,13 +208,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           return tree;
         }
 
-        if (TreeUtils.isRawCall(methodInvocationTree, parentPath, types)) {
+        if (TreeUtils.isRawCall(methodInvocationTree, parentPath, env)) {
           return tree;
         }
 
         if (argumentNeedsInference(
             methodElement, methodInvocationTree.getArguments(), tree, null)) {
-          return outerInference((ExpressionTree) parentTree, parentPath.getParentPath(), types);
+          return outerInference((ExpressionTree) parentTree, parentPath.getParentPath(), env);
         }
         return tree;
       case NEW_CLASS:
@@ -222,18 +223,18 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           return tree;
         }
         ExecutableElement constructor = TreeUtils.elementFromUse(newClassTree);
-        if (TypesUtils.isRawCall(TreeUtils.typeOf(newClassTree), constructor, types)) {
+        if (TypesUtils.isRawCall(TreeUtils.typeOf(newClassTree), constructor, env)) {
           return tree;
         }
         if (argumentNeedsInference(constructor, newClassTree.getArguments(), tree, newClassTree)) {
-          return outerInference((ExpressionTree) parentTree, parentPath.getParentPath(), types);
+          return outerInference((ExpressionTree) parentTree, parentPath.getParentPath(), env);
         }
         return tree;
       case RETURN:
         TreePath parentParentPath = parentPath.getParentPath();
         if (parentParentPath.getLeaf() instanceof LambdaExpressionTree) {
           return outerInference(
-              (ExpressionTree) parentParentPath.getLeaf(), parentParentPath.getParentPath(), types);
+              (ExpressionTree) parentParentPath.getLeaf(), parentParentPath.getParentPath(), env);
         }
         return tree;
       case CASE:
@@ -250,7 +251,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       // parentTree is a switch expression, so fall through
       case SWITCH_EXPRESSION:
         ExpressionTree outerTree =
-            outerInference((ExpressionTree) parentTree, parentPath.getParentPath(), types);
+            outerInference((ExpressionTree) parentTree, parentPath.getParentPath(), env);
         if (outerTree == parentTree) {
           return tree;
         }

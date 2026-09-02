@@ -2792,11 +2792,11 @@ public final class TreeUtils {
    *
    * @param methodInvocationTree the method invocation to check
    * @param path path to {@code methodInvocationTree}
-   * @param types the type utilities
+   * @param env the processing environment
    * @return true if the receiver of {@code methodInvocationTree} is raw
    */
   public static boolean isRawCall(
-      MethodInvocationTree methodInvocationTree, TreePath path, javax.lang.model.util.Types types) {
+      MethodInvocationTree methodInvocationTree, TreePath path, ProcessingEnvironment env) {
     TypeMirror receiverType;
     if (TreeUtils.isSuperConstructorCall(methodInvocationTree)) {
       // For `super(...)` there is no receiver tree, and for the qualified form
@@ -2814,13 +2814,12 @@ public final class TreeUtils {
       } else {
         // The receiver is implicit: `this` or `Outer.this`.  A method inherited from a raw
         // supertype is erased even when it is invoked without a receiver.
-        return isRawImplicitReceiverCall(
-            TreeUtils.elementFromUse(methodInvocationTree), path, types);
+        return isRawImplicitReceiverCall(TreeUtils.elementFromUse(methodInvocationTree), path, env);
       }
     }
     ExecutableElement methodElement = TreeUtils.elementFromUse(methodInvocationTree);
 
-    return TypesUtils.isRawCall(receiverType, methodElement, types);
+    return TypesUtils.isRawCall(receiverType, methodElement, env);
   }
 
   /**
@@ -2833,21 +2832,22 @@ public final class TreeUtils {
    *
    * @param methodElement the method being invoked with an implicit receiver
    * @param path path to the method invocation
-   * @param types the type utilities
+   * @param env the processing environment
    * @return true if the implicit receiver of the call is raw
    */
   private static boolean isRawImplicitReceiverCall(
-      ExecutableElement methodElement, TreePath path, javax.lang.model.util.Types types) {
+      ExecutableElement methodElement, TreePath path, ProcessingEnvironment env) {
     TypeElement declaringClass = ElementUtils.enclosingTypeElement(methodElement);
     if (declaringClass == null) {
       return false;
     }
+    javax.lang.model.util.Types types = env.getTypeUtils();
     for (TreePath classPath = TreePathUtil.pathTillClass(path);
         classPath != null;
         classPath = TreePathUtil.pathTillClass(classPath.getParentPath())) {
       TypeMirror enclosingType = TreeUtils.typeOf(classPath.getLeaf());
       if (TypesUtils.isErasedSubtype(enclosingType, declaringClass.asType(), types)) {
-        return TypesUtils.isRawCall(enclosingType, methodElement, types);
+        return TypesUtils.isRawCall(enclosingType, methodElement, env);
       }
     }
     return false;

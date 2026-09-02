@@ -14,11 +14,9 @@ import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -1489,12 +1487,12 @@ public final class TypesUtils {
    *     erased even when it is accessed without a receiver; use {@link TreeUtils#isRawCall} for a
    *     call whose receiver is implicit.
    * @param member the method, constructor, or field being accessed
-   * @param types the type utilities
+   * @param env the processing environment
    * @return true if accessing {@code member} through a receiver of type {@code receiverType} is an
    *     access on a raw type
    */
   public static boolean isRawCall(
-      @Nullable TypeMirror receiverType, Element member, javax.lang.model.util.Types types) {
+      @Nullable TypeMirror receiverType, Element member, ProcessingEnvironment env) {
     if (receiverType == null || ElementUtils.isStatic(member)) {
       return false;
     }
@@ -1514,18 +1512,18 @@ public final class TypesUtils {
         // A member accessed through a type variable is a member of the type variable's upper
         // bound, so the access is raw exactly when an access through that bound is raw.  This
         // also covers a capture variable, whose upper bound is the captured wildcard's bound.
-        return isRawCall(((TypeVariable) receiverType).getUpperBound(), member, types);
+        return isRawCall(((TypeVariable) receiverType).getUpperBound(), member, env);
       }
       case WILDCARD -> {
         // getExtendsBound() returns null for `?` and for `? super X`, and isRawCall returns
         // false for a null type; neither has a raw upper bound.
-        return isRawCall(((WildcardType) receiverType).getExtendsBound(), member, types);
+        return isRawCall(((WildcardType) receiverType).getExtendsBound(), member, env);
       }
       case INTERSECTION -> {
         // The member comes from whichever bound declares it, so the access is raw if any bound
         // makes it raw.
         for (TypeMirror bound : ((IntersectionType) receiverType).getBounds()) {
-          if (isRawCall(bound, member, types)) {
+          if (isRawCall(bound, member, env)) {
             return true;
           }
         }
@@ -1546,28 +1544,25 @@ public final class TypesUtils {
     // member is a member of a raw supertype.
     //
     // Therefore, the member's type is erased exactly when the class that declares it, viewed as
-    // a supertype of receiverType, is raw.  Javac's directSupertypes() erases the supertypes of
-    // a raw type, so walking up from receiverType finds a raw type in that case.
-    DeclaredType site = declaringSupertype((DeclaredType) receiverType, declaringClass, types);
-    if (site == null
-        && hasEnclosingInstanceOfType(declaringClass, ((DeclaredType) receiverType).asElement())) {
+    // a supertype of receiverType, is raw.  Javac's supertype() erases the supertypes of a raw
+    // type, so asSuper() returns a raw type in that case.
+    com.sun.tools.javac.code.Types javacTypes =
+        com.sun.tools.javac.code.Types.instance(InternalUtils.getJavacContext(env));
+    Type site = javacTypes.asSuper((Type) receiverType, (Symbol) declaringClass);
+    if (site == null) {
+      if (!hasEnclosingInstanceOfType(declaringClass, ((DeclaredType) receiverType).asElement())) {
+        return false;
+      }
       // `receiverType` is not a subtype of the class that declares the member, but it encloses
       // it, so `receiverType` is an enclosing instance rather than a receiver.  This happens for
       // a qualified superclass constructor invocation `outer.super(...)` and for a qualified
       // class instance creation expression `outer.new Inner(...)`.  The member is erased when
       // the type of the enclosing instance is raw.
-      site = (DeclaredType) receiverType;
+      site = (Type) receiverType;
     }
-    // A type is also raw if one of its enclosing types is raw; the members of `Outer.Inner` are
+    // Type.isRaw() is also true for a type nested in a raw type; the members of `Outer.Inner` are
     // erased when `Outer` is raw, even though `Inner` declares no type parameters.
-    for (TypeMirror enclosing = site;
-        enclosing != null && enclosing.getKind() == TypeKind.DECLARED;
-        enclosing = ((DeclaredType) enclosing).getEnclosingType()) {
-      if (isRaw(enclosing)) {
-        return true;
-      }
-    }
-    return false;
+    return site.isRaw();
   }
 
   /**
@@ -1593,43 +1588,6 @@ public final class TypesUtils {
       }
     }
     return false;
-  }
-
-  /**
-   * Returns the supertype of {@code type} that is declared by {@code declaringClass}, or null if
-   * {@code declaringClass} does not declare a supertype of {@code type}. Returns {@code type}
-   * itself if {@code type} is declared by {@code declaringClass}.
-   *
-   * @param type a type
-   * @param declaringClass the declaration of a supertype of {@code type}
-   * @param types the type utilities
-   * @return the supertype of {@code type} declared by {@code declaringClass}, or null
-   */
-  private static @Nullable DeclaredType declaringSupertype(
-      DeclaredType type, TypeElement declaringClass, javax.lang.model.util.Types types) {
-    if (declaringClass.equals(type.asElement())) {
-      // This is the common case: the member is declared in the receiver's own class.
-      return type;
-    }
-    Deque<DeclaredType> worklist = new ArrayDeque<>();
-    worklist.add(type);
-    Set<Element> visited = new HashSet<>();
-    while (!worklist.isEmpty()) {
-      DeclaredType current = worklist.remove();
-      Element currentElement = current.asElement();
-      if (declaringClass.equals(currentElement)) {
-        return current;
-      }
-      if (!visited.add(currentElement)) {
-        continue;
-      }
-      for (TypeMirror supertype : types.directSupertypes(current)) {
-        if (supertype.getKind() == TypeKind.DECLARED) {
-          worklist.add((DeclaredType) supertype);
-        }
-      }
-    }
-    return null;
   }
 
   /**
