@@ -193,10 +193,7 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public final @Nullable Set<TypeMirror> relevantJavaTypes;
 
-  /**
-   * True if users may write type annotations on arrays. Ignored unless {@link #relevantJavaTypes}
-   * is non-null.
-   */
+  /** Whether users may write type annotations on arrays. */
   protected final boolean arraysAreRelevant;
 
   // Flow related fields
@@ -2503,9 +2500,9 @@ public abstract class GenericAnnotatedTypeFactory<
     if (tm.getKind() != TypeKind.PACKAGE && tm.getKind() != TypeKind.MODULE) {
       tm = types.erasure(tm);
     }
-    Boolean cachedResult = isRelevantCache.get(tm);
-    if (cachedResult != null) {
-      return cachedResult;
+    Boolean resultBoxed = isRelevantCache.get(tm);
+    if (resultBoxed != null) {
+      return resultBoxed;
     }
     boolean result = isRelevantImpl(tm);
     isRelevantCache.put(tm, result);
@@ -2536,6 +2533,10 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>Clients should never call this. Call {@link #isRelevant} instead. This is a helper method
    * for {@link #isRelevant}.
+   *
+   * <p>An override must handle every type, including the types for which this implementation
+   * returns true immediately: those in {@link #relevantJavaTypes}, and every type if {@code
+   * relevantJavaTypes == null}. An override may call {@code super} to do so.
    *
    * @param tm a type
    * @return true if users can write type annotations from this type system on the given Java type
@@ -2621,6 +2622,15 @@ public abstract class GenericAnnotatedTypeFactory<
 
       default -> throw new BugInCF("isRelevantImpl(%s): Unexpected TypeKind %s", tm, tm.getKind());
     }
+  }
+
+  /**
+   * Returns true if users can write type annotations from this type system on array types.
+   *
+   * @return true if users can write type annotations from this type system on array types
+   */
+  public final boolean arraysAreRelevant() {
+    return arraysAreRelevant;
   }
 
   /** The cached message about relevant types. */

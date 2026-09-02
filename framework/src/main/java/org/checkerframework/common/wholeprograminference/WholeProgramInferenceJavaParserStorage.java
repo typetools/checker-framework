@@ -1,10 +1,13 @@
 package org.checkerframework.common.wholeprograminference;
 
+import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
+import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -25,7 +28,10 @@ import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithVariables;
+import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.visitor.CloneVisitor;
@@ -70,6 +76,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import org.checkerframework.afu.scenelib.util.JVMNames;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -490,7 +497,11 @@ public class WholeProgramInferenceJavaParserStorage
       // See the comment on the similar exception in #getParameterAnnotations, above.
       return false;
     }
-    return methodAnnos.removeDeclarationAnnotation(anno);
+    boolean wasRemoved = methodAnnos.removeDeclarationAnnotation(anno);
+    if (wasRemoved) {
+      setFileModified(getFileForElement(elt));
+    }
+    return wasRemoved;
   }
 
   @Override
@@ -1092,6 +1103,205 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
+   * Returns true if the annotation is relevant (where it appears in the program). This
+   * implementation is conservative and only returns false if the qualifier is definitely not
+   * relevant.
+   *
+   * @param anno an annotation
+   * @return true if the annotation might be relevant
+   */
+  boolean annotationIsRelevant(AnnotationExpr anno) {
+    if (!(atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf)) {
+      return true;
+    }
+    if (gatf.relevantJavaTypes == null) {
+      return true;
+    }
+
+    // `aName` is a fully-qualified name.
+    String aName = anno.getNameAsString();
+    if (!atypeFactory.isSupportedQualifier(aName)) {
+      // The annotation might be a declaration qualifier, such as a side effect specification.
+      return true;
+    }
+
+    Node parentNode = anno.getParentNode().orElse(null);
+    if (parentNode == null) {
+      return true;
+    }
+
+    // An annotation that was inferred for a type is attached to a Type node.  An annotation that
+    // was inferred for a declaration is attached to the declaration; it is usually not a type
+    // qualifier, but a checker may add a type qualifier as a declaration annotation.
+
+    if (parentNode instanceof Type type) {
+      return typeIsRelevant(gatf, type);
+    }
+    if (parentNode instanceof ArrayCreationLevel) {
+      // The annotation is on an array type, as in `new String @Anno [10]`.
+      return gatf.arraysAreRelevant();
+    }
+    if (parentNode instanceof Parameter param) {
+      if (param.getVarArgsAnnotations().contains(anno)) {
+        // The annotation is on the array type that `...` creates, as in
+        // `void m(String @Anno ... args)`.
+        return gatf.arraysAreRelevant();
+      }
+      // The annotation precedes the type, so it is on the element type; in
+      // `void m(@Anno String... args)`, `@Anno` is on `String`.
+      return typeIsRelevant(gatf, elementType(param.getType()));
+    }
+    if (parentNode instanceof ReceiverParameter receiverParam) {
+      return typeIsRelevant(gatf, elementType(receiverParam.getType()));
+    }
+    if (parentNode instanceof MethodDeclaration method) {
+      return typeIsRelevant(gatf, elementType(method.getType()));
+    }
+    if (parentNode instanceof AnnotationMemberDeclaration member) {
+      return typeIsRelevant(gatf, elementType(member.getType()));
+    }
+    if (parentNode instanceof NodeWithVariables<?> declaration) {
+      // A field declaration or a local variable declaration.  All its variables have the same
+      // element type, even if they have different numbers of array levels as in `int i, a[];`.
+      NodeList<VariableDeclarator> variables = declaration.getVariables();
+      if (variables.isEmpty()) {
+        return true;
+      }
+      return typeIsRelevant(gatf, elementType(variables.get(0).getType()));
+    }
+
+    // The annotation is on some other declaration:  a type declaration, a type parameter
+    // declaration, a constructor, ....  Be conservative.
+    return true;
+  }
+
+  /**
+   * Returns true if a type qualifier that is written on the given type might be relevant. This
+   * implementation is conservative and only returns false if such a qualifier is definitely not
+   * relevant.
+   *
+   * @param gatf the type factory associated with this
+   * @param type a JavaParser type
+   * @return true if a type qualifier written on {@code type} might be relevant
+   */
+  private boolean typeIsRelevant(GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf, Type type) {
+    if (type instanceof ArrayType) {
+      return gatf.arraysAreRelevant();
+    }
+    if (type instanceof PrimitiveType primitiveType) {
+      Types types = atypeFactory.getProcessingEnv().getTypeUtils();
+      return gatf.isRelevant(types.getPrimitiveType(typeKindForPrimitive(primitiveType)));
+    }
+    if (type instanceof ClassOrInterfaceType classType) {
+      TypeElement typeElt = resolveTypeName(classType);
+      if (typeElt == null) {
+        // The name could not be resolved:  it is a type variable, or a type that is not on the
+        // classpath.  Be conservative.
+        return true;
+      }
+      return gatf.isRelevant(typeElt.asType());
+    }
+    // An intersection type, a union type, `var`, a wildcard, a type parameter declaration, ....
+    // Be conservative.
+    return true;
+  }
+
+  /**
+   * Returns the element type of the given type: the type itself if it is not an array type, or its
+   * innermost component type if it is.
+   *
+   * @param type a JavaParser type
+   * @return the element type of {@code type}
+   */
+  private static Type elementType(Type type) {
+    while (type instanceof ArrayType arrayType) {
+      type = arrayType.getComponentType();
+    }
+    return type;
+  }
+
+  /**
+   * Returns the {@code TypeKind} that corresponds to the given JavaParser primitive type.
+   *
+   * @param primitiveType a JavaParser primitive type
+   * @return the {@code TypeKind} for {@code primitiveType}
+   */
+  private static TypeKind typeKindForPrimitive(PrimitiveType primitiveType) {
+    return switch (primitiveType.getType()) {
+      case BOOLEAN -> TypeKind.BOOLEAN;
+      case BYTE -> TypeKind.BYTE;
+      case CHAR -> TypeKind.CHAR;
+      case DOUBLE -> TypeKind.DOUBLE;
+      case FLOAT -> TypeKind.FLOAT;
+      case INT -> TypeKind.INT;
+      case LONG -> TypeKind.LONG;
+      case SHORT -> TypeKind.SHORT;
+    };
+  }
+
+  /**
+   * Returns the element for the given JavaParser type, whose name is resolved in the scope of the
+   * compilation unit that contains it. Returns null if the name cannot be resolved, which happens
+   * for a type variable and for a type that is not on the classpath.
+   *
+   * @param type a JavaParser class or interface type
+   * @return the element for {@code type}, or null if it cannot be determined
+   */
+  private @Nullable TypeElement resolveTypeName(ClassOrInterfaceType type) {
+    String name = type.getNameWithScope();
+
+    // The name might already be fully-qualified.
+    TypeElement result = elements.getTypeElement(name);
+    if (result != null) {
+      return result;
+    }
+
+    CompilationUnit cu = type.findCompilationUnit().orElse(null);
+    if (cu == null) {
+      return null;
+    }
+
+    // `firstComponent` is what a single-type import must import; the rest of `name` names a
+    // nested type, as in `Entry` and `Entry.Foo` for the import `java.util.Map.Entry`.
+    int dotIndex = name.indexOf('.');
+    String firstComponent = dotIndex == -1 ? name : name.substring(0, dotIndex);
+    String suffix = name.substring(firstComponent.length());
+
+    // A single-type import takes precedence over an import on demand.
+    for (ImportDeclaration importDecl : cu.getImports()) {
+      if (importDecl.isStatic() || importDecl.isAsterisk()) {
+        continue;
+      }
+      String importedName = importDecl.getNameAsString();
+      if (importedName.equals(firstComponent) || importedName.endsWith("." + firstComponent)) {
+        result = elements.getTypeElement(importedName + suffix);
+        if (result != null) {
+          return result;
+        }
+      }
+    }
+
+    // The type might be in the same package, in a package that is imported on demand, or in
+    // `java.lang`.
+    List<String> packageNames = new ArrayList<>();
+    cu.getPackageDeclaration().ifPresent(pkg -> packageNames.add(pkg.getNameAsString()));
+    for (ImportDeclaration importDecl : cu.getImports()) {
+      if (importDecl.isAsterisk() && !importDecl.isStatic()) {
+        packageNames.add(importDecl.getNameAsString());
+      }
+    }
+    packageNames.add("java.lang");
+    for (String packageName : packageNames) {
+      result = elements.getTypeElement(packageName + "." + name);
+      if (result != null) {
+        return result;
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Returns the relative directory that corresponds to a package name. For example, if {@code
    * separatorChar} is {@code '/'}, then the package name {@code "org.example"} yields {@code
    * "org/example"}.
@@ -1119,7 +1329,9 @@ public class WholeProgramInferenceJavaParserStorage
       // and crashes when adding annotations in certain locations.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
-      // Do not print invisible qualifiers, to avoid cluttering the output.
+      // To avoid cluttering the output, do not print:
+      //  * invisible qualifiers
+      //  * irrelevant qualifiers.
       Set<String> invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
       DefaultPrettyPrinter prettyPrinter =
           new DefaultPrettyPrinter() {
@@ -1132,6 +1344,9 @@ public class WholeProgramInferenceJavaParserStorage
                       if (invisibleQualifierNames.contains(n.getName().toString())) {
                         return;
                       }
+                      if (!annotationIsRelevant(n)) {
+                        return;
+                      }
                       super.visit(n, arg);
                     }
 
@@ -1140,12 +1355,18 @@ public class WholeProgramInferenceJavaParserStorage
                       if (invisibleQualifierNames.contains(n.getName().toString())) {
                         return;
                       }
+                      if (!annotationIsRelevant(n)) {
+                        return;
+                      }
                       super.visit(n, arg);
                     }
 
                     @Override
                     public void visit(NormalAnnotationExpr n, Void arg) {
                       if (invisibleQualifierNames.contains(n.getName().toString())) {
+                        return;
+                      }
+                      if (!annotationIsRelevant(n)) {
                         return;
                       }
                       super.visit(n, arg);
