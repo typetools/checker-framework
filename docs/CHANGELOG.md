@@ -9,7 +9,7 @@
 
 The new Delegation Checker verifies correctness of wrapper classes.
 
-### Implementation details
+### Changes for type system implementers
 
 ### Closed issues
 
@@ -20,7 +20,7 @@ The new Delegation Checker verifies correctness of wrapper classes.
 The `-AsuggestPureMethods` command-line option and the `purity.effectively.pure`
 warning no longer require `-AcheckPurityAnnotations` to also be supplied.
 
-### Implementation details
+### Changes for type system implementers
 
 Made the field `Java8InferenceContext.pathToExpression` private; use
 `getPathToExpression()` and `setPathToExpression()` instead.
