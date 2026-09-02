@@ -11,6 +11,12 @@ The new Delegation Checker verifies correctness of wrapper classes.
 
 ### Changes for type system implementers
 
+`AnnotatedTypeMirror.hashCode()` now hashes only the top-level type rather than
+recursively hashing component types.  Removed class `HashcodeAtmVisitor`, field
+`AnnotatedTypeMirror.HASHCODE_VISITOR`, and method
+`AnnotatedTypeMirror.getUnderlyingTypeHashCode()`, which existed only to compute
+the old hash code.
+
 ### Closed issues
 
 ## Version 4.2.3 (2026-09-01)
