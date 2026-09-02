@@ -172,9 +172,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * underlying type, except time for {@code ArrayType} is proportional to the array's nesting
    * depth.
    *
-   * <p>A structural hash would be inconsistent with {@code equals}: types that print alike but wrap
-   * distinct {@code Type} objects would hash alike and compare unequal, making hash table
-   * operations long scans of colliding, never-equal entries.
+   * <p>Every part of this hash must be derived from something that {@code equals} compares. In
+   * particular, it must not be derived from the underlying type's printed representation: {@code
+   * equals} compares underlying types by reference, so types that print alike but wrap distinct
+   * {@code Type} objects would hash alike and compare unequal, making hash table operations long
+   * scans of colliding, never-equal entries.
    *
    * @return a hash code for this type
    */
@@ -183,9 +185,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   public final int hashCode() {
     int result = 31 + underlyingType.hashCode();
     for (AnnotationMirror anno : primaryAnnotations) {
-      // Commutative, so that sets with the same elements in different order hash the same,
-      // consistent with AnnotationUtils.areSame().
-      result += anno.getAnnotationType().asElement().hashCode();
+      // Hash the annotation's name, because AnnotationUtils.areSame() compares names.  (Hashing
+      // the annotation type's element would depend on javac interning one Symbol per name per
+      // Context.)  Addition is commutative, so that sets with the same elements in different
+      // order hash the same, also consistent with AnnotationUtils.areSame().
+      result += AnnotationUtils.annotationName(anno).hashCode();
     }
     return result;
   }
