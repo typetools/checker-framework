@@ -183,7 +183,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * The Java types on which users may write this type system's type annotations. null means no
-   * restrictions. Arrays are handled by separate field {@code #arraysAreRelevant}.
+   * restrictions. Arrays are handled by separate field {@code #arrayTypesAreRelevant}.
    *
    * <p>If the relevant type is generic, this contains its erasure.
    *
@@ -194,7 +194,7 @@ public abstract class GenericAnnotatedTypeFactory<
   public final @Nullable Set<TypeMirror> relevantJavaTypes;
 
   /** True if users may write type annotations from this type system on arrays. */
-  protected final boolean arraysAreRelevant;
+  protected final boolean arrayTypesAreRelevant;
 
   // Flow related fields
 
@@ -365,16 +365,16 @@ public abstract class GenericAnnotatedTypeFactory<
         checker.getClass().getAnnotation(RelevantJavaTypes.class);
     if (relevantJavaTypesAnno == null) {
       this.relevantJavaTypes = null;
-      this.arraysAreRelevant = true;
+      this.arrayTypesAreRelevant = true;
     } else {
       Types types = getChecker().getTypeUtils();
       Elements elements = getElementUtils();
       Class<?>[] classes = relevantJavaTypesAnno.value();
       Set<TypeMirror> relevantJavaTypesTemp = new HashSet<>(MapsP.mapCapacity(classes.length));
-      boolean arraysAreRelevantTemp = false;
+      boolean arrayTypesAreRelevantTemp = false;
       for (Class<?> clazz : classes) {
         if (clazz == Object[].class) {
-          arraysAreRelevantTemp = true;
+          arrayTypesAreRelevantTemp = true;
         } else if (clazz.isArray()) {
           throw new TypeSystemError(
               "Don't use arrays other than Object[] in @RelevantJavaTypes on "
@@ -386,7 +386,7 @@ public abstract class GenericAnnotatedTypeFactory<
         }
       }
       this.relevantJavaTypes = Collections.unmodifiableSet(relevantJavaTypesTemp);
-      this.arraysAreRelevant = arraysAreRelevantTemp;
+      this.arrayTypesAreRelevant = arrayTypesAreRelevantTemp;
     }
 
     contractsUtils = createContractsFromMethod();
@@ -2570,7 +2570,7 @@ public abstract class GenericAnnotatedTypeFactory<
       }
 
       case ARRAY -> {
-        return arraysAreRelevant;
+        return arrayTypesAreRelevant;
       }
 
       case DECLARED -> {
@@ -2629,8 +2629,8 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @return true if users can write type annotations from this type system on array types
    */
-  public final boolean arraysAreRelevant() {
-    return arraysAreRelevant;
+  public final boolean arrayTypesAreRelevant() {
+    return arrayTypesAreRelevant;
   }
 
   /** The cached message about relevant types. */
@@ -2649,7 +2649,7 @@ public abstract class GenericAnnotatedTypeFactory<
         irrelevantExtraMessage = "";
       } else {
         irrelevantExtraMessage = "; only applicable to " + relevantJavaTypes;
-        if (arraysAreRelevant) {
+        if (arrayTypesAreRelevant) {
           irrelevantExtraMessage += " and arrays";
         }
       }
