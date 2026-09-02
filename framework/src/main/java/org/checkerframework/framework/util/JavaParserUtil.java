@@ -27,11 +27,7 @@ import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 
-/**
- * Utility methods for working with JavaParser. It is a replacement for {@code
- * com.github.javaparser.StaticJavaParser} that does not leak memory. It also provides some other
- * methods.
- */
+/** Utility methods for working with JavaParser. Also see {@link StaticJavaParserUtil}. */
 public final class JavaParserUtil {
 
   /** Do not instantiate. */
