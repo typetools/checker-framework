@@ -1156,16 +1156,16 @@ public class WholeProgramInferenceJavaParserStorage
       }
       // The annotation precedes the type, so it is on the element type; in
       // `void m(@Anno String... args)`, `@Anno` is on `String`.
-      return typeIsRelevant(gatf, elementType(param.getType()));
+      return typeIsRelevant(gatf, innermostComponentType(param.getType()));
     }
     if (parentNode instanceof ReceiverParameter receiverParam) {
-      return typeIsRelevant(gatf, elementType(receiverParam.getType()));
+      return typeIsRelevant(gatf, innermostComponentType(receiverParam.getType()));
     }
     if (parentNode instanceof MethodDeclaration method) {
-      return typeIsRelevant(gatf, elementType(method.getType()));
+      return typeIsRelevant(gatf, innermostComponentType(method.getType()));
     }
     if (parentNode instanceof AnnotationMemberDeclaration member) {
-      return typeIsRelevant(gatf, elementType(member.getType()));
+      return typeIsRelevant(gatf, innermostComponentType(member.getType()));
     }
     if (parentNode instanceof NodeWithVariables<?> declaration) {
       // A field declaration or a local variable declaration.  All its variables have the same
@@ -1174,7 +1174,7 @@ public class WholeProgramInferenceJavaParserStorage
       if (variables.isEmpty()) {
         throw new RuntimeException("this can't happen");
       }
-      return typeIsRelevant(gatf, elementType(variables.get(0).getType()));
+      return typeIsRelevant(gatf, innermostComponentType(variables.get(0).getType()));
     }
 
     // The annotation is on some other declaration:  a type declaration, a type parameter
@@ -1223,11 +1223,12 @@ public class WholeProgramInferenceJavaParserStorage
    * @param type a JavaParser type
    * @return the element type of {@code type}
    */
-  private static Type elementType(Type type) {
-    while (type instanceof ArrayType arrayType) {
-      type = arrayType.getComponentType();
+  private static Type innermostComponentType(Type type) {
+    Type componentType = type;
+    while (componentType instanceof ArrayType arrayType) {
+      componentType = componentType.getComponentType();
     }
-    return type;
+    return componentType;
   }
 
   /**
