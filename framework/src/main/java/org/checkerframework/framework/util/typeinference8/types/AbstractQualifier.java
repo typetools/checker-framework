@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.function.BinaryOperator;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
@@ -50,11 +51,12 @@ public abstract class AbstractQualifier {
   }
 
   /**
-   * Returns the instantiation of this.
+   * Returns the instantiation of this, or null if this is a qualifier variable with no
+   * instantiation.
    *
-   * @return the instantiation of this
+   * @return the instantiation of this, or null
    */
-  abstract AnnotationMirror getInstantiation();
+  abstract @Nullable AnnotationMirror getInstantiation();
 
   /**
    * Returns the least upper bounds of {@code quals}.
@@ -76,7 +78,7 @@ public abstract class AbstractQualifier {
    * @param quals a set of qualifiers; can contain multiple qualifiers for multiple hierarchies and
    *     multiple qualifiers for a hierarchy
    * @param context a context
-   * @return the greatest lowest bounds of {@code quals}
+   * @return the greatest lower bounds of {@code quals}
    */
   public static Set<AnnotationMirror> glb(
       Set<AbstractQualifier> quals, Java8InferenceContext context) {
@@ -98,13 +100,16 @@ public abstract class AbstractQualifier {
     Map<String, AnnotationMirror> m = new HashMap<>();
 
     for (AbstractQualifier qual : quals) {
-      AnnotationMirror lub = m.get(qual.hierarchyName);
-      if (lub != null) {
-        lub = combine.apply(lub, qual.getInstantiation());
-      } else {
-        lub = qual.getInstantiation();
+      AnnotationMirror qualAnno = qual.getInstantiation();
+      if (qualAnno != null) {
+        AnnotationMirror soFar = m.get(qual.hierarchyName);
+        if (soFar == null) {
+          m.put(qual.hierarchyName, qualAnno);
+        } else {
+          AnnotationMirror combined = combine.apply(soFar, qualAnno);
+          m.put(qual.hierarchyName, combined);
+        }
       }
-      m.put(qual.hierarchyName, lub);
     }
     return new AnnotationMirrorSet(m.values());
   }
@@ -118,8 +123,7 @@ public abstract class AbstractQualifier {
    * @param annos a set of annotation mirrors
    * @param qualifierVars a map from polymorphic qualifiers to {@link QualifierVar}
    * @param context a context
-   * @return a set containing an {@code AbstractQualifier} for each annotation in {@code
-   *     qualifierVars}
+   * @return a set containing an {@code AbstractQualifier} for each annotation in {@code annos}
    */
   public static Set<AbstractQualifier> create(
       Set<AnnotationMirror> annos,
@@ -141,11 +145,11 @@ public abstract class AbstractQualifier {
   }
 
   /**
-   * Creates new {@code Qualifier} is added for each annotation in {@code annos}.
+   * Creates a new {@code Qualifier} for each annotation in {@code annos}.
    *
    * @param annos a set of annotation mirrors
    * @param context a context
-   * @return new {@code Qualifier} is added for each annotation in {@code annos}
+   * @return a set containing a new {@code Qualifier} for each annotation in {@code annos}
    */
   private static Set<AbstractQualifier> create(
       Set<AnnotationMirror> annos, Java8InferenceContext context) {

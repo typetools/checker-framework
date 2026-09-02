@@ -252,9 +252,13 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
    * A list where each element associates an annotation with name regexes and name exception
    * regexes.
    */
-  private static class ListOfNameRegexes extends ArrayList<NameRegexes> {
+  private static final class ListOfNameRegexes extends ArrayList<NameRegexes> {
 
+    /** The serial version UID. */
     static final long serialVersionUID = 20200218L;
+
+    /** Creates a new ListOfNameRegexes. */
+    ListOfNameRegexes() {}
 
     /**
      * Update this list from the {@code names} and {@code namesExceptions} fields of a @DefaultFor
@@ -263,6 +267,9 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
      * @param theQual the qualifier that a @DefaultFor annotation is written on
      * @param defaultFor the @DefaultFor annotation written on {@code theQual}
      */
+    @SuppressWarnings(
+        "regex:argument") // annotation element values; validity checked by PatternSyntaxException
+    // catch
     void add(AnnotationMirror theQual, DefaultFor defaultFor) {
       if (defaultFor.names().length != 0) {
         NameRegexes thisName = new NameRegexes(theQual);

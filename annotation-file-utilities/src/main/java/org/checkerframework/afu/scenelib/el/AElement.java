@@ -2,7 +2,9 @@ package org.checkerframework.afu.scenelib.el;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
 
@@ -55,7 +57,7 @@ public class AElement implements Cloneable {
   }
 
   AElement(Object description, ATypeElement type) {
-    tlAnnotationsHere = new LinkedHashSet<Annotation>();
+    tlAnnotationsHere = new LinkedHashSet<>();
     this.description = description;
     this.type = type;
   }
@@ -98,7 +100,7 @@ public class AElement implements Cloneable {
    */
   @Override
   public boolean equals(Object o) {
-    return o instanceof AElement && ((AElement) o).equals(this);
+    return o instanceof AElement element && element.equals(this);
   }
 
   /**
@@ -125,9 +127,7 @@ public class AElement implements Cloneable {
 
   @Override
   public int hashCode() {
-    return getClass().getName().hashCode()
-        + tlAnnotationsHere.hashCode()
-        + (type == null ? 0 : type.hashCode());
+    return Objects.hash(getClass().getName(), tlAnnotationsHere, type);
   }
 
   /**
@@ -175,15 +175,17 @@ public class AElement implements Cloneable {
     return null;
   }
 
+  /**
+   * Append the top-level annotations on this element, to {@code sb}.
+   *
+   * @param sb where to output the formatted annotations
+   */
   public void tlAnnotationsHereFormatted(StringBuilder sb) {
-    boolean first = true;
+    StringJoiner sj = new StringJoiner(", ");
     for (Annotation aElement : tlAnnotationsHere) {
-      if (!first) {
-        sb.append(", ");
-      }
-      first = false;
-      sb.append(aElement.toString());
+      sj.add(aElement.toString());
     }
+    sb.append(sj);
   }
 
   public <R, T> R accept(ElementVisitor<R, T> v, T t) {
@@ -192,8 +194,15 @@ public class AElement implements Cloneable {
 
   // Static methods
 
+  /**
+   * Returns a new {@link LinkedHashMap}-backed map from keys to {@link AElement}s, which vivifies
+   * missing values.
+   *
+   * @param <K> the type of the map keys
+   * @return a new vivifying map from keys to {@link AElement}s
+   */
   static <K extends Object> VivifyingMap<K, AElement> newVivifyingLHMap_AE() {
-    return new VivifyingMap<K, AElement>(new LinkedHashMap<>()) {
+    return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public AElement createValueFor(K k) {
         return new AElement(k);
@@ -209,7 +218,7 @@ public class AElement implements Cloneable {
   // Different from the above in that the elements are guaranteed to
   // contain a non-null "type" field.
   static <K extends Object> VivifyingMap<K, AElement> newVivifyingLHMap_AET() {
-    return new VivifyingMap<K, AElement>(new LinkedHashMap<>()) {
+    return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public AElement createValueFor(K k) {
         return new AElement(k, true);
@@ -222,6 +231,14 @@ public class AElement implements Cloneable {
     };
   }
 
+  /**
+   * Copies the contents of {@code orig} into {@code copy}, cloning each value.
+   *
+   * @param <K> the type of the map keys
+   * @param <V> the type of the map values
+   * @param orig the map to copy from
+   * @param copy the map to copy into
+   */
   @SuppressWarnings("unchecked")
   static <K, V extends AElement> void copyMapContents(
       VivifyingMap<K, V> orig, VivifyingMap<K, V> copy) {

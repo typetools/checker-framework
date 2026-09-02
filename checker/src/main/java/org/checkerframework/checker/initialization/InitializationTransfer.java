@@ -7,6 +7,7 @@ import com.sun.tools.javac.code.Symbol;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -94,8 +95,11 @@ public class InitializationTransfer<
   protected List<VariableElement> initializedFieldsAfterCall(MethodInvocationNode node) {
     List<VariableElement> result = new ArrayList<>();
     MethodInvocationTree tree = node.getTree();
+    if (tree == null) {
+      return result;
+    }
     ExecutableElement method = TreeUtils.elementFromUse(tree);
-    boolean isConstructor = method.getSimpleName().contentEquals("<init>");
+    boolean isConstructor = method.getKind() == ElementKind.CONSTRUCTOR;
     Node receiver = node.getTarget().getReceiver();
     String methodString = tree.getMethodSelect().toString();
 
@@ -152,8 +156,7 @@ public class InitializationTransfer<
     JavaExpression lhs = JavaExpression.fromNode(n.getTarget());
 
     // If this is an assignment to a field of 'this', then mark the field as initialized.
-    if (!lhs.containsUnknown() && lhs instanceof FieldAccess) {
-      FieldAccess fa = (FieldAccess) lhs;
+    if (!lhs.containsUnknown() && lhs instanceof FieldAccess fa) {
       // Only a ternary expression may cause a conditional transfer result, e.g.
       //      condExpr#num0 = (obj instanceof List)
       // In such cases, the LHS is never a FieldAccess, so we can assert that result

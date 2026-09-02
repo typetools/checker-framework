@@ -95,11 +95,9 @@ public class DiagMessage {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof DiagMessage)) {
+    if (!(obj instanceof DiagMessage other)) {
       return false;
     }
-
-    DiagMessage other = (DiagMessage) obj;
 
     return (kind == other.kind
         && messageKey.equals(other.messageKey)

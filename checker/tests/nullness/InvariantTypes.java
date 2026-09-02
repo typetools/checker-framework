@@ -24,7 +24,7 @@ public class InvariantTypes {
   void testDecl(@MonotonicNonNull Object[] p) {}
 
   void testCall() {
-    // Type for array creation is propaged from parameter type
+    // Type for array creation is propagated from parameter type
     testDecl(new Object[5]);
   }
 }

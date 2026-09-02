@@ -65,6 +65,7 @@ public class CodeOffsetAdapter extends ClassVisitor {
   }
 
   @Override
+  @SuppressWarnings("NotJavadoc") // Error Prone flags Javadoc comments on local class methods.
   public MethodVisitor visitMethod(
       int access, String name, String descriptor, String signature, String[] exceptions) {
     MethodVisitor methodVisitor =
@@ -92,7 +93,9 @@ public class CodeOffsetAdapter extends ClassVisitor {
               offset = codeStart + classReader.readInt(codeStart - 4);
               codeStart += 8;
               while (--attrCount >= 0) {
-                debug.debug("attribute %s%n", classReader.readUTF8(offset, buffer));
+                if (debug.isEnabled()) {
+                  debug.debug("attribute %s%n", classReader.readUTF8(offset, buffer));
+                }
                 offset += 6 + classReader.readInt(offset + 2);
               }
               methodEnd = offset;
@@ -115,11 +118,6 @@ public class CodeOffsetAdapter extends ClassVisitor {
        */
       private int readInt(int i) {
         return classReader.readInt(codeStart + i);
-      }
-
-      @Override
-      public void visitLabel(Label label) {
-        super.visitLabel(label);
       }
 
       @Override
@@ -154,9 +152,11 @@ public class CodeOffsetAdapter extends ClassVisitor {
       public void visitInvokeDynamicInsn(
           String name, String descriptor, Handle bsm, Object... bsmArgs) {
         super.visitInvokeDynamicInsn(name, descriptor, bsm, bsmArgs);
-        debug.debug(
-            "%d visitInvokeDynamicInsn(%s, %s, %s, %s)%n",
-            offset, name, descriptor, bsm, Arrays.toString(bsmArgs));
+        if (debug.isEnabled()) {
+          debug.debug(
+              "%d visitInvokeDynamicInsn(%s, %s, %s, %s)%n",
+              offset, name, descriptor, bsm, Arrays.toString(bsmArgs));
+        }
         advance(5);
       }
 
@@ -181,22 +181,15 @@ public class CodeOffsetAdapter extends ClassVisitor {
       @Override
       public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
         super.visitLookupSwitchInsn(dflt, keys, labels);
-        debug.debug(
-            "%d visitLookupSwitchInsn(%s, %s, %s)%n",
-            offset, dflt, Arrays.toString(keys), Arrays.toString(labels));
+        if (debug.isEnabled()) {
+          debug.debug(
+              "%d visitLookupSwitchInsn(%s, %s, %s)%n",
+              offset, dflt, Arrays.toString(keys), Arrays.toString(labels));
+        }
         previousOffset = offset;
         offset += 8 - (offset & 3);
         offset += 4 + 8 * readInt(offset);
         assert offset > 0 && methodEnd > codeStart + offset;
-      }
-
-      @Deprecated
-      @Override
-      public void visitMethodInsn(int opcode, String owner, String name, String descriptor) {
-        super.visitMethodInsn(opcode, owner, name, descriptor);
-        debug.debug(
-            "%d visitMethodInsn(%d, %s, %s, %s)%n", offset, opcode, owner, name, descriptor);
-        advance(opcode == Opcodes.INVOKEINTERFACE ? 5 : 3);
       }
 
       @Override
@@ -219,9 +212,11 @@ public class CodeOffsetAdapter extends ClassVisitor {
       @Override
       public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
         super.visitTableSwitchInsn(min, max, dflt, labels);
-        debug.debug(
-            "%d visitTableSwitchInsn(%d, %d, %s, %s)%n",
-            offset, min, max, dflt, Arrays.toString(labels));
+        if (debug.isEnabled()) {
+          debug.debug(
+              "%d visitTableSwitchInsn(%d, %d, %s, %s)%n",
+              offset, min, max, dflt, Arrays.toString(labels));
+        }
         previousOffset = offset;
         offset += 8 - (offset & 3);
         offset += 4 * (readInt(offset + 4) - readInt(offset) + 3);

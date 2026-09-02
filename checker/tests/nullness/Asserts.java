@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 
 public class Asserts {
 
-  void propogateToExpr() {
+  void propagateToExpr() {
     String s = "m";
     assert false : s.getClass();
   }

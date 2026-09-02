@@ -73,6 +73,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.dataflow.util.PurityChecker;
+import org.checkerframework.dataflow.util.PurityKind;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -210,13 +211,11 @@ public abstract class CFAbstractTransfer<
     analysis.setCurrentTree(tree);
     AnnotatedTypeMirror at;
     try {
-      if (node instanceof MethodInvocationNode
-          && ((MethodInvocationNode) node).getIterableExpression() != null) {
-        ExpressionTree iter = ((MethodInvocationNode) node).getIterableExpression();
+      if (node instanceof MethodInvocationNode min && min.getIterableExpression() != null) {
+        ExpressionTree iter = min.getIterableExpression();
         at = factory.getIterableElementType(iter);
-      } else if (node instanceof ArrayAccessNode
-          && ((ArrayAccessNode) node).getArrayExpression() != null) {
-        ExpressionTree array = ((ArrayAccessNode) node).getArrayExpression();
+      } else if (node instanceof ArrayAccessNode aan && aan.getArrayExpression() != null) {
+        ExpressionTree array = aan.getArrayExpression();
         at = factory.getIterableElementType(array);
       } else {
         at = factory.getAnnotatedType(tree);
@@ -348,9 +347,9 @@ public abstract class CFAbstractTransfer<
               atypeFactory.getPath(lambda.getLambdaTree()), TreeUtils.classAndMethodTreeKinds());
 
       Element enclosingElement = null;
-      if (enclosingTree instanceof MethodTree) {
+      if (enclosingTree instanceof MethodTree enclosingMt) {
         // If it is in an initializer, we need to use locals from the initializer.
-        enclosingElement = TreeUtils.elementFromDeclaration((MethodTree) enclosingTree);
+        enclosingElement = TreeUtils.elementFromDeclaration(enclosingMt);
 
       } else if (TreeUtils.isClassTree(enclosingTree)) {
 
@@ -429,8 +428,7 @@ public abstract class CFAbstractTransfer<
   private boolean doesLambdaLeak(CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
     LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
     Tree lambdaParent = aTypeFactory.getPath(lambdaTree).getParentPath().getLeaf();
-    if (lambdaParent instanceof MethodInvocationTree) {
-      MethodInvocationTree invok = (MethodInvocationTree) lambdaParent;
+    if (lambdaParent instanceof MethodInvocationTree invok) {
       ExecutableElement methodElt = TreeUtils.elementFromUse(invok);
       AliasingAnnotatedTypeFactory aliasingAtf =
           analysis
@@ -439,9 +437,12 @@ public abstract class CFAbstractTransfer<
               .getTypeFactoryOfSubcheckerOrNull(AliasingChecker.class);
       if (aliasingAtf != null) {
         int indexOfLambdaActual = invok.getArguments().indexOf(lambdaTree);
-        VariableElement lambdaFormal = methodElt.getParameters().get(indexOfLambdaActual);
-        return aliasingAtf.getAnnotatedType(lambdaFormal).getEffectiveAnnotation(NonLeaked.class)
-            == null;
+        List<? extends VariableElement> formals = methodElt.getParameters();
+        // In a varargs invocation, the lambda may be an element of the vararg array, in which
+        // case its index among the arguments is beyond the last formal parameter.
+        VariableElement lambdaFormal =
+            formals.get(Math.min(indexOfLambdaActual, formals.size() - 1));
+        return aliasingAtf.getAnnotatedType(lambdaFormal).getAnnotation(NonLeaked.class) == null;
       }
     }
     return true;
@@ -479,7 +480,7 @@ public abstract class CFAbstractTransfer<
             isAssumeSideEffectFreeEnabled,
             isAssumeDeterministicEnabled,
             aTypeFactory.getChecker().hasOption("assumePureGetters"));
-    return result.isPure(EnumSet.allOf(Pure.Kind.class));
+    return result.isPure(EnumSet.of(PurityKind.SIDE_EFFECT_FREE, PurityKind.DETERMINISTIC));
   }
 
   /**
@@ -506,13 +507,13 @@ public abstract class CFAbstractTransfer<
     boolean isConstructor = TreeUtils.isConstructor(methodTree);
     TypeElement classEle = TreeUtils.elementFromDeclaration(classTree);
     for (FieldInitialValue<V> fieldInitialValue : analysis.getFieldInitialValues()) {
-      VariableElement varEle = fieldInitialValue.fieldDecl.getField();
+      VariableElement varEle = fieldInitialValue.fieldDecl().getField();
       // TODO: should field visibility matter? An access from outside the class might observe
       // the declared type instead of a refined type. Issue a warning to alert users?
-      if (fieldInitialValue.initializer != null
+      if (fieldInitialValue.initializer() != null
           && ElementUtils.isFinal(varEle)
           && analysis.atypeFactory.isImmutable(ElementUtils.getType(varEle))) {
-        store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.initializer);
+        store.insertValue(fieldInitialValue.fieldDecl(), fieldInitialValue.initializer());
       }
 
       // Maybe insert the declared type:
@@ -521,14 +522,14 @@ public abstract class CFAbstractTransfer<
         // fully initialized.
         boolean isInitializedReceiver = !isNotFullyInitializedReceiver(methodTree);
         if (isInitializedReceiver && varEle.getEnclosingElement().equals(classEle)) {
-          store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
+          store.insertValue(fieldInitialValue.fieldDecl(), fieldInitialValue.declared());
         }
       } else {
         // If it is a constructor, then only use the declared type if the field has been
         // initialized.
-        if (fieldInitialValue.initializer != null
+        if (fieldInitialValue.initializer() != null
             && varEle.getEnclosingElement().equals(classEle)) {
-          store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
+          store.insertValue(fieldInitialValue.fieldDecl(), fieldInitialValue.declared());
         }
       }
     }
@@ -938,7 +939,7 @@ public abstract class CFAbstractTransfer<
               thenStore.insertValue(secondInternal, firstValue);
             }
             // To handle `(a = b = c) == x`, repeat for all insertable receivers of
-            // splitted assignments instead of returning.
+            // split assignments instead of returning.
             res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
           }
         }
@@ -959,9 +960,8 @@ public abstract class CFAbstractTransfer<
    */
   @SideEffectFree
   protected List<Node> splitAssignments(Node node) {
-    if (node instanceof AssignmentNode) {
+    if (node instanceof AssignmentNode a) {
       List<Node> result = new ArrayList<>(2);
-      AssignmentNode a = (AssignmentNode) node;
       result.add(a.getTarget());
       result.addAll(splitAssignments(a.getExpression()));
       return result;
@@ -980,14 +980,14 @@ public abstract class CFAbstractTransfer<
     if (shouldPerformWholeProgramInference(n.getTree(), lhs.getTree())) {
       // Fields defined in interfaces are LocalVariableNodes with ElementKind of FIELD.
       if (lhs instanceof FieldAccessNode
-          || (lhs instanceof LocalVariableNode
-              && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.FIELD)) {
+          || (lhs instanceof LocalVariableNode lhsLvn
+              && lhsLvn.getElement().getKind() == ElementKind.FIELD)) {
         // Updates inferred field type
         analysis.atypeFactory.getWholeProgramInference().updateFromFieldAssignment(lhs, rhs);
-      } else if (lhs instanceof LocalVariableNode
-          && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.PARAMETER) {
+      } else if (lhs instanceof LocalVariableNode lhsLvn2
+          && lhsLvn2.getElement().getKind() == ElementKind.PARAMETER) {
         // lhs is a formal parameter of some method
-        VariableElement param = ((LocalVariableNode) lhs).getElement();
+        VariableElement param = lhsLvn2.getElement();
         analysis
             .atypeFactory
             .getWholeProgramInference()
@@ -1084,6 +1084,8 @@ public abstract class CFAbstractTransfer<
     S store = p.getRegularStore();
     // add new information based on postcondition
     processPostconditions(n, store, constructorElt, newClassTree);
+    // TODO: This does not call `store.updateForMethodCall`, so a constructor's
+    // `@SideEffectsOnly` annotation has no effect yet on type refinement at a `new` expression.
     return super.visitObjectCreation(n, p);
   }
 
@@ -1110,7 +1112,7 @@ public abstract class CFAbstractTransfer<
     V storeValue = store.getValue(n);
     V resValue = moreSpecificValue(factoryValue, storeValue);
 
-    store.updateForMethodCall(n, analysis.atypeFactory, resValue);
+    store.updateForMethodCall(n, resValue);
 
     // add new information based on postcondition
     processPostconditions(n, store, method, invocationTree);
@@ -1274,11 +1276,10 @@ public abstract class CFAbstractTransfer<
       Set<? extends Contract> postconditions) {
 
     StringToJavaExpression stringToJavaExpr = null;
-    if (invocationNode instanceof MethodInvocationNode) {
+    if (invocationNode instanceof MethodInvocationNode min) {
       stringToJavaExpr =
           stringExpr ->
-              StringToJavaExpression.atMethodInvocation(
-                  stringExpr, (MethodInvocationNode) invocationNode, analysis.checker);
+              StringToJavaExpression.atMethodInvocation(stringExpr, min, analysis.checker);
     } else if (invocationNode instanceof ObjectCreationNode) {
       stringToJavaExpr =
           stringExpr ->

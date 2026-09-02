@@ -76,7 +76,7 @@ import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArraySet;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.MapsP;
 
 /** AnnotatedTypeFactory for the Value type system. */
@@ -401,7 +401,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotationUtils.getElementValueArray(
             fieldInvarAnno, minLenFieldInvariantMinLenElement, Integer.class);
     List<AnnotationMirror> qualifiers =
-        CollectionsPlume.mapList(
+        CollectionsP.mapList(
             (Integer minlen) -> createArrayLenRangeAnnotation(minlen, Integer.MAX_VALUE), minlens);
 
     FieldInvariants superInvariants = super.getFieldInvariants(element);
@@ -452,7 +452,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       int count =
           ElementUtils.getEnumConstants((TypeElement) methodElt.getEnclosingElement()).size();
       AnnotationMirror am = createArrayLenAnnotation(Collections.singletonList(count));
-      superPair.executableType.getReturnType().replaceAnnotation(am);
+      superPair.executableType().getReturnType().replaceAnnotation(am);
     }
     return superPair;
   }
@@ -524,7 +524,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Clients should call {@link #getToValueFromIntRange} if it might not exist.
    *
    * @param intRangeAnno an IntRange annotation
-   * @param defaultValue the value to retur if there is no to() element/field
+   * @param defaultValue the value to return if there is no to() element/field
    * @return its to() element/field
    */
   protected long getIntRangeToValue(AnnotationMirror intRangeAnno, long defaultValue) {
@@ -595,7 +595,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   /*package-private*/ List<Long> getArrayLenOrIntValue(AnnotationMirror anno) {
     if (AnnotationUtils.areSameByName(anno, ARRAYLEN_NAME)) {
-      return CollectionsPlume.mapList(Integer::longValue, getArrayLength(anno));
+      return CollectionsP.mapList(Integer::longValue, getArrayLength(anno));
     } else {
       return getIntValues(anno);
     }
@@ -741,20 +741,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /*package-private*/ AnnotationMirror createArrayLengthResultAnnotation(AnnotatedTypeMirror type) {
     AnnotationMirror arrayAnno = type.getPrimaryAnnotationInHierarchy(UNKNOWNVAL);
     switch (AnnotationUtils.annotationName(arrayAnno)) {
-      case ARRAYLEN_NAME:
+      case ARRAYLEN_NAME -> {
         // array.length, where array : @ArrayLen(x)
         List<Integer> lengths = getArrayLength(arrayAnno);
         return createNumberAnnotationMirror(new ArrayList<>(lengths));
-      case ARRAYLENRANGE_NAME:
+      }
+      case ARRAYLENRANGE_NAME -> {
         // array.length, where array : @ArrayLenRange(x)
         Range range = getRange(arrayAnno);
         return createIntRangeAnnotation(range);
-      case STRINGVAL_NAME:
+      }
+      case STRINGVAL_NAME -> {
         List<String> strings = getStringValues(arrayAnno);
         List<Integer> lengthsS = ValueCheckerUtils.getLengthsForStringValues(strings);
         return createNumberAnnotationMirror(new ArrayList<>(lengthsS));
-      default:
+      }
+      default -> {
         return createIntRangeAnnotation(0, Integer.MAX_VALUE);
+      }
     }
   }
 
@@ -776,7 +780,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * reflects the {@code resultType} given.
    *
    * @param resultType used to select which kind of value annotation is returned
-   * @param values must be a homogeneous list: every element of it has the same class
+   * @param values a homogeneous list: every element of it has the same class
    * @return a constant value annotation with the {@code values}
    */
   /*package-private*/ AnnotationMirror createResultingAnnotation(
@@ -792,14 +796,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     if (TypesUtils.isString(resultType)) {
-      List<String> stringVals = CollectionsPlume.mapList((Object o) -> (String) o, values);
+      List<String> stringVals = CollectionsP.mapList((Object o) -> (String) o, values);
       return createStringAnnotation(stringVals);
     } else if (TypesUtils.getClassFromType(resultType) == char[].class) {
       List<String> stringVals =
-          CollectionsPlume.mapList(
+          CollectionsP.mapList(
               o -> {
-                if (o instanceof char[]) {
-                  return new String((char[]) o);
+                if (o instanceof char[] ca) {
+                  return new String(ca);
                 } else {
                   return o.toString();
                 }
@@ -818,20 +822,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     switch (primitiveKind) {
-      case BOOLEAN:
-        List<Boolean> boolVals = CollectionsPlume.mapList((Object o) -> (Boolean) o, values);
+      case BOOLEAN -> {
+        List<Boolean> boolVals = CollectionsP.mapList((Object o) -> (Boolean) o, values);
         return createBooleanAnnotation(boolVals);
-      case DOUBLE:
-      case FLOAT:
-      case INT:
-      case LONG:
-      case SHORT:
-      case BYTE:
+      }
+      case DOUBLE, FLOAT, INT, LONG, SHORT, BYTE -> {
         List<Number> numberVals = new ArrayList<>(values.size());
         List<Character> characterVals = new ArrayList<>(values.size());
         for (Object o : values) {
-          if (o instanceof Character) {
-            characterVals.add((Character) o);
+          if (o instanceof Character ch) {
+            characterVals.add(ch);
           } else {
             numberVals.add((Number) o);
           }
@@ -841,18 +841,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           return createCharAnnotation(characterVals);
         }
         return createNumberAnnotationMirror(new ArrayList<>(numberVals));
-      case CHAR:
+      }
+      case CHAR -> {
         List<Character> charVals = new ArrayList<>(values.size());
         for (Object o : values) {
-          if (o instanceof Number) {
-            charVals.add((char) ((Number) o).intValue());
+          if (o instanceof Number num) {
+            charVals.add((char) num.intValue());
           } else {
             charVals.add((char) o);
           }
         }
         return createCharAnnotation(charVals);
-      default:
-        throw new UnsupportedOperationException("Unexpected kind:" + resultType);
+      }
+      default -> throw new UnsupportedOperationException("Unexpected kind:" + resultType);
     }
   }
 
@@ -872,7 +873,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicatesSorted(values);
+    values = CollectionsP.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       long valMin = values.get(0);
       long valMax = values.get(values.size() - 1);
@@ -912,7 +913,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicatesSorted(values);
+    values = CollectionsP.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
@@ -940,7 +941,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return a list of double floating-point values
    */
   /*package-private*/ List<Double> convertLongListToDoubleList(List<Long> intValues) {
-    return CollectionsPlume.mapList(Long::doubleValue, intValues);
+    return CollectionsP.mapList(Long::doubleValue, intValues);
   }
 
   /**
@@ -960,7 +961,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicatesSorted(values);
+    values = CollectionsP.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       // Too many strings are replaced by their lengths
       List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(values);
@@ -989,7 +990,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicatesSorted(values);
+    values = CollectionsP.withoutDuplicatesSorted(values);
     if (values.isEmpty() || Collections.min(values) < 0) {
       return BOTTOMVAL;
     } else if (values.size() > MAX_VALUES) {
@@ -1016,7 +1017,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicatesSorted(values);
+    values = CollectionsP.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
@@ -1045,11 +1046,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicatesSorted(values);
+    values = CollectionsP.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
-      List<Long> longValues = CollectionsPlume.mapList((Character value) -> (long) value, values);
+      List<Long> longValues = CollectionsP.mapList((Character value) -> (long) value, values);
       return createIntValAnnotation(longValues);
     }
   }
@@ -1069,7 +1070,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicatesSorted(values);
+    values = CollectionsP.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
@@ -1095,10 +1096,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         || first instanceof Short
         || first instanceof Long
         || first instanceof Byte) {
-      List<Long> intValues = CollectionsPlume.mapList(Number::longValue, values);
+      List<Long> intValues = CollectionsP.mapList(Number::longValue, values);
       return createIntValAnnotation(intValues);
     } else if (first instanceof Double || first instanceof Float) {
-      List<Double> doubleValues = CollectionsPlume.mapList(Number::doubleValue, values);
+      List<Double> doubleValues = CollectionsP.mapList(Number::doubleValue, values);
       return createDoubleValAnnotation(doubleValues);
     }
     throw new UnsupportedOperationException(
@@ -1277,7 +1278,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /*package-private*/ AnnotationMirror convertStringValToMatchesRegex(
       AnnotationMirror stringValAnno) {
     List<String> values = getStringValues(stringValAnno);
-    List<@Regex String> valuesAsRegexes = CollectionsPlume.mapList(Pattern::quote, values);
+    List<@Regex String> valuesAsRegexes = CollectionsP.mapList(Pattern::quote, values);
     return createMatchesRegexAnnotation(valuesAsRegexes);
   }
 
@@ -1311,24 +1312,18 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (rangeAnno == null) {
       return null;
     }
-    switch (AnnotationUtils.annotationName(rangeAnno)) {
-      case INTRANGE_FROMPOS_NAME:
-        return Range.create(1, Integer.MAX_VALUE);
-      case INTRANGE_FROMNONNEG_NAME:
-        return Range.create(0, Integer.MAX_VALUE);
-      case INTRANGE_FROMGTENEGONE_NAME:
-        return Range.create(-1, Integer.MAX_VALUE);
-      case INTVAL_NAME:
-        return ValueCheckerUtils.getRangeFromValues(getIntValues(rangeAnno));
-      case INTRANGE_NAME:
-        // Assume rangeAnno is well-formed, i.e., 'from' is less than or equal to 'to'.
-        return Range.create(getIntRangeFromValue(rangeAnno), getIntRangeToValue(rangeAnno));
-      case ARRAYLENRANGE_NAME:
-        return Range.create(
-            getArrayLenRangeFromValue(rangeAnno), getArrayLenRangeToValue(rangeAnno));
-      default:
-        return null;
-    }
+    return switch (AnnotationUtils.annotationName(rangeAnno)) {
+      case INTRANGE_FROMPOS_NAME -> Range.create(1, Integer.MAX_VALUE);
+      case INTRANGE_FROMNONNEG_NAME -> Range.create(0, Integer.MAX_VALUE);
+      case INTRANGE_FROMGTENEGONE_NAME -> Range.create(-1, Integer.MAX_VALUE);
+      case INTVAL_NAME -> ValueCheckerUtils.getRangeFromValues(getIntValues(rangeAnno));
+      case INTRANGE_NAME ->
+          // Assume rangeAnno is well-formed, i.e., 'from' is less than or equal to 'to'.
+          Range.create(getIntRangeFromValue(rangeAnno), getIntRangeToValue(rangeAnno));
+      case ARRAYLENRANGE_NAME ->
+          Range.create(getArrayLenRangeFromValue(rangeAnno), getArrayLenRangeToValue(rangeAnno));
+      default -> null;
+    };
   }
 
   /**
@@ -1348,7 +1343,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return null;
     }
     List<Long> list = AnnotationUtils.getElementValueArray(intAnno, intValValueElement, Long.class);
-    list = CollectionsPlume.withoutDuplicatesSorted(list);
+    list = CollectionsP.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1367,7 +1362,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     List<Double> list =
         AnnotationUtils.getElementValueArray(doubleAnno, doubleValValueElement, Double.class);
-    list = CollectionsPlume.withoutDuplicatesSorted(list);
+    list = CollectionsP.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1386,7 +1381,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     List<Integer> list =
         AnnotationUtils.getElementValueArray(arrayAnno, arrayLenValueElement, Integer.class);
-    list = CollectionsPlume.withoutDuplicatesSorted(list);
+    list = CollectionsP.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1405,8 +1400,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     List<Long> intValues =
         AnnotationUtils.getElementValueArray(intAnno, intValValueElement, Long.class);
-    List<Character> charValues =
-        CollectionsPlume.mapList((Long i) -> (char) i.intValue(), intValues);
+    List<Character> charValues = CollectionsP.mapList((Long i) -> (char) i.intValue(), intValues);
     Collections.sort(charValues);
     // TODO: Should this be an unmodifiable list?
     return new ArrayList<>(charValues);
@@ -1475,7 +1469,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     List<String> list =
         AnnotationUtils.getElementValueArray(stringAnno, stringValValueElement, String.class);
-    list = CollectionsPlume.withoutDuplicatesSorted(list);
+    list = CollectionsP.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1495,7 +1489,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     List<String> list =
         AnnotationUtils.getElementValueArray(
             matchesRegexAnno, matchesRegexValueElement, String.class);
-    list = CollectionsPlume.withoutDuplicatesSorted(list);
+    list = CollectionsP.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1516,7 +1510,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     List<String> list =
         AnnotationUtils.getElementValueArray(
             doesNotMatchRegexAnno, doesNotMatchRegexValueElement, String.class);
-    list = CollectionsPlume.withoutDuplicatesSorted(list);
+    list = CollectionsP.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1564,17 +1558,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (annotation == null) {
       return null;
     }
-    switch (AnnotationUtils.annotationName(annotation)) {
-      case ARRAYLENRANGE_NAME:
-        return Long.valueOf(getRange(annotation).to).intValue();
-      case ARRAYLEN_NAME:
-        return Collections.max(getArrayLength(annotation));
-      case STRINGVAL_NAME:
-        return Collections.max(
-            ValueCheckerUtils.getLengthsForStringValues(getStringValues(annotation)));
-      default:
-        return null;
-    }
+    return switch (AnnotationUtils.annotationName(annotation)) {
+      case ARRAYLENRANGE_NAME -> Long.valueOf(getRange(annotation).to).intValue();
+      case ARRAYLEN_NAME -> Collections.max(getArrayLength(annotation));
+      case STRINGVAL_NAME ->
+          Collections.max(ValueCheckerUtils.getLengthsForStringValues(getStringValues(annotation)));
+      default -> null;
+    };
   }
 
   /**
@@ -1589,19 +1579,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (annotation == null) {
       return null;
     }
-    switch (AnnotationUtils.annotationName(annotation)) {
-      case MINLEN_NAME:
-        return getMinLenValueValue(annotation);
-      case ARRAYLENRANGE_NAME:
-        return Long.valueOf(getRange(annotation).from).intValue();
-      case ARRAYLEN_NAME:
-        return Collections.min(getArrayLength(annotation));
-      case STRINGVAL_NAME:
-        return Collections.min(
-            ValueCheckerUtils.getLengthsForStringValues(getStringValues(annotation)));
-      default:
-        return null;
-    }
+    return switch (AnnotationUtils.annotationName(annotation)) {
+      case MINLEN_NAME -> getMinLenValueValue(annotation);
+      case ARRAYLENRANGE_NAME -> Long.valueOf(getRange(annotation).from).intValue();
+      case ARRAYLEN_NAME -> Collections.min(getArrayLength(annotation));
+      case STRINGVAL_NAME ->
+          Collections.min(ValueCheckerUtils.getLengthsForStringValues(getStringValues(annotation)));
+      default -> null;
+    };
   }
 
   /**
@@ -1680,18 +1665,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return 0;
     }
 
-    if (expressionObj instanceof ValueLiteral) {
-      ValueLiteral sequenceLiteral = (ValueLiteral) expressionObj;
+    if (expressionObj instanceof ValueLiteral sequenceLiteral) {
       Object sequenceLiteralValue = sequenceLiteral.getValue();
-      if (sequenceLiteralValue instanceof String) {
-        return ((String) sequenceLiteralValue).length();
+      if (sequenceLiteralValue instanceof String s) {
+        return s.length();
       }
-    } else if (expressionObj instanceof ArrayCreation) {
-      ArrayCreation arrayCreation = (ArrayCreation) expressionObj;
+    } else if (expressionObj instanceof ArrayCreation arrayCreation) {
       // This is only expected to support array creations in varargs methods
       return arrayCreation.getInitializers().size();
     } else if (expressionObj instanceof ArrayAccess) {
-      List<? extends AnnotationMirror> annoList = expressionObj.getType().getAnnotationMirrors();
+      TypeMirror expressionType = expressionObj.getType();
+      List<? extends AnnotationMirror> annoList = expressionType.getAnnotationMirrors();
       for (AnnotationMirror anno : annoList) {
         String ANNO_NAME = AnnotationUtils.annotationName(anno);
         if (ANNO_NAME.equals(MINLEN_NAME)) {

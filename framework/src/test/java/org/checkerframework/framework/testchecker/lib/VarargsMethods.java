@@ -4,6 +4,12 @@ import org.checkerframework.common.value.qual.StaticallyExecutable;
 
 /** Used by framework/tests/value/VarargsRe.java */
 public class VarargsMethods {
+
+  /** Do not instantiate. */
+  private VarargsMethods() {
+    throw new Error("Do not instantiate");
+  }
+
   @StaticallyExecutable
   public static int test0(Object... objects) {
     if (objects == null) {

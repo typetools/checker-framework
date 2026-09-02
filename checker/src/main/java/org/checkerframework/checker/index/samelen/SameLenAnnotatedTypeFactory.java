@@ -121,10 +121,10 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree tree) {
     AnnotatedTypeMirror atm = super.getAnnotatedTypeLhs(tree);
 
-    if (tree instanceof VariableTree) {
+    if (tree instanceof VariableTree vt) {
       AnnotationMirror sameLenAnno = atm.getPrimaryAnnotation(SameLen.class);
       if (sameLenAnno != null) {
-        JavaExpression je = JavaExpression.fromVariableTree((VariableTree) tree);
+        JavaExpression je = JavaExpression.fromVariableTree(vt);
         String varName = je.toString();
 
         List<String> exprs =

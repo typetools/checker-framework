@@ -297,9 +297,9 @@ public class ControlFlowGraph implements UniqueId {
     // Traverse the whole control flow graph.
     while (!worklist.isEmpty()) {
       Block cur = worklist.remove();
-      if (cur instanceof ExceptionBlock) {
+      if (cur instanceof ExceptionBlock exceptionBlock) {
         for (Map.Entry<TypeMirror, Set<Block>> entry :
-            ((ExceptionBlock) cur).getExceptionalSuccessors().entrySet()) {
+            exceptionBlock.getExceptionalSuccessors().entrySet()) {
           if (!shouldIgnoreException.apply(entry.getKey())) {
             for (Block b : entry.getValue()) {
               if (visited.add(b)) {
@@ -465,7 +465,7 @@ public class ControlFlowGraph implements UniqueId {
     if (astString.length() > 65) {
       astString = "\"" + astString.substring(0, 60) + "\"";
     }
-    result.add("underlyingAST=" + underlyingAST);
+    result.add("underlyingAST=" + astString);
     result.add("treeLookup=" + AnalysisResult.treeLookupToString(treeLookup));
     result.add("convertedTreeLookup=" + AnalysisResult.treeLookupToString(convertedTreeLookup));
     result.add("postfixLookup=" + postfixNodeLookup);

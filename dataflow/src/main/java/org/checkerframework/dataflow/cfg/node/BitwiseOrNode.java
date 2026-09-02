@@ -38,10 +38,9 @@ public class BitwiseOrNode extends BinaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof BitwiseOrNode)) {
+    if (!(obj instanceof BitwiseOrNode other)) {
       return false;
     }
-    BitwiseOrNode other = (BitwiseOrNode) obj;
     return getLeftOperand().equals(other.getLeftOperand())
         && getRightOperand().equals(other.getRightOperand());
   }

@@ -2,7 +2,6 @@ package org.checkerframework.common.aliasing;
 
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
@@ -92,21 +91,24 @@ public class AliasingTransfer extends CFTransfer {
       Node n, CFStore store, ExecutableElement executableElement, ExpressionTree tree) {
     // TODO: Process ObjectCreationNode here after fixing issue:
     // https://github.com/eisop/checker-framework/issues/400
-    if (!(n instanceof MethodInvocationNode)) {
+    if (!(n instanceof MethodInvocationNode min)) {
       return;
     }
-    if (TreeUtils.isEnumSuperCall((MethodInvocationTree) n.getTree())) {
+    if (TreeUtils.isEnumSuperCall(min.getTree())) {
       // Skipping the init() method for enums.
       return;
     }
-    List<Node> args = ((MethodInvocationNode) n).getArguments();
+    List<Node> args = min.getArguments();
     List<? extends VariableElement> params = executableElement.getParameters();
     assert (args.size() == params.size())
         : "Number of arguments in "
-            + "the method call "
-            + n
-            + " is different from the"
-            + " number of parameters for the method declaration: "
+            + "method call "
+            + min
+            + " has "
+            + args.size()
+            + " arguments, method declaration has "
+            + params.size()
+            + " parameters: "
             + executableElement.getSimpleName();
 
     AnnotatedExecutableType annotatedType = factory.getAnnotatedType(executableElement);
@@ -121,7 +123,7 @@ public class AliasingTransfer extends CFTransfer {
     }
 
     // Now, doing the same as above for the receiver parameter
-    Node receiver = ((MethodInvocationNode) n).getTarget().getReceiver();
+    Node receiver = min.getTarget().getReceiver();
     AnnotatedDeclaredType receiverType = annotatedType.getReceiverType();
     if (receiverType != null
         && !receiverType.hasPrimaryAnnotation(LeakedToResult.class)

@@ -5,10 +5,12 @@ import com.sun.source.util.JavacTask;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Types;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -62,7 +64,7 @@ public final class Source {
       throw new CompilerException("could not get compiler instance");
     }
 
-    diagnostics = new DiagnosticCollector<JavaFileObject>();
+    diagnostics = new DiagnosticCollector<>();
 
     // Get the file manager for locating input files.
     try (StandardJavaFileManager fileManager =
@@ -82,17 +84,17 @@ public final class Source {
       // This seems to require that the file names end in .java
       CompilationTask cTask =
           compiler.getTask(null, fileManager, diagnostics, optsList, null, fileObjs);
-      if (!(cTask instanceof JavacTask)) {
+      if (!(cTask instanceof JavacTask javacTask)) {
         throw new CompilerException("could not get a valid JavacTask: " + cTask.getClass());
       }
-      this.task = (JavacTask) cTask;
+      this.task = javacTask;
       this.types = Types.instance(((JavacTaskImpl) cTask).getContext());
 
       // Read the source file into a buffer.
       path = src;
       source = new StringBuilder();
       try (ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-          FileInputStream in = new FileInputStream(src)) {
+          InputStream in = Files.newInputStream(Paths.get(src))) {
         int c;
         while ((c = in.read()) != -1) {
           bytes.write(c);

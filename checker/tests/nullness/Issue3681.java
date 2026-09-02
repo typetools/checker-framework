@@ -1,4 +1,4 @@
-// Test case for isse #3681: https://tinyurl.com/cfissue/3681
+// Test case for issue #3681: https://tinyurl.com/cfissue/3681
 
 // @below-java11-jdk-skip-test
 package org.jro.tests.checkerfwk.utils;

@@ -40,15 +40,15 @@ public enum ConversionCategory {
   GENERAL("bBhHsS", (Class<?>[]) null /* everything */),
 
   /**
-   * Use if the parameter is of a basic types which represent Unicode characters: char, Character,
+   * Use if the parameter is of a basic type that represents Unicode characters: char, Character,
    * byte, Byte, short, and Short. This conversion may also be applied to the types int and Integer
    * when Character.isValidCodePoint(int) returns true. Applicable for conversions c, C.
    */
   CHAR("cC", Character.class, Byte.class, Short.class, Integer.class),
 
   /**
-   * Use if the parameter is an integral type: byte, Byte, short, Short, int and Integer, long,
-   * Long, and BigInteger. Applicable for conversions d, o, x, X.
+   * Use if the parameter is an integral type: byte, Byte, short, Short, int, Integer, long, Long,
+   * and BigInteger. Applicable for conversions d, o, x, X.
    */
   INT("doxX", Byte.class, Short.class, Integer.class, Long.class, BigInteger.class),
 
@@ -59,7 +59,7 @@ public enum ConversionCategory {
   FLOAT("eEfgGaA", Float.class, Double.class, BigDecimal.class),
 
   /**
-   * Use if the parameter is a type which is capable of encoding a date or time: long, Long,
+   * Use if the parameter is a type that is capable of encoding a date or time: long, Long,
    * Calendar, and Date. Applicable for conversions t, T.
    */
   @SuppressWarnings("JdkObsolete")
@@ -75,15 +75,15 @@ public enum ConversionCategory {
    *   format("Test %1$c %1$d", (int)42);
    * </pre>
    *
-   * In this example, the first parameter is interpreted as both a character and an int, therefore
-   * the parameter must be compatible with both conversion, and can therefore neither be char nor
+   * In this example, the first parameter is interpreted as both a character and an int; therefore
+   * the parameter must be compatible with both conversions, and can therefore be neither char nor
    * long. This intersection of conversions is called CHAR_AND_INT.
    *
    * <p>One other conversion intersection is interesting, namely the intersection of INT and TIME,
    * resulting in INT_AND_TIME.
    *
-   * <p>All other intersection either lead to an already existing type, or NULL, in which case it is
-   * illegal to pass object's of any type as parameter.
+   * <p>All other intersections either lead to an already existing type or to NULL, in which case it
+   * is illegal to pass objects of any type as a parameter.
    */
   CHAR_AND_INT(null, Byte.class, Short.class, Integer.class),
 
@@ -95,26 +95,26 @@ public enum ConversionCategory {
   INT_AND_TIME(null, Long.class),
 
   /**
-   * Use if no object of any type can be passed as parameter. In this case, the only legal value is
-   * null. This is seldomly needed, and indicates an error in most cases. For example:
+   * Use if no object of any type can be passed as a parameter. In this case, the only legal value
+   * is null. This is seldom needed, and indicates an error in most cases. For example:
    *
    * <pre>
    *   format("Test %1$f %1$d", null);
    * </pre>
    *
-   * Only null can be legally passed, passing a value such as 4 or 4.2 would lead to an exception.
+   * Only null can be legally passed; passing a value such as 4 or 4.2 would lead to an exception.
    */
   NULL(null),
 
   /**
-   * Use if a parameter is not used by the formatter. This is seldomly needed, and indicates an
-   * error in most cases. For example:
+   * Use if a parameter is not used by the formatter. This is seldom needed, and indicates an error
+   * in most cases. For example:
    *
    * <pre>
-   *   format("Test %1$s %3$s", "a","unused","b");
+   *   format("Test %1$s %3$s", "a", "unused", "b");
    * </pre>
    *
-   * Only the first "a" and third "b" parameters are used, the second "unused" parameter is ignored.
+   * Only the first "a" and third "b" parameters are used; the second "unused" parameter is ignored.
    */
   UNUSED(null, (Class<?>[]) null /* everything */);
 
@@ -185,10 +185,11 @@ public enum ConversionCategory {
 
   /**
    * The conversion categories that have a corresponding conversion character. This lacks UNUSED,
-   * TIME_AND_INT, etc.
+   * INT_AND_TIME, etc.
    */
-  private static final ConversionCategory[] conversionCategoriesWithChar =
-      new ConversionCategory[] {GENERAL, CHAR, INT, FLOAT, TIME};
+  private static final ConversionCategory[] conversionCategoriesWithChar = {
+    GENERAL, CHAR, INT, FLOAT, TIME
+  };
 
   /**
    * Converts a conversion character to a category. For example:
@@ -210,6 +211,13 @@ public enum ConversionCategory {
     throw new IllegalArgumentException("Bad conversion character " + c);
   }
 
+  /**
+   * Converts an array to a set.
+   *
+   * @param a an array
+   * @param <E> the type of array and set elements
+   * @return a set containing the array's elements
+   */
   private static <E> Set<E> arrayToSet(E[] a) {
     return new HashSet<>(Arrays.asList(a));
   }
@@ -219,11 +227,12 @@ public enum ConversionCategory {
   }
 
   /** Conversion categories that need to be considered by {@link #intersect}. */
-  private static final ConversionCategory[] conversionCategoriesForIntersect =
-      new ConversionCategory[] {CHAR, INT, FLOAT, TIME, CHAR_AND_INT, INT_AND_TIME, NULL};
+  private static final ConversionCategory[] conversionCategoriesForIntersect = {
+    CHAR, INT, FLOAT, TIME, CHAR_AND_INT, INT_AND_TIME, NULL
+  };
 
   /**
-   * Returns the intersection of two categories. This is seldomly needed.
+   * Returns the intersection of two categories. This is seldom needed.
    *
    * <blockquote>
    *
@@ -266,15 +275,16 @@ public enum ConversionCategory {
         return v;
       }
     }
-    throw new RuntimeException();
+    throw new RuntimeException("Could not compute intersect(" + a + ", " + b + ")");
   }
 
   /** Conversion categories that need to be considered by {@link #union}. */
-  private static final ConversionCategory[] conversionCategoriesForUnion =
-      new ConversionCategory[] {NULL, CHAR_AND_INT, INT_AND_TIME, CHAR, INT, FLOAT, TIME};
+  private static final ConversionCategory[] conversionCategoriesForUnion = {
+    NULL, CHAR_AND_INT, INT_AND_TIME, CHAR, INT, FLOAT, TIME
+  };
 
   /**
-   * Returns the union of two categories. This is seldomly needed.
+   * Returns the union of two categories. This is seldom needed.
    *
    * <blockquote>
    *
@@ -297,7 +307,7 @@ public enum ConversionCategory {
     }
     if ((a == CHAR_AND_INT && b == INT_AND_TIME) || (a == INT_AND_TIME && b == CHAR_AND_INT)) {
       // This is special-cased because the union of a.types and b.types
-      // does not include BigInteger.class, whereas the types for INT does.
+      // does not include BigInteger.class, whereas the types for INT do.
       // Returning INT here to prevent returning GENERAL below.
       return INT;
     }
@@ -342,11 +352,11 @@ public enum ConversionCategory {
     return false;
   }
 
-  /** Returns a pretty printed {@link ConversionCategory}. */
+  /** Returns a pretty-printed {@link ConversionCategory}. */
   @Pure
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    StringBuilder sb = new StringBuilder(32);
     sb.append(name());
     sb.append(" conversion category");
 
@@ -358,7 +368,7 @@ public enum ConversionCategory {
     for (Class<?> cls : types) {
       sj.add(cls.getSimpleName());
     }
-    sb.append(" ");
+    sb.append(' ');
     sb.append(sj);
 
     return sb.toString();

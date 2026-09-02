@@ -61,6 +61,11 @@ import org.plumelib.util.IPair;
  */
 public class TypeArgumentMapper {
 
+  /** Do not instantiate. */
+  private TypeArgumentMapper() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Returns a mapping from subtype's type parameter indices to the indices of corresponding type
    * parameters in supertype.
@@ -165,6 +170,7 @@ public class TypeArgumentMapper {
           addToSetMap(intermediate, (TypeParameterElement) typeArgEle, correspondingParameter);
         }
       }
+      current = next;
     }
 
     List<? extends TypeParameterElement> supertypeParams = supertype.getTypeParameters();
@@ -193,7 +199,7 @@ public class TypeArgumentMapper {
     for (TypeParameterElement oldElement : elements) {
       Set<TypeParameterElement> substitutions = map.get(oldElement);
       if (substitutions != null) {
-        result.addAll(flattenPath(elements, map));
+        result.addAll(flattenPath(substitutions, map));
       } else {
         result.add(oldElement);
       }

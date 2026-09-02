@@ -21,10 +21,10 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <ol>
  *   <li value="1">Allows any String to be passed to Pattern.compile if the Pattern.LITERAL flag is
- *       passed.
+ *                 passed.
  *   <li value="2">Checks compound String concatenation to ensure correct usage of Regex Strings.
  *   <li value="3">Checks calls to {@code MatchResult.start}, {@code MatchResult.end} and {@code
- *       MatchResult.group} to ensure that a valid group number is passed.
+ *                 MatchResult.group} to ensure that a valid group number is passed.
  * </ol>
  *
  * @see RegexChecker
@@ -72,8 +72,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
     ProcessingEnvironment env = checker.getProcessingEnvironment();
     if (TreeUtils.isMethodInvocation(tree, patternCompile, env)) {
       ExpressionTree flagParam = tree.getArguments().get(1);
-      if (flagParam instanceof MemberSelectTree) {
-        MemberSelectTree memSelect = (MemberSelectTree) flagParam;
+      if (flagParam instanceof MemberSelectTree memSelect) {
         if (TreeUtils.isSpecificFieldAccess(memSelect, patternLiteral)) {
           // This is a call to Pattern.compile with the Pattern.LITERAL flag so the first
           // parameter doesn't need to be a @Regex String. Don't call the super method to

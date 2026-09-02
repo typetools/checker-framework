@@ -25,4 +25,3 @@ AST -> "Annotations\nw/ AST Paths" [style=dashed]
 "Annotations w/\nCode Locations" -> "Annotated AAST" [style=dashed]
 Scene -> "Annotation\nSpecifications" [style=dashed]
 }
-

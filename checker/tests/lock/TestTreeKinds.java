@@ -365,7 +365,7 @@ public class TestTreeKinds {
       foo.field.toString();
     }
 
-    // TODO: Reenable:
+    // TODO: Re-enable:
     // @PolyGuardedBy should not be written here, but it is not explicitly forbidden by the
     // framework.
     // @PolyGuardedBy MyClass m2 = new MyClass();

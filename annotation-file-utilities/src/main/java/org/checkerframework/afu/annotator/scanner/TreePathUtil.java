@@ -17,9 +17,10 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.VarHandle;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** Utility methods relating to TreePaths. */
-public class TreePathUtil {
+public final class TreePathUtil {
 
   /** Do not instantiate this class. */
   private TreePathUtil() {
@@ -104,7 +105,13 @@ public class TreePathUtil {
         && hasClassKind(path.getParentPath().getLeaf());
   }
 
-  public static TreePath findEnclosingFieldInit(TreePath path) {
+  /**
+   * Returns the path to the enclosing field initializer, or null if the argument is not within one.
+   *
+   * @param path a reference to some source code
+   * @return the path to the enclosing field initializer, or null
+   */
+  public static @Nullable TreePath findEnclosingFieldInit(TreePath path) {
     while (!isFieldInit(path)) {
       path = path.getParentPath();
       if (path == null) {
@@ -175,8 +182,7 @@ public class TreePathUtil {
     int ctPos = -1;
 
     for (Tree member : ct.getMembers()) {
-      if (member instanceof MethodTree) {
-        MethodTree method = (MethodTree) member;
+      if (member instanceof MethodTree method) {
         if (method.getName().contentEquals("<init>")) {
           // The tree contains the implicit default constructor if the user wrote no constructor,
           // so must check position too. :-(
@@ -226,21 +232,18 @@ public class TreePathUtil {
     String result = "";
     for (Tree t : path) {
       switch (t.getKind()) {
-        case CLASS:
-        case INTERFACE:
-        case ENUM:
-        case ANNOTATION_TYPE:
+        case CLASS, INTERFACE, ENUM, ANNOTATION_TYPE -> {
           ClassTree ct = (ClassTree) t;
           String className = ct.getSimpleName().toString();
           result = result.isEmpty() ? className : className + "$" + result;
-          break;
+        }
 
-        case METHOD:
+        case METHOD -> {
           // Hack that works for the first class defined within a method.
           result = "1" + result;
-          break;
+        }
 
-        case COMPILATION_UNIT:
+        case COMPILATION_UNIT -> {
           CompilationUnitTree cut = (CompilationUnitTree) t;
           ExpressionTree pkgExp = cut.getPackageName();
           if (pkgExp == null) {
@@ -248,9 +251,8 @@ public class TreePathUtil {
           } else {
             return pkgExp.toString() + "." + result;
           }
-
-        default:
-          break;
+        }
+        default -> {}
       }
     }
     throw new Error("unreachable");
@@ -280,7 +282,7 @@ public class TreePathUtil {
   /**
    * Returns the {@link MethodHandle} for retrieving the end position of a {@link JCTree}.
    *
-   * @return the {@link MethodHandle} for retrieving the end position of a {@link JCTree}.
+   * @return the {@link MethodHandle} for retrieving the end position of a {@link JCTree}
    */
   private static MethodHandle getEndPosMethodHandle() {
     MethodHandles.Lookup lookup = MethodHandles.lookup();

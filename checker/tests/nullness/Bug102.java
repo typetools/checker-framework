@@ -5,7 +5,7 @@ public final class Bug102 {
   void bug1() {
     C<String> c = new C<>();
     m(c);
-    m(c); // note: the bug disapear if calling m only once
+    m(c); // note: the bug disappear if calling m only once
   }
 
   void bug2() {

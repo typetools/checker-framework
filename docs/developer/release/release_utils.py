@@ -19,7 +19,7 @@ import subprocess
 import urllib.request
 from pathlib import Path
 
-from release_vars import (  # ty: ignore # TODO: limitation in ty
+from release_vars import (
     execute,
     execute_output,
     execute_status,
@@ -249,16 +249,16 @@ def git_repo_exists_at_path(repo_root: Path) -> bool:
 def push_changes_prompt_if_fail(repo_root: Path) -> None:
     """Attempt to push changes, including tags, for the repository at the given filesystem path.
 
-    In case of failure, ask the user
-    if they would like to try again. Loop until pushing changes succeeds or the
-    user answers opts to not try again.
+    In case of failure, ask the user if they would like to try again.
+    Loop until pushing changes succeeds or the user answers opts to not try again.
     """
     while True:
-        cmd = f"(cd {repo_root} && git push --tags)"
-        result = os.system(cmd)
-        cmd = f"(cd {repo_root} && git push origin master)"
-        result = os.system(cmd)
-        if result == 0:
+        cmd = f"git -C {repo_root} push --tags"
+        subprocess.run([cmd], shell=False, check=False)
+        cmd = f"git -C {repo_root} push origin master"
+        result = subprocess.run([cmd], shell=False, check=False)
+        # Only check the second command, on the theory that both will succeed or both will fail.
+        if result.returncode == 0:
             break
         print(
             f"Could not push from: {repo_root}; result={result} for command: `{cmd}`"
@@ -476,16 +476,11 @@ def read_first_line(file_path: Path) -> str:
     return first_line
 
 
-def ensure_group_access(path: Path) -> None:
-    """Give group access to all files and directories under the specified path."""
-    # Errs for any file not owned by this user.
+def ensure_writeable(path: Path) -> None:
+    """Permit user and group to read/write everything under the specified path."""
+    # Ignore errors.  It errs for any file not owned by this user.
     # But, the point is to set group writeability of any *new* files.
-    execute(f"chmod -f -R g+rw {path}")
-
-
-def ensure_user_access(path: Path) -> None:
-    """Give the user access to all files and directories under the specified path."""
-    execute(f"chmod -f -R u+rwx {path}")
+    execute_status(f"chmod -f -R ug+rw {path}")
 
 
 def set_umask() -> None:
@@ -506,7 +501,7 @@ def delete_if_exists(file_to_delete: Path) -> None:
 
 def delete_directory(path: Path) -> None:
     """Delete all files and directories under the specified path."""
-    ensure_group_access(path)
+    ensure_writeable(path)
     shutil.rmtree(path)
 
 
@@ -584,20 +579,25 @@ def get_announcement_email(version: str) -> str:
     Returns:
         the template for the e-mail announcing a new release of the Checker Framework.
     """
-    return f"""
+    return (
+        f"""
 To:  checker-framework-discuss@googlegroups.com
 Subject: Release {version} of the Checker Framework
 
 We have released a new version of the Checker Framework.
-The Checker Framework lets you create and/or run pluggable type checkers, in order to detect and prevent bugs in your code.
+The Checker Framework lets you create and/or run pluggable type checkers, """
+        f"""in order to detect and prevent bugs in your code.
 
 You can find documentation and download links at:
 https://CheckerFramework.org/
 
 Changes for Checker Framework version {version}:
 
-<<Insert latest Checker Framework changelog entry from https://github.com/typetools/checker-framework/blob/master/docs/CHANGELOG.md, preserving its formatting.>>
-"""  # noqa: E501
+<<Insert latest Checker Framework changelog entry from """
+        """https://github.com/typetools/checker-framework/blob/master/docs/CHANGELOG.md, """
+        """preserving its formatting.>>
+"""
+    )
 
 
 # =========================================================================================

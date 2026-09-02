@@ -7,7 +7,10 @@ PDFFILES = $(patsubst %.svg,%.pdf,$(wildcard *.svg))
 RSVG_CONVERT_VERSION := $(shell rsvg-convert --version 2>/dev/null)
 INKSCAPE_VERSION := $(shell inkscape --version 2>/dev/null)
 
+.PHONY: all test clean
 all: ${PDFFILES} clean-obsolete-files svg-copy
+
+test: all
 
 svg-copy:
 	-chmod -f u+w ../*.svg
@@ -15,16 +18,18 @@ svg-copy:
 	chmod -f a-w ../*.svg
 
 %.pdf : %.svg
+	: # Work around checkmake bug
 ifdef RSVG_CONVERT_VERSION
 	rsvg-convert -f pdf -o $@ $<
 else
   ifdef INKSCAPE_VERSION
-	inkscape $< --export-pdf=$@
+	inkscape $< --export-filename=$@
   else
 	convert $< $@
   endif
 endif
 
+.PHONY: clean
 clean: clean-obsolete-files
 	@\rm -f ${PDFFILES}
 

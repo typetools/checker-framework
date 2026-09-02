@@ -20,6 +20,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.lock.qual.EnsuresLockHeld;
 import org.checkerframework.checker.lock.qual.EnsuresLockHeldIf;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
@@ -32,6 +33,8 @@ import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.NewObject;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -63,7 +66,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * LockAnnotatedTypeFactory builds types with @LockHeld and @LockPossiblyHeld annotations. LockHeld
@@ -100,8 +103,7 @@ public class LockAnnotatedTypeFactory
 
   /** The @{@link GuardedBy} annotation. */
   @SuppressWarnings("this-escape")
-  protected final AnnotationMirror GUARDEDBY =
-      createGuardedByAnnotationMirror(new ArrayList<String>());
+  protected final AnnotationMirror GUARDEDBY = createGuardedByAnnotationMirror(new ArrayList<>());
 
   /** The @{@link NewObject} annotation. */
   protected final AnnotationMirror NEWOBJECT =
@@ -223,15 +225,13 @@ public class LockAnnotatedTypeFactory
    * @return true if the expression is effectively final
    */
   boolean isExpressionEffectivelyFinal(JavaExpression expr) {
-    if (expr instanceof FieldAccess) {
-      FieldAccess fieldAccess = (FieldAccess) expr;
+    if (expr instanceof FieldAccess fieldAccess) {
       JavaExpression receiver = fieldAccess.getReceiver();
       // Don't call fieldAccess
       return fieldAccess.isFinal() && isExpressionEffectivelyFinal(receiver);
-    } else if (expr instanceof LocalVariable) {
-      return ElementUtils.isEffectivelyFinal(((LocalVariable) expr).getElement());
-    } else if (expr instanceof MethodCall) {
-      MethodCall methodCall = (MethodCall) expr;
+    } else if (expr instanceof LocalVariable lv) {
+      return ElementUtils.isEffectivelyFinal(lv.getElement());
+    } else if (expr instanceof MethodCall methodCall) {
       for (JavaExpression arg : methodCall.getArguments()) {
         if (!isExpressionEffectivelyFinal(arg)) {
           return false;
@@ -370,7 +370,7 @@ public class LockAnnotatedTypeFactory
           a1, qualifierKind1, a2, qualifierKind2, lubKind);
     }
 
-    // GLB never returns @NewObject unless one of the argumetns is @NewObject; it returns
+    // GLB never returns @NewObject unless one of the arguments is @NewObject; it returns
     // @GuardedByBottom instead, to prevent showing users the unexpected @NewObject type.
     @Override
     protected AnnotationMirror greatestLowerBoundWithElements(
@@ -408,16 +408,34 @@ public class LockAnnotatedTypeFactory
     }
   }
 
-  // The side effect annotations processed by the Lock Checker.
+  /** The side effect annotations processed by the Lock Checker. */
   enum SideEffectAnnotation {
+    /** The method might release some locks. */
     MAYRELEASELOCKS("@MayReleaseLocks", MayReleaseLocks.class),
+    /** The method does not release any locks. */
     RELEASESNOLOCKS("@ReleasesNoLocks", ReleasesNoLocks.class),
+    /** The method does not acquire or release any locks. */
     LOCKINGFREE("@LockingFree", LockingFree.class),
+    // `@SideEffectsOnly` is intentionally absent from this enum.  It constrains which expressions
+    // a method modifies, but it promises nothing about acquiring or releasing locks, so a
+    // `@SideEffectsOnly` method gets the same locking guarantee as an unannotated one.
+    /** The method has no side effects. */
     SIDEEFFECTFREE("@SideEffectFree", SideEffectFree.class),
+    /** The method has no side effects and is deterministic. */
     PURE("@Pure", Pure.class);
+
+    /** The annotation as written in Java source code, starting with "@". */
     final String annotation;
+
+    /** The Java class of the annotation. */
     final Class<? extends Annotation> annotationClass;
 
+    /**
+     * Creates a new SideEffectAnnotation.
+     *
+     * @param annotation the annotation as written in Java source code, starting with "@"
+     * @param annotationClass the Java class of the annotation
+     */
     SideEffectAnnotation(String annotation, Class<? extends Annotation> annotationClass) {
       this.annotation = annotation;
       this.annotationClass = annotationClass;
@@ -438,54 +456,47 @@ public class LockAnnotatedTypeFactory
     boolean isWeakerThan(SideEffectAnnotation other) {
       boolean weaker = false;
 
-      switch (other) {
-        case MAYRELEASELOCKS:
-          break;
-        case RELEASESNOLOCKS:
-          if (this == SideEffectAnnotation.MAYRELEASELOCKS) {
+      switch (this) {
+        case MAYRELEASELOCKS -> {
+          switch (other) {
+            case RELEASESNOLOCKS, LOCKINGFREE, SIDEEFFECTFREE, PURE -> weaker = true;
+            default -> {}
+          }
+        }
+        case RELEASESNOLOCKS -> {
+          switch (other) {
+            case LOCKINGFREE, SIDEEFFECTFREE, PURE -> weaker = true;
+            default -> {}
+          }
+        }
+        case LOCKINGFREE -> {
+          switch (other) {
+            case SIDEEFFECTFREE, PURE -> weaker = true;
+            default -> {}
+          }
+        }
+        case SIDEEFFECTFREE -> {
+          if (other == PURE) {
             weaker = true;
           }
-          break;
-        case LOCKINGFREE:
-          switch (this) {
-            case MAYRELEASELOCKS:
-            case RELEASESNOLOCKS:
-              weaker = true;
-              break;
-            default:
-          }
-          break;
-        case SIDEEFFECTFREE:
-          switch (this) {
-            case MAYRELEASELOCKS:
-            case RELEASESNOLOCKS:
-            case LOCKINGFREE:
-              weaker = true;
-              break;
-            default:
-          }
-          break;
-        case PURE:
-          switch (this) {
-            case MAYRELEASELOCKS:
-            case RELEASESNOLOCKS:
-            case LOCKINGFREE:
-            case SIDEEFFECTFREE:
-              weaker = true;
-              break;
-            default:
-          }
-          break;
+        }
+        case PURE -> {}
       }
 
       return weaker;
     }
 
-    static SideEffectAnnotation weakest = null;
+    /** The weakest side effect annotation. */
+    static @MonotonicNonNull SideEffectAnnotation weakest;
 
+    /**
+     * Returns the weakest side effect annotation.
+     *
+     * @return the weakest side effect annotation
+     */
     public static SideEffectAnnotation weakest() {
       if (weakest == null) {
-        for (SideEffectAnnotation sea : SideEffectAnnotation.values()) {
+        for (SideEffectAnnotation sea : values()) {
           if (weakest == null) {
             weakest = sea;
           }
@@ -583,7 +594,7 @@ public class LockAnnotatedTypeFactory
     ParameterizedExecutableType mType =
         super.methodFromUse(tree, methodElt, receiverType, inferTypeArgs);
 
-    if (!(tree instanceof MethodInvocationTree)) {
+    if (!(tree instanceof MethodInvocationTree mit)) {
       return mType;
     }
 
@@ -593,7 +604,7 @@ public class LockAnnotatedTypeFactory
     // the call site (e.g. @GuardedBy("someLock") and replace the return type at the call site
     // with this type.
 
-    AnnotatedExecutableType invokedMethod = mType.executableType;
+    AnnotatedExecutableType invokedMethod = mType.executableType();
 
     if (invokedMethod.getElement().getKind() == ElementKind.CONSTRUCTOR) {
       return mType;
@@ -629,18 +640,16 @@ public class LockAnnotatedTypeFactory
       return mType;
     }
 
-    List<? extends ExpressionTree> methodInvocationTreeArguments =
-        ((MethodInvocationTree) tree).getArguments();
+    List<? extends ExpressionTree> methodInvocationTreeArguments = mit.getArguments();
     List<AnnotatedTypeMirror> paramTypes =
         AnnotatedTypes.adaptParameters(this, invokedMethod, methodInvocationTreeArguments, tree);
 
     for (int i = 0; i < paramTypes.size(); i++) {
+      AnnotatedTypeMirror argType = getAnnotatedType(methodInvocationTreeArguments.get(i));
+      @SuppressWarnings("nullness:assignment") // type should have an annotation in this hierarchy
+      @NonNull AnnotationMirror argAnno = argType.getAnnotationInHierarchy(GUARDEDBYUNKNOWN);
       if (replaceAnnotationInGuardedByHierarchyIfGuardSatisfiedIndexMatches(
-          methodDefinitionReturn,
-          paramTypes.get(i),
-          returnGuardSatisfiedIndex,
-          getAnnotatedType(methodInvocationTreeArguments.get(i))
-              .getEffectiveAnnotationInHierarchy(GUARDEDBYUNKNOWN))) {
+          methodDefinitionReturn, paramTypes.get(i), returnGuardSatisfiedIndex, argAnno)) {
         return mType;
       }
     }
@@ -695,8 +704,8 @@ public class LockAnnotatedTypeFactory
 
   @Override
   public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
-    if (tree instanceof VariableTree) {
-      translateJcipAndJavaxAnnotations(TreeUtils.elementFromDeclaration((VariableTree) tree), type);
+    if (tree instanceof VariableTree vt) {
+      translateJcipAndJavaxAnnotations(TreeUtils.elementFromDeclaration(vt), type);
     }
 
     super.addComputedTypeAnnotations(tree, type, useFlow);
@@ -748,7 +757,7 @@ public class LockAnnotatedTypeFactory
     if (value instanceof List) {
       @SuppressWarnings("unchecked")
       List<AnnotationValue> la = (List<AnnotationValue>) value;
-      lockExpressions = CollectionsPlume.mapList((AnnotationValue a) -> (String) a.getValue(), la);
+      lockExpressions = CollectionsP.mapList((AnnotationValue a) -> (String) a.getValue(), la);
     } else if (value instanceof String) {
       lockExpressions = Collections.singletonList((String) value);
     } else {
@@ -768,7 +777,9 @@ public class LockAnnotatedTypeFactory
    * @param values a list of lock expressions
    * @return an AnnotationMirror corresponding to @GuardedBy(values)
    */
-  private AnnotationMirror createGuardedByAnnotationMirror(List<String> values) {
+  private AnnotationMirror createGuardedByAnnotationMirror(
+      @UnknownInitialization(GenericAnnotatedTypeFactory.class) LockAnnotatedTypeFactory this,
+      List<String> values) {
     AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), GuardedBy.class);
     builder.setValue("value", values.toArray());
 

@@ -476,14 +476,13 @@ public class OffsetEquation {
       Node node, AnnotationProvider factory, OffsetEquation eq, char op) {
     JavaExpression je = JavaExpression.fromNode(node);
     if (je instanceof Unknown || je == null) {
-      if (node instanceof NumericalAdditionNode) {
-        createOffsetFromNode(((NumericalAdditionNode) node).getLeftOperand(), factory, eq, op);
-        createOffsetFromNode(((NumericalAdditionNode) node).getRightOperand(), factory, eq, op);
-      } else if (node instanceof NumericalSubtractionNode) {
-        createOffsetFromNode(((NumericalSubtractionNode) node).getLeftOperand(), factory, eq, op);
+      if (node instanceof NumericalAdditionNode nan) {
+        createOffsetFromNode(nan.getLeftOperand(), factory, eq, op);
+        createOffsetFromNode(nan.getRightOperand(), factory, eq, op);
+      } else if (node instanceof NumericalSubtractionNode nsn) {
+        createOffsetFromNode(nsn.getLeftOperand(), factory, eq, op);
         char other = op == '+' ? '-' : '+';
-        createOffsetFromNode(
-            ((NumericalSubtractionNode) node).getRightOperand(), factory, eq, other);
+        createOffsetFromNode(nsn.getRightOperand(), factory, eq, other);
       } else {
         eq.error = node.toString();
       }

@@ -5,11 +5,13 @@ import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Options;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import javax.tools.JavaFileManager;
@@ -255,16 +257,7 @@ public final class CFGVisualizeLauncher {
     try {
       // Redirect syserr to nothing (and prevent the compiler from issuing
       // warnings about our exception).
-      @SuppressWarnings({
-        "builder:required.method.not.called",
-        "mustcall:assignment"
-      }) // Won't be needed in JDK 11+ with use of "OutputStream.nullOutputStream()".
-      @MustCall OutputStream nullOS =
-          // In JDK 11+, this can be just "OutputStream.nullOutputStream()".
-          new OutputStream() {
-            @Override
-            public void write(int b) throws IOException {}
-          };
+      @MustCall OutputStream nullOS = OutputStream.nullOutputStream();
       System.setErr(new PrintStream(nullOS));
       javac.compile(List.of(l), List.of(clas), List.of(cfgProcessor), List.nil());
     } catch (Throwable e) {
@@ -301,6 +294,7 @@ public final class CFGVisualizeLauncher {
    * @param outputFile source output file
    * @param analysis instance of forward or backward analysis from specific dataflow test case
    */
+  @SuppressWarnings("PMD.UseObjectForClearerAPI")
   public static void writeStringOfCFG(
       String inputFile, String method, String clas, String outputFile, Analysis<?, ?, ?> analysis) {
     ControlFlowGraph cfg = generateMethodCFG(inputFile, method, clas, analysis);
@@ -335,10 +329,24 @@ public final class CFGVisualizeLauncher {
    */
   private static void producePDF(String file) {
     try {
-      String command = "dot -Tpdf \"" + file + "\" -o \"" + file + ".pdf\"";
-      Process child = Runtime.getRuntime().exec(new String[] {"/bin/sh", "-c", command});
-      child.waitFor();
+      ProcessBuilder pb = new ProcessBuilder("dot", "-Tpdf", file, "-o", file + ".pdf");
+      // Without this, `dot` blocks forever if it writes more output than fits in a pipe buffer.
+      pb.inheritIO();
+      Process child = pb.start();
+      int exitCode = child.waitFor();
+      if (exitCode != 0) {
+        System.err.println("dot exited with status " + exitCode);
+      }
     } catch (InterruptedException | IOException e) {
+      String msg = e.getMessage();
+      // JDK 21+ words this as "Exec failed, error: 2 (No such file or directory)", earlier JDKs as
+      // "error=2, No such file or directory".
+      if (msg != null && msg.contains("No such file or directory")) {
+        System.err.printf("Cannot find `dot` program.%n");
+        System.err.printf("PATH=%s%n", System.getenv("PATH"));
+        System.err.printf(
+            "Contents of /usr/bin/: %s%n", Arrays.toString(new File("/usr/bin/").listFiles()));
+      }
       e.printStackTrace();
       System.exit(1);
     }

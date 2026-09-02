@@ -407,7 +407,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
    *      lit 0 + * &rarr; *
    *      lit 1 + * &rarr; call promote
    *      9. lit &ge; 2 + {gte-1, nn, or pos} &rarr; pos
-   *      let all other lits, including sets, fall through:
+   *      let all other literals, including sets, fall through:
    *      10. pos + pos &rarr; pos
    *      11. nn + * &rarr; *
    *      12. pos + gte-1 &rarr; nn
@@ -496,11 +496,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       // Check if the left side is a field access of an array's length, or invocation of
       // String.length. If so, try to look up the MinLen of the array, and potentially keep
       // this either NN or POS instead of GTEN1 or LBU.
-      if (leftExpr instanceof MemberSelectTree) {
-        MemberSelectTree mstree = (MemberSelectTree) leftExpr;
+      if (leftExpr instanceof MemberSelectTree mstree) {
         minLen = atypeFactory.getMinLenFromMemberSelectTree(mstree);
-      } else if (leftExpr instanceof MethodInvocationTree) {
-        MethodInvocationTree mitree = (MethodInvocationTree) leftExpr;
+      } else if (leftExpr instanceof MethodInvocationTree mitree) {
         minLen = atypeFactory.getMinLenFromMethodInvocationTree(mitree);
       }
 

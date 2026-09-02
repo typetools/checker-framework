@@ -9,7 +9,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
- * Elements of this enumeration are used in a {@link I18nFormat} annotation to indicate the valid
+ * Elements of this enumeration are used in an {@link I18nFormat} annotation to indicate the valid
  * types that may be passed as a format parameter. For example:
  *
  * <pre>{@literal @}I18nFormat({GENERAL, NUMBER}) String f = "{0}{1, number}";
@@ -64,11 +64,10 @@ public enum I18nConversionCategory {
   }
 
   /** Used by {@link #stringToI18nConversionCategory}. */
-  private static final I18nConversionCategory[] namedCategories =
-      new I18nConversionCategory[] {DATE, NUMBER};
+  private static final I18nConversionCategory[] namedCategories = {DATE, NUMBER};
 
   /**
-   * Creates a conversion cagetogry from a string name.
+   * Creates a conversion category from a string name.
    *
    * <pre>
    * I18nConversionCategory.stringToI18nConversionCategory("number") == I18nConversionCategory.NUMBER;
@@ -90,6 +89,13 @@ public enum I18nConversionCategory {
     throw new IllegalArgumentException("Invalid format type " + string);
   }
 
+  /**
+   * Converts an array to a set.
+   *
+   * @param a an array
+   * @param <E> the type of array and set elements
+   * @return a set containing the array's elements
+   */
   private static <E> Set<E> arrayToSet(E[] a) {
     return new HashSet<>(Arrays.asList(a));
   }
@@ -104,8 +110,7 @@ public enum I18nConversionCategory {
   }
 
   /** Conversion categories that need to be considered by {@link #intersect}. */
-  private static final I18nConversionCategory[] conversionCategoriesForIntersect =
-      new I18nConversionCategory[] {DATE, NUMBER};
+  private static final I18nConversionCategory[] conversionCategoriesForIntersect = {DATE, NUMBER};
 
   /**
    * Returns the intersection of the two given I18nConversionCategories.
@@ -147,14 +152,14 @@ public enum I18nConversionCategory {
         return v;
       }
     }
-    throw new RuntimeException();
+    throw new RuntimeException("Could not compute intersect(" + a + ", " + b + ")");
   }
 
   /**
    * Returns the union of the two given I18nConversionCategories.
    *
    * <pre>
-   * I18nConversionCategory.intersect(DATE, NUMBER) == DATE;
+   * I18nConversionCategory.union(DATE, NUMBER) == DATE;
    * </pre>
    */
   public static I18nConversionCategory union(I18nConversionCategory a, I18nConversionCategory b) {
@@ -191,7 +196,7 @@ public enum I18nConversionCategory {
     return false;
   }
 
-  /** Returns a pretty printed {@link I18nConversionCategory}. */
+  /** Returns a pretty-printed {@link I18nConversionCategory}. */
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder(this.name());

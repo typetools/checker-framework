@@ -3,11 +3,12 @@ package org.checkerframework.framework.util.typeinference8.types;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -73,8 +74,8 @@ public class UseOfVariable extends AbstractType {
   }
 
   @Override
-  public AbstractType create(AnnotatedTypeMirror atm, TypeMirror type, boolean ignoreAnnotations) {
-    return InferenceType.create(atm, type, variable.map, qualifierVars, context, ignoreAnnotations);
+  public AbstractType create(AnnotatedTypeMirror atm, boolean ignoreAnnotations) {
+    return InferenceType.create(atm, variable.map, qualifierVars, context, ignoreAnnotations);
   }
 
   @Override
@@ -82,8 +83,16 @@ public class UseOfVariable extends AbstractType {
     return false;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>An inference variable is not a declared type, so it has no type parameters; this
+   * implementation returns null.
+   *
+   * @return null, because this type is a use of an inference variable
+   */
   @Override
-  public List<ProperType> getTypeParameterBounds() {
+  public @Nullable List<ProperType> getTypeParameterBounds() {
     return null;
   }
 
@@ -145,7 +154,7 @@ public class UseOfVariable extends AbstractType {
   }
 
   /**
-   * Adds a qualifier bound for this variable, is this use does not have a primary annotation.
+   * Adds a qualifier bound for this variable, if this use does not have a primary annotation.
    *
    * @param kind the kind of bound
    * @param annotations the qualifiers to add
@@ -157,7 +166,7 @@ public class UseOfVariable extends AbstractType {
   }
 
   /**
-   * Adds a bound for this variable, is this use does not have a primary annotation.
+   * Adds a bound for this variable, if this use does not have a primary annotation.
    *
    * @param parent the constraint whose reduction created this bound
    * @param kind the kind of bound
@@ -170,9 +179,9 @@ public class UseOfVariable extends AbstractType {
       // If the use has a primary annotation, then mark the bound so that the annotations will be
       // ignored. Also, set to bottom or top, unless the bound is a type variable. This way if all
       // the bounds of a variable have annotations to be ignored, the instantiation of that variable
-      // is as flexable as possible.
+      // is as flexible as possible.
       AnnotatedTypeMirror boundCopyATM = bound.getAnnotatedType().deepCopy();
-      AbstractType boundCopy = bound.create(boundCopyATM, bound.getJavaType(), true);
+      AbstractType boundCopy = bound.create(boundCopyATM, true);
       if (boundCopyATM.getKind() == TypeKind.TYPEVAR && kind == BoundKind.EQUAL) {
         variable.getBounds().addBound(parent, kind, boundCopy);
       } else if (kind == BoundKind.LOWER) {
@@ -186,7 +195,7 @@ public class UseOfVariable extends AbstractType {
         variable.getBounds().addBound(parent, BoundKind.UPPER, boundCopy);
 
         AnnotatedTypeMirror boundCopyATM2 = bound.getAnnotatedType().deepCopy();
-        AbstractType boundCopy2 = bound.create(boundCopyATM2, bound.getJavaType(), true);
+        AbstractType boundCopy2 = bound.create(boundCopyATM2, true);
         boundCopyATM2.replaceAnnotations(bots);
         variable.getBounds().addBound(parent, BoundKind.LOWER, boundCopy2);
       }
@@ -216,12 +225,12 @@ public class UseOfVariable extends AbstractType {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    if (!super.equals(o)) {
-      return false;
-    }
 
     UseOfVariable that = (UseOfVariable) o;
 
+    if (!sameInferenceProblem(that)) {
+      return false;
+    }
     if (hasPrimaryAnno != that.hasPrimaryAnno) {
       return false;
     }
@@ -234,18 +243,17 @@ public class UseOfVariable extends AbstractType {
     if (!tops.equals(that.tops)) {
       return false;
     }
+    // Two types with different qualifierVars have different qualifiers, as getQualifiers() shows.
+    if (!qualifierVars.equals(that.qualifierVars)) {
+      return false;
+    }
 
     return type.equals(that.type);
   }
 
   @Override
   public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + variable.hashCode();
-    result = 31 * result + (hasPrimaryAnno ? 1 : 0);
-    result = 31 * result + bots.hashCode();
-    result = 31 * result + tops.hashCode();
-    result = 31 * result + type.hashCode();
-    return result;
+    return Objects.hash(
+        inferenceProblemHashCode(), variable, hasPrimaryAnno, bots, tops, qualifierVars, type);
   }
 }

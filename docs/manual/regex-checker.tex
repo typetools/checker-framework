@@ -1,7 +1,7 @@
 \htmlhr
 \chapterAndLabel{Regex Checker for regular expression syntax}{regex-checker}
 
-The Regex Checker prevents, at compile-time, use of syntactically invalid
+The Regex Checker prevents, at compile time, use of syntactically invalid
 regular expressions and access of invalid capturing groups.
 
 A regular expression, or regex, is a pattern for matching certain strings
@@ -87,7 +87,7 @@ the \code{null} literal to be assigned to any type qualified with the
 The Regex Checker validates that a legal capturing group number is passed
 to \sunjavadoc{java.base/java/util/regex/Matcher.html}{Matcher}'s
 \sunjavadoc{java.base/java/util/regex/Matcher.html\#group(int)}{group},
-\sunjavadoc{java.base/java/util/regex/Matcher.html\#start(int)}{start} and
+\sunjavadoc{java.base/java/util/regex/Matcher.html\#start(int)}{start}, and
 \sunjavadoc{java.base/java/util/regex/Matcher.html\#end(int)}{end} methods. To do this,
 the type of \<Matcher> must be qualified with a \<@Regex> annotation
 with the number of capturing groups in the regular expression. This is
@@ -114,7 +114,7 @@ of non-regular-expression Strings to produce valid regular expression Strings.}
 In general, concatenating a non-regular-expression String with any other
 string yields a non-regular-expression String.  The Regex Checker can
 sometimes determine that concatenation of non-regular-expression Strings
-will produce valid regular expression Strings. For an example see
+will produce valid regular expression Strings. For an example, see
 Figure~\ref{fig-regex-partial}.
 
 
@@ -147,24 +147,24 @@ example of the intended use of the \code{RegexUtil} methods.
 
 \end{description}
 
-An additional version of each of these methods is also provided that takes
+A version of each of these methods is also provided that takes
 an additional group count parameter. The
 \refmethod{checker/regex/util}{RegexUtil}{isRegex}{(java.lang.String,int)} method
 verifies that the argument has at least the given number of groups. The
 \refmethod{checker/regex/util}{RegexUtil}{regexError}{(java.lang.String,int)} and
 \refmethod{checker/regex/util}{RegexUtil}{regexException}{(java.lang.String,int)}
-methods return a \<String> error message and \<Pattern\-Syntax\-Exception>,
+methods return a \<String> error message and a \<Pattern\-Syntax\-Exception>,
 respectively, detailing why the given String is not a syntactically valid
 regular expression with at least the given number of capturing groups.
 
 \begin{sloppypar}
 If you detect that a \<String> is not a valid regular expression but would like
 to report the error higher up the call stack (potentially where you can
-provide a more detailed error message) you can throw a
+provide a more detailed error message), you can throw a
 \refclass{checker/regex/util}{RegexUtil.CheckedPatternSyntaxException}. This exception is
 functionally the same as a
 \sunjavadoc{java.base/java/util/regex/PatternSyntaxException.html}{Pattern\-Syntax\-Exception}
-except it is checked to guarantee that the error will be handled up the
+except that it is checked to guarantee that the error will be handled up the
 call stack.  For more details, see the Javadoc for
 \refclass{checker/regex/util}{RegexUtil.CheckedPatternSyntaxException}.
 \end{sloppypar}
@@ -210,7 +210,7 @@ method that takes a capturing group parameter. This method works the same as
 described above, but returns a \code{@Regex String} with the parameter on the
 annotation set to the value of the capturing group parameter passed to the method.
 
-The use case shown in Figure~\ref{fig-regex-util-example} should support most cases
+The use case shown in Figure~\ref{fig-regex-util-example} should support most cases,
 so the \<asRegex> method should be used rarely.
 
 

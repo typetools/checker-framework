@@ -17,7 +17,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
@@ -176,15 +175,16 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
   }
 
   @Override
-  @FormatMethod
   protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
-      AnnotatedTypeMirror valueType,
-      Tree valueTree,
+      ExpressionTree valueTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
-    boolean result =
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+
+    if (shouldSkipUses(valueTree)) {
+      return true;
+    }
+    boolean result = super.commonAssignmentCheck(varType, valueTree, errorKey, extraArgs);
 
     // If we are visiting a pseudo-assignment, visitorLeafKind is either
     // Tree.Kind.NEW_CLASS or Tree.Kind.METHOD_INVOCATION.

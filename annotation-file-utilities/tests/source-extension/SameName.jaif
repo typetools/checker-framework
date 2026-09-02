@@ -9,4 +9,3 @@ class SameName:
     method m()V:
         local a *1:
         type: @java.lang.UnderInitialization
-

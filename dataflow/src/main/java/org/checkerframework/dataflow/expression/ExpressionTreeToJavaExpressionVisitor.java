@@ -47,16 +47,15 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
 import org.checkerframework.javacutil.TypesUtils;
-import org.checkerframework.javacutil.javacparse.JavacParse;
-import org.checkerframework.javacutil.javacparse.JavacParseResult;
 import org.checkerframework.javacutil.trees.TreeBuilder;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.javacparse.JavacParse;
+import org.plumelib.util.CollectionsP;
 
 /**
  * A visitor class that converts a javac {@link ExpressionTree} to a {@link JavaExpression}. This
  * class does not viewpoint-adapt the expression.
  */
-class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpression, Void> {
+final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpression, Void> {
 
   /** How to format warnings about use of formal parameter name. */
   public static final @Format({ConversionCategory.INT, ConversionCategory.GENERAL}) String
@@ -402,8 +401,8 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
   public JavaExpression visitArrayType(ArrayTypeTree node, Void unused) {
     Tree elementTypeTree = node.getType();
     JavaExpression elementTypeJE = elementTypeTree.accept(this, null);
-    if (elementTypeJE instanceof ClassName) {
-      return new ClassName(types.getArrayType(((ClassName) elementTypeJE).getType()));
+    if (elementTypeJE instanceof ClassName cn) {
+      return new ClassName(types.getArrayType(cn.getType()));
     } else {
       throw new JavaExpressionParseExceptionUnchecked(
           JavaExpressionParseException.construct(
@@ -420,7 +419,8 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
    * @param identifier possible simple class name
    * @return the {@code ClassName} for {@code identifier}, or null if it is not a simple class name
    */
-  protected @Nullable ClassName getIdentifierAsInnerClassName(TypeMirror type, String identifier) {
+  /*package-private*/ @Nullable ClassName getIdentifierAsInnerClassName(
+      TypeMirror type, String identifier) {
     if (type.getKind() != TypeKind.DECLARED) {
       return null;
     }
@@ -454,7 +454,7 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
    * @param identifier possible class name
    * @return the {@code ClassName} for {@code identifier}, or null if it is not a class name
    */
-  protected @Nullable ClassName getIdentifierAsUnqualifiedClassName(String identifier) {
+  /*package-private*/ @Nullable ClassName getIdentifierAsUnqualifiedClassName(String identifier) {
     // Is identifier an inner class of enclosingType or of any enclosing class of
     // enclosingType?
     TypeMirror searchType = enclosingType;
@@ -517,7 +517,7 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
    * @return a field access, or null if {@code identifier} is not a field that can be accessed via
    *     {@code receiverExpr}
    */
-  protected @Nullable FieldAccess getIdentifierAsFieldAccess(
+  /*package-private*/ @Nullable FieldAccess getIdentifierAsFieldAccess(
       JavaExpression receiverExpr, String identifier) {
     setResolverField();
     // Find the field element.
@@ -578,7 +578,7 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
     //  * true: it's an instance field declared in the type (or supertype) of receiverExpr.
     //  * false: it's an instance field declared in an enclosing type of receiverExpr.
 
-    @SuppressWarnings("interning:not.interned") // Checking for exact object
+    @SuppressWarnings({"interning:not.interned", "TypeEquals"}) // Checking for exact object
     boolean fieldDeclaredInReceiverType = enclosingTypeOfField == receiverExpr.getType();
     if (fieldDeclaredInReceiverType) {
       TypeMirror fieldType = ElementUtils.getType(fieldElem);
@@ -613,15 +613,14 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
     JavaExpression receiverExprTmp; // null if not yet computed
     TypeMirror receiverType;
     String methodName;
-    if (methodSelect instanceof MemberSelectTree) {
+    if (methodSelect instanceof MemberSelectTree memberSelect) {
       // Method call with explicit receiver, like `obj.method()` or `Class.staticMethod()`.
-      MemberSelectTree memberSelect = (MemberSelectTree) methodSelect;
       receiverExprTmp = memberSelect.getExpression().accept(this, null);
       receiverType = receiverExprTmp.getType();
       methodName = memberSelect.getIdentifier().toString();
-    } else if (methodSelect instanceof IdentifierTree) {
+    } else if (methodSelect instanceof IdentifierTree identifierTree) {
       // Static or instance method call with implicit receiver, like `method()`.
-      methodName = ((IdentifierTree) methodSelect).getName().toString();
+      methodName = identifierTree.getName().toString();
       receiverExprTmp = null;
       receiverType = enclosingType;
     } else {
@@ -632,8 +631,7 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
 
     // Convert argument expressions
     List<JavaExpression> arguments =
-        CollectionsPlume.mapList(
-            argument -> argument.accept(this, null), invocation.getArguments());
+        CollectionsP.mapList(argument -> argument.accept(this, null), invocation.getArguments());
 
     // Resolve method
     ExecutableElement methodElement;
@@ -730,7 +728,7 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
       Resolver resolver)
       throws JavaExpressionParseException {
 
-    List<TypeMirror> argumentTypes = CollectionsPlume.mapList(JavaExpression::getType, arguments);
+    List<TypeMirror> argumentTypes = CollectionsP.mapList(JavaExpression::getType, arguments);
 
     if (receiverType.getKind() == TypeKind.ARRAY) {
       ExecutableElement element =
@@ -863,16 +861,15 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
     // This eliminates + and performs constant-folding for -; it could also do so for other
     // operations.
     switch (treeKind) {
-      case UNARY_PLUS:
+      case UNARY_PLUS -> {
         return operand;
-      case UNARY_MINUS:
-        if (operand instanceof ValueLiteral) {
-          return ((ValueLiteral) operand).negate();
+      }
+      case UNARY_MINUS -> {
+        if (operand instanceof ValueLiteral valueLiteral) {
+          return valueLiteral.negate();
         }
-        break;
-      default:
-        // Not optimization for this operand
-        break;
+      }
+      default -> {} // No optimization for this operand
     }
     return new UnaryOperation(operand.getType(), treeKind, operand);
   }
@@ -923,63 +920,47 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
    *     handled
    */
   private @Nullable TypeMirror convertTreeToTypeMirror(JCTree typeTree) {
-    if (typeTree instanceof MemberSelectTree) {
-      MemberSelectTree memberSelectTree = (MemberSelectTree) typeTree;
+    if (typeTree instanceof MemberSelectTree memberSelectTree) {
       String identifier = memberSelectTree.getIdentifier().toString();
-      JavacParseResult<ExpressionTree> jpr = JavacParse.parseExpression(identifier);
-      if (jpr.hasParseError()) {
-        throw new Error(identifier + " :" + jpr.getParseErrorMessages());
-      }
-      ExpressionTree parsed = jpr.getTree();
+      ExpressionTree parsed = JavacParse.parseExpression(identifier);
 
-      if (parsed instanceof IdentifierTree) {
-        return parsed.accept(this, null).getType();
+      if (parsed instanceof IdentifierTree identTree) {
+        return identTree.accept(this, null).getType();
       } else {
         String msg =
             String.format(
                 "parsed is not IdentifierTree: %s [%s]", parsed, parsed.getClass().getSimpleName());
         throw new BugInCF(msg);
       }
-    } else if (typeTree instanceof IdentifierTree) {
+    } else if (typeTree instanceof IdentifierTree identTree2) {
       try {
-        return typeTree.accept(this, null).getType();
+        return identTree2.accept(this, null).getType();
       } catch (Throwable e) {
         throw new BugInCF("Problem while parsing " + typeTree, e);
       }
-    } else if (typeTree instanceof JCTree.JCPrimitiveTypeTree) {
-      switch (((JCTree.JCPrimitiveTypeTree) typeTree).getPrimitiveTypeKind()) {
-        case BOOLEAN:
-          return types.getPrimitiveType(TypeKind.BOOLEAN);
-        case BYTE:
-          return types.getPrimitiveType(TypeKind.BYTE);
-        case SHORT:
-          return types.getPrimitiveType(TypeKind.SHORT);
-        case INT:
-          return types.getPrimitiveType(TypeKind.INT);
-        case CHAR:
-          return types.getPrimitiveType(TypeKind.CHAR);
-        case FLOAT:
-          return types.getPrimitiveType(TypeKind.FLOAT);
-        case LONG:
-          return types.getPrimitiveType(TypeKind.LONG);
-        case DOUBLE:
-          return types.getPrimitiveType(TypeKind.DOUBLE);
-        case VOID:
-          return types.getNoType(TypeKind.VOID);
-        default:
-          return null;
-      }
-    } else if (typeTree instanceof JCTree.JCArrayTypeTree) {
-      TypeMirror componentType =
-          convertTreeToTypeMirror(((JCTree.JCArrayTypeTree) typeTree).getType());
+    } else if (typeTree instanceof JCTree.JCPrimitiveTypeTree primitiveTypeTree) {
+      return switch (primitiveTypeTree.getPrimitiveTypeKind()) {
+        case BOOLEAN -> types.getPrimitiveType(TypeKind.BOOLEAN);
+        case BYTE -> types.getPrimitiveType(TypeKind.BYTE);
+        case SHORT -> types.getPrimitiveType(TypeKind.SHORT);
+        case INT -> types.getPrimitiveType(TypeKind.INT);
+        case CHAR -> types.getPrimitiveType(TypeKind.CHAR);
+        case FLOAT -> types.getPrimitiveType(TypeKind.FLOAT);
+        case LONG -> types.getPrimitiveType(TypeKind.LONG);
+        case DOUBLE -> types.getPrimitiveType(TypeKind.DOUBLE);
+        case VOID -> types.getNoType(TypeKind.VOID);
+        default -> null;
+      };
+    } else if (typeTree instanceof JCTree.JCArrayTypeTree arrayTypeTree) {
+      TypeMirror componentType = convertTreeToTypeMirror(arrayTypeTree.getType());
       if (componentType == null) {
         return null;
       }
       return types.getArrayType(componentType);
-    } else if (typeTree instanceof JCTree.JCAnnotatedType) {
-      return convertTreeToTypeMirror(((JCTree.JCAnnotatedType) typeTree).getUnderlyingType());
-    } else if (typeTree instanceof JCTree.JCTypeApply) {
-      return convertTreeToTypeMirror(((JCTree.JCTypeApply) typeTree).getType());
+    } else if (typeTree instanceof JCTree.JCAnnotatedType annotatedType) {
+      return convertTreeToTypeMirror(annotatedType.getUnderlyingType());
+    } else if (typeTree instanceof JCTree.JCTypeApply typeApply) {
+      return convertTreeToTypeMirror(typeApply.getType());
     } else {
       System.out.printf(
           "convertTreeToTypeMirror does not handle %s [%s]%n",
@@ -1004,9 +985,9 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
    * @return the innermost enclosing class or Type.noType
    */
   private static TypeMirror getTypeOfEnclosingClass(DeclaredType type) {
-    if (type instanceof ClassType) {
+    if (type instanceof ClassType classType) {
       // enclClass() needs to be called on tsym.owner, because tsym.enclClass() == tsym.
-      Symbol sym = ((ClassType) type).tsym.owner;
+      Symbol sym = classType.tsym.owner;
       if (sym == null) {
         return com.sun.tools.javac.code.Type.noType;
       }

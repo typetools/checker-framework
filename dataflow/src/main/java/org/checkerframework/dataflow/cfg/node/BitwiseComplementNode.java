@@ -37,10 +37,9 @@ public class BitwiseComplementNode extends UnaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof BitwiseComplementNode)) {
+    if (!(obj instanceof BitwiseComplementNode other)) {
       return false;
     }
-    BitwiseComplementNode other = (BitwiseComplementNode) obj;
     return getOperand().equals(other.getOperand());
   }
 

@@ -96,10 +96,9 @@ public class FieldAccess extends JavaExpression {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof FieldAccess)) {
+    if (!(obj instanceof FieldAccess fa)) {
       return false;
     }
-    FieldAccess fa = (FieldAccess) obj;
     if (!fa.getField().equals(getField())) {
       return false;
     }
@@ -120,16 +119,20 @@ public class FieldAccess extends JavaExpression {
 
   @Override
   public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof FieldAccess)) {
+    if (!(je instanceof FieldAccess other)) {
       return false;
     }
-    FieldAccess other = (FieldAccess) je;
     return this.receiver.syntacticEquals(other.receiver) && this.field.equals(other.field);
   }
 
   @Override
   public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
     return syntacticEquals(other) || receiver.containsSyntacticEqualJavaExpression(other);
+  }
+
+  @Override
+  public boolean containsAsReceiver(AnnotationProvider provider, JavaExpression other) {
+    return syntacticEquals(other) || receiver.containsAsReceiver(provider, other);
   }
 
   @Override

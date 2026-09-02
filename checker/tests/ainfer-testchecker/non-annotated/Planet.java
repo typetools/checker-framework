@@ -2,10 +2,11 @@
 
 import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 
-@SuppressWarnings(
-    "value" // Do not generate Value Checker annotations, because IndexFileParser cannot handle
-// scientific notation.
-)
+@SuppressWarnings({
+  "value", // Do not generate Value Checker annotations, because IndexFileParser cannot handle
+  // scientific notation.
+  "unneeded.suppression"
+})
 public enum Planet {
   MERCURY(3.303e+23, 2.4397e6),
   VENUS(4.869e+24, 6.0518e6),

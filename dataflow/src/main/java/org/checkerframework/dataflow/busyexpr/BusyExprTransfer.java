@@ -21,6 +21,9 @@ public class BusyExprTransfer
         TransferInput<UnusedAbstractValue, BusyExprStore>>
     implements BackwardTransferFunction<UnusedAbstractValue, BusyExprStore> {
 
+  /** Creates a BusyExprTransfer. */
+  public BusyExprTransfer() {}
+
   @Override
   public BusyExprStore initialNormalExitStore(
       UnderlyingAST underlyingAST, List<ReturnNode> returnNodes) {

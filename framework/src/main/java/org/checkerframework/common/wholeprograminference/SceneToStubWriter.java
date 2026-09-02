@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +79,7 @@ public final class SceneToStubWriter {
    * A pattern matching the name of an anonymous inner class, a local class, or a class nested
    * within one of these types of classes. An anonymous inner class has a basename like Outer$1 and
    * a local class has a basename like Outer$1Inner. See <a
-   * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-13.html#jls-13.1">Java Language
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-13.html#jls-13.1">Java Language
    * Specification, section 13.1</a>.
    */
   private static final Pattern anonymousInnerClassOrLocalClassPattern = Pattern.compile("\\$\\d+");
@@ -145,27 +144,28 @@ public final class SceneToStubWriter {
   public static void formatAnnotation(StringBuilder sb, Annotation a) {
     String fullAnnoName = a.def().name;
     String simpleAnnoName = fullAnnoName.substring(fullAnnoName.lastIndexOf('.') + 1);
-    sb.append("@");
+    sb.append('@');
     sb.append(simpleAnnoName);
     if (a.fieldValues.isEmpty()) {
       return;
     } else {
-      sb.append("(");
+      sb.append('(');
       if (a.fieldValues.size() == 1 && a.fieldValues.containsKey("value")) {
         AnnotationFieldType aft = a.def().fieldTypes.get("value");
         aft.format(sb, a.fieldValues.get("value"));
       } else {
-        // This simulates: new StringJoiner(", ", "@" + simpleAnnoName + "(", ")")
+        StringJoiner sj = new StringJoiner(", ");
         for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
           AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
-          sb.append(f.getKey());
-          sb.append("=");
-          aft.format(sb, f.getValue());
-          sb.append(", ");
+          StringBuilder fsb = new StringBuilder();
+          fsb.append(f.getKey());
+          fsb.append('=');
+          aft.format(fsb, f.getValue());
+          sj.add(fsb);
         }
-        sb.delete(sb.length() - 2, sb.length());
+        sb.append(sj);
       }
-      sb.append(")");
+      sb.append(')');
     }
   }
 
@@ -197,7 +197,7 @@ public final class SceneToStubWriter {
     for (Annotation tla : annos) {
       if (!isInternalJDKAnnotation(tla.def.name)) {
         formatAnnotation(sb, tla);
-        sb.append(" ");
+        sb.append(' ');
       }
     }
   }
@@ -240,7 +240,7 @@ public final class SceneToStubWriter {
     List<? extends AnnotationMirror> explicitAnnos = javacRep.getAnnotationMirrors();
     for (AnnotationMirror explicitAnno : explicitAnnos) {
       sb.append(explicitAnno.toString());
-      sb.append(" ");
+      sb.append(' ');
     }
     if (explicitAnnos.isEmpty() && scenelibRep != null) {
       formatAnnotations(sb, scenelibRep.tlAnnotationsHere);
@@ -250,9 +250,6 @@ public final class SceneToStubWriter {
       formatArrayTypeImpl(sb, scenelibComponent, (ArrayType) javacComponent);
     }
   }
-
-  /** Static mutable variable to improve performance of getNextArrayLevel. */
-  private static List<TypePathEntry> location;
 
   /**
    * Gets the outermost array level (or the component if not an array) from the given type element,
@@ -269,7 +266,7 @@ public final class SceneToStubWriter {
     }
 
     for (Map.Entry<List<TypePathEntry>, ATypeElement> ite : e.innerTypes.entrySet()) {
-      location = ite.getKey();
+      List<TypePathEntry> location = ite.getKey();
       if (location.contains(TypePathEntry.ARRAY_ELEMENT)) {
         return ite.getValue();
       }
@@ -288,7 +285,8 @@ public final class SceneToStubWriter {
    *     argument is exactly the String "this".
    * @return the formatted formal parameter, as if it were written in Java source code
    */
-  private static String formatParameter(AField param, String parameterName, String basename) {
+  // Package-private rather than private so that SceneToStubWriterTest can call it.
+  static String formatParameter(AField param, String parameterName, String basename) {
     StringBuilder sb = new StringBuilder();
     formatParameter(sb, param, parameterName, basename);
     return sb.toString();
@@ -307,12 +305,9 @@ public final class SceneToStubWriter {
    */
   private static void formatParameter(
       StringBuilder sb, AField param, String parameterName, String basename) {
-    if (!param.tlAnnotationsHere.isEmpty()) {
-      for (Annotation declAnno : param.tlAnnotationsHere) {
-        formatAnnotation(sb, declAnno);
-        sb.append(" ");
-      }
-      sb.delete(sb.length() - 1, sb.length());
+    for (Annotation declAnno : param.tlAnnotationsHere) {
+      formatAnnotation(sb, declAnno);
+      sb.append(' ');
     }
     formatAFieldImpl(sb, param, parameterName, basename);
   }
@@ -419,7 +414,7 @@ public final class SceneToStubWriter {
    * printed using the name of the class as {@code basetypeToPrint} instead of the javac type. The
    * other version of this method should be preferred in every other case.
    *
-   * @param sb where to formate the type to
+   * @param sb where to format the type to
    * @param aType the scene-lib representation of the type, or null if only the unannotated type is
    *     to be printed
    * @param javacType the javac representation of the type, or null if this is a receiver parameter
@@ -466,7 +461,7 @@ public final class SceneToStubWriter {
       formatAnnotations(sb, aType.tlAnnotationsHere);
     }
     sb.append(basetypeToPrint);
-    sb.append(" ");
+    sb.append(' ');
   }
 
   /** Writes an import statement for each annotation used in an {@link AScene}. */
@@ -718,8 +713,7 @@ public final class SceneToStubWriter {
     // comes first; within package sort by class name.
     @SuppressWarnings("signature") // scene-lib bytecode lacks signature annotations
     List<@BinaryName String> classes = new ArrayList<>(scene.getAScene().getClasses().keySet());
-    Collections.sort(
-        classes,
+    classes.sort(
         (o1, o2) ->
             ComparisonChain.start()
                 .compare(
@@ -752,7 +746,7 @@ public final class SceneToStubWriter {
               fileWriter = new FileWriter(filename, StandardCharsets.UTF_8);
               printWriter = new PrintWriter(fileWriter);
             } catch (IOException e) {
-              throw new BugInCF("error writing file during WPI: " + filename);
+              throw new BugInCF(e, "error opening file during WPI: %s", filename);
             }
 
             // Write out all imports
@@ -781,6 +775,13 @@ public final class SceneToStubWriter {
       } catch (IOException e) {
         // Nothing to do since exceptions thrown from a finally block have no effect.
       }
+    }
+
+    // A PrintWriter never throws IOException; it records the fact that an error occurred, and
+    // checkError() returns it.  Closing the PrintWriter above flushed all output, so an error
+    // during writing or closing has been recorded by now.
+    if (printWriter != null && printWriter.checkError()) {
+      throw new BugInCF("error writing file during WPI: %s", filename);
     }
   }
 
@@ -882,11 +883,7 @@ public final class SceneToStubWriter {
    * @return a string containing that many indents
    */
   private static String indents(int n) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < n; i++) {
-      sb.append(INDENT);
-    }
-    return sb.toString();
+    return INDENT.repeat(Math.max(0, n));
   }
 
   /**

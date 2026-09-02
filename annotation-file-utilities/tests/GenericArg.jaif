@@ -17,4 +17,3 @@ local j: @X
 class GenericArg$Tricky:
 method argh(Ljava/lang/Object;)V:
 local a: @X
-

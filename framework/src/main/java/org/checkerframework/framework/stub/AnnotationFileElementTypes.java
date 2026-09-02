@@ -4,10 +4,8 @@ import com.sun.source.tree.CompilationUnitTree;
 import io.github.classgraph.ClassGraph;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ProcessBuilder.Redirect;
 import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -51,9 +49,8 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
-import org.plumelib.util.SystemPlume;
 
 /**
  * Holds information about types parsed from annotation files (stub files or ajava files). When
@@ -152,8 +149,8 @@ public class AnnotationFileElementTypes {
    * <p>If a type is annotated with a qualifier from the same hierarchy in more than one stub file,
    * the qualifier in the last stub file is applied.
    *
-   * <p>If using JDK 11, then the JDK stub files are only parsed if a type or declaration annotation
-   * is requested from a class in that file.
+   * <p>The JDK stub files are only parsed if a type or declaration annotation is requested from a
+   * class in that file.
    */
   public void parseStubFiles() {
     if (stubDebug) {
@@ -272,7 +269,7 @@ public class AnnotationFileElementTypes {
     parsing = true;
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-    try (InputStream in = new FileInputStream(ajavaPath)) {
+    try (InputStream in = Files.newInputStream(Paths.get(ajavaPath))) {
       if (stubDebug) {
         AnnotationFileParser.stubDebugStatic(
             processingEnv,
@@ -472,32 +469,34 @@ public class AnnotationFileElementTypes {
     } else {
       // Handle annotations on record declarations.
       boolean canTransferAnnotationsToSameName;
-      Element enclosingType; // Do nothing unless this element is a record.
-      switch (elt.getKind()) {
-        case METHOD:
-          // Annotations transfer to zero-arg accessor methods of same name:
-          canTransferAnnotationsToSameName = ((ExecutableElement) elt).getParameters().isEmpty();
-          enclosingType = elt.getEnclosingElement();
-          break;
-        case FIELD:
-          // Annotations transfer to fields of same name:
-          canTransferAnnotationsToSameName = true;
-          enclosingType = elt.getEnclosingElement();
-          break;
-        case PARAMETER:
-          // Annotations transfer to compact canonical constructor parameter of same name:
-          canTransferAnnotationsToSameName =
-              ElementUtils.isCompactCanonicalRecordConstructor(elt.getEnclosingElement())
-                  && elt.getEnclosingElement().getKind() == ElementKind.CONSTRUCTOR;
-          enclosingType = elt.getEnclosingElement().getEnclosingElement();
-          break;
-        default:
-          canTransferAnnotationsToSameName = false;
-          enclosingType = null;
-          break;
-      }
+      // Do nothing unless this element is a record.
+      Element enclosingType =
+          switch (elt.getKind()) {
+            case METHOD -> {
+              // Annotations transfer to zero-arg accessor methods of same name:
+              canTransferAnnotationsToSameName =
+                  ((ExecutableElement) elt).getParameters().isEmpty();
+              yield elt.getEnclosingElement();
+            }
+            case FIELD -> {
+              // Annotations transfer to fields of same name:
+              canTransferAnnotationsToSameName = true;
+              yield elt.getEnclosingElement();
+            }
+            case PARAMETER -> {
+              // Annotations transfer to compact canonical constructor parameter of same name:
+              canTransferAnnotationsToSameName =
+                  ElementUtils.isCompactCanonicalRecordConstructor(elt.getEnclosingElement())
+                      && elt.getEnclosingElement().getKind() == ElementKind.CONSTRUCTOR;
+              yield elt.getEnclosingElement().getEnclosingElement();
+            }
+            default -> {
+              canTransferAnnotationsToSameName = false;
+              yield null;
+            }
+          };
 
-      if (canTransferAnnotationsToSameName && enclosingType.getKind().toString().equals("RECORD")) {
+      if (canTransferAnnotationsToSameName && enclosingType.getKind() == ElementKind.RECORD) {
         AnnotationFileParser.RecordStub recordStub =
             annotationFileAnnos.records.get(enclosingType.getSimpleName().toString());
         if (recordStub != null
@@ -613,17 +612,12 @@ public class AnnotationFileElementTypes {
       } else if (factory.types.isSubtype(receiverTypeMirror, fakeLocation)) {
         TypeElement fakeElement = TypesUtils.getTypeElement(fakeLocation);
         switch (fakeElement.getKind()) {
-          case CLASS:
-          case ENUM:
-            applicableClasses.add(fakeLocation);
-            break;
-          case INTERFACE:
-          case ANNOTATION_TYPE:
-            applicableInterfaces.add(fakeLocation);
-            break;
-          default:
-            throw new BugInCF(
-                "What type? %s %s %s", fakeElement.getKind(), fakeElement.getClass(), fakeElement);
+          case CLASS, ENUM -> applicableClasses.add(fakeLocation);
+          case INTERFACE, ANNOTATION_TYPE -> applicableInterfaces.add(fakeLocation);
+          default ->
+              throw new BugInCF(
+                  "What type? %s %s %s",
+                  fakeElement.getKind(), fakeElement.getClass(), fakeElement);
         }
       }
     }
@@ -737,7 +731,7 @@ public class AnnotationFileElementTypes {
    */
   private void parseJdkStubFile(Path path) {
     parsing = true;
-    try (FileInputStream jdkStub = new FileInputStream(path.toFile())) {
+    try (InputStream jdkStub = Files.newInputStream(path)) {
       AnnotationFileParser.parseJdkFileAsStub(
           path.toFile().getName(),
           jdkStub,
@@ -900,7 +894,7 @@ public class AnnotationFileElementTypes {
     JarURLConnection connection = getJarURLConnectionToJdk();
 
     try (JarFile jarFile = connection.getJarFile()) {
-      ArrayList<JarEntry> entries = CollectionsPlume.makeArrayList(jarFile.entries());
+      ArrayList<JarEntry> entries = CollectionsP.makeArrayList(jarFile.entries());
       entries.sort(Comparator.comparing(Object::toString));
       for (JarEntry jarEntry : entries) {
         // filter out directories and non-Java files
@@ -933,20 +927,7 @@ public class AnnotationFileElementTypes {
             "End of remainingJdkStubFilesJar for %s from %s.%n", factoryClass, jarFileURL);
 
         System.out.printf("Contents of %s:%n", jarFileURL);
-        assert jarFileURL.startsWith("file:");
-        ProcessBuilder pb =
-            new ProcessBuilder(
-                "/bin/sh", "-c", "jar tf '" + jarFileURL.substring(5) + "' | LC_ALL=C sort");
-        pb.redirectOutput(Redirect.INHERIT);
-        pb.redirectError(Redirect.INHERIT);
-        Process p = pb.start();
-        try {
-          p.waitFor();
-        } catch (InterruptedException e) {
-          // do nothing
-        }
-        System.out.flush();
-        SystemPlume.sleep(1);
+        printSortedIndented(entries.stream().map(JarEntry::getName).collect(Collectors.toList()));
         System.out.printf("End of %s.%n", jarFileURL);
       }
     } catch (IOException e) {

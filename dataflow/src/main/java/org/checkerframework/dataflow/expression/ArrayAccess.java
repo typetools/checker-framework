@@ -70,11 +70,23 @@ public class ArrayAccess extends JavaExpression {
   }
 
   @Override
-  public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof ArrayAccess)) {
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof ArrayAccess other)) {
       return false;
     }
-    ArrayAccess other = (ArrayAccess) je;
+    return array.equals(other.array) && index.equals(other.index);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(array, index);
+  }
+
+  @Override
+  public boolean syntacticEquals(JavaExpression je) {
+    if (!(je instanceof ArrayAccess other)) {
+      return false;
+    }
     return array.syntacticEquals(other.array) && index.syntacticEquals(other.index);
   }
 
@@ -86,6 +98,12 @@ public class ArrayAccess extends JavaExpression {
   }
 
   @Override
+  public boolean containsAsReceiver(AnnotationProvider provider, JavaExpression other) {
+    // The index is not consulted: `a[i]` is reached through `a`, but not through `i`.
+    return syntacticEquals(other) || array.containsAsReceiver(provider, other);
+  }
+
+  @Override
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
     if (array.containsModifiableAliasOf(store, other)) {
       return true;
@@ -94,26 +112,12 @@ public class ArrayAccess extends JavaExpression {
   }
 
   @Override
-  public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ArrayAccess)) {
-      return false;
-    }
-    ArrayAccess other = (ArrayAccess) obj;
-    return array.equals(other.array) && index.equals(other.index);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(array, index);
-  }
-
-  @Override
   public String toString() {
     StringBuilder result = new StringBuilder();
     result.append(array.toString());
-    result.append("[");
+    result.append('[');
     result.append(index.toString());
-    result.append("]");
+    result.append(']');
     return result.toString();
   }
 

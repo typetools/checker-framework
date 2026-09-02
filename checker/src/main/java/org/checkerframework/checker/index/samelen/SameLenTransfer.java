@@ -88,8 +88,7 @@ public class SameLenTransfer extends CFTransfer {
     Node recNode = node.getTarget();
 
     // Handle b = new T[a.length]
-    if (exprNode instanceof ArrayCreationNode) {
-      ArrayCreationNode acNode = (ArrayCreationNode) exprNode;
+    if (exprNode instanceof ArrayCreationNode acNode) {
       if (acNode.getDimensions().size() == 1) {
 
         Node lengthNode = acNode.getDimension(0);
@@ -165,6 +164,9 @@ public class SameLenTransfer extends CFTransfer {
       try {
         je = atypeFactory.parseJavaExpressionString(exprString, currentPath);
       } catch (JavaExpressionParseException e) {
+        // Do not report the error here; that would duplicate the one that DependentTypesHelper
+        // issues for the `@SameLen` annotation, whose `value` element is a `@JavaExpression`.
+        // Skipping the expression only loses precision.
         continue;
       }
       store.clearValue(je);
@@ -174,9 +176,9 @@ public class SameLenTransfer extends CFTransfer {
 
   /** Returns true if node is of the form "someArray.length". */
   private boolean isArrayLengthAccess(Node node) {
-    return (node instanceof FieldAccessNode
-        && ((FieldAccessNode) node).getFieldName().equals("length")
-        && ((FieldAccessNode) node).getReceiver().getType().getKind() == TypeKind.ARRAY);
+    return (node instanceof FieldAccessNode fan
+        && fan.getFieldName().equals("length")
+        && fan.getReceiver().getType().getKind() == TypeKind.ARRAY);
   }
 
   /**

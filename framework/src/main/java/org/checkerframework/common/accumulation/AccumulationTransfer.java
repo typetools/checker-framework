@@ -14,7 +14,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * The default transfer function for an accumulation checker.
@@ -83,9 +83,9 @@ public class AccumulationTransfer
     }
 
     Tree tree = node.getTree();
-    if (tree != null && tree instanceof MethodInvocationTree) {
+    if (tree instanceof MethodInvocationTree mit) {
       Node receiver = ((MethodInvocationNode) node).getTarget().getReceiver();
-      if (receiver != null && atypeFactory.returnsThis((MethodInvocationTree) tree)) {
+      if (receiver != null && atypeFactory.returnsThis(mit)) {
         accumulate(receiver, result, values);
       }
     }
@@ -110,7 +110,7 @@ public class AccumulationTransfer
     if (flowValue != null) {
       Set<String> accumulatedValues = flowValue.getAccumulatedValues();
       if (accumulatedValues != null) {
-        valuesAsList = CollectionsPlume.concatenate(valuesAsList, accumulatedValues);
+        valuesAsList = CollectionsP.concatenate(valuesAsList, accumulatedValues);
       } else {
         AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
         assert flowAnnos.size() <= 1;

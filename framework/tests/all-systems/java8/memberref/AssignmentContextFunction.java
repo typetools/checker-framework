@@ -10,12 +10,12 @@ public class AssignmentContextFunction {
   Object o1 = (Object) (FunctionAC) String::toString;
 
   void take(FunctionAC f) {
-    // Test argument assingment
+    // Test argument assignment
     take(String::toString);
   }
 
   FunctionAC supply() {
-    // Test return assingment
+    // Test return assignment
     return String::toString;
   }
 }

@@ -11,7 +11,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * can be retrieved by calling the appropriate getter method. See {@link
  * org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher} for an example.
  */
-public class CFGVisualizeOptions {
+public final class CFGVisualizeOptions {
 
   /** Default method name. */
   private static final String DEFAULT_METHOD = "test";
@@ -106,43 +106,40 @@ public class CFGVisualizeOptions {
 
     for (int i = 1; i < args.length; i++) {
       switch (args[i]) {
-        case "--outputdir":
-          if (i >= args.length - 1) {
+        case "--outputdir" -> {
+          if (i >= args.length - 1 || args[i + 1].startsWith("--")) {
             printError("Did not find <outputdir> after --outputdir.");
+            error = true;
             continue;
           }
           i++;
           output = args[i];
-          break;
-        case "--pdf":
-          pdf = true;
-          break;
-        case "--method":
-          if (i >= args.length - 1) {
+        }
+        case "--pdf" -> pdf = true;
+        case "--method" -> {
+          if (i >= args.length - 1 || args[i + 1].startsWith("--")) {
             printError("Did not find <name> after --method.");
+            error = true;
             continue;
           }
           i++;
           method = args[i];
-          break;
-        case "--class":
-          if (i >= args.length - 1) {
+        }
+        case "--class" -> {
+          if (i >= args.length - 1 || args[i + 1].startsWith("--")) {
             printError("Did not find <name> after --class.");
+            error = true;
             continue;
           }
           i++;
           clas = args[i];
-          break;
-        case "--verbose":
-          verbose = true;
-          break;
-        case "--string":
-          string = true;
-          break;
-        default:
+        }
+        case "--verbose" -> verbose = true;
+        case "--string" -> string = true;
+        default -> {
           printError("Unknown command line argument: " + args[i]);
           error = true;
-          break;
+        }
       }
     }
 

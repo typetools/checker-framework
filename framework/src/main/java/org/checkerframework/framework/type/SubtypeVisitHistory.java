@@ -18,10 +18,16 @@ import org.plumelib.util.IPair;
  * <p>This class is primarily used to implement isSubtype(ATM, ATM). The pair of types corresponds
  * to the subtype and the supertype being checked. A single subtype may be visited more than once,
  * but with a different supertype. For example, if the two types are {@code @A T extends @B
- * Serializable<T>} and {@code @C Serializable<?>}, then isSubtype is first called one those types
+ * Serializable<T>} and {@code @C Serializable<?>}, then isSubtype is first called on those types
  * and then on {@code @B Serializable<T>} and {@code @C Serializable<?>}.
+ *
+ * <p>Callers should call {@link #clear} once an outermost (non-nested) {@code isSubtype} call
+ * completes, so that the history does not accumulate entries across unrelated {@code isSubtype}
+ * calls. Entries only need to persist for the duration of a single such call, to guard against
+ * infinite recursion within it; letting the map grow for the whole compilation unit only makes
+ * every subsequent lookup slower, for no benefit, since unrelated calls do not repeat the same
+ * (type1, type2) pair.
  */
-// TODO: do we need to clear the history sometimes?
 public class SubtypeVisitHistory {
 
   /**
@@ -91,6 +97,11 @@ public class SubtypeVisitHistory {
     IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = IPair.of(type1, type2);
     AnnotationMirrorSet hit = visited.get(key);
     return hit != null && hit.contains(currentTop);
+  }
+
+  /** Removes all entries from the history. */
+  public void clear() {
+    visited.clear();
   }
 
   @Override

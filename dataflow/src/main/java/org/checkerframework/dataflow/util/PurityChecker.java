@@ -20,6 +20,7 @@ import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -40,7 +41,12 @@ import org.plumelib.util.IPair;
  * @see Deterministic
  * @see Pure
  */
-public class PurityChecker {
+public final class PurityChecker {
+
+  /** Do not instantiate. */
+  private PurityChecker() {
+    throw new Error("Do not instantiate");
+  }
 
   /**
    * Compute whether the given statement is side-effect-free, deterministic, or both. Returns a
@@ -83,17 +89,19 @@ public class PurityChecker {
     protected final List<IPair<Tree, String>> notBothReasons = new ArrayList<>(1);
 
     /**
-     * Contains all the varieties of purity that the expression has. Starts out with all varieties,
-     * and elements are removed from it as violations are found.
+     * Contains the varieties of purity that the expression has. Starts out with the purities that a
+     * method body can be analyzed for ({@link PurityKind#SIDE_EFFECT_FREE} and {@link
+     * PurityKind#DETERMINISTIC}), and elements are removed from it as violations are found.
      */
-    protected EnumSet<Pure.Kind> kinds = EnumSet.allOf(Pure.Kind.class);
+    protected EnumSet<PurityKind> kinds =
+        EnumSet.of(PurityKind.SIDE_EFFECT_FREE, PurityKind.DETERMINISTIC);
 
     /**
      * Returns the kinds of purity that the method has.
      *
      * @return the kinds of purity that the method has
      */
-    public EnumSet<Pure.Kind> getKinds() {
+    public EnumSet<PurityKind> getKinds() {
       return kinds;
     }
 
@@ -103,7 +111,7 @@ public class PurityChecker {
      * @param otherKinds the varieties of purity to check
      * @return true if the method is pure with respect to all the given kinds
      */
-    public boolean isPure(EnumSet<Pure.Kind> otherKinds) {
+    public boolean isPure(EnumSet<PurityKind> otherKinds) {
       return kinds.containsAll(otherKinds);
     }
 
@@ -124,7 +132,7 @@ public class PurityChecker {
      */
     public void addNotSEFreeReason(Tree t, String msgId) {
       notSEFreeReasons.add(IPair.of(t, msgId));
-      kinds.remove(Pure.Kind.SIDE_EFFECT_FREE);
+      kinds.remove(PurityKind.SIDE_EFFECT_FREE);
     }
 
     /**
@@ -144,7 +152,7 @@ public class PurityChecker {
      */
     public void addNotDetReason(Tree t, String msgId) {
       notDetReasons.add(IPair.of(t, msgId));
-      kinds.remove(Pure.Kind.DETERMINISTIC);
+      kinds.remove(PurityKind.DETERMINISTIC);
     }
 
     /**
@@ -164,8 +172,8 @@ public class PurityChecker {
      */
     public void addNotBothReason(Tree t, String msgId) {
       notBothReasons.add(IPair.of(t, msgId));
-      kinds.remove(Pure.Kind.DETERMINISTIC);
-      kinds.remove(Pure.Kind.SIDE_EFFECT_FREE);
+      kinds.remove(PurityKind.DETERMINISTIC);
+      kinds.remove(PurityKind.SIDE_EFFECT_FREE);
     }
 
     @Override
@@ -240,23 +248,30 @@ public class PurityChecker {
     }
 
     /** Represents a method that is both deterministic and side-effect free. */
-    private static final EnumSet<Pure.Kind> detAndSeFree =
-        EnumSet.of(Pure.Kind.DETERMINISTIC, Pure.Kind.SIDE_EFFECT_FREE);
+    private static final EnumSet<PurityKind> detAndSeFree =
+        EnumSet.of(PurityKind.DETERMINISTIC, PurityKind.SIDE_EFFECT_FREE);
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void ignore) {
       ExecutableElement elt = TreeUtils.elementFromUse(tree);
-      if (!PurityUtils.hasPurityAnnotation(annoProvider, elt)) {
+      EnumSet<PurityKind> eltPurityKinds = PurityUtils.getPurityKinds(annoProvider, elt);
+      if (!eltPurityKinds.contains(PurityKind.SIDE_EFFECT_FREE)
+          && !eltPurityKinds.contains(PurityKind.DETERMINISTIC)) {
+        // The called method has no purity annotation, so the callee is not pure either.
         purityResult.addNotBothReason(tree, "call");
       } else {
-        EnumSet<Pure.Kind> purityKinds =
+        // The called method has a purity annotation:  @SideEffectFree, @Deterministic, or both.
+        EnumSet<PurityKind> purityKinds =
             ((assumeDeterministic && assumeSideEffectFree)
                     || (assumePureGetters && ElementUtils.isGetter(elt)))
                 // Avoid computation if not necessary
                 ? detAndSeFree
-                : PurityUtils.getPurityKinds(annoProvider, elt);
-        boolean det = assumeDeterministic || purityKinds.contains(Pure.Kind.DETERMINISTIC);
-        boolean seFree = assumeSideEffectFree || purityKinds.contains(Pure.Kind.SIDE_EFFECT_FREE);
+                : eltPurityKinds;
+        boolean det =
+            assumeDeterministic
+                || purityKinds.contains(PurityKind.DETERMINISTIC)
+                || elt.getReturnType().getKind() == TypeKind.VOID;
+        boolean seFree = assumeSideEffectFree || purityKinds.contains(PurityKind.SIDE_EFFECT_FREE);
         if (!det && !seFree) {
           purityResult.addNotBothReason(tree, "call");
         } else if (!det) {
@@ -283,7 +298,7 @@ public class PurityChecker {
       //    @SideEffectFree and the args are pure, and forbid all enclosing try statements
       //    that have a catch clause.
       // More precise rule:
-      //  * permit other non-deterministic expresssions within throw (at which time move this
+      //  * permit other non-deterministic expressions within throw (at which time move this
       //    logic to visitThrow()).
       //  * the only bad try statements are those with a catch block that is:
       //     * unchecked exceptions
@@ -314,7 +329,7 @@ public class PurityChecker {
       boolean sideEffectFree =
           assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, ctorElement);
       // This does not use "addNotBothReason" because the reasons are different:  one is
-      // because the constructor is called at all, and the other is because the constuctor is
+      // because the constructor is called at all, and the other is because the constructor is
       // not side-effect-free.
       if (!deterministic) {
         purityResult.addNotDetReason(tree, "object.creation");
@@ -339,16 +354,13 @@ public class PurityChecker {
     @Override
     public Void visitUnary(UnaryTree tree, Void ignore) {
       switch (tree.getKind()) {
-        case POSTFIX_DECREMENT:
-        case POSTFIX_INCREMENT:
-        case PREFIX_DECREMENT:
-        case PREFIX_INCREMENT:
+        case POSTFIX_DECREMENT, POSTFIX_INCREMENT, PREFIX_DECREMENT, PREFIX_INCREMENT -> {
           ExpressionTree expression = tree.getExpression();
           assignmentCheck(expression);
-          break;
-        default:
+        }
+        default -> {
           // Nothing to do
-          break;
+        }
       }
       return super.visitUnary(tree, ignore);
     }

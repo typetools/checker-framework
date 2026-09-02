@@ -13,7 +13,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.el.AClass;
@@ -35,7 +34,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArraySet;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
 
 /**
@@ -130,30 +129,26 @@ public class ASceneWrapper {
     AScene scene = theScene.clone();
     removeAnnosFromScene(scene, annosToIgnore);
     scene.prune();
-    String filepath;
-    switch (outputFormat) {
-      case JAIF:
-        filepath = jaifPath;
-        break;
-      case STUB:
-        String astubWithChecker = "-" + checker.getClass().getCanonicalName() + ".astub";
-        filepath = jaifPath.replace(".jaif", astubWithChecker);
-        break;
-      default:
-        throw new BugInCF("Unhandled outputFormat " + outputFormat);
-    }
+    String filepath =
+        switch (outputFormat) {
+          case JAIF -> jaifPath;
+          case STUB -> {
+            String astubWithChecker = "-" + checker.getClass().getCanonicalName() + ".astub";
+            yield jaifPath.replace(".jaif", astubWithChecker);
+          }
+          default -> throw new BugInCF("Unhandled outputFormat " + outputFormat);
+        };
     new File(filepath).delete();
     // Only write non-empty scenes into files.
     if (!scene.isEmpty()) {
       try {
         switch (outputFormat) {
-          case STUB:
-            // For stub files, pass in the checker to compute contracts on the fly;
-            // precomputing yields incorrect annotations, most likely due to nested
-            // classes.
-            SceneToStubWriter.write(this, filepath, checker);
-            break;
-          case JAIF:
+          case STUB ->
+              // For stub files, pass in the checker to compute contracts on the fly;
+              // precomputing yields incorrect annotations, most likely due to nested
+              // classes.
+              SceneToStubWriter.write(this, filepath, checker);
+          case JAIF -> {
             // For .jaif files, precompute contracts because the Annotation File
             // Utilities knows nothing about (and cannot depend on) the Checker
             // Framework.
@@ -164,7 +159,7 @@ public class ASceneWrapper {
                 List<AnnotationMirror> contractAnnotationMirrors =
                     checker.getTypeFactory().getContractAnnotations(aMethod);
                 List<Annotation> contractAnnotations =
-                    CollectionsPlume.mapList(
+                    CollectionsP.mapList(
                         AnnotationConverter::annotationMirrorToAnnotation,
                         contractAnnotationMirrors);
                 aMethod.contracts = contractAnnotations;
@@ -173,9 +168,8 @@ public class ASceneWrapper {
             try (Writer fw = Files.newBufferedWriter(Paths.get(filepath), StandardCharsets.UTF_8)) {
               IndexFileWriter.write(scene, fw);
             }
-            break;
-          default:
-            throw new BugInCF("Unhandled outputFormat " + outputFormat);
+          }
+          default -> throw new BugInCF("Unhandled outputFormat " + outputFormat);
         }
       } catch (IOException e) {
         throw new UserError("Problem while writing %s: %s", filepath, e.getMessage());
@@ -220,9 +214,10 @@ public class ASceneWrapper {
       }
     }
 
+    // Mark this class and each of its enclosing classes, because a stub file must print the
+    // declaration of every enclosing class, using the right keyword for each one.
     ClassSymbol outerClass = classSymbol;
-    ClassSymbol previous = classSymbol;
-    do {
+    while (outerClass != null) {
       if (outerClass.getKind() == ElementKind.ANNOTATION_TYPE) {
         aClass.markAsAnnotation(outerClass.getSimpleName().toString());
       } else if (outerClass.isEnum()) {
@@ -232,16 +227,12 @@ public class ASceneWrapper {
         // } else if (outerClass.isRecord()) {
         //   aClass.markAsRecord(outerClass.getSimpleName().toString());
       }
-      Element element = classSymbol.getEnclosingElement();
+      Element element = outerClass.getEnclosingElement();
       if (element == null || element.getKind() == ElementKind.PACKAGE) {
         break;
       }
-      TypeElement t = ElementUtils.enclosingTypeElement(element);
-      previous = outerClass;
-      outerClass = (ClassSymbol) t;
-      // It is necessary to check that previous isn't equal to outer class because
-      // otherwise this loop will sometimes run forever.
-    } while (outerClass != null && !previous.equals(outerClass));
+      outerClass = (ClassSymbol) ElementUtils.enclosingTypeElement(element);
+    }
 
     aClass.setTypeElement(classSymbol);
   }

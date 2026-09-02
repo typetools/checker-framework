@@ -22,17 +22,22 @@ import java.lang.annotation.Target;
  *
  * <p>Writing {@code @IndexOrHigh("arr")} is equivalent to writing {@link NonNegative @NonNegative}
  * {@link LTEqLengthOf @LTEqLengthOf("arr")}, and that is how it is treated internally by the
- * checker. Thus, if you write an {@code @IndexFor("arr")} annotation, you might see warnings about
- * {@code @NonNegative} or {@code @LTEqLengthOf}.
+ * checker. Thus, if you write an {@code @IndexOrHigh("arr")} annotation, you might see warnings
+ * about {@code @NonNegative} or {@code @LTEqLengthOf}.
  *
  * @see NonNegative
- * @see LTLengthOf
+ * @see LTEqLengthOf
  * @checker_framework.manual #index-checker Index Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface IndexOrHigh {
-  /** Sequences that the annotated expression is a valid index for or is equal to the length of. */
+  /**
+   * The annotated expression is a valid index for, or is equal to the length of, each sequence.
+   *
+   * @return sequences that the annotated expression is a valid index for or is equal to the length
+   *     of
+   */
   String[] value();
 }

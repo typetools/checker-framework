@@ -37,7 +37,7 @@ record NormalizingRecordIllegalConstructor1(String s) {
 record NormalizingRecordIllegalConstructor2(@Nullable String s) {
   NormalizingRecordIllegalConstructor2(String s) {
     if (s.equals("")) {
-      // The formal parametr type is @NonNull, so this assignment to it is illegal.
+      // The formal parameter type is @NonNull, so this assignment to it is illegal.
       // :: error: [assignment]
       s = null;
     }

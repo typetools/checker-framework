@@ -3,6 +3,7 @@
 // guarantee that your program will not throw a NullPointerException.
 
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import java.util.function.Supplier;
 

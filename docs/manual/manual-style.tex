@@ -26,7 +26,7 @@
 %%HEVEA \newcommand{\code}[1]{\codesize{\texttt{#1}}}
 \def\<#1>{\code{#1}}
 
-% Don't use \ahref which makes no hyperlink; use \href or \ahrefforurl instead.
+% Don't use \ahref which makes no hyperlink; use \href or \ahreforurl instead.
 % \ahrefloc is for internal links to a LaTeX label, but only works in HTML
 % (no hyperlink in PDF).
 
@@ -34,7 +34,7 @@
 \newcommand{\myurl}[1]{{\codesize\url{#1}}}
 %HEVEA \def\myurl{\url}
 % A command that shows the URL in the printed manual.
-% Make a URL visible in PDF the but just be attached to anchor text in HTML:
+% Make a URL visible in the PDF but just be attached to anchor text in HTML:
 %BEGIN LATEX
 \newcommand{\ahreforurl}[2]{#2 (\url{#1})}
 %END LATEX
@@ -171,9 +171,9 @@
 \newcommand{\refenum}[4]{\href{../api/org/checkerframework/#1/#2.html\##3#4}{\<#3>}}
 
 % Reference to Oracle (previously Sun) Javadoc.
-% Arg 1: .html reference, without the .../api/ prefix
+% Arg 1: .html reference, without the .../api/ prefix.  Quote "#" as "\#" if it appears.
 % Arg 2: What will appear in the formatted manual.
-% Do not use \url in the body of any macro
+% Do not use \url in the body of any macro.
 \newcommand{\sunjavadoc}[2]{\href{https://docs.oracle.com/en/java/javase/25/docs/api/#1}{\<#2>}}
 % Like \sunjavadoc, but for annotations and prepends "@".
 \newcommand{\sunjavadocanno}[2]{\href{https://docs.oracle.com/en/java/javase/25/docs/api/#1}{\<@#2>}}

@@ -126,8 +126,7 @@ public class OptionalImplTransfer extends CFTransfer {
       if (lambdaParams.size() == 1) {
         TreePath lambdaPath = optionalTypeFactory.getPath(lambdaTree);
         Tree lambdaParent = lambdaPath.getParentPath().getLeaf();
-        if (lambdaParent instanceof MethodInvocationTree) {
-          MethodInvocationTree invok = (MethodInvocationTree) lambdaParent;
+        if (lambdaParent instanceof MethodInvocationTree invok) {
           ExecutableElement methodElt = TreeUtils.elementFromUse(invok);
           if (methodElt.equals(optionalIfPresent) || methodElt.equals(optionalIfPresentOrElse)) {
             // `underlyingAST` is an invocation of `Optional.ifPresent()` or

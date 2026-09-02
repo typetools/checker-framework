@@ -8,7 +8,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** Miscellaneous static utility methods. */
-public class InternalUtils {
+public final class InternalUtils {
 
   // Class cannot be instantiated.
   private InternalUtils() {

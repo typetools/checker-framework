@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 // Nullable receivers don't make a lot of sense
-// But this class tests the sub supertype recevier relationships.
+// But this class tests the sub supertype receiver relationships.
 // It could just use tainted.
 
 interface Unbound1 {

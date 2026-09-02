@@ -40,8 +40,13 @@ public class SuperReference extends JavaExpression {
   }
 
   @Override
-  public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
-    return false;
+  public boolean equals(@Nullable Object obj) {
+    return obj instanceof SuperReference;
+  }
+
+  @Override
+  public int hashCode() {
+    return 0;
   }
 
   @Override
@@ -55,13 +60,8 @@ public class SuperReference extends JavaExpression {
   }
 
   @Override
-  public boolean equals(@Nullable Object obj) {
-    return obj instanceof SuperReference;
-  }
-
-  @Override
-  public int hashCode() {
-    return 0;
+  public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
+    return false;
   }
 
   @Override

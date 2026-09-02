@@ -64,6 +64,7 @@ public class ContractsFromMethod {
    */
   public Set<Contract> getContracts(ExecutableElement executableElement) {
     Set<Contract> contracts = new LinkedHashSet<>();
+    // TODO: It is inefficient to call getContractsOfKind three times.
     contracts.addAll(getPreconditions(executableElement));
     contracts.addAll(getPostconditions(executableElement));
     contracts.addAll(getConditionalPostconditions(executableElement));

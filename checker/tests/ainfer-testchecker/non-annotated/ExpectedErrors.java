@@ -34,7 +34,7 @@ public class ExpectedErrors {
   private @AinferBottom int privateDeclaredField2;
   public @AinferBottom int publicDeclaredField2;
 
-  // The refinement cannot happen and an assignemnt type incompatible error occurs.
+  // The refinement cannot happen and an assignment type incompatible error occurs.
   void assignFieldsToAinferTop() {
     // :: warning: [assignment]
     privateDeclaredField2 = getAinferTop();
@@ -202,7 +202,7 @@ public class ExpectedErrors {
 
     // The types of both fields are not refined to @AinferBottom, as whole-program
     // inference never performs refinement in the presence of the null literal.
-    @SuppressWarnings("value")
+    @SuppressWarnings({"value", "unneeded.suppression"})
     void assignFieldsToBottom() {
       privateField = null;
       publicField = null;

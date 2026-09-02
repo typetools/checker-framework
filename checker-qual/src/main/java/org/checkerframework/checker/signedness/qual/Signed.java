@@ -32,16 +32,9 @@ import org.checkerframework.framework.qual.UpperBoundFor;
       TypeKind.FLOAT,
       TypeKind.DOUBLE
     },
-    types = {
-      java.lang.Byte.class,
-      java.lang.Integer.class,
-      java.lang.Long.class,
-      java.lang.Short.class,
-      java.lang.Float.class,
-      java.lang.Double.class
-    },
+    types = {Byte.class, Integer.class, Long.class, Short.class, Float.class, Double.class},
     value = TypeUseLocation.EXCEPTION_PARAMETER)
 @UpperBoundFor(
     typeKinds = {TypeKind.FLOAT, TypeKind.DOUBLE},
-    types = {java.lang.Float.class, java.lang.Double.class})
+    types = {Float.class, Double.class})
 public @interface Signed {}

@@ -12,7 +12,7 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import org.checkerframework.framework.test.diagnostics.JavaDiagnosticReader;
 import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /** Used by the Checker Framework test suite to run the framework and generate a test result. */
 public class TypecheckExecutor {
@@ -96,12 +96,12 @@ public class TypecheckExecutor {
             "javac "
                 + String.join(" ", options)
                 + " "
-                + StringsPlume.join(" ", configuration.getTestSourceFiles()));
+                + StringsP.join(" ", configuration.getTestSourceFiles()));
       }
 
       JavaCompiler.CompilationTask task =
           compiler.getTask(
-              javacOutput, fileManager, diagnostics, options, new ArrayList<String>(), javaFiles);
+              javacOutput, fileManager, diagnostics, options, new ArrayList<>(), javaFiles);
 
       /*
        * In Eclipse, std out and std err for multiple tests appear as one

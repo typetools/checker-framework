@@ -11,6 +11,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * class type parameter, etc.).
  */
 final class NotInMethodCriterion implements Criterion {
+  /** Creates a NotInMethodCriterion. */
+  public NotInMethodCriterion() {}
 
   @Override
   public Kind getKind() {

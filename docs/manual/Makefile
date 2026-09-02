@@ -2,17 +2,20 @@
 # Make will silently continue if that file does not exist.
 -include Makefile.user
 
+.PHONY: all test clean
 all: manual.pdf manual.html ../api
+test: all
 
 .PHONY: figures-all
 figures-all:
 	${MAKE} -C figures all
 
-manual.pdf: *.tex plume-bib figures-all check-labels
 # It is not harmful to run `latexmk` needlessly because it does its own dependency check,
 # which depends on file contents, not timestamp.
+manual.pdf: *.tex plume-bib figures-all check-labels
 	latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
 
+.PHONY: html
 html: manual.html
 manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 	hevea -fix svg.hva -exec xxdate.exe manual.tex
@@ -26,9 +29,10 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 	./hevea-retarget-crossrefs < manual.html-with-htoc > manual.html
 	\rm -f manual.html-with-htoc
 # Add CSS styling, since \newstyle doesn't work for me.
-	sed -i -e "s%<style type=\"text/css\">%<style type=\"text/css\">\nimg { max-width: 100\%; max-height: 100\%; }%" manual.html
+	sed -i.bak -e "s%<style type=\"text/css\">%<style type=\"text/css\">\nimg { max-width: 100\%; max-height: 100\%; }%" manual.html
 # Add CSS styling for some links, since \ahrefloc doesn't permit styling
-	sed -i -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
+	sed -i.bak -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
+	rm -f manual.html.bak
 
 ../../checker/bin-devel/.git-scripts:
 	cd ../.. && ./gradlew getGitScripts
@@ -63,9 +67,11 @@ plume-bib:
 
 
 # Leaves manual.html, and .svg files that it references.
+.PHONY: clean
 clean:
-	@\rm -f *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc manual.image.tex
+	@\rm -f *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc manual.image.tex TAGS
 
+.PHONY: very-clean very_clean
 very-clean: very_clean
 very_clean: clean
 	@\rm -f manual.html manual.bbl CFLogo.png manual001.png favicon-checkerframework.png *.svg
@@ -86,10 +92,10 @@ checklink-via-http: manual.html
 	(cd .. && cp -prf manual ${HOME}/public_html/tmp-cf-manual)
 	${CHECKLINK}/checklink -q -e `grep -v '^#' ${CHECKLINK}/checklink-args.txt` https://homes.cs.washington.edu/~mernst/tmp-cf-manual/manual.html
 
-.PHONY: tags
-tags: TAGS
+.PHONY: tags TAGS
+TAGS: tags
 # This target always runs because contributors.tex is always updated.
-TAGS: *.tex ../../checker/bin-devel/.plume-scripts
+tags: *.tex ../../checker/bin-devel/.plume-scripts
 # Update plume-scripts even if it is already cloned.
 	cd ../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60 && ./gradlew --stacktrace getPlumeScripts))
 # This is better than using "*.tex" because this command puts the files in the appropriate order.

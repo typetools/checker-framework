@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.afu.annotator.Main;
 import org.checkerframework.afu.scenelib.el.TypePathEntry;
 import org.checkerframework.afu.scenelib.io.ASTPath;
@@ -15,7 +16,7 @@ import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.objectweb.asm.TypePath;
 import org.plumelib.util.IPair;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Specifies something that needs to be inserted into a source file, including the "what" and the
@@ -62,7 +63,7 @@ public abstract class Insertion {
   public Insertion(Criteria criteria, boolean separateLine) {
     this.criteria = criteria;
     this.separateLine = separateLine;
-    this.packageNames = new LinkedHashSet<String>();
+    this.packageNames = new LinkedHashSet<>();
     this.inserted = false;
   }
 
@@ -240,7 +241,7 @@ public abstract class Insertion {
       return "["
           + System.lineSeparator()
           + "  "
-          + StringsPlume.join(System.lineSeparator() + "  ", list)
+          + StringsP.join(System.lineSeparator() + "  ", list)
           + System.lineSeparator()
           + "]";
     }
@@ -258,14 +259,14 @@ public abstract class Insertion {
    *
    * @param s the string representation of an annotation
    * @return given {@code @com.foo.bar(baz)} it returns a pair of {@code com.foo} and
-   *     {@code @bar(baz)}.
+   *     {@code @bar(baz)}
    */
   public static IPair<String, String> removePackage(String s) {
     int nameEnd = s.indexOf('(');
     if (nameEnd == -1) {
       nameEnd = s.length();
     }
-    int dotIndex = s.lastIndexOf(".", nameEnd);
+    int dotIndex = s.lastIndexOf('.', nameEnd);
     if (dotIndex != -1) {
       String basename = s.substring(dotIndex + 1);
       if (!alwaysQualify.contains(basename)) {
@@ -294,7 +295,7 @@ public abstract class Insertion {
     StringBuilder result = new StringBuilder();
 
     switch (type.getKind()) {
-      case DECLARED:
+      case DECLARED -> {
         DeclaredType declaredType = (DeclaredType) type;
         String typeName = declaredType.getName();
         int sep = typeName.lastIndexOf('.') + 1;
@@ -309,13 +310,11 @@ public abstract class Insertion {
         if (!declaredType.isWildcard()) {
           List<Type> typeArguments = declaredType.getTypeParameters();
           if (!typeArguments.isEmpty()) {
-            result.append('<');
-            result.append(typeToString(typeArguments.get(0), abbreviate));
-            for (int i = 1; i < typeArguments.size(); i++) {
-              result.append(", ");
-              result.append(typeToString(typeArguments.get(i), abbreviate));
+            StringJoiner sj = new StringJoiner(", ", "<", ">");
+            for (Type typeArgument : typeArguments) {
+              sj.add(typeToString(typeArgument, abbreviate));
             }
-            result.append('>');
+            result.append(sj);
           }
           Type innerType = declaredType.getInnerType();
           if (innerType != null) {
@@ -323,8 +322,8 @@ public abstract class Insertion {
             result.append(typeToString(innerType, abbreviate));
           }
         }
-        break;
-      case ARRAY:
+      }
+      case ARRAY -> {
         ArrayType arrayType = (ArrayType) type;
         result.append(typeToString(arrayType.getComponentType(), abbreviate));
         if (!arrayType.getAnnotations().isEmpty()) {
@@ -332,17 +331,16 @@ public abstract class Insertion {
         }
         writeAnnotations(type, result, abbreviate);
         result.append("[]");
-        break;
-      case BOUNDED:
+      }
+      case BOUNDED -> {
         BoundedType boundedType = (BoundedType) type;
         result.append(typeToString(boundedType.getName(), abbreviate));
         result.append(' ');
         result.append(boundedType.getBoundKind());
         result.append(' ');
         result.append(typeToString(boundedType.getBound(), abbreviate));
-        break;
-      default:
-        throw new RuntimeException("Illegal kind: " + type.getKind());
+      }
+      default -> throw new RuntimeException("Illegal kind: " + type.getKind());
     }
     // There will be extra whitespace at the end if this is only annotations, so trim
     return result.toString().trim();
@@ -361,7 +359,7 @@ public abstract class Insertion {
     for (String annotation : type.getAnnotations()) {
       AnnotationInsertion ins = new AnnotationInsertion(annotation);
       result.append(ins.getText(abbreviate));
-      result.append(" ");
+      result.append(' ');
       if (abbreviate) {
         packageNames.addAll(ins.getPackageNames());
       }
@@ -414,14 +412,14 @@ public abstract class Insertion {
         // path and actual type don't match up.
         for (TypePathEntry tpe : location) {
           switch (tpe.step) {
-            case TypePath.ARRAY_ELEMENT:
+            case TypePath.ARRAY_ELEMENT -> {
               if (type.getKind() == Type.Kind.ARRAY) {
                 type = ((ArrayType) type).getComponentType();
               } else {
                 throw new RuntimeException("Incorrect type path.");
               }
-              break;
-            case TypePath.INNER_TYPE:
+            }
+            case TypePath.INNER_TYPE -> {
               if (type.getKind() == Type.Kind.DECLARED) {
                 DeclaredType declaredType = (DeclaredType) type;
                 if (declaredType.getInnerType() == null) {
@@ -432,8 +430,8 @@ public abstract class Insertion {
               } else {
                 throw new RuntimeException("Incorrect type path.");
               }
-              break;
-            case TypePath.WILDCARD_BOUND:
+            }
+            case TypePath.WILDCARD_BOUND -> {
               if (type.getKind() == Type.Kind.BOUNDED) {
                 BoundedType boundedType = (BoundedType) type;
                 if (boundedType.getBound() == null) {
@@ -444,8 +442,8 @@ public abstract class Insertion {
               } else {
                 throw new RuntimeException("Incorrect type path.");
               }
-              break;
-            case TypePath.TYPE_ARGUMENT:
+            }
+            case TypePath.TYPE_ARGUMENT -> {
               if (type.getKind() == Type.Kind.DECLARED) {
                 DeclaredType declaredType = (DeclaredType) type;
                 if (0 <= tpe.argument && tpe.argument < declaredType.getTypeParameters().size()) {
@@ -456,9 +454,8 @@ public abstract class Insertion {
               } else {
                 throw new RuntimeException("Incorrect type path.");
               }
-              break;
-            default:
-              throw new RuntimeException("Illegal TypePathEntryKind: " + tpe.step);
+            }
+            default -> throw new RuntimeException("Illegal TypePathEntryKind: " + tpe.step);
           }
         }
         if (type.getKind() == Type.Kind.BOUNDED) {
@@ -487,14 +484,14 @@ public abstract class Insertion {
       ASTPath.ASTEntry entry = ii.next();
       Tree.Kind kind = entry.getTreeKind();
       switch (kind) {
-        case ARRAY_TYPE:
+        case ARRAY_TYPE -> {
           if (type.getKind() == Type.Kind.ARRAY) {
             type = ((ArrayType) type).getComponentType();
           } else {
             throw new RuntimeException("Incorrect type path.");
           }
-          break;
-        case MEMBER_SELECT:
+        }
+        case MEMBER_SELECT -> {
           if (type.getKind() == Type.Kind.DECLARED) {
             DeclaredType declaredType = (DeclaredType) type;
             if (declaredType.getInnerType() == null) {
@@ -505,8 +502,8 @@ public abstract class Insertion {
           } else {
             throw new RuntimeException("Incorrect type path.");
           }
-          break;
-        case PARAMETERIZED_TYPE:
+        }
+        case PARAMETERIZED_TYPE -> {
           if (type.getKind() == Type.Kind.DECLARED) {
             int arg = entry.getArgument();
             DeclaredType declaredType = (DeclaredType) type;
@@ -518,8 +515,8 @@ public abstract class Insertion {
           } else {
             throw new RuntimeException("Incorrect type path.");
           }
-          break;
-        case UNBOUNDED_WILDCARD:
+        }
+        case UNBOUNDED_WILDCARD -> {
           if (type.getKind() == Type.Kind.BOUNDED) {
             BoundedType boundedType = (BoundedType) type;
             if (boundedType.getBound() == null) {
@@ -530,9 +527,8 @@ public abstract class Insertion {
           } else {
             throw new RuntimeException("Incorrect type path.");
           }
-          break;
-        default:
-          throw new RuntimeException("Illegal TreeKind: " + kind);
+        }
+        default -> throw new RuntimeException("Illegal TreeKind: " + kind);
       }
     }
     if (type.getKind() == Type.Kind.BOUNDED) {

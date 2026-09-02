@@ -9,8 +9,8 @@ import org.checkerframework.framework.qual.JavaExpression;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The annotated expression evaluates to an integer whose length is between {@code -a.length - 1}
- * and {@code a.length - 1}, inclusive, for all sequences {@code a} listed in the annotation.
+ * The annotated expression evaluates to an integer whose value is between {@code -a.length - 1} and
+ * {@code a.length - 1}, inclusive, for all sequences {@code a} listed in the annotation.
  *
  * <p>This is the return type of {@link java.util.Arrays#binarySearch(Object[],Object)
  * Arrays.binarySearch} in the JDK.

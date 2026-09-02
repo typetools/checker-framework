@@ -246,7 +246,7 @@ abstract class OwnershipWithExceptions {
     @CreatesMustCallFor("this")
     void realloc() throws IOException {
       // Unlike in a constructor, field assignments in normal methods are not
-      // leaked when the method exits with an exception, since the reciever
+      // leaked when the method exits with an exception, since the receiver
       // is still accessible to the caller.
       resource = alloc();
       if (arbitraryChoice()) {

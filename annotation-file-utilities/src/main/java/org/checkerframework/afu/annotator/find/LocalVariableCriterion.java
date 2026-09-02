@@ -50,7 +50,7 @@ public class LocalVariableCriterion implements Criterion {
 
     Tree parent = parentPath.getLeaf();
     Tree leaf = path.getLeaf();
-    if (parent instanceof VariableTree) {
+    if (parent instanceof VariableTree vtt) {
       // parent is a variable declaration
 
       if (parentPath.getParentPath().getLeaf() instanceof MethodTree) {
@@ -58,7 +58,6 @@ public class LocalVariableCriterion implements Criterion {
         return false;
       }
 
-      VariableTree vtt = (VariableTree) parent;
       if (leaf.equals(vtt.getInitializer())) {
         // don't match in initializer
         return false;

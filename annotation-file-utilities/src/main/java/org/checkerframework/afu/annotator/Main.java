@@ -18,7 +18,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -64,7 +63,6 @@ import org.checkerframework.afu.scenelib.io.ASTRecord;
 import org.checkerframework.afu.scenelib.io.DebugWriter;
 import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.checkerframework.afu.scenelib.io.IndexFileWriter;
-import org.checkerframework.afu.scenelib.io.classfile.ClassFileReader;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.afu.scenelib.util.CommandLineUtils;
@@ -74,9 +72,9 @@ import org.objectweb.asm.TypePath;
 import org.plumelib.options.Option;
 import org.plumelib.options.OptionGroup;
 import org.plumelib.options.Options;
-import org.plumelib.reflection.ReflectionPlume;
+import org.plumelib.reflection.ReflectionP;
 import org.plumelib.util.FileIOException;
-import org.plumelib.util.FilesPlume;
+import org.plumelib.util.FilesP;
 import org.plumelib.util.IPair;
 
 /**
@@ -98,45 +96,91 @@ import org.plumelib.util.IPair;
  *
  * <ul>
  *   <li id="optiongroup:General-options">General options
- *       <ul>
- *         <li id="option:outdir"><b>-d</b> <b>--outdir=</b><i>directory</i>. Directory in which
- *             output files are written. [default: annotated/]
- *         <li id="option:in-place"><b>-i</b> <b>--in-place=</b><i>boolean</i>. If true, overwrite
- *             original source files (making a backup first). Furthermore, if the backup files
- *             already exist, they are used instead of the .java files. This behavior permits a user
- *             to tweak the {@code .jaif} file and re-run the annotator.
- *             <p>Note that if the user runs the annotator with --in-place, makes edits, and then
- *             re-runs the annotator with this --in-place option, those edits are lost. Similarly,
- *             if the user runs the annotator twice in a row with --in-place, only the last set of
- *             annotations will appear in the codebase at the end.
- *             <p>To preserve changes when using the --in-place option, first remove the backup
- *             files. Or, use the {@code -d .} option, which makes (and reads) no backup, instead of
- *             --in-place. [default: false]
- *         <li id="option:abbreviate"><b>-a</b> <b>--abbreviate=</b><i>boolean</i>. If true, insert
- *             {@code import} statements as necessary. [default: true]
- *         <li id="option:omit-annotation"><b>-o</b> <b>--omit-annotation=</b><i>string</i>. Omit
- *             given annotation
- *         <li id="option:nowarn"><b>--nowarn=</b><i>boolean</i>. Suppress warnings about disallowed
- *             insertions [default: false]
- *         <li id="option:convert-jaifs"><b>--convert-jaifs=</b><i>boolean</i>. Convert JAIFs to AST
- *             Path format, but do no insertion into source [default: false]
- *         <li id="option:help"><b>-h</b> <b>--help=</b><i>boolean</i>. Print usage information and
- *             exit [default: false]
- *       </ul>
+ *                                        <ul>
+ *                                          <li id="option:outdir"><b>-d</b>
+ *                                                                 <b>--outdir=</b><i>directory</i>.
+ *                                                                 Directory in which output files
+ *                                                                 are written. [default:
+ *                                                                 annotated/]
+ *                                          <li id="option:in-place"><b>-i</b>
+ *                                                                   <b>--in-place=</b><i>boolean</i>.
+ *                                                                   If true, overwrite original
+ *                                                                   source files (making a backup
+ *                                                                   first). Furthermore, if the
+ *                                                                   backup files already exist,
+ *                                                                   they are used instead of the
+ *                                                                   .java files. This behavior
+ *                                                                   permits a user to tweak the
+ *                                                                   {@code .jaif} file and re-run
+ *                                                                   the annotator.
+ *                                                                   <p>Note that if the user runs
+ *                                                                   the annotator with {@code
+ *                                                                   --in-place}, makes edits, and
+ *                                                                   then re-runs the annotator with
+ *                                                                   this {@code --in-place} option,
+ *                                                                   those edits are lost.
+ *                                                                   Similarly, if the user runs the
+ *                                                                   annotator twice in a row with
+ *                                                                   {@code --in-place}, only the
+ *                                                                   last set of annotations will
+ *                                                                   appear in the codebase at the
+ *                                                                   end.
+ *                                                                   <p>To preserve changes when
+ *                                                                   using the {@code --in-place}
+ *                                                                   option, first remove the backup
+ *                                                                   files. Or, instead of {@code
+ *                                                                   --in-place}, use the {@code -d
+ *                                                                   .} option, which makes (and
+ *                                                                   reads) no backup. [default:
+ *                                                                   false]
+ *                                          <li id="option:abbreviate"><b>-a</b>
+ *                                                                     <b>--abbreviate=</b><i>boolean</i>.
+ *                                                                     If true, insert {@code
+ *                                                                     import} statements as
+ *                                                                     necessary. [default: true]
+ *                                          <li id="option:omit-annotation"><b>-o</b>
+ *                                                                          <b>--omit-annotation=</b><i>string</i>.
+ *                                                                          Don't insert the given
+ *                                                                          annotation.
+ *                                          <li id="option:nowarn"><b>--nowarn=</b><i>boolean</i>.
+ *                                                                 Suppress warnings about
+ *                                                                 disallowed insertions [default:
+ *                                                                 false]
+ *                                          <li id="option:convert-jaifs"><b>--convert-jaifs=</b><i>boolean</i>.
+ *                                                                        Convert JAIFs to AST Path
+ *                                                                        format, but do no
+ *                                                                        insertion into source
+ *                                                                        [default: false]
+ *                                          <li id="option:help"><b>-h</b>
+ *                                                               <b>--help=</b><i>boolean</i>. Print
+ *                                                               usage information and exit
+ *                                                               [default: false]
+ *                                        </ul>
  *   <li id="optiongroup:Debugging-options">Debugging options
- *       <ul>
- *         <li id="option:verbose"><b>-v</b> <b>--verbose=</b><i>boolean</i>. Verbose (print
- *             progress information) [default: false]
- *         <li id="option:debug"><b>--debug=</b><i>boolean</i>. Debug (print debug information)
- *             [default: false]
- *         <li id="option:print-error-stack"><b>--print-error-stack=</b><i>boolean</i>. Print error
- *             stack [default: false]
- *       </ul>
+ *                                          <ul>
+ *                                            <li id="option:verbose"><b>-v</b>
+ *                                                                    <b>--verbose=</b><i>boolean</i>.
+ *                                                                    Print progress information.
+ *                                                                    [default: false]
+ *                                            <li id="option:debug"><b>--debug=</b><i>boolean</i>.
+ *                                                                  Print debug information.
+ *                                                                  [default: false]
+ *                                            <li id="option:print-error-stack"><b>--print-error-stack=</b><i>boolean</i>.
+ *                                                                              Print the stack if
+ *                                                                              an error is thrown.
+ *                                                                              [default: false]
+ *                                          </ul>
  * </ul>
  *
  * <!-- end options doc -->
  */
-public class Main {
+@SuppressWarnings("PMD.ShortClassName")
+public final class Main {
+
+  /** Do not instantiate. */
+  private Main() {
+    throw new Error("Do not instantiate");
+  }
 
   // Options
 
@@ -156,8 +200,8 @@ public class Main {
    * annotations will appear in the codebase at the end.
    *
    * <p>To preserve changes when using the {@code --in-place} option, first remove the backup files.
-   * Or, use the {@code -d .} option, which makes (and reads) no backup, instead of {@code
-   * --in-place}.
+   * Or, instead of {@code --in-place}, use the {@code -d .} option, which makes (and reads) no
+   * backup.
    */
   @Option("-i Overwrite original source files")
   public static boolean in_place = false;
@@ -167,8 +211,8 @@ public class Main {
   public static boolean abbreviate = true;
 
   /** Don't insert the given annotation. */
-  @Option("-o Omit given annotation")
-  public static String omit_annotation;
+  @Option("-o Omit (don't insert) the given annotation")
+  public static @Nullable String omit_annotation = null;
 
   @Option("Suppress warnings about disallowed insertions")
   public static boolean nowarn;
@@ -183,19 +227,25 @@ public class Main {
 
   // Debugging options go below here.
 
+  /** Print progress information. */
   @OptionGroup("Debugging options")
   @Option("-v Verbose (print progress information)")
   public static boolean verbose = false;
 
+  /** Print debug information. */
   @Option("Debug (print debug information)")
   public static boolean debug = false;
 
-  @Option("Print error stack")
+  /** Print the stack if an error is thrown. */
+  @Option("Print the stack if an error is thrown")
   public static boolean print_error_stack = false;
 
+  /** Debugging flag. */
   // TODO: remove this.
   public static boolean temporaryDebug = false;
 
+  /** Does the work of {@link #filteredScene}. */
+  @SuppressWarnings("PMD.UseDiamondOperator")
   private static ElementVisitor<Void, AElement> classFilter =
       new ElementVisitor<Void, AElement>() {
         <K, V extends AElement> Void filter(VivifyingMap<K, V> vm0, VivifyingMap<K, V> vm1) {
@@ -244,7 +294,7 @@ public class Main {
             ASTPath p = entry.getKey();
             ATypeElementWithType e = entry.getValue();
             Type type = e.getType();
-            if (type instanceof DeclaredType && ((DeclaredType) type).getName().isEmpty()) {
+            if (type instanceof DeclaredType declaredType && declaredType.getName().isEmpty()) {
               insertAnnotations.put(p, e);
               // visitTypeElement(e, insertAnnotations.getVivify(p));
             } else {
@@ -326,7 +376,7 @@ public class Main {
     ASTPath.ASTEntry entry;
     for (TypePathEntry tpe : tpes) {
       switch (tpe.step) {
-        case TypePath.ARRAY_ELEMENT:
+        case TypePath.ARRAY_ELEMENT -> {
           if (!astPath.isEmpty()) {
             entry = astPath.getLast();
             if (entry.getTreeKind() == Tree.Kind.NEW_ARRAY && entry.childSelectorIs(ASTPath.TYPE)) {
@@ -336,20 +386,16 @@ public class Main {
             }
           }
           entry = new ASTPath.ASTEntry(Tree.Kind.ARRAY_TYPE, ASTPath.TYPE);
-          break;
-        case TypePath.INNER_TYPE:
-          entry = new ASTPath.ASTEntry(Tree.Kind.MEMBER_SELECT, ASTPath.EXPRESSION);
-          break;
-        case TypePath.TYPE_ARGUMENT:
-          entry =
-              new ASTPath.ASTEntry(
-                  Tree.Kind.PARAMETERIZED_TYPE, ASTPath.TYPE_ARGUMENT, tpe.argument);
-          break;
-        case TypePath.WILDCARD_BOUND:
-          entry = new ASTPath.ASTEntry(Tree.Kind.UNBOUNDED_WILDCARD, ASTPath.BOUND);
-          break;
-        default:
-          throw new IllegalArgumentException("unknown type tag " + tpe.step);
+        }
+        case TypePath.INNER_TYPE ->
+            entry = new ASTPath.ASTEntry(Tree.Kind.MEMBER_SELECT, ASTPath.EXPRESSION);
+        case TypePath.TYPE_ARGUMENT ->
+            entry =
+                new ASTPath.ASTEntry(
+                    Tree.Kind.PARAMETERIZED_TYPE, ASTPath.TYPE_ARGUMENT, tpe.argument);
+        case TypePath.WILDCARD_BOUND ->
+            entry = new ASTPath.ASTEntry(Tree.Kind.UNBOUNDED_WILDCARD, ASTPath.BOUND);
+        default -> throw new IllegalArgumentException("unknown type tag " + tpe.step);
       }
       astPath = astPath.extend(entry);
     }
@@ -399,24 +445,21 @@ public class Main {
           } catch (NumberFormatException e) {
             TreePath path = ASTIndex.getTreePath(tree, rec);
             JCTree.JCVariableDecl varTree = null;
-            JCTree.JCMethodDecl methTree = null;
+            JCTree.JCMethodDecl methTree;
             loop:
             while (path != null) {
               Tree leaf = path.getLeaf();
               switch (leaf.getKind()) {
-                case VARIABLE:
-                  varTree = (JCTree.JCVariableDecl) leaf;
-                  break;
-                case METHOD:
-                  methTree = (JCTree.JCMethodDecl) leaf;
-                  break;
-                case ANNOTATION:
-                case CLASS:
-                case ENUM:
-                case INTERFACE:
+                // TODO: Is this an infinite loop if leaf is a VARIABLE or METHOD?
+                case VARIABLE -> varTree = (JCTree.JCVariableDecl) leaf;
+                case METHOD -> {
+                  // This assignment is not used.
+                  // methTree = (JCTree.JCMethodDecl) leaf;
+                }
+                case ANNOTATION_TYPE, CLASS, ENUM, INTERFACE -> {
                   break loop;
-                default:
-                  path = path.getParentPath();
+                }
+                default -> path = path.getParentPath();
               }
             }
             while (path != null) {
@@ -456,8 +499,7 @@ public class Main {
         for (Annotation anno : annos) {
           el.tlAnnotationsHere.add(anno);
         }
-        if (ins instanceof TypedInsertion) {
-          TypedInsertion ti = (TypedInsertion) ins;
+        if (ins instanceof TypedInsertion ti) {
           if (!rec.astPath.isEmpty()) {
             // addInnerTypePaths(decl, rec, ti, insertionSources);
           }
@@ -498,7 +540,7 @@ public class Main {
   public static void main(String[] args) throws IOException {
 
     if (verbose) {
-      System.out.printf("insert-annotations-to-source (%s)%n", ClassFileReader.INDEX_UTILS_VERSION);
+      System.out.printf("insert-annotations-to-source%n");
     }
 
     Options options =
@@ -595,15 +637,11 @@ public class Main {
           }
         }
         AScene scene = spec.getScene();
-        Collections.sort(
-            parsedSpec,
-            new Comparator<Insertion>() {
-              @Override
-              public int compare(Insertion i1, Insertion i2) {
-                ASTPath p1 = i1.getCriteria().getASTPath();
-                ASTPath p2 = i2.getCriteria().getASTPath();
-                return p1 == null ? p2 == null ? 0 : -1 : p2 == null ? 1 : p1.compareTo(p2);
-              }
+        parsedSpec.sort(
+            (Insertion i1, Insertion i2) -> {
+              ASTPath p1 = i1.getCriteria().getASTPath();
+              ASTPath p2 = i2.getCriteria().getASTPath();
+              return p1 == null ? p2 == null ? 0 : -1 : p2 == null ? 1 : p1.compareTo(p2);
             });
         if (convert_jaifs) {
           scenes.put(jaifFile, filteredScene(scene));
@@ -615,9 +653,11 @@ public class Main {
           }
           insertionIndex.get(jaifFile).putAll(spec.insertionSources());
         }
-        verb.debug("Read %d annotations from %s%n", parsedSpec.size(), jaifFile);
+        if (verb.isEnabled()) {
+          verb.debug("Read %d annotations from %s%n", parsedSpec.size(), jaifFile);
+        }
         if (omit_annotation != null) {
-          List<Insertion> filtered = new ArrayList<Insertion>(parsedSpec.size());
+          List<Insertion> filtered = new ArrayList<>(parsedSpec.size());
           for (Insertion insertion : parsedSpec) {
             // TODO: this won't omit annotations if the insertion is more than
             // just the annotation (such as if the insertion is a cast
@@ -627,7 +667,9 @@ public class Main {
             }
           }
           parsedSpec = filtered;
-          verb.debug("After filtering: %d annotations from %s%n", parsedSpec.size(), jaifFile);
+          if (verb.isEnabled()) {
+            verb.debug("After filtering: %d annotations from %s%n", parsedSpec.size(), jaifFile);
+          }
         }
         // if (dbug.isEnabled()) {
         //   dbug.debug("parsedSpec:%n");
@@ -638,7 +680,7 @@ public class Main {
         insertions.addAll(parsedSpec);
         annotationImports.putAll(spec.annotationImports());
       } catch (RuntimeException e) {
-        if (e.getCause() != null && e.getCause() instanceof FileNotFoundException) {
+        if (e.getCause() instanceof FileNotFoundException) {
           System.err.println("File not found: " + jaifFile);
           System.exit(1);
         } else {
@@ -664,7 +706,7 @@ public class Main {
                     + causeMessage.substring(22)
                     + " to the classpath.");
             System.err.println("The classpath is:");
-            System.err.println(ReflectionPlume.classpathToString());
+            System.err.println(ReflectionP.classpathToString());
           }
         }
         if (print_error_stack) {
@@ -684,7 +726,9 @@ public class Main {
     }
 
     for (String javafilename : javafiles) {
-      verb.debug("Processing %s%n", javafilename);
+      if (verb.isEnabled()) {
+        verb.debug("Processing %s%n", javafilename);
+      }
 
       File javafile = new File(javafilename);
       File unannotated = new File(javafilename + ".unannotated");
@@ -694,7 +738,9 @@ public class Main {
         // A user can rename that file back to just .java to cause the
         // .java file to be read.
         if (unannotated.exists()) {
-          verb.debug("Renaming %s to %s%n", unannotated, javafile);
+          if (verb.isEnabled()) {
+            verb.debug("Renaming %s to %s%n", unannotated, javafile);
+          }
           boolean success = unannotated.renameTo(javafile);
           if (!success) {
             throw new Error(String.format("Failed renaming %s to %s", unannotated, javafile));
@@ -706,12 +752,14 @@ public class Main {
       if (src == null) {
         return;
       } else {
-        verb.debug("Parsed %s%n", javafilename);
+        if (verb.isEnabled()) {
+          verb.debug("Parsed %s%n", javafilename);
+        }
       }
       String fileLineSep;
       try {
         // fileLineSep is set here so that exceptions can be caught
-        fileLineSep = FilesPlume.inferLineSeparator(javafilename);
+        fileLineSep = FilesP.inferLineSeparator(javafilename);
       } catch (IOException e) {
         throw new Error("Cannot read " + javafilename, e);
       }
@@ -763,23 +811,23 @@ public class Main {
         }
 
         // Apply the positions to the source file.
-        verb.debug(
-            "getPositions returned %d positions in tree for %s%n", positions.size(), javafilename);
+        if (verb.isEnabled()) {
+          verb.debug(
+              "getPositions returned %d positions in tree for %s%n",
+              positions.size(), javafilename);
+        }
 
         Set<IPair<Integer, ASTPath>> positionKeysUnsorted = positions.keySet();
         Set<IPair<Integer, ASTPath>> positionKeysSorted =
-            new TreeSet<IPair<Integer, ASTPath>>(
-                new Comparator<IPair<Integer, ASTPath>>() {
-                  @Override
-                  public int compare(IPair<Integer, ASTPath> p1, IPair<Integer, ASTPath> p2) {
-                    int c = Integer.compare(p2.first, p1.first);
-                    if (c != 0) {
-                      return c;
-                    }
-                    return p2.second == null
-                        ? (p1.second == null ? 0 : -1)
-                        : (p1.second == null ? 1 : p2.second.compareTo(p1.second));
+            new TreeSet<>(
+                (p1, p2) -> {
+                  int c = Integer.compare(p2.first, p1.first);
+                  if (c != 0) {
+                    return c;
                   }
+                  return p2.second == null
+                      ? (p1.second == null ? 0 : -1)
+                      : (p1.second == null ? 1 : p2.second.compareTo(p1.second));
                 });
         positionKeysSorted.addAll(positionKeysUnsorted);
         for (IPair<Integer, ASTPath> pair : positionKeysSorted) {
@@ -810,7 +858,7 @@ public class Main {
               // of the line being inserted onto. This puts the annotation on its own line aligned
               // with the contents of the next line.
 
-              // Number of whitespace characters preceeding the insertion position on the same line
+              // Number of whitespace characters preceding the insertion position on the same line
               // (tabs count as one).
               int indentation = 0;
               while ((pos - indentation != 0)
@@ -942,8 +990,7 @@ public class Main {
               dbug.debug("Need import %s%n  due to insertion %s%n", packageNames, toInsert);
               imports.addAll(packageNames);
             }
-            if (iToInsert instanceof AnnotationInsertion) {
-              AnnotationInsertion annoToInsert = (AnnotationInsertion) iToInsert;
+            if (iToInsert instanceof AnnotationInsertion annoToInsert) {
               Set<String> annoImports =
                   annotationImports.get(annoToInsert.getAnnotationFullyQualifiedName());
               if (annoImports != null) {
@@ -1029,13 +1076,9 @@ public class Main {
           if (pkg.isEmpty()) {
             outfile = new File(outdir, javafile.getName());
           } else {
-            @SuppressWarnings("StringSplitter") // false positive because pkg is non-empty
-            String[] pkgPath = pkg.split("\\.");
-            StringBuilder sb = new StringBuilder(outdir);
-            for (int i = 0; i < pkgPath.length; i++) {
-              sb.append(File.separator).append(pkgPath[i]);
-            }
-            outfile = new File(sb.toString(), javafile.getName());
+            // `pkg` is non-empty.
+            String path = outdir + File.separator + pkg.replace(".", File.separator);
+            outfile = new File(path, javafile.getName());
           }
           outfile.getParentFile().mkdirs();
         }
@@ -1082,18 +1125,15 @@ public class Main {
    * that they are alphabetized when inserted).
    */
   private static Comparator<Insertion> insertionSorter =
-      new Comparator<Insertion>() {
-        @Override
-        public int compare(Insertion i1, Insertion i2) {
-          boolean separateLine1 = i1.isSeparateLine();
-          boolean separateLine2 = i2.isSeparateLine();
-          if (separateLine1 && !separateLine2) {
-            return 1;
-          } else if (separateLine2 && !separateLine1) {
-            return -1;
-          } else {
-            return -i1.getText().compareTo(i2.getText());
-          }
+      (i1, i2) -> {
+        boolean separateLine1 = i1.isSeparateLine();
+        boolean separateLine2 = i2.isSeparateLine();
+        if (separateLine1 && !separateLine2) {
+          return 1;
+        } else if (separateLine2 && !separateLine1) {
+          return -1;
+        } else {
+          return -i1.getText().compareTo(i2.getText());
         }
       };
 
@@ -1101,7 +1141,7 @@ public class Main {
   public static Map<String, Boolean> hasExplicitConstructor = new HashMap<>();
 
   /**
-   * Fills in the {@link hasExplicitConstructor} map.
+   * Fills in the {@link #hasExplicitConstructor} map.
    *
    * @param javaFiles the Java files that were passed on the command line
    */

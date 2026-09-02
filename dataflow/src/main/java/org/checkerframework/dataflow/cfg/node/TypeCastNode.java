@@ -50,10 +50,9 @@ public class TypeCastNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof TypeCastNode)) {
+    if (!(obj instanceof TypeCastNode other)) {
       return false;
     }
-    TypeCastNode other = (TypeCastNode) obj;
     return getOperand().equals(other.getOperand()) && types.isSameType(getType(), other.getType());
   }
 

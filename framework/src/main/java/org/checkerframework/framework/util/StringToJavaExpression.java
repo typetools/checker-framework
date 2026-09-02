@@ -171,7 +171,7 @@ public interface StringToJavaExpression {
       String expression, MethodTree methodTree, SourceChecker checker)
       throws JavaExpressionParseException {
     ExecutableElement ee = TreeUtils.elementFromDeclaration(methodTree);
-    JavaExpression javaExpr = StringToJavaExpression.atMethodDecl(expression, ee, checker);
+    JavaExpression javaExpr = atMethodDecl(expression, ee, checker);
     return javaExpr.atMethodBody(methodTree);
   }
 
@@ -191,7 +191,7 @@ public interface StringToJavaExpression {
       String expression, MethodInvocationTree methodInvocationTree, SourceChecker checker)
       throws JavaExpressionParseException {
     ExecutableElement ee = TreeUtils.elementFromUse(methodInvocationTree);
-    JavaExpression javaExpr = StringToJavaExpression.atMethodDecl(expression, ee, checker);
+    JavaExpression javaExpr = atMethodDecl(expression, ee, checker);
     return javaExpr.atMethodInvocation(methodInvocationTree);
   }
 
@@ -211,7 +211,7 @@ public interface StringToJavaExpression {
       String expression, MethodInvocationNode methodInvocationNode, SourceChecker checker)
       throws JavaExpressionParseException {
     ExecutableElement ee = TreeUtils.elementFromUse(methodInvocationNode.getTree());
-    JavaExpression javaExpr = StringToJavaExpression.atMethodDecl(expression, ee, checker);
+    JavaExpression javaExpr = atMethodDecl(expression, ee, checker);
     return javaExpr.atMethodInvocation(methodInvocationNode);
   }
 
@@ -231,7 +231,7 @@ public interface StringToJavaExpression {
       String expression, NewClassTree newClassTree, SourceChecker checker)
       throws JavaExpressionParseException {
     ExecutableElement ee = TreeUtils.elementFromUse(newClassTree);
-    JavaExpression javaExpr = StringToJavaExpression.atMethodDecl(expression, ee, checker);
+    JavaExpression javaExpr = atMethodDecl(expression, ee, checker);
     return javaExpr.atConstructorInvocation(newClassTree);
   }
 
@@ -253,7 +253,7 @@ public interface StringToJavaExpression {
 
     VariableElement fieldEle = TreeUtils.variableElementFromUse(fieldAccess);
     JavaExpression receiver = JavaExpression.fromTree(fieldAccess.getExpression());
-    JavaExpression javaExpr = StringToJavaExpression.atFieldDecl(expression, fieldEle, checker);
+    JavaExpression javaExpr = atFieldDecl(expression, fieldEle, checker);
     return javaExpr.atFieldAccess(receiver);
   }
 
@@ -282,8 +282,7 @@ public interface StringToJavaExpression {
     JavaExpression receiver = JavaExpression.getPseudoReceiver(parentPath, enclosingType);
     // If receiver isn't a ThisReference, then the lambda is in a static context and "this"
     // cannot be referenced in the expression.
-    ThisReference thisReference =
-        receiver instanceof ThisReference ? (ThisReference) receiver : null;
+    ThisReference thisReference = receiver instanceof ThisReference tr ? tr : null;
     List<JavaExpression> paramsAsLocals = new ArrayList<>(lambdaTree.getParameters().size());
     List<FormalParameter> parameters = new ArrayList<>(lambdaTree.getParameters().size());
     int oneBasedIndex = 1;

@@ -28,13 +28,14 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /** A transfer function that accumulates the names of methods called. */
 public class CalledMethodsTransfer extends AccumulationTransfer {
@@ -193,12 +194,11 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    */
   private Map<TypeMirror, AccumulationStore> makeExceptionalStores(
       MethodInvocationNode node, AccumulationStore inputStore) {
-    if (!(node.getBlock() instanceof ExceptionBlock)) {
+    if (!(node.getBlock() instanceof ExceptionBlock block)) {
       // This can happen in some weird (buggy?) cases:
       // see https://github.com/typetools/checker-framework/issues/3585
       return Collections.emptyMap();
     }
-    ExceptionBlock block = (ExceptionBlock) node.getBlock();
     Map<TypeMirror, AccumulationStore> result = new LinkedHashMap<>();
     block.getExceptionalSuccessors().forEach((tm, b) -> result.put(tm, inputStore.copy()));
     return result;
@@ -233,8 +233,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     Node varArgActual = node.getArguments().get(varArgsPos);
     // In the CFG, explicit passing of multiple arguments in the varargs position is represented
     // via an ArrayCreationNode.  This is the only case we handle for now.
-    if (varArgActual instanceof ArrayCreationNode) {
-      ArrayCreationNode arrayCreationNode = (ArrayCreationNode) varArgActual;
+    if (varArgActual instanceof ArrayCreationNode arrayCreationNode) {
       // add in the called method to all the vararg arguments
       AccumulationStore thenStore = result.getThenStore();
       AccumulationStore elseStore = result.getElseStore();
@@ -272,10 +271,20 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
       try {
         e =
             StringToJavaExpression.atMethodInvocation(
-                postcond.getExpression(), node.getTree(), atypeFactory.getChecker());
+                postcond.expression(), node.getTree(), atypeFactory.getChecker());
       } catch (JavaExpressionParseException ex) {
-        // This parse error will be reported later. For now, we'll skip this malformed
-        // postcondition and move on to the others.
+        if (ex.isFlowParseError()) {
+          Object[] args = new Object[ex.args.length + 1];
+          args[0] = ElementUtils.getSimpleSignature(method);
+          System.arraycopy(ex.args, 0, args, 1, ex.args.length);
+          atypeFactory
+              .getChecker()
+              .reportError(node.getTree(), "flowexpr.parse.error.postcondition", args);
+        } else {
+          atypeFactory.getChecker().report(node.getTree(), new DiagMessage(ex));
+        }
+        // Skip this malformed postcondition and move on to the others.  Dropping it only removes
+        // facts from the store, which is conservative.
         continue;
       }
 
@@ -283,8 +292,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
       // calls `insertOrRefine` in a loop.  Even worse, this code appears within a loop.
       // For now we aren't too worried about it, since the number of
       // EnsuresCalledMethodsOnException annotations should be small.
-      AnnotationMirror calledMethod =
-          atypeFactory.createAccumulatorAnnotation(postcond.getMethod());
+      AnnotationMirror calledMethod = atypeFactory.createAccumulatorAnnotation(postcond.method());
       for (Map.Entry<TypeMirror, AccumulationStore> successor : exceptionalStores.entrySet()) {
         TypeMirror caughtException = successor.getKey();
         if (types.isSubtype(caughtException, javaLangExceptionType)) {
@@ -327,7 +335,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
 
     List<String> currentMethods =
         AnnotationUtils.getElementValueArray(type, calledMethodsValueElement, String.class);
-    List<String> newList = CollectionsPlume.concatenate(currentMethods, methodNames);
+    List<String> newList = CollectionsP.concatenate(currentMethods, methodNames);
 
     return atypeFactory.createAccumulatorAnnotation(newList);
   }

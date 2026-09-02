@@ -2,7 +2,7 @@ import java.util.List;
 import org.checkerframework.checker.interning.qual.Interned;
 
 /*
- * This test case excercises the interaction between class annotations
+ * This test case exercises the interaction between class annotations
  * and method type argument inference.
  * A previously existing Unqualified annotation wasn't correctly removed.
  */

@@ -11,7 +11,7 @@ will raise no error at run time.
 ``internationalization'' because there are 18 characters between the ``i'' and
 the ``n''.
 
-Here are the examples of errors that the
+Here are examples of errors that the
 I18n Format Checker
 detects at compile time.
 
@@ -33,7 +33,7 @@ detects at compile time.
 For instructions on how to run the Internationalization Format String
 Checker, see Section~\ref{i18n-format-running}.
 
-The Internationalization Checker or I18n Checker (\chapterpageref{i18n-checker})
+The Internationalization Checker or I18n Checker (\sectionpageref{i18n-checker})
 has a different purpose.  It verifies that your code is properly
 internationalized: any user-visible text should be obtained from a
 localization resource and all keys exist in that resource.
@@ -42,7 +42,7 @@ The paper ``A type system for format strings''~\cite{WeitzKSE2014} (ISSTA
 2014,
 \myurl{https://homes.cs.washington.edu/~mernst/pubs/format-string-issta2014-abstract.html})
 gives more details about the Internationalization Format String Checker and the Format
-String Checker (\chapterpageref{formatter-checker});
+String Checker (\chapterpageref{formatter-checker}).
 
 
 \sectionAndLabel{Internationalization Format String Checker annotations}{i18n-format-annotation}
@@ -121,7 +121,7 @@ Figure~\ref{i18n-format-type-hierarchy} shows their subtyping relationships.
 
 In a message string, the optional second element within the curly braces is
 called a \emph{format type} and must be one of \<number>, \<date>,
-\<time>, and \<choice>. These four format types correspond to different
+\<time>, or \<choice>. These four format types correspond to different
 conversion categories. \<date> and \<time> correspond to \emph{DATE} in the
 conversion categories figure. \<choice> corresponds to \emph{NUMBER}.
 The format type restricts what arguments are legal.
@@ -155,7 +155,7 @@ It is legal to:
 \begin{itemize}
 \item use a format string with a weaker (less restrictive) conversion category than required.
 \item use a format string with fewer format specifiers than required.
-  Although this is legal a warning is issued because most occurrences of
+  Although this is legal, a warning is issued because most occurrences of
   this are due to programmer error.
 \end{itemize}
 
@@ -179,9 +179,9 @@ The conversion categories are:
 
 \item[\refenum{checker/i18nformatter/qual}{I18nConversionCategory}{UNUSED}{}]
 indicates an unused argument. For example, in
-\code{MessageFormat.format("\{0, number\} \{2, number\}", 3.14, "Hello", 2.718)}
-, the second argument \code{Hello} is unused. Thus, the conversion
-categories for the format, \code{{0, number} {2, number}}, is
+\code{MessageFormat.format("\{0, number\} \{2, number\}", 3.14, "Hello", 2.718)},
+the second argument \code{Hello} is unused. Thus, the conversion
+categories for the format, \code{\{0, number\} \{2, number\}}, are
 \code{(NUMBER, UNUSED, NUMBER)}.
 
 \item[\refenum{checker/i18nformatter/qual}{I18nConversionCategory}{GENERAL}{}]
@@ -189,10 +189,10 @@ means that any value can be supplied as an argument.
 
 \item[\refenum{checker/i18nformatter/qual}{I18nConversionCategory}{DATE}{}]
 is applicable for date, time, and number types. An argument needs to be
-of \sunjavadoc{java.sql/java/sql/Date.html}{Date},
-\sunjavadoc{java.sql/java/sql/Time.html}{Time}, or
+of \sunjavadoc{java.base/java/util/Date.html}{Date} or
 \sunjavadoc{java.base/java/lang/Number.html}{Number} type or a subclass of them,
-including \sunjavadoc{java.sql/java/sql/Timestamp.html}{Timestamp} and the classes
+including \sunjavadoc{java.sql/java/sql/Time.html}{Time},
+\sunjavadoc{java.sql/java/sql/Timestamp.html}{Timestamp}, and the classes
 listed immediately below.
 
 \item[\refenum{checker/i18nformatter/qual}{I18nConversionCategory}{NUMBER}{}]
@@ -219,7 +219,7 @@ formatting method \sunjavadoc{java.base/java/text/MessageFormat.html\#format(jav
 and guarantees the following:
 
 \begin{enumerate}
-  \item{The checker issues a warning for the following cases:}
+  \item The checker issues a warning for the following cases:
     \begin{enumerate}
       \item There are missing arguments from what is required by the format string.
 
@@ -282,7 +282,7 @@ and guarantees the following:
     \end{enumerate}
 \end{enumerate}
 
-The Checker also detects illegal assignments: assigning a non-format-string
+The checker also detects illegal assignments: assigning a non-format-string
 or an incompatible format string to a variable declared as containing a
 specific type of format string. For example,
 
@@ -293,10 +293,10 @@ specific type of format string. For example,
   // OK, GENERAL is weaker (less restrictive) than NUMBER.
   format = "{0} {1}";
   // OK, it is legal to have fewer arguments than required (less restrictive).
-  // But the warning will be issued instead.
+  // But a warning will be issued.
   format = "{0}";
 
-  // Error, the format string is stronger (more restrictive) than the specifiers.
+  // Error, the format string has too many arguments.
   format = "{0} {1} {2}";
   // Error, the format string is more restrictive. NUMBER is a subtype of GENERAL.
   format = "{0, number} {1, number}";
@@ -430,7 +430,7 @@ must be on the classpath at run time.
   \item Annotating a string with
     \refqualclass{checker/i18nformatter/qual}{I18nFormat}.
 \begin{Verbatim}
-      @I18nFormat({I18nConversionCategory.DATE}) String;
+      @I18nFormat({I18nConversionCategory.DATE}) String s1;
       s1 = "{0}";
       s1 = "{0, number}";        // error: incompatible types in assignment
 \end{Verbatim}

@@ -21,10 +21,10 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /** Utility methods for the Value Checker. */
-public class ValueCheckerUtils {
+public final class ValueCheckerUtils {
 
   /** Do not instantiate. */
   private ValueCheckerUtils() {
@@ -61,30 +61,24 @@ public class ValueCheckerUtils {
     Class<?> castType = TypesUtils.getClassFromType(castTo);
     List<?> values;
     switch (AnnotationUtils.annotationName(anno)) {
-      case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
-        values = convertDoubleVal(anno, castType, castTo, atypeFactory);
-        break;
-      case ValueAnnotatedTypeFactory.INTVAL_NAME:
+      case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME ->
+          values = convertDoubleVal(anno, castType, castTo, atypeFactory);
+      case ValueAnnotatedTypeFactory.INTVAL_NAME -> {
         List<Long> longs = atypeFactory.getIntValues(anno);
         values = convertIntVal(longs, castType, castTo, isUnsigned);
-        break;
-      case ValueAnnotatedTypeFactory.INTRANGE_NAME:
+      }
+      case ValueAnnotatedTypeFactory.INTRANGE_NAME -> {
         Range range = atypeFactory.getRange(anno);
         List<Long> rangeValues = getValuesFromRange(range, Long.class);
         values = convertIntVal(rangeValues, castType, castTo, isUnsigned);
-        break;
-      case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-        values = convertStringVal(anno, castType, atypeFactory);
-        break;
-      case ValueAnnotatedTypeFactory.BOOLVAL_NAME:
-        values = convertBoolVal(anno, castType, atypeFactory);
-        break;
-      case ValueAnnotatedTypeFactory.BOTTOMVAL_NAME:
-      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
-        values = Collections.emptyList();
-        break;
-      default:
-        values = null;
+      }
+      case ValueAnnotatedTypeFactory.STRINGVAL_NAME ->
+          values = convertStringVal(anno, castType, atypeFactory);
+      case ValueAnnotatedTypeFactory.BOOLVAL_NAME ->
+          values = convertBoolVal(anno, castType, atypeFactory);
+      case ValueAnnotatedTypeFactory.BOTTOMVAL_NAME, ValueAnnotatedTypeFactory.ARRAYLEN_NAME ->
+          values = Collections.emptyList();
+      default -> values = null;
     }
     return values;
   }
@@ -179,7 +173,7 @@ public class ValueCheckerUtils {
     if (origValues == null) {
       return null;
     }
-    return CollectionsPlume.mapList(Object::toString, origValues);
+    return CollectionsP.mapList(Object::toString, origValues);
   }
 
   /**
@@ -215,7 +209,7 @@ public class ValueCheckerUtils {
       AnnotationMirror anno, Class<?> newClass, ValueAnnotatedTypeFactory atypeFactory) {
     List<String> strings = atypeFactory.getStringValues(anno);
     if (newClass == char[].class) {
-      return CollectionsPlume.mapList(String::toCharArray, strings);
+      return CollectionsP.mapList(String::toCharArray, strings);
     }
     return strings;
   }
@@ -238,7 +232,7 @@ public class ValueCheckerUtils {
     if (newClass == String.class) {
       return convertToStringVal(longs);
     } else if (newClass == Character.class || newClass == char.class) {
-      return CollectionsPlume.mapList((Long l) -> (char) l.longValue(), longs);
+      return CollectionsP.mapList((Long l) -> (char) l.longValue(), longs);
     } else if (newClass == Boolean.class) {
       throw new UnsupportedOperationException(
           "ValueAnnotatedTypeFactory: can't convert integral type to boolean");
@@ -267,7 +261,7 @@ public class ValueCheckerUtils {
     if (newClass == String.class) {
       return convertToStringVal(doubles);
     } else if (newClass == Character.class || newClass == char.class) {
-      return CollectionsPlume.mapList((Double l) -> (char) l.doubleValue(), doubles);
+      return CollectionsP.mapList((Double l) -> (char) l.doubleValue(), doubles);
     } else if (newClass == Boolean.class) {
       throw new UnsupportedOperationException(
           "ValueAnnotatedTypeFactory: can't convert double to boolean");
@@ -282,8 +276,8 @@ public class ValueCheckerUtils {
    * @return list of unique lengths of strings in {@code values}
    */
   public static List<Integer> getLengthsForStringValues(List<String> values) {
-    List<Integer> lengths = CollectionsPlume.mapList(String::length, values);
-    return CollectionsPlume.withoutDuplicatesSorted(lengths);
+    List<Integer> lengths = CollectionsP.mapList(String::length, values);
+    return CollectionsP.withoutDuplicatesSorted(lengths);
   }
 
   /**
@@ -377,7 +371,7 @@ public class ValueCheckerUtils {
 
   /**
    * Finds the maximum value in a Value Checker type. If there is no information (such as when the
-   * list of possible values is empty or null), returns null. Otherwise, returns the smallest value
+   * list of possible values is empty or null), returns null. Otherwise, returns the largest value
    * in the list of possible values.
    */
   public static @Nullable Long getMaxValue(Tree tree, ValueAnnotatedTypeFactory factory) {

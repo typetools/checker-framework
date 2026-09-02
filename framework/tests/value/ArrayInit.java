@@ -67,7 +67,7 @@ public class ArrayInit {
     int @ArrayLen({2}) [][] c = new int[][] {{2}, {3}};
   }
 
-  public void initilizer() {
+  public void initializer() {
     int @ArrayLen(3) [] ints = new int[] {2, 2, 2};
     char @StringVal("-A%") [] chars = new char[] {45, 'A', '%'};
     int @ArrayLen(3) [] ints2 = {2, 2, 2};

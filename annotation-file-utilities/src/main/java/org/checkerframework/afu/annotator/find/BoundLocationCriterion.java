@@ -71,8 +71,8 @@ public class BoundLocationCriterion implements Criterion {
     // if boundIndex is not null, need to check that this is right bound
     // in parent
     if (boundIndex != -1) {
-      if (parent instanceof TypeParameterTree) {
-        List<? extends Tree> bounds = ((TypeParameterTree) parent).getBounds();
+      if (parent instanceof TypeParameterTree typeParameterTree) {
+        List<? extends Tree> bounds = typeParameterTree.getBounds();
         int ix = boundIndex;
         if (!bounds.isEmpty() && isInterface((JCExpression) bounds.get(0))) {
           --ix;
@@ -82,8 +82,8 @@ public class BoundLocationCriterion implements Criterion {
         if (foundLeaf) {
           returnValue = parentCriterion.isSatisfiedBy(parentPath);
         }
-      } else if (boundIndex == 0 && leaf instanceof TypeParameterTree) {
-        List<? extends Tree> bounds = ((TypeParameterTree) leaf).getBounds();
+      } else if (boundIndex == 0 && leaf instanceof TypeParameterTree typeParameterTree) {
+        List<? extends Tree> bounds = typeParameterTree.getBounds();
         if (bounds.isEmpty() || isInterface((JCExpression) bounds.get(0))) {
           // If the bound is implicit (i.e., a missing "extends Object"),
           // then permit the match here.
@@ -101,10 +101,10 @@ public class BoundLocationCriterion implements Criterion {
       if (parent instanceof MethodTree || parent instanceof ClassTree) {
         List<? extends TypeParameterTree> params = null;
 
-        if (parent instanceof MethodTree) {
-          params = ((MethodTree) parent).getTypeParameters();
-        } else if (parent instanceof ClassTree) {
-          params = ((ClassTree) parent).getTypeParameters();
+        if (parent instanceof MethodTree methodTree) {
+          params = methodTree.getTypeParameters();
+        } else if (parent instanceof ClassTree classTree) {
+          params = classTree.getTypeParameters();
         }
 
         if (paramIndex < params.size()) {

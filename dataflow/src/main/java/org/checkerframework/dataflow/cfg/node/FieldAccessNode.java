@@ -47,12 +47,10 @@ public class FieldAccessNode extends Node {
     this.receiver = receiver;
     this.field = TreeUtils.getFieldName(tree);
 
-    if (tree instanceof MemberSelectTree) {
-      MemberSelectTree mstree = (MemberSelectTree) tree;
+    if (tree instanceof MemberSelectTree mstree) {
       assert TreeUtils.isUseOfElement(mstree) : "@AssumeAssertion(nullness): tree kind";
       this.element = TreeUtils.variableElementFromUse(mstree);
-    } else if (tree instanceof IdentifierTree) {
-      IdentifierTree itree = (IdentifierTree) tree;
+    } else if (tree instanceof IdentifierTree itree) {
       assert TreeUtils.isUseOfElement(itree) : "@AssumeAssertion(nullness): tree kind";
       this.element = TreeUtils.variableElementFromUse(itree);
     } else {
@@ -92,7 +90,7 @@ public class FieldAccessNode extends Node {
 
   @Override
   public String toString() {
-    if (Node.disambiguateOwner) {
+    if (disambiguateOwner) {
       return getReceiver() + "." + field + "{owner=" + ((Symbol) element).owner + "}";
     } else {
       return getReceiver() + "." + field;
@@ -110,10 +108,9 @@ public class FieldAccessNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof FieldAccessNode)) {
+    if (!(obj instanceof FieldAccessNode other)) {
       return false;
     }
-    FieldAccessNode other = (FieldAccessNode) obj;
     return getReceiver().equals(other.getReceiver()) && getFieldName().equals(other.getFieldName());
   }
 

@@ -1,6 +1,5 @@
 package org.checkerframework.afu.annotator.find;
 
-import com.google.errorprone.annotations.InlineMe;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
@@ -74,14 +73,18 @@ public final class Criteria {
     assert path.getLeaf() == leaf;
     for (Criterion c : criteria.values()) {
       if (!c.isSatisfiedBy(path, leaf)) {
-        dbug.debug(
-            "UNsatisfied criterion of type %s [%s]:%n    leaf=%s%n",
-            c, c.getClass(), Main.leafString(path));
+        if (dbug.isEnabled()) {
+          dbug.debug(
+              "UNsatisfied criterion of type %s [%s]:%n    leaf=%s%n",
+              c, c.getClass(), Main.leafString(path));
+        }
         return false;
       } else {
-        dbug.debug(
-            "satisfied criterion of type %s [%s]:%n    leaf=%s%n",
-            c, c.getClass(), Main.leafString(path));
+        if (dbug.isEnabled()) {
+          dbug.debug(
+              "satisfied criterion of type %s [%s]:%n    leaf=%s%n",
+              c, c.getClass(), Main.leafString(path));
+        }
       }
     }
 
@@ -102,10 +105,14 @@ public final class Criteria {
   public boolean isSatisfiedBy(@Nullable TreePath path) {
     for (Criterion c : criteria.values()) {
       if (!c.isSatisfiedBy(path)) {
-        dbug.debug("UNsatisfied criterion: %s%n", c);
+        if (dbug.isEnabled()) {
+          dbug.debug("UNsatisfied criterion: %s%n", c);
+        }
         return false;
       } else {
-        dbug.debug("satisfied criterion: %s%n", c);
+        if (dbug.isEnabled()) {
+          dbug.debug("satisfied criterion: %s%n", c);
+        }
       }
     }
 
@@ -366,17 +373,17 @@ public final class Criteria {
   public boolean onBoundZero() {
     for (Criterion c : criteria.values()) {
       switch (c.getKind()) {
-        case CLASS_BOUND:
-          if (((ClassBoundCriterion) c).boundLoc.boundIndex != 0) {
-            break;
+        case CLASS_BOUND -> {
+          if (((ClassBoundCriterion) c).boundLoc.boundIndex == 0) {
+            return true;
           }
-          return true;
-        case METHOD_BOUND:
-          if (((MethodBoundCriterion) c).boundLoc.boundIndex != 0) {
-            break;
+        }
+        case METHOD_BOUND -> {
+          if (((MethodBoundCriterion) c).boundLoc.boundIndex == 0) {
+            return true;
           }
-          return true;
-        case AST_PATH:
+        }
+        case AST_PATH -> {
           ASTPath astPath = ((ASTPathCriterion) c).astPath;
           if (!astPath.isEmpty()) {
             ASTPath.ASTEntry entry = astPath.getLast();
@@ -384,9 +391,8 @@ public final class Criteria {
               return true;
             }
           }
-          break;
-        default:
-          break;
+        }
+        default -> {}
       }
     }
     return false;
@@ -480,20 +486,6 @@ public final class Criteria {
    */
   public static final Criterion atLocation(TypePath loc) {
     return new GenericArrayLocationCriterion(loc);
-  }
-
-  /**
-   * Creates a GenericArrayLocationCriterion for a field.
-   *
-   * @param varName location of the field
-   * @return a GenericArrayLocationCriterion for the given field
-   */
-  @Deprecated
-  @InlineMe(
-      replacement = "new FieldCriterion(varName)",
-      imports = "org.checkerframework.afu.annotator.find.FieldCriterion")
-  public static final Criterion field(String varName) {
-    return new FieldCriterion(varName);
   }
 
   public static final Criterion field(String varName, boolean isOnDeclaration) {

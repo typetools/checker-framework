@@ -14,7 +14,7 @@ class A4879<A> {
 
 class Issue4879 {
   private final class I4879 extends L4879<Object> {
-    // Any non-top default checker will issue a true postive error.
+    // Any non-top default checker will issue a true positive error.
     @SuppressWarnings("argument")
     private I4879() {
       super(new A4879.B4879<>().build());

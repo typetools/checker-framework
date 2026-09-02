@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * Represents a binary name as defined in the <a
- * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-13.html#jls-13.1">Java Language
+ * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-13.html#jls-13.1">Java Language
  * Specification, section 13.1</a>.
  *
  * <p>For example, in
@@ -24,11 +24,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * the binary names for the two types are org.checkerframework.checker.signature.SignatureChecker
  * and org.checkerframework.checker.signature.SignatureChecker$Inner.
  *
- * <p>Binary names and {@linkplain InternalForm internal form} only differ by the use of '.' vs. '/'
- * as package separator.
- *
  * <p>The binary name should not be confused with the {@linkplain InternalForm internal form}, which
- * is a variant of the binary name that actually appears in the class file.
+ * is a variant of the binary name that actually appears in the class file. The two differ only by
+ * the use of '.' vs. '/' as the package separator.
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */

@@ -8,8 +8,8 @@ import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.CollectionsP;
+import org.plumelib.util.StringsP;
 
 /**
  * A mutable abstraction that can be either a range or a list of values that could come from an
@@ -72,10 +72,10 @@ class RangeOrListOfValues {
 
   /**
    * Produces the most precise annotation that captures the information stored in this
-   * RangeOrListofValues. The result is either a {@link ArrayLen} or a {@link ArrayLenRange}.
+   * RangeOrListOfValues. The result is either a {@link ArrayLen} or a {@link ArrayLenRange}.
    *
    * @param atypeFactory the type factory
-   * @return an annotation correspending to this RangeOrListofValues
+   * @return an annotation corresponding to this RangeOrListOfValues
    */
   public AnnotationMirror createAnnotation(ValueAnnotatedTypeFactory atypeFactory) {
     if (isRange) {
@@ -109,7 +109,7 @@ class RangeOrListOfValues {
    * @return a list of Integers
    */
   public static List<Integer> convertLongsToInts(List<Long> newValues) {
-    return CollectionsPlume.mapList(RangeOrListOfValues::convertLongToInt, newValues);
+    return CollectionsP.mapList(RangeOrListOfValues::convertLongToInt, newValues);
   }
 
   /**
@@ -133,7 +133,7 @@ class RangeOrListOfValues {
         return "[]";
       }
       String res = "[";
-      res += StringsPlume.join(", ", values);
+      res += StringsP.join(", ", values);
       res += "]";
       return res;
     }

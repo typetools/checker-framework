@@ -16,9 +16,9 @@ class MustCallAliasSocketException {
       return;
     }
     try {
-      DataOutputStream dout = new DataOutputStream(sock.getOutputStream());
+      DataOutputStream dOut = new DataOutputStream(sock.getOutputStream());
       // Before MCA was implemented, the call to getInputStream() below triggered
-      // a false positive warning that dout had not been closed.
+      // a false positive warning that dOut had not been closed.
       DataInputStream din = new DataInputStream(sock.getInputStream());
       // ~30 lines omitted...
     } finally {

@@ -1,20 +1,24 @@
-all default: config.yml
-# TODO: all default: config.yml config-daily.yml
+.PHONY: all test clean default validate
+default: all
+all: config.yml
+# TODO: all: config.yml config-daily.yml
 
-%: %.m4 ../.azure/defs-common.m4 defs.m4 ../.azure/jobs.m4
+test: all
+
+PLUME_SCRIPTS=../checker/bin-devel/.plume-scripts
+
+%: %.m4 ../.azure/defs-common.m4 defs.m4 ../.azure/jobs.m4 ${PLUME_SCRIPTS}
 	@chmod -f +w $@ || true
 	m4 $< > $@
-# Squeeze multiple blank lines into one.
-	cat -s $@ > $@.tmp
-# Remove leading blank lines.
-	sed '/[^[:blank:]]/,$$!d' $@.tmp > $@
-# Remove trailing blank lines.
-	sed -e :a -e '/^\s*$$/{$$d;N;ba' -e '}' $@ > $@.tmp
-	mv -f $@.tmp $@
-	@chmod -w $@
+	${PLUME_SCRIPTS}/squeeze-blank-lines $@
+# Don't do this for now, because it breaks prek's end-of-file-fixer.
+#	@chmod -w $@
 
 validate: config.yml
 	cd .. && circleci config validate
 
+${PLUME_SCRIPTS}:
+	cd .. && ./gradlew getPlumeScripts
+
 clean:
-	rm -f config.yml
+	@rm -f config.yml

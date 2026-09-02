@@ -1,6 +1,5 @@
 import org.checkerframework.checker.index.qual.LTLengthOf;
 
-@SuppressWarnings("lowerbound")
 public class UpperBoundRefinement {
   // If expression i has type @LTLengthOf(value = "f2", offset = "f1.length") int and expression
   // j is less than or equal to the length of f1, then the type of i + j is @LTLengthOf("f2")

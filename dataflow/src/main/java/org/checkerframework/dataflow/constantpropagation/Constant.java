@@ -96,10 +96,9 @@ public class Constant implements AbstractValue<Constant> {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof Constant)) {
+    if (!(obj instanceof Constant other)) {
       return false;
     }
-    Constant other = (Constant) obj;
     return type == other.type && Objects.equals(value, other.value);
   }
 
@@ -110,16 +109,14 @@ public class Constant implements AbstractValue<Constant> {
 
   @Override
   public String toString() {
-    switch (type) {
-      case TOP:
-        return "T";
-      case BOTTOM:
-        return "-";
-      case CONSTANT:
+    return switch (type) {
+      case TOP -> "T";
+      case BOTTOM -> "-";
+      case CONSTANT -> {
         assert isConstant() : "@AssumeAssertion(nullness)";
-        return value.toString();
-      default:
-        throw new BugInCF("Unexpected type: " + type);
-    }
+        yield value.toString();
+      }
+      default -> throw new BugInCF("Unexpected type: " + type);
+    };
   }
 }

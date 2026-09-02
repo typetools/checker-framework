@@ -199,14 +199,8 @@ public abstract class AbstractAnalysis<
           || (currentTree != null && currentTree == n.getTree())) {
         return null;
       }
-      // check that 'n' is a subnode of 'currentNode'. Check immediate operands
-      // first for efficiency.
       assert !n.isLValue() : "Did not expect an lvalue, but got " + n;
-      if (!currentNode.getOperands().contains(n)
-          && !currentNode.getTransitiveOperands().contains(n)) {
-        return null;
-      }
-      // fall through when the current node is not 'n', and 'n' is not a subnode.
+      // fall through when the current node is not 'n'.
     }
     return nodeValues.get(n);
   }
@@ -456,38 +450,12 @@ public abstract class AbstractAnalysis<
    *
    * @param t the given tree
    * @return the contained method tree of the given tree
-   * @deprecated use {@link #getEnclosingMethod}
-   */
-  @Deprecated // 2024-05-01
-  public @Nullable MethodTree getContainingMethod(Tree t) {
-    return getEnclosingMethod(t);
-  }
-
-  /**
-   * Returns the {@link MethodTree} of the current CFG if the argument {@link Tree} maps to a {@link
-   * Node} in the CFG or {@code null} otherwise.
-   *
-   * @param t the given tree
-   * @return the contained method tree of the given tree
    */
   public @Nullable MethodTree getEnclosingMethod(Tree t) {
     if (cfg == null) {
       return null;
     }
     return cfg.getEnclosingMethod(t);
-  }
-
-  /**
-   * Returns the {@link ClassTree} of the current CFG if the argument {@link Tree} maps to a {@link
-   * Node} in the CFG or {@code null} otherwise.
-   *
-   * @param t the given tree
-   * @return the contained class tree of the given tree
-   * @deprecated use {@link #getEnclosingClass}
-   */
-  @Deprecated // 2024-05-01
-  public @Nullable ClassTree getContainingClass(Tree t) {
-    return getEnclosingClass(t);
   }
 
   /**
@@ -523,15 +491,12 @@ public abstract class AbstractAnalysis<
     }
     transferInput.node = node;
     setCurrentNode(node);
-    @SuppressWarnings("nullness") // CF bug: "INFERENCE FAILED"
     TransferResult<V, S> transferResult = node.accept(transferFunction, transferInput);
     setCurrentNode(null);
-    if (node instanceof AssignmentNode) {
+    if (node instanceof AssignmentNode assignment) {
       // store the flow-refined value effectively for final local variables
-      AssignmentNode assignment = (AssignmentNode) node;
       Node lhst = assignment.getTarget();
-      if (lhst instanceof LocalVariableNode) {
-        LocalVariableNode lhs = (LocalVariableNode) lhst;
+      if (lhst instanceof LocalVariableNode lhs) {
         VariableElement elem = lhs.getElement();
         if (ElementUtils.isEffectivelyFinal(elem)) {
           V resval = transferResult.getResultValue();

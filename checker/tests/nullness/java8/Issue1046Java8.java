@@ -1,6 +1,6 @@
 // Test case for Issue 1046:
 // https://github.com/typetools/checker-framework/issues/1046
-// Additonal test case: checker/tests/nullness/Issue1046.java
+// Additional test case: checker/tests/nullness/Issue1046.java
 
 import java.util.List;
 import java.util.function.Function;

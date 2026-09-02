@@ -103,7 +103,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The {@link Class#getCanonicalName()} method. */
   private final ExecutableElement classGetCanonicalName =
-      TreeUtils.getMethod(java.lang.Class.class, "getCanonicalName", processingEnv);
+      TreeUtils.getMethod(Class.class, "getCanonicalName", processingEnv);
 
   /**
    * Creates a SignatureAnnotatedTypeFactory.
@@ -290,8 +290,8 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
           if (TreeUtils.isClassLiteral(receiver)) {
             ExpressionTree classExpr = ((MemberSelectTree) receiver).getExpression();
-            if (classExpr instanceof PrimitiveTypeTree) {
-              if (((PrimitiveTypeTree) classExpr).getPrimitiveTypeKind() == TypeKind.VOID) {
+            if (classExpr instanceof PrimitiveTypeTree ptt) {
+              if (ptt.getPrimitiveTypeKind() == TypeKind.VOID) {
                 // do nothing
               } else {
                 type.replaceAnnotation(PRIMITIVE_TYPE);

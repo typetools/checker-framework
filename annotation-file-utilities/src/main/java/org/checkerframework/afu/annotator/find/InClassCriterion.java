@@ -18,6 +18,7 @@ import org.checkerframework.afu.annotator.scanner.LocalClassScanner;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 
 // If there are dollar signs in a name, then there are two
@@ -70,11 +71,14 @@ public final class InClassCriterion implements Criterion {
 
   @Override
   public boolean isSatisfiedBy(@Nullable TreePath path) {
-    return InClassCriterion.isSatisfiedBy(path, className, exactMatch);
+    return isSatisfiedBy(path, className, exactMatch);
   }
 
-  static Pattern anonclassPattern;
-  static Pattern localClassPattern;
+  /** Pattern that matches an anonymous class name. */
+  static @Regex(3) Pattern anonclassPattern;
+
+  /** Pattern that matches a local class name. */
+  static @Regex(4) Pattern localClassPattern;
 
   static {
     // for JDK 7: anonclassPattern = Pattern.compile("^(?<num>[0-9]+)(\\$(?<remaining>.*))?$");
@@ -106,8 +110,10 @@ public final class InClassCriterion implements Criterion {
       boolean checkLocal = false;
 
       switch (tree.getKind()) {
-        case COMPILATION_UNIT:
-          debug("InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
+        case COMPILATION_UNIT -> {
+          if (debug) {
+            debug("InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
+          }
           ExpressionTree packageTree = ((CompilationUnitTree) tree).getPackageName();
           if (packageTree == null) {
             // compilation unit is in default package; nothing to do
@@ -116,18 +122,17 @@ public final class InClassCriterion implements Criterion {
             if (cname.startsWith(declaredPackage + ".")) {
               cname = cname.substring(declaredPackage.length() + 1);
             } else {
-              debug(
-                  "false[COMPILATION_UNIT; bad declaredPackage = %s]"
-                      + " InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n",
-                  declaredPackage, cname, tree);
+              if (debug) {
+                debug(
+                    "false[COMPILATION_UNIT; bad declaredPackage = %s]"
+                        + " InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n",
+                    declaredPackage, cname, tree);
+              }
               return false;
             }
           }
-          break;
-        case CLASS:
-        case INTERFACE:
-        case ENUM:
-        case ANNOTATION_TYPE:
+        }
+        case CLASS, INTERFACE, ENUM, ANNOTATION_TYPE -> {
           if (i > 0 && trees.get(i - 1) instanceof NewClassTree) {
             // For an anonymous class, the CLASS tree is always directly inside of
             // a NEW_CLASS tree. If that's the case here then skip this iteration
@@ -135,15 +140,19 @@ public final class InClassCriterion implements Criterion {
             // iteration.
             break;
           }
-          debug("InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
+          if (debug) {
+            debug("InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
+          }
 
           if (i > 0 && trees.get(i - 1) instanceof BlockTree) {
             // Section 14.3 of the JLS says "every local class declaration
             // statement is immediately contained by a block".
             checkLocal = true;
-            debug(
-                "found local class: InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n",
-                cname, tree);
+            if (debug) {
+              debug(
+                  "found local class: InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n",
+                  cname, tree);
+            }
             break;
           }
 
@@ -152,9 +161,11 @@ public final class InClassCriterion implements Criterion {
           Name csn = c.getSimpleName();
 
           if (csn == null || csn.length() == 0) {
-            debug(
-                "empty getSimpleName: InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n",
-                cname, tree);
+            if (debug) {
+              debug(
+                  "empty getSimpleName: InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n",
+                  cname, tree);
+            }
             checkAnon = true;
             break;
           }
@@ -163,7 +174,9 @@ public final class InClassCriterion implements Criterion {
             if (exactMatch) {
               cname = "";
             } else {
-              debug("true InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
+              if (debug) {
+                debug("true InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
+              }
               return true;
             }
           } else if (cname.startsWith(treeClassName + "$")
@@ -172,34 +185,39 @@ public final class InClassCriterion implements Criterion {
           } else if (!treeClassName.isEmpty()) {
             // treeClassName is empty for anonymous inner class
             // System.out.println("cname else: " + cname);
-            debug("false InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
+            if (debug) {
+              debug("false InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
+            }
             return false;
           }
-          break;
-        case NEW_CLASS:
+        }
+        case NEW_CLASS -> {
           // When matching the "new Class() { ... }" expression itself, we
           // should not use the anonymous class name.  But when matching
           // within the braces, we should.
-          debug("InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
+          if (debug) {
+            debug("InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
+          }
           if (cname.equals("")) {
             insideMatch = true;
           } else {
             NewClassTree nc = (NewClassTree) tree;
             checkAnon = nc.getClassBody() != null;
           }
-          break;
-        case METHOD:
-        case VARIABLE:
+        }
+        case METHOD, VARIABLE -> {
           // Avoid searching inside inner classes of the matching class,
           // lest a homographic inner class lead to a spurious match.
           if (insideMatch) {
-            debug("false InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
+            if (debug) {
+              debug("false InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n", cname, tree);
+            }
             return false;
           }
-          break;
-        default:
+        }
+        default -> {
           // nothing to do
-          break;
+        }
       }
 
       if (checkAnon) {
@@ -208,9 +226,11 @@ public final class InClassCriterion implements Criterion {
 
         Matcher anonclassMatcher = anonclassPattern.matcher(cname);
         if (!anonclassMatcher.matches()) {
-          debug(
-              "false[anonclassMatcher] InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n",
-              cname, tree);
+          if (debug) {
+            debug(
+                "false[anonclassMatcher] InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n",
+                cname, tree);
+          }
           return false;
         }
         // for JDK 7: String anonclassNumString = anonclassMatcher.group("num");
@@ -230,9 +250,12 @@ public final class InClassCriterion implements Criterion {
         int actualIndexInSource = AnonymousClassScanner.indexOfClassTree(path, tree);
 
         if (anonclassNum != actualIndexInSource) {
-          debug(
-              "false[anonclassNum %d %d] InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n",
-              anonclassNum, actualIndexInSource, cname, tree);
+          if (debug) {
+            debug(
+                "false[anonclassNum %d %d] InClassCriterion.isSatisfiedBy:%n  cname=%s%n "
+                    + " tree=%s%n",
+                anonclassNum, actualIndexInSource, cname, tree);
+          }
           return false;
         }
       } else if (checkLocal) {
@@ -241,9 +264,11 @@ public final class InClassCriterion implements Criterion {
 
         Matcher localClassMatcher = localClassPattern.matcher(cname);
         if (!localClassMatcher.matches()) {
-          debug(
-              "false[localClassMatcher] InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n",
-              cname, tree);
+          if (debug) {
+            debug(
+                "false[localClassMatcher] InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n",
+                cname, tree);
+          }
           return false;
         }
         String localClassNumString = localClassMatcher.group(1);
@@ -258,17 +283,22 @@ public final class InClassCriterion implements Criterion {
             cname = "";
           }
         } else {
-          debug(
-              "false[localClassNum %d %d] InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n",
-              localClassNum, actualIndexInSource, cname, tree);
+          if (debug) {
+            debug(
+                "false[localClassNum %d %d] InClassCriterion.isSatisfiedBy:%n  cname=%s%n "
+                    + " tree=%s%n",
+                localClassNum, actualIndexInSource, cname, tree);
+          }
           return false;
         }
       }
     }
 
-    debug(
-        "%s InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n",
-        cname.equals(""), cname, path.getLeaf());
+    if (debug) {
+      debug(
+          "%s InClassCriterion.isSatisfiedBy:%n  cname=%s%n  tree=%s%n",
+          cname.equals(""), cname, path.getLeaf());
+    }
     return cname.equals("");
   }
 

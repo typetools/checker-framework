@@ -32,14 +32,15 @@ public final class DeclarationsIntoElements {
   /**
    * The entry point.
    *
+   * @param env the processing environment
    * @param atypeFactory the type factory
    * @param tree the ClassTree to process
    */
   public static void store(
       ProcessingEnvironment env, AnnotatedTypeFactory atypeFactory, ClassTree tree) {
     for (Tree mem : tree.getMembers()) {
-      if (mem instanceof MethodTree) {
-        storeMethod(env, atypeFactory, (MethodTree) mem);
+      if (mem instanceof MethodTree mt) {
+        storeMethod(env, atypeFactory, mt);
       }
     }
   }

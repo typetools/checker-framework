@@ -38,10 +38,9 @@ public class NotEqualNode extends BinaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof NotEqualNode)) {
+    if (!(obj instanceof NotEqualNode other)) {
       return false;
     }
-    NotEqualNode other = (NotEqualNode) obj;
     return getLeftOperand().equals(other.getLeftOperand())
         && getRightOperand().equals(other.getRightOperand());
   }

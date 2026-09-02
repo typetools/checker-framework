@@ -30,10 +30,25 @@ public abstract class TypedInsertion extends Insertion {
   /** The inner types to go on this insertion. See {@link ReceiverInsertion} for more details. */
   protected List<Insertion> innerTypeInsertions;
 
+  /**
+   * Creates a new {@code TypedInsertion} whose text is not on its own line.
+   *
+   * @param type the type to insert
+   * @param criteria where to insert the text
+   * @param innerTypeInsertions the inner types to go on this insertion
+   */
   public TypedInsertion(Type type, Criteria criteria, List<Insertion> innerTypeInsertions) {
     this(type, criteria, false, innerTypeInsertions);
   }
 
+  /**
+   * Creates a new {@code TypedInsertion}.
+   *
+   * @param type the type to insert
+   * @param criteria where to insert the text
+   * @param b if true, insert the text on its own line
+   * @param innerTypeInsertions the inner types to go on this insertion
+   */
   public TypedInsertion(
       Type type, Criteria criteria, boolean b, List<Insertion> innerTypeInsertions) {
     super(criteria, b);
@@ -77,15 +92,11 @@ public abstract class TypedInsertion extends Insertion {
   }
 
   public static DeclaredType getBaseType(Type type) {
-    switch (type.getKind()) {
-      case DECLARED:
-        return (DeclaredType) type;
-      case BOUNDED:
-        return getBaseType(((BoundedType) type).getName());
-      case ARRAY:
-        return getBaseType(((ArrayType) type).getComponentType());
-      default: // should never be reached
-        return null;
-    }
+    return switch (type.getKind()) {
+      case DECLARED -> (DeclaredType) type;
+      case BOUNDED -> getBaseType(((BoundedType) type).getName());
+      case ARRAY -> getBaseType(((ArrayType) type).getComponentType());
+      default -> null; // should never be reached
+    };
   }
 }

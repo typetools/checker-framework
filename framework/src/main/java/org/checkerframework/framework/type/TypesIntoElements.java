@@ -84,10 +84,10 @@ public final class TypesIntoElements {
     */
 
     for (Tree mem : tree.getMembers()) {
-      if (mem instanceof MethodTree) {
-        storeMethod(processingEnv, types, atypeFactory, (MethodTree) mem);
-      } else if (mem instanceof VariableTree) {
-        storeVariable(processingEnv, types, atypeFactory, (VariableTree) mem);
+      if (mem instanceof MethodTree mt) {
+        storeMethod(processingEnv, types, atypeFactory, mt);
+      } else if (mem instanceof VariableTree vt) {
+        storeVariable(processingEnv, types, atypeFactory, vt);
       } else {
         // System.out.println("Unhandled member tree: " + mem);
       }

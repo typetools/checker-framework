@@ -38,7 +38,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * An annotated type factory for an accumulation checker.
@@ -93,13 +93,13 @@ public abstract class AccumulationAnnotatedTypeFactory
       Class<? extends Annotation> bottom,
       @Nullable Class<? extends Annotation> predicate) {
     super(checker);
-    if (!(checker instanceof AccumulationChecker)) {
+    if (!(checker instanceof AccumulationChecker ac)) {
       throw new TypeSystemError(
           "AccumulationAnnotatedTypeFactory cannot be used with a checker "
               + "class that is not a subtype of AccumulationChecker. Found class: "
               + checker.getClass());
     }
-    this.accumulationChecker = (AccumulationChecker) checker;
+    this.accumulationChecker = ac;
 
     this.accumulator = accumulator;
     // Check that the requirements of the accumulator are met.
@@ -203,7 +203,7 @@ public abstract class AccumulationAnnotatedTypeFactory
    */
   public AnnotationMirror createAccumulatorAnnotation(List<String> values) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, accumulator);
-    builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(values));
+    builder.setValue("value", CollectionsP.withoutDuplicatesSorted(values));
     return builder.build();
   }
 

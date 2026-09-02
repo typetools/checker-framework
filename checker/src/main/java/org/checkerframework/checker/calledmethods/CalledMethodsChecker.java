@@ -8,21 +8,12 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SupportedOptions;
-import org.checkerframework.framework.source.SuppressWarningsPrefix;
 
 /**
  * The Called Methods Checker tracks the methods that have definitely been called on an object. One
  * common use case for the Called Methods Checker is to specify safe combinations of options to
  * builder or builder-like interfaces, preventing objects from being instantiated incompletely.
  */
-@SuppressWarningsPrefix({
-  // Preferred checkername.
-  "calledmethods",
-  // Deprecated checkernames, supported for backward compatibility.
-  "builder",
-  "object.construction",
-  "objectconstruction"
-})
 @SupportedOptions({
   CalledMethodsChecker.USE_VALUE_CHECKER,
   CalledMethodsChecker.COUNT_FRAMEWORK_BUILD_CALLS,

@@ -15,7 +15,7 @@ import java.util.Map;
  * with a given name, so that the i^th index corresponds to the i^th declaration of a local variable
  * with that name, using 0-based indexing.
  */
-public class LocalVariableScanner extends CommonScanner {
+public final class LocalVariableScanner extends CommonScanner {
   /**
    * Computes the index i of the given tree along the given tree path such that it is the i^th
    * declaration of the local variable with the given var name, using 0-based indexing.
@@ -66,8 +66,6 @@ public class LocalVariableScanner extends CommonScanner {
   private final String varName;
 
   private LocalVariableScanner(Tree varTree, String varName) {
-    this.index = -1;
-    this.done = false;
     this.varTree = varTree;
     this.varName = varName;
   }
@@ -132,17 +130,11 @@ public class LocalVariableScanner extends CommonScanner {
    * @param offset the start offset of the local variable
    */
   public static void addToMethodNameCounter(String methodName, String varName, Integer offset) {
-    Map<String, List<Integer>> nameOffsetCounter = methodNameCounter.get(methodName);
-    if (nameOffsetCounter == null) {
-      nameOffsetCounter = new HashMap<>();
-      methodNameCounter.put(methodName, nameOffsetCounter);
-    }
+    Map<String, List<Integer>> nameOffsetCounter =
+        methodNameCounter.computeIfAbsent(methodName, k -> new HashMap<>());
 
-    List<Integer> listOfOffsets = nameOffsetCounter.get(varName);
-    if (listOfOffsets == null) {
-      listOfOffsets = new ArrayList<Integer>();
-      nameOffsetCounter.put(varName, listOfOffsets);
-    }
+    List<Integer> listOfOffsets =
+        nameOffsetCounter.computeIfAbsent(varName, k -> new ArrayList<>());
 
     listOfOffsets.add(offset);
   }

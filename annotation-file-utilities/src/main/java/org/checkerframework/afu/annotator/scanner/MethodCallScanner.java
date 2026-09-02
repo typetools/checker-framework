@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MethodCallScanner extends CommonScanner {
+public final class MethodCallScanner extends CommonScanner {
 
   /**
    * Computes the index of the given method invocation amongst all method invocation trees inside
@@ -69,11 +69,8 @@ public class MethodCallScanner extends CommonScanner {
    * @param offset the offset to add
    */
   public static void addMethodCallToMethod(String methodName, Integer offset) {
-    List<Integer> offsetList = methodNameToMethodCallOffsets.get(methodName);
-    if (offsetList == null) {
-      offsetList = new ArrayList<Integer>();
-      methodNameToMethodCallOffsets.put(methodName, offsetList);
-    }
+    List<Integer> offsetList =
+        methodNameToMethodCallOffsets.computeIfAbsent(methodName, k -> new ArrayList<>());
     offsetList.add(offset);
   }
 

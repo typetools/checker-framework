@@ -139,7 +139,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     /**
      * For a given call to format, this setting specifies whether or not to printInvisibles. If a
      * user did not specify a printInvisible parameter in the call to format then this value will
-     * equal DefaultAnnotatedTypeFormatter.defaultInvisibleSettings for this object
+     * equal DefaultAnnotatedTypeFormatter.defaultInvisiblesSetting for this object
      */
     protected boolean currentPrintInvisibleSetting;
 
@@ -148,7 +148,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
 
     /**
      * Prints type variables in a less ambiguous manner using [] to delimit them. Always prints both
-     * bounds even if they lower bound is an AnnotatedNull type.
+     * bounds even if the lower bound is an AnnotatedNull type.
      */
     protected boolean currentPrintVerboseGenerics;
 
@@ -200,9 +200,9 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         return;
       }
 
-      sb.append(" ");
+      sb.append(' ');
       sb.append(keyWord);
-      sb.append(" ");
+      sb.append(' ');
 
       if (field == null) {
         sb.append("<null>");
@@ -269,7 +269,9 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
           sb.append(sj);
         }
       } else {
-        sb.append("<" + "/*Type args not initialized*/" + ">");
+        sb.append('<');
+        sb.append("/*Type args not initialized*/");
+        sb.append('>');
       }
       currentlyPrintingRaw = oldPrintingRaw;
       return sb.toString();
@@ -348,17 +350,18 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
       if (type.paramTypes == null) {
         sb.append("/*Parameters not initialized*/");
       } else if (!type.paramTypes.isEmpty()) {
+        // If a receiver was printed, a leading separator is needed before the first parameter.
+        if (rcv != null) {
+          sb.append(", ");
+        }
+        StringJoiner sj = new StringJoiner(", ");
         int p = 0;
         for (AnnotatedTypeMirror atm : type.paramTypes) {
-          if (rcv != null || p > 0) {
-            sb.append(", ");
-          }
-          sb.append(visit(atm, visiting));
           // Output some parameter names to make it look more like a method.
           // TODO: go to the element and look up real parameter names, maybe.
-          sb.append(" p");
-          sb.append(p++);
+          sj.add(visit(atm, visiting) + " p" + p++);
         }
+        sb.append(sj);
       }
       sb.append(')');
       if (type.thrownTypes == null) {
@@ -429,12 +432,12 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         try {
           visiting.add(type);
           if (currentPrintVerboseGenerics) {
-            sb.append("[");
+            sb.append('[');
           }
           printBound("extends", type.getUpperBoundField(), visiting, sb);
           printBound("super", type.getLowerBoundField(), visiting, sb);
           if (currentPrintVerboseGenerics) {
-            sb.append("]");
+            sb.append(']');
           }
 
         } finally {
@@ -479,19 +482,19 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
           annoFormatter.formatAnnotationString(
               type.getPrimaryAnnotationsField(), currentPrintInvisibleSetting));
 
-      sb.append("?");
+      sb.append('?');
       if (!visiting.contains(type)) {
 
         try {
           visiting.add(type);
 
           if (currentPrintVerboseGenerics) {
-            sb.append("[");
+            sb.append('[');
           }
           printBound("extends", type.getExtendsBoundField(), visiting, sb);
           printBound("super", type.getSuperBoundField(), visiting, sb);
           if (currentPrintVerboseGenerics) {
-            sb.append("]");
+            sb.append(']');
           }
 
         } finally {

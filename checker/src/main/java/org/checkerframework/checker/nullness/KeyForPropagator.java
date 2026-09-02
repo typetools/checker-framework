@@ -28,16 +28,19 @@ import org.plumelib.util.IPair;
  * @see org.checkerframework.checker.nullness.KeyForPropagationTreeAnnotator
  */
 public class KeyForPropagator {
-  public static enum PropagationDirection {
-    // transfer FROM the super type to the subtype
+  /** The direction of propagation. */
+  public enum PropagationDirection {
+    /** Transfer FROM the supertype to the subtype. */
     TO_SUBTYPE,
 
-    // transfer FROM the subtype to the supertype
+    /** Transfer FROM the subtype to the supertype. */
     TO_SUPERTYPE,
 
-    // first execute TO_SUBTYPE then TO_SUPERTYPE, if TO_SUBTYPE actually transfers
-    // an annotation for a particular type T then T will not be affected by the
-    // TO_SUPERTYPE transfer because it will already have a KeyFor annotation
+    /**
+     * first execute TO_SUBTYPE then TO_SUPERTYPE. If TO_SUBTYPE actually transfers an annotation
+     * for a particular type T then T will not be affected by the TO_SUPERTYPE transfer because it
+     * will already have a KeyFor annotation.
+     */
     BOTH
   }
 
@@ -130,19 +133,13 @@ public class KeyForPropagator {
       }
 
       switch (direction) {
-        case TO_SUBTYPE:
-          replacer.visit(supertypeArg, subtypeArg);
-          break;
-
-        case TO_SUPERTYPE:
-          replacer.visit(subtypeArg, supertypeArg);
-          break;
-
-        case BOTH:
+        case TO_SUBTYPE -> replacer.visit(supertypeArg, subtypeArg);
+        case TO_SUPERTYPE -> replacer.visit(subtypeArg, supertypeArg);
+        case BOTH -> {
           // note if they both have an annotation nothing will happen
           replacer.visit(subtypeArg, supertypeArg);
           replacer.visit(supertypeArg, subtypeArg);
-          break;
+        }
       }
     }
   }
@@ -168,8 +165,8 @@ public class KeyForPropagator {
     }
     Tree assignmentContext = TreePathUtil.getContextForPolyExpression(path);
     AnnotatedTypeMirror assignedTo;
-    if (assignmentContext instanceof VariableTree) {
-      if (TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) assignmentContext)) {
+    if (assignmentContext instanceof VariableTree vt) {
+      if (TreeUtils.isVariableTreeDeclaredUsingVar(vt)) {
         return;
       }
       assignedTo = atypeFactory.getAnnotatedTypeLhs(assignmentContext);
@@ -192,7 +189,11 @@ public class KeyForPropagator {
    * types to the second type, if the second type is annotated with @UnknownKeyFor or has no
    * annotation in the KeyFor hierarchy.
    */
-  private class KeyForPropagationReplacer extends AnnotatedTypeReplacer {
+  private final class KeyForPropagationReplacer extends AnnotatedTypeReplacer {
+
+    /** Creates a new KeyForPropagationReplacer. */
+    KeyForPropagationReplacer() {}
+
     @Override
     protected void replaceAnnotations(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
       AnnotationMirror fromKeyFor = from.getPrimaryAnnotationInHierarchy(UNKNOWN_KEYFOR);

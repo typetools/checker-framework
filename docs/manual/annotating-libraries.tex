@@ -197,8 +197,8 @@ documentation.  Here are reasons for this rule:
   but globally inconsistent, or might not read all the documentation of the
   class to understand how it works.
 \item
-  It is not much more effort to annotate an entire class versus one method
-  or field.  In either case it is usually necessary to understand the entire
+  It is only a bit more effort to annotate an entire class than to annotate one
+  method or field.  In either case it is usually necessary to understand the entire
   class's design and implementation.  Once you have done that, you might as
   well annotate the whole thing.
 \item
@@ -282,7 +282,7 @@ This section describes how to create an annotated library.
 %  \<-AprintUnannotatedMethods> command-line argument while type-checking a
 %  client of the library.
 
-  % This is a strong recomendation, but not a requirement.  @AnnotatedFor
+  % This is a strong recommendation, but not a requirement.  @AnnotatedFor
   % can be written on a method as well.
   When you annotate a file, annotate the whole thing, not just a few of its
   methods.  Add an
@@ -326,7 +326,7 @@ This section describes how to create an annotated library.
     into your fork, add annotations to any newly-added methods in classes
     that are annotated with \<@AnnotatedFor>, rebuild to create an updated
     \<.jar> file, and inform the Checker Framework developers by opening an
-    issue or issuing a pull request.
+    issue or a pull request.
   \end{itemize}
 
 \end{enumerate}
@@ -352,7 +352,7 @@ The rest of this section tells you how to compile a library if you
 classes but not others.
 (There is another type of partial annotation, which is when you annotate
 method signatures but do not type-check the bodies.
-See Section~\ref{library-tips}.)
+See Section~\ref{library-tips-verify}.)
 
 Here are two concerns you may have when partially annotating a library:
 
@@ -450,7 +450,7 @@ such as method bodies.  Section~\ref{stub-format} describes
 the stub file format.
 
 Section~\ref{annotating-jdk} explains how you should choose between
-creating stub classes or creating an annotated library.
+creating stub classes and creating an annotated library.
 Section~\ref{stub-creating} describes how to create stub classes.
 Section~\ref{stub-using} describes how to use stub classes.
 These sections illustrate stub classes via the example of creating a \refqualclass{checker/interning/qual}{Interned}-annotated
@@ -506,7 +506,7 @@ In other words:
   \<A> is ignored.  See below for how to change this behavior and respect
   both types of annotations.
 \item
-  An un-annotated type variable in a stub file is used instead of
+  An unannotated type variable in a stub file is used instead of
   annotations on a type variable in bytecode.
   \\
   Use the \<-AstubWarnIfRedundantWithBytecode> command-line option to get a
@@ -637,7 +637,7 @@ following ways:
 \item{\textbf{Method declarations:}}
   You only have to specify the methods that you need to annotate.
   Any method declaration may be omitted, in which case the checker reads
-  its annotations from library's \<.class> files.  If you are using a stub class, then
+  its annotations from the library's \<.class> files.  If you are using a stub class, then
   often the library is unannotated, but you can use stub files to override
   library annotations.
 
@@ -732,7 +732,7 @@ If you do not have access to the library source code, you can create a stub
 file by hand.
 
 If you have access to the API documentation for the element you wish to
-annotate, it is often easiest to copy--paste names, types, and signatures
+annotate, it is often easiest to copy-paste names, types, and signatures
 from the API documentation.  (The API documentation is a \<.html> file that
 is sometimes colloquially called the ``Javadoc''.)  This avoids common
 mistakes when writing stub files by hand, such as typos in the package name
@@ -746,7 +746,7 @@ Here are steps to write a stub file by hand:
 writing a Java file for the target class.  (If the file already contains a
 declaration for that package, re-use it by doing the rest of your work
 under it; don't write a duplicate package declaration in the file.)
-Typically, it is easiest to copy--paste the package name from API
+Typically, it is easiest to copy-paste the package name from API
 documentation or from an import statement in the code that you are
 type-checking, to avoid typos.
 \item Write a class declaration header:  \<class> followed by the
@@ -857,7 +857,7 @@ Gradle plugin:
 \end{Verbatim}
 \item
   If the stub files appear under the \<src/main/resources/>
-  directory in a sub-directory matching the package of your checker class,
+  directory in a subdirectory matching the package of your checker class,
   the default Gradle build configuration is sufficient.
 \end{itemize}
 In either case, recall that a \refqualclass{framework/qual}{StubFiles}
@@ -961,7 +961,7 @@ AnnotationFileParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
 \end{Verbatim}
 
 \noindent
-by removing the method \<enableForgroundNdefPush(...)> from
+by removing the method \<enableForegroundNdefPush(...)> from
 the stub file, because it is not defined in class \<android.nfc.NfcAdapter>
 in the version of the library you are using.
 
@@ -1002,8 +1002,8 @@ For example:
 \end{Verbatim}
 \end{myxsmall}
 
-If there's an annotation in both a source file and the corresponding a
-source file, the Checker Framework uses the greatest lower bound, as with
+If there's an annotation in both a source file and the corresponding ajava
+file, the Checker Framework uses the greatest lower bound, as with
 the \code{-AmergeStubsWithSource} option.
 
 
@@ -1021,13 +1021,13 @@ due to mismatches.
 The ajava file must either (1) be found below one of the arguments to
 \code{-Aajava}, in a subdirectory matching its package name, or (2) be
 unambiguously specified directly with its full path. A pair of \<.ajava>
-files are specified ambiguously if one of their fully-qualified names
+files is specified ambiguously if one of their fully-qualified names
 is a substring of the other, and both are specified as \<.ajava> files (rather
 than being found under directories). For example, if the \<-Aajava> argument
 was \<-Aajava=~/foo/Bar.ajava:~/baz/foo/Bar.ajava>, the two \<.ajava> files
-would be considered ambiguous and a \<ambiguous.ajava> warning would be issued.
+would be considered ambiguous and an \<ambiguous.ajava> warning would be issued.
 Files found under a directory are always unambiguous, because their file structure
-must match their package name; the solution to a \<ambiguous.ajava> warning is to
+must match their package name; the solution to an \<ambiguous.ajava> warning is to
 convert the specific files in the \<-Aajava> argument to directories.
 
 The ajava file must be named
@@ -1045,7 +1045,7 @@ named
 \subsubsectionAndLabel{Contents of an ajava file}{ajava-contents}
 
 The
-ajava file must contain the same source code as the source file with the following exceptions:
+ajava file must contain the same source code as the source file, with the following exceptions:
 \begin{itemize}
   \item The two may differ in annotations.
   \item The two may have different import statements.
@@ -1076,7 +1076,7 @@ containing Java files.  The \code{checker.jar} file must be in the classpath.
 Here is an example invocation:
 \begin{Verbatim}
   java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-    org.checkerframework.framework.ajava.InsertAjavaAnnoations \
+    org.checkerframework.framework.ajava.InsertAjavaAnnotations \
     <path-to-ajava-files> <path-to-java-files>
 \end{Verbatim}
 
@@ -1089,7 +1089,7 @@ may help you in determining which library files are read.
 
 \begin{description}
 \item \<-verbose>
-  Outputs info about compile phases --- when the compiler
+  Outputs information about compile phases --- when the compiler
   reads/parses/attributes/writes any file.  Also outputs the classpath and
   sourcepath paths.
 \end{description}
@@ -1105,7 +1105,7 @@ being silently ignored.  A typo in an annotation name, or a missing
 % LocalWords: CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
 % LocalWords: Interning's UsesObjectEquals ApermitMissingJdk AonlyUses java pre
 % LocalWords: Aignorejdkastub AstubWarnIfNotFound AstubDebug dont local'
-% LocalWords: enableForgroundNdefPush BCEL getopt ajava html drawImage
+% LocalWords: enableForegroundNdefPush BCEL getopt ajava html drawImage
 % LocalWords: NoAnnotationFileParserWarning CHECKERFRAMEWORK AnnotatedFor regex
 % LocalWords: AuseConservativeDefaultsForUnannotatedCode buildfile qual
 % LocalWords: AprintUnannotatedMethods checkername AskipDefs bcel mkdir

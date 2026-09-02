@@ -21,8 +21,9 @@ import com.github.javaparser.ast.body.ReceiverParameter;
 import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.comments.BlockComment;
-import com.github.javaparser.ast.comments.JavadocComment;
 import com.github.javaparser.ast.comments.LineComment;
+import com.github.javaparser.ast.comments.MarkdownComment;
+import com.github.javaparser.ast.comments.TraditionalJavadocComment;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
@@ -41,6 +42,7 @@ import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
+import com.github.javaparser.ast.expr.MatchAllPatternExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
@@ -49,6 +51,7 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.RecordPatternExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
@@ -57,6 +60,7 @@ import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.expr.TextBlockLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.TypeExpr;
+import com.github.javaparser.ast.expr.TypePatternExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
@@ -186,10 +190,24 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   }
 
   @Override
+  public void visit(ArrayCreationLevel node1, Node other) {
+    ArrayCreationLevel node2 = (ArrayCreationLevel) other;
+    defaultAction(node1, node2);
+    node1.getDimension().ifPresent(l -> l.accept(this, node2.getDimension().get()));
+  }
+
+  @Override
   public void visit(ArrayInitializerExpr node1, Node other) {
     ArrayInitializerExpr node2 = (ArrayInitializerExpr) other;
     defaultAction(node1, node2);
     visitLists(node1.getValues(), node2.getValues());
+  }
+
+  @Override
+  public void visit(ArrayType node1, Node other) {
+    ArrayType node2 = (ArrayType) other;
+    defaultAction(node1, node2);
+    node1.getComponentType().accept(this, node2.getComponentType());
   }
 
   @Override
@@ -290,6 +308,17 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   }
 
   @Override
+  public void visit(CompactConstructorDeclaration node1, Node other) {
+    CompactConstructorDeclaration node2 = (CompactConstructorDeclaration) other;
+    defaultAction(node1, node2);
+    node1.getBody().accept(this, node2.getBody());
+    visitLists(node1.getModifiers(), node2.getModifiers());
+    node1.getName().accept(this, node2.getName());
+    visitLists(node1.getThrownExceptions(), node2.getThrownExceptions());
+    visitLists(node1.getTypeParameters(), node2.getTypeParameters());
+  }
+
+  @Override
   public void visit(CompilationUnit node1, Node other) {
     CompilationUnit node2 = (CompilationUnit) other;
     defaultAction(node1, node2);
@@ -320,19 +349,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     if (node1.getReceiverParameter().isPresent() && node2.getReceiverParameter().isPresent()) {
       node1.getReceiverParameter().get().accept(this, node2.getReceiverParameter().get());
     }
-
-    visitLists(node1.getThrownExceptions(), node2.getThrownExceptions());
-    visitLists(node1.getTypeParameters(), node2.getTypeParameters());
-  }
-
-  @Override
-  public void visit(CompactConstructorDeclaration node1, Node other) {
-    CompactConstructorDeclaration node2 = (CompactConstructorDeclaration) other;
-    defaultAction(node1, node2);
-    node1.getBody().accept(this, node2.getBody());
-    visitLists(node1.getModifiers(), node2.getModifiers());
-    node1.getName().accept(this, node2.getName());
-
     visitLists(node1.getThrownExceptions(), node2.getThrownExceptions());
     visitLists(node1.getTypeParameters(), node2.getTypeParameters());
   }
@@ -451,6 +467,13 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   }
 
   @Override
+  public void visit(ImportDeclaration node1, Node other) {
+    ImportDeclaration node2 = (ImportDeclaration) other;
+    defaultAction(node1, node2);
+    node1.getName().accept(this, node2.getName());
+  }
+
+  @Override
   public void visit(InitializerDeclaration node1, Node other) {
     InitializerDeclaration node2 = (InitializerDeclaration) other;
     defaultAction(node1, node2);
@@ -471,8 +494,10 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   }
 
   @Override
-  public void visit(JavadocComment node1, Node other) {
-    defaultAction(node1, other);
+  public void visit(IntersectionType node1, Node other) {
+    IntersectionType node2 = (IntersectionType) other;
+    defaultAction(node1, node2);
+    visitLists(node1.getElements(), node2.getElements());
   }
 
   @Override
@@ -484,8 +509,30 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   }
 
   @Override
+  public void visit(LambdaExpr node1, Node other) {
+    LambdaExpr node2 = (LambdaExpr) other;
+    defaultAction(node1, node2);
+    node1.getBody().accept(this, node2.getBody());
+    visitLists(node1.getParameters(), node2.getParameters());
+  }
+
+  @Override
   public void visit(LineComment node1, Node other) {
     defaultAction(node1, other);
+  }
+
+  @Override
+  public void visit(LocalClassDeclarationStmt node1, Node other) {
+    LocalClassDeclarationStmt node2 = (LocalClassDeclarationStmt) other;
+    defaultAction(node1, node2);
+    node1.getClassDeclaration().accept(this, node2.getClassDeclaration());
+  }
+
+  @Override
+  public void visit(LocalRecordDeclarationStmt node1, Node other) {
+    LocalRecordDeclarationStmt node2 = (LocalRecordDeclarationStmt) other;
+    defaultAction(node1, node2);
+    node1.getRecordDeclaration().accept(this, node2.getRecordDeclaration());
   }
 
   @Override
@@ -494,10 +541,22 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   }
 
   @Override
+  public void visit(MarkdownComment node1, Node other) {
+    defaultAction(node1, other);
+  }
+
+  @Override
   public void visit(MarkerAnnotationExpr node1, Node other) {
     MarkerAnnotationExpr node2 = (MarkerAnnotationExpr) other;
     defaultAction(node1, node2);
     node1.getName().accept(this, node2.getName());
+  }
+
+  @Override
+  public void visit(MatchAllPatternExpr node1, Node other) {
+    MatchAllPatternExpr node2 = (MatchAllPatternExpr) other;
+    defaultAction(node1, node2);
+    visitLists(node1.getModifiers(), node2.getModifiers());
   }
 
   @Override
@@ -530,9 +589,75 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     if (node1.getReceiverParameter().isPresent() && node2.getReceiverParameter().isPresent()) {
       node1.getReceiverParameter().get().accept(this, node2.getReceiverParameter().get());
     }
-
     visitLists(node1.getThrownExceptions(), node2.getThrownExceptions());
     visitLists(node1.getTypeParameters(), node2.getTypeParameters());
+  }
+
+  @Override
+  public void visit(MethodReferenceExpr node1, Node other) {
+    MethodReferenceExpr node2 = (MethodReferenceExpr) other;
+    defaultAction(node1, node2);
+    node1.getScope().accept(this, node2.getScope());
+    node1.getTypeArguments().ifPresent(l -> visitLists(l, node2.getTypeArguments().get()));
+  }
+
+  @Override
+  public void visit(Modifier node1, Node other) {
+    defaultAction(node1, other);
+  }
+
+  @Override
+  public void visit(ModuleDeclaration node1, Node other) {
+    ModuleDeclaration node2 = (ModuleDeclaration) other;
+    defaultAction(node1, node2);
+    visitLists(node1.getDirectives(), node2.getDirectives());
+    node1.getName().accept(this, node2.getName());
+  }
+
+  @Override
+  public void visit(ModuleExportsDirective node1, Node other) {
+    ModuleExportsDirective node2 = (ModuleExportsDirective) other;
+    defaultAction(node1, node2);
+    visitLists(node1.getModuleNames(), node2.getModuleNames());
+    node1.getName().accept(this, node2.getName());
+  }
+
+  @Override
+  public void visit(ModuleOpensDirective node1, Node other) {
+    ModuleOpensDirective node2 = (ModuleOpensDirective) other;
+    defaultAction(node1, node2);
+    visitLists(node1.getModuleNames(), node2.getModuleNames());
+    node1.getName().accept(this, node2.getName());
+  }
+
+  @Override
+  public void visit(ModuleProvidesDirective node1, Node other) {
+    ModuleProvidesDirective node2 = (ModuleProvidesDirective) other;
+    defaultAction(node1, node2);
+    node1.getName().accept(this, node2.getName());
+    visitLists(node1.getWith(), node2.getWith());
+  }
+
+  @Override
+  public void visit(ModuleRequiresDirective node1, Node other) {
+    ModuleRequiresDirective node2 = (ModuleRequiresDirective) other;
+    defaultAction(node1, node2);
+    visitLists(node1.getModifiers(), node2.getModifiers());
+    node1.getName().accept(this, node2.getName());
+  }
+
+  @Override
+  public void visit(ModuleUsesDirective node1, Node other) {
+    ModuleUsesDirective node2 = (ModuleUsesDirective) other;
+    defaultAction(node1, node2);
+    node1.getName().accept(this, node2.getName());
+  }
+
+  @Override
+  public void visit(Name node1, Node other) {
+    Name node2 = (Name) other;
+    defaultAction(node1, node2);
+    node1.getQualifier().ifPresent(l -> l.accept(this, node2.getQualifier().get()));
   }
 
   @Override
@@ -590,43 +715,11 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   }
 
   @Override
-  public void visit(Name node1, Node other) {
-    Name node2 = (Name) other;
+  public void visit(ReceiverParameter node1, Node other) {
+    ReceiverParameter node2 = (ReceiverParameter) other;
     defaultAction(node1, node2);
-    node1.getQualifier().ifPresent(l -> l.accept(this, node2.getQualifier().get()));
-  }
-
-  @Override
-  public void visit(SimpleName node1, Node other) {
-    defaultAction(node1, other);
-  }
-
-  @Override
-  public void visit(ArrayType node1, Node other) {
-    ArrayType node2 = (ArrayType) other;
-    defaultAction(node1, node2);
-    node1.getComponentType().accept(this, node2.getComponentType());
-  }
-
-  @Override
-  public void visit(ArrayCreationLevel node1, Node other) {
-    ArrayCreationLevel node2 = (ArrayCreationLevel) other;
-    defaultAction(node1, node2);
-    node1.getDimension().ifPresent(l -> l.accept(this, node2.getDimension().get()));
-  }
-
-  @Override
-  public void visit(IntersectionType node1, Node other) {
-    IntersectionType node2 = (IntersectionType) other;
-    defaultAction(node1, node2);
-    visitLists(node1.getElements(), node2.getElements());
-  }
-
-  @Override
-  public void visit(UnionType node1, Node other) {
-    UnionType node2 = (UnionType) other;
-    defaultAction(node1, node2);
-    visitLists(node1.getElements(), node2.getElements());
+    node1.getName().accept(this, node2.getName());
+    node1.getType().accept(this, node2.getType());
   }
 
   @Override
@@ -645,10 +738,24 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   }
 
   @Override
+  public void visit(RecordPatternExpr node1, Node other) {
+    RecordPatternExpr node2 = (RecordPatternExpr) other;
+    defaultAction(node1, node2);
+    visitLists(node1.getPatternList(), node2.getPatternList());
+    visitLists(node1.getModifiers(), node2.getModifiers());
+    node1.getType().accept(this, node2.getType());
+  }
+
+  @Override
   public void visit(ReturnStmt node1, Node other) {
     ReturnStmt node2 = (ReturnStmt) other;
     defaultAction(node1, node2);
     node1.getExpression().ifPresent(l -> l.accept(this, node2.getExpression().get()));
+  }
+
+  @Override
+  public void visit(SimpleName node1, Node other) {
+    defaultAction(node1, other);
   }
 
   @Override
@@ -680,6 +787,14 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   }
 
   @Override
+  public void visit(SwitchExpr node1, Node other) {
+    SwitchExpr node2 = (SwitchExpr) other;
+    defaultAction(node1, node2);
+    visitLists(node1.getEntries(), node2.getEntries());
+    node1.getSelector().accept(this, node2.getSelector());
+  }
+
+  @Override
   public void visit(SwitchStmt node1, Node other) {
     SwitchStmt node2 = (SwitchStmt) other;
     defaultAction(node1, node2);
@@ -693,6 +808,11 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     defaultAction(node1, node2);
     node1.getBody().accept(this, node2.getBody());
     node1.getExpression().accept(this, node2.getExpression());
+  }
+
+  @Override
+  public void visit(TextBlockLiteralExpr node1, Node other) {
+    defaultAction(node1, other);
   }
 
   @Override
@@ -710,6 +830,11 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   }
 
   @Override
+  public void visit(TraditionalJavadocComment node1, Node other) {
+    defaultAction(node1, other);
+  }
+
+  @Override
   public void visit(TryStmt node1, Node other) {
     TryStmt node2 = (TryStmt) other;
     defaultAction(node1, node2);
@@ -720,17 +845,10 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   }
 
   @Override
-  public void visit(LocalClassDeclarationStmt node1, Node other) {
-    LocalClassDeclarationStmt node2 = (LocalClassDeclarationStmt) other;
+  public void visit(TypeExpr node1, Node other) {
+    TypeExpr node2 = (TypeExpr) other;
     defaultAction(node1, node2);
-    node1.getClassDeclaration().accept(this, node2.getClassDeclaration());
-  }
-
-  @Override
-  public void visit(LocalRecordDeclarationStmt node1, Node other) {
-    LocalRecordDeclarationStmt node2 = (LocalRecordDeclarationStmt) other;
-    defaultAction(node1, node2);
-    node1.getRecordDeclaration().accept(this, node2.getRecordDeclaration());
+    node1.getType().accept(this, node2.getType());
   }
 
   @Override
@@ -746,6 +864,15 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   }
 
   @Override
+  public void visit(TypePatternExpr node1, Node other) {
+    TypePatternExpr node2 = (TypePatternExpr) other;
+    defaultAction(node1, node2);
+    node1.getName().accept(this, node2.getName());
+    visitLists(node1.getModifiers(), node2.getModifiers());
+    node1.getType().accept(this, node2.getType());
+  }
+
+  @Override
   public void visit(UnaryExpr node1, Node other) {
     UnaryExpr node2 = (UnaryExpr) other;
     defaultAction(node1, node2);
@@ -753,7 +880,24 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   }
 
   @Override
+  public void visit(UnionType node1, Node other) {
+    UnionType node2 = (UnionType) other;
+    defaultAction(node1, node2);
+    visitLists(node1.getElements(), node2.getElements());
+  }
+
+  @Override
   public void visit(UnknownType node1, Node other) {
+    defaultAction(node1, other);
+  }
+
+  @Override
+  public void visit(UnparsableStmt node1, Node other) {
+    defaultAction(node1, other);
+  }
+
+  @Override
+  public void visit(VarType node1, Node other) {
     defaultAction(node1, other);
   }
 
@@ -793,119 +937,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     defaultAction(node1, node2);
     node1.getExtendedType().ifPresent(l -> l.accept(this, node2.getExtendedType().get()));
     node1.getSuperType().ifPresent(l -> l.accept(this, node2.getSuperType().get()));
-  }
-
-  @Override
-  public void visit(LambdaExpr node1, Node other) {
-    LambdaExpr node2 = (LambdaExpr) other;
-    defaultAction(node1, node2);
-    node1.getBody().accept(this, node2.getBody());
-    visitLists(node1.getParameters(), node2.getParameters());
-  }
-
-  @Override
-  public void visit(MethodReferenceExpr node1, Node other) {
-    MethodReferenceExpr node2 = (MethodReferenceExpr) other;
-    defaultAction(node1, node2);
-    node1.getScope().accept(this, node2.getScope());
-    node1.getTypeArguments().ifPresent(l -> visitLists(l, node2.getTypeArguments().get()));
-  }
-
-  @Override
-  public void visit(TypeExpr node1, Node other) {
-    TypeExpr node2 = (TypeExpr) other;
-    defaultAction(node1, node2);
-    node1.getType().accept(this, node2.getType());
-  }
-
-  @Override
-  public void visit(ImportDeclaration node1, Node other) {
-    ImportDeclaration node2 = (ImportDeclaration) other;
-    defaultAction(node1, node2);
-    node1.getName().accept(this, node2.getName());
-  }
-
-  @Override
-  public void visit(ModuleDeclaration node1, Node other) {
-    ModuleDeclaration node2 = (ModuleDeclaration) other;
-    defaultAction(node1, node2);
-    visitLists(node1.getDirectives(), node2.getDirectives());
-    node1.getName().accept(this, node2.getName());
-  }
-
-  @Override
-  public void visit(ModuleRequiresDirective node1, Node other) {
-    ModuleRequiresDirective node2 = (ModuleRequiresDirective) other;
-    defaultAction(node1, node2);
-    visitLists(node1.getModifiers(), node2.getModifiers());
-    node1.getName().accept(this, node2.getName());
-  }
-
-  @Override
-  public void visit(ModuleExportsDirective node1, Node other) {
-    ModuleExportsDirective node2 = (ModuleExportsDirective) other;
-    defaultAction(node1, node2);
-    visitLists(node1.getModuleNames(), node2.getModuleNames());
-    node1.getName().accept(this, node2.getName());
-  }
-
-  @Override
-  public void visit(ModuleProvidesDirective node1, Node other) {
-    ModuleProvidesDirective node2 = (ModuleProvidesDirective) other;
-    defaultAction(node1, node2);
-    node1.getName().accept(this, node2.getName());
-    visitLists(node1.getWith(), node2.getWith());
-  }
-
-  @Override
-  public void visit(ModuleUsesDirective node1, Node other) {
-    ModuleUsesDirective node2 = (ModuleUsesDirective) other;
-    defaultAction(node1, node2);
-    node1.getName().accept(this, node2.getName());
-  }
-
-  @Override
-  public void visit(ModuleOpensDirective node1, Node other) {
-    ModuleOpensDirective node2 = (ModuleOpensDirective) other;
-    defaultAction(node1, node2);
-    visitLists(node1.getModuleNames(), node2.getModuleNames());
-    node1.getName().accept(this, node2.getName());
-  }
-
-  @Override
-  public void visit(UnparsableStmt node1, Node other) {
-    defaultAction(node1, other);
-  }
-
-  @Override
-  public void visit(ReceiverParameter node1, Node other) {
-    ReceiverParameter node2 = (ReceiverParameter) other;
-    defaultAction(node1, node2);
-    node1.getName().accept(this, node2.getName());
-    node1.getType().accept(this, node2.getType());
-  }
-
-  @Override
-  public void visit(VarType node1, Node other) {
-    defaultAction(node1, other);
-  }
-
-  @Override
-  public void visit(Modifier node1, Node other) {
-    defaultAction(node1, other);
-  }
-
-  @Override
-  public void visit(SwitchExpr node1, Node other) {
-    SwitchExpr node2 = (SwitchExpr) other;
-    defaultAction(node1, node2);
-    visitLists(node1.getEntries(), node2.getEntries());
-    node1.getSelector().accept(this, node2.getSelector());
-  }
-
-  @Override
-  public void visit(TextBlockLiteralExpr node1, Node other) {
-    defaultAction(node1, other);
   }
 
   @Override

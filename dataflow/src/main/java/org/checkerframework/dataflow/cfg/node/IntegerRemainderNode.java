@@ -38,10 +38,9 @@ public class IntegerRemainderNode extends BinaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof IntegerRemainderNode)) {
+    if (!(obj instanceof IntegerRemainderNode other)) {
       return false;
     }
-    IntegerRemainderNode other = (IntegerRemainderNode) obj;
     return getLeftOperand().equals(other.getLeftOperand())
         && getRightOperand().equals(other.getRightOperand());
   }

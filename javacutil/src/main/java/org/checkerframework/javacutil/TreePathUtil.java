@@ -2,6 +2,7 @@ package org.checkerframework.javacutil;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
@@ -11,18 +12,21 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
 import org.plumelib.util.IPair;
 
 /**
@@ -89,6 +93,42 @@ public final class TreePathUtil {
    */
   public static @Nullable TreePath pathTillMethod(TreePath path) {
     return pathTillOfKind(path, Tree.Kind.METHOD);
+  }
+
+  /**
+   * Returns the instance field initializers and instance initializer blocks of the class that
+   * encloses the given code. They run as part of every constructor that does not delegate to
+   * another constructor of the same class.
+   *
+   * @param path the path defining the tree node
+   * @return paths to the instance initializers of the class that encloses {@code path}
+   */
+  public static List<TreePath> getInstanceInitializers(TreePath path) {
+    TreePath pathOfClass = pathTillClass(path);
+    if (pathOfClass == null) {
+      return Collections.emptyList();
+    }
+    ClassTree classTree = (ClassTree) pathOfClass.getLeaf();
+    if (classTree.getKind() == Kind.INTERFACE || classTree.getKind() == Kind.ANNOTATION_TYPE) {
+      // An interface has no instance initializers:  every field of an interface is static, and an
+      // interface may not contain an initializer block.  A field of an interface is implicitly
+      // static, so its modifiers do not necessarily contain `static`.
+      return Collections.emptyList();
+    }
+    List<TreePath> result = new ArrayList<>(2);
+    for (Tree member : classTree.getMembers()) {
+      if (member instanceof VariableTree variable) {
+        // A static field's initializer runs at class initialization rather than at construction.
+        // (This also excludes an enum constant, which is static.)
+        if (variable.getInitializer() != null
+            && !variable.getModifiers().getFlags().contains(Modifier.STATIC)) {
+          result.add(new TreePath(pathOfClass, member));
+        }
+      } else if (member instanceof BlockTree block && !block.isStatic()) {
+        result.add(new TreePath(pathOfClass, member));
+      }
+    }
+    return result;
   }
 
   //
@@ -284,13 +324,11 @@ public final class TreePathUtil {
 
     Tree parent = parentPath.getLeaf();
     switch (parent.getKind()) {
-      case ASSIGNMENT: // See below for CompoundAssignmentTree.
-      case LAMBDA_EXPRESSION:
-      case METHOD_INVOCATION:
-      case NEW_ARRAY:
-      case RETURN:
+      case ASSIGNMENT, LAMBDA_EXPRESSION, METHOD_INVOCATION, NEW_ARRAY, RETURN -> {
+        // See below for CompoundAssignmentTree.
         return parent;
-      case NEW_CLASS:
+      }
+      case NEW_CLASS -> {
         @SuppressWarnings("interning:not.interned") // Checking for exact object.
         boolean enclosingExpr =
             ((NewClassTree) parent).getEnclosingExpression() == treePath.getLeaf();
@@ -298,18 +336,21 @@ public final class TreePathUtil {
           return null;
         }
         return parent;
-      case TYPE_CAST:
+      }
+      case TYPE_CAST -> {
         if (isLambdaOrMethodRef) {
           return parent;
         } else {
           return null;
         }
-      case VARIABLE:
+      }
+      case VARIABLE -> {
         if (TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) parent)) {
           return null;
         }
         return parent;
-      case CONDITIONAL_EXPRESSION:
+      }
+      case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree cet = (ConditionalExpressionTree) parent;
         @SuppressWarnings("interning:not.interned") // AST node comparison
         boolean conditionIsLeaf = (cet.getCondition() == treePath.getLeaf());
@@ -320,38 +361,53 @@ public final class TreePathUtil {
         }
         // Otherwise use the context of the ConditionalExpressionTree.
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
-      case PARENTHESIZED:
-      case CASE:
+      }
+      case PARENTHESIZED -> {
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
-      default:
-        if (TreeUtils.isYield(parent)) {
-          // A yield statement is only legal within a switch expression. Walk up the path
-          // to the case tree instead of the switch expression tree so the code remains
-          // backward compatible.
-          TreePath pathToCase = pathTillOfKind(parentPath, Kind.CASE);
-          assert pathToCase != null
-              : "@AssumeAssertion(nullness): yield statements must be enclosed in a CaseTree";
-          parentPath = pathToCase.getParentPath();
-          parent = parentPath.getLeaf();
+      }
+      case CASE -> {
+        @SuppressWarnings("interning:not.interned") // AST node comparison
+        boolean guardIsLeaf =
+            TreeUtilsAfterJava17.CaseUtils.getGuard((CaseTree) parent) == treePath.getLeaf();
+        if (guardIsLeaf) {
+          // The assignment context for the guard is simply boolean.
+          // No point in going on.
+          return null;
         }
-        if (TreeUtils.isSwitchExpression(parent)) {
-          @SuppressWarnings("interning:not.interned") // AST node comparison
-          boolean switchIsLeaf = SwitchExpressionUtils.getExpression(parent) == treePath.getLeaf();
-          if (switchIsLeaf) {
-            // The assignment context for the switch selector expression is simply
-            // boolean.
-            // No point in going on.
-            return null;
-          }
-          // Otherwise use the context of the ConditionalExpressionTree.
-          return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
+        // Otherwise use the context of the CaseTree.
+        return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
+      }
+      case YIELD -> {
+        // A yield statement is only legal within a switch expression. Walk up the path
+        // to the case tree instead of the switch expression tree so the code remains
+        // backward compatible.
+        TreePath pathToCase = pathTillOfKind(parentPath, Kind.CASE);
+        assert pathToCase != null
+            : "@AssumeAssertion(nullness): yield statements must be enclosed in a CaseTree";
+        parentPath = pathToCase.getParentPath();
+        return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
+      }
+      case SWITCH_EXPRESSION -> {
+        @SuppressWarnings("interning:not.interned") // AST node comparison
+        boolean switchIsLeaf =
+            ((SwitchExpressionTree) parent).getExpression() == treePath.getLeaf();
+        if (switchIsLeaf) {
+          // The assignment context for the conditional guard is simply
+          // boolean. No point in going on.
+          return null;
         }
+        // Otherwise use the context of the ConditionalExpressionTree.
+        return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
+      }
+      default -> {
+
         // 11 Tree.Kinds are CompoundAssignmentTrees,
         // so use instanceof rather than listing all 11.
         if (parent instanceof CompoundAssignmentTree) {
           return parent;
         }
         return null;
+      }
     }
   }
 
@@ -425,23 +481,15 @@ public final class TreePathUtil {
     for (Iterator<Tree> itor = path.iterator(); itor.hasNext(); ) {
       Tree leaf = itor.next();
       switch (leaf.getKind()) {
-        case CLASS:
-        case ENUM:
-        case PARAMETERIZED_TYPE:
+        case CLASS, ENUM, PARAMETERIZED_TYPE -> {
           return prevLeaf instanceof BlockTree;
-
-        case COMPILATION_UNIT:
-          throw new BugInCF("found COMPILATION_UNIT in " + toString(origPath));
-
-        case DO_WHILE_LOOP:
-        case ENHANCED_FOR_LOOP:
-        case FOR_LOOP:
-        case LAMBDA_EXPRESSION:
-        case METHOD:
+        }
+        case COMPILATION_UNIT ->
+            throw new BugInCF("found COMPILATION_UNIT in " + toString(origPath));
+        case DO_WHILE_LOOP, ENHANCED_FOR_LOOP, FOR_LOOP, LAMBDA_EXPRESSION, METHOD -> {
           return false;
-
-        default:
-          prevLeaf = leaf;
+        }
+        default -> prevLeaf = leaf;
       }
     }
     throw new BugInCF("path did not contain method or class: " + toString(origPath));
@@ -492,11 +540,11 @@ public final class TreePathUtil {
    *     such enclosing element can be found
    */
   public static @Nullable Element findNearestEnclosingElement(TreePath path) {
-    MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(path);
+    MethodTree enclosingMethodTree = enclosingMethod(path);
     if (enclosingMethodTree != null) {
       return TreeUtils.elementFromDeclaration(enclosingMethodTree);
     }
-    ClassTree enclosingClassTree = TreePathUtil.enclosingClass(path);
+    ClassTree enclosingClassTree = enclosingClass(path);
     if (enclosingClassTree != null) {
       return TreeUtils.elementFromDeclaration(enclosingClassTree);
     }

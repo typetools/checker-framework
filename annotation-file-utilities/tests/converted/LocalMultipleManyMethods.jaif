@@ -22,4 +22,3 @@ class LocalMultipleManyMethods:
         return:
         insert-annotation Method.body, Block.statement 1, If.elseStatement, Block.statement 0, Variable.type: @java.lang.D
         insert-annotation Method.body, Block.statement 1, If.thenStatement, Block.statement 0, Variable.type: @java.lang.A
-

@@ -16,12 +16,15 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
+import org.checkerframework.javacutil.TypesUtils;
 
 /** Helper class for determining if a type contains an inference variable. */
-public class AnnotatedContainsInferenceVariable {
+public final class AnnotatedContainsInferenceVariable {
 
-  /** Creates an AnnotatedContainsInferenceVariable. */
-  public AnnotatedContainsInferenceVariable() {}
+  /** Do not instantiate. */
+  private AnnotatedContainsInferenceVariable() {
+    throw new Error("Do not instantiate");
+  }
 
   /**
    * Returns true if {@code type} contains any of the type variables in {@code typeVariables}.
@@ -54,13 +57,24 @@ public class AnnotatedContainsInferenceVariable {
     }
 
     /**
-     * Returns true if {@code typeVar} is a type variable in {@code typeVariables}
+     * Returns true if {@code typeVar} is the same type variable as one in {@code typeVariables}.
+     * The comparison is {@link TypesUtils#areSame(TypeVariable, TypeVariable)}, which compares the
+     * name and the enclosing element; the two type variables need not be the same object.
      *
      * @param typeVar a type variable
-     * @return true if {@code typeVar} is a type variable in {@code typeVariables}
+     * @return true if {@code typeVar} is the same type variable as one in {@code typeVariables}
      */
     private boolean isTypeVariableOfInterest(AnnotatedTypeVariable typeVar) {
-      return typeVariables.contains(typeVar.getUnderlyingType());
+      // Do not use `Collection.contains`, which compares object references: a use of a type
+      // variable that is written with a type annotation is a different object than the type
+      // variable in the declaration.
+      TypeVariable underlyingTypeVar = typeVar.getUnderlyingType();
+      for (TypeVariable tv : typeVariables) {
+        if (TypesUtils.areSame(tv, underlyingTypeVar)) {
+          return true;
+        }
+      }
+      return false;
     }
 
     @Override
@@ -100,6 +114,11 @@ public class AnnotatedContainsInferenceVariable {
         if (visit(typeArg)) {
           found = true;
         }
+      }
+      // An inner class type may mention a type variable only in its enclosing type, as in
+      // Outer<T>.Inner.
+      if (visit(t.getEnclosingType())) {
+        found = true;
       }
       return found;
     }

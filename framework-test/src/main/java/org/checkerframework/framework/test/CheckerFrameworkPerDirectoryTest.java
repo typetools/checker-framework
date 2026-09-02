@@ -34,14 +34,14 @@ import org.junit.runner.RunWith;
  *
  * <pre><code>
  * public class MyTest extends CheckerFrameworkPerDirectoryTest {
- *   /** {@literal @}param testFiles the files containing test code, which will be type-checked *{@literal /}
- *   public MyTest(List{@literal <}File{@literal >} testFiles) {
- *     super(testFiles, MyChecker.class, "", "Anomsgtext");
- *   }
+ *  /** {@literal @}param testFiles the files containing test code, which will be type-checked *{@literal /}
+ *  public MyTest(List{@literal <}File{@literal >} testFiles) {
+ *    super(testFiles, MyChecker.class, "", "Anomsgtext");
+ *  }
  *  {@literal @}Parameters
- *   public static String [] getTestDirs() {
- *     return new String[] {"all-systems"};
- *   }
+ *  public static String [] getTestDirs() {
+ *    return new String[] {"all-systems"};
+ *  }
  * }
  * </code></pre>
  */
@@ -142,6 +142,7 @@ public abstract class CheckerFrameworkPerDirectoryTest extends CheckerFrameworkR
     this.checkerOptions = new ArrayList<>(Arrays.asList(checkerOptions));
     this.checkerOptions.add("-AajavaChecks");
     this.checkerOptions.add("-AconvertTypeArgInferenceCrashToWarning=false");
+    this.checkerOptions.add("-AwarnUnneededSuppressions");
   }
 
   /** Run the tests. */

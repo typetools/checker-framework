@@ -11,6 +11,9 @@ import java.util.Map;
  *       empty value and returns that.
  *   <li>{@link #prune} removes empty values
  * </ul>
+ *
+ * @param <K> the type of the map keys
+ * @param <V> the type of the map values
  */
 public abstract class VivifyingMap<K, V> extends WrapperMap<K, V> {
   /**
@@ -19,6 +22,8 @@ public abstract class VivifyingMap<K, V> extends WrapperMap<K, V> {
    * generally provides a superset of the functionality of the backing map, it is rarely useful to
    * access the backing map directly; the parameter is given mainly so you can provide a new map of
    * your favorite class ({@link java.util.HashMap}, {@link java.util.LinkedHashMap}, etc.).
+   *
+   * @param back the backing map
    */
   public VivifyingMap(Map<K, V> back) {
     super(back);
@@ -52,8 +57,8 @@ public abstract class VivifyingMap<K, V> extends WrapperMap<K, V> {
     // but using an iterator affords efficient deletion.
     for (Iterator<Map.Entry<K, V>> ei = entrySet().iterator(); ei.hasNext(); ) {
       V value = ei.next().getValue();
-      if (value instanceof VivifyingMap) {
-        ((VivifyingMap) value).prune();
+      if (value instanceof VivifyingMap<?, ?> vm) {
+        vm.prune();
       }
       if (isEmptyValue(value)) {
         ei.remove();

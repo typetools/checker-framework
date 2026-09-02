@@ -38,13 +38,13 @@ Define 2 or 3 type qualifiers.
 \begin{itemize}
 \item
 The ``accumulator'' type qualifier has a single argument: a \<String[]> named
-\<value> that defaults to the an empty array.  Note that the Checker Framework's
+\<value> that defaults to an empty array.  Note that the Checker Framework's
 support for accumulation analysis requires you to accumulate a string representation
 of whatever you are accumulating. For example, when accumulating which methods have
 been called, you might choose to accumulate method names.
 
 The accumulator
-qualifier should have no supertypes (\<@SubtypeOf({})>) and should
+qualifier should have no supertypes (\<@SubtypeOf(\{\})>) and should
 be the default qualifier in the hierarchy (\<@DefaultQualifierInHierarchy>).
 
 An example of such a qualifier can be found in the Checker Framework's tests:
@@ -64,7 +64,7 @@ The predicate syntax supports
 \item \<||> disjunctions
 \item \<\&\&> conjunctions
 \item \<!> logical complement.  \<"!x"> means
-``it is not true that \<x> was definitely accumulated'' or, equivalently, ``there is no path on which \<x> was accumulated''.
+``it is not true that \<x> was definitely accumulated'' or, equivalently, ``there is some path on which \<x> was not accumulated''.
 Note that this does \textbf{not} mean ``\<x> was not accumulated'' --- it is not a violation of the specification \<"!x"> if \<x> is accumulated
 on some paths, but not others.
 \item \<(...)> parentheses for precedence

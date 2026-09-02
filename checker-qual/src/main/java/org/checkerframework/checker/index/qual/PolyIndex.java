@@ -12,7 +12,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  *
  * <p>Writing {@code @PolyIndex} is equivalent to writing {@link PolyUpperBound @PolyUpperBound}
  * {@link PolyLowerBound @PolyLowerBound}, and that is how it is treated internally by the checker.
- * Thus, if you write an {@code @PolyIndex} annotation, you might see warnings about
+ * Thus, if you write a {@code @PolyIndex} annotation, you might see warnings about
  * {@code @PolyUpperBound} or {@code @PolyLowerBound}.
  *
  * @checker_framework.manual #index-checker Index Checker

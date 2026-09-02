@@ -2,7 +2,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-// @skip-test this is crashing because inference the new inference isn't used throught the
+// @skip-test this is crashing because inference the new inference isn't used throughout the
 // framework.
 @SuppressWarnings("all")
 public class Issue2370 {

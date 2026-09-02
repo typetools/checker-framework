@@ -28,7 +28,7 @@ public class ArrayAccessNode extends Node {
   /** The array expression being accessed. */
   protected final Node array;
 
-  /** The index expresssion used to access the array. */
+  /** The index expression used to access the array. */
   protected final Node index;
 
   /**
@@ -136,10 +136,9 @@ public class ArrayAccessNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ArrayAccessNode)) {
+    if (!(obj instanceof ArrayAccessNode other)) {
       return false;
     }
-    ArrayAccessNode other = (ArrayAccessNode) obj;
     return getArray().equals(other.getArray()) && getIndex().equals(other.getIndex());
   }
 

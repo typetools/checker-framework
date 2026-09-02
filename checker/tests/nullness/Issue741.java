@@ -6,7 +6,7 @@ public class Issue741 {
   public <T> T incompatibleTypes(Object o) {
     final T x = (T) o;
     if (x != null) {}
-    // invaild error here
+    // invalid error here
     return x;
   }
 

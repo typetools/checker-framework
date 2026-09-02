@@ -15,7 +15,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  * @checker_framework.manual #signedness-utilities Utility routines for manipulating unsigned values
  */
 @AnnotatedFor("nullness")
-public class SignednessUtilExtra {
+public final class SignednessUtilExtra {
   /** Do not instantiate this class. */
   private SignednessUtilExtra() {
     throw new Error("Do not instantiate");

@@ -51,16 +51,15 @@ public class SynchronizedNode extends Node {
     StringBuilder sb = new StringBuilder();
     sb.append("synchronized (");
     sb.append(expression);
-    sb.append(")");
+    sb.append(')');
     return sb.toString();
   }
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof SynchronizedNode)) {
+    if (!(obj instanceof SynchronizedNode other)) {
       return false;
     }
-    SynchronizedNode other = (SynchronizedNode) obj;
     return Objects.equals(getTree(), other.getTree())
         && getExpression().equals(other.getExpression())
         && startOfBlock == other.startOfBlock;

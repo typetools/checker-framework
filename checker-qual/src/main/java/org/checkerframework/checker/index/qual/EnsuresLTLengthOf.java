@@ -68,7 +68,7 @@ public @interface EnsuresLTLengthOf {
   String[] value();
 
   /**
-   * Sequences, each of which is longer than the each of the expressions' value on successful method
+   * Sequences, each of which is longer than each of the expressions' values on successful method
    * termination.
    */
   @JavaExpression
@@ -77,7 +77,7 @@ public @interface EnsuresLTLengthOf {
 
   /**
    * This expression plus each of the value expressions is less than the length of the sequence on
-   * successful method termination. The {@code offset} element must ether be empty or the same
+   * successful method termination. The {@code offset} element must either be empty or the same
    * length as {@code targetValue}.
    *
    * @return the offset expressions

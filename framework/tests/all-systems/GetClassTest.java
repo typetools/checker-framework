@@ -1,6 +1,5 @@
 import java.util.Date;
 
-@SuppressWarnings("ainfertest") // only check WPI for crashes
 public class GetClassTest {
 
   // See AnnotatedTypeFactory.adaptGetClassReturnTypeToReceiver
@@ -9,13 +8,7 @@ public class GetClassTest {
     Integer i = 4;
     i.getClass();
     Class<?> a = i.getClass();
-    // Type arguments don't match
-    @SuppressWarnings("fenum:assignment")
     Class<? extends Object> b = i.getClass();
-    @SuppressWarnings({
-      "fenum:assignment", // Type arguments don't match
-      "signedness:assignment" // Type arguments don't match
-    })
     Class<? extends Integer> c = i.getClass();
 
     Class<?> d = i.getClass();
@@ -24,7 +17,6 @@ public class GetClassTest {
   }
 
   void m(Date d) {
-    @SuppressWarnings("fenum:assignment")
     Class<? extends Date> c = d.getClass();
   }
 }

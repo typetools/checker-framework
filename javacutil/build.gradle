@@ -26,7 +26,7 @@ dependencies {
 apply from: rootProject.file("gradle-mvn-push.gradle")
 
 final javacUtilPom(publication) {
-  sharedPublicationConfiguration(publication)
+  rootProject.sharedPublicationConfiguration(publication)
   publication.from(components.java)
 
   publication.pom {

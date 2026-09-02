@@ -12,7 +12,7 @@ import java.lang.reflect.Field;
  * index {@code i} corresponds to the (0-based) i^th initializer of the indicated kind (static or
  * instance).
  */
-public class InitBlockScanner extends TreePathScanner<Void, Boolean> {
+public final class InitBlockScanner extends TreePathScanner<Void, Boolean> {
   public static int indexOfInitTree(TreePath path, boolean isStatic) {
     // we allow to start with any path/tree within an initializer.
     // first go to the enclosing initializer
@@ -34,8 +34,6 @@ public class InitBlockScanner extends TreePathScanner<Void, Boolean> {
   private final Tree tree;
 
   private InitBlockScanner(Tree tree) {
-    this.index = -1;
-    this.done = false;
     this.tree = tree;
   }
 

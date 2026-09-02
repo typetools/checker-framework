@@ -29,7 +29,7 @@ ever tries to call \<setNavigationMode> with an \<int> that is not a
 \<@NavigationMode int>.
 
 The Fake Enum Checker gives the same safety guarantees as a true enumeration
-type or typedef, but retaining backward-compatibility with interfaces that
+type or typedef, but retains backward-compatibility with interfaces that
 use existing Java types.  You can apply fenum annotations to any Java type,
 including all primitive types and also reference types.  Thus, you could
 use it (for example) to represent floating-point values between 0 and 1, or
@@ -90,7 +90,7 @@ public @interface \textit{MyFenum} \ttlcb\ttrcb
 You only need to adapt the italicized package, annotation, and file names in the example.
 
 Note that all custom annotations must have the
-\<@Target(\ttlcb ElementType.TYPE\_USE\ttrcb)> meta-annotation. See section
+\<@Target(\ttlcb ElementType.TYPE\_USE\ttrcb)> meta-annotation. See Section
 \ref{creating-define-type-qualifiers}.
 
 \item Use the provided \refqualclass{checker/fenum/qual}{Fenum} annotation, which takes a
@@ -229,7 +229,7 @@ class FenumUser {
     fenumArg(TestStatic.BCONST1);   // Incompatible fenums forbidden!
     fenumArg(TestStatic.ACONST1);   // ok
   }
- }
+}
 \end{Verbatim}
 
 Also, see the example project in the \<docs/examples/fenum-extension> directory.
@@ -243,7 +243,7 @@ describes case studies of the Fake Enum Checker.
 \sectionAndLabel{The fake enumeration pattern}{fenum-pattern}
 
 Java's
-\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-8.html#jls-8.9}{\code{enum}}
+\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-8.html#jls-8.9}{\code{enum}}
 keyword lets you define an enumeration type: a finite set of distinct values
 that are related to one another but are disjoint from all other
 types, including other enumerations.
@@ -254,7 +254,7 @@ enumeration, both of which are error-prone:
 \item[the fake enum pattern]  a set of \code{int} or \code{String}
   constants (as often found in older C code).
 
-\item[the typesafe enum pattern]  a class with private constructor.
+\item[the typesafe enum pattern]  a class with a private constructor.
 % This requires
 % \href{http://www.javaworld.com/javaworld/javatips/jw-javatip122.html}{careful development}.
 \end{description}
@@ -289,7 +289,7 @@ primitive types as well as for reference types.
   (ICSE 2011, \url{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-icse2011.pdf#page=3})
 
 \item Java Language Specification on enums:\\
-  \url{https://docs.oracle.com/javase/specs/jls/se17/html/jls-8.html#jls-8.9}
+  \url{https://docs.oracle.com/javase/specs/jls/se25/html/jls-8.html#jls-8.9}
 
 \item Tutorial trail on enums:\\
   \url{https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html}

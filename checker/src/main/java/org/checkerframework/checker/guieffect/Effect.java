@@ -110,8 +110,8 @@ public final class Effect {
   @Override
   @SuppressWarnings("SuperEqualsIsObjectEquals") // better style to use the equals() abstraction
   public boolean equals(@Nullable Object o) {
-    if (o instanceof Effect) {
-      return this.equals((Effect) o);
+    if (o instanceof Effect e) {
+      return this.equals(e);
     } else {
       return super.equals(o);
     }

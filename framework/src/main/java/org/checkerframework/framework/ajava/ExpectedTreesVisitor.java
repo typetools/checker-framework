@@ -3,6 +3,7 @@ package org.checkerframework.framework.ajava;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EmptyStatementTree;
@@ -20,16 +21,17 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
+import com.sun.source.tree.YieldTree;
 import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
 
 /**
  * After this visitor visits a tree, {@link #getTrees} returns all the trees that should match with
@@ -67,8 +69,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   public Void visitImport(ImportTree tree, Void p) {
     // Javac stores an import like a.* as a member select, but JavaParser just stores "a", so
     // don't add the member select in that case.
-    if (tree.getQualifiedIdentifier() instanceof MemberSelectTree) {
-      MemberSelectTree memberSelect = (MemberSelectTree) tree.getQualifiedIdentifier();
+    if (tree.getQualifiedIdentifier() instanceof MemberSelectTree memberSelect) {
       if (memberSelect.getIdentifier().contentEquals("*")) {
         memberSelect.getExpression().accept(this, p);
         return null;
@@ -94,30 +95,26 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
       // instance of an enum.
       for (Tree member : tree.getMembers()) {
         member.accept(this, p);
-        if (!(member instanceof VariableTree)) {
+        if (!(member instanceof VariableTree variable)) {
           continue;
         }
 
-        VariableTree variable = (VariableTree) member;
         ExpressionTree initializer = variable.getInitializer();
-        if (initializer == null || !(initializer instanceof NewClassTree)) {
+        if (initializer == null || !(initializer instanceof NewClassTree constructor)) {
           continue;
         }
 
-        NewClassTree constructor = (NewClassTree) initializer;
-        if (!(constructor.getIdentifier() instanceof IdentifierTree)) {
+        if (!(constructor.getIdentifier() instanceof IdentifierTree name)) {
           continue;
         }
 
-        IdentifierTree name = (IdentifierTree) constructor.getIdentifier();
         if (name.getName().contentEquals(tree.getSimpleName())) {
           trees.remove(variable.getType());
           trees.remove(constructor);
           trees.remove(constructor.getIdentifier());
         }
       }
-      // RECORD was added in Java 14, so use string comparison to be JDK 8,11 compatible:
-    } else if (tree.getKind().name().equals("RECORD")) {
+    } else if (tree.getKind() == Kind.RECORD) {
       // A record like:
       //   record MyRec(String myField) {}
       // will be expanded by javac to:
@@ -145,8 +142,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
           // If the user declares a compact canonical constructor, javac will
           // automatically fill in the parameters.
           // These trees also don't have a match:
-          if (member instanceof MethodTree) {
-            MethodTree methodTree = (MethodTree) member;
+          if (member instanceof MethodTree methodTree) {
             if (TreeUtils.isCompactCanonicalRecordConstructor(methodTree)) {
               for (VariableTree canonicalParameter : methodTree.getParameters()) {
                 canonicalParameter.accept(removeAllVisitor, null);
@@ -180,8 +176,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
         trees.remove(last.getType());
       }
 
-      if (last.getType() instanceof AnnotatedTypeTree) {
-        AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) last.getType();
+      if (last.getType() instanceof AnnotatedTypeTree annotatedType) {
         if (annotatedType.getUnderlyingType() instanceof ArrayTypeTree) {
           trees.remove(annotatedType);
           trees.remove(annotatedType.getUnderlyingType());
@@ -256,10 +251,10 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   }
 
   @Override
-  public Void visitSwitchExpression17(Tree tree, Void p) {
-    super.visitSwitchExpression17(tree, p);
+  public Void visitSwitchExpression(SwitchExpressionTree tree, Void unused) {
+    super.visitSwitchExpression(tree, unused);
     // javac surrounds switch expression in a ParenthesizedTree but JavaParser does not.
-    trees.remove(SwitchExpressionUtils.getExpression(tree));
+    trees.remove(tree.getExpression());
     return null;
   }
 
@@ -293,10 +288,8 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     // be added. JavaParser has no expression statement surrounding these, so remove the
     // expression statement itself.
     Void result = super.visitExpressionStatement(tree, p);
-    if (tree.getExpression() instanceof MethodInvocationTree) {
-      MethodInvocationTree invocation = (MethodInvocationTree) tree.getExpression();
-      if (invocation.getMethodSelect() instanceof IdentifierTree) {
-        IdentifierTree identifier = (IdentifierTree) invocation.getMethodSelect();
+    if (tree.getExpression() instanceof MethodInvocationTree invocation) {
+      if (invocation.getMethodSelect() instanceof IdentifierTree identifier) {
         if (identifier.getName().contentEquals("this")
             || identifier.getName().contentEquals("super")) {
           trees.remove(tree);
@@ -349,8 +342,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     scan(body.getImplementsClause(), p);
     for (Tree member : body.getMembers()) {
       // Constructors cannot be declared in an anonymous class, so don't add them.
-      if (member instanceof MethodTree) {
-        MethodTree methodTree = (MethodTree) member;
+      if (member instanceof MethodTree methodTree) {
         if (methodTree.getName().contentEquals("<init>")) {
           continue;
         }
@@ -384,10 +376,10 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   }
 
   @Override
-  public Void visitBindingPattern17(Tree tree, Void p) {
-    super.visitBindingPattern17(tree, p);
+  public Void visitBindingPattern(BindingPatternTree tree, Void unused) {
+    super.visitBindingPattern(tree, unused);
     // JavaParser doesn't have a node for the VariableTree.
-    trees.remove(BindingPatternUtils.getVariable(tree));
+    trees.remove(tree.getVariable());
     return null;
   }
 
@@ -405,7 +397,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   }
 
   @Override
-  public Void visitYield17(Tree tree, Void p) {
+  public Void visitYield(YieldTree tree, Void p) {
     // JavaParser does not parse yields correctly:
     // https://github.com/javaparser/javaparser/issues/3364
     // So skip yields.

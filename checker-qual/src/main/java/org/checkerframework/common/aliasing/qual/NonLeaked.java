@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * This annotation is used on a formal parameter to indicate that the parameter is not leaked
+ * This annotation is used on a formal parameter to indicate that the parameter is neither leaked
  * (stored in a location that could be accessed later) nor returned by the method body.
  *
  * <p>For example, the parameter of {@link String#String(String s)} is {@code @NonLeaked}, because
@@ -21,7 +21,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 
 // This is a type qualifier because of a Checker Framework limitation (Issue 383), but its hierarchy
-// is ignored. Once the stub parser gets updated to read non-type-qualifiers annotations on stub
+// is ignored. Once the stub parser gets updated to store non-type-qualifier annotations from stub
 // files, this annotation won't be a type qualifier anymore.
 
 @Documented
