@@ -51,7 +51,8 @@ public final class JavaParserUtil {
    * @param type a JavaParser class or interface type
    * @return the element for {@code type}, or null if it cannot be determined
    */
-  public @Nullable TypeElement resolveTypeName(Elements elements, ClassOrInterfaceType type) {
+  public static @Nullable TypeElement resolveTypeName(
+      Elements elements, ClassOrInterfaceType type) {
     String name = type.getNameWithScope();
 
     // The name might already be fully-qualified.
