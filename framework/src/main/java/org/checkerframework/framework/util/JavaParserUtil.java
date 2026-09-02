@@ -27,11 +27,7 @@ import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 
-/**
- * Utility methods for working with JavaParser. It is a replacement for {@code
- * com.github.javaparser.StaticJavaParser} that does not leak memory. It also provides some other
- * methods.
- */
+/** Utility methods for working with JavaParser. Also see {@link StaticJavaParserUtil}. */
 public final class JavaParserUtil {
 
   /** Do not instantiate. */
@@ -48,16 +44,20 @@ public final class JavaParserUtil {
    * type declarations and the compilation unit that contain it. Returns null if the name cannot be
    * resolved, which happens for a type variable and for a type that is not on the classpath.
    *
+   * @param elements used for looking up names
    * @param type a JavaParser class or interface type
    * @return the element for {@code type}, or null if it cannot be determined
    */
-  public @Nullable TypeElement resolveTypeName(Elements elements, ClassOrInterfaceType type) {
+  public static @Nullable TypeElement resolveTypeName(
+      Elements elements, ClassOrInterfaceType type) {
     String name = type.getNameWithScope();
 
     // The name might already be fully-qualified.
-    TypeElement result = elements.getTypeElement(name);
-    if (result != null) {
-      return result;
+    {
+      TypeElement result = elements.getTypeElement(name);
+      if (result != null) {
+        return result;
+      }
     }
 
     // A type that is lexically enclosed in a type declaration takes precedence over an import,
@@ -68,7 +68,7 @@ public final class JavaParserUtil {
       if (ancestor instanceof TypeDeclaration<?> enclosingType) {
         String enclosingName = enclosingType.getFullyQualifiedName().orElse(null);
         if (enclosingName != null) {
-          result = elements.getTypeElement(enclosingName + "." + name);
+          TypeElement result = elements.getTypeElement(enclosingName + "." + name);
           if (result != null) {
             return result;
           }
@@ -84,8 +84,15 @@ public final class JavaParserUtil {
     // `firstComponent` is what a single-type import must import; the rest of `name` names a
     // nested type, as in `Entry` and `Entry.Foo` for the import `java.util.Map.Entry`.
     int dotIndex = name.indexOf('.');
-    String firstComponent = dotIndex == -1 ? name : name.substring(0, dotIndex);
-    String suffix = name.substring(firstComponent.length());
+    String firstComponent;
+    String suffix;
+    if (dotIndex == -1) {
+      firstComponent = name;
+      suffix = "";
+    } else {
+      firstComponent = name.substring(0, dotIndex);
+      suffix = name.substring(dotIndex);
+    }
 
     // A single-type import takes precedence over an import on demand.
     for (ImportDeclaration importDecl : cu.getImports()) {
@@ -94,7 +101,7 @@ public final class JavaParserUtil {
       }
       String importedName = importDecl.getNameAsString();
       if (importedName.equals(firstComponent) || importedName.endsWith("." + firstComponent)) {
-        result = elements.getTypeElement(importedName + suffix);
+        TypeElement result = elements.getTypeElement(importedName + suffix);
         if (result != null) {
           return result;
         }
@@ -112,7 +119,7 @@ public final class JavaParserUtil {
     }
     packageNames.add("java.lang");
     for (String packageName : packageNames) {
-      result = elements.getTypeElement(packageName + "." + name);
+      TypeElement result = elements.getTypeElement(packageName + "." + name);
       if (result != null) {
         return result;
       }
@@ -161,33 +168,6 @@ public final class JavaParserUtil {
     } else {
       throw new BugInCF("Type " + name + " not found in " + root);
     }
-  }
-
-  /**
-   * No longer needed, because JavaParser has added the missing method.
-   *
-   * <p>JavaParser's {@link CompilationUnit} class has methods like this for every other kind of
-   * class-like structure (e.g., classes, enums, annotation declarations, etc.), but not for
-   * records. This implementation is based on the implementation of {@link
-   * CompilationUnit#getClassByName(String)}, and has the same interface as the other, similar
-   * JavaParser methods (except that it is static and takes the CompilationUnit as a parameter,
-   * rather than being an instance method on the CompilationUnit).
-   *
-   * @param cu the CompilationUnit to search
-   * @param recordName the name of the record
-   * @return the record declaration in the compilation unit with the given name, or an empty
-   *     Optional if no such record declaration exists
-   * @deprecated use {@code CompilationUnit#getRecordByName}
-   */
-  @Deprecated // 2026-09-02
-  private static Optional<RecordDeclaration> getRecordByName(
-      CompilationUnit cu, String recordName) {
-    return cu.getTypes().stream()
-        .filter(
-            (type) ->
-                type.getNameAsString().equals(recordName) && type instanceof RecordDeclaration)
-        .findFirst()
-        .map((t) -> (RecordDeclaration) t);
   }
 
   /**

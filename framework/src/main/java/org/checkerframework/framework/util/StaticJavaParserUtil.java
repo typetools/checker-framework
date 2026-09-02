@@ -14,8 +14,8 @@ import java.io.InputStream;
 
 /**
  * Utility methods for working with JavaParser. It is a replacement for {@code
- * com.github.javaparser.StaticJavaParser} that does not leak memory. It also provides some other
- * methods.
+ * com.github.javaparser.StaticJavaParser} that does not leak memory. Also see {@link
+ * JavaParserUtil}.
  */
 public final class StaticJavaParserUtil {
 
@@ -100,6 +100,7 @@ public final class StaticJavaParserUtil {
   public static CompilationUnit parseCompilationUnit(String javaSource) {
     ParserConfiguration parserConfiguration = new ParserConfiguration();
     parserConfiguration.setLanguageLevel(DEFAULT_LANGUAGE_LEVEL);
+    parserConfiguration.setPreprocessUnicodeEscapes(true);
     JavaParser javaParser = new JavaParser(parserConfiguration);
     ParseResult<CompilationUnit> parseResult = javaParser.parse(javaSource);
     if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {

@@ -9,6 +9,9 @@
 
 ### Implementation details
 
+`JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,
+`parseStubUnit()`, and `parseExpression()` into new class `StaticJavaParserUtil`.
+
 ### Closed issues
 
 ## Version 4.2.3 (2026-09-01)
