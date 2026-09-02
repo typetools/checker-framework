@@ -1498,6 +1498,14 @@ public final class TypesUtils {
     if (receiverType == null || ElementUtils.isStatic(member)) {
       return false;
     }
+    TypeElement declaringClass = ElementUtils.enclosingTypeElement(member);
+    if (declaringClass == null || !isGenericOrEnclosedByGeneric(declaringClass)) {
+      // Only a type declaration in which some type parameter is in scope has a raw type, so only
+      // such a declaration supplies a member whose type is erased.  Testing this first avoids
+      // walking the supertypes of `receiverType` for a member of a non-generic declaration, such
+      // as any member of Object.
+      return false;
+    }
     switch (receiverType.getKind()) {
       case DECLARED -> {
         // Handled below.
@@ -1540,10 +1548,6 @@ public final class TypesUtils {
     // Therefore, the member's type is erased exactly when the class that declares it, viewed as
     // a supertype of receiverType, is raw.  Javac's directSupertypes() erases the supertypes of
     // a raw type, so walking up from receiverType finds a raw type in that case.
-    TypeElement declaringClass = ElementUtils.enclosingTypeElement(member);
-    if (declaringClass == null) {
-      return false;
-    }
     DeclaredType site = declaringSupertype((DeclaredType) receiverType, declaringClass, types);
     if (site == null
         && hasEnclosingInstanceOfType(declaringClass, ((DeclaredType) receiverType).asElement())) {
@@ -1603,6 +1607,10 @@ public final class TypesUtils {
    */
   private static @Nullable DeclaredType declaringSupertype(
       DeclaredType type, TypeElement declaringClass, javax.lang.model.util.Types types) {
+    if (declaringClass.equals(type.asElement())) {
+      // This is the common case: the member is declared in the receiver's own class.
+      return type;
+    }
     Deque<DeclaredType> worklist = new ArrayDeque<>();
     worklist.add(type);
     Set<Element> visited = new HashSet<>();
