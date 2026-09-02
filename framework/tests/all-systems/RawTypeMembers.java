@@ -86,7 +86,7 @@ public class RawTypeMembers {
   // A qualified class instance creation expression, `o.new Inner(...)`, whose qualifier `o` has a
   // raw type.  The constructor is a member of the raw type `Outer.Inner`, so javac erases its
   // signature; it warns "unchecked call to <T>Outer.Inner(Desc<T>) as a member of the raw type
-  // Outer.Inner" for every call below except the first.
+  // Outer.Inner" for every call below except the one in `parameterizedQualifier`.
   //
   // The constructor is not a member of the qualifier's type or of any of its supertypes; it is a
   // member of a class that the qualifier's type encloses, so the rawness is contributed by the
@@ -147,7 +147,8 @@ public class RawTypeMembers {
 
   // A generic method invoked on a receiver whose type is a type variable whose bound is raw.  The
   // method is a member of the raw bound, so javac erases its signature; it warns "unchecked call to
-  // <T>get(Desc<T>) as a member of the raw type Backend" for both calls below.
+  // <T>get(Desc<T>) as a member of the raw type Backend" for all three calls below on a raw
+  // bound: every call except the one in `parameterizedBound`.
   //
   // The receiver's type is a TYPEVAR (a declared type variable in `typeVariableReceiver`, and a
   // capture variable in `capturedWildcardReceiver`), not a DECLARED type, so TypesUtils.isRawCall

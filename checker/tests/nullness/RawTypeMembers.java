@@ -87,7 +87,8 @@ public class RawTypeMembers {
   // parameterization of C (JLS 4.8), so an inherited member is a member of a *raw* supertype, and
   // its type is therefore the erasure of its declared type.  javac agrees; without the
   // @SuppressWarnings below it warns "unchecked call to put(Desc<String>) as a member of the raw
-  // type Super" for the last call.
+  // type Super" for both `put` calls below, naming `Super` even for the receiver whose type is the
+  // raw type `Sub`.
   @SuppressWarnings({"rawtypes", "unchecked"})
   static class RawInheritedMember {
 
@@ -188,7 +189,7 @@ public class RawTypeMembers {
 
   // A constructor invoked through a qualifier with a raw type is erased, just as a method invoked
   // on a raw receiver is.  javac warns "unchecked call to Outer.Inner(Desc<String>) as a member of
-  // the raw type Outer.Inner" for every call below except the first.
+  // the raw type Outer.Inner" for every call below except the one in `parameterizedQualifier`.
   //
   // The nested class of the same name in framework/tests/all-systems/RawTypeMembers.java checks
   // that type argument inference does not crash for these calls; this one checks that the
