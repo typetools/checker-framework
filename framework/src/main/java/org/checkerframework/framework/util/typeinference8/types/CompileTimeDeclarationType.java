@@ -13,15 +13,13 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 
 /**
- * Represents the compile-time declaration type of the method reference that is the method to which
- * the method reference refers. See <a
+ * Represents the type of the compile-time declaration of the method reference. The compile-time
+ * declaration is the actual method referenced by the method reference. See <a
  * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.1">JLS section
  * 15.13.1</a> for a complete definition.
  *
  * <p>The type of a member reference is a functional interface. The function type of a member
- * reference is the type of the single abstract method declared by the functional interface. The
- * compile-time declaration type is the type of the actual method referenced by the method
- * reference.
+ * reference is the type of the single abstract method declared by the functional interface.
  *
  * <p>For example,
  *
@@ -33,8 +31,8 @@ import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
  * }</pre>
  *
  * <p>The function type is {@code int compare(Comparator<MyClass> this, MyClass o1, MyClass o2)}
- * whereas the compile-time declaration type is {@code int compareByField(MyClass this, MyClass
- * other)}.
+ * whereas the type of the compile-time declaration is {@code int compareByField(MyClass this,
+ * MyClass other)}.
  */
 public class CompileTimeDeclarationType extends AbstractExecutableType {
 

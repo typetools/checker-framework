@@ -52,12 +52,13 @@ jobs:
       - uses: actions/checkout@v7
         with:
           set-safe-directory: true
-          # Unlimited history for contributors.tex generation.
           fetch-depth: 0
       - name: clone_plume_scripts
-        run: git clone https://github.com/plume-lib/plume-scripts.git /tmp/plume-scripts
-      - name: ci_info
-        run: /tmp/plume-scripts/ci-info --debug
+        run: ./gradlew -q getPlumeScripts
+      - name: ci_org_and_branch
+        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+      - name: git_changes
+        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
 
   junit_jdk17:
     needs:
@@ -225,10 +226,6 @@ jobs:
           fetch-depth: 0
       - name: getPlumeScripts
         run: ./gradlew -q getPlumeScripts
-      - name: ci-org-and-branch
-        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
-      - name: git-changes
-        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:
@@ -245,10 +242,6 @@ jobs:
           fetch-depth: 0
       - name: getPlumeScripts
         run: ./gradlew -q getPlumeScripts
-      - name: ci-org-and-branch
-        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
-      - name: git-changes
-        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:
@@ -265,10 +258,6 @@ jobs:
           fetch-depth: 0
       - name: getPlumeScripts
         run: ./gradlew -q getPlumeScripts
-      - name: ci-org-and-branch
-        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
-      - name: git-changes
-        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:

@@ -222,10 +222,8 @@ public class Typing extends TypeConstraint {
       } else if (sAsSuper.isRaw() || T.isRaw()) {
         return ReductionResult.UNCHECKED_CONVERSION;
       }
-      // Capturing is not in the JLS, but otherwise wildcards appear in the constraints
-      // against the type arguments, which causes crashes.
-      AbstractType aAsSuperCaptured = sAsSuper.capture(context);
-      List<AbstractType> Bs = aAsSuperCaptured.getTypeArguments();
+
+      List<AbstractType> Bs = sAsSuper.getTypeArguments();
       Iterator<AbstractType> As = T.getTypeArguments().iterator();
       List<Integer> covariantArgIndexes =
           context
@@ -243,7 +241,7 @@ public class Typing extends TypeConstraint {
       // If T is an inner class type, then its enclosing type is parameterized (directly or
       // indirectly) and contributes type arguments of its own, which the loop above did not
       // handle because getTypeArguments() omits them.
-      addEnclosingTypeConstraint(set, aAsSuperCaptured, T, Kind.SUBTYPE);
+      addEnclosingTypeConstraint(set, sAsSuper, T, Kind.SUBTYPE);
 
       return set;
     } else {
