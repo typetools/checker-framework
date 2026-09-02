@@ -1692,20 +1692,6 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Returns the innermost component type of {@code type}.
-   *
-   * @param type array type
-   * @return the innermost component type of {@code type}
-   */
-  private AnnotatedTypeMirror innermostComponentType(AnnotatedArrayType type) {
-    AnnotatedTypeMirror componentType = type;
-    while (componentType.getKind() == TypeKind.ARRAY) {
-      componentType = ((AnnotatedArrayType) componentType).getComponentType();
-    }
-    return componentType;
-  }
-
-  /**
    * Adds {@code annotations} to the innermost component type of {@code type}.
    *
    * @param type array type
@@ -1714,7 +1700,7 @@ public final class AnnotationFileParser {
    */
   private void annotateInnermostComponentType(
       AnnotatedArrayType type, List<AnnotationExpr> annotations, NodeWithRange<?> astNode) {
-    annotate(innermostComponentType(type), annotations, astNode);
+    annotate(AnnotatedTypes.innermostComponentType(type), annotations, astNode);
   }
 
   /**

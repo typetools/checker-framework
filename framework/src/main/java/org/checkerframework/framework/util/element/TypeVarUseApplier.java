@@ -54,17 +54,7 @@ public class TypeVarUseApplier {
 
   private static boolean isGenericArrayType(AnnotatedTypeMirror type) {
     return type instanceof AnnotatedArrayType
-        && getNestedComponentType(type) instanceof AnnotatedTypeVariable;
-  }
-
-  private static AnnotatedTypeMirror getNestedComponentType(AnnotatedTypeMirror type) {
-
-    AnnotatedTypeMirror componentType = type;
-    while (componentType instanceof AnnotatedArrayType) {
-      componentType = ((AnnotatedArrayType) componentType).getComponentType();
-    }
-
-    return componentType;
+        && AnnotatedTypes.getInnermostComponentType(type) instanceof AnnotatedTypeVariable;
   }
 
   /** The generic array type, if any. */
@@ -104,7 +94,7 @@ public class TypeVarUseApplier {
 
     if (isGenericArrayType(type)) {
       this.arrayType = (AnnotatedArrayType) type;
-      this.typeVariable = (AnnotatedTypeVariable) getNestedComponentType(type);
+      this.typeVariable = (AnnotatedTypeVariable) AnnotatedTypes.getInnermostComponentType(type);
       this.declarationElem = (TypeParameterElement) typeVariable.getUnderlyingType().asElement();
       this.useElem = element;
       this.typeFactory = typeFactory;
