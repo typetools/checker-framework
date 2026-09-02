@@ -9,6 +9,8 @@
 
 ### Implementation details
 
+Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
+
 ### Closed issues
 
 ## Version 4.2.3 (2026-09-01)
