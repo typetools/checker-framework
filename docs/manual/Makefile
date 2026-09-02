@@ -38,7 +38,7 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 	cd ../.. && ./gradlew getGitScripts
 
 ../../checker/bin-devel/.plume-scripts:
-	cd ../.. && ./gradlew getPlumeScripts
+	cd ../.. && ./gradlew -q getPlumeScripts
 
 # Because `contributors.tex` is .PHONY, any target that depends on it is always remade.
 .PHONY: contributors.tex

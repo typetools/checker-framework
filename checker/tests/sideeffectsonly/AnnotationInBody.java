@@ -9,8 +9,13 @@ import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 public class AnnotationInBody {
 
-  @Target({ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE})
-  @interface Marker {
+  @Target({ElementType.LOCAL_VARIABLE})
+  @interface Marker1 {
+    String value();
+  }
+
+  @Target({ElementType.TYPE_USE})
+  @interface Marker2 {
     String value();
   }
 
@@ -18,19 +23,25 @@ public class AnnotationInBody {
 
   @SideEffectsOnly("this")
   void singleElementAnnotation() {
-    @Marker("x")
+    @Marker1("x")
     int local = field;
   }
 
   @SideEffectsOnly("this")
   void namedElementAnnotation() {
-    @Marker(value = "x")
+    @Marker1(value = "x")
     int local = field;
   }
 
   @SideEffectsOnly("this")
   void annotationOnTypeUse() {
-    @Marker("x")
+    @Marker2("x")
+    String local = "s";
+  }
+
+  @SideEffectsOnly("this")
+  void annotationOnTypeUseNamed() {
+    @Marker2(value = "x")
     String local = "s";
   }
 }

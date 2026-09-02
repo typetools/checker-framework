@@ -447,10 +447,11 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         checker.reportError(
             node,
             "purity.unparseable.sideeffectsonly",
-            ElementUtils.getSimpleDescription(invokedElem),
-            exprString);
+            exprString,
+            ElementUtils.getSimpleDescription(invokedElem));
         // If an expression cannot be parsed at the call site, the checker cannot tell what the
-        // callee modifies, so be conservative.
+        // callee modifies.  The error above informs the user; report no further side effect for
+        // this call, because none can be determined.
         return Collections.emptyList();
       }
     }
@@ -552,8 +553,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         checker.reportError(
             node,
             "purity.unparseable.sideeffectsonly",
-            ElementUtils.getSimpleDescription(invokedElem),
-            exprString);
+            exprString,
+            ElementUtils.getSimpleDescription(invokedElem));
         return;
       }
       if (receiver == null) {
@@ -565,8 +566,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         if (atDeclaration.containedOfClass(ThisReference.class) != null) {
           // The expression is reached through the object that the desugaring created.  That object
           // is not nameable here, so the expression cannot be viewpoint-adapted; and its value may
-          // be an
-          // object that existed before the call, so it cannot be dismissed as unobservable either.
+          // be an object that existed before the call, so it cannot be dismissed as unobservable
+          // either.
           checker.reportError(
               node,
               "purity.unknown.sideeffectsonly",
@@ -629,8 +630,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       return null;
     }
     Elements elements = checker.getElementUtils();
-    for (ExecutableElement method :
-        ElementFilter.methodsIn(elements.getAllMembers((TypeElement) declaredType.asElement()))) {
+    TypeElement typeElement = (TypeElement) declaredType.asElement();
+    ExecutableElement result = null;
+    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(typeElement))) {
       // A static method is not a candidate, because the desugared call has a receiver. Neither is a
       // synthetic method: a covariant-return override such as {@code MyIterator iterator()} makes
       // javac add a bridge method {@code Iterator iterator()} to the member closure, and the bridge
@@ -639,10 +641,15 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
           && method.getSimpleName().contentEquals(methodName)
           && !method.getModifiers().contains(Modifier.STATIC)
           && !TreeUtils.isSynthetic(method)) {
-        return method;
+        // `Elements.getAllMembers` may return both a method and a method that overrides it, and it
+        // does not specify the order in which it returns them. The call invokes the most-derived
+        // one, whose annotations therefore are the ones to check the call against.
+        if (result == null || elements.overrides(method, result, typeElement)) {
+          result = method;
+        }
       }
     }
-    return null;
+    return result;
   }
 
   @Override
@@ -711,8 +718,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         checker.reportError(
             node,
             "purity.unparseable.sideeffectsonly",
-            ElementUtils.getSimpleDescription(constructorElt),
-            exprString);
+            exprString,
+            ElementUtils.getSimpleDescription(constructorElt));
         return Collections.emptyList();
       }
       if (atDeclaration instanceof ThisReference) {
