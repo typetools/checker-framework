@@ -33,6 +33,7 @@ module org.checkerframework.checker.qual {
   exports org.checkerframework.checker.tainting.qual;
   exports org.checkerframework.checker.units.qual;
   exports org.checkerframework.common.aliasing.qual;
+  exports org.checkerframework.common.delegation.qual;
   exports org.checkerframework.common.initializedfields.qual;
   exports org.checkerframework.common.reflection.qual;
   exports org.checkerframework.common.returnsreceiver.qual;

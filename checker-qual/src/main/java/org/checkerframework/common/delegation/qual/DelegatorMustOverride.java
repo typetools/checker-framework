@@ -18,36 +18,52 @@ import java.lang.annotation.Target;
  *
  * <p>Here is a way that this annotation may be used:
  *
- * <p>Given a class that declares a method with a postcondition annotation:
+ * <p>Given a class that declares a method with a conditional postcondition:
  *
  * <pre><code>
- * class ArrayListVariant&lt;T&gt; {
- *    {@literal @}EnsuresPresentIf(result = true)
- *    {@literal @}DelegatorMustOverride
- *    public boolean hasMoreElements() {
- *      return e.hasMoreElements();
- *    }
+ * class Sequence&lt;T&gt; {
+ *
+ *   private final List&lt;T&gt; elements;
+ *
+ *   {@literal @}DelegatorMustOverride
+ *   {@literal @}EnsuresNonNullIf(expression = "peek()", result = true)
+ *   public boolean hasNext() {
+ *     return !elements.isEmpty();
+ *   }
+ *
+ *   public {@literal @}Nullable T peek() {
+ *     return elements.isEmpty() ? null : elements.get(0);
+ *   }
  * }
  * </code></pre>
  *
- * A delegating client <i>must</i> override the method:
+ * A delegator <i>must</i> override the method, because the inherited implementation would consult
+ * the delegator's own {@code elements} field rather than the delegate's:
  *
  * <pre><code>
- * class MyArrayListVariant&lt;T&gt; extends ArrayListVariant&lt;T&gt; {
+ * class MySequence&lt;T&gt; extends Sequence&lt;T&gt; {
  *
- *    {@literal @}Delegate
- *     private ArrayListVariant&lt;T&gt; myList;
+ *   {@literal @}Delegate private final Sequence&lt;T&gt; delegate;
  *
+ *   MySequence(Sequence&lt;T&gt; delegate) {
+ *     this.delegate = delegate;
+ *   }
  *
- *    {@literal @}Override
- *    {@literal @}EnsuresPresentIf(result = true)
- *    public boolean hasMoreElements() {
- *      return myList.hasMoreElements();
- *    }
+ *   {@literal @}Override
+ *   {@literal @}EnsuresNonNullIf(expression = "peek()", result = true)
+ *   public boolean hasNext() {
+ *     return delegate.hasNext();
+ *   }
+ *
+ *   {@literal @}Override
+ *   public {@literal @}Nullable T peek() {
+ *     return delegate.peek();
+ *   }
  * }
  * </code></pre>
  *
- * Otherwise, a warning will be raised.
+ * If {@code MySequence} did not override {@code hasNext()}, the Delegation Checker would issue a
+ * warning.
  *
  * @checker_framework.manual #delegation-checker Delegation Checker
  */

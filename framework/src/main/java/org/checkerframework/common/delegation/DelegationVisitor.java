@@ -12,12 +12,16 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
@@ -82,7 +86,7 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
 
   @Override
   public Void visitClass(ClassTree tree, Void p) {
-    if (checker.shouldSkipDefs(tree)) {
+    if (checker.shouldSkipDefs(tree) || checker.shouldSkipFiles(tree)) {
       return null;
     }
     List<VariableTree> delegateFields = getDelegateFields(tree);
@@ -108,8 +112,36 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
 
   @Override
   public Void visitMethod(MethodTree tree, Void p) {
+    checkMustOverrideIsOverridable(tree);
     checkDelegatedCall(tree);
     return super.visitMethod(tree, p);
+  }
+
+  /**
+   * Issues an error if the given method is annotated with {@link DelegatorMustOverride} but cannot
+   * be overridden. No delegator could satisfy such a requirement.
+   *
+   * @param tree a method declaration
+   */
+  private void checkMustOverrideIsOverridable(MethodTree tree) {
+    ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
+    if (annotationProvider.getDeclAnnotation(methodElt, DelegatorMustOverride.class) != null
+        && !isOverridable(methodElt)) {
+      checker.reportError(tree, "mustoverride.not.overridable", tree.getName());
+    }
+  }
+
+  /**
+   * Returns true if the given method can be overridden by a method in a subclass.
+   *
+   * @param methodElt a method
+   * @return true if the given method can be overridden by a method in a subclass
+   */
+  private static boolean isOverridable(ExecutableElement methodElt) {
+    Set<Modifier> modifiers = methodElt.getModifiers();
+    return !modifiers.contains(Modifier.STATIC)
+        && !modifiers.contains(Modifier.PRIVATE)
+        && !modifiers.contains(Modifier.FINAL);
   }
 
   /**
@@ -167,15 +199,44 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
     if (!(methodSelectTree instanceof MemberSelectTree fieldAccessTree)) {
       return false;
     }
-    VariableElement delegatedField = TreeUtils.asFieldAccess(fieldAccessTree.getExpression());
-    if (delegatedField == null
-        || !delegatedField.getSimpleName().contentEquals(delegate.getName())) {
+    VariableElement receiverField = TreeUtils.asFieldAccess(fieldAccessTree.getExpression());
+    if (!Objects.equals(receiverField, TreeUtils.elementFromDeclaration(delegate))) {
       return false;
     }
     ExecutableElement enclosingMethodElt = TreeUtils.elementFromDeclaration(enclosingMethod);
     ExecutableElement delegatedMethodElt = TreeUtils.elementFromUse(delegatedMethodCall);
-    return ElementUtils.isMethod(enclosingMethodElt, delegatedMethodElt, processingEnv)
+    return isSameMethod(enclosingMethodElt, delegatedMethodElt)
         && argumentsAreFormalParameters(enclosingMethod, delegatedMethodCall);
+  }
+
+  /**
+   * Returns true if the two methods are the same method: that is, they are the same element, one
+   * overrides the other, or both override some common method.
+   *
+   * <p>This is more permissive than {@link ElementUtils#isMethod}, which requires the first
+   * method's declaring class to be a subtype of the second method's declaring class. That
+   * requirement does not hold for a delegator that implements an interface but whose delegate field
+   * is declared using a concrete implementation type.
+   *
+   * @param method1 a method
+   * @param method2 a method
+   * @return true if the two methods are the same method
+   */
+  private boolean isSameMethod(ExecutableElement method1, ExecutableElement method2) {
+    if (method1.equals(method2)) {
+      return true;
+    }
+    Set<ExecutableElement> method1Supers =
+        new HashSet<>(ElementUtils.getOverriddenMethods(method1, types));
+    if (method1Supers.contains(method2)) {
+      return true;
+    }
+    for (ExecutableElement method2Super : ElementUtils.getOverriddenMethods(method2, types)) {
+      if (method2Super.equals(method1) || method1Supers.contains(method2Super)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -290,7 +351,7 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
     }
     List<ExecutableElement> declaredMethods =
         ElementFilter.methodsIn(classElt.getEnclosedElements());
-    StringJoiner notOverridden = new StringJoiner(", ");
+    List<ExecutableElement> notOverridden = new ArrayList<>();
     for (TypeElement supertypeElt : ElementUtils.getAllSupertypes(classElt, processingEnv)) {
       if (supertypeElt.equals(classElt)) {
         continue;
@@ -298,20 +359,33 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
       for (ExecutableElement supertypeMethod :
           ElementFilter.methodsIn(supertypeElt.getEnclosedElements())) {
         if (annotationProvider.getDeclAnnotation(supertypeMethod, DelegatorMustOverride.class)
-            == null) {
+                == null
+            || !isOverridable(supertypeMethod)) {
           continue;
         }
         boolean isOverridden =
             declaredMethods.stream()
                 .anyMatch(m -> ElementUtils.isMethod(m, supertypeMethod, processingEnv));
         if (!isOverridden) {
-          notOverridden.add(ElementUtils.getSimpleDescription(supertypeMethod));
+          notOverridden.add(supertypeMethod);
         }
       }
     }
-    if (notOverridden.length() != 0) {
+    // A supertype method and a method that overrides it may both be annotated with
+    // @DelegatorMustOverride.  They are one method as far as the delegator is concerned, so list
+    // only the most specific one.
+    StringJoiner mostSpecific = new StringJoiner(", ");
+    for (ExecutableElement method : notOverridden) {
+      boolean hasMoreSpecific =
+          notOverridden.stream()
+              .anyMatch(m -> !m.equals(method) && ElementUtils.isMethod(m, method, processingEnv));
+      if (!hasMoreSpecific) {
+        mostSpecific.add(ElementUtils.getSimpleDescription(method));
+      }
+    }
+    if (mostSpecific.length() != 0) {
       checker.reportWarning(
-          tree, "delegate.override", tree.getSimpleName(), notOverridden.toString());
+          tree, "delegate.override", tree.getSimpleName(), mostSpecific.toString());
     }
   }
 }
