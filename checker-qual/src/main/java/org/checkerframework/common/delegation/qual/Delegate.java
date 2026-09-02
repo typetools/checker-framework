@@ -7,7 +7,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This is an annotation that indicates a field is a delegate, fields are not delegates by default.
+ * This is an annotation that indicates a field is a delegate. Fields are not delegates by default.
+ *
+ * <p>A class is a <i>delegator</i> if it implements each of its methods by calling the same method
+ * on some other object, which is called the <i>delegate</i>. Delegation is an alternative to
+ * inheritance: rather than reusing a superclass's implementation, the delegator forwards each call
+ * to an object that it wraps. A class may have at most one field annotated with {@code @Delegate}.
  *
  * <p>Here is a way that this annotation may be used:
  *
@@ -25,7 +30,7 @@ import java.lang.annotation.Target;
  * In the example above, {@code MyEnumeration.hasMoreElements()} delegates a call to {@code
  * e.hasMoreElements()}.
  *
- * @checker_framework.manual #non-empty-checker Non-Empty Checker
+ * @checker_framework.manual #delegation-checker Delegation Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

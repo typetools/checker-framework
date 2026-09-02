@@ -10,111 +10,204 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.ThrowTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.StringJoiner;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.delegation.qual.Delegate;
 import org.checkerframework.common.delegation.qual.DelegatorMustOverride;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.source.SourceVisitor;
+import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-public class DelegationVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
+/**
+ * The visitor for the Delegation Checker. See the {@link DelegationChecker} documentation for the
+ * checks that this class performs.
+ *
+ * @checker_framework.manual #delegation-checker Delegation Checker
+ */
+public class DelegationVisitor extends SourceVisitor<Void, Void> {
 
-  /** The maximum number of fields marked with {@link Delegate} permitted in a class. */
-  private final int MAX_NUM_DELEGATE_FIELDS = 1;
+  /** The canonical name of the {@link Delegate} annotation. */
+  private static final String DELEGATE_NAME = Delegate.class.getCanonicalName();
 
-  /** The field marked with {@link Delegate} for the current class. */
-  private @Nullable VariableTree delegate;
+  /** The checker that is using this visitor. */
+  private final DelegationChecker checker;
 
-  public DelegationVisitor(BaseTypeChecker checker) {
+  /** The processing environment. */
+  private final ProcessingEnvironment processingEnv;
+
+  /** Reads declaration annotations. */
+  private final AnnotationProvider annotationProvider;
+
+  /**
+   * For each class that encloses the tree currently being visited, its field that is annotated with
+   * {@link Delegate}. The innermost class is the last element. An element is null if the
+   * corresponding class does not have exactly one field annotated with {@link Delegate}.
+   */
+  private final List<@Nullable VariableTree> delegates = new ArrayList<>();
+
+  /**
+   * Creates a DelegationVisitor.
+   *
+   * @param checker the associated checker
+   */
+  public DelegationVisitor(DelegationChecker checker) {
     super(checker);
+    this.checker = checker;
+    this.processingEnv = checker.getProcessingEnvironment();
+    this.annotationProvider = checker.getAnnotationProvider();
+  }
+
+  /**
+   * Returns the field annotated with {@link Delegate} of the innermost class that encloses the tree
+   * currently being visited, or null if that class does not have exactly one such field.
+   *
+   * @return the delegate field of the class currently being visited, or null
+   */
+  private @Nullable VariableTree currentDelegate() {
+    return delegates.isEmpty() ? null : delegates.get(delegates.size() - 1);
   }
 
   @Override
-  public void processClassTree(ClassTree tree) {
-    delegate = null; // Unset the previous delegate whenever a new class is visited
-    // TODO: what about inner classes?
-    List<VariableTree> delegates = getDelegateFields(tree);
-    if (delegates.size() > MAX_NUM_DELEGATE_FIELDS) {
-      VariableTree latestDelegate = delegates.get(delegates.size() - 1);
-      checker.reportError(latestDelegate, "multiple.delegate.annotations");
-    } else if (delegates.size() == 1) {
-      delegate = delegates.get(0);
-      checkSuperClassOverrides(tree);
+  public Void visitClass(ClassTree tree, Void p) {
+    if (checker.shouldSkipDefs(tree)) {
+      return null;
     }
-    // Do nothing if no delegate field is found
-    super.processClassTree(tree);
+    List<VariableTree> delegateFields = getDelegateFields(tree);
+    if (delegateFields.size() > 1) {
+      for (VariableTree delegateField : delegateFields) {
+        checker.reportError(delegateField, "multiple.delegate.annotations");
+      }
+    }
+    // A class with no delegate field is not a delegator, and a class with multiple delegate fields
+    // has already been reported as erroneous.  In neither case is any further check performed on
+    // the class's methods.
+    VariableTree delegate = delegateFields.size() == 1 ? delegateFields.get(0) : null;
+    delegates.add(delegate);
+    try {
+      if (delegate != null) {
+        checkDelegatorMustOverrideMethods(tree);
+      }
+      return super.visitClass(tree, p);
+    } finally {
+      delegates.remove(delegates.size() - 1);
+    }
   }
 
   @Override
-  public void processMethodTree(String className, MethodTree tree) {
-    super.processMethodTree(className, tree);
-    if (delegate == null || !isMarkedWithOverride(tree)) {
+  public Void visitMethod(MethodTree tree, Void p) {
+    checkDelegatedCall(tree);
+    return super.visitMethod(tree, p);
+  }
+
+  /**
+   * Issues a warning if the given method, which is declared in a delegator, does not delegate.
+   * Performs no check if the method's enclosing class is not a delegator or if the method does not
+   * override a supertype's method.
+   *
+   * @param tree a method declaration
+   */
+  private void checkDelegatedCall(MethodTree tree) {
+    VariableTree delegate = currentDelegate();
+    BlockTree body = tree.getBody();
+    if (delegate == null || body == null || !isOverride(tree)) {
       return;
     }
-    MethodInvocationTree candidateDelegateCall = getLastExpression(tree.getBody());
-    boolean hasExceptionalExit =
-        hasExceptionalExit(tree.getBody(), UnsupportedOperationException.class);
-    if (hasExceptionalExit) {
+    // A delegator may refuse to support an operation rather than delegating it.
+    if (throwsException(body, UnsupportedOperationException.class)) {
       return;
     }
-    if (candidateDelegateCall == null) {
-      checker.reportWarning(tree, "invalid.delegate", tree.getName(), delegate.getName());
-      return;
-    }
-    Name enclosingMethodName = tree.getName();
-    if (!isValidDelegateCall(enclosingMethodName, candidateDelegateCall)) {
+    MethodInvocationTree candidateDelegateCall = getSoleMethodInvocation(body);
+    if (candidateDelegateCall == null
+        || !isValidDelegateCall(tree, candidateDelegateCall, delegate)) {
       checker.reportWarning(tree, "invalid.delegate", tree.getName(), delegate.getName());
     }
   }
 
   /**
-   * Return true if the given method call is a valid delegate call for the enclosing method.
+   * Returns true if the given method declaration overrides or implements a method of a supertype.
    *
-   * <p>A delegate method call must fulfill the following properties: its receiver must be the
-   * current field marked with {@link Delegate} in the class, and the name of the method call must
-   * match that of the enclosing method.
+   * <p>This does not depend on the method being annotated with {@link Override}, which is optional.
    *
-   * @param enclosingMethodName the name of the enclosing method
+   * @param tree a method declaration
+   * @return true if the method overrides or implements a method of a supertype
+   */
+  private boolean isOverride(MethodTree tree) {
+    ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
+    return !ElementUtils.getOverriddenMethods(methodElt, types).isEmpty();
+  }
+
+  /**
+   * Returns true if the given method call is a valid delegate call for the given enclosing method.
+   *
+   * <p>A delegate call must fulfill the following properties: its receiver is the given delegate
+   * field, the method that it invokes is the enclosing method or is overridden by it, and its
+   * arguments are the enclosing method's formal parameters, in order.
+   *
+   * @param enclosingMethod the method whose body is {@code delegatedMethodCall}
    * @param delegatedMethodCall the delegated method call
+   * @param delegate the field annotated with {@link Delegate}
    * @return true if the given method call is a valid delegate call for the enclosing method
    */
   private boolean isValidDelegateCall(
-      Name enclosingMethodName, MethodInvocationTree delegatedMethodCall) {
-    assert delegate != null; // This method should only be invoked when delegate is non-null
+      MethodTree enclosingMethod, MethodInvocationTree delegatedMethodCall, VariableTree delegate) {
     ExpressionTree methodSelectTree = delegatedMethodCall.getMethodSelect();
-    MemberSelectTree fieldAccessTree = (MemberSelectTree) methodSelectTree;
+    if (!(methodSelectTree instanceof MemberSelectTree fieldAccessTree)) {
+      return false;
+    }
     VariableElement delegatedField = TreeUtils.asFieldAccess(fieldAccessTree.getExpression());
-    Name delegatedMethodName = TreeUtils.methodName(delegatedMethodCall);
-    // TODO: is there a better way to check? Comparing names seems fragile.
-    return enclosingMethodName.equals(delegatedMethodName)
-        && delegatedField != null
-        && delegatedField.getSimpleName().equals(delegate.getName());
+    if (delegatedField == null
+        || !delegatedField.getSimpleName().contentEquals(delegate.getName())) {
+      return false;
+    }
+    ExecutableElement enclosingMethodElt = TreeUtils.elementFromDeclaration(enclosingMethod);
+    ExecutableElement delegatedMethodElt = TreeUtils.elementFromUse(delegatedMethodCall);
+    return ElementUtils.isMethod(enclosingMethodElt, delegatedMethodElt, processingEnv)
+        && argumentsAreFormalParameters(enclosingMethod, delegatedMethodCall);
   }
 
   /**
-   * Returns the fields of a class marked with a {@link Delegate} annotation.
+   * Returns true if the arguments of the given method call are the formal parameters of the given
+   * method declaration, in order.
+   *
+   * @param enclosingMethod a method declaration
+   * @param delegatedMethodCall a method call that appears in the body of {@code enclosingMethod}
+   * @return true if the call's arguments are the method's formal parameters, in order
+   */
+  private boolean argumentsAreFormalParameters(
+      MethodTree enclosingMethod, MethodInvocationTree delegatedMethodCall) {
+    List<? extends VariableTree> parameters = enclosingMethod.getParameters();
+    List<? extends ExpressionTree> arguments = delegatedMethodCall.getArguments();
+    if (parameters.size() != arguments.size()) {
+      return false;
+    }
+    for (int i = 0; i < parameters.size(); i++) {
+      VariableElement parameterElt = TreeUtils.elementFromDeclaration(parameters.get(i));
+      Element argumentElt = TreeUtils.elementFromTree(TreeUtils.withoutParens(arguments.get(i)));
+      if (!parameterElt.equals(argumentElt)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Returns all the fields of a class that have a {@link Delegate} annotation.
    *
    * @param tree a class
-   * @return the fields of a class marked with a {@link Delegate} annotation
+   * @return all the fields of a class that have a {@link Delegate} annotation
    */
   private List<VariableTree> getDelegateFields(ClassTree tree) {
     List<VariableTree> delegateFields = new ArrayList<>();
@@ -122,7 +215,7 @@ public class DelegationVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory>
       List<AnnotationMirror> annosOnField =
           TreeUtils.annotationsFromTypeAnnotationTrees(field.getModifiers().getAnnotations());
       if (annosOnField.stream()
-          .anyMatch(anno -> atypeFactory.areSameByClass(anno, Delegate.class))) {
+          .anyMatch(anno -> AnnotationUtils.areSameByName(anno, DELEGATE_NAME))) {
         delegateFields.add(field);
       }
     }
@@ -130,124 +223,95 @@ public class DelegationVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory>
   }
 
   /**
-   * Returns the last expression in a method body.
+   * Returns the method call that constitutes the entirety of a method body: that is, the body
+   * consists of exactly one statement, and that statement is a method call or is a return statement
+   * whose expression is a method call. Otherwise, returns null.
    *
-   * <p>This method is used to identify a possible delegate method call. It will check whether a
-   * method has only one statement (a method invocation or a return statement), and return the
-   * expression that is associated with it. Otherwise, it will return null.
-   *
-   * @param tree the method body
-   * @return the last expression in the method body
+   * @param tree a method body
+   * @return the method call that is the entirety of the method body, or null
    */
-  private @Nullable MethodInvocationTree getLastExpression(BlockTree tree) {
+  private @Nullable MethodInvocationTree getSoleMethodInvocation(BlockTree tree) {
     List<? extends StatementTree> stmts = tree.getStatements();
     if (stmts.size() != 1) {
       return null;
     }
     StatementTree stmt = stmts.get(0);
-    ExpressionTree lastExprInMethod = null;
-    if (stmt instanceof ExpressionStatementTree) {
-      lastExprInMethod = ((ExpressionStatementTree) stmt).getExpression();
-    } else if (stmt instanceof ReturnTree) {
-      lastExprInMethod = ((ReturnTree) stmt).getExpression();
-    }
-    if (!(lastExprInMethod instanceof MethodInvocationTree)) {
+    ExpressionTree soleExpression;
+    if (stmt instanceof ExpressionStatementTree expressionStatement) {
+      soleExpression = expressionStatement.getExpression();
+    } else if (stmt instanceof ReturnTree returnStatement) {
+      soleExpression = returnStatement.getExpression();
+    } else {
       return null;
     }
-    return (MethodInvocationTree) lastExprInMethod;
+    if (soleExpression instanceof MethodInvocationTree methodInvocation) {
+      return methodInvocation;
+    }
+    return null;
   }
 
   /**
-   * Return true if the last (and only) statement of the block throws an exception of the given
-   * class.
+   * Returns true if the given method body consists of exactly one statement, which throws an
+   * exception of the given class.
    *
-   * @param tree a block tree
+   * @param tree a method body
    * @param clazz a class of exception (usually {@link UnsupportedOperationException})
-   * @return true if the last and only statement throws an exception of the given class
+   * @return true if the body's only statement throws an exception of the given class
    */
-  private boolean hasExceptionalExit(BlockTree tree, Class<?> clazz) {
+  private boolean throwsException(BlockTree tree, Class<?> clazz) {
     List<? extends StatementTree> stmts = tree.getStatements();
     if (stmts.size() != 1) {
       return false;
     }
-    StatementTree lastStmt = stmts.get(0);
-    if (!(lastStmt instanceof ThrowTree)) {
+    StatementTree soleStmt = stmts.get(0);
+    if (!(soleStmt instanceof ThrowTree throwStmt)) {
       return false;
     }
-    ThrowTree throwStmt = (ThrowTree) lastStmt;
-    AnnotatedTypeMirror throwType = atypeFactory.getAnnotatedType(throwStmt.getExpression());
-    Class<?> exceptionClass = TypesUtils.getClassFromType(throwType.getUnderlyingType());
+    Class<?> exceptionClass =
+        TypesUtils.getClassFromType(TreeUtils.typeOf(throwStmt.getExpression()));
     return exceptionClass.equals(clazz);
   }
 
   /**
-   * Validate whether a class overrides all declared methods in its superclass.
+   * Issues a warning if the given class does not override every method of a supertype that is
+   * annotated with {@link DelegatorMustOverride}.
    *
-   * <p>This is a basic implementation that naively checks whether all the superclass methods have
-   * been overridden by the subclass. It is unlikely in practice that a delegating subclass needs to
-   * override <i>all</i> the methods in a superclass for postconditions to hold.
+   * <p>A delegator need not override every method of a supertype: for many methods, the inherited
+   * implementation is correct for the delegator as well. A method is annotated with {@link
+   * DelegatorMustOverride} if its specification would not be satisfied by an inherited
+   * implementation.
    *
-   * @param tree a class tree
+   * @param tree a class that has a field annotated with {@link Delegate}
    */
-  private void checkSuperClassOverrides(ClassTree tree) {
-    TypeElement classTreeElt = TreeUtils.elementFromDeclaration(tree);
-    if (classTreeElt == null || classTreeElt.getSuperclass() == null) {
+  private void checkDelegatorMustOverrideMethods(ClassTree tree) {
+    TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
+    if (classElt == null) {
       return;
     }
-    DeclaredType superClassMirror = (DeclaredType) classTreeElt.getSuperclass();
-    if (superClassMirror == null || superClassMirror.getKind() == TypeKind.NONE) {
-      return;
-    }
-    Set<Name> overriddenMethods =
-        getOverriddenMethods(tree).stream()
-            .map(ExecutableElement::getSimpleName)
-            .collect(Collectors.toSet());
-    Set<ExecutableElement> methodsDeclaredInSuperClass =
-        new HashSet<>(ElementFilter.methodsIn(superClassMirror.asElement().getEnclosedElements()));
-    Set<Name> methodsThatMustBeOverriden =
-        methodsDeclaredInSuperClass.stream()
-            .filter(e -> atypeFactory.getDeclAnnotation(e, DelegatorMustOverride.class) != null)
-            .map(ExecutableElement::getSimpleName)
-            .collect(Collectors.toSet());
-
-    // TODO: comparing a set of names isn't ideal, what about overloading?
-    if (!overriddenMethods.containsAll(methodsThatMustBeOverriden)) {
-      checker.reportWarning(
-          tree,
-          "delegate.override",
-          tree.getSimpleName(),
-          TypesUtils.getQualifiedName(superClassMirror));
-    }
-  }
-
-  /**
-   * Return a set of all methods in the class that are marked with {@link Override}.
-   *
-   * @param tree the class tree
-   * @return a set of all methods in the class that are marked with {@link Override}
-   */
-  private Set<ExecutableElement> getOverriddenMethods(ClassTree tree) {
-    Set<ExecutableElement> overriddenMethods = new HashSet<>();
-    for (Tree member : tree.getMembers()) {
-      if (!(member instanceof MethodTree)) {
+    List<ExecutableElement> declaredMethods =
+        ElementFilter.methodsIn(classElt.getEnclosedElements());
+    StringJoiner notOverridden = new StringJoiner(", ");
+    for (TypeElement supertypeElt : ElementUtils.getAllSupertypes(classElt, processingEnv)) {
+      if (supertypeElt.equals(classElt)) {
         continue;
       }
-      MethodTree method = (MethodTree) member;
-      if (isMarkedWithOverride(method)) {
-        overriddenMethods.add(TreeUtils.elementFromDeclaration(method));
+      for (ExecutableElement supertypeMethod :
+          ElementFilter.methodsIn(supertypeElt.getEnclosedElements())) {
+        if (annotationProvider.getDeclAnnotation(supertypeMethod, DelegatorMustOverride.class)
+            == null) {
+          continue;
+        }
+        boolean isOverridden =
+            declaredMethods.stream()
+                .anyMatch(m -> ElementUtils.isMethod(m, supertypeMethod, processingEnv));
+        if (!isOverridden) {
+          notOverridden.add(ElementUtils.getSimpleDescription(supertypeMethod));
+        }
       }
     }
-    return overriddenMethods;
-  }
-
-  /**
-   * Return true if a method is marked with {@link Override}.
-   *
-   * @param tree the method declaration
-   * @return true if the given method declaration is annotated with {@link Override}
-   */
-  private boolean isMarkedWithOverride(MethodTree tree) {
-    Element method = TreeUtils.elementFromDeclaration(tree);
-    return atypeFactory.getDeclAnnotation(method, Override.class) != null;
+    if (notOverridden.length() != 0) {
+      checker.reportWarning(
+          tree, "delegate.override", tree.getSimpleName(), notOverridden.toString());
+    }
   }
 }

@@ -1,0 +1,158 @@
+\htmlhr
+\chapterAndLabel{Delegation Checker}{delegation-checker}
+
+The Delegation Checker verifies that a class that is written as a
+\emph{delegator} really does delegate.  A delegator is a class that
+implements each of its methods by calling the same method on some other
+object, called the \emph{delegate}.  Delegation is an alternative to
+inheritance:  rather than reusing a superclass's implementation, the
+delegator forwards each call to an object that it wraps.
+
+Here is an example of a delegator:
+
+\begin{Verbatim}
+class MyEnumeration<T> implements Enumeration<T> {
+  @Delegate private Enumeration<T> e;
+
+  public boolean hasMoreElements() {
+    return e.hasMoreElements();
+  }
+
+  public T nextElement() {
+    return e.nextElement();
+  }
+}
+\end{Verbatim}
+
+Delegation is worth verifying because a delegator inherits more than an
+implementation:  it also inherits the delegate's specification.  For
+example, suppose that \<Enumeration.hasMoreElements()> has a conditional
+postcondition.  Then \<MyEnumeration.hasMoreElements()> satisfies that
+postcondition only because its body is exactly a call to
+\<e.hasMoreElements()>.  A typo, an extra side effect, or a forgotten
+override silently invalidates the reasoning that another type-checker
+performs.  The Delegation Checker detects such mistakes.
+
+The Delegation Checker is not a type system:  it defines no type
+qualifiers and no subtyping relationship.  It is nonetheless a checker, and
+it is run in the same way as any other checker.
+
+
+\sectionAndLabel{Running the Delegation Checker}{delegation-checker-running}
+
+An example invocation is
+
+\begin{Verbatim}
+javac -processor org.checkerframework.common.delegation.DelegationChecker MyFile.java
+\end{Verbatim}
+
+The Delegation Checker's purpose is to justify reasoning that
+\emph{other} checkers perform, so it is most useful when run together with
+the type-checkers whose specifications the delegator depends on:
+
+\begin{Verbatim}
+javac -processor MapKeyChecker,DelegationChecker MyFile.java
+\end{Verbatim}
+
+
+\sectionAndLabel{Annotations}{delegation-checker-annotations}
+
+The Delegation Checker uses the following declaration annotations:
+
+\begin{description}
+\item[\refqualclass{common/delegation/qual}{Delegate}]
+  is written on a field.  It indicates that the field is the delegate of
+  the class that declares it:  the enclosing class's methods are
+  implemented by calling the same method on the field.  A class may have at
+  most one \<@Delegate> field.
+\item[\refqualclass{common/delegation/qual}{DelegatorMustOverride}]
+  is written on a method \<m> of a class \<C>.  It indicates that any
+  delegator that is a subtype of \<C> must override \<m>.  Write it on a
+  method whose specification (such as a precondition, a postcondition, or a
+  conditional postcondition) would not be satisfied by an inherited
+  implementation.
+\end{description}
+
+
+\sectionAndLabel{What the Delegation Checker guarantees}{delegation-checker-guarantees}
+
+Within a class that declares a field annotated \<@Delegate>, the Delegation
+Checker enforces the following rules.
+
+\begin{itemize}
+\item
+  The class declares at most one field annotated \<@Delegate>.  Otherwise,
+  the checker issues a \<multiple.delegate.annotations> error.
+\item
+  The body of every method that overrides (or implements) a supertype
+  method consists of a single statement, which is
+  \begin{itemize}
+  \item
+    a call to the same method on the delegate field, passing the
+    overriding method's formal parameters, in order, as the arguments; or
+  \item
+    \<throw new UnsupportedOperationException(...)>.  A delegator may
+    refuse to support an operation rather than delegating it.
+  \end{itemize}
+  Otherwise, the checker issues an \<invalid.delegate> warning.
+\item
+  The class overrides every method of a supertype that is annotated
+  \<@DelegatorMustOverride>.  Otherwise, the checker issues a
+  \<delegate.override> warning that lists the methods that were not
+  overridden.
+\end{itemize}
+
+The Delegation Checker does not require a delegator to override
+\emph{every} method of its supertype.  Requiring that would be onerous, and
+it is unnecessary for a method whose inherited implementation is already
+correct for the delegator.  Use \<@DelegatorMustOverride> to mark the
+methods for which an inherited implementation is not acceptable.
+
+A class with no field annotated \<@Delegate> is not a delegator, so the
+Delegation Checker does not check it.
+
+
+\sectionAndLabel{Example}{delegation-checker-example}
+
+\begin{Verbatim}
+import java.util.IdentityHashMap;
+import java.util.Map;
+import org.checkerframework.common.delegation.qual.Delegate;
+
+public class MyMap<K, V> extends IdentityHashMap<K, V> {
+
+  @Delegate private final IdentityHashMap<K, V> map;
+
+  MyMap(IdentityHashMap<K, V> map) {
+    this.map = map;
+  }
+
+  @Override
+  public int size() {
+    return map.size();     // OK: delegates
+  }
+
+  @Override
+  public V get(Object key) {
+    return map.get(key);   // OK: delegates, passing the formal parameter
+  }
+
+  @Override
+  public boolean isEmpty() {
+    // Warning: the body is not a call to map.isEmpty()
+    return map.size() == 0;
+  }
+
+  @Override
+  public void putAll(Map<? extends K, ? extends V> m) {
+    // OK: a delegator may refuse to support an operation
+    throw new UnsupportedOperationException();
+  }
+}
+\end{Verbatim}
+
+
+% LocalWords:  delegator delegators MyEnumeration hasMoreElements nextElement
+% LocalWords:  DelegatorMustOverride IdentityHashMap MyMap
+% LocalWords:  UnsupportedOperationException putAll MapKeyChecker
+% LocalWords:  DelegationChecker

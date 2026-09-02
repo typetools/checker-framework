@@ -1,13 +1,20 @@
 package org.checkerframework.common.delegation.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This is an annotation that indicates a method that <i>must</i> be overridden in order for a
- * conditional postcondition to hold for a delegating class.
+ * This annotation indicates a method that <i>must</i> be overridden in order for a delegator's
+ * specification to hold.
+ *
+ * <p>The Delegation Checker does not require a delegator to override every method of its
+ * supertypes, because for many methods the inherited implementation is correct for the delegator as
+ * well. Write {@code @DelegatorMustOverride} on a method whose specification &mdash; such as a
+ * precondition, a postcondition, or a conditional postcondition &mdash; would not be satisfied by
+ * an inherited implementation, and therefore requires a delegating implementation.
  *
  * <p>Here is a way that this annotation may be used:
  *
@@ -42,8 +49,9 @@ import java.lang.annotation.Target;
  *
  * Otherwise, a warning will be raised.
  *
- * @checker_framework.manual #non-empty-checker Non-Empty Checker
+ * @checker_framework.manual #delegation-checker Delegation Checker
  */
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface DelegatorMustOverride {}

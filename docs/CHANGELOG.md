@@ -7,6 +7,8 @@
 
 ### User-visible changes
 
+The new Delegation Checker verifies correctness of wrapper classes.
+
 ### Implementation details
 
 ### Closed issues
