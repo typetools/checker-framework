@@ -193,7 +193,7 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public final @Nullable Set<TypeMirror> relevantJavaTypes;
 
-  /** Whether users may write type annotations on arrays. */
+  /** True if users may write type annotations from this type system on arrays. */
   protected final boolean arraysAreRelevant;
 
   // Flow related fields
@@ -2500,9 +2500,9 @@ public abstract class GenericAnnotatedTypeFactory<
     if (tm.getKind() != TypeKind.PACKAGE && tm.getKind() != TypeKind.MODULE) {
       tm = types.erasure(tm);
     }
-    Boolean resultBoxed = isRelevantCache.get(tm);
-    if (resultBoxed != null) {
-      return resultBoxed;
+    Boolean cachedResult = isRelevantCache.get(tm);
+    if (cachedResult != null) {
+      return cachedResult;
     }
     boolean result = isRelevantImpl(tm);
     isRelevantCache.put(tm, result);
