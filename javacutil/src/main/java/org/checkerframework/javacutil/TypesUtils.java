@@ -274,7 +274,7 @@ public final class TypesUtils {
   /**
    * Given an array type, returns the type with all array levels stripped off.
    *
-   * @param at an array type
+   * @param arrayType an array type
    * @return the type with all array levels stripped off
    */
   public static TypeMirror getInnermostComponentType(ArrayType arrayType) {

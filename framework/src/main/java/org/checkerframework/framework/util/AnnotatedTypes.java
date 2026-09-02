@@ -1157,13 +1157,14 @@ public final class AnnotatedTypes {
 
   /**
    * Returns the innermost component type of {@code type}, which is also called the "element type"
-   * of {@code type}.
+   * of {@code type}. Returns {@code type} itself if {@code type} is not an array type.
    *
-   * @param type an array type
-   * @return the innermost component type of {@code type}
+   * @param type a type
+   * @return the innermost component type of {@code type}, or {@code type} if it is not an array
+   *     type
    */
-  public static AnnotatedTypeMirror innermostComponentType(AnnotatedArrayType arrayType) {
-    AnnotatedTypeMirror componentType = arrayType;
+  public static AnnotatedTypeMirror innermostComponentType(AnnotatedTypeMirror type) {
+    AnnotatedTypeMirror componentType = type;
     while (componentType.getKind() == TypeKind.ARRAY) {
       componentType = ((AnnotatedArrayType) componentType).getComponentType();
     }

@@ -19,6 +19,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -54,7 +55,7 @@ public class TypeVarUseApplier {
 
   private static boolean isGenericArrayType(AnnotatedTypeMirror type) {
     return type instanceof AnnotatedArrayType
-        && AnnotatedTypes.getInnermostComponentType(type) instanceof AnnotatedTypeVariable;
+        && AnnotatedTypes.innermostComponentType(type) instanceof AnnotatedTypeVariable;
   }
 
   /** The generic array type, if any. */
@@ -94,7 +95,7 @@ public class TypeVarUseApplier {
 
     if (isGenericArrayType(type)) {
       this.arrayType = (AnnotatedArrayType) type;
-      this.typeVariable = (AnnotatedTypeVariable) AnnotatedTypes.getInnermostComponentType(type);
+      this.typeVariable = (AnnotatedTypeVariable) AnnotatedTypes.innermostComponentType(type);
       this.declarationElem = (TypeParameterElement) typeVariable.getUnderlyingType().asElement();
       this.useElem = element;
       this.typeFactory = typeFactory;

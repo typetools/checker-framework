@@ -503,9 +503,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
   @Override
   public Void visitArray(AnnotatedArrayType type, Tree tree) {
-    // TODO: is there already or add a helper method
-    // to determine the non-array component type
-    AnnotatedTypeMirror comp = AnnotatedTypes.innermostComponentType();
+    AnnotatedTypeMirror comp = AnnotatedTypes.innermostComponentType(type);
 
     if (comp.getKind() == TypeKind.DECLARED
         && checker.shouldSkipUses(((AnnotatedDeclaredType) comp).getUnderlyingType().asElement())) {

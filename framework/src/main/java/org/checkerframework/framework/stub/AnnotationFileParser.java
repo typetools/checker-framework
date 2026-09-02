@@ -102,6 +102,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
