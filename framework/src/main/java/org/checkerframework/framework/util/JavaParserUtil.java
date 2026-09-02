@@ -17,15 +17,22 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 
 /** Utility methods for working with JavaParser. Also see {@link StaticJavaParserUtil}. */
 public final class JavaParserUtil {
@@ -61,27 +68,6 @@ public final class JavaParserUtil {
       }
     }
 
-    // A type that is lexically enclosed in a type declaration takes precedence over an import,
-    // over a type in the same package, and over a type in `java.lang`.
-    for (Node ancestor = type.getParentNode().orElse(null);
-        ancestor != null;
-        ancestor = ancestor.getParentNode().orElse(null)) {
-      if (ancestor instanceof TypeDeclaration<?> enclosingType) {
-        String enclosingName = enclosingType.getFullyQualifiedName().orElse(null);
-        if (enclosingName != null) {
-          TypeElement result = elements.getTypeElement(enclosingName + "." + name);
-          if (result != null) {
-            return result;
-          }
-        }
-      }
-    }
-
-    CompilationUnit cu = type.findCompilationUnit().orElse(null);
-    if (cu == null) {
-      return null;
-    }
-
     // `firstComponent` is what a single-type import must import; the rest of `name` names a
     // nested type, as in `Entry` and `Entry.Foo` for the import `java.util.Map.Entry`.
     int dotIndex = name.indexOf('.');
@@ -95,9 +81,39 @@ public final class JavaParserUtil {
       suffix = name.substring(dotIndex);
     }
 
-    // A single-type import takes precedence over an import on demand.
+    // A type that is lexically enclosed in a type declaration takes precedence over an import,
+    // over a type in the same package, and over a type in `java.lang`.
+    for (Node ancestor = type.getParentNode().orElse(null);
+        ancestor != null;
+        ancestor = ancestor.getParentNode().orElse(null)) {
+      if (ancestor instanceof TypeDeclaration<?> enclosingType) {
+        String enclosingName = enclosingType.getFullyQualifiedName().orElse(null);
+        if (enclosingName != null) {
+          TypeElement result = elements.getTypeElement(enclosingName + "." + name);
+          if (result != null) {
+            return result;
+          }
+          // The enclosing type might inherit the member type rather than declare it.
+          TypeElement enclosingElement = elements.getTypeElement(enclosingName);
+          if (enclosingElement != null) {
+            result = resolveMemberType(elements, enclosingElement, firstComponent, suffix);
+            if (result != null) {
+              return result;
+            }
+          }
+        }
+      }
+    }
+
+    CompilationUnit cu = type.findCompilationUnit().orElse(null);
+    if (cu == null) {
+      return null;
+    }
+
+    // A single-type import or a single-static import of a member type takes precedence over an
+    // import on demand.
     for (ImportDeclaration importDecl : cu.getImports()) {
-      if (importDecl.isStatic() || importDecl.isAsterisk()) {
+      if (importDecl.isAsterisk()) {
         continue;
       }
       String importedName = importDecl.getNameAsString();
@@ -106,26 +122,95 @@ public final class JavaParserUtil {
         if (result != null) {
           return result;
         }
+        if (importDecl.isStatic()) {
+          // A static import can name a member type that the named type inherits.  (A static
+          // import that names a field or a method resolves to no type element at all.)
+          String containerName =
+              importedName.substring(0, importedName.length() - firstComponent.length() - 1);
+          TypeElement containerElement = elements.getTypeElement(containerName);
+          if (containerElement != null) {
+            result = resolveMemberType(elements, containerElement, firstComponent, suffix);
+            if (result != null) {
+              return result;
+            }
+          }
+        }
       }
     }
 
-    // The type might be in the same package, in a package that is imported on demand, or in
-    // `java.lang`.
-    List<String> packageNames = new ArrayList<>();
-    cu.getPackageDeclaration().ifPresent(pkg -> packageNames.add(pkg.getNameAsString()));
+    // The type might be in the same package, in a package or type that is imported on demand, or
+    // in `java.lang`.
+    List<String> containerNames = new ArrayList<>();
+    cu.getPackageDeclaration().ifPresent(pkg -> containerNames.add(pkg.getNameAsString()));
     for (ImportDeclaration importDecl : cu.getImports()) {
-      if (importDecl.isAsterisk() && !importDecl.isStatic()) {
-        packageNames.add(importDecl.getNameAsString());
+      if (importDecl.isAsterisk()) {
+        containerNames.add(importDecl.getNameAsString());
       }
     }
-    packageNames.add("java.lang");
-    for (String packageName : packageNames) {
-      TypeElement result = elements.getTypeElement(packageName + "." + name);
+    containerNames.add("java.lang");
+    for (String containerName : containerNames) {
+      TypeElement result = elements.getTypeElement(containerName + "." + name);
       if (result != null) {
         return result;
       }
     }
 
+    // A static import on demand also imports the member types that the named type inherits.
+    for (ImportDeclaration importDecl : cu.getImports()) {
+      if (importDecl.isAsterisk() && importDecl.isStatic()) {
+        TypeElement importedElement = elements.getTypeElement(importDecl.getNameAsString());
+        if (importedElement != null) {
+          TypeElement result = resolveMemberType(elements, importedElement, firstComponent, suffix);
+          if (result != null) {
+            return result;
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Returns the element for the member type named {@code firstComponent + suffix} that {@code
+   * typeElement} declares or inherits, or null if there is no such member type.
+   *
+   * <p>{@code typeElement} and its supertypes are searched in breadth-first order, so a member type
+   * that is declared in a nearer supertype hides one that is declared in a farther supertype.
+   *
+   * @param elements used for looking up names
+   * @param typeElement the type whose member types to search
+   * @param firstComponent the simple name of a member type of {@code typeElement}
+   * @param suffix the rest of the type name, which names a type nested within {@code
+   *     firstComponent}; it is empty or starts with "."
+   * @return the element for the member type, or null if it cannot be determined
+   */
+  private static @Nullable TypeElement resolveMemberType(
+      Elements elements, TypeElement typeElement, String firstComponent, String suffix) {
+    Set<TypeElement> visited = new HashSet<>();
+    visited.add(typeElement);
+    Deque<TypeElement> worklist = new ArrayDeque<>();
+    worklist.add(typeElement);
+    while (!worklist.isEmpty()) {
+      TypeElement current = worklist.remove();
+      for (TypeElement member : ElementFilter.typesIn(current.getEnclosedElements())) {
+        // A private member type is not inherited.
+        if (member.getSimpleName().contentEquals(firstComponent)
+            && !member.getModifiers().contains(Modifier.PRIVATE)) {
+          if (suffix.isEmpty()) {
+            return member;
+          }
+          @SuppressWarnings("signature:argument") // concatenation of canonical names is canonical
+          TypeElement result = elements.getTypeElement(member.getQualifiedName() + suffix);
+          return result;
+        }
+      }
+      for (TypeElement supertype : ElementUtils.getDirectSuperTypeElements(current, elements)) {
+        if (visited.add(supertype)) {
+          worklist.add(supertype);
+        }
+      }
+    }
     return null;
   }
 
