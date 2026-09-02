@@ -414,6 +414,10 @@ public final class AnnotatedTypes {
         TypeMirror enclosingElementType = member.getEnclosingElement().asType();
         for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) receiverType).getBounds()) {
           if (TypesUtils.isErasedSubtype(bound.getUnderlyingType(), enclosingElementType, types)) {
+            if (bound.getKind() == TypeKind.DECLARED
+                && isRawCall((AnnotatedDeclaredType) bound, member, types)) {
+              return memberType.getErased();
+            }
             result =
                 substituteTypeVariables(
                     types,

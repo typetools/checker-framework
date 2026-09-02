@@ -222,8 +222,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           return tree;
         }
         ExecutableElement constructor = TreeUtils.elementFromUse(newClassTree);
-        if (TypesUtils.isRawCall(
-            TreeUtils.typeOf(newClassTree.getIdentifier()), constructor, types)) {
+        if (TypesUtils.isRawCall(TreeUtils.typeOf(newClassTree), constructor, types)) {
           return tree;
         }
         if (argumentNeedsInference(constructor, newClassTree.getArguments(), tree, newClassTree)) {
