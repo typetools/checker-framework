@@ -82,6 +82,7 @@ import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -1119,7 +1120,7 @@ public class WholeProgramInferenceJavaParserStorage
       return true;
     }
 
-    @FQName String aName = anno.getNameAsString();
+    @FullyQualifiedName String aName = anno.getNameAsString();
     if (!atypeFactory.isSupportedQualifier(aName)) {
       // The annotation might be a declaration annotation, such as a side effect specification.
       return true;
@@ -1197,14 +1198,15 @@ public class WholeProgramInferenceJavaParserStorage
     }
     if (type instanceof PrimitiveType primitiveType) {
       Types types = atypeFactory.getProcessingEnv().getTypeUtils();
-      return gatf.isRelevant(types.getPrimitiveType(typeKindForPrimitive(primitiveType)));
+      return gatf.isRelevant(
+          types.getPrimitiveType(JavaParserUtil.typeKindForPrimitive(primitiveType)));
     }
     if (type instanceof VoidType) {
       // `void` is never relevant.
       return false;
     }
     if (type instanceof ClassOrInterfaceType classType) {
-      TypeElement typeElt = resolveTypeName(classType);
+      TypeElement typeElt = JavaParserUtil.resolveTypeName(elements, classType);
       if (typeElt == null) {
         // The name could not be resolved.  Be conservative.
         return true;
@@ -1226,7 +1228,7 @@ public class WholeProgramInferenceJavaParserStorage
   private static Type innermostComponentType(Type type) {
     Type componentType = type;
     while (componentType instanceof ArrayType arrayType) {
-      componentType = componentType.getComponentType();
+      componentType = arrayType.getComponentType();
     }
     return componentType;
   }
