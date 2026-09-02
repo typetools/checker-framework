@@ -238,7 +238,13 @@ public class RawTypeMembers {
   @SuppressWarnings({"rawtypes", "unchecked"})
   static class RawSupertypeMember {
 
-    static class Super<K> {
+    static class SuperSuper<K> {
+      List<K> get2() {
+        throw new RuntimeException();
+      }
+    }
+
+    static class Super<K> extends SuperSuper<K> {
       List<K> get() {
         throw new RuntimeException();
       }
@@ -246,11 +252,17 @@ public class RawTypeMembers {
 
     static class Base<T> extends Super<@Nullable String> {}
 
-    // Because Base is used raw, everything Sub inherits from Super is erased, so `get()` overrides
-    // a method whose return type is the raw type `List`.
+    // Because Base is used raw, everything Sub inherits is erased, so `get()` overrides a method
+    // whose return type is the raw type `List`.  The same is true of `get2()`, which Sub inherits
+    // from a supertype of the type that is written with type arguments.
     static class Sub extends Base {
       @Override
       List<@NonNull String> get() {
+        throw new RuntimeException();
+      }
+
+      @Override
+      List<@NonNull String> get2() {
         throw new RuntimeException();
       }
     }

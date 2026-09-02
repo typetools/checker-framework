@@ -2791,21 +2791,19 @@ public final class TreeUtils {
    * Returns true if the receiver of {@code methodInvocationTree} is raw.
    *
    * @param methodInvocationTree the method invocation to check
-   * @param parentPath path to the parent of {@code methodInvocationTree}
+   * @param path path to {@code methodInvocationTree}
    * @param types the type utilities
    * @return true if the receiver of {@code methodInvocationTree} is raw
    */
   public static boolean isRawCall(
-      MethodInvocationTree methodInvocationTree,
-      TreePath parentPath,
-      javax.lang.model.util.Types types) {
+      MethodInvocationTree methodInvocationTree, TreePath path, javax.lang.model.util.Types types) {
     TypeMirror receiverType;
     if (TreeUtils.isSuperConstructorCall(methodInvocationTree)) {
       // For `super(...)` there is no receiver tree, and for the qualified form
       // `outer.super(...)` the receiver tree is the enclosing instance rather than a receiver.
       // In both cases the invoked constructor is a member of the superclass, which isRawCall
       // finds by walking up from the subtype, so pass the enclosing class.
-      ClassTree enclosingClass = TreePathUtil.enclosingClass(parentPath);
+      ClassTree enclosingClass = TreePathUtil.enclosingClass(path);
       assert enclosingClass != null
           : "@AssumeAssertion(nullness): a super call must have an enclosing class.";
       receiverType = TreeUtils.typeOf(enclosingClass);
@@ -2817,7 +2815,7 @@ public final class TreeUtils {
         // The receiver is implicit: `this` or `Outer.this`.  A method inherited from a raw
         // supertype is erased even when it is invoked without a receiver.
         return isRawImplicitReceiverCall(
-            TreeUtils.elementFromUse(methodInvocationTree), parentPath, types);
+            TreeUtils.elementFromUse(methodInvocationTree), path, types);
       }
     }
     ExecutableElement methodElement = TreeUtils.elementFromUse(methodInvocationTree);
@@ -2834,20 +2832,20 @@ public final class TreeUtils {
    * and tests the first enclosing class that has the method as a member.
    *
    * @param methodElement the method being invoked with an implicit receiver
-   * @param parentPath path to the parent of the method invocation
+   * @param path path to the method invocation
    * @param types the type utilities
    * @return true if the implicit receiver of the call is raw
    */
   private static boolean isRawImplicitReceiverCall(
-      ExecutableElement methodElement, TreePath parentPath, javax.lang.model.util.Types types) {
+      ExecutableElement methodElement, TreePath path, javax.lang.model.util.Types types) {
     TypeElement declaringClass = ElementUtils.enclosingTypeElement(methodElement);
     if (declaringClass == null) {
       return false;
     }
-    for (TreePath path = TreePathUtil.pathTillClass(parentPath);
-        path != null;
-        path = TreePathUtil.pathTillClass(path.getParentPath())) {
-      TypeMirror enclosingType = TreeUtils.typeOf(path.getLeaf());
+    for (TreePath classPath = TreePathUtil.pathTillClass(path);
+        classPath != null;
+        classPath = TreePathUtil.pathTillClass(classPath.getParentPath())) {
+      TypeMirror enclosingType = TreeUtils.typeOf(classPath.getLeaf());
       if (TypesUtils.isErasedSubtype(enclosingType, declaringClass.asType(), types)) {
         return TypesUtils.isRawCall(enclosingType, methodElement, types);
       }

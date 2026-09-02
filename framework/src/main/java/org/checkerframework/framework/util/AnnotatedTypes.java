@@ -414,8 +414,7 @@ public final class AnnotatedTypes {
         TypeMirror enclosingElementType = member.getEnclosingElement().asType();
         for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) receiverType).getBounds()) {
           if (TypesUtils.isErasedSubtype(bound.getUnderlyingType(), enclosingElementType, types)) {
-            if (bound.getKind() == TypeKind.DECLARED
-                && isRawCall((AnnotatedDeclaredType) bound, member, types)) {
+            if (isRawCall(bound, member, types)) {
               return memberType.getErased();
             }
             result =
@@ -452,13 +451,23 @@ public final class AnnotatedTypes {
    * @param types the type utilities
    * @return true if accessing {@code member} through {@code receiver} is an access on a raw type
    */
-  private static boolean isRawCall(AnnotatedDeclaredType receiver, Element member, Types types) {
+  private static boolean isRawCall(AnnotatedTypeMirror receiver, Element member, Types types) {
     // SupertypeFinder sets isUnderlyingTypeRaw() on the supertypes of a raw type, whose
     // underlying types still have their type arguments; TypesUtils.isRawCall cannot detect that
     // case, because it looks only at underlying types.
-    if (receiver.isUnderlyingTypeRaw()
-        && member.getEnclosingElement().equals(receiver.getUnderlyingType().asElement())) {
-      return true;
+    if (receiver instanceof AnnotatedDeclaredType declaredReceiver
+        && declaredReceiver.isUnderlyingTypeRaw()
+        && !ElementUtils.isStatic(member)) {
+      // The supertypes of a raw type are erased, so a member that `receiver` inherits is erased
+      // just like a member that `receiver` declares.  A member inherited from a declaration in
+      // which no type parameter is in scope keeps its type arguments, though (JLS 4.8).
+      TypeElement declaringClass = ElementUtils.enclosingTypeElement(member);
+      if (declaringClass != null
+          && TypesUtils.isGenericOrEnclosedByGeneric(declaringClass)
+          && TypesUtils.isErasedSubtype(
+              receiver.getUnderlyingType(), declaringClass.asType(), types)) {
+        return true;
+      }
     }
     return TypesUtils.isRawCall(receiver.getUnderlyingType(), member, types);
   }

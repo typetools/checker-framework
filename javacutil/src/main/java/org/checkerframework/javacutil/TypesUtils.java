@@ -1449,14 +1449,45 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns true if some type parameter is in scope in the declaration of {@code typeElement}; that
+   * is, {@code typeElement} is generic or is a non-static member of a type declaration for which
+   * this method returns true.
+   *
+   * <p>Only such a type declaration has a raw type, so only the members of such a type declaration
+   * are erased by rawness (JLS 4.8).
+   *
+   * @param typeElement a type declaration
+   * @return true if some type parameter is in scope in the declaration of {@code typeElement}
+   */
+  public static boolean isGenericOrEnclosedByGeneric(TypeElement typeElement) {
+    for (Element enclosing = typeElement;
+        enclosing != null;
+        enclosing = enclosing.getEnclosingElement()) {
+      if (enclosing instanceof TypeElement enclosingType
+          && !enclosingType.getTypeParameters().isEmpty()) {
+        return true;
+      }
+      if (ElementUtils.isStatic(enclosing)) {
+        // The type parameters of an enclosing type declaration are not in scope in a static
+        // declaration.
+        return false;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Returns true if accessing {@code member} through a receiver of type {@code receiverType} is an
    * access on a raw type.
    *
    * <p>If {@code receiverType} is a type variable, a wildcard, or an intersection type, then its
    * bounds are tested, because the member is a member of a bound.
    *
-   * @param receiverType the receiver of the access, or null if the receiver is implicit; for a
-   *     constructor invocation, the class being instantiated
+   * @param receiverType the receiver of the access; for a constructor invocation, the class being
+   *     instantiated. Null stands for an unknown receiver, for which this method returns false. Do
+   *     not pass null for an implicit receiver, because a member inherited from a raw supertype is
+   *     erased even when it is accessed without a receiver; use {@link TreeUtils#isRawCall} for a
+   *     call whose receiver is implicit.
    * @param member the method, constructor, or field being accessed
    * @param types the type utilities
    * @return true if accessing {@code member} through a receiver of type {@code receiverType} is an
@@ -1514,7 +1545,8 @@ public final class TypesUtils {
       return false;
     }
     DeclaredType site = declaringSupertype((DeclaredType) receiverType, declaringClass, types);
-    if (site == null && isEnclosedBy(declaringClass, ((DeclaredType) receiverType).asElement())) {
+    if (site == null
+        && hasEnclosingInstanceOfType(declaringClass, ((DeclaredType) receiverType).asElement())) {
       // `receiverType` is not a subtype of the class that declares the member, but it encloses
       // it, so `receiverType` is an enclosing instance rather than a receiver.  This happens for
       // a qualified superclass constructor invocation `outer.super(...)` and for a qualified
@@ -1535,19 +1567,25 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if {@code inner} is {@code outer} or is nested, at any depth, within {@code
-   * outer}.
+   * Returns true if an instance of {@code inner} has an enclosing instance of type {@code outer};
+   * that is, {@code inner} is {@code outer}, or {@code inner} is nested within {@code outer} and no
+   * declaration between the two is static.
    *
    * @param inner a type declaration
    * @param outer a type declaration
-   * @return true if {@code inner} is enclosed by {@code outer}
+   * @return true if an instance of {@code inner} has an enclosing instance of type {@code outer}
    */
-  private static boolean isEnclosedBy(TypeElement inner, Element outer) {
+  private static boolean hasEnclosingInstanceOfType(TypeElement inner, Element outer) {
     for (Element enclosing = inner;
         enclosing != null;
         enclosing = enclosing.getEnclosingElement()) {
       if (outer.equals(enclosing)) {
         return true;
+      }
+      if (ElementUtils.isStatic(enclosing)) {
+        // A static declaration has no enclosing instance, so neither does anything declared
+        // within it.
+        return false;
       }
     }
     return false;
