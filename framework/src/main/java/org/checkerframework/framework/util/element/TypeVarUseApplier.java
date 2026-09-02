@@ -56,6 +56,7 @@ public class TypeVarUseApplier {
   /**
    * Returns true if {@code type} is a generic array type.
    *
+   * @param type an annotated type
    * @return true if {@code type} is a generic array type
    */
   private static boolean isGenericArrayType(AnnotatedTypeMirror type) {
