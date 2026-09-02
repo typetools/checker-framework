@@ -48,6 +48,7 @@ public final class JavaParserUtil {
    * @param type a JavaParser class or interface type
    * @return the element for {@code type}, or null if it cannot be determined
    */
+  @SuppressWarnings("signature:argument") // calls to getTypeElement() whose result is checked
   public static @Nullable TypeElement resolveTypeName(
       Elements elements, ClassOrInterfaceType type) {
     String name = type.getNameWithScope();
