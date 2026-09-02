@@ -19,7 +19,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void> {
 
   /** Creates an {@code EqualityAtmComparer}. */
-  public EqualityAtmComparer() {}
+  public EqualityAtmComparer() {
+    super();
+  }
 
   /**
    * Returns true if {@code type1} and {@code type2} have equivalent sets of annotations.

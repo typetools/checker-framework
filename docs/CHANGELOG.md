@@ -7,13 +7,13 @@
 
 ### User-visible changes
 
+### Implementation details
+
 `AnnotatedTypeMirror.hashCode()` now hashes only the top-level type rather than
 recursively hashing component types.  Removed class `HashcodeAtmVisitor`, field
 `AnnotatedTypeMirror.HASHCODE_VISITOR`, and method
 `AnnotatedTypeMirror.getUnderlyingTypeHashCode()`, which existed only to compute
 the old hash code.
-
-### Implementation details
 
 ### Closed issues
 

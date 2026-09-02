@@ -168,19 +168,13 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * <p>This hashes only the top-level type: its underlying type and its primary annotations. It
    * does not descend into component types, even though {@link #equals} does. That is permitted --
-   * unequal types may share a hash code -- and it is what makes this method constant-time for every
-   * underlying type but {@code ArrayType}. Because {@code equals} compares underlying types with
-   * {@link Object#equals} (which for all of javac's {@code Type}s but {@code ArrayType} is
-   * reference equality, and {@code ArrayType} overrides {@code hashCode} to match), two equal types
-   * always agree on {@code underlyingType.hashCode()}, so the two methods stay consistent. For an
-   * array type, {@code ArrayType#hashCode()} recurses into the component type's hash code, so this
-   * method's cost is proportional to the array's nesting depth rather than strictly constant -- in
-   * practice a small bound, since the JVM specification limits array nesting depth to 255.
+   * unequal types may share a hash code -- and it makes this method constant-time for every
+   * underlying type, except time for {@code ArrayType} is proportional to the array's nesting
+   * depth.
    *
-   * <p>A structural hash, which is what this method used to compute, is not just slower but
-   * mismatched with {@code equals}: types that print alike but wrap distinct {@code Type} objects
-   * hashed alike and compared unequal, so hash-based collections of types degenerated into long
-   * scans of colliding, never-equal entries.
+   * <p>A structural hash would be inconsistent with {@code equals}: types that print alike but wrap
+   * distinct {@code Type} objects would hash alike and compare unequal, making hash table
+   * operations long scans of colliding, never-equal entries.
    *
    * @return a hash code for this type
    */
@@ -189,10 +183,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   public final int hashCode() {
     int result = 31 + underlyingType.hashCode();
     for (AnnotationMirror anno : primaryAnnotations) {
-      // Sum, rather than combining in order, because the iteration order of an
-      // AnnotationMirrorSet is not part of what equals() compares.  The element of an
-      // annotation's type is unique per annotation name within a compilation, and equal
-      // annotations have equal names, so this is consistent with AnnotationUtils.areSame().
+      // Commutative, so that sets with the same elements in different order hash the same,
+      // consistent with AnnotationUtils.areSame().
       result += anno.getAnnotationType().asElement().hashCode();
     }
     return result;
