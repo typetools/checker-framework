@@ -330,7 +330,7 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
     }
     Class<?> exceptionClass =
         TypesUtils.getClassFromType(TreeUtils.typeOf(throwStmt.getExpression()));
-    return exceptionClass.equals(clazz);
+    return exceptionClass == clazz;
   }
 
   /**
