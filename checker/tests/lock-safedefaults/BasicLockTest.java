@@ -35,9 +35,9 @@ public class BasicLockTest {
   @MayReleaseLocks
   void testFields() {
     // Test in two ways that return values are @GuardedByUnknown.
-    // The first way is more durable as cannot.dereference is tied specifically to
-    // @GuardedByUnknown (and @GuardedByBottom, but it is unlikely to become the default for
-    // return values on unannotated methods).
+    // The first way is more durable because the error on dereferencing the return value is
+    // tied specifically to @GuardedByUnknown (and @GuardedByBottom, but it is unlikely to
+    // become the default for return values on unannotated methods).
     // :: error: [lock.not.held] :: error: [argument]
     myUnannotatedMethod(o1).field = someValue;
     // The second way is less durable because the default for fields is currently @GuardedBy({})
