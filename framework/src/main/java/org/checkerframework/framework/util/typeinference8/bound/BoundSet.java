@@ -310,6 +310,8 @@ public class BoundSet implements ReductionResult {
         }
       } else {
         for (Variable beta : alphaDependencies) {
+          // If beta is not a capture variable or beta is a capture variable where the type argument
+          // to be captured is a wildcard.
           if (!beta.isCaptureVariable() || beta.isCapturedWildcard()) {
             // Otherwise, alpha depends on the resolution of beta.
             //
