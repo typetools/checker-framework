@@ -161,6 +161,22 @@ public class ProperType extends AbstractType {
   }
 
   /**
+   * Is {@code this} the same type as {@code other}? The underlying Java types are assumed to have
+   * already been found to be the same; only the qualifiers are compared.
+   *
+   * @param other another proper type, whose Java type is the same as this type's Java type
+   * @return {@link ConstraintSet#TRUE} if the qualifiers of {@code this} and {@code other} are the
+   *     same; otherwise {@link ConstraintSet#TRUE_ANNO_FAIL}
+   */
+  public ReductionResult isSameType(ProperType other) {
+    ConstraintSet result = checkAnnotationSubtype(other);
+    if (result != ConstraintSet.TRUE) {
+      return result;
+    }
+    return other.checkAnnotationSubtype(this);
+  }
+
+  /**
    * Is {@code this} an unchecked subtype of {@code superType}?
    *
    * @param superType super type
