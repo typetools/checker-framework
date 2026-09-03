@@ -29,6 +29,32 @@ fi
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
+# Runs "./gradlew" with the given arguments, in the current directory.  Retries
+# if the failure looks like a transient network problem, such as HTTP status
+# code 429 ("Too Many Requests") from Maven Central.
+gradle_retry() {
+  local log status delay
+  log="$(mktemp)"
+  # The last iteration uses a delay of 0, which means "do not retry again".
+  for delay in 60 300 0; do
+    # "set -o pipefail" is not in effect, so "set -e" does not act on this
+    # pipeline, and ${PIPESTATUS[0]} is the exit status of "./gradlew".
+    ./gradlew "$@" 2>&1 | tee "$log"
+    status="${PIPESTATUS[0]}"
+    if [ "$status" -eq 0 ]; then
+      rm -f "$log"
+      return 0
+    fi
+    if [ "$delay" -eq 0 ] \
+      || ! grep -q -E 'status code (429|50[0-9])|Could not (GET|HEAD|resolve)|Connection reset|Read timed out' "$log"; then
+      rm -f "$log"
+      return "$status"
+    fi
+    echo "gradle_retry: \"./gradlew $*\" failed for an apparent network reason; retrying in ${delay} seconds."
+    sleep "$delay"
+  done
+}
+
 echo "initial JAVA_HOME=${JAVA_HOME}"
 if [ "$(uname)" == "Darwin" ]; then
   export JAVA_HOME=${JAVA_HOME:-$(/usr/libexec/java_home)}
@@ -89,18 +115,11 @@ if [ -n "${JAVA21_HOME:-}" ] && [ -x "${JAVA21_HOME}/bin/java" ]; then
   export JAVA_HOME="${JAVA21_HOME}"
 fi
 
-# Download Gradle and dependencies, retrying in case of network problems.
-# Under CircleCI, the `timeout` command seems to hang forever.
-if [ -z "$CIRCLECI" ]; then
-  # echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
-  if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
-    # Note that "timeout" is not compatible with shell functions.
-    TERM=dumb ./gradlew --write-verification-metadata sha256 help --dry-run --quiet \
-      || { echo "./gradlew --write-verification-metadata sha256 help --dry-run failed; sleeping before trying again." \
-        && sleep 1m \
-        && echo "Trying again: ./gradlew --write-verification-metadata sha256 help --dry-run" \
-        && TERM=dumb ./gradlew --write-verification-metadata sha256 help --dry-run; }
-  fi
+# Download Gradle and dependencies, retrying in case of network problems,
+# before the expensive part of the build.
+# echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
+if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
+  (TERM=dumb gradle_retry --write-verification-metadata sha256 help --dry-run --quiet)
 fi
 
 echo "Exiting checker/bin-devel/clone-related.sh $* in $(pwd)"

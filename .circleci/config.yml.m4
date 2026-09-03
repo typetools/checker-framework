@@ -9,7 +9,7 @@ jobs:
   # Only proceed to other jobs if canary_jobs passes.
   canary_jobs:
     docker:
-      - image: 'cimg/base:2026.08'
+      - image: 'cimg/base:2026.09'
     resource_class: small
     environment:
       TERM: dumb
@@ -19,7 +19,7 @@ jobs:
   # Passes only if all other jobs passed.
   all_green:
     docker:
-      - image: 'cimg/base:2026.08'
+      - image: 'cimg/base:2026.09'
     resource_class: small
     environment:
       TERM: dumb
@@ -44,9 +44,11 @@ jobs:
           key: *sourcefull-cache
           paths:
             - .git
+gradle_restore_cache()
       - run:
           name: getPlumeScripts
           command: ./gradlew -q getPlumeScripts
+gradle_save_cache()
       - run:
           name: ci-org-and-branch
           command: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug

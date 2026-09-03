@@ -56,6 +56,7 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 0
+gradle_cache()dnl
       - name: clone_plume_scripts
         run: ./gradlew -q getPlumeScripts
       - name: ci_org_and_branch

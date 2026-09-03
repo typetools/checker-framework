@@ -40,9 +40,20 @@ jobs:
           key: *sourcefull-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: getPlumeScripts
           command: ./gradlew -q getPlumeScripts
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
       - run:
           name: ci-org-and-branch
           command: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
@@ -67,12 +78,23 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: test-cftests-junit.sh
           command: ./checker/bin-devel/test-cftests-junit.sh
           no_output_timeout: "30m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 17
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   junit_jdk21:
     docker:
@@ -91,12 +113,23 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: test-cftests-junit.sh
           command: ./checker/bin-devel/test-cftests-junit.sh
           no_output_timeout: "30m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 21
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   junit_part1_jdk25:
     docker:
@@ -115,12 +148,23 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: test-cftests-junit.sh part1
           command: ./checker/bin-devel/test-cftests-junit.sh part1
           no_output_timeout: "30m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
   junit_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -138,12 +182,23 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: test-cftests-junit.sh part2
           command: ./checker/bin-devel/test-cftests-junit.sh part2
           no_output_timeout: "30m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   junit_jdk26:
     docker:
@@ -162,12 +217,23 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: test-cftests-junit.sh
           command: ./checker/bin-devel/test-cftests-junit.sh
           no_output_timeout: "30m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 26
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   nonjunit_jdk21:
     docker:
@@ -186,11 +252,22 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: test-cftests-nonjunit.sh
           command: ./checker/bin-devel/test-cftests-nonjunit.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 21
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   nonjunit_jdk25:
     docker:
@@ -209,11 +286,22 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: test-cftests-nonjunit.sh
           command: ./checker/bin-devel/test-cftests-nonjunit.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   # Sometimes one of the invocations of wpi-many in `./gradlew wpiManyTest`
   # takes much longer to complete than normal, and this Azure job times out.
@@ -237,11 +325,22 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: test-cftests-inference-part1.sh
           command: ./checker/bin-devel/test-cftests-inference-part1.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
   inference_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -259,11 +358,22 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: test-cftests-inference-part2.sh
           command: ./checker/bin-devel/test-cftests-inference-part2.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   misc_jdk21:
     docker:
@@ -283,6 +393,11 @@ jobs:
           key: *sourcefull-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: getPlumeScripts
           command: ./gradlew -q getPlumeScripts
@@ -291,6 +406,12 @@ jobs:
           command: ./checker/bin-devel/test-misc.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 21
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   misc_jdk25:
     docker:
@@ -310,6 +431,11 @@ jobs:
           key: *sourcefull-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: getPlumeScripts
           command: ./gradlew -q getPlumeScripts
@@ -318,6 +444,12 @@ jobs:
           command: ./checker/bin-devel/test-misc.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   misc_jdk26:
     docker:
@@ -337,6 +469,11 @@ jobs:
           key: *sourcefull-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: getPlumeScripts
           command: ./gradlew -q getPlumeScripts
@@ -345,6 +482,12 @@ jobs:
           command: ./checker/bin-devel/test-misc.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 26
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   typecheck_part1_jdk25:
     docker:
@@ -363,11 +506,22 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: test-typecheck-part1.sh
           command: ./checker/bin-devel/test-typecheck-part1.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
   typecheck_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -385,11 +539,22 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: test-typecheck-part2.sh
           command: ./checker/bin-devel/test-typecheck-part2.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   # TEMPORARILY commented until Daikon release 5.8.24.
   # daikon_job(canary_jdk)
@@ -411,12 +576,23 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: test-guava-part1.sh
           command: ./checker/bin-devel/test-guava-part1.sh
           no_output_timeout: "50m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
   guava_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -434,12 +610,23 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: test-guava-part2.sh
           command: ./checker/bin-devel/test-guava-part2.sh
           no_output_timeout: "50m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   plume_lib_jdk25:
     docker:
@@ -458,11 +645,22 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: test-plume-lib.sh
           command: ./checker/bin-devel/test-plume-lib.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
 # The "workflows" section determines which jobs run and what other jobs they depend on.
 # For an explanation of the dependence logic, see ../.azure/azure-pipelines.yml .

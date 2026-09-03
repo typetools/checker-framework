@@ -53,6 +53,15 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 0
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: clone_plume_scripts
         run: ./gradlew -q getPlumeScripts
       - name: ci_org_and_branch
@@ -74,6 +83,15 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: test-cftests-junit.sh
         run: ./checker/bin-devel/test-cftests-junit.sh
         env:
@@ -93,6 +111,15 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: test-cftests-junit.sh
         run: ./checker/bin-devel/test-cftests-junit.sh
         env:
@@ -108,6 +135,15 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: test-cftests-junit.sh part1
         run: ./checker/bin-devel/test-cftests-junit.sh part1
         env:
@@ -122,6 +158,15 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: test-cftests-junit.sh part2
         run: ./checker/bin-devel/test-cftests-junit.sh part2
         env:
@@ -141,6 +186,15 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: test-cftests-junit.sh
         run: ./checker/bin-devel/test-cftests-junit.sh
         env:
@@ -158,6 +212,15 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: test-cftests-nonjunit.sh
         run: ./checker/bin-devel/test-cftests-nonjunit.sh
         env:
@@ -172,6 +235,15 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: test-cftests-nonjunit.sh
         run: ./checker/bin-devel/test-cftests-nonjunit.sh
         env:
@@ -192,6 +264,15 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: test-cftests-inference-part1.sh
         run: ./checker/bin-devel/test-cftests-inference-part1.sh
         env:
@@ -206,6 +287,15 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: test-cftests-inference-part2.sh
         run: ./checker/bin-devel/test-cftests-inference-part2.sh
         env:
@@ -224,6 +314,15 @@ jobs:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: getPlumeScripts
         run: ./gradlew -q getPlumeScripts
       - name: test-misc.sh
@@ -240,6 +339,15 @@ jobs:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: getPlumeScripts
         run: ./gradlew -q getPlumeScripts
       - name: test-misc.sh
@@ -256,6 +364,15 @@ jobs:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: getPlumeScripts
         run: ./gradlew -q getPlumeScripts
       - name: test-misc.sh
@@ -272,6 +389,15 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: test-typecheck-part1.sh
         run: ./checker/bin-devel/test-typecheck-part1.sh
         env:
@@ -285,6 +411,15 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: test-typecheck-part2.sh
         run: ./checker/bin-devel/test-typecheck-part2.sh
         env:
@@ -305,6 +440,15 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: test-guava-part1.sh
         run: ./checker/bin-devel/test-guava-part1.sh
         env:
@@ -321,6 +465,15 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: test-guava-part2.sh
         run: ./checker/bin-devel/test-guava-part2.sh
         env:
@@ -337,6 +490,15 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
       - name: test-plume-lib.sh
         run: ./checker/bin-devel/test-plume-lib.sh
         env:

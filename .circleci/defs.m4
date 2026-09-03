@@ -4,6 +4,21 @@ ifelse([The built-in "dnl" m4 macro means "discard to next line".])dnl
 dnl
 define([job_name], [$1:])
 dnl
+define([gradle_restore_cache], [dnl
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-])dnl
+dnl
+define([gradle_save_cache], [dnl
+      - save_cache:
+          key: *gradle-cache
+          when: always
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper])dnl
+dnl
 ifelse([Takes 4 arguments: OS, JDK version number, name, command line.])dnl
 define([boilerplate], [dnl
     docker:
@@ -23,6 +38,7 @@ define([boilerplate], [dnl
           key: *source-cache
           paths:
             - .git
+gradle_restore_cache()
       - run:
           name: $3
           command: $4
@@ -43,6 +59,7 @@ ifelse($3,test-cftests-nonjunit.sh,[],
 ])dnl
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: $2
+gradle_save_cache()
 ])dnl
 dnl
 ifelse([This macro takes 1-3 arguments: the JDK version and optionally a docker
@@ -64,7 +81,8 @@ define([circleci_boilerplate], [dnl
       - save_cache:
           key: *source$3-cache
           paths:
-            - .git])dnl
+            - .git
+gradle_restore_cache()])dnl
 dnl
 ifelse([Each macro takes one argument, the JDK version.])dnl
 dnl
@@ -109,6 +127,7 @@ circleci_boilerplate($1,-plus,full)
           command: ./checker/bin-devel/test-misc.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: $1
+gradle_save_cache()
 ])dnl
 dnl
 define([typecheck_job], [dnl

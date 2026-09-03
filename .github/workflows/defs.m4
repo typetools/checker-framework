@@ -6,6 +6,18 @@ define([dependsOn], [needs])dnl
 dnl
 define([job_name], [$1:])dnl
 dnl
+define([gradle_cache], [dnl
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ github.job }}-
+            gradle-
+])dnl
+dnl
 ifelse([Takes 4 arguments: OS, JDK version number, name, command line.])dnl
 define([boilerplate], [dnl
     runs-on: ubuntu-latest
@@ -26,6 +38,7 @@ ifelse($3,test-cftests-nonjunit.sh,[],
         with:
           set-safe-directory: true
           fetch-depth: 25
+gradle_cache()dnl
       - name: $3
         run: $4
         env:
@@ -98,6 +111,7 @@ ifelse($1,canary_jdk,,$1,latest_jdk,,[    dependsOn:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+gradle_cache()dnl
       - name: getPlumeScripts
         run: ./gradlew -q getPlumeScripts
       - name: test-misc.sh
