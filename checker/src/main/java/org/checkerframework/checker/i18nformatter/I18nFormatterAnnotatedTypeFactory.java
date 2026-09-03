@@ -112,9 +112,10 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
             try (InputStream fis = Files.newInputStream(Paths.get(propfile))) {
               prop.load(fis);
             } catch (FileNotFoundException e) {
+              // The Property Key Checker's `propertykeychecker.filenotfound` message key
+              // describes this problem, but it cannot be used here: issuing a diagnostic
+              // requires an AST node, and this problem is not associated with one.
               System.err.println("Couldn't find the properties file: " + propfile);
-              // report(null, "propertykeychecker.filenotfound", propfile);
-              // return Collections.emptySet();
               continue;
             }
           }
