@@ -420,6 +420,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
+    String file = storage.getFileForElement(methodElt);
+
     // TODO: Probably move some part of this into the AnnotatedTypeFactory.
 
     // This code handles fields of "this" and method parameters (including the receiver
@@ -427,44 +429,46 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     TypeElement enclosingClass = (TypeElement) methodElt.getEnclosingElement();
     ThisReference thisReference = new ThisReference(enclosingClass.asType());
     ClassName classNameReceiver = new ClassName(enclosingClass.asType());
-    // Fields of "this":
-    for (VariableElement fieldElement :
-        ElementFilter.fieldsIn(enclosingClass.getEnclosedElements())) {
-      if (atypeFactory.wpiOutputFormat == OutputFormat.JAIF
-          && enclosingClass.getNestingKind().isNested()) {
-        // Don't infer facts about fields of inner classes, because IndexFileWriter
-        // places the annotations incorrectly on the class declarations.
-        continue;
+    // Fields of "this".  Don't infer facts about fields of inner classes when writing JAIFs,
+    // because IndexFileWriter places the annotations incorrectly on the class declarations.
+    if (atypeFactory.wpiOutputFormat != OutputFormat.JAIF
+        || !enclosingClass.getNestingKind().isNested()) {
+      for (VariableElement fieldElement :
+          ElementFilter.fieldsIn(enclosingClass.getEnclosedElements())) {
+        if (ElementUtils.isStatic(methodElt) && !ElementUtils.isStatic(fieldElement)) {
+          // A static method can't have precondition annotations about instance fields.
+          continue;
+        }
+        FieldAccess fa =
+            new FieldAccess(
+                (ElementUtils.isStatic(fieldElement) ? classNameReceiver : thisReference),
+                fieldElement.asType(),
+                fieldElement);
+        CFAbstractValue<?> v = store.getFieldValue(fa);
+        AnnotatedTypeMirror fieldDeclType = atypeFactory.getAnnotatedType(fieldElement);
+        AnnotatedTypeMirror inferredType;
+        if (v != null) {
+          // This field is in the store.
+          inferredType = convertCFAbstractValueToAnnotatedTypeMirror(v, fieldDeclType);
+          atypeFactory.wpiAdjustForUpdateNonField(inferredType);
+        } else {
+          // This field is not in the store. Use the declared type.
+          inferredType = fieldDeclType;
+        }
+        T preOrPostConditionAnnos =
+            storage.getPreOrPostconditions(
+                className, preOrPost, methodElt, fa.toString(), fieldDeclType, atypeFactory);
+        if (preOrPostConditionAnnos == null) {
+          continue;
+        }
+        updateAnnotationSet(
+            preOrPostConditionAnnos,
+            TypeUseLocation.FIELD,
+            inferredType,
+            fieldDeclType,
+            file,
+            false);
       }
-      if (ElementUtils.isStatic(methodElt) && !ElementUtils.isStatic(fieldElement)) {
-        // A static method can't have precondition annotations about instance fields.
-        continue;
-      }
-      FieldAccess fa =
-          new FieldAccess(
-              (ElementUtils.isStatic(fieldElement) ? classNameReceiver : thisReference),
-              fieldElement.asType(),
-              fieldElement);
-      CFAbstractValue<?> v = store.getFieldValue(fa);
-      AnnotatedTypeMirror fieldDeclType = atypeFactory.getAnnotatedType(fieldElement);
-      AnnotatedTypeMirror inferredType;
-      if (v != null) {
-        // This field is in the store.
-        inferredType = convertCFAbstractValueToAnnotatedTypeMirror(v, fieldDeclType);
-        atypeFactory.wpiAdjustForUpdateNonField(inferredType);
-      } else {
-        // This field is not in the store. Use the declared type.
-        inferredType = fieldDeclType;
-      }
-      T preOrPostConditionAnnos =
-          storage.getPreOrPostconditions(
-              className, preOrPost, methodElt, fa.toString(), fieldDeclType, atypeFactory);
-      if (preOrPostConditionAnnos == null) {
-        continue;
-      }
-      String file = storage.getFileForElement(methodElt);
-      updateAnnotationSet(
-          preOrPostConditionAnnos, TypeUseLocation.FIELD, inferredType, fieldDeclType, file, false);
     }
     // Method parameters (other than the receiver parameter "this"):
     // This loop is 1-indexed to match the syntax used in annotation arguments.
@@ -494,7 +498,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
           storage.getPreOrPostconditions(
               className, preOrPost, methodElt, "#" + index, declType, atypeFactory);
       if (preOrPostConditionAnnos != null) {
-        String file = storage.getFileForElement(methodElt);
         updateAnnotationSet(
             preOrPostConditionAnnos,
             TypeUseLocation.PARAMETER,
@@ -524,7 +527,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             storage.getPreOrPostconditions(
                 className, preOrPost, methodElt, "this", declaredType, atypeFactory);
         if (preOrPostConditionAnnos != null) {
-          String file = storage.getFileForElement(methodElt);
           updateAnnotationSet(
               preOrPostConditionAnnos,
               TypeUseLocation.PARAMETER,
