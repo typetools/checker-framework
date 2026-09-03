@@ -1,10 +1,12 @@
 package org.checkerframework.common.wholeprograminference;
 
+import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
+import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -25,9 +27,13 @@ import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithVariables;
+import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
+import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
@@ -70,11 +76,13 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import org.checkerframework.afu.scenelib.util.JVMNames;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -90,6 +98,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.JavaParserUtil;
+import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -490,7 +499,11 @@ public class WholeProgramInferenceJavaParserStorage
       // See the comment on the similar exception in #getParameterAnnotations, above.
       return false;
     }
-    return methodAnnos.removeDeclarationAnnotation(anno);
+    boolean wasRemoved = methodAnnos.removeDeclarationAnnotation(anno);
+    if (wasRemoved) {
+      setFileModified(getFileForElement(elt));
+    }
+    return wasRemoved;
   }
 
   @Override
@@ -652,7 +665,7 @@ public class WholeProgramInferenceJavaParserStorage
 
     CompilationUnit root;
     try {
-      root = JavaParserUtil.parseCompilationUnit(new File(path));
+      root = StaticJavaParserUtil.parseCompilationUnit(new File(path));
     } catch (FileNotFoundException e) {
       throw new BugInCF("Failed to read Java file " + path, e);
     }
@@ -1081,14 +1094,145 @@ public class WholeProgramInferenceJavaParserStorage
         Path outputPathNoCheckerName = packageDir.resolve(name + ".ajava");
         // Avoid re-writing this file for each checker that was run.
         if (Files.notExists(outputPathNoCheckerName)) {
-          writeAjavaFile(outputPathNoCheckerName, root);
+          // This output is supposed to reproduce the original source code, so retain every
+          // annotation that the programmer wrote.
+          writeAjavaFile(outputPathNoCheckerName, root, false);
         }
       }
       root.transferAnnotations(checker);
-      writeAjavaFile(outputPath, root);
+      writeAjavaFile(outputPath, root, true);
     }
 
     modifiedFiles.clear();
+  }
+
+  /**
+   * Returns true if the annotation might be relevant (where it appears in the program).
+   *
+   * @param anno an annotation
+   * @return true if the annotation might be relevant
+   */
+  @SuppressWarnings("interning:not.interned")
+  boolean annotationIsRelevant(AnnotationExpr anno) {
+    if (!(atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf)) {
+      return true;
+    }
+    if (gatf.relevantJavaTypes == null) {
+      return true;
+    }
+
+    @SuppressWarnings("signature:assignment") // immediately tests
+    @FullyQualifiedName String aName = anno.getNameAsString();
+    if (!atypeFactory.isSupportedQualifier(aName)) {
+      // The annotation might be a declaration annotation, such as a side effect specification.
+      return true;
+    }
+
+    Node parentNode = anno.getParentNode().orElse(null);
+    if (parentNode == null) {
+      return true;
+    }
+
+    // An annotation that was inferred for a type is attached to a Type node.  An annotation that
+    // was inferred for a declaration is attached to the declaration; it is usually not a type
+    // qualifier, because a checker shoul dnot add a type qualifier as a declaration annotation.
+    //
+    // JavaParser attaches an annotation that precedes a declaration's type to the declaration
+    // rather than to the type, so the two cases cannot be distinguished for a method, a field, or
+    // a formal parameter.  Such an annotation is treated as a type qualifier on the declaration's
+    // element type.
+
+    if (parentNode instanceof Type type) {
+      return typeIsRelevant(gatf, type);
+    }
+    if (parentNode instanceof ArrayCreationLevel) {
+      // The annotation is on an array type, as in `new String @Anno [10]`.
+      return gatf.arrayTypesAreRelevant();
+    }
+    if (parentNode instanceof Parameter param) {
+      // Use reference equality.  `NodeList.contains()` would use structural equality, which does
+      // not distinguish the two annotations in `void m(@Anno String @Anno ... args)`.
+      if (param.getVarArgsAnnotations().stream().anyMatch(a -> a == anno)) {
+        // The annotation is on the array type that `...` creates, as in
+        // `void m(String @Anno ... args)`.
+        return gatf.arrayTypesAreRelevant();
+      }
+      // The annotation precedes the type, so it is on the element type; in
+      // `void m(@Anno String... args)`, `@Anno` is on `String`.
+      return typeIsRelevant(gatf, innermostComponentType(param.getType()));
+    }
+    if (parentNode instanceof ReceiverParameter receiverParam) {
+      return typeIsRelevant(gatf, innermostComponentType(receiverParam.getType()));
+    }
+    if (parentNode instanceof MethodDeclaration method) {
+      return typeIsRelevant(gatf, innermostComponentType(method.getType()));
+    }
+    if (parentNode instanceof AnnotationMemberDeclaration member) {
+      return typeIsRelevant(gatf, innermostComponentType(member.getType()));
+    }
+    if (parentNode instanceof NodeWithVariables<?> declaration) {
+      // A field declaration or a local variable declaration.  All its variables have the same
+      // element type, even if they have different numbers of array levels as in `int i, a[];`.
+      NodeList<VariableDeclarator> variables = declaration.getVariables();
+      if (variables.isEmpty()) {
+        throw new RuntimeException("this can't happen");
+      }
+      return typeIsRelevant(gatf, innermostComponentType(variables.get(0).getType()));
+    }
+
+    // The annotation is on some other declaration:  a type declaration, a type parameter
+    // declaration, a constructor, etc.  Be conservative.
+    return true;
+  }
+
+  /**
+   * Returns true if a type qualifier that is written on the given type might be relevant. This
+   * implementation is conservative and only returns false if such a qualifier is definitely not
+   * relevant.
+   *
+   * @param gatf the type factory associated with this
+   * @param type a JavaParser type
+   * @return true if a type qualifier written on {@code type} might be relevant
+   */
+  private boolean typeIsRelevant(GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf, Type type) {
+    if (type instanceof ArrayType) {
+      return gatf.arrayTypesAreRelevant();
+    }
+    if (type instanceof PrimitiveType primitiveType) {
+      Types types = atypeFactory.getProcessingEnv().getTypeUtils();
+      return gatf.isRelevant(
+          types.getPrimitiveType(JavaParserUtil.typeKindForPrimitive(primitiveType)));
+    }
+    if (type instanceof VoidType) {
+      // `void` is never relevant.
+      return false;
+    }
+    if (type instanceof ClassOrInterfaceType classType) {
+      TypeElement typeElt = JavaParserUtil.resolveTypeName(elements, classType);
+      if (typeElt == null) {
+        // The name could not be resolved.  Be conservative.
+        return true;
+      }
+      return gatf.isRelevant(typeElt.asType());
+    }
+    // An intersection type, a union type, `var`, a wildcard, a type parameter declaration, etc.
+    // Be conservative.
+    return true;
+  }
+
+  /**
+   * Returns the element type of the given type: the type itself if it is not an array type, or its
+   * innermost component type if it is.
+   *
+   * @param type a JavaParser type
+   * @return the element type of {@code type}
+   */
+  private static Type innermostComponentType(Type type) {
+    Type componentType = type;
+    while (componentType instanceof ArrayType arrayType) {
+      componentType = arrayType.getComponentType();
+    }
+    return componentType;
   }
 
   /**
@@ -1109,8 +1253,11 @@ public class WholeProgramInferenceJavaParserStorage
    *
    * @param outputPath the path to which the ajava file should be written
    * @param root the compilation unit to be written
+   * @param omitIrrelevantAnnotations if true, do not write annotations that are irrelevant where
+   *     they appear
    */
-  private void writeAjavaFile(Path outputPath, CompilationUnitAnnos root) {
+  private void writeAjavaFile(
+      Path outputPath, CompilationUnitAnnos root, boolean omitIrrelevantAnnotations) {
     try (Writer writer = Files.newBufferedWriter(outputPath, StandardCharsets.UTF_8)) {
 
       // This commented implementation uses JavaParser's lexical preserving printing, which
@@ -1119,7 +1266,9 @@ public class WholeProgramInferenceJavaParserStorage
       // and crashes when adding annotations in certain locations.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
-      // Do not print invisible qualifiers, to avoid cluttering the output.
+      // To avoid cluttering the output, do not print:
+      //  * invisible qualifiers
+      //  * irrelevant qualifiers, if `omitIrrelevantAnnotations` is true.
       Set<String> invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
       DefaultPrettyPrinter prettyPrinter =
           new DefaultPrettyPrinter() {
@@ -1132,6 +1281,9 @@ public class WholeProgramInferenceJavaParserStorage
                       if (invisibleQualifierNames.contains(n.getName().toString())) {
                         return;
                       }
+                      if (omitIrrelevantAnnotations && !annotationIsRelevant(n)) {
+                        return;
+                      }
                       super.visit(n, arg);
                     }
 
@@ -1140,12 +1292,18 @@ public class WholeProgramInferenceJavaParserStorage
                       if (invisibleQualifierNames.contains(n.getName().toString())) {
                         return;
                       }
+                      if (omitIrrelevantAnnotations && !annotationIsRelevant(n)) {
+                        return;
+                      }
                       super.visit(n, arg);
                     }
 
                     @Override
                     public void visit(NormalAnnotationExpr n, Void arg) {
                       if (invisibleQualifierNames.contains(n.getName().toString())) {
+                        return;
+                      }
+                      if (omitIrrelevantAnnotations && !annotationIsRelevant(n)) {
                         return;
                       }
                       super.visit(n, arg);

@@ -1,13 +1,10 @@
 package org.checkerframework.framework.util;
 
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.ParseProblemException;
-import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ParserConfiguration.LanguageLevel;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.StubUnit;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
@@ -16,22 +13,28 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
-import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 
-/**
- * Utility methods for working with JavaParser. It is a replacement for {@code
- * com.github.javaparser.StaticJavaParser} that does not leak memory, and it provides some other
- * methods.
- */
+/** Utility methods for working with JavaParser. Also see {@link StaticJavaParserUtil}. */
 public final class JavaParserUtil {
 
   /** Do not instantiate. */
@@ -39,174 +42,177 @@ public final class JavaParserUtil {
     throw new Error("Do not instantiate.");
   }
 
-  /**
-   * The Language Level to use when parsing if a specific level isn't applied. This should be the
-   * highest version of Java that the Checker Framework can process.
-   */
-  public static final LanguageLevel DEFAULT_LANGUAGE_LEVEL = LanguageLevel.JAVA_21;
-
   //
-  // Replacements for StaticJavaParser
+  // Resolving names
   //
 
   /**
-   * Parses the Java code contained in the {@code InputStream} and returns a {@code CompilationUnit}
-   * that represents it.
+   * Returns the element for the given JavaParser type, whose name is resolved in the scope of the
+   * type declarations and the compilation unit that contain it. Returns null if the name cannot be
+   * resolved, which happens for a type variable and for a type that is not on the classpath.
    *
-   * <p>This is like {@code StaticJavaParser.parse}, but it does not lead to memory leaks because it
-   * creates a new instance of JavaParser each time it is invoked. Re-using {@code StaticJavaParser}
-   * causes memory problems because it retains too much memory.
-   *
-   * @param inputStream the Java source code
-   * @return CompilationUnit representing the Java source code
-   * @throws ParseProblemException if the source code has parser errors
+   * @param elements used for looking up names
+   * @param type a JavaParser class or interface type
+   * @return the element for {@code type}, or null if it cannot be determined
    */
-  public static CompilationUnit parseCompilationUnit(InputStream inputStream) {
-    ParserConfiguration parserConfiguration = new ParserConfiguration();
-    parserConfiguration.setLanguageLevel(DEFAULT_LANGUAGE_LEVEL);
-    parserConfiguration.setPreprocessUnicodeEscapes(true);
-    JavaParser javaParser = new JavaParser(parserConfiguration);
-    ParseResult<CompilationUnit> parseResult = javaParser.parse(inputStream);
-    if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
-      return parseResult.getResult().get();
-    } else {
-      throw new ParseProblemException(parseResult.getProblems());
+  @SuppressWarnings("signature:argument") // calls to getTypeElement() whose result is checked
+  public static @Nullable TypeElement resolveTypeName(
+      Elements elements, ClassOrInterfaceType type) {
+    String name = type.getNameWithScope();
+
+    // The name might already be fully-qualified.
+    {
+      TypeElement result = elements.getTypeElement(name);
+      if (result != null) {
+        return result;
+      }
     }
+
+    // `firstComponent` is what a single-type import must import; the rest of `name` names a
+    // nested type, as in `Entry` and `Entry.Foo` for the import `java.util.Map.Entry`.
+    int dotIndex = name.indexOf('.');
+    String firstComponent;
+    String suffix;
+    if (dotIndex == -1) {
+      firstComponent = name;
+      suffix = "";
+    } else {
+      firstComponent = name.substring(0, dotIndex);
+      suffix = name.substring(dotIndex);
+    }
+
+    // A type that is lexically enclosed in a type declaration takes precedence over an import,
+    // over a type in the same package, and over a type in `java.lang`.
+    for (Node ancestor = type.getParentNode().orElse(null);
+        ancestor != null;
+        ancestor = ancestor.getParentNode().orElse(null)) {
+      if (ancestor instanceof TypeDeclaration<?> enclosingType) {
+        String enclosingName = enclosingType.getFullyQualifiedName().orElse(null);
+        if (enclosingName != null) {
+          TypeElement result = elements.getTypeElement(enclosingName + "." + name);
+          if (result != null) {
+            return result;
+          }
+          // The enclosing type might inherit the member type rather than declare it.
+          TypeElement enclosingElement = elements.getTypeElement(enclosingName);
+          if (enclosingElement != null) {
+            result = resolveMemberType(elements, enclosingElement, firstComponent, suffix);
+            if (result != null) {
+              return result;
+            }
+          }
+        }
+      }
+    }
+
+    CompilationUnit cu = type.findCompilationUnit().orElse(null);
+    if (cu == null) {
+      return null;
+    }
+
+    // A single-type import or a single-static import of a member type takes precedence over an
+    // import on demand.
+    for (ImportDeclaration importDecl : cu.getImports()) {
+      if (importDecl.isAsterisk()) {
+        continue;
+      }
+      String importedName = importDecl.getNameAsString();
+      if (importedName.equals(firstComponent) || importedName.endsWith("." + firstComponent)) {
+        TypeElement result = elements.getTypeElement(importedName + suffix);
+        if (result != null) {
+          return result;
+        }
+        if (importDecl.isStatic()) {
+          // A static import can name a member type that the named type inherits.  (A static
+          // import that names a field or a method resolves to no type element at all.)
+          String containerName =
+              importedName.substring(0, importedName.length() - firstComponent.length() - 1);
+          TypeElement containerElement = elements.getTypeElement(containerName);
+          if (containerElement != null) {
+            result = resolveMemberType(elements, containerElement, firstComponent, suffix);
+            if (result != null) {
+              return result;
+            }
+          }
+        }
+      }
+    }
+
+    // The type might be in the same package, in a package or type that is imported on demand, or
+    // in `java.lang`.
+    List<String> containerNames = new ArrayList<>();
+    cu.getPackageDeclaration().ifPresent(pkg -> containerNames.add(pkg.getNameAsString()));
+    for (ImportDeclaration importDecl : cu.getImports()) {
+      if (importDecl.isAsterisk()) {
+        containerNames.add(importDecl.getNameAsString());
+      }
+    }
+    containerNames.add("java.lang");
+    for (String containerName : containerNames) {
+      TypeElement result = elements.getTypeElement(containerName + "." + name);
+      if (result != null) {
+        return result;
+      }
+    }
+
+    // A static import on demand also imports the member types that the named type inherits.
+    for (ImportDeclaration importDecl : cu.getImports()) {
+      if (importDecl.isAsterisk() && importDecl.isStatic()) {
+        TypeElement importedElement = elements.getTypeElement(importDecl.getNameAsString());
+        if (importedElement != null) {
+          TypeElement result = resolveMemberType(elements, importedElement, firstComponent, suffix);
+          if (result != null) {
+            return result;
+          }
+        }
+      }
+    }
+
+    return null;
   }
 
   /**
-   * Parses the Java code contained in the {@code File} and returns a {@code CompilationUnit} that
-   * represents it.
+   * Returns the element for the member type named {@code firstComponent + suffix} that {@code
+   * typeElement} declares or inherits, or null if there is no such member type.
    *
-   * <p>This is like {@code StaticJavaParser.parse}, but it does not lead to memory leaks because it
-   * creates a new instance of JavaParser each time it is invoked. Re-using {@code StaticJavaParser}
-   * causes memory problems because it retains too much memory.
+   * <p>{@code typeElement} and its supertypes are searched in breadth-first order, so a member type
+   * that is declared in a nearer supertype hides one that is declared in a farther supertype.
    *
-   * @param file the Java source code
-   * @return CompilationUnit representing the Java source code
-   * @throws ParseProblemException if the source code has parser errors
-   * @throws FileNotFoundException if the file was not found
+   * @param elements used for looking up names
+   * @param typeElement the type whose member types to search
+   * @param firstComponent the simple name of a member type of {@code typeElement}
+   * @param suffix the rest of the type name, which names a type nested within {@code
+   *     firstComponent}; it is empty or starts with "."
+   * @return the element for the member type, or null if it cannot be determined
    */
-  public static CompilationUnit parseCompilationUnit(File file) throws FileNotFoundException {
-    ParserConfiguration configuration = new ParserConfiguration();
-    configuration.setLanguageLevel(DEFAULT_LANGUAGE_LEVEL);
-    configuration.setPreprocessUnicodeEscapes(true);
-    JavaParser javaParser = new JavaParser(configuration);
-    ParseResult<CompilationUnit> parseResult = javaParser.parse(file);
-    if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
-      return parseResult.getResult().get();
-    } else {
-      throw new ParseProblemException(parseResult.getProblems());
+  private static @Nullable TypeElement resolveMemberType(
+      Elements elements, TypeElement typeElement, String firstComponent, String suffix) {
+    Set<TypeElement> visited = new HashSet<>();
+    visited.add(typeElement);
+    Deque<TypeElement> worklist = new ArrayDeque<>();
+    worklist.add(typeElement);
+    while (!worklist.isEmpty()) {
+      TypeElement current = worklist.remove();
+      for (TypeElement member : ElementFilter.typesIn(current.getEnclosedElements())) {
+        // A private member type is not inherited.
+        if (member.getSimpleName().contentEquals(firstComponent)
+            && !member.getModifiers().contains(Modifier.PRIVATE)) {
+          if (suffix.isEmpty()) {
+            return member;
+          }
+          @SuppressWarnings("signature:argument") // concatenation of canonical names is canonical
+          TypeElement result = elements.getTypeElement(member.getQualifiedName() + suffix);
+          return result;
+        }
+      }
+      for (TypeElement supertype : ElementUtils.getDirectSuperTypeElements(current, elements)) {
+        if (visited.add(supertype)) {
+          worklist.add(supertype);
+        }
+      }
     }
+    return null;
   }
-
-  /**
-   * Parses the Java code contained in the {@code String} and returns a {@code CompilationUnit} that
-   * represents it.
-   *
-   * <p>This is like {@code StaticJavaParser.parse}, but it does not lead to memory leaks because it
-   * creates a new instance of JavaParser each time it is invoked. Re-using {@code StaticJavaParser}
-   * causes memory problems because it retains too much memory.
-   *
-   * @param javaSource the Java source code
-   * @return CompilationUnit representing the Java source code
-   * @throws ParseProblemException if the source code has parser errors
-   */
-  public static CompilationUnit parseCompilationUnit(String javaSource) {
-    ParserConfiguration parserConfiguration = new ParserConfiguration();
-    parserConfiguration.setLanguageLevel(DEFAULT_LANGUAGE_LEVEL);
-    JavaParser javaParser = new JavaParser(parserConfiguration);
-    ParseResult<CompilationUnit> parseResult = javaParser.parse(javaSource);
-    if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
-      return parseResult.getResult().get();
-    } else {
-      throw new ParseProblemException(parseResult.getProblems());
-    }
-  }
-
-  /**
-   * Parses the stub file contained in the {@code InputStream} and returns a {@code StubUnit} that
-   * represents it.
-   *
-   * <p>This is like {@code StaticJavaParser.parse}, but it does not lead to memory leaks because it
-   * creates a new instance of JavaParser each time it is invoked. Re-using {@code StaticJavaParser}
-   * causes memory problems because it retains too much memory.
-   *
-   * @param inputStream the stub file
-   * @return StubUnit representing the stub file
-   * @throws ParseProblemException if the source code has parser errors
-   */
-  public static StubUnit parseStubUnit(InputStream inputStream) {
-    // The ParserConfiguration accumulates data each time parse is called, so create a new one
-    // each time.  There's no method to set the ParserConfiguration used by a JavaParser, so a
-    // JavaParser has to be created each time.
-    ParserConfiguration configuration = new ParserConfiguration();
-    configuration.setLanguageLevel(DEFAULT_LANGUAGE_LEVEL);
-    // Store the tokens so that errors have line and column numbers.
-    // configuration.setStoreTokens(false);
-    configuration.setLexicalPreservationEnabled(false);
-    configuration.setAttributeComments(false);
-    configuration.setDetectOriginalLineSeparator(false);
-    configuration.setPreprocessUnicodeEscapes(true);
-    JavaParser javaParser = new JavaParser(configuration);
-    ParseResult<StubUnit> parseResult = javaParser.parseStubUnit(inputStream);
-    if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
-      return parseResult.getResult().get();
-    } else {
-      throw new ParseProblemException(parseResult.getProblems());
-    }
-  }
-
-  /**
-   * Parses the {@code expression} and returns an {@code Expression} that represents it.
-   *
-   * <p>This is like {@code StaticJavaParser.parseExpression}, but it does not lead to memory leaks
-   * because it creates a new instance of JavaParser each time it is invoked. Re-using {@code
-   * StaticJavaParser} causes memory problems because it retains too much memory.
-   *
-   * @param expression the expression string
-   * @return the parsed expression
-   * @throws ParseProblemException if the expression has parser errors
-   */
-  public static Expression parseExpression(String expression) {
-    return parseExpression(expression, DEFAULT_LANGUAGE_LEVEL);
-  }
-
-  /**
-   * Parses the {@code expression} and returns an {@code Expression} that represents it.
-   *
-   * <p>This is like {@code StaticJavaParser.parseExpression}, but it does not lead to memory leaks
-   * because it creates a new instance of JavaParser each time it is invoked. Re-using {@code
-   * StaticJavaParser} causes memory problems because it retains too much memory.
-   *
-   * @param expression the expression string
-   * @param languageLevel the language level to use when parsing the Java source
-   * @return the parsed expression
-   * @throws ParseProblemException if the expression has parser errors
-   */
-  public static Expression parseExpression(String expression, LanguageLevel languageLevel) {
-    // The ParserConfiguration accumulates data each time parse is called, so create a new one
-    // each time.  There's no method to set the ParserConfiguration used by a JavaParser, so a
-    // JavaParser has to be created each time.
-    ParserConfiguration configuration = new ParserConfiguration();
-    configuration.setLanguageLevel(languageLevel);
-    configuration.setStoreTokens(false);
-    configuration.setLexicalPreservationEnabled(false);
-    configuration.setAttributeComments(false);
-    configuration.setDetectOriginalLineSeparator(false);
-    configuration.setPreprocessUnicodeEscapes(true);
-    JavaParser javaParser = new JavaParser(configuration);
-    ParseResult<Expression> parseResult = javaParser.parseExpression(expression);
-    if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
-      return parseResult.getResult().get();
-    } else {
-      throw new ParseProblemException(parseResult.getProblems());
-    }
-  }
-
-  //
-  // Other methods
-  //
 
   /**
    * Given the compilation unit node for a source file, returns the top level type definition with
@@ -237,7 +243,7 @@ public final class JavaParserUtil {
       return annoDecl.get();
     }
 
-    Optional<RecordDeclaration> recordDecl = getRecordByName(root, name);
+    Optional<RecordDeclaration> recordDecl = root.getRecordByName(name);
     if (recordDecl.isPresent()) {
       return recordDecl.get();
     }
@@ -248,29 +254,6 @@ public final class JavaParserUtil {
     } else {
       throw new BugInCF("Type " + name + " not found in " + root);
     }
-  }
-
-  /**
-   * JavaParser's {@link CompilationUnit} class has methods like this for every other kind of
-   * class-like structure (e.g., classes, enums, annotation declarations, etc.), but not for
-   * records. This implementation is based on the implementation of {@link
-   * CompilationUnit#getClassByName(String)}, and has the same interface as the other, similar
-   * JavaParser methods (except that it is static and takes the CompilationUnit as a parameter,
-   * rather than being an instance method on the CompilationUnit).
-   *
-   * @param cu the CompilationUnit to search
-   * @param recordName the name of the record
-   * @return the record declaration in the compilation unit with the given name, or an empty
-   *     Optional if no such record declaration exists
-   */
-  private static Optional<RecordDeclaration> getRecordByName(
-      CompilationUnit cu, String recordName) {
-    return cu.getTypes().stream()
-        .filter(
-            (type) ->
-                type.getNameAsString().equals(recordName) && type instanceof RecordDeclaration)
-        .findFirst()
-        .map((t) -> (RecordDeclaration) t);
   }
 
   /**
@@ -291,6 +274,29 @@ public final class JavaParserUtil {
       return type.getNameAsString();
     }
   }
+
+  /**
+   * Returns the {@code TypeKind} that corresponds to the given JavaParser primitive type.
+   *
+   * @param primitiveType a JavaParser primitive type
+   * @return the {@code TypeKind} for {@code primitiveType}
+   */
+  public static TypeKind typeKindForPrimitive(PrimitiveType primitiveType) {
+    return switch (primitiveType.getType()) {
+      case BOOLEAN -> TypeKind.BOOLEAN;
+      case BYTE -> TypeKind.BYTE;
+      case CHAR -> TypeKind.CHAR;
+      case DOUBLE -> TypeKind.DOUBLE;
+      case FLOAT -> TypeKind.FLOAT;
+      case INT -> TypeKind.INT;
+      case LONG -> TypeKind.LONG;
+      case SHORT -> TypeKind.SHORT;
+    };
+  }
+
+  //
+  // Perform side effects
+  //
 
   /**
    * Side-effects {@code node} by removing all annotations from anywhere inside its subtree.
@@ -364,6 +370,10 @@ public final class JavaParserUtil {
     }
   }
 
+  //
+  // Deprecated
+  //
+
   /**
    * Initialized by {@link #getCurrentSourceVersion(ProcessingEnvironment)}. Use that method to
    * access.
@@ -376,12 +386,14 @@ public final class JavaParserUtil {
    *
    * @param env processing environment used to get source version
    * @return the current source version
+   * @deprecated Does not seem to be used
    */
+  @Deprecated // 2026-09-02
   public static ParserConfiguration.LanguageLevel getCurrentSourceVersion(
       ProcessingEnvironment env) {
     if (currentSourceVersion == null) {
-      // Use String comparison so we can compile on older JDKs which
-      // don't have all the latest SourceVersion constants:
+      // Use String comparison so we can compile on older JDKs that
+      // don't have all the latest SourceVersion constants.
       currentSourceVersion =
           switch (env.getSourceVersion().name()) {
             case "RELEASE_8" -> ParserConfiguration.LanguageLevel.JAVA_8;
@@ -404,7 +416,7 @@ public final class JavaParserUtil {
             case "RELEASE_25" -> ParserConfiguration.LanguageLevel.JAVA_25;
             // Up-to-date as of 2026-03-26.  See
             // https://www.javadoc.io/doc/com.github.javaparser/javaparser-core/latest/com/github/javaparser/ParserConfiguration.LanguageLevel.html .
-            default -> DEFAULT_LANGUAGE_LEVEL;
+            default -> StaticJavaParserUtil.DEFAULT_LANGUAGE_LEVEL;
           };
     }
     return currentSourceVersion;
