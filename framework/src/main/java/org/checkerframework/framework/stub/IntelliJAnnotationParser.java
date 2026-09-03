@@ -430,7 +430,7 @@ public final class IntelliJAnnotationParser {
       return Collections.emptyList();
     }
     List<String> items = new ArrayList<>();
-    boolean inQuote = false;
+    char quoteChar = '\0';
     boolean escaped = false;
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < s.length(); i++) {
@@ -441,10 +441,13 @@ public final class IntelliJAnnotationParser {
       } else if (c == '\\') {
         escaped = true;
         sb.append(c);
-      } else if (c == '"') {
-        inQuote = !inQuote;
+      } else if (quoteChar == '\0' && (c == '"' || c == '\'')) {
+        quoteChar = c;
         sb.append(c);
-      } else if (c == ',' && !inQuote) {
+      } else if (quoteChar != '\0' && c == quoteChar) {
+        quoteChar = '\0';
+        sb.append(c);
+      } else if (c == ',' && quoteChar == '\0') {
         items.add(sb.toString().trim());
         sb.setLength(0);
       } else {
