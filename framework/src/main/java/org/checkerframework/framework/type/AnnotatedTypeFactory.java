@@ -4150,7 +4150,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Retrieving the annotations from the element.
     // This includes annotations inherited from superclasses, but not superinterfaces or
     // overridden methods.
-    List<? extends AnnotationMirror> fromEle = elements.getAllAnnotationMirrors(elt);
+    List<? extends AnnotationMirror> fromEle;
+    try {
+      fromEle = elements.getAllAnnotationMirrors(elt);
+    } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
+      // A superclass could not be completed, so no annotation can be inherited from one.
+      checker.reportWarning(
+          elt, "supertype.not.completed", ElementUtils.getQualifiedName(elt), cf.getMessage());
+      fromEle = elt.getAnnotationMirrors();
+    }
     for (AnnotationMirror annotation : fromEle) {
       try {
         results.add(annotation);
