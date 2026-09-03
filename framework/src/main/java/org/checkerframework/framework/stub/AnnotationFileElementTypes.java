@@ -202,11 +202,11 @@ public class AnnotationFileElementTypes {
           AnnotationFileType.COMMAND_LINE_STUB);
     }
 
-    // 6. External annotations provided via -AexternalAnnotations command-line option
-    String externalAnnotationsOption = checker.getOption("externalAnnotations");
-    if (externalAnnotationsOption != null) {
-      parseExternalAnnotations(
-          SystemUtil.pathSeparatorSplitter.splitToList(externalAnnotationsOption));
+    // 6. Annotations provided via -AintellijAnnotations command-line option
+    String intellijAnnotationsOption = checker.getOption("intellijAnnotations");
+    if (intellijAnnotationsOption != null) {
+      parseIntellijAnnotations(
+          SystemUtil.pathSeparatorSplitter.splitToList(intellijAnnotationsOption));
     }
 
     parsing = false;
@@ -296,26 +296,26 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Parses the external annotations files (IntelliJ annotations.xml format) at the given paths.
+   * Parses IntelliJ annotation files.
    *
-   * @param externalAnnotationPaths list of files, directories, or jars/zips to parse
+   * @param intellijAnnotationPaths list of files, directories, or jars/zips to parse
    */
-  public void parseExternalAnnotations(List<String> externalAnnotationPaths) {
-    if (externalAnnotationPaths.isEmpty()) {
+  public void parseIntellijAnnotations(List<String> intellijAnnotationPaths) {
+    if (intellijAnnotationPaths.isEmpty()) {
       return;
     }
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
     if (stubDebug) {
       AnnotationFileParser.stubDebugStatic(
-          processingEnv, "AFET.parseExternalAnnotations(%s)", externalAnnotationPaths);
+          processingEnv, "AFET.parseIntellijAnnotations(%s)", intellijAnnotationPaths);
     }
-    for (String path : externalAnnotationPaths) {
+    for (String path : intellijAnnotationPaths) {
       String base = System.getProperty("test.src");
       String fullPath = (base == null) ? path : base + "/" + path;
 
       List<AnnotationFileResource> allFiles =
-          AnnotationFileUtil.allAnnotationFiles(fullPath, AnnotationFileType.EXTERNAL_ANNOTATIONS);
+          AnnotationFileUtil.allAnnotationFiles(fullPath, AnnotationFileType.INTELLIJ_ANNOTATIONS);
       if (allFiles != null) {
         for (AnnotationFileResource resource : allFiles) {
           try (InputStream annotationFileStream =
@@ -329,12 +329,11 @@ public class AnnotationFileElementTypes {
           } catch (IOException e) {
             checker.message(
                 Diagnostic.Kind.NOTE,
-                "Could not read external annotations resource: " + resource.getDescription());
+                "Could not read IntelliJ IDEA annotations: " + resource.getDescription());
           }
         }
       } else {
-        checker.message(
-            Diagnostic.Kind.WARNING, "External annotations location not found: " + path);
+        checker.message(Diagnostic.Kind.WARNING, "IntelliJ IDEA annotations not found at " + path);
       }
     }
   }

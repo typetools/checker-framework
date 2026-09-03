@@ -61,8 +61,8 @@ public class AnnotationFileUtil {
     AJAVA_AS_STUB,
     /** Ajava file provided on command line. */
     AJAVA,
-    /** External annotations (IntelliJ annotations.xml format). */
-    EXTERNAL_ANNOTATIONS;
+    /** IntelliJ annotations. */
+    INTELLIJ_ANNOTATIONS;
 
     /**
      * Returns true if this represents a stub file.
@@ -72,7 +72,7 @@ public class AnnotationFileUtil {
     public boolean isStub() {
       return switch (this) {
         case JDK_STUB, BUILTIN_STUB, COMMAND_LINE_STUB, AJAVA_AS_STUB -> true;
-        case AJAVA, EXTERNAL_ANNOTATIONS -> false;
+        case AJAVA, INTELLIJ_ANNOTATIONS -> false;
         default -> throw new BugInCF("unhandled case " + this);
       };
     }
@@ -85,7 +85,7 @@ public class AnnotationFileUtil {
     public boolean isBuiltIn() {
       return switch (this) {
         case JDK_STUB, BUILTIN_STUB -> true;
-        case COMMAND_LINE_STUB, AJAVA_AS_STUB, AJAVA, EXTERNAL_ANNOTATIONS -> false;
+        case COMMAND_LINE_STUB, AJAVA_AS_STUB, AJAVA, INTELLIJ_ANNOTATIONS -> false;
         default -> throw new BugInCF("unhandled case " + this);
       };
     }
@@ -98,7 +98,7 @@ public class AnnotationFileUtil {
     public boolean isCommandLine() {
       return switch (this) {
         case JDK_STUB, BUILTIN_STUB -> false;
-        case COMMAND_LINE_STUB, AJAVA_AS_STUB, AJAVA, EXTERNAL_ANNOTATIONS -> true;
+        case COMMAND_LINE_STUB, AJAVA_AS_STUB, AJAVA, INTELLIJ_ANNOTATIONS -> true;
         default -> throw new BugInCF("unhandled case " + this);
       };
     }
@@ -402,7 +402,7 @@ public class AnnotationFileUtil {
    *     otherwise
    */
   private static boolean isAnnotationFile(String path, AnnotationFileType fileType) {
-    if (fileType == AnnotationFileType.EXTERNAL_ANNOTATIONS) {
+    if (fileType == AnnotationFileType.INTELLIJ_ANNOTATIONS) {
       return "annotations.xml".equals(new File(path).getName())
           || path.endsWith("/annotations.xml");
     }

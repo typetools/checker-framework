@@ -6,18 +6,18 @@ import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.checkerframework.framework.testchecker.h1h2checker.H1H2Checker;
 import org.junit.runners.Parameterized.Parameters;
 
-/** JUnit test for IntelliJ external annotations support. */
-public class ExternalAnnotationsJUnitTest extends CheckerFrameworkPerDirectoryTest {
+/** JUnit test for IntelliJ IDEA annotations file support. */
+public class IntellijAnnotationsJUnitTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
    * @param testFiles the files containing test code, which will be type-checked
    */
-  public ExternalAnnotationsJUnitTest(List<File> testFiles) {
+  public IntellijAnnotationsJUnitTest(List<File> testFiles) {
     super(
         testFiles,
         H1H2Checker.class,
-        "externalannotations",
-        "-AexternalAnnotations=tests/externalannotations");
+        "intellij-annotations",
+        "-AintellijAnnotations=tests/intellijannotations");
   }
 
   /**
@@ -27,6 +27,6 @@ public class ExternalAnnotationsJUnitTest extends CheckerFrameworkPerDirectoryTe
    */
   @Parameters
   public static String[] getTestDirs() {
-    return new String[] {"externalannotations"};
+    return new String[] {"intellijannotations"};
   }
 }

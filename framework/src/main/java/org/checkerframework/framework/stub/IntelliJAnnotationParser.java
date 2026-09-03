@@ -47,7 +47,7 @@ import org.xml.sax.SAXException;
 /**
  * Parser for IntelliJ IDEA external annotations format ({@code annotations.xml}).
  *
- * <p>IntelliJ stores external annotations in XML files named {@code annotations.xml} located in
+ * <p>IntelliJ stores "external" annotations in XML files named {@code annotations.xml} located in
  * directory trees mirroring package names.
  */
 public final class IntelliJAnnotationParser {
@@ -415,7 +415,8 @@ public final class IntelliJAnnotationParser {
   }
 
   /**
-   * Parses an array literal in IntelliJ external annotations format (e.g. {@code {val1, val2}}).
+   * Parses an array literal in IntelliJ IDEA external annotations file format (e.g., {@code {val1,
+   * val2}}).
    *
    * @param s the array literal string
    * @return a list of parsed item strings

@@ -1081,26 +1081,27 @@ Here is an example invocation:
 \end{Verbatim}
 
 
-\sectionAndLabel{External annotations (IntelliJ format)}{intellij-external-annotations}
+\sectionAndLabel{External annotations in IntelliJ IDEA format}{intellij-annotations}
 
-The Checker Framework can read external annotations stored in IntelliJ IDEA's \code{annotations.xml} format.
-This allows users to create external annotations using IntelliJ IDEA's user interface and supply them directly
-to the Checker Framework.
+The Checker Framework can read external annotations stored in IntelliJ
+IDEA's \code{annotations.xml} format.  This allows users to create
+\href{https://www.jetbrains.com/help/rider/Code_Analysis__External_Annotations.html}{external
+annotations}
+using
+\href{https://www.jetbrains.com/help/idea/annotating-source-code.html#external-annotations}{IntelliJ
+IDEA's user interface}.
 
-\subsectionAndLabel{Using external annotations}{external-annotations-using}
-
-To supply external annotations to a checker, pass the \code{-AexternalAnnotations} command-line argument.
-It takes a colon-separated (on Unix) or semicolon-separated (on Windows) list of \code{annotations.xml} files, directories, JAR files, or ZIP files
+The \code{-AintellijAnnotations} command-line argument takes a
+path-separated list of \code{annotations.xml} files, directories, jar files, or zip files
 containing \code{annotations.xml} files arranged in directory structures matching their package names.
+The path separator is colon on Unix and semicolon on Windows.
 
 For example:
-\begin{myxsmall}
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.nullness.NullnessChecker \
-    -AexternalAnnotations=path/to/annotations-dir:path/to/annotations.jar \
+    -AintellijAnnotations=path/to/annotations-dir:path/to/annotations.jar \
     MyFile.java
 \end{Verbatim}
-\end{myxsmall}
 
 
 \sectionAndLabel{Troubleshooting/debugging annotated libraries}{libraries-troubleshooting}

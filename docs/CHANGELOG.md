@@ -7,8 +7,8 @@
 
 ### User-visible changes
 
-Added support for IntelliJ IDEA external annotations (`annotations.xml`) via the
-`-AexternalAnnotations` command-line option.
+Added support for IntelliJ IDEA annotation files (`annotations.xml`) via the
+`-AintellijAnnotations` command-line option.
 
 ### Implementation details
 
@@ -20,7 +20,7 @@ the old hash code.
 
 ### Closed issues
 
-\#6258.
+(Filled in at release time.)
 
 ## Version 4.2.3 (2026-09-01)
 

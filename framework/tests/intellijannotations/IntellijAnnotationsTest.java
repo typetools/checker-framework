@@ -1,8 +1,8 @@
-package externalannotations;
+package intellijannotations;
 
 import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 
-public class ExternalAnnotationsTest {
+public class IntellijAnnotationsTest {
 
   void testReturn(String s) {
     @H1S1 String s1 = s.trim();
