@@ -36,7 +36,7 @@ public class UsesObjectEqualsTest {
     }
   }
 
-  // changed to inherited, no (superclass.annotated) warning
+  // @UsesObjectEquals is inherited, so C need not be annotated.
   class C extends A {}
 
   class D {}
