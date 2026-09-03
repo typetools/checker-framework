@@ -57,8 +57,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-
@@ -87,8 +89,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-
@@ -115,8 +119,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-
@@ -139,8 +145,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-
@@ -162,8 +170,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-
@@ -190,8 +200,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-
@@ -216,8 +228,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-
@@ -239,8 +253,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-
@@ -268,8 +284,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-
@@ -291,8 +309,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-
@@ -318,8 +338,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-
@@ -343,8 +365,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-
@@ -368,8 +392,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-
@@ -393,8 +419,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-
@@ -415,8 +443,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-
@@ -444,8 +474,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-
@@ -469,8 +501,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-
@@ -494,8 +528,10 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-

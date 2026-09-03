@@ -31,7 +31,9 @@ echo "SHELLOPTS=${SHELLOPTS}"
 
 # Runs "./gradlew" with the given arguments, in the current directory.  Retries
 # if the failure looks like a transient network problem, such as HTTP status
-# code 429 ("Too Many Requests") from Maven Central.
+# code 429 ("Too Many Requests") from Maven Central.  The pattern below matches
+# only messages that indicate a network problem; in particular it does not match
+# Gradle's "Could not resolve".
 gradle_retry() {
   local log status delay
   log="$(mktemp)"
@@ -46,7 +48,7 @@ gradle_retry() {
       return 0
     fi
     if [ "$delay" -eq 0 ] \
-      || ! grep -q -E 'status code (429|50[0-9])|Could not (GET|HEAD|resolve)|Connection reset|Read timed out' "$log"; then
+      || ! grep -q -E '(status|response) code:? (429|5[0-9][0-9])|Connect(ion)? timed out|Connection (reset|refused)|Read timed out|Network is unreachable|UnknownHostException|Temporary failure in name resolution|Premature end of Content-Length|Remote host terminated the handshake' "$log"; then
       rm -f "$log"
       return "$status"
     fi
@@ -117,8 +119,11 @@ fi
 
 # Download Gradle and dependencies, retrying in case of network problems,
 # before the expensive part of the build.
+# Do not do this under CircleCI:  every CircleCI job sources this script, so on
+# a cache miss all of them would resolve every configuration against Maven
+# Central at once, which is what provokes HTTP status code 429.
 # echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
-if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
+if [ -z "${CIRCLECI:-}" ] && [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
   (TERM=dumb gradle_retry --write-verification-metadata sha256 help --dry-run --quiet)
 fi
 

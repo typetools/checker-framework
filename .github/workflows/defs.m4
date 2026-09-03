@@ -6,13 +6,17 @@ define([dependsOn], [needs])dnl
 dnl
 define([job_name], [$1:])dnl
 dnl
+ifelse([The cache key must cover every file that pins a dependency version. Add
+to this list any file that gains a hardcoded dependency or plugin version.])dnl
 define([gradle_cache], [dnl
       - uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches/modules-2
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
-          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          key: gradle-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
             gradle-${{ github.job }}-
             gradle-

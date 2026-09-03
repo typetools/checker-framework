@@ -40,17 +40,27 @@ jobs:
           key: *sourcefull-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
           name: getPlumeScripts
           command: ./gradlew -q getPlumeScripts
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
@@ -78,9 +88,15 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
@@ -89,9 +105,13 @@ jobs:
           no_output_timeout: "30m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 17
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
@@ -113,9 +133,15 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
@@ -124,9 +150,13 @@ jobs:
           no_output_timeout: "30m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 21
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
@@ -148,9 +178,15 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
@@ -159,9 +195,13 @@ jobs:
           no_output_timeout: "30m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
@@ -182,9 +222,15 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
@@ -193,9 +239,13 @@ jobs:
           no_output_timeout: "30m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
@@ -217,9 +267,15 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
@@ -228,9 +284,13 @@ jobs:
           no_output_timeout: "30m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 26
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
@@ -252,9 +312,15 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
@@ -262,9 +328,13 @@ jobs:
           command: ./checker/bin-devel/test-cftests-nonjunit.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 21
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
@@ -286,9 +356,15 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
@@ -296,9 +372,13 @@ jobs:
           command: ./checker/bin-devel/test-cftests-nonjunit.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
@@ -325,9 +405,15 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
@@ -335,9 +421,13 @@ jobs:
           command: ./checker/bin-devel/test-cftests-inference-part1.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
@@ -358,9 +448,15 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
@@ -368,9 +464,13 @@ jobs:
           command: ./checker/bin-devel/test-cftests-inference-part2.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
@@ -393,9 +493,15 @@ jobs:
           key: *sourcefull-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
@@ -406,9 +512,13 @@ jobs:
           command: ./checker/bin-devel/test-misc.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 21
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
@@ -431,9 +541,15 @@ jobs:
           key: *sourcefull-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
@@ -444,9 +560,13 @@ jobs:
           command: ./checker/bin-devel/test-misc.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
@@ -469,9 +589,15 @@ jobs:
           key: *sourcefull-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
@@ -482,9 +608,13 @@ jobs:
           command: ./checker/bin-devel/test-misc.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 26
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
@@ -506,9 +636,15 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
@@ -516,9 +652,13 @@ jobs:
           command: ./checker/bin-devel/test-typecheck-part1.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
@@ -539,9 +679,15 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
@@ -549,9 +695,13 @@ jobs:
           command: ./checker/bin-devel/test-typecheck-part2.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
@@ -576,9 +726,15 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
@@ -587,9 +743,13 @@ jobs:
           no_output_timeout: "50m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
@@ -610,9 +770,15 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
@@ -621,9 +787,13 @@ jobs:
           no_output_timeout: "50m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
@@ -645,9 +815,15 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
       - restore_cache:
           keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "gradle/libs.versions.toml" }}'
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
@@ -655,9 +831,13 @@ jobs:
           command: ./checker/bin-devel/test-plume-lib.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
       - save_cache:
           key: *gradle-cache
-          when: always
           paths:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
