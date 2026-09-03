@@ -403,7 +403,8 @@ public class AnnotationFileUtil {
    */
   private static boolean isAnnotationFile(String path, AnnotationFileType fileType) {
     if (fileType == AnnotationFileType.EXTERNAL_ANNOTATIONS) {
-      return path.endsWith("annotations.xml");
+      return "annotations.xml".equals(new File(path).getName())
+          || path.endsWith("/annotations.xml");
     }
     return path.endsWith(fileType.isStub() ? ".astub" : ".ajava");
   }

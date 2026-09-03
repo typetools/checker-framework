@@ -1,5 +1,6 @@
 package org.checkerframework.framework.stub;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
@@ -24,8 +25,10 @@ import javax.tools.Diagnostic;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.AnnotationFileParser.AnnotationFileAnnotations;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -34,10 +37,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * Parser for IntelliJ IDEA external annotations format ({@code annotations.xml}).
@@ -68,41 +73,87 @@ public final class IntelliJAnnotationParser {
       ProcessingEnvironment processingEnv,
       AnnotationFileAnnotations annotationFileAnnos) {
     SourceChecker checker = atypeFactory.getChecker();
+    Document doc;
     try {
       DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-      // Disable external DTD and entity resolution for security and speed
       try {
         dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+      } catch (Exception ignored) {
+        // Feature unsupported by specific parser
+      }
+      try {
         dbFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
       } catch (Exception ignored) {
-        // Fall back if feature is unsupported by specific parser
+        // Feature unsupported by specific parser
       }
+      try {
+        dbFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+      } catch (Exception ignored) {
+        // Feature unsupported by specific parser
+      }
+      try {
+        dbFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+      } catch (Exception ignored) {
+        // Feature unsupported by specific parser
+      }
+      try {
+        dbFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+      } catch (Exception ignored) {
+        // Feature unsupported by specific parser
+      }
+      dbFactory.setXIncludeAware(false);
+      dbFactory.setExpandEntityReferences(false);
       DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-      Document doc = dBuilder.parse(inputStream);
+      doc = dBuilder.parse(inputStream);
       doc.getDocumentElement().normalize();
+    } catch (ParserConfigurationException | SAXException | IOException e) {
+      checker.message(
+          Diagnostic.Kind.WARNING,
+          String.format("Could not parse annotations XML %s: %s", filename, e.getMessage()));
+      return;
+    }
 
-      NodeList itemNodes = doc.getElementsByTagName("item");
-      for (int i = 0; i < itemNodes.getLength(); i++) {
-        Node node = itemNodes.item(i);
-        if (node.getNodeType() == Node.ELEMENT_NODE) {
-          org.w3c.dom.Element itemElement = (org.w3c.dom.Element) node;
-          String itemName = itemElement.getAttribute("name");
-          if (itemName == null || itemName.trim().isEmpty()) {
-            continue;
-          }
+    NodeList itemNodes = doc.getElementsByTagName("item");
+    for (int i = 0; i < itemNodes.getLength(); i++) {
+      Node node = itemNodes.item(i);
+      if (node.getNodeType() == Node.ELEMENT_NODE) {
+        org.w3c.dom.Element itemElement = (org.w3c.dom.Element) node;
+        String itemName = itemElement.getAttribute("name");
+        if (itemName == null || itemName.trim().isEmpty()) {
+          continue;
+        }
 
+        try {
           List<AnnotationMirror> annotations =
               parseItemAnnotations(itemElement, atypeFactory, processingEnv);
           if (!annotations.isEmpty()) {
             applyAnnotationsToElement(
                 itemName.trim(), annotations, atypeFactory, processingEnv, annotationFileAnnos);
           }
+        } catch (BugInCF e) {
+          throw e;
+        } catch (Exception e) {
+          checker.message(
+              Diagnostic.Kind.WARNING,
+              String.format(
+                  "Could not apply annotation item '%s' in %s: %s",
+                  itemName.trim(), filename, e.getMessage()));
         }
       }
-    } catch (Exception e) {
-      checker.message(
-          Diagnostic.Kind.NOTE,
-          String.format("Could not parse annotations XML %s: %s", filename, e.getMessage()));
+    }
+  }
+
+  /**
+   * Issues a warning about missing elements if the -AstubWarnIfNotFound option is set.
+   *
+   * @param checker the source checker
+   * @param message the warning message
+   */
+  private static void warnNotFound(SourceChecker checker, String message) {
+    if (checker.hasOption("stubWarnIfNotFound")) {
+      Diagnostic.Kind kind =
+          checker.hasOption("stubWarnNote") ? Diagnostic.Kind.NOTE : Diagnostic.Kind.WARNING;
+      checker.message(kind, message);
     }
   }
 
@@ -135,7 +186,7 @@ public final class IntelliJAnnotationParser {
 
         TypeElement annoTypeElt = elements.getTypeElement(annoName);
         if (annoTypeElt == null) {
-          // Annotation not found on classpath; skip
+          warnNotFound(atypeFactory.getChecker(), "Unknown annotation: " + annoName);
           continue;
         }
 
@@ -146,8 +197,12 @@ public final class IntelliJAnnotationParser {
             AnnotationMirror canonical = atypeFactory.canonicalAnnotation(annoMirror);
             result.add(canonical != null ? canonical : annoMirror);
           }
-        } catch (Exception ignored) {
-          // If annotation building fails for this specific item, continue
+        } catch (BugInCF e) {
+          throw e;
+        } catch (Exception e) {
+          warnNotFound(
+              atypeFactory.getChecker(),
+              "Failed to build annotation @" + annoName + ": " + e.getMessage());
         }
       }
     }
@@ -217,70 +272,145 @@ public final class IntelliJAnnotationParser {
     }
 
     TypeMirror returnType = memberMethod.getReturnType();
-    String unquotedVal = stripQuotes(valStr);
+    if (returnType.getKind() == TypeKind.ARRAY) {
+      ArrayType at = (ArrayType) returnType;
+      TypeMirror compType = at.getComponentType();
+      List<String> items = parseArrayLiteral(valStr);
+      List<Object> parsedItems = new ArrayList<>(items.size());
+      for (String item : items) {
+        Object val = parseElementValue(item, compType, processingEnv);
+        if (val != null) {
+          parsedItems.add(val);
+        }
+      }
+      builder.setValue(memberName, parsedItems);
+    } else {
+      Object val = parseElementValue(valStr, returnType, processingEnv);
+      if (val instanceof Boolean b) {
+        builder.setValue(memberName, b);
+      } else if (val instanceof Integer i) {
+        builder.setValue(memberName, i);
+      } else if (val instanceof Long l) {
+        builder.setValue(memberName, l);
+      } else if (val instanceof Float f) {
+        builder.setValue(memberName, f);
+      } else if (val instanceof Double d) {
+        builder.setValue(memberName, d);
+      } else if (val instanceof Short s) {
+        builder.setValue(memberName, s);
+      } else if (val instanceof Byte b) {
+        builder.setValue(memberName, b);
+      } else if (val instanceof Character c) {
+        builder.setValue(memberName, c);
+      } else if (val instanceof String s) {
+        builder.setValue(memberName, s);
+      } else if (val instanceof VariableElement ve) {
+        builder.setValue(memberName, ve);
+      } else if (val instanceof TypeMirror tm) {
+        builder.setValue(memberName, tm);
+      }
+    }
+  }
 
-    if (returnType.getKind() == TypeKind.BOOLEAN) {
-      builder.setValue(memberName, Boolean.parseBoolean(unquotedVal));
-    } else if (returnType.getKind() == TypeKind.INT) {
-      builder.setValue(memberName, Integer.parseInt(unquotedVal));
-    } else if (returnType.getKind() == TypeKind.LONG) {
-      builder.setValue(memberName, Long.parseLong(unquotedVal.replaceAll("[lL]$", "")));
-    } else if (returnType.getKind() == TypeKind.FLOAT) {
-      builder.setValue(memberName, Float.parseFloat(unquotedVal.replaceAll("[fF]$", "")));
-    } else if (returnType.getKind() == TypeKind.DOUBLE) {
-      builder.setValue(memberName, Double.parseDouble(unquotedVal.replaceAll("[dD]$", "")));
-    } else if (returnType.getKind() == TypeKind.SHORT) {
-      builder.setValue(memberName, Short.parseShort(unquotedVal));
-    } else if (returnType.getKind() == TypeKind.BYTE) {
-      builder.setValue(memberName, Byte.parseByte(unquotedVal));
-    } else if (returnType.getKind() == TypeKind.CHAR) {
-      builder.setValue(memberName, unquotedVal.length() > 0 ? unquotedVal.charAt(0) : '\0');
-    } else if (returnType.getKind() == TypeKind.DECLARED) {
-      DeclaredType dt = (DeclaredType) returnType;
+  /**
+   * Parses a single element value according to its expected type.
+   *
+   * @param rawVal the raw value string
+   * @param type the expected TypeMirror of the value
+   * @param processingEnv the processing environment
+   * @return the parsed object or null if it cannot be parsed
+   */
+  @SuppressWarnings("signature")
+  private static @Nullable Object parseElementValue(
+      String rawVal, TypeMirror type, ProcessingEnvironment processingEnv) {
+    String unquotedVal = stripQuotes(rawVal);
+    TypeKind kind = type.getKind();
+    if (kind == TypeKind.BOOLEAN) {
+      return Boolean.parseBoolean(unquotedVal);
+    } else if (kind == TypeKind.INT) {
+      return Integer.parseInt(unquotedVal);
+    } else if (kind == TypeKind.LONG) {
+      return Long.parseLong(unquotedVal.replaceAll("[lL]$", ""));
+    } else if (kind == TypeKind.FLOAT) {
+      return Float.parseFloat(unquotedVal.replaceAll("[fF]$", ""));
+    } else if (kind == TypeKind.DOUBLE) {
+      return Double.parseDouble(unquotedVal.replaceAll("[dD]$", ""));
+    } else if (kind == TypeKind.SHORT) {
+      return Short.parseShort(unquotedVal);
+    } else if (kind == TypeKind.BYTE) {
+      return Byte.parseByte(unquotedVal);
+    } else if (kind == TypeKind.CHAR) {
+      return parseChar(unquotedVal);
+    } else if (kind == TypeKind.DECLARED) {
+      DeclaredType dt = (DeclaredType) type;
       TypeElement dtElt = (TypeElement) dt.asElement();
       if (dtElt.getQualifiedName().contentEquals("java.lang.String")) {
-        builder.setValue(memberName, unquotedVal);
+        return unquotedVal;
       } else if (dtElt.getKind() == ElementKind.ENUM) {
         String enumConstName =
             unquotedVal.substring(
                 Math.max(unquotedVal.lastIndexOf('.'), unquotedVal.lastIndexOf('$')) + 1);
         for (VariableElement enumField : ElementFilter.fieldsIn(dtElt.getEnclosedElements())) {
           if (enumField.getSimpleName().contentEquals(enumConstName)) {
-            builder.setValue(memberName, enumField);
-            break;
+            return enumField;
           }
         }
       } else if (dtElt.getQualifiedName().contentEquals("java.lang.Class")) {
         String className = unquotedVal.replaceAll("\\.class$", "");
-        TypeElement classTypeElt = processingEnv.getElementUtils().getTypeElement(className);
+        TypeElement classTypeElt =
+            processingEnv.getElementUtils().getTypeElement(className.replace('$', '.'));
+        if (classTypeElt == null) {
+          classTypeElt = processingEnv.getElementUtils().getTypeElement(className);
+        }
         if (classTypeElt != null) {
-          builder.setValue(memberName, classTypeElt.asType());
+          return classTypeElt.asType();
         }
-      }
-    } else if (returnType.getKind() == TypeKind.ARRAY) {
-      ArrayType at = (ArrayType) returnType;
-      TypeMirror compType = at.getComponentType();
-      List<String> items = parseArrayLiteral(valStr);
-      if (compType.getKind() == TypeKind.DECLARED
-          && ((DeclaredType) compType).asElement().getSimpleName().contentEquals("String")) {
-        List<String> stringItems = new ArrayList<>();
-        for (String item : items) {
-          stringItems.add(stripQuotes(item));
-        }
-        builder.setValue(memberName, stringItems.toArray(new String[0]));
       }
     }
+    return null;
   }
 
   /**
-   * Strips surrounding quotation marks from a string literal value.
+   * Parses a char literal value string, interpreting escape sequences.
+   *
+   * @param s the unquoted string
+   * @return the char value
+   */
+  private static char parseChar(String s) {
+    if (s.isEmpty()) {
+      return '\0';
+    }
+    if (s.startsWith("\\") && s.length() > 1) {
+      char next = s.charAt(1);
+      return switch (next) {
+        case 'n' -> '\n';
+        case 'r' -> '\r';
+        case 't' -> '\t';
+        case 'b' -> '\b';
+        case 'f' -> '\f';
+        case '\'' -> '\'';
+        case '\"' -> '\"';
+        case '\\' -> '\\';
+        case '0' -> '\0';
+        default -> next;
+      };
+    }
+    return s.charAt(0);
+  }
+
+  /**
+   * Strips surrounding single or double quotation marks from a string literal value.
    *
    * @param s the string to strip quotes from
    * @return the string without surrounding quotes
    */
   private static String stripQuotes(String s) {
-    if (s.length() >= 2 && s.startsWith("\"") && s.endsWith("\"")) {
-      return s.substring(1, s.length() - 1);
+    s = s.trim();
+    if (s.length() >= 2
+        && ((s.startsWith("\"") && s.endsWith("\""))
+            || (s.startsWith("'") && s.endsWith("'")))) {
+      String inner = s.substring(1, s.length() - 1);
+      return inner.replace("\\\"", "\"").replace("\\'", "'");
     }
     return s;
   }
@@ -301,10 +431,17 @@ public final class IntelliJAnnotationParser {
     }
     List<String> items = new ArrayList<>();
     boolean inQuote = false;
+    boolean escaped = false;
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < s.length(); i++) {
       char c = s.charAt(i);
-      if (c == '"') {
+      if (escaped) {
+        sb.append(c);
+        escaped = false;
+      } else if (c == '\\') {
+        escaped = true;
+        sb.append(c);
+      } else if (c == '"') {
         inQuote = !inQuote;
         sb.append(c);
       } else if (c == ',' && !inQuote) {
@@ -440,13 +577,8 @@ public final class IntelliJAnnotationParser {
           memberName = name;
         }
       } else {
-        String name = parts[2];
-        if (name.equals(className) || name.equals(simpleClassName) || name.equals("<init>")) {
-          isConstructor = true;
-          memberName = simpleClassName;
-        } else {
-          memberName = name;
-        }
+        isConstructor = false;
+        memberName = parts[parts.length - 1];
       }
 
       return new ParsedItemSignature(
@@ -457,12 +589,16 @@ public final class IntelliJAnnotationParser {
       if (parts.length == 1) {
         return new ParsedItemSignature(
             parts[0], null, Collections.emptyList(), -1, false, false, false, true);
-      } else if (parts.length == 2) {
-        return new ParsedItemSignature(
-            parts[0], parts[1], Collections.emptyList(), -1, false, false, true, false);
       } else {
         return new ParsedItemSignature(
-            parts[0], parts[2], Collections.emptyList(), -1, false, false, true, false);
+            parts[0],
+            parts[parts.length - 1],
+            Collections.emptyList(),
+            -1,
+            false,
+            false,
+            true,
+            false);
       }
     }
   }
@@ -530,12 +666,14 @@ public final class IntelliJAnnotationParser {
       AnnotationFileAnnotations annos) {
     ParsedItemSignature parsed = parseSignature(itemSignature);
     Elements elements = processingEnv.getElementUtils();
+    SourceChecker checker = atypeFactory.getChecker();
 
     TypeElement classElem = elements.getTypeElement(parsed.className.replace('$', '.'));
     if (classElem == null) {
       classElem = elements.getTypeElement(parsed.className);
     }
     if (classElem == null) {
+      warnNotFound(checker, "Class not found: " + parsed.className);
       return;
     }
 
@@ -544,9 +682,17 @@ public final class IntelliJAnnotationParser {
           findMatchingExecutable(
               classElem, parsed.memberName, parsed.paramTypes, parsed.isConstructor);
       if (execElem == null) {
+        warnNotFound(
+            checker,
+            (parsed.isConstructor ? "Constructor" : "Method")
+                + " not found: "
+                + parsed.memberName
+                + " in "
+                + parsed.className);
         return;
       }
 
+      markAsFromStubFile(execElem, processingEnv, annos);
       AnnotatedExecutableType methodType =
           (AnnotatedExecutableType)
               annos.atypes.computeIfAbsent(execElem, e -> atypeFactory.fromElement(execElem));
@@ -554,6 +700,7 @@ public final class IntelliJAnnotationParser {
       if (parsed.paramIndex >= 0 && parsed.paramIndex < methodType.getParameterTypes().size()) {
         AnnotatedTypeMirror paramType = methodType.getParameterTypes().get(parsed.paramIndex);
         VariableElement paramElem = execElem.getParameters().get(parsed.paramIndex);
+        markAsFromStubFile(paramElem, processingEnv, annos);
         for (AnnotationMirror am : annotations) {
           if (atypeFactory.isSupportedQualifier(am)) {
             paramType.replaceAnnotation(am);
@@ -561,6 +708,15 @@ public final class IntelliJAnnotationParser {
           recordDeclAnnotationIfApplicable(paramElem, am, annos);
         }
         annos.atypes.put(paramElem, paramType);
+      } else if (parsed.paramIndex >= methodType.getParameterTypes().size()) {
+        warnNotFound(
+            checker,
+            "Parameter index "
+                + parsed.paramIndex
+                + " out of bounds for "
+                + parsed.memberName
+                + " in "
+                + parsed.className);
       } else if (parsed.paramIndex < 0) {
         AnnotatedTypeMirror returnType = methodType.getReturnType();
         for (AnnotationMirror am : annotations) {
@@ -580,10 +736,12 @@ public final class IntelliJAnnotationParser {
         }
       }
       if (fieldElem == null) {
+        warnNotFound(checker, "Field not found: " + parsed.memberName + " in " + parsed.className);
         return;
       }
 
       final VariableElement finalFieldElem = fieldElem;
+      markAsFromStubFile(finalFieldElem, processingEnv, annos);
       AnnotatedTypeMirror fieldType =
           annos.atypes.computeIfAbsent(
               finalFieldElem, e -> atypeFactory.fromElement(finalFieldElem));
@@ -595,10 +753,26 @@ public final class IntelliJAnnotationParser {
       }
       annos.atypes.put(finalFieldElem, fieldType);
     } else if (parsed.isClass) {
+      markAsFromStubFile(classElem, processingEnv, annos);
       for (AnnotationMirror am : annotations) {
         recordDeclAnnotationIfApplicable(classElem, am, annos);
       }
     }
+  }
+
+  /**
+   * Marks the element with {@code @FromStubFile}.
+   *
+   * @param elt the element to mark
+   * @param processingEnv the processing environment
+   * @param annos the annotation storage
+   */
+  private static void markAsFromStubFile(
+      Element elt, ProcessingEnvironment processingEnv, AnnotationFileAnnotations annos) {
+    AnnotationMirror fromStubFile =
+        AnnotationBuilder.fromClass(processingEnv.getElementUtils(), FromStubFile.class);
+    String eltName = ElementUtils.getQualifiedName(elt);
+    annos.declAnnos.computeIfAbsent(eltName, k -> new AnnotationMirrorSet()).add(fromStubFile);
   }
 
   /**
@@ -633,27 +807,18 @@ public final class IntelliJAnnotationParser {
       boolean isConstructor) {
     List<ExecutableElement> candidates =
         isConstructor
-            ? ElementFilter.constructorsIn(classElem.getEnclosedElements())
-            : ElementFilter.methodsIn(classElem.getEnclosedElements());
+             ? ElementFilter.constructorsIn(classElem.getEnclosedElements())
+             : ElementFilter.methodsIn(classElem.getEnclosedElements());
 
+    // Pass 1: exact match
     for (ExecutableElement candidate : candidates) {
-      if (!isConstructor
-          && methodName != null
-          && !candidate.getSimpleName().contentEquals(methodName)) {
-        continue;
+      if (matchesExecutable(candidate, methodName, expectedParamTypes, isConstructor, false)) {
+        return candidate;
       }
-      List<? extends VariableElement> params = candidate.getParameters();
-      if (params.size() != expectedParamTypes.size()) {
-        continue;
-      }
-      boolean matches = true;
-      for (int i = 0; i < params.size(); i++) {
-        if (!typeMatches(params.get(i).asType(), expectedParamTypes.get(i))) {
-          matches = false;
-          break;
-        }
-      }
-      if (matches) {
+    }
+    // Pass 2: fallback match allowing Object for type variables
+    for (ExecutableElement candidate : candidates) {
+      if (matchesExecutable(candidate, methodName, expectedParamTypes, isConstructor, true)) {
         return candidate;
       }
     }
@@ -661,13 +826,48 @@ public final class IntelliJAnnotationParser {
   }
 
   /**
+   * Tests whether an executable candidate matches the given method name and expected parameter types.
+   *
+   * @param candidate the executable element candidate
+   * @param methodName the expected method name, or null for constructors
+   * @param expectedParamTypes the expected parameter type names
+   * @param isConstructor true if searching for a constructor
+   * @param allowTypeVarAsObject true if type variables are allowed to match java.lang.Object
+   * @return true if candidate matches
+   */
+  private static boolean matchesExecutable(
+      ExecutableElement candidate,
+      @Nullable String methodName,
+      List<String> expectedParamTypes,
+      boolean isConstructor,
+      boolean allowTypeVarAsObject) {
+    if (!isConstructor
+        && methodName != null
+        && !candidate.getSimpleName().contentEquals(methodName)) {
+      return false;
+    }
+    List<? extends VariableElement> params = candidate.getParameters();
+    if (params.size() != expectedParamTypes.size()) {
+      return false;
+    }
+    for (int i = 0; i < params.size(); i++) {
+      if (!typeMatches(params.get(i).asType(), expectedParamTypes.get(i), allowTypeVarAsObject)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Compares a {@link TypeMirror} with an expected type signature string from IntelliJ.
    *
    * @param typeMirror the type mirror of the element parameter
    * @param expectedTypeStr the expected type name string
+   * @param allowTypeVarAsObject true if type variables should match java.lang.Object as fallback
    * @return true if the type matches
    */
-  private static boolean typeMatches(TypeMirror typeMirror, String expectedTypeStr) {
+  private static boolean typeMatches(
+      TypeMirror typeMirror, String expectedTypeStr, boolean allowTypeVarAsObject) {
     expectedTypeStr = expectedTypeStr.trim();
     if (expectedTypeStr.endsWith("...")) {
       expectedTypeStr = expectedTypeStr.substring(0, expectedTypeStr.length() - 3) + "[]";
@@ -679,7 +879,8 @@ public final class IntelliJAnnotationParser {
       }
       return typeMatches(
           ((ArrayType) typeMirror).getComponentType(),
-          expectedTypeStr.substring(0, expectedTypeStr.length() - 2));
+          expectedTypeStr.substring(0, expectedTypeStr.length() - 2),
+          allowTypeVarAsObject);
     }
 
     if (expectedTypeStr.endsWith("[]")) {
@@ -704,7 +905,8 @@ public final class IntelliJAnnotationParser {
     if (typeMirror.getKind() == TypeKind.TYPEVAR) {
       TypeVariable tv = (TypeVariable) typeMirror;
       String tvName = tv.asElement().getSimpleName().toString();
-      return tvName.equals(rawExpected) || "java.lang.Object".equals(rawExpected);
+      return tvName.equals(rawExpected)
+          || (allowTypeVarAsObject && "java.lang.Object".equals(rawExpected));
     }
 
     return false;
