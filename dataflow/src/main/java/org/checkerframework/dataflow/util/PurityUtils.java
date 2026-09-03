@@ -7,6 +7,7 @@ import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -149,6 +150,8 @@ public final class PurityUtils {
     EnumSet<PurityKind> result = EnumSet.noneOf(PurityKind.class);
     if (sefAnnotation != null) {
       result.add(PurityKind.SIDE_EFFECT_FREE);
+    } else if (provider.getDeclAnnotation(methodElement, SideEffectsOnly.class) != null) {
+      result.add(PurityKind.SIDE_EFFECTS_ONLY);
     }
     if (detAnnotation != null) {
       result.add(PurityKind.DETERMINISTIC);

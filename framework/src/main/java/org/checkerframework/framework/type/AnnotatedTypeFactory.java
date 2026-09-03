@@ -4191,6 +4191,35 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Returns true if the given declaration annotation is written on the given element itself --
+   * either in source code or in an annotation file -- rather than being inherited.
+   *
+   * @param elt an element
+   * @param anno a declaration annotation that applies to {@code elt}
+   * @return true if {@code anno} is written on {@code elt} itself
+   */
+  public boolean isDeclAnnotationWrittenOn(Element elt, AnnotationMirror anno) {
+    return AnnotationUtils.containsSameByName(elt.getAnnotationMirrors(), anno)
+        || containsSameByName(stubTypes.getDeclAnnotations(elt), anno)
+        || containsSameByName(ajavaTypes.getDeclAnnotations(elt), anno)
+        || (currentFileAjavaTypes != null
+            && containsSameByName(currentFileAjavaTypes.getDeclAnnotations(elt), anno));
+  }
+
+  /**
+   * Returns true if the given collection contains an annotation with the same name as the given
+   * one. Returns false if the collection is null.
+   *
+   * @param annos a collection of annotations, or null
+   * @param anno an annotation
+   * @return true if {@code annos} contains an annotation with the same name as {@code anno}
+   */
+  private static boolean containsSameByName(
+      @Nullable Collection<? extends AnnotationMirror> annos, AnnotationMirror anno) {
+    return annos != null && AnnotationUtils.containsSameByName(annos, anno);
+  }
+
+  /**
    * Adds into {@code results} the inherited declaration annotations found in all elements of the
    * super types of {@code typeMirror}. (Both superclasses and superinterfaces.)
    *
@@ -4327,12 +4356,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // annotation is written on `method` itself.
     AnnotationMirror sideEffectsOnly = getDeclAnnotation(method, SideEffectsOnly.class);
     if (sideEffectsOnly != null) {
-      return Collections.singletonMap(
-          method,
-          AnnotationUtils.getElementValueArray(
-              sideEffectsOnly, sideEffectsOnlyValueElement, String.class));
+      return Collections.singletonMap(method, getSideEffectsOnlyExpressions(sideEffectsOnly));
     }
     return inheritedSideEffectsOnlyExpressions.get(method);
+  }
+
+  /**
+   * Returns the expressions that are written in the given {@code @SideEffectsOnly} annotation.
+   *
+   * @param sideEffectsOnly a {@code @SideEffectsOnly} annotation
+   * @return the expressions that are written in {@code sideEffectsOnly}
+   */
+  public List<String> getSideEffectsOnlyExpressions(AnnotationMirror sideEffectsOnly) {
+    return AnnotationUtils.getElementValueArray(
+        sideEffectsOnly, sideEffectsOnlyValueElement, String.class);
   }
 
   /**
