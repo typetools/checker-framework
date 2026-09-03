@@ -9,6 +9,9 @@
 
 ### Changes for type system implementers
 
+The Checker Framework now enforces `@TargetLocations` restrictions on explicitly
+written type qualifiers.
+
 `AnnotatedTypeMirror.hashCode()` now hashes only the top-level type rather than
 recursively hashing component types.  Removed class `HashcodeAtmVisitor`, field
 `AnnotatedTypeMirror.HASHCODE_VISITOR`, and method

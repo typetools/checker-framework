@@ -1,10 +1,8 @@
-// @skip-test until the bug is fixed
-
 import java.util.List;
 import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 
 // :: error: [type.annotations.on.location]
-public class EnforceTargetLocation<T extends @H2S1 Object> {
+public class EnforceTargetLocation<T extends @H2OnlyOnLB Object> {
   @H2S1 Object right;
 
   // :: error: [type.annotations.on.location]
@@ -17,8 +15,8 @@ public class EnforceTargetLocation<T extends @H2S1 Object> {
     return o;
   }
 
-  @H2OnlyOnLB
   // :: error: [type.annotations.on.location]
+  @H2OnlyOnLB
   Object incorrect() {
     // :: warning: (cast.unsafe.constructor.invocation)
     // :: error: [type.annotations.on.location]
