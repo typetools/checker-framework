@@ -412,8 +412,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     if (store == null) {
       throw new BugInCF(
-          "updateContracts(%s, %s, null) for %s",
-          preOrPost, methodElt, atypeFactory.getClass().getSimpleName());
+          "updateContracts(%s, %s, %s, null) for %s",
+          className, preOrPost, methodElt, atypeFactory.getClass().getSimpleName());
     }
 
     if (!storage.hasStorageLocationForMethod(methodElt)) {
