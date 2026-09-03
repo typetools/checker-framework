@@ -65,21 +65,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   /** An EqualityAtmComparer. */
   protected static final EqualityAtmComparer EQUALITY_COMPARER = new EqualityAtmComparer();
 
-  /** A HashcodeAtmVisitor. */
-  protected static final HashcodeAtmVisitor HASHCODE_VISITOR = new HashcodeAtmVisitor();
-
   /** The factory to use for lazily creating annotated types. */
   protected final AnnotatedTypeFactory atypeFactory;
 
   /** The actual type wrapped by this AnnotatedTypeMirror. */
   protected final TypeMirror underlyingType;
-
-  /**
-   * Saves the result of {@code underlyingType.toString().hashCode()} to use when computing the hash
-   * code of this. (Because AnnotatedTypeMirrors are mutable, the hash code for this cannot be
-   * saved.) Call {@link #getUnderlyingTypeHashCode()} rather than using the field directly.
-   */
-  private int underlyingTypeHashCode = -1;
 
   /** The annotations on this type. */
   // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
@@ -173,10 +163,36 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     return EQUALITY_COMPARER.visit(this, atm, null);
   }
 
+  /**
+   * Returns a hash code for this type.
+   *
+   * <p>This hashes only the top-level type: its underlying type and its primary annotations. It
+   * does not descend into component types, even though {@link #equals} does. That is permitted --
+   * unequal types may share a hash code -- and it makes this method constant-time for every
+   * underlying type, except time for {@code ArrayType} is proportional to the array's nesting
+   * depth.
+   *
+   * <p>Every part of this hash must be derived from something that {@code equals} compares. In
+   * particular, it must not be derived from the underlying type's printed representation: {@code
+   * equals} compares underlying types with {@code Type.equals}, which is reference equality for
+   * every javac type but {@code ArrayType}, so types that print alike but wrap distinct {@code
+   * Type} objects would hash alike and compare unequal, making hash table operations long scans of
+   * colliding, never-equal entries.
+   *
+   * @return a hash code for this type
+   */
   @Pure
   @Override
   public final int hashCode() {
-    return HASHCODE_VISITOR.visit(this);
+    int result = 31 + underlyingType.hashCode();
+    for (AnnotationMirror anno : primaryAnnotations) {
+      // Hash the annotation's name, because AnnotationUtils.areSame() compares names.  (Hashing
+      // the annotation type's element would depend on javac interning one Symbol per name per
+      // Context.)  Addition is commutative, so that sets with the same elements in different
+      // order hash the same, also consistent with AnnotationUtils.areSame().
+      result += AnnotationUtils.annotationName(anno).hashCode();
+    }
+    return result;
   }
 
   /**
@@ -885,19 +901,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
         atypeFactory.fromElement(atypeFactory.elements.getTypeElement("java.lang.Record"));
     recordType.declaration = false;
     return recordType;
-  }
-
-  /**
-   * Returns the result of calling {@code underlyingType.toString().hashcode()}. This method saves
-   * the result in a field so that it isn't recomputed each time.
-   *
-   * @return the result of calling {@code underlyingType.toString().hashcode()}
-   */
-  public int getUnderlyingTypeHashCode() {
-    if (underlyingTypeHashCode == -1) {
-      underlyingTypeHashCode = underlyingType.toString().hashCode();
-    }
-    return underlyingTypeHashCode;
   }
 
   /** Represents a declared type (whether class or interface). */

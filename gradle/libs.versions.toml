@@ -56,7 +56,7 @@ jgit-ssh-apache = { group = "org.eclipse.jgit", name = "org.eclipse.jgit.ssh.apa
 
 junit = { group = "junit", name = "junit", version.ref = "junit-junit" }
 
-lombok = "org.projectlombok:lombok:1.18.46"
+lombok = "org.projectlombok:lombok:1.18.48"
 
 options = "org.plumelib:options:3.0.0"
 

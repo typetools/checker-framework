@@ -77,6 +77,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * Stores the result of {@link #areEqualInHierarchy(AnnotatedTypeMirror, AnnotatedTypeMirror)} for
    * type arguments. Prevents infinite recursion on types that refer to themselves. (Stores both
    * true and false results.)
+   *
+   * <p>Unlike {@link #isSubtypeVisitHistory}, this history is deliberately not cleared when the
+   * outermost {@code isSubtype} call returns: unrelated calls do re-compare the same pair of type
+   * arguments, so it pays for itself as a cache. Clearing it costs about 12% on {@code
+   * checker/jtreg/slowtypechecking/Issue4412.java}. It grows over a compilation, but slowly: about
+   * 6 entries per compiled file.
    */
   protected final StructuralEqualityVisitHistory areEqualVisitHistory;
 
