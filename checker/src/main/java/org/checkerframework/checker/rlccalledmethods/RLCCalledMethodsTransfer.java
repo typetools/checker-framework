@@ -1,26 +1,35 @@
 package org.checkerframework.checker.rlccalledmethods;
 
 import com.sun.source.tree.MethodInvocationTree;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
+import org.checkerframework.checker.collectionownership.DisposalLoopInfo;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
+import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
+import org.checkerframework.dataflow.expression.IteratedCollectionElement;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -43,6 +52,80 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
   public RLCCalledMethodsTransfer(RLCCalledMethodsAnalysis analysis) {
     super(analysis);
     this.rlTypeFactory = (RLCCalledMethodsAnnotatedTypeFactory) analysis.getTypeFactory();
+  }
+
+  @Override
+  public void accumulate(
+      Node node, TransferResult<AccumulationValue, AccumulationStore> result, String... values) {
+    super.accumulate(node, result, values);
+    updateStoreForIteratedCollectionElement(Arrays.asList(values), result, node);
+  }
+
+  /**
+   * Add the collection elements iterated over in {@link DisposalLoopInfo}'s to the store so that
+   * temp-vars. e.g., col.get(i), col.pop() are tracked.
+   */
+  @Override
+  public AccumulationStore initialStore(
+      UnderlyingAST underlyingAST, List<LocalVariableNode> parameters) {
+    AccumulationStore store = super.initialStore(underlyingAST, parameters);
+    for (DisposalLoopInfo disposalLoopInfo :
+        ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(rlTypeFactory)
+            .getDisposalLoopInfos(underlyingAST)) {
+      IteratedCollectionElement collectionElementJE =
+          new IteratedCollectionElement(
+              disposalLoopInfo.iteratedElementNode(), disposalLoopInfo.iteratedElementTree());
+      store.insertValue(collectionElementJE, rlTypeFactory.top);
+    }
+    return store;
+  }
+
+  /**
+   * Accumulates the called methods to this collection element if the given node is the element of a
+   * collection iterated over in a potentially fulfilling collection loop.
+   *
+   * @param valuesAsList the list of called methods
+   * @param result the transfer result
+   * @param node a cfg node
+   */
+  private void updateStoreForIteratedCollectionElement(
+      List<String> valuesAsList,
+      TransferResult<AccumulationValue, AccumulationStore> result,
+      Node node) {
+    IteratedCollectionElement collectionElement =
+        result.getRegularStore().getIteratedCollectionElement(node, node.getTree());
+    if (collectionElement != null) {
+      AccumulationValue flowValue = result.getRegularStore().getValue(collectionElement);
+      if (flowValue != null) {
+        // Dataflow has already recorded information about the target.  Integrate it into
+        // the list of values in the new annotation.
+        AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
+        assert flowAnnos.size() <= 1;
+        for (AnnotationMirror anno : flowAnnos) {
+          if (atypeFactory.isAccumulatorAnnotation(anno)) {
+            List<String> oldFlowValues =
+                AnnotationUtils.getElementValueArray(anno, calledMethodsValueElement, String.class);
+            // valuesAsList cannot have its length changed -- it is backed by an
+            // array.  getElementValueArray returns a new, modifiable list.
+            oldFlowValues.addAll(valuesAsList);
+            valuesAsList = oldFlowValues;
+          }
+        }
+      }
+      AnnotationMirror newAnno = atypeFactory.createAccumulatorAnnotation(valuesAsList);
+      if (result.containsTwoStores()) {
+        updateValueAndInsertIntoStore(result.getThenStore(), collectionElement, valuesAsList);
+        updateValueAndInsertIntoStore(result.getElseStore(), collectionElement, valuesAsList);
+      } else {
+        updateValueAndInsertIntoStore(result.getRegularStore(), collectionElement, valuesAsList);
+      }
+      Map<TypeMirror, AccumulationStore> exceptionalStores = result.getExceptionalStores();
+      exceptionalStores.forEach(
+          (tm, s) ->
+              s.replaceValue(
+                  collectionElement,
+                  analysis.createSingleAnnotationValue(newAnno, collectionElement.getType())));
+    }
   }
 
   @Override
@@ -167,12 +250,7 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
         if (anm == null) {
           anm = rlTypeFactory.top;
         }
-        if (result.containsTwoStores()) {
-          result.getThenStore().insertValue(localExp, anm);
-          result.getElseStore().insertValue(localExp, anm);
-        } else {
-          result.getRegularStore().insertValue(localExp, anm);
-        }
+        insertIntoStores(result, localExp, anm);
       }
     }
   }
