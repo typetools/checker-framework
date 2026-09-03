@@ -117,11 +117,10 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     AnnotatedTypeMirror result;
     switch (type.getKind()) {
       case ARRAY -> result = new AnnotatedArrayType((ArrayType) type, atypeFactory);
-      case DECLARED ->
+      // An ERROR type is a class whose class file is not on the classpath; javac reported no
+      // error, so treat it like any other declared type.
+      case DECLARED, ERROR ->
           result = new AnnotatedDeclaredType((DeclaredType) type, atypeFactory, isDeclaration);
-      case ERROR ->
-          throw new BugInCF(
-              "AnnotatedTypeMirror.createType: input is not compilable. Found error type: " + type);
       case EXECUTABLE -> result = new AnnotatedExecutableType((ExecutableType) type, atypeFactory);
       case VOID, PACKAGE, NONE -> result = new AnnotatedNoType((NoType) type, atypeFactory);
       case NULL -> result = new AnnotatedNullType((NullType) type, atypeFactory);
