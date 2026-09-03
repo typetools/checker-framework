@@ -1112,6 +1112,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param anno an annotation
    * @return true if the annotation might be relevant
    */
+  @SuppressWarnings("interning:not.interned")
   boolean annotationIsRelevant(AnnotationExpr anno) {
     if (!(atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf)) {
       return true;
@@ -1120,6 +1121,7 @@ public class WholeProgramInferenceJavaParserStorage
       return true;
     }
 
+    @SuppressWarnings("signature:assignment") // immediately tests
     @FullyQualifiedName String aName = anno.getNameAsString();
     if (!atypeFactory.isSupportedQualifier(aName)) {
       // The annotation might be a declaration annotation, such as a side effect specification.
