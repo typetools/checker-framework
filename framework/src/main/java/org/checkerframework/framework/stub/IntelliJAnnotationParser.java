@@ -97,7 +97,8 @@ public final class IntelliJAnnotationParser {
         // Feature unsupported by specific parser
       }
       try {
-        dbFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        dbFactory.setFeature(
+            "http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
       } catch (Exception ignored) {
         // Feature unsupported by specific parser
       }
@@ -253,7 +254,6 @@ public final class IntelliJAnnotationParser {
    * @param annoTypeElt the TypeElement of the annotation
    * @param processingEnv the processing environment
    */
-  @SuppressWarnings("signature")
   private static void setBuilderValue(
       AnnotationBuilder builder,
       String memberName,
@@ -407,8 +407,7 @@ public final class IntelliJAnnotationParser {
   private static String stripQuotes(String s) {
     s = s.trim();
     if (s.length() >= 2
-        && ((s.startsWith("\"") && s.endsWith("\""))
-            || (s.startsWith("'") && s.endsWith("'")))) {
+        && ((s.startsWith("\"") && s.endsWith("\"")) || (s.startsWith("'") && s.endsWith("'")))) {
       String inner = s.substring(1, s.length() - 1);
       return inner.replace("\\\"", "\"").replace("\\'", "'");
     }
@@ -810,8 +809,8 @@ public final class IntelliJAnnotationParser {
       boolean isConstructor) {
     List<ExecutableElement> candidates =
         isConstructor
-             ? ElementFilter.constructorsIn(classElem.getEnclosedElements())
-             : ElementFilter.methodsIn(classElem.getEnclosedElements());
+            ? ElementFilter.constructorsIn(classElem.getEnclosedElements())
+            : ElementFilter.methodsIn(classElem.getEnclosedElements());
 
     // Pass 1: exact match
     for (ExecutableElement candidate : candidates) {
@@ -829,7 +828,8 @@ public final class IntelliJAnnotationParser {
   }
 
   /**
-   * Tests whether an executable candidate matches the given method name and expected parameter types.
+   * Tests whether an executable candidate matches the given method name and expected parameter
+   * types.
    *
    * @param candidate the executable element candidate
    * @param methodName the expected method name, or null for constructors
