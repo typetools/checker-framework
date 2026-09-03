@@ -96,12 +96,9 @@ public class Expression extends TypeConstraint {
       return reduceProperType();
     } else if (TreeUtils.isStandaloneExpression(expression)) {
       AbstractType s;
-      if (!context.isLambdaParam(expression)) {
-        s = new ProperType(expression, context);
-      } else {
-        AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(expression);
-        s = getT().create(atm, false);
-      }
+
+      s = new ProperType(expression, context);
+
       return new Typing(this, s, T, TypeConstraint.Kind.TYPE_COMPATIBILITY);
     }
     switch (expression.getKind()) {
@@ -231,18 +228,13 @@ public class Expression extends TypeConstraint {
         AbstractType targetReference = ps.remove(0);
         ExpressionTree preColonTree = memRef.getQualifierExpression();
         AbstractType referenceType;
-        if (context.isLambdaParam(preColonTree)) {
-          AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(preColonTree);
-          referenceType = T.create(atm, false);
+        if (MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound()) {
+          AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedTypeFromTypeTree(preColonTree);
+          referenceType = new ProperType(atm, context);
         } else {
-          if (MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound()) {
-            AnnotatedTypeMirror atm =
-                context.typeFactory.getAnnotatedTypeFromTypeTree(preColonTree);
-            referenceType = new ProperType(atm, context);
-          } else {
-            referenceType = new ProperType(preColonTree, context);
-          }
+          referenceType = new ProperType(preColonTree, context);
         }
+
         constraintSet.add(
             new Typing(this, targetReference, referenceType, TypeConstraint.Kind.SUBTYPE));
       }
@@ -283,14 +275,18 @@ public class Expression extends TypeConstraint {
     // determine the method reference's invocation type when targeting the return type of the
     // function type, as defined in 18.5.2. B3 may contain new inference variables, as well as
     // dependencies between these new variables and the inference variables in T.
+    List<AbstractType> functionTypeParams = T.getFunctionTypeParameterTypes();
+    assert functionTypeParams != null : "@AssumeAssertion(nullness): T is a functional interface";
+
+    // The first parameter of the function type, `p1`, acts as the target reference of the
+    // invocation for an unbound method reference.
+    AbstractType p1 = functionTypeParams.isEmpty() ? null : functionTypeParams.get(0);
     Theta map =
         context.inferenceTypeFactory.createThetaForMethodReference(
-            memRef, compileTimeDecl, context);
+            memRef, compileTimeDecl, p1, context);
     AbstractType compileTimeReturn = compileTimeDecl.getReturnType(map);
     BoundSet b2;
     if (TreeUtils.needsTypeArgInference(memRef)) {
-      List<AbstractType> functionTypeParams = T.getFunctionTypeParameterTypes();
-      assert functionTypeParams != null : "@AssumeAssertion(nullness): T is a functional interface";
       b2 = context.inference.createB2MethodRef(compileTimeDecl, functionTypeParams, map);
       if (!compileTimeReturn.isProper()) {
         return context.inference.createB3(b2, memRef, compileTimeDecl, r, map);

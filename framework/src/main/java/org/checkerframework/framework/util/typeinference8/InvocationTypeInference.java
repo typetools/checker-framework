@@ -13,9 +13,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.IntersectionType;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.UnionType;
+import javax.lang.model.type.WildcardType;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.bound.CaptureBound;
@@ -23,6 +34,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.CheckedExce
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Expression;
+import org.checkerframework.framework.util.typeinference8.constraint.LambdaBodyConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.AbstractExecutableType;
@@ -41,6 +53,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SwitchExpressionScanner;
 import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Performs invocation type inference as described in <a
@@ -136,6 +149,97 @@ public class InvocationTypeInference {
   }
 
   /**
+   * If {@code param} is an implicitly typed lambda parameter whose type this inference problem has
+   * already determined, returns that type. Otherwise, returns null.
+   *
+   * @param param an element that might be an implicitly typed lambda parameter
+   * @return the type of {@code param}, or null if this inference problem cannot supply it
+   */
+  public @Nullable AnnotatedTypeMirror getLambdaParameterType(VariableElement param) {
+    Java8InferenceContext.LambdaParamTarget target = context.lambdaParamTargets.get(param);
+    if (target == null) {
+      return null;
+    }
+    AbstractType lambdaTarget = target.lambdaTargetType().applyInstantiations();
+    // getFunctionTypeParameterTypes() returns null if lambdaTarget is not a functional interface,
+    // which is the case while it is still just an inference variable.  It applies
+    // AbstractType.makeGround(), the non-wildcard parameterization of JLS 9.9 that JLS 15.27.3
+    // prescribes for an implicitly typed lambda; only implicitly typed lambdas are recorded in
+    // lambdaParamTargets, so that is the correct rule.
+    List<AbstractType> paramTypes = lambdaTarget.getFunctionTypeParameterTypes();
+    if (paramTypes == null || target.index() >= paramTypes.size()) {
+      return null;
+    }
+    AbstractType paramType = paramTypes.get(target.index()).applyInstantiations();
+    if (!paramType.isProper()) {
+      return null;
+    }
+    // AbstractType.isProper() only means "mentions no inference variable of this problem".  The
+    // target type is derived from the lambda's context, which may include a method type variable
+    // belonging to a different, unfinished inference -- for example when the lambda is an argument
+    // of a call whose receiver is a generic invocation that is itself under inference and so was
+    // typed without substituting its type arguments.  Such a type variable is not this problem's
+    // to instantiate, so this problem has not determined the parameter's type.  Returning it would
+    // let the type variable escape as a lambda parameter's type, which later fails in
+    // AnnotatedTypes.asMemberOf.
+    if (mentionsMethodTypeVariable(paramType.getJavaType())) {
+      return null;
+    }
+    // Copy, because AbstractType.getAnnotatedType() returns a type that inference itself uses: it
+    // is a component of the memoized AbstractType.functionType, and the caller is permitted to
+    // side-effect the type that this method returns.
+    return paramType.getAnnotatedType().deepCopy();
+  }
+
+  /**
+   * Returns whether {@code type} mentions a type variable that is declared by a method or
+   * constructor, rather than by a class or interface.
+   *
+   * <p>Bounds of a type variable are not searched: a type variable is judged only by its own
+   * declaration, so that an F-bounded type variable does not cause infinite recursion.
+   *
+   * @param type a type
+   * @return whether {@code type} mentions a type variable declared by a method or constructor
+   */
+  private static boolean mentionsMethodTypeVariable(TypeMirror type) {
+    return switch (type.getKind()) {
+      case TYPEVAR ->
+          ((TypeVariable) type).asElement().getEnclosingElement() instanceof ExecutableElement;
+      case DECLARED -> {
+        DeclaredType declared = (DeclaredType) type;
+        // The enclosing type carries type arguments of its own: in `Outer<T>.Inner`, `T` is
+        // mentioned only there.  It is a NoType, whose kind falls through to false below, when
+        // there is no enclosing type.
+        yield anyMentionsMethodTypeVariable(declared.getTypeArguments())
+            || mentionsMethodTypeVariable(declared.getEnclosingType());
+      }
+      case ARRAY -> mentionsMethodTypeVariable(((ArrayType) type).getComponentType());
+      case WILDCARD -> {
+        WildcardType wildcard = (WildcardType) type;
+        yield (wildcard.getExtendsBound() != null
+                && mentionsMethodTypeVariable(wildcard.getExtendsBound()))
+            || (wildcard.getSuperBound() != null
+                && mentionsMethodTypeVariable(wildcard.getSuperBound()));
+      }
+      case INTERSECTION -> anyMentionsMethodTypeVariable(((IntersectionType) type).getBounds());
+      case UNION -> anyMentionsMethodTypeVariable(((UnionType) type).getAlternatives());
+      default -> false;
+    };
+  }
+
+  /**
+   * Returns whether any of {@code types} mentions a type variable that is declared by a method or
+   * constructor.
+   *
+   * @param types some types
+   * @return whether any of {@code types} mentions a type variable declared by a method or
+   *     constructor
+   */
+  private static boolean anyMentionsMethodTypeVariable(List<? extends TypeMirror> types) {
+    return types.stream().anyMatch(InvocationTypeInference::mentionsMethodTypeVariable);
+  }
+
+  /**
    * Perform invocation type inference on {@code invocation}. See <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2">JLS
    * 18.5.2</a>.
@@ -172,11 +276,35 @@ public class InvocationTypeInference {
 
     BoundSet b4 = getB4(b3, c);
     b4.resolve();
+    recordLambdaParameterTypes();
     return new InferenceResult(
         b4.getInstantiatedVariables(),
         b4.isUncheckedConversion(),
         b4.annoInferenceFailed,
         b4.errorMsg);
+  }
+
+  /**
+   * Records, on the type factory, the type of every implicitly typed lambda parameter that this
+   * inference problem determined.
+   *
+   * <p>Call this only after resolution, so that the recorded types are final.
+   */
+  private void recordLambdaParameterTypes() {
+    for (VariableElement param : context.lambdaParamTargets.keySet()) {
+      AnnotatedTypeMirror type = getLambdaParameterType(param);
+      if (type == null) {
+        continue;
+      }
+
+      // `param.asType()` is the type of the lambda parameter according to javac. If `typ` is not a
+      // subtype of it, then don't record it because it is imprecise.
+      if (!TypesUtils.isErasedSubtype(
+          type.getUnderlyingType(), param.asType(), context.typeFactory.types)) {
+        continue;
+      }
+      context.typeFactory.recordLambdaParameterType(param, type);
+    }
   }
 
   /**
@@ -201,16 +329,19 @@ public class InvocationTypeInference {
       throw new BugInCF("Target of method reference should not be null: %s", invocation);
     }
 
-    CompileTimeDeclarationType compileTimeDecl =
-        context.inferenceTypeFactory.compileTimeDeclarationType(invocation);
-    Theta map =
-        context.inferenceTypeFactory.createThetaForMethodReference(
-            invocation, compileTimeDecl, context);
     List<AbstractType> functionTypeParams = target.getFunctionTypeParameterTypes();
     if (functionTypeParams == null) {
       throw new BugInCF(
           "Target of method reference is not a functional interface: %s: %s", invocation, target);
     }
+    // The first parameter of the function type, `p1`, acts as the target reference of the
+    // invocation for an unbound method reference.
+    AbstractType p1 = functionTypeParams.isEmpty() ? null : functionTypeParams.get(0);
+    CompileTimeDeclarationType compileTimeDecl =
+        context.inferenceTypeFactory.compileTimeDeclarationType(invocation);
+    Theta map =
+        context.inferenceTypeFactory.createThetaForMethodReference(
+            invocation, compileTimeDecl, p1, context);
     BoundSet b2 = createB2MethodRef(compileTimeDecl, functionTypeParams, map);
     AbstractType r = target.getFunctionTypeReturnType();
     BoundSet b3;
@@ -296,7 +427,7 @@ public class InvocationTypeInference {
    * parameters of function type of target type of the method reference.
    *
    * @param executableType the type of the method or constructor invoked
-   * @param args types to use as arguments
+   * @param args types to use as arguments; this method does not modify it
    * @param map map of type variables to (inference) variables
    * @return bound set used to determine whether a method is applicable
    */
@@ -316,17 +447,37 @@ public class InvocationTypeInference {
 
     ConstraintSet c = new ConstraintSet();
     List<AbstractType> formals = executableType.getParameterTypes(map, args.size());
-    if (TreeUtils.isLikeDiamondMemberReference(executableType.getMethodRef())) {
-      // https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.1
-      //  If ReferenceType is a raw type, and there exists a parameterization of this type,
-      // G<...>, that is a supertype of P1, the type to search is the result of capture
-      // conversion (§5.1.10) applied to G<...>; otherwise, the type to search is the same
-      // as the type of the first search. Type arguments, if any, are given by the method
-      // reference expression.
-      args.set(0, args.get(0).capture(context));
+    // https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.1 says:
+    //   If ReferenceType is a raw type, and there exists a parameterization of this type,
+    //   G<...>, that is a supertype of P1, the type to search is the result of capture
+    //   conversion (§5.1.10) applied to G<...>; otherwise, the type to search is the same
+    //   as the type of the first search.
+    // Whichever of those two types is the type to search, no constraint is generated against P1.
+    // JLS 18.2.1 generates no parameter constraints at all for an inexact method reference, and a
+    // method reference whose ReferenceType is raw is always inexact (JLS 15.13.1).  JLS 15.13.1's
+    // second search likewise drops P1: it requires only that P1 be a subtype of the raw
+    // ReferenceType, which holds by construction here.  When G<...> exists,
+    // createThetaForMethodReference has additionally instantiated the receiver's type arguments to
+    // those of capture(G<...>), so formals.get(0) is determined by P1; a constraint against it
+    // would add nothing to the bound set, and would in fact reduce to false, because capture
+    // conversion produces fresh capture variables that P1's own type arguments are not subtypes
+    // of.
+    MemberReferenceTree methodRef = executableType.getMethodRef();
+    boolean isRawTypedMemberReference =
+        !args.isEmpty() && TreeUtils.isRawTypedMemberReference(methodRef);
+    int firstArg = isRawTypedMemberReference ? 1 : 0;
+
+    if (isRawTypedMemberReference
+        && context.inferenceTypeFactory.getCapturedSupertype(methodRef, args.get(0)) == null) {
+      // No parameterization G<...> of the raw ReferenceType is a supertype of P1, so JLS
+      // 15.13.1's second search falls back to the raw ReferenceType itself: the compile-time
+      // declaration's type is used as-is, unparameterized. Using a raw type in place of its
+      // parameterization requires unchecked conversion (JLS 5.1.9), matching javac's
+      // rawtypes/unchecked warning for this reference.
+      b0.setUncheckedConversion(true);
     }
 
-    for (int i = 0; i < formals.size(); i++) {
+    for (int i = firstArg; i < formals.size(); i++) {
       AbstractType ei = args.get(i);
       AbstractType fi = formals.get(i);
       String source =
@@ -520,8 +671,23 @@ public class InvocationTypeInference {
       case LAMBDA_EXPRESSION -> {
         c.add(new CheckedExceptionConstraint(ei, fi, map));
         LambdaExpressionTree lambda = (LambdaExpressionTree) ei;
-        for (ExpressionTree expression : TreeUtils.getReturnedExpressions(lambda)) {
-          c.addAll(createAdditionalArgConstraintsNoLambda(expression));
+        if (TreeUtils.isImplicitlyTypedLambda(lambda)) {
+          // Record where this lambda's parameters get their types from, so that a request for one
+          // of them can be answered from this inference instead of re-deriving the lambda's target
+          // type, which would re-enter inference for the invocation that the lambda is an
+          // argument of.
+          context.addLambdaParamTargets(lambda.getParameters(), fi);
+        }
+        if (LambdaBodyConstraint.mustDefer(lambda, fi)) {
+          // The lambda is implicitly typed and its parameters do not have types yet, so the body
+          // cannot be examined.  Defer the body's constraints; JLS 18.5.2.2 resolves this
+          // constraint's input variables -- the variables that the parameter types mention --
+          // before reducing it.  See LambdaBodyConstraint.
+          c.add(new LambdaBodyConstraint(lambda, fi));
+        } else {
+          for (ExpressionTree expression : TreeUtils.getReturnedExpressions(lambda)) {
+            c.addAll(createAdditionalArgConstraintsNoLambda(expression));
+          }
         }
       }
       case METHOD_INVOCATION, NEW_CLASS -> {
@@ -588,7 +754,7 @@ public class InvocationTypeInference {
    * @param expression expression to search
    * @return additional constraints
    */
-  private ConstraintSet createAdditionalArgConstraintsNoLambda(ExpressionTree expression) {
+  public ConstraintSet createAdditionalArgConstraintsNoLambda(ExpressionTree expression) {
     ConstraintSet c = new ConstraintSet();
 
     switch (expression.getKind()) {

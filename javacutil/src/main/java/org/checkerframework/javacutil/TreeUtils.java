@@ -183,6 +183,30 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns the explicit {@code this(...)} or {@code super(...)} call in the given constructor's
+   * body, or null if it contains neither.
+   *
+   * @param methodTree a constructor
+   * @return the explicit constructor call in the constructor's body, or null
+   */
+  public static @Nullable MethodInvocationTree getExplicitConstructorCall(MethodTree methodTree) {
+    BlockTree body = methodTree.getBody();
+    if (body == null) {
+      return null;
+    }
+    // The call need not be the first statement:  since Java 25, a constructor may run other
+    // statements before it.
+    for (StatementTree statement : body.getStatements()) {
+      if (statement instanceof ExpressionStatementTree expressionStatement
+          && expressionStatement.getExpression() instanceof MethodInvocationTree invocation
+          && (isThisConstructorCall(invocation) || isSuperConstructorCall(invocation))) {
+        return invocation;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Checks if the method call is a call to the given method name.
    *
    * @param name a method name
@@ -2603,7 +2627,8 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns all expressions that might be the result of {@code lambda}.
+   * Returns all expressions that might be the result of {@code lambda}; that is, the result
+   * expressions of {@code lambda} as defined in JLS 15.27.2.
    *
    * @param lambda a lambda with or without a body
    * @return a list of expressions that are returned by {@code lambda}
@@ -2627,6 +2652,12 @@ public final class TreeUtils {
           @Override
           public Void visitLambdaExpression(LambdaExpressionTree node, Void unused) {
             // Don't visit inside anther lambda.
+            return null;
+          }
+
+          @Override
+          public Void visitClass(ClassTree node, Void unused) {
+            // Don't visit inside a class declared in the body.
             return null;
           }
         };
@@ -2712,8 +2743,21 @@ public final class TreeUtils {
    *
    * @param tree a tree
    * @return true if {@code tree} is a method reference with a raw type to the left of {@code ::}
+   * @deprecated use {@link #isRawTypedMemberReference(ExpressionTree)}
    */
+  @Deprecated // 2026-08-31
   public static boolean isLikeDiamondMemberReference(ExpressionTree tree) {
+    return isRawTypedMemberReference(tree);
+  }
+
+  /**
+   * Returns true if {@code tree} is a method reference with a raw type to the left of {@code ::}.
+   * For example, {@code Class::getName}.
+   *
+   * @param tree a tree
+   * @return true if {@code tree} is a method reference with a raw type to the left of {@code ::}
+   */
+  public static boolean isRawTypedMemberReference(ExpressionTree tree) {
     if (!(tree instanceof MemberReferenceTree memberReferenceTree)) {
       return false;
     }
@@ -2732,7 +2776,7 @@ public final class TreeUtils {
    */
   public static boolean needsTypeArgInference(MemberReferenceTree memberReferenceTree) {
     if (isDiamondMemberReference(memberReferenceTree)
-        || isLikeDiamondMemberReference(memberReferenceTree)) {
+        || isRawTypedMemberReference(memberReferenceTree)) {
       return true;
     }
 

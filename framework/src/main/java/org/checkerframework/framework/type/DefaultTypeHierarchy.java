@@ -77,11 +77,25 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * Stores the result of {@link #areEqualInHierarchy(AnnotatedTypeMirror, AnnotatedTypeMirror)} for
    * type arguments. Prevents infinite recursion on types that refer to themselves. (Stores both
    * true and false results.)
+   *
+   * <p>Unlike {@link #isSubtypeVisitHistory}, this history is deliberately not cleared when the
+   * outermost {@code isSubtype} call returns: unrelated calls do re-compare the same pair of type
+   * arguments, so it pays for itself as a cache. Clearing it costs about 12% on {@code
+   * checker/jtreg/slowtypechecking/Issue4412.java}. It grows over a compilation, but slowly: about
+   * 6 entries per compiled file.
    */
   protected final StructuralEqualityVisitHistory areEqualVisitHistory;
 
   /** The Covariant.value field/element. */
   final ExecutableElement covariantValueElement;
+
+  /**
+   * The number of {@link #isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)} calls currently on
+   * the stack. Used to clear {@link #isSubtypeVisitHistory} once all the calls have returned, so
+   * that the history does not accumulate entries -- and lookups against it do not slow down -- over
+   * the course of an entire compilation unit. See {@link SubtypeVisitHistory}.
+   */
+  private int isSubtypeCallDepth = 0;
 
   /**
    * Creates a DefaultTypeHierarchy.
@@ -134,13 +148,21 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    */
   @Override
   public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
-    for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
-      if (!isSubtype(subtype, supertype, top)) {
-        return false;
+    isSubtypeCallDepth++;
+    try {
+      for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+        if (!isSubtype(subtype, supertype, top)) {
+          return false;
+        }
+      }
+
+      return true;
+    } finally {
+      isSubtypeCallDepth--;
+      if (isSubtypeCallDepth == 0) {
+        isSubtypeVisitHistory.clear();
       }
     }
-
-    return true;
   }
 
   /** A set of annotations and a {@link TypeMirror}. */

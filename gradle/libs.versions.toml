@@ -32,7 +32,7 @@ aws-java-sdk-ec2 = { module = "com.amazonaws:aws-java-sdk-ec2" }
 
 aws-java-sdk-kms = { module = "com.amazonaws:aws-java-sdk-kms" }
 
-classgraph = "io.github.classgraph:classgraph:4.8.193"
+classgraph = "io.github.classgraph:classgraph:4.8.194"
 
 commons-io = "commons-io:commons-io:2.22.0"
 
@@ -74,9 +74,9 @@ com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.6.1" }
 
 de-undercouch-download = { id = "de.undercouch.download", version = "5.7.0" }
 
-net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "5.1.0" }
+net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "5.1.1" }
 
-com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.10.0" }
+com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.10.1" }
 
 com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "4.0.1" }
 
