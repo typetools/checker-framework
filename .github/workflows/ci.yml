@@ -53,6 +53,8 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 0
+          show-progress: false
+          persist-credentials: false
       - uses: actions/cache@v4
         with:
           path: |
@@ -85,6 +87,8 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
       - uses: actions/cache@v4
         with:
           path: |
@@ -115,6 +119,8 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
       - uses: actions/cache@v4
         with:
           path: |
@@ -141,6 +147,8 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
       - uses: actions/cache@v4
         with:
           path: |
@@ -166,6 +174,8 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
       - uses: actions/cache@v4
         with:
           path: |
@@ -196,6 +206,8 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
       - uses: actions/cache@v4
         with:
           path: |
@@ -224,6 +236,8 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
       - uses: actions/cache@v4
         with:
           path: |
@@ -249,6 +263,8 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
       - uses: actions/cache@v4
         with:
           path: |
@@ -280,6 +296,8 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
       - uses: actions/cache@v4
         with:
           path: |
@@ -305,6 +323,8 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
       - uses: actions/cache@v4
         with:
           path: |
@@ -415,6 +435,8 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
       - uses: actions/cache@v4
         with:
           path: |
@@ -439,6 +461,8 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
       - uses: actions/cache@v4
         with:
           path: |
@@ -470,6 +494,8 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
       - uses: actions/cache@v4
         with:
           path: |
@@ -497,6 +523,8 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
       - uses: actions/cache@v4
         with:
           path: |
@@ -524,6 +552,8 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
       - uses: actions/cache@v4
         with:
           path: |

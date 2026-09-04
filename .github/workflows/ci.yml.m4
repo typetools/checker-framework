@@ -56,6 +56,8 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 0
+          show-progress: false
+          persist-credentials: false
 gradle_cache()dnl
       - name: clone_plume_scripts
         run: ./gradlew -q getPlumeScripts

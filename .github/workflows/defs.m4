@@ -45,6 +45,8 @@ ifelse($3,test-cftests-nonjunit.sh,[],
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
 gradle_cache()dnl
       - name: $3
         run: $4
