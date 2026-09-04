@@ -1137,26 +1137,33 @@ public final class AnnotatedTypes {
   /**
    * Returns the depth of the array type of the provided array.
    *
-   * @param array the type of the array
+   * @param arrayType the type of the array
    * @return the depth of the provided array
    */
-  public static int getArrayDepth(AnnotatedArrayType array) {
+  public static int getArrayDepth(AnnotatedArrayType arrayType) {
     int counter = 0;
-    AnnotatedTypeMirror type = array;
-    while (type.getKind() == TypeKind.ARRAY) {
+    AnnotatedTypeMirror componentType = arrayType;
+    while (componentType.getKind() == TypeKind.ARRAY) {
       counter++;
-      type = ((AnnotatedArrayType) type).getComponentType();
+      componentType = ((AnnotatedArrayType) componentType).getComponentType();
     }
     return counter;
   }
 
-  // The innermost *array* type.
-  public static AnnotatedTypeMirror innerMostType(AnnotatedTypeMirror t) {
-    AnnotatedTypeMirror inner = t;
-    while (inner.getKind() == TypeKind.ARRAY) {
-      inner = ((AnnotatedArrayType) inner).getComponentType();
+  /**
+   * Returns the innermost component type of {@code type}, which is also called the "element type"
+   * of {@code type}. Returns {@code type} itself if {@code type} is not an array type.
+   *
+   * @param type a type
+   * @return the innermost component type of {@code type}, or {@code type} if it is not an array
+   *     type
+   */
+  public static AnnotatedTypeMirror innermostComponentType(AnnotatedTypeMirror type) {
+    AnnotatedTypeMirror componentType = type;
+    while (componentType.getKind() == TypeKind.ARRAY) {
+      componentType = ((AnnotatedArrayType) componentType).getComponentType();
     }
-    return inner;
+    return componentType;
   }
 
   /**
