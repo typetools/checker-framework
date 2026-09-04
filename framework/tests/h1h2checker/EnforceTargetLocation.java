@@ -42,4 +42,19 @@ public class EnforceTargetLocation<T extends @H2OnlyOnLB Object> {
 
   // :: error: [type.annotations.on.location]
   void ordinaryParameter(@H2OnlyOnReceiver Object p1) {}
+
+  @H2OnlyOnReturn
+  Object returnOnly(Object value) {
+    // :: warning: [cast.unsafe]
+    // :: error: [type.annotations.on.location]
+    Object cast = (@H2OnlyOnReturn Object) value;
+    // :: warning: [instanceof.unsafe]
+    // :: error: [type.annotations.on.location]
+    boolean instanceOf = value instanceof @H2OnlyOnReturn String;
+    // :: error: [type.annotations.on.location]
+    if (value instanceof @H2OnlyOnReturn String pattern) {
+      return pattern;
+    }
+    return cast;
+  }
 }

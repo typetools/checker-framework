@@ -3008,6 +3008,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             case EXTENDS_WILDCARD -> TypeUseLocation.EXPLICIT_UPPER_BOUND;
             case SUPER_WILDCARD -> TypeUseLocation.EXPLICIT_LOWER_BOUND;
             case TYPE_PARAMETER -> TypeUseLocation.EXPLICIT_UPPER_BOUND;
+            case TYPE_CAST, INSTANCE_OF -> TypeUseLocation.LOCAL_VARIABLE;
             case METHOD -> TypeUseLocation.RETURN;
             case VARIABLE -> {
               VariableTree variableTree = (VariableTree) tree;
@@ -3020,7 +3021,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               ElementKind kind = TreeUtils.elementFromDeclaration(variableTree).getKind();
               yield switch (kind) {
                 case FIELD -> TypeUseLocation.FIELD;
-                case LOCAL_VARIABLE -> TypeUseLocation.LOCAL_VARIABLE;
+                case LOCAL_VARIABLE, BINDING_VARIABLE -> TypeUseLocation.LOCAL_VARIABLE;
                 case RESOURCE_VARIABLE -> TypeUseLocation.RESOURCE_VARIABLE;
                 case EXCEPTION_PARAMETER -> TypeUseLocation.EXCEPTION_PARAMETER;
                 case PARAMETER -> TypeUseLocation.PARAMETER;
