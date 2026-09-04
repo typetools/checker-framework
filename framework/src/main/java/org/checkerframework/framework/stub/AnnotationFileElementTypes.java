@@ -306,38 +306,62 @@ public class AnnotationFileElementTypes {
     if (intellijAnnotationPaths.isEmpty()) {
       return;
     }
-    SourceChecker checker = factory.getChecker();
-    ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-    if (stubDebug) {
-      AnnotationFileParser.stubDebugStatic(
-          processingEnv, "AFET.parseIntellijAnnotations(%s)", intellijAnnotationPaths);
-    }
-    for (String path : intellijAnnotationPaths) {
-      String base = System.getProperty("test.src");
-      String fullPath = (base == null) ? path : base + "/" + path;
-
-      List<AnnotationFileResource> allFiles =
-          AnnotationFileUtil.allAnnotationFiles(fullPath, AnnotationFileType.INTELLIJ_ANNOTATIONS);
-      if (allFiles != null) {
-        for (AnnotationFileResource resource : allFiles) {
-          try (InputStream annotationFileStream =
-              new BufferedInputStream(resource.getInputStream())) {
-            IntelliJAnnotationParser.parseAnnotationsXml(
-                resource.getDescription(),
-                annotationFileStream,
-                factory,
-                processingEnv,
-                annotationFileAnnos);
-          } catch (IOException e) {
-            checker.message(
-                Diagnostic.Kind.NOTE,
-                "Could not read IntelliJ IDEA annotations: " + resource.getDescription());
-          }
-        }
-      } else {
-        checker.message(Diagnostic.Kind.WARNING, "IntelliJ IDEA annotations not found at " + path);
+    boolean wasParsing = parsing;
+    parsing = true;
+    try {
+      SourceChecker checker = factory.getChecker();
+      ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+      if (stubDebug) {
+        AnnotationFileParser.stubDebugStatic(
+            processingEnv, "AFET.parseIntellijAnnotations(%s)", intellijAnnotationPaths);
       }
+      for (String path : intellijAnnotationPaths) {
+        String fullPath = resolveAgainstTestSrc(path);
+
+        List<AnnotationFileResource> allFiles =
+            AnnotationFileUtil.allAnnotationFiles(
+                fullPath, AnnotationFileType.INTELLIJ_ANNOTATIONS);
+        if (allFiles != null) {
+          for (AnnotationFileResource resource : allFiles) {
+            try (InputStream annotationFileStream =
+                new BufferedInputStream(resource.getInputStream())) {
+              IntelliJAnnotationParser.parseAnnotationsXml(
+                  resource.getDescription(),
+                  annotationFileStream,
+                  factory,
+                  processingEnv,
+                  annotationFileAnnos);
+            } catch (IOException e) {
+              checker.message(
+                  Diagnostic.Kind.NOTE,
+                  "Could not read IntelliJ IDEA annotations: " + resource.getDescription());
+            }
+          }
+        } else {
+          checker.message(
+              Diagnostic.Kind.WARNING, "IntelliJ IDEA annotations not found at " + path);
+        }
+      }
+    } finally {
+      parsing = wasParsing;
     }
+  }
+
+  /**
+   * Returns the path to use for an annotation file that was named on the command line. This is a
+   * special case when running in jtreg, which runs the compiler in a different directory than the
+   * one that contains the test's annotation files.
+   *
+   * @param path a relative or absolute path, from a command-line argument
+   * @return {@code path}, resolved against the {@code test.src} system property if that property is
+   *     set and {@code path} is relative
+   */
+  private static String resolveAgainstTestSrc(String path) {
+    String base = System.getProperty("test.src");
+    if (base == null || Paths.get(path).isAbsolute()) {
+      return path;
+    }
+    return base + "/" + path;
   }
 
   /**
@@ -367,9 +391,7 @@ public class AnnotationFileElementTypes {
           processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
     }
     for (String path : annotationFiles) {
-      // Special case when running in jtreg.
-      String base = System.getProperty("test.src");
-      String fullPath = (base == null) ? path : base + "/" + path;
+      String fullPath = resolveAgainstTestSrc(path);
 
       List<AnnotationFileResource> allFiles =
           AnnotationFileUtil.allAnnotationFiles(fullPath, fileType);

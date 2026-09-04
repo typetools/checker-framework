@@ -39,6 +39,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.plumelib.util.StringsP;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -126,10 +127,15 @@ public final class IntelliJAnnotationParser {
 
         try {
           List<AnnotationMirror> annotations =
-              parseItemAnnotations(itemElement, atypeFactory, processingEnv);
+              parseItemAnnotations(itemElement, atypeFactory, processingEnv, filename);
           if (!annotations.isEmpty()) {
             applyAnnotationsToElement(
-                itemName.trim(), annotations, atypeFactory, processingEnv, annotationFileAnnos);
+                itemName.trim(),
+                annotations,
+                atypeFactory,
+                processingEnv,
+                annotationFileAnnos,
+                filename);
           }
         } catch (BugInCF e) {
           throw e;
@@ -164,15 +170,18 @@ public final class IntelliJAnnotationParser {
    * @param itemElement the XML item element containing annotation child tags
    * @param atypeFactory the type factory
    * @param processingEnv the processing environment
+   * @param filename the name or path of the file (for diagnostic reporting)
    * @return a list of parsed and canonicalized {@link AnnotationMirror}s
    */
-  @SuppressWarnings("signature")
   private static List<AnnotationMirror> parseItemAnnotations(
       org.w3c.dom.Element itemElement,
       AnnotatedTypeFactory atypeFactory,
-      ProcessingEnvironment processingEnv) {
+      ProcessingEnvironment processingEnv,
+      String filename) {
     List<AnnotationMirror> result = new ArrayList<>();
     Elements elements = processingEnv.getElementUtils();
+    String context =
+        String.format("item '%s' in %s", itemElement.getAttribute("name").trim(), filename);
 
     NodeList children = itemElement.getChildNodes();
     for (int i = 0; i < children.getLength(); i++) {
@@ -185,7 +194,7 @@ public final class IntelliJAnnotationParser {
         }
         annoName = annoName.trim();
 
-        TypeElement annoTypeElt = elements.getTypeElement(annoName);
+        TypeElement annoTypeElt = getTypeElement(annoName, elements);
         if (annoTypeElt == null) {
           warnNotFound(atypeFactory.getChecker(), "Unknown annotation: " + annoName);
           continue;
@@ -193,7 +202,8 @@ public final class IntelliJAnnotationParser {
 
         try {
           AnnotationMirror annoMirror =
-              buildAnnotationMirror(annoElement, annoTypeElt, processingEnv);
+              buildAnnotationMirror(
+                  annoElement, annoTypeElt, processingEnv, atypeFactory.getChecker(), context);
           if (annoMirror != null) {
             AnnotationMirror canonical = atypeFactory.canonicalAnnotation(annoMirror);
             result.add(canonical != null ? canonical : annoMirror);
@@ -213,16 +223,23 @@ public final class IntelliJAnnotationParser {
   /**
    * Constructs an {@link AnnotationMirror} from an XML {@code <annotation>} element.
    *
+   * <p>If any {@code <val>} child cannot be parsed, this issues a warning and returns null, rather
+   * than building an annotation that is missing a mandatory element.
+   *
    * @param annoElement the XML element for the annotation
    * @param annoTypeElt the TypeElement corresponding to the annotation
    * @param processingEnv the processing environment
+   * @param checker the source checker, for issuing diagnostics
+   * @param context a description of the enclosing item, for diagnostics
    * @return the constructed {@link AnnotationMirror}, or null if construction fails
    */
   private static @Nullable AnnotationMirror buildAnnotationMirror(
       org.w3c.dom.Element annoElement,
       TypeElement annoTypeElt,
-      ProcessingEnvironment processingEnv) {
-    @SuppressWarnings("signature")
+      ProcessingEnvironment processingEnv,
+      SourceChecker checker,
+      String context) {
+    @SuppressWarnings("signature") // the qualified name of a TypeElement is a canonical name
     @CanonicalName String canonicalName = annoTypeElt.getQualifiedName().toString();
     Elements elements = processingEnv.getElementUtils();
 
@@ -239,7 +256,13 @@ public final class IntelliJAnnotationParser {
       }
       String memberName = valElem.hasAttribute("name") ? valElem.getAttribute("name") : "value";
       String valStr = valElem.getAttribute("val").trim();
-      setBuilderValue(builder, memberName, valStr, annoTypeElt, processingEnv);
+      String problem = setBuilderValue(builder, memberName, valStr, annoTypeElt, processingEnv);
+      if (problem != null) {
+        checker.message(
+            Diagnostic.Kind.WARNING,
+            String.format("Ignoring annotation @%s on %s: %s", canonicalName, context, problem));
+        return null;
+      }
     }
 
     return builder.build();
@@ -253,8 +276,9 @@ public final class IntelliJAnnotationParser {
    * @param valStr the raw string value from the XML
    * @param annoTypeElt the TypeElement of the annotation
    * @param processingEnv the processing environment
+   * @return null if the value was set, or a description of the problem if it was not
    */
-  private static void setBuilderValue(
+  private static @Nullable String setBuilderValue(
       AnnotationBuilder builder,
       String memberName,
       String valStr,
@@ -268,7 +292,7 @@ public final class IntelliJAnnotationParser {
       }
     }
     if (memberMethod == null) {
-      return;
+      return String.format("the annotation has no element named '%s'", memberName);
     }
 
     TypeMirror returnType = memberMethod.getReturnType();
@@ -279,37 +303,46 @@ public final class IntelliJAnnotationParser {
       List<Object> parsedItems = new ArrayList<>(items.size());
       for (String item : items) {
         Object val = parseElementValue(item, compType, processingEnv);
-        if (val != null) {
-          parsedItems.add(val);
+        if (val == null) {
+          return String.format(
+              "cannot parse '%s' as a value of type %s, for element '%s'",
+              item, compType, memberName);
         }
+        parsedItems.add(val);
       }
       builder.setValue(memberName, parsedItems);
-    } else {
-      Object val = parseElementValue(valStr, returnType, processingEnv);
-      if (val instanceof Boolean b) {
-        builder.setValue(memberName, b);
-      } else if (val instanceof Integer i) {
-        builder.setValue(memberName, i);
-      } else if (val instanceof Long l) {
-        builder.setValue(memberName, l);
-      } else if (val instanceof Float f) {
-        builder.setValue(memberName, f);
-      } else if (val instanceof Double d) {
-        builder.setValue(memberName, d);
-      } else if (val instanceof Short s) {
-        builder.setValue(memberName, s);
-      } else if (val instanceof Byte b) {
-        builder.setValue(memberName, b);
-      } else if (val instanceof Character c) {
-        builder.setValue(memberName, c);
-      } else if (val instanceof String s) {
-        builder.setValue(memberName, s);
-      } else if (val instanceof VariableElement ve) {
-        builder.setValue(memberName, ve);
-      } else if (val instanceof TypeMirror tm) {
-        builder.setValue(memberName, tm);
-      }
+      return null;
     }
+
+    Object val = parseElementValue(valStr, returnType, processingEnv);
+    if (val instanceof Boolean b) {
+      builder.setValue(memberName, b);
+    } else if (val instanceof Integer i) {
+      builder.setValue(memberName, i);
+    } else if (val instanceof Long l) {
+      builder.setValue(memberName, l);
+    } else if (val instanceof Float f) {
+      builder.setValue(memberName, f);
+    } else if (val instanceof Double d) {
+      builder.setValue(memberName, d);
+    } else if (val instanceof Short s) {
+      builder.setValue(memberName, s);
+    } else if (val instanceof Byte b) {
+      builder.setValue(memberName, b);
+    } else if (val instanceof Character c) {
+      builder.setValue(memberName, c);
+    } else if (val instanceof String s) {
+      builder.setValue(memberName, s);
+    } else if (val instanceof VariableElement ve) {
+      builder.setValue(memberName, ve);
+    } else if (val instanceof TypeMirror tm) {
+      builder.setValue(memberName, tm);
+    } else {
+      return String.format(
+          "cannot parse '%s' as a value of type %s, for element '%s'",
+          valStr, returnType, memberName);
+    }
+    return null;
   }
 
   /**
@@ -320,26 +353,30 @@ public final class IntelliJAnnotationParser {
    * @param processingEnv the processing environment
    * @return the parsed object or null if it cannot be parsed
    */
-  @SuppressWarnings("signature")
   private static @Nullable Object parseElementValue(
       String rawVal, TypeMirror type, ProcessingEnvironment processingEnv) {
     String unquotedVal = stripQuotes(rawVal);
     TypeKind kind = type.getKind();
-    if (kind == TypeKind.BOOLEAN) {
-      return Boolean.parseBoolean(unquotedVal);
-    } else if (kind == TypeKind.INT) {
-      return Integer.parseInt(unquotedVal);
-    } else if (kind == TypeKind.LONG) {
-      return Long.parseLong(unquotedVal.replaceAll("[lL]$", ""));
-    } else if (kind == TypeKind.FLOAT) {
-      return Float.parseFloat(unquotedVal.replaceAll("[fF]$", ""));
-    } else if (kind == TypeKind.DOUBLE) {
-      return Double.parseDouble(unquotedVal.replaceAll("[dD]$", ""));
-    } else if (kind == TypeKind.SHORT) {
-      return Short.parseShort(unquotedVal);
-    } else if (kind == TypeKind.BYTE) {
-      return Byte.parseByte(unquotedVal);
-    } else if (kind == TypeKind.CHAR) {
+    try {
+      if (kind == TypeKind.BOOLEAN) {
+        return Boolean.parseBoolean(unquotedVal);
+      } else if (kind == TypeKind.INT) {
+        return Integer.parseInt(unquotedVal);
+      } else if (kind == TypeKind.LONG) {
+        return Long.parseLong(unquotedVal.replaceAll("[lL]$", ""));
+      } else if (kind == TypeKind.FLOAT) {
+        return Float.parseFloat(unquotedVal.replaceAll("[fF]$", ""));
+      } else if (kind == TypeKind.DOUBLE) {
+        return Double.parseDouble(unquotedVal.replaceAll("[dD]$", ""));
+      } else if (kind == TypeKind.SHORT) {
+        return Short.parseShort(unquotedVal);
+      } else if (kind == TypeKind.BYTE) {
+        return Byte.parseByte(unquotedVal);
+      }
+    } catch (NumberFormatException e) {
+      return null;
+    }
+    if (kind == TypeKind.CHAR) {
       return parseChar(unquotedVal);
     } else if (kind == TypeKind.DECLARED) {
       DeclaredType dt = (DeclaredType) type;
@@ -357,17 +394,30 @@ public final class IntelliJAnnotationParser {
         }
       } else if (dtElt.getQualifiedName().contentEquals("java.lang.Class")) {
         String className = unquotedVal.replaceAll("\\.class$", "");
-        TypeElement classTypeElt =
-            processingEnv.getElementUtils().getTypeElement(className.replace('$', '.'));
-        if (classTypeElt == null) {
-          classTypeElt = processingEnv.getElementUtils().getTypeElement(className);
-        }
+        TypeElement classTypeElt = getTypeElement(className, processingEnv.getElementUtils());
         if (classTypeElt != null) {
           return classTypeElt.asType();
         }
       }
     }
     return null;
+  }
+
+  /**
+   * Returns the {@link TypeElement} for the given class name, which may use either '.' or '$' to
+   * separate the name of a nested class from the name of its enclosing class.
+   *
+   * @param className a class name read from an {@code annotations.xml} file
+   * @param elements the element utilities
+   * @return the {@link TypeElement} for {@code className}, or null if there is none
+   */
+  @SuppressWarnings("signature:argument") // an annotations.xml file contains canonical names
+  private static @Nullable TypeElement getTypeElement(String className, Elements elements) {
+    TypeElement result = elements.getTypeElement(className.replace('$', '.'));
+    if (result == null) {
+      result = elements.getTypeElement(className);
+    }
+    return result;
   }
 
   /**
@@ -399,19 +449,35 @@ public final class IntelliJAnnotationParser {
   }
 
   /**
-   * Strips surrounding single or double quotation marks from a string literal value.
+   * Strips surrounding single or double quotation marks from a string literal value, and interprets
+   * the Java escape sequences within it.
    *
    * @param s the string to strip quotes from
-   * @return the string without surrounding quotes
+   * @return the string without surrounding quotes and with escape sequences interpreted
    */
-  private static String stripQuotes(String s) {
+  /*package*/ static String stripQuotes(String s) {
     s = s.trim();
     if (s.length() >= 2
-        && ((s.startsWith("\"") && s.endsWith("\"")) || (s.startsWith("'") && s.endsWith("'")))) {
-      String inner = s.substring(1, s.length() - 1);
-      return inner.replace("\\\"", "\"").replace("\\'", "'");
+        && ((s.startsWith("\"") && s.endsWith("\"")) || (s.startsWith("'") && s.endsWith("'")))
+        && !lastCharIsEscaped(s)) {
+      return StringsP.unescapeJava(s.substring(1, s.length() - 1));
     }
     return s;
+  }
+
+  /**
+   * Returns true if the last character of {@code s} is escaped by a preceding backslash; that is,
+   * the last character is preceded by an odd number of backslashes.
+   *
+   * @param s a string of length at least 2
+   * @return true if the last character of {@code s} is escaped
+   */
+  private static boolean lastCharIsEscaped(String s) {
+    int backslashes = 0;
+    for (int i = s.length() - 2; i >= 0 && s.charAt(i) == '\\'; i--) {
+      backslashes++;
+    }
+    return backslashes % 2 == 1;
   }
 
   /**
@@ -421,7 +487,7 @@ public final class IntelliJAnnotationParser {
    * @param s the array literal string
    * @return a list of parsed item strings
    */
-  private static List<String> parseArrayLiteral(String s) {
+  /*package*/ static List<String> parseArrayLiteral(String s) {
     s = s.trim();
     if (s.startsWith("{") && s.endsWith("}")) {
       s = s.substring(1, s.length() - 1).trim();
@@ -515,6 +581,15 @@ public final class IntelliJAnnotationParser {
       this.isConstructor = isConstructor;
       this.isField = isField;
       this.isClass = isClass;
+    }
+
+    /**
+     * Returns true if the item signature was malformed, so it names no program element.
+     *
+     * @return true if the item signature was malformed
+     */
+    boolean isMalformed() {
+      return !isMethodOrConstructor && !isField && !isClass;
     }
   }
 
@@ -659,22 +734,27 @@ public final class IntelliJAnnotationParser {
    * @param atypeFactory the type factory
    * @param processingEnv the processing environment
    * @param annos the annotation container to populate
+   * @param filename the name or path of the file (for diagnostic reporting)
    */
-  @SuppressWarnings("signature")
   private static void applyAnnotationsToElement(
       String itemSignature,
       List<AnnotationMirror> annotations,
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
-      AnnotationFileAnnotations annos) {
+      AnnotationFileAnnotations annos,
+      String filename) {
     ParsedItemSignature parsed = parseSignature(itemSignature);
     Elements elements = processingEnv.getElementUtils();
     SourceChecker checker = atypeFactory.getChecker();
 
-    TypeElement classElem = elements.getTypeElement(parsed.className.replace('$', '.'));
-    if (classElem == null) {
-      classElem = elements.getTypeElement(parsed.className);
+    if (parsed.isMalformed()) {
+      checker.message(
+          Diagnostic.Kind.WARNING,
+          String.format("Cannot parse item name '%s' in %s", itemSignature, filename));
+      return;
     }
+
+    TypeElement classElem = getTypeElement(parsed.className, elements);
     if (classElem == null) {
       warnNotFound(checker, "Class not found: " + parsed.className);
       return;
@@ -756,10 +836,18 @@ public final class IntelliJAnnotationParser {
       }
       annos.atypes.put(finalFieldElem, fieldType);
     } else if (parsed.isClass) {
-      markAsFromStubFile(classElem, processingEnv, annos);
+      TypeElement finalClassElem = classElem;
+      markAsFromStubFile(finalClassElem, processingEnv, annos);
+      AnnotatedTypeMirror classType =
+          annos.atypes.computeIfAbsent(
+              finalClassElem, e -> atypeFactory.fromElement(finalClassElem));
       for (AnnotationMirror am : annotations) {
-        recordDeclAnnotationIfApplicable(classElem, am, annos);
+        if (atypeFactory.isSupportedQualifier(am)) {
+          classType.replaceAnnotation(am);
+        }
+        recordDeclAnnotationIfApplicable(finalClassElem, am, annos);
       }
+      annos.atypes.put(finalClassElem, classType);
     }
   }
 

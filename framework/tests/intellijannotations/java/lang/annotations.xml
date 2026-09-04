@@ -6,4 +6,13 @@
   <item name="java.lang.String java.lang.String concat(java.lang.String) 0">
     <annotation name="org.checkerframework.framework.testchecker.h1h2checker.quals.H1S2" />
   </item>
+  <item name="java.lang.String java.util.Comparator CASE_INSENSITIVE_ORDER">
+    <annotation name="org.checkerframework.framework.testchecker.h1h2checker.quals.H1S1" />
+  </item>
+  <item name="java.lang.String java.lang.String(char[])">
+    <annotation name="org.checkerframework.framework.testchecker.h1h2checker.quals.H1S1" />
+  </item>
+  <item name="java.lang.StringBuilder">
+    <annotation name="org.checkerframework.framework.testchecker.h1h2checker.quals.H1S1" />
+  </item>
 </root>
