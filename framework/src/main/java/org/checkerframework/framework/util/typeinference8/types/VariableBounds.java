@@ -756,12 +756,9 @@ public class VariableBounds {
       if (bound.isProper() || bound.isInferenceType()) {
         if (TypesUtils.isCapturedTypeVariable(bound.getJavaType())) {
           // Unlike javac, the Checker Framework may infer an expression a second time, against a
-          // target type that a previous inference produced; that target type can contain a
-          // captured type variable that resolution created for this very wildcard.  Such a bound
-          // is not a contradiction: it says that the capture variable being created now is the
-          // same capture that the earlier inference created.  JLS 18.3.2 states this rule for a
-          // type that appears in the program, which a captured type variable never is.  See
-          // tests/all-systems/Issue8053.java.
+          // target type that a previous inference produced; in that case, ignore this bound
+          // (adding no constraints for it) so that this inference reuses the exact value that the
+          // previous inference computed.
           continue;
         }
         // var = R implies the bound false

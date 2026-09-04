@@ -310,17 +310,17 @@ public class BoundSet implements ReductionResult {
         }
       } else {
         for (Variable beta : alphaDependencies) {
-          // If beta is not a capture variable or beta is a capture variable where the type argument
-          // to be captured is a wildcard.
           if (!beta.isCaptureVariable() || beta.isCapturedWildcard()) {
-            // Otherwise, alpha depends on the resolution of beta.
+            // Beta is not a capture variable, or beta is a capture variable whose type argument to
+            // be captured is a wildcard.  In either case, alpha depends on the resolution of beta.
             //
-            // A capture variable for a wildcard is included.  JLS 18.5.2.1 creates a fresh
-            // variable for each type argument of a wildcard-parameterized return type, so a bound
-            // such as `G<beta1, beta2> <: alpha` has to make alpha depend on beta1 and beta2.
-            // Without the dependency, alpha is resolved first, its lower bound `G<beta1, beta2>`
-            // is not yet proper, and alpha resolves to its upper bound instead.  See
-            // tests/all-systems/Issue8053.java.
+            // The second case is why this method's result includes a dependency on a capture
+            // variable for a wildcard.  JLS 18.5.2.1 creates a fresh variable for each type
+            // argument of a wildcard-parameterized return type, so a bound such as
+            // `G<beta1, beta2> <: alpha` has to make alpha depend on beta1 and beta2.  If this
+            // method's result omitted that dependency, then resolution would resolve alpha first,
+            // alpha's lower bound `G<beta1, beta2>` would not yet be proper, and alpha would
+            // resolve to its upper bound instead.  See tests/all-systems/Issue8053.java.
             dependencies.putOrAdd(alpha, beta);
           }
         }
