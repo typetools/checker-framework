@@ -7,11 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * NOTE: This meta-annotation is <a
- * href="https://github.com/typetools/checker-framework/issues/1919"><b>not currently
- * enforced</b></a>.
- *
- * <p>A meta-annotation that restricts the type-use locations where a type qualifier may be written.
+ * A meta-annotation that restricts the type-use locations where a type qualifier may be written.
  * When written together with {@code @Target({ElementType.TYPE_USE})}, the given type qualifier may
  * be written only at locations listed in the {@code @TargetLocations(...)} meta-annotation.
  * {@code @Target({ElementType.TYPE_USE})} together with no {@code @TargetLocations(...)} means that

@@ -5,20 +5,13 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf({
-  H2S1.class,
-  H2S2.class,
-  H2OnlyOnLB.class,
-  H2OnlyOnConstructorResult.class,
-  H2OnlyOnReceiver.class,
-  H2OnlyOnReturn.class
-})
-@DefaultFor(TypeUseLocation.LOWER_BOUND)
-public @interface H2Bot {}
+@TargetLocations(TypeUseLocation.CONSTRUCTOR_RESULT)
+@SubtypeOf(H2Top.class)
+public @interface H2OnlyOnConstructorResult {}
