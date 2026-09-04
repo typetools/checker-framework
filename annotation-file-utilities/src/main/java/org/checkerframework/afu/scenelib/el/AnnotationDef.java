@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.StringTokenizer;
+import java.util.function.Supplier;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.AnnotationBuilder;
 import org.checkerframework.afu.scenelib.Annotations;
@@ -42,8 +43,12 @@ public final class AnnotationDef extends AElement {
    */
   public Map<String, AnnotationFieldType> fieldTypes;
 
-  /** Where the annotation definition came from, such as a file name. */
-  public String source;
+  /**
+   * Computes where the annotation definition came from, such as a file name. It is a supplier
+   * rather than a string because it is used only for diagnostics, and computing it can be
+   * expensive.
+   */
+  private final Supplier<String> sourceSupplier;
 
   /**
    * Constructs an annotation definition with the given name. You MUST call setFieldTypes afterward,
@@ -53,11 +58,43 @@ public final class AnnotationDef extends AElement {
    * @param source where the annotation came from, such as a filename
    */
   public AnnotationDef(@BinaryName String name, String source) {
+    this(name, constantSupplier(source));
+  }
+
+  /**
+   * Constructs an annotation definition with the given name. You MUST call setFieldTypes afterward,
+   * even if with an empty map. (Yuck.)
+   *
+   * @param name the binary name of the annotation type
+   * @param source computes where the annotation came from, such as a filename; it is called only if
+   *     the source is needed for a diagnostic
+   */
+  public AnnotationDef(@BinaryName String name, Supplier<String> source) {
     super("annotation: " + name);
     assert name != null;
     assert source != null;
     this.name = name;
-    this.source = source;
+    this.sourceSupplier = source;
+  }
+
+  /**
+   * Returns a supplier of the given string.
+   *
+   * @param source where an annotation came from, such as a filename
+   * @return a supplier that returns {@code source}
+   */
+  private static Supplier<String> constantSupplier(String source) {
+    assert source != null;
+    return () -> source;
+  }
+
+  /**
+   * Returns where the annotation definition came from, such as a file name.
+   *
+   * @return where the annotation definition came from, such as a file name
+   */
+  public String getSource() {
+    return sourceSupplier.get();
   }
 
   /**
@@ -138,11 +175,20 @@ public final class AnnotationDef extends AElement {
    * @param source where the annotation came from, such as a filename
    */
   public AnnotationDef(@BinaryName String name, Set<Annotation> tlAnnotationsHere, String source) {
-    super("annotation: " + name);
-    assert name != null;
-    assert source != null;
-    this.name = name;
-    this.source = source;
+    this(name, tlAnnotationsHere, constantSupplier(source));
+  }
+
+  /**
+   * Constructs an empty (so far) annotation definition.
+   *
+   * @param name the binary name of the annotation
+   * @param tlAnnotationsHere the meta-annotations that are directly on the annotation definition
+   * @param source computes where the annotation came from, such as a filename; it is called only if
+   *     the source is needed for a diagnostic
+   */
+  public AnnotationDef(
+      @BinaryName String name, Set<Annotation> tlAnnotationsHere, Supplier<String> source) {
+    this(name, source);
     if (tlAnnotationsHere != null) {
       this.tlAnnotationsHere.addAll(tlAnnotationsHere);
     }
@@ -162,6 +208,25 @@ public final class AnnotationDef extends AElement {
       Set<Annotation> tlAnnotationsHere,
       Map<String, ? extends AnnotationFieldType> fieldTypes,
       String source) {
+    this(name, tlAnnotationsHere, source);
+    setFieldTypes(fieldTypes);
+  }
+
+  /**
+   * Constructs an annotation definition with the given name and field types. Uses {@link
+   * #setFieldTypes} to protect the immutability of the annotation definition.
+   *
+   * @param name the binary name of the annotation
+   * @param tlAnnotationsHere the meta-annotations that are directly on the annotation definition
+   * @param fieldTypes the annotation's element types
+   * @param source computes where the annotation came from, such as a filename; it is called only if
+   *     the source is needed for a diagnostic
+   */
+  public AnnotationDef(
+      @BinaryName String name,
+      Set<Annotation> tlAnnotationsHere,
+      Map<String, ? extends AnnotationFieldType> fieldTypes,
+      Supplier<String> source) {
     this(name, tlAnnotationsHere, source);
     setFieldTypes(fieldTypes);
   }
@@ -337,7 +402,7 @@ public final class AnnotationDef extends AElement {
             def1.name,
             def1.tlAnnotationsHere,
             newFieldTypes,
-            String.format("unify(%s, %s)", def1.source, def2.source));
+            () -> String.format("unify(%s, %s)", def1.getSource(), def2.getSource()));
       }
     }
     return null;
@@ -373,7 +438,7 @@ public final class AnnotationDef extends AElement {
    */
   public String toStringDebug() {
     return toString()
-        + String.format("; source=%s, tlAnnotationsHere=%s", source, tlAnnotationsHere);
+        + String.format("; source=%s, tlAnnotationsHere=%s", getSource(), tlAnnotationsHere);
   }
 
   /** Prints the classpath. */

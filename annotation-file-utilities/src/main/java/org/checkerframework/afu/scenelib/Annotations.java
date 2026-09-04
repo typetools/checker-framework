@@ -204,7 +204,7 @@ public final class Annotations {
    */
   public static final Annotation rebuild(Annotation a) {
     AnnotationBuilder ab =
-        AnnotationFactory.saf.beginAnnotation(a.def(), "rebuild " + a.def.source);
+        AnnotationFactory.saf.beginAnnotation(a.def(), "rebuild " + a.def.getSource());
     if (ab != null) {
       for (Map.Entry<String, AnnotationFieldType> fieldDef : a.def().fieldTypes.entrySet()) {
 
