@@ -93,10 +93,9 @@ job_dependences(21, junit)
 job_dependences(latest_jdk, junit)
 
 ifelse([The following jobs have no corresponding job in the canary jobs.])dnl
-      # TEMPORARILY commented until Daikon release 5.8.24.
-      # job_dependences_not_in_canary(canary_jdk, daikon_part1)
-      # job_dependences_not_in_canary(canary_jdk, daikon_part2)
-      # job_dependences_not_in_canary(canary_jdk, daikon_part3)
+job_dependences_not_in_canary(canary_jdk, daikon_part1)
+job_dependences_not_in_canary(canary_jdk, daikon_part2)
+job_dependences_not_in_canary(canary_jdk, daikon_part3)
 job_dependences_not_in_canary(canary_jdk, guava_part1)
 job_dependences_not_in_canary(canary_jdk, guava_part2)
 job_dependences_not_in_canary(canary_jdk, plume_lib)

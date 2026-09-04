@@ -20,8 +20,7 @@ misc_job(latest_jdk)
 
 typecheck_job(canary_jdk)
 
-  # TEMPORARILY commented until Daikon release 5.8.24.
-  # daikon_job(canary_jdk)
+daikon_job(canary_jdk)
 
 guava_job(canary_jdk)
 
