@@ -7,6 +7,10 @@
 
 ### User-visible changes
 
+New warning `class.not.completed` is issued when a class file that is needed to
+compute an element's declaration annotations cannot be read.  Previously, the
+Checker Framework crashed on such a classpath.
+
 ### Changes for type system implementers
 
 `AnnotatedTypeMirror.hashCode()` now hashes only the top-level type rather than
@@ -15,7 +19,12 @@ recursively hashing component types.  Removed class `HashcodeAtmVisitor`, field
 `AnnotatedTypeMirror.getUnderlyingTypeHashCode()`, which existed only to compute
 the old hash code.
 
+`AnnotatedTypeMirror.createType()` no longer throws `BugInCF` for a type whose
+kind is `ERROR`; it returns an `AnnotatedDeclaredType`, as it does for `DECLARED`.
+
 ### Closed issues
+
+\#8055.
 
 ## Version 4.2.3 (2026-09-01)
 
