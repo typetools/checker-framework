@@ -94,7 +94,7 @@ public class ElementAnnotationUtil {
       AnnotatedTypeMirror type, List<? extends AnnotationMirror> annotations) {
     // The code here should be similar to
     // org.checkerframework.framework.type.TypeFromMemberVisitor.visitVariable
-    AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(type);
+    AnnotatedTypeMirror innerType = AnnotatedTypes.innermostComponentType(type);
     if (innerType != type) {
       for (AnnotationMirror annotation : annotations) {
         if (AnnotationUtils.annotationName(annotation).startsWith("org.checkerframework")) {
