@@ -30,9 +30,9 @@ fi
 # ./gradlew test --warning-mode=all
 
 if [ "$arg" != "part2" ]; then
-  gradle_retry junitPart1 --warning-mode=all
+  gradle_retry_once junitPart1 --warning-mode=all
 fi
 
 if [ "$arg" != "part1" ]; then
-  gradle_retry junitPart2 --warning-mode=all
+  gradle_retry_once junitPart2 --warning-mode=all
 fi

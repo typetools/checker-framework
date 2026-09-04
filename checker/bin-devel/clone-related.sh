@@ -29,20 +29,28 @@ fi
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
-# Runs "./gradlew" with the given arguments, in the current directory.  Retries
-# if the failure looks like a transient network problem, such as HTTP status
-# code 429 ("Too Many Requests") from Maven Central.  The pattern below matches
-# only messages that indicate a network problem; in particular it does not match
-# Gradle's "Could not resolve".
-gradle_retry() {
+# Runs "./gradlew" with the arguments after the first, in the current
+# directory.  Retries if the failure looks like a transient network problem,
+# such as HTTP status code 429 ("Too Many Requests") from Maven Central.  The
+# pattern below matches only messages that indicate a network problem; in
+# particular it does not match Gradle's "Could not resolve".
+# The first argument is a space-separated list of the delays, in seconds,
+# before successive retries.  Its last element must be 0, which means "do not
+# retry again".
+gradle_retry_with_delays() {
   local log status delay
+  local -a delays
+  read -r -a delays <<< "$1"
+  shift
   log="$(mktemp)"
-  # The last iteration uses a delay of 0, which means "do not retry again".
-  for delay in 60 300 0; do
-    # "set -o pipefail" is not in effect, so "set -e" does not act on this
-    # pipeline, and ${PIPESTATUS[0]} is the exit status of "./gradlew".
+  for delay in "${delays[@]}"; do
+    # "set +e" keeps a failure of the pipeline from aborting the script before
+    # the retry logic below runs; it is needed whether or not "set -o pipefail"
+    # is in effect.  ${PIPESTATUS[0]} is the exit status of "./gradlew".
+    set +e
     ./gradlew "$@" 2>&1 | tee "$log"
     status="${PIPESTATUS[0]}"
+    set -e
     if [ "$status" -eq 0 ]; then
       rm -f "$log"
       return 0
@@ -55,6 +63,19 @@ gradle_retry() {
     echo "gradle_retry: \"./gradlew $*\" failed for an apparent network reason; retrying in ${delay} seconds."
     sleep "$delay"
   done
+}
+
+# Runs "./gradlew" with the given arguments, in the current directory, retrying
+# up to twice if the failure looks like a transient network problem.
+gradle_retry() {
+  gradle_retry_with_delays "60 300 0" "$@"
+}
+
+# Like "gradle_retry", but retries at most once and after a shorter delay.  Use
+# this for a task that runs for a long time, where a full sequence of retries
+# could exceed the CI job's time limit and thereby hide the underlying failure.
+gradle_retry_once() {
+  gradle_retry_with_delays "60 0" "$@"
 }
 
 echo "initial JAVA_HOME=${JAVA_HOME}"

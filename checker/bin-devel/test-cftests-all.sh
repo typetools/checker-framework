@@ -13,7 +13,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
 source "$SCRIPT_DIR"/clone-related.sh
 
-gradle_retry allTests --warning-mode=all
+gradle_retry_once allTests --warning-mode=all
 # Moved example-tests out of all tests because it fails in
 # the release script because the newest Maven artifacts are not published yet.
 gradle_retry :checker:exampleTests --warning-mode=all

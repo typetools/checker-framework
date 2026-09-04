@@ -8,11 +8,14 @@ define([job_name], [$1:])dnl
 dnl
 ifelse([The cache key must cover every file that pins a dependency version. Add
 to this list any file that gains a hardcoded dependency or plugin version.])dnl
+ifelse([A "!" pattern removes files that an earlier pattern matched, so the
+include pattern must enumerate files, via "/**", rather than name the
+directory, which "actions/cache" would archive whole.])dnl
 define([gradle_cache], [dnl
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper

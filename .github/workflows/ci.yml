@@ -56,7 +56,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
@@ -88,7 +88,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
@@ -118,7 +118,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
@@ -144,7 +144,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
@@ -169,7 +169,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
@@ -199,7 +199,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
@@ -227,7 +227,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
@@ -252,7 +252,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
@@ -283,7 +283,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
@@ -308,7 +308,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
@@ -337,7 +337,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
@@ -364,7 +364,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
@@ -391,7 +391,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
@@ -418,7 +418,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
@@ -442,7 +442,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
@@ -473,7 +473,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
@@ -500,7 +500,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper
@@ -527,7 +527,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
             ~/.gradle/wrapper

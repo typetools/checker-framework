@@ -14,7 +14,7 @@ gradle_retry -q getPlumeScripts
 PLUME_SCRIPTS="$SCRIPT_DIR/.plume-scripts"
 
 # Pluggable type-checking:  run the Checker Framework on itself
-gradle_retry typecheck-part2 --warning-mode=all
+gradle_retry_once typecheck-part2 --warning-mode=all
 
 if [ -f SKIP-REQUIRE-JAVADOC ]; then
   echo "Skipping checkNullness because file SKIP-REQUIRE-JAVADOC exists."
