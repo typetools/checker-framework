@@ -38,6 +38,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsP;
 import org.plumelib.util.DeepCopyable;
 
@@ -117,10 +118,19 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     AnnotatedTypeMirror result;
     switch (type.getKind()) {
       case ARRAY -> result = new AnnotatedArrayType((ArrayType) type, atypeFactory);
-      // An ERROR type is a class whose class file is not on the classpath; javac reported no
-      // error, so treat it like any other declared type.
-      case DECLARED, ERROR ->
+      case DECLARED ->
           result = new AnnotatedDeclaredType((DeclaredType) type, atypeFactory, isDeclaration);
+      // An ERROR type can appear when the Checker Framework accesses a symbol that is not on the
+      // classpath.  javac throws a Symbol.CompletionFailure, which the Checker Framework catches,
+      // but the Checker Framework still sometimes tries to create an AnnotatedTypeMirror from the
+      // symbol, some part of which is an ErrorType.  In that case, use Object as the underlying
+      // type rather than the error type, so that the Checker Framework does not crash elsewhere.
+      case ERROR ->
+          result =
+              new AnnotatedDeclaredType(
+                  TypesUtils.getObjectTypeMirror(atypeFactory.processingEnv),
+                  atypeFactory,
+                  isDeclaration);
       case EXECUTABLE -> result = new AnnotatedExecutableType((ExecutableType) type, atypeFactory);
       case VOID, PACKAGE, NONE -> result = new AnnotatedNoType((NoType) type, atypeFactory);
       case NULL -> result = new AnnotatedNullType((NullType) type, atypeFactory);
