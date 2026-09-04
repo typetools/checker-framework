@@ -1,0 +1,6 @@
+- compiler.warn.proc.messager: [class.not.completed] Cannot read a class file that is needed to compute the declaration annotations of lib.SubOfQualParam: class file for lib.Missing not found. Annotations inherited from a supertype may be missed. Make sure your classpath is set correctly.
+InheritedAnno.java:14:33: compiler.err.proc.messager: [assignment] incompatible types in assignment.
+found   : @Untainted SubOfQualParam
+required: @Tainted SubOfQualParam
+1 error
+1 warning
