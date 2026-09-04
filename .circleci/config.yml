@@ -387,8 +387,75 @@ jobs:
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
 
-  # TEMPORARILY commented until Daikon release 5.8.24.
-  # daikon_job(canary_jdk)
+  daikon_part1_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+          name: test-daikon-part1.sh
+          command: ./checker/bin-devel/test-daikon-part1.sh
+          no_output_timeout: "30m"
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
+  daikon_part2_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+          name: test-daikon-part2.sh
+          command: ./checker/bin-devel/test-daikon-part2.sh
+          no_output_timeout: "30m"
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
+  daikon_part3_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+          name: test-daikon-part3.sh
+          command: ./checker/bin-devel/test-daikon-part3.sh
+          no_output_timeout: "30m"
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
 
   guava_part1_jdk25:
     docker:
@@ -517,10 +584,18 @@ workflows:
             - junit_part1_jdk25
             - junit_part2_jdk25
 
-      # TEMPORARILY commented until Daikon release 5.8.24.
-      # job_dependences_not_in_canary(canary_jdk, daikon_part1)
-      # job_dependences_not_in_canary(canary_jdk, daikon_part2)
-      # job_dependences_not_in_canary(canary_jdk, daikon_part3)
+      - daikon_part1_jdk25:
+          requires:
+            - canary_jobs
+
+      - daikon_part2_jdk25:
+          requires:
+            - canary_jobs
+
+      - daikon_part3_jdk25:
+          requires:
+            - canary_jobs
+
       - guava_part1_jdk25:
           requires:
             - canary_jobs
@@ -540,6 +615,9 @@ workflows:
             - junit_jdk17
             - junit_jdk21
             - junit_jdk26
+            - daikon_part1_jdk25
+            - daikon_part2_jdk25
+            - daikon_part3_jdk25
             - guava_part1_jdk25
             - guava_part2_jdk25
             - plume_lib_jdk25
