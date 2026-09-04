@@ -3,6 +3,17 @@ import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 
 // :: error: [type.annotations.on.location]
 public class EnforceTargetLocation<T extends @H2OnlyOnLB Object> {
+  @H2OnlyOnConstructorResult
+  // :: warning: [inconsistent.constructor.type]
+  // :: error: [super.invocation]
+  EnforceTargetLocation() {}
+
+  // :: error: [type.annotations.on.location]
+  @H2OnlyOnReceiver
+  // :: warning: [inconsistent.constructor.type]
+  // :: error: [super.invocation]
+  EnforceTargetLocation(int ignored) {}
+
   @H2S1 Object right;
 
   // :: error: [type.annotations.on.location]
@@ -26,4 +37,9 @@ public class EnforceTargetLocation<T extends @H2OnlyOnLB Object> {
 
   // :: error: [type.annotations.on.location]
   void incorrectUse2(@H2OnlyOnLB Object p1) {}
+
+  void receiver(@H2OnlyOnReceiver EnforceTargetLocation<T> this) {}
+
+  // :: error: [type.annotations.on.location]
+  void ordinaryParameter(@H2OnlyOnReceiver Object p1) {}
 }

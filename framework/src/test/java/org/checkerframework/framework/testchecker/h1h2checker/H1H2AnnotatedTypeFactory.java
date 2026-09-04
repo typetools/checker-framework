@@ -14,7 +14,9 @@ import org.checkerframework.framework.testchecker.h1h2checker.quals.H1S1;
 import org.checkerframework.framework.testchecker.h1h2checker.quals.H1S2;
 import org.checkerframework.framework.testchecker.h1h2checker.quals.H1Top;
 import org.checkerframework.framework.testchecker.h1h2checker.quals.H2Bot;
+import org.checkerframework.framework.testchecker.h1h2checker.quals.H2OnlyOnConstructorResult;
 import org.checkerframework.framework.testchecker.h1h2checker.quals.H2OnlyOnLB;
+import org.checkerframework.framework.testchecker.h1h2checker.quals.H2OnlyOnReceiver;
 import org.checkerframework.framework.testchecker.h1h2checker.quals.H2Poly;
 import org.checkerframework.framework.testchecker.h1h2checker.quals.H2S1;
 import org.checkerframework.framework.testchecker.h1h2checker.quals.H2S2;
@@ -50,6 +52,8 @@ public class H1H2AnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         H2S2.class,
         H2Bot.class,
         H2OnlyOnLB.class,
+        H2OnlyOnConstructorResult.class,
+        H2OnlyOnReceiver.class,
         H1Poly.class,
         H2Poly.class,
         H1Invalid.class);

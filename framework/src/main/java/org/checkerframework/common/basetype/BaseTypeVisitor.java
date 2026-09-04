@@ -1047,6 +1047,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       visitAnnotatedType(modifiers.getAnnotations(), returnType);
       warnRedundantAnnotations(returnType, methodType.getReturnType());
     } else if (TreeUtils.isConstructor(tree)) {
+      checkTargetLocations(modifiers.getAnnotations(), TypeUseLocation.CONSTRUCTOR_RESULT);
       maybeReportAnnoOnIrrelevant(
           modifiers, methodType.getReturnType().getUnderlyingType(), modifiers.getAnnotations());
     }
@@ -2957,6 +2958,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (location == null) {
       return;
     }
+    checkTargetLocations(annoTrees, location);
+  }
+
+  /** Checks that explicitly written qualifiers are permitted at {@code location}. */
+  private void checkTargetLocations(
+      List<? extends AnnotationTree> annoTrees, TypeUseLocation location) {
     for (AnnotationTree annoTree : annoTrees) {
       AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(annoTree);
       if (!atypeFactory.isSupportedQualifier(anno)) {
@@ -3003,7 +3010,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             case TYPE_PARAMETER -> TypeUseLocation.EXPLICIT_UPPER_BOUND;
             case METHOD -> TypeUseLocation.RETURN;
             case VARIABLE -> {
-              ElementKind kind = TreeUtils.elementFromDeclaration((VariableTree) tree).getKind();
+              VariableTree variableTree = (VariableTree) tree;
+              TreePath parentPath = path.getParentPath();
+              if (parentPath != null
+                  && parentPath.getLeaf() instanceof MethodTree enclosingMethod
+                  && enclosingMethod.getReceiverParameter() == variableTree) {
+                yield TypeUseLocation.RECEIVER;
+              }
+              ElementKind kind = TreeUtils.elementFromDeclaration(variableTree).getKind();
               yield switch (kind) {
                 case FIELD -> TypeUseLocation.FIELD;
                 case LOCAL_VARIABLE -> TypeUseLocation.LOCAL_VARIABLE;
