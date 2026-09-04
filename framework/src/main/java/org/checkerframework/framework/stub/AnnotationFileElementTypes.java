@@ -144,6 +144,8 @@ public class AnnotationFileElementTypes {
    *   <li>Stub files returned by {@link BaseTypeChecker#getExtraStubFiles} (treated like those
    *       listed in @StubFiles annotation)
    *   <li>Stub files provided via {@code -Astubs} compiler option
+   *   <li>IntelliJ IDEA external annotations provided via {@code -AintellijAnnotations} compiler
+   *       option
    * </ol>
    *
    * <p>If a type is annotated with a qualifier from the same hierarchy in more than one stub file,
