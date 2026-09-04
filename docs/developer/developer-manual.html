@@ -45,11 +45,6 @@ including people who wish to edit its source code or make pull requests.
         <ul>
           <li><a href="#ci-github-actions">GitHub Actions</a></li>
           <li><a href="#ci-circleci">CircleCI</a></li>
-          <li><a href="#ci-azure-pipelines">Azure Pipelines</a>
-            <ul>
-              <li><a href="#ci-increasing-quota">Increasing quota</a></li>
-              <li><a href="#project-visibility">How to change project visibility settings</a></li>
-            </ul></li>
           <li><a href="#ci-related-projects">Continuous Integration failures in related projects (daikon, plume-lib, etc.)</a></li>
           <li><a href="#ci-failure">Reproducing Continuous Integration build failures</a></li>
         </ul></li>
@@ -139,8 +134,7 @@ Furthermore, whenever you make a pull request from
 a <code>checker-framework</code> branch A into branch B, if B has a
 corresponding <code>jdk</code>
 branch, then A also needs one.
-A needs the branch even if A's branch is identical to B's; in that case,
-beware of a <a href="#azure-pipelines-bug-same-commit-hash">bug in Azure Pipelines</a>.
+A needs the branch even if A's branch is identical to B's.
 </p>
 
 
@@ -216,10 +210,9 @@ For writing new test cases, see file <a href="https://github.com/typetools/check
 <h3 id="testing-optimizations">Testing optimizations</h3>
 
 <p>
-To test an optimization that should speed up type-checking, see
-the <code>test-daikon-part<em>N</em>.sh</code> stage of the <code>daikon_part<em>N</em>_jdk*</code> job
-of the Azure Pipelines CI job.  Compare the run time of this stage (or of
-the entire <code>daikon_jdk*</code> job) between the master branch and a
+To test an optimization that should speed up type-checking, see a
+CI execution of <code>test-daikon-part<em>N</em>.sh</code>.
+Compare the run time between the master branch and a
 branch with your improvements.
 </p>
 
@@ -347,16 +340,6 @@ Ernst's advice about creating GitHub pull requests</a>.
   See <a href="#Related_repositories">"Related repositories"</a> above.
 </p>
 
-<p id="azure-pipelines-bug-same-commit-hash">
-Azure Pipelines has a bug:  whenever two CI jobs would run code with the same
-commit hash, it re-uses a previous execution result.  This is a bug because the
-CI job's behavior may depend on the branch name and other factors that are
-independent of the commit hash.  This means that you may see spurious successes
-or failures when your branch of (say) the <code>jdk</code> repository has the
-identical commit hash to some other branch that Azure Pipelines previously ran a
-job for.
-</p>
-
 
 <h3 id="pull-requests-maintainers">Pull request and commit notes for maintainers</h3>
 
@@ -410,8 +393,8 @@ branches after they are merged</a>.
 <h2 id="ci">Continuous Integration</h2>
 
 <p>
-The Checker Framework has continuous integration jobs that run in Azure
-Pipelines, CircleCI, and/or GitHub Actions on each push to GitHub.
+The Checker Framework has continuous integration jobs that run in
+CircleCI and/or GitHub Actions on each push to GitHub.
 </p>
 
 
@@ -439,102 +422,6 @@ Pipelines, CircleCI, and/or GitHub Actions on each push to GitHub.
   <li>Choose a branch that contains the .circleci/config.yml file, often the master branch</li>
   <li>Click "Set up project".</li>
 </ul>
-
-<h3 id="ci-azure-pipelines">Azure Pipelines</h3>
-
-<p>
-  To enable Azure Pipelines continuous integration for your fork:
-  (This is a summary of the <a href="https://learn.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops">Azure
-  Pipelines getting started directions</a>.)
-</p>
-<ul>
-  <li>Browse to <a href="https://dev.azure.com/">dev.azure.com</a>.
-      (You might need to create a (free) account.)</li>
-  <li>Click "Create a project to get started" and enter an appropriate name</li>
-  <li>Click "public".
-    <ul>
-      <li>If this option is not available, create the project and <a href="#project-visibility">modify its visibility</a> later.</li>
-    </ul>
-  </li>
-  <li>(You might have to wait a few days for your project to be created.)
-  <li>Click "create project"</li>
-  <li>At the left, click the blue rocket labeled "pipelines"</li>
-  <li>Click "new pipeline"</li>
-  <li>Click "GitHub"
-      (You might need to authorize the app on GitHub.)</li>
-  <li>Click "Select a repository"</li>
-  <li>Choose <em>MYUSERID</em>/checker-framework</li>
-  <li>Choose the default radio button, "only selected repositories".  <b>Do not</b> choose "all repositories".</li>
-  <li>Choose "Existing Azure Pipelines YAML file"</li>
-  <li>Select "/azure-pipelines.yml" in the dropdown menu</li>
-  <li>Approve and install.</li>
-  <li>Click "run".</li>
-</ul>
-
-<h4 id="ci-increasing-quota">Increasing quota</h4>
-
-<p>
-By default, your project has no parallelism and thus pipeline runs fail
-immediately. Azure DevOps provides a
-<!-- Another URL that redirects to the same place:
-  https://aka.ms/azpipelines-parallelism-request
--->
-<a href="https://forms.office.com/r/nwUb97Fj9r">Microsoft Forms</a>
-through which you can request increased public project concurrency for validated
-open-source projects.
-</p>
-
-<p>
-It may be the case that you obtain only 1800 minutes per month, only one
-parallel job at a time, and only for private projects.  In this case, you need
-to ask Azure to lift all three restrictions.  Send mail such as the following:
-</p>
-
-<p>
-  Thank you for granting me free tier access to Azure Pipelines.
-  I am working on the open-source <a href="https://github.com/typetools/checker-framework">Checker Framework</a>.
-  Therefore, could you please make the following changes, per the policies at https://azure.microsoft.com/en-us/products/devops/pipelines/?
-</p>
-  <ul>
-    <li>Increase parallelism beyond 1 job.</li>
-    <li>Increase time limit beyond 1800 minutes per month.</li>
-    <li>Permit the project to be public, for collaboration.</li>
-  </ul>
-<p>
-  Thanks for your help.
-</p>
-
-
-<h4 id="project-visibility">How to change project visibility settings</h4>
-
-<p>
-To change your project's visibility settings (usually to "Public" to enable CI):
-</p>
-
-<ul>
-  <li>Browse to your project on <a href="https://dev.azure.com">dev.azure.com</a>.</li>
-  <li>Click the "Project Settings" button.</li>
-  <li>Click the "Visibility" dropdown.</li>
-  <li>Click "Public".</li>
-</ul>
-
-
-<!-- Travis CI is not currently supported. -->
-<!-- Note that Travis CI is no longer
-free for open-source projects; you have to apply for an Open Source Sponsorship.
--->
-<!-- <h3 id="ci-travis">Travis CI</h3>
-
-<p>
-  To enable Travis CI continuous integration for your fork:
-</p>
-<ul>
-  <li>Browse to <a href="https://www.travis-ci.com/">travis-ci.com</a></li>
-  <li>Click the downarrow for the dropdown, near your face in the upper right corner</li>
-  <li>Click settings</li>
-  <li>Find "checker-framework" in the list, and click the slider to enable it.</li>
-</ul>
--->
 
 <h3 id="ci-related-projects">Continuous Integration failures in related projects (daikon, plume-lib, etc.)</h3>
 
@@ -592,9 +479,10 @@ If a CI job fails, examine the CI logs.
 <p>
 You can also run the same test locally.  Each CI job runs a different command.
 You can see the commands in
-file <a href="https://github.com/typetools/checker-framework/blob/master/.azure/azure-pipelines.yml"><code>azure-pipelines.yml</code></a>,
-usually on lines starting with <code>bash:</code>.  The scripts that are run
-generally just invoke gradle to run particular tasks.
+file <a href="https://github.com/typetools/checker-framework/blob/master/.github/workflows/ci.yml"><code>.github/workflows/ci.yml</code></a>
+(usually on lines starting with <code>run:</code>) or in
+file <a href="https://github.com/typetools/checker-framework/blob/master/.circleci/config.yml"><code>.circleci/config.yml</code></a>
+(usually on lines starting with <code>command:</code>).
 </p>
 
 <p>
@@ -602,8 +490,10 @@ Sometimes, CI tests for your pull request may fail even though the same command
 passed locally.  First, ensure you are using the same JDK.  Second, all CI tests
 are run in a Docker container, and you can use that container if necessary.  The
 container names are in
-file <a href="https://github.com/typetools/checker-framework/blob/master/.azure/azure-pipelines.yml"><code>azure-pipelines.yml</code></a>,
-on lines starting with <code>container:</code>.
+file <a href="https://github.com/typetools/checker-framework/blob/master/.github/workflows/ci.yml"><code>.github/workflows/ci.yml</code></a>
+(on lines starting with <code>image:</code>) or in
+file <a href="https://github.com/typetools/checker-framework/blob/master/.circleci/config.yml"><code>.circleci/config.yml</code></a>
+(on lines starting with <code>- image:</code>).
 </p>
 
 

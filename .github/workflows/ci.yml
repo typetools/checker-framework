@@ -177,10 +177,6 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
-  # Sometimes one of the invocations of wpi-many in `./gradlew wpiManyTest`
-  # takes much longer to complete than normal, and this Azure job times out.
-  # When there is a timeout, one cannot examine wpi or wpi-many logs.
-  # So use a timeout of 90 minutes, and hope that is enough.
   # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk25:
     runs-on: ubuntu-latest
