@@ -1408,7 +1408,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param expectedKinds the expected purity for the method
    */
   protected void reportPurityErrors(
-      PurityResult result, MethodTree tree, EnumSet<PurityKind> expectedKinds) {
+      PurityResult result, Tree tree, EnumSet<PurityKind> expectedKinds) {
     assert !result.isPure(expectedKinds);
     EnumSet<PurityKind> violations = EnumSet.copyOf(expectedKinds);
     violations.removeAll(result.getKinds());
@@ -2403,7 +2403,44 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // TODO: Postconditions?
     // https://github.com/typetools/checker-framework/issues/801
 
+    checkLambdaPurity(tree);
+
     return super.visitLambdaExpression(tree, p);
+  }
+
+  /**
+   * If the functional interface method that the given lambda implements is annotated
+   * {@code @SideEffectFree}, {@code @Deterministic}, or {@code @Pure}, checks the lambda's body
+   * against that annotation.
+   *
+   * <p>Nothing else checks a lambda's body against those annotations. Unlike an overriding method,
+   * a lambda does not inherit the annotation, and unlike a method reference, a lambda has no
+   * declaration whose annotations can be compared against the functional method's.
+   *
+   * @param tree a lambda expression
+   */
+  protected void checkLambdaPurity(LambdaExpressionTree tree) {
+    if (!checkPurityAnnotations) {
+      return;
+    }
+    ExecutableElement functionalMethod = atypeFactory.getFunctionTypeFromTree(tree).getElement();
+    EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, functionalMethod);
+    if (purityKinds.isEmpty()) {
+      return;
+    }
+    TreePath body = atypeFactory.getPath(tree.getBody());
+    if (body == null) {
+      // The body is not in the compilation unit that is being processed, so it cannot be
+      // checked.  This is the same conservative treatment that `visitMethod` gives a method
+      // body.
+      return;
+    }
+    PurityResult r =
+        PurityChecker.checkPurity(
+            body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
+    if (!r.isPure(purityKinds)) {
+      reportPurityErrors(r, tree, purityKinds);
+    }
   }
 
   @Override

@@ -7,7 +7,9 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
@@ -247,6 +249,44 @@ public final class PurityChecker {
       return super.visitCatch(tree, ignore);
     }
 
+    /**
+     * Evaluating a lambda expression creates an object; it does not run the lambda's body. The
+     * body's effects occur where the lambda's functional method is invoked, and that invocation is
+     * checked like any other method call. Therefore, do not scan the body.
+     *
+     * <p>Not scanning the body is sound only because the body is checked elsewhere, against the
+     * purity annotations on the functional method that the lambda implements; see {@code
+     * BaseTypeVisitor#checkLambdaPurity}. (The analogous check for a method reference is {@code
+     * BaseTypeVisitor.OverrideChecker#checkPurity}.)
+     *
+     * @param tree a lambda expression
+     * @param ignore an unused parameter
+     * @return null
+     */
+    @Override
+    public Void visitLambdaExpression(LambdaExpressionTree tree, Void ignore) {
+      return null;
+    }
+
+    /**
+     * Declaring a local or anonymous class has no effect; the effects of its methods occur where
+     * those methods are invoked. Therefore, do not scan the class body. Its methods are checked
+     * against their own purity annotations, like the methods of any other class.
+     *
+     * <p>Instantiating such a class is still checked, by {@link #visitNewClass}: an anonymous
+     * class's constructor cannot be annotated, so it is never {@code @SideEffectFree}, and
+     * therefore any effect of an instance initializer is still reported at the {@code new}
+     * expression.
+     *
+     * @param tree a class declaration
+     * @param ignore an unused parameter
+     * @return null
+     */
+    @Override
+    public Void visitClass(ClassTree tree, Void ignore) {
+      return null;
+    }
+
     /** Represents a method that is both deterministic and side-effect free. */
     private static final EnumSet<PurityKind> detAndSeFree =
         EnumSet.of(PurityKind.DETERMINISTIC, PurityKind.SIDE_EFFECT_FREE);
@@ -373,9 +413,7 @@ public final class PurityChecker {
     protected void assignmentCheck(ExpressionTree variable) {
       variable = TreeUtils.withoutParens(variable);
       VariableElement fieldElt = TreeUtils.asFieldAccess(variable);
-      if (fieldElt != null
-          && isFieldInCurrentClass(fieldElt)
-          && TreePathUtil.inConstructor(getCurrentPath())) {
+      if (fieldElt != null && isFieldInCurrentClass(fieldElt) && inConstructorNotInLambda()) {
         // assigning a field in a constructor
         // TODO: add a check for ArrayAccessTree too.
         return;
@@ -390,6 +428,27 @@ public final class PurityChecker {
         // lhs is a local variable
         assert isLocalVariable(variable);
       }
+    }
+
+    /**
+     * Returns true if the current path is within a constructor or an initializer block, and is not
+     * within a lambda expression.
+     *
+     * <p>{@link #assignmentCheck} permits a constructor to assign to a field of its own class,
+     * because the object is not yet visible to other code. That reasoning does not extend to a
+     * lambda that a constructor creates: the lambda's body may run long after the constructor has
+     * returned, when the object is visible.
+     *
+     * @return true if the current path is within a constructor or initializer block and within no
+     *     lambda expression
+     */
+    private boolean inConstructorNotInLambda() {
+      Tree enclosing = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
+      if (enclosing == null) {
+        // This is an initializer block.
+        return true;
+      }
+      return enclosing instanceof MethodTree methodTree && TreeUtils.isConstructor(methodTree);
     }
 
     /**
