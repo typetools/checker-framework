@@ -3,8 +3,8 @@
  * @summary The Checker Framework must not crash when it completes a classpath class whose
  *   supertype mentions a class that is not on the classpath.  javac completes such a symbol
  *   lazily and never needs it, so javac reports no error and the Checker Framework must not
- *   either.  Each compilation below is expected to succeed, with only a supertype.not.completed
- *   warning naming lib.Missing.
+ *   either.  Every compilation below is checked against a .goal file, so the test fails if the
+ *   diagnostics change, not only if a compilation crashes.
  *
  *   Issue 8055 was two bugs, one behind the other.  First,
  *   AnnotatedTypeFactory#getDeclAnnotations called Elements#getAllAnnotationMirrors outside the
@@ -38,14 +38,15 @@
  *   AnnotatedTypeFactory and ElementUtils#getSuperClass already caught CompletionFailure and
  *   carried on instead (issues 309 and 348).  These paths did not.
  *
- * @compile libsrc/Box.java libsrc/Missing.java libsrc/SuperTypeArg.java libsrc/Factory.java libsrc/MemberOnly.java
+ * @compile libsrc/Box.java libsrc/Missing.java libsrc/SuperTypeArg.java libsrc/Factory.java libsrc/MemberOnly.java libsrc/QualParam.java libsrc/SubOfQualParam.java
  * @build DeleteMissingClassFile
  * @run main DeleteMissingClassFile
- * @compile -processor org.checkerframework.checker.tainting.TaintingChecker Ok.java
- * @compile -processor org.checkerframework.checker.tainting.TaintingChecker ClassLiteral.java
- * @compile -processor org.checkerframework.checker.tainting.TaintingChecker Field.java
- * @compile -processor org.checkerframework.checker.tainting.TaintingChecker MethodCall.java
- * @compile -processor org.checkerframework.checker.tainting.TaintingChecker Parameter.java
+ * @compile/ref=Ok.goal -XDrawDiagnostics -processor org.checkerframework.checker.tainting.TaintingChecker Ok.java
+ * @compile/ref=ClassLiteral.goal -XDrawDiagnostics -processor org.checkerframework.checker.tainting.TaintingChecker ClassLiteral.java
+ * @compile/ref=Field.goal -XDrawDiagnostics -processor org.checkerframework.checker.tainting.TaintingChecker Field.java
+ * @compile/ref=MethodCall.goal -XDrawDiagnostics -processor org.checkerframework.checker.tainting.TaintingChecker MethodCall.java
+ * @compile/ref=Parameter.goal -XDrawDiagnostics -processor org.checkerframework.checker.tainting.TaintingChecker Parameter.java
+ * @compile/fail/ref=InheritedAnno.goal -XDrawDiagnostics -processor org.checkerframework.checker.tainting.TaintingChecker InheritedAnno.java
  */
 
 /*
@@ -54,6 +55,17 @@
  * cleanly; it pins down that the absent class has to appear in a type argument of the supertype.
  * It is checked first, so that the "must stay clean" case is exercised before the shapes that used
  * to crash; jtreg stops a test at its first failing action.
+ *
+ * Every @compile names a .goal file, because a bare @compile checks only the exit status: it would
+ * pass whether the warning is issued once, five times, or not at all.  -XDrawDiagnostics is what
+ * makes the golden files portable; without it a diagnostic that has a source position prints the
+ * absolute path that jtreg passed to javac.
+ *
+ * InheritedAnno.java is the only compilation that is expected to fail, and its error is the
+ * assertion: lib.SubOfQualParam inherits @HasQualifierParameter from lib.QualParam, whose own
+ * supertype is the one that cannot be read, and that annotation is what makes the assignment an
+ * error.  Without it the file compiles cleanly, so the error is evidence that a declaration
+ * annotation is still inherited across the class whose supertype is missing.
  *
  * Keep prose out of the tag block above: jtreg treats everything after `@run main
  * DeleteMissingClassFile`, up to the next tag, as command-line arguments to its main method.

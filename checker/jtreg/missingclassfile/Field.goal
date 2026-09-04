@@ -1,0 +1,2 @@
+- compiler.warn.proc.messager: [class.not.completed] Cannot read a class file that is needed to compute the declaration annotations of lib.SuperTypeArg: class file for lib.Missing not found. Annotations inherited from a supertype may be missed. Make sure your classpath is set correctly.
+1 warning
