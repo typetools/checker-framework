@@ -107,6 +107,9 @@ job_dependences_not_in_canary(canary_jdk, plume_lib)
             - junit_jdk17
             - junit_jdk21
             - junit_jdk26
+            - daikon_part1_jdk[]canary_jdk
+            - daikon_part2_jdk[]canary_jdk
+            - daikon_part3_jdk[]canary_jdk
             - guava_part1_jdk[]canary_jdk
             - guava_part2_jdk[]canary_jdk
             - plume_lib_jdk[]canary_jdk

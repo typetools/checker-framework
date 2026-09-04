@@ -73,6 +73,9 @@ include([../../.azure/jobs.m4])dnl
       - junit_jdk26
       - nonjunit_jdk21
       - misc_jdk21
+      - daikon_part1_jdk[]canary_jdk
+      - daikon_part2_jdk[]canary_jdk
+      - daikon_part3_jdk[]canary_jdk
       - guava_part1_jdk[]canary_jdk
       - guava_part2_jdk[]canary_jdk
       - plume_lib_jdk[]canary_jdk

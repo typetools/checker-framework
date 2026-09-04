@@ -396,6 +396,9 @@ jobs:
       - junit_jdk26
       - nonjunit_jdk21
       - misc_jdk21
+      - daikon_part1_jdk25
+      - daikon_part2_jdk25
+      - daikon_part3_jdk25
       - guava_part1_jdk25
       - guava_part2_jdk25
       - plume_lib_jdk25

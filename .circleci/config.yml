@@ -619,6 +619,9 @@ workflows:
             - junit_jdk17
             - junit_jdk21
             - junit_jdk26
+            - daikon_part1_jdk25
+            - daikon_part2_jdk25
+            - daikon_part3_jdk25
             - guava_part1_jdk25
             - guava_part2_jdk25
             - plume_lib_jdk25
