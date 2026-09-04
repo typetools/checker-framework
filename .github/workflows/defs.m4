@@ -26,6 +26,8 @@ ifelse($3,test-cftests-nonjunit.sh,[],
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
       - name: $3
         run: $4
         env:
