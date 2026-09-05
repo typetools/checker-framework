@@ -18,6 +18,7 @@ import org.checkerframework.afu.scenelib.AnnotationBuilder;
 import org.checkerframework.afu.scenelib.Annotations;
 import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
 import org.checkerframework.afu.scenelib.util.MethodRecorder;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.objectweb.asm.ClassReader;
@@ -43,79 +44,95 @@ public final class AnnotationDef extends AElement {
    */
   public Map<String, AnnotationFieldType> fieldTypes;
 
+  // Exactly one of `source` and `sourceSupplier` is null.
+
+  /** Where the annotation definition came from, such as a file name. Used only for diagnostics. */
+  private @MonotonicNonNull String source;
+
   /**
    * Computes where the annotation definition came from, such as a file name. It is a supplier
    * rather than a string because it is used only for diagnostics, and computing it can be
-   * expensive.
+   * expensive. It is called only if {@link #source} is null.
    */
-  private final Supplier<String> sourceSupplier;
+  private final @Nullable Supplier<String> sourceSupplier;
 
   /**
-   * Constructs an annotation definition with the given name. You MUST call setFieldTypes afterward,
-   * even if with an empty map. (Yuck.)
+   * Constructs an annotation definition.
    *
    * @param name the binary name of the annotation type
-   * @param source where the annotation came from, such as a filename
+   * @param fieldTypes map from the names of this annotation type's fields to their types
+   * @param source where the annotation came from, such as a filename; used for diagnostics
    */
-  public AnnotationDef(@BinaryName String name, String source) {
-    this(name, constantSupplier(source));
-  }
-
-  /**
-   * Constructs an annotation definition with the given name. You MUST call setFieldTypes afterward,
-   * even if with an empty map. (Yuck.)
-   *
-   * @param name the binary name of the annotation type
-   * @param source computes where the annotation came from, such as a filename; it is called only if
-   *     the source is needed for a diagnostic
-   */
-  public AnnotationDef(@BinaryName String name, Supplier<String> source) {
+  public AnnotationDef(
+      @BinaryName String name, Map<String, AnnotationFieldType> fieldTypes, String source) {
     super("annotation: " + name);
     assert name != null;
     assert source != null;
     this.name = name;
-    this.sourceSupplier = source;
+    this.fieldTypes = immutableMap(fieldTypes);
+    this.source = source;
+    this.sourceSupplier = null;
   }
 
   /**
-   * Returns a supplier of the given string.
+   * Constructs an annotation definition.
    *
-   * @param source where an annotation came from, such as a filename
-   * @return a supplier that returns {@code source}
+   * @param name the binary name of the annotation type
+   * @param fieldTypes map from the names of this annotation type's fields to their types
+   * @param sourceSupplier computes where the annotation came from, such as a filename; it is called
+   *     only if the source is needed for a diagnostic
    */
-  private static Supplier<String> constantSupplier(String source) {
-    assert source != null;
-    return () -> source;
+  public AnnotationDef(
+      @BinaryName String name,
+      Map<String, AnnotationFieldType> fieldTypes,
+      Supplier<String> sourceSupplier) {
+    super("annotation: " + name);
+    assert name != null;
+    assert sourceSupplier != null;
+    this.name = name;
+    this.fieldTypes = immutableMap(fieldTypes);
+    this.source = null;
+    this.sourceSupplier = sourceSupplier;
   }
 
   /**
-   * Returns where the annotation definition came from, such as a file name.
+   * Constructs an annotation definition.
    *
-   * @return where the annotation definition came from, such as a file name
+   * @param name the binary name of the annotation
+   * @param tlAnnotationsHere the meta-annotations that are directly on the annotation definition
+   * @param fieldTypes the annotation's element types
+   * @param source where the annotation came from, such as a filename; if it is expensive to
+   *     compute, use {@link #AnnotationDef(String,Set,Map,Supplier)} instead
    */
-  public String getSource() {
-    return sourceSupplier.get();
-  }
-
-  /**
-   * Returns a list of method names for a class in the order in which they occur in the .class file.
-   * Note that the JDK method Class.getDeclaredMethods() does not preserve this order.
-   *
-   * @param name the ifully qualified name of the class to be read
-   * @return a list of methods for the class
-   */
-  public static List<String> getDeclaredMethods(String name) {
-    List<String> methods;
-    try {
-      ClassReader classReader = new ClassReader(name);
-      MethodRecorder methodRecorder = new MethodRecorder(Opcodes.ASM8);
-      classReader.accept(methodRecorder, 0);
-      methods = methodRecorder.getMethods();
-    } catch (IOException e) {
-      methods = null;
-      e.printStackTrace();
+  public AnnotationDef(
+      @BinaryName String name,
+      Set<Annotation> tlAnnotationsHere,
+      Map<String, AnnotationFieldType> fieldTypes,
+      String source) {
+    this(name, fieldTypes, source);
+    if (tlAnnotationsHere != null) {
+      this.tlAnnotationsHere.addAll(tlAnnotationsHere);
     }
-    return methods;
+  }
+
+  /**
+   * Constructs an annotation definition.
+   *
+   * @param name the binary name of the annotation
+   * @param tlAnnotationsHere the meta-annotations that are directly on the annotation definition
+   * @param fieldTypes the annotation's element types
+   * @param sourceSupplier computes where the annotation came from, such as a filename; it is called
+   *     only if the source is needed for a diagnostic
+   */
+  public AnnotationDef(
+      @BinaryName String name,
+      Set<Annotation> tlAnnotationsHere,
+      Map<String, AnnotationFieldType> fieldTypes,
+      Supplier<String> sourceSupplier) {
+    this(name, fieldTypes, sourceSupplier);
+    if (tlAnnotationsHere != null) {
+      this.tlAnnotationsHere.addAll(tlAnnotationsHere);
+    }
   }
 
   // Problem:  I am not sure how to handle circularities (annotations meta-annotated with
@@ -168,84 +185,42 @@ public final class AnnotationDef extends AElement {
   }
 
   /**
-   * Constructs an empty (so far) annotation definition.
+   * Returns where the annotation definition came from, such as a file name.
    *
-   * @param name the binary name of the annotation
-   * @param tlAnnotationsHere the meta-annotations that are directly on the annotation definition
-   * @param source where the annotation came from, such as a filename
+   * @return where the annotation definition came from, such as a file name
    */
-  public AnnotationDef(@BinaryName String name, Set<Annotation> tlAnnotationsHere, String source) {
-    this(name, tlAnnotationsHere, constantSupplier(source));
-  }
-
-  /**
-   * Constructs an empty (so far) annotation definition.
-   *
-   * @param name the binary name of the annotation
-   * @param tlAnnotationsHere the meta-annotations that are directly on the annotation definition
-   * @param source computes where the annotation came from, such as a filename; it is called only if
-   *     the source is needed for a diagnostic
-   */
-  public AnnotationDef(
-      @BinaryName String name, Set<Annotation> tlAnnotationsHere, Supplier<String> source) {
-    this(name, source);
-    if (tlAnnotationsHere != null) {
-      this.tlAnnotationsHere.addAll(tlAnnotationsHere);
+  public String getSource() {
+    if (source == null) {
+      source = sourceSupplier.get();
     }
+    return source;
   }
 
   /**
-   * Constructs an annotation definition with the given name and field types. Uses {@link
-   * #setFieldTypes} to protect the immutability of the annotation definition.
+   * Returns a list of method names for a class in the order in which they occur in the .class file.
+   * Note that the JDK method Class.getDeclaredMethods() does not preserve this order.
    *
-   * @param name the binary name of the annotation
-   * @param tlAnnotationsHere the meta-annotations that are directly on the annotation definition
-   * @param fieldTypes the annotation's element types
-   * @param source where the annotation came from, such as a filename
+   * @param name the ifully qualified name of the class to be read
+   * @return a list of methods for the class
    */
-  public AnnotationDef(
-      @BinaryName String name,
-      Set<Annotation> tlAnnotationsHere,
-      Map<String, ? extends AnnotationFieldType> fieldTypes,
-      String source) {
-    this(name, tlAnnotationsHere, source);
-    setFieldTypes(fieldTypes);
-  }
-
-  /**
-   * Constructs an annotation definition with the given name and field types. Uses {@link
-   * #setFieldTypes} to protect the immutability of the annotation definition.
-   *
-   * @param name the binary name of the annotation
-   * @param tlAnnotationsHere the meta-annotations that are directly on the annotation definition
-   * @param fieldTypes the annotation's element types
-   * @param source computes where the annotation came from, such as a filename; it is called only if
-   *     the source is needed for a diagnostic
-   */
-  public AnnotationDef(
-      @BinaryName String name,
-      Set<Annotation> tlAnnotationsHere,
-      Map<String, ? extends AnnotationFieldType> fieldTypes,
-      Supplier<String> source) {
-    this(name, tlAnnotationsHere, source);
-    setFieldTypes(fieldTypes);
+  public static List<String> getDeclaredMethods(String name) {
+    List<String> methods;
+    try {
+      ClassReader classReader = new ClassReader(name);
+      MethodRecorder methodRecorder = new MethodRecorder(Opcodes.ASM8);
+      classReader.accept(methodRecorder, 0);
+      methods = methodRecorder.getMethods();
+    } catch (IOException e) {
+      methods = null;
+      e.printStackTrace();
+    }
+    return methods;
   }
 
   // This override is necessary because AnnotationDef extends AElement, which implements Cloneable.
   @Override
   public AnnotationDef clone() {
     throw new UnsupportedOperationException("Can't duplicate an AnnotationDef");
-  }
-
-  /**
-   * Sets the field types of this annotation. The field type map is copied and then wrapped in an
-   * {@linkplain Collections#unmodifiableMap unmodifiable map} to protect the immutability of the
-   * annotation definition.
-   *
-   * @param fieldTypes the annotation's element types
-   */
-  public void setFieldTypes(Map<String, ? extends AnnotationFieldType> fieldTypes) {
-    this.fieldTypes = Collections.unmodifiableMap(new LinkedHashMap<>(fieldTypes));
   }
 
   /**
@@ -454,5 +429,60 @@ public final class AnnotationDef extends AElement {
       }
       System.out.println("  " + cpelt);
     }
+  }
+
+  // Utilities
+
+  // TODO: Move these two methods into MapsP.
+
+  /**
+   * Returns a immutable copy of the map. The result cannot be modified, directly or through an
+   * alias.
+   *
+   * <p>WARNING: If the map is already unmodifiable, then it is returned unchanged. That means that
+   * a client that passes an unmodifiable (but not immutable) map can violate this method's
+   * contract.
+   *
+   * @param map a map. If it is unmodifiable, it is immutable. That is, the client may not pass an
+   *     unmodifiable map that can be modified through an alias.x
+   * @return a immutable copy of the map
+   */
+  public <K, V> Map<K, V> immutableMap(Map<K, V> map) {
+    if (isUnmodifiable(map)) {
+      return map;
+    } else {
+      return Collections.unmodifiableMap(new LinkedHashMap<>(map));
+    }
+  }
+
+  /** The package-private class Collections.UnmodifableMap. */
+  private static final Class<?> unmodifiableMapClass;
+
+  /** The package-private class ImmutableCollections.AbstractImmutableMap. */
+  private static final Class<?> abstractImmutableMapClass;
+
+  static {
+    try {
+      unmodifiableMapClass = Class.forName("java.util.Collections$UnmodifiableMap");
+      abstractImmutableMapClass =
+          Class.forName("java.util.ImmutableCollections$AbstractImmutableMap");
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Returns true if the map is unmodifable.
+   *
+   * @param map a map
+   * @return true if the map is unmodifable
+   */
+  public static boolean isUnmodifiable(Map<?, ?> map) {
+    return
+    // For private and package-private clasess in Collections:
+    // UnmodifableMap, UnmodifiableSortedMap, UnmodifiableNavigableMap, UnmodifiableSequencedMap.
+    unmodifiableMapClass.isInstance(map)
+        // For package-private classes in ImmutableCollections: AbstractImmutableMap, Map1, MapN.
+        || abstractImmutableMapClass.isInstance(map);
   }
 }

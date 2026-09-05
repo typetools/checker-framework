@@ -30,8 +30,8 @@ public class SceneToStubWriterTest {
    * @return a scene-lib annotation with the given name
    */
   private static Annotation markerAnnotation(String binaryName) {
-    AnnotationDef def = new AnnotationDef(binaryName, "SceneToStubWriterTest");
-    def.setFieldTypes(Collections.emptyMap());
+    AnnotationDef def =
+        new AnnotationDef(binaryName, Collections.emptyMap(), "SceneToStubWriterTest");
     return new Annotation(def, Collections.emptyMap());
   }
 

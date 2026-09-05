@@ -244,8 +244,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
     @SuppressWarnings("signature") // special case for annotations containing "+"
     AnnotationDef def =
-        new AnnotationDef(exprName, "ToIndexFileConverter.extractAnnotation(" + expr + ")");
-    def.setFieldTypes(Collections.emptyMap());
+        new AnnotationDef(
+            exprName,
+            Collections.emptyMap(),
+            "ToIndexFileConverter.extractAnnotation(" + expr + ")");
     return new Annotation(def, Collections.emptyMap());
   }
 

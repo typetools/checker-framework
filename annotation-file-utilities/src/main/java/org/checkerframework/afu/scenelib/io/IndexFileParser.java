@@ -747,11 +747,10 @@ public final class IndexFileParser {
     @SuppressWarnings("signature") // string concatenation
     @BinaryName String fullName = curPkgPrefix + basename;
 
-    AnnotationDef ad = new AnnotationDef(fullName, source);
+    Map<String, AnnotationFieldType> fields = new LinkedHashMap<>(); // will be filled in
+    AnnotationDef ad = new AnnotationDef(fullName, fields, source);
     expectChar(':');
     parseAnnotations(ad);
-
-    Map<String, AnnotationFieldType> fields = new LinkedHashMap<>();
 
     // yuck; it would be nicer to do a positive match
     while (st.ttype != StreamTokenizer.TT_EOF
@@ -765,8 +764,6 @@ public final class IndexFileParser {
       }
       fields.put(name, type);
     }
-
-    ad.setFieldTypes(fields);
 
     // Now add the definition to the map of all definitions.
     addDef(ad, basename);
