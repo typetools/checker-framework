@@ -7,18 +7,9 @@
 
 ### User-visible changes
 
-Stub-based whole-program inference (`-Ainfer=stubs`) now writes a record as a
-record declaration, including its component list, rather than as a class
-declaration.  Relatedly, an annotation file (stub file) may now annotate a
-nested record declaration; such a declaration was previously ignored.
+### Changes for type system implementers
 
-### Implementation details
-
-`AnnotatedTypeMirror.hashCode()` now hashes only the top-level type rather than
-recursively hashing component types.  Removed class `HashcodeAtmVisitor`, field
-`AnnotatedTypeMirror.HASHCODE_VISITOR`, and method
-`AnnotatedTypeMirror.getUnderlyingTypeHashCode()`, which existed only to compute
-the old hash code.
+Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
 
 ### Closed issues
 
@@ -29,7 +20,7 @@ the old hash code.
 The `-AsuggestPureMethods` command-line option and the `purity.effectively.pure`
 warning no longer require `-AcheckPurityAnnotations` to also be supplied.
 
-### Implementation details
+### Changes for type system implementers
 
 Made the field `Java8InferenceContext.pathToExpression` private; use
 `getPathToExpression()` and `setPathToExpression()` instead.

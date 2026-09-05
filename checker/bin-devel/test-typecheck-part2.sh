@@ -10,11 +10,11 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
 source "$SCRIPT_DIR"/clone-related.sh
 
-./gradlew -q getPlumeScripts
+gradle_retry -q getPlumeScripts
 PLUME_SCRIPTS="$SCRIPT_DIR/.plume-scripts"
 
 # Pluggable type-checking:  run the Checker Framework on itself
-./gradlew typecheck-part2 --warning-mode=all
+gradle_retry_once typecheck-part2 --warning-mode=all
 
 if [ -f SKIP-REQUIRE-JAVADOC ]; then
   echo "Skipping checkNullness because file SKIP-REQUIRE-JAVADOC exists."
