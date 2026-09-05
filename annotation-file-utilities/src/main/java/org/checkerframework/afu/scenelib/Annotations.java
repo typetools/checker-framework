@@ -57,7 +57,12 @@ public final class Annotations {
    */
   public static Set<AnnotationDef> standardDefs;
 
-  // the field types for an annotation with only one field, named "value".
+  /**
+   * Returns the field types for an annotation with only one field, named "value".
+   *
+   * @param aft the type of the "value" field
+   * @return the field types for an annotation with only one field, named "value"
+   */
   static Map<String, AnnotationFieldType> valueFieldTypeOnly(AnnotationFieldType aft) {
     return Collections.singletonMap("value", aft);
   }

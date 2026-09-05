@@ -443,6 +443,8 @@ public final class AnnotationDef extends AElement {
    * a client that passes an unmodifiable (but not immutable) map can violate this method's
    * contract.
    *
+   * @param <K> the type of map keys
+   * @param <V> the type of map values
    * @param map a map. If it is unmodifiable, it is immutable. That is, the client may not pass an
    *     unmodifiable map that can be modified through an alias.x
    * @return a immutable copy of the map
