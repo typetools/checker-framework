@@ -27,7 +27,7 @@ public final class Annotations {
   }
 
   public static Set<Annotation> noAnnotations;
-  public static Map<String, ? extends AnnotationFieldType> noFieldTypes;
+  public static Map<String, AnnotationFieldType> noFieldTypes;
   public static Map<String, ? extends Object> noFieldValues;
   public static Set<Annotation> typeQualifierMetaAnnotations;
 
@@ -57,8 +57,13 @@ public final class Annotations {
    */
   public static Set<AnnotationDef> standardDefs;
 
-  // the field types for an annotation with only one field, named "value".
-  static Map<String, ? extends AnnotationFieldType> valueFieldTypeOnly(AnnotationFieldType aft) {
+  /**
+   * Returns the field types for an annotation with only one field, named "value".
+   *
+   * @param aft the type of the "value" field
+   * @return the field types for an annotation with only one field, named "value"
+   */
+  static Map<String, AnnotationFieldType> valueFieldTypeOnly(AnnotationFieldType aft) {
     return Collections.singletonMap("value", aft);
   }
 
@@ -119,8 +124,8 @@ public final class Annotations {
     adRetention =
         new AnnotationDef(
             "java.lang.annotation.Retention",
+            valueFieldTypeOnly(aftRetentionPolicy),
             "'Retention' in org/checkerframework/afu/scenelib/annotations/Annotations");
-    adRetention.setFieldTypes(valueFieldTypeOnly(aftRetentionPolicy));
     aRetentionRuntime = createValueAnnotation(adRetention, "RUNTIME");
     adRetention.tlAnnotationsHere.add(aRetentionRuntime);
     aRetentionClass = createValueAnnotation(adRetention, "CLASS");
@@ -133,8 +138,8 @@ public final class Annotations {
     adDocumented =
         new AnnotationDef(
             "java.lang.annotation.Documented",
+            noFieldTypes,
             "'Documented' in org/checkerframework/afu/scenelib/annotations/Annotations");
-    adDocumented.setFieldTypes(noFieldTypes);
     aDocumented = new Annotation(adDocumented, noFieldValues);
     adDocumented.tlAnnotationsHere.add(aDocumented);
 
@@ -204,7 +209,7 @@ public final class Annotations {
    */
   public static final Annotation rebuild(Annotation a) {
     AnnotationBuilder ab =
-        AnnotationFactory.saf.beginAnnotation(a.def(), "rebuild " + a.def.source);
+        AnnotationFactory.saf.beginAnnotation(a.def(), "rebuild " + a.def.getSource());
     if (ab != null) {
       for (Map.Entry<String, AnnotationFieldType> fieldDef : a.def().fieldTypes.entrySet()) {
 
