@@ -7,19 +7,9 @@
 
 ### User-visible changes
 
-### Implementation details
+### Changes for type system implementers
 
-New constructors `UserError(String, Throwable)` and `UserError(Throwable,
-String, Object...)` record the cause of a `UserError`.  Calls of the form `new
-UserError(message, throwable)` previously resolved to the varargs constructor
-`UserError(String, Object...)`, which discarded the throwable and treated the
-message as a format string.
-
-`AnnotatedTypeMirror.hashCode()` now hashes only the top-level type rather than
-recursively hashing component types.  Removed class `HashcodeAtmVisitor`, field
-`AnnotatedTypeMirror.HASHCODE_VISITOR`, and method
-`AnnotatedTypeMirror.getUnderlyingTypeHashCode()`, which existed only to compute
-the old hash code.
+Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
 
 ### Closed issues
 
@@ -30,7 +20,7 @@ the old hash code.
 The `-AsuggestPureMethods` command-line option and the `purity.effectively.pure`
 warning no longer require `-AcheckPurityAnnotations` to also be supplied.
 
-### Implementation details
+### Changes for type system implementers
 
 Made the field `Java8InferenceContext.pathToExpression` private; use
 `getPathToExpression()` and `setPathToExpression()` instead.

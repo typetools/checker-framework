@@ -53,6 +53,22 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 0
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: clone_plume_scripts
         run: ./gradlew -q getPlumeScripts
       - name: ci_org_and_branch
@@ -74,6 +90,22 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: test-cftests-junit.sh
         run: ./checker/bin-devel/test-cftests-junit.sh
         env:
@@ -93,6 +125,22 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: test-cftests-junit.sh
         run: ./checker/bin-devel/test-cftests-junit.sh
         env:
@@ -108,6 +156,22 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: test-cftests-junit.sh part1
         run: ./checker/bin-devel/test-cftests-junit.sh part1
         env:
@@ -122,6 +186,22 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: test-cftests-junit.sh part2
         run: ./checker/bin-devel/test-cftests-junit.sh part2
         env:
@@ -141,6 +221,22 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: test-cftests-junit.sh
         run: ./checker/bin-devel/test-cftests-junit.sh
         env:
@@ -158,6 +254,22 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: test-cftests-nonjunit.sh
         run: ./checker/bin-devel/test-cftests-nonjunit.sh
         env:
@@ -172,15 +284,27 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: test-cftests-nonjunit.sh
         run: ./checker/bin-devel/test-cftests-nonjunit.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
-  # Sometimes one of the invocations of wpi-many in `./gradlew wpiManyTest`
-  # takes much longer to complete than normal, and this Azure job times out.
-  # When there is a timeout, one cannot examine wpi or wpi-many logs.
-  # So use a timeout of 90 minutes, and hope that is enough.
   # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk25:
     runs-on: ubuntu-latest
@@ -192,6 +316,22 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: test-cftests-inference-part1.sh
         run: ./checker/bin-devel/test-cftests-inference-part1.sh
         env:
@@ -206,6 +346,22 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: test-cftests-inference-part2.sh
         run: ./checker/bin-devel/test-cftests-inference-part2.sh
         env:
@@ -224,6 +380,20 @@ jobs:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: getPlumeScripts
         run: ./gradlew -q getPlumeScripts
       - name: test-misc.sh
@@ -240,6 +410,20 @@ jobs:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: getPlumeScripts
         run: ./gradlew -q getPlumeScripts
       - name: test-misc.sh
@@ -256,6 +440,20 @@ jobs:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: getPlumeScripts
         run: ./gradlew -q getPlumeScripts
       - name: test-misc.sh
@@ -272,6 +470,22 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: test-typecheck-part1.sh
         run: ./checker/bin-devel/test-typecheck-part1.sh
         env:
@@ -285,13 +499,75 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: test-typecheck-part2.sh
         run: ./checker/bin-devel/test-typecheck-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
-  # TEMPORARILY commented until Daikon release 5.8.24.
-  # daikon_job(canary_jdk)
+  daikon_part1_jdk25:
+    needs:
+      - canary_jobs
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk25:latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+      - name: test-daikon-part1.sh
+        run: ./checker/bin-devel/test-daikon-part1.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+  daikon_part2_jdk25:
+    needs:
+      - canary_jobs
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk25:latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+      - name: test-daikon-part2.sh
+        run: ./checker/bin-devel/test-daikon-part2.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+  daikon_part3_jdk25:
+    needs:
+      - canary_jobs
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk25:latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+      - name: test-daikon-part3.sh
+        run: ./checker/bin-devel/test-daikon-part3.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
   guava_part1_jdk25:
     needs:
@@ -305,6 +581,22 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: test-guava-part1.sh
         run: ./checker/bin-devel/test-guava-part1.sh
         env:
@@ -321,6 +613,22 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: test-guava-part2.sh
         run: ./checker/bin-devel/test-guava-part2.sh
         env:
@@ -337,6 +645,22 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: test-plume-lib.sh
         run: ./checker/bin-devel/test-plume-lib.sh
         env:
@@ -350,6 +674,9 @@ jobs:
       - junit_jdk26
       - nonjunit_jdk21
       - misc_jdk21
+      - daikon_part1_jdk25
+      - daikon_part2_jdk25
+      - daikon_part3_jdk25
       - guava_part1_jdk25
       - guava_part2_jdk25
       - plume_lib_jdk25

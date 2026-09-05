@@ -939,9 +939,9 @@ public class WholeProgramInferenceScenesStorage
       // vars upper bound from being inserted.
       for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
         if (curATM.getPrimaryAnnotationInHierarchy(am) != null) {
-          // Don't insert if the type is already has a primary annotation
-          // in the same hierarchy.
-          break;
+          // Don't insert if the type already has a primary annotation in the same hierarchy.
+          // Other hierarchies are still handled, so this is `continue` rather than `break`.
+          continue;
         }
         addAnnotationsToATypeElement(newATM, typeToUpdate, defLoc, am, curATM.hasAnnotation(am));
       }
