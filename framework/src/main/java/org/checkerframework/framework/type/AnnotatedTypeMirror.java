@@ -174,9 +174,10 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * <p>Every part of this hash must be derived from something that {@code equals} compares. In
    * particular, it must not be derived from the underlying type's printed representation: {@code
-   * equals} compares underlying types by reference, so types that print alike but wrap distinct
-   * {@code Type} objects would hash alike and compare unequal, making hash table operations long
-   * scans of colliding, never-equal entries.
+   * equals} compares underlying types with {@code Type.equals}, which is reference equality for
+   * every javac type but {@code ArrayType}, so types that print alike but wrap distinct {@code
+   * Type} objects would hash alike and compare unequal, making hash table operations long scans of
+   * colliding, never-equal entries.
    *
    * @return a hash code for this type
    */
