@@ -144,6 +144,8 @@ public class AnnotationFileElementTypes {
    *   <li>Stub files returned by {@link BaseTypeChecker#getExtraStubFiles} (treated like those
    *       listed in @StubFiles annotation)
    *   <li>Stub files provided via {@code -Astubs} compiler option
+   *   <li>IntelliJ IDEA external annotations provided via {@code -AintellijAnnotations} compiler
+   *       option
    * </ol>
    *
    * <p>If a type is annotated with a qualifier from the same hierarchy in more than one stub file,
@@ -200,6 +202,13 @@ public class AnnotationFileElementTypes {
       parseAnnotationFiles(
           SystemUtil.pathSeparatorSplitter.splitToList(stubsOption),
           AnnotationFileType.COMMAND_LINE_STUB);
+    }
+
+    // 6. Annotations provided via -AintellijAnnotations command-line option
+    String intellijAnnotationsOption = checker.getOption("intellijAnnotations");
+    if (intellijAnnotationsOption != null) {
+      parseIntellijAnnotations(
+          SystemUtil.pathSeparatorSplitter.splitToList(intellijAnnotationsOption));
     }
 
     parsing = false;
@@ -289,6 +298,80 @@ public class AnnotationFileElementTypes {
   }
 
   /**
+   * Parses IntelliJ annotation files.
+   *
+   * @param intellijAnnotationPaths list of files, directories, or jars/zips to parse
+   */
+  public void parseIntellijAnnotations(List<String> intellijAnnotationPaths) {
+    if (intellijAnnotationPaths.isEmpty()) {
+      return;
+    }
+    boolean noFilesFound = true;
+    boolean wasParsing = parsing;
+    parsing = true;
+    try {
+      SourceChecker checker = factory.getChecker();
+      ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+      if (stubDebug) {
+        AnnotationFileParser.stubDebugStatic(
+            processingEnv, "AFET.parseIntellijAnnotations(%s)", intellijAnnotationPaths);
+      }
+      for (String path : intellijAnnotationPaths) {
+        String fullPath = resolveAgainstTestSrc(path);
+
+        List<AnnotationFileResource> allFiles =
+            AnnotationFileUtil.allAnnotationFiles(
+                fullPath, AnnotationFileType.INTELLIJ_ANNOTATIONS);
+        if (allFiles == null) {
+          checker.message(
+              Diagnostic.Kind.ERROR, "IntelliJ IDEA annotations file not found: " + path);
+        } else if (!allFiles.isEmpty()) {
+          noFilesFound = false;
+          for (AnnotationFileResource resource : allFiles) {
+            try (InputStream annotationFileStream =
+                new BufferedInputStream(resource.getInputStream())) {
+              IntelliJAnnotationParser.parseAnnotationsXml(
+                  resource.getDescription(),
+                  annotationFileStream,
+                  factory,
+                  processingEnv,
+                  annotationFileAnnos);
+
+            } catch (IOException e) {
+              checker.message(
+                  Diagnostic.Kind.ERROR,
+                  "Could not read IntelliJ IDEA annotations: " + resource.getDescription());
+            }
+          }
+        }
+      }
+    } finally {
+      parsing = wasParsing;
+    }
+    if (noFilesFound) {
+      checker.message(
+          Diagnostic.Kind.NOTE, "No annotations.xml file found within " + intellijAnnotationPaths);
+    }
+  }
+
+  /**
+   * Returns the path to use for an annotation file that was named on the command line. This is a
+   * special case when running in jtreg, which runs the compiler in a different directory than the
+   * one that contains the test's annotation files.
+   *
+   * @param path a relative or absolute path, from a command-line argument
+   * @return {@code path}, resolved against the {@code test.src} system property if that property is
+   *     set and {@code path} is relative
+   */
+  private static String resolveAgainstTestSrc(String path) {
+    String base = System.getProperty("test.src");
+    if (base == null || Paths.get(path).isAbsolute()) {
+      return path;
+    }
+    return base + "/" + path;
+  }
+
+  /**
    * Parses the files in {@code annotationFiles} of the given file type. This includes files listed
    * directly in {@code annotationFiles} and for each listed directory, also includes all files
    * located in that directory (recursively).
@@ -315,9 +398,7 @@ public class AnnotationFileElementTypes {
           processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
     }
     for (String path : annotationFiles) {
-      // Special case when running in jtreg.
-      String base = System.getProperty("test.src");
-      String fullPath = (base == null) ? path : base + "/" + path;
+      String fullPath = resolveAgainstTestSrc(path);
 
       List<AnnotationFileResource> allFiles =
           AnnotationFileUtil.allAnnotationFiles(fullPath, fileType);

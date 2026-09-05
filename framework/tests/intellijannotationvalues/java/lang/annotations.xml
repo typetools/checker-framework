@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <item name="java.lang.String java.lang.String trim()">
+    <annotation name="org.checkerframework.framework.testchecker.testaccumulation.qual.TestAccumulation">
+      <val name="value" val="{&quot;alpha&quot;, &quot;beta&quot;}" />
+    </annotation>
+  </item>
+  <item name="java.lang.String java.lang.String strip()">
+    <annotation name="org.checkerframework.framework.testchecker.testaccumulation.qual.TestAccumulationPredicate">
+      <val val="&quot;alpha&quot;" />
+    </annotation>
+  </item>
+</root>

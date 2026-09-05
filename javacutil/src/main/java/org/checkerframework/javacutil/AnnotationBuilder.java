@@ -384,47 +384,112 @@ public class AnnotationBuilder {
     return this;
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element name
+   * @param values array of values
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Object[] values) {
     return setValue(elementName, Arrays.asList(values));
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element name
+   * @param value the Boolean value
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Boolean value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element name
+   * @param value the Character value
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Character value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element name
+   * @param value the Double value
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Double value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element name
+   * @param value the Float value
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Float value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element name
+   * @param value the Integer value
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Integer value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element name
+   * @param value the Long value
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Long value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element name
+   * @param value the Short value
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Short value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element name
+   * @param value the Byte value
+   * @return this
+   */
+  public AnnotationBuilder setValue(CharSequence elementName, Byte value) {
+    return setValue(elementName, (Object) value);
+  }
+
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element name
+   * @param value the String value
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, String value) {
     return setValue(elementName, (Object) value);
   }
@@ -793,6 +858,8 @@ public class AnnotationBuilder {
         return v.visitArray((List<? extends AnnotationValue>) list, p);
       } else if (value instanceof Boolean b) {
         return v.visitBoolean(b, p);
+      } else if (value instanceof Byte by) {
+        return v.visitByte(by, p);
       } else if (value instanceof Character c) {
         return v.visitChar(c, p);
       } else if (value instanceof Double d) {

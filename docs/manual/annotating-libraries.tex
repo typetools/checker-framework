@@ -897,7 +897,9 @@ Some command-line options make the stub parser issue more warnings:
   By default, the Checker Framework warns about such problems in a stub
   file provided on the command line, but does not warn about built-in stub files.
   These command-line options turn the warnings on or off (respectively) for
-  all stub files. \\
+  all stub files. They also turn off the same warning about problems in
+  an IntelliJ IDEA annotation file (Section~\ref{intellij-annotations}).
+  \\
   The \<@NoAnnotationFileParserWarning> annotation on a package or type in a stub file
   causes no warning to be issued for that package or type, regardless of
   the command-line options.
@@ -1078,6 +1080,29 @@ Here is an example invocation:
   java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
     org.checkerframework.framework.ajava.InsertAjavaAnnotations \
     <path-to-ajava-files> <path-to-java-files>
+\end{Verbatim}
+
+
+\sectionAndLabel{External annotations in IntelliJ IDEA format}{intellij-annotations}
+
+The Checker Framework can read external annotations stored in IntelliJ
+IDEA's \code{annotations.xml} format.  This allows users to create
+\href{https://www.jetbrains.com/help/rider/Code_Analysis__External_Annotations.html}{external
+annotations}
+using
+\href{https://www.jetbrains.com/help/idea/annotating-source-code.html#external-annotations}{IntelliJ
+IDEA's user interface}.
+
+The \code{-AintellijAnnotations} command-line argument takes a
+path-separated list of \code{annotations.xml} files, directories, jar files, or zip files
+containing \code{annotations.xml} files arranged in directory structures matching their package names.
+The path separator is colon on Unix and semicolon on Windows.
+
+For example:
+\begin{Verbatim}
+  javac -processor org.checkerframework.checker.nullness.NullnessChecker \
+    -AintellijAnnotations=path/to/annotations-dir:path/to/annotations.jar \
+    MyFile.java
 \end{Verbatim}
 
 
