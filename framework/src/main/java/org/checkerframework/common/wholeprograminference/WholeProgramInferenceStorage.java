@@ -35,7 +35,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @param elt an element
    * @return the path to the file where inference results for the element will be written
    */
-  public String getFileForElement(Element elt);
+  String getFileForElement(Element elt);
 
   /**
    * Given an ExecutableElement in a compilation unit that has already been read into storage,
@@ -48,7 +48,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @param methodElt a method or constructor Element
    * @return true if the storage has a method corresponding to {@code elt}
    */
-  public boolean hasStorageLocationForMethod(ExecutableElement methodElt);
+  boolean hasStorageLocationForMethod(ExecutableElement methodElt);
 
   /**
    * Returns the annotations for a formal parameter type.
@@ -60,7 +60,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @param atypeFactory the type factory
    * @return the annotations for a formal parameter type
    */
-  public T getParameterAnnotations(
+  T getParameterAnnotations(
       ExecutableElement methodElt,
       @Positive int index_1based,
       AnnotatedTypeMirror paramATM,
@@ -75,7 +75,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @param atypeFactory the type factory
    * @return the annotations for the receiver type
    */
-  public T getReceiverAnnotations(
+  T getReceiverAnnotations(
       ExecutableElement methodElt, AnnotatedTypeMirror paramATM, AnnotatedTypeFactory atypeFactory);
 
   /**
@@ -86,7 +86,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @param atypeFactory the type factory
    * @return the annotations for the return type
    */
-  public T getReturnAnnotations(
+  T getReturnAnnotations(
       ExecutableElement methodElt, AnnotatedTypeMirror atm, AnnotatedTypeFactory atypeFactory);
 
   /**
@@ -98,7 +98,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @param atypeFactory the annotated type factory
    * @return the annotations for a field type
    */
-  public T getFieldAnnotations(
+  T getFieldAnnotations(
       Element element,
       String fieldName,
       AnnotatedTypeMirror lhsATM,
@@ -125,7 +125,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @return the pre- or postcondition annotations for an expression, or null if the given
    *     expression is not a supported expression type
    */
-  public @Nullable T getPreOrPostconditions(
+  @Nullable T getPreOrPostconditions(
       String className,
       Analysis.BeforeOrAfter preOrPost,
       ExecutableElement methodElement,
@@ -141,7 +141,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @return true if {@code anno} is a new declaration annotation for {@code methodElt}, false
    *     otherwise
    */
-  public boolean addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
+  boolean addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
 
   /**
    * Updates a field to add a declaration annotation.
@@ -151,7 +151,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @return true if {@code anno} is a new declaration annotation for {@code fieldElt}, false
    *     otherwise
    */
-  public boolean addFieldDeclarationAnnotation(VariableElement fieldElt, AnnotationMirror anno);
+  boolean addFieldDeclarationAnnotation(VariableElement fieldElt, AnnotationMirror anno);
 
   /**
    * Adds a declaration annotation to a formal parameter.
@@ -162,7 +162,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @return true if {@code anno} is a new declaration annotation for {@code methodElt}, false
    *     otherwise
    */
-  public boolean addDeclarationAnnotationToFormalParameter(
+  boolean addDeclarationAnnotationToFormalParameter(
       ExecutableElement methodElt, @Positive int index_1based, AnnotationMirror anno);
 
   /**
@@ -173,7 +173,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @return true if {@code anno} is a new declaration annotation for {@code classElt}, false
    *     otherwise
    */
-  public boolean addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno);
+  boolean addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno);
 
   /**
    * Returns the list of declaration annotations inferred on the given method so far in this round
@@ -204,7 +204,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @return an annotated type mirror with underlying type {@code typeMirror} and annotations from
    *     {@code storageLocation}
    */
-  public AnnotatedTypeMirror atmFromStorageLocation(TypeMirror typeMirror, T storageLocation);
+  AnnotatedTypeMirror atmFromStorageLocation(TypeMirror typeMirror, T storageLocation);
 
   /**
    * Updates a storage location to have the annotations of the given {@code AnnotatedTypeMirror}.
@@ -228,7 +228,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
    *     source code
    */
-  public void updateStorageLocationFromAtm(
+  void updateStorageLocationFromAtm(
       AnnotatedTypeMirror newATM,
       AnnotatedTypeMirror curATM,
       T storageLocationToUpdate,
@@ -243,8 +243,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @param outputFormat the file format in which to write the results
    * @param checker the checker from which this method is called, for naming annotation files
    */
-  public void writeResultsToFile(
-      WholeProgramInference.OutputFormat outputFormat, BaseTypeChecker checker);
+  void writeResultsToFile(WholeProgramInference.OutputFormat outputFormat, BaseTypeChecker checker);
 
   /**
    * Indicates that inferred annotations for the file at {@code path} have changed since last
@@ -253,7 +252,7 @@ public interface WholeProgramInferenceStorage<T> {
    *
    * @param path path to the file with annotations that have been modified
    */
-  public void setFileModified(String path);
+  void setFileModified(String path);
 
   /**
    * Performs any preparation required for inference on the elements of a class. Should be called on
