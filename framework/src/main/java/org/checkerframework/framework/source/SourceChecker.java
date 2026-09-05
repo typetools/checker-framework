@@ -274,8 +274,8 @@ import org.plumelib.util.UtilP;
   // Annotations in IntelliJ annotations.xml format
   // org.checkerframework.framework.stub.AnnotationFileElementTypes.parseIntellijAnnotations()
   "intellijAnnotations",
-  // Whether to print warnings about types/members in a stub file
-  // that were not found on the class path
+  // Whether to print warnings about types/members in a stub file (or IntelliJ
+  // IDEA annotation file) that were not found on the classpath.
   // org.checkerframework.framework.stub.AnnotationFileParser.warnIfNotFound
   "stubWarnIfNotFound",
   "stubNoWarnIfNotFound",

@@ -7,8 +7,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -39,6 +42,8 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.plumelib.util.ArrayMap;
+import org.plumelib.util.ArraySet;
 import org.plumelib.util.StringsP;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -151,13 +156,16 @@ public final class IntelliJAnnotationParser {
   }
 
   /**
-   * Issues a warning about missing elements if the -AstubWarnIfNotFound option is set.
+   * Issues a warning about a missing element, unless the -AstubNoWarnIfNotFound option is set.
+   *
+   * <p>An IntelliJ annotation file is always supplied on the command line, so this warns by
+   * default, as {@link AnnotationFileParser} does for a command-line file.
    *
    * @param checker the source checker
    * @param message the warning message
    */
   private static void warnNotFound(SourceChecker checker, String message) {
-    if (checker.hasOption("stubWarnIfNotFound")) {
+    if (!checker.hasOption("stubNoWarnIfNotFound")) {
       Diagnostic.Kind kind =
           checker.hasOption("stubWarnNote") ? Diagnostic.Kind.NOTE : Diagnostic.Kind.WARNING;
       checker.message(kind, message);
@@ -183,38 +191,59 @@ public final class IntelliJAnnotationParser {
     String context =
         String.format("item '%s' in %s", itemElement.getAttribute("name").trim(), filename);
 
-    NodeList children = itemElement.getChildNodes();
+    for (org.w3c.dom.Element annoElement : childElements(itemElement, "annotation")) {
+      String annoName = annoElement.getAttribute("name");
+      if (annoName == null || annoName.trim().isEmpty()) {
+        continue;
+      }
+      annoName = annoName.trim();
+
+      TypeElement annoTypeElt = getTypeElement(annoName, elements);
+      if (annoTypeElt == null) {
+        warnNotFound(atypeFactory.getChecker(), "Unknown annotation: " + annoName);
+        continue;
+      }
+      if (annoTypeElt.getKind() != ElementKind.ANNOTATION_TYPE) {
+        warnNotFound(atypeFactory.getChecker(), "Not an annotation type: " + annoName);
+        continue;
+      }
+
+      try {
+        AnnotationMirror annoMirror =
+            buildAnnotationMirror(
+                annoElement, annoTypeElt, processingEnv, atypeFactory.getChecker(), context);
+        if (annoMirror != null) {
+          AnnotationMirror canonical = atypeFactory.canonicalAnnotation(annoMirror);
+          result.add(canonical != null ? canonical : annoMirror);
+        }
+      } catch (BugInCF e) {
+        throw e;
+      } catch (Exception e) {
+        warnNotFound(
+            atypeFactory.getChecker(),
+            "Failed to build annotation @" + annoName + ": " + e.getMessage());
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns the children of {@code parent} that are elements with the given tag name. Unlike {@link
+   * org.w3c.dom.Element#getElementsByTagName}, this returns only direct children rather than all
+   * descendants.
+   *
+   * @param parent an XML element
+   * @param tagName a tag name
+   * @return the direct children of {@code parent} whose tag name is {@code tagName}
+   */
+  private static List<org.w3c.dom.Element> childElements(
+      org.w3c.dom.Element parent, String tagName) {
+    List<org.w3c.dom.Element> result = new ArrayList<>();
+    NodeList children = parent.getChildNodes();
     for (int i = 0; i < children.getLength(); i++) {
       Node child = children.item(i);
-      if (child.getNodeType() == Node.ELEMENT_NODE && "annotation".equals(child.getNodeName())) {
-        org.w3c.dom.Element annoElement = (org.w3c.dom.Element) child;
-        String annoName = annoElement.getAttribute("name");
-        if (annoName == null || annoName.trim().isEmpty()) {
-          continue;
-        }
-        annoName = annoName.trim();
-
-        TypeElement annoTypeElt = getTypeElement(annoName, elements);
-        if (annoTypeElt == null) {
-          warnNotFound(atypeFactory.getChecker(), "Unknown annotation: " + annoName);
-          continue;
-        }
-
-        try {
-          AnnotationMirror annoMirror =
-              buildAnnotationMirror(
-                  annoElement, annoTypeElt, processingEnv, atypeFactory.getChecker(), context);
-          if (annoMirror != null) {
-            AnnotationMirror canonical = atypeFactory.canonicalAnnotation(annoMirror);
-            result.add(canonical != null ? canonical : annoMirror);
-          }
-        } catch (BugInCF e) {
-          throw e;
-        } catch (Exception e) {
-          warnNotFound(
-              atypeFactory.getChecker(),
-              "Failed to build annotation @" + annoName + ": " + e.getMessage());
-        }
+      if (child.getNodeType() == Node.ELEMENT_NODE && tagName.equals(child.getNodeName())) {
+        result.add((org.w3c.dom.Element) child);
       }
     }
     return result;
@@ -223,8 +252,9 @@ public final class IntelliJAnnotationParser {
   /**
    * Constructs an {@link AnnotationMirror} from an XML {@code <annotation>} element.
    *
-   * <p>If any {@code <val>} child cannot be parsed, this issues a warning and returns null, rather
-   * than building an annotation that is missing a mandatory element.
+   * <p>If any {@code <val>} child cannot be parsed, or if some element that has no default value is
+   * not given a value, this issues a warning and returns null, rather than building an annotation
+   * that is missing a mandatory element.
    *
    * @param annoElement the XML element for the annotation
    * @param annoTypeElt the TypeElement corresponding to the annotation
@@ -243,14 +273,9 @@ public final class IntelliJAnnotationParser {
     @CanonicalName String canonicalName = annoTypeElt.getQualifiedName().toString();
     Elements elements = processingEnv.getElementUtils();
 
-    NodeList valNodes = annoElement.getElementsByTagName("val");
-    if (valNodes.getLength() == 0) {
-      return AnnotationBuilder.fromName(elements, canonicalName);
-    }
-
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, canonicalName);
-    for (int i = 0; i < valNodes.getLength(); i++) {
-      org.w3c.dom.Element valElem = (org.w3c.dom.Element) valNodes.item(i);
+    Set<String> writtenElements = new ArraySet<>(2); // most annotations have few elements
+    for (org.w3c.dom.Element valElem : childElements(annoElement, "val")) {
       if (!valElem.hasAttribute("val")) {
         continue;
       }
@@ -263,9 +288,31 @@ public final class IntelliJAnnotationParser {
             String.format("Ignoring annotation @%s on %s: %s", canonicalName, context, problem));
         return null;
       }
+      writtenElements.add(memberName);
     }
 
-    return builder.build();
+    for (ExecutableElement annoElt : ElementFilter.methodsIn(annoTypeElt.getEnclosedElements())) {
+      String elementName = annoElt.getSimpleName().toString();
+      if (annoElt.getDefaultValue() == null && !writtenElements.contains(elementName)) {
+        checker.message(
+            Diagnostic.Kind.WARNING,
+            String.format(
+                "Ignoring annotation @%s on %s: no value for element '%s', which has no default",
+                canonicalName, context, elementName));
+        return null;
+      }
+    }
+
+    // Index the values by element name, so that fromName can supply the default value of every
+    // element that the annotations.xml file does not mention.
+    Map<? extends ExecutableElement, ? extends AnnotationValue> builtValues =
+        builder.build().getElementValues();
+    Map<String, AnnotationValue> elementValues = new ArrayMap<>(builtValues.size());
+    for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
+        builtValues.entrySet()) {
+      elementValues.put(entry.getKey().getSimpleName().toString(), entry.getValue());
+    }
+    return AnnotationBuilder.fromName(elements, canonicalName, elementValues);
   }
 
   /**
@@ -359,7 +406,7 @@ public final class IntelliJAnnotationParser {
     TypeKind kind = type.getKind();
     try {
       if (kind == TypeKind.BOOLEAN) {
-        return Boolean.parseBoolean(unquotedVal);
+        return parseBoolean(unquotedVal);
       } else if (kind == TypeKind.INT) {
         return Integer.parseInt(unquotedVal);
       } else if (kind == TypeKind.LONG) {
@@ -396,7 +443,9 @@ public final class IntelliJAnnotationParser {
         String className = unquotedVal.replaceAll("\\.class$", "");
         TypeElement classTypeElt = getTypeElement(className, processingEnv.getElementUtils());
         if (classTypeElt != null) {
-          return classTypeElt.asType();
+          // Erase, because that is what javac stores for a class literal and what
+          // AnnotationBuilder.setValue(CharSequence, TypeMirror) does.
+          return processingEnv.getTypeUtils().erasure(classTypeElt.asType());
         }
       }
     }
@@ -418,6 +467,23 @@ public final class IntelliJAnnotationParser {
       result = elements.getTypeElement(className);
     }
     return result;
+  }
+
+  /**
+   * Parses a boolean literal. Unlike {@link Boolean#parseBoolean}, which treats every string other
+   * than "true" as false, this returns null for a string that is not a boolean literal.
+   *
+   * @param s a string
+   * @return the boolean that {@code s} represents, or null if {@code s} is not a boolean literal
+   */
+  static @Nullable Boolean parseBoolean(String s) {
+    if (s.equalsIgnoreCase("true")) {
+      return true;
+    } else if (s.equalsIgnoreCase("false")) {
+      return false;
+    } else {
+      return null;
+    }
   }
 
   /**

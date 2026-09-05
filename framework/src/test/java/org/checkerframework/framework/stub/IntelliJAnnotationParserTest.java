@@ -2,6 +2,7 @@ package org.checkerframework.framework.stub;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -92,6 +93,18 @@ public class IntelliJAnnotationParserTest {
     assertEquals("a\\", IntelliJAnnotationParser.stripQuotes("\"a\\\\\""));
     // An unterminated string literal is left alone.
     assertEquals("\"a\\\"", IntelliJAnnotationParser.stripQuotes("\"a\\\""));
+  }
+
+  @Test
+  public void testParseBoolean() {
+    assertEquals(Boolean.TRUE, IntelliJAnnotationParser.parseBoolean("true"));
+    assertEquals(Boolean.TRUE, IntelliJAnnotationParser.parseBoolean("TRUE"));
+    assertEquals(Boolean.FALSE, IntelliJAnnotationParser.parseBoolean("false"));
+    // A string that is not a boolean literal is not silently treated as false.
+    assertNull(IntelliJAnnotationParser.parseBoolean("ture"));
+    assertNull(IntelliJAnnotationParser.parseBoolean("1"));
+    assertNull(IntelliJAnnotationParser.parseBoolean("yes"));
+    assertNull(IntelliJAnnotationParser.parseBoolean(""));
   }
 
   @Test

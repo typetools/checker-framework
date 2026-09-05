@@ -306,6 +306,7 @@ public class AnnotationFileElementTypes {
     if (intellijAnnotationPaths.isEmpty()) {
       return;
     }
+    boolean noFilesFound = true;
     boolean wasParsing = parsing;
     parsing = true;
     try {
@@ -321,7 +322,11 @@ public class AnnotationFileElementTypes {
         List<AnnotationFileResource> allFiles =
             AnnotationFileUtil.allAnnotationFiles(
                 fullPath, AnnotationFileType.INTELLIJ_ANNOTATIONS);
-        if (allFiles != null) {
+        if (allFiles == null) {
+          checker.message(
+              Diagnostic.Kind.ERROR, "IntelliJ IDEA annotations file not found: " + path);
+        } else if (!allFiles.isEmpty()) {
+          noFilesFound = false;
           for (AnnotationFileResource resource : allFiles) {
             try (InputStream annotationFileStream =
                 new BufferedInputStream(resource.getInputStream())) {
@@ -331,19 +336,21 @@ public class AnnotationFileElementTypes {
                   factory,
                   processingEnv,
                   annotationFileAnnos);
+
             } catch (IOException e) {
               checker.message(
-                  Diagnostic.Kind.NOTE,
+                  Diagnostic.Kind.ERROR,
                   "Could not read IntelliJ IDEA annotations: " + resource.getDescription());
             }
           }
-        } else {
-          checker.message(
-              Diagnostic.Kind.WARNING, "IntelliJ IDEA annotations not found at " + path);
         }
       }
     } finally {
       parsing = wasParsing;
+    }
+    if (noFilesFound) {
+      checker.message(
+          Diagnostic.Kind.NOTE, "No annotations.xml file found within " + intellijAnnotationPaths);
     }
   }
 

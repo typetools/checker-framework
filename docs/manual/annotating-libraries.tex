@@ -897,7 +897,9 @@ Some command-line options make the stub parser issue more warnings:
   By default, the Checker Framework warns about such problems in a stub
   file provided on the command line, but does not warn about built-in stub files.
   These command-line options turn the warnings on or off (respectively) for
-  all stub files. \\
+  all stub files. They also turn off the same warning about problems in
+  an IntelliJ IDEA annotation file (Section~\ref{intellij-annotations}).
+  \\
   The \<@NoAnnotationFileParserWarning> annotation on a package or type in a stub file
   causes no warning to be issued for that package or type, regardless of
   the command-line options.
