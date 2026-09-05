@@ -11,4 +11,4 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 source "$SCRIPT_DIR"/clone-related.sh
 
 # Pluggable type-checking:  run the Checker Framework on itself
-./gradlew typecheck-part1 --warning-mode=all
+gradle_retry_once typecheck-part1 --warning-mode=all
