@@ -45,8 +45,10 @@ public class AnnotationConverterTest {
     Assert.assertEquals(
         "annotationMirrorToAnnotation stringified its argument", 0, am.toStringCount);
     String source = converted.def().getSource();
+    String secondSource = converted.def().getSource();
     Assert.assertTrue(source, source.startsWith("annotationMirrorToAnnotation "));
     Assert.assertTrue(source, source.contains("java.lang.Deprecated"));
+    Assert.assertEquals(source, secondSource);
     Assert.assertEquals("getSource() stringified its argument more than once", 1, am.toStringCount);
   }
 
