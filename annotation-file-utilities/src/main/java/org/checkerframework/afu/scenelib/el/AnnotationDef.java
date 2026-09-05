@@ -54,7 +54,7 @@ public final class AnnotationDef extends AElement {
    * rather than a string because it is used only for diagnostics, and computing it can be
    * expensive. It is called only if {@link #source} is null.
    */
-  private final @Nullable Supplier<String> sourceSupplier;
+  private @Nullable Supplier<String> sourceSupplier;
 
   /**
    * Constructs an annotation definition.
@@ -189,9 +189,10 @@ public final class AnnotationDef extends AElement {
    *
    * @return where the annotation definition came from, such as a file name
    */
-  public String getSource() {
+  public synchronized String getSource() {
     if (source == null) {
       source = sourceSupplier.get();
+      sourceSupplier = null;
     }
     return source;
   }
@@ -467,34 +468,48 @@ public final class AnnotationDef extends AElement {
     }
   }
 
-  /** The package-private class Collections.UnmodifableMap. */
-  private static final Class<?> unmodifiableMapClass;
+  /**
+   * The package-private class Collections.UnmodifiableMap, or null if this JDK does not have such a
+   * class.
+   */
+  private static final @Nullable Class<?> unmodifiableMapClass =
+      classForNameOrNull("java.util.Collections$UnmodifiableMap");
 
-  /** The package-private class ImmutableCollections.AbstractImmutableMap. */
-  private static final Class<?> abstractImmutableMapClass;
+  /**
+   * The package-private class ImmutableCollections.AbstractImmutableMap, or null if this JDK does
+   * not have such a class.
+   */
+  private static final @Nullable Class<?> abstractImmutableMapClass =
+      classForNameOrNull("java.util.ImmutableCollections$AbstractImmutableMap");
 
-  static {
+  /**
+   * Returns the class with the given name, or null if there is no such class. Unlike {@link
+   * Class#forName(String)}, this method throws no exception.
+   *
+   * @param className the binary name of a class
+   * @return the class with the given name, or null
+   */
+  private static @Nullable Class<?> classForNameOrNull(@BinaryName String className) {
     try {
-      unmodifiableMapClass = Class.forName("java.util.Collections$UnmodifiableMap");
-      abstractImmutableMapClass =
-          Class.forName("java.util.ImmutableCollections$AbstractImmutableMap");
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
+      return Class.forName(className);
+    } catch (ClassNotFoundException | LinkageError e) {
+      return null;
     }
   }
 
   /**
-   * Returns true if the map is unmodifable.
+   * Returns true if the map is unmodifiable. May return false for a map that is unmodifiable but
+   * whose implementation this method does not recognize.
    *
    * @param map a map
-   * @return true if the map is unmodifable
+   * @return true if the map is unmodifiable
    */
   public static boolean isUnmodifiable(Map<?, ?> map) {
     return
-    // For private and package-private clasess in Collections:
-    // UnmodifableMap, UnmodifiableSortedMap, UnmodifiableNavigableMap, UnmodifiableSequencedMap.
-    unmodifiableMapClass.isInstance(map)
+    // For private and package-private classes in Collections:
+    // UnmodifiableMap, UnmodifiableSortedMap, UnmodifiableNavigableMap, UnmodifiableSequencedMap.
+    (unmodifiableMapClass != null && unmodifiableMapClass.isInstance(map))
         // For package-private classes in ImmutableCollections: AbstractImmutableMap, Map1, MapN.
-        || abstractImmutableMapClass.isInstance(map);
+        || (abstractImmutableMapClass != null && abstractImmutableMapClass.isInstance(map));
   }
 }
