@@ -387,7 +387,7 @@ public final class AnnotationDef extends AElement {
             def1.name,
             def1.tlAnnotationsHere,
             newFieldTypes,
-            "unify(" + def1.getSource() + ", " + def2.getSource() + ")");
+            () -> "unify(" + def1.getSource() + ", " + def2.getSource() + ")");
       }
     }
     return null;
