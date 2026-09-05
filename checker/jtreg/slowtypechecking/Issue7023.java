@@ -7,9 +7,9 @@
  * a large number of type-argument combinations for it, and each one probes SubtypeVisitHistory
  * and StructuralEqualityVisitHistory, which are keyed on a pair of AnnotatedTypeMirrors.  When
  * AnnotatedTypeMirror.hashCode() was a recursive walk of the whole type -- and, worse, a
- * structural walk while equals() compares underlying types by reference -- every probe cost two
- * full traversals and the colliding, never-equal entries turned each bucket lookup into a long
- * scan.  The Nullness Checker then reported 18-31 seconds per qualifier hierarchy on this file.
+ * structural walk while equals() compares underlying types with Type.equals(), which is reference
+ * equality for every javac type but ArrayType -- every probe cost two full traversals and the
+ * colliding, never-equal entries turned each bucket lookup into a long scan.  The Nullness Checker then reported 18-31 seconds per qualifier hierarchy on this file.
  *
  * There is nothing to type-check here; the file is expected to produce no diagnostics at all.
  *

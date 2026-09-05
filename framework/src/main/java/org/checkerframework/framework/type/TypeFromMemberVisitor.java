@@ -101,7 +101,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       }
     } else {
       // Add the primary annotation from the variableTree.getModifiers();
-      AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(result);
+      AnnotatedTypeMirror innerType = AnnotatedTypes.innermostComponentType(result);
       for (AnnotationMirror anno : modifierAnnos) {
         // The code here is similar to
         // org.checkerframework.framework.util.element.ElementAnnotationUtil.addDeclarationAnnotationsFromElement.
