@@ -944,7 +944,8 @@ public final class AnnotatedTypes {
 
   /**
    * Returns the annotated greatest lower bound of {@code subtype} and {@code supertype}, where the
-   * underlying Java types are in a subtyping relationship.
+   * underlying Java type of {@code subtype} is a subtype of the underlying Java type of {@code
+   * superType}.
    *
    * <p>This handles cases 1, 2, and 3 mentioned in the Javadoc of {@link
    * #annotatedGLB(AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)}.
@@ -984,8 +985,24 @@ public final class AnnotatedTypes {
           // The superAnno is lower than the lower bound annotation, so add it.
           glb.addAnnotation(superAnno);
         } // else don't add any annotation.
-      } else {
-        throw new BugInCF("GLB: subtype: %s, supertype: %s", subtype, supertype);
+      } else { // superAnno == null && subAnno != null
+        if (supertype.getKind() != TypeKind.TYPEVAR) {
+          throw new BugInCF("Missing primary annotations: supertype: %s", supertype);
+        }
+
+        // The supertype is a type variable with no primary annotation, so it stands for the
+        // range of its bounds.  Its greatest possible annotation is its effective upper bound
+        // annotation, so the result is the greatest lower bound of that and subAnno.  (The two
+        // are not necessarily comparable; the underlying Java types are in a subtyping
+        // relationship, but their annotations need not be.)
+        AnnotationMirrorSet ub = findEffectiveAnnotations(qualHierarchy, supertype);
+        AnnotationMirror superUBAnno = qualHierarchy.findAnnotationInHierarchy(ub, top);
+        if (superUBAnno == null) {
+          glb.addAnnotation(subAnno);
+        } else {
+          glb.addAnnotation(
+              qualHierarchy.greatestLowerBoundShallow(subAnno, subTM, superUBAnno, superTM));
+        }
       }
     }
     return glb;
