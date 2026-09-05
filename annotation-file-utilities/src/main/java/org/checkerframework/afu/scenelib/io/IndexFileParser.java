@@ -747,6 +747,7 @@ public final class IndexFileParser {
     @SuppressWarnings("signature") // string concatenation
     @BinaryName String fullName = curPkgPrefix + basename;
 
+    // PROBLEM: `fields` needs to be computed after the fact.
     Map<String, AnnotationFieldType> fields = new LinkedHashMap<>(); // will be filled in
     AnnotationDef ad = new AnnotationDef(fullName, fields, source);
     expectChar(':');
@@ -764,6 +765,9 @@ public final class IndexFileParser {
       }
       fields.put(name, type);
     }
+
+    // Gross, but fields are parsed after the `AnnotationDef` is needed.
+    ad.setFieldTypes(fields);
 
     // Now add the definition to the map of all definitions.
     addDef(ad, basename);

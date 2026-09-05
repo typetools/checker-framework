@@ -224,6 +224,16 @@ public final class AnnotationDef extends AElement {
   }
 
   /**
+   * Sets the field types of this annotation. Copies the field type map so it cannot be later
+   * modified by the client.
+   *
+   * @param fieldTypes the annotation's element types
+   */
+  public void setFieldTypes(Map<String, AnnotationFieldType> fieldTypes) {
+    this.fieldTypes = immutableMap(fieldTypes);
+  }
+
+  /**
    * The retention policy for annotations of this type. If non-null, this is called a "top-level"
    * annotation definition. It may be null for annotations that are used only as a field of other
    * annotations.
@@ -377,7 +387,7 @@ public final class AnnotationDef extends AElement {
             def1.name,
             def1.tlAnnotationsHere,
             newFieldTypes,
-            () -> String.format("unify(%s, %s)", def1.getSource(), def2.getSource()));
+            "unify(" + def1.getSource() + ", " + def2.getSource() + ")");
       }
     }
     return null;
