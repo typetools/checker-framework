@@ -175,9 +175,9 @@ public interface WholeProgramInference {
    * Updates the preconditions or postconditions of the current method, from a store.
    *
    * @param className the name of the class, for debugging only
-   * @param methodElement the method or constructor whose preconditions or postconditions to update
    * @param preOrPost what to update: preconditions ({@code BEFORE}) or postconditions ({@code
    *     AFTER})
+   * @param methodElement the method or constructor whose preconditions or postconditions to update
    * @param store the store at the method's entry or normal exit, for reading types of expressions
    */
   void updateContracts(
