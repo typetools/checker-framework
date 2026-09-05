@@ -56,7 +56,7 @@ jgit-ssh-apache = { group = "org.eclipse.jgit", name = "org.eclipse.jgit.ssh.apa
 
 junit = { group = "junit", name = "junit", version.ref = "junit-junit" }
 
-lombok = "org.projectlombok:lombok:1.18.46"
+lombok = "org.projectlombok:lombok:1.18.48"
 
 options = "org.plumelib:options:3.0.0"
 
@@ -76,7 +76,7 @@ de-undercouch-download = { id = "de.undercouch.download", version = "5.7.0" }
 
 net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "5.1.1" }
 
-com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.10.1" }
+com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.10.2" }
 
 com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "4.0.1" }
 

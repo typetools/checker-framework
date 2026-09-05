@@ -10,4 +10,4 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
 source "$SCRIPT_DIR"/clone-related.sh
 
-./gradlew inferenceTests --warning-mode=all
+gradle_retry_once inferenceTests --warning-mode=all

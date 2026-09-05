@@ -1,6 +1,6 @@
 .PHONY: all test clean default
 default: all
-all: azure-pipelines-daily.yml
+all:
 
 test: all
 

@@ -9,7 +9,7 @@ jobs:
   # Only proceed to other jobs if canary_jobs passes.
   canary_jobs:
     docker:
-      - image: 'cimg/base:2026.08'
+      - image: 'cimg/base:2026.09'
     resource_class: small
     environment:
       TERM: dumb
@@ -19,7 +19,7 @@ jobs:
   # Passes only if all other jobs passed.
   all_green:
     docker:
-      - image: 'cimg/base:2026.08'
+      - image: 'cimg/base:2026.09'
     resource_class: small
     environment:
       TERM: dumb
@@ -44,9 +44,11 @@ jobs:
           key: *sourcefull-cache
           paths:
             - .git
+gradle_restore_cache()
       - run:
           name: getPlumeScripts
           command: ./gradlew -q getPlumeScripts
+gradle_save_cache()
       - run:
           name: ci-org-and-branch
           command: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
@@ -93,10 +95,9 @@ job_dependences(21, junit)
 job_dependences(latest_jdk, junit)
 
 ifelse([The following jobs have no corresponding job in the canary jobs.])dnl
-      # TEMPORARILY commented until Daikon release 5.8.24.
-      # job_dependences_not_in_canary(canary_jdk, daikon_part1)
-      # job_dependences_not_in_canary(canary_jdk, daikon_part2)
-      # job_dependences_not_in_canary(canary_jdk, daikon_part3)
+job_dependences_not_in_canary(canary_jdk, daikon_part1)
+job_dependences_not_in_canary(canary_jdk, daikon_part2)
+job_dependences_not_in_canary(canary_jdk, daikon_part3)
 job_dependences_not_in_canary(canary_jdk, guava_part1)
 job_dependences_not_in_canary(canary_jdk, guava_part2)
 job_dependences_not_in_canary(canary_jdk, plume_lib)
@@ -108,6 +109,9 @@ job_dependences_not_in_canary(canary_jdk, plume_lib)
             - junit_jdk17
             - junit_jdk21
             - junit_jdk26
+            - daikon_part1_jdk[]canary_jdk
+            - daikon_part2_jdk[]canary_jdk
+            - daikon_part3_jdk[]canary_jdk
             - guava_part1_jdk[]canary_jdk
             - guava_part2_jdk[]canary_jdk
             - plume_lib_jdk[]canary_jdk
