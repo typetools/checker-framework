@@ -27,7 +27,7 @@ public final class Annotations {
   }
 
   public static Set<Annotation> noAnnotations;
-  public static Map<String, AnnotationFieldType> noFieldTypes;
+  public static Map<String, ? extends AnnotationFieldType> noFieldTypes;
   public static Map<String, ? extends Object> noFieldValues;
   public static Set<Annotation> typeQualifierMetaAnnotations;
 
@@ -63,7 +63,7 @@ public final class Annotations {
    * @param aft the type of the "value" field
    * @return the field types for an annotation with only one field, named "value"
    */
-  static Map<String, AnnotationFieldType> valueFieldTypeOnly(AnnotationFieldType aft) {
+  static Map<String, ? extends AnnotationFieldType> valueFieldTypeOnly(AnnotationFieldType aft) {
     return Collections.singletonMap("value", aft);
   }
 
@@ -211,7 +211,8 @@ public final class Annotations {
     AnnotationBuilder ab =
         AnnotationFactory.saf.beginAnnotation(a.def(), "rebuild " + a.def.getSource());
     if (ab != null) {
-      for (Map.Entry<String, AnnotationFieldType> fieldDef : a.def().fieldTypes.entrySet()) {
+      for (Map.Entry<String, ? extends AnnotationFieldType> fieldDef :
+          a.def().fieldTypes.entrySet()) {
 
         String fieldName = fieldDef.getKey();
         AnnotationFieldType fieldType = fieldDef.getValue();

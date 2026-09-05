@@ -42,17 +42,17 @@ public final class AnnotationDef extends AElement {
    * AnnotationDef}s are immutable, clients should not modify this map, and doing so will result in
    * an exception.
    */
-  public Map<String, AnnotationFieldType> fieldTypes;
+  public Map<String, ? extends AnnotationFieldType> fieldTypes;
 
   // Exactly one of `source` and `sourceSupplier` is null.
 
-  /** Where the annotation definition came from, such as a file name. Used only for diagnostics. */
+  /** Where the annotation definition came from, such as a file name; used for diagnostics. */
   private @MonotonicNonNull String source;
 
   /**
-   * Computes where the annotation definition came from, such as a file name. It is a supplier
-   * rather than a string because it is used only for diagnostics, and computing it can be
-   * expensive. It is called only if {@link #source} is null.
+   * Computes where the annotation definition came from, such as a file name, for diagnostics. It is
+   * a supplier rather than a string because it is used only for diagnostics, and computing it can
+   * be expensive. It is called only if {@link #source} is null.
    */
   private @Nullable Supplier<String> sourceSupplier;
 
@@ -64,7 +64,9 @@ public final class AnnotationDef extends AElement {
    * @param source where the annotation came from, such as a filename; used for diagnostics
    */
   public AnnotationDef(
-      @BinaryName String name, Map<String, AnnotationFieldType> fieldTypes, String source) {
+      @BinaryName String name,
+      Map<String, ? extends AnnotationFieldType> fieldTypes,
+      String source) {
     super("annotation: " + name);
     assert name != null;
     assert source != null;
@@ -84,7 +86,7 @@ public final class AnnotationDef extends AElement {
    */
   public AnnotationDef(
       @BinaryName String name,
-      Map<String, AnnotationFieldType> fieldTypes,
+      Map<String, ? extends AnnotationFieldType> fieldTypes,
       Supplier<String> sourceSupplier) {
     super("annotation: " + name);
     assert name != null;
@@ -107,7 +109,7 @@ public final class AnnotationDef extends AElement {
   public AnnotationDef(
       @BinaryName String name,
       Set<Annotation> tlAnnotationsHere,
-      Map<String, AnnotationFieldType> fieldTypes,
+      Map<String, ? extends AnnotationFieldType> fieldTypes,
       String source) {
     this(name, fieldTypes, source);
     if (tlAnnotationsHere != null) {
@@ -127,7 +129,7 @@ public final class AnnotationDef extends AElement {
   public AnnotationDef(
       @BinaryName String name,
       Set<Annotation> tlAnnotationsHere,
-      Map<String, AnnotationFieldType> fieldTypes,
+      Map<String, ? extends AnnotationFieldType> fieldTypes,
       Supplier<String> sourceSupplier) {
     this(name, fieldTypes, sourceSupplier);
     if (tlAnnotationsHere != null) {
@@ -185,7 +187,7 @@ public final class AnnotationDef extends AElement {
   }
 
   /**
-   * Returns where the annotation definition came from, such as a file name.
+   * Returns where the annotation definition came from, such as a file name; used for diagnostics.
    *
    * @return where the annotation definition came from, such as a file name
    */
@@ -410,7 +412,7 @@ public final class AnnotationDef extends AElement {
     }
 
     StringJoiner args = new StringJoiner(",", "(", ")");
-    for (Map.Entry<String, AnnotationFieldType> entry : fieldTypes.entrySet()) {
+    for (Map.Entry<String, ? extends AnnotationFieldType> entry : fieldTypes.entrySet()) {
       args.add(entry.getValue().toString() + " " + entry.getKey());
     }
 
@@ -444,7 +446,7 @@ public final class AnnotationDef extends AElement {
 
   // Utilities
 
-  // TODO: Move these two methods into MapsP.
+  // TODO: Move these methods into MapsP.
 
   /**
    * Returns a immutable copy of the map. The result cannot be modified, directly or through an

@@ -749,7 +749,7 @@ public final class IndexFileParser {
 
     // PROBLEM: `fields` needs to be computed after the fact.
     Map<String, AnnotationFieldType> fields = new LinkedHashMap<>(); // will be filled in
-    AnnotationDef ad = new AnnotationDef(fullName, fields, source);
+    AnnotationDef ad = new AnnotationDef(fullName, Collections.emptyMap(), source);
     expectChar(':');
     parseAnnotations(ad);
 
