@@ -7,19 +7,9 @@
 
 ### User-visible changes
 
-Whole-program inference no longer ignores an already-inferred annotation when the
-type kind of the right-hand side of an assignment differs from the type kind of
-the annotated element -- for example, when an array is assigned to a variable
-whose declared type is `Object`.  Previously, whole-program inference could infer
-a type that is too specific in such a case.
+### Changes for type system implementers
 
-### Implementation details
-
-`AnnotatedTypeMirror.hashCode()` now hashes only the top-level type rather than
-recursively hashing component types.  Removed class `HashcodeAtmVisitor`, field
-`AnnotatedTypeMirror.HASHCODE_VISITOR`, and method
-`AnnotatedTypeMirror.getUnderlyingTypeHashCode()`, which existed only to compute
-the old hash code.
+Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
 
 ### Closed issues
 
@@ -30,7 +20,7 @@ the old hash code.
 The `-AsuggestPureMethods` command-line option and the `purity.effectively.pure`
 warning no longer require `-AcheckPurityAnnotations` to also be supplied.
 
-### Implementation details
+### Changes for type system implementers
 
 Made the field `Java8InferenceContext.pathToExpression` private; use
 `getPathToExpression()` and `setPathToExpression()` instead.

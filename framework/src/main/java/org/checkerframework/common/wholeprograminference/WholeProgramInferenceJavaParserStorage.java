@@ -962,13 +962,14 @@ public class WholeProgramInferenceJavaParserStorage
    * <p>Because of the side effect, clients may want to pass a copy into this method.
    *
    * @param classAnnos the class annotations to modify
-   * @param supertypes the binary names of all supertypes; not side-effected
-   * @param subtypes the binary names of all subtypes; not side-effected
+   * @param supertypes the binary names of all supertypes, or null if none are known; not
+   *     side-effected
+   * @param subtypes the binary names of all subtypes, or null if none are known; not side-effected
    */
   public void wpiPrepareClassForWriting(
       ClassOrInterfaceAnnos classAnnos,
-      Collection<@BinaryName String> supertypes,
-      Collection<@BinaryName String> subtypes) {
+      @Nullable Collection<@BinaryName String> supertypes,
+      @Nullable Collection<@BinaryName String> subtypes) {
     if (classAnnos.callableDeclarations.isEmpty()) {
       return;
     }
@@ -976,10 +977,8 @@ public class WholeProgramInferenceJavaParserStorage
     for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
         classAnnos.callableDeclarations.entrySet()) {
       String jvmSignature = methodEntry.getKey();
-      List<CallableDeclarationAnnos> inSupertypes =
-          findOverrides(jvmSignature, supertypesMap.get(classAnnos.className));
-      List<CallableDeclarationAnnos> inSubtypes =
-          findOverrides(jvmSignature, subtypesMap.get(classAnnos.className));
+      List<CallableDeclarationAnnos> inSupertypes = findOverrides(jvmSignature, supertypes);
+      List<CallableDeclarationAnnos> inSubtypes = findOverrides(jvmSignature, subtypes);
 
       wpiPrepareMethodForWriting(methodEntry.getValue(), inSupertypes, inSubtypes);
     }
