@@ -7,13 +7,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 import org.checkerframework.afu.scenelib.el.AnnotationDef;
 import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
 import org.checkerframework.afu.scenelib.field.ArrayAFT;
 import org.checkerframework.afu.scenelib.field.ScalarAFT;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 
 /**
@@ -44,16 +42,8 @@ public class AnnotationBuilder {
    */
   Set<Annotation> tlAnnotationsHere;
 
-  // Exactly one of `source` and `sourceSupplier` is non-null.
-
   /** Where the annotation came from, such as a filename. */
-  @Nullable String source;
-
-  /**
-   * Computes where the annotation came from, such as a filename. It is a supplier rather than a
-   * string because it is used only for diagnostics, and computing it can be expensive.
-   */
-  @Nullable Supplier<String> sourceSupplier;
+  String source;
 
   /** True if an array is being supplied. */
   boolean arrayInProgress = false;
@@ -70,8 +60,7 @@ public class AnnotationBuilder {
    * Create a new AnnotationBuilder.
    *
    * @param def the definition of the annotation being built
-   * @param source where the annotation came from, such as a filename; if it is expensive to
-   *     compute, use {@link #AnnotationBuilder(AnnotationDef,Supplier)} instead
+   * @param source where the annotation came from, such as a filename
    */
   AnnotationBuilder(AnnotationDef def, String source) {
     assert def != null;
@@ -79,23 +68,6 @@ public class AnnotationBuilder {
     this.def = def;
     this.typeName = def.name;
     this.source = source;
-    this.sourceSupplier = null;
-  }
-
-  /**
-   * Create a new AnnotationBuilder.
-   *
-   * @param def the definition of the annotation being built
-   * @param sourceSupplier computes where the annotation came from, such as a filename; it is called
-   *     only if the source is needed for a diagnostic
-   */
-  AnnotationBuilder(AnnotationDef def, Supplier<String> sourceSupplier) {
-    assert def != null;
-    assert sourceSupplier != null;
-    this.def = def;
-    this.typeName = def.name;
-    this.source = null;
-    this.sourceSupplier = sourceSupplier;
   }
 
   /**
@@ -107,11 +79,9 @@ public class AnnotationBuilder {
   AnnotationBuilder(@BinaryName String typeName, String source) {
     assert typeName != null;
     assert source != null;
-    this.def = null;
     this.typeName = typeName;
     this.tlAnnotationsHere = new LinkedHashSet<>(2);
     this.source = source;
-    this.sourceSupplier = null;
   }
 
   /**
@@ -125,11 +95,9 @@ public class AnnotationBuilder {
   AnnotationBuilder(@BinaryName String typeName, Set<Annotation> tlAnnotationsHere, String source) {
     assert typeName != null;
     assert source != null;
-    this.def = null;
     this.typeName = typeName;
     this.tlAnnotationsHere = tlAnnotationsHere;
     this.source = source;
-    this.sourceSupplier = null;
   }
 
   /**
@@ -295,13 +263,8 @@ public class AnnotationBuilder {
     active = false;
     if (def == null) {
       assert fieldTypes != null;
-      if (source != null) {
-        def = new AnnotationDef(typeName, tlAnnotationsHere, fieldTypes, source);
-      } else {
-        def = new AnnotationDef(typeName, tlAnnotationsHere, fieldTypes, sourceSupplier);
-      }
+      def = new AnnotationDef(typeName, tlAnnotationsHere, fieldTypes, source);
     } else {
-      assert typeName == null;
       assert fieldTypes.isEmpty();
     }
     return new Annotation(def, fieldValues);

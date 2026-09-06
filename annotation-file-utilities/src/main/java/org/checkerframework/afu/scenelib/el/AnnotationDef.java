@@ -42,7 +42,7 @@ public final class AnnotationDef extends AElement {
    * AnnotationDef}s are immutable, clients should not modify this map, and doing so will result in
    * an exception.
    */
-  public Map<String, ? extends AnnotationFieldType> fieldTypes;
+  public final Map<String, ? extends AnnotationFieldType> fieldTypes;
 
   // Exactly one of `source` and `sourceSupplier` is null.
 
@@ -224,16 +224,6 @@ public final class AnnotationDef extends AElement {
   @Override
   public AnnotationDef clone() {
     throw new UnsupportedOperationException("Can't duplicate an AnnotationDef");
-  }
-
-  /**
-   * Sets the field types of this annotation. Copies the field type map so it cannot be later
-   * modified by the client.
-   *
-   * @param fieldTypes the annotation's element types
-   */
-  public void setFieldTypes(Map<String, AnnotationFieldType> fieldTypes) {
-    this.fieldTypes = immutableMap(fieldTypes);
   }
 
   /**

@@ -1,10 +1,10 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.sun.tools.javac.code.Type.ArrayType;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -57,8 +57,9 @@ public class AnnotationConverter {
     @SuppressWarnings("signature:assignment") // TODO: bug for inner classes
     @BinaryName String annoName = AnnotationUtils.annotationName(am);
     // Capturing `am` rather than the strings would prevent it from being garbage-collected.
+    // `fieldTypes.keySet()` is a view, so copy it rather than retaining `fieldTypes` itself.
     String amClassName = am.getClass().getName();
-    Set<String> fieldNames = fieldTypes.keySet();
+    List<String> fieldNames = new ArrayList<>(fieldTypes.keySet());
     AnnotationDef def =
         new AnnotationDef(
             annoName,
