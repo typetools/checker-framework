@@ -71,8 +71,7 @@ public class SceneToStubWriterTest {
       String binaryName,
       Map<String, AnnotationFieldType> fieldTypes,
       Map<String, Object> fieldValues) {
-    AnnotationDef def = new AnnotationDef(binaryName, "SceneToStubWriterTest");
-    def.setFieldTypes(fieldTypes);
+    AnnotationDef def = new AnnotationDef(binaryName, fieldTypes, "SceneToStubWriterTest");
     return new Annotation(def, fieldValues);
   }
 
