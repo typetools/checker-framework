@@ -532,6 +532,22 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: test-daikon-part1.sh
         run: ./checker/bin-devel/test-daikon-part1.sh
         env:
@@ -548,6 +564,22 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: test-daikon-part2.sh
         run: ./checker/bin-devel/test-daikon-part2.sh
         env:
@@ -564,6 +596,22 @@ jobs:
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-${{ github.job }}-
+            gradle-modules-
       - name: test-daikon-part3.sh
         run: ./checker/bin-devel/test-daikon-part3.sh
         env:
