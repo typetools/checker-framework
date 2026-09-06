@@ -65,7 +65,7 @@ public class AnnotationBuilder {
     }
   }
 
-  public Map<String, AnnotationFieldType> fieldTypes() {
+  public Map<String, ? extends AnnotationFieldType> fieldTypes() {
     if (def != null) {
       return def.fieldTypes;
     } else {

@@ -20,6 +20,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -414,6 +415,9 @@ public final class AnnotatedTypes {
         TypeMirror enclosingElementType = member.getEnclosingElement().asType();
         for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) receiverType).getBounds()) {
           if (TypesUtils.isErasedSubtype(bound.getUnderlyingType(), enclosingElementType, types)) {
+            if (isRawCall(bound, member, types, atypeFactory.getProcessingEnv())) {
+              return memberType.getErased();
+            }
             result =
                 substituteTypeVariables(
                     types,
@@ -430,7 +434,7 @@ public final class AnnotatedTypes {
       }
       case DECLARED -> {
         AnnotatedDeclaredType receiverTypeDT = (AnnotatedDeclaredType) receiverType;
-        if (isRawCall(receiverTypeDT, member, types)) {
+        if (isRawCall(receiverTypeDT, member, types, atypeFactory.getProcessingEnv())) {
           return memberType.getErased();
         }
         return substituteTypeVariables(types, atypeFactory, receiverType, member, memberType);
@@ -440,44 +444,35 @@ public final class AnnotatedTypes {
   }
 
   /**
-   * Is the call to {@code method} with {@code receiver} raw?
+   * Is the access to {@code member} through a receiver of type {@code receiver} an access on a raw
+   * type?
    *
-   * @param receiver type of the receiver of the call
-   * @param method the element of a method or constructor
-   * @param types type utilities
-   * @return true if the call to {@code method} with {@code receiver} raw
+   * @param receiver the type of the receiver of the access
+   * @param member the method, constructor, or field being accessed
+   * @param types the type utilities
+   * @param env the processing environment
+   * @return true if accessing {@code member} through {@code receiver} is an access on a raw type
    */
-  private static boolean isRawCall(AnnotatedDeclaredType receiver, Element method, Types types) {
-    // Section 4.8, "Raw Types".
-    // (https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.8)
-    //
-    // The type of a constructor (§8.8), instance method (8.4, 9.4), or non-static field
-    // (8.3) of a raw type C that is not inherited from its superclasses or superinterfaces
-    // is the raw type that corresponds to the erasure of its type in the generic declaration
-    // corresponding to C.
-    if (method.getEnclosingElement().equals(receiver.getUnderlyingType().asElement())) {
-      return receiver.isUnderlyingTypeRaw();
-    }
-
-    // The below is checking for a super() call where the super type is a raw type.
-    // See framework/tests/all-systems/RawSuper.java for an example.
-    if ("<init>".contentEquals(method.getSimpleName())) {
-      ExecutableElement constructor = (ExecutableElement) method;
-      TypeMirror constructorClass = types.erasure(constructor.getEnclosingElement().asType());
-      TypeMirror directSuper = types.directSupertypes(receiver.getUnderlyingType()).get(0);
-      while (!types.isSameType(types.erasure(directSuper), constructorClass)
-          && !TypesUtils.isObject(directSuper)) {
-        directSuper = types.directSupertypes(directSuper).get(0);
-      }
-      if (directSuper.getKind() == TypeKind.DECLARED) {
-        DeclaredType declaredType = (DeclaredType) directSuper;
-        TypeElement typeelem = (TypeElement) declaredType.asElement();
-        DeclaredType declty = (DeclaredType) typeelem.asType();
-        return !declty.getTypeArguments().isEmpty() && declaredType.getTypeArguments().isEmpty();
+  private static boolean isRawCall(
+      AnnotatedTypeMirror receiver, Element member, Types types, ProcessingEnvironment env) {
+    // SupertypeFinder sets isUnderlyingTypeRaw() on the supertypes of a raw type, whose
+    // underlying types still have their type arguments; TypesUtils.isRawCall cannot detect that
+    // case, because it looks only at underlying types.
+    if (receiver instanceof AnnotatedDeclaredType declaredReceiver
+        && declaredReceiver.isUnderlyingTypeRaw()
+        && !ElementUtils.isStatic(member)) {
+      // The supertypes of a raw type are erased, so a member that `receiver` inherits is erased
+      // just like a member that `receiver` declares.  A member inherited from a declaration in
+      // which no type parameter is in scope keeps its type arguments, though (JLS 4.8).
+      TypeElement declaringClass = ElementUtils.enclosingTypeElement(member);
+      if (declaringClass != null
+          && TypesUtils.isGenericOrEnclosedByGeneric(declaringClass)
+          && TypesUtils.isErasedSubtype(
+              receiver.getUnderlyingType(), declaringClass.asType(), types)) {
+        return true;
       }
     }
-
-    return false;
+    return TypesUtils.isRawCall(receiver.getUnderlyingType(), member, env);
   }
 
   /**
@@ -949,7 +944,8 @@ public final class AnnotatedTypes {
 
   /**
    * Returns the annotated greatest lower bound of {@code subtype} and {@code supertype}, where the
-   * underlying Java types are in a subtyping relationship.
+   * underlying Java type of {@code subtype} is a subtype of the underlying Java type of {@code
+   * superType}.
    *
    * <p>This handles cases 1, 2, and 3 mentioned in the Javadoc of {@link
    * #annotatedGLB(AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)}.
@@ -989,8 +985,24 @@ public final class AnnotatedTypes {
           // The superAnno is lower than the lower bound annotation, so add it.
           glb.addAnnotation(superAnno);
         } // else don't add any annotation.
-      } else {
-        throw new BugInCF("GLB: subtype: %s, supertype: %s", subtype, supertype);
+      } else { // superAnno == null && subAnno != null
+        if (supertype.getKind() != TypeKind.TYPEVAR) {
+          throw new BugInCF("Missing primary annotations: supertype: %s", supertype);
+        }
+
+        // The supertype is a type variable with no primary annotation, so it stands for the
+        // range of its bounds.  Its greatest possible annotation is its effective upper bound
+        // annotation, so the result is the greatest lower bound of that and subAnno.  (The two
+        // are not necessarily comparable; the underlying Java types are in a subtyping
+        // relationship, but their annotations need not be.)
+        AnnotationMirrorSet ub = findEffectiveAnnotations(qualHierarchy, supertype);
+        AnnotationMirror superUBAnno = qualHierarchy.findAnnotationInHierarchy(ub, top);
+        if (superUBAnno == null) {
+          glb.addAnnotation(subAnno);
+        } else {
+          glb.addAnnotation(
+              qualHierarchy.greatestLowerBoundShallow(subAnno, subTM, superUBAnno, superTM));
+        }
       }
     }
     return glb;
@@ -1142,26 +1154,33 @@ public final class AnnotatedTypes {
   /**
    * Returns the depth of the array type of the provided array.
    *
-   * @param array the type of the array
+   * @param arrayType the type of the array
    * @return the depth of the provided array
    */
-  public static int getArrayDepth(AnnotatedArrayType array) {
+  public static int getArrayDepth(AnnotatedArrayType arrayType) {
     int counter = 0;
-    AnnotatedTypeMirror type = array;
-    while (type.getKind() == TypeKind.ARRAY) {
+    AnnotatedTypeMirror componentType = arrayType;
+    while (componentType.getKind() == TypeKind.ARRAY) {
       counter++;
-      type = ((AnnotatedArrayType) type).getComponentType();
+      componentType = ((AnnotatedArrayType) componentType).getComponentType();
     }
     return counter;
   }
 
-  // The innermost *array* type.
-  public static AnnotatedTypeMirror innerMostType(AnnotatedTypeMirror t) {
-    AnnotatedTypeMirror inner = t;
-    while (inner.getKind() == TypeKind.ARRAY) {
-      inner = ((AnnotatedArrayType) inner).getComponentType();
+  /**
+   * Returns the innermost component type of {@code type}, which is also called the "element type"
+   * of {@code type}. Returns {@code type} itself if {@code type} is not an array type.
+   *
+   * @param type a type
+   * @return the innermost component type of {@code type}, or {@code type} if it is not an array
+   *     type
+   */
+  public static AnnotatedTypeMirror innermostComponentType(AnnotatedTypeMirror type) {
+    AnnotatedTypeMirror componentType = type;
+    while (componentType.getKind() == TypeKind.ARRAY) {
+      componentType = ((AnnotatedArrayType) componentType).getComponentType();
     }
-    return inner;
+    return componentType;
   }
 
   /**
