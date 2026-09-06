@@ -10,11 +10,15 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
@@ -81,6 +85,29 @@ public class WholeProgramInferenceScenesStorageTest {
   }
 
   /**
+   * Tests that {@link #elementsOf} reports a compilation error in its argument, rather than
+   * silently returning the elements that javac managed to create.
+   */
+  @Test
+  public void uncompilableSourceIsReported() {
+    String uncompilableSource =
+        String.join(
+            System.lineSeparator(),
+            "package testpkg;",
+            "public class Uncompilable {",
+            "  int aField = \"not an int\";",
+            "}");
+    try {
+      elementsOf(uncompilableSource);
+    } catch (Error e) {
+      Assert.assertTrue(
+          "unexpected message: " + e.getMessage(), e.getMessage().startsWith("Cannot compile "));
+      return;
+    }
+    Assert.fail("elementsOf did not report the compilation error in " + uncompilableSource);
+  }
+
+  /**
    * Asserts that {@link WholeProgramInferenceScenesStorage#getEnclosingClassName} returns {@code
    * expectedName} for the element of {@link #SOURCE} that is declared with name {@code
    * elementName}.
@@ -107,6 +134,7 @@ public class WholeProgramInferenceScenesStorageTest {
    *
    * @param source the text of a Java compilation unit
    * @return the elements declared in {@code source}, indexed by name
+   * @throws Error if {@code source} does not compile without errors
    */
   private static Map<String, Element> elementsOf(String source) {
     JavaFileObject fileObject =
@@ -118,12 +146,13 @@ public class WholeProgramInferenceScenesStorageTest {
           }
         };
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
     JavacTask task =
         (JavacTask)
             compiler.getTask(
                 null,
                 null,
-                null,
+                diagnostics,
                 Collections.singletonList("-proc:none"),
                 null,
                 Collections.singletonList(fileObject));
@@ -133,6 +162,23 @@ public class WholeProgramInferenceScenesStorageTest {
       task.analyze();
     } catch (IOException e) {
       throw new Error("Cannot compile " + source, e);
+    }
+    // Without this check, a compilation error in `source` would be reported only as a missing
+    // element, which is much harder to diagnose.
+    List<Diagnostic<? extends JavaFileObject>> errors = new ArrayList<>();
+    for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
+      if (diagnostic.getKind() == Diagnostic.Kind.ERROR) {
+        errors.add(diagnostic);
+      }
+    }
+    if (!errors.isEmpty()) {
+      StringBuilder message = new StringBuilder("Cannot compile ");
+      message.append(source);
+      for (Diagnostic<? extends JavaFileObject> error : errors) {
+        message.append(System.lineSeparator());
+        message.append(error);
+      }
+      throw new Error(message.toString());
     }
     Trees trees = Trees.instance(task);
     Map<String, Element> result = new LinkedHashMap<>();
