@@ -48,9 +48,13 @@ public class AnnotationBuilder {
   /** True if an array is being supplied. */
   boolean arrayInProgress = false;
 
+  /** True if {@link #finish} has not yet been called. */
   boolean active = true;
 
-  // Generally, don't use this.  Use method fieldTypes() instead.
+  /**
+   * The tyypes of the annotation fields/elements. Generally, don't use this. Use method
+   * fieldTypes() instead.
+   */
   private Map<String, AnnotationFieldType> fieldTypes = new LinkedHashMap<>();
 
   /** The values of the annotation fields/elements. */
