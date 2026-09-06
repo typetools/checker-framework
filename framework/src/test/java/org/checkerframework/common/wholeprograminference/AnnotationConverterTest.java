@@ -4,6 +4,7 @@ import com.sun.source.util.JavacTask;
 import java.net.URI;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -13,8 +14,10 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -77,7 +80,10 @@ public class AnnotationConverterTest {
           "  intArrayElement = {10, 11},",
           "  enumArrayElement = {MyEnum.A, MyEnum.B}",
           ")",
-          "public class Annotated {}");
+          "public class Annotated {",
+          // The annotation on this method is the one that sourceIsComputedOnlyOnDemand uses.
+          "  @Deprecated void aMethod() {}",
+          "}");
 
   /** Tests {@link AnnotationConverter#getAnnotationFieldType} for every kind of element. */
   @Test
@@ -145,6 +151,29 @@ public class AnnotationConverterTest {
   }
 
   /**
+   * {@link AnnotationConverter#annotationMirrorToAnnotation} is called once per annotation per
+   * storage write, so it must not construct the {@code AnnotationDef}'s source string, which is
+   * used only for diagnostics.
+   */
+  @Test
+  public void sourceIsComputedOnlyOnDemand() {
+    withProcessingEnvironment(
+        env -> {
+          CountingAnnotationMirror am = new CountingAnnotationMirror(theAnnotationMirror(env));
+          Annotation converted = AnnotationConverter.annotationMirrorToAnnotation(am);
+          Assert.assertEquals(
+              "annotationMirrorToAnnotation stringified its argument", 0, am.toStringCount);
+          String source = converted.def().getSource();
+          String secondSource = converted.def().getSource();
+          Assert.assertTrue(source, source.startsWith("annotationMirrorToAnnotation "));
+          Assert.assertTrue(source, source.contains("java.lang.Deprecated"));
+          Assert.assertEquals(source, secondSource);
+          Assert.assertEquals(
+              "getSource() stringified its argument more than once", 1, am.toStringCount);
+        });
+  }
+
+  /**
    * Asserts that the type of the given element of an annotation is {@code expected}.
    *
    * @param expected the string representation of the expected annotation field type
@@ -179,6 +208,23 @@ public class AnnotationConverterTest {
       result.put(element.getSimpleName().toString(), element);
     }
     return result;
+  }
+
+  /**
+   * Returns the annotation on the method declared in {@link #SOURCE}.
+   *
+   * @param env the processing environment
+   * @return the annotation on the method declared in {@link #SOURCE}
+   */
+  private static AnnotationMirror theAnnotationMirror(ProcessingEnvironment env) {
+    TypeElement annotated = env.getElementUtils().getTypeElement("testpkg.Annotated");
+    Assert.assertNotNull("no element for testpkg.Annotated", annotated);
+    List<ExecutableElement> methods = ElementFilter.methodsIn(annotated.getEnclosedElements());
+    Assert.assertEquals("methods of " + annotated, 1, methods.size());
+    ExecutableElement method = methods.get(0);
+    List<? extends AnnotationMirror> annotations = method.getAnnotationMirrors();
+    Assert.assertEquals("annotations on " + method, 1, annotations.size());
+    return annotations.get(0);
   }
 
   /**
@@ -245,5 +291,40 @@ public class AnnotationConverterTest {
       throw new Error(t);
     }
     Assert.assertTrue("Cannot compile " + SOURCE, success);
+  }
+
+  /** An {@code AnnotationMirror} that counts how often it is converted to a string. */
+  private static class CountingAnnotationMirror implements AnnotationMirror {
+
+    /** The annotation mirror that this delegates to. */
+    private final AnnotationMirror delegate;
+
+    /** The number of times that {@link #toString} has been called. */
+    private int toStringCount = 0;
+
+    /**
+     * Creates a {@code CountingAnnotationMirror} that delegates to {@code delegate}.
+     *
+     * @param delegate the annotation mirror to delegate to
+     */
+    CountingAnnotationMirror(AnnotationMirror delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    public DeclaredType getAnnotationType() {
+      return delegate.getAnnotationType();
+    }
+
+    @Override
+    public Map<? extends ExecutableElement, ? extends AnnotationValue> getElementValues() {
+      return delegate.getElementValues();
+    }
+
+    @Override
+    public String toString() {
+      toStringCount++;
+      return delegate.toString();
+    }
   }
 }

@@ -42,6 +42,7 @@ api
 build
 dist
 buildSrc/.gradle
+gradle/verification-metadata.dryrun.xml
 docs/tmpapi/
 stubparser/docs/api
 # Don't want to ignore .jar files in checker/lib/ nor in gradle/wrapper
