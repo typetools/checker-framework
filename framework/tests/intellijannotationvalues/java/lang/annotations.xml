@@ -10,4 +10,14 @@
       <val val="&quot;alpha&quot;" />
     </annotation>
   </item>
+  <item name="org.checkerframework.framework.testchecker.lib.UncheckedByteCode java.lang.CharSequence getI(java.lang.CharSequence)">
+    <annotation name="org.checkerframework.framework.testchecker.testaccumulation.qual.TestAccumulation">
+      <val val="{&quot;bounded&quot;}" />
+    </annotation>
+    <annotation name="intellijannotationvalues.ClassLiteralValues">
+      <val name="primitive" val="int.class" />
+      <val name="noType" val="void.class" />
+      <val name="array" val="java.lang.String[].class" />
+    </annotation>
+  </item>
 </root>

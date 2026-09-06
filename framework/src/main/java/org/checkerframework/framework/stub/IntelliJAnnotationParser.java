@@ -24,6 +24,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -441,15 +442,53 @@ public final class IntelliJAnnotationParser {
         }
       } else if (dtElt.getQualifiedName().contentEquals("java.lang.Class")) {
         String className = unquotedVal.replaceAll("\\.class$", "");
-        TypeElement classTypeElt = getTypeElement(className, processingEnv.getElementUtils());
-        if (classTypeElt != null) {
-          // Erase, because that is what javac stores for a class literal and what
-          // AnnotationBuilder.setValue(CharSequence, TypeMirror) does.
-          return processingEnv.getTypeUtils().erasure(classTypeElt.asType());
-        }
+        return classLiteralType(className, processingEnv);
       }
     }
     return null;
+  }
+
+  /**
+   * Returns the type represented by a class literal name.
+   *
+   * @param className a class literal name without the {@code .class} suffix
+   * @param processingEnv the processing environment
+   * @return the class literal's type, or null if {@code className} does not name a type
+   */
+  private static @Nullable TypeMirror classLiteralType(
+      String className, ProcessingEnvironment processingEnv) {
+    int dimensions = 0;
+    while (className.endsWith("[]")) {
+      dimensions++;
+      className = className.substring(0, className.length() - 2);
+    }
+
+    Types types = processingEnv.getTypeUtils();
+    TypeMirror result =
+        switch (className) {
+          case "boolean" -> types.getPrimitiveType(TypeKind.BOOLEAN);
+          case "byte" -> types.getPrimitiveType(TypeKind.BYTE);
+          case "short" -> types.getPrimitiveType(TypeKind.SHORT);
+          case "int" -> types.getPrimitiveType(TypeKind.INT);
+          case "long" -> types.getPrimitiveType(TypeKind.LONG);
+          case "char" -> types.getPrimitiveType(TypeKind.CHAR);
+          case "float" -> types.getPrimitiveType(TypeKind.FLOAT);
+          case "double" -> types.getPrimitiveType(TypeKind.DOUBLE);
+          case "void" -> types.getNoType(TypeKind.VOID);
+          default -> {
+            TypeElement classTypeElt = getTypeElement(className, processingEnv.getElementUtils());
+            // Erase, because that is what javac stores for a class literal and what
+            // AnnotationBuilder.setValue(CharSequence, TypeMirror) does.
+            yield classTypeElt == null ? null : types.erasure(classTypeElt.asType());
+          }
+        };
+    if (result == null || (dimensions > 0 && result.getKind() == TypeKind.VOID)) {
+      return null;
+    }
+    for (int i = 0; i < dimensions; i++) {
+      result = types.getArrayType(result);
+    }
+    return result;
   }
 
   /**
@@ -903,7 +942,11 @@ public final class IntelliJAnnotationParser {
     if (parsed.isMethodOrConstructor) {
       ExecutableElement execElem =
           findMatchingExecutable(
-              classElem, parsed.memberName, parsed.paramTypes, parsed.isConstructor);
+              classElem,
+              parsed.memberName,
+              parsed.paramTypes,
+              parsed.isConstructor,
+              processingEnv.getTypeUtils());
       if (execElem == null) {
         warnNotFound(
             checker,
@@ -1029,13 +1072,15 @@ public final class IntelliJAnnotationParser {
    * @param methodName the method name, or null for constructors
    * @param expectedParamTypes the list of expected parameter type strings
    * @param isConstructor true if searching for a constructor
+   * @param types the type utilities
    * @return the matching {@link ExecutableElement}, or null if not found
    */
   private static @Nullable ExecutableElement findMatchingExecutable(
       TypeElement classElem,
       @Nullable String methodName,
       List<String> expectedParamTypes,
-      boolean isConstructor) {
+      boolean isConstructor,
+      Types types) {
     List<ExecutableElement> candidates =
         isConstructor
             ? ElementFilter.constructorsIn(classElem.getEnclosedElements())
@@ -1043,13 +1088,15 @@ public final class IntelliJAnnotationParser {
 
     // Pass 1: exact match
     for (ExecutableElement candidate : candidates) {
-      if (matchesExecutable(candidate, methodName, expectedParamTypes, isConstructor, false)) {
+      if (matchesExecutable(
+          candidate, methodName, expectedParamTypes, isConstructor, false, types)) {
         return candidate;
       }
     }
-    // Pass 2: fallback match allowing Object for type variables
+    // Pass 2: fallback match allowing the erasure of type variables
     for (ExecutableElement candidate : candidates) {
-      if (matchesExecutable(candidate, methodName, expectedParamTypes, isConstructor, true)) {
+      if (matchesExecutable(
+          candidate, methodName, expectedParamTypes, isConstructor, true, types)) {
         return candidate;
       }
     }
@@ -1064,7 +1111,8 @@ public final class IntelliJAnnotationParser {
    * @param methodName the expected method name, or null for constructors
    * @param expectedParamTypes the expected parameter type names
    * @param isConstructor true if searching for a constructor
-   * @param allowTypeVarAsObject true if type variables are allowed to match java.lang.Object
+   * @param allowTypeVarErasure true if type variables are allowed to match their erasure
+   * @param types the type utilities
    * @return true if candidate matches
    */
   private static boolean matchesExecutable(
@@ -1072,7 +1120,8 @@ public final class IntelliJAnnotationParser {
       @Nullable String methodName,
       List<String> expectedParamTypes,
       boolean isConstructor,
-      boolean allowTypeVarAsObject) {
+      boolean allowTypeVarErasure,
+      Types types) {
     if (!isConstructor
         && methodName != null
         && !candidate.getSimpleName().contentEquals(methodName)) {
@@ -1083,7 +1132,8 @@ public final class IntelliJAnnotationParser {
       return false;
     }
     for (int i = 0; i < params.size(); i++) {
-      if (!typeMatches(params.get(i).asType(), expectedParamTypes.get(i), allowTypeVarAsObject)) {
+      if (!typeMatches(
+          params.get(i).asType(), expectedParamTypes.get(i), allowTypeVarErasure, types)) {
         return false;
       }
     }
@@ -1095,11 +1145,12 @@ public final class IntelliJAnnotationParser {
    *
    * @param typeMirror the type mirror of the element parameter
    * @param expectedTypeStr the expected type name string
-   * @param allowTypeVarAsObject true if type variables should match java.lang.Object as fallback
+   * @param allowTypeVarErasure true if type variables should match their erasure as fallback
+   * @param types the type utilities
    * @return true if the type matches
    */
   private static boolean typeMatches(
-      TypeMirror typeMirror, String expectedTypeStr, boolean allowTypeVarAsObject) {
+      TypeMirror typeMirror, String expectedTypeStr, boolean allowTypeVarErasure, Types types) {
     expectedTypeStr = expectedTypeStr.trim();
     if (expectedTypeStr.endsWith("...")) {
       expectedTypeStr = expectedTypeStr.substring(0, expectedTypeStr.length() - 3) + "[]";
@@ -1112,7 +1163,8 @@ public final class IntelliJAnnotationParser {
       return typeMatches(
           ((ArrayType) typeMirror).getComponentType(),
           expectedTypeStr.substring(0, expectedTypeStr.length() - 2),
-          allowTypeVarAsObject);
+          allowTypeVarErasure,
+          types);
     }
 
     if (expectedTypeStr.endsWith("[]")) {
@@ -1138,7 +1190,7 @@ public final class IntelliJAnnotationParser {
       TypeVariable tv = (TypeVariable) typeMirror;
       String tvName = tv.asElement().getSimpleName().toString();
       return tvName.equals(rawExpected)
-          || (allowTypeVarAsObject && "java.lang.Object".equals(rawExpected));
+          || (allowTypeVarErasure && typeMatches(types.erasure(tv), rawExpected, false, types));
     }
 
     return false;
