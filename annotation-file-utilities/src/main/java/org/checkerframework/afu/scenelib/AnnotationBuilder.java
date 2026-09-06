@@ -12,6 +12,7 @@ import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
 import org.checkerframework.afu.scenelib.field.ArrayAFT;
 import org.checkerframework.afu.scenelib.field.ScalarAFT;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 
 /**
