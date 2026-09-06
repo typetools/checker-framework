@@ -66,7 +66,6 @@ public class AnnotationBuilder {
     assert def != null;
     assert source != null;
     this.def = def;
-    this.typeName = def.name;
     this.source = source;
   }
 
