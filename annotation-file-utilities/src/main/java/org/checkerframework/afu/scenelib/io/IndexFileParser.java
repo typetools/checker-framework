@@ -765,6 +765,7 @@ public final class IndexFileParser {
     parseAnnotations(metaAnnotations, "annotation: " + fullName);
 
     Map<String, AnnotationFieldType> fields = new LinkedHashMap<>();
+
     // yuck; it would be nicer to do a positive match
     while (st.ttype != StreamTokenizer.TT_EOF
         && !checkKeyword("annotation")

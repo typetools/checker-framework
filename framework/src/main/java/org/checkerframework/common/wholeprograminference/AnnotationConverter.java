@@ -56,9 +56,7 @@ public class AnnotationConverter {
 
     @SuppressWarnings("signature:assignment") // TODO: bug for inner classes
     @BinaryName String annoName = AnnotationUtils.annotationName(am);
-    // The lambda below captures only these strings, not `am`, because capturing `am` would retain
-    // the AnnotationMirror (and its javac Type and Symbol graph) for as long as the AnnotationDef
-    // is reachable, which is for the whole compilation.
+    // Capturing `am` rather than the strings would prevent it from being garbage-collected.
     String amClassName = am.getClass().getName();
     Set<String> fieldNames = fieldTypes.keySet();
     AnnotationDef def =
