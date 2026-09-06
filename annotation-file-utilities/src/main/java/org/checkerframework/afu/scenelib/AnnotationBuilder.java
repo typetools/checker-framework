@@ -52,6 +52,7 @@ public class AnnotationBuilder {
    */
   Supplier<String> sourceSupplier;
 
+  /** True if an array is being supplied. */
   boolean arrayInProgress = false;
 
   boolean active = true;
@@ -59,6 +60,7 @@ public class AnnotationBuilder {
   // Generally, don't use this.  Use method fieldTypes() instead.
   private Map<String, AnnotationFieldType> fieldTypes = new LinkedHashMap<>();
 
+  /** The values of the annotation fields/elements. */
   Map<String, Object> fieldValues = new LinkedHashMap<>();
 
   /**

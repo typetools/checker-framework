@@ -635,6 +635,13 @@ public final class IndexFileParser {
     return ann;
   }
 
+  /**
+   * Parses annotations and adds them to {@code e}.
+   *
+   * @param e where to put the parsed annotations
+   * @throws IOException if there is trouble reading the input
+   * @throws ParseException if the input is malformed
+   */
   private void parseAnnotations(AElement e) throws IOException, ParseException {
     parseAnnotations(e.tlAnnotationsHere, e.description);
   }
