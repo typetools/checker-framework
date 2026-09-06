@@ -1,7 +1,9 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.sun.source.util.JavacTask;
+import java.lang.annotation.RetentionPolicy;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,6 +19,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -26,6 +29,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 import org.checkerframework.afu.scenelib.Annotation;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.junit.Assert;
@@ -43,6 +47,7 @@ public class AnnotationConverterTest {
       String.join(
           System.lineSeparator(),
           "package testpkg;",
+          "import java.lang.annotation.RetentionPolicy;",
           "@interface MyAnno {",
           "  boolean booleanElement();",
           // AnnotationConverter.addFieldToAnnotationBuilder cannot convert a byte value back into
@@ -61,6 +66,17 @@ public class AnnotationConverterTest {
           "  String[] stringArrayElement();",
           "  int[] intArrayElement();",
           "  MyEnum[] enumArrayElement();",
+          // The following three elements exist only for
+          // addFieldToAnnotationBuilderForEveryType, which needs an element whose type is an
+          // annotation, and elements whose type is an enum (or an array thereof) that is loadable
+          // at run time, unlike MyEnum.  They have defaults so that the annotation use below, and
+          // therefore the round-trip test, need not mention them.
+          "  MyNested nestedElement() default @MyNested(0);",
+          "  RetentionPolicy policyElement() default RetentionPolicy.CLASS;",
+          "  RetentionPolicy[] policyArrayElement() default {};",
+          "}",
+          "@interface MyNested {",
+          "  int value();",
           "}",
           "enum MyEnum {",
           "  A, B;",
@@ -102,9 +118,16 @@ public class AnnotationConverterTest {
           assertFieldType("String", elements, "stringElement");
           assertFieldType("Class", elements, "classElement");
           assertFieldType("enum testpkg.MyEnum", elements, "enumElement");
+          assertFieldType("enum java.lang.annotation.RetentionPolicy", elements, "policyElement");
           assertFieldType("String[]", elements, "stringArrayElement");
           assertFieldType("int[]", elements, "intArrayElement");
           assertFieldType("enum testpkg.MyEnum[]", elements, "enumArrayElement");
+          assertFieldType(
+              "enum java.lang.annotation.RetentionPolicy[]", elements, "policyArrayElement");
+          // typeMirrorToAnnotationFieldType does not handle an element whose type is an
+          // annotation: such an element falls through to the branch that assumes an enum.  This
+          // assertion documents that behavior rather than endorsing it.
+          assertFieldType("enum testpkg.MyNested", elements, "nestedElement");
         });
   }
 
@@ -129,9 +152,8 @@ public class AnnotationConverterTest {
 
   /**
    * Tests that converting an annotation to an {@link Annotation} and back yields the original
-   * annotation. This exercises every branch of {@link
-   * AnnotationConverter#addFieldToAnnotationBuilder} that a value of a legal element type can
-   * reach.
+   * annotation. {@link #addFieldToAnnotationBuilderForEveryType} tests the second half of that
+   * conversion in more detail.
    */
   @Test
   public void annotationRoundTrip() {
@@ -147,6 +169,92 @@ public class AnnotationConverterTest {
           Assert.assertTrue(
               "expected " + am + " but got " + roundTripped,
               AnnotationUtils.areSame(am, roundTripped));
+        });
+  }
+
+  /**
+   * Tests one value for every branch of {@link AnnotationConverter#addFieldToAnnotationBuilder},
+   * including the branch that no value can reach.
+   */
+  @Test
+  public void addFieldToAnnotationBuilderForEveryType() {
+    withProcessingEnvironment(
+        env -> {
+          VariableElement enumA = enumConstant(env, "testpkg.MyEnum", "A");
+          VariableElement enumB = enumConstant(env, "testpkg.MyEnum", "B");
+          TypeMirror stringType = typeElement(env, "java.lang.String").asType();
+          AnnotationMirror nested =
+              new AnnotationBuilder(env, "testpkg.MyNested").setValue("value", 12).build();
+
+          // One value per branch, in the order in which addFieldToAnnotationBuilder tests them.
+          // List
+          assertFieldValue(env, "{\"a\", \"b\"}", "stringArrayElement", Arrays.asList("a", "b"));
+          // String
+          assertFieldValue(env, "\"seven\"", "stringElement", "seven");
+          // Integer
+          assertFieldValue(env, "4", "intElement", 4);
+          // Float
+          assertFieldValue(env, "3.0", "floatElement", 3.0f);
+          // Long
+          assertFieldValue(env, "5", "longElement", 5L);
+          // Boolean
+          assertFieldValue(env, "true", "booleanElement", true);
+          // Character
+          assertFieldValue(env, "'c'", "charElement", 'c');
+          // Class
+          assertFieldValue(env, "java.lang.String.class", "classElement", String.class);
+          // Double
+          assertFieldValue(env, "2.0", "doubleElement", 2.0);
+          // Enum
+          assertFieldValue(
+              env,
+              "java.lang.annotation.RetentionPolicy.RUNTIME",
+              "policyElement",
+              RetentionPolicy.RUNTIME);
+          // Enum[]
+          assertFieldValue(
+              env,
+              "{java.lang.annotation.RetentionPolicy.RUNTIME,"
+                  + " java.lang.annotation.RetentionPolicy.SOURCE}",
+              "policyArrayElement",
+              new RetentionPolicy[] {RetentionPolicy.RUNTIME, RetentionPolicy.SOURCE});
+          // AnnotationMirror
+          assertFieldValue(env, "@testpkg.MyNested(12)", "nestedElement", nested);
+          // Object[]
+          assertFieldValue(env, "{10, 11}", "intArrayElement", new Integer[] {10, 11});
+          // TypeMirror
+          assertFieldValue(env, "java.lang.String.class", "classElement", stringType);
+          // Short
+          assertFieldValue(env, "6", "shortElement", (short) 6);
+          // VariableElement
+          assertFieldValue(env, "testpkg.MyEnum.A", "enumElement", enumA);
+          // The VariableElement[] branch is unreachable, because a VariableElement[] is an
+          // Object[] and the Object[] branch precedes it.  This assertion shows that the Object[]
+          // branch handles a VariableElement[] correctly anyway.
+          assertFieldValue(
+              env,
+              "{testpkg.MyEnum.A, testpkg.MyEnum.B}",
+              "enumArrayElement",
+              new VariableElement[] {enumA, enumB});
+        });
+  }
+
+  /**
+   * Tests that {@link AnnotationConverter#addFieldToAnnotationBuilder} throws an exception, rather
+   * than silently dropping the field, for a value whose type it does not handle. A {@code Byte} is
+   * such a value, even though {@code byte} is a legal type for an annotation element.
+   */
+  @Test
+  public void addFieldToAnnotationBuilderForUnhandledType() {
+    withProcessingEnvironment(
+        env -> {
+          AnnotationBuilder builder = new AnnotationBuilder(env, "testpkg.MyAnno");
+          try {
+            AnnotationConverter.addFieldToAnnotationBuilder("byteElement", (byte) 1, builder);
+            Assert.fail("No exception for a byte value");
+          } catch (BugInCF e) {
+            Assert.assertTrue(e.getMessage(), e.getMessage().contains("Unrecognized type"));
+          }
         });
   }
 
@@ -188,6 +296,62 @@ public class AnnotationConverterTest {
         "type of " + elementName,
         expected,
         AnnotationConverter.getAnnotationFieldType(element).toString());
+  }
+
+  /**
+   * Asserts that passing {@code elementName} and {@code value} to {@link
+   * AnnotationConverter#addFieldToAnnotationBuilder} sets exactly the element named {@code
+   * elementName} of {@code testpkg.MyAnno}, to a value whose string representation is {@code
+   * expected}.
+   *
+   * @param env the processing environment
+   * @param expected the string representation of the expected value
+   * @param elementName the name of an element of {@code testpkg.MyAnno}
+   * @param value the value to set the element to
+   */
+  private static void assertFieldValue(
+      ProcessingEnvironment env, String expected, String elementName, Object value) {
+    AnnotationBuilder builder = new AnnotationBuilder(env, "testpkg.MyAnno");
+    AnnotationConverter.addFieldToAnnotationBuilder(elementName, value, builder);
+    Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues =
+        builder.build().getElementValues();
+    Assert.assertEquals("elements set while setting " + elementName, 1, elementValues.size());
+    Assert.assertEquals(
+        "value of " + elementName, expected, elementValues.values().iterator().next().toString());
+  }
+
+  /**
+   * Returns the named constant of the named enum type.
+   *
+   * @param env the processing environment
+   * @param enumName the fully-qualified name of an enum type
+   * @param constantName the name of one of the constants of the enum type
+   * @return the element for the constant
+   */
+  private static VariableElement enumConstant(
+      ProcessingEnvironment env, String enumName, String constantName) {
+    for (VariableElement constant :
+        ElementFilter.fieldsIn(typeElement(env, enumName).getEnclosedElements())) {
+      if (constant.getSimpleName().contentEquals(constantName)) {
+        return constant;
+      }
+    }
+    throw new AssertionError("no constant " + constantName + " in " + enumName);
+  }
+
+  /**
+   * Returns the element for the named type declaration.
+   *
+   * @param env the processing environment
+   * @param name the fully-qualified name of a type
+   * @return the element for the type
+   */
+  private static TypeElement typeElement(ProcessingEnvironment env, String name) {
+    TypeElement result = env.getElementUtils().getTypeElement(name);
+    if (result == null) {
+      throw new AssertionError("no element for " + name);
+    }
+    return result;
   }
 
   /**
