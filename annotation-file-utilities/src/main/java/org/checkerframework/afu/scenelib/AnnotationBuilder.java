@@ -41,6 +41,11 @@ public class AnnotationBuilder {
    */
   Set<Annotation> tlAnnotationsHere;
 
+  // Exactly one of `source` and `sourceSupplier` is non-null.
+
+  /** Where the annotation came from, such as a filename. */
+  String source;
+
   /**
    * Computes where the annotation came from, such as a filename. It is a supplier rather than a
    * string because it is used only for diagnostics, and computing it can be expensive.
@@ -55,6 +60,63 @@ public class AnnotationBuilder {
   private Map<String, AnnotationFieldType> fieldTypes = new LinkedHashMap<>();
 
   Map<String, Object> fieldValues = new LinkedHashMap<>();
+
+  /**
+   * Create a new AnnotationBuilder.
+   *
+   * @param def the definition of the annotation being built
+   * @param source where the annotation came from, such as a filename; if it is expensive to
+   *     compute, use {@link #AnnotationBuilder(AnnotationDef,Supplier)} instead
+   */
+  AnnotationBuilder(AnnotationDef def, String source) {
+    this(def, () -> source);
+  }
+
+  /**
+   * Create a new AnnotationBuilder.
+   *
+   * @param def the definition of the annotation being built
+   * @param sourceSupplier computes where the annotation came from, such as a filename; it is called
+   *     only if the source is needed for a diagnostic
+   */
+  AnnotationBuilder(AnnotationDef def, Supplier<String> sourceSupplier) {
+    assert def != null;
+    assert sourceSupplier != null;
+    this.def = def;
+    this.source = null;
+    this.sourceSupplier = sourceSupplier;
+  }
+
+  /**
+   * Create a new AnnotationBuilder.
+   *
+   * @param typeName the name of the annotation being built
+   * @param source where the annotation came from, such as a filename
+   */
+  AnnotationBuilder(@BinaryName String typeName, String source) {
+    assert typeName != null;
+    assert source != null;
+    this.typeName = typeName;
+    this.source = source;
+    this.sourceSupplier = null;
+  }
+
+  /**
+   * Create a new AnnotationBuilder.
+   *
+   * @param typeName the name of the annotation being built
+   * @param tlAnnotationsHere the top-level meta-annotations that appear directly on the annotation
+   *     being built. "tl" stands for "top-level".
+   * @param source where the annotation came from, such as a filename
+   */
+  AnnotationBuilder(@BinaryName String typeName, Set<Annotation> tlAnnotationsHere, String source) {
+    assert typeName != null;
+    assert source != null;
+    this.typeName = typeName;
+    this.tlAnnotationsHere = tlAnnotationsHere;
+    this.source = source;
+    this.sourceSupplier = null;
+  }
 
   /**
    * Returns the name of the annotation.
@@ -219,66 +281,16 @@ public class AnnotationBuilder {
     active = false;
     if (def == null) {
       assert fieldTypes != null;
-      def = new AnnotationDef(typeName, tlAnnotationsHere, fieldTypes, sourceSupplier);
+      if (source != null) {
+        def = new AnnotationDef(typeName, tlAnnotationsHere, fieldTypes, source);
+      } else {
+        def = new AnnotationDef(typeName, tlAnnotationsHere, fieldTypes, sourceSupplier);
+      }
     } else {
       assert typeName == null;
       assert fieldTypes.isEmpty();
     }
     return new Annotation(def, fieldValues);
-  }
-
-  /**
-   * Create a new AnnotationBuilder.
-   *
-   * @param def the definition of the annotation being built
-   * @param source where the annotation came from, such as a filename; if it is expensive to
-   *     compute, use {@link #AnnotationBuilder(AnnotationDef,Supplier)} instead
-   */
-  AnnotationBuilder(AnnotationDef def, String source) {
-    this(def, () -> source);
-  }
-
-  /**
-   * Create a new AnnotationBuilder.
-   *
-   * @param def the definition of the annotation being built
-   * @param sourceSupplier computes where the annotation came from, such as a filename; it is called
-   *     only if the source is needed for a diagnostic
-   */
-  AnnotationBuilder(AnnotationDef def, Supplier<String> sourceSupplier) {
-    assert def != null;
-    assert sourceSupplier != null;
-    this.def = def;
-    this.sourceSupplier = sourceSupplier;
-  }
-
-  /**
-   * Create a new AnnotationBuilder.
-   *
-   * @param typeName the name of the annotation being built
-   * @param source where the annotation came from, such as a filename
-   */
-  AnnotationBuilder(@BinaryName String typeName, String source) {
-    assert typeName != null;
-    assert source != null;
-    this.typeName = typeName;
-    this.sourceSupplier = () -> source;
-  }
-
-  /**
-   * Create a new AnnotationBuilder.
-   *
-   * @param typeName the name of the annotation being built
-   * @param tlAnnotationsHere the top-level meta-annotations that appear directly on the annotation
-   *     being built. "tl" stands for "top-level".
-   * @param source where the annotation came from, such as a filename
-   */
-  AnnotationBuilder(@BinaryName String typeName, Set<Annotation> tlAnnotationsHere, String source) {
-    assert typeName != null;
-    assert source != null;
-    this.typeName = typeName;
-    this.tlAnnotationsHere = tlAnnotationsHere;
-    this.sourceSupplier = () -> source;
   }
 
   @Override
