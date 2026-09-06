@@ -33,8 +33,11 @@ public class AnnotationBuilder {
    */
   @MonotonicNonNull AnnotationDef def;
 
-  /** The name of the annotation being built. */
-  private @BinaryName String typeName;
+  /**
+   * The name of the annotation being built. null if a non-null {@link #def} was supplied to the
+   * constructor.
+   */
+  private @Nullable @BinaryName String typeName;
 
   /**
    * The top-level meta-annotations that appear directly on the annotation being built. "tl" stands
@@ -70,6 +73,7 @@ public class AnnotationBuilder {
     assert def != null;
     assert source != null;
     this.def = def;
+    this.tlAnnotationsHere = new LinkedHashSet<>(2);
     this.source = source;
   }
 
