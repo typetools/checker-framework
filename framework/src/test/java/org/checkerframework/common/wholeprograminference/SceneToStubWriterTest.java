@@ -217,6 +217,7 @@ public class SceneToStubWriterTest {
             parameter(types.getArrayType(listOfString)), "x", "MyClass"));
   }
 
+  /** Tests formatting an annotation with no elements. */
   @Test
   public void formatAnnotationWithoutElements() {
     Assert.assertEquals("@Owning", SceneToStubWriter.formatAnnotation(markerAnnotation(OWNING)));
@@ -265,12 +266,14 @@ public class SceneToStubWriterTest {
         SceneToStubWriter.formatAnnotation(anno));
   }
 
+  /** Tests extracting a package name from a binary name. */
   @Test
   public void packagePart() {
     Assert.assertEquals("java.util", SceneToStubWriter.packagePart("java.util.Map$Entry"));
     Assert.assertNull(SceneToStubWriter.packagePart("Outer$Inner"));
   }
 
+  /** Tests extracting a basename from a binary name. */
   @Test
   public void basenamePart() {
     Assert.assertEquals("Map$Entry", SceneToStubWriter.basenamePart("java.util.Map$Entry"));
