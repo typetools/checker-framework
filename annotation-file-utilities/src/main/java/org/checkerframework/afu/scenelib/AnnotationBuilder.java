@@ -29,8 +29,8 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 public class AnnotationBuilder {
 
   /**
-   * Sometimes, we build the AnnotationDef at the very end, and sometimes we have it before
-   * starting.
+   * Sometimes we build the AnnotationDef at the very end, and sometimes the client provides it at
+   * the very start.
    */
   @MonotonicNonNull AnnotationDef def;
 
@@ -56,8 +56,8 @@ public class AnnotationBuilder {
   boolean active = true;
 
   /**
-   * The tyypes of the annotation fields/elements. Generally, don't use this. Use method
-   * fieldTypes() instead.
+   * The tyypes of the annotation fields/elements. Generally, don't use this. Use method {@link
+   * #fieldTypes()} instead.
    */
   private Map<String, AnnotationFieldType> fieldTypes = new LinkedHashMap<>();
 
