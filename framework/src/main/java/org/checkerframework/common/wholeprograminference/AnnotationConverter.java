@@ -45,20 +45,23 @@ public class AnnotationConverter {
    * @return the Annotation
    */
   public static Annotation annotationMirrorToAnnotation(AnnotationMirror am) {
-    @SuppressWarnings("signature:argument") // TODO: bug for inner classes
-    AnnotationDef def =
-        new AnnotationDef(
-            AnnotationUtils.annotationName(am),
-            String.format(
-                "annotationMirrorToAnnotation %s [%s] keyset=%s",
-                am, am.getClass(), am.getElementValues().keySet()));
     Map<String, AnnotationFieldType> fieldTypes = new ArrayMap<>(am.getElementValues().size());
     // Handling cases where there are fields in annotations.
     for (ExecutableElement ee : am.getElementValues().keySet()) {
       AnnotationFieldType aft = getAnnotationFieldType(ee);
       fieldTypes.put(ee.getSimpleName().toString(), aft);
     }
-    def.setFieldTypes(fieldTypes);
+
+    @SuppressWarnings("signature:argument") // TODO: bug for inner classes
+    AnnotationDef def =
+        new AnnotationDef(
+            AnnotationUtils.annotationName(am),
+            fieldTypes,
+            // The source is computed lazily because it is used only for diagnostics.
+            () ->
+                String.format(
+                    "annotationMirrorToAnnotation %s [%s] keyset=%s",
+                    am, am.getClass(), am.getElementValues().keySet()));
 
     // Now, we handle the values of those types below
     Map<? extends ExecutableElement, ? extends AnnotationValue> values = am.getElementValues();
