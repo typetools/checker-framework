@@ -69,7 +69,11 @@ public class AnnotationBuilder {
    *     compute, use {@link #AnnotationBuilder(AnnotationDef,Supplier)} instead
    */
   AnnotationBuilder(AnnotationDef def, String source) {
-    this(def, () -> source);
+    assert def != null;
+    assert source != null;
+    this.def = def;
+    this.source = source;
+    this.sourceSupplier = null;
   }
 
   /**

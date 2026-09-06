@@ -779,11 +779,9 @@ public final class IndexFileParser {
       fields.put(name, type);
     }
 
-    // The meta-annotations and fields are parsed before constructing the `AnnotationDef`, because
-    // an `AnnotationDef` is immutable.
     AnnotationDef ad = new AnnotationDef(fullName, metaAnnotations, fields, source);
 
-    // Now add the definition to the map of all definitions.
+    // Add the definition to the map of all definitions.
     addDef(ad, basename);
   }
 
