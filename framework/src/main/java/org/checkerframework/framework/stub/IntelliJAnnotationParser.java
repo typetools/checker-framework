@@ -487,31 +487,92 @@ public final class IntelliJAnnotationParser {
   }
 
   /**
-   * Parses a char literal value string, interpreting escape sequences.
+   * Parses a char literal value string, interpreting escape sequences. The argument has already had
+   * its enclosing quotation marks, if any, stripped by {@link #stripQuotes}, which also interprets
+   * escape sequences; this method interprets escape sequences in an unquoted value.
    *
    * @param s the unquoted string
-   * @return the char value
+   * @return the char that {@code s} represents, or null if {@code s} is not a char literal
    */
-  private static char parseChar(String s) {
-    if (s.isEmpty()) {
-      return '\0';
+  /*package*/ static @Nullable Character parseChar(String s) {
+    if (s.length() == 1) {
+      return s.charAt(0);
     }
-    if (s.startsWith("\\") && s.length() > 1) {
-      char next = s.charAt(1);
-      return switch (next) {
-        case 'n' -> '\n';
-        case 'r' -> '\r';
-        case 't' -> '\t';
-        case 'b' -> '\b';
-        case 'f' -> '\f';
-        case '\'' -> '\'';
-        case '\"' -> '\"';
-        case '\\' -> '\\';
-        case '0' -> '\0';
-        default -> next;
-      };
+    if (s.length() < 2 || s.charAt(0) != '\\') {
+      // The empty string, or more than one character with no escape sequence.
+      return null;
     }
-    return s.charAt(0);
+    String escape = s.substring(1);
+    if (escape.length() == 1) {
+      @Nullable Character simpleEscape =
+          switch (escape.charAt(0)) {
+            case 'n' -> '\n';
+            case 'r' -> '\r';
+            case 't' -> '\t';
+            case 'b' -> '\b';
+            case 'f' -> '\f';
+            case 's' -> ' ';
+            case '\'' -> '\'';
+            case '"' -> '"';
+            case '\\' -> '\\';
+            default -> null;
+          };
+      if (simpleEscape != null) {
+        return simpleEscape;
+      }
+    }
+    if (escape.charAt(0) == 'u') {
+      // A unicode escape may contain more than one 'u', as in a backslash followed by
+      // "uuu0041".
+      int hexStart = 1;
+      while (hexStart < escape.length() && escape.charAt(hexStart) == 'u') {
+        hexStart++;
+      }
+      String hex = escape.substring(hexStart);
+      if (hex.length() != 4 || !isHexDigits(hex)) {
+        return null;
+      }
+      return (char) Integer.parseInt(hex, 16);
+    }
+    // An octal escape is 1 to 3 octal digits, with value at most 0377.
+    if (escape.length() <= 3 && isOctalDigits(escape)) {
+      int value = Integer.parseInt(escape, 8);
+      if (value <= 0377) {
+        return (char) value;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns true if every character of {@code s} is a hexadecimal digit.
+   *
+   * @param s a non-empty string
+   * @return true if every character of {@code s} is a hexadecimal digit
+   */
+  private static boolean isHexDigits(String s) {
+    for (int i = 0; i < s.length(); i++) {
+      if (Character.digit(s.charAt(i), 16) == -1) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Returns true if every character of {@code s} is an octal digit.
+   *
+   * @param s a non-empty string
+   * @return true if every character of {@code s} is an octal digit
+   */
+  private static boolean isOctalDigits(String s) {
+    for (int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+      if (c < '0' || c > '7') {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -674,6 +735,9 @@ public final class IntelliJAnnotationParser {
    *   <li>Constructor param: {@code "java.lang.String java.lang.String(byte[], int) 1"}
    * </ul>
    *
+   * <p>If {@code sig} is malformed, the result's {@link ParsedItemSignature#isMalformed} method
+   * returns true.
+   *
    * @param sig the raw signature string from the XML item name attribute
    * @return the parsed item signature
    */
@@ -688,12 +752,22 @@ public final class IntelliJAnnotationParser {
             sig, null, Collections.emptyList(), -1, false, false, false, false);
       }
       String trailing = sig.substring(lastParen + 1).trim();
+      // -1 means the signature names the method or constructor itself, not one of its
+      // parameters.
       int paramIndex = -1;
       if (!trailing.isEmpty()) {
         try {
           paramIndex = Integer.parseInt(trailing);
-        } catch (NumberFormatException ignored) {
-          // not an index
+        } catch (NumberFormatException e) {
+          // The signature is malformed: the only thing that may follow the parameter list is a
+          // parameter index.
+          return new ParsedItemSignature(
+              sig, null, Collections.emptyList(), -1, false, false, false, false);
+        }
+        if (paramIndex < 0) {
+          // The signature is malformed: a parameter index is non-negative.
+          return new ParsedItemSignature(
+              sig, null, Collections.emptyList(), -1, false, false, false, false);
         }
       }
 

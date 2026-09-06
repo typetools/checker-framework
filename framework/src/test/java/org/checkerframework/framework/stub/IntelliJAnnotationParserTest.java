@@ -70,6 +70,60 @@ public class IntelliJAnnotationParserTest {
   }
 
   @Test
+  public void testParseSignatureBadParameterIndex() {
+    // Only a parameter index may follow the parameter list.  A non-numeric or negative trailer
+    // is not silently treated as naming the return type.
+    assertTrue(
+        IntelliJAnnotationParser.parseSignature(
+                "java.lang.String java.lang.String concat(java.lang.String) bogus")
+            .isMalformed());
+    assertTrue(
+        IntelliJAnnotationParser.parseSignature(
+                "java.lang.String java.lang.String concat(java.lang.String) -1")
+            .isMalformed());
+    assertTrue(
+        IntelliJAnnotationParser.parseSignature(
+                "java.lang.String java.lang.String concat(java.lang.String) 0 1")
+            .isMalformed());
+  }
+
+  @Test
+  public void testParseChar() {
+    assertEquals(Character.valueOf('a'), IntelliJAnnotationParser.parseChar("a"));
+    assertEquals(Character.valueOf('\n'), IntelliJAnnotationParser.parseChar("\\n"));
+    assertEquals(Character.valueOf('\''), IntelliJAnnotationParser.parseChar("\\'"));
+    assertEquals(Character.valueOf('\\'), IntelliJAnnotationParser.parseChar("\\\\"));
+    // stripQuotes has already interpreted the escape sequence in a quoted value such as '\\'.
+    assertEquals(Character.valueOf('\\'), IntelliJAnnotationParser.parseChar("\\"));
+    assertEquals(Character.valueOf(' '), IntelliJAnnotationParser.parseChar("\\s"));
+    // Unicode escapes, which may contain more than one 'u'.
+    assertEquals(Character.valueOf('A'), IntelliJAnnotationParser.parseChar("\\u0041"));
+    assertEquals(Character.valueOf('A'), IntelliJAnnotationParser.parseChar("\\uuu0041"));
+    // Octal escapes.
+    assertEquals(Character.valueOf('\0'), IntelliJAnnotationParser.parseChar("\\0"));
+    assertEquals(Character.valueOf('!'), IntelliJAnnotationParser.parseChar("\\041"));
+    assertEquals(Character.valueOf('\u00ff'), IntelliJAnnotationParser.parseChar("\\377"));
+  }
+
+  @Test
+  public void testParseCharMalformed() {
+    // A value that is not a char literal is not silently treated as some char.
+    assertNull(IntelliJAnnotationParser.parseChar(""));
+    assertNull(IntelliJAnnotationParser.parseChar("ab"));
+    // Not a Java escape sequence.
+    assertNull(IntelliJAnnotationParser.parseChar("\\q"));
+    // Malformed unicode escapes.
+    assertNull(IntelliJAnnotationParser.parseChar("\\u"));
+    assertNull(IntelliJAnnotationParser.parseChar("\\u041"));
+    assertNull(IntelliJAnnotationParser.parseChar("\\u004g"));
+    assertNull(IntelliJAnnotationParser.parseChar("\\u00041"));
+    // Malformed octal escapes.
+    assertNull(IntelliJAnnotationParser.parseChar("\\400"));
+    assertNull(IntelliJAnnotationParser.parseChar("\\0000"));
+    assertNull(IntelliJAnnotationParser.parseChar("\\08"));
+  }
+
+  @Test
   public void testStripQuotes() {
     assertEquals("abc", IntelliJAnnotationParser.stripQuotes("\"abc\""));
     assertEquals("abc", IntelliJAnnotationParser.stripQuotes("  \"abc\"  "));

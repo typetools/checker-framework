@@ -354,8 +354,11 @@ public class AnnotationFileUtil {
   /**
    * Returns annotation files found at a given file system location (does not look on classpath).
    *
-   * @param location an annotation file (stub file or ajava file), a jarfile, or a directory. Look
-   *     for it as an absolute file and relative to the current directory.
+   * @param location an annotation file (a stub file, ajava file, or IntelliJ IDEA annotation file),
+   *     a jarfile, or a directory. Look for it as an absolute file and relative to the current
+   *     directory. Because it is named explicitly, a file is used no matter what its name is;
+   *     within a jarfile or directory, only files whose name indicates that they are of type {@code
+   *     fileType} are used.
    * @param fileType file type of files to collect
    * @return annotation files with the given file type found in the file system (does not look on
    *     classpath). Returns null if the file system location does not exist; the caller may wish to
@@ -366,7 +369,7 @@ public class AnnotationFileUtil {
     File file = new File(location);
     if (file.exists()) {
       List<AnnotationFileResource> resources = new ArrayList<>();
-      addAnnotationFilesToList(file, resources, fileType);
+      addAnnotationFilesToList(file, resources, fileType, true);
       return resources;
     }
 
@@ -375,7 +378,7 @@ public class AnnotationFileUtil {
     file = new File(System.getProperty("user.dir"), location);
     if (file.exists()) {
       List<AnnotationFileResource> resources = new ArrayList<>();
-      addAnnotationFilesToList(file, resources, fileType);
+      addAnnotationFilesToList(file, resources, fileType, true);
       return resources;
     }
 
@@ -403,8 +406,10 @@ public class AnnotationFileUtil {
    */
   private static boolean isAnnotationFile(String path, AnnotationFileType fileType) {
     if (fileType == AnnotationFileType.INTELLIJ_ANNOTATIONS) {
-      return "annotations.xml".equals(new File(path).getName())
-          || path.endsWith("/annotations.xml");
+      // Within a directory or an archive, an IntelliJ IDEA annotation file is always named
+      // "annotations.xml".  (A file named on the command line may have any name; see
+      // addAnnotationFilesToList.)
+      return "annotations.xml".equals(new File(path).getName());
     }
     return path.endsWith(fileType.isStub() ? ".astub" : ".ajava");
   }
@@ -422,12 +427,16 @@ public class AnnotationFileUtil {
   /**
    * Side-effects {@code resources} by adding annotation files of the given file type to it.
    *
-   * @param location an annotation file (a stub file or ajava file), a jarfile, or a directory. If a
-   *     stub file or ajava file, add it to the {@code resources} list. If a jarfile, use all
-   *     annotation files (of type {@code fileType}) contained in it. If a directory, recurse on all
-   *     files contained in it.
+   * @param location an annotation file (a stub file, ajava file, or IntelliJ IDEA annotation file),
+   *     a jarfile, or a directory. If an annotation file, add it to the {@code resources} list. If
+   *     a jarfile, use all annotation files (of type {@code fileType}) contained in it. If a
+   *     directory, recurse on all files contained in it.
    * @param resources the list to add the found files to
    * @param fileType type of annotation files to add
+   * @param isUserSupplied true if {@code location} was named by the user (say, on the command line)
+   *     rather than being found by searching a directory or an archive. A file named by the user is
+   *     used no matter what its name is; a file found by searching is used only if its name
+   *     indicates that it is an annotation file of type {@code fileType}.
    */
   @SuppressWarnings({
     "JdkObsolete", // JarFile.entries()
@@ -436,10 +445,11 @@ public class AnnotationFileUtil {
     // JarEntryAnnotationFileResource, where `file` appears in every element of the list
   })
   private static void addAnnotationFilesToList(
-      File location, List<AnnotationFileResource> resources, AnnotationFileType fileType) {
-    if (isAnnotationFile(location, fileType)) {
-      resources.add(new FileAnnotationFileResource(location));
-    } else if (isJarOrZip(location)) {
+      File location,
+      List<AnnotationFileResource> resources,
+      AnnotationFileType fileType,
+      boolean isUserSupplied) {
+    if (isJarOrZip(location)) {
       JarFile file;
       try {
         file = new JarFile(location);
@@ -459,8 +469,10 @@ public class AnnotationFileUtil {
       File[] directoryContents = location.listFiles();
       Arrays.sort(directoryContents, Comparator.comparing(File::getName));
       for (File enclosed : directoryContents) {
-        addAnnotationFilesToList(enclosed, resources, fileType);
+        addAnnotationFilesToList(enclosed, resources, fileType, false);
       }
+    } else if ((isUserSupplied && location.isFile()) || isAnnotationFile(location, fileType)) {
+      resources.add(new FileAnnotationFileResource(location));
     }
   }
 
