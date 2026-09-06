@@ -36,7 +36,9 @@ public class AnnotationConverterTest {
   /**
    * {@link AnnotationConverter#annotationMirrorToAnnotation} is called once per annotation per
    * storage write, so it must not construct the {@code AnnotationDef}'s source string, which is
-   * used only for diagnostics.
+   * used only for diagnostics. Furthermore, the {@code AnnotationDef} outlives the compilation of
+   * the annotation, so it must not retain the {@code AnnotationMirror}; the source string is
+   * therefore computed from strings rather than from the {@code AnnotationMirror} itself.
    */
   @Test
   public void sourceIsComputedOnlyOnDemand() {
@@ -48,8 +50,9 @@ public class AnnotationConverterTest {
     String secondSource = converted.def().getSource();
     Assert.assertTrue(source, source.startsWith("annotationMirrorToAnnotation "));
     Assert.assertTrue(source, source.contains("java.lang.Deprecated"));
-    Assert.assertEquals(source, secondSource);
-    Assert.assertEquals("getSource() stringified its argument more than once", 1, am.toStringCount);
+    // Reference equality, because getSource() caches its result rather than recomputing it.
+    Assert.assertSame(source, secondSource);
+    Assert.assertEquals("getSource() stringified the AnnotationMirror", 0, am.toStringCount);
   }
 
   /**

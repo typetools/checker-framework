@@ -2,6 +2,7 @@ package org.checkerframework.afu.scenelib;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import org.checkerframework.afu.scenelib.el.AnnotationDef;
 import org.checkerframework.checker.signature.qual.BinaryName;
 
@@ -24,6 +25,19 @@ public final class AnnotationFactory {
    */
   public AnnotationBuilder beginAnnotation(AnnotationDef def, String source) {
     return new AnnotationBuilder(def, source);
+  }
+
+  /**
+   * Returns an {@link AnnotationBuilder} appropriate for building an {@link Annotation} of the
+   * given type name.
+   *
+   * @param def the definition for the annotation to be built
+   * @param sourceSupplier computes where the annotation came from, such as a filename; it is called
+   *     only if the source is needed for a diagnostic
+   * @return an {@link AnnotationBuilder} for the given definition
+   */
+  public AnnotationBuilder beginAnnotation(AnnotationDef def, Supplier<String> sourceSupplier) {
+    return new AnnotationBuilder(def, sourceSupplier);
   }
 
   /**

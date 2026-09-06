@@ -4,6 +4,7 @@ import com.sun.tools.javac.code.Type.ArrayType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -19,6 +20,7 @@ import org.checkerframework.afu.scenelib.field.BasicAFT;
 import org.checkerframework.afu.scenelib.field.ClassTokenAFT;
 import org.checkerframework.afu.scenelib.field.EnumAFT;
 import org.checkerframework.afu.scenelib.field.ScalarAFT;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -52,16 +54,22 @@ public class AnnotationConverter {
       fieldTypes.put(ee.getSimpleName().toString(), aft);
     }
 
-    @SuppressWarnings("signature:argument") // TODO: bug for inner classes
+    @SuppressWarnings("signature:assignment") // TODO: bug for inner classes
+    @BinaryName String annoName = AnnotationUtils.annotationName(am);
+    // The lambda below captures only these strings, not `am`, because capturing `am` would retain
+    // the AnnotationMirror (and its javac Type and Symbol graph) for as long as the AnnotationDef
+    // is reachable, which is for the whole compilation.
+    String amClassName = am.getClass().getName();
+    Set<String> fieldNames = fieldTypes.keySet();
     AnnotationDef def =
         new AnnotationDef(
-            AnnotationUtils.annotationName(am),
+            annoName,
             fieldTypes,
             // The source is computed lazily because it is used only for diagnostics.
             () ->
                 String.format(
                     "annotationMirrorToAnnotation %s [%s] keyset=%s",
-                    am, am.getClass(), am.getElementValues().keySet()));
+                    annoName, amClassName, fieldNames));
 
     // Now, we handle the values of those types below
     Map<? extends ExecutableElement, ? extends AnnotationValue> values = am.getElementValues();
