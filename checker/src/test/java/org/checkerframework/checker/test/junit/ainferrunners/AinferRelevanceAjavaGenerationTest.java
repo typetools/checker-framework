@@ -86,6 +86,20 @@ public class AinferRelevanceAjavaGenerationTest extends AinferGeneratePerDirecto
     Path ajavaFile =
         inferenceOutputDir.resolve(
             className + "-" + AinferRelevanceTestChecker.class.getCanonicalName() + ".ajava");
+    String message =
+        String.format(
+            "%s differs from %s.  If the difference is desirable, overwrite the goal file:%n"
+                + "  cp %s %s%n",
+            ajavaFile.toAbsolutePath(),
+            goalFile.toAbsolutePath(),
+            ajavaFile.toAbsolutePath(),
+            goalFile.toAbsolutePath());
+    if (!Files.exists(ajavaFile)) {
+      // Inference wrote no ajava file for the class:  it inferred nothing, or the file has an
+      // unexpected name.  Report this the same way as a difference in contents, rather than
+      // throwing an uninformative IOException.
+      Assert.fail(message);
+    }
     String goalContents;
     String ajavaContents;
     try {
@@ -94,15 +108,6 @@ public class AinferRelevanceAjavaGenerationTest extends AinferGeneratePerDirecto
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
-    Assert.assertEquals(
-        String.format(
-            "%s differs from %s.  If the difference is desirable, overwrite the goal file:%n"
-                + "  cp %s %s%n",
-            ajavaFile.toAbsolutePath(),
-            goalFile.toAbsolutePath(),
-            ajavaFile.toAbsolutePath(),
-            goalFile.toAbsolutePath()),
-        goalContents,
-        ajavaContents);
+    Assert.assertEquals(message, goalContents, ajavaContents);
   }
 }

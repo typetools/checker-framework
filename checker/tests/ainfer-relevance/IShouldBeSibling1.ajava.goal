@@ -5,8 +5,12 @@
 // declaration.  Printing the annotation must not crash, and inference must not discard the
 // annotation even though the method's return type `void` is irrelevant:  a type qualifier is never
 // written on `void`, so the annotation is certainly a declaration annotation.
-@SuppressWarnings("super.invocation") // Intentional.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+@org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1
 public class IShouldBeSibling1 {
 
-  void iShouldBeSibling1() {}
+    @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    void iShouldBeSibling1() {
+    }
 }

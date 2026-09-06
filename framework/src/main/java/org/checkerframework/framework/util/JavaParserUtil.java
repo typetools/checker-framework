@@ -14,8 +14,10 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.PrimitiveType;
+import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -60,14 +62,6 @@ public final class JavaParserUtil {
       Elements elements, ClassOrInterfaceType type) {
     String name = type.getNameWithScope();
 
-    // The name might already be fully-qualified.
-    {
-      TypeElement result = elements.getTypeElement(name);
-      if (result != null) {
-        return result;
-      }
-    }
-
     // `firstComponent` is what a single-type import must import; the rest of `name` names a
     // nested type, as in `Entry` and `Entry.Foo` for the import `java.util.Map.Entry`.
     int dotIndex = name.indexOf('.');
@@ -82,10 +76,20 @@ public final class JavaParserUtil {
     }
 
     // A type that is lexically enclosed in a type declaration takes precedence over an import,
-    // over a type in the same package, and over a type in `java.lang`.
+    // over a type in the same package, over a type in `java.lang`, and over the interpretation of
+    // `name` as a fully-qualified name.
     for (Node ancestor = type.getParentNode().orElse(null);
         ancestor != null;
         ancestor = ancestor.getParentNode().orElse(null)) {
+      if (ancestor instanceof NodeWithTypeParameters<?> genericDeclaration) {
+        for (TypeParameter typeParameter : genericDeclaration.getTypeParameters()) {
+          if (typeParameter.getNameAsString().equals(firstComponent)) {
+            // `name` names a type parameter, which shadows any type of the same name.  A type
+            // parameter has no TypeElement.
+            return null;
+          }
+        }
+      }
       if (ancestor instanceof TypeDeclaration<?> enclosingType) {
         String enclosingName = enclosingType.getFullyQualifiedName().orElse(null);
         if (enclosingName != null) {
@@ -165,6 +169,17 @@ public final class JavaParserUtil {
             return result;
           }
         }
+      }
+    }
+
+    // The name might be fully-qualified.  This lookup also finds a type in the unnamed package,
+    // for which `cu.getPackageDeclaration()` yields nothing.  This lookup is last, because a type
+    // that is in scope shadows a type whose fully-qualified name is `name`; in the unnamed
+    // package, every simple name is also a fully-qualified name.
+    {
+      TypeElement result = elements.getTypeElement(name);
+      if (result != null) {
+        return result;
       }
     }
 

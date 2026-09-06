@@ -21,6 +21,7 @@ import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.ArrayCreationExpr;
 import com.github.javaparser.ast.expr.CharLiteralExpr;
 import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
@@ -590,9 +591,9 @@ public class WholeProgramInferenceJavaParserStorage
       // of the same hierarchy.
       for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
         if (curATM.getPrimaryAnnotationInHierarchy(am) != null) {
-          // Don't insert if the type is already has a primary annotation
-          // in the same hierarchy.
-          break;
+          // Don't insert if the type already has a primary annotation in the same hierarchy.
+          // Other hierarchies are still handled, so this is `continue` rather than `break`.
+          continue;
         }
         typeToUpdate.replaceAnnotation(am);
       }
@@ -1134,19 +1135,20 @@ public class WholeProgramInferenceJavaParserStorage
 
     // An annotation that was inferred for a type is attached to a Type node.  An annotation that
     // was inferred for a declaration is attached to the declaration; it is usually not a type
-    // qualifier, because a checker shoul dnot add a type qualifier as a declaration annotation.
+    // qualifier, because a checker should not add a type qualifier as a declaration annotation.
     //
     // JavaParser attaches an annotation that precedes a declaration's type to the declaration
     // rather than to the type, so the two cases cannot be distinguished for a method, a field, or
     // a formal parameter.  Such an annotation is treated as a type qualifier on the declaration's
-    // element type.
+    // element type -- except when the declaration's type is `void`, on which no type qualifier can
+    // be written, so the annotation is certainly a declaration annotation.
 
     if (parentNode instanceof Type type) {
       return typeIsRelevant(gatf, type);
     }
-    if (parentNode instanceof ArrayCreationLevel) {
+    if (parentNode instanceof ArrayCreationLevel level) {
       // The annotation is on an array type, as in `new String @Anno [10]`.
-      return gatf.arrayTypesAreRelevant();
+      return arrayCreationLevelIsRelevant(gatf, level);
     }
     if (parentNode instanceof Parameter param) {
       // Use reference equality.  `NodeList.contains()` would use structural equality, which does
@@ -1154,7 +1156,7 @@ public class WholeProgramInferenceJavaParserStorage
       if (param.getVarArgsAnnotations().stream().anyMatch(a -> a == anno)) {
         // The annotation is on the array type that `...` creates, as in
         // `void m(String @Anno ... args)`.
-        return gatf.arrayTypesAreRelevant();
+        return typeIsRelevant(gatf, param.getType(), 1);
       }
       // The annotation precedes the type, so it is on the element type; in
       // `void m(@Anno String... args)`, `@Anno` is on `String`.
@@ -1164,6 +1166,12 @@ public class WholeProgramInferenceJavaParserStorage
       return typeIsRelevant(gatf, innermostComponentType(receiverParam.getType()));
     }
     if (parentNode instanceof MethodDeclaration method) {
+      if (method.getType() instanceof VoidType) {
+        // No type qualifier can be written on `void`, so the annotation is a declaration
+        // annotation that is also a type qualifier, as `addMethodDeclarationAnnotation` can
+        // create.  Be conservative.
+        return true;
+      }
       return typeIsRelevant(gatf, innermostComponentType(method.getType()));
     }
     if (parentNode instanceof AnnotationMemberDeclaration member) {
@@ -1174,7 +1182,8 @@ public class WholeProgramInferenceJavaParserStorage
       // element type, even if they have different numbers of array levels as in `int i, a[];`.
       NodeList<VariableDeclarator> variables = declaration.getVariables();
       if (variables.isEmpty()) {
-        throw new RuntimeException("this can't happen");
+        throw new BugInCF(
+            "No variables in declaration %s [%s]", declaration, declaration.getClass());
       }
       return typeIsRelevant(gatf, innermostComponentType(variables.get(0).getType()));
     }
@@ -1194,29 +1203,84 @@ public class WholeProgramInferenceJavaParserStorage
    * @return true if a type qualifier written on {@code type} might be relevant
    */
   private boolean typeIsRelevant(GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf, Type type) {
-    if (type instanceof ArrayType) {
-      return gatf.arrayTypesAreRelevant();
+    return typeIsRelevant(gatf, type, 0);
+  }
+
+  /**
+   * Returns true if a type qualifier that is written on the given type might be relevant, where the
+   * type is {@code componentType} wrapped in {@code arrayLevels} array levels. This implementation
+   * is conservative and only returns false if such a qualifier is definitely not relevant.
+   *
+   * @param gatf the type factory associated with this
+   * @param componentType a JavaParser type
+   * @param arrayLevels the number of array levels to wrap {@code componentType} in; may be 0
+   * @return true if a type qualifier written on the array type might be relevant
+   */
+  private boolean typeIsRelevant(
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf, Type componentType, int arrayLevels) {
+    TypeMirror tm = typeToTypeMirror(componentType);
+    if (tm == null) {
+      // The type could not be determined.  Be conservative.
+      return true;
+    }
+    Types types = atypeFactory.getProcessingEnv().getTypeUtils();
+    for (int i = 0; i < arrayLevels; i++) {
+      tm = types.getArrayType(tm);
+    }
+    return gatf.isRelevant(tm);
+  }
+
+  /**
+   * Returns true if the annotation on the given array creation level might be relevant. In {@code
+   * new String @Anno [10][]}, the annotation is on the type {@code String[][]}.
+   *
+   * @param gatf the type factory associated with this
+   * @param level an array creation level that an annotation is written on
+   * @return true if the annotation on {@code level} might be relevant
+   */
+  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
+  private boolean arrayCreationLevelIsRelevant(
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf, ArrayCreationLevel level) {
+    if (!(level.getParentNode().orElse(null) instanceof ArrayCreationExpr creation)) {
+      // Be conservative.
+      return true;
+    }
+    // Use reference equality; `NodeList.indexOf()` would use structural equality, which does not
+    // distinguish the two levels in `new String @Anno [10] @Anno [10]`.
+    NodeList<ArrayCreationLevel> levels = creation.getLevels();
+    for (int i = 0; i < levels.size(); i++) {
+      if (levels.get(i) == level) {
+        return typeIsRelevant(gatf, creation.getElementType(), levels.size() - i);
+      }
+    }
+    // Be conservative.
+    return true;
+  }
+
+  /**
+   * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined.
+   *
+   * @param type a JavaParser type
+   * @return the TypeMirror for {@code type}, or null if it cannot be determined
+   */
+  private @Nullable TypeMirror typeToTypeMirror(Type type) {
+    Types types = atypeFactory.getProcessingEnv().getTypeUtils();
+    if (type instanceof ArrayType arrayType) {
+      TypeMirror componentType = typeToTypeMirror(arrayType.getComponentType());
+      return componentType == null ? null : types.getArrayType(componentType);
     }
     if (type instanceof PrimitiveType primitiveType) {
-      Types types = atypeFactory.getProcessingEnv().getTypeUtils();
-      return gatf.isRelevant(
-          types.getPrimitiveType(JavaParserUtil.typeKindForPrimitive(primitiveType)));
+      return types.getPrimitiveType(JavaParserUtil.typeKindForPrimitive(primitiveType));
     }
     if (type instanceof VoidType) {
-      // `void` is never relevant.
-      return false;
+      return types.getNoType(TypeKind.VOID);
     }
     if (type instanceof ClassOrInterfaceType classType) {
       TypeElement typeElt = JavaParserUtil.resolveTypeName(elements, classType);
-      if (typeElt == null) {
-        // The name could not be resolved.  Be conservative.
-        return true;
-      }
-      return gatf.isRelevant(typeElt.asType());
+      return typeElt == null ? null : typeElt.asType();
     }
     // An intersection type, a union type, `var`, a wildcard, a type parameter declaration, etc.
-    // Be conservative.
-    return true;
+    return null;
   }
 
   /**
