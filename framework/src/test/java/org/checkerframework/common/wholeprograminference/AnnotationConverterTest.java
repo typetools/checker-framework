@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import javax.annotation.processing.AbstractProcessor;
@@ -418,6 +419,9 @@ public class AnnotationConverterTest {
                 null,
                 Collections.singletonList(fileObject));
     AtomicReference<Throwable> thrown = new AtomicReference<>();
+    // Records that body ran, so that a change in javac's behavior cannot turn every test in this
+    // class into a silent no-op.
+    AtomicBoolean ran = new AtomicBoolean(false);
     task.setProcessors(
         Collections.singletonList(
             new AbstractProcessor() {
@@ -437,6 +441,7 @@ public class AnnotationConverterTest {
                 // reason for the failure, so record what was thrown and rethrow it later.
                 if (!re.processingOver() && thrown.get() == null) {
                   try {
+                    ran.set(true);
                     body.accept(processingEnv);
                   } catch (Throwable t) {
                     thrown.set(t);
@@ -455,6 +460,7 @@ public class AnnotationConverterTest {
       throw new Error(t);
     }
     Assert.assertTrue("Cannot compile " + SOURCE, success);
+    Assert.assertTrue("The processor never ran the test body", ran.get());
   }
 
   /** An {@code AnnotationMirror} that counts how often it is converted to a string. */

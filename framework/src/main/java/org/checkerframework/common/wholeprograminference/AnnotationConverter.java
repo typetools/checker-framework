@@ -161,7 +161,11 @@ public class AnnotationConverter {
         } else if (className.equals("java.lang.Class")) {
           return ClassTokenAFT.ctaft;
         } else {
-          // This must be an enum constant.
+          // TODO: This assumes an enum constant, but the type of an annotation element may also
+          // be an annotation type, in which case this returns an EnumAFT and the value is later
+          // formatted as an enum constant.  This is reachable in practice: for example, a
+          // container annotation such as `@EnsuresNonNullIf.List` has an element whose type is
+          // `EnsuresNonNullIf[]`.  Handle an annotation type here instead.
           return new EnumAFT(className);
         }
       }
@@ -217,6 +221,8 @@ public class AnnotationConverter {
     } else if (obj instanceof VariableElement[] veArr) {
       builder.setValue(fieldKey, veArr);
     } else {
+      // TODO: There is no `Byte` case above, so this throws for a `byte` value even though
+      // `byte` is a legal type for an annotation element.  Add a `Byte` case.
       throw new BugInCF("Unrecognized type: " + obj.getClass());
     }
   }
