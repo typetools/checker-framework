@@ -1,6 +1,7 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.sun.source.util.JavacTask;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -13,6 +14,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.el.AField;
@@ -22,6 +24,7 @@ import org.checkerframework.afu.scenelib.el.TypePathEntry;
 import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
 import org.checkerframework.afu.scenelib.field.ArrayAFT;
 import org.checkerframework.afu.scenelib.field.BasicAFT;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,17 +37,39 @@ public class SceneToStubWriterTest {
   /** Creates type elements. */
   private static final Elements elements;
 
+  /** Reads the class files that {@link #elements} and {@link #types} resolve names in. */
+  private static final StandardJavaFileManager fileManager;
+
   static {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+    if (compiler == null) {
+      throw new AssertionError("No Java compiler is available; run these tests on a JDK.");
+    }
+    fileManager = compiler.getStandardFileManager(null, null, null);
     JavacTask task =
         (JavacTask)
-            compiler.getTask(null, null, null, null, null, Collections.<JavaFileObject>emptyList());
+            compiler.getTask(
+                null, fileManager, null, null, null, Collections.<JavaFileObject>emptyList());
     types = task.getTypes();
     elements = task.getElements();
   }
 
-  /** The binary name of an annotation that the tests place on types and declarations. */
+  /**
+   * Closes the file manager. {@link #elements} and {@link #types} resolve names lazily, so the file
+   * manager must stay open until every test in this class has run.
+   *
+   * @throws IOException if the file manager cannot be closed
+   */
+  @AfterClass
+  public static void closeFileManager() throws IOException {
+    fileManager.close();
+  }
+
+  /** The binary name of a declaration annotation that the tests place on formal parameters. */
   private static final String OWNING = "org.checkerframework.checker.mustcall.qual.Owning";
+
+  /** The binary name of a type annotation that the tests place on types. */
+  private static final String INTERNED = "org.checkerframework.checker.interning.qual.Interned";
 
   /** Creates a new SceneToStubWriterTest. */
   public SceneToStubWriterTest() {}
@@ -147,9 +172,9 @@ public class SceneToStubWriterTest {
     AField receiver = new AField("this", types.getPrimitiveType(TypeKind.INT));
     Assert.assertEquals(
         "MyClass this", SceneToStubWriter.formatParameter(receiver, "this", "MyClass"));
-    receiver.type.tlAnnotationsHere.add(markerAnnotation(OWNING));
+    receiver.type.tlAnnotationsHere.add(markerAnnotation(INTERNED));
     Assert.assertEquals(
-        "@Owning MyClass this", SceneToStubWriter.formatParameter(receiver, "this", "MyClass"));
+        "@Interned MyClass this", SceneToStubWriter.formatParameter(receiver, "this", "MyClass"));
   }
 
   /** An annotation on an array type is printed between the component type and the brackets. */
@@ -158,9 +183,9 @@ public class SceneToStubWriterTest {
     TypeMirror intArray = types.getArrayType(types.getPrimitiveType(TypeKind.INT));
     AField param = parameter(intArray);
     Assert.assertEquals("int [] x", SceneToStubWriter.formatParameter(param, "x", "MyClass"));
-    param.type.tlAnnotationsHere.add(markerAnnotation(OWNING));
+    param.type.tlAnnotationsHere.add(markerAnnotation(INTERNED));
     Assert.assertEquals(
-        "int @Owning [] x", SceneToStubWriter.formatParameter(param, "x", "MyClass"));
+        "int @Interned [] x", SceneToStubWriter.formatParameter(param, "x", "MyClass"));
   }
 
   /**
@@ -234,16 +259,20 @@ public class SceneToStubWriterTest {
     Assert.assertEquals("@MinLen(3)", SceneToStubWriter.formatAnnotation(anno));
   }
 
-  /** An annotation with a single element not named "value" is printed with the element's name. */
+  /**
+   * An annotation with a single element not named "value" is printed with the element's name. No
+   * annotation in the Checker Framework has exactly one element that is not named "value", so this
+   * test uses a hypothetical annotation.
+   */
   @Test
   public void formatAnnotationWithNamedElement() {
     Annotation anno =
         annotation(
-            "org.checkerframework.checker.nullness.qual.EnsuresNonNull",
+            "test.AnnoWithNamedElement",
             Collections.singletonMap("expression", new ArrayAFT(BasicAFT.forType(String.class))),
             Collections.singletonMap("expression", Collections.singletonList("this.f")));
     Assert.assertEquals(
-        "@EnsuresNonNull(expression=\"this.f\")", SceneToStubWriter.formatAnnotation(anno));
+        "@AnnoWithNamedElement(expression=\"this.f\")", SceneToStubWriter.formatAnnotation(anno));
   }
 
   /**
