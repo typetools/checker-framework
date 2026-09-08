@@ -1190,7 +1190,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
     }
     if (!r.isPure(purityKinds)) {
-      reportPurityErrors(r, tree, purityKinds);
+      reportPurityErrors(r, purityKinds);
     }
 
     if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
@@ -1403,12 +1403,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Reports errors found during purity checking.
    *
-   * @param result true if the method is deterministic and/or side-effect-free
-   * @param tree the method
+   * @param result the result of the purity analysis
    * @param expectedKinds the expected purity for the method
    */
-  protected void reportPurityErrors(
-      PurityResult result, Tree tree, EnumSet<PurityKind> expectedKinds) {
+  protected void reportPurityErrors(PurityResult result, EnumSet<PurityKind> expectedKinds) {
     assert !result.isPure(expectedKinds);
     EnumSet<PurityKind> violations = EnumSet.copyOf(expectedKinds);
     violations.removeAll(result.getKinds());
@@ -2403,7 +2401,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // TODO: Postconditions?
     // https://github.com/typetools/checker-framework/issues/801
 
-    checkLambdaPurity(tree);
+    checkLambdaPurity(tree, functionType);
 
     return super.visitLambdaExpression(tree, p);
   }
@@ -2418,28 +2416,24 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * declaration whose annotations can be compared against the functional method's.
    *
    * @param tree a lambda expression
+   * @param functionType the type of the functional interface method that {@code tree} implements
    */
-  protected void checkLambdaPurity(LambdaExpressionTree tree) {
+  protected void checkLambdaPurity(
+      LambdaExpressionTree tree, AnnotatedExecutableType functionType) {
     if (!checkPurityAnnotations) {
       return;
     }
-    ExecutableElement functionalMethod = atypeFactory.getFunctionTypeFromTree(tree).getElement();
+    ExecutableElement functionalMethod = functionType.getElement();
     EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, functionalMethod);
     if (purityKinds.isEmpty()) {
       return;
     }
-    TreePath body = atypeFactory.getPath(tree.getBody());
-    if (body == null) {
-      // The body is not in the compilation unit that is being processed, so it cannot be
-      // checked.  This is the same conservative treatment that `visitMethod` gives a method
-      // body.
-      return;
-    }
+    TreePath body = new TreePath(getCurrentPath(), tree.getBody());
     PurityResult r =
         PurityChecker.checkPurity(
             body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
     if (!r.isPure(purityKinds)) {
-      reportPurityErrors(r, tree, purityKinds);
+      reportPurityErrors(r, purityKinds);
     }
   }
 

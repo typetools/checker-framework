@@ -36,8 +36,9 @@ lambda's body may run after the constructor has returned.
 
 ### Changes for type system implementers
 
-The second parameter of `BaseTypeVisitor.reportPurityErrors()` is now a `Tree`
-rather than a `MethodTree`, so that a lambda expression can be passed.
+`BaseTypeVisitor.reportPurityErrors()` no longer takes a `MethodTree`
+parameter; it was unused, and purity errors are reported at the locations that
+`PurityResult` records.
 
 Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
 
