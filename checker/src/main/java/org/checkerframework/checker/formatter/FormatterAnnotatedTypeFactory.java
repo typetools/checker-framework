@@ -122,7 +122,8 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     super.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
     if (hasFormatMethodAnno(methodAnnos)) {
       // The index is 0-based, so 0 is the first formal parameter.
-      AnnotatedTypeMirror atm = methodAnnos.getParameterType(0);
+      @SuppressWarnings("nullness:assignment") // A format method has a formal parameter.
+      @NonNull AnnotatedTypeMirror atm = methodAnnos.getParameterType(0);
       atm.removePrimaryAnnotationByClass(Format.class);
     }
   }
