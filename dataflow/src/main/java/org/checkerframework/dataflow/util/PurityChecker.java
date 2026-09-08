@@ -7,20 +7,27 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -201,6 +208,12 @@ public final class PurityChecker {
     /** The purity result. */
     PurityResult purityResult = new PurityResult();
 
+    /**
+     * Caches the results of {@link #ownedArrayDepth}, which requires scanning a whole class
+     * declaration.
+     */
+    private final Map<VariableElement, Integer> ownedArrayDepths = new HashMap<>(2);
+
     /** The annotation provider (typically an AnnotatedTypeFactory). */
     protected final AnnotationProvider annoProvider;
 
@@ -372,12 +385,9 @@ public final class PurityChecker {
      */
     protected void assignmentCheck(ExpressionTree variable) {
       variable = TreeUtils.withoutParens(variable);
-      VariableElement fieldElt = TreeUtils.asFieldAccess(variable);
-      if (fieldElt != null
-          && isFieldInCurrentClass(fieldElt)
-          && TreePathUtil.inConstructor(getCurrentPath())) {
-        // assigning a field in a constructor
-        // TODO: add a check for ArrayAccessTree too.
+      if (TreePathUtil.inConstructor(getCurrentPath()) && writesFieldInCurrentClass(variable, 0)) {
+        // assigning a field of the object being constructed, or an element of an array that such
+        // a field owns
         return;
       }
       if (TreeUtils.isFieldAccess(variable)) {
@@ -390,6 +400,96 @@ public final class PurityChecker {
         // lhs is a local variable
         assert isLocalVariable(variable);
       }
+    }
+
+    /**
+     * Returns true if writing the given expression writes a field of the current class, or an
+     * element of an array that such a field owns (possibly nested, as in {@code f[0][1]}).
+     *
+     * <p>Writing an array element counts as writing the field that holds the array only if no code
+     * outside the object under construction can have a reference to the array: the field is a
+     * non-static field of {@code this}, it is only ever assigned freshly-created arrays, and its
+     * value never escapes. Otherwise the write is visible to code that shares the array, as when a
+     * constructor stores its argument in the field and then writes an element of it.
+     *
+     * @param variable the left-hand side of an assignment, or the array of an array access that it
+     *     is nested within
+     * @param depth the number of array accesses that have been stripped from the left-hand side; 0
+     *     when {@code variable} is the left-hand side itself
+     * @return true if the assignment writes a field of the current class or an element of an array
+     *     that such a field owns
+     */
+    private boolean writesFieldInCurrentClass(ExpressionTree variable, int depth) {
+      variable = TreeUtils.withoutParens(variable);
+      if (variable instanceof ArrayAccessTree arrayAccess) {
+        return writesFieldInCurrentClass(arrayAccess.getExpression(), depth + 1);
+      }
+      VariableElement fieldElt = TreeUtils.asFieldAccess(variable);
+      if (fieldElt == null || !isFieldInCurrentClass(fieldElt)) {
+        return false;
+      }
+      if (depth == 0) {
+        // The field itself is assigned, not an element of an array that it holds.
+        return true;
+      }
+      // A static field is not part of the object under construction, and a field of another
+      // object is that object's, so neither one owns its array.
+      return !ElementUtils.isStatic(fieldElt)
+          && isAccessOfThis(variable)
+          && depth <= ownedArrayDepth(fieldElt);
+    }
+
+    /**
+     * Returns true if the given field access reads a field of {@code this}, rather than of some
+     * other object.
+     *
+     * @param fieldAccess a field access, without parentheses
+     * @return true if the field access is on {@code this}
+     */
+    private boolean isAccessOfThis(ExpressionTree fieldAccess) {
+      if (fieldAccess instanceof MemberSelectTree memberSelect) {
+        return TreeUtils.isExplicitThisDereference(memberSelect.getExpression());
+      }
+      // An unqualified reference to a field of the current class is a reference to a field of
+      // `this`.
+      return true;
+    }
+
+    /**
+     * Returns the number of levels of indexing for which the array in the given field is owned by
+     * the object under construction: that is, the depth to which every array reachable from the
+     * field was created within the class and cannot be reached by any other code. The result is 0
+     * if the field's value might be aliased.
+     *
+     * <p>For example, the result is 0 for a field that a constructor assigns from its argument, 1
+     * for a field assigned {@code new int[][] {arg1, arg2}}, and unbounded for a field only ever
+     * assigned {@code new int[2][2]}.
+     *
+     * <p>This assumes that no other code observes the object while its constructor runs, which
+     * holds because a constructor that leaks {@code this} is not side-effect-free.
+     *
+     * @param fieldElt a field of the current class
+     * @return the number of levels of indexing under which writes to the field's array cannot be
+     *     observed by other code
+     */
+    private int ownedArrayDepth(VariableElement fieldElt) {
+      return ownedArrayDepths.computeIfAbsent(
+          fieldElt,
+          f -> {
+            // Scan the outermost class, because the field may be used anywhere within it.
+            ClassTree outermostClass = null;
+            for (TreePath p = getCurrentPath(); p != null; p = p.getParentPath()) {
+              if (p.getLeaf() instanceof ClassTree classTree) {
+                outermostClass = classTree;
+              }
+            }
+            if (outermostClass == null) {
+              return 0;
+            }
+            OwnedArrayScanner scanner = new OwnedArrayScanner(f);
+            scanner.scan(outermostClass, null);
+            return scanner.depth;
+          });
     }
 
     /**
@@ -423,6 +523,169 @@ public final class PurityChecker {
       ExpressionTree variable = tree.getVariable();
       assignmentCheck(variable);
       return super.visitCompoundAssignment(tree, ignore);
+    }
+  }
+
+  /**
+   * Scans a class declaration to determine how deeply the array in a given field is owned by the
+   * object that holds it: to what depth every array reachable from the field is created within the
+   * class and no other code can obtain a reference to it.
+   *
+   * <p>The array's depth is limited by every assignment that stores a value that might be aliased,
+   * and is 0 if the field's value is ever used as a whole, since it could then be stored anywhere.
+   * Indexing the array and reading its length do not give out a reference to it.
+   */
+  private static class OwnedArrayScanner extends TreeScanner<Void, Void> {
+
+    /** The field whose uses to examine. */
+    private final VariableElement field;
+
+    /**
+     * The number of levels of indexing for which the field's array is owned, given the uses seen so
+     * far. {@link Integer#MAX_VALUE} means "any depth".
+     */
+    private int depth = Integer.MAX_VALUE;
+
+    /**
+     * Creates an OwnedArrayScanner.
+     *
+     * @param field the field whose uses to examine
+     */
+    OwnedArrayScanner(VariableElement field) {
+      this.field = field;
+    }
+
+    /**
+     * Returns true if the given expression is an access to {@link #field}, of any object.
+     *
+     * @param tree an expression, without parentheses
+     * @return true if the expression is an access to {@link #field}
+     */
+    private boolean isAccessOfField(ExpressionTree tree) {
+      VariableElement accessed = TreeUtils.asFieldAccess(tree);
+      return accessed != null && field.equals(accessed);
+    }
+
+    /**
+     * Scans the receiver of a field access, which is not itself a use of the field.
+     *
+     * @param fieldAccess an access to {@link #field}, without parentheses
+     * @return null
+     */
+    private Void scanReceiver(ExpressionTree fieldAccess) {
+      if (fieldAccess instanceof MemberSelectTree memberSelect) {
+        return scan(memberSelect.getExpression(), null);
+      }
+      return null;
+    }
+
+    /**
+     * Records that the array {@code indices} levels down from the field is assigned the given
+     * value.
+     *
+     * @param value the assigned value, or null if a field declaration has no initializer
+     * @param indices the number of array accesses through which the value is stored
+     */
+    private void assigned(@Nullable ExpressionTree value, int indices) {
+      int fresh = freshDepth(value);
+      depth = Math.min(depth, fresh == Integer.MAX_VALUE ? Integer.MAX_VALUE : indices + fresh);
+    }
+
+    /**
+     * Returns the number of levels of indexing for which the given expression is known to evaluate
+     * to a newly-created array that no other code can reach; 0 if it might be an alias of an array
+     * that other code holds.
+     *
+     * @param value an expression, or null if a field declaration has no initializer
+     * @return the depth to which the expression's value is freshly created
+     */
+    private static int freshDepth(@Nullable ExpressionTree value) {
+      if (value == null) {
+        // A declaration without an initializer stores nothing; the assignments that do store a
+        // value are examined separately.
+        return Integer.MAX_VALUE;
+      }
+      if (!(TreeUtils.withoutParens(value) instanceof NewArrayTree newArray)) {
+        return 0;
+      }
+      List<? extends ExpressionTree> initializers = newArray.getInitializers();
+      if (initializers == null) {
+        // "new int[2][2]" creates every array within it.
+        return Integer.MAX_VALUE;
+      }
+      // The array itself is fresh, so its elements may be replaced; each element is fresh only as
+      // deeply as the expression that produced it.
+      int result = Integer.MAX_VALUE;
+      for (ExpressionTree initializer : initializers) {
+        int fresh = freshDepth(initializer);
+        if (fresh != Integer.MAX_VALUE) {
+          result = Math.min(result, fresh + 1);
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public Void visitVariable(VariableTree tree, Void ignore) {
+      VariableElement declared = TreeUtils.elementFromDeclaration(tree);
+      if (declared != null && field.equals(declared)) {
+        assigned(tree.getInitializer(), 0);
+      }
+      return super.visitVariable(tree, ignore);
+    }
+
+    @Override
+    public Void visitAssignment(AssignmentTree tree, Void ignore) {
+      // Strip the array accesses, if any, to find what the assignment ultimately writes into.
+      ExpressionTree target = TreeUtils.withoutParens(tree.getVariable());
+      int indices = 0;
+      while (target instanceof ArrayAccessTree arrayAccess) {
+        indices++;
+        scan(arrayAccess.getIndex(), ignore);
+        target = TreeUtils.withoutParens(arrayAccess.getExpression());
+      }
+      if (isAccessOfField(target)) {
+        assigned(tree.getExpression(), indices);
+        scanReceiver(target);
+      } else {
+        scan(target, ignore);
+      }
+      return scan(tree.getExpression(), ignore);
+    }
+
+    @Override
+    public Void visitArrayAccess(ArrayAccessTree tree, Void ignore) {
+      ExpressionTree array = TreeUtils.withoutParens(tree.getExpression());
+      if (isAccessOfField(array)) {
+        // Indexing the array does not give out a reference to it.
+        scanReceiver(array);
+        return scan(tree.getIndex(), ignore);
+      }
+      return super.visitArrayAccess(tree, ignore);
+    }
+
+    @Override
+    public Void visitMemberSelect(MemberSelectTree tree, Void ignore) {
+      ExpressionTree receiver = TreeUtils.withoutParens(tree.getExpression());
+      if (tree.getIdentifier().contentEquals("length") && isAccessOfField(receiver)) {
+        // Reading the length does not give out a reference to the array.
+        return scanReceiver(receiver);
+      }
+      if (isAccessOfField(tree)) {
+        // The field's value is used as a whole, so it might be stored anywhere.
+        depth = 0;
+        return scanReceiver(tree);
+      }
+      return super.visitMemberSelect(tree, ignore);
+    }
+
+    @Override
+    public Void visitIdentifier(IdentifierTree tree, Void ignore) {
+      if (isAccessOfField(tree)) {
+        // The field's value is used as a whole, so it might be stored anywhere.
+        depth = 0;
+      }
+      return null;
     }
   }
 }
