@@ -282,21 +282,24 @@ public class AnnotationConverterTest {
    */
   @Test
   public void sourceIsComputedOnlyOnDemand() {
-    CountingAnnotationMirror am = new CountingAnnotationMirror(theAnnotationMirror());
-    Annotation converted = AnnotationConverter.annotationMirrorToAnnotation(am);
-    AnnotationDef def = converted.def();
-    Assert.assertNull(
-        "annotationMirrorToAnnotation computed the source eagerly", computedSource(def));
-    Assert.assertEquals(
-        "annotationMirrorToAnnotation stringified its argument", 0, am.toStringCount);
-    String source = def.getSource();
-    String secondSource = def.getSource();
-    Assert.assertTrue(source, source.startsWith("annotationMirrorToAnnotation "));
-    Assert.assertTrue(source, source.contains("java.lang.Deprecated"));
-    // Reference equality, because getSource() caches its result rather than recomputing it.
-    Assert.assertSame(source, secondSource);
-    Assert.assertSame("getSource() did not cache its result", source, computedSource(def));
-    Assert.assertEquals("getSource() stringified the AnnotationMirror", 0, am.toStringCount);
+    withProcessingEnvironment(
+        env -> {
+          CountingAnnotationMirror am = new CountingAnnotationMirror(theAnnotationMirror(env));
+          Annotation converted = AnnotationConverter.annotationMirrorToAnnotation(am);
+          AnnotationDef def = converted.def();
+          Assert.assertNull(
+              "annotationMirrorToAnnotation computed the source eagerly", computedSource(def));
+          Assert.assertEquals(
+              "annotationMirrorToAnnotation stringified its argument", 0, am.toStringCount);
+          String source = def.getSource();
+          String secondSource = def.getSource();
+          Assert.assertTrue(source, source.startsWith("annotationMirrorToAnnotation "));
+          Assert.assertTrue(source, source.contains("java.lang.Deprecated"));
+          // Reference equality, because getSource() caches its result rather than recomputing it.
+          Assert.assertSame(source, secondSource);
+          Assert.assertSame("getSource() did not cache its result", source, computedSource(def));
+          Assert.assertEquals("getSource() stringified the AnnotationMirror", 0, am.toStringCount);
+        });
   }
 
   /**
