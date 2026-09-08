@@ -34,10 +34,7 @@ public class AnnotationBuilder {
    */
   @MonotonicNonNull AnnotationDef def;
 
-  /**
-   * The name of the annotation being built. null if a non-null {@link #def} was supplied to the
-   * constructor.
-   */
+  /** The name of the annotation being built. Exactly one of this and {@link #def} is non-null. */
   private @Nullable @BinaryName String typeName;
 
   /**
@@ -270,6 +267,7 @@ public class AnnotationBuilder {
     }
     active = false;
     if (def == null) {
+      assert "typeName != null" : "@AssumeAssertion(nullness): one of def and typename is non-null";
       assert fieldTypes != null;
       def = new AnnotationDef(typeName, tlAnnotationsHere, fieldTypes, source);
     } else {
