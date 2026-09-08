@@ -939,9 +939,9 @@ public class WholeProgramInferenceScenesStorage
       // vars upper bound from being inserted.
       for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
         if (curATM.getPrimaryAnnotationInHierarchy(am) != null) {
-          // Don't insert if the type is already has a primary annotation
-          // in the same hierarchy.
-          break;
+          // Don't insert if the type already has a primary annotation in the same hierarchy.
+          // Other hierarchies are still handled, so this is `continue` rather than `break`.
+          continue;
         }
         addAnnotationsToATypeElement(newATM, typeToUpdate, defLoc, am, curATM.hasAnnotation(am));
       }
@@ -961,6 +961,20 @@ public class WholeProgramInferenceScenesStorage
     }
   }
 
+  /**
+   * Adds annotation {@code am} to {@code typeToUpdate}. If {@code am} should not be written into
+   * the source code -- either because the source code already has that annotation, or because
+   * {@link #shouldIgnore} returns true for it -- then this method also records {@code am} in {@link
+   * #annosToIgnore}, which prevents it from being written to the .jaif or stub file.
+   *
+   * @param newATM the AnnotatedTypeMirror that {@code am} is a primary annotation of; used only to
+   *     determine whether {@code am} should be ignored
+   * @param typeToUpdate the ATypeElement that will be updated
+   * @param defLoc the location where the annotation will be added
+   * @param am the annotation to add to {@code typeToUpdate}
+   * @param isEffectiveAnnotation true if {@code am} is already an effective annotation of the type
+   *     in the source code, in which case writing it into the source code would be redundant
+   */
   private void addAnnotationsToATypeElement(
       AnnotatedTypeMirror newATM,
       ATypeElement typeToUpdate,

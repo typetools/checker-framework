@@ -326,12 +326,9 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private String getClassNameFromType(Type classType) {
       switch (classType.getKind()) {
         case ARRAY -> {
-          String array = "";
-          while (classType.getKind() == TypeKind.ARRAY) {
-            classType = ((ArrayType) classType).getComponentType();
-            array += "[]";
-          }
-          return getClassNameFromType(classType) + array;
+          int depth = TypesUtils.getArrayDepth(classType);
+          Type componentType = (Type) TypesUtils.getInnermostComponentType((ArrayType) classType);
+          return getClassNameFromType(componentType) + "[]".repeat(depth);
         }
         case DECLARED -> {
           StringBuilder className =

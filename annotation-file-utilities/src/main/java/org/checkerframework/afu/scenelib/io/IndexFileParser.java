@@ -635,7 +635,27 @@ public final class IndexFileParser {
     return ann;
   }
 
+  /**
+   * Parses annotations and adds them to {@code e}.
+   *
+   * @param e where to put the parsed annotations
+   * @throws IOException if there is trouble reading the input
+   * @throws ParseException if the input is malformed
+   */
   private void parseAnnotations(AElement e) throws IOException, ParseException {
+    parseAnnotations(e.tlAnnotationsHere, e.description);
+  }
+
+  /**
+   * Parses annotations and adds them to {@code tlAnnotationsHere}.
+   *
+   * @param tlAnnotationsHere where to put the parsed annotations
+   * @param description a description of the element being annotated, for diagnostics
+   * @throws IOException if there is trouble reading the input
+   * @throws ParseException if the input is malformed
+   */
+  private void parseAnnotations(Set<Annotation> tlAnnotationsHere, Object description)
+      throws IOException, ParseException {
     while (checkChar('@')) {
       AnnotationDef d = parseAnnotationHead();
       AnnotationBuilder ab = AnnotationFactory.saf.beginAnnotation(d, source);
@@ -646,7 +666,7 @@ public final class IndexFileParser {
         Object trash = parseAnnotationBody(d, AnnotationFactory.saf.beginAnnotation(d, source));
       } else {
         Annotation a = parseAnnotationBody(d, ab);
-        for (Annotation other : e.tlAnnotationsHere) {
+        for (Annotation other : tlAnnotationsHere) {
           if (a.def.name.equals(other.def.name)) {
             // Don't output this warning, because the annotation might be repeatable.
             // TODO: IndexFileWriter should output the @Repeatable(EnsuresQualifier.List.class)
@@ -654,7 +674,7 @@ public final class IndexFileParser {
             // then this code can output the warning (or even crash) if it is not present.
             if (false) {
               System.err.printf(
-                  "WARNING: duplicate annotation of type %s on %s%n", a.def().name, e.description);
+                  "WARNING: duplicate annotation of type %s on %s%n", a.def().name, description);
             }
           }
         }
@@ -662,7 +682,7 @@ public final class IndexFileParser {
         if (!tla.def.equals(d)) {
           throw new ParseException("Bad def");
         }
-        e.tlAnnotationsHere.add(tla);
+        tlAnnotationsHere.add(tla);
       }
     }
   }
@@ -747,9 +767,9 @@ public final class IndexFileParser {
     @SuppressWarnings("signature") // string concatenation
     @BinaryName String fullName = curPkgPrefix + basename;
 
-    AnnotationDef ad = new AnnotationDef(fullName, source);
     expectChar(':');
-    parseAnnotations(ad);
+    Set<Annotation> metaAnnotations = new LinkedHashSet<>();
+    parseAnnotations(metaAnnotations, "annotation: " + fullName);
 
     Map<String, AnnotationFieldType> fields = new LinkedHashMap<>();
 
@@ -766,9 +786,9 @@ public final class IndexFileParser {
       fields.put(name, type);
     }
 
-    ad.setFieldTypes(fields);
+    AnnotationDef ad = new AnnotationDef(fullName, metaAnnotations, fields, source);
 
-    // Now add the definition to the map of all definitions.
+    // Add the definition to the map of all definitions.
     addDef(ad, basename);
   }
 

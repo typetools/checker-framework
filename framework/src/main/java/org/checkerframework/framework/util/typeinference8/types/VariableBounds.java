@@ -754,6 +754,13 @@ public class VariableBounds {
 
     for (AbstractType bound : bounds.get(VariableBounds.BoundKind.EQUAL)) {
       if (bound.isProper() || bound.isInferenceType()) {
+        if (TypesUtils.isCapturedTypeVariable(bound.getJavaType())) {
+          // Unlike javac, the Checker Framework may infer an expression a second time, against a
+          // target type that a previous inference produced; in that case, ignore this bound
+          // (adding no constraints for it) so that this inference reuses the exact value that the
+          // previous inference computed.
+          continue;
+        }
         // var = R implies the bound false
         return null;
       }
