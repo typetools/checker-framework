@@ -2413,28 +2413,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * {@code @SideEffectFree}, {@code @Deterministic}, or {@code @Pure}, checks the lambda's body
    * against that annotation.
    *
-   * <p>Nothing else checks a lambda's body against those annotations. Unlike an overriding method,
-   * a lambda does not inherit the annotation, and unlike a method reference, a lambda has no
-   * declaration whose annotations can be compared against the functional method's.
-   *
    * @param tree a lambda expression
    */
   protected void checkLambdaPurity(LambdaExpressionTree tree) {
     if (!checkPurityAnnotations) {
       return;
     }
-    ExecutableElement functionalMethod = atypeFactory.getFunctionTypeFromTree(tree).getElement();
+
+    ExecutableElement functionalMethod =
+        TreeUtils.findFunction(tree, atypeFactory.getProcessingEnv());
     EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, functionalMethod);
     if (purityKinds.isEmpty()) {
       return;
     }
     TreePath body = atypeFactory.getPath(tree.getBody());
-    if (body == null) {
-      // The body is not in the compilation unit that is being processed, so it cannot be
-      // checked.  This is the same conservative treatment that `visitMethod` gives a method
-      // body.
-      return;
-    }
+    assert body != null
+        : "@AssumeAssertion(nullness): the lambda is being visited, so its body can't be null.";
     PurityResult r =
         PurityChecker.checkPurity(
             body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
