@@ -1192,7 +1192,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param s a string
    * @return the index of a lonely surrogate character in its argument, or -1 if there is none
    */
-  private int indexOfLonelySurrogateCharacter(String s) {
+  /*package-private*/ static int indexOfLonelySurrogateCharacter(String s) {
     int limit = s.length();
     for (int i = 0; i < limit; i++) {
       if (Character.isSurrogate(s.charAt(i))) {
@@ -1214,7 +1214,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param s a string
    * @return the string, with lonely surrogate characters replaced by their unicode escape
    */
-  private String escapeLonelySurrogates(String s) {
+  /*package-private*/ static String escapeLonelySurrogates(String s) {
     int idx = indexOfLonelySurrogateCharacter(s);
     if (idx != -1) {
       // This recursion is less efficient than a loop with StringBuilder would be,
@@ -1832,7 +1832,7 @@ public class WholeProgramInferenceJavaParserStorage
         }
       }
 
-      if (declarationAnnotations != null && declaration != null) {
+      if (declarationAnnotations != null) {
         for (AnnotationMirror annotation : declarationAnnotations) {
           declaration.addAnnotation(
               AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(

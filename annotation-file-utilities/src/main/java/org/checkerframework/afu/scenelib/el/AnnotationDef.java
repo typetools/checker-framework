@@ -42,7 +42,7 @@ public final class AnnotationDef extends AElement {
    * AnnotationDef}s are immutable, clients should not modify this map, and doing so will result in
    * an exception.
    */
-  public Map<String, ? extends AnnotationFieldType> fieldTypes;
+  public final Map<String, ? extends AnnotationFieldType> fieldTypes;
 
   // Exactly one of `source` and `sourceSupplier` is null.
 
@@ -232,16 +232,6 @@ public final class AnnotationDef extends AElement {
   @Override
   public AnnotationDef clone() {
     throw new UnsupportedOperationException("Can't duplicate an AnnotationDef");
-  }
-
-  /**
-   * Sets the field types of this annotation. Copies the field type map so it cannot be later
-   * modified by the client.
-   *
-   * @param fieldTypes the annotation's element types
-   */
-  public void setFieldTypes(Map<String, AnnotationFieldType> fieldTypes) {
-    this.fieldTypes = immutableMap(fieldTypes);
   }
 
   /**
@@ -457,7 +447,7 @@ public final class AnnotationDef extends AElement {
   // TODO: Move these methods into MapsP.
 
   /**
-   * Returns a immutable copy of the map. The result cannot be modified, directly or through an
+   * Returns an immutable copy of the map. The result cannot be modified, directly or through an
    * alias.
    *
    * <p>WARNING: If the map is already unmodifiable, then it is returned unchanged. That means that
@@ -467,8 +457,8 @@ public final class AnnotationDef extends AElement {
    * @param <K> the type of map keys
    * @param <V> the type of map values
    * @param map a map. If it is unmodifiable, it is immutable. That is, the client may not pass an
-   *     unmodifiable map that can be modified through an alias.x
-   * @return a immutable copy of the map
+   *     unmodifiable map that can be modified through an alias.
+   * @return an immutable copy of the map
    */
   public static <K, V> Map<K, V> immutableMap(Map<K, V> map) {
     if (isUnmodifiable(map)) {
