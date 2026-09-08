@@ -1188,7 +1188,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       List<TreePath> toCheck = new ArrayList<>(2);
       toCheck.add(body);
       if (TreeUtils.isConstructor(tree)) {
-        toCheck.addAll(instanceInitializerPaths(tree, body));
+        MethodInvocationTree explicitCall = TreeUtils.getExplicitConstructorCall(tree);
+        if (explicitCall == null || !TreeUtils.isThisConstructorCall(explicitCall)) {
+          // The class's instance initializers run as part of this constructor.  If instead it
+          // delegates to another constructor of the same class, they run as part of that one, and
+          // this constructor is checked at its call to it, like any other method call.
+          toCheck.addAll(TreePathUtil.getInstanceInitializers(body));
+        }
       }
       r =
           PurityChecker.checkPurity(
@@ -1240,46 +1246,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
       }
     }
-  }
-
-  /**
-   * Returns paths to the instance initializers that run as part of the given constructor: the
-   * instance initializer blocks of the constructor's class, and the initializers of its instance
-   * fields. The compiler runs these as part of the constructor, so the constructor's purity
-   * annotation applies to them, but they do not appear in the constructor's body.
-   *
-   * <p>Returns the empty list if the constructor delegates to another constructor of the same class
-   * via {@code this(...)}: then the initializers run as part of that constructor instead, and the
-   * delegating constructor is checked at its call to it, like any other method call.
-   *
-   * @param tree a constructor
-   * @param bodyPath the path to the constructor's body
-   * @return paths to the initializers that run as part of the given constructor
-   */
-  private List<TreePath> instanceInitializerPaths(MethodTree tree, TreePath bodyPath) {
-    MethodInvocationTree explicitCall = TreeUtils.getExplicitConstructorCall(tree);
-    if (explicitCall != null && TreeUtils.isThisConstructorCall(explicitCall)) {
-      return Collections.emptyList();
-    }
-    TreePath classPath = TreePathUtil.pathTillClass(bodyPath);
-    if (classPath == null) {
-      return Collections.emptyList();
-    }
-    ClassTree classTree = (ClassTree) classPath.getLeaf();
-    List<TreePath> result = new ArrayList<>(1);
-    for (Tree member : classTree.getMembers()) {
-      if (member instanceof BlockTree block) {
-        if (!block.isStatic()) {
-          result.add(new TreePath(classPath, block));
-        }
-      } else if (member instanceof VariableTree variable) {
-        ExpressionTree initializer = variable.getInitializer();
-        if (initializer != null && !variable.getModifiers().getFlags().contains(Modifier.STATIC)) {
-          result.add(new TreePath(new TreePath(classPath, variable), initializer));
-        }
-      }
-    }
-    return result;
   }
 
   /**
