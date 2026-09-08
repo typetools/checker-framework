@@ -8,6 +8,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
@@ -15,6 +16,7 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
@@ -66,10 +68,43 @@ public final class PurityChecker {
       boolean assumeSideEffectFree,
       boolean assumeDeterministic,
       boolean assumePureGetters) {
+    return checkPurity(
+        Collections.singletonList(statement),
+        annoProvider,
+        assumeSideEffectFree,
+        assumeDeterministic,
+        assumePureGetters);
+  }
+
+  /**
+   * Compute whether the given statements, taken together, are side-effect-free, deterministic, or
+   * both. Returns a result that can be queried.
+   *
+   * <p>Use this rather than calling {@link #checkPurity(TreePath, AnnotationProvider, boolean,
+   * boolean, boolean)} once per statement, for code that runs as a unit but is not contiguous in
+   * the source code: a constructor together with the instance initializers that run as part of it,
+   * for example.
+   *
+   * @param statements the statements to check
+   * @param annoProvider the annotation provider
+   * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
+   * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
+   * @param assumePureGetters true if all getter methods should be assumed to be @Pure
+   * @return information about whether the given statements are side-effect-free, deterministic, or
+   *     both
+   */
+  public static PurityResult checkPurity(
+      List<TreePath> statements,
+      AnnotationProvider annoProvider,
+      boolean assumeSideEffectFree,
+      boolean assumeDeterministic,
+      boolean assumePureGetters) {
     PurityCheckerHelper helper =
         new PurityCheckerHelper(
             annoProvider, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
-    helper.scan(statement, null);
+    for (TreePath statement : statements) {
+      helper.scan(statement, null);
+    }
     return helper.purityResult;
   }
 
@@ -373,10 +408,8 @@ public final class PurityChecker {
     protected void assignmentCheck(ExpressionTree variable) {
       variable = TreeUtils.withoutParens(variable);
       VariableElement fieldElt = TreeUtils.asFieldAccess(variable);
-      if (fieldElt != null
-          && isFieldInCurrentClass(fieldElt)
-          && TreePathUtil.inConstructor(getCurrentPath())) {
-        // assigning a field in a constructor
+      if (fieldElt != null && isFieldInCurrentClass(fieldElt) && inConstructorOrInitializer()) {
+        // assigning a field in a constructor or an initializer
         // TODO: add a check for ArrayAccessTree too.
         return;
       }
@@ -390,6 +423,33 @@ public final class PurityChecker {
         // lhs is a local variable
         assert isLocalVariable(variable);
       }
+    }
+
+    /**
+     * Returns true if the current path is in a constructor, or in an initializer of the class that
+     * immediately encloses it (an instance or static initializer block, or the initializer of a
+     * field). Such code runs while the object is being constructed, before it is visible to other
+     * code.
+     *
+     * <p>This differs from {@link TreePathUtil#inConstructor} for code in a local or anonymous
+     * class: an initializer of such a class runs when the class is instantiated, so what matters is
+     * the class member that encloses the code, not the method that encloses the class declaration.
+     *
+     * @return true if the current path is in a constructor or in an initializer
+     */
+    private boolean inConstructorOrInitializer() {
+      for (TreePath p = getCurrentPath(); p != null; p = p.getParentPath()) {
+        Tree leaf = p.getLeaf();
+        if (leaf instanceof MethodTree methodTree) {
+          return TreeUtils.isConstructor(methodTree);
+        }
+        if (leaf instanceof ClassTree) {
+          // No method intervenes between the class and the code, so the code is in an
+          // initializer of the class.
+          return true;
+        }
+      }
+      return false;
     }
 
     /**

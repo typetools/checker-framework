@@ -7,6 +7,10 @@
 
 ### User-visible changes
 
+Under `-AcheckPurityAnnotations`, a constructor's purity annotation is now
+checked against its class's instance initializers, in addition to its body.
+This may cause new purity errors to be issued.
+
 ### Changes for type system implementers
 
 Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
