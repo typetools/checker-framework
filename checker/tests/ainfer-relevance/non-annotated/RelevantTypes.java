@@ -1,8 +1,9 @@
 import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 
-// AinferRelevanceTestChecker declares `@RelevantJavaTypes({CharSequence.class, int.class})`.
+// AinferRelevanceTestChecker declares
+// `@RelevantJavaTypes({CharSequence.class, int.class, Map.Entry.class})`.
 // Whole-program inference must write, into the .ajava file, every annotation that it infers for a
-// relevant type:  `int`, which is listed; and `String` and `CharSequence`, which are relevant
+// relevant type:  `int` and `CharSequence`, which are listed; and `String`, which is relevant
 // because of subtyping.  If inference discards such an annotation, then the second (validation)
 // pass of this test issues the warnings that are written below.
 public class RelevantTypes {

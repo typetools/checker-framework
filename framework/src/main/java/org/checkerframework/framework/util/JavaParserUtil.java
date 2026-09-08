@@ -126,7 +126,9 @@ public final class JavaParserUtil {
         if (result != null) {
           return result;
         }
-        if (importDecl.isStatic()) {
+        // If `importedName.equals(firstComponent)`, then the import names no container to search.
+        // javac rejects such an import, but do not crash on it.
+        if (importDecl.isStatic() && !importedName.equals(firstComponent)) {
           // A static import can name a member type that the named type inherits.  (A static
           // import that names a field or a method resolves to no type element at all.)
           String containerName =
@@ -142,10 +144,21 @@ public final class JavaParserUtil {
       }
     }
 
-    // The type might be in the same package, in a package or type that is imported on demand, or
-    // in `java.lang`.
+    // A type in the same package shadows a type that is imported on demand and a type in
+    // `java.lang`, so look in the same package first.  A compilation unit in the unnamed package
+    // has no package declaration; in the unnamed package, a simple name is also a fully-qualified
+    // name.
+    {
+      String samePackagePrefix =
+          cu.getPackageDeclaration().map(pkg -> pkg.getNameAsString() + ".").orElse("");
+      TypeElement result = elements.getTypeElement(samePackagePrefix + name);
+      if (result != null) {
+        return result;
+      }
+    }
+
+    // The type might be in a package or type that is imported on demand, or in `java.lang`.
     List<String> containerNames = new ArrayList<>();
-    cu.getPackageDeclaration().ifPresent(pkg -> containerNames.add(pkg.getNameAsString()));
     for (ImportDeclaration importDecl : cu.getImports()) {
       if (importDecl.isAsterisk()) {
         containerNames.add(importDecl.getNameAsString());
@@ -172,10 +185,8 @@ public final class JavaParserUtil {
       }
     }
 
-    // The name might be fully-qualified.  This lookup also finds a type in the unnamed package,
-    // for which `cu.getPackageDeclaration()` yields nothing.  This lookup is last, because a type
-    // that is in scope shadows a type whose fully-qualified name is `name`; in the unnamed
-    // package, every simple name is also a fully-qualified name.
+    // The name might be fully-qualified.  This lookup is last, because a type that is in scope
+    // shadows a type whose fully-qualified name is `name`.
     {
       TypeElement result = elements.getTypeElement(name);
       if (result != null) {

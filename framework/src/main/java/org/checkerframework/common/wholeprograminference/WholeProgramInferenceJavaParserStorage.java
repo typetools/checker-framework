@@ -2,6 +2,7 @@ package org.checkerframework.common.wholeprograminference;
 
 import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.DataKey;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
@@ -28,6 +29,7 @@ import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.nodeTypes.NodeWithVariables;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -120,6 +122,14 @@ import org.plumelib.util.UtilP;
  */
 public class WholeProgramInferenceJavaParserStorage
     implements WholeProgramInferenceStorage<AnnotatedTypeMirror> {
+
+  /**
+   * A key for JavaParser {@link Node} data. It marks an annotation that whole-program inference
+   * added as a declaration annotation rather than as a type qualifier. Such an annotation is
+   * written to the ajava file even if a type qualifier would be irrelevant where it appears; see
+   * {@link #annotationIsRelevant}.
+   */
+  private static final DataKey<Boolean> IS_DECLARATION_ANNOTATION = new DataKey<Boolean>() {};
 
   /** The type factory associated with this. */
   protected final AnnotatedTypeFactory atypeFactory;
@@ -1107,6 +1117,22 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
+   * Adds {@code anno} to {@code node}, marking it as a declaration annotation. Use this rather than
+   * {@code node.addAnnotation(...)} whenever the annotation was inferred for a declaration rather
+   * than for a type, so that {@link #annotationIsRelevant} does not discard it.
+   *
+   * @param node the JavaParser node for a declaration
+   * @param anno a declaration annotation that was inferred for {@code node}
+   */
+  private static void writeDeclarationAnnotation(
+      NodeWithAnnotations<?> node, AnnotationMirror anno) {
+    AnnotationExpr annoExpr =
+        AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(anno);
+    annoExpr.setData(IS_DECLARATION_ANNOTATION, true);
+    node.addAnnotation(annoExpr);
+  }
+
+  /**
    * Returns true if the annotation might be relevant (where it appears in the program).
    *
    * @param anno an annotation
@@ -1125,6 +1151,14 @@ public class WholeProgramInferenceJavaParserStorage
     @FullyQualifiedName String aName = anno.getNameAsString();
     if (!atypeFactory.isSupportedQualifier(aName)) {
       // The annotation might be a declaration annotation, such as a side effect specification.
+      return true;
+    }
+
+    if (anno.containsData(IS_DECLARATION_ANNOTATION)) {
+      // Inference added the annotation as a declaration annotation, as
+      // `addMethodDeclarationAnnotation`, `addFieldDeclarationAnnotation`, and
+      // `addDeclarationAnnotationToFormalParameter` do.  Relevance constrains the types on which a
+      // qualifier may be *written*, so it says nothing about a declaration annotation.
       return true;
     }
 
@@ -2048,26 +2082,20 @@ public class WholeProgramInferenceJavaParserStorage
     public void transferAnnotations() {
       if (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> genericAtf) {
         for (AnnotationMirror contractAnno : genericAtf.getContractAnnotations(this)) {
-          declaration.addAnnotation(
-              AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
-                  contractAnno));
+          writeDeclarationAnnotation(declaration, contractAnno);
         }
       }
 
       if (declarationAnnotations != null && declaration != null) {
         for (AnnotationMirror annotation : declarationAnnotations) {
-          declaration.addAnnotation(
-              AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
-                  annotation));
+          writeDeclarationAnnotation(declaration, annotation);
         }
       }
 
       if (paramsDeclAnnos != null) {
         for (IPair<Integer, AnnotationMirror> pair : paramsDeclAnnos) {
           Parameter param = declaration.getParameter(pair.first - 1);
-          param.addAnnotation(
-              AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
-                  pair.second));
+          writeDeclarationAnnotation(param, pair.second);
         }
       }
 
@@ -2244,9 +2272,7 @@ public class WholeProgramInferenceJavaParserStorage
         Node declParent = declaration.getParentNode().orElse(null);
         if (declParent instanceof FieldDeclaration decl) {
           for (AnnotationMirror annotation : declarationAnnotations) {
-            decl.addAnnotation(
-                AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
-                    annotation));
+            writeDeclarationAnnotation(decl, annotation);
           }
         }
       }

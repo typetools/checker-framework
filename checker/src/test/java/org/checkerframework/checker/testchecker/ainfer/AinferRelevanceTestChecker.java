@@ -10,9 +10,9 @@ import org.checkerframework.framework.qual.RelevantJavaTypes;
  * system and the same visitor.
  *
  * <p>This checker exists so that the tests exercise whole-program inference for a checker that
- * restricts the Java types on which its qualifiers may be written. {@code int} is relevant because
- * it is listed. {@code String} and {@code CharSequence} are relevant because of subtyping. Arrays
- * are irrelevant, because {@code Object[].class} is not listed.
+ * restricts the Java types on which its qualifiers may be written. {@code int} and {@code
+ * CharSequence} are relevant because they are listed. {@code String} is relevant because of
+ * subtyping. Arrays are irrelevant, because {@code Object[].class} is not listed.
  *
  * <p>{@code Map.Entry} is listed because it is a nested type and it has type parameters, so a
  * program may refer to {@code Map.Entry} in several different ways.
