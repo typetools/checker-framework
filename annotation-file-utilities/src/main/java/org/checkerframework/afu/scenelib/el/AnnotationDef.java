@@ -195,12 +195,17 @@ public final class AnnotationDef extends AElement {
     if (source == null) {
       assert sourceSupplier != null
           : "@AssumeAssertion(nullness): only one of source and sourceSupplier is null";
-      String newSource = sourceSupplier.get();
-      // Do not throw an exception if newSource is null.  getSource() is called only while
-      // formatting a diagnostic, so an exception here would replace the real diagnostic with a
-      // less informative one.
-      source = newSource != null ? newSource : "unknown source";
+      // getSource() is called only while formatting a diagnostic, so a problem here (a null
+      // result, or an exception) must not replace the real diagnostic with a less informative
+      // one.  Clear sourceSupplier even if it threw, so a later call does not throw again.
+      String newSource;
+      try {
+        newSource = sourceSupplier.get();
+      } catch (RuntimeException | Error e) {
+        newSource = "unknown source (" + e.getClass().getSimpleName() + ")";
+      }
       sourceSupplier = null;
+      source = newSource != null ? newSource : "unknown source";
     }
     return source;
   }
@@ -209,7 +214,7 @@ public final class AnnotationDef extends AElement {
    * Returns a list of method names for a class in the order in which they occur in the .class file.
    * Note that the JDK method Class.getDeclaredMethods() does not preserve this order.
    *
-   * @param name the ifully qualified name of the class to be read
+   * @param name the fully qualified name of the class to be read
    * @return a list of methods for the class, or an empty list if the class file cannot be read
    */
   public static List<String> getDeclaredMethods(String name) {
