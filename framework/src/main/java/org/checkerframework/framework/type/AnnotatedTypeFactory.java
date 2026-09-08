@@ -4154,8 +4154,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     try {
       fromEle = elements.getAllAnnotationMirrors(elt);
     } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
-      // A completer runs at most once, so the second call does not throw; it returns the
-      // annotations inherited from every superclass that could be read.
+      // The failed completion left the unreadable class's symbol erroneous, so the second walk
+      // stops where the first one threw and returns what every readable superclass contributed.
       try {
         fromEle = elements.getAllAnnotationMirrors(elt);
       } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf2) {
