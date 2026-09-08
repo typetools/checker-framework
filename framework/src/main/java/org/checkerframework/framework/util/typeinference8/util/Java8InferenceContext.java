@@ -7,13 +7,9 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -82,9 +78,6 @@ public class Java8InferenceContext {
 
   /** The annotated type factory. */
   public final AnnotatedTypeFactory typeFactory;
-
-  /** There's no way to tell if an element is a parameter of a lambda, so keep track of them. */
-  public final Set<VariableElement> lambdaParms = new HashSet<>();
 
   /**
    * Where an implicitly typed lambda parameter's type comes from: the target type of the lambda
@@ -205,32 +198,5 @@ public class Java8InferenceContext {
    */
   public int getNextQualifierVariableId() {
     return qualifierVarCount++;
-  }
-
-  /**
-   * Adds the parameters to the list of trees that are lambda parameters.
-   *
-   * <p>There's no way to tell if a tree is a parameter of a lambda, so keep track of them.
-   *
-   * @param parameters list of lambda parameters
-   */
-  public void addLambdaParms(List<? extends VariableTree> parameters) {
-    for (VariableTree tree : parameters) {
-      lambdaParms.add(TreeUtils.elementFromDeclaration(tree));
-    }
-  }
-
-  /**
-   * Returns true if the {@code expression} is a lambda parameter.
-   *
-   * @param expression an expression
-   * @return true if the {@code expression} is a lambda parameter
-   */
-  public boolean isLambdaParam(ExpressionTree expression) {
-    Element element = TreeUtils.elementFromTree(expression);
-    if (element == null || element.getKind() != ElementKind.PARAMETER) {
-      return false;
-    }
-    return lambdaParms.contains((VariableElement) element);
   }
 }
