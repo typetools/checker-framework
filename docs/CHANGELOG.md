@@ -7,7 +7,32 @@
 
 ### User-visible changes
 
+Under `-AcheckPurityAnnotations`, a constructor's purity annotation is now
+checked against the instance initializers that run as part of the constructor:
+the instance initializer blocks of its class and the initializers of its
+instance fields.  Previously only the constructor's body was checked, so the
+following was accepted:
+
+```java
+class C {
+  int x = sideEffectingMethod();   // now an error
+  @SideEffectFree C() {}
+}
+```
+
+The initializers are not checked against a constructor that delegates to another
+constructor of the same class via `this(...)`, because they do not run as part of
+it.  Static initializers are not checked against any constructor.
+
+Relatedly, an initializer of a local or anonymous class may now assign to a field
+of that class without being reported as a side effect, as an initializer of any
+other class already could.
+
 ### Changes for type system implementers
+
+`PurityChecker.checkPurity()` has a new overload that takes a list of
+`TreePath`s and checks their purity together, for code that runs as a unit but is
+not contiguous in the source code.
 
 Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
 
