@@ -24,3 +24,5 @@ jobs:
           # shfmt and shellcheck are run by `prek`.
           sh_checker_shfmt_disable: true
           sh_checker_shellcheck_disable: true
+          # Exclusions.
+          sh_checker_exclude: gradlew
