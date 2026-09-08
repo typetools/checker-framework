@@ -66,6 +66,30 @@ public class PurityInitializers {
     }
   }
 
+  // A constructor may write an element of an array that a field of its own class holds, in an
+  // initializer as well as in the constructor's body.
+  static class ArrayField {
+    int[] a = new int[3];
+    int[][] b = new int[2][2];
+
+    {
+      a[0] = 1;
+      b[0][1] = 2;
+    }
+
+    @SideEffectFree
+    ArrayField() {
+      a[1] = 3;
+    }
+
+    // Writing the array anywhere else is still a side effect.
+    @SideEffectFree
+    void set() {
+      // :: error: [purity.not.sideeffectfree.assign.array]
+      a[2] = 4;
+    }
+  }
+
   // Pure initializers do not make the constructor impure.
   static class PureInitializer {
     int x = pureValue();

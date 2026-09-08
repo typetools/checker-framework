@@ -26,7 +26,9 @@ it.  Static initializers are not checked against any constructor.
 
 Relatedly, an initializer of a local or anonymous class may now assign to a field
 of that class without being reported as a side effect, as an initializer of any
-other class already could.
+other class already could.  A constructor or initializer may also write an
+element of an array that a field of its own class holds, which was previously
+reported as a side effect.
 
 ### Changes for type system implementers
 

@@ -407,10 +407,9 @@ public final class PurityChecker {
      */
     protected void assignmentCheck(ExpressionTree variable) {
       variable = TreeUtils.withoutParens(variable);
-      VariableElement fieldElt = TreeUtils.asFieldAccess(variable);
-      if (fieldElt != null && isFieldInCurrentClass(fieldElt) && inConstructorOrInitializer()) {
-        // assigning a field in a constructor or an initializer
-        // TODO: add a check for ArrayAccessTree too.
+      if (writesFieldInCurrentClass(variable) && inConstructorOrInitializer()) {
+        // assigning a field of the object being constructed, or an element of an array that such
+        // a field holds
         return;
       }
       if (TreeUtils.isFieldAccess(variable)) {
@@ -423,6 +422,27 @@ public final class PurityChecker {
         // lhs is a local variable
         assert isLocalVariable(variable);
       }
+    }
+
+    /**
+     * Returns true if writing the given expression writes a field of the current class, or an
+     * element of an array that such a field holds (possibly nested, as in {@code f[0][1]}).
+     *
+     * <p>Treating an array element like the field that holds the array is unsound if code outside
+     * the class also has a reference to the array: if a constructor stores its argument in the
+     * field and then writes an element of it, for example.
+     *
+     * @param variable the left-hand side of an assignment
+     * @return true if the assignment writes a field of the current class or an element of an array
+     *     that such a field holds
+     */
+    private boolean writesFieldInCurrentClass(ExpressionTree variable) {
+      variable = TreeUtils.withoutParens(variable);
+      if (variable instanceof ArrayAccessTree arrayAccess) {
+        return writesFieldInCurrentClass(arrayAccess.getExpression());
+      }
+      VariableElement fieldElt = TreeUtils.asFieldAccess(variable);
+      return fieldElt != null && isFieldInCurrentClass(fieldElt);
     }
 
     /**
