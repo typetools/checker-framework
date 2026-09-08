@@ -1,6 +1,7 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.sun.tools.javac.code.Type.ArrayType;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import org.checkerframework.afu.scenelib.field.BasicAFT;
 import org.checkerframework.afu.scenelib.field.ClassTokenAFT;
 import org.checkerframework.afu.scenelib.field.EnumAFT;
 import org.checkerframework.afu.scenelib.field.ScalarAFT;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -45,20 +47,28 @@ public class AnnotationConverter {
    * @return the Annotation
    */
   public static Annotation annotationMirrorToAnnotation(AnnotationMirror am) {
-    @SuppressWarnings("signature:argument") // TODO: bug for inner classes
-    AnnotationDef def =
-        new AnnotationDef(
-            AnnotationUtils.annotationName(am),
-            String.format(
-                "annotationMirrorToAnnotation %s [%s] keyset=%s",
-                am, am.getClass(), am.getElementValues().keySet()));
     Map<String, AnnotationFieldType> fieldTypes = new ArrayMap<>(am.getElementValues().size());
     // Handling cases where there are fields in annotations.
     for (ExecutableElement ee : am.getElementValues().keySet()) {
       AnnotationFieldType aft = getAnnotationFieldType(ee);
       fieldTypes.put(ee.getSimpleName().toString(), aft);
     }
-    def.setFieldTypes(fieldTypes);
+
+    @SuppressWarnings("signature:assignment") // TODO: bug for inner classes
+    @BinaryName String annoName = AnnotationUtils.annotationName(am);
+    // Capturing `am` rather than the strings would prevent it from being garbage-collected.
+    // `fieldTypes.keySet()` is a view, so copy it rather than retaining `fieldTypes` itself.
+    String amClassName = am.getClass().getName();
+    List<String> fieldNames = new ArrayList<>(fieldTypes.keySet());
+    AnnotationDef def =
+        new AnnotationDef(
+            annoName,
+            fieldTypes,
+            // The source is computed lazily because it is used only for diagnostics.
+            () ->
+                String.format(
+                    "annotationMirrorToAnnotation %s [%s] keyset=%s",
+                    annoName, amClassName, fieldNames));
 
     // Now, we handle the values of those types below
     Map<? extends ExecutableElement, ? extends AnnotationValue> values = am.getElementValues();

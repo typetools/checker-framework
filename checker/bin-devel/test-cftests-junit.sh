@@ -12,8 +12,8 @@ source "$SCRIPT_DIR"/clone-related.sh
 
 # `./gradlew test` subsumes the other commands, but performing them
 # separately seems to avoid some out-of-memory errors.
-./gradlew assemble --warning-mode=all
-./gradlew compileTestJava testClasses --warning-mode=all
+gradle_retry assemble --warning-mode=all
+gradle_retry compileTestJava testClasses --warning-mode=all
 
 if [ "$#" -eq 0 ]; then
   arg=both
@@ -30,9 +30,9 @@ fi
 # ./gradlew test --warning-mode=all
 
 if [ "$arg" != "part2" ]; then
-  ./gradlew junitPart1 --warning-mode=all
+  gradle_retry_once junitPart1 --warning-mode=all
 fi
 
 if [ "$arg" != "part1" ]; then
-  ./gradlew junitPart2 --warning-mode=all
+  gradle_retry_once junitPart2 --warning-mode=all
 fi
