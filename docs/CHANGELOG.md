@@ -7,32 +7,11 @@
 
 ### User-visible changes
 
-Under `-AcheckPurityAnnotations`, the Purity Checker no longer reports the
-effects of a lambda body, or of a local or anonymous class body, as effects of
-the enclosing method.  Evaluating a lambda expression or declaring a class does
-not run the code in it; those effects occur where the functional method or the
-class's method is invoked, and each such invocation is checked on its own.  This
-removes false positives such as:
-
-```java
-@SideEffectFree Runnable makeRunnable() { return () -> count++; }
-```
-
-Under `-AcheckPurityAnnotations`, a lambda's body is now checked against a
-`@SideEffectFree`, `@Deterministic`, or `@Pure` annotation on the functional
-interface method that the lambda implements.  Previously nothing performed this
-check: unlike an overriding method, a lambda does not inherit the annotation,
-and unlike a method reference, a lambda has no declaration to compare against.
-The following is now an error:
-
-```java
-@FunctionalInterface interface PureFunc { @SideEffectFree String get(); }
-PureFunc f = () -> { count++; return ""; };
-```
-
-Relatedly, a lambda that a constructor creates no longer receives the
-constructor's permission to assign to fields of its own class, because the
-lambda's body may run after the constructor has returned.
+Under `-AcheckPurityAnnotations`, the Purity Checker no longer treats the body of
+a lambda, local class, or anonymous class as part of the enclosing method, which
+removes false positives.  A lambda's body is instead checked against any purity
+annotation on the functional interface method it implements, which may cause new
+purity errors to be issued.
 
 ### Changes for type system implementers
 
