@@ -913,6 +913,8 @@ public class AnnotationBuilder {
         return v.visitArray((List<? extends AnnotationValue>) list, p);
       } else if (value instanceof Boolean b) {
         return v.visitBoolean(b, p);
+      } else if (value instanceof Byte b) {
+        return v.visitByte(b, p);
       } else if (value instanceof Character c) {
         return v.visitChar(c, p);
       } else if (value instanceof Double d) {
