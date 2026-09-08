@@ -395,6 +395,11 @@ public class AnnotationBuilder {
   }
 
   /** Set the element/field with the given name, to the given value. */
+  public AnnotationBuilder setValue(CharSequence elementName, Byte value) {
+    return setValue(elementName, (Object) value);
+  }
+
+  /** Set the element/field with the given name, to the given value. */
   public AnnotationBuilder setValue(CharSequence elementName, Character value) {
     return setValue(elementName, (Object) value);
   }

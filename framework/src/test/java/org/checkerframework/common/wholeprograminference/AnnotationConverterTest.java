@@ -51,10 +51,7 @@ public class AnnotationConverterTest {
           "import java.lang.annotation.RetentionPolicy;",
           "@interface MyAnno {",
           "  boolean booleanElement();",
-          // AnnotationConverter.addFieldToAnnotationBuilder cannot convert a byte value back into
-          // an AnnotationMirror, so byteElement has a default and the annotation use below does
-          // not write it; that keeps it out of the round-trip test.
-          "  byte byteElement() default 1;",
+          "  byte byteElement();",
           "  char charElement();",
           "  double doubleElement();",
           "  float floatElement();",
@@ -67,12 +64,14 @@ public class AnnotationConverterTest {
           "  String[] stringArrayElement();",
           "  int[] intArrayElement();",
           "  MyEnum[] enumArrayElement();",
-          // The following three elements exist only for
-          // addFieldToAnnotationBuilderForEveryType, which needs an element whose type is an
-          // annotation, and elements whose type is an enum (or an array thereof) that is loadable
-          // at run time, unlike MyEnum.  They have defaults so that the annotation use below, and
-          // therefore the round-trip test, need not mention them.
-          "  MyNested nestedElement() default @MyNested(0);",
+          // Both legal forms of an annotation-valued element.
+          "  MyNested nestedElement();",
+          "  MyNested[] nestedArrayElement();",
+          // The following two elements exist only for
+          // addFieldToAnnotationBuilderForEveryType, which needs elements whose type is an enum
+          // (or an array thereof) that is loadable at run time, unlike MyEnum.  They have
+          // defaults so that the annotation use below, and therefore the round-trip test, need
+          // not mention them.
           "  RetentionPolicy policyElement() default RetentionPolicy.CLASS;",
           "  RetentionPolicy[] policyArrayElement() default {};",
           "}",
@@ -84,6 +83,7 @@ public class AnnotationConverterTest {
           "}",
           "@MyAnno(",
           "  booleanElement = true,",
+          "  byteElement = 1,",
           "  charElement = 'c',",
           "  doubleElement = 2.0,",
           "  floatElement = 3.0f,",
@@ -95,7 +95,9 @@ public class AnnotationConverterTest {
           "  enumElement = MyEnum.A,",
           "  stringArrayElement = {\"eight\", \"nine\"},",
           "  intArrayElement = {10, 11},",
-          "  enumArrayElement = {MyEnum.A, MyEnum.B}",
+          "  enumArrayElement = {MyEnum.A, MyEnum.B},",
+          "  nestedElement = @MyNested(12),",
+          "  nestedArrayElement = {@MyNested(13), @MyNested(14)}",
           ")",
           "public class Annotated {",
           // The annotation on this method is the one that sourceIsComputedOnlyOnDemand uses.
@@ -125,10 +127,8 @@ public class AnnotationConverterTest {
           assertFieldType("enum testpkg.MyEnum[]", elements, "enumArrayElement");
           assertFieldType(
               "enum java.lang.annotation.RetentionPolicy[]", elements, "policyArrayElement");
-          // typeMirrorToAnnotationFieldType does not handle an element whose type is an
-          // annotation: such an element falls through to the branch that assumes an enum.  This
-          // assertion documents that behavior rather than endorsing it.
-          assertFieldType("enum testpkg.MyNested", elements, "nestedElement");
+          assertFieldType("annotation-field testpkg.MyNested", elements, "nestedElement");
+          assertFieldType("annotation-field testpkg.MyNested[]", elements, "nestedArrayElement");
         });
   }
 
@@ -174,8 +174,7 @@ public class AnnotationConverterTest {
   }
 
   /**
-   * Tests one value for every branch of {@link AnnotationConverter#addFieldToAnnotationBuilder},
-   * including the branch that no value can reach.
+   * Tests one value for every branch of {@link AnnotationConverter#addFieldToAnnotationBuilder}.
    */
   @Test
   public void addFieldToAnnotationBuilderForEveryType() {
@@ -186,6 +185,7 @@ public class AnnotationConverterTest {
           TypeMirror stringType = typeElement(env, "java.lang.String").asType();
           AnnotationMirror nested =
               new AnnotationBuilder(env, "testpkg.MyNested").setValue("value", 12).build();
+          Annotation sceneNested = AnnotationConverter.annotationMirrorToAnnotation(nested);
 
           // One value per branch, in the order in which addFieldToAnnotationBuilder tests them.
           // List
@@ -227,6 +227,16 @@ public class AnnotationConverterTest {
           assertFieldValue(env, "java.lang.String.class", "classElement", stringType);
           // Short
           assertFieldValue(env, "6", "shortElement", (short) 6);
+          // Byte
+          assertFieldValue(env, "1", "byteElement", (byte) 1);
+          // Annotation
+          assertFieldValue(env, "@testpkg.MyNested(12)", "nestedElement", sceneNested);
+          // A List of Annotation, which the List branch handles.
+          assertFieldValue(
+              env,
+              "{@testpkg.MyNested(12), @testpkg.MyNested(12)}",
+              "nestedArrayElement",
+              Arrays.asList(sceneNested, sceneNested));
           // VariableElement
           assertFieldValue(env, "testpkg.MyEnum.A", "enumElement", enumA);
           // The VariableElement[] branch is unreachable, because a VariableElement[] is an
@@ -242,8 +252,8 @@ public class AnnotationConverterTest {
 
   /**
    * Tests that {@link AnnotationConverter#addFieldToAnnotationBuilder} throws an exception, rather
-   * than silently dropping the field, for a value whose type it does not handle. A {@code Byte} is
-   * such a value, even though {@code byte} is a legal type for an annotation element.
+   * than silently dropping the field, for a value whose type it does not handle. No value of a
+   * legal annotation element type reaches that branch.
    */
   @Test
   public void addFieldToAnnotationBuilderForUnhandledType() {
@@ -251,8 +261,9 @@ public class AnnotationConverterTest {
         env -> {
           AnnotationBuilder builder = new AnnotationBuilder(env, "testpkg.MyAnno");
           try {
-            AnnotationConverter.addFieldToAnnotationBuilder("byteElement", (byte) 1, builder);
-            Assert.fail("No exception for a byte value");
+            AnnotationConverter.addFieldToAnnotationBuilder(
+                "byteElement", new StringBuilder("1"), builder, env);
+            Assert.fail("No exception for a StringBuilder value");
           } catch (BugInCF e) {
             Assert.assertTrue(e.getMessage(), e.getMessage().contains("Unrecognized type"));
           }
@@ -313,7 +324,7 @@ public class AnnotationConverterTest {
   private static void assertFieldValue(
       ProcessingEnvironment env, String expected, String elementName, Object value) {
     AnnotationBuilder builder = new AnnotationBuilder(env, "testpkg.MyAnno");
-    AnnotationConverter.addFieldToAnnotationBuilder(elementName, value, builder);
+    AnnotationConverter.addFieldToAnnotationBuilder(elementName, value, builder, env);
     Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues =
         builder.build().getElementValues();
     Assert.assertEquals("elements set while setting " + elementName, 1, elementValues.size());
