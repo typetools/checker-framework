@@ -193,7 +193,12 @@ public final class AnnotationDef extends AElement {
    */
   public synchronized String getSource() {
     if (source == null) {
+      assert sourceSupplier != null
+          : "@AssumeAssertion(nullness): only one of source and sourceSupplier is null";
       source = sourceSupplier.get();
+      if (source == null) {
+        throw new RuntimeException("source supplier yielded null");
+      }
       sourceSupplier = null;
     }
     return source;
@@ -462,7 +467,7 @@ public final class AnnotationDef extends AElement {
    *     unmodifiable map that can be modified through an alias.x
    * @return a immutable copy of the map
    */
-  public <K, V> Map<K, V> immutableMap(Map<K, V> map) {
+  public static <K, V> Map<K, V> immutableMap(Map<K, V> map) {
     if (isUnmodifiable(map)) {
       return map;
     } else {
