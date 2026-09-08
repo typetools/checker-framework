@@ -13,11 +13,7 @@ Checker Framework crashed on such a classpath.
 
 ### Changes for type system implementers
 
-`AnnotatedTypeMirror.hashCode()` now hashes only the top-level type rather than
-recursively hashing component types.  Removed class `HashcodeAtmVisitor`, field
-`AnnotatedTypeMirror.HASHCODE_VISITOR`, and method
-`AnnotatedTypeMirror.getUnderlyingTypeHashCode()`, which existed only to compute
-the old hash code.
+Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
 
 `AnnotatedTypeMirror.createType()` no longer throws `BugInCF` for a type whose
 kind is `ERROR`; it returns an `AnnotatedDeclaredType`, as it does for `DECLARED`.
