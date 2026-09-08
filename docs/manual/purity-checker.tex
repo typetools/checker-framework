@@ -43,6 +43,100 @@ whole-program inference.
 \end{description}
 
 
+\sectionAndLabel{Lambdas, method references, and functional interfaces}{purity-functional-interfaces}
+
+Creating a lambda, or declaring a local or anonymous class, is not itself a
+side effect.  A lambda expression creates an object; it does not run the code
+in the lambda's body.  A side-effect-free method may therefore create a lambda
+whose body has side effects:
+
+\begin{Verbatim}
+  @SideEffectFree
+  Runnable makeRunnable() {
+    return () -> count++;  // OK: creating the lambda has no side effect
+  }
+\end{Verbatim}
+
+\noindent
+The effects of the body occur where the functional method is invoked, and
+each such invocation is checked on its own.
+
+The body of a lambda is checked against the purity annotations on the
+functional interface method that the lambda implements, not against those on
+the method that creates the lambda.  For example:
+
+\begin{Verbatim}
+  @FunctionalInterface
+  interface PureSupplier {
+    @SideEffectFree String get();
+  }
+
+  PureSupplier s1 = () -> "hello";                  // OK
+  PureSupplier s2 = () -> { count++; return ""; };  // error: the body has a side effect
+\end{Verbatim}
+
+
+\subsectionAndLabel{Functional-interface parameters}{purity-functional-interface-parameters}
+
+A side-effect-free method may run code that its caller handed to it.  If a
+parameter's type is a functional interface whose functional method (its
+single abstract method) is not itself annotated with a purity annotation,
+then \<@SideEffectFree> is also a requirement on the method's callers:  the
+argument must denote a value whose functional method is side-effect-free.
+In return, the body of the method may call that parameter's functional
+method without thereby being impure:
+
+\begin{Verbatim}
+  @SideEffectFree
+  int apply(Function<String, Integer> f, String s) {
+    return f.apply(s);  // permitted: the receiver is a formal parameter of this method
+  }
+\end{Verbatim}
+
+\noindent
+and, at calls to \<apply>:
+
+\begin{Verbatim}
+  apply(s -> s.length(), "hi");  // OK: the lambda body is side-effect-free
+  apply(s -> count++, "hi");     // error: the lambda body has a side effect
+\end{Verbatim}
+
+The permission to call a method that is not \<@SideEffectFree> is narrow.
+The receiver must be the formal parameter itself; a local variable that has
+been assigned the parameter, or a field that holds it, does not qualify.
+Nor does a call to a \<default> or \<static> method of the functional
+interface.
+
+The requirement on callers is imposed on every parameter whose type is a
+functional interface, whether or not the method's body ever calls it, so that
+a caller can read the requirement off the signature alone.  The requirement
+is imposed only when the functional method is unannotated; when the
+functional method is itself annotated \<@SideEffectFree>, that annotation
+governs both the call in the body and the obligation on the argument,
+exactly as for any other method.
+
+At each call to a \<@SideEffectFree> method or constructor, the Checker
+Framework checks that every argument passed to a functional-interface
+parameter is side-effect-free:
+
+\begin{itemize}
+\item
+  If the argument is a lambda, its body is checked directly and no
+  annotation on it is needed.
+\item
+  If the argument is a method reference, the referenced method must be
+  \<@SideEffectFree>.
+\item
+  If the argument is a functional-interface parameter of the enclosing
+  method, and that method is itself \<@SideEffectFree>, then the enclosing
+  method's own callers have already discharged the requirement, so the
+  argument is permitted.
+\item
+  Otherwise, the functional method of the argument's declared type must be
+  \<@SideEffectFree>.
+\end{itemize}
+
+
 \sectionAndLabel{Purity annotations are trusted}{purity-trusted}
 
 By default, purity annotations are trusted.  Purity annotations on called
