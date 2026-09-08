@@ -195,10 +195,11 @@ public final class AnnotationDef extends AElement {
     if (source == null) {
       assert sourceSupplier != null
           : "@AssumeAssertion(nullness): only one of source and sourceSupplier is null";
-      source = sourceSupplier.get();
-      if (source == null) {
-        throw new RuntimeException("source supplier yielded null");
-      }
+      String newSource = sourceSupplier.get();
+      // Do not throw an exception if newSource is null.  getSource() is called only while
+      // formatting a diagnostic, so an exception here would replace the real diagnostic with a
+      // less informative one.
+      source = newSource != null ? newSource : "unknown source";
       sourceSupplier = null;
     }
     return source;
@@ -209,7 +210,7 @@ public final class AnnotationDef extends AElement {
    * Note that the JDK method Class.getDeclaredMethods() does not preserve this order.
    *
    * @param name the ifully qualified name of the class to be read
-   * @return a list of methods for the class
+   * @return a list of methods for the class, or an empty list if the class file cannot be read
    */
   public static List<String> getDeclaredMethods(String name) {
     List<String> methods;
@@ -219,7 +220,9 @@ public final class AnnotationDef extends AElement {
       classReader.accept(methodRecorder, 0);
       methods = methodRecorder.getMethods();
     } catch (IOException e) {
-      methods = null;
+      // The .class file could not be read, so the declaration order of the methods is unknown.
+      // Returning an empty list loses the ordering, but is better than crashing the caller.
+      methods = Collections.emptyList();
       e.printStackTrace();
     }
     return methods;
