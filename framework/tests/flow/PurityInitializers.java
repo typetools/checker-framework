@@ -37,6 +37,19 @@ public class PurityInitializers {
     InitializerBlock() {}
   }
 
+  // The initializers run as part of each constructor, but each of their effects is one error, not
+  // one error per constructor.
+  static class TwoConstructors {
+    // :: error: [purity.not.sideeffectfree.call]
+    int x = bump();
+
+    @SideEffectFree
+    TwoConstructors() {}
+
+    @SideEffectFree
+    TwoConstructors(int i) {}
+  }
+
   // A constructor may assign the fields of its own class, in an initializer as well as in the
   // constructor's body.
   static class AssignOwnField {
