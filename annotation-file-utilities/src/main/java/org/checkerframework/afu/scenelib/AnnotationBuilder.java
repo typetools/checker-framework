@@ -267,7 +267,7 @@ public class AnnotationBuilder {
     }
     active = false;
     if (def == null) {
-      assert "typeName != null" : "@AssumeAssertion(nullness): one of def and typename is non-null";
+      assert typeName != null : "@AssumeAssertion(nullness): one of def and typename is non-null";
       assert fieldTypes != null;
       def = new AnnotationDef(typeName, tlAnnotationsHere, fieldTypes, source);
     } else {
