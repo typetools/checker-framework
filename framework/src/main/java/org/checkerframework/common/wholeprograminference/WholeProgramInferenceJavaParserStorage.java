@@ -1832,7 +1832,7 @@ public class WholeProgramInferenceJavaParserStorage
         }
       }
 
-      if (declarationAnnotations != null && declaration != null) {
+      if (declarationAnnotations != null) {
         for (AnnotationMirror annotation : declarationAnnotations) {
           declaration.addAnnotation(
               AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(

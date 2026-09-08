@@ -2,6 +2,7 @@ package org.checkerframework.common.wholeprograminference;
 
 import com.sun.source.util.JavacTask;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,6 +31,8 @@ import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 import org.checkerframework.afu.scenelib.Annotation;
+import org.checkerframework.afu.scenelib.el.AnnotationDef;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -273,24 +276,45 @@ public class AnnotationConverterTest {
   /**
    * {@link AnnotationConverter#annotationMirrorToAnnotation} is called once per annotation per
    * storage write, so it must not construct the {@code AnnotationDef}'s source string, which is
-   * used only for diagnostics.
+   * used only for diagnostics. Furthermore, the {@code AnnotationDef} outlives the compilation of
+   * the annotation, so it must not retain the {@code AnnotationMirror}; the source string is
+   * therefore computed from strings rather than from the {@code AnnotationMirror} itself.
    */
   @Test
   public void sourceIsComputedOnlyOnDemand() {
-    withProcessingEnvironment(
-        env -> {
-          CountingAnnotationMirror am = new CountingAnnotationMirror(theAnnotationMirror(env));
-          Annotation converted = AnnotationConverter.annotationMirrorToAnnotation(am);
-          Assert.assertEquals(
-              "annotationMirrorToAnnotation stringified its argument", 0, am.toStringCount);
-          String source = converted.def().getSource();
-          String secondSource = converted.def().getSource();
-          Assert.assertTrue(source, source.startsWith("annotationMirrorToAnnotation "));
-          Assert.assertTrue(source, source.contains("java.lang.Deprecated"));
-          Assert.assertEquals(source, secondSource);
-          Assert.assertEquals(
-              "getSource() stringified its argument more than once", 1, am.toStringCount);
-        });
+    CountingAnnotationMirror am = new CountingAnnotationMirror(theAnnotationMirror());
+    Annotation converted = AnnotationConverter.annotationMirrorToAnnotation(am);
+    AnnotationDef def = converted.def();
+    Assert.assertNull(
+        "annotationMirrorToAnnotation computed the source eagerly", computedSource(def));
+    Assert.assertEquals(
+        "annotationMirrorToAnnotation stringified its argument", 0, am.toStringCount);
+    String source = def.getSource();
+    String secondSource = def.getSource();
+    Assert.assertTrue(source, source.startsWith("annotationMirrorToAnnotation "));
+    Assert.assertTrue(source, source.contains("java.lang.Deprecated"));
+    // Reference equality, because getSource() caches its result rather than recomputing it.
+    Assert.assertSame(source, secondSource);
+    Assert.assertSame("getSource() did not cache its result", source, computedSource(def));
+    Assert.assertEquals("getSource() stringified the AnnotationMirror", 0, am.toStringCount);
+  }
+
+  /**
+   * Returns the source string that {@code def} has already computed, without computing it. Reads
+   * the field directly, because {@link AnnotationDef#getSource()} computes the string if it has not
+   * been computed yet.
+   *
+   * @param def an annotation definition
+   * @return the source string that {@code def} has computed, or null if it has computed none
+   */
+  private static @Nullable String computedSource(AnnotationDef def) {
+    try {
+      Field sourceField = AnnotationDef.class.getDeclaredField("source");
+      sourceField.setAccessible(true);
+      return (String) sourceField.get(def);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new Error("Cannot read AnnotationDef.source", e);
+    }
   }
 
   /**

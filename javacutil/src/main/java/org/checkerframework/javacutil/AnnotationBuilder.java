@@ -268,6 +268,11 @@ public class AnnotationBuilder {
     }
   }
 
+  /**
+   * Returns the newly-built AnnotationMirror.
+   *
+   * @return the newly-built AnnotationMirror
+   */
   public AnnotationMirror build() {
     assertNotBuilt();
     wasBuilt = true;
