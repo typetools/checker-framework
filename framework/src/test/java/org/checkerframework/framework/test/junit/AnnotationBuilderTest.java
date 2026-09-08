@@ -8,7 +8,9 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Options;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.SimpleAnnotationValueVisitor14;
 import org.checkerframework.framework.testchecker.util.AnnoWithStringArg;
 import org.checkerframework.framework.testchecker.util.Encrypted;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -138,6 +140,34 @@ public class AnnotationBuilderTest {
     AnnotationBuilder builder = new AnnotationBuilder(env, A.class);
     builder.setValue("a", 3.0);
     Assert.assertEquals(1, builder.build().getElementValues().size());
+  }
+
+  public static @interface ByteElt {
+    byte value();
+  }
+
+  /** Returns a description of the visited annotation value. */
+  private static class ByteVisitor extends SimpleAnnotationValueVisitor14<String, Void> {
+    /** Creates a ByteVisitor. */
+    ByteVisitor() {
+      super("other");
+    }
+
+    @Override
+    public String visitByte(byte b, Void p) {
+      return "byte " + b;
+    }
+  }
+
+  @Test
+  public void byteValue() {
+    AnnotationBuilder builder = new AnnotationBuilder(env, ByteElt.class);
+    builder.setValue("value", Byte.valueOf((byte) 3));
+    AnnotationMirror anno = builder.build();
+    AnnotationValue av = anno.getElementValues().values().iterator().next();
+    Assert.assertEquals(Byte.valueOf((byte) 3), av.getValue());
+    // This calls visitByte, not visitUnknown.
+    Assert.assertEquals("byte 3", av.accept(new ByteVisitor(), null));
   }
 
   // Multiple values
