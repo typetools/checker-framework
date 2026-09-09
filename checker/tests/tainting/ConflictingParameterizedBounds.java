@@ -113,4 +113,49 @@ public class ConflictingParameterizedBounds {
   void useCovariantNoInference() {
     CovariantSup<@Tainted String> x = covariantNoInference();
   }
+
+  // Only the covariant argument is exempt.
+  @Covariant(1)
+  interface CovariantSecond<T, U> {}
+
+  <S extends CovariantSecond<@Untainted String, @Untainted String>> S covariantSecond() {
+    throw new RuntimeException();
+  }
+
+  void useCovariantSecondArg() {
+    CovariantSecond<@Untainted String, @Tainted String> x = covariantSecond();
+  }
+
+  void useCovariantFirstArg() {
+    // :: error: [assignment] :: error: [type.arguments.not.inferred]
+    CovariantSecond<@Tainted String, @Untainted String> x = covariantSecond();
+  }
+
+  // The conflicting type argument mentions an inference variable, so it is not a proper type
+  // until the constraint is reduced.
+  interface Pair<X, Y> {}
+
+  <X, S extends A<Pair<X, @Untainted String>>> S typeArgWithVariable(X x) {
+    throw new RuntimeException();
+  }
+
+  void useTypeArgWithVariable(String s) {
+    // :: error: [type.arguments.not.inferred]
+    B<Pair<String, @Tainted String>> x = typeArgWithVariable(s);
+  }
+
+  // TODO: This is a false negative.  No such S exists, but the conflict is in the argument of an
+  // enclosing type, and neither the constraints implied by incorporation nor the equality
+  // constraint between two declared types cover enclosing type arguments.
+  static class Outer<O> {
+    class In {}
+  }
+
+  <S extends A<Outer<@Untainted String>.In>> S enclosingTypeArg() {
+    throw new RuntimeException();
+  }
+
+  void useEnclosingTypeArg() {
+    B<Outer<@Tainted String>.In> x = enclosingTypeArg();
+  }
 }

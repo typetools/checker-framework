@@ -2,7 +2,6 @@ package org.checkerframework.framework.util.typeinference8.types;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -482,10 +481,12 @@ public class VariableBounds {
 
     // At a covariant type argument of G, a type whose supertype is one of these
     // parameterizations can still be a subtype of the other, so the qualifiers need not match.
+    // The cast is safe because getTypeArguments() above returned non-null.
     List<Integer> covariantArgIndexes =
-        pair.first.getAnnotatedType() instanceof AnnotatedDeclaredType adt
-            ? context.typeFactory.getTypeHierarchy().getCovariantArgIndexes(adt)
-            : Collections.emptyList();
+        context
+            .typeFactory
+            .getTypeHierarchy()
+            .getCovariantArgIndexes((AnnotatedDeclaredType) pair.first.getAnnotatedType());
 
     List<Typing> constraints = new ArrayList<>();
     for (int i = 0; i < ss.size(); i++) {

@@ -178,7 +178,7 @@ public class Typing extends TypeConstraint {
       case TYPE_COMPATIBILITY -> reduceCompatible();
       case SUBTYPE -> reduceSubtyping(context);
       case CONTAINED -> reduceContained();
-      case TYPE_EQUALITY -> reduceEquality();
+      case TYPE_EQUALITY -> reduceEquality(context);
       default -> throw new BugInCF("Unexpected kind: " + getKind());
     };
   }
@@ -459,9 +459,10 @@ public class Typing extends TypeConstraint {
    * Returns the result of reducing this constraint, assume it is an equality constraint. See JLS
    * 18.2.4
    *
+   * @param context the context
    * @return the result of reducing the constraint
    */
-  private ReductionResult reduceEquality() {
+  private ReductionResult reduceEquality(Java8InferenceContext context) {
     if (S.isProper()) {
       if (T.isProper()) {
         // If S and T are proper types, the constraint reduces to true if S is the same
@@ -500,13 +501,29 @@ public class Typing extends TypeConstraint {
     if (sTypeArgs != null && tTypeArgs != null && sTypeArgs.size() == tTypeArgs.size()) {
       // Assume if both have type arguments, then S and T are class or interface types with
       // the same erasure
+
+      // If these types must have the same qualifiers, then so must their type arguments, except
+      // at a covariant type argument.
+      List<Integer> covariantArgIndexes =
+          qualifiersMustMatch
+              ? context
+                  .typeFactory
+                  .getTypeHierarchy()
+                  .getCovariantArgIndexes((AnnotatedDeclaredType) T.getAnnotatedType())
+              : Collections.emptyList();
       ConstraintSet constraintSet = new ConstraintSet();
       for (int i = 0; i < tTypeArgs.size(); i++) {
         // The constraint between two equal type arguments reduces to true (JLS 18.2.4), so do
         // not create it.
         if (!tTypeArgs.get(i).equals(sTypeArgs.get(i))) {
           constraintSet.add(
-              new Typing(this, tTypeArgs.get(i), sTypeArgs.get(i), Kind.TYPE_EQUALITY));
+              new Typing(
+                  this,
+                  tTypeArgs.get(i),
+                  sTypeArgs.get(i),
+                  Kind.TYPE_EQUALITY,
+                  false,
+                  qualifiersMustMatch && !covariantArgIndexes.contains(i)));
         }
       }
       // An inner class type's own type arguments are not all of the type arguments it mentions;
@@ -518,7 +535,8 @@ public class Typing extends TypeConstraint {
     AbstractType sComponentType = S.getComponentType();
     AbstractType tComponentType = T.getComponentType();
     if (sComponentType != null && tComponentType != null) {
-      return new Typing(this, sComponentType, tComponentType, Kind.TYPE_EQUALITY);
+      return new Typing(
+          this, sComponentType, tComponentType, Kind.TYPE_EQUALITY, false, qualifiersMustMatch);
     }
 
     if (S.getTypeKind() == TypeKind.TYPEVAR && T.getTypeKind() == TypeKind.TYPEVAR && S.equals(T)) {
