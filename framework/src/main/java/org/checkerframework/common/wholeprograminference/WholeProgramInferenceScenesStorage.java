@@ -33,6 +33,7 @@ import org.checkerframework.afu.scenelib.el.TypePathEntry;
 import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.checkerframework.afu.scenelib.util.JVMNames;
 import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -80,6 +81,13 @@ public class WholeProgramInferenceScenesStorage
 
   /** Annotations that should not be output to a .jaif or stub file. */
   private final AnnotationsInContexts annosToIgnore = new AnnotationsInContexts();
+
+  /**
+   * The binary names of the type qualifiers supported by {@link #atypeFactory}. It is lazily
+   * initialized by {@link #getSupportedAnnoNames}, rather than in the constructor, because this
+   * object is created while the type factory is still being constructed.
+   */
+  private @MonotonicNonNull Set<@BinaryName String> supportedAnnoNames = null;
 
   /**
    * If true, assignments where the rhs is null are ignored.
@@ -757,26 +765,54 @@ public class WholeProgramInferenceScenesStorage
   }
 
   /**
+   * Returns the binary names of the type qualifiers supported by the type factory associated with
+   * this.
+   *
+   * @return the binary names of the type qualifiers supported by this object's AnnotatedTypeFactory
+   */
+  private Set<@BinaryName String> getSupportedAnnoNames() {
+    if (supportedAnnoNames == null) {
+      Set<Class<? extends java.lang.annotation.Annotation>> supportedAnnos =
+          atypeFactory.getSupportedTypeQualifiers();
+      Set<@BinaryName String> result = new HashSet<>(MapsP.mapCapacity(supportedAnnos.size()));
+      for (Class<? extends java.lang.annotation.Annotation> clazz : supportedAnnos) {
+        @SuppressWarnings("signature:assignment") // an annotation is not an array or primitive
+        @BinaryName String annoName = clazz.getName();
+        result.add(annoName);
+      }
+      supportedAnnoNames = result;
+    }
+    return supportedAnnoNames;
+  }
+
+  /**
    * Returns a subset of annosSet, consisting of the annotations supported by the type factory
    * associated with this. These are not necessarily legal annotations: they have the right name,
    * but they may lack elements (fields).
+   *
+   * <p>The result is unmodifiable and is not aliased to {@code annosSet}.
    *
    * @param annosSet a set of annotations
    * @return the annotations supported by this object's AnnotatedTypeFactory
    */
   private Set<Annotation> getSupportedAnnosInSet(Set<Annotation> annosSet) {
-    Set<Annotation> output = new HashSet<>(1);
-    Set<Class<? extends java.lang.annotation.Annotation>> supportedAnnos =
-        atypeFactory.getSupportedTypeQualifiers();
+    // TODO: Remove comparison by name.
+    Set<@BinaryName String> supportedNames = getSupportedAnnoNames();
+    // Is lazily initialized, to avoid allocation when annosSet contains no supported
+    // annotation, which includes the common case that annosSet is empty.
+    Set<Annotation> output = null;
     for (Annotation anno : annosSet) {
-      for (Class<? extends java.lang.annotation.Annotation> clazz : supportedAnnos) {
-        // TODO: Remove comparison by name, and make this routine more efficient.
-        if (clazz.getName().equals(anno.def.name)) {
-          output.add(anno);
+      if (supportedNames.contains(anno.def.name)) {
+        if (output == null) {
+          output = new HashSet<>(MapsP.mapCapacity(annosSet.size()));
         }
+        output.add(anno);
       }
     }
-    return output;
+    if (output == null) {
+      return Collections.emptySet();
+    }
+    return Collections.unmodifiableSet(output);
   }
 
   @Override
