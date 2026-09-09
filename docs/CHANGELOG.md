@@ -7,9 +7,18 @@
 
 ### User-visible changes
 
+Whole-program inference no longer writes annotations that should be ignored, such
+as implementation-detail qualifiers and default qualifiers, into `.astub` files.
+Conversely, it no longer omits annotations on inner types (such as array component
+types) from `.jaif` files.
+
 ### Changes for type system implementers
 
 Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
+
+`WholeProgramInferenceScenesStorage.AnnotationsInContexts` is now keyed by
+`ATypeElement` rather than by a string representation of one, and the method
+`WholeProgramInferenceScenesStorage.aTypeElementToString()` has been removed.
 
 ### Closed issues
 

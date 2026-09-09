@@ -389,6 +389,15 @@ tasks.register("ainferTestCheckerGenerateStubs", Test) {
     // is extended to support annotation definitions.
     delete("tests/ainfer-testchecker/annotated/all-systems/Issue4083.java")
 
+    // Stub-based WPI does not write out an annotation that is redundant in the source code,
+    // such as the default qualifier @AinferDefaultType that it infers for the type of the
+    // field iShouldBeTreatedAsSibling1.  The test checker unconditionally infers the
+    // declaration annotation @AinferTreatAsSibling1 (an alias for @AinferSibling1) for that
+    // field, so with the redundant type annotation omitted the field's type is
+    // @AinferSibling1, which its @AinferDefaultType initializer is not compatible with.
+    // (This test is about ajava-based inference; see the comment at the top of the file.)
+    delete("tests/ainfer-testchecker/annotated/InnerClassFieldDeclAnno.java")
+
     copy {
       from(file("tests/ainfer-testchecker/non-annotated/UsesAnonymous.java"))
       into(file("tests/ainfer-testchecker/annotated"))

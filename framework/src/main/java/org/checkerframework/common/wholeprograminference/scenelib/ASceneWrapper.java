@@ -21,21 +21,18 @@ import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.afu.scenelib.el.AScene;
 import org.checkerframework.afu.scenelib.el.ATypeElement;
 import org.checkerframework.afu.scenelib.el.DefException;
+import org.checkerframework.afu.scenelib.el.TypePathEntry;
 import org.checkerframework.afu.scenelib.io.IndexFileWriter;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.AnnotationConverter;
 import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage.AnnotationsInContexts;
-import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.UserError;
-import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsP;
-import org.plumelib.util.IPair;
 
 /**
  * scene-lib (from the Annotation File Utilities) doesn't provide enough information to usefully
@@ -63,54 +60,82 @@ public class ASceneWrapper {
   }
 
   /**
-   * Removes the specified annotations from an AScene. The scene is a parameter rather than being
-   * the scene that this object wraps, because callers pass a clone of the wrapped scene, so that
-   * the wrapped scene is not side-effected.
+   * Removes the specified annotations from {@code copy}, which must be a clone of {@code original}.
    *
-   * @param scene the scene from which to remove annotations
+   * <p>Two scenes are needed because {@code annosToRemove} is keyed by the ATypeElements of {@code
+   * original}, but the annotations must be removed from {@code copy}, so that {@code original} --
+   * which whole-program inference continues to use -- is not side-effected. The two scenes have the
+   * same structure, so this method traverses them in lockstep.
+   *
+   * @param original the scene that {@code annosToRemove} refers to
+   * @param copy a clone of {@code original}, from which to remove annotations
    * @param annosToRemove annotations that should not be added to .jaif or stub files
    */
-  private static void removeAnnosFromScene(AScene scene, AnnotationsInContexts annosToRemove) {
-    for (AClass aclass : scene.classes.values()) {
-      for (AField field : aclass.fields.values()) {
-        removeAnnosFromATypeElement(field.type, TypeUseLocation.FIELD, annosToRemove);
+  private static void removeAnnosFromScene(
+      AScene original, AScene copy, AnnotationsInContexts annosToRemove) {
+    for (Map.Entry<String, AClass> classEntry : copy.classes.entrySet()) {
+      AClass originalClass = correspondingElement(original.classes, classEntry.getKey());
+      AClass copyClass = classEntry.getValue();
+      for (Map.Entry<String, AField> fieldEntry : copyClass.fields.entrySet()) {
+        AField originalField = correspondingElement(originalClass.fields, fieldEntry.getKey());
+        removeAnnosFromATypeElement(originalField.type, fieldEntry.getValue().type, annosToRemove);
       }
-      for (AMethod method : aclass.methods.values()) {
-        removeAnnosFromATypeElement(method.returnType, TypeUseLocation.RETURN, annosToRemove);
-        removeAnnosFromATypeElement(method.receiver.type, TypeUseLocation.RECEIVER, annosToRemove);
-        for (AField param : method.parameters.values()) {
-          removeAnnosFromATypeElement(param.type, TypeUseLocation.PARAMETER, annosToRemove);
+      for (Map.Entry<String, AMethod> methodEntry : copyClass.methods.entrySet()) {
+        AMethod originalMethod = correspondingElement(originalClass.methods, methodEntry.getKey());
+        AMethod copyMethod = methodEntry.getValue();
+        removeAnnosFromATypeElement(
+            originalMethod.returnType, copyMethod.returnType, annosToRemove);
+        removeAnnosFromATypeElement(
+            originalMethod.receiver.type, copyMethod.receiver.type, annosToRemove);
+        for (Map.Entry<Integer, AField> paramEntry : copyMethod.parameters.entrySet()) {
+          AField originalParam =
+              correspondingElement(originalMethod.parameters, paramEntry.getKey());
+          removeAnnosFromATypeElement(
+              originalParam.type, paramEntry.getValue().type, annosToRemove);
         }
       }
     }
   }
 
   /**
-   * Removes the specified annotations from an ATypeElement.
+   * Removes the specified annotations from {@code copy}, which must be a clone of {@code original}.
    *
-   * @param typeElt the type element from which to remove annotations
-   * @param loc the location where typeElt is used
+   * @param original the type element that {@code annosToRemove} refers to
+   * @param copy a clone of {@code original}, from which to remove annotations
    * @param annosToRemove annotations that should not be added to .jaif or stub files
    */
   private static void removeAnnosFromATypeElement(
-      ATypeElement typeElt, TypeUseLocation loc, AnnotationsInContexts annosToRemove) {
-    String annosToRemoveKey = WholeProgramInferenceScenesStorage.aTypeElementToString(typeElt);
-    Set<String> annosToRemoveForLocation = annosToRemove.get(IPair.of(annosToRemoveKey, loc));
-    if (annosToRemoveForLocation != null) {
-      Set<Annotation> annosToRemoveHere =
-          ArraySet.newArraySetOrHashSet(annosToRemoveForLocation.size());
-      for (Annotation anno : typeElt.tlAnnotationsHere) {
-        if (annosToRemoveForLocation.contains(anno.def().toString())) {
-          annosToRemoveHere.add(anno);
-        }
-      }
-      typeElt.tlAnnotationsHere.removeAll(annosToRemoveHere);
+      ATypeElement original, ATypeElement copy, AnnotationsInContexts annosToRemove) {
+    Set<String> annosToRemoveHere = annosToRemove.get(original);
+    if (annosToRemoveHere != null) {
+      copy.tlAnnotationsHere.removeIf(anno -> annosToRemoveHere.contains(anno.def().toString()));
     }
 
     // Recursively remove annotations from inner types
-    for (ATypeElement innerType : typeElt.innerTypes.values()) {
-      removeAnnosFromATypeElement(innerType, loc, annosToRemove);
+    for (Map.Entry<List<TypePathEntry>, ATypeElement> innerEntry : copy.innerTypes.entrySet()) {
+      ATypeElement originalInnerType =
+          correspondingElement(original.innerTypes, innerEntry.getKey());
+      removeAnnosFromATypeElement(originalInnerType, innerEntry.getValue(), annosToRemove);
     }
+  }
+
+  /**
+   * Returns the value that {@code map} maps {@code key} to. Throws an exception if there is none;
+   * {@code map} is a map of a scene of which the map being traversed is a clone, so it has the same
+   * keys.
+   *
+   * @param <K> the type of the keys of {@code map}
+   * @param <V> the type of the values of {@code map}
+   * @param map a map of the original scene
+   * @param key a key of the corresponding map of the clone of the original scene
+   * @return the value that {@code map} maps {@code key} to
+   */
+  private static <K, V> V correspondingElement(Map<K, V> map, K key) {
+    V result = map.get(key);
+    if (result == null) {
+      throw new BugInCF("Not in the scene that was cloned: " + key);
+    }
+    return result;
   }
 
   /**
@@ -128,8 +153,10 @@ public class ASceneWrapper {
       OutputFormat outputFormat,
       BaseTypeChecker checker) {
     assert jaifPath.endsWith(".jaif");
+    // Work on a clone, so that removing annotations does not side-effect the wrapped scene:
+    // whole-program inference may continue to use the wrapped scene after this method returns.
     AScene scene = theScene.clone();
-    removeAnnosFromScene(scene, annosToIgnore);
+    removeAnnosFromScene(theScene, scene, annosToIgnore);
     scene.prune();
     String filepath =
         switch (outputFormat) {
@@ -146,10 +173,11 @@ public class ASceneWrapper {
       try {
         switch (outputFormat) {
           case STUB ->
-              // For stub files, pass in the checker to compute contracts on the fly;
-              // precomputing yields incorrect annotations, most likely due to nested
-              // classes.
-              SceneToStubWriter.write(this, filepath, checker);
+              // Write out a wrapper for the cleaned-up clone, not `this`, so that the
+              // annotations that were removed above do not appear in the stub file.
+              // Pass in the checker to compute contracts on the fly; precomputing yields
+              // incorrect annotations, most likely due to nested classes.
+              SceneToStubWriter.write(new ASceneWrapper(scene), filepath, checker);
           case JAIF -> {
             // For .jaif files, precompute contracts because the Annotation File
             // Utilities knows nothing about (and cannot depend on) the Checker

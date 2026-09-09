@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -55,7 +56,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
-import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
 
 /**
@@ -984,34 +984,22 @@ public class WholeProgramInferenceScenesStorage
     Annotation anno = AnnotationConverter.annotationMirrorToAnnotation(am);
     typeToUpdate.tlAnnotationsHere.add(anno);
     if (isEffectiveAnnotation || shouldIgnore(am, defLoc, newATM)) {
-      // firstKey works as a unique identifier for each annotation
-      // that should not be inserted in source code
-      String firstKey = aTypeElementToString(typeToUpdate);
-      IPair<String, TypeUseLocation> key = IPair.of(firstKey, defLoc);
       Set<String> annosIgnored =
-          annosToIgnore.computeIfAbsent(key, k -> new HashSet<>(MapsP.mapCapacity(1)));
+          annosToIgnore.computeIfAbsent(typeToUpdate, k -> new HashSet<>(MapsP.mapCapacity(1)));
       annosIgnored.add(anno.def().toString());
     }
   }
 
   /**
-   * Returns a string representation of an ATypeElement, for use as part of a key in {@link
-   * AnnotationsInContexts}.
+   * Maps an ATypeElement of a scene to the names of the annotation definitions of the annotations
+   * that should not be written out for it.
    *
-   * @param aType an ATypeElement to convert to a string representation
-   * @return a string representation of the argument
+   * <p>The keys are compared by identity, not by {@code equals()}. Two distinct ATypeElements can
+   * be {@code equals()} to one another (and their {@code hashCode()} changes as annotations are
+   * inferred for them), so a hash map keyed by ATypeElements would conflate elements that need to
+   * be distinguished.
    */
-  public static String aTypeElementToString(ATypeElement aType) {
-    // return aType.description.toString() + aType.tlAnnotationsHere;
-    return aType.description.toString();
-  }
-
-  /**
-   * Maps the {@link #aTypeElementToString} representation of an ATypeElement and its
-   * TypeUseLocation to a set of names of annotations.
-   */
-  public static class AnnotationsInContexts
-      extends HashMap<IPair<String, TypeUseLocation>, Set<String>> {
+  public static class AnnotationsInContexts extends IdentityHashMap<ATypeElement, Set<String>> {
     /** UID for serialization. */
     private static final long serialVersionUID = 20200321L;
 
