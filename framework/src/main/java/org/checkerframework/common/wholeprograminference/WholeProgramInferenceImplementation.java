@@ -118,7 +118,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   /** The storage for the inferred annotations. */
   private final WholeProgramInferenceStorage<T> storage;
 
-  /** If true, ignore assignments where the rhs is null. */
+  /**
+   * If true, ignore assignments where the rhs is null. This is the negation of {@link
+   * AnnotatedTypeFactory#wpiShouldInferFromNullAssignments}.
+   */
   private final boolean ignoreNullAssignments;
 
   /** The @{@link Deterministic} annotation. */
@@ -163,9 +166,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       boolean showWpiFailedInferences) {
     this.atypeFactory = atypeFactory;
     this.storage = storage;
-    boolean isNullness =
-        atypeFactory.getClass().getSimpleName().equals("NullnessAnnotatedTypeFactory");
-    this.ignoreNullAssignments = !isNullness;
+    this.ignoreNullAssignments = !atypeFactory.wpiShouldInferFromNullAssignments();
     this.showWpiFailedInferences = showWpiFailedInferences;
     DETERMINISTIC =
         AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), Deterministic.class);
@@ -316,13 +317,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       }
     }
 
+    List<? extends VariableElement> params = methodElt.getParameters();
     int numArguments = arguments.size();
     for (int i = 0; i < numArguments; i++) {
       Node arg = arguments.get(i);
       Tree argTree = arg.getTree();
 
       VariableElement ve;
-      boolean varargsParam = i >= methodElt.getParameters().size() - 1 && methodElt.isVarArgs();
+      boolean varargsParam = i >= params.size() - 1 && methodElt.isVarArgs();
       if (varargsParam && this.atypeFactory.wpiOutputFormat == OutputFormat.JAIF) {
         // The AFU's org.checkerframework.afu.annotator.Main produces a non-compilable
         // source file when JAIF-based WPI tries to output an annotated varargs parameter,
@@ -339,7 +341,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         }
         return;
       }
-      List<? extends VariableElement> params = methodElt.getParameters();
       if (varargsParam) {
         ve = params.get(params.size() - 1);
       } else {
@@ -388,7 +389,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       // If storage.getParameterAnnotations receives an index that's larger than the size
       // of the parameter list, scenes-backed inference can create duplicate entries
       // for the varargs parameter (it indexes inferred annotations by the parameter number).
-      int paramIndex = varargsParam ? methodElt.getParameters().size() : i + 1;
+      int paramIndex = varargsParam ? params.size() : i + 1;
       T paramAnnotations =
           storage.getParameterAnnotations(methodElt, paramIndex, paramATM, ve, atypeFactory);
       if (this.atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf) {
@@ -412,8 +413,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     if (store == null) {
       throw new BugInCF(
-          "updateContracts(%s, %s, null) for %s",
-          preOrPost, methodElt, atypeFactory.getClass().getSimpleName());
+          "updateContracts(%s, %s, %s, null) for %s",
+          className, preOrPost, methodElt, atypeFactory.getClass().getSimpleName());
     }
 
     if (!storage.hasStorageLocationForMethod(methodElt)) {
@@ -665,12 +666,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   public void updateFieldFromType(
       Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
 
+    // This test also verifies that the element is presented as source code, which is a
+    // precondition of storage.getFileForElement().
     if (ignoreFieldInWPI(element, fieldName)) {
-      return;
-    }
-
-    // Don't infer types for code that isn't presented as source.
-    if (!ElementUtils.isElementFromSourceCode(element)) {
       return;
     }
 
@@ -687,7 +685,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   }
 
   /**
-   * Returns true if an assignment to the given field should be ignored by WPI.
+   * Returns true if an assignment to the given field should be ignored by WPI. In particular, this
+   * returns true if the field is not presented as source code.
    *
    * @param element the field's element
    * @param fieldName the field's name
@@ -727,10 +726,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       ClassSymbol classSymbol,
       MethodTree methodDeclTree,
       Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods) {
+    if (methodDeclTree == null) {
+      return;
+    }
+    ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclTree);
     // Don't infer types for code that isn't presented as source.
-    if (methodDeclTree == null
-        || !ElementUtils.isElementFromSourceCode(
-            TreeUtils.elementFromDeclaration(methodDeclTree))) {
+    if (!ElementUtils.isElementFromSourceCode(methodElt)) {
       return;
     }
 
@@ -740,7 +741,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
-    ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclTree);
     String file = storage.getFileForElement(methodElt);
 
     AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(methodDeclTree).getReturnType();
@@ -841,31 +841,50 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @return the "least upper bound" between anno1 and anno2, as described above
    */
   private AnnotationMirror lubPurityAnnotations(AnnotationMirror anno1, AnnotationMirror anno2) {
-    // TODO: is this the best way to do this? Would it be easier to just write a real subtype
-    // routine for purity? Do we have code to handle this already somewhere?
-
-    boolean anno1IsDet =
-        AnnotationUtils.areSameByName(anno1, PURE_NAME)
-            || AnnotationUtils.areSameByName(anno1, DETERMINISTIC_NAME);
-    boolean anno1IsSEF =
-        AnnotationUtils.areSameByName(anno1, PURE_NAME)
-            || AnnotationUtils.areSameByName(anno1, SIDE_EFFECT_FREE_NAME);
-
-    boolean anno2IsDet =
-        AnnotationUtils.areSameByName(anno2, PURE_NAME)
-            || AnnotationUtils.areSameByName(anno2, DETERMINISTIC_NAME);
-    boolean anno2IsSEF =
-        AnnotationUtils.areSameByName(anno2, PURE_NAME)
-            || AnnotationUtils.areSameByName(anno2, SIDE_EFFECT_FREE_NAME);
-
-    if (anno2IsSEF && anno2IsDet && anno1IsSEF && anno1IsDet) {
+    String lubName =
+        lubPurityAnnotationNames(
+            AnnotationUtils.annotationName(anno1), AnnotationUtils.annotationName(anno2));
+    if (lubName.equals(PURE_NAME)) {
       return PURE;
-    } else if (anno2IsSEF && anno1IsSEF) {
+    } else if (lubName.equals(SIDE_EFFECT_FREE_NAME)) {
       return SIDE_EFFECT_FREE;
-    } else if (anno2IsDet && anno1IsDet) {
+    } else if (lubName.equals(DETERMINISTIC_NAME)) {
       return DETERMINISTIC;
     } else {
       return IMPURE;
+    }
+  }
+
+  /**
+   * Computes a "least upper bound" between two purity annotations, which are represented by their
+   * fully-qualified names. See {@link #lubPurityAnnotations(AnnotationMirror, AnnotationMirror)}
+   * for a description of the "lattice". This routine is "fail-safe": the name of Impure is returned
+   * if either argument does not name a purity annotation.
+   *
+   * @param anno1Name the fully-qualified name of a purity annotation
+   * @param anno2Name the fully-qualified name of another purity annotation
+   * @return the fully-qualified name of the "least upper bound" between anno1Name and anno2Name
+   */
+  // Package-private rather than private so that WholeProgramInferenceImplementationTest can call
+  // it.
+  /*package-private*/ static String lubPurityAnnotationNames(String anno1Name, String anno2Name) {
+    // TODO: is this the best way to do this? Would it be easier to just write a real subtype
+    // routine for purity? Do we have code to handle this already somewhere?
+
+    boolean anno1IsDet = anno1Name.equals(PURE_NAME) || anno1Name.equals(DETERMINISTIC_NAME);
+    boolean anno1IsSEF = anno1Name.equals(PURE_NAME) || anno1Name.equals(SIDE_EFFECT_FREE_NAME);
+
+    boolean anno2IsDet = anno2Name.equals(PURE_NAME) || anno2Name.equals(DETERMINISTIC_NAME);
+    boolean anno2IsSEF = anno2Name.equals(PURE_NAME) || anno2Name.equals(SIDE_EFFECT_FREE_NAME);
+
+    if (anno2IsSEF && anno2IsDet && anno1IsSEF && anno1IsDet) {
+      return PURE_NAME;
+    } else if (anno2IsSEF && anno1IsSEF) {
+      return SIDE_EFFECT_FREE_NAME;
+    } else if (anno2IsDet && anno1IsDet) {
+      return DETERMINISTIC_NAME;
+    } else {
+      return IMPURE_NAME;
     }
   }
 
@@ -1027,13 +1046,18 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       TypeMirror rhsTM = rhsATM.getUnderlyingType();
       TypeMirror declTM = decl.getUnderlyingType();
       QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
+      // `getPrimaryAnnotations()` allocates a new set on each call, so call it only once.
+      // `allRemoved` records whether the loop emptied the primary annotations of `rhsATM`.
+      boolean allRemoved = true;
       for (AnnotationMirror anno : rhsATM.getPrimaryAnnotations()) {
         AnnotationMirror upperAnno = qualHierarchy.findAnnotationInSameHierarchy(upperAnnos, anno);
         if (qualHierarchy.isSubtypeShallow(anno, rhsTM, upperAnno, declTM)) {
           rhsATM.removePrimaryAnnotation(anno);
+        } else {
+          allRemoved = false;
         }
       }
-      if (rhsATM.getPrimaryAnnotations().isEmpty()) {
+      if (allRemoved) {
         return;
       }
     }
