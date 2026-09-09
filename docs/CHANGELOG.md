@@ -11,16 +11,6 @@
 
 Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
 
-New method `AnnotatedTypeFactory.wpiShouldIgnoreNullAssignments()` determines
-whether whole-program inference ignores assignments whose right-hand side is
-`null`.  It replaces a comparison against the simple name of the type factory's
-class, so a subclass of an existing type factory now inherits that type system's
-behavior.
-
-Removed the unused method
-`WholeProgramInferenceScenesStorage.updateAnnotationSetInScene()`; use
-`WholeProgramInferenceImplementation.updateAnnotationSet()` instead.
-
 ### Closed issues
 
 ## Version 4.2.3 (2026-09-01)
