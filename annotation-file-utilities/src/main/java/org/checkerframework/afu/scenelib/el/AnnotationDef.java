@@ -42,7 +42,7 @@ public final class AnnotationDef extends AElement {
    * AnnotationDef}s are immutable, clients should not modify this map, and doing so will result in
    * an exception.
    */
-  public Map<String, ? extends AnnotationFieldType> fieldTypes;
+  public final Map<String, ? extends AnnotationFieldType> fieldTypes;
 
   // Exactly one of `source` and `sourceSupplier` is null.
 
@@ -193,8 +193,19 @@ public final class AnnotationDef extends AElement {
    */
   public synchronized String getSource() {
     if (source == null) {
-      source = sourceSupplier.get();
+      assert sourceSupplier != null
+          : "@AssumeAssertion(nullness): only one of source and sourceSupplier is null";
+      // getSource() is called only while formatting a diagnostic, so a problem here (a null
+      // result, or an exception) must not replace the real diagnostic with a less informative
+      // one.  Clear sourceSupplier even if it threw, so a later call does not throw again.
+      String newSource;
+      try {
+        newSource = sourceSupplier.get();
+      } catch (RuntimeException | Error e) {
+        newSource = "unknown source (" + e.getClass().getSimpleName() + ")";
+      }
       sourceSupplier = null;
+      source = newSource != null ? newSource : "unknown source";
     }
     return source;
   }
@@ -203,8 +214,8 @@ public final class AnnotationDef extends AElement {
    * Returns a list of method names for a class in the order in which they occur in the .class file.
    * Note that the JDK method Class.getDeclaredMethods() does not preserve this order.
    *
-   * @param name the ifully qualified name of the class to be read
-   * @return a list of methods for the class
+   * @param name the fully qualified name of the class to be read
+   * @return a list of methods for the class, or an empty list if the class file cannot be read
    */
   public static List<String> getDeclaredMethods(String name) {
     List<String> methods;
@@ -214,7 +225,9 @@ public final class AnnotationDef extends AElement {
       classReader.accept(methodRecorder, 0);
       methods = methodRecorder.getMethods();
     } catch (IOException e) {
-      methods = null;
+      // The .class file could not be read, so the declaration order of the methods is unknown.
+      // Returning an empty list loses the ordering, but is better than crashing the caller.
+      methods = Collections.emptyList();
       e.printStackTrace();
     }
     return methods;
@@ -224,16 +237,6 @@ public final class AnnotationDef extends AElement {
   @Override
   public AnnotationDef clone() {
     throw new UnsupportedOperationException("Can't duplicate an AnnotationDef");
-  }
-
-  /**
-   * Sets the field types of this annotation. Copies the field type map so it cannot be later
-   * modified by the client.
-   *
-   * @param fieldTypes the annotation's element types
-   */
-  public void setFieldTypes(Map<String, AnnotationFieldType> fieldTypes) {
-    this.fieldTypes = immutableMap(fieldTypes);
   }
 
   /**
@@ -449,7 +452,7 @@ public final class AnnotationDef extends AElement {
   // TODO: Move these methods into MapsP.
 
   /**
-   * Returns a immutable copy of the map. The result cannot be modified, directly or through an
+   * Returns an immutable copy of the map. The result cannot be modified, directly or through an
    * alias.
    *
    * <p>WARNING: If the map is already unmodifiable, then it is returned unchanged. That means that
@@ -459,10 +462,10 @@ public final class AnnotationDef extends AElement {
    * @param <K> the type of map keys
    * @param <V> the type of map values
    * @param map a map. If it is unmodifiable, it is immutable. That is, the client may not pass an
-   *     unmodifiable map that can be modified through an alias.x
-   * @return a immutable copy of the map
+   *     unmodifiable map that can be modified through an alias.
+   * @return an immutable copy of the map
    */
-  public <K, V> Map<K, V> immutableMap(Map<K, V> map) {
+  public static <K, V> Map<K, V> immutableMap(Map<K, V> map) {
     if (isUnmodifiable(map)) {
       return map;
     } else {
