@@ -137,12 +137,19 @@ public class ASceneWrapper {
           }
           default -> throw new BugInCF("Unhandled outputFormat " + outputFormat);
         };
-    // Delete the file, so that a stale file does not remain if this method writes nothing
-    // because the scene is empty.
-    try {
-      Files.deleteIfExists(Paths.get(filepath));
-    } catch (IOException e) {
-      throw new UserError("Problem while deleting %s: %s", filepath, e.getMessage());
+    // Delete the file, so that a stale file does not remain if this method writes nothing.  That
+    // happens if the scene is empty, and also for stub output, which writes no file if no class in
+    // the scene is printable.  In the other cases, writing truncates the file, so there is no need
+    // to delete it first -- and deleting it would be worse, because deletion requires write
+    // permission on the containing directory, whereas truncation does not.
+    if (scene.isEmpty() || outputFormat == OutputFormat.STUB) {
+      try {
+        Files.deleteIfExists(Paths.get(filepath));
+      } catch (IOException e) {
+        // Use e, not e.getMessage(), because the message of a FileSystemException is just the
+        // file name, without any indication of what went wrong.
+        throw new UserError("Problem while deleting %s: %s", filepath, e);
+      }
     }
     // Only write non-empty scenes into files.
     if (!scene.isEmpty()) {
