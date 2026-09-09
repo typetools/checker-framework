@@ -139,15 +139,29 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Returns the index of the format string parameter of the given method signature: its first
    * formal parameter whose declared type is {@code String}.
    *
+   * <p>Returns -1 if {@code methodSignature} is not a well-formed method signature. That can happen
+   * when the signature was read from a stale or hand-written annotation file rather than being
+   * computed from a method declaration.
+   *
    * @param methodSignature a method's simple name followed by its erased signature in JVML format,
    *     for example {@code bar(B[I[[Ljava/lang/String;)I}
    * @return the 0-based index of the method's format string parameter, or -1 if there is none
    */
   private static int formatStringIndex(String methodSignature) {
-    String jvmArglist =
-        methodSignature.substring(
-            methodSignature.indexOf('('), methodSignature.lastIndexOf(')') + 1);
-    List<@FieldDescriptor String> paramDescriptors = Signatures.splitJvmArglist(jvmArglist);
+    int openParenIndex = methodSignature.indexOf('(');
+    int closeParenIndex = methodSignature.lastIndexOf(')');
+    if (openParenIndex == -1 || closeParenIndex < openParenIndex) {
+      return -1;
+    }
+    String jvmArglist = methodSignature.substring(openParenIndex, closeParenIndex + 1);
+    List<@FieldDescriptor String> paramDescriptors;
+    try {
+      paramDescriptors = Signatures.splitJvmArglist(jvmArglist);
+    } catch (Error e) {
+      // `Signatures.splitJvmArglist` throws `Error` if `jvmArglist` is malformed.  Removing an
+      // inferred `@Format` annotation is optional cleanup, so don't abort the compilation.
+      return -1;
+    }
     for (int i = 0; i < paramDescriptors.size(); i++) {
       if (paramDescriptors.get(i).equals("Ljava/lang/String;")) {
         return i;
