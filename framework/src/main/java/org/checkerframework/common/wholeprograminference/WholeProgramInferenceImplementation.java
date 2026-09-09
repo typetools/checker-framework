@@ -317,13 +317,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       }
     }
 
+    List<? extends VariableElement> params = methodElt.getParameters();
     int numArguments = arguments.size();
     for (int i = 0; i < numArguments; i++) {
       Node arg = arguments.get(i);
       Tree argTree = arg.getTree();
 
       VariableElement ve;
-      boolean varargsParam = i >= methodElt.getParameters().size() - 1 && methodElt.isVarArgs();
+      boolean varargsParam = i >= params.size() - 1 && methodElt.isVarArgs();
       if (varargsParam && this.atypeFactory.wpiOutputFormat == OutputFormat.JAIF) {
         // The AFU's org.checkerframework.afu.annotator.Main produces a non-compilable
         // source file when JAIF-based WPI tries to output an annotated varargs parameter,
@@ -340,7 +341,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         }
         return;
       }
-      List<? extends VariableElement> params = methodElt.getParameters();
       if (varargsParam) {
         ve = params.get(params.size() - 1);
       } else {
@@ -389,7 +389,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       // If storage.getParameterAnnotations receives an index that's larger than the size
       // of the parameter list, scenes-backed inference can create duplicate entries
       // for the varargs parameter (it indexes inferred annotations by the parameter number).
-      int paramIndex = varargsParam ? methodElt.getParameters().size() : i + 1;
+      int paramIndex = varargsParam ? params.size() : i + 1;
       T paramAnnotations =
           storage.getParameterAnnotations(methodElt, paramIndex, paramATM, ve, atypeFactory);
       if (this.atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf) {
@@ -726,10 +726,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       ClassSymbol classSymbol,
       MethodTree methodDeclTree,
       Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods) {
+    if (methodDeclTree == null) {
+      return;
+    }
+    ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclTree);
     // Don't infer types for code that isn't presented as source.
-    if (methodDeclTree == null
-        || !ElementUtils.isElementFromSourceCode(
-            TreeUtils.elementFromDeclaration(methodDeclTree))) {
+    if (!ElementUtils.isElementFromSourceCode(methodElt)) {
       return;
     }
 
@@ -739,7 +741,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
-    ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodDeclTree);
     String file = storage.getFileForElement(methodElt);
 
     AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(methodDeclTree).getReturnType();
@@ -1045,13 +1046,18 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       TypeMirror rhsTM = rhsATM.getUnderlyingType();
       TypeMirror declTM = decl.getUnderlyingType();
       QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
+      // `getPrimaryAnnotations()` allocates a new set on each call, so call it only once.
+      // `allRemoved` records whether the loop emptied the primary annotations of `rhsATM`.
+      boolean allRemoved = true;
       for (AnnotationMirror anno : rhsATM.getPrimaryAnnotations()) {
         AnnotationMirror upperAnno = qualHierarchy.findAnnotationInSameHierarchy(upperAnnos, anno);
         if (qualHierarchy.isSubtypeShallow(anno, rhsTM, upperAnno, declTM)) {
           rhsATM.removePrimaryAnnotation(anno);
+        } else {
+          allRemoved = false;
         }
       }
-      if (rhsATM.getPrimaryAnnotations().isEmpty()) {
+      if (allRemoved) {
         return;
       }
     }
