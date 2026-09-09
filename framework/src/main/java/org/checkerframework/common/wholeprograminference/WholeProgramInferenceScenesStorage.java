@@ -321,57 +321,23 @@ public class WholeProgramInferenceScenesStorage
       String expression,
       AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
+    AMethod methodAnnos = getMethodAnnos(methodElement);
+    String key = methodAnnos.methodSignature + expression;
     return switch (preOrPost) {
-      case BEFORE ->
-          getPreconditionsForExpression(className, methodElement, expression, declaredType);
-      case AFTER ->
-          getPostconditionsForExpression(className, methodElement, expression, declaredType);
+      case BEFORE -> {
+        preconditionsToDeclaredTypes.put(key, declaredType);
+        yield methodAnnos.vivifyAndAddTypeMirrorToPrecondition(
+                expression, declaredType.getUnderlyingType())
+            .type;
+      }
+      case AFTER -> {
+        postconditionsToDeclaredTypes.put(key, declaredType);
+        yield methodAnnos.vivifyAndAddTypeMirrorToPostcondition(
+                expression, declaredType.getUnderlyingType())
+            .type;
+      }
       default -> throw new BugInCF("Unexpected " + preOrPost);
     };
-  }
-
-  /**
-   * Returns the precondition annotations for a Java expression.
-   *
-   * @param className the class that contains the method, for diagnostics only
-   * @param methodElement the method
-   * @param expression the expression
-   * @param declaredType the declared type of the expression
-   * @return the precondition annotations for a Java expression
-   */
-  @SuppressWarnings("UnusedVariable")
-  private ATypeElement getPreconditionsForExpression(
-      String className,
-      ExecutableElement methodElement,
-      String expression,
-      AnnotatedTypeMirror declaredType) {
-    AMethod methodAnnos = getMethodAnnos(methodElement);
-    preconditionsToDeclaredTypes.put(methodAnnos.methodSignature + expression, declaredType);
-    return methodAnnos.vivifyAndAddTypeMirrorToPrecondition(
-            expression, declaredType.getUnderlyingType())
-        .type;
-  }
-
-  /**
-   * Returns the postcondition annotations for a Java expression.
-   *
-   * @param className the class that contains the method, for diagnostics only
-   * @param methodElement the method
-   * @param expression the expression
-   * @param declaredType the declared type of the expression
-   * @return the postcondition annotations for a Java expression
-   */
-  @SuppressWarnings("UnusedVariable")
-  private ATypeElement getPostconditionsForExpression(
-      String className,
-      ExecutableElement methodElement,
-      String expression,
-      AnnotatedTypeMirror declaredType) {
-    AMethod methodAnnos = getMethodAnnos(methodElement);
-    postconditionsToDeclaredTypes.put(methodAnnos.methodSignature + expression, declaredType);
-    return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(
-            expression, declaredType.getUnderlyingType())
-        .type;
   }
 
   /**
