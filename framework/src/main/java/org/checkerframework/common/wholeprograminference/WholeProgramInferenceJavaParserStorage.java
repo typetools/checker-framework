@@ -398,68 +398,13 @@ public class WholeProgramInferenceJavaParserStorage
       String expression,
       AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
-    return switch (preOrPost) {
-      case BEFORE ->
-          getPreconditionsForExpression(
-              className, methodElement, expression, declaredType, atypeFactory);
-      case AFTER ->
-          getPostconditionsForExpression(
-              className, methodElement, expression, declaredType, atypeFactory);
-      default -> throw new BugInCF("Unexpected " + preOrPost);
-    };
-  }
-
-  /**
-   * Returns the precondition annotations for the given expression.
-   *
-   * @param className the class that contains the method, for diagnostics only
-   * @param methodElement the method
-   * @param expression the expression
-   * @param declaredType the declared type of the expression
-   * @param atypeFactory the type factory
-   * @return the precondition annotations for a field
-   */
-  private AnnotatedTypeMirror getPreconditionsForExpression(
-      String className,
-      ExecutableElement methodElement,
-      String expression,
-      AnnotatedTypeMirror declaredType,
-      AnnotatedTypeFactory atypeFactory) {
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElement);
     if (methodAnnos == null) {
       // See the comment on the similar exception in #getParameterAnnotations, above.
       return declaredType;
     }
-    return methodAnnos.getPreconditionsForExpression(
-        className,
-        methodElement.getSimpleName().toString(),
-        expression,
-        declaredType,
-        atypeFactory);
-  }
-
-  /**
-   * Returns the postcondition annotations for an expression.
-   *
-   * @param className the class that contains the method, for diagnostics only
-   * @param methodElement the method
-   * @param expression the expression
-   * @param declaredType the declared type of the expression
-   * @param atypeFactory the type factory
-   * @return the postcondition annotations for a field
-   */
-  private AnnotatedTypeMirror getPostconditionsForExpression(
-      String className,
-      ExecutableElement methodElement,
-      String expression,
-      AnnotatedTypeMirror declaredType,
-      AnnotatedTypeFactory atypeFactory) {
-    CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElement);
-    if (methodAnnos == null) {
-      // See the comment on the similar exception in #getParameterAnnotations, above.
-      return declaredType;
-    }
-    return methodAnnos.getPostconditionsForExpression(
+    return methodAnnos.getPreOrPostconditionsForExpression(
+        preOrPost,
         className,
         methodElement.getSimpleName().toString(),
         expression,
@@ -1760,7 +1705,7 @@ public class WholeProgramInferenceJavaParserStorage
      *
      * @return a mapping from Java expression string to pairs of (inferred precondition for the
      *     expression, declared type of the expression)
-     * @see #getPreconditionsForExpression
+     * @see #getPreOrPostconditionsForExpression
      */
     public Map<String, InferredDeclared> getPreconditions() {
       if (preconditions == null) {
@@ -1780,7 +1725,7 @@ public class WholeProgramInferenceJavaParserStorage
      *
      * @return a mapping from Java expression string to pairs of (inferred postcondition for the
      *     expression, declared type of the expression)
-     * @see #getPostconditionsForExpression
+     * @see #getPreOrPostconditionsForExpression
      */
     public Map<String, InferredDeclared> getPostconditions() {
       if (postconditions == null) {
@@ -1791,71 +1736,58 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     /**
-     * Returns an AnnotatedTypeMirror containing the preconditions for the given expression. Changes
-     * to the returned AnnotatedTypeMirror are reflected in this CallableDeclarationAnnos.
+     * Returns an AnnotatedTypeMirror containing the preconditions or postconditions for the given
+     * expression. Changes to the returned AnnotatedTypeMirror are reflected in this
+     * CallableDeclarationAnnos.
      *
+     * @param preOrPost whether to return the preconditions or the postconditions
      * @param className the class that contains the method, for diagnostics only
      * @param methodName the method name, for diagnostics only
      * @param expression a string representing a Java expression, in the same format as the argument
-     *     to a {@link org.checkerframework.framework.qual.RequiresQualifier} annotation
+     *     to a {@link org.checkerframework.framework.qual.RequiresQualifier} annotation (if {@code
+     *     preOrPost} is {@code BEFORE}) or to a {@link
+     *     org.checkerframework.framework.qual.EnsuresQualifier} annotation (if {@code preOrPost} is
+     *     {@code AFTER})
      * @param declaredType the declared type of {@code expression}
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
      * @return an {@code AnnotatedTypeMirror} containing the annotations for the inferred
-     *     preconditions for the given expression
+     *     preconditions or postconditions for the given expression
      */
-    @SuppressWarnings("UnusedVariable")
-    public AnnotatedTypeMirror getPreconditionsForExpression(
+    @SuppressWarnings("UnusedVariable") // className and methodName are for diagnostics only
+    public AnnotatedTypeMirror getPreOrPostconditionsForExpression(
+        Analysis.BeforeOrAfter preOrPost,
         String className,
         String methodName,
         String expression,
         AnnotatedTypeMirror declaredType,
         AnnotatedTypeFactory atf) {
-      if (preconditions == null) {
-        preconditions = new HashMap<>(4);
-      }
+      Map<String, InferredDeclared> conditions =
+          switch (preOrPost) {
+            case BEFORE -> {
+              if (preconditions == null) {
+                preconditions = new HashMap<>(4);
+              }
+              yield preconditions;
+            }
+            case AFTER -> {
+              if (postconditions == null) {
+                postconditions = new HashMap<>(4);
+              }
+              yield postconditions;
+            }
+            default -> throw new BugInCF("Unexpected " + preOrPost);
+          };
 
-      if (!preconditions.containsKey(expression)) {
-        AnnotatedTypeMirror preconditionsType =
+      InferredDeclared conditionsForExpression = conditions.get(expression);
+      if (conditionsForExpression == null) {
+        AnnotatedTypeMirror conditionsType =
             AnnotatedTypeMirror.createType(declaredType.getUnderlyingType(), atf, false);
-        preconditions.put(expression, new InferredDeclared(preconditionsType, declaredType));
+        conditionsForExpression = new InferredDeclared(conditionsType, declaredType);
+        conditions.put(expression, conditionsForExpression);
       }
 
-      return preconditions.get(expression).inferred;
-    }
-
-    /**
-     * Returns an AnnotatedTypeMirror containing the postconditions for the given expression.
-     * Changes to the returned AnnotatedTypeMirror are reflected in this CallableDeclarationAnnos.
-     *
-     * @param className the class that contains the method, for diagnostics only
-     * @param methodName the method name, for diagnostics only
-     * @param expression a string representing a Java expression, in the same format as the argument
-     *     to a {@link org.checkerframework.framework.qual.EnsuresQualifier} annotation
-     * @param declaredType the declared type of {@code expression}
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used
-     * @return an {@code AnnotatedTypeMirror} containing the annotations for the inferred
-     *     postconditions for the given expression
-     */
-    @SuppressWarnings("UnusedVariable")
-    public AnnotatedTypeMirror getPostconditionsForExpression(
-        String className,
-        String methodName,
-        String expression,
-        AnnotatedTypeMirror declaredType,
-        AnnotatedTypeFactory atf) {
-      if (postconditions == null) {
-        postconditions = new HashMap<>(4);
-      }
-
-      if (!postconditions.containsKey(expression)) {
-        AnnotatedTypeMirror postconditionsType =
-            AnnotatedTypeMirror.createType(declaredType.getUnderlyingType(), atf, false);
-        postconditions.put(expression, new InferredDeclared(postconditionsType, declaredType));
-      }
-
-      return postconditions.get(expression).inferred;
+      return conditionsForExpression.inferred;
     }
 
     /**
