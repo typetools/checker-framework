@@ -833,6 +833,11 @@ public class WholeProgramInferenceJavaParserStorage
             }
             String className = ElementUtils.getEnclosingClassName(element);
             ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(className);
+            if (enclosingClass == null) {
+              // No wrapper was created for the enclosing class, because inference is not
+              // supported for it.  This happens for the members of an annotation declaration.
+              return;
+            }
             String executableSignature = JVMNames.getJVMMethodSignature(javacTree);
             if (!enclosingClass.callableDeclarations.containsKey(executableSignature)) {
               enclosingClass.callableDeclarations.put(
@@ -852,6 +857,11 @@ public class WholeProgramInferenceJavaParserStorage
 
             String enclosingClassName = ElementUtils.getEnclosingClassName(elt);
             ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(enclosingClassName);
+            if (enclosingClass == null) {
+              // No wrapper was created for the enclosing class, because inference is not
+              // supported for it.  This happens for the members of an annotation declaration.
+              return;
+            }
             String fieldName = javacTree.getName().toString();
             enclosingClass.enumConstants.add(fieldName);
 
@@ -888,6 +898,12 @@ public class WholeProgramInferenceJavaParserStorage
 
             String enclosingClassName = ElementUtils.getEnclosingClassName(elt);
             ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(enclosingClassName);
+            if (enclosingClass == null) {
+              // No wrapper was created for the enclosing class, because inference is not
+              // supported for it.  This happens for a constant field of an annotation
+              // declaration.
+              return;
+            }
             String fieldName = javacTree.getName().toString();
             if (!enclosingClass.fields.containsKey(fieldName)) {
               enclosingClass.fields.put(fieldName, new FieldAnnos(javaParserNode));
