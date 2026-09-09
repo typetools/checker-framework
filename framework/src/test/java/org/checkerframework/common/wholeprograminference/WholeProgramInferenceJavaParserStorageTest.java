@@ -58,8 +58,8 @@ public class WholeProgramInferenceJavaParserStorageTest {
     VariableDeclarator declaration = new VariableDeclarator(PrimitiveType.intType(), "f");
     Assert.assertFalse(declaration.getParentNode().isPresent());
     FieldAnnos fieldAnnos = new FieldAnnos(declaration);
-    // Initialize the inferred type.  Otherwise, transferAnnotations() would do nothing, and the
-    // test would not exercise the code that reads the parent node.
+    // Initialize the inferred type, so that transferAnnotations() attempts a real transfer
+    // rather than a no-op one.  (The code that reads the parent node runs either way.)
     AnnotatedTypeMirror intType =
         AnnotatedTypeMirror.createType(
             env.getTypeUtils().getPrimitiveType(TypeKind.INT), typeFactory, false);
@@ -67,7 +67,8 @@ public class WholeProgramInferenceJavaParserStorageTest {
 
     fieldAnnos.transferAnnotations();
 
-    // Nothing was inferred, so the declaration is unchanged.
+    // No annotations were inferred, so the declaration is unchanged, except that its type was
+    // replaced by an equivalent clone.
     Assert.assertFalse(declaration.getParentNode().isPresent());
     Assert.assertEquals("int", declaration.getTypeAsString());
     Assert.assertEquals("f", declaration.getNameAsString());
