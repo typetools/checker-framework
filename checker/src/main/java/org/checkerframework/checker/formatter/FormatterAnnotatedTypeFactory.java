@@ -1,12 +1,14 @@
 package org.checkerframework.checker.formatter;
 
+import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.IllegalFormatException;
+import java.util.List;
 import java.util.Set;
-import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -37,7 +39,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.reflection.Signatures;
 
 /**
  * Adds {@link Format} to the type of tree, if it is a {@code String} or {@code char} literal that
@@ -122,15 +124,35 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @see FormatterVisitor#formatStringIndex
    */
   private static @Nullable AField formatStringParameter(AMethod method) {
-    // `method.parameters` might not have an entry for every formal parameter, and its iteration
-    // order is not necessarily by increasing index, so sort by index (the map's key).
-    for (AField param : new TreeMap<>(method.parameters).values()) {
-      TypeMirror paramType = param.getTypeMirror();
-      if (paramType != null && TypesUtils.isString(paramType)) {
-        return param;
+    int index = formatStringIndex(method.methodSignature);
+    if (index == -1) {
+      return null;
+    }
+    // `method.parameters` might not have an entry for every formal parameter.  If it has no entry
+    // for the format string parameter, then nothing was inferred about that parameter, so the
+    // parameter has no `@Format` annotation to remove.
+    return method.parameters.get(index);
+  }
+
+  /**
+   * Returns the index of the format string parameter of the given method signature: its first
+   * formal parameter whose declared type is {@code String}.
+   *
+   * @param methodSignature a method's simple name followed by its erased signature in JVML format,
+   *     for example {@code bar(B[I[[Ljava/lang/String;)I}
+   * @return the 0-based index of the method's format string parameter, or -1 if there is none
+   */
+  private static int formatStringIndex(String methodSignature) {
+    String jvmArglist =
+        methodSignature.substring(
+            methodSignature.indexOf('('), methodSignature.lastIndexOf(')') + 1);
+    List<String> paramDescriptors = Signatures.splitJvmArglist(jvmArglist);
+    for (int i = 0; i < paramDescriptors.size(); i++) {
+      if (paramDescriptors.get(i).equals("Ljava/lang/String;")) {
+        return i;
       }
     }
-    return null;
+    return -1;
   }
 
   /**
@@ -167,16 +189,36 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   private static @Nullable AnnotatedTypeMirror formatStringParameterType(
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
-    int numParams = methodAnnos.declaration.getParameters().size();
-    for (int i = 0; i < numParams; i++) {
-      // getParameterType's index is 0-based.  It returns null if nothing was inferred about the
-      // parameter, in which case the parameter has no annotation to remove.
-      AnnotatedTypeMirror paramType = methodAnnos.getParameterType(i);
-      if (paramType != null && TypesUtils.isString(paramType.getUnderlyingType())) {
-        return paramType;
+    List<Parameter> params = methodAnnos.declaration.getParameters();
+    for (int i = 0; i < params.size(); i++) {
+      if (isStringParameter(params.get(i))) {
+        // getParameterType's index is 0-based.  It returns null if nothing was inferred about the
+        // parameter, in which case the parameter has no annotation to remove.
+        return methodAnnos.getParameterType(i);
       }
     }
     return null;
+  }
+
+  /**
+   * Returns true if the declared type of the given formal parameter is {@code String}.
+   *
+   * <p>The test is syntactic, because the JavaParser declaration has not been resolved: it assumes
+   * that the simple name {@code String} refers to {@code java.lang.String}.
+   *
+   * @param param a formal parameter declaration
+   * @return true if the parameter's declared type is {@code String}
+   */
+  private static boolean isStringParameter(Parameter param) {
+    if (param.isVarArgs()) {
+      // The declared type of a varargs parameter is an array type.
+      return false;
+    }
+    if (!(param.getType() instanceof ClassOrInterfaceType classType)) {
+      return false;
+    }
+    String name = classType.getNameWithScope();
+    return name.equals("String") || name.equals("java.lang.String");
   }
 
   /**
