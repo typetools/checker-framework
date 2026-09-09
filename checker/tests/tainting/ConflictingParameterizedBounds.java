@@ -20,7 +20,8 @@ public class ConflictingParameterizedBounds {
 
   void useDifferentQualifiers() {
     // S must be a subtype of both A<@Untainted String> and B<@Tainted String>, and so of both
-    // Sup<@Untainted String> and Sup<@Tainted String>.  No such type exists.
+    // Sup<@Untainted String> and Sup<@Tainted String>.  The implied equality constraint
+    // `@Untainted String = @Tainted String` does not hold, so no such type exists.
     // :: error: [type.arguments.not.inferred]
     B<@Tainted String> x = m();
   }
@@ -102,6 +103,8 @@ public class ConflictingParameterizedBounds {
   }
 
   void useCovariant() {
+    // S can be a subtype of both CovariantSup<@Untainted String> and CovariantSup<@Tainted
+    // String>, so the implied constraint between the two type arguments ignores the qualifiers.
     CovariantSup<@Tainted String> x = covariant();
   }
 
