@@ -24,6 +24,7 @@ import org.checkerframework.checker.formatter.qual.UnknownFormat;
 import org.checkerframework.checker.formatter.util.FormatUtil;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.checker.signature.qual.FieldDescriptor;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
@@ -146,7 +147,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     String jvmArglist =
         methodSignature.substring(
             methodSignature.indexOf('('), methodSignature.lastIndexOf(')') + 1);
-    List<String> paramDescriptors = Signatures.splitJvmArglist(jvmArglist);
+    List<@FieldDescriptor String> paramDescriptors = Signatures.splitJvmArglist(jvmArglist);
     for (int i = 0; i < paramDescriptors.size(); i++) {
       if (paramDescriptors.get(i).equals("Ljava/lang/String;")) {
         return i;
