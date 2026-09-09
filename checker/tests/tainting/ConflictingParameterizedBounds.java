@@ -4,6 +4,7 @@
 import java.util.List;
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
+import org.checkerframework.framework.qual.Covariant;
 
 public class ConflictingParameterizedBounds {
 
@@ -89,5 +90,27 @@ public class ConflictingParameterizedBounds {
   // Incorporation does not imply a constraint for a wildcard type argument.
   void useWildcard() {
     B<?> x = m();
+  }
+
+  // At a covariant type argument the qualifiers need not match, because a type whose supertype is
+  // one parameterization can still be a subtype of the other.
+  @Covariant(0)
+  interface CovariantSup<T> {}
+
+  <S extends CovariantSup<@Untainted String>> S covariant() {
+    throw new RuntimeException();
+  }
+
+  void useCovariant() {
+    CovariantSup<@Tainted String> x = covariant();
+  }
+
+  // The same relationship without inference, for comparison.
+  CovariantSup<@Untainted String> covariantNoInference() {
+    throw new RuntimeException();
+  }
+
+  void useCovariantNoInference() {
+    CovariantSup<@Tainted String> x = covariantNoInference();
   }
 }

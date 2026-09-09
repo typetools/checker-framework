@@ -49,16 +49,18 @@ public class Typing extends TypeConstraint {
   private final boolean isCovarTypeArg;
 
   /**
-   * Whether reducing this constraint should compare the qualifiers of two proper types.
+   * Whether reducing this constraint should compare the qualifiers of two proper types. It is set
+   * for the equality constraints that incorporating two bounds on an inference variable implies, in
+   * {@code VariableBounds.getConstraintsFromParameterized}.
    *
-   * <p>Ordinarily it should not: a constraint between two proper types mentions no inference
-   * variable, so no choice of type arguments makes it hold or fail, and {@code BaseTypeVisitor}
-   * separately issues a more informative message about the qualifiers. But a constraint that was
-   * implied by two bounds on an inference variable is different: it holds only if the qualifiers
-   * match, and if they do not, then the variable has no instantiation and nothing else reports it.
-   * See {@link org.checkerframework.framework.util.typeinference8.types.VariableBounds#addBound}.
+   * <p>Ordinarily the qualifiers should not be compared: a constraint between two proper types
+   * mentions no inference variable, so no choice of type arguments makes it hold or fail, and
+   * {@code BaseTypeVisitor} separately issues a more informative message about the qualifiers. But
+   * a constraint that was implied by two bounds on an inference variable is different: it holds
+   * only if the qualifiers match, and if they do not, then the variable has no instantiation and
+   * nothing else reports it.
    */
-  public boolean qualifiersMustMatch = false;
+  private final boolean qualifiersMustMatch;
 
   /**
    * Creates a typing constraint.
@@ -96,6 +98,27 @@ public class Typing extends TypeConstraint {
    */
   public Typing(
       Constraint parent, AbstractType S, AbstractType t, Kind kind, boolean covarTypeArg) {
+    this(parent, S, t, kind, covarTypeArg, false);
+  }
+
+  /**
+   * Creates a typing constraint.
+   *
+   * @param parent the constraint whose reduction created this constraint
+   * @param S left-hand side type
+   * @param t right-hand side type
+   * @param kind the kind of constraint
+   * @param covarTypeArg true if the constraint is for a covariant type argument
+   * @param qualifiersMustMatch true if reducing this constraint should compare the qualifiers of
+   *     two proper types; see {@link #qualifiersMustMatch}
+   */
+  public Typing(
+      Constraint parent,
+      AbstractType S,
+      AbstractType t,
+      Kind kind,
+      boolean covarTypeArg,
+      boolean qualifiersMustMatch) {
     super(parent, t);
     assert S != null;
     switch (kind) {
@@ -105,6 +128,7 @@ public class Typing extends TypeConstraint {
     this.S = S;
     this.kind = kind;
     this.isCovarTypeArg = covarTypeArg;
+    this.qualifiersMustMatch = qualifiersMustMatch;
   }
 
   /**
@@ -544,11 +568,16 @@ public class Typing extends TypeConstraint {
 
     Typing typing = (Typing) o;
 
-    return S.equals(typing.S) && kind == typing.kind;
+    // qualifiersMustMatch is compared because it changes how this constraint reduces: a
+    // constraint set drops a constraint that is equal to one it already contains, so a constraint
+    // that compares qualifiers must not be dropped in favor of one that does not.
+    return S.equals(typing.S)
+        && kind == typing.kind
+        && qualifiersMustMatch == typing.qualifiersMustMatch;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), S, kind);
+    return Objects.hash(super.hashCode(), S, kind, qualifiersMustMatch);
   }
 }

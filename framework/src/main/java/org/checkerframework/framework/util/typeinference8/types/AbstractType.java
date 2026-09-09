@@ -724,32 +724,6 @@ public abstract class AbstractType {
     }
   }
 
-  /**
-   * Checks whether the annotations of {@code this} are the same as those of {@code other}, assuming
-   * that their underlying Java types have already been found to be the same. If either type is
-   * marked as having annotations that should be ignored, then the annotations are not compared.
-   *
-   * @param other the type to compare against
-   * @return {@link ConstraintSet#TRUE} if the annotations are ignored or if the annotations of
-   *     {@code this} are the same as those of {@code other}; otherwise {@link
-   *     ConstraintSet#TRUE_ANNO_FAIL}
-   */
-  public final ConstraintSet checkAnnotationEquality(ProperType other) {
-    if (ignoreAnnotations || other.ignoreAnnotations) {
-      return ConstraintSet.TRUE;
-    }
-    AnnotatedTypeMirror thisATM = getAnnotatedType();
-    AnnotatedTypeMirror otherATM = other.getAnnotatedType();
-    // Compare using the type hierarchy in both directions rather than AnnotatedTypeMirror#equals,
-    // which requires the underlying types to be the same object.
-    if (typeFactory.getTypeHierarchy().isSubtype(thisATM, otherATM)
-        && typeFactory.getTypeHierarchy().isSubtype(otherATM, thisATM)) {
-      return ConstraintSet.TRUE;
-    } else {
-      return ConstraintSet.TRUE_ANNO_FAIL;
-    }
-  }
-
   // equals and hashCode are abstract so that a subclass must implement them.  A subclass that needs
   // to compare the fields of this class can use sameInferenceProblem and inferenceProblemHashCode.
   @Override
