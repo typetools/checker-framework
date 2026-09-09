@@ -749,10 +749,15 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       gatf.getDependentTypesHelper().delocalize(rhsATM, methodDeclTree);
     }
     T returnTypeAnnos = storage.getReturnAnnotations(methodElt, lhsATM, atypeFactory);
-    // updateAnnotationSet() side-effects its rhsATM argument, so pass a copy: every update
-    // below must start from the type of the returned expression, unaffected by the other
-    // updates.
-    updateAnnotationSet(returnTypeAnnos, TypeUseLocation.RETURN, rhsATM.deepCopy(), lhsATM, file);
+    // updateAnnotationSet() side-effects its rhsATM argument, so pass a copy if rhsATM is
+    // used again below: every update must start from the type of the returned expression,
+    // unaffected by the other updates.
+    updateAnnotationSet(
+        returnTypeAnnos,
+        TypeUseLocation.RETURN,
+        overriddenMethods.isEmpty() ? rhsATM : rhsATM.deepCopy(),
+        lhsATM,
+        file);
 
     // Now, update return types of overridden methods based on the implementation we just saw.
     // This inference is similar to the inference procedure for method parameters: both are
