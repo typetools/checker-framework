@@ -1080,19 +1080,31 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   public void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM) {
 
     if (sourceCodeATM.getKind() != ajavaATM.getKind()) {
+      // The two types have different structures, so only their primary annotations can be
+      // least-upper-bounded.
       if (sourceCodeATM.getKind() == TypeKind.NULL || ajavaATM.getKind() == TypeKind.NULL) {
         // Ignore null types: passing either of them to asSuper causes a crash, as a null type
         // cannot be substituted for a type variable. Only the primary annotation of a null type
         // is ever considered, so least-upper-bound the primary annotations without recursing
         // into the structure of the two types, which differs.
         lubPrimaryAnnotations(sourceCodeATM, ajavaATM);
-        return;
+      } else {
+        // Differing kinds can happen e.g. when recursing into the bounds of a type variable:
+        // the bound on sourceCodeATM might be a declared type (such as T), while the ajavaATM
+        // might be a typevar (such as S extends T), or vice-versa. In that case, use asSuper
+        // to make the two ATMs fully-compatible, so that their primary annotations correspond.
+        // asSuper does not side-effect its arguments; it returns a fresh copy. So
+        // least-upper-bound into the copy, then copy the copy's primary annotations into
+        // sourceCodeATM, which this method is contracted to side-effect. The nested annotations
+        // of the copy are not copied back, because sourceCodeATM has a different structure;
+        // that loses nothing, because clients read nested annotations only when the two types
+        // have the same structure.
+        AnnotatedTypeMirror sourceCodeAsSuper =
+            AnnotatedTypes.asSuper(this.atypeFactory, sourceCodeATM, ajavaATM);
+        lubPrimaryAnnotations(sourceCodeAsSuper, ajavaATM);
+        sourceCodeATM.replaceAnnotations(sourceCodeAsSuper.getPrimaryAnnotations());
       }
-      // This can happen e.g. when recursing into the bounds of a type variable:
-      // the bound on sourceCodeATM might be a declared type (such as T), while
-      // the ajavaATM might be a typevar (such as S extends T), or vice-versa. In
-      // that case, use asSuper to make the two ATMs fully-compatible.
-      sourceCodeATM = AnnotatedTypes.asSuper(this.atypeFactory, sourceCodeATM, ajavaATM);
+      return;
     }
 
     switch (sourceCodeATM.getKind()) {

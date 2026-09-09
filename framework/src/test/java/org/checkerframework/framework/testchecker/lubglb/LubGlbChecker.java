@@ -9,6 +9,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
@@ -99,10 +100,11 @@ public class LubGlbChecker extends BaseTypeChecker {
 
   /**
    * Tests that {@link WholeProgramInference#updateAtmWithLub} least-upper-bounds the primary
-   * annotations of a null type and a type of a different kind, no matter which of its two arguments
-   * is the null type. {@code updateAtmWithLub} reconciles two types of different kinds by calling
-   * {@code asSuper}, which crashes when either of its arguments is a null type, because a null type
-   * cannot be substituted for a type variable. Throws an {@code AssertionError} if a test fails.
+   * annotations of two types of different kinds, and stores the result in its first argument.
+   * {@code updateAtmWithLub} reconciles two types of different kinds by calling {@code asSuper},
+   * which crashes when either of its arguments is a null type (because a null type cannot be
+   * substituted for a type variable) and which returns a fresh copy rather than side-effecting its
+   * arguments. Throws an {@code AssertionError} if a test fails.
    *
    * <p>This test needs an {@link AnnotatedTypeFactory}, so it cannot be an ordinary JUnit test.
    */
@@ -128,6 +130,16 @@ public class LubGlbChecker extends BaseTypeChecker {
     AnnotatedTypeMirror nullSourceCodeType = createType(nullType, D, factory);
     wpi.updateAtmWithLub(nullSourceCodeType, createType(stringType, E, factory));
     lubResultAssert(nullSourceCodeType, C, "the type from the source code is a null type");
+
+    // The two types have different kinds, and neither of them is a null type.  `asSuper` views
+    // `String[]` as `Object`; the result must still be stored in the argument, not in the copy
+    // that `asSuper` returns.
+    TypeMirror stringArrayType = processingEnv.getTypeUtils().getArrayType(stringType);
+    TypeMirror objectType =
+        processingEnv.getElementUtils().getTypeElement("java.lang.Object").asType();
+    AnnotatedTypeMirror arraySourceCodeType = createType(stringArrayType, D, factory);
+    wpi.updateAtmWithLub(arraySourceCodeType, createType(objectType, E, factory));
+    lubResultAssert(arraySourceCodeType, C, "the two types have different kinds");
   }
 
   /**
@@ -155,8 +167,8 @@ public class LubGlbChecker extends BaseTypeChecker {
    */
   private void lubResultAssert(
       AnnotatedTypeMirror type, AnnotationMirror expected, String description) {
-    AnnotationMirror actual = type.getPrimaryAnnotationInHierarchy(A);
-    if (!AnnotationUtils.areSame(expected, actual)) {
+    @Nullable AnnotationMirror actual = type.getPrimaryAnnotationInHierarchy(A);
+    if (actual == null || !AnnotationUtils.areSame(expected, actual)) {
       throw new AssertionError(
           String.format(
               "updateAtmWithLub, when %s, produced %s, but should have produced %s",
