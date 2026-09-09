@@ -577,9 +577,9 @@ public class WholeProgramInferenceJavaParserStorage
       // of the same hierarchy.
       for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
         if (curATM.getPrimaryAnnotationInHierarchy(am) != null) {
-          // Don't insert if the type is already has a primary annotation
+          // Don't insert if the type already has a primary annotation
           // in the same hierarchy.
-          break;
+          continue;
         }
         typeToUpdate.replaceAnnotation(am);
       }
