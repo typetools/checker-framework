@@ -560,9 +560,9 @@ public class WholeProgramInferenceJavaParserStorage
       // of the same hierarchy.
       for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
         if (curATM.getPrimaryAnnotationInHierarchy(am) != null) {
-          // Don't insert if the type is already has a primary annotation
+          // Don't insert if the type already has a primary annotation
           // in the same hierarchy.
-          break;
+          continue;
         }
         typeToUpdate.replaceAnnotation(am);
       }
@@ -816,6 +816,11 @@ public class WholeProgramInferenceJavaParserStorage
             }
             String className = ElementUtils.getEnclosingClassName(element);
             ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(className);
+            if (enclosingClass == null) {
+              // No wrapper was created for the enclosing class, because inference is not
+              // supported for it.  This happens for the members of an annotation declaration.
+              return;
+            }
             String executableSignature = JVMNames.getJVMMethodSignature(javacTree);
             if (!enclosingClass.callableDeclarations.containsKey(executableSignature)) {
               enclosingClass.callableDeclarations.put(
@@ -835,6 +840,11 @@ public class WholeProgramInferenceJavaParserStorage
 
             String enclosingClassName = ElementUtils.getEnclosingClassName(elt);
             ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(enclosingClassName);
+            if (enclosingClass == null) {
+              // No wrapper was created for the enclosing class, because inference is not
+              // supported for it.  This happens for the members of an annotation declaration.
+              return;
+            }
             String fieldName = javacTree.getName().toString();
             enclosingClass.enumConstants.add(fieldName);
 
@@ -871,6 +881,12 @@ public class WholeProgramInferenceJavaParserStorage
 
             String enclosingClassName = ElementUtils.getEnclosingClassName(elt);
             ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(enclosingClassName);
+            if (enclosingClass == null) {
+              // No wrapper was created for the enclosing class, because inference is not
+              // supported for it.  This happens for a constant field of an annotation
+              // declaration.
+              return;
+            }
             String fieldName = javacTree.getName().toString();
             if (!enclosingClass.fields.containsKey(fieldName)) {
               enclosingClass.fields.put(fieldName, new FieldAnnos(javaParserNode));
@@ -1032,7 +1048,10 @@ public class WholeProgramInferenceJavaParserStorage
 
     for (String path : modifiedFiles) {
       // This calls deepCopy() because wpiPrepareCompilationUnitForWriting performs side
-      // effects that we don't want to be persistent.
+      // effects on the inference results that we don't want to be persistent.  The JavaParser
+      // AST is shared rather than copied, so the side effects that transferAnnotations performs
+      // on it below are visible in sourceToAnnos.get(path); that is harmless because
+      // transferAnnotations first removes all annotations from the AST.
       CompilationUnitAnnos root = sourceToAnnos.get(path).deepCopy();
       wpiPrepareCompilationUnitForWriting(root);
       Path packageDir;
@@ -1175,7 +1194,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param s a string
    * @return the index of a lonely surrogate character in its argument, or -1 if there is none
    */
-  private int indexOfLonelySurrogateCharacter(String s) {
+  /*package-private*/ static int indexOfLonelySurrogateCharacter(String s) {
     int limit = s.length();
     for (int i = 0; i < limit; i++) {
       if (Character.isSurrogate(s.charAt(i))) {
@@ -1197,7 +1216,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param s a string
    * @return the string, with lonely surrogate characters replaced by their unicode escape
    */
-  private String escapeLonelySurrogates(String s) {
+  /*package-private*/ static String escapeLonelySurrogates(String s) {
     int idx = indexOfLonelySurrogateCharacter(s);
     if (idx != -1) {
       // This recursion is less efficient than a loop with StringBuilder would be,
@@ -1271,6 +1290,10 @@ public class WholeProgramInferenceJavaParserStorage
    * Stores the JavaParser node for a compilation unit and the list of wrappers for the classes and
    * interfaces in that compilation unit.
    *
+   * <p>The wrappers in {@code types}, and the wrappers they contain, hold references to JavaParser
+   * nodes within {@code compilationUnit}. Every {@code CompilationUnitAnnos} for a given source
+   * file, including the ones produced by {@link #deepCopy}, refers to the same JavaParser AST.
+   *
    * @param compilationUnit compilation unit being wrapped
    * @param types wrappers for classes and interfaces in {@code compilationUnit}
    */
@@ -1287,6 +1310,15 @@ public class WholeProgramInferenceJavaParserStorage
       this(compilationUnit, new ArrayList<>());
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>The wrapped {@link CompilationUnit} is shared with, not copied into, the result: the
+     * wrappers in {@code types} refer to JavaParser nodes within it, so a copy of the AST would not
+     * correspond to them. Only the inference results (the {@code types} wrappers) are copied.
+     * Therefore, a side effect on the JavaParser AST -- notably {@link #transferAnnotations} -- is
+     * visible in both this and the result.
+     */
     @Override
     public CompilationUnitAnnos deepCopy() {
       return new CompilationUnitAnnos(compilationUnit, CollectionsP.deepCopy(types));
@@ -1295,6 +1327,11 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Transfers all annotations inferred by whole program inference for the wrapped compilation
      * unit to their corresponding JavaParser locations.
+     *
+     * <p>This side-effects the wrapped JavaParser AST, which is shared with every other {@code
+     * CompilationUnitAnnos} for the same source file (see {@link #deepCopy}). Calling this method
+     * repeatedly is harmless because it first removes all annotations from the AST, so each call
+     * overwrites the previous call's output rather than adding to it.
      *
      * @param checker the checker who's name to include in the @AnnotatedFor annotation
      */
@@ -1801,7 +1838,7 @@ public class WholeProgramInferenceJavaParserStorage
         }
       }
 
-      if (declarationAnnotations != null && declaration != null) {
+      if (declarationAnnotations != null) {
         for (AnnotationMirror annotation : declarationAnnotations) {
           declaration.addAnnotation(
               AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
@@ -1877,6 +1914,7 @@ public class WholeProgramInferenceJavaParserStorage
       sj.add("paramsDeclAnnos = " + paramsDeclAnnos);
       sj.add("declarationAnnotations = " + declarationAnnotations);
       sj.add("preconditions = " + preconditions);
+      sj.add("postconditions = " + postconditions);
       return sj.toString();
     }
   }
