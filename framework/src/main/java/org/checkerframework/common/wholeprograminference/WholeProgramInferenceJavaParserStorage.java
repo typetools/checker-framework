@@ -962,13 +962,14 @@ public class WholeProgramInferenceJavaParserStorage
    * <p>Because of the side effect, clients may want to pass a copy into this method.
    *
    * @param classAnnos the class annotations to modify
-   * @param supertypes the binary names of all supertypes; not side-effected
-   * @param subtypes the binary names of all subtypes; not side-effected
+   * @param supertypes the binary names of all supertypes, or null if none are known; not
+   *     side-effected
+   * @param subtypes the binary names of all subtypes, or null if none are known; not side-effected
    */
   public void wpiPrepareClassForWriting(
       ClassOrInterfaceAnnos classAnnos,
-      Collection<@BinaryName String> supertypes,
-      Collection<@BinaryName String> subtypes) {
+      @Nullable Collection<@BinaryName String> supertypes,
+      @Nullable Collection<@BinaryName String> subtypes) {
     if (classAnnos.callableDeclarations.isEmpty()) {
       return;
     }
@@ -976,10 +977,8 @@ public class WholeProgramInferenceJavaParserStorage
     for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
         classAnnos.callableDeclarations.entrySet()) {
       String jvmSignature = methodEntry.getKey();
-      List<CallableDeclarationAnnos> inSupertypes =
-          findOverrides(jvmSignature, supertypesMap.get(classAnnos.className));
-      List<CallableDeclarationAnnos> inSubtypes =
-          findOverrides(jvmSignature, subtypesMap.get(classAnnos.className));
+      List<CallableDeclarationAnnos> inSupertypes = findOverrides(jvmSignature, supertypes);
+      List<CallableDeclarationAnnos> inSubtypes = findOverrides(jvmSignature, subtypes);
 
       wpiPrepareMethodForWriting(methodEntry.getValue(), inSupertypes, inSubtypes);
     }
@@ -1196,7 +1195,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param s a string
    * @return the index of a lonely surrogate character in its argument, or -1 if there is none
    */
-  private int indexOfLonelySurrogateCharacter(String s) {
+  /*package-private*/ static int indexOfLonelySurrogateCharacter(String s) {
     int limit = s.length();
     for (int i = 0; i < limit; i++) {
       if (Character.isSurrogate(s.charAt(i))) {
@@ -1218,7 +1217,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param s a string
    * @return the string, with lonely surrogate characters replaced by their unicode escape
    */
-  private String escapeLonelySurrogates(String s) {
+  /*package-private*/ static String escapeLonelySurrogates(String s) {
     int idx = indexOfLonelySurrogateCharacter(s);
     if (idx != -1) {
       // This recursion is less efficient than a loop with StringBuilder would be,
@@ -1854,7 +1853,7 @@ public class WholeProgramInferenceJavaParserStorage
         }
       }
 
-      if (declarationAnnotations != null && declaration != null) {
+      if (declarationAnnotations != null) {
         for (AnnotationMirror annotation : declarationAnnotations) {
           declaration.addAnnotation(
               AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
@@ -1930,6 +1929,7 @@ public class WholeProgramInferenceJavaParserStorage
       sj.add("paramsDeclAnnos = " + paramsDeclAnnos);
       sj.add("declarationAnnotations = " + declarationAnnotations);
       sj.add("preconditions = " + preconditions);
+      sj.add("postconditions = " + postconditions);
       return sj.toString();
     }
   }
