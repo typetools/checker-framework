@@ -58,10 +58,8 @@ public class WholeProgramInferenceJavaParserStorageTest {
     AnnotatedTypeMirror stringType =
         AnnotatedTypeMirror.createType(
             env.getElementUtils().getTypeElement("java.lang.String").asType(), typeFactory, false);
-    methodAnnos.getPreconditionsForExpression(
-        "testpkg.Outer", "aMethod", "this.aPreconditionField", stringType, typeFactory);
-    methodAnnos.getPostconditionsForExpression(
-        "testpkg.Outer", "aMethod", "this.aPostconditionField", stringType, typeFactory);
+    methodAnnos.getPreconditionsForExpression("this.aPreconditionField", stringType, typeFactory);
+    methodAnnos.getPostconditionsForExpression("this.aPostconditionField", stringType, typeFactory);
 
     String methodAnnosString = methodAnnos.toString();
     Assert.assertTrue(methodAnnosString, methodAnnosString.contains("testpkg.Outer.aMethod"));
