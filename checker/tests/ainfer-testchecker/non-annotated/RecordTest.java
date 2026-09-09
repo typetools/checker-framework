@@ -5,6 +5,10 @@
 
 // Check that types can be inferred for a nested record: for the formal parameters of its
 // canonical constructor, and for its components.
+//
+// A record component and the corresponding formal parameter of the canonical constructor must be
+// given the same annotation, because the canonical constructor assigns the parameter to the field
+// that the component declares.  See SceneToStubWriter.recordComponentAnnos.
 
 import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 import org.checkerframework.checker.testchecker.ainfer.qual.AinferTop;

@@ -1028,11 +1028,14 @@ public final class AnnotationFileParser {
       Map<String, RecordComponentStub> byName =
           ArrayMap.newArrayMapOrLinkedHashMap(recordMembers.size());
       for (Parameter recordMember : recordMembers) {
-        RecordComponentStub stub =
-            processRecordField(
-                recordMember,
-                findFieldElement(typeElt, recordMember.getNameAsString(), recordMember));
-        byName.put(recordMember.getNameAsString(), stub);
+        String recordMemberName = recordMember.getNameAsString();
+        VariableElement recordMemberElt = findFieldElement(typeElt, recordMemberName, recordMember);
+        if (recordMemberElt == null) {
+          // The annotation file declares a component that the record does not have.
+          // findFieldElement has already issued a warning.
+          continue;
+        }
+        byName.put(recordMemberName, processRecordField(recordMember, recordMemberElt));
       }
       annotationFileAnnos.records.put(
           recordDecl.getFullyQualifiedName().get(), new RecordStub(byName));

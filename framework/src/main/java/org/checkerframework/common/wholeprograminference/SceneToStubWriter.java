@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import java.util.StringJoiner;
 import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -24,6 +26,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.el.AClass;
 import org.checkerframework.afu.scenelib.el.AField;
@@ -35,6 +38,7 @@ import org.checkerframework.afu.scenelib.el.DefCollector;
 import org.checkerframework.afu.scenelib.el.DefException;
 import org.checkerframework.afu.scenelib.el.TypePathEntry;
 import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
+import org.checkerframework.afu.scenelib.util.JVMNames;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -45,6 +49,7 @@ import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 
 // In this file, "base name" means "type without its package part in binary name format".
 // For example, "Outer$Inner" is a base name.
@@ -321,8 +326,8 @@ public final class SceneToStubWriter {
    * <p>This method does not add a trailing semicolon or comma.
    *
    * <p>Usually, {@link #formatParameter(AField, String, String)} should be called to format method
-   * parameters, and {@link #printField(AField, String, PrintWriter, String)} should be called to
-   * print field declarations. Both use this method as their underlying implementation.
+   * parameters, and {@link #printField(AField, String, boolean, PrintWriter, String)} should be
+   * called to print field declarations. Both use this method as their underlying implementation.
    *
    * @param aField the field declaration or formal parameter declaration to format; should not
    *     represent a local variable
@@ -344,8 +349,8 @@ public final class SceneToStubWriter {
    * <p>This method does not add a trailing semicolon or comma.
    *
    * <p>Usually, {@link #formatParameter(AField, String, String)} should be called to format method
-   * parameters, and {@link #printField(AField, String, PrintWriter, String)} should be called to
-   * print field declarations. Both use this method as their underlying implementation.
+   * parameters, and {@link #printField(AField, String, boolean, PrintWriter, String)} should be
+   * called to print field declarations. Both use this method as their underlying implementation.
    *
    * @param sb where to write the formatted declaration to
    * @param aField the field declaration or formal parameter declaration to format; should not
@@ -612,14 +617,37 @@ public final class SceneToStubWriter {
 
     printWriter.println(indentLevel + "// fields:");
     printWriter.println();
+    Set<String> staticFields = staticFieldNames(aClass);
     for (Map.Entry<String, AField> fieldEntry : fields.entrySet()) {
       String fieldName = fieldEntry.getKey();
       if (omit.contains(fieldName)) {
         continue;
       }
       AField aField = fieldEntry.getValue();
-      printField(aField, fieldName, printWriter, indentLevel);
+      printField(aField, fieldName, staticFields.contains(fieldName), printWriter, indentLevel);
     }
+  }
+
+  /**
+   * Returns the names of the static fields of the given class, or the empty set if the class's
+   * {@code TypeElement} is unknown. A record may not declare an instance field, so a static field
+   * of a record must be printed with the {@code static} modifier.
+   *
+   * @param aClass the representation of the class
+   * @return the names of the static fields of the class
+   */
+  private static Set<String> staticFieldNames(AClass aClass) {
+    TypeElement typeElt = aClass.getTypeElement();
+    if (typeElt == null) {
+      return Collections.emptySet();
+    }
+    Set<String> result = new HashSet<>();
+    for (VariableElement field : ElementFilter.fieldsIn(typeElt.getEnclosedElements())) {
+      if (ElementUtils.isStatic(field)) {
+        result.add(field.getSimpleName().toString());
+      }
+    }
+    return result;
   }
 
   /**
@@ -627,11 +655,16 @@ public final class SceneToStubWriter {
    *
    * @param aField the field declaration
    * @param fieldName the name of the field
+   * @param isStatic true if the field is static
    * @param printWriter the writer on which to print
    * @param indentLevel the indent string
    */
   private static void printField(
-      AField aField, String fieldName, PrintWriter printWriter, String indentLevel) {
+      AField aField,
+      String fieldName,
+      boolean isStatic,
+      PrintWriter printWriter,
+      String indentLevel) {
     if (aField.getTypeMirror() == null) {
       // aField has no type mirror, so there are no inferred annotations and the field need
       // not be printed.
@@ -644,6 +677,9 @@ public final class SceneToStubWriter {
     }
 
     printWriter.print(indentLevel);
+    if (isStatic) {
+      printWriter.print("static ");
+    }
     printWriter.print(formatAFieldImpl(aField, fieldName, /*enclosing class=*/ null));
     printWriter.println(";");
     printWriter.println();
@@ -913,11 +949,11 @@ public final class SceneToStubWriter {
    */
   private static void printRecordComponents(
       TypeElement type, @Nullable AClass aClass, PrintWriter printWriter) {
-    Map<String, AField> fields = aClass == null ? Collections.emptyMap() : aClass.getFields();
+    Map<String, AField> componentAnnos = recordComponentAnnos(type, aClass);
     StringJoiner components = new StringJoiner(", ");
     for (RecordComponentElement component : type.getRecordComponents()) {
       String componentName = component.getSimpleName().toString();
-      AField aField = fields.get(componentName);
+      AField aField = componentAnnos.get(componentName);
       if (aField != null && aField.getTypeMirror() != null) {
         components.add(formatParameter(aField, componentName, type.getSimpleName().toString()));
       } else {
@@ -925,6 +961,81 @@ public final class SceneToStubWriter {
       }
     }
     printWriter.print("(" + components + ")");
+  }
+
+  /**
+   * Returns the inferred annotations for the components of the given record, indexed by component
+   * name. A component with no inferred annotations may be absent from the result.
+   *
+   * <p>A component's annotations are usually those inferred for the corresponding field. However,
+   * if the record's canonical constructor assigns the fields implicitly -- that is, if the
+   * canonical constructor is compact or is not declared at all -- then whole-program inference
+   * infers annotations for that constructor's formal parameters, from its call sites, but infers
+   * nothing for the fields, because the assignments to the fields do not appear in the source code.
+   * For such a record, this method uses the annotations of the canonical constructor's formal
+   * parameters. Using the fields' annotations would be unsound, because the component (and
+   * therefore the field and the accessor method) could be a strict subtype of what the canonical
+   * constructor accepts.
+   *
+   * @param type the TypeElement representing the record
+   * @param aClass the scene-lib representation of {@code type}, or null if the scene contains no
+   *     information about {@code type}
+   * @return the inferred annotations for the components of {@code type}, indexed by component name
+   */
+  private static Map<String, AField> recordComponentAnnos(
+      TypeElement type, @Nullable AClass aClass) {
+    if (aClass == null) {
+      return Collections.emptyMap();
+    }
+    Map<Integer, AField> constructorParams = implicitlyAssigningConstructorParams(type, aClass);
+    if (constructorParams.isEmpty()) {
+      return aClass.getFields();
+    }
+    Map<String, AField> result = new HashMap<>(aClass.getFields());
+    List<? extends RecordComponentElement> recordComponents = type.getRecordComponents();
+    for (Map.Entry<Integer, AField> entry : constructorParams.entrySet()) {
+      int index = entry.getKey();
+      AField param = entry.getValue();
+      if (index >= recordComponents.size() || param.getTypeMirror() == null) {
+        continue;
+      }
+      String componentName = recordComponents.get(index).getSimpleName().toString();
+      AField merged = param.clone();
+      AField field = result.get(componentName);
+      if (field != null) {
+        // WPI infers no type annotations for such a field (see the Javadoc of this method), so
+        // retaining the field's declaration annotations retains all of its inferences.
+        merged.tlAnnotationsHere.addAll(field.tlAnnotationsHere);
+      }
+      result.put(componentName, merged);
+    }
+    return result;
+  }
+
+  /**
+   * Returns the inferred annotations for the formal parameters of the given record's canonical
+   * constructor, indexed by 0-based parameter index, if that constructor assigns the record's
+   * fields implicitly. Returns an empty map if the record's canonical constructor is declared with
+   * a formal parameter list -- in that case, it assigns the fields in its body, where whole-program
+   * inference observes the assignments -- or if nothing was inferred about the constructor.
+   *
+   * @param type the TypeElement representing the record
+   * @param aClass the scene-lib representation of {@code type}
+   * @return the inferred annotations for the formal parameters of the canonical constructor of
+   *     {@code type}, if that constructor assigns the record's fields implicitly
+   */
+  private static Map<Integer, AField> implicitlyAssigningConstructorParams(
+      TypeElement type, AClass aClass) {
+    for (ExecutableElement constructor : ElementFilter.constructorsIn(type.getEnclosedElements())) {
+      // A record's only auto-generated constructor is its canonical constructor.
+      if (!ElementUtils.isCompactCanonicalRecordConstructor(constructor)
+          && !ElementUtils.isAutoGeneratedRecordMember(constructor)) {
+        continue;
+      }
+      AMethod aMethod = aClass.getMethods().get(JVMNames.getJVMMethodSignature(constructor));
+      return aMethod == null ? Collections.emptyMap() : aMethod.getParameters();
+    }
+    return Collections.emptyMap();
   }
 
   /**

@@ -21,4 +21,16 @@ class PairUsage {
     // :: error: [assignment]
     @NonNull Object o3 = r.xnn();
   }
+
+  public void makeNested() {
+    NestedRecord.Nested n = new NestedRecord.Nested(null, "b");
+    // :: error: [argument]
+    NestedRecord.Nested n2 = new NestedRecord.Nested("a", null);
+    // :: error: [assignment]
+    @NonNull Object o = n.nullableViaStub();
+    @NonNull Object o2 = n.nonNull();
+
+    NestedRecord.NoSuchComponent s = new NestedRecord.NoSuchComponent("a");
+    @NonNull Object o3 = s.real();
+  }
 }
