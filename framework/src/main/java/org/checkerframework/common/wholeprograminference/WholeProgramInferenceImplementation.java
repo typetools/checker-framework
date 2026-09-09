@@ -554,7 +554,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
   @Override
   public void updateFromOverride(
-      MethodTree methodTree,
+      MethodTree methodDeclTree,
       ExecutableElement methodElt,
       AnnotatedExecutableType overriddenMethod) {
     // Don't infer types for code that isn't presented as source.
@@ -577,7 +577,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     AnnotatedDeclaredType argADT = overriddenMethod.getReceiverType();
     if (argADT != null) {
-      AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(methodTree).getReceiverType();
+      AnnotatedTypeMirror paramATM =
+          atypeFactory.getAnnotatedType(methodDeclTree).getReceiverType();
       if (paramATM != null) {
         T receiver = storage.getReceiverAnnotations(methodElt, paramATM, atypeFactory);
         updateAnnotationSet(receiver, TypeUseLocation.RECEIVER, argADT, paramATM, file);

@@ -394,17 +394,17 @@ public class WholeProgramInferenceJavaParserStorage
   public AnnotatedTypeMirror getPreOrPostconditions(
       String className,
       Analysis.BeforeOrAfter preOrPost,
-      ExecutableElement methodElement,
+      ExecutableElement methodElt,
       String expression,
       AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
     return switch (preOrPost) {
       case BEFORE ->
           getPreconditionsForExpression(
-              className, methodElement, expression, declaredType, atypeFactory);
+              className, methodElt, expression, declaredType, atypeFactory);
       case AFTER ->
           getPostconditionsForExpression(
-              className, methodElement, expression, declaredType, atypeFactory);
+              className, methodElt, expression, declaredType, atypeFactory);
       default -> throw new BugInCF("Unexpected " + preOrPost);
     };
   }
@@ -413,7 +413,7 @@ public class WholeProgramInferenceJavaParserStorage
    * Returns the precondition annotations for the given expression.
    *
    * @param className the class that contains the method, for diagnostics only
-   * @param methodElement the method
+   * @param methodElt the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
    * @param atypeFactory the type factory
@@ -421,28 +421,24 @@ public class WholeProgramInferenceJavaParserStorage
    */
   private AnnotatedTypeMirror getPreconditionsForExpression(
       String className,
-      ExecutableElement methodElement,
+      ExecutableElement methodElt,
       String expression,
       AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
-    CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElement);
+    CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
     if (methodAnnos == null) {
       // See the comment on the similar exception in #getParameterAnnotations, above.
       return declaredType;
     }
     return methodAnnos.getPreconditionsForExpression(
-        className,
-        methodElement.getSimpleName().toString(),
-        expression,
-        declaredType,
-        atypeFactory);
+        className, methodElt.getSimpleName().toString(), expression, declaredType, atypeFactory);
   }
 
   /**
    * Returns the postcondition annotations for an expression.
    *
    * @param className the class that contains the method, for diagnostics only
-   * @param methodElement the method
+   * @param methodElt the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
    * @param atypeFactory the type factory
@@ -450,21 +446,17 @@ public class WholeProgramInferenceJavaParserStorage
    */
   private AnnotatedTypeMirror getPostconditionsForExpression(
       String className,
-      ExecutableElement methodElement,
+      ExecutableElement methodElt,
       String expression,
       AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
-    CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElement);
+    CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
     if (methodAnnos == null) {
       // See the comment on the similar exception in #getParameterAnnotations, above.
       return declaredType;
     }
     return methodAnnos.getPostconditionsForExpression(
-        className,
-        methodElement.getSimpleName().toString(),
-        expression,
-        declaredType,
-        atypeFactory);
+        className, methodElt.getSimpleName().toString(), expression, declaredType, atypeFactory);
   }
 
   @Override

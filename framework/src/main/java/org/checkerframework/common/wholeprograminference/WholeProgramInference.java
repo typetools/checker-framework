@@ -98,12 +98,14 @@ public interface WholeProgramInference {
    *       method.
    * </ul>
    *
-   * @param methodTree the tree of the method that contains the parameter(s)
+   * @param methodDeclTree the tree of the method that contains the parameter(s)
    * @param methodElt the element of the method
    * @param overriddenMethod the AnnotatedExecutableType of the overridden method
    */
   void updateFromOverride(
-      MethodTree methodTree, ExecutableElement methodElt, AnnotatedExecutableType overriddenMethod);
+      MethodTree methodDeclTree,
+      ExecutableElement methodElt,
+      AnnotatedExecutableType overriddenMethod);
 
   /**
    * Updates the type of {@code lhs} based on an assignment of {@code rhs} to {@code lhs}.
@@ -127,9 +129,9 @@ public interface WholeProgramInference {
    * the field has a declaration annotation with the {@link IgnoreInWholeProgramInference}
    * meta-annotation, no type annotation will be inferred for that field.
    *
-   * <p>If there is no stored entry for the field lhs, the entry will be created and its type will
-   * be the type of rhs. If there is a stored entry/type for lhs, its new type will be the LUB
-   * between the previous type and the type of rhs.
+   * <p>If there is no stored entry for {@code field}, the entry will be created and its type will
+   * be the type of {@code rhs}. If there is a stored entry/type for {@code field}, its new type
+   * will be the LUB between the previous type and the type of {@code rhs}.
    *
    * @param field the field whose type will be refined. Must be either a FieldAccessNode or a
    *     LocalVariableNode whose element kind is FIELD.
@@ -138,8 +140,9 @@ public interface WholeProgramInference {
   void updateFromFieldAssignment(Node field, Node rhs);
 
   /**
-   * Updates the type of {@code field} based on an assignment whose right-hand side has type {@code
-   * rhsATM}. See more details at {@link #updateFromFieldAssignment}.
+   * Updates the type of the field represented by {@code lhsTree} based on an assignment whose
+   * right-hand side has type {@code rhsATM}. See more details at {@link
+   * #updateFromFieldAssignment}.
    *
    * @param lhsTree the tree for the field whose type will be refined
    * @param element the element for the field whose type will be refined
@@ -175,9 +178,9 @@ public interface WholeProgramInference {
    * Updates the preconditions or postconditions of the current method, from a store.
    *
    * @param className the name of the class, for debugging only
-   * @param methodElt the method or constructor whose preconditions or postconditions to update
    * @param preOrPost what to update: preconditions ({@code BEFORE}) or postconditions ({@code
    *     AFTER})
+   * @param methodElt the method or constructor whose preconditions or postconditions to update
    * @param store the store at the method's entry or normal exit, for reading types of expressions
    */
   void updateContracts(

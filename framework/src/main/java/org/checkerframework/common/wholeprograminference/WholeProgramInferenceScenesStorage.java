@@ -309,15 +309,13 @@ public class WholeProgramInferenceScenesStorage
   public ATypeElement getPreOrPostconditions(
       String className,
       Analysis.BeforeOrAfter preOrPost,
-      ExecutableElement methodElement,
+      ExecutableElement methodElt,
       String expression,
       AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
     return switch (preOrPost) {
-      case BEFORE ->
-          getPreconditionsForExpression(className, methodElement, expression, declaredType);
-      case AFTER ->
-          getPostconditionsForExpression(className, methodElement, expression, declaredType);
+      case BEFORE -> getPreconditionsForExpression(className, methodElt, expression, declaredType);
+      case AFTER -> getPostconditionsForExpression(className, methodElt, expression, declaredType);
       default -> throw new BugInCF("Unexpected " + preOrPost);
     };
   }
@@ -326,7 +324,7 @@ public class WholeProgramInferenceScenesStorage
    * Returns the precondition annotations for a Java expression.
    *
    * @param className the class that contains the method, for diagnostics only
-   * @param methodElement the method
+   * @param methodElt the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
    * @return the precondition annotations for a Java expression
@@ -334,10 +332,10 @@ public class WholeProgramInferenceScenesStorage
   @SuppressWarnings("UnusedVariable")
   private ATypeElement getPreconditionsForExpression(
       String className,
-      ExecutableElement methodElement,
+      ExecutableElement methodElt,
       String expression,
       AnnotatedTypeMirror declaredType) {
-    AMethod methodAnnos = getMethodAnnos(methodElement);
+    AMethod methodAnnos = getMethodAnnos(methodElt);
     preconditionsToDeclaredTypes.put(methodAnnos.methodSignature + expression, declaredType);
     return methodAnnos.vivifyAndAddTypeMirrorToPrecondition(
             expression, declaredType.getUnderlyingType())
@@ -348,7 +346,7 @@ public class WholeProgramInferenceScenesStorage
    * Returns the postcondition annotations for a Java expression.
    *
    * @param className the class that contains the method, for diagnostics only
-   * @param methodElement the method
+   * @param methodElt the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
    * @return the postcondition annotations for a Java expression
@@ -356,10 +354,10 @@ public class WholeProgramInferenceScenesStorage
   @SuppressWarnings("UnusedVariable")
   private ATypeElement getPostconditionsForExpression(
       String className,
-      ExecutableElement methodElement,
+      ExecutableElement methodElt,
       String expression,
       AnnotatedTypeMirror declaredType) {
-    AMethod methodAnnos = getMethodAnnos(methodElement);
+    AMethod methodAnnos = getMethodAnnos(methodElt);
     postconditionsToDeclaredTypes.put(methodAnnos.methodSignature + expression, declaredType);
     return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(
             expression, declaredType.getUnderlyingType())

@@ -39,14 +39,14 @@ public interface WholeProgramInferenceStorage<T> {
 
   /**
    * Given an ExecutableElement in a compilation unit that has already been read into storage,
-   * returns whether there exists a stored method matching {@code elt}.
+   * returns whether there exists a stored method matching {@code methodElt}.
    *
-   * <p>An implementation is permitted to return false if {@code elt} represents a method that was
-   * synthetically added by javac, such as zero-argument constructors or valueOf(String) methods for
-   * enum types.
+   * <p>An implementation is permitted to return false if {@code methodElt} represents a method that
+   * was synthetically added by javac, such as zero-argument constructors or valueOf(String) methods
+   * for enum types.
    *
    * @param methodElt a method or constructor Element
-   * @return true if the storage has a method corresponding to {@code elt}
+   * @return true if the storage has a method corresponding to {@code methodElt}
    */
   public boolean hasStorageLocationForMethod(ExecutableElement methodElt);
 
@@ -118,7 +118,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @param className the class that contains the method, for diagnostics only
    * @param preOrPost what to get: the precondition ({@code BEFORE}) or the postcondition ({@code
    *     AFTER})
-   * @param methodElement the method
+   * @param methodElt the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
    * @param atypeFactory the type factory
@@ -128,7 +128,7 @@ public interface WholeProgramInferenceStorage<T> {
   public @Nullable T getPreOrPostconditions(
       String className,
       Analysis.BeforeOrAfter preOrPost,
-      ExecutableElement methodElement,
+      ExecutableElement methodElt,
       String expression,
       AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory);
