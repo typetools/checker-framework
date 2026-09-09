@@ -2017,6 +2017,11 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public void transferAnnotations() {
       Node declParent = declaration.getParentNode().orElse(null);
+      if (declParent == null) {
+        // The declarator is not part of a parsed source file, so there is nothing to write
+        // annotations into.
+        return;
+      }
       if (declarationAnnotations != null) {
         // Don't add directly to the type of the variable declarator,
         // because declaration annotations need to be attached to the FieldDeclaration
@@ -2041,16 +2046,14 @@ public class WholeProgramInferenceJavaParserStorage
       // siblings, and there's no other information about the declaration for
       // WholeProgramInferenceImplementation to use: to determine that there are siblings,
       // a parse tree is needed.
-      if (declParent != null) {
-        boolean foundVariableDeclarator = false;
-        for (Node child : declParent.getChildNodes()) {
-          if (child instanceof VariableDeclarator) {
-            if (foundVariableDeclarator) {
-              // This is the second VariableDeclarator that was found.
-              return;
-            }
-            foundVariableDeclarator = true;
+      boolean foundVariableDeclarator = false;
+      for (Node child : declParent.getChildNodes()) {
+        if (child instanceof VariableDeclarator) {
+          if (foundVariableDeclarator) {
+            // This is the second VariableDeclarator that was found.
+            return;
           }
+          foundVariableDeclarator = true;
         }
       }
       Type newType = (Type) declaration.getType().accept(new CloneVisitor(), null);

@@ -50,16 +50,16 @@ public class WholeProgramInferenceJavaParserStorageTest {
   }
 
   /**
-   * Tests that {@link FieldAnnos#transferAnnotations} does not throw when the wrapped variable
-   * declarator has no parent node.
+   * Tests that {@link FieldAnnos#transferAnnotations} does nothing, and does not throw, when the
+   * wrapped variable declarator has no parent node.
    */
   @Test
   public void testTransferAnnotationsWithoutParent() {
     VariableDeclarator declaration = new VariableDeclarator(PrimitiveType.intType(), "f");
     Assert.assertFalse(declaration.getParentNode().isPresent());
     FieldAnnos fieldAnnos = new FieldAnnos(declaration);
-    // Initialize the inferred type, so that transferAnnotations() attempts a real transfer
-    // rather than a no-op one.  (The code that reads the parent node runs either way.)
+    // Initialize the inferred type, so that transferAnnotations() would attempt a real transfer
+    // if it did not stop at the missing parent node.
     AnnotatedTypeMirror intType =
         AnnotatedTypeMirror.createType(
             env.getTypeUtils().getPrimitiveType(TypeKind.INT), typeFactory, false);
@@ -67,8 +67,7 @@ public class WholeProgramInferenceJavaParserStorageTest {
 
     fieldAnnos.transferAnnotations();
 
-    // No annotations were inferred, so the declaration is unchanged, except that its type was
-    // replaced by an equivalent clone.
+    // The declarator has no parent, so it is left entirely unchanged.
     Assert.assertFalse(declaration.getParentNode().isPresent());
     Assert.assertEquals("int", declaration.getTypeAsString());
     Assert.assertEquals("f", declaration.getNameAsString());
