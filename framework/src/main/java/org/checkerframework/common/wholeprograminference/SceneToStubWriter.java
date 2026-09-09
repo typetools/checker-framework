@@ -105,7 +105,7 @@ public final class SceneToStubWriter {
    * @return the part of the name referring to the package, or null if there is no package name
    */
   @SuppressWarnings("signature") // a valid non-empty package name is a dot separated identifier
-  private static @Nullable @DotSeparatedIdentifiers String packagePart(
+  /*package*/ static @Nullable @DotSeparatedIdentifiers String packagePart(
       @BinaryName String className) {
     int lastdot = className.lastIndexOf('.');
     return (lastdot == -1) ? null : className.substring(0, lastdot);
@@ -118,7 +118,7 @@ public final class SceneToStubWriter {
    * @return the part of the name representing the class's name without its package
    */
   @SuppressWarnings("signature:return") // A binary name without its package is still a binary name
-  private static @BinaryName String basenamePart(@BinaryName String className) {
+  /*package*/ static @BinaryName String basenamePart(@BinaryName String className) {
     int lastdot = className.lastIndexOf('.');
     return className.substring(lastdot + 1);
   }
@@ -285,8 +285,7 @@ public final class SceneToStubWriter {
    *     argument is exactly the String "this".
    * @return the formatted formal parameter, as if it were written in Java source code
    */
-  // Package-private rather than private so that SceneToStubWriterTest can call it.
-  static String formatParameter(AField param, String parameterName, String basename) {
+  /*package*/ static String formatParameter(AField param, String parameterName, String basename) {
     StringBuilder sb = new StringBuilder();
     formatParameter(sb, param, parameterName, basename);
     return sb.toString();
