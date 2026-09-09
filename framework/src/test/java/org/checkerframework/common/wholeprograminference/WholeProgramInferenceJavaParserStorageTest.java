@@ -8,6 +8,7 @@ import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.FieldAnnos;
@@ -56,7 +57,21 @@ public class WholeProgramInferenceJavaParserStorageTest {
   public void testTransferAnnotationsWithoutParent() {
     VariableDeclarator declaration = new VariableDeclarator(PrimitiveType.intType(), "f");
     Assert.assertFalse(declaration.getParentNode().isPresent());
-    new FieldAnnos(declaration).transferAnnotations();
+    FieldAnnos fieldAnnos = new FieldAnnos(declaration);
+    // Initialize the inferred type.  Otherwise, transferAnnotations() would do nothing, and the
+    // test would not exercise the code that reads the parent node.
+    AnnotatedTypeMirror intType =
+        AnnotatedTypeMirror.createType(
+            env.getTypeUtils().getPrimitiveType(TypeKind.INT), typeFactory, false);
+    fieldAnnos.getType(intType, typeFactory);
+
+    fieldAnnos.transferAnnotations();
+
+    // Nothing was inferred, so the declaration is unchanged.
+    Assert.assertFalse(declaration.getParentNode().isPresent());
+    Assert.assertEquals("int", declaration.getTypeAsString());
+    Assert.assertEquals("f", declaration.getNameAsString());
+    Assert.assertTrue(declaration.getType().getAnnotations().isEmpty());
   }
 
   /**
