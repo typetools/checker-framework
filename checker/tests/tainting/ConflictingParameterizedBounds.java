@@ -1,6 +1,7 @@
 // Two upper bounds on an inference variable whose parameterized supertypes have different
 // qualifiers make the variable uninferrable, even though the Java types agree.
 
+import java.util.List;
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
@@ -25,5 +26,68 @@ public class ConflictingParameterizedBounds {
 
   void useSameQualifiers() {
     B<@Untainted String> x = m();
+  }
+
+  // The conflicting bounds both come from the declaration.
+  <S extends A<@Untainted String> & B<@Tainted String>> S intersectionBound() {
+    throw new RuntimeException();
+  }
+
+  void useIntersectionBound() {
+    // :: error: [type.arguments.not.inferred]
+    Object o = intersectionBound();
+  }
+
+  // The qualifiers differ in the second type argument.
+  interface Sup2<T, U> {}
+
+  interface A2<T, U> extends Sup2<T, U> {}
+
+  interface B2<T, U> extends Sup2<T, U> {}
+
+  <S extends A2<@Untainted String, @Untainted String>> S twoTypeArgs() {
+    throw new RuntimeException();
+  }
+
+  void useTwoTypeArgs() {
+    // :: error: [type.arguments.not.inferred]
+    B2<@Untainted String, @Tainted String> x = twoTypeArgs();
+  }
+
+  // The qualifiers differ within a type argument rather than on it.
+  <S extends A<List<@Untainted String>>> S nested() {
+    throw new RuntimeException();
+  }
+
+  void useNested() {
+    // :: error: [type.arguments.not.inferred]
+    B<List<@Tainted String>> x = nested();
+  }
+
+  // The two bounds reach Sup at different depths.
+  interface Mid<T> extends Sup<T> {}
+
+  interface Deep<T> extends Mid<T> {}
+
+  <S extends Deep<@Untainted String>> S deep() {
+    throw new RuntimeException();
+  }
+
+  void useDeep() {
+    // :: error: [type.arguments.not.inferred]
+    B<@Tainted String> x = deep();
+  }
+
+  // The conflict is between two inference variables rather than a variable and a proper type.
+  <U extends B<@Tainted String>> void take(U u) {}
+
+  void useNestedCall() {
+    // :: error: [type.arguments.not.inferred]
+    take(m());
+  }
+
+  // Incorporation does not imply a constraint for a wildcard type argument.
+  void useWildcard() {
+    B<?> x = m();
   }
 }
