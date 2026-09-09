@@ -478,7 +478,10 @@ public class VariableBounds {
       AbstractType si = ss.get(i);
       AbstractType ti = ts.get(i);
       if (si.getTypeKind() != TypeKind.WILDCARD && ti.getTypeKind() != TypeKind.WILDCARD) {
-        constraints.add(createImpliedConstraint(parent, description, si, ti, Kind.TYPE_EQUALITY));
+        Typing constraint =
+            createImpliedConstraint(parent, description, si, ti, Kind.TYPE_EQUALITY);
+        constraint.qualifiersMustMatch = true;
+        constraints.add(constraint);
       }
     }
     return constraints;

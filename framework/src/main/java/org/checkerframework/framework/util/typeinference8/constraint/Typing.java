@@ -49,6 +49,18 @@ public class Typing extends TypeConstraint {
   private final boolean isCovarTypeArg;
 
   /**
+   * Whether reducing this constraint should compare the qualifiers of two proper types.
+   *
+   * <p>Ordinarily it should not: a constraint between two proper types mentions no inference
+   * variable, so no choice of type arguments makes it hold or fail, and {@code BaseTypeVisitor}
+   * separately issues a more informative message about the qualifiers. But a constraint that was
+   * implied by two bounds on an inference variable is different: it holds only if the qualifiers
+   * match, and if they do not, then the variable has no instantiation and nothing else reports it.
+   * See {@link org.checkerframework.framework.util.typeinference8.types.VariableBounds#addBound}.
+   */
+  public boolean qualifiersMustMatch = false;
+
+  /**
    * Creates a typing constraint.
    *
    * @param parent the constraint whose reduction created this constraint
@@ -429,8 +441,12 @@ public class Typing extends TypeConstraint {
     if (S.isProper()) {
       if (T.isProper()) {
         // If S and T are proper types, the constraint reduces to true if S is the same
-        // as T (4.3.4), and false otherwise.
-        return ConstraintSet.TRUE;
+        // as T (4.3.4), and false otherwise.  javac has already checked that the Java types
+        // are the same, so only the qualifiers remain to be checked, and they are checked only
+        // for a constraint that an inference variable's bounds imply.
+        return qualifiersMustMatch
+            ? ((ProperType) S).checkAnnotationEquality((ProperType) T)
+            : ConstraintSet.TRUE;
       }
       ProperType sProper = (ProperType) S;
       if (sProper.getTypeKind() == TypeKind.NULL || sProper.getTypeKind().isPrimitive()) {
