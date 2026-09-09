@@ -134,16 +134,18 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   private final AnnotationMirror IMPURE;
 
   /** The fully-qualified name of the @{@link Deterministic} class. */
-  private final String DETERMINISTIC_NAME = "org.checkerframework.dataflow.qual.Deterministic";
+  private static final String DETERMINISTIC_NAME =
+      "org.checkerframework.dataflow.qual.Deterministic";
 
   /** The fully-qualified name of the @{@link SideEffectFree} class. */
-  private final String SIDE_EFFECT_FREE_NAME = "org.checkerframework.dataflow.qual.SideEffectFree";
+  private static final String SIDE_EFFECT_FREE_NAME =
+      "org.checkerframework.dataflow.qual.SideEffectFree";
 
   /** The fully-qualified name of the @{@link Pure} class. */
-  private final String PURE_NAME = "org.checkerframework.dataflow.qual.Pure";
+  private static final String PURE_NAME = "org.checkerframework.dataflow.qual.Pure";
 
   /** The fully-qualified name of the @{@link Impure} class. */
-  private final String IMPURE_NAME = "org.checkerframework.dataflow.qual.Impure";
+  private static final String IMPURE_NAME = "org.checkerframework.dataflow.qual.Impure";
 
   /**
    * Constructs a new {@code WholeProgramInferenceImplementation} that has not yet inferred any
@@ -670,12 +672,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   public void updateFieldFromType(
       Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
 
+    // This test also verifies that the element is presented as source code, which is a
+    // precondition of storage.getFileForElement().
     if (ignoreFieldInWPI(element, fieldName)) {
-      return;
-    }
-
-    // Don't infer types for code that isn't presented as source.
-    if (!ElementUtils.isElementFromSourceCode(element)) {
       return;
     }
 
@@ -692,7 +691,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   }
 
   /**
-   * Returns true if an assignment to the given field should be ignored by WPI.
+   * Returns true if an assignment to the given field should be ignored by WPI. In particular, this
+   * returns true if the field is not presented as source code.
    *
    * @param element the field's element
    * @param fieldName the field's name
@@ -846,31 +846,50 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @return the "least upper bound" between anno1 and anno2, as described above
    */
   private AnnotationMirror lubPurityAnnotations(AnnotationMirror anno1, AnnotationMirror anno2) {
-    // TODO: is this the best way to do this? Would it be easier to just write a real subtype
-    // routine for purity? Do we have code to handle this already somewhere?
-
-    boolean anno1IsDet =
-        AnnotationUtils.areSameByName(anno1, PURE_NAME)
-            || AnnotationUtils.areSameByName(anno1, DETERMINISTIC_NAME);
-    boolean anno1IsSEF =
-        AnnotationUtils.areSameByName(anno1, PURE_NAME)
-            || AnnotationUtils.areSameByName(anno1, SIDE_EFFECT_FREE_NAME);
-
-    boolean anno2IsDet =
-        AnnotationUtils.areSameByName(anno2, PURE_NAME)
-            || AnnotationUtils.areSameByName(anno2, DETERMINISTIC_NAME);
-    boolean anno2IsSEF =
-        AnnotationUtils.areSameByName(anno2, PURE_NAME)
-            || AnnotationUtils.areSameByName(anno2, SIDE_EFFECT_FREE_NAME);
-
-    if (anno2IsSEF && anno2IsDet && anno1IsSEF && anno1IsDet) {
+    String lubName =
+        lubPurityAnnotationNames(
+            AnnotationUtils.annotationName(anno1), AnnotationUtils.annotationName(anno2));
+    if (lubName.equals(PURE_NAME)) {
       return PURE;
-    } else if (anno2IsSEF && anno1IsSEF) {
+    } else if (lubName.equals(SIDE_EFFECT_FREE_NAME)) {
       return SIDE_EFFECT_FREE;
-    } else if (anno2IsDet && anno1IsDet) {
+    } else if (lubName.equals(DETERMINISTIC_NAME)) {
       return DETERMINISTIC;
     } else {
       return IMPURE;
+    }
+  }
+
+  /**
+   * Computes a "least upper bound" between two purity annotations, which are represented by their
+   * fully-qualified names. See {@link #lubPurityAnnotations(AnnotationMirror, AnnotationMirror)}
+   * for a description of the "lattice". This routine is "fail-safe": the name of Impure is returned
+   * if either argument does not name a purity annotation.
+   *
+   * @param anno1Name the fully-qualified name of a purity annotation
+   * @param anno2Name the fully-qualified name of another purity annotation
+   * @return the fully-qualified name of the "least upper bound" between anno1Name and anno2Name
+   */
+  // Package-private rather than private so that WholeProgramInferenceImplementationTest can call
+  // it.
+  /*package-private*/ static String lubPurityAnnotationNames(String anno1Name, String anno2Name) {
+    // TODO: is this the best way to do this? Would it be easier to just write a real subtype
+    // routine for purity? Do we have code to handle this already somewhere?
+
+    boolean anno1IsDet = anno1Name.equals(PURE_NAME) || anno1Name.equals(DETERMINISTIC_NAME);
+    boolean anno1IsSEF = anno1Name.equals(PURE_NAME) || anno1Name.equals(SIDE_EFFECT_FREE_NAME);
+
+    boolean anno2IsDet = anno2Name.equals(PURE_NAME) || anno2Name.equals(DETERMINISTIC_NAME);
+    boolean anno2IsSEF = anno2Name.equals(PURE_NAME) || anno2Name.equals(SIDE_EFFECT_FREE_NAME);
+
+    if (anno2IsSEF && anno2IsDet && anno1IsSEF && anno1IsDet) {
+      return PURE_NAME;
+    } else if (anno2IsSEF && anno1IsSEF) {
+      return SIDE_EFFECT_FREE_NAME;
+    } else if (anno2IsDet && anno1IsDet) {
+      return DETERMINISTIC_NAME;
+    } else {
+      return IMPURE_NAME;
     }
   }
 

@@ -54,7 +54,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -2412,10 +2411,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     return super.visitMemberReference(tree, p);
   }
 
-  /** A set containing {@code Tree.Kind.METHOD} and {@code Tree.Kind.LAMBDA_EXPRESSION}. */
-  private ArraySet<Tree.Kind> methodAndLambdaExpression =
-      new ArraySet<>(Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION));
-
   /**
    * Checks that the type of the return expression is a subtype of the enclosing method required
    * return type. If not, it issues a "return" error.
@@ -2431,7 +2426,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     long startMillis = System.currentTimeMillis();
     Tree startSlowTypeCheckingTree = slowTypecheckingTree;
 
-    Tree enclosing = TreePathUtil.enclosingOfKind(getCurrentPath(), methodAndLambdaExpression);
+    Tree enclosing = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
 
     AnnotatedTypeMirror declaredReturnType = null;
     if (enclosing instanceof MethodTree enclosingMethod) {
