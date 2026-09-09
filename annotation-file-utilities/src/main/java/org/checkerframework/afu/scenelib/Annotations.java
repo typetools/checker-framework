@@ -208,8 +208,7 @@ public final class Annotations {
    * @return a clone of the given annotation
    */
   public static final Annotation rebuild(Annotation a) {
-    AnnotationBuilder ab =
-        AnnotationFactory.saf.beginAnnotation(a.def(), "rebuild " + a.def.getSource());
+    AnnotationBuilder ab = AnnotationFactory.saf.beginAnnotation(a.def(), "rebuild " + a.def.name);
     if (ab != null) {
       for (Map.Entry<String, ? extends AnnotationFieldType> fieldDef :
           a.def().fieldTypes.entrySet()) {
