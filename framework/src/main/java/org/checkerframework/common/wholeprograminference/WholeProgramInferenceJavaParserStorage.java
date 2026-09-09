@@ -1049,7 +1049,10 @@ public class WholeProgramInferenceJavaParserStorage
 
     for (String path : modifiedFiles) {
       // This calls deepCopy() because wpiPrepareCompilationUnitForWriting performs side
-      // effects that we don't want to be persistent.
+      // effects on the inference results that we don't want to be persistent.  The JavaParser
+      // AST is shared rather than copied, so the side effects that transferAnnotations performs
+      // on it below are visible in sourceToAnnos.get(path); that is harmless because
+      // transferAnnotations first removes all annotations from the AST.
       CompilationUnitAnnos root = sourceToAnnos.get(path).deepCopy();
       wpiPrepareCompilationUnitForWriting(root);
       Path packageDir;
@@ -1288,6 +1291,10 @@ public class WholeProgramInferenceJavaParserStorage
    * Stores the JavaParser node for a compilation unit and the list of wrappers for the classes and
    * interfaces in that compilation unit.
    *
+   * <p>The wrappers in {@code types}, and the wrappers they contain, hold references to JavaParser
+   * nodes within {@code compilationUnit}. Every {@code CompilationUnitAnnos} for a given source
+   * file, including the ones produced by {@link #deepCopy}, refers to the same JavaParser AST.
+   *
    * @param compilationUnit compilation unit being wrapped
    * @param types wrappers for classes and interfaces in {@code compilationUnit}
    */
@@ -1304,6 +1311,15 @@ public class WholeProgramInferenceJavaParserStorage
       this(compilationUnit, new ArrayList<>());
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>The wrapped {@link CompilationUnit} is shared with, not copied into, the result: the
+     * wrappers in {@code types} refer to JavaParser nodes within it, so a copy of the AST would not
+     * correspond to them. Only the inference results (the {@code types} wrappers) are copied.
+     * Therefore, a side effect on the JavaParser AST -- notably {@link #transferAnnotations} -- is
+     * visible in both this and the result.
+     */
     @Override
     public CompilationUnitAnnos deepCopy() {
       return new CompilationUnitAnnos(compilationUnit, CollectionsP.deepCopy(types));
@@ -1312,6 +1328,11 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Transfers all annotations inferred by whole program inference for the wrapped compilation
      * unit to their corresponding JavaParser locations.
+     *
+     * <p>This side-effects the wrapped JavaParser AST, which is shared with every other {@code
+     * CompilationUnitAnnos} for the same source file (see {@link #deepCopy}). Calling this method
+     * repeatedly is harmless because it first removes all annotations from the AST, so each call
+     * overwrites the previous call's output rather than adding to it.
      *
      * @param checker the checker who's name to include in the @AnnotatedFor annotation
      */
