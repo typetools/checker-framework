@@ -32,7 +32,6 @@ import org.checkerframework.afu.scenelib.el.DefException;
 import org.checkerframework.afu.scenelib.el.TypePathEntry;
 import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
 import org.checkerframework.checker.index.qual.NonNegative;
-import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
@@ -508,36 +507,35 @@ public final class SceneToStubWriter {
   }
 
   /**
-   * Print the hierarchy of outer classes up to and including the given class, and return the number
-   * of curly braces to close with. The classes are printed with appropriate opening curly braces,
-   * in standard Java style.
+   * Print the enclosing classes up to and including the given class, and return the number of curly
+   * braces to close with. The classes are printed with appropriate opening curly braces, in
+   * standard Java style.
    *
    * <p>In an AScene, an inner class name is a binary name like "Outer$Inner". In a stub file, inner
    * classes must be nested, as in Java source code.
    *
-   * @param basename the binary name of the class without the package part
-   * @param aClass the AClass for {@code basename}
+   * @param innermostTypeElt the class to print; its enclosing classes are printed around it
+   * @param aClass the AClass for {@code innermostTypeElt}
    * @param printWriter the writer where the class definition should be printed
    * @param checker the type-checker whose annotations are being written
    * @return the number of outer classes within which this class is nested
    */
   private static int printClassDefinitions(
-      String basename, AClass aClass, PrintWriter printWriter, BaseTypeChecker checker) {
-    String[] classNames = basename.split("\\$");
-    TypeElement innermostTypeElt = aClass.getTypeElement();
-    if (innermostTypeElt == null) {
-      throw new BugInCF("typeElement was unexpectedly null in this aClass: " + aClass);
-    }
-    TypeElement[] typeElements = getTypeElementsForClasses(innermostTypeElt, classNames);
+      TypeElement innermostTypeElt,
+      AClass aClass,
+      PrintWriter printWriter,
+      BaseTypeChecker checker) {
+    TypeElement[] typeElements = getTypeElementsForClasses(innermostTypeElt);
+    int classCount = typeElements.length;
 
-    for (int i = 0; i < classNames.length; i++) {
-      String nameToPrint = classNames[i];
-      if (i == classNames.length - 1) {
+    for (int i = 0; i < classCount; i++) {
+      String nameToPrint = typeElements[i].getSimpleName().toString();
+      if (i == classCount - 1) {
         printWriter.print(indents(i));
         printWriter.println("@AnnotatedFor(\"" + checker.getClass().getCanonicalName() + "\")");
       }
       printWriter.print(indents(i));
-      if (i == classNames.length - 1) {
+      if (i == classCount - 1) {
         // Only print class annotations on the innermost class, which corresponds to aClass.
         // If there should be class annotations on another class, it will have its own stub
         // file, which will eventually be merged with this one.
@@ -557,35 +555,42 @@ public final class SceneToStubWriter {
       printWriter.print(nameToPrint);
       printTypeParameters(typeElements[i], printWriter);
       printWriter.println(" {");
-      if (aClass.isEnum(nameToPrint) && i != classNames.length - 1) {
+      if (aClass.isEnum(nameToPrint) && i != classCount - 1) {
         // Print a blank set of enum constants if this is an outer enum.
         printWriter.println(indents(i + 1) + "/* omitted enum constants */ ;");
       }
       printWriter.println();
     }
-    return classNames.length;
+    return classCount;
   }
 
   /**
-   * Constructs an array of TypeElements corresponding to the list of classes.
+   * Constructs an array of the TypeElements for the given class and each of its enclosing classes,
+   * from outermost to innermost.
    *
-   * @param innermostTypeElt the innermost type element: either an inner class or an outer class
-   *     without any inner classes that should be printed
-   * @param classNames the names of the enclosing classes, from outer to inner
-   * @return an array of TypeElements whose entry at a given index represents the type named at that
-   *     index in {@code classNames}
+   * <p>This walks the enclosing elements rather than splitting the class's binary name at dollar
+   * signs, because a dollar sign in a binary name does not necessarily separate an enclosing class
+   * from a nested one: a dollar sign is legal in a Java identifier, as in {@code class Foo$Bar {}}.
+   *
+   * @param innermostTypeElt the innermost type element: the class to print, which is neither local
+   *     nor anonymous, nor nested within a local or anonymous class
+   * @return an array of TypeElements, from the outermost enclosing class to {@code
+   *     innermostTypeElt}
    */
-  private static TypeElement @SameLen("#2") [] getTypeElementsForClasses(
-      TypeElement innermostTypeElt, String @MinLen(1) [] classNames) {
-    TypeElement[] result = new TypeElement[classNames.length];
-    result[classNames.length - 1] = innermostTypeElt;
+  private static TypeElement @MinLen(1) [] getTypeElementsForClasses(TypeElement innermostTypeElt) {
+    int classCount = 0;
+    for (Element elt = innermostTypeElt;
+        elt instanceof TypeElement;
+        elt = elt.getEnclosingElement()) {
+      classCount++;
+    }
+    @SuppressWarnings("value:assignment") // classCount >= 1: innermostTypeElt is a TypeElement
+    TypeElement @MinLen(1) [] result = new TypeElement[classCount];
     Element elt = innermostTypeElt;
-    for (int i = classNames.length - 2; i >= 0; i--) {
-      elt = elt.getEnclosingElement();
-      // The cast is safe because the enclosing element of a class is only something other
-      // than a TypeElement (namely, an ExecutableElement) for a local or anonymous class,
-      // and isPrintable() rejects those classes and their nested classes.
+    for (int i = classCount - 1; i >= 0; i--) {
+      // The cast is safe because the loop above counted only TypeElements.
       result[i] = (TypeElement) elt;
+      elt = elt.getEnclosingElement();
     }
     return result;
   }
@@ -831,30 +836,41 @@ public final class SceneToStubWriter {
       BaseTypeChecker checker,
       PrintWriter printWriter) {
 
-    String basename = basenamePart(classname);
-    String innermostClassname =
-        basename.contains("$") ? basename.substring(basename.lastIndexOf('$') + 1) : basename;
+    TypeElement innermostTypeElt = aClass.getTypeElement();
+    if (innermostTypeElt == null) {
+      throw new BugInCF("typeElement was unexpectedly null in this aClass: " + aClass);
+    }
+    // Use the simple name from the type element rather than the last dollar-sign-separated part
+    // of the binary name, because a dollar sign is legal in a Java identifier.
+    String innermostClassname = innermostTypeElt.getSimpleName().toString();
     String pkg = packagePart(classname);
 
     if (pkg != null) {
       printWriter.println("package " + pkg + ";");
     }
 
-    int curlyCount = printClassDefinitions(basename, aClass, printWriter, checker);
+    int curlyCount = printClassDefinitions(innermostTypeElt, aClass, printWriter, checker);
 
     String indentLevel = indents(curlyCount);
 
     List<VariableElement> enumConstants = aClass.getEnumConstants();
-    if (enumConstants != null && !enumConstants.isEmpty()) {
-      StringJoiner sj = new StringJoiner(", ");
-      for (VariableElement enumConstant : enumConstants) {
-        sj.add(enumConstant.getSimpleName());
-      }
+    if (enumConstants != null) {
+      if (!enumConstants.isEmpty()) {
+        StringJoiner sj = new StringJoiner(", ");
+        for (VariableElement enumConstant : enumConstants) {
+          sj.add(enumConstant.getSimpleName());
+        }
 
-      printWriter.println(indentLevel + "// enum constants:");
-      printWriter.println();
-      printWriter.println(indentLevel + sj.toString() + ";");
-      printWriter.println();
+        printWriter.println(indentLevel + "// enum constants:");
+        printWriter.println();
+        printWriter.println(indentLevel + sj.toString() + ";");
+        printWriter.println();
+      } else if (!aClass.getFields().isEmpty() || !aClass.getMethods().isEmpty()) {
+        // An enum with no enum constants but with body declarations still needs the semicolon
+        // that separates the (empty) list of enum constants from the body declarations.
+        printWriter.println(indentLevel + ";");
+        printWriter.println();
+      }
     }
 
     printFields(aClass, printWriter, indentLevel);
