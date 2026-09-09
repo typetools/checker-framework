@@ -4858,10 +4858,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return getAnnotatedType(assignmentTree.getVariable());
       }
       case RETURN -> {
-        Tree enclosing =
-            TreePathUtil.enclosingOfKind(
-                getPath(parentTree),
-                new HashSet<>(Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION)));
+        Tree enclosing = TreePathUtil.enclosingMethodOrLambda(getPath(parentTree));
         if (enclosing instanceof MethodTree enclosingMethod) {
           return getAnnotatedType(enclosingMethod.getReturnType());
         } else {
