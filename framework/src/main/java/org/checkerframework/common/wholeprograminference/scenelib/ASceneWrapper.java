@@ -199,17 +199,10 @@ public class ASceneWrapper {
       } else {
         // Verify that the existing value is consistent.
         List<VariableElement> existingEnumConstants = aClass.getEnumConstants();
-        if (existingEnumConstants.size() != enumConstants.size()) {
+        if (!existingEnumConstants.equals(enumConstants)) {
           throw new BugInCF(
-              "inconsistent enum constants in WPI for class "
-                  + classSymbol.getQualifiedName().toString());
-        }
-        for (int i = 0; i < enumConstants.size(); i++) {
-          if (!existingEnumConstants.get(i).equals(enumConstants.get(i))) {
-            throw new BugInCF(
-                "inconsistent enum constants in WPI for class "
-                    + classSymbol.getQualifiedName().toString());
-          }
+              "inconsistent enum constants in WPI for class %s: existing %s, new %s",
+              classSymbol.getQualifiedName(), existingEnumConstants, enumConstants);
         }
       }
     }
