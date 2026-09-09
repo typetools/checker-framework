@@ -3128,6 +3128,13 @@ public final class AnnotationFileParser {
             Node varDeclParent = varDecl.getParentNode().orElse(null);
             if (varDeclParent instanceof FieldDeclaration fieldDecl) {
               processField(fieldDecl, elt);
+            } else {
+              throw new BugInCF(
+                  "Expected FieldDeclaration parent for %s [%s], found %s [%s]",
+                  varDecl,
+                  varDecl.getClass(),
+                  varDeclParent,
+                  varDeclParent == null ? "null" : varDeclParent.getClass());
             }
           }
 
