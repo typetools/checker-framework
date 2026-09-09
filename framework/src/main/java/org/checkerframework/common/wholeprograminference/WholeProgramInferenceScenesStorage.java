@@ -108,27 +108,34 @@ public class WholeProgramInferenceScenesStorage
   public final Set<String> modifiedScenes = new HashSet<>();
 
   /**
+   * A key for {@link #preconditionsToDeclaredTypes} and {@link #postconditionsToDeclaredTypes}: the
+   * method to which a contract applies, together with the expression to which it applies.
+   *
+   * <p>The class name is part of the key because {@link AMethod#methodSignature} does not include
+   * the enclosing class, and an {@link AMethod} is unique only within its {@link AClass}. Without
+   * the class name, same-signature methods in different classes would collide.
+   *
+   * @param className the name of the class that declares the method; the key under which the
+   *     method's {@link AClass} is stored in its scene
+   * @param methodSignature the method signature, as in {@link AMethod#methodSignature}
+   * @param expression the expression to which the contract applies
+   */
+  private record ContractKey(String className, String methodSignature, String expression) {}
+
+  /**
    * This map relates inferred preconditions to the declared types of the expressions to which the
    * precondition applies. It is necessary to keep this map here because the AFU does not have a
    * dependency on the CF itself, where AnnotatedTypeMirror exists.
-   *
-   * <p>Each key is a pair of the string representation of the method signature as stored by {@link
-   * AMethod} to which the precondition applies and the expression to which the precondition
-   * applies.
    */
-  private final Map<IPair<String, String>, AnnotatedTypeMirror> preconditionsToDeclaredTypes =
+  private final Map<ContractKey, AnnotatedTypeMirror> preconditionsToDeclaredTypes =
       new HashMap<>();
 
   /**
    * This map relates inferred postconditions to the declared types of the expressions to which the
    * postcondition applies. It is necessary to keep this map here because the AFU does not have a
    * dependency on the CF itself, where AnnotatedTypeMirror exists.
-   *
-   * <p>Each key is a pair of the string representation of the method signature as stored by {@link
-   * AMethod} to which the postcondition applies and the expression to which the postcondition
-   * applies.
    */
-  private final Map<IPair<String, String>, AnnotatedTypeMirror> postconditionsToDeclaredTypes =
+  private final Map<ContractKey, AnnotatedTypeMirror> postconditionsToDeclaredTypes =
       new HashMap<>();
 
   /** The directory for reading and writing .jaif files. */
@@ -341,7 +348,7 @@ public class WholeProgramInferenceScenesStorage
       AnnotatedTypeMirror declaredType) {
     AMethod methodAnnos = getMethodAnnos(methodElement);
     preconditionsToDeclaredTypes.put(
-        IPair.of(methodAnnos.methodSignature, expression), declaredType);
+        contractKey(methodElement, methodAnnos, expression), declaredType);
     return methodAnnos.vivifyAndAddTypeMirrorToPrecondition(
             expression, declaredType.getUnderlyingType())
         .type;
@@ -364,22 +371,46 @@ public class WholeProgramInferenceScenesStorage
       AnnotatedTypeMirror declaredType) {
     AMethod methodAnnos = getMethodAnnos(methodElement);
     postconditionsToDeclaredTypes.put(
-        IPair.of(methodAnnos.methodSignature, expression), declaredType);
+        contractKey(methodElement, methodAnnos, expression), declaredType);
     return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(
             expression, declaredType.getUnderlyingType())
         .type;
   }
 
   /**
+   * Returns the key under which the declared type of {@code expression} is stored, for a contract
+   * on {@code methodElement}.
+   *
+   * <p>The class name is computed from {@code methodElement}, the same way that {@link
+   * #getMethodAnnos} computes it, rather than being taken from the {@code className} argument of
+   * {@link #getPreOrPostconditions}; that argument is sometimes a placeholder such as {@code
+   * "<unknown from updateFromMethodInvocation>"}.
+   *
+   * @param methodElement a method
+   * @param methodAnnos the annotations for {@code methodElement}, as returned by {@link
+   *     #getMethodAnnos}
+   * @param expression the expression to which the contract applies
+   * @return the key for the contract's expression
+   */
+  private ContractKey contractKey(
+      ExecutableElement methodElement, AMethod methodAnnos, String expression) {
+    return new ContractKey(
+        ElementUtils.getEnclosingClassName(methodElement), methodAnnos.methodSignature, expression);
+  }
+
+  /**
    * Fetches the declared type of an expression for which a precondition was inferred, for the given
    * AMethod.
    *
+   * @param className the name of the class that declares {@code m}, as stored in {@link
+   *     AClass#className}
    * @param m a method
    * @param expression the expression
    * @return the declared type
    */
-  public AnnotatedTypeMirror getPreconditionDeclaredType(AMethod m, String expression) {
-    IPair<String, String> key = IPair.of(m.methodSignature, expression);
+  public AnnotatedTypeMirror getPreconditionDeclaredType(
+      String className, AMethod m, String expression) {
+    ContractKey key = new ContractKey(className, m.methodSignature, expression);
     AnnotatedTypeMirror result = preconditionsToDeclaredTypes.get(key);
     if (result == null) {
       throw new BugInCF(
@@ -394,12 +425,15 @@ public class WholeProgramInferenceScenesStorage
    * Fetches the declared type of an expression for which a postcondition was inferred, for the
    * given AMethod.
    *
+   * @param className the name of the class that declares {@code m}, as stored in {@link
+   *     AClass#className}
    * @param m a method
    * @param expression the expression
    * @return the declared type
    */
-  public AnnotatedTypeMirror getPostconditionDeclaredType(AMethod m, String expression) {
-    IPair<String, String> key = IPair.of(m.methodSignature, expression);
+  public AnnotatedTypeMirror getPostconditionDeclaredType(
+      String className, AMethod m, String expression) {
+    ContractKey key = new ContractKey(className, m.methodSignature, expression);
     AnnotatedTypeMirror result = postconditionsToDeclaredTypes.get(key);
     if (result == null) {
       throw new BugInCF(

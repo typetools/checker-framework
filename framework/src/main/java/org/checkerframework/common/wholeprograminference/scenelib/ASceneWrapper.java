@@ -157,7 +157,7 @@ public class ASceneWrapper {
               for (Map.Entry<String, AMethod> methodEntry : aClass.getMethods().entrySet()) {
                 AMethod aMethod = methodEntry.getValue();
                 List<AnnotationMirror> contractAnnotationMirrors =
-                    checker.getTypeFactory().getContractAnnotations(aMethod);
+                    checker.getTypeFactory().getContractAnnotations(aClass.className, aMethod);
                 List<Annotation> contractAnnotations =
                     CollectionsP.mapList(
                         AnnotationConverter::annotationMirrorToAnnotation,

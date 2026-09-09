@@ -2670,12 +2670,14 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>This overload must only be called when using WholeProgramInferenceScenes.
    *
+   * @param className the name of the class that declares {@code m}, as stored in {@code
+   *     AClass.className}
    * @param m the AFU representation of a method
    * @return the contract annotations for the method
    */
-  public List<AnnotationMirror> getContractAnnotations(AMethod m) {
-    List<AnnotationMirror> preconds = getPreconditionAnnotations(m);
-    List<AnnotationMirror> postconds = getPostconditionAnnotations(m, preconds);
+  public List<AnnotationMirror> getContractAnnotations(String className, AMethod m) {
+    List<AnnotationMirror> preconds = getPreconditionAnnotations(className, m);
+    List<AnnotationMirror> postconds = getPostconditionAnnotations(className, m, preconds);
 
     List<AnnotationMirror> result = preconds;
     result.addAll(postconds);
@@ -2687,10 +2689,12 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>This overload must only be called when using WholeProgramInferenceScenes.
    *
+   * @param className the name of the class that declares {@code m}, as stored in {@code
+   *     AClass.className}
    * @param m the AFU representation of a method
    * @return the precondition annotations for the method
    */
-  public List<AnnotationMirror> getPreconditionAnnotations(AMethod m) {
+  public List<AnnotationMirror> getPreconditionAnnotations(String className, AMethod m) {
     int size = m.getPreconditions().size();
     List<AnnotationMirror> result = new ArrayList<>(size);
     if (size == 0) {
@@ -2710,7 +2714,8 @@ public abstract class GenericAnnotatedTypeFactory<
                 + entry.getValue().toString());
       }
 
-      AnnotatedTypeMirror declaredType = storage.getPreconditionDeclaredType(m, entry.getKey());
+      AnnotatedTypeMirror declaredType =
+          storage.getPreconditionDeclaredType(className, m, entry.getKey());
       AnnotatedTypeMirror inferredType =
           storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
       result.addAll(getPreconditionAnnotations(entry.getKey(), inferredType, declaredType));
@@ -2724,13 +2729,15 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>This overload must only be called when using WholeProgramInferenceScenes.
    *
+   * @param className the name of the class that declares {@code m}, as stored in {@code
+   *     AClass.className}
    * @param m the AFU representation of a method
    * @param preconds the precondition annotations for the method; used to suppress redundant
    *     postconditions
    * @return the postcondition annotations for the method
    */
   public List<AnnotationMirror> getPostconditionAnnotations(
-      AMethod m, List<AnnotationMirror> preconds) {
+      String className, AMethod m, List<AnnotationMirror> preconds) {
     int size = m.getPostconditions().size();
     List<AnnotationMirror> result = new ArrayList<>(size);
     if (size == 0) {
@@ -2750,7 +2757,8 @@ public abstract class GenericAnnotatedTypeFactory<
                 + entry.getValue().toString());
       }
 
-      AnnotatedTypeMirror declaredType = storage.getPostconditionDeclaredType(m, entry.getKey());
+      AnnotatedTypeMirror declaredType =
+          storage.getPostconditionDeclaredType(className, m, entry.getKey());
       AnnotatedTypeMirror inferredType =
           storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
       result.addAll(
