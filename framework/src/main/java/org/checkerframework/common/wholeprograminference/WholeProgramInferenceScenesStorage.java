@@ -935,8 +935,7 @@ public class WholeProgramInferenceScenesStorage
     } else if (curATM.getKind() == TypeKind.TYPEVAR) {
       // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
       // annotated.  So instead, only insert the annotation if there is not primary annotation
-      // of the same hierarchy.  #shouldIgnore prevent annotations that are subtypes of type
-      // vars upper bound from being inserted.
+      // of the same hierarchy.
       for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
         if (curATM.getPrimaryAnnotationInHierarchy(am) != null) {
           // Don't insert if the type already has a primary annotation in the same hierarchy.
@@ -947,13 +946,18 @@ public class WholeProgramInferenceScenesStorage
       }
     }
 
-    // Recursively update the component type of an array, if the type is an array.
+    // Recursively update the component type of an array.  Both newATM and curATM must be
+    // arrays, because one might be a declared type even if the other is an array: it is
+    // permitted to assign, e.g., a String[] to a location whose static type is Object, and
+    // vice versa (if a cast is used).
+    //
     // Type variables are deliberately not treated analogously: WPI does not infer
     // type-variable bounds, and the bounds of an AnnotatedTypeVariable for a *use* of a type
     // variable are copied from its *declaration*.  Writing them out would record the
-    // declaration's bounds at the use site.  (The read path, updateAtmFromATypeElement, does
-    // recur into a type variable's upper bound, so that bounds written by some other tool into
-    // the .jaif file are preserved rather than discarded.)
+    // declaration's bounds at the use site.
+    // TODO: The read path, updateAtmFromATypeElement, is asymmetric with this one: it does
+    // recur into a type variable's upper bound.  The ajava implementation deliberately does
+    // not, to avoid accidentally substituting the use of a type variable for its declaration.
     if (newATM.getKind() == TypeKind.ARRAY && curATM.getKind() == TypeKind.ARRAY) {
       AnnotatedArrayType newAAT = (AnnotatedArrayType) newATM;
       AnnotatedArrayType oldAAT = (AnnotatedArrayType) curATM;
