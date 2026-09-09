@@ -47,7 +47,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -81,12 +80,6 @@ public class WholeProgramInferenceScenesStorage
   /** Annotations that should not be output to a .jaif or stub file. */
   private final AnnotationsInContexts annosToIgnore = new AnnotationsInContexts();
 
-  /**
-   * If true, assignments where the rhs is null are ignored. Its value is that of {@link
-   * AnnotatedTypeFactory#wpiShouldIgnoreNullAssignments}, which explains the rationale.
-   */
-  private final boolean ignoreNullAssignments;
-
   /** Maps .jaif file paths (Strings) to Scenes. Relative to inferOutputDirectory. */
   public final Map<String, ASceneWrapper> scenes = new HashMap<>();
 
@@ -97,8 +90,8 @@ public class WholeProgramInferenceScenesStorage
    * {@link #getJaifPath} method.
    *
    * <p>Modifying a Scene means adding (or changing) a type annotation for a field, method return
-   * type, or method parameter type in the Scene. (Scenes are modified by the method {@link
-   * #updateAnnotationSetInScene}.)
+   * type, or method parameter type in the Scene. (A Scene is marked as modified by the method
+   * {@link #setFileModified}.)
    */
   public final Set<String> modifiedScenes = new HashSet<>();
 
@@ -136,7 +129,6 @@ public class WholeProgramInferenceScenesStorage
   public WholeProgramInferenceScenesStorage(
       AnnotatedTypeFactory atypeFactory, String inferOutputDirectory) {
     this.atypeFactory = atypeFactory;
-    this.ignoreNullAssignments = atypeFactory.wpiShouldIgnoreNullAssignments();
     try {
       this.inferOutputDirectory = Path.of(inferOutputDirectory);
     } catch (InvalidPathException e) {
@@ -467,8 +459,8 @@ public class WholeProgramInferenceScenesStorage
   }
 
   /**
-   * Write all modified scenes into files. (Scenes are modified by the method {@link
-   * #updateAnnotationSetInScene}.)
+   * Write all modified scenes into files. (A Scene is marked as modified by the method {@link
+   * #setFileModified}.)
    *
    * @param outputFormat the output format to use when writing files
    * @param checker the checker from which this method is called, for naming stub files
@@ -556,54 +548,6 @@ public class WholeProgramInferenceScenesStorage
    */
   protected AClass getAClass(@BinaryName String className, String jaifPath) {
     return getAClass(className, jaifPath, null);
-  }
-
-  /**
-   * Updates the set of annotations in a location of a Scene, as the result of a pseudo-assignment.
-   *
-   * <ul>
-   *   <li>If there was no previous annotation for that location, then the updated set will be the
-   *       annotations in rhsATM.
-   *   <li>If there was a previous annotation, the updated set will be the LUB between the previous
-   *       annotation and rhsATM.
-   * </ul>
-   *
-   * @param type the ATypeElement of the Scene which will be modified
-   * @param jaifPath path to a .jaif file for a Scene; used for marking the scene as modified
-   *     (needing to be written to disk)
-   * @param rhsATM the RHS of the annotated type on the source code
-   * @param lhsATM the LHS of the annotated type on the source code
-   * @param defLoc the location where the annotation will be added
-   * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
-   *     source code
-   */
-  protected void updateAnnotationSetInScene(
-      ATypeElement type,
-      TypeUseLocation defLoc,
-      AnnotatedTypeMirror rhsATM,
-      AnnotatedTypeMirror lhsATM,
-      String jaifPath,
-      boolean ignoreIfAnnotated) {
-    if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
-      return;
-    }
-    TypeMirror rhsTM = rhsATM.getUnderlyingType();
-    AnnotatedTypeMirror atmFromScene = atmFromStorageLocation(rhsTM, type);
-    updateAtmWithLub(rhsATM, atmFromScene);
-    if (lhsATM instanceof AnnotatedTypeVariable atv) {
-      AnnotationMirrorSet upperAnnos = atv.getUpperBound().getAnnotations();
-      // If the inferred type is a subtype of the upper bounds of the
-      // current type on the source code, halt.
-      if (upperAnnos.size() == rhsATM.getPrimaryAnnotations().size()
-          && atypeFactory
-              .getQualifierHierarchy()
-              .isSubtypeShallow(
-                  rhsATM.getPrimaryAnnotations(), rhsTM, upperAnnos, lhsATM.getUnderlyingType())) {
-        return;
-      }
-    }
-    updateTypeElementFromATM(type, defLoc, rhsATM, lhsATM, ignoreIfAnnotated);
-    modifiedScenes.add(jaifPath);
   }
 
   /**
