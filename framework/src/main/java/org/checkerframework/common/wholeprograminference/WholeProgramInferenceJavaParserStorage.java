@@ -795,13 +795,16 @@ public class WholeProgramInferenceJavaParserStorage
               }
             }
 
-            ClassOrInterfaceAnnos typeWrapper =
-                new ClassOrInterfaceAnnos(className, javaParserNode);
+            // `className` might already be mapped, because the name computed above is only
+            // a heuristic and can collide with the name of another class.  In that case, all
+            // inference is recorded on the already-mapped wrapper, so creating a second
+            // wrapper would leave a permanently-empty one in `sourceAnnos.types`.
             if (!classToAnnos.containsKey(className)) {
+              ClassOrInterfaceAnnos typeWrapper =
+                  new ClassOrInterfaceAnnos(className, javaParserNode);
               classToAnnos.put(className, typeWrapper);
+              sourceAnnos.types.add(typeWrapper);
             }
-
-            sourceAnnos.types.add(typeWrapper);
           }
 
           @Override
