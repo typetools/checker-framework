@@ -10,10 +10,8 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -90,18 +88,21 @@ public class WholeProgramInferenceScenesStorageTest {
    */
   @Test
   public void uncompilableSourceIsReported() {
+    // The class must be named "Outer", to match the file name that `elementsOf` uses, so that the
+    // type error is the only compilation error.
     String uncompilableSource =
         String.join(
             System.lineSeparator(),
             "package testpkg;",
-            "public class Uncompilable {",
+            "public class Outer {",
             "  int aField = \"not an int\";",
             "}");
     try {
       elementsOf(uncompilableSource);
     } catch (Error e) {
-      Assert.assertTrue(
-          "unexpected message: " + e.getMessage(), e.getMessage().startsWith("Cannot compile "));
+      String message = e.getMessage();
+      Assert.assertTrue("unexpected message: " + message, message.startsWith("Cannot compile "));
+      Assert.assertTrue("unexpected message: " + message, message.contains("incompatible types"));
       return;
     }
     Assert.fail("elementsOf did not report the compilation error in " + uncompilableSource);
@@ -165,20 +166,15 @@ public class WholeProgramInferenceScenesStorageTest {
     }
     // Without this check, a compilation error in `source` would be reported only as a missing
     // element, which is much harder to diagnose.
-    List<Diagnostic<? extends JavaFileObject>> errors = new ArrayList<>();
+    StringBuilder errors = new StringBuilder();
     for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
       if (diagnostic.getKind() == Diagnostic.Kind.ERROR) {
-        errors.add(diagnostic);
+        errors.append(System.lineSeparator());
+        errors.append(diagnostic);
       }
     }
-    if (!errors.isEmpty()) {
-      StringBuilder message = new StringBuilder("Cannot compile ");
-      message.append(source);
-      for (Diagnostic<? extends JavaFileObject> error : errors) {
-        message.append(System.lineSeparator());
-        message.append(error);
-      }
-      throw new Error(message.toString());
+    if (errors.length() != 0) {
+      throw new Error("Cannot compile " + source + errors);
     }
     Trees trees = Trees.instance(task);
     Map<String, Element> result = new LinkedHashMap<>();
