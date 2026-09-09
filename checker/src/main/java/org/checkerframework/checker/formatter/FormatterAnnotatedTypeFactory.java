@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.IllegalFormatException;
 import java.util.Set;
+import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -19,7 +20,6 @@ import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.formatter.qual.InvalidFormat;
 import org.checkerframework.checker.formatter.qual.UnknownFormat;
 import org.checkerframework.checker.formatter.util.FormatUtil;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -37,6 +37,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Adds {@link Format} to the type of tree, if it is a {@code String} or {@code char} literal that
@@ -94,13 +95,13 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * {@inheritDoc}
    *
    * <p>If a method is annotated with {@code @FormatMethod}, remove any {@code @Format} annotation
-   * from its first argument.
+   * from its format string parameter.
    */
   @Override
   public void wpiPrepareMethodForWriting(String className, AMethod method) {
     super.wpiPrepareMethodForWriting(className, method);
     if (hasFormatMethodAnno(method)) {
-      AField param = method.parameters.get(0);
+      AField param = formatStringParameter(method);
       if (param != null) {
         Set<Annotation> paramTypeAnnos = param.type.tlAnnotationsHere;
         paramTypeAnnos.removeIf(
@@ -110,10 +111,33 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
+   * Returns the format string parameter of the given method: its first formal parameter whose
+   * declared type is {@code String}, which is what {@code @FormatMethod} means by "format string".
+   *
+   * <p>Returns null if the method has no such parameter, or if nothing was inferred about it. A
+   * parameter about which nothing was inferred has no {@code @Format} annotation to remove.
+   *
+   * @param method the AFU representation of a method that is annotated as {@code @FormatMethod}
+   * @return the method's format string parameter, or null if there is none
+   * @see FormatterVisitor#formatStringIndex
+   */
+  private static @Nullable AField formatStringParameter(AMethod method) {
+    // `method.parameters` might not have an entry for every formal parameter, and its iteration
+    // order is not necessarily by increasing index, so sort by index (the map's key).
+    for (AField param : new TreeMap<>(method.parameters).values()) {
+      TypeMirror paramType = param.getTypeMirror();
+      if (paramType != null && TypesUtils.isString(paramType)) {
+        return param;
+      }
+    }
+    return null;
+  }
+
+  /**
    * {@inheritDoc}
    *
    * <p>If a method is annotated with {@code @FormatMethod}, remove any {@code @Format} annotation
-   * from its first argument.
+   * from its format string parameter.
    */
   @Override
   public void wpiPrepareMethodForWriting(
@@ -122,11 +146,37 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSubtypes) {
     super.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
     if (hasFormatMethodAnno(methodAnnos)) {
-      // The index is 0-based, so 0 is the first formal parameter.
-      @SuppressWarnings("nullness:assignment") // A format method has a formal parameter.
-      @NonNull AnnotatedTypeMirror atm = methodAnnos.getParameterType(0);
-      atm.removePrimaryAnnotationByClass(Format.class);
+      AnnotatedTypeMirror atm = formatStringParameterType(methodAnnos);
+      if (atm != null) {
+        atm.removePrimaryAnnotationByClass(Format.class);
+      }
     }
+  }
+
+  /**
+   * Returns the inferred type of the format string parameter of the given method: its first formal
+   * parameter whose declared type is {@code String}, which is what {@code @FormatMethod} means by
+   * "format string".
+   *
+   * <p>Returns null if the method has no such parameter, or if nothing was inferred about it. A
+   * parameter about which nothing was inferred has no {@code @Format} annotation to remove.
+   *
+   * @param methodAnnos the annotations of a method that is annotated as {@code @FormatMethod}
+   * @return the inferred type of the method's format string parameter, or null if there is none
+   * @see FormatterVisitor#formatStringIndex
+   */
+  private static @Nullable AnnotatedTypeMirror formatStringParameterType(
+      WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
+    int numParams = methodAnnos.declaration.getParameters().size();
+    for (int i = 0; i < numParams; i++) {
+      // getParameterType's index is 0-based.  It returns null if nothing was inferred about the
+      // parameter, in which case the parameter has no annotation to remove.
+      AnnotatedTypeMirror paramType = methodAnnos.getParameterType(i);
+      if (paramType != null && TypesUtils.isString(paramType.getUnderlyingType())) {
+        return paramType;
+      }
+    }
+    return null;
   }
 
   /**
