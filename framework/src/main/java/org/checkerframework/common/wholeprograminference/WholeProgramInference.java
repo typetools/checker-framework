@@ -106,13 +106,13 @@ public interface WholeProgramInference {
       MethodTree methodTree, ExecutableElement methodElt, AnnotatedExecutableType overriddenMethod);
 
   /**
-   * Updates the type of {@code lhs} based on an assignment of {@code rhs} to {@code lhs}.
+   * Updates the type of the formal parameter {@code lhs} based on an assignment of {@code rhs} to
+   * {@code lhs} within the body of the method that declares {@code lhs}.
    *
    * <ul>
-   *   <li>If there is no stored annotated type for lhs, then use the type of the corresponding
-   *       argument in the method call methodInvNode.
+   *   <li>If there is no stored annotated type for lhs, then use the type of rhs.
    *   <li>If there is a stored annotated type for lhs, then its new type will be the LUB between
-   *       the previous type and the type of the corresponding argument in the method call.
+   *       the previous type and the type of rhs.
    * </ul>
    *
    * @param lhs the node representing the formal parameter
