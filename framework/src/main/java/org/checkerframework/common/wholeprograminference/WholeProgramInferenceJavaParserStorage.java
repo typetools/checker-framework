@@ -864,8 +864,10 @@ public class WholeProgramInferenceJavaParserStorage
   /**
    * Calls {@link #addSourceFile(String)} for the file containing the given element.
    *
-   * @param element the element for the source file to add
+   * @param element the element for the source file to add; must be declared in source code that is
+   *     being compiled
    * @return path of the file containing {@code element}
+   * @throws BugInCF if {@code element} is not declared in source code that is being compiled
    */
   private String addClassesForElement(Element element) {
     if (!ElementUtils.isElementFromSourceCode(element)) {

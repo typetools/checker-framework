@@ -32,7 +32,12 @@ public interface WholeProgramInferenceStorage<T> {
    * Returns the file corresponding to the given element. This may side-effect the storage to load
    * the file if it hasn't been read yet.
    *
-   * @param elt an element
+   * <p>The element must be declared in source code that is being compiled; that is, {@link
+   * org.checkerframework.javacutil.ElementUtils#isElementFromSourceCode} must return true for it. A
+   * caller must test that precondition before calling this method, because an implementation is
+   * permitted to throw an exception when the precondition is violated.
+   *
+   * @param elt an element that is declared in source code that is being compiled
    * @return the path to the file where inference results for the element will be written
    */
   public String getFileForElement(Element elt);
