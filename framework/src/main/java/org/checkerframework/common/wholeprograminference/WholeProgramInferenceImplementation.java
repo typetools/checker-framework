@@ -118,7 +118,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   /** The storage for the inferred annotations. */
   private final WholeProgramInferenceStorage<T> storage;
 
-  /** If true, ignore assignments where the rhs is null. */
+  /**
+   * If true, ignore assignments where the rhs is null. This is the negation of {@link
+   * AnnotatedTypeFactory#wpiShouldInferFromNullAssignments}.
+   */
   private final boolean ignoreNullAssignments;
 
   /** The @{@link Deterministic} annotation. */
@@ -163,9 +166,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       boolean showWpiFailedInferences) {
     this.atypeFactory = atypeFactory;
     this.storage = storage;
-    boolean isNullness =
-        atypeFactory.getClass().getSimpleName().equals("NullnessAnnotatedTypeFactory");
-    this.ignoreNullAssignments = !isNullness;
+    this.ignoreNullAssignments = !atypeFactory.wpiShouldInferFromNullAssignments();
     this.showWpiFailedInferences = showWpiFailedInferences;
     DETERMINISTIC =
         AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), Deterministic.class);

@@ -18,8 +18,7 @@ used, from the following methods:
 `BaseTypeVisitor.processMethodTree()`,
 `WholeProgramInference.updateContracts()`,
 `WholeProgramInference.updateFromObjectCreation()`,
-`WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos.getPreconditionsForExpression()`,
-`WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos.getPostconditionsForExpression()`,
+`WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos.getPreOrPostconditionsForExpression()`,
 `WholeProgramInferenceScenesStorage.wpiPrepareMethodForWriting()`, and
 `WholeProgramInferenceStorage.getPreOrPostconditions()`.
 
