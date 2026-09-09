@@ -28,6 +28,12 @@ public class UserError extends RuntimeException {
   /**
    * Constructs a new CheckerError with a detail message composed from the given arguments.
    *
+   * <p>Beware: if the only argument is a {@code Throwable}, then Java instead selects {@link
+   * #UserError(String, Throwable)}, which uses {@code fmt} literally rather than as a format
+   * string, and uses the throwable as the cause. To format a throwable into the detail message,
+   * pass it as an explicit cause too, as in {@code new UserError(t, "Cannot read %s", t)}, or pass
+   * {@code t.getMessage()} as the format argument.
+   *
    * @param fmt the format string
    * @param args the arguments for the format string
    */

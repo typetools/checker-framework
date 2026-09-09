@@ -30,6 +30,18 @@ public class UserErrorTest {
   }
 
   /**
+   * A Throwable as the sole vararg selects the (String, Throwable) constructor: it is the cause,
+   * not a format argument.
+   */
+  @Test
+  public void testThrowableArgIsCause() {
+    IOException cause = new IOException("the cause");
+    UserError e = new UserError("Cannot read %s", cause);
+    Assert.assertEquals("Cannot read %s", e.getMessage());
+    Assert.assertSame(cause, e.getCause());
+  }
+
+  /**
    * A message that is not a format string is used literally, even if it contains a percent sign.
    */
   @Test

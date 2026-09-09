@@ -3252,13 +3252,23 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   //
 
   /**
-   * Log (that is, print) a user error.
+   * Log (that is, print) a user error, along with its causes if it has any.
    *
    * @param ce the user error to output
    */
   private void logUserError(UserError ce) {
-    String msg = ce.getMessage();
-    printMessage(msg);
+    if (ce.getCause() == null) {
+      printMessage(ce.getMessage());
+      return;
+    }
+    String lineSeparator =
+        getOptions().getOrDefault("exceptionLineSeparator", System.lineSeparator());
+    StringJoiner msg = new StringJoiner(lineSeparator);
+    msg.add(ce.getMessage());
+    for (Throwable cause = ce.getCause(); cause != null; cause = cause.getCause()) {
+      msg.add("  Underlying cause: " + cause);
+    }
+    printMessage(msg.toString());
   }
 
   /**
