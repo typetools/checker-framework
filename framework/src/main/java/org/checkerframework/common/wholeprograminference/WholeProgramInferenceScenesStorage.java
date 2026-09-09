@@ -1002,7 +1002,6 @@ public class WholeProgramInferenceScenesStorage
    * @return a string representation of the argument
    */
   public static String aTypeElementToString(ATypeElement aType) {
-    // return aType.description.toString() + aType.tlAnnotationsHere;
     return aType.description.toString();
   }
 
