@@ -10,9 +10,9 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -22,6 +22,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
@@ -30,8 +31,11 @@ import javax.tools.ToolProvider;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link WholeProgramInferenceScenesStorage}. */
 public class WholeProgramInferenceScenesStorageTest {
@@ -64,12 +68,15 @@ public class WholeProgramInferenceScenesStorageTest {
   private static final Map<String, Element> elements = elementsOf(SOURCE);
 
   /**
-   * A checker, needed to construct a {@link WholeProgramInferenceScenesStorage}. Any concrete
-   * checker would do; {@code ValueChecker} is one that the framework tests already depend on.
+   * A checker, needed to construct a {@link WholeProgramInferenceScenesStorage} and to write out
+   * its results. Writing a Scene that contains a method consults {@code checker.getTypeFactory()},
+   * to compute the method's contracts, so the checker must be initialized rather than merely
+   * constructed. {@code ValueChecker} is a concrete checker that the framework tests already depend
+   * on; any other concrete checker would do.
    */
   private static final ValueChecker checker = new ValueChecker();
 
-  /** A type factory, needed to construct a {@link WholeProgramInferenceScenesStorage}. */
+  /** The type factory of {@link #checker}. */
   private static final AnnotatedTypeFactory typeFactory;
 
   static {
@@ -82,8 +89,12 @@ public class WholeProgramInferenceScenesStorageTest {
     javac.enterDone();
 
     checker.init(env);
-    typeFactory = new AnnotatedTypeFactory(checker);
+    checker.initChecker();
+    typeFactory = checker.getTypeFactory();
   }
+
+  /** The directory that whole-program inference writes its results into. */
+  @Rule public TemporaryFolder outputDirectory = new TemporaryFolder();
 
   @Test
   public void classes() {
@@ -119,59 +130,91 @@ public class WholeProgramInferenceScenesStorageTest {
    * invariant, on which {@code writeResultsToFile} depends.
    */
   @Test
-  public void setFileModifiedForFileWithoutScene() throws IOException {
-    Path outputDirectory = Files.createTempDirectory("wpi-no-scene");
-    try {
-      WholeProgramInferenceScenesStorage storage =
-          new WholeProgramInferenceScenesStorage(typeFactory, outputDirectory.toString());
-      storage.setFileModified(outputDirectory.resolve("testpkg.Unknown.jaif").toString());
-      storage.writeResultsToFile(OutputFormat.JAIF, checker);
-      Assert.assertArrayEquals(
-          "wrote a file for a class with no Scene", new String[0], outputDirectory.toFile().list());
-    } finally {
-      deleteRecursively(outputDirectory.toFile());
-    }
+  public void setFileModifiedForFileWithoutScene() {
+    WholeProgramInferenceScenesStorage storage = newStorage();
+    storage.setFileModified(outputDirectoryPath().resolve("testpkg.Unknown.jaif").toString());
+    storage.writeResultsToFile(OutputFormat.JAIF, checker);
+    Assert.assertArrayEquals(
+        "wrote a file for a class with no Scene", new String[0], outputDirectory.getRoot().list());
   }
 
   /** A file is written out if a Scene was created for it and it was marked as modified. */
   @Test
-  public void setFileModifiedForFileWithScene() throws IOException {
-    Path outputDirectory = Files.createTempDirectory("wpi-scene");
-    try {
-      WholeProgramInferenceScenesStorage storage =
-          new WholeProgramInferenceScenesStorage(typeFactory, outputDirectory.toString());
-      TypeElement outer = (TypeElement) elements.get("Outer");
-      Assert.assertNotNull("no element named Outer", outer);
-      AnnotationMirror deprecated = outer.getAnnotationMirrors().get(0);
-      Assert.assertTrue(
-          "Outer is not annotated with @Deprecated",
-          storage.addClassDeclarationAnnotation(outer, deprecated));
-      storage.setFileModified(storage.getFileForElement(outer));
-      storage.writeResultsToFile(OutputFormat.JAIF, checker);
-      Assert.assertArrayEquals(
-          "did not write the .jaif file for testpkg.Outer",
-          new String[] {"testpkg.Outer.jaif"},
-          outputDirectory.toFile().list());
-    } finally {
-      deleteRecursively(outputDirectory.toFile());
-    }
+  public void setFileModifiedForFileWithScene() {
+    WholeProgramInferenceScenesStorage storage = newStorage();
+    TypeElement outer = (TypeElement) elements.get("Outer");
+    Assert.assertNotNull("no element named Outer", outer);
+    Assert.assertTrue(
+        "did not add @Deprecated to the Scene for testpkg.Outer",
+        storage.addClassDeclarationAnnotation(outer, deprecatedAnnotation(outer)));
+    storage.setFileModified(storage.getFileForElement(outer));
+    storage.writeResultsToFile(OutputFormat.JAIF, checker);
+    Assert.assertArrayEquals(
+        "did not write the .jaif file for testpkg.Outer",
+        new String[] {"testpkg.Outer.jaif"},
+        outputDirectory.getRoot().list());
   }
 
   /**
-   * Deletes {@code file}, and everything within it if it is a directory.
-   *
-   * @param file the file or directory to delete
+   * Writing out a Scene that contains a method consults the checker's type factory, to compute the
+   * method's contracts.
    */
-  private static void deleteRecursively(File file) {
-    File[] contents = file.listFiles();
-    if (contents != null) {
-      for (File child : contents) {
-        deleteRecursively(child);
+  @Test
+  public void writeSceneContainingMethod() throws IOException {
+    WholeProgramInferenceScenesStorage storage = newStorage();
+    ExecutableElement aMethod = (ExecutableElement) elements.get("aMethod");
+    TypeElement outer = (TypeElement) elements.get("Outer");
+    Assert.assertNotNull("no element named aMethod", aMethod);
+    Assert.assertNotNull("no element named Outer", outer);
+    Assert.assertTrue(
+        "did not add @Deprecated to the Scene for aMethod",
+        storage.addMethodDeclarationAnnotation(aMethod, deprecatedAnnotation(outer)));
+    storage.setFileModified(storage.getFileForElement(aMethod));
+    storage.writeResultsToFile(OutputFormat.JAIF, checker);
+    Path jaifFile = outputDirectoryPath().resolve("testpkg.Outer.jaif");
+    Assert.assertTrue("did not write " + jaifFile, Files.exists(jaifFile));
+    String jaifContents = new String(Files.readAllBytes(jaifFile), StandardCharsets.UTF_8);
+    Assert.assertTrue(
+        "@Deprecated is not on aMethod in "
+            + jaifFile
+            + ":"
+            + System.lineSeparator()
+            + jaifContents,
+        jaifContents.contains("method aMethod(I)V: @java.lang.Deprecated"));
+  }
+
+  /**
+   * Creates a storage that writes its results into {@link #outputDirectory}.
+   *
+   * @return a new storage that writes its results into {@link #outputDirectory}
+   */
+  private WholeProgramInferenceScenesStorage newStorage() {
+    return new WholeProgramInferenceScenesStorage(
+        typeFactory, outputDirectory.getRoot().toString());
+  }
+
+  /**
+   * Returns {@link #outputDirectory} as a path.
+   *
+   * @return {@link #outputDirectory} as a path
+   */
+  private Path outputDirectoryPath() {
+    return outputDirectory.getRoot().toPath();
+  }
+
+  /**
+   * Returns the {@code @Deprecated} annotation on {@code element}.
+   *
+   * @param element an element that is declared with a {@code @Deprecated} annotation
+   * @return the {@code @Deprecated} annotation on {@code element}
+   */
+  private static AnnotationMirror deprecatedAnnotation(Element element) {
+    for (AnnotationMirror anno : element.getAnnotationMirrors()) {
+      if (AnnotationUtils.areSameByName(anno, Deprecated.class.getCanonicalName())) {
+        return anno;
       }
     }
-    if (!file.delete()) {
-      throw new Error("Cannot delete " + file);
-    }
+    throw new AssertionError(element + " is not annotated with @Deprecated");
   }
 
   /**
