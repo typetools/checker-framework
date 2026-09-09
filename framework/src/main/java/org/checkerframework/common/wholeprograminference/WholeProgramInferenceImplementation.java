@@ -665,12 +665,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   public void updateFieldFromType(
       Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
 
+    // This test also verifies that the element is presented as source code, which is a
+    // precondition of storage.getFileForElement().
     if (ignoreFieldInWPI(element, fieldName)) {
-      return;
-    }
-
-    // Don't infer types for code that isn't presented as source.
-    if (!ElementUtils.isElementFromSourceCode(element)) {
       return;
     }
 
@@ -687,7 +684,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   }
 
   /**
-   * Returns true if an assignment to the given field should be ignored by WPI.
+   * Returns true if an assignment to the given field should be ignored by WPI. In particular, this
+   * returns true if the field is not presented as source code.
    *
    * @param element the field's element
    * @param fieldName the field's name
