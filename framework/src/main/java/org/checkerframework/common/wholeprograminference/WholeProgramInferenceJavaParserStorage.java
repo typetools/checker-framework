@@ -1912,6 +1912,7 @@ public class WholeProgramInferenceJavaParserStorage
       sj.add("paramsDeclAnnos = " + paramsDeclAnnos);
       sj.add("declarationAnnotations = " + declarationAnnotations);
       sj.add("preconditions = " + preconditions);
+      sj.add("postconditions = " + postconditions);
       return sj.toString();
     }
   }
