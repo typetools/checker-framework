@@ -1081,7 +1081,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     // A version of sourceCodeATM that has the same kind as ajavaATM, so that the structures of
     // the two types can be compared below.  It is the same object as sourceCodeATM, unless the
-    // two kinds differ.  When it is a different object, changes to its nested types are lost:
+    // two kinds differ and sourceCodeATM is not a null type.  When it is a different object,
+    // changes to its nested types are lost:
     // only its primary annotations are copied back into sourceCodeATM, at the end of this
     // method.  (Nothing better is possible, because the two types have different structures.)
     AnnotatedTypeMirror sourceCodeATMasSuper = sourceCodeATM;
@@ -1096,11 +1097,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         // the bound on sourceCodeATM might be a declared type (such as T), while
         // the ajavaATM might be a typevar (such as S extends T), or vice-versa. In
         // that case, use asSuper to make the two ATMs fully-compatible.
-        // asSuper is passed a copy of ajavaATM because asSuper may side-effect (and even
-        // return) its last argument, and ajavaATM must not be modified: its annotations are
-        // one of the two inputs to the least upper bound computed below.
-        sourceCodeATMasSuper =
-            AnnotatedTypes.asSuper(this.atypeFactory, sourceCodeATM, ajavaATM.deepCopy());
+        sourceCodeATMasSuper = AnnotatedTypes.asSuper(this.atypeFactory, sourceCodeATM, ajavaATM);
       }
     }
 
