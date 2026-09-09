@@ -17,11 +17,11 @@ public class DefException extends Exception {
             + "\n  "
             + def1
             + "\n    "
-            + def1.source
+            + def1.getSource()
             + "\n  "
             + def2
             + "\n    "
-            + def2.source);
+            + def2.getSource());
     this.annotationType = annotationType;
   }
 }
