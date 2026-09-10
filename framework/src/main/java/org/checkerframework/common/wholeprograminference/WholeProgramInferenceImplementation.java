@@ -751,7 +751,15 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       gatf.getDependentTypesHelper().delocalize(rhsATM, methodDeclTree);
     }
     T returnTypeAnnos = storage.getReturnAnnotations(methodElt, lhsATM, atypeFactory);
-    updateAnnotationSet(returnTypeAnnos, TypeUseLocation.RETURN, rhsATM, lhsATM, file);
+    // updateAnnotationSet() side-effects its rhsATM argument, so pass a copy if rhsATM is
+    // used again below: every update must start from the type of the returned expression,
+    // unaffected by the other updates.
+    updateAnnotationSet(
+        returnTypeAnnos,
+        TypeUseLocation.RETURN,
+        overriddenMethods.isEmpty() ? rhsATM : rhsATM.deepCopy(),
+        lhsATM,
+        file);
 
     // Now, update return types of overridden methods based on the implementation we just saw.
     // This inference is similar to the inference procedure for method parameters: both are
@@ -781,7 +789,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       updateAnnotationSet(
           storedOverriddenMethodReturnTypeAnnotations,
           TypeUseLocation.RETURN,
-          rhsATM,
+          rhsATM.deepCopy(),
           overriddenMethodReturnType,
           superClassFile);
     }
@@ -980,7 +988,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    *
    * @param annotationsToUpdate the type whose annotations are modified by this method
    * @param defLoc the location where the annotation will be added
-   * @param rhsATM the RHS of the annotated type on the source code
+   * @param rhsATM the RHS of the annotated type on the source code; side-effected by this method
    * @param lhsATM the LHS of the annotated type on the source code
    * @param file the annotation file containing the executable; used for marking the scene as
    *     modified (needing to be written to disk)
@@ -1008,7 +1016,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    *
    * @param annotationsToUpdate the type whose annotations are modified by this method
    * @param defLoc the location where the annotation will be added
-   * @param rhsATM the RHS of the annotated type on the source code
+   * @param rhsATM the RHS of the annotated type on the source code; side-effected by this method
    * @param lhsATM the LHS of the annotated type on the source code
    * @param file annotation file containing the executable; used for marking the scene as modified
    *     (needing to be written to disk)
