@@ -33,6 +33,7 @@ import org.checkerframework.afu.scenelib.el.TypePathEntry;
 import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.checkerframework.afu.scenelib.util.JVMNames;
 import org.checkerframework.checker.index.qual.Positive;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -82,6 +83,13 @@ public class WholeProgramInferenceScenesStorage
   private final AnnotationsInContexts annosToIgnore = new AnnotationsInContexts();
 
   /**
+   * The binary names of the type qualifiers supported by {@link #atypeFactory}. It is lazily
+   * initialized by {@link #getSupportedAnnoNames}, rather than in the constructor, because this
+   * object is created while the type factory is still being constructed.
+   */
+  private @MonotonicNonNull Set<@BinaryName String> supportedAnnoNames = null;
+
+  /**
    * If true, assignments where the rhs is null are ignored.
    *
    * <p>If all assignments to a variable are null (because inference is being done with respect to a
@@ -93,7 +101,7 @@ public class WholeProgramInferenceScenesStorage
   private final boolean ignoreNullAssignments;
 
   /** Maps .jaif file paths (Strings) to Scenes. Relative to inferOutputDirectory. */
-  public final Map<String, ASceneWrapper> scenes = new HashMap<>();
+  private final Map<String, ASceneWrapper> scenes = new HashMap<>();
 
   /**
    * Scenes that were modified since the last time all Scenes were written into .jaif files. Each
@@ -105,7 +113,7 @@ public class WholeProgramInferenceScenesStorage
    * type, or method parameter type in the Scene. (Scenes are modified by the method {@link
    * #updateAnnotationSetInScene}.)
    */
-  public final Set<String> modifiedScenes = new HashSet<>();
+  private final Set<String> modifiedScenes = new HashSet<>();
 
   /**
    * This map relates inferred preconditions to the declared types of the expressions to which the
@@ -313,57 +321,23 @@ public class WholeProgramInferenceScenesStorage
       String expression,
       AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
+    AMethod methodAnnos = getMethodAnnos(methodElement);
+    String key = methodAnnos.methodSignature + expression;
     return switch (preOrPost) {
-      case BEFORE ->
-          getPreconditionsForExpression(className, methodElement, expression, declaredType);
-      case AFTER ->
-          getPostconditionsForExpression(className, methodElement, expression, declaredType);
+      case BEFORE -> {
+        preconditionsToDeclaredTypes.put(key, declaredType);
+        yield methodAnnos.vivifyAndAddTypeMirrorToPrecondition(
+                expression, declaredType.getUnderlyingType())
+            .type;
+      }
+      case AFTER -> {
+        postconditionsToDeclaredTypes.put(key, declaredType);
+        yield methodAnnos.vivifyAndAddTypeMirrorToPostcondition(
+                expression, declaredType.getUnderlyingType())
+            .type;
+      }
       default -> throw new BugInCF("Unexpected " + preOrPost);
     };
-  }
-
-  /**
-   * Returns the precondition annotations for a Java expression.
-   *
-   * @param className the class that contains the method, for diagnostics only
-   * @param methodElement the method
-   * @param expression the expression
-   * @param declaredType the declared type of the expression
-   * @return the precondition annotations for a Java expression
-   */
-  @SuppressWarnings("UnusedVariable")
-  private ATypeElement getPreconditionsForExpression(
-      String className,
-      ExecutableElement methodElement,
-      String expression,
-      AnnotatedTypeMirror declaredType) {
-    AMethod methodAnnos = getMethodAnnos(methodElement);
-    preconditionsToDeclaredTypes.put(methodAnnos.methodSignature + expression, declaredType);
-    return methodAnnos.vivifyAndAddTypeMirrorToPrecondition(
-            expression, declaredType.getUnderlyingType())
-        .type;
-  }
-
-  /**
-   * Returns the postcondition annotations for a Java expression.
-   *
-   * @param className the class that contains the method, for diagnostics only
-   * @param methodElement the method
-   * @param expression the expression
-   * @param declaredType the declared type of the expression
-   * @return the postcondition annotations for a Java expression
-   */
-  @SuppressWarnings("UnusedVariable")
-  private ATypeElement getPostconditionsForExpression(
-      String className,
-      ExecutableElement methodElement,
-      String expression,
-      AnnotatedTypeMirror declaredType) {
-    AMethod methodAnnos = getMethodAnnos(methodElement);
-    postconditionsToDeclaredTypes.put(methodAnnos.methodSignature + expression, declaredType);
-    return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(
-            expression, declaredType.getUnderlyingType())
-        .type;
   }
 
   /**
@@ -757,26 +731,54 @@ public class WholeProgramInferenceScenesStorage
   }
 
   /**
+   * Returns the binary names of the type qualifiers supported by the type factory associated with
+   * this.
+   *
+   * @return the binary names of the type qualifiers supported by this object's AnnotatedTypeFactory
+   */
+  private Set<@BinaryName String> getSupportedAnnoNames() {
+    if (supportedAnnoNames == null) {
+      Set<Class<? extends java.lang.annotation.Annotation>> supportedAnnos =
+          atypeFactory.getSupportedTypeQualifiers();
+      Set<@BinaryName String> result = new HashSet<>(MapsP.mapCapacity(supportedAnnos.size()));
+      for (Class<? extends java.lang.annotation.Annotation> clazz : supportedAnnos) {
+        @SuppressWarnings("signature:assignment") // an annotation is not an array or primitive
+        @BinaryName String annoName = clazz.getName();
+        result.add(annoName);
+      }
+      supportedAnnoNames = result;
+    }
+    return supportedAnnoNames;
+  }
+
+  /**
    * Returns a subset of annosSet, consisting of the annotations supported by the type factory
    * associated with this. These are not necessarily legal annotations: they have the right name,
    * but they may lack elements (fields).
+   *
+   * <p>The result is unmodifiable and is not aliased to {@code annosSet}.
    *
    * @param annosSet a set of annotations
    * @return the annotations supported by this object's AnnotatedTypeFactory
    */
   private Set<Annotation> getSupportedAnnosInSet(Set<Annotation> annosSet) {
-    Set<Annotation> output = new HashSet<>(1);
-    Set<Class<? extends java.lang.annotation.Annotation>> supportedAnnos =
-        atypeFactory.getSupportedTypeQualifiers();
+    // TODO: Remove comparison by name.
+    Set<@BinaryName String> supportedNames = getSupportedAnnoNames();
+    // Is lazily initialized, to avoid allocation when annosSet contains no supported
+    // annotation, which includes the common case that annosSet is empty.
+    Set<Annotation> output = null;
     for (Annotation anno : annosSet) {
-      for (Class<? extends java.lang.annotation.Annotation> clazz : supportedAnnos) {
-        // TODO: Remove comparison by name, and make this routine more efficient.
-        if (clazz.getName().equals(anno.def.name)) {
-          output.add(anno);
+      if (supportedNames.contains(anno.def.name)) {
+        if (output == null) {
+          output = new HashSet<>(MapsP.mapCapacity(annosSet.size()));
         }
+        output.add(anno);
       }
     }
-    return output;
+    if (output == null) {
+      return Collections.emptySet();
+    }
+    return Collections.unmodifiableSet(output);
   }
 
   @Override
@@ -939,9 +941,9 @@ public class WholeProgramInferenceScenesStorage
       // vars upper bound from being inserted.
       for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
         if (curATM.getPrimaryAnnotationInHierarchy(am) != null) {
-          // Don't insert if the type is already has a primary annotation
-          // in the same hierarchy.
-          break;
+          // Don't insert if the type already has a primary annotation in the same hierarchy.
+          // Other hierarchies are still handled, so this is `continue` rather than `break`.
+          continue;
         }
         addAnnotationsToATypeElement(newATM, typeToUpdate, defLoc, am, curATM.hasAnnotation(am));
       }
@@ -961,6 +963,20 @@ public class WholeProgramInferenceScenesStorage
     }
   }
 
+  /**
+   * Adds annotation {@code am} to {@code typeToUpdate}. If {@code am} should not be written into
+   * the source code -- either because the source code already has that annotation, or because
+   * {@link #shouldIgnore} returns true for it -- then this method also records {@code am} in {@link
+   * #annosToIgnore}, which prevents it from being written to the .jaif or stub file.
+   *
+   * @param newATM the AnnotatedTypeMirror that {@code am} is a primary annotation of; used only to
+   *     determine whether {@code am} should be ignored
+   * @param typeToUpdate the ATypeElement that will be updated
+   * @param defLoc the location where the annotation will be added
+   * @param am the annotation to add to {@code typeToUpdate}
+   * @param isEffectiveAnnotation true if {@code am} is already an effective annotation of the type
+   *     in the source code, in which case writing it into the source code would be redundant
+   */
   private void addAnnotationsToATypeElement(
       AnnotatedTypeMirror newATM,
       ATypeElement typeToUpdate,
@@ -988,7 +1004,6 @@ public class WholeProgramInferenceScenesStorage
    * @return a string representation of the argument
    */
   public static String aTypeElementToString(ATypeElement aType) {
-    // return aType.description.toString() + aType.tlAnnotationsHere;
     return aType.description.toString();
   }
 
