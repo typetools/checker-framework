@@ -101,7 +101,7 @@ public class WholeProgramInferenceScenesStorage
   private final boolean ignoreNullAssignments;
 
   /** Maps .jaif file paths (Strings) to Scenes. Relative to inferOutputDirectory. */
-  public final Map<String, ASceneWrapper> scenes = new HashMap<>();
+  private final Map<String, ASceneWrapper> scenes = new HashMap<>();
 
   /**
    * Scenes that were modified since the last time all Scenes were written into .jaif files. Each
@@ -113,7 +113,7 @@ public class WholeProgramInferenceScenesStorage
    * type, or method parameter type in the Scene. (Scenes are modified by the method {@link
    * #updateAnnotationSetInScene}.)
    */
-  public final Set<String> modifiedScenes = new HashSet<>();
+  private final Set<String> modifiedScenes = new HashSet<>();
 
   /**
    * This map relates inferred preconditions to the declared types of the expressions to which the
@@ -321,57 +321,23 @@ public class WholeProgramInferenceScenesStorage
       String expression,
       AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
+    AMethod methodAnnos = getMethodAnnos(methodElement);
+    String key = methodAnnos.methodSignature + expression;
     return switch (preOrPost) {
-      case BEFORE ->
-          getPreconditionsForExpression(className, methodElement, expression, declaredType);
-      case AFTER ->
-          getPostconditionsForExpression(className, methodElement, expression, declaredType);
+      case BEFORE -> {
+        preconditionsToDeclaredTypes.put(key, declaredType);
+        yield methodAnnos.vivifyAndAddTypeMirrorToPrecondition(
+                expression, declaredType.getUnderlyingType())
+            .type;
+      }
+      case AFTER -> {
+        postconditionsToDeclaredTypes.put(key, declaredType);
+        yield methodAnnos.vivifyAndAddTypeMirrorToPostcondition(
+                expression, declaredType.getUnderlyingType())
+            .type;
+      }
       default -> throw new BugInCF("Unexpected " + preOrPost);
     };
-  }
-
-  /**
-   * Returns the precondition annotations for a Java expression.
-   *
-   * @param className the class that contains the method, for diagnostics only
-   * @param methodElement the method
-   * @param expression the expression
-   * @param declaredType the declared type of the expression
-   * @return the precondition annotations for a Java expression
-   */
-  @SuppressWarnings("UnusedVariable")
-  private ATypeElement getPreconditionsForExpression(
-      String className,
-      ExecutableElement methodElement,
-      String expression,
-      AnnotatedTypeMirror declaredType) {
-    AMethod methodAnnos = getMethodAnnos(methodElement);
-    preconditionsToDeclaredTypes.put(methodAnnos.methodSignature + expression, declaredType);
-    return methodAnnos.vivifyAndAddTypeMirrorToPrecondition(
-            expression, declaredType.getUnderlyingType())
-        .type;
-  }
-
-  /**
-   * Returns the postcondition annotations for a Java expression.
-   *
-   * @param className the class that contains the method, for diagnostics only
-   * @param methodElement the method
-   * @param expression the expression
-   * @param declaredType the declared type of the expression
-   * @return the postcondition annotations for a Java expression
-   */
-  @SuppressWarnings("UnusedVariable")
-  private ATypeElement getPostconditionsForExpression(
-      String className,
-      ExecutableElement methodElement,
-      String expression,
-      AnnotatedTypeMirror declaredType) {
-    AMethod methodAnnos = getMethodAnnos(methodElement);
-    postconditionsToDeclaredTypes.put(methodAnnos.methodSignature + expression, declaredType);
-    return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(
-            expression, declaredType.getUnderlyingType())
-        .type;
   }
 
   /**
@@ -1038,7 +1004,6 @@ public class WholeProgramInferenceScenesStorage
    * @return a string representation of the argument
    */
   public static String aTypeElementToString(ATypeElement aType) {
-    // return aType.description.toString() + aType.tlAnnotationsHere;
     return aType.description.toString();
   }
 
