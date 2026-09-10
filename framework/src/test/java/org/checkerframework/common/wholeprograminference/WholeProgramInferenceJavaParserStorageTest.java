@@ -8,6 +8,7 @@ import com.sun.tools.javac.util.Context;
 import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos;
+import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.junit.Assert;
@@ -58,10 +59,20 @@ public class WholeProgramInferenceJavaParserStorageTest {
     AnnotatedTypeMirror stringType =
         AnnotatedTypeMirror.createType(
             env.getElementUtils().getTypeElement("java.lang.String").asType(), typeFactory, false);
-    methodAnnos.getPreconditionsForExpression(
-        "testpkg.Outer", "aMethod", "this.aPreconditionField", stringType, typeFactory);
-    methodAnnos.getPostconditionsForExpression(
-        "testpkg.Outer", "aMethod", "this.aPostconditionField", stringType, typeFactory);
+    methodAnnos.getPreOrPostconditionsForExpression(
+        Analysis.BeforeOrAfter.BEFORE,
+        "testpkg.Outer",
+        "aMethod",
+        "this.aPreconditionField",
+        stringType,
+        typeFactory);
+    methodAnnos.getPreOrPostconditionsForExpression(
+        Analysis.BeforeOrAfter.AFTER,
+        "testpkg.Outer",
+        "aMethod",
+        "this.aPostconditionField",
+        stringType,
+        typeFactory);
 
     String methodAnnosString = methodAnnos.toString();
     Assert.assertTrue(methodAnnosString, methodAnnosString.contains("testpkg.Outer.aMethod"));
