@@ -95,6 +95,7 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceIm
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.InferredDeclared;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
+import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -5921,11 +5922,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           inferredType.replaceAnnotations(declaredType.getPrimaryAnnotations());
         } else {
           AnnotatedTypeMirror otherInferredType =
-              isPrecondition
-                  ? otherDeclAnnos.getPreconditionsForExpression(
-                      className, methodName, expr, declaredType, this)
-                  : otherDeclAnnos.getPostconditionsForExpression(
-                      className, methodName, expr, declaredType, this);
+              otherDeclAnnos.getPreOrPostconditionsForExpression(
+                  isPrecondition ? Analysis.BeforeOrAfter.BEFORE : Analysis.BeforeOrAfter.AFTER,
+                  className,
+                  methodName,
+                  expr,
+                  declaredType,
+                  this);
           this.getWholeProgramInference().updateAtmWithLub(inferredType, otherInferredType);
         }
       }
