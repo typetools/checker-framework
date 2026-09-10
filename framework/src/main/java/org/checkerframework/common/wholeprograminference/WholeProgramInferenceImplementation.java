@@ -1093,6 +1093,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   @Override
   public void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM) {
 
+    // A version of sourceCodeATM that has the same kind as ajavaATM, so that the structures of
+    // the two types can be compared below.  It is the same object as sourceCodeATM, unless the
+    // two kinds differ and sourceCodeATM is not a null type.  When it is a different object,
+    // changes to its nested types are lost:
+    // only its primary annotations are copied back into sourceCodeATM, at the end of this
+    // method.  (Nothing better is possible, because the two types have different structures.)
+    AnnotatedTypeMirror sourceCodeATMasSuper = sourceCodeATM;
+
     if (sourceCodeATM.getKind() != ajavaATM.getKind()) {
       // Ignore null types: passing them to asSuper causes a crash, as they cannot be
       // substituted for type variables. If sourceCodeATM is a null type, only the primary
@@ -1103,17 +1111,17 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         // the bound on sourceCodeATM might be a declared type (such as T), while
         // the ajavaATM might be a typevar (such as S extends T), or vice-versa. In
         // that case, use asSuper to make the two ATMs fully-compatible.
-        sourceCodeATM = AnnotatedTypes.asSuper(this.atypeFactory, sourceCodeATM, ajavaATM);
+        sourceCodeATMasSuper = AnnotatedTypes.asSuper(this.atypeFactory, sourceCodeATM, ajavaATM);
       }
     }
 
-    switch (sourceCodeATM.getKind()) {
+    switch (sourceCodeATMasSuper.getKind()) {
       case TYPEVAR -> {
         updateAtmWithLub(
-            ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
+            ((AnnotatedTypeVariable) sourceCodeATMasSuper).getLowerBound(),
             ((AnnotatedTypeVariable) ajavaATM).getLowerBound());
         updateAtmWithLub(
-            ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
+            ((AnnotatedTypeVariable) sourceCodeATMasSuper).getUpperBound(),
             ((AnnotatedTypeVariable) ajavaATM).getUpperBound());
       }
       case WILDCARD -> {}
@@ -1131,7 +1139,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       //         ((AnnotatedWildcardType) ajavaATM).getSuperBound());
       case ARRAY -> {
         AnnotatedTypeMirror sourceCodeComponent =
-            ((AnnotatedArrayType) sourceCodeATM).getComponentType();
+            ((AnnotatedArrayType) sourceCodeATMasSuper).getComponentType();
         AnnotatedTypeMirror ajavaComponent = ((AnnotatedArrayType) ajavaATM).getComponentType();
         if (sourceCodeComponent.getKind() == ajavaComponent.getKind()) {
           updateAtmWithLub(sourceCodeComponent, ajavaComponent);
@@ -1157,7 +1165,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     // LUB primary annotations
     AnnotationMirrorSet annosToReplace = new AnnotationMirrorSet();
-    for (AnnotationMirror amSource : sourceCodeATM.getPrimaryAnnotations()) {
+    for (AnnotationMirror amSource : sourceCodeATMasSuper.getPrimaryAnnotations()) {
       AnnotationMirror amAjava = ajavaATM.getPrimaryAnnotationInHierarchy(amSource);
       // amAjava only contains annotations from the ajava file, so it might be missing
       // an annotation in the hierarchy.
@@ -1167,12 +1175,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
                 .getQualifierHierarchy()
                 .leastUpperBoundShallow(
                     amSource,
-                    sourceCodeATM.getUnderlyingType(),
+                    sourceCodeATMasSuper.getUnderlyingType(),
                     amAjava,
                     ajavaATM.getUnderlyingType());
       }
       annosToReplace.add(amSource);
     }
+    // Side-effect the argument, as this method's contract requires.  sourceCodeATMasSuper might
+    // be a different object than sourceCodeATM, so do not write to it instead.
     sourceCodeATM.replaceAnnotations(annosToReplace);
   }
 
