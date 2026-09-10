@@ -89,7 +89,7 @@ public class WholeProgramInferenceScenesStorage
   private @MonotonicNonNull Set<@BinaryName String> supportedAnnoNames = null;
 
   /** Maps .jaif file paths (Strings) to Scenes. Relative to inferOutputDirectory. */
-  public final Map<String, ASceneWrapper> scenes = new HashMap<>();
+  private final Map<String, ASceneWrapper> scenes = new HashMap<>();
 
   /**
    * Scenes that were modified since the last time all Scenes were written into .jaif files. Each
@@ -101,7 +101,7 @@ public class WholeProgramInferenceScenesStorage
    * type, or method parameter type in the Scene. (Scenes are modified by the method {@link
    * #updateStorageLocationFromAtm}.)
    */
-  public final Set<String> modifiedScenes = new HashSet<>();
+  private final Set<String> modifiedScenes = new HashSet<>();
 
   /**
    * This map relates inferred preconditions to the declared types of the expressions to which the
