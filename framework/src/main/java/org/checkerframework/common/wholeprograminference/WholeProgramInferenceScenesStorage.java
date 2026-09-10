@@ -953,13 +953,16 @@ public class WholeProgramInferenceScenesStorage
     // permitted to assign, e.g., a String[] to a location whose static type is Object, and
     // vice versa (if a cast is used).
     //
-    // Type variables are deliberately not treated analogously: WPI does not infer
-    // type-variable bounds, and the bounds of an AnnotatedTypeVariable for a *use* of a type
-    // variable are copied from its *declaration*.  Writing them out would record the
-    // declaration's bounds at the use site.
-    // TODO: The read path, updateAtmFromATypeElement, is asymmetric with this one: it does
-    // recur into a type variable's upper bound.  The ajava implementation deliberately does
-    // not, to avoid accidentally substituting the use of a type variable for its declaration.
+    // Type variables are not treated analogously: this method never recurs into the bounds
+    // of a type variable, so it never writes a type-variable bound into innerTypes.
+    // TODO: The read path is asymmetric with this one: updateAtmFromATypeElement reads
+    // innerTypes into the upper bound of an AnnotatedTypeVariable, and updateAtmWithLub
+    // takes the LUB of both bounds.  Those two behaviors apply only to type-variable bounds
+    // that came from a pre-existing .jaif file (which getScene parses), never to bounds that
+    // WPI itself wrote.  Decide whether this method should write type-variable bounds, or
+    // whether those two methods should stop reading them.  Note that the ajava
+    // implementation deliberately does not recur into type-variable bounds, to avoid
+    // accidentally substituting the use of a type variable for its declaration.
     if (newATM.getKind() == TypeKind.ARRAY && curATM.getKind() == TypeKind.ARRAY) {
       AnnotatedArrayType newAAT = (AnnotatedArrayType) newATM;
       AnnotatedArrayType oldAAT = (AnnotatedArrayType) curATM;
