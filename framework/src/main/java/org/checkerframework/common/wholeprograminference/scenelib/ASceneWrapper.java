@@ -139,6 +139,22 @@ public class ASceneWrapper {
   }
 
   /**
+   * Returns {@code jaifPath} with its ".jaif" extension replaced by {@code newExtension}. Only the
+   * extension is replaced: an occurrence of ".jaif" elsewhere in the path, such as in a directory
+   * name, is left alone.
+   *
+   * @param jaifPath a path ending in ".jaif"
+   * @param newExtension the extension to use in place of ".jaif"
+   * @return {@code jaifPath} with its ".jaif" extension replaced by {@code newExtension}
+   */
+  /*package-private*/ static String replaceJaifExtension(String jaifPath, String newExtension) {
+    if (!jaifPath.endsWith(".jaif")) {
+      throw new BugInCF("Expected a path ending in \".jaif\", but found: " + jaifPath);
+    }
+    return jaifPath.substring(0, jaifPath.length() - ".jaif".length()) + newExtension;
+  }
+
+  /**
    * Write the scene wrapped by this object to a file at the given path.
    *
    * @param jaifPath the path of the file to be written, but ending in ".jaif". If {@code
@@ -163,7 +179,7 @@ public class ASceneWrapper {
           case JAIF -> jaifPath;
           case STUB -> {
             String astubWithChecker = "-" + checker.getClass().getCanonicalName() + ".astub";
-            yield jaifPath.replace(".jaif", astubWithChecker);
+            yield replaceJaifExtension(jaifPath, astubWithChecker);
           }
           default -> throw new BugInCF("Unhandled outputFormat " + outputFormat);
         };
@@ -229,17 +245,10 @@ public class ASceneWrapper {
       } else {
         // Verify that the existing value is consistent.
         List<VariableElement> existingEnumConstants = aClass.getEnumConstants();
-        if (existingEnumConstants.size() != enumConstants.size()) {
+        if (!existingEnumConstants.equals(enumConstants)) {
           throw new BugInCF(
-              "inconsistent enum constants in WPI for class "
-                  + classSymbol.getQualifiedName().toString());
-        }
-        for (int i = 0; i < enumConstants.size(); i++) {
-          if (!existingEnumConstants.get(i).equals(enumConstants.get(i))) {
-            throw new BugInCF(
-                "inconsistent enum constants in WPI for class "
-                    + classSymbol.getQualifiedName().toString());
-          }
+              "inconsistent enum constants in WPI for class %s: existing %s, new %s",
+              classSymbol.getQualifiedName(), existingEnumConstants, enumConstants);
         }
       }
     }

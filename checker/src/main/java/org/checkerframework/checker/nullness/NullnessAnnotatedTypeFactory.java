@@ -984,6 +984,13 @@ public class NullnessAnnotatedTypeFactory
     return false;
   }
 
+  @Override
+  public boolean wpiShouldInferFromNullAssignments() {
+    // Assigning null to an expression is what makes that expression @Nullable, so the Nullness
+    // Checker must not ignore such assignments.
+    return true;
+  }
+
   // This implementation overrides the superclass implementation to:
   //  * check for @MonotonicNonNull
   //  * output @RequiresNonNull rather than @RequiresQualifier.
