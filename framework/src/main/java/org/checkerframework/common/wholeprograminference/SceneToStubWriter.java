@@ -396,7 +396,7 @@ public final class SceneToStubWriter {
       StringBuilder sb, @Nullable ATypeElement aType, TypeMirror javacType) {
     // TypeMirror#toString prints multiple annotations on a single type
     // separated by commas rather than by whitespace, as is required in source code.
-    String basetypeToPrint = javacType.toString().replaceAll(",@", " @");
+    String basetypeToPrint = javacType.toString().replace(",@", " @");
 
     // We must not print annotations in the default package that conflict with
     // imported annotation names.
