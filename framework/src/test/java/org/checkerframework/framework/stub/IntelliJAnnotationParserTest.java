@@ -1,13 +1,9 @@
 package org.checkerframework.framework.stub;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Arrays;
 import java.util.Collections;
 import org.checkerframework.framework.stub.IntelliJAnnotationParser.ParsedItemSignature;
+import org.junit.Assert;
 import org.junit.Test;
 
 /** Unit tests for the string-manipulation routines of {@link IntelliJAnnotationParser}. */
@@ -16,9 +12,9 @@ public class IntelliJAnnotationParserTest {
   @Test
   public void testParseSignatureClass() {
     ParsedItemSignature parsed = IntelliJAnnotationParser.parseSignature("java.lang.String");
-    assertTrue(parsed.isClass);
-    assertFalse(parsed.isMalformed());
-    assertEquals("java.lang.String", parsed.className);
+    Assert.assertTrue(parsed.isClass);
+    Assert.assertFalse(parsed.isMalformed());
+    Assert.assertEquals("java.lang.String", parsed.className);
   }
 
   @Test
@@ -26,9 +22,9 @@ public class IntelliJAnnotationParserTest {
     ParsedItemSignature parsed =
         IntelliJAnnotationParser.parseSignature(
             "java.lang.String java.util.Comparator CASE_INSENSITIVE_ORDER");
-    assertTrue(parsed.isField);
-    assertEquals("java.lang.String", parsed.className);
-    assertEquals("CASE_INSENSITIVE_ORDER", parsed.memberName);
+    Assert.assertTrue(parsed.isField);
+    Assert.assertEquals("java.lang.String", parsed.className);
+    Assert.assertEquals("CASE_INSENSITIVE_ORDER", parsed.memberName);
   }
 
   @Test
@@ -36,11 +32,11 @@ public class IntelliJAnnotationParserTest {
     ParsedItemSignature parsed =
         IntelliJAnnotationParser.parseSignature(
             "java.lang.String java.lang.String substring(int, int)");
-    assertTrue(parsed.isMethodOrConstructor);
-    assertFalse(parsed.isConstructor);
-    assertEquals("substring", parsed.memberName);
-    assertEquals(Arrays.asList("int", "int"), parsed.paramTypes);
-    assertEquals(-1, parsed.paramIndex);
+    Assert.assertTrue(parsed.isMethodOrConstructor);
+    Assert.assertFalse(parsed.isConstructor);
+    Assert.assertEquals("substring", parsed.memberName);
+    Assert.assertEquals(Arrays.asList("int", "int"), parsed.paramTypes);
+    Assert.assertEquals(-1, parsed.paramIndex);
   }
 
   @Test
@@ -48,17 +44,17 @@ public class IntelliJAnnotationParserTest {
     ParsedItemSignature parsed =
         IntelliJAnnotationParser.parseSignature(
             "java.lang.String java.lang.String concat(java.lang.String) 0");
-    assertTrue(parsed.isMethodOrConstructor);
-    assertEquals(0, parsed.paramIndex);
+    Assert.assertTrue(parsed.isMethodOrConstructor);
+    Assert.assertEquals(0, parsed.paramIndex);
   }
 
   @Test
   public void testParseSignatureConstructor() {
     ParsedItemSignature parsed =
         IntelliJAnnotationParser.parseSignature("java.lang.String java.lang.String(byte[], int)");
-    assertTrue(parsed.isConstructor);
-    assertEquals("String", parsed.memberName);
-    assertEquals(Arrays.asList("byte[]", "int"), parsed.paramTypes);
+    Assert.assertTrue(parsed.isConstructor);
+    Assert.assertEquals("String", parsed.memberName);
+    Assert.assertEquals(Arrays.asList("byte[]", "int"), parsed.paramTypes);
   }
 
   @Test
@@ -66,22 +62,22 @@ public class IntelliJAnnotationParserTest {
     // The closing parenthesis has no matching opening parenthesis.
     ParsedItemSignature parsed =
         IntelliJAnnotationParser.parseSignature("java.lang.String substring int, int)");
-    assertTrue(parsed.isMalformed());
+    Assert.assertTrue(parsed.isMalformed());
   }
 
   @Test
   public void testParseSignatureBadParameterIndex() {
     // Only a parameter index may follow the parameter list.  A non-numeric or negative trailer
     // is not silently treated as naming the return type.
-    assertTrue(
+    Assert.assertTrue(
         IntelliJAnnotationParser.parseSignature(
                 "java.lang.String java.lang.String concat(java.lang.String) bogus")
             .isMalformed());
-    assertTrue(
+    Assert.assertTrue(
         IntelliJAnnotationParser.parseSignature(
                 "java.lang.String java.lang.String concat(java.lang.String) -1")
             .isMalformed());
-    assertTrue(
+    Assert.assertTrue(
         IntelliJAnnotationParser.parseSignature(
                 "java.lang.String java.lang.String concat(java.lang.String) 0 1")
             .isMalformed());
@@ -89,89 +85,90 @@ public class IntelliJAnnotationParserTest {
 
   @Test
   public void testParseChar() {
-    assertEquals(Character.valueOf('a'), IntelliJAnnotationParser.parseChar("a"));
-    assertEquals(Character.valueOf('\n'), IntelliJAnnotationParser.parseChar("\\n"));
-    assertEquals(Character.valueOf('\''), IntelliJAnnotationParser.parseChar("\\'"));
-    assertEquals(Character.valueOf('\\'), IntelliJAnnotationParser.parseChar("\\\\"));
+    Assert.assertEquals(Character.valueOf('a'), IntelliJAnnotationParser.parseChar("a"));
+    Assert.assertEquals(Character.valueOf('\n'), IntelliJAnnotationParser.parseChar("\\n"));
+    Assert.assertEquals(Character.valueOf('\''), IntelliJAnnotationParser.parseChar("\\'"));
+    Assert.assertEquals(Character.valueOf('\\'), IntelliJAnnotationParser.parseChar("\\\\"));
     // stripQuotes has already interpreted the escape sequence in a quoted value such as '\\'.
-    assertEquals(Character.valueOf('\\'), IntelliJAnnotationParser.parseChar("\\"));
-    assertEquals(Character.valueOf(' '), IntelliJAnnotationParser.parseChar("\\s"));
+    Assert.assertEquals(Character.valueOf('\\'), IntelliJAnnotationParser.parseChar("\\"));
+    Assert.assertEquals(Character.valueOf(' '), IntelliJAnnotationParser.parseChar("\\s"));
     // Unicode escapes, which may contain more than one 'u'.
-    assertEquals(Character.valueOf('A'), IntelliJAnnotationParser.parseChar("\\u0041"));
-    assertEquals(Character.valueOf('A'), IntelliJAnnotationParser.parseChar("\\uuu0041"));
+    Assert.assertEquals(Character.valueOf('A'), IntelliJAnnotationParser.parseChar("\\u0041"));
+    Assert.assertEquals(Character.valueOf('A'), IntelliJAnnotationParser.parseChar("\\uuu0041"));
     // Octal escapes.
-    assertEquals(Character.valueOf('\0'), IntelliJAnnotationParser.parseChar("\\0"));
-    assertEquals(Character.valueOf('!'), IntelliJAnnotationParser.parseChar("\\041"));
-    assertEquals(Character.valueOf('\u00ff'), IntelliJAnnotationParser.parseChar("\\377"));
+    Assert.assertEquals(Character.valueOf('\0'), IntelliJAnnotationParser.parseChar("\\0"));
+    Assert.assertEquals(Character.valueOf('!'), IntelliJAnnotationParser.parseChar("\\041"));
+    Assert.assertEquals(Character.valueOf('\u00ff'), IntelliJAnnotationParser.parseChar("\\377"));
   }
 
   @Test
   public void testParseCharMalformed() {
     // A value that is not a char literal is not silently treated as some char.
-    assertNull(IntelliJAnnotationParser.parseChar(""));
-    assertNull(IntelliJAnnotationParser.parseChar("ab"));
+    Assert.assertNull(IntelliJAnnotationParser.parseChar(""));
+    Assert.assertNull(IntelliJAnnotationParser.parseChar("ab"));
     // Not a Java escape sequence.
-    assertNull(IntelliJAnnotationParser.parseChar("\\q"));
+    Assert.assertNull(IntelliJAnnotationParser.parseChar("\\q"));
     // Malformed unicode escapes.
-    assertNull(IntelliJAnnotationParser.parseChar("\\u"));
-    assertNull(IntelliJAnnotationParser.parseChar("\\u041"));
-    assertNull(IntelliJAnnotationParser.parseChar("\\u004g"));
-    assertNull(IntelliJAnnotationParser.parseChar("\\u00041"));
+    Assert.assertNull(IntelliJAnnotationParser.parseChar("\\u"));
+    Assert.assertNull(IntelliJAnnotationParser.parseChar("\\u041"));
+    Assert.assertNull(IntelliJAnnotationParser.parseChar("\\u004g"));
+    Assert.assertNull(IntelliJAnnotationParser.parseChar("\\u00041"));
     // Malformed octal escapes.
-    assertNull(IntelliJAnnotationParser.parseChar("\\400"));
-    assertNull(IntelliJAnnotationParser.parseChar("\\0000"));
-    assertNull(IntelliJAnnotationParser.parseChar("\\08"));
+    Assert.assertNull(IntelliJAnnotationParser.parseChar("\\400"));
+    Assert.assertNull(IntelliJAnnotationParser.parseChar("\\0000"));
+    Assert.assertNull(IntelliJAnnotationParser.parseChar("\\08"));
   }
 
   @Test
   public void testStripQuotes() {
-    assertEquals("abc", IntelliJAnnotationParser.stripQuotes("\"abc\""));
-    assertEquals("abc", IntelliJAnnotationParser.stripQuotes("  \"abc\"  "));
-    assertEquals("abc", IntelliJAnnotationParser.stripQuotes("'abc'"));
-    assertEquals(
+    Assert.assertEquals("abc", IntelliJAnnotationParser.stripQuotes("\"abc\""));
+    Assert.assertEquals("abc", IntelliJAnnotationParser.stripQuotes("  \"abc\"  "));
+    Assert.assertEquals("abc", IntelliJAnnotationParser.stripQuotes("'abc'"));
+    Assert.assertEquals(
         "java.lang.String.class", IntelliJAnnotationParser.stripQuotes("java.lang.String.class"));
   }
 
   @Test
   public void testStripQuotesEscapes() {
-    assertEquals("a\nb", IntelliJAnnotationParser.stripQuotes("\"a\\nb\""));
-    assertEquals("a\tb", IntelliJAnnotationParser.stripQuotes("\"a\\tb\""));
-    assertEquals("a\\b", IntelliJAnnotationParser.stripQuotes("\"a\\\\b\""));
-    assertEquals("a\"b", IntelliJAnnotationParser.stripQuotes("\"a\\\"b\""));
-    assertEquals("a'b", IntelliJAnnotationParser.stripQuotes("\"a\\'b\""));
-    assertEquals("aAb", IntelliJAnnotationParser.stripQuotes("\"a\\u0041b\""));
-    assertEquals("aAb", IntelliJAnnotationParser.stripQuotes("\"a\\uuu0041b\""));
-    assertEquals("a\0b", IntelliJAnnotationParser.stripQuotes("\"a\\0b\""));
-    assertEquals("a!b", IntelliJAnnotationParser.stripQuotes("\"a\\041b\""));
+    Assert.assertEquals("a\nb", IntelliJAnnotationParser.stripQuotes("\"a\\nb\""));
+    Assert.assertEquals("a\tb", IntelliJAnnotationParser.stripQuotes("\"a\\tb\""));
+    Assert.assertEquals("a\\b", IntelliJAnnotationParser.stripQuotes("\"a\\\\b\""));
+    Assert.assertEquals("a\"b", IntelliJAnnotationParser.stripQuotes("\"a\\\"b\""));
+    Assert.assertEquals("a'b", IntelliJAnnotationParser.stripQuotes("\"a\\'b\""));
+    Assert.assertEquals("aAb", IntelliJAnnotationParser.stripQuotes("\"a\\u0041b\""));
+    Assert.assertEquals("aAb", IntelliJAnnotationParser.stripQuotes("\"a\\uuu0041b\""));
+    Assert.assertEquals("a\0b", IntelliJAnnotationParser.stripQuotes("\"a\\0b\""));
+    Assert.assertEquals("a!b", IntelliJAnnotationParser.stripQuotes("\"a\\041b\""));
     // A string that ends with a backslash.
-    assertEquals("a\\", IntelliJAnnotationParser.stripQuotes("\"a\\\\\""));
+    Assert.assertEquals("a\\", IntelliJAnnotationParser.stripQuotes("\"a\\\\\""));
     // An unterminated string literal is left alone.
-    assertEquals("\"a\\\"", IntelliJAnnotationParser.stripQuotes("\"a\\\""));
+    Assert.assertEquals("\"a\\\"", IntelliJAnnotationParser.stripQuotes("\"a\\\""));
   }
 
   @Test
   public void testParseBoolean() {
-    assertEquals(Boolean.TRUE, IntelliJAnnotationParser.parseBoolean("true"));
-    assertEquals(Boolean.TRUE, IntelliJAnnotationParser.parseBoolean("TRUE"));
-    assertEquals(Boolean.FALSE, IntelliJAnnotationParser.parseBoolean("false"));
+    Assert.assertEquals(Boolean.TRUE, IntelliJAnnotationParser.parseBoolean("true"));
+    Assert.assertEquals(Boolean.TRUE, IntelliJAnnotationParser.parseBoolean("TRUE"));
+    Assert.assertEquals(Boolean.FALSE, IntelliJAnnotationParser.parseBoolean("false"));
     // A string that is not a boolean literal is not silently treated as false.
-    assertNull(IntelliJAnnotationParser.parseBoolean("ture"));
-    assertNull(IntelliJAnnotationParser.parseBoolean("1"));
-    assertNull(IntelliJAnnotationParser.parseBoolean("yes"));
-    assertNull(IntelliJAnnotationParser.parseBoolean(""));
+    Assert.assertNull(IntelliJAnnotationParser.parseBoolean("ture"));
+    Assert.assertNull(IntelliJAnnotationParser.parseBoolean("1"));
+    Assert.assertNull(IntelliJAnnotationParser.parseBoolean("yes"));
+    Assert.assertNull(IntelliJAnnotationParser.parseBoolean(""));
   }
 
   @Test
   public void testParseArrayLiteral() {
-    assertEquals(Collections.emptyList(), IntelliJAnnotationParser.parseArrayLiteral("{}"));
-    assertEquals(
+    Assert.assertEquals(Collections.emptyList(), IntelliJAnnotationParser.parseArrayLiteral("{}"));
+    Assert.assertEquals(
         Arrays.asList("\"a\"", "\"b\""),
         IntelliJAnnotationParser.parseArrayLiteral("{\"a\", \"b\"}"));
     // A comma within a string literal does not separate array elements.
-    assertEquals(
+    Assert.assertEquals(
         Arrays.asList("\"a,b\"", "\"c\""),
         IntelliJAnnotationParser.parseArrayLiteral("{\"a,b\", \"c\"}"));
     // A single value need not be surrounded by braces.
-    assertEquals(Arrays.asList("\"a\""), IntelliJAnnotationParser.parseArrayLiteral("\"a\""));
+    Assert.assertEquals(
+        Arrays.asList("\"a\""), IntelliJAnnotationParser.parseArrayLiteral("\"a\""));
   }
 }
