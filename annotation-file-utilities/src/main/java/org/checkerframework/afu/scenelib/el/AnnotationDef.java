@@ -193,8 +193,19 @@ public final class AnnotationDef extends AElement {
    */
   public synchronized String getSource() {
     if (source == null) {
-      source = sourceSupplier.get();
+      assert sourceSupplier != null
+          : "@AssumeAssertion(nullness): only one of source and sourceSupplier is null";
+      // getSource() is called only while formatting a diagnostic, so a problem here (a null
+      // result, or an exception) must not replace the real diagnostic with a less informative
+      // one.  Clear sourceSupplier even if it threw, so a later call does not throw again.
+      String newSource;
+      try {
+        newSource = sourceSupplier.get();
+      } catch (RuntimeException | Error e) {
+        newSource = "unknown source (" + e.getClass().getSimpleName() + ")";
+      }
       sourceSupplier = null;
+      source = newSource != null ? newSource : "unknown source";
     }
     return source;
   }
@@ -203,8 +214,8 @@ public final class AnnotationDef extends AElement {
    * Returns a list of method names for a class in the order in which they occur in the .class file.
    * Note that the JDK method Class.getDeclaredMethods() does not preserve this order.
    *
-   * @param name the ifully qualified name of the class to be read
-   * @return a list of methods for the class
+   * @param name the fully qualified name of the class to be read
+   * @return a list of methods for the class, or an empty list if the class file cannot be read
    */
   public static List<String> getDeclaredMethods(String name) {
     List<String> methods;
@@ -214,7 +225,9 @@ public final class AnnotationDef extends AElement {
       classReader.accept(methodRecorder, 0);
       methods = methodRecorder.getMethods();
     } catch (IOException e) {
-      methods = null;
+      // The .class file could not be read, so the declaration order of the methods is unknown.
+      // Returning an empty list loses the ordering, but is better than crashing the caller.
+      methods = Collections.emptyList();
       e.printStackTrace();
     }
     return methods;
