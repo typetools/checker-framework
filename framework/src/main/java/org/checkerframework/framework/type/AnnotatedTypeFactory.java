@@ -95,6 +95,7 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceIm
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.InferredDeclared;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
+import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -5771,6 +5772,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Returns true if whole-program inference should infer a type from an assignment whose right-hand
+   * side has the null type, such as the {@code null} literal. For most type systems, the null type
+   * is annotated with the bottom qualifier and therefore an assignment of {@code null} says nothing
+   * about the type of the left-hand side. For the Nullness type system, by contrast, such an
+   * assignment is exactly what makes the left-hand side {@code @Nullable}.
+   *
+   * @return true if WPI should infer types from assignments whose right-hand side has the null
+   *     type, false otherwise
+   */
+  public boolean wpiShouldInferFromNullAssignments() {
+    return false;
+  }
+
+  /**
    * Side-effects the method or constructor annotations to make any desired changes before writing
    * to an annotation file.
    *
@@ -5901,11 +5916,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           inferredType.replaceAnnotations(declaredType.getPrimaryAnnotations());
         } else {
           AnnotatedTypeMirror otherInferredType =
-              isPrecondition
-                  ? otherDeclAnnos.getPreconditionsForExpression(
-                      className, methodName, expr, declaredType, this)
-                  : otherDeclAnnos.getPostconditionsForExpression(
-                      className, methodName, expr, declaredType, this);
+              otherDeclAnnos.getPreOrPostconditionsForExpression(
+                  isPrecondition ? Analysis.BeforeOrAfter.BEFORE : Analysis.BeforeOrAfter.AFTER,
+                  className,
+                  methodName,
+                  expr,
+                  declaredType,
+                  this);
           this.getWholeProgramInference().updateAtmWithLub(inferredType, otherInferredType);
         }
       }
