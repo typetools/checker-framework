@@ -440,7 +440,6 @@ public class AnnotationFileUtil {
    */
   @SuppressWarnings({
     "JdkObsolete", // JarFile.entries()
-    "nullness:argument", // inference failed in Arrays.sort
     "builder:required.method.not.called" // ownership passed to list of
     // JarEntryAnnotationFileResource, where `file` appears in every element of the list
   })
@@ -467,6 +466,10 @@ public class AnnotationFileUtil {
 
     } else if (location.isDirectory()) {
       File[] directoryContents = location.listFiles();
+      if (directoryContents == null) {
+        System.err.println("AnnotationFileUtil: could not list directory: " + location);
+        return;
+      }
       Arrays.sort(directoryContents, Comparator.comparing(File::getName));
       for (File enclosed : directoryContents) {
         addAnnotationFilesToList(enclosed, resources, fileType, false);

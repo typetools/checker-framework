@@ -15,10 +15,12 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -293,7 +295,8 @@ public final class IntelliJAnnotationParser {
       if (!valElem.hasAttribute("val")) {
         continue;
       }
-      String memberName = valElem.hasAttribute("name") ? valElem.getAttribute("name") : "value";
+      String memberName =
+          valElem.hasAttribute("name") ? valElem.getAttribute("name").trim() : "value";
       String valStr = valElem.getAttribute("val").trim();
       String problem = setBuilderValue(builder, memberName, valStr, annoTypeElt, processingEnv);
       if (problem != null) {
@@ -497,6 +500,13 @@ public final class IntelliJAnnotationParser {
         };
     if (result == null || (dimensions > 0 && result.getKind() == TypeKind.VOID)) {
       return null;
+    }
+    if (dimensions == 0 && result.getKind().isPrimitive()) {
+      // Box, because that is what AnnotationBuilder.setValue(CharSequence, TypeMirror) does, and
+      // an annotation read from an annotations.xml file should be indistinguishable from one that
+      // the Checker Framework builds itself.  Only a scalar is boxed:  `int[]` is a reference
+      // type, which AnnotationBuilder leaves alone.
+      result = types.boxedClass((PrimitiveType) result).asType();
     }
     for (int i = 0; i < dimensions; i++) {
       result = types.getArrayType(result);
@@ -948,6 +958,18 @@ public final class IntelliJAnnotationParser {
 
     TypeElement classElem = getTypeElement(parsed.className, elements);
     if (classElem == null) {
+      if (parsed.isClass) {
+        // IntelliJ IDEA writes an annotation on a package using the package name as the item
+        // name, as in <item name="java.lang">.  A package name is not syntactically
+        // distinguishable from a class name, so resolution determines which it is.
+        PackageElement packageElem = elements.getPackageElement(parsed.className);
+        if (packageElem != null) {
+          for (AnnotationMirror am : annotations) {
+            recordDeclAnnotationIfApplicable(packageElem, am, annos);
+          }
+          return;
+        }
+      }
       warnClassNotFound(checker, "Class not found: " + parsed.className);
       return;
     }
@@ -971,12 +993,29 @@ public final class IntelliJAnnotationParser {
         return;
       }
 
-      markAsFromStubFile(execElem, processingEnv, annos);
-      AnnotatedExecutableType methodType =
-          (AnnotatedExecutableType)
-              annos.atypes.computeIfAbsent(execElem, e -> atypeFactory.fromElement(execElem));
+      // Do not create the AnnotatedExecutableType via `annos.atypes.computeIfAbsent`, and do not
+      // mark the method as being from an annotation file, until the item is known to be
+      // well-formed.  Otherwise a rejected item would still install a bytecode-derived type that
+      // takes precedence over the annotated JDK, which is parsed later.
+      AnnotatedExecutableType methodType = (AnnotatedExecutableType) annos.atypes.get(execElem);
+      if (methodType == null) {
+        methodType = atypeFactory.fromElement(execElem);
+      }
 
-      if (parsed.paramIndex >= 0 && parsed.paramIndex < methodType.getParameterTypes().size()) {
+      if (parsed.paramIndex >= methodType.getParameterTypes().size()) {
+        warnNotFound(
+            checker,
+            "Parameter index "
+                + parsed.paramIndex
+                + " out of bounds for "
+                + parsed.memberName
+                + " in "
+                + parsed.className);
+        return;
+      }
+
+      markAsFromStubFile(execElem, processingEnv, annos);
+      if (parsed.paramIndex >= 0) {
         AnnotatedTypeMirror paramType = methodType.getParameterTypes().get(parsed.paramIndex);
         VariableElement paramElem = execElem.getParameters().get(parsed.paramIndex);
         markAsFromStubFile(paramElem, processingEnv, annos);
@@ -987,16 +1026,7 @@ public final class IntelliJAnnotationParser {
           recordDeclAnnotationIfApplicable(paramElem, am, annos);
         }
         annos.atypes.put(paramElem, paramType);
-      } else if (parsed.paramIndex >= methodType.getParameterTypes().size()) {
-        warnNotFound(
-            checker,
-            "Parameter index "
-                + parsed.paramIndex
-                + " out of bounds for "
-                + parsed.memberName
-                + " in "
-                + parsed.className);
-      } else if (parsed.paramIndex < 0) {
+      } else {
         AnnotatedTypeMirror returnType = methodType.getReturnType();
         for (AnnotationMirror am : annotations) {
           if (atypeFactory.isSupportedQualifier(am)) {

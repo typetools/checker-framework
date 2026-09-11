@@ -16,8 +16,16 @@
     </annotation>
     <annotation name="intellijannotationvalues.ClassLiteralValues">
       <val name="primitive" val="int.class" />
-      <val name="noType" val="void.class" />
+      <!-- Whitespace around an element name is insignificant, as it is around a value. -->
+      <val name=" noType " val="void.class" />
       <val name="array" val="java.lang.String[].class" />
+    </annotation>
+  </item>
+  <!-- IntelliJ IDEA writes an annotation on a package using the package name as the item name.
+       Such an item is not a nonexistent class, so it produces no "Class not found" warning. -->
+  <item name="java.lang">
+    <annotation name="org.checkerframework.framework.testchecker.testaccumulation.qual.TestAccumulation">
+      <val val="{&quot;onPackage&quot;}" />
     </annotation>
   </item>
 </root>

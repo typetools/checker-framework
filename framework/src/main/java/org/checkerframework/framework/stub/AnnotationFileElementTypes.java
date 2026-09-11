@@ -321,7 +321,6 @@ public class AnnotationFileElementTypes {
         AnnotationFileParser.stubDebugStatic(
             processingEnv, "AFET.parseIntellijAnnotations(%s)", intellijAnnotationPaths);
       }
-      boolean noFilesFound = true;
       SourceChecker checker = factory.getChecker();
       for (String path : intellijAnnotationPaths) {
         String fullPath = resolveAgainstTestSrc(path);
@@ -332,31 +331,30 @@ public class AnnotationFileElementTypes {
         if (allFiles == null) {
           checker.message(
               Diagnostic.Kind.ERROR, "IntelliJ IDEA annotations file not found: " + path);
-        } else if (!allFiles.isEmpty()) {
-          noFilesFound = false;
+        } else if (allFiles.isEmpty()) {
+          // The path exists but contains no annotations.xml file, so the user gets no
+          // annotations from it.  That is most likely a mistake, so warn rather than issuing a
+          // note, which javac does not display by default.
+          checker.message(Diagnostic.Kind.WARNING, "No annotations.xml file found within " + path);
+        } else {
           for (AnnotationFileResource resource : allFiles) {
-            BufferedInputStream annotationFileStream;
-            try {
-              annotationFileStream = new BufferedInputStream(resource.getInputStream());
+            // Closing the stream is safe even for a jar file entry:  it does not close the
+            // JarFile that other entries in `allFiles` share.
+            try (BufferedInputStream annotationFileStream =
+                new BufferedInputStream(resource.getInputStream())) {
+              IntelliJAnnotationParser.parseAnnotationsXml(
+                  resource.getDescription(),
+                  annotationFileStream,
+                  factory,
+                  processingEnv,
+                  annotationFileAnnos);
             } catch (IOException e) {
               checker.message(
                   Diagnostic.Kind.ERROR,
                   "Could not read IntelliJ IDEA annotations: " + resource.getDescription());
-              continue;
             }
-            IntelliJAnnotationParser.parseAnnotationsXml(
-                resource.getDescription(),
-                annotationFileStream,
-                factory,
-                processingEnv,
-                annotationFileAnnos);
           }
         }
-      }
-      if (noFilesFound) {
-        checker.message(
-            Diagnostic.Kind.NOTE,
-            "No annotations.xml file found within " + intellijAnnotationPaths);
       }
     } finally {
       parsing = wasParsing;
