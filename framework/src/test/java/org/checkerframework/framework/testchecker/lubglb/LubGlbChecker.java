@@ -100,11 +100,12 @@ public class LubGlbChecker extends BaseTypeChecker {
 
   /**
    * Tests that {@link WholeProgramInference#updateAtmWithLub} least-upper-bounds the primary
-   * annotations of two types of different kinds, and stores the result in its first argument.
-   * {@code updateAtmWithLub} reconciles two types of different kinds by calling {@code asSuper},
-   * which crashes when either of its arguments is a null type (because a null type cannot be
-   * substituted for a type variable) and which returns a fresh copy rather than side-effecting its
-   * arguments. Throws an {@code AssertionError} if a test fails.
+   * annotations of two types of different kinds, stores the result in its first argument, and
+   * leaves a hierarchy in which its first argument has no primary annotation unannotated. {@code
+   * updateAtmWithLub} reconciles two types of different kinds by calling {@code asSuper}, which
+   * crashes when either of its arguments is a null type (because a null type cannot be substituted
+   * for a type variable) and which returns a fresh copy rather than side-effecting its arguments.
+   * Throws an {@code AssertionError} if a test fails.
    *
    * <p>This test needs an {@link AnnotatedTypeFactory}, so it cannot be an ordinary JUnit test.
    */
@@ -140,6 +141,27 @@ public class LubGlbChecker extends BaseTypeChecker {
     AnnotatedTypeMirror arraySourceCodeType = createType(stringArrayType, D, factory);
     wpi.updateAtmWithLub(arraySourceCodeType, createType(objectType, E, factory));
     lubResultAssert(arraySourceCodeType, C, "the two types have different kinds");
+
+    // The type from the source code has no primary annotation in the hierarchy, so the result
+    // has none either -- neither when the two types have different kinds nor when they have the
+    // same kind.  `asSuper` builds its result by copying the primary annotations of the type from
+    // the source code onto a copy of the type from the annotation file, so the copy retains the
+    // annotation file's annotation; that annotation must not be copied back.
+    AnnotatedTypeMirror unannotatedArraySourceCodeType =
+        AnnotatedTypeMirror.createType(stringArrayType, factory, false);
+    wpi.updateAtmWithLub(unannotatedArraySourceCodeType, createType(objectType, E, factory));
+    lubResultAssert(
+        unannotatedArraySourceCodeType,
+        null,
+        "the two types have different kinds and the type from the source code is unannotated");
+
+    AnnotatedTypeMirror unannotatedSourceCodeType =
+        AnnotatedTypeMirror.createType(stringType, factory, false);
+    wpi.updateAtmWithLub(unannotatedSourceCodeType, createType(stringType, E, factory));
+    lubResultAssert(
+        unannotatedSourceCodeType,
+        null,
+        "the two types have the same kind and the type from the source code is unannotated");
   }
 
   /**
@@ -162,13 +184,18 @@ public class LubGlbChecker extends BaseTypeChecker {
    * Throws an exception if the primary annotation of {@code type} is not {@code expected}.
    *
    * @param type the type that {@code updateAtmWithLub} side-effected
-   * @param expected the expected primary annotation of {@code type}
+   * @param expected the expected primary annotation of {@code type}, or null if {@code type} is
+   *     expected to have no primary annotation
    * @param description a description of the call to {@code updateAtmWithLub}, for the error message
    */
   private void lubResultAssert(
-      AnnotatedTypeMirror type, AnnotationMirror expected, String description) {
+      AnnotatedTypeMirror type, @Nullable AnnotationMirror expected, String description) {
     @Nullable AnnotationMirror actual = type.getPrimaryAnnotationInHierarchy(A);
-    if (actual == null || !AnnotationUtils.areSame(expected, actual)) {
+    boolean asExpected =
+        expected == null
+            ? actual == null
+            : actual != null && AnnotationUtils.areSame(expected, actual);
+    if (!asExpected) {
       throw new AssertionError(
           String.format(
               "updateAtmWithLub, when %s, produced %s, but should have produced %s",

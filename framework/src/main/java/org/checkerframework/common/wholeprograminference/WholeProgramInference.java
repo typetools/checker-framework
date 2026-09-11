@@ -193,6 +193,9 @@ public interface WholeProgramInference {
    * AnnotationMirrors from ajavaATM -- it considers the LUB between an AnnotationMirror am and a
    * missing AnnotationMirror to be am. The results are stored in sourceCodeATM.
    *
+   * <p>A hierarchy in which sourceCodeATM has no primary annotation remains unannotated: this
+   * method never adds an annotation in a hierarchy that sourceCodeATM does not already mention.
+   *
    * @param sourceCodeATM the annotated type on the source code; side effected by this method
    * @param ajavaATM the annotated type on the annotation file
    */

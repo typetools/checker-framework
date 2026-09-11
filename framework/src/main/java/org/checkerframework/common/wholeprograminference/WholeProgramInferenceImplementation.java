@@ -1098,7 +1098,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         // might be a typevar (such as S extends T), or vice-versa. In that case, use asSuper
         // to make the two ATMs fully-compatible, so that their primary annotations correspond.
         // asSuper does not side-effect its arguments; it returns a fresh copy. So
-        // least-upper-bound into the copy, then copy the copy's primary annotations into
+        // least-upper-bound into the copy, then copy the copy's primary annotations back into
         // sourceCodeATM, which this method is contracted to side-effect. The nested annotations
         // of the copy are not copied back, because sourceCodeATM has a different structure;
         // that loses nothing, because clients read nested annotations only when the two types
@@ -1106,7 +1106,22 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         AnnotatedTypeMirror sourceCodeAsSuper =
             AnnotatedTypes.asSuper(this.atypeFactory, sourceCodeATM, ajavaATM);
         lubPrimaryAnnotations(sourceCodeAsSuper, ajavaATM);
-        sourceCodeATM.replaceAnnotations(sourceCodeAsSuper.getPrimaryAnnotations());
+        // Copy back only the hierarchies in which sourceCodeATM has a primary annotation.
+        // asSuper builds its result by copying sourceCodeATM's primary annotations onto a copy
+        // of ajavaATM, so in a hierarchy where sourceCodeATM has no primary annotation the
+        // result retains ajavaATM's annotation. Copying that back would install ajavaATM's
+        // annotation in a hierarchy that sourceCodeATM says nothing about, rather than
+        // least-upper-bounding. Like the equal-kind case below, leave such a hierarchy
+        // unannotated.
+        AnnotationMirrorSet lubbedAnnos = new AnnotationMirrorSet();
+        for (AnnotationMirror sourceAnno : sourceCodeATM.getPrimaryAnnotations()) {
+          AnnotationMirror lubbedAnno =
+              sourceCodeAsSuper.getPrimaryAnnotationInHierarchy(sourceAnno);
+          if (lubbedAnno != null) {
+            lubbedAnnos.add(lubbedAnno);
+          }
+        }
+        sourceCodeATM.replaceAnnotations(lubbedAnnos);
       }
       return;
     }
