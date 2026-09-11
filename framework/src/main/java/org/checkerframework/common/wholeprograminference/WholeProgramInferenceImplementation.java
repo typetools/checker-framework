@@ -436,6 +436,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
+    String file = storage.getFileForElement(methodElt);
+
     // TODO: Probably move some part of this into the AnnotatedTypeFactory.
 
     // This code handles fields of "this" and method parameters (including the receiver
@@ -443,44 +445,46 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     TypeElement enclosingClass = (TypeElement) methodElt.getEnclosingElement();
     ThisReference thisReference = new ThisReference(enclosingClass.asType());
     ClassName classNameReceiver = new ClassName(enclosingClass.asType());
-    // Fields of "this":
-    for (VariableElement fieldElement :
-        ElementFilter.fieldsIn(enclosingClass.getEnclosedElements())) {
-      if (atypeFactory.wpiOutputFormat == OutputFormat.JAIF
-          && enclosingClass.getNestingKind().isNested()) {
-        // Don't infer facts about fields of inner classes, because IndexFileWriter
-        // places the annotations incorrectly on the class declarations.
-        continue;
+    // Fields of "this".  Don't infer facts about fields of inner classes when writing JAIFs,
+    // because IndexFileWriter places the annotations incorrectly on the class declarations.
+    if (atypeFactory.wpiOutputFormat != OutputFormat.JAIF
+        || !enclosingClass.getNestingKind().isNested()) {
+      for (VariableElement fieldElement :
+          ElementFilter.fieldsIn(enclosingClass.getEnclosedElements())) {
+        if (ElementUtils.isStatic(methodElt) && !ElementUtils.isStatic(fieldElement)) {
+          // A static method can't have precondition annotations about instance fields.
+          continue;
+        }
+        FieldAccess fa =
+            new FieldAccess(
+                (ElementUtils.isStatic(fieldElement) ? classNameReceiver : thisReference),
+                fieldElement.asType(),
+                fieldElement);
+        CFAbstractValue<?> v = store.getFieldValue(fa);
+        AnnotatedTypeMirror fieldDeclType = atypeFactory.getAnnotatedType(fieldElement);
+        AnnotatedTypeMirror inferredType;
+        if (v != null) {
+          // This field is in the store.
+          inferredType = convertCFAbstractValueToAnnotatedTypeMirror(v, fieldDeclType);
+          atypeFactory.wpiAdjustForUpdateNonField(inferredType);
+        } else {
+          // This field is not in the store. Use the declared type.
+          inferredType = fieldDeclType;
+        }
+        T preOrPostConditionAnnos =
+            storage.getPreOrPostconditions(
+                className, preOrPost, methodElt, fa.toString(), fieldDeclType, atypeFactory);
+        if (preOrPostConditionAnnos == null) {
+          continue;
+        }
+        updateAnnotationSet(
+            preOrPostConditionAnnos,
+            TypeUseLocation.FIELD,
+            inferredType,
+            fieldDeclType,
+            file,
+            false);
       }
-      if (ElementUtils.isStatic(methodElt) && !ElementUtils.isStatic(fieldElement)) {
-        // A static method can't have precondition annotations about instance fields.
-        continue;
-      }
-      FieldAccess fa =
-          new FieldAccess(
-              (ElementUtils.isStatic(fieldElement) ? classNameReceiver : thisReference),
-              fieldElement.asType(),
-              fieldElement);
-      CFAbstractValue<?> v = store.getFieldValue(fa);
-      AnnotatedTypeMirror fieldDeclType = atypeFactory.getAnnotatedType(fieldElement);
-      AnnotatedTypeMirror inferredType;
-      if (v != null) {
-        // This field is in the store.
-        inferredType = convertCFAbstractValueToAnnotatedTypeMirror(v, fieldDeclType);
-        atypeFactory.wpiAdjustForUpdateNonField(inferredType);
-      } else {
-        // This field is not in the store. Use the declared type.
-        inferredType = fieldDeclType;
-      }
-      T preOrPostConditionAnnos =
-          storage.getPreOrPostconditions(
-              className, preOrPost, methodElt, fa.toString(), fieldDeclType, atypeFactory);
-      if (preOrPostConditionAnnos == null) {
-        continue;
-      }
-      String file = storage.getFileForElement(methodElt);
-      updateAnnotationSet(
-          preOrPostConditionAnnos, TypeUseLocation.FIELD, inferredType, fieldDeclType, file, false);
     }
     // Method parameters (other than the receiver parameter "this"):
     // This loop is 1-indexed to match the syntax used in annotation arguments.
@@ -510,7 +514,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
           storage.getPreOrPostconditions(
               className, preOrPost, methodElt, "#" + index, declType, atypeFactory);
       if (preOrPostConditionAnnos != null) {
-        String file = storage.getFileForElement(methodElt);
         updateAnnotationSet(
             preOrPostConditionAnnos,
             TypeUseLocation.PARAMETER,
@@ -540,7 +543,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             storage.getPreOrPostconditions(
                 className, preOrPost, methodElt, "this", declaredType, atypeFactory);
         if (preOrPostConditionAnnos != null) {
-          String file = storage.getFileForElement(methodElt);
           updateAnnotationSet(
               preOrPostConditionAnnos,
               TypeUseLocation.PARAMETER,
@@ -766,7 +768,15 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       gatf.getDependentTypesHelper().delocalize(rhsATM, methodDeclTree);
     }
     T returnTypeAnnos = storage.getReturnAnnotations(methodElt, lhsATM, atypeFactory);
-    updateAnnotationSet(returnTypeAnnos, TypeUseLocation.RETURN, rhsATM, lhsATM, file);
+    // updateAnnotationSet() side-effects its rhsATM argument, so pass a copy if rhsATM is
+    // used again below: every update must start from the type of the returned expression,
+    // unaffected by the other updates.
+    updateAnnotationSet(
+        returnTypeAnnos,
+        TypeUseLocation.RETURN,
+        overriddenMethods.isEmpty() ? rhsATM : rhsATM.deepCopy(),
+        lhsATM,
+        file);
 
     // Now, update return types of overridden methods based on the implementation we just saw.
     // This inference is similar to the inference procedure for method parameters: both are
@@ -796,7 +806,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       updateAnnotationSet(
           storedOverriddenMethodReturnTypeAnnotations,
           TypeUseLocation.RETURN,
-          rhsATM,
+          rhsATM.deepCopy(),
           overriddenMethodReturnType,
           superClassFile);
     }
@@ -995,7 +1005,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    *
    * @param annotationsToUpdate the type whose annotations are modified by this method
    * @param defLoc the location where the annotation will be added
-   * @param rhsATM the RHS of the annotated type on the source code
+   * @param rhsATM the RHS of the annotated type on the source code; side-effected by this method
    * @param lhsATM the LHS of the annotated type on the source code
    * @param file the annotation file containing the executable; used for marking the scene as
    *     modified (needing to be written to disk)
@@ -1023,7 +1033,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    *
    * @param annotationsToUpdate the type whose annotations are modified by this method
    * @param defLoc the location where the annotation will be added
-   * @param rhsATM the RHS of the annotated type on the source code
+   * @param rhsATM the RHS of the annotated type on the source code; side-effected by this method
    * @param lhsATM the LHS of the annotated type on the source code
    * @param file annotation file containing the executable; used for marking the scene as modified
    *     (needing to be written to disk)
@@ -1115,6 +1125,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   @Override
   public void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM) {
 
+    // A version of sourceCodeATM that has the same kind as ajavaATM, so that the structures of
+    // the two types can be compared below.  It is the same object as sourceCodeATM, unless the
+    // two kinds differ and sourceCodeATM is not a null type.  When it is a different object,
+    // changes to its nested types are lost:
+    // only its primary annotations are copied back into sourceCodeATM, at the end of this
+    // method.  (Nothing better is possible, because the two types have different structures.)
+    AnnotatedTypeMirror sourceCodeATMasSuper = sourceCodeATM;
+
     if (sourceCodeATM.getKind() != ajavaATM.getKind()) {
       // Ignore null types: passing them to asSuper causes a crash, as they cannot be
       // substituted for type variables. If sourceCodeATM is a null type, only the primary
@@ -1125,17 +1143,17 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         // the bound on sourceCodeATM might be a declared type (such as T), while
         // the ajavaATM might be a typevar (such as S extends T), or vice-versa. In
         // that case, use asSuper to make the two ATMs fully-compatible.
-        sourceCodeATM = AnnotatedTypes.asSuper(this.atypeFactory, sourceCodeATM, ajavaATM);
+        sourceCodeATMasSuper = AnnotatedTypes.asSuper(this.atypeFactory, sourceCodeATM, ajavaATM);
       }
     }
 
-    switch (sourceCodeATM.getKind()) {
+    switch (sourceCodeATMasSuper.getKind()) {
       case TYPEVAR -> {
         updateAtmWithLub(
-            ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
+            ((AnnotatedTypeVariable) sourceCodeATMasSuper).getLowerBound(),
             ((AnnotatedTypeVariable) ajavaATM).getLowerBound());
         updateAtmWithLub(
-            ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
+            ((AnnotatedTypeVariable) sourceCodeATMasSuper).getUpperBound(),
             ((AnnotatedTypeVariable) ajavaATM).getUpperBound());
       }
       case WILDCARD -> {}
@@ -1153,7 +1171,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       //         ((AnnotatedWildcardType) ajavaATM).getSuperBound());
       case ARRAY -> {
         AnnotatedTypeMirror sourceCodeComponent =
-            ((AnnotatedArrayType) sourceCodeATM).getComponentType();
+            ((AnnotatedArrayType) sourceCodeATMasSuper).getComponentType();
         AnnotatedTypeMirror ajavaComponent = ((AnnotatedArrayType) ajavaATM).getComponentType();
         if (sourceCodeComponent.getKind() == ajavaComponent.getKind()) {
           updateAtmWithLub(sourceCodeComponent, ajavaComponent);
@@ -1179,7 +1197,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     // LUB primary annotations
     AnnotationMirrorSet annosToReplace = new AnnotationMirrorSet();
-    for (AnnotationMirror amSource : sourceCodeATM.getPrimaryAnnotations()) {
+    for (AnnotationMirror amSource : sourceCodeATMasSuper.getPrimaryAnnotations()) {
       AnnotationMirror amAjava = ajavaATM.getPrimaryAnnotationInHierarchy(amSource);
       // amAjava only contains annotations from the ajava file, so it might be missing
       // an annotation in the hierarchy.
@@ -1189,12 +1207,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
                 .getQualifierHierarchy()
                 .leastUpperBoundShallow(
                     amSource,
-                    sourceCodeATM.getUnderlyingType(),
+                    sourceCodeATMasSuper.getUnderlyingType(),
                     amAjava,
                     ajavaATM.getUnderlyingType());
       }
       annosToReplace.add(amSource);
     }
+    // Side-effect the argument, as this method's contract requires.  sourceCodeATMasSuper might
+    // be a different object than sourceCodeATM, so do not write to it instead.
     sourceCodeATM.replaceAnnotations(annosToReplace);
   }
 
