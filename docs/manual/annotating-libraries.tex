@@ -897,8 +897,10 @@ Some command-line options make the stub parser issue more warnings:
   By default, the Checker Framework warns about such problems in a stub
   file provided on the command line, but does not warn about built-in stub files.
   These command-line options turn the warnings on or off (respectively) for
-  all stub files and for IntelliJ IDEA annotation files
-  (Section~\ref{intellij-annotations}).
+  all stub files.
+  An IntelliJ IDEA annotation file (Section~\ref{intellij-annotations}) is always
+  provided on the command line, so the Checker Framework warns about it by default;
+  \<-AstubNoWarnIfNotFound> turns those warnings off.
   \\
   The \<@NoAnnotationFileParserWarning> annotation on a package or type in a stub file
   causes no warning to be issued for that package or type, regardless of
@@ -915,6 +917,8 @@ Some command-line options make the stub parser issue more warnings:
   to report only missing methods/fields, but ignore missing classes, even if
   other classes from the same package are present.
   Useful if a package spans more than one jar.
+  This also applies to IntelliJ IDEA annotation files
+  (Section~\ref{intellij-annotations}).
 
 \item[\<-AstubWarnIfRedundantWithBytecode>]
   Warn if a stub file entry is redundant with bytecode information.  The

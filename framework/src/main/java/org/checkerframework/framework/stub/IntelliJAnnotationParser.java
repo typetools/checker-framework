@@ -174,6 +174,19 @@ public final class IntelliJAnnotationParser {
   }
 
   /**
+   * Issues a warning about a class that the annotation file mentions but that does not exist,
+   * unless the -AstubNoWarnIfNotFound or -AstubWarnIfNotFoundIgnoresClasses option is set.
+   *
+   * @param checker the source checker
+   * @param message the warning message
+   */
+  private static void warnClassNotFound(SourceChecker checker, String message) {
+    if (!checker.hasOption("stubWarnIfNotFoundIgnoresClasses")) {
+      warnNotFound(checker, message);
+    }
+  }
+
+  /**
    * Parses the {@code <annotation>} children of an {@code <item>} element.
    *
    * @param itemElement the XML item element containing annotation child tags
@@ -935,7 +948,7 @@ public final class IntelliJAnnotationParser {
 
     TypeElement classElem = getTypeElement(parsed.className, elements);
     if (classElem == null) {
-      warnNotFound(checker, "Class not found: " + parsed.className);
+      warnClassNotFound(checker, "Class not found: " + parsed.className);
       return;
     }
 
