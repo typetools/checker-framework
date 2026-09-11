@@ -64,6 +64,31 @@ public class ASceneWrapper {
   /**
    * Removes the specified annotations from an AScene.
    *
+   * <p>This method visits the type annotations on fields, method return types, method receivers,
+   * and formal parameters. It does not visit the declaration annotations on a class, method, or
+   * field, because those are stored on the {@link AClass}, {@link AMethod}, or {@link AField}
+   * itself rather than on an {@link ATypeElement}. It does, however, visit the declaration
+   * annotations on a formal parameter, because {@code
+   * WholeProgramInferenceScenesStorage.addDeclarationAnnotationToFormalParameter} stores them in
+   * the parameter's {@link ATypeElement} (that is, in {@code param.type.tlAnnotationsHere}), which
+   * is the same set that this method removes annotations from.
+   *
+   * <p>Visiting a formal parameter's declaration annotations is nonetheless harmless, because
+   * {@code annosToRemove} never contains the name of a declaration annotation. The only writer of
+   * {@code annosToRemove} is {@code
+   * WholeProgramInferenceScenesStorage.addAnnotationsToATypeElement}, which records only primary
+   * annotations of an {@code AnnotatedTypeMirror}; that is, only type qualifiers supported by the
+   * checker. No declaration annotation that whole-program inference writes, such as {@code @Owning}
+   * or {@code @MustCallAlias}, is a supported type qualifier, so the names never collide.
+   *
+   * <p>TODO: The type annotations on a method's inferred preconditions and postconditions are not
+   * visited, even though they can be ignorable. An ignorable annotation on a precondition or
+   * postcondition is therefore written out. When fixing this, beware that the {@code
+   * TypeUseLocation} under which a contract is recorded depends on what the contract is about:
+   * {@code WholeProgramInferenceImplementation.inferPreOrPostconditions} uses {@link
+   * TypeUseLocation#FIELD} for a contract about a field expression, but {@link
+   * TypeUseLocation#PARAMETER} for a contract about a formal parameter or about the receiver.
+   *
    * @param scene the scene from which to remove annotations
    * @param annosToRemove annotations that should not be added to .jaif or stub files
    */
