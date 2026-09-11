@@ -1,7 +1,6 @@
 package org.checkerframework.common.wholeprograminference.scenelib;
 
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
@@ -64,6 +63,31 @@ public class ASceneWrapper {
 
   /**
    * Removes the specified annotations from an AScene.
+   *
+   * <p>This method visits the type annotations on fields, method return types, method receivers,
+   * and formal parameters. It does not visit the declaration annotations on a class, method, or
+   * field, because those are stored on the {@link AClass}, {@link AMethod}, or {@link AField}
+   * itself rather than on an {@link ATypeElement}. It does, however, visit the declaration
+   * annotations on a formal parameter, because {@code
+   * WholeProgramInferenceScenesStorage.addDeclarationAnnotationToFormalParameter} stores them in
+   * the parameter's {@link ATypeElement} (that is, in {@code param.type.tlAnnotationsHere}), which
+   * is the same set that this method removes annotations from.
+   *
+   * <p>Visiting a formal parameter's declaration annotations is nonetheless harmless, because
+   * {@code annosToRemove} never contains the name of a declaration annotation. The only writer of
+   * {@code annosToRemove} is {@code
+   * WholeProgramInferenceScenesStorage.addAnnotationsToATypeElement}, which records only primary
+   * annotations of an {@code AnnotatedTypeMirror}; that is, only type qualifiers supported by the
+   * checker. No declaration annotation that whole-program inference writes, such as {@code @Owning}
+   * or {@code @MustCallAlias}, is a supported type qualifier, so the names never collide.
+   *
+   * <p>TODO: The type annotations on a method's inferred preconditions and postconditions are not
+   * visited, even though they can be ignorable. An ignorable annotation on a precondition or
+   * postcondition is therefore written out. When fixing this, beware that the {@code
+   * TypeUseLocation} under which a contract is recorded depends on what the contract is about:
+   * {@code WholeProgramInferenceImplementation.inferPreOrPostconditions} uses {@link
+   * TypeUseLocation#FIELD} for a contract about a field expression, but {@link
+   * TypeUseLocation#PARAMETER} for a contract about a formal parameter or about the receiver.
    *
    * @param scene the scene from which to remove annotations
    * @param annosToRemove annotations that should not be added to .jaif or stub files
@@ -154,7 +178,20 @@ public class ASceneWrapper {
           }
           default -> throw new BugInCF("Unhandled outputFormat " + outputFormat);
         };
-    new File(filepath).delete();
+    // Delete the file, so that a stale file does not remain if this method writes nothing.  That
+    // happens if the scene is empty, and also for stub output, which writes no file if no class in
+    // the scene is printable.  In the other cases, writing truncates the file, so there is no need
+    // to delete it first -- and deleting it would be worse, because deletion requires write
+    // permission on the containing directory, whereas truncation does not.
+    if (scene.isEmpty() || outputFormat == OutputFormat.STUB) {
+      try {
+        Files.deleteIfExists(Paths.get(filepath));
+      } catch (IOException e) {
+        // Use e, not e.getMessage(), because the message of a FileSystemException is just the
+        // file name, without any indication of what went wrong.
+        throw new UserError("Problem while deleting %s: %s", filepath, e);
+      }
+    }
     // Only write non-empty scenes into files.
     if (!scene.isEmpty()) {
       try {
@@ -188,7 +225,7 @@ public class ASceneWrapper {
           default -> throw new BugInCF("Unhandled outputFormat " + outputFormat);
         }
       } catch (IOException e) {
-        throw new UserError("Problem while writing %s: %s", filepath, e.getMessage());
+        throw new UserError(e, "Problem while writing %s", filepath);
       } catch (DefException e) {
         throw new BugInCF(e);
       }

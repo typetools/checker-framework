@@ -494,7 +494,7 @@ public class WholeProgramInferenceScenesStorage
         try {
           IndexFileParser.parseFile(jaifPath, scene);
         } catch (IOException e) {
-          throw new UserError("Problem while reading %s: %s", jaifPath, e.getMessage());
+          throw new UserError(e, "Problem while reading %s", jaifPath);
         }
       }
       ASceneWrapper wrapper = new ASceneWrapper(scene);
