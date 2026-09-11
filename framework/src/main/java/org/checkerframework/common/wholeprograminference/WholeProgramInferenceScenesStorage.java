@@ -494,7 +494,7 @@ public class WholeProgramInferenceScenesStorage
         try {
           IndexFileParser.parseFile(jaifPath, scene);
         } catch (IOException e) {
-          throw new UserError("Problem while reading %s: %s", jaifPath, e.getMessage());
+          throw new UserError(e, "Problem while reading %s", jaifPath);
         }
       }
       ASceneWrapper wrapper = new ASceneWrapper(scene);
@@ -937,8 +937,7 @@ public class WholeProgramInferenceScenesStorage
     } else if (curATM.getKind() == TypeKind.TYPEVAR) {
       // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
       // annotated.  So instead, only insert the annotation if there is not primary annotation
-      // of the same hierarchy.  #shouldIgnore prevent annotations that are subtypes of type
-      // vars upper bound from being inserted.
+      // of the same hierarchy.
       for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
         if (curATM.getPrimaryAnnotationInHierarchy(am) != null) {
           // Don't insert if the type already has a primary annotation in the same hierarchy.
@@ -949,7 +948,21 @@ public class WholeProgramInferenceScenesStorage
       }
     }
 
-    // Recursively update compound type and type variable type if they exist.
+    // Recursively update the component type of an array.  Both newATM and curATM must be
+    // arrays, because one might be a declared type even if the other is an array: it is
+    // permitted to assign, e.g., a String[] to a location whose static type is Object, and
+    // vice versa (if a cast is used).
+    //
+    // Type variables are not treated analogously: this method never recurs into the bounds
+    // of a type variable, so it never writes a type-variable bound into innerTypes.
+    // TODO: The read path is asymmetric with this one: updateAtmFromATypeElement reads
+    // innerTypes into the upper bound of an AnnotatedTypeVariable, and updateAtmWithLub
+    // takes the LUB of both bounds.  Those two behaviors apply only to type-variable bounds
+    // that came from a pre-existing .jaif file (which getScene parses), never to bounds that
+    // WPI itself wrote.  Decide whether this method should write type-variable bounds, or
+    // whether those two methods should stop reading them.  Note that the ajava
+    // implementation deliberately does not recur into type-variable bounds, to avoid
+    // accidentally substituting the use of a type variable for its declaration.
     if (newATM.getKind() == TypeKind.ARRAY && curATM.getKind() == TypeKind.ARRAY) {
       AnnotatedArrayType newAAT = (AnnotatedArrayType) newATM;
       AnnotatedArrayType oldAAT = (AnnotatedArrayType) curATM;
