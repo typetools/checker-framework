@@ -228,8 +228,8 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Returns true if the declared type of the given formal parameter is {@code String}.
    *
    * <p>The test is syntactic, because the JavaParser declaration has not been resolved: it assumes
-   * that the simple name {@code String} refers to {@code java.lang.String}. Prefer the parameter's
-   * {@code TypeMirror}, as {@link #formatStringParameterType} does, when one is available.
+   * that the simple name {@code String} refers to {@code java.lang.String}. Do not call this method
+   * if the parameter's {@code TypeMirror} is available.
    *
    * @param param a formal parameter declaration
    * @return true if the parameter's declared type is {@code String}
