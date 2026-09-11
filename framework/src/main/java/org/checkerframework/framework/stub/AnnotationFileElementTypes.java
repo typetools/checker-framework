@@ -302,13 +302,6 @@ public class AnnotationFileElementTypes {
    *
    * @param intellijAnnotationPaths list of files, directories, or jars/zips to parse
    */
-  @SuppressWarnings("builder:required.method.not.called" // `allFiles` may contain multiple
-  // JarEntryAnnotationFileResource.  Each of those references a zip file entry resource, which
-  // itself references a ZipFile resource -- the same ZipFile for multiple zip file entries.
-  // Closing any one of the zip file entries will close the ZipFile, which invalidates the
-  // other zipfile entries.  Therefore, this code does not close any of them.  This code may
-  // leak resources.
-  )
   public void parseIntellijAnnotations(List<String> intellijAnnotationPaths) {
     if (intellijAnnotationPaths.isEmpty()) {
       return;
