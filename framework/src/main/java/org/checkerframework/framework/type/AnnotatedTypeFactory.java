@@ -4151,7 +4151,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Retrieving the annotations from the element.
     // This includes annotations inherited from superclasses, but not superinterfaces or
     // overridden methods.
-    List<? extends AnnotationMirror> fromEle = elements.getAllAnnotationMirrors(elt);
+    List<? extends AnnotationMirror> fromEle;
+    try {
+      fromEle = elements.getAllAnnotationMirrors(elt);
+    } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
+      // The failed completion left the unreadable class's symbol erroneous, so the second walk
+      // stops where the first one threw and returns what every readable superclass contributed.
+      try {
+        fromEle = elements.getAllAnnotationMirrors(elt);
+      } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf2) {
+        fromEle = elt.getAnnotationMirrors();
+      }
+      reportCompletionFailure(elt, cf);
+    }
     for (AnnotationMirror annotation : fromEle) {
       try {
         results.add(annotation);
@@ -4189,6 +4201,31 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Add the element and its annotations to the cache.
     cacheDeclAnnos.put(elt, results);
     return results;
+  }
+
+  /**
+   * Issues a warning that a class file that was needed to compute {@code elt}'s declaration
+   * annotations could not be read.
+   *
+   * @param elt the element whose declaration annotations are incomplete
+   * @param cf the failure to read a class file
+   */
+  private void reportCompletionFailure(
+      Element elt, com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
+    String eltName = ElementUtils.getQualifiedName(elt);
+    try {
+      checker.reportWarning(elt, "class.not.completed", eltName, cf.getMessage());
+    } catch (com.sun.tools.javac.code.Symbol.CompletionFailure nested) {
+      // Deciding whether the warning is suppressed reads the annotations of `elt` and of its
+      // enclosing elements, which can fail to read a class file too.
+      checker.message(
+          Diagnostic.Kind.WARNING,
+          "Cannot read a class file that is needed to compute the declaration annotations of %s:"
+              + " %s.  Annotations inherited from a supertype may be missed.  Make sure your"
+              + " classpath is set correctly.",
+          eltName,
+          cf.getMessage());
+    }
   }
 
   /**
