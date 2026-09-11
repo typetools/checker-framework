@@ -651,8 +651,8 @@ public final class SceneToStubWriter {
    * @param simplename the simple name of the enclosing class, for receiver parameters and
    *     constructor names
    * @param printWriter where to print the method signature
-   * @param atf the type factory, for computing preconditions and postconditions
    * @param indentLevel the indent string
+   * @param atf the type factory, for computing preconditions and postconditions
    */
   private static void printMethodDeclaration(
       AMethod aMethod,
