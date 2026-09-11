@@ -198,7 +198,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     // Don't infer types for code that can't be annotated anyway.
     if (!storage.hasStorageLocationForMethod(constructorElt)) {
-      if (showWpiFailedInferences) {
+      if (showWpiFailedInferences && hasDeclarationInSourceCode(constructorElt)) {
         printFailedInferenceDebugMessage(
             "WPI could not store information"
                 + " about this constructor: "
@@ -223,7 +223,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
+    // Don't infer types for code that can't be annotated anyway.
     if (!storage.hasStorageLocationForMethod(methodElt)) {
+      if (showWpiFailedInferences && hasDeclarationInSourceCode(methodElt)) {
+        printFailedInferenceDebugMessage(
+            "WPI could not store information"
+                + " about this method: "
+                + JVMNames.getJVMMethodSignature(methodElt));
+      }
       return;
     }
 
@@ -417,7 +424,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
           className, preOrPost, methodElt, atypeFactory.getClass().getSimpleName());
     }
 
+    // Don't infer contracts for code that can't be annotated anyway.
     if (!storage.hasStorageLocationForMethod(methodElt)) {
+      if (showWpiFailedInferences && hasDeclarationInSourceCode(methodElt)) {
+        printFailedInferenceDebugMessage(
+            "WPI could not store contracts"
+                + " about this method: "
+                + JVMNames.getJVMMethodSignature(methodElt));
+      }
       return;
     }
 
@@ -1071,6 +1085,23 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     storage.updateStorageLocationFromAtm(
         rhsATM, lhsATM, annotationsToUpdate, defLoc, ignoreIfAnnotated);
     storage.setFileModified(file);
+  }
+
+  /**
+   * Returns true if {@code methodElt} has a declaration in source code, on which a user could write
+   * an annotation.
+   *
+   * <p>Some compiler-generated methods and constructors, such as an enum's {@code values()} method
+   * or a default constructor, are presented as source code (see {@link
+   * ElementUtils#isElementFromSourceCode}) even though they have no declaration that a user could
+   * annotate. A failed-inference message about such a method would not be actionable.
+   *
+   * @param methodElt a method or constructor
+   * @return true if {@code methodElt} has a declaration in source code
+   */
+  private boolean hasDeclarationInSourceCode(ExecutableElement methodElt) {
+    return !TreeUtils.isSynthetic(methodElt)
+        && atypeFactory.declarationFromElement(methodElt) != null;
   }
 
   /**
