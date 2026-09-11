@@ -208,11 +208,12 @@ public final class SceneToStubWriter {
    * space.
    *
    * @param sb where to format the array type to
-   * @param scenelibRep the array's scenelib type element
+   * @param scenelibRep the array's scenelib type element, or null if scene-lib is not storing any
+   *     information about this array
    * @param javacRep the representation of the array's type used by javac
    */
   private static void formatArrayType(
-      StringBuilder sb, ATypeElement scenelibRep, ArrayType javacRep) {
+      StringBuilder sb, @Nullable ATypeElement scenelibRep, ArrayType javacRep) {
     TypeMirror componentType = javacRep.getComponentType();
     ATypeElement scenelibComponent = getNextArrayLevel(scenelibRep);
     while (componentType.getKind() == TypeKind.ARRAY) {
@@ -230,11 +231,12 @@ public final class SceneToStubWriter {
    * of the array type).
    *
    * @param sb where to format the array type to
-   * @param scenelibRep the scene-lib representation
+   * @param scenelibRep the scene-lib representation, or null if scene-lib is not storing any
+   *     information about this array
    * @param javacRep the javac representation of the array type
    */
   private static void formatArrayTypeImpl(
-      StringBuilder sb, ATypeElement scenelibRep, ArrayType javacRep) {
+      StringBuilder sb, @Nullable ATypeElement scenelibRep, ArrayType javacRep) {
     TypeMirror javacComponent = javacRep.getComponentType();
     ATypeElement scenelibComponent = getNextArrayLevel(scenelibRep);
     List<? extends AnnotationMirror> explicitAnnos = javacRep.getAnnotationMirrors();
