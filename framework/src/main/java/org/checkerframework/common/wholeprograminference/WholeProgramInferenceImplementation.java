@@ -1162,19 +1162,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         AnnotatedTypeMirror sourceCodeComponent =
             ((AnnotatedArrayType) sourceCodeATM).getComponentType();
         AnnotatedTypeMirror ajavaComponent = ((AnnotatedArrayType) ajavaATM).getComponentType();
-        if (sourceCodeComponent.getKind() == ajavaComponent.getKind()) {
-          updateAtmWithLub(sourceCodeComponent, ajavaComponent);
-        } else {
-          if (showWpiFailedInferences) {
-            printFailedInferenceDebugMessage(
-                String.join(
-                    System.lineSeparator(),
-                    "attempted to update the component type of an array type, but found an"
-                        + " unexpected difference in type structure.",
-                    "LHS kind: " + sourceCodeComponent.getKind(),
-                    "RHS kind: " + ajavaComponent.getKind()));
-          }
-        }
+        // The two component types might have different kinds, which this method handles at its
+        // beginning by least-upper-bounding only their primary annotations rather than recursing
+        // into their differing structures.  So, recur unconditionally.
+        updateAtmWithLub(sourceCodeComponent, ajavaComponent);
       }
       // case DECLARED:
       // Inferring annotations on type arguments is not supported, so no need to recur on
