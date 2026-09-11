@@ -9,6 +9,8 @@ configurations {
 dependencies {
   implementation(project(":checker-qual"))
 
+  testImplementation(libs.junit)
+
   // This is used by org.checkerframework.javacutil.TypesUtils.isImmutableTypeInJdk.
   // https://mvnrepository.com/artifact/org.plumelib/plume-util
   implementation(libs.hashmap.util)
