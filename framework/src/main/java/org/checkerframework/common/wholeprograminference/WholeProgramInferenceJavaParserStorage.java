@@ -1549,11 +1549,12 @@ public class WholeProgramInferenceJavaParserStorage
      * {@code AnnotatedTypeMirror} for that location using {@code type} and {@code atf} to a wrapper
      * around the base type for the parameter.
      *
-     * @param type type for the parameter at {@code index}, used for initializing the returned
-     *     {@code AnnotatedTypeMirror} the first time it's accessed
+     * @param type type for the parameter at {@code index_1based}, used for initializing the
+     *     returned {@code AnnotatedTypeMirror} the first time it's accessed
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
-     * @param index_1based index of the parameter to return the inferred annotations of (1-based)
+     * @param index_1based index of the parameter to return the inferred annotations of (1-based;
+     *     note that the sibling method {@link #getParameterType} uses a 0-based index)
      * @return an {@code AnnotatedTypeMirror} containing all annotations inferred for the parameter
      *     at the given index
      */
@@ -1578,17 +1579,20 @@ public class WholeProgramInferenceJavaParserStorage
      * Returns the inferred type for the parameter at the given index, or null if there's no
      * parameter at the given index or there's no inferred type for that parameter.
      *
-     * @param index index of the parameter to return the inferred annotations of
+     * <p>Unlike most of the whole-program inference API, and unlike {@link
+     * #getParameterTypeInitialized}, this method's index is 0-based.
+     *
+     * @param index_0based index of the parameter to return the inferred annotations of (0-based)
      * @return an {@code AnnotatedTypeMirror} containing all annotations inferred for the parameter
-     *     at the given index, or null if there's no parameter at {@code index} or if there's not
-     *     inferred annotations for that parameter
+     *     at the given index, or null if there's no parameter at {@code index_0based} or if there's
+     *     not inferred annotations for that parameter
      */
-    public @Nullable AnnotatedTypeMirror getParameterType(int index) {
-      if (parameterTypes == null || index < 0 || index >= parameterTypes.size()) {
+    public @Nullable AnnotatedTypeMirror getParameterType(int index_0based) {
+      if (parameterTypes == null || index_0based < 0 || index_0based >= parameterTypes.size()) {
         return null;
       }
 
-      return parameterTypes.get(index);
+      return parameterTypes.get(index_0based);
     }
 
     /**
