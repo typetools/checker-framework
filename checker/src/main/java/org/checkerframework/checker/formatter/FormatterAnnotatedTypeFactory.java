@@ -40,6 +40,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.reflection.Signatures;
 
 /**
@@ -206,10 +207,18 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
     List<Parameter> params = methodAnnos.declaration.getParameters();
     for (int i = 0; i < params.size(); i++) {
-      if (isStringParameter(params.get(i))) {
-        // getParameterType's index is 0-based.  It returns null if nothing was inferred about the
-        // parameter, in which case the parameter has no annotation to remove.
-        return methodAnnos.getParameterType(i);
+      // getParameterType's index is 0-based.  It returns null if nothing was inferred about the
+      // parameter, in which case the parameter has no annotation to remove.
+      AnnotatedTypeMirror atm = methodAnnos.getParameterType(i);
+      // An inferred type is built from the parameter's TypeMirror, so when one exists, testing it
+      // is exactly the test that `FormatterVisitor.formatStringIndex` performs.  Only when nothing
+      // was inferred about the parameter is the less precise syntactic test necessary.
+      boolean isString =
+          atm != null
+              ? TypesUtils.isString(atm.getUnderlyingType())
+              : isStringParameter(params.get(i));
+      if (isString) {
+        return atm;
       }
     }
     return null;
@@ -219,7 +228,8 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Returns true if the declared type of the given formal parameter is {@code String}.
    *
    * <p>The test is syntactic, because the JavaParser declaration has not been resolved: it assumes
-   * that the simple name {@code String} refers to {@code java.lang.String}.
+   * that the simple name {@code String} refers to {@code java.lang.String}. Prefer the parameter's
+   * {@code TypeMirror}, as {@link #formatStringParameterType} does, when one is available.
    *
    * @param param a formal parameter declaration
    * @return true if the parameter's declared type is {@code String}
