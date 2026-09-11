@@ -200,7 +200,7 @@ public class ASceneWrapper {
           default -> throw new BugInCF("Unhandled outputFormat " + outputFormat);
         }
       } catch (IOException e) {
-        throw new UserError("Problem while writing %s: %s", filepath, e.getMessage());
+        throw new UserError(e, "Problem while writing %s", filepath);
       } catch (DefException e) {
         throw new BugInCF(e);
       }
