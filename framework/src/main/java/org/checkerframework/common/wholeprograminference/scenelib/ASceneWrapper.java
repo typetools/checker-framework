@@ -67,10 +67,10 @@ public class ASceneWrapper {
    * same structure, so this method traverses them in lockstep.
    *
    * <p>This method visits the type annotations on fields, method return types, method receivers,
-   * and formal parameters. It does not visit the declaration annotations on a class, method, or
-   * field, because those are stored on the {@link AClass}, {@link AMethod}, or {@link AField}
-   * itself rather than on an {@link ATypeElement}. It does, however, visit the declaration
-   * annotations on a formal parameter, because {@code
+   * formal parameters, and inferred preconditions and postconditions. It does not visit the
+   * declaration annotations on a class, method, or field, because those are stored on the {@link
+   * AClass}, {@link AMethod}, or {@link AField} itself rather than on an {@link ATypeElement}. It
+   * does, however, visit the declaration annotations on a formal parameter, because {@code
    * WholeProgramInferenceScenesStorage.addDeclarationAnnotationToFormalParameter} stores them in
    * the parameter's {@link ATypeElement} (that is, in {@code param.type.tlAnnotationsHere}), which
    * is the same set that this method removes annotations from.
@@ -82,10 +82,6 @@ public class ASceneWrapper {
    * annotations of an {@code AnnotatedTypeMirror}; that is, only type qualifiers supported by the
    * checker. No declaration annotation that whole-program inference writes, such as {@code @Owning}
    * or {@code @MustCallAlias}, is a supported type qualifier, so the names never collide.
-   *
-   * <p>TODO: The type annotations on a method's inferred preconditions and postconditions are not
-   * visited, even though they can be ignorable. An ignorable annotation on a precondition or
-   * postcondition is therefore written out.
    *
    * @param original the scene that {@code annosToRemove} refers to
    * @param copy a clone of {@code original}, from which to remove annotations
@@ -112,6 +108,16 @@ public class ASceneWrapper {
               correspondingElement(originalMethod.parameters, paramEntry.getKey());
           removeAnnosFromATypeElement(
               originalParam.type, paramEntry.getValue().type, annosToRemove);
+        }
+        for (Map.Entry<String, AField> preEntry : copyMethod.preconditions.entrySet()) {
+          AField originalPre =
+              correspondingElement(originalMethod.preconditions, preEntry.getKey());
+          removeAnnosFromATypeElement(originalPre.type, preEntry.getValue().type, annosToRemove);
+        }
+        for (Map.Entry<String, AField> postEntry : copyMethod.postconditions.entrySet()) {
+          AField originalPost =
+              correspondingElement(originalMethod.postconditions, postEntry.getKey());
+          removeAnnosFromATypeElement(originalPost.type, postEntry.getValue().type, annosToRemove);
         }
       }
     }
