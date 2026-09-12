@@ -102,6 +102,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -1691,20 +1692,6 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Returns the innermost component type of {@code type}.
-   *
-   * @param type array type
-   * @return the innermost component type of {@code type}
-   */
-  private AnnotatedTypeMirror innermostComponentType(AnnotatedArrayType type) {
-    AnnotatedTypeMirror componentType = type;
-    while (componentType.getKind() == TypeKind.ARRAY) {
-      componentType = ((AnnotatedArrayType) componentType).getComponentType();
-    }
-    return componentType;
-  }
-
-  /**
    * Adds {@code annotations} to the innermost component type of {@code type}.
    *
    * @param type array type
@@ -1713,7 +1700,7 @@ public final class AnnotationFileParser {
    */
   private void annotateInnermostComponentType(
       AnnotatedArrayType type, List<AnnotationExpr> annotations, NodeWithRange<?> astNode) {
-    annotate(innermostComponentType(type), annotations, astNode);
+    annotate(AnnotatedTypes.innermostComponentType(type), annotations, astNode);
   }
 
   /**
@@ -3136,7 +3123,19 @@ public final class AnnotationFileParser {
         if (elt != null) {
           if (elt.getKind() == ElementKind.FIELD) {
             VariableDeclarator varDecl = (VariableDeclarator) javaParserNode;
-            processField((FieldDeclaration) varDecl.getParentNode().get(), elt);
+            // In a parsed AST, the parent of a field's VariableDeclarator is always a
+            // FieldDeclaration, but be defensive in case the AST was built programmatically.
+            Node varDeclParent = varDecl.getParentNode().orElse(null);
+            if (varDeclParent instanceof FieldDeclaration fieldDecl) {
+              processField(fieldDecl, elt);
+            } else {
+              throw new BugInCF(
+                  "Expected FieldDeclaration parent for %s [%s], found %s [%s]",
+                  varDecl,
+                  varDecl.getClass(),
+                  varDeclParent,
+                  varDeclParent == null ? "null" : varDeclParent.getClass());
+            }
           }
 
           if (elt.getKind() == ElementKind.ENUM_CONSTANT) {
