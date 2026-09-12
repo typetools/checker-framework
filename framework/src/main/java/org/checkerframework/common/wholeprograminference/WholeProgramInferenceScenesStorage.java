@@ -22,6 +22,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.afu.scenelib.Annotation;
@@ -56,6 +58,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.MapsP;
 
@@ -585,7 +588,8 @@ public class WholeProgramInferenceScenesStorage
    * @param am an annotation to test for whether it should be inserted into source code
    * @param location where the location would be inserted; used to determine if {@code am} is the
    *     default for that location
-   * @param atm its kind is used to determine if {@code am} is the default for that kind
+   * @param atm its underlying Java type is used to determine if {@code am} is the default for that
+   *     type or for that kind of type
    * @return true if am should not be inserted into source code, or if am is invisible
    */
   private boolean shouldIgnore(
@@ -602,19 +606,22 @@ public class WholeProgramInferenceScenesStorage
     }
 
     // Checks if am is the qualifier that this location would have if am were not written out.
+    // If that cannot be determined, then am is written out, which is never unsound.
     if (isDeclaredDefaultFor(
         elt.getAnnotation(DefaultQualifier.class),
         elt.getAnnotation(DefaultFor.class),
         location,
-        atm)) {
+        atm.getUnderlyingType(),
+        false)) {
       return true;
     }
     if (elt.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
       // The hierarchy-wide default applies only where no qualifier is the default for the
-      // specific location or type kind.  For example, in the Signedness Checker @Signed is the
-      // default for the hierarchy, but @Unsigned is the default for char, so omitting an
-      // inferred @Signed from a char would give it the type @Unsigned instead.
-      return !existsMoreSpecificDefault(AnnotationUtils.annotationName(am), location, atm);
+      // specific location, type kind, or Java type.  For example, in the Signedness Checker
+      // @Signed is the default for the hierarchy, but @Unsigned is the default for char, so
+      // omitting an inferred @Signed from a char would give it the type @Unsigned instead.
+      return !existsMoreSpecificDefault(
+          AnnotationUtils.annotationName(am), location, atm.getUnderlyingType());
     }
 
     return false;
@@ -622,25 +629,34 @@ public class WholeProgramInferenceScenesStorage
 
   /**
    * Returns true if the qualifier that is meta-annotated by {@code defaultQual} and {@code
-   * defaultFor} is declared to be the default for {@code location} or for the kind of {@code atm}.
+   * defaultFor} is declared to be the default for {@code location}, for the kind of {@code type},
+   * or for {@code type} itself.
    *
    * <p>The meta-annotations are passed in, rather than the qualifier itself, because a caller has
    * the qualifier as an {@link Element} and another caller has it as a {@link Class}.
+   *
+   * <p>The {@code names} element of {@code @DefaultFor} selects declarations by name, but no name
+   * is available here. If {@code defaultFor} has a {@code names} element and no other element of
+   * {@code defaultQual} or {@code defaultFor} matches, this method returns {@code
+   * resultIfUndetermined}.
    *
    * @param defaultQual the qualifier declaration's {@code @DefaultQualifier} meta-annotation, or
    *     null if it has none
    * @param defaultFor the qualifier declaration's {@code @DefaultFor} meta-annotation, or null if
    *     it has none
    * @param location the location where the qualifier would be written
-   * @param atm the type that the qualifier would be written on; only its kind is used
-   * @return true if the qualifier is the declared default for {@code location} or for the kind of
-   *     {@code atm}
+   * @param type the type that the qualifier would be written on
+   * @param resultIfUndetermined what to return if {@code defaultFor} selects declarations by name,
+   *     which this method cannot evaluate
+   * @return true if the qualifier is the declared default for {@code location}, for the kind of
+   *     {@code type}, or for {@code type} itself
    */
-  private boolean isDeclaredDefaultFor(
+  /*package-private*/ static boolean isDeclaredDefaultFor(
       @Nullable DefaultQualifier defaultQual,
       @Nullable DefaultFor defaultFor,
       TypeUseLocation location,
-      AnnotatedTypeMirror atm) {
+      TypeMirror type,
+      boolean resultIfUndetermined) {
     if (defaultQual != null) {
       for (TypeUseLocation loc : defaultQual.locations()) {
         if (loc == TypeUseLocation.ALL || loc == location) {
@@ -655,14 +671,69 @@ public class WholeProgramInferenceScenesStorage
           return true;
         }
       }
-      // Checks if the qualifier is the default for the kind of atm.
+      // Checks if the qualifier is the default for the kind of type.
       // TODO: Handle cases of annotations added via an
       // org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator.
-      // TODO: Handle the `types` and `names` elements of @DefaultFor, which this method ignores.
-      org.checkerframework.framework.qual.TypeKind[] types = defaultFor.typeKinds();
-      TypeKind atmKind = atm.getUnderlyingType().getKind();
-      if (hasMatchingTypeKind(atmKind, types)) {
+      org.checkerframework.framework.qual.TypeKind[] typeKinds = defaultFor.typeKinds();
+      if (hasMatchingTypeKind(type.getKind(), typeKinds)) {
         return true;
+      }
+      // Checks if the qualifier is the default for the Java type itself.
+      String typeName = defaultForTypeName(type);
+      if (typeName != null && hasMatchingType(typeName, defaultFor)) {
+        return true;
+      }
+      // The `names` element selects variables and methods by name.  This method does not know
+      // the name of the declaration whose type is being written, so it cannot tell whether the
+      // qualifier is the default here.
+      if (defaultFor.names().length != 0) {
+        return resultIfUndetermined;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns the name under which {@link
+   * org.checkerframework.framework.type.typeannotator.DefaultForTypeAnnotator} looks up {@code
+   * javaType} in the {@code types} element of a {@code @DefaultFor} meta-annotation, or null if
+   * that annotator never applies such a default to {@code javaType}.
+   *
+   * @param javaType a type
+   * @return the name to match against the {@code types} element of {@code @DefaultFor}, or null
+   */
+  private static @Nullable String defaultForTypeName(TypeMirror javaType) {
+    if (javaType.getKind() == TypeKind.DECLARED) {
+      return TypesUtils.getQualifiedName((DeclaredType) javaType);
+    } else if (javaType.getKind().isPrimitive()) {
+      return javaType.toString();
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Returns true if the {@code types} element of {@code defaultFor} contains the type named {@code
+   * typeName}.
+   *
+   * @param typeName the name of a type, as computed by {@link #defaultForTypeName}
+   * @param defaultFor a {@code @DefaultFor} meta-annotation
+   * @return true if {@code defaultFor}'s {@code types} element contains {@code typeName}
+   */
+  private static boolean hasMatchingType(String typeName, DefaultFor defaultFor) {
+    try {
+      for (Class<?> clazz : defaultFor.types()) {
+        if (typeName.equals(clazz.getCanonicalName())) {
+          return true;
+        }
+      }
+    } catch (MirroredTypesException e) {
+      // `defaultFor` was obtained from an Element, so its Class-valued element cannot be read
+      // directly; the exception carries the types instead.
+      for (TypeMirror typeMirror : e.getTypeMirrors()) {
+        if (typeName.equals(defaultForTypeName(typeMirror))) {
+          return true;
+        }
       }
     }
     return false;
@@ -670,23 +741,26 @@ public class WholeProgramInferenceScenesStorage
 
   /**
    * Returns true if a supported type qualifier other than {@code qualName} is declared to be the
-   * default for {@code location} or for the kind of {@code atm}. Such a qualifier overrides the
-   * hierarchy-wide default that {@code @DefaultQualifierInHierarchy} establishes, so a qualifier
-   * that is the hierarchy-wide default is not redundant at {@code location}.
+   * default for {@code location}, for the kind of {@code type}, or for {@code type} itself. Such a
+   * qualifier overrides the hierarchy-wide default that {@code @DefaultQualifierInHierarchy}
+   * establishes, so a qualifier that is the hierarchy-wide default is not redundant at {@code
+   * location}.
    *
-   * <p>This method is conservative: it does not check whether the other qualifier is in the same
-   * qualifier hierarchy as {@code qualName}. If it is not, then this method returns true even
-   * though {@code qualName} is still the default for {@code location}. The only consequence is that
-   * whole-program inference writes out an annotation that is redundant, not one that is wrong.
+   * <p>This method is conservative in two ways, both of which can make it return true when {@code
+   * qualName} is in fact the default for {@code location}. First, it does not check whether the
+   * other qualifier is in the same qualifier hierarchy as {@code qualName}. Second, it treats a
+   * qualifier whose {@code @DefaultFor} selects declarations by name as applicable, because it
+   * cannot evaluate that selector. In both cases the only consequence is that whole-program
+   * inference writes out an annotation that is redundant, not one that is wrong.
    *
    * @param qualName the fully-qualified name of a type qualifier that is the default for its
    *     hierarchy
    * @param location the location where the qualifier would be written
-   * @param atm the type that the qualifier would be written on; only its kind is used
+   * @param type the type that the qualifier would be written on
    * @return true if a more specific default overrides the hierarchy-wide default
    */
   private boolean existsMoreSpecificDefault(
-      String qualName, TypeUseLocation location, AnnotatedTypeMirror atm) {
+      String qualName, TypeUseLocation location, TypeMirror type) {
     for (Class<? extends java.lang.annotation.Annotation> clazz :
         atypeFactory.getSupportedTypeQualifiers()) {
       if (qualName.equals(clazz.getCanonicalName())) {
@@ -696,7 +770,8 @@ public class WholeProgramInferenceScenesStorage
           clazz.getAnnotation(DefaultQualifier.class),
           clazz.getAnnotation(DefaultFor.class),
           location,
-          atm)) {
+          type,
+          true)) {
         return true;
       }
     }
@@ -704,15 +779,15 @@ public class WholeProgramInferenceScenesStorage
   }
 
   /**
-   * Returns true if {@code atmKind} appears in {@code types}.
+   * Returns true if {@code atmKind} appears in {@code typeKinds}.
    *
    * @param atmKind the kind of the type being tested
-   * @param types the type kinds to test against
-   * @return true iff {@code atmKind} appears in {@code types}
+   * @param typeKinds the type kinds to test against
+   * @return true iff {@code atmKind} appears in {@code typeKinds}
    */
-  private boolean hasMatchingTypeKind(
-      TypeKind atmKind, org.checkerframework.framework.qual.TypeKind[] types) {
-    for (org.checkerframework.framework.qual.TypeKind tk : types) {
+  private static boolean hasMatchingTypeKind(
+      TypeKind atmKind, org.checkerframework.framework.qual.TypeKind[] typeKinds) {
+    for (org.checkerframework.framework.qual.TypeKind tk : typeKinds) {
       if (tk.name().equals(atmKind.name())) {
         return true;
       }
