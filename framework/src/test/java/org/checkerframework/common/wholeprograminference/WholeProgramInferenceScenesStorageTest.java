@@ -33,11 +33,15 @@ import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.qual.MinLen;
+import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -62,6 +66,12 @@ public class WholeProgramInferenceScenesStorageTest {
           "  }",
           "  void aMethod(int methodParam) {",
           "    int methodLocal = methodParam;",
+          "  }",
+          "  String aliasedMethod() {",
+          "    return \"x\";",
+          "  }",
+          "  String unaliasedMethod() {",
+          "    return \"x\";",
           "  }",
           "  static class Inner {",
           "    void innerMethod() {",
@@ -376,6 +386,140 @@ public class WholeProgramInferenceScenesStorageTest {
             + System.lineSeparator()
             + jaifContents,
         jaifContents.contains("method aMethod(I)V: @java.lang.Deprecated"));
+  }
+
+  /**
+   * An inferred annotation that is redundant in the source code is not written to the output file.
+   * This test is the baseline for {@link #aliasedMethodDeclarationAnnotationPreservesReturnType}.
+   */
+  @Test
+  public void redundantReturnTypeAnnotationIsNotWritten() throws IOException {
+    WholeProgramInferenceScenesStorage storage = newStorage();
+    ExecutableElement unaliasedMethod = methodNamed("unaliasedMethod");
+    inferRedundantReturnType(storage, unaliasedMethod);
+    String jaifContents = writeJaif(storage, unaliasedMethod);
+    Assert.assertTrue(
+        "unaliasedMethod is absent from the .jaif file:" + System.lineSeparator() + jaifContents,
+        jaifContents.contains("method unaliasedMethod()"));
+    Assert.assertFalse(
+        "the redundant @StringVal was written to the .jaif file:"
+            + System.lineSeparator()
+            + jaifContents,
+        jaifContents.contains("StringVal"));
+  }
+
+  /**
+   * Writing, on a method, a declaration annotation that is an alias for a type qualifier gives the
+   * method's return type that qualifier. Therefore, an annotation that the method's return type has
+   * in the input program is not redundant in the output file, even if whole-program inference would
+   * ordinarily omit it.
+   */
+  @Test
+  public void aliasedMethodDeclarationAnnotationPreservesReturnType() throws IOException {
+    WholeProgramInferenceScenesStorage storage = newStorage();
+    ExecutableElement aliasedMethod = methodNamed("aliasedMethod");
+    AnnotationMirror minLen = minLenAnnotation();
+    Assert.assertFalse(
+        "@MinLen is not an alias for a qualifier of the Constant Value Checker",
+        AnnotationUtils.areSameByName(typeFactory.canonicalAnnotation(minLen), minLen));
+    Assert.assertTrue(
+        "did not add @MinLen to the Scene for aliasedMethod",
+        storage.addMethodDeclarationAnnotation(aliasedMethod, minLen));
+    inferRedundantReturnType(storage, aliasedMethod);
+    String jaifContents = writeJaif(storage, aliasedMethod);
+    Assert.assertTrue(
+        "@StringVal is not on the return type of aliasedMethod in the .jaif file:"
+            + System.lineSeparator()
+            + jaifContents,
+        jaifContents.contains("StringVal"));
+  }
+
+  /**
+   * Returns the method in {@link #SOURCE} whose name is {@code methodName}.
+   *
+   * @param methodName the name of a method declared in {@link #SOURCE}
+   * @return the element for that method
+   */
+  private static ExecutableElement methodNamed(String methodName) {
+    Element result = elements.get(methodName);
+    Assert.assertNotNull("no element named " + methodName, result);
+    return (ExecutableElement) result;
+  }
+
+  /**
+   * Infers, for the return type of {@code methodElt}, an annotation that the source code already
+   * has. Whole-program inference does not write such an annotation to the output file, unless some
+   * other inference for {@code methodElt} makes it non-redundant.
+   *
+   * @param storage the storage to record the inference in
+   * @param methodElt a method whose return type is {@code String}
+   */
+  private void inferRedundantReturnType(
+      WholeProgramInferenceScenesStorage storage, ExecutableElement methodElt) {
+    AnnotationMirror stringVal = stringValAnnotation();
+    AnnotatedTypeMirror inferredType = annotatedStringType(stringVal);
+    AnnotatedTypeMirror declaredType = annotatedStringType(stringVal);
+    storage.updateStorageLocationFromAtm(
+        inferredType,
+        declaredType,
+        storage.getReturnAnnotations(methodElt, inferredType, typeFactory),
+        TypeUseLocation.RETURN,
+        false);
+  }
+
+  /**
+   * Writes out the scene that contains {@code methodElt}, and returns the contents of the .jaif
+   * file that was written.
+   *
+   * @param storage the storage to write out
+   * @param methodElt a method whose scene has been modified
+   * @return the contents of the .jaif file for {@code methodElt}'s class
+   */
+  private String writeJaif(WholeProgramInferenceScenesStorage storage, ExecutableElement methodElt)
+      throws IOException {
+    storage.setFileModified(storage.getFileForElement(methodElt));
+    storage.writeResultsToFile(OutputFormat.JAIF, checker);
+    Path jaifFile = outputDirectoryPath().resolve("testpkg.Outer.jaif");
+    Assert.assertTrue("did not write " + jaifFile, Files.exists(jaifFile));
+    return new String(Files.readAllBytes(jaifFile), StandardCharsets.UTF_8);
+  }
+
+  /**
+   * Returns the type {@code String}, with {@code anno} as its primary annotation.
+   *
+   * @param anno a type qualifier
+   * @return the type {@code String} annotated with {@code anno}
+   */
+  private AnnotatedTypeMirror annotatedStringType(AnnotationMirror anno) {
+    AnnotatedTypeMirror result =
+        AnnotatedTypeMirror.createType(typeOf("aStringField"), typeFactory, false);
+    result.addAnnotation(anno);
+    return result;
+  }
+
+  /**
+   * Returns a {@code @MinLen} annotation, which the Constant Value Checker treats as an alias for
+   * the type qualifier {@code @ArrayLenRange}. {@link
+   * WholeProgramInferenceScenesStorage#addMethodDeclarationAnnotation} does not check where its
+   * argument may be written, only whether it is an alias for a type qualifier.
+   *
+   * @return a {@code @MinLen} annotation
+   */
+  private static AnnotationMirror minLenAnnotation() {
+    return AnnotationBuilder.fromClass(typeFactory.getElementUtils(), MinLen.class);
+  }
+
+  /**
+   * Returns a {@code @StringVal("x")} annotation, which is a type qualifier of the Constant Value
+   * Checker.
+   *
+   * @return a {@code @StringVal("x")} annotation
+   */
+  private static AnnotationMirror stringValAnnotation() {
+    AnnotationBuilder builder =
+        new AnnotationBuilder(typeFactory.getProcessingEnv(), StringVal.class);
+    builder.setValue("value", new String[] {"x"});
+    return builder.build();
   }
 
   /**

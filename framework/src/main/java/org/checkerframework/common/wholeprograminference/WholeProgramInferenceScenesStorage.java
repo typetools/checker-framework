@@ -394,6 +394,11 @@ public class WholeProgramInferenceScenesStorage
 
     Annotation sceneAnno = AnnotationConverter.annotationMirrorToAnnotation(anno);
     boolean isNewAnnotation = methodAnnos.tlAnnotationsHere.add(sceneAnno);
+    if (isAliasForTypeQualifier(anno)) {
+      // A declaration annotation on a method that is an alias for a type qualifier applies to
+      // the method's return type.
+      neverIgnoreAnnotationsOn(methodAnnos.returnType);
+    }
     return isNewAnnotation;
   }
 
