@@ -227,8 +227,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     if (!storage.hasStorageLocationForMethod(methodElt)) {
       if (showWpiFailedInferences && hasDeclarationInSourceCode(methodElt)) {
         printFailedInferenceDebugMessage(
-            "WPI could not store information"
-                + " about this method: "
+            "WPI could not store information about this "
+                + (methodElt.getKind() == ElementKind.CONSTRUCTOR ? "constructor" : "method")
+                + ": "
                 + JVMNames.getJVMMethodSignature(methodElt));
       }
       return;
@@ -428,8 +429,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     if (!storage.hasStorageLocationForMethod(methodElt)) {
       if (showWpiFailedInferences && hasDeclarationInSourceCode(methodElt)) {
         printFailedInferenceDebugMessage(
-            "WPI could not store contracts"
-                + " about this method: "
+            "WPI could not store contracts about this "
+                + (methodElt.getKind() == ElementKind.CONSTRUCTOR ? "constructor" : "method")
+                + ": "
                 + JVMNames.getJVMMethodSignature(methodElt));
       }
       return;
