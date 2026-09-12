@@ -31,7 +31,7 @@ import org.checkerframework.afu.scenelib.el.DefCollector;
 import org.checkerframework.afu.scenelib.el.DefException;
 import org.checkerframework.afu.scenelib.el.TypePathEntry;
 import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
-import org.checkerframework.checker.index.qual.SameLen;
+import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
@@ -105,7 +105,7 @@ public final class SceneToStubWriter {
    * @return the part of the name referring to the package, or null if there is no package name
    */
   @SuppressWarnings("signature") // a valid non-empty package name is a dot separated identifier
-  private static @Nullable @DotSeparatedIdentifiers String packagePart(
+  /*package*/ static @Nullable @DotSeparatedIdentifiers String packagePart(
       @BinaryName String className) {
     int lastdot = className.lastIndexOf('.');
     return (lastdot == -1) ? null : className.substring(0, lastdot);
@@ -118,7 +118,7 @@ public final class SceneToStubWriter {
    * @return the part of the name representing the class's name without its package
    */
   @SuppressWarnings("signature:return") // A binary name without its package is still a binary name
-  private static @BinaryName String basenamePart(@BinaryName String className) {
+  /*package*/ static @BinaryName String basenamePart(@BinaryName String className) {
     int lastdot = className.lastIndexOf('.');
     return className.substring(lastdot + 1);
   }
@@ -208,11 +208,12 @@ public final class SceneToStubWriter {
    * space.
    *
    * @param sb where to format the array type to
-   * @param scenelibRep the array's scenelib type element
+   * @param scenelibRep the array's scenelib type element, or null if scene-lib is not storing any
+   *     information about this array
    * @param javacRep the representation of the array's type used by javac
    */
   private static void formatArrayType(
-      StringBuilder sb, ATypeElement scenelibRep, ArrayType javacRep) {
+      StringBuilder sb, @Nullable ATypeElement scenelibRep, ArrayType javacRep) {
     TypeMirror componentType = javacRep.getComponentType();
     ATypeElement scenelibComponent = getNextArrayLevel(scenelibRep);
     while (componentType.getKind() == TypeKind.ARRAY) {
@@ -230,11 +231,12 @@ public final class SceneToStubWriter {
    * of the array type).
    *
    * @param sb where to format the array type to
-   * @param scenelibRep the scene-lib representation
+   * @param scenelibRep the scene-lib representation, or null if scene-lib is not storing any
+   *     information about this array
    * @param javacRep the javac representation of the array type
    */
   private static void formatArrayTypeImpl(
-      StringBuilder sb, ATypeElement scenelibRep, ArrayType javacRep) {
+      StringBuilder sb, @Nullable ATypeElement scenelibRep, ArrayType javacRep) {
     TypeMirror javacComponent = javacRep.getComponentType();
     ATypeElement scenelibComponent = getNextArrayLevel(scenelibRep);
     List<? extends AnnotationMirror> explicitAnnos = javacRep.getAnnotationMirrors();
@@ -285,8 +287,7 @@ public final class SceneToStubWriter {
    *     argument is exactly the String "this".
    * @return the formatted formal parameter, as if it were written in Java source code
    */
-  // Package-private rather than private so that SceneToStubWriterTest can call it.
-  static String formatParameter(AField param, String parameterName, String basename) {
+  /*package*/ static String formatParameter(AField param, String parameterName, String basename) {
     StringBuilder sb = new StringBuilder();
     formatParameter(sb, param, parameterName, basename);
     return sb.toString();
@@ -388,7 +389,7 @@ public final class SceneToStubWriter {
       StringBuilder sb, @Nullable ATypeElement aType, TypeMirror javacType) {
     // TypeMirror#toString prints multiple annotations on a single type
     // separated by commas rather than by whitespace, as is required in source code.
-    String basetypeToPrint = javacType.toString().replaceAll(",@", " @");
+    String basetypeToPrint = javacType.toString().replace(",@", " @");
 
     // We must not print annotations in the default package that conflict with
     // imported annotation names.
@@ -508,36 +509,35 @@ public final class SceneToStubWriter {
   }
 
   /**
-   * Print the hierarchy of outer classes up to and including the given class, and return the number
-   * of curly braces to close with. The classes are printed with appropriate opening curly braces,
-   * in standard Java style.
+   * Print the enclosing classes up to and including the given class, and return the number of curly
+   * braces to close with. The classes are printed with appropriate opening curly braces, in
+   * standard Java style.
    *
    * <p>In an AScene, an inner class name is a binary name like "Outer$Inner". In a stub file, inner
    * classes must be nested, as in Java source code.
    *
-   * @param basename the binary name of the class without the package part
-   * @param aClass the AClass for {@code basename}
+   * @param innermostTypeElt the class to print; its enclosing classes are printed around it
+   * @param aClass the AClass for {@code innermostTypeElt}
    * @param printWriter the writer where the class definition should be printed
    * @param checker the type-checker whose annotations are being written
    * @return the number of outer classes within which this class is nested
    */
   private static int printClassDefinitions(
-      String basename, AClass aClass, PrintWriter printWriter, BaseTypeChecker checker) {
-    String[] classNames = basename.split("\\$");
-    TypeElement innermostTypeElt = aClass.getTypeElement();
-    if (innermostTypeElt == null) {
-      throw new BugInCF("typeElement was unexpectedly null in this aClass: " + aClass);
-    }
-    TypeElement[] typeElements = getTypeElementsForClasses(innermostTypeElt, classNames);
+      TypeElement innermostTypeElt,
+      AClass aClass,
+      PrintWriter printWriter,
+      BaseTypeChecker checker) {
+    TypeElement[] typeElements = getTypeElementsForClasses(innermostTypeElt);
+    int classCount = typeElements.length;
 
-    for (int i = 0; i < classNames.length; i++) {
-      String nameToPrint = classNames[i];
-      if (i == classNames.length - 1) {
+    for (int i = 0; i < classCount; i++) {
+      String nameToPrint = typeElements[i].getSimpleName().toString();
+      if (i == classCount - 1) {
         printWriter.print(indents(i));
         printWriter.println("@AnnotatedFor(\"" + checker.getClass().getCanonicalName() + "\")");
       }
       printWriter.print(indents(i));
-      if (i == classNames.length - 1) {
+      if (i == classCount - 1) {
         // Only print class annotations on the innermost class, which corresponds to aClass.
         // If there should be class annotations on another class, it will have its own stub
         // file, which will eventually be merged with this one.
@@ -557,32 +557,42 @@ public final class SceneToStubWriter {
       printWriter.print(nameToPrint);
       printTypeParameters(typeElements[i], printWriter);
       printWriter.println(" {");
-      if (aClass.isEnum(nameToPrint) && i != classNames.length - 1) {
+      if (aClass.isEnum(nameToPrint) && i != classCount - 1) {
         // Print a blank set of enum constants if this is an outer enum.
         printWriter.println(indents(i + 1) + "/* omitted enum constants */ ;");
       }
       printWriter.println();
     }
-    return classNames.length;
+    return classCount;
   }
 
   /**
-   * Constructs an array of TypeElements corresponding to the list of classes.
+   * Constructs an array of the TypeElements for the given class and each of its enclosing classes,
+   * from outermost to innermost.
    *
-   * @param innermostTypeElt the innermost type element: either an inner class or an outer class
-   *     without any inner classes that should be printed
-   * @param classNames the names of the enclosing classes, from outer to inner
-   * @return an array of TypeElements whose entry at a given index represents the type named at that
-   *     index in {@code classNames}
+   * <p>This walks the enclosing elements rather than splitting the class's binary name at dollar
+   * signs, because a dollar sign in a binary name does not necessarily separate an enclosing class
+   * from a nested one: a dollar sign is legal in a Java identifier, as in {@code class Foo$Bar {}}.
+   *
+   * @param innermostTypeElt the innermost type element: the class to print, which is neither local
+   *     nor anonymous, nor nested within a local or anonymous class
+   * @return an array of TypeElements, from the outermost enclosing class to {@code
+   *     innermostTypeElt}
    */
-  private static TypeElement @SameLen("#2") [] getTypeElementsForClasses(
-      TypeElement innermostTypeElt, String @MinLen(1) [] classNames) {
-    TypeElement[] result = new TypeElement[classNames.length];
-    result[classNames.length - 1] = innermostTypeElt;
+  private static TypeElement @MinLen(1) [] getTypeElementsForClasses(TypeElement innermostTypeElt) {
+    int classCount = 0;
+    for (Element elt = innermostTypeElt;
+        elt instanceof TypeElement;
+        elt = elt.getEnclosingElement()) {
+      classCount++;
+    }
+    @SuppressWarnings("value:assignment") // classCount >= 1: innermostTypeElt is a TypeElement
+    TypeElement @MinLen(1) [] result = new TypeElement[classCount];
     Element elt = innermostTypeElt;
-    for (int i = classNames.length - 2; i >= 0; i--) {
-      elt = elt.getEnclosingElement();
+    for (int i = classCount - 1; i >= 0; i--) {
+      // The cast is safe because the loop above counted only TypeElements.
       result[i] = (TypeElement) elt;
+      elt = elt.getEnclosingElement();
     }
     return result;
   }
@@ -639,17 +649,14 @@ public final class SceneToStubWriter {
   /**
    * Prints a method declaration in stub file format (i.e., without a method body).
    *
-   * @param className the class that contains the method, for diagnostics only
    * @param aMethod the method to print
    * @param simplename the simple name of the enclosing class, for receiver parameters and
    *     constructor names
    * @param printWriter where to print the method signature
-   * @param atf the type factory, for computing preconditions and postconditions
    * @param indentLevel the indent string
+   * @param atf the type factory, for computing preconditions and postconditions
    */
-  @SuppressWarnings("UnusedVariable")
   private static void printMethodDeclaration(
-      String className,
       AMethod aMethod,
       String simplename,
       PrintWriter printWriter,
@@ -792,6 +799,8 @@ public final class SceneToStubWriter {
    * @param classname the class name
    * @param aClass the representation of the class
    * @return true if the class is printable, by the definition above
+   * @throws BugInCF if the class passes the tests above but has no {@code TypeElement}, which
+   *     printing it would require
    */
   private static boolean isPrintable(@BinaryName String classname, AClass aClass) {
     String basename = basenamePart(classname);
@@ -829,30 +838,41 @@ public final class SceneToStubWriter {
       BaseTypeChecker checker,
       PrintWriter printWriter) {
 
-    String basename = basenamePart(classname);
-    String innermostClassname =
-        basename.contains("$") ? basename.substring(basename.lastIndexOf('$') + 1) : basename;
+    TypeElement innermostTypeElt = aClass.getTypeElement();
+    if (innermostTypeElt == null) {
+      throw new BugInCF("typeElement was unexpectedly null in this aClass: " + aClass);
+    }
+    // Use the simple name from the type element rather than the last dollar-sign-separated part
+    // of the binary name, because a dollar sign is legal in a Java identifier.
+    String innermostClassname = innermostTypeElt.getSimpleName().toString();
     String pkg = packagePart(classname);
 
     if (pkg != null) {
       printWriter.println("package " + pkg + ";");
     }
 
-    int curlyCount = printClassDefinitions(basename, aClass, printWriter, checker);
+    int curlyCount = printClassDefinitions(innermostTypeElt, aClass, printWriter, checker);
 
     String indentLevel = indents(curlyCount);
 
     List<VariableElement> enumConstants = aClass.getEnumConstants();
     if (enumConstants != null) {
-      StringJoiner sj = new StringJoiner(", ");
-      for (VariableElement enumConstant : enumConstants) {
-        sj.add(enumConstant.getSimpleName());
-      }
+      if (!enumConstants.isEmpty()) {
+        StringJoiner sj = new StringJoiner(", ");
+        for (VariableElement enumConstant : enumConstants) {
+          sj.add(enumConstant.getSimpleName());
+        }
 
-      printWriter.println(indentLevel + "// enum constants:");
-      printWriter.println();
-      printWriter.println(indentLevel + sj.toString() + ";");
-      printWriter.println();
+        printWriter.println(indentLevel + "// enum constants:");
+        printWriter.println();
+        printWriter.println(indentLevel + sj.toString() + ";");
+        printWriter.println();
+      } else if (!aClass.getFields().isEmpty() || !aClass.getMethods().isEmpty()) {
+        // An enum with no enum constants but with body declarations still needs the semicolon
+        // that separates the (empty) list of enum constants from the body declarations.
+        printWriter.println(indentLevel + ";");
+        printWriter.println();
+      }
     }
 
     printFields(aClass, printWriter, indentLevel);
@@ -863,7 +883,6 @@ public final class SceneToStubWriter {
       printWriter.println();
       for (Map.Entry<String, AMethod> methodEntry : aClass.getMethods().entrySet()) {
         printMethodDeclaration(
-            aClass.className,
             methodEntry.getValue(),
             innermostClassname,
             printWriter,
@@ -882,8 +901,8 @@ public final class SceneToStubWriter {
    * @param n the number of indents
    * @return a string containing that many indents
    */
-  private static String indents(int n) {
-    return INDENT.repeat(Math.max(0, n));
+  private static String indents(@NonNegative int n) {
+    return INDENT.repeat(n);
   }
 
   /**

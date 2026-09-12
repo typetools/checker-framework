@@ -289,7 +289,7 @@ and the enclosing class must have a \<@MustCall("d")> obligation to
 ensure the destructor is called. In addition to the \<@EnsuresCalledMethods> annotation,
 which guarantees that the field(s) it references have their must-call obligations satisfied
 on non-exceptional paths, the Resource Leak Checker requires those fields to have their must-call
-obligations satisfied on all paths in (only) the destructor, and will issue a \<destructor.exceptional.postcondition>
+obligations satisfied on all paths in (only) the destructor, and will issue a \<contracts.exceptional.postcondition>
 error if they are not satisfied. Resolve this error by ensuring that the required methods are called
 on all exceptional paths.
 
