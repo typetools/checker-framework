@@ -9,6 +9,10 @@
 
 ### Changes for type system implementers
 
+`BaseTypeVisitor.reportPurityErrors()` no longer takes a `MethodTree`
+parameter; it was unused, and purity errors are reported at the locations that
+`PurityResult` records.
+
 Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
 
 Removed the unused method
