@@ -3123,7 +3123,19 @@ public final class AnnotationFileParser {
         if (elt != null) {
           if (elt.getKind() == ElementKind.FIELD) {
             VariableDeclarator varDecl = (VariableDeclarator) javaParserNode;
-            processField((FieldDeclaration) varDecl.getParentNode().get(), elt);
+            // In a parsed AST, the parent of a field's VariableDeclarator is always a
+            // FieldDeclaration, but be defensive in case the AST was built programmatically.
+            Node varDeclParent = varDecl.getParentNode().orElse(null);
+            if (varDeclParent instanceof FieldDeclaration fieldDecl) {
+              processField(fieldDecl, elt);
+            } else {
+              throw new BugInCF(
+                  "Expected FieldDeclaration parent for %s [%s], found %s [%s]",
+                  varDecl,
+                  varDecl.getClass(),
+                  varDeclParent,
+                  varDeclParent == null ? "null" : varDeclParent.getClass());
+            }
           }
 
           if (elt.getKind() == ElementKind.ENUM_CONSTANT) {
