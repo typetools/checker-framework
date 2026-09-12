@@ -243,8 +243,15 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
    * Returns the index of the format string of a method: the first formal parameter with declared
    * type String.
    *
+   * <p>This is the Formatter Checker's definition of "format string parameter". Whole-program
+   * inference needs the same notion for representations of a method other than an {@code
+   * ExecutableElement}; the private methods {@code
+   * FormatterAnnotatedTypeFactory.formatStringParameter} (for an annotation file) and {@code
+   * FormatterAnnotatedTypeFactory.formatStringParameterType} (for a JavaParser declaration) must be
+   * kept in sync with this method.
+   *
    * @param m a method
-   * @return the index of the last String formal parameter, or -1 if none
+   * @return the index of the first String formal parameter, or -1 if none
    */
   public static int formatStringIndex(ExecutableElement m) {
     List<? extends VariableElement> params = m.getParameters();
