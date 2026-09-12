@@ -11,6 +11,9 @@
 
 Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
 
+`JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,
+`parseStubUnit()`, and `parseExpression()` into new class `StaticJavaParserUtil`.
+
 Removed the unused method
 `WholeProgramInferenceScenesStorage.updateAnnotationSetInScene()`.
 
