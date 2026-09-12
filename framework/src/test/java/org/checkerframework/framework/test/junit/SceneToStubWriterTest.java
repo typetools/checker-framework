@@ -25,7 +25,7 @@ import org.checkerframework.afu.scenelib.el.AScene;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
-import org.checkerframework.framework.util.JavaParserUtil;
+import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -108,7 +108,7 @@ public class SceneToStubWriterTest {
   private static void assertParseable(String contents) {
     try (InputStream inputStream =
         new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8))) {
-      JavaParserUtil.parseStubUnit(inputStream);
+      StaticJavaParserUtil.parseStubUnit(inputStream);
     } catch (IOException e) {
       throw new AssertionError(e);
     } catch (ParseProblemException e) {

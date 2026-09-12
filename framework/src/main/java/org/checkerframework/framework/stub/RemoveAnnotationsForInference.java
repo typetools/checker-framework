@@ -45,7 +45,7 @@ import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.stubifier.JavaStubifier;
-import org.checkerframework.framework.util.JavaParserUtil;
+import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.ArraysP;
 import org.plumelib.util.CollectionsP;
@@ -179,7 +179,7 @@ public final class RemoveAnnotationsForInference {
     CollectionStrategy strategy = new ParserCollectionStrategy();
     // Required to include directories that contain a module-info.java, which don't parse by
     // default.
-    strategy.getParserConfiguration().setLanguageLevel(JavaParserUtil.DEFAULT_LANGUAGE_LEVEL);
+    strategy.getParserConfiguration().setLanguageLevel(StaticJavaParserUtil.DEFAULT_LANGUAGE_LEVEL);
     ProjectRoot projectRoot = strategy.collect(root);
 
     for (SourceRoot sourceRoot : projectRoot.getSourceRoots()) {
