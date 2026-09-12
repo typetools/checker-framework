@@ -88,14 +88,15 @@ hooks = [
 
 ## CircleCI
 
-# This doesn't install the tool!  It fails with "Circleci CLI could not be
-# found." unless you have installed the CircleCI CLI.  Using `snap` to install
-# leads to permission problems due to snap confinement.  To install:
-# - run: curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/main/install.sh | sudo bash
-[[repos]]
-repo = "https://github.com/zahorniak/pre-commit-circleci"
-rev = "v1.3.0"
-hooks = [{ id = "circleci_validate" }]
+# # This doesn't install the tool!  It fails with "Circleci CLI could not be
+# # found." unless you have installed the CircleCI CLI.  Using `snap` to install
+# # leads to permission problems due to snap confinement.  To install:
+# # - run: curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/main/install.sh | sudo bash
+# # But, as of 2026-08-31, it requires an --org=... argument, so disable it.
+# [[repos]]
+# repo = "https://github.com/zahorniak/pre-commit-circleci"
+# rev = "v1.3.0"
+# hooks = [{ id = "circleci_validate", args = ["--org=gh/mernst"] }]
 
 ## GitHub Actions
 
@@ -321,7 +322,8 @@ hooks = [
 #   { id = "oxlint", verbose = true }
 # ]
 
-# Taplo does not work on ARM and is not actively maintained.
+# Taplo does not work on ARM Linux and is not actively maintained.
+# [[repos]]
 # repo = "https://github.com/ComPWA/taplo-pre-commit"
 # rev = "v0.9.3"
 # hooks = [
