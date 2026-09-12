@@ -14,8 +14,10 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.PrimitiveType;
+import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -60,14 +62,6 @@ public final class JavaParserUtil {
       Elements elements, ClassOrInterfaceType type) {
     String name = type.getNameWithScope();
 
-    // The name might already be fully-qualified.
-    {
-      TypeElement result = elements.getTypeElement(name);
-      if (result != null) {
-        return result;
-      }
-    }
-
     // `firstComponent` is what a single-type import must import; the rest of `name` names a
     // nested type, as in `Entry` and `Entry.Foo` for the import `java.util.Map.Entry`.
     int dotIndex = name.indexOf('.');
@@ -81,11 +75,19 @@ public final class JavaParserUtil {
       suffix = name.substring(dotIndex);
     }
 
-    // A type that is lexically enclosed in a type declaration takes precedence over an import,
-    // over a type in the same package, and over a type in `java.lang`.
+    // A type parameter, or a type that is lexically enclosed in a type declaration, takes
+    // precedence over an import, over a type in the same package, and over a type in `java.lang`.
     for (Node ancestor = type.getParentNode().orElse(null);
         ancestor != null;
         ancestor = ancestor.getParentNode().orElse(null)) {
+      if (ancestor instanceof NodeWithTypeParameters<?> generic) {
+        for (TypeParameter typeParameter : generic.getTypeParameters()) {
+          if (typeParameter.getNameAsString().equals(firstComponent)) {
+            // `name` is a type variable, or is nested within one.
+            return null;
+          }
+        }
+      }
       if (ancestor instanceof TypeDeclaration<?> enclosingType) {
         String enclosingName = enclosingType.getFullyQualifiedName().orElse(null);
         if (enclosingName != null) {
@@ -107,7 +109,8 @@ public final class JavaParserUtil {
 
     CompilationUnit cu = type.findCompilationUnit().orElse(null);
     if (cu == null) {
-      return null;
+      // The name might be fully-qualified.
+      return elements.getTypeElement(name);
     }
 
     // A single-type import or a single-static import of a member type takes precedence over an
@@ -122,7 +125,9 @@ public final class JavaParserUtil {
         if (result != null) {
           return result;
         }
-        if (importDecl.isStatic()) {
+        // When `importedName` equals `firstComponent`, the import has no qualifier, so it names
+        // no container to search.  (JavaParser accepts such an import even though javac does not.)
+        if (importDecl.isStatic() && importedName.length() > firstComponent.length()) {
           // A static import can name a member type that the named type inherits.  (A static
           // import that names a field or a method resolves to no type element at all.)
           String containerName =
@@ -139,25 +144,27 @@ public final class JavaParserUtil {
     }
 
     // The type might be in the same package, in a package or type that is imported on demand, or
-    // in `java.lang`.
-    List<String> containerNames = new ArrayList<>();
-    cu.getPackageDeclaration().ifPresent(pkg -> containerNames.add(pkg.getNameAsString()));
+    // in `java.lang`.  A name in the unnamed package has no prefix.
+    List<String> containerPrefixes = new ArrayList<>();
+    containerPrefixes.add(
+        cu.getPackageDeclaration().map(pkg -> pkg.getNameAsString() + ".").orElse(""));
     for (ImportDeclaration importDecl : cu.getImports()) {
       if (importDecl.isAsterisk()) {
-        containerNames.add(importDecl.getNameAsString());
+        containerPrefixes.add(importDecl.getNameAsString() + ".");
       }
     }
-    containerNames.add("java.lang");
-    for (String containerName : containerNames) {
-      TypeElement result = elements.getTypeElement(containerName + "." + name);
+    containerPrefixes.add("java.lang.");
+    for (String containerPrefix : containerPrefixes) {
+      TypeElement result = elements.getTypeElement(containerPrefix + name);
       if (result != null) {
         return result;
       }
     }
 
-    // A static import on demand also imports the member types that the named type inherits.
+    // An import on demand, whether static or not, also imports the member types that the named
+    // type inherits.
     for (ImportDeclaration importDecl : cu.getImports()) {
-      if (importDecl.isAsterisk() && importDecl.isStatic()) {
+      if (importDecl.isAsterisk()) {
         TypeElement importedElement = elements.getTypeElement(importDecl.getNameAsString());
         if (importedElement != null) {
           TypeElement result = resolveMemberType(elements, importedElement, firstComponent, suffix);
@@ -168,7 +175,8 @@ public final class JavaParserUtil {
       }
     }
 
-    return null;
+    // The name might be fully-qualified, or might be a top-level type in the unnamed package.
+    return elements.getTypeElement(name);
   }
 
   /**
