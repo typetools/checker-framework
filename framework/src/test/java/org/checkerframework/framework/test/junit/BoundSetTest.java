@@ -1,11 +1,10 @@
 package org.checkerframework.framework.test.junit;
 
-import static org.checkerframework.framework.util.typeinference8.UninitializedInstance.uninitialized;
-
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.util.typeinference8.UninitializedInstance;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
@@ -203,7 +202,13 @@ public class BoundSetTest {
      * @param id an identification number, which is unique among the variables of one test
      */
     TestVariable(Java8InferenceContext context, int id) {
-      super(uninitialized(AnnotatedTypeVariable.class), null, null, context, null, id);
+      super(
+          UninitializedInstance.uninitialized(AnnotatedTypeVariable.class),
+          null,
+          null,
+          context,
+          null,
+          id);
     }
 
     // Variable's equals and hashCode use the Java type variable, which is null in a TestVariable.
@@ -283,6 +288,6 @@ public class BoundSetTest {
    * @return a {@link Java8InferenceContext} whose fields are all null
    */
   private static Java8InferenceContext uninitializedContext() {
-    return uninitialized(Java8InferenceContext.class);
+    return UninitializedInstance.uninitialized(Java8InferenceContext.class);
   }
 }

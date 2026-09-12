@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
-import static org.checkerframework.framework.util.typeinference8.UninitializedInstance.uninitialized;
-
+import org.checkerframework.framework.util.typeinference8.UninitializedInstance;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -222,6 +221,7 @@ public class VariableBoundsTest {
    */
   private static VariableBounds uninitializedVariableBounds() {
     return new VariableBounds(
-        uninitialized(Variable.class), uninitialized(Java8InferenceContext.class));
+        UninitializedInstance.uninitialized(Variable.class),
+        UninitializedInstance.uninitialized(Java8InferenceContext.class));
   }
 }
