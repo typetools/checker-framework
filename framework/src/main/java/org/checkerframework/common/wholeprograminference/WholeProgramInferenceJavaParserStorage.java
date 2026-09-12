@@ -1198,7 +1198,10 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Adds an explicit receiver type to a JavaParser method declaration.
+   * Adds an explicit receiver type to a JavaParser method declaration. Does nothing if the method
+   * is not declared in a {@code TypeDeclaration}; this is not an error, because a method of an
+   * anonymous class has an {@code ObjectCreationExpr} parent, and such a method cannot be given an
+   * explicit receiver. Callers must therefore not assume that a receiver was added.
    *
    * @param methodDeclaration declaration to add a receiver to
    */
@@ -1207,7 +1210,7 @@ public class WholeProgramInferenceJavaParserStorage
       return;
     }
 
-    com.github.javaparser.ast.Node parent = methodDeclaration.getParentNode().get();
+    com.github.javaparser.ast.Node parent = methodDeclaration.getParentNode().orElse(null);
     if (!(parent instanceof TypeDeclaration<?> parentDecl)) {
       return;
     }
@@ -1992,19 +1995,31 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Transfers all annotations inferred by whole program inference on this field to the JavaParser
      * nodes for that field.
+     *
+     * @throws BugInCF if the wrapped declarator's parent is not a {@code FieldDeclaration}
      */
     public void transferAnnotations() {
+      // In a parsed AST, the parent of a field's VariableDeclarator is always a FieldDeclaration,
+      // but be defensive in case the AST was built programmatically.  Report the problem rather
+      // than silently discarding the inferred annotations.
+      Node declParent = declaration.getParentNode().orElse(null);
+      if (!(declParent instanceof FieldDeclaration decl)) {
+        throw new BugInCF(
+            "Expected FieldDeclaration parent for %s [%s], found %s [%s]",
+            declaration,
+            declaration.getClass(),
+            declParent,
+            declParent == null ? "null" : declParent.getClass());
+      }
+
       if (declarationAnnotations != null) {
         // Don't add directly to the type of the variable declarator,
         // because declaration annotations need to be attached to the FieldDeclaration
         // node instead.
-        Node declParent = declaration.getParentNode().orElse(null);
-        if (declParent instanceof FieldDeclaration decl) {
-          for (AnnotationMirror annotation : declarationAnnotations) {
-            decl.addAnnotation(
-                AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
-                    annotation));
-          }
+        for (AnnotationMirror annotation : declarationAnnotations) {
+          decl.addAnnotation(
+              AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
+                  annotation));
         }
       }
 
@@ -2020,7 +2035,7 @@ public class WholeProgramInferenceJavaParserStorage
       // WholeProgramInferenceImplementation to use: to determine that there are siblings,
       // a parse tree is needed.
       boolean foundVariableDeclarator = false;
-      for (Node child : this.declaration.getParentNode().get().getChildNodes()) {
+      for (Node child : decl.getChildNodes()) {
         if (child instanceof VariableDeclarator) {
           if (foundVariableDeclarator) {
             // This is the second VariableDeclarator that was found.
