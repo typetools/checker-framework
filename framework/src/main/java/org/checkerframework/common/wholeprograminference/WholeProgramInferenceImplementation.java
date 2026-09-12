@@ -587,18 +587,23 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     for (int i = 0; i < numParams; i++) {
       VariableElement ve = methodElt.getParameters().get(i);
       AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
-      AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
+      // Copy, because wpiAdjustForUpdateNonField and updateAnnotationSet side-effect their
+      // argument, and overriddenMethod belongs to the caller.
+      AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i).deepCopy();
       atypeFactory.wpiAdjustForUpdateNonField(argATM);
       T paramAnnotations =
           storage.getParameterAnnotations(methodElt, i + 1, paramATM, ve, atypeFactory);
       updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
     }
 
-    AnnotatedDeclaredType argADT = overriddenMethod.getReceiverType();
-    if (argADT != null) {
+    AnnotatedDeclaredType overriddenReceiver = overriddenMethod.getReceiverType();
+    if (overriddenReceiver != null) {
       AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(methodTree).getReceiverType();
       if (paramATM != null) {
         T receiver = storage.getReceiverAnnotations(methodElt, paramATM, atypeFactory);
+        // Copy, because updateAnnotationSet side-effects its argument, and overriddenMethod
+        // belongs to the caller.
+        AnnotatedDeclaredType argADT = overriddenReceiver.deepCopy();
         updateAnnotationSet(receiver, TypeUseLocation.RECEIVER, argADT, paramATM, file);
       }
     }

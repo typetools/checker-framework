@@ -100,7 +100,8 @@ public interface WholeProgramInference {
    *
    * @param methodTree the tree of the method that contains the parameter(s)
    * @param methodElt the element of the method
-   * @param overriddenMethod the AnnotatedExecutableType of the overridden method
+   * @param overriddenMethod the AnnotatedExecutableType of the overridden method; it is not
+   *     side-effected by this method
    */
   void updateFromOverride(
       MethodTree methodTree, ExecutableElement methodElt, AnnotatedExecutableType overriddenMethod);
