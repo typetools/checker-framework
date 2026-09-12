@@ -35,7 +35,7 @@ Create the Docker image:
 DOCKERTESTING=""
 # When DOCKERTESTING is enabled, also
 # edit the definition of `docker_testing` in file `.azure/defs-common.m4`
-# and run:  make -C ../../.azure && make -C ../../.circleci && make -C ../../.github/workflows
+# and run:  make -C ../../.circleci && make -C ../../.github/workflows
 # DOCKERTESTING="-testing"
 # Arguments: project, OS, JDK version
 function create_upload_docker_image {
