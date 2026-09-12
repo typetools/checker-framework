@@ -49,6 +49,20 @@ public class Typing extends TypeConstraint {
   private final boolean isCovarTypeArg;
 
   /**
+   * Whether reducing this constraint should compare the qualifiers of two proper types. It is set
+   * for the equality constraints that incorporating two bounds on an inference variable implies, in
+   * {@code VariableBounds.getConstraintsFromParameterized}.
+   *
+   * <p>Ordinarily the qualifiers should not be compared: a constraint between two proper types
+   * mentions no inference variable, so no choice of type arguments makes it hold or fail, and
+   * {@code BaseTypeVisitor} separately issues a more informative message about the qualifiers. But
+   * a constraint that was implied by two bounds on an inference variable is different: it holds
+   * only if the qualifiers match, and if they do not, then the variable has no instantiation and
+   * nothing else reports it.
+   */
+  private final boolean qualifiersMustMatch;
+
+  /**
    * Creates a typing constraint.
    *
    * @param parent the constraint whose reduction created this constraint
@@ -84,6 +98,27 @@ public class Typing extends TypeConstraint {
    */
   public Typing(
       Constraint parent, AbstractType S, AbstractType t, Kind kind, boolean covarTypeArg) {
+    this(parent, S, t, kind, covarTypeArg, false);
+  }
+
+  /**
+   * Creates a typing constraint.
+   *
+   * @param parent the constraint whose reduction created this constraint
+   * @param S left-hand side type
+   * @param t right-hand side type
+   * @param kind the kind of constraint
+   * @param covarTypeArg true if the constraint is for a covariant type argument
+   * @param qualifiersMustMatch true if reducing this constraint should compare the qualifiers of
+   *     two proper types; see {@link #qualifiersMustMatch}
+   */
+  public Typing(
+      Constraint parent,
+      AbstractType S,
+      AbstractType t,
+      Kind kind,
+      boolean covarTypeArg,
+      boolean qualifiersMustMatch) {
     super(parent, t);
     assert S != null;
     switch (kind) {
@@ -93,6 +128,7 @@ public class Typing extends TypeConstraint {
     this.S = S;
     this.kind = kind;
     this.isCovarTypeArg = covarTypeArg;
+    this.qualifiersMustMatch = qualifiersMustMatch;
   }
 
   /**
@@ -142,7 +178,7 @@ public class Typing extends TypeConstraint {
       case TYPE_COMPATIBILITY -> reduceCompatible();
       case SUBTYPE -> reduceSubtyping(context);
       case CONTAINED -> reduceContained();
-      case TYPE_EQUALITY -> reduceEquality();
+      case TYPE_EQUALITY -> reduceEquality(context);
       default -> throw new BugInCF("Unexpected kind: " + getKind());
     };
   }
@@ -423,14 +459,19 @@ public class Typing extends TypeConstraint {
    * Returns the result of reducing this constraint, assume it is an equality constraint. See JLS
    * 18.2.4
    *
+   * @param context the context
    * @return the result of reducing the constraint
    */
-  private ReductionResult reduceEquality() {
+  private ReductionResult reduceEquality(Java8InferenceContext context) {
     if (S.isProper()) {
       if (T.isProper()) {
         // If S and T are proper types, the constraint reduces to true if S is the same
-        // as T (4.3.4), and false otherwise.
-        return ConstraintSet.TRUE;
+        // as T (4.3.4), and false otherwise.  javac has already checked that the Java types
+        // are the same, so only the qualifiers remain to be checked, and they are checked only
+        // for a constraint that an inference variable's bounds imply.
+        return qualifiersMustMatch
+            ? ((ProperType) S).checkAnnotationEquality((ProperType) T)
+            : ConstraintSet.TRUE;
       }
       ProperType sProper = (ProperType) S;
       if (sProper.getTypeKind() == TypeKind.NULL || sProper.getTypeKind().isPrimitive()) {
@@ -460,13 +501,29 @@ public class Typing extends TypeConstraint {
     if (sTypeArgs != null && tTypeArgs != null && sTypeArgs.size() == tTypeArgs.size()) {
       // Assume if both have type arguments, then S and T are class or interface types with
       // the same erasure
+
+      // If these types must have the same qualifiers, then so must their type arguments, except
+      // at a covariant type argument.
+      List<Integer> covariantArgIndexes =
+          qualifiersMustMatch
+              ? context
+                  .typeFactory
+                  .getTypeHierarchy()
+                  .getCovariantArgIndexes((AnnotatedDeclaredType) T.getAnnotatedType())
+              : Collections.emptyList();
       ConstraintSet constraintSet = new ConstraintSet();
       for (int i = 0; i < tTypeArgs.size(); i++) {
         // The constraint between two equal type arguments reduces to true (JLS 18.2.4), so do
         // not create it.
         if (!tTypeArgs.get(i).equals(sTypeArgs.get(i))) {
           constraintSet.add(
-              new Typing(this, tTypeArgs.get(i), sTypeArgs.get(i), Kind.TYPE_EQUALITY));
+              new Typing(
+                  this,
+                  tTypeArgs.get(i),
+                  sTypeArgs.get(i),
+                  Kind.TYPE_EQUALITY,
+                  false,
+                  qualifiersMustMatch && !covariantArgIndexes.contains(i)));
         }
       }
       // An inner class type's own type arguments are not all of the type arguments it mentions;
@@ -478,7 +535,8 @@ public class Typing extends TypeConstraint {
     AbstractType sComponentType = S.getComponentType();
     AbstractType tComponentType = T.getComponentType();
     if (sComponentType != null && tComponentType != null) {
-      return new Typing(this, sComponentType, tComponentType, Kind.TYPE_EQUALITY);
+      return new Typing(
+          this, sComponentType, tComponentType, Kind.TYPE_EQUALITY, false, qualifiersMustMatch);
     }
 
     if (S.getTypeKind() == TypeKind.TYPEVAR && T.getTypeKind() == TypeKind.TYPEVAR && S.equals(T)) {
@@ -528,11 +586,16 @@ public class Typing extends TypeConstraint {
 
     Typing typing = (Typing) o;
 
-    return S.equals(typing.S) && kind == typing.kind;
+    // qualifiersMustMatch is compared because it changes how this constraint reduces: a
+    // constraint set drops a constraint that is equal to one it already contains, so a constraint
+    // that compares qualifiers must not be dropped in favor of one that does not.
+    return S.equals(typing.S)
+        && kind == typing.kind
+        && qualifiersMustMatch == typing.qualifiersMustMatch;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), S, kind);
+    return Objects.hash(super.hashCode(), S, kind, qualifiersMustMatch);
   }
 }

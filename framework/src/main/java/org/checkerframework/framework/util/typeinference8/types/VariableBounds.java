@@ -10,6 +10,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
@@ -379,7 +380,7 @@ public class VariableBounds {
    */
   private void addComplementaryBoundConstraint(
       Constraint parent, AbstractType s, AbstractType t, Kind kind) {
-    constraints.add(createImpliedConstraint(parent, "From complementary bound", s, t, kind));
+    constraints.add(createImpliedConstraint(parent, "From complementary bound", s, t, kind, false));
   }
 
   /**
@@ -395,8 +396,13 @@ public class VariableBounds {
    * @return the new constraint
    */
   private Typing createImpliedConstraint(
-      Constraint parent, String description, AbstractType s, AbstractType t, Kind kind) {
-    Typing constraint = new Typing(parent, s, t, kind);
+      Constraint parent,
+      String description,
+      AbstractType s,
+      AbstractType t,
+      Kind kind,
+      boolean qualifiersMustMatch) {
+    Typing constraint = new Typing(parent, s, t, kind, false, qualifiersMustMatch);
     if (parent == null) {
       constraint.source = description;
     } else {
@@ -473,12 +479,23 @@ public class VariableBounds {
           pair.first, pair.second);
     }
 
+    // At a covariant type argument of G, a type whose supertype is one of these
+    // parameterizations can still be a subtype of the other, so the qualifiers need not match.
+    // The cast is safe because getTypeArguments() above returned non-null.
+    List<Integer> covariantArgIndexes =
+        context
+            .typeFactory
+            .getTypeHierarchy()
+            .getCovariantArgIndexes((AnnotatedDeclaredType) pair.first.getAnnotatedType());
+
     List<Typing> constraints = new ArrayList<>();
     for (int i = 0; i < ss.size(); i++) {
       AbstractType si = ss.get(i);
       AbstractType ti = ts.get(i);
       if (si.getTypeKind() != TypeKind.WILDCARD && ti.getTypeKind() != TypeKind.WILDCARD) {
-        constraints.add(createImpliedConstraint(parent, description, si, ti, Kind.TYPE_EQUALITY));
+        constraints.add(
+            createImpliedConstraint(
+                parent, description, si, ti, Kind.TYPE_EQUALITY, !covariantArgIndexes.contains(i)));
       }
     }
     return constraints;
