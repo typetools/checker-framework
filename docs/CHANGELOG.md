@@ -15,6 +15,9 @@ parameter; it was unused, and purity errors are reported at the locations that
 
 Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
 
+Removed the unused method
+`WholeProgramInferenceScenesStorage.updateAnnotationSetInScene()`.
+
 ### Closed issues
 
 ## Version 4.2.3 (2026-09-01)
