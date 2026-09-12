@@ -2411,25 +2411,48 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * {@code @SideEffectFree}, {@code @Deterministic}, or {@code @Pure}, checks the lambda's body
    * against that annotation.
    *
+   * <p>Under {@code -Ainfer}, reports no error, but instead infers the purity of the functional
+   * interface method from the lambda's body.
+   *
    * @param tree a lambda expression
    * @param functionType the type of the functional interface method that {@code tree} implements
    */
   protected void checkLambdaPurity(
       LambdaExpressionTree tree, AnnotatedExecutableType functionType) {
-    if (!checkPurityAnnotations) {
-      return;
-    }
     ExecutableElement functionalMethod = functionType.getElement();
     EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, functionalMethod);
-    if (purityKinds.isEmpty()) {
+    // Do not report errors while inferring.  The purity annotations on `functionalMethod` may
+    // have been written by inference, which has not yet taken this lambda into account; the
+    // code below does that.  The annotations are checked when the inference output is
+    // type-checked.
+    boolean needToCheck = checkPurityAnnotations && !infer && !purityKinds.isEmpty();
+    if (!needToCheck && !infer) {
+      // There is no work to do.
       return;
     }
+
     TreePath body = new TreePath(getCurrentPath(), tree.getBody());
     PurityResult r =
         PurityChecker.checkPurity(
             body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
-    if (!r.isPure(purityKinds)) {
+    if (needToCheck && !r.isPure(purityKinds)) {
       reportPurityErrors(r, purityKinds);
+    }
+
+    if (infer) {
+      // A lambda implements the functional interface method, so it constrains that method's
+      // purity just as an overriding method does; see the treatment of overridden methods in
+      // `checkPurityAnnotations`.
+      EnumSet<PurityKind> lambdaKinds = r.getKinds().clone();
+      if (functionalMethod.getReturnType().getKind() == TypeKind.VOID) {
+        lambdaKinds.remove(PurityKind.DETERMINISTIC);
+      }
+      WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+      inferPurityAnno(lambdaKinds, wpi, functionalMethod);
+      for (ExecutableElement overriddenElt :
+          ElementUtils.getOverriddenMethods(functionalMethod, types)) {
+        inferPurityAnno(lambdaKinds, wpi, overriddenElt);
+      }
     }
   }
 

@@ -250,12 +250,15 @@ public final class PurityChecker {
     }
 
     /**
-     * Evaluating a lambda expression creates an object; it does not run the lambda's body. The
-     * body's effects occur where the lambda's functional method is invoked, and that invocation is
-     * checked like any other method call. Therefore, do not scan the body.
+     * Evaluating a lambda expression creates an object; it does not run the lambda's body.
      *
-     * <p>Not scanning the body is sound only because the body is checked elsewhere, against the
-     * purity annotations on the functional method that the lambda implements; see {@code
+     * <p>Creating an object is not deterministic, just as a {@code new} expression is not; see
+     * {@link #visitNewClass}.
+     *
+     * <p>The body's effects occur where the lambda's functional method is invoked, and that
+     * invocation is checked like any other method call. Therefore, do not scan the body. Not
+     * scanning the body is sound only because the body is checked elsewhere, against the purity
+     * annotations on the functional method that the lambda implements; see {@code
      * BaseTypeVisitor#checkLambdaPurity}. (The analogous check for a method reference is {@code
      * BaseTypeVisitor.OverrideChecker#checkPurity}.)
      *
@@ -265,18 +268,20 @@ public final class PurityChecker {
      */
     @Override
     public Void visitLambdaExpression(LambdaExpressionTree tree, Void ignore) {
+      purityResult.addNotDetReason(tree, "object.creation");
       return null;
     }
 
     /**
      * Declaring a local or anonymous class has no effect; the effects of its methods occur where
-     * those methods are invoked. Therefore, do not scan the class body. Its methods are checked
+     * those methods are invoked. Therefore, do not scan the class's methods. They are checked
      * against their own purity annotations, like the methods of any other class.
      *
-     * <p>Instantiating such a class is still checked, by {@link #visitNewClass}: an anonymous
-     * class's constructor cannot be annotated, so it is never {@code @SideEffectFree}, and
-     * therefore any effect of an instance initializer is still reported at the {@code new}
-     * expression.
+     * <p>Do scan the class's other members. A field initializer or an initializer block runs when
+     * the class is instantiated (or, if static, when the class is initialized), and it is part of
+     * no method declaration, so no other check examines it. Attributing it to the method that
+     * contains the class declaration is conservative: the effect is reported even if the class is
+     * never instantiated.
      *
      * @param tree a class declaration
      * @param ignore an unused parameter
@@ -284,6 +289,11 @@ public final class PurityChecker {
      */
     @Override
     public Void visitClass(ClassTree tree, Void ignore) {
+      for (Tree member : tree.getMembers()) {
+        if (!(member instanceof MethodTree)) {
+          scan(member, ignore);
+        }
+      }
       return null;
     }
 
@@ -431,24 +441,35 @@ public final class PurityChecker {
     }
 
     /**
-     * Returns true if the current path is within a constructor or an initializer block, and is not
-     * within a lambda expression.
+     * Returns true if the current path is within a constructor, a field initializer, or an
+     * initializer block of the innermost enclosing class, and is not within a lambda expression.
      *
      * <p>{@link #assignmentCheck} permits a constructor to assign to a field of its own class,
      * because the object is not yet visible to other code. That reasoning does not extend to a
      * lambda that a constructor creates: the lambda's body may run long after the constructor has
      * returned, when the object is visible.
      *
-     * @return true if the current path is within a constructor or initializer block and within no
-     *     lambda expression
+     * @return true if the current path is within a constructor, field initializer, or initializer
+     *     block, and within no lambda expression
      */
     private boolean inConstructorNotInLambda() {
-      Tree enclosing = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
-      if (enclosing == null) {
-        // This is an initializer block.
-        return true;
+      // The search stops at the innermost enclosing class, because a method or lambda outside
+      // that class does not contain the current path's code:  the code of a field initializer
+      // or initializer block runs when the class is instantiated or initialized.
+      for (TreePath path = getCurrentPath(); path != null; path = path.getParentPath()) {
+        Tree leaf = path.getLeaf();
+        if (leaf instanceof MethodTree methodTree) {
+          return TreeUtils.isConstructor(methodTree);
+        } else if (leaf instanceof LambdaExpressionTree) {
+          return false;
+        } else if (TreeUtils.classTreeKinds().contains(leaf.getKind())) {
+          // This is a field initializer or an initializer block.
+          return true;
+        }
       }
-      return enclosing instanceof MethodTree methodTree && TreeUtils.isConstructor(methodTree);
+      // This is a field initializer or an initializer block; the scan started within it, so no
+      // class declaration was encountered.
+      return true;
     }
 
     /**

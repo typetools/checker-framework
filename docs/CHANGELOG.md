@@ -7,12 +7,6 @@
 
 ### User-visible changes
 
-Under `-AcheckPurityAnnotations`, the Purity Checker no longer treats the body of
-a lambda, local class, or anonymous class as part of the enclosing method, which
-removes false positives.  A lambda's body is instead checked against any purity
-annotation on the functional interface method it implements, which may cause new
-purity errors to be issued.
-
 ### Changes for type system implementers
 
 `BaseTypeVisitor.reportPurityErrors()` no longer takes a `MethodTree`
