@@ -1230,12 +1230,12 @@ required parsing of the option.
 \subsubsectionAndLabel{Default options}{creating-providing-command-line-options-default-options}
 
 The default options passed to a custom checker may be customized by overriding the
-\refmethodterse{common/basetype}{BaseTypeChecker}{getOptions}{()} method in the
+\refmethodterse{framework/source}{SourceChecker}{getOptions}{()} method in the
 custom checker class.
 
 For example, to ignore the \<introduce.eliminate> warnings raised by the
 Optional Checker (Chapter~\ref{optional-checker}), override
-\refmethodterse{common/basetype}{BaseTypeChecker}{getOptions}{()} as follows:
+\refmethodterse{framework/source}{SourceChecker}{getOptions}{()} as follows:
 
 \begin{Verbatim}
   @Override

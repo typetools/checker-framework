@@ -17,6 +17,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.VarHandle;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** Utility methods relating to TreePaths. */
 public final class TreePathUtil {
@@ -104,7 +105,13 @@ public final class TreePathUtil {
         && hasClassKind(path.getParentPath().getLeaf());
   }
 
-  public static TreePath findEnclosingFieldInit(TreePath path) {
+  /**
+   * Returns the path to the enclosing field initializer, or null if the argument is not within one.
+   *
+   * @param path a reference to some source code
+   * @return the path to the enclosing field initializer, or null
+   */
+  public static @Nullable TreePath findEnclosingFieldInit(TreePath path) {
     while (!isFieldInit(path)) {
       path = path.getParentPath();
       if (path == null) {

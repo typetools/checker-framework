@@ -21,7 +21,7 @@ public class ParameterExpression {
   @SuppressWarnings("assert.postcondition")
   // "#0" is illegal syntax; it should be "#1"
   @EnsuresNonNull("#0")
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   public void m2(final @Nullable Object o) {}
 
   @SuppressWarnings("contracts.postcondition")
@@ -45,32 +45,32 @@ public class ParameterExpression {
   }
 
   @EnsuresNonNull("param")
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   public void m6a(Object param) {
     param = new Object();
   }
 
   @EnsuresNonNull("param")
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   public void m6b(Object param) {
     // :: error: [assignment]
     param = null;
   }
 
   @EnsuresNonNull("param")
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   public void m6c(@Nullable Object param) {
     param = new Object();
   }
 
   @EnsuresNonNull("param")
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   public void m6d(@Nullable Object param) {
     param = null;
   }
 
   @EnsuresNonNull("param.toString()")
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   public void m6e(@Nullable Object param) {
     param = null;
   }
@@ -109,7 +109,7 @@ public class ParameterExpression {
   public void m8() {}
 
   @RequiresNonNull("param")
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   public void m9(Object param) {}
 
   // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a
@@ -126,7 +126,7 @@ public class ParameterExpression {
   }
 
   @EnsuresNonNullIf(result = true, expression = "param")
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   public boolean m12(Object param) {
     param = new Object();
     return true;

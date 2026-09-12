@@ -54,7 +54,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -77,6 +76,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -1059,6 +1059,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       checkPurityAnnotations(tree);
+      checkSideEffectsOnlyExpressions(tree, methodElement);
 
       // Passing the whole method/constructor validates the return type
       validateTypeOf(tree);
@@ -1236,6 +1237,103 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
+   * Returns a diagnostic message for an annotation expression that cannot be parsed, describing
+   * where the expression appears in addition to why it cannot be parsed.
+   *
+   * <p>The message for {@code messageKey} takes {@code contextArgs} followed by the arguments of
+   * the parse failure, so the description precedes the explanation of the failure.
+   *
+   * @param ex the parse failure
+   * @param messageKey a message key whose message describes where the expression appears
+   * @param contextArgs the arguments to {@code messageKey} that precede those of {@code ex}
+   * @return a diagnostic message about the unparseable expression
+   */
+  private static DiagMessage parseErrorInContext(
+      JavaExpressionParseException ex,
+      @CompilerMessageKey String messageKey,
+      Object... contextArgs) {
+    if (!ex.isFlowParseError()) {
+      // Some other message key, whose format string this method does not know.
+      return new DiagMessage(ex);
+    }
+    Object[] args = new Object[contextArgs.length + ex.args.length];
+    System.arraycopy(contextArgs, 0, args, 0, contextArgs.length);
+    System.arraycopy(ex.args, 0, args, contextArgs.length, ex.args.length);
+    return new DiagMessage(Diagnostic.Kind.ERROR, messageKey, args);
+  }
+
+  /**
+   * Returns a diagnostic message for a {@code @SideEffectsOnly} expression that cannot be parsed.
+   * The message names the method whose annotation contains the expression, because the message
+   * might be issued at a call site, which may be far from that method's declaration.
+   *
+   * @param ex the parse failure
+   * @param declaringMethod the method on whose declaration the annotation appears
+   * @param declExpr the expression as written in the annotation
+   * @return a diagnostic message about the unparseable expression
+   */
+  public static DiagMessage sideEffectsOnlyParseError(
+      JavaExpressionParseException ex, ExecutableElement declaringMethod, String declExpr) {
+    return parseErrorInContext(
+        ex,
+        "flowexpr.parse.error.sideeffectsonly",
+        declExpr,
+        ElementUtils.getSimpleDescription(declaringMethod));
+  }
+
+  /**
+   * Returns a diagnostic message for a contract expression that cannot be parsed. The message names
+   * the contract annotation and the method that it appears on, because a method declaration may
+   * carry several contract annotations.
+   *
+   * @param ex the parse failure
+   * @param contract the contract whose expression cannot be parsed
+   * @param methodTree the method declaration on which the contract annotation appears
+   * @return a diagnostic message about the unparseable expression
+   */
+  private static DiagMessage contractParseError(
+      JavaExpressionParseException ex, Contract contract, MethodTree methodTree) {
+    return parseErrorInContext(
+        ex,
+        "flowexpr.parse.error.contract",
+        contract.kind.errorKey,
+        contract.expressionString,
+        contract.contractAnnotation.getAnnotationType().asElement().getSimpleName(),
+        ElementUtils.getSimpleDescription(TreeUtils.elementFromDeclaration(methodTree)));
+  }
+
+  /**
+   * Issues an error for each expression of the method's {@code @SideEffectsOnly} annotation that
+   * cannot be parsed in the scope of the method declaration.
+   *
+   * <p>A call to the method also issues the error, because the callee's declaration might not be
+   * under compilation. This check issues the error where the programmer can fix it, and does so
+   * even if the method is never called.
+   *
+   * @param tree a method declaration
+   * @param methodElement the element for {@code tree}
+   */
+  protected void checkSideEffectsOnlyExpressions(MethodTree tree, ExecutableElement methodElement) {
+    AnnotationMirror sideEffectsOnly =
+        atypeFactory.getDeclAnnotation(methodElement, SideEffectsOnly.class);
+    if (sideEffectsOnly == null) {
+      // An inherited annotation is checked at the declaration that writes it.
+      return;
+    }
+    for (String expression :
+        AnnotationUtils.getElementValueArray(
+            sideEffectsOnly, sideEffectsOnlyValueElement, String.class)) {
+      try {
+        StringToJavaExpression.atMethodDecl(expression, methodElement, checker);
+      } catch (JavaExpressionParseException ex) {
+        // Every checker of a compound checker performs this check, so report the error only once.
+        checker.reportOnce(
+            getCurrentPath(), sideEffectsOnlyParseError(ex, methodElement, expression));
+      }
+    }
+  }
+
+  /**
    * Returns true if the given method is explicitly annotated with both @{@link SideEffectFree}
    * and @{@link Deterministic}. Those annotations can be replaced by @{@link Pure}.
    *
@@ -1392,19 +1490,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       try {
         exprJe = StringToJavaExpression.atMethodBody(expressionString, methodTree, checker);
       } catch (JavaExpressionParseException e) {
-        DiagMessage diagMessage = new DiagMessage(e);
-        if (diagMessage.getMessageKey().equals("flowexpr.parse.error")) {
-          String s =
-              String.format(
-                  "'%s' in the %s %s on the declaration of method '%s': ",
-                  expressionString,
-                  contract.kind.errorKey,
-                  contract.contractAnnotation.getAnnotationType().asElement().getSimpleName(),
-                  methodTree.getName().toString());
-          checker.reportError(methodTree, "flowexpr.parse.error", s + diagMessage.getArgs()[0]);
-        } else {
-          checker.report(methodTree, new DiagMessage(e));
-        }
+        checker.report(methodTree, contractParseError(e, contract, methodTree));
         continue;
       }
       if (!CFAbstractStore.canInsertJavaExpression(exprJe)) {
@@ -2325,10 +2411,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     return super.visitMemberReference(tree, p);
   }
 
-  /** A set containing {@code Tree.Kind.METHOD} and {@code Tree.Kind.LAMBDA_EXPRESSION}. */
-  private ArraySet<Tree.Kind> methodAndLambdaExpression =
-      new ArraySet<>(Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION));
-
   /**
    * Checks that the type of the return expression is a subtype of the enclosing method required
    * return type. If not, it issues a "return" error.
@@ -2344,7 +2426,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     long startMillis = System.currentTimeMillis();
     Tree startSlowTypeCheckingTree = slowTypecheckingTree;
 
-    Tree enclosing = TreePathUtil.enclosingOfKind(getCurrentPath(), methodAndLambdaExpression);
+    Tree enclosing = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
 
     AnnotatedTypeMirror declaredReturnType = null;
     if (enclosing instanceof MethodTree enclosingMethod) {
@@ -3973,7 +4055,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     MemberReferenceKind memRefKind =
         MemberReferenceKind.getMemberReferenceKind(memberReferenceTree);
     AnnotatedTypeMirror enclosingType;
-    if (TreeUtils.isLikeDiamondMemberReference(memberReferenceTree)) {
+    if (TreeUtils.isRawTypedMemberReference(memberReferenceTree)) {
       TypeElement typeElt = TypesUtils.getTypeElement(TreeUtils.typeOf(preColonTree));
       enclosingType = atypeFactory.getAnnotatedType(typeElt);
     } else if (memberReferenceTree.getMode() == ReferenceMode.NEW
@@ -4637,19 +4719,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     for (IPair<JavaExpression, AnnotationMirror> weak : mustSubset) {
       JavaExpression jexpr = weak.first;
-      boolean found = false;
+      TypeMirror jexprTM = jexpr.getType();
 
-      for (IPair<JavaExpression, AnnotationMirror> strong : set) {
-        // are we looking at a contract of the same receiver?
-        if (jexpr.equals(strong.first)) {
-          // check subtyping relationship of annotations
-          TypeMirror jexprTM = jexpr.getType();
-          if (qualHierarchy.isSubtypeShallow(strong.second, jexprTM, weak.second, jexprTM)) {
-            found = true;
-            break;
-          }
-        }
-      }
+      // Is there a contract of the same receiver, whose annotation is a subtype?
+      boolean found =
+          set.stream()
+              .anyMatch(
+                  strong ->
+                      jexpr.equals(strong.first)
+                          && qualHierarchy.isSubtypeShallow(
+                              strong.second, jexprTM, weak.second, jexprTM));
 
       if (!found) {
 

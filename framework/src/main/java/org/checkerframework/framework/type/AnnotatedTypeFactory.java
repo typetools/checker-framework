@@ -49,6 +49,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -94,6 +95,7 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceIm
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.InferredDeclared;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
+import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -363,6 +365,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   private final AnnotationMirrorSet inheritedAnnotations = new AnnotationMirrorSet();
 
+  /**
+   * Maps a method to the {@code @SideEffectsOnly} expressions that it inherits from the methods it
+   * overrides: a map from a method declaration to the expressions written in the
+   * {@code @SideEffectsOnly} annotation on that declaration. A method that inherits no such
+   * expression has no entry.
+   *
+   * <p>The declaring method is retained, rather than just the expression strings, because each
+   * expression must be parsed in the scope of the method that declares it; see {@link
+   * #getSideEffectsOnlyExpressionMap}.
+   *
+   * <p>{@link #inheritOverriddenDeclAnnos} populates this map, in lockstep with {@link
+   * #cacheDeclAnnos}, so an entry is present only after {@link #getDeclAnnotations} has been called
+   * on the method.
+   */
+  private final Map<ExecutableElement, Map<ExecutableElement, List<String>>>
+      inheritedSideEffectsOnlyExpressions = new HashMap<>();
+
   /** The checker to use for option handling and resource management. */
   protected final BaseTypeChecker checker;
 
@@ -538,6 +557,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /** Mapping from an Element to the source Tree of the declaration. */
   private final Map<Element, Tree> elementToTreeCache;
+
+  /**
+   * Maps an implicitly typed lambda parameter to the type that type argument inference determined
+   * for it.
+   *
+   * <p>A lambda parameter's type is the corresponding parameter type of the function type derived
+   * from the lambda's target type, which for a lambda that is an argument of a generic invocation
+   * is known only to that invocation's inference. Without this map, a later request for the
+   * parameter's type re-derives the target type by re-running that inference, and if some inference
+   * is still in progress the re-run can answer with types that still mention inference variables,
+   * or two invocations can end up waiting on each other.
+   *
+   * <p>Only types from a completed inference are recorded, and only when they are proper; a
+   * provisional type must never be recorded, or a lambda body is type-checked against it.
+   *
+   * @see #recordLambdaParameterType(VariableElement, AnnotatedTypeMirror)
+   */
+  private final Map<VariableElement, AnnotatedTypeMirror> lambdaParamTypes = new HashMap<>();
 
   /** Mapping from a Tree to its TreePath. Shared between all instances. */
   private final TreePathCacher treePathCache;
@@ -811,6 +848,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     addInheritedAnnotation(
         AnnotationBuilder.fromClass(
             elements, org.checkerframework.dataflow.qual.SideEffectFree.class));
+    // `@SideEffectsOnly` is not in `inheritedAnnotations`, even though it is inherited, because
+    // inheriting it as an annotation would lose track of which method declared each of its
+    // expressions.  `inheritOverriddenDeclAnnos` inherits it separately; see
+    // `getSideEffectsOnlyExpressionMap`.
     addInheritedAnnotation(
         AnnotationBuilder.fromClass(
             elements, org.checkerframework.dataflow.qual.Deterministic.class));
@@ -949,6 +990,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // contents won't change between compilation units.
       // elementCache.clear();
     }
+
+    // Unlike elementCache, this is keyed by elements of the compilation unit being processed and
+    // is unbounded, so it must be cleared whether or not caching is enabled.
+    lambdaParamTypes.clear();
 
     if (root != null && checker.hasOption("ajava")) {
       // Search for an ajava file with annotations for the current source file and the current
@@ -1633,6 +1678,37 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       elementCache.put(elt, type.deepCopy());
     }
     return type;
+  }
+
+  /**
+   * Records the type that type argument inference determined for the implicitly typed lambda
+   * parameter {@code param}, so that a later request for the parameter's type is answered from this
+   * record instead of re-deriving the lambda's target type.
+   *
+   * <p>Call this only with a type from a completed inference; see {@link #lambdaParamTypes}.
+   *
+   * @param param an implicitly typed lambda parameter
+   * @param type the type that inference determined for {@code param}
+   */
+  public void recordLambdaParameterType(VariableElement param, AnnotatedTypeMirror type) {
+    lambdaParamTypes.put(param, type.deepCopy());
+    if (shouldCache) {
+      // A request made before inference finished may have cached a type computed from a target
+      // type that was not yet known.
+      elementCache.remove(param);
+    }
+  }
+
+  /**
+   * Returns the type that type argument inference determined for the implicitly typed lambda
+   * parameter {@code param}, or null if no inference has determined it.
+   *
+   * @param param an element that might be an implicitly typed lambda parameter
+   * @return the recorded type of {@code param}, or null if there is none
+   */
+  public @Nullable AnnotatedTypeMirror getRecordedLambdaParameterType(VariableElement param) {
+    AnnotatedTypeMirror type = lambdaParamTypes.get(param);
+    return type == null ? null : type.deepCopy();
   }
 
   /**
@@ -4165,50 +4241,99 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
         AnnotatedTypes.overriddenMethods(elements, this, elt);
 
-    if (overriddenMethods != null) {
-      for (ExecutableElement superElt : overriddenMethods.values()) {
-        AnnotationMirrorSet superAnnos = getDeclAnnotations(superElt);
+    if (overriddenMethods == null) {
+      return;
+    }
 
-        for (AnnotationMirror annotation : superAnnos) {
-          List<? extends AnnotationMirror> annotationsOnAnnotation;
-          try {
-            annotationsOnAnnotation =
-                annotation.getAnnotationType().asElement().getAnnotationMirrors();
-          } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
-            // Fix for Issue 348: If a CompletionFailure occurs, issue a warning.
-            checker.reportWarning(
-                annotation.getAnnotationType().asElement(),
-                "annotation.not.completed",
-                ElementUtils.getQualifiedName(elt),
-                annotation);
-            continue;
+    // `@SideEffectsOnly` is not inherited as an annotation, because its `value` element is
+    // significant, unlike that of the other inherited declaration annotations.  A method that
+    // overrides methods in two supertypes inherits the union of what they permit it to
+    // side-effect, rather than the "first one wins" rule of `addOrMerge`;
+    // `BaseTypeVisitor.OverrideChecker` reports any override that thereby side-effects more than a
+    // supertype permits.  Furthermore, each expression must be remembered along with the method
+    // that declares it, because the expression is parsed in that method's scope.  A
+    // `@SideEffectsOnly` written on `elt` itself is authoritative, so in that case nothing is
+    // inherited.
+    boolean inheritSideEffectsOnly = !containsSameByClass(results, SideEffectsOnly.class);
+    // The union of the supertypes' `@SideEffectsOnly` expressions, or null if no supertype has a
+    // `@SideEffectsOnly` annotation.  A `LinkedHashMap` for determinism.
+    Map<ExecutableElement, List<String>> inheritedSideEffectsOnly = null;
+
+    for (ExecutableElement superElt : overriddenMethods.values()) {
+      if (inheritSideEffectsOnly) {
+        Map<ExecutableElement, List<String>> superSideEffectsOnly =
+            getSideEffectsOnlyExpressionMap(superElt);
+        if (superSideEffectsOnly != null) {
+          if (inheritedSideEffectsOnly == null) {
+            inheritedSideEffectsOnly = new LinkedHashMap<>();
           }
-          if (containsSameByClass(annotationsOnAnnotation, InheritedAnnotation.class)
-              || AnnotationUtils.containsSameByName(inheritedAnnotations, annotation)) {
-            addOrMerge(results, annotation);
-          }
+          inheritedSideEffectsOnly.putAll(superSideEffectsOnly);
         }
       }
+
+      AnnotationMirrorSet superAnnos = getDeclAnnotations(superElt);
+
+      for (AnnotationMirror annotation : superAnnos) {
+        List<? extends AnnotationMirror> annotationsOnAnnotation;
+        try {
+          annotationsOnAnnotation =
+              annotation.getAnnotationType().asElement().getAnnotationMirrors();
+        } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
+          // Fix for Issue 348: If a CompletionFailure occurs, issue a warning.
+          checker.reportWarning(
+              annotation.getAnnotationType().asElement(),
+              "annotation.not.completed",
+              ElementUtils.getQualifiedName(elt),
+              annotation);
+          continue;
+        }
+        if (containsSameByClass(annotationsOnAnnotation, InheritedAnnotation.class)
+            || AnnotationUtils.containsSameByName(inheritedAnnotations, annotation)) {
+          addOrMerge(results, annotation);
+        }
+      }
+    }
+
+    if (inheritedSideEffectsOnly != null) {
+      inheritedSideEffectsOnlyExpressions.put(elt, inheritedSideEffectsOnly);
     }
   }
 
   /**
-   * Returns the expressions written in the {@code @SideEffectsOnly} annotation on {@code method}.
-   * Returns null if {@code method} has no {@code @SideEffectsOnly} annotation.
+   * Returns the {@code @SideEffectsOnly} expressions that apply to {@code method}: a map from a
+   * method declaration to the expressions written in the {@code @SideEffectsOnly} annotation on
+   * that declaration. Returns null if no {@code @SideEffectsOnly} annotation applies to {@code
+   * method}.
+   *
+   * <p>The result identifies the method that declares each expression, rather than just the
+   * expression strings, because an expression is parsed in the scope of the method that declares
+   * it. That scope differs from {@code method}'s scope when {@code method} inherits the annotation:
+   * an expression that names a field of the superclass might name a different field, or none at
+   * all, in the subclass.
+   *
+   * <p>A {@code @SideEffectsOnly} annotation written on {@code method} itself is authoritative.
+   * Otherwise, {@code method} inherits the union of the annotations on the methods that it
+   * overrides.
    *
    * <p>Clients should not side-effect the returned value, which may be aliased to internal state.
    *
    * @param method a method or constructor
-   * @return the {@code @SideEffectsOnly} expressions written on {@code method}, or null if {@code
-   *     method} has no {@code @SideEffectsOnly} annotation
+   * @return a map from a method declaration to the {@code @SideEffectsOnly} expressions written on
+   *     it, or null if no {@code @SideEffectsOnly} annotation applies to {@code method}
    */
-  public @Nullable List<String> getSideEffectsOnlyExpressionStrings(ExecutableElement method) {
+  public @Nullable Map<ExecutableElement, List<String>> getSideEffectsOnlyExpressionMap(
+      ExecutableElement method) {
+    // This call also populates `inheritedSideEffectsOnlyExpressions` for `method`.  Because
+    // `@SideEffectsOnly` is not inherited as an annotation, the result is non-null only if the
+    // annotation is written on `method` itself.
     AnnotationMirror sideEffectsOnly = getDeclAnnotation(method, SideEffectsOnly.class);
-    if (sideEffectsOnly == null) {
-      return null;
+    if (sideEffectsOnly != null) {
+      return Collections.singletonMap(
+          method,
+          AnnotationUtils.getElementValueArray(
+              sideEffectsOnly, sideEffectsOnlyValueElement, String.class));
     }
-    return AnnotationUtils.getElementValueArray(
-        sideEffectsOnly, sideEffectsOnlyValueElement, String.class);
+    return inheritedSideEffectsOnlyExpressions.get(method);
   }
 
   /**
@@ -4734,10 +4859,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return getAnnotatedType(assignmentTree.getVariable());
       }
       case RETURN -> {
-        Tree enclosing =
-            TreePathUtil.enclosingOfKind(
-                getPath(parentTree),
-                new HashSet<>(Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION)));
+        Tree enclosing = TreePathUtil.enclosingMethodOrLambda(getPath(parentTree));
         if (enclosing instanceof MethodTree enclosingMethod) {
           return getAnnotatedType(enclosingMethod.getReturnType());
         } else {
@@ -5251,14 +5373,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       if (first == null) {
         first = candidate;
       }
-      boolean doesNotContain = true;
-      for (AnnotatedTypeVariable other : collection) {
-        if (candidate != other && captureScanner.visit(candidate, other.getUnderlyingType())) {
-          doesNotContain = false;
-          break;
-        }
-      }
-      if (doesNotContain) {
+      if (collection.stream()
+          .noneMatch(
+              other ->
+                  candidate != other
+                      && captureScanner.visit(candidate, other.getUnderlyingType()))) {
         return candidate;
       }
     }
@@ -5653,6 +5772,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Returns true if whole-program inference should infer a type from an assignment whose right-hand
+   * side has the null type, such as the {@code null} literal. For most type systems, the null type
+   * is annotated with the bottom qualifier and therefore an assignment of {@code null} says nothing
+   * about the type of the left-hand side. For the Nullness type system, by contrast, such an
+   * assignment is exactly what makes the left-hand side {@code @Nullable}.
+   *
+   * @return true if WPI should infer types from assignments whose right-hand side has the null
+   *     type, false otherwise
+   */
+  public boolean wpiShouldInferFromNullAssignments() {
+    return false;
+  }
+
+  /**
    * Side-effects the method or constructor annotations to make any desired changes before writing
    * to an annotation file.
    *
@@ -5783,11 +5916,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           inferredType.replaceAnnotations(declaredType.getPrimaryAnnotations());
         } else {
           AnnotatedTypeMirror otherInferredType =
-              isPrecondition
-                  ? otherDeclAnnos.getPreconditionsForExpression(
-                      className, methodName, expr, declaredType, this)
-                  : otherDeclAnnos.getPostconditionsForExpression(
-                      className, methodName, expr, declaredType, this);
+              otherDeclAnnos.getPreOrPostconditionsForExpression(
+                  isPrecondition ? Analysis.BeforeOrAfter.BEFORE : Analysis.BeforeOrAfter.AFTER,
+                  className,
+                  methodName,
+                  expr,
+                  declaredType,
+                  this);
           this.getWholeProgramInference().updateAtmWithLub(inferredType, otherInferredType);
         }
       }

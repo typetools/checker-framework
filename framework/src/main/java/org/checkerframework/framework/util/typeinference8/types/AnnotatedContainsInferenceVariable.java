@@ -115,6 +115,11 @@ public final class AnnotatedContainsInferenceVariable {
           found = true;
         }
       }
+      // An inner class type may mention a type variable only in its enclosing type, as in
+      // Outer<T>.Inner.
+      if (visit(t.getEnclosingType())) {
+        found = true;
+      }
       return found;
     }
 

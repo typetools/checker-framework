@@ -1,11 +1,13 @@
 package org.checkerframework.javacutil;
 
 import com.sun.tools.javac.code.BoundKind;
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Type.ClassType;
+import com.sun.tools.javac.code.Type.IntersectionClassType;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types.FunctionDescriptorLookupError;
 import com.sun.tools.javac.model.JavacTypes;
@@ -254,17 +256,33 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns the depth of an array type.
+   *
+   * @param arrayType an array type
+   * @return the depth of {@code arrayType}
+   */
+  public static int getArrayDepth(TypeMirror arrayType) {
+    int counter = 0;
+    TypeMirror componentType = arrayType;
+    while (componentType.getKind() == TypeKind.ARRAY) {
+      counter++;
+      componentType = ((ArrayType) componentType).getComponentType();
+    }
+    return counter;
+  }
+
+  /**
    * Given an array type, returns the type with all array levels stripped off.
    *
-   * @param at an array type
+   * @param arrayType an array type
    * @return the type with all array levels stripped off
    */
-  public static TypeMirror getInnermostComponentType(ArrayType at) {
-    TypeMirror result = at;
-    while (result.getKind() == TypeKind.ARRAY) {
-      result = ((ArrayType) result).getComponentType();
+  public static TypeMirror getInnermostComponentType(ArrayType arrayType) {
+    TypeMirror componentType = arrayType;
+    while (componentType.getKind() == TypeKind.ARRAY) {
+      componentType = ((ArrayType) componentType).getComponentType();
     }
-    return result;
+    return componentType;
   }
 
   // Equality
@@ -633,16 +651,57 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if {@code type} is a functional interface type (as defined in JLS 9.8).
+   * Returns true if {@code type} is a functional interface type (as defined in JLS 9.9). This
+   * includes an intersection type that induces a notional functional interface, such as {@code
+   * Runnable & java.io.Serializable}.
    *
    * @param type possible functional interface type
    * @param env the processing environment
-   * @return true if {@code type} is a functional interface type (as defined in JLS 9.8)
+   * @return true if {@code type} is a functional interface type (as defined in JLS 9.9)
    */
   public static boolean isFunctionalInterface(TypeMirror type, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-    return javacTypes.isFunctionalInterface((Type) type);
+    Type javaType = (Type) type;
+    if (javaType.isIntersection()) {
+      javaType = notionalInterface((IntersectionClassType) javaType, javacTypes);
+    }
+    return javacTypes.isFunctionalInterface(javaType);
+  }
+
+  /**
+   * Returns the notional interface induced by the intersection type {@code type} (<a
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.9">JLS 4.9</a>). Per
+   * <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9">JLS 9.9</a>,
+   * the function type of an intersection type that induces a notional functional interface is the
+   * function type of that notional interface. If {@code type} has a component that is a class, then
+   * it induces a notional class rather than a notional interface, and {@code type} is returned
+   * unchanged.
+   *
+   * <p>javac does not represent the notional interface directly: the symbol of an intersection type
+   * is a synthetic compound class symbol that is never marked as an interface, so javac's function
+   * descriptor lookup rejects it. This method builds the notional interface the same way that
+   * {@code Attr.getTargetInfo} does when attributing a lambda expression or a method reference
+   * whose target type is an intersection type: it creates a fresh intersection of the non-wildcard
+   * parameterizations (JLS 9.9) of the components and marks its symbol as an interface. {@code
+   * type} itself is not modified.
+   *
+   * @param type an intersection type
+   * @param javacTypes the javac Types instance
+   * @return the notional interface induced by {@code type}, or {@code type} if it does not induce a
+   *     notional interface
+   */
+  private static Type notionalInterface(
+      IntersectionClassType type, com.sun.tools.javac.code.Types javacTypes) {
+    if (!type.allInterfaces) {
+      // The intersection induces a notional class, which is not a functional interface.
+      return type;
+    }
+    com.sun.tools.javac.util.List<Type> components =
+        type.getExplicitComponents().map(javacTypes::removeWildcards);
+    IntersectionClassType notionalInterface = javacTypes.makeIntersectionType(components);
+    notionalInterface.tsym.flags_field |= Flags.INTERFACE;
+    return notionalInterface;
   }
 
   /**
@@ -1224,22 +1283,6 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns the depth of an array type.
-   *
-   * @param arrayType an array type
-   * @return the depth of {@code arrayType}
-   */
-  public static int getArrayDepth(TypeMirror arrayType) {
-    int counter = 0;
-    TypeMirror type = arrayType;
-    while (type.getKind() == TypeKind.ARRAY) {
-      counter++;
-      type = ((ArrayType) type).getComponentType();
-    }
-    return counter;
-  }
-
-  /**
    * If {@code typeMirror} is a wildcard, returns a fresh type variable that will be used as a
    * captured type variable for it. If {@code typeMirror} is not a wildcard, returns {@code
    * typeMirror}.
@@ -1346,7 +1389,9 @@ public final class TypesUtils {
 
   /**
    * This method returns the single abstract method declared by {@code functionalInterfaceType}.
-   * (The type of this method is referred to as the function type.)
+   * (The type of this method is referred to as the function type.) If {@code
+   * functionalInterfaceType} is an intersection type that induces a notional functional interface,
+   * then the single abstract method of that notional interface is returned (JLS 9.9).
    *
    * @param functionalInterfaceType a functional interface type
    * @param env the processing environment
@@ -1357,14 +1402,18 @@ public final class TypesUtils {
       TypeMirror functionalInterfaceType, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
+    Type javaType = (Type) functionalInterfaceType;
+    if (javaType.isIntersection()) {
+      javaType = notionalInterface((IntersectionClassType) javaType, javacTypes);
+    }
     try {
-      return (ExecutableElement)
-          javacTypes.findDescriptorSymbol(((Type) functionalInterfaceType).asElement());
+      return (ExecutableElement) javacTypes.findDescriptorSymbol(javaType.asElement());
     } catch (FunctionDescriptorLookupError ex) {
       // FunctionDescriptorLookupError does not have a stack trace, so catch it here and throw a
       // BugInCF.
       throw new BugInCF(
-          "%s is not a functional interface. Call TypesUtils.isFunctionalInterface() before calling TypesUtils.findFunction.",
+          "%s is not a functional interface."
+              + " Call TypesUtils.isFunctionalInterface() before calling TypesUtils.findFunction.",
           functionalInterfaceType);
     }
   }
@@ -1396,6 +1445,150 @@ public final class TypesUtils {
     DeclaredType declType = (DeclaredType) typeelem.asType();
     return !declType.getTypeArguments().isEmpty()
         && ((DeclaredType) type).getTypeArguments().isEmpty();
+  }
+
+  /**
+   * Returns true if some type parameter is in scope in the declaration of {@code typeElement}; that
+   * is, {@code typeElement} is generic or is a non-static member of a type declaration for which
+   * this method returns true.
+   *
+   * <p>Only such a type declaration has a raw type, so only the members of such a type declaration
+   * are erased by rawness (JLS 4.8).
+   *
+   * @param typeElement a type declaration
+   * @return true if some type parameter is in scope in the declaration of {@code typeElement}
+   */
+  public static boolean isGenericOrEnclosedByGeneric(TypeElement typeElement) {
+    for (Element enclosing = typeElement;
+        enclosing != null;
+        enclosing = enclosing.getEnclosingElement()) {
+      if (enclosing instanceof TypeElement enclosingType
+          && !enclosingType.getTypeParameters().isEmpty()) {
+        return true;
+      }
+      if (ElementUtils.isStatic(enclosing)) {
+        // The type parameters of an enclosing type declaration are not in scope in a static
+        // declaration.
+        return false;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if accessing {@code member} through a receiver of type {@code receiverType} is an
+   * access on a raw type.
+   *
+   * <p>If {@code receiverType} is a type variable, a wildcard, or an intersection type, then its
+   * bounds are tested, because the member is a member of a bound.
+   *
+   * @param receiverType the receiver of the access; for a constructor invocation, the class being
+   *     instantiated. Null stands for an unknown receiver, for which this method returns false. Do
+   *     not pass null for an implicit receiver, because a member inherited from a raw supertype is
+   *     erased even when it is accessed without a receiver; use {@link TreeUtils#isRawCall} for a
+   *     call whose receiver is implicit.
+   * @param member the method, constructor, or field being accessed
+   * @param env the processing environment
+   * @return true if accessing {@code member} through a receiver of type {@code receiverType} is an
+   *     access on a raw type
+   */
+  public static boolean isRawCall(
+      @Nullable TypeMirror receiverType, Element member, ProcessingEnvironment env) {
+    if (receiverType == null || ElementUtils.isStatic(member)) {
+      return false;
+    }
+    TypeElement declaringClass = ElementUtils.enclosingTypeElement(member);
+    if (declaringClass == null || !isGenericOrEnclosedByGeneric(declaringClass)) {
+      // Only a type declaration in which some type parameter is in scope has a raw type, so only
+      // such a declaration supplies a member whose type is erased.  Testing this first avoids
+      // walking the supertypes of `receiverType` for a member of a non-generic declaration, such
+      // as any member of Object.
+      return false;
+    }
+    switch (receiverType.getKind()) {
+      case DECLARED -> {
+        // Handled below.
+      }
+      case TYPEVAR -> {
+        // A member accessed through a type variable is a member of the type variable's upper
+        // bound, so the access is raw exactly when an access through that bound is raw.  This
+        // also covers a capture variable, whose upper bound is the captured wildcard's bound.
+        return isRawCall(((TypeVariable) receiverType).getUpperBound(), member, env);
+      }
+      case WILDCARD -> {
+        // getExtendsBound() returns null for `?` and for `? super X`, and isRawCall returns
+        // false for a null type; neither has a raw upper bound.
+        return isRawCall(((WildcardType) receiverType).getExtendsBound(), member, env);
+      }
+      case INTERSECTION -> {
+        // The member comes from whichever bound declares it, so the access is raw if any bound
+        // makes it raw.
+        for (TypeMirror bound : ((IntersectionType) receiverType).getBounds()) {
+          if (isRawCall(bound, member, env)) {
+            return true;
+          }
+        }
+        return false;
+      }
+      default -> {
+        return false;
+      }
+    }
+    // Section 4.8, "Raw Types".
+    // (https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.8)
+    //
+    // The type of a constructor (§8.8), instance method (8.4, 9.4), or non-static field
+    // (8.3) of a raw type C that is not inherited from its superclasses or superinterfaces
+    // is the raw type that corresponds to the erasure of its type in the generic declaration
+    // corresponding to C.  A member that *is* inherited is erased too, because the supertypes
+    // of a raw type are the erasures of the supertypes of any of its parameterizations, so the
+    // member is a member of a raw supertype.
+    //
+    // Therefore, the member's type is erased exactly when the class that declares it, viewed as
+    // a supertype of receiverType, is raw.  Javac's supertype() erases the supertypes of a raw
+    // type, so asSuper() returns a raw type in that case.
+    com.sun.tools.javac.code.Types javacTypes =
+        com.sun.tools.javac.code.Types.instance(InternalUtils.getJavacContext(env));
+    Type site = javacTypes.asSuper((Type) receiverType, (Symbol) declaringClass);
+    if (site == null) {
+      if (!hasEnclosingInstanceOfType(declaringClass, ((DeclaredType) receiverType).asElement())) {
+        return false;
+      }
+      // `receiverType` is not a subtype of the class that declares the member, but it encloses
+      // it, so `receiverType` is an enclosing instance rather than a receiver.  This happens for
+      // a qualified superclass constructor invocation `outer.super(...)` and for a qualified
+      // class instance creation expression `outer.new Inner(...)`.  The member is erased when
+      // the type of the enclosing instance is raw.
+      site = (Type) receiverType;
+    }
+    // Type.isRaw() is also true for a type nested in a raw type; the members of `Outer.Inner` are
+    // erased when `Outer` is raw, even though `Inner` declares no type parameters.
+    return site.isRaw();
+  }
+
+  /**
+   * Returns true if an instance of {@code inner} has an enclosing instance of type {@code outer};
+   * that is, {@code inner} is {@code outer}, or {@code inner} is nested within {@code outer} and no
+   * declaration between the two is static.
+   *
+   * @param inner a type declaration
+   * @param outer a type declaration
+   * @return true if an instance of {@code inner} has an enclosing instance of type {@code outer}
+   */
+  private static boolean hasEnclosingInstanceOfType(TypeElement inner, Element outer) {
+    for (Element enclosing = inner;
+        enclosing != null;
+        enclosing = enclosing.getEnclosingElement()) {
+      if (outer.equals(enclosing)) {
+        return true;
+      }
+      if (ElementUtils.isStatic(enclosing)) {
+        // A static declaration has no enclosing instance, so neither does anything declared
+        // within it.
+        return false;
+      }
+    }
+    return false;
   }
 
   /**

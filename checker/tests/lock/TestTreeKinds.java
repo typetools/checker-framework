@@ -355,12 +355,11 @@ public class TestTreeKinds {
     }
 
     if (foo == null) {
-      // With -AconcurrentSemantics turned off, a cannot.dereference error would be expected,
-      // since there is an attempt to dereference an expression whose type has been refined to
-      // @GuardedByBottom (due to the comparison to null). However, with -AconcurrentSemantics
-      // turned on, foo may no longer be null by now, the refinement to @GuardedByBottom is
-      // lost and the refined type of foo is now the declared type ( @GuardedBy("lock") ),
-      // resulting in the lock.not.held error.
+      // With -AconcurrentSemantics turned off, the refinement of foo to @GuardedByBottom
+      // (due to the comparison to null) would still be in effect here. However, with
+      // -AconcurrentSemantics turned on, foo may no longer be null by now, the refinement to
+      // @GuardedByBottom is lost and the refined type of foo is now the declared type
+      // ( @GuardedBy("lock") ), resulting in the lock.not.held error.
       // :: error: [lock.not.held]
       foo.field.toString();
     }
@@ -369,7 +368,6 @@ public class TestTreeKinds {
     // @PolyGuardedBy should not be written here, but it is not explicitly forbidden by the
     // framework.
     // @PolyGuardedBy MyClass m2 = new MyClass();
-    // (cannot.dereference)
     // m2.field.toString();
   }
 

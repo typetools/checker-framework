@@ -54,7 +54,7 @@ public final class IndexFileWriter {
   private static final String INDENT = "    ";
 
   void printAnnotationDefBody(AnnotationDef d) {
-    for (Map.Entry<String, AnnotationFieldType> f : d.fieldTypes.entrySet()) {
+    for (Map.Entry<String, ? extends AnnotationFieldType> f : d.fieldTypes.entrySet()) {
       String fieldname = f.getKey();
       AnnotationFieldType fieldType = f.getValue();
       pw.println(INDENT + fieldType + " " + fieldname);

@@ -1,10 +1,13 @@
 package org.checkerframework.checker.formatter;
 
+import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.IllegalFormatException;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -21,6 +24,7 @@ import org.checkerframework.checker.formatter.qual.UnknownFormat;
 import org.checkerframework.checker.formatter.util.FormatUtil;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.checker.signature.qual.FieldDescriptor;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
@@ -36,6 +40,8 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.reflection.Signatures;
 
 /**
  * Adds {@link Format} to the type of tree, if it is a {@code String} or {@code char} literal that
@@ -93,13 +99,13 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * {@inheritDoc}
    *
    * <p>If a method is annotated with {@code @FormatMethod}, remove any {@code @Format} annotation
-   * from its first argument.
+   * from its format string parameter.
    */
   @Override
   public void wpiPrepareMethodForWriting(String className, AMethod method) {
     super.wpiPrepareMethodForWriting(className, method);
     if (hasFormatMethodAnno(method)) {
-      AField param = method.parameters.get(0);
+      AField param = formatStringParameter(method);
       if (param != null) {
         Set<Annotation> paramTypeAnnos = param.type.tlAnnotationsHere;
         paramTypeAnnos.removeIf(
@@ -109,10 +115,67 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
+   * Returns the format string parameter of the given method: its first formal parameter whose
+   * declared type is {@code String}, which is what {@code @FormatMethod} means by "format string".
+   *
+   * <p>Returns null if the method has no such parameter, or if nothing was inferred about it. A
+   * parameter about which nothing was inferred has no {@code @Format} annotation to remove.
+   *
+   * @param method the AFU representation of a method that is annotated as {@code @FormatMethod}
+   * @return the method's format string parameter, or null if there is none
+   * @see FormatterVisitor#formatStringIndex
+   */
+  private static @Nullable AField formatStringParameter(AMethod method) {
+    int index = formatStringIndex(method.methodSignature);
+    if (index == -1) {
+      return null;
+    }
+    // `method.parameters` might not have an entry for every formal parameter.  If it has no entry
+    // for the format string parameter, then nothing was inferred about that parameter, so the
+    // parameter has no `@Format` annotation to remove.
+    return method.parameters.get(index);
+  }
+
+  /**
+   * Returns the index of the format string parameter of the given method signature: its first
+   * formal parameter whose declared type is {@code String}.
+   *
+   * <p>Returns -1 if {@code methodSignature} is not a well-formed method signature. That can happen
+   * when the signature was read from a stale or hand-written annotation file rather than being
+   * computed from a method declaration.
+   *
+   * @param methodSignature a method's simple name followed by its erased signature in JVML format,
+   *     for example {@code bar(B[I[[Ljava/lang/String;)I}
+   * @return the 0-based index of the method's format string parameter, or -1 if there is none
+   */
+  private static int formatStringIndex(String methodSignature) {
+    int openParenIndex = methodSignature.indexOf('(');
+    int closeParenIndex = methodSignature.lastIndexOf(')');
+    if (openParenIndex == -1 || closeParenIndex < openParenIndex) {
+      return -1;
+    }
+    String jvmArglist = methodSignature.substring(openParenIndex, closeParenIndex + 1);
+    List<@FieldDescriptor String> paramDescriptors;
+    try {
+      paramDescriptors = Signatures.splitJvmArglist(jvmArglist);
+    } catch (Error e) {
+      // `Signatures.splitJvmArglist` throws `Error` if `jvmArglist` is malformed.  Removing an
+      // inferred `@Format` annotation is optional cleanup, so don't abort the compilation.
+      return -1;
+    }
+    for (int i = 0; i < paramDescriptors.size(); i++) {
+      if (paramDescriptors.get(i).equals("Ljava/lang/String;")) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /**
    * {@inheritDoc}
    *
    * <p>If a method is annotated with {@code @FormatMethod}, remove any {@code @Format} annotation
-   * from its first argument.
+   * from its format string parameter.
    */
   @Override
   public void wpiPrepareMethodForWriting(
@@ -121,9 +184,66 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSubtypes) {
     super.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
     if (hasFormatMethodAnno(methodAnnos)) {
-      AnnotatedTypeMirror atm = methodAnnos.getParameterType(0);
-      atm.removePrimaryAnnotationByClass(Format.class);
+      AnnotatedTypeMirror atm = formatStringParameterType(methodAnnos);
+      if (atm != null) {
+        atm.removePrimaryAnnotationByClass(Format.class);
+      }
     }
+  }
+
+  /**
+   * Returns the inferred type of the format string parameter of the given method: its first formal
+   * parameter whose declared type is {@code String}, which is what {@code @FormatMethod} means by
+   * "format string".
+   *
+   * <p>Returns null if the method has no such parameter, or if nothing was inferred about it. A
+   * parameter about which nothing was inferred has no {@code @Format} annotation to remove.
+   *
+   * @param methodAnnos the annotations of a method that is annotated as {@code @FormatMethod}
+   * @return the inferred type of the method's format string parameter, or null if there is none
+   * @see FormatterVisitor#formatStringIndex
+   */
+  private static @Nullable AnnotatedTypeMirror formatStringParameterType(
+      WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
+    List<Parameter> params = methodAnnos.declaration.getParameters();
+    for (int i = 0; i < params.size(); i++) {
+      // getParameterType's index is 0-based.  It returns null if nothing was inferred about the
+      // parameter, in which case the parameter has no annotation to remove.
+      AnnotatedTypeMirror atm = methodAnnos.getParameterType(i);
+      // An inferred type is built from the parameter's TypeMirror, so when one exists, testing it
+      // is exactly the test that `FormatterVisitor.formatStringIndex` performs.  Only when nothing
+      // was inferred about the parameter is the less precise syntactic test necessary.
+      boolean isString =
+          atm != null
+              ? TypesUtils.isString(atm.getUnderlyingType())
+              : isStringParameter(params.get(i));
+      if (isString) {
+        return atm;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns true if the declared type of the given formal parameter is {@code String}.
+   *
+   * <p>The test is syntactic, because the JavaParser declaration has not been resolved: it assumes
+   * that the simple name {@code String} refers to {@code java.lang.String}. Do not call this method
+   * if the parameter's {@code TypeMirror} is available.
+   *
+   * @param param a formal parameter declaration
+   * @return true if the parameter's declared type is {@code String}
+   */
+  private static boolean isStringParameter(Parameter param) {
+    if (param.isVarArgs()) {
+      // The declared type of a varargs parameter is an array type.
+      return false;
+    }
+    if (!(param.getType() instanceof ClassOrInterfaceType classType)) {
+      return false;
+    }
+    String name = classType.getNameWithScope();
+    return name.equals("String") || name.equals("java.lang.String");
   }
 
   /**

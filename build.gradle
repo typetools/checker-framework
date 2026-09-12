@@ -196,6 +196,11 @@ allprojects { currentProj ->
   apply plugin: "net.ltgt.errorprone"
   // apply plugin: "pmd"
 
+  // Each project's `tags` task writes an Emacs TAGS table in the project directory.
+  tasks.named("clean") {
+    delete("TAGS")
+  }
+
   group = "org.checkerframework"
 
   // Keep in sync with "repositories { ... }" block above.
@@ -701,6 +706,10 @@ tasks.register("cleanManual") {
 clean.dependsOn(cleanManual)
 clean {
   delete(file("${rootDir}/docs/api"))
+  // Written by the `buildSrcTags` task.  The TAGS tables of the root project and of each
+  // subproject are deleted by the `clean` configuration in the `allprojects` block, and
+  // docs/manual/TAGS is deleted by `cleanCfManual`.
+  delete(file("${rootDir}/buildSrc/TAGS"))
   delete("${afuManualDir}/annotation-file-format.aux")
   delete("${afuManualDir}/annotation-file-format.blg")
   delete("${afuManualDir}/annotation-file-format.dvi")

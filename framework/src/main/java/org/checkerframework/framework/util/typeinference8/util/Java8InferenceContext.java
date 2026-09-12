@@ -7,18 +7,15 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
+import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceFactory;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -31,8 +28,11 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class Java8InferenceContext {
 
-  /** Path to the top level expression whose type arguments are inferred. */
-  public TreePath pathToExpression;
+  /**
+   * Path to the top level expression whose type arguments are inferred. This is the only mutable
+   * field in this class; see {@link #setPathToExpression}.
+   */
+  private TreePath pathToExpression;
 
   /** javax.annotation.processing.ProcessingEnvironment */
   public final ProcessingEnvironment env;
@@ -79,8 +79,40 @@ public class Java8InferenceContext {
   /** The annotated type factory. */
   public final AnnotatedTypeFactory typeFactory;
 
-  /** There's no way to tell if an element is a parameter of a lambda, so keep track of them. */
-  public final Set<VariableElement> lambdaParms = new HashSet<>();
+  /**
+   * Where an implicitly typed lambda parameter's type comes from: the target type of the lambda
+   * that declares it, and the parameter's index in the lambda's parameter list.
+   *
+   * <p>The lambda's target type is stored rather than the parameter's own type because, when this
+   * is recorded, the target type may still mention inference variables.
+   *
+   * @param lambdaTargetType the target type of the lambda that declares the parameter
+   * @param index the index of the parameter in the lambda's parameter list
+   */
+  public record LambdaParamTarget(AbstractType lambdaTargetType, int index) {}
+
+  /**
+   * Maps each implicitly typed lambda parameter encountered by this inference problem to the
+   * information needed to compute its type.
+   *
+   * @see InvocationTypeInference#getLambdaParameterType(VariableElement)
+   */
+  public final Map<VariableElement, LambdaParamTarget> lambdaParamTargets = new HashMap<>();
+
+  /**
+   * Records where each parameter of an implicitly typed lambda gets its type from.
+   *
+   * @param parameters the formal parameters of an implicitly typed lambda
+   * @param lambdaTargetType the target type of that lambda
+   */
+  public void addLambdaParamTargets(
+      List<? extends VariableTree> parameters, AbstractType lambdaTargetType) {
+    for (int i = 0; i < parameters.size(); i++) {
+      lambdaParamTargets.put(
+          TreeUtils.elementFromDeclaration(parameters.get(i)),
+          new LambdaParamTarget(lambdaTargetType, i));
+    }
+  }
 
   /**
    * Creates a context.
@@ -107,6 +139,35 @@ public class Java8InferenceContext {
         TypesUtils.typeFromClass(RuntimeException.class, env.getTypeUtils(), env.getElementUtils());
     this.inferenceTypeFactory = new InferenceFactory(this);
     this.object = inferenceTypeFactory.getObject();
+  }
+
+  /**
+   * Returns the path to the expression whose type arguments are inferred.
+   *
+   * @return the path to the expression whose type arguments are inferred
+   */
+  public TreePath getPathToExpression() {
+    return pathToExpression;
+  }
+
+  /**
+   * Sets the path to the expression whose type arguments are inferred.
+   *
+   * <p>This method exists because inference for an outer invocation does not always instantiate the
+   * type variables of a method reference that appears within one of its arguments. (The method
+   * reference need not be the argument itself; it might be nested, as {@code A::m} is in {@code
+   * foo(flag ? A::m : B::m)}.) In that case, inference is run a second time, on the method
+   * reference itself, in this same context: the variables and maps that the first run created are
+   * still needed, but the target type (see {@link
+   * org.checkerframework.framework.util.typeinference8.types.InferenceFactory#getTargetType}) must
+   * now be computed with respect to the method reference rather than the outer invocation. Calling
+   * this method is what makes that happen, so its effect depends on when it is called relative to
+   * the two inference runs.
+   *
+   * @param pathToExpression the path to the expression whose type arguments are inferred
+   */
+  public void setPathToExpression(TreePath pathToExpression) {
+    this.pathToExpression = pathToExpression;
   }
 
   /**
@@ -137,32 +198,5 @@ public class Java8InferenceContext {
    */
   public int getNextQualifierVariableId() {
     return qualifierVarCount++;
-  }
-
-  /**
-   * Adds the parameters to the list of trees that are lambda parameters.
-   *
-   * <p>There's no way to tell if a tree is a parameter of a lambda, so keep track of them.
-   *
-   * @param parameters list of lambda parameters
-   */
-  public void addLambdaParms(List<? extends VariableTree> parameters) {
-    for (VariableTree tree : parameters) {
-      lambdaParms.add(TreeUtils.elementFromDeclaration(tree));
-    }
-  }
-
-  /**
-   * Returns true if the {@code expression} is a lambda parameter.
-   *
-   * @param expression an expression
-   * @return true if the {@code expression} is a lambda parameter
-   */
-  public boolean isLambdaParam(ExpressionTree expression) {
-    Element element = TreeUtils.elementFromTree(expression);
-    if (element == null || element.getKind() != ElementKind.PARAMETER) {
-      return false;
-    }
-    return lambdaParms.contains((VariableElement) element);
   }
 }

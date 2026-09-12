@@ -367,6 +367,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     try {
       result = atypeFactory.parseJavaExpressionString(s, currentPath);
     } catch (JavaExpressionParseException e) {
+      // Do not report the error.  As the Javadoc says, failing to parse is an ordinary outcome
+      // for a string that is not a Java expression, such as "n+1".  If the string does come from
+      // an annotation, DependentTypesHelper reports the error.
       result = null;
     }
     return result;

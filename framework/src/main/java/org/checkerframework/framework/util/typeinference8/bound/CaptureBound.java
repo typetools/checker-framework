@@ -77,6 +77,7 @@ public final class CaptureBound {
       AbstractType Ai = args.next();
 
       CaptureVariable alphai = (CaptureVariable) alphas.next();
+      alphai.setCapturedWildcard(Ai.getTypeKind() == TypeKind.WILDCARD);
       captureVariables.add(alphai);
       alphai.initialBounds(map);
 
@@ -140,6 +141,24 @@ public final class CaptureBound {
           containsFalse = true;
         } else {
           set.addAll(newCon);
+        }
+        if (t.capturedTypeArg.isUpperBoundedWildcard()) {
+          // If Ai is `? extends T`, add the bound alphai <: T, so that the fresh type variable
+          // that resolution creates for alphai has upper bound glb(T, Bi theta), which is the
+          // upper bound that capture conversion (JLS 5.1.10) gives it.
+          //
+          // JLS 18.3.2 does not state this bound: it implies only alphai <: Bi theta, and the
+          // wildcard's own bound T appears solely in the conditional rules that
+          // getWildcardConstraints implements just above.  JLS 18.4 then builds the fresh type
+          // variable out of alphai's own bounds, so without this bound T is lost and the capture
+          // variable comes out with upper bound Object.  javac does not lose it, because it
+          // applies real capture conversion to the return type rather than encoding capture as a
+          // set of inference variables.  See tests/all-systems/CapturedWildcardBound.java.
+          //
+          // The symmetric bound for `? super T` is deliberately not added; see
+          // CapturedWildcardBound#twoLevelSuper.
+          AbstractType T = t.capturedTypeArg.getWildcardUpperBound();
+          t.alpha.getBounds().addBound(null, VariableBounds.BoundKind.UPPER, T);
         }
       }
     }

@@ -325,10 +325,26 @@ public class BoundSet implements ReductionResult {
     }
     Dependencies dependencies = new Dependencies();
 
+    // The two rules below apply only to a capture variable for a wildcard, though JLS 18.4 states
+    // them for every variable on the left-hand side of a capture bound.  This follows javac:
+    // Infer#generateReturnConstraints captures the return type and then adds an inference variable
+    // only for a type argument that capture conversion replaced, that is, only for a wildcard,
+    // whereas JLS 18.5.2.1 creates one for each of the n type arguments.
+    //
+    // The difference matters because these rules reverse the usual direction of a dependency.  For
+    // a non-wildcard type argument Ai, the bound alphai = Ai holds, so applying them makes every
+    // variable mentioned in Ai's bounds depend on alphai, and that can create a cycle where javac
+    // has none.  See tests/all-systems/Issue7694.java: applying them to the variable that captures
+    // `E` in `Collector<E, ?, List<E>>` puts the variable for `Optional.empty()` in the same
+    // resolution set as the variable it is a lower bound of, and resolution then discards that
+    // lower bound for not being proper.
     for (CaptureBound capture : captures) {
       List<? extends CaptureVariable> lhsVars = capture.getAllVariablesOnLHS();
       Set<Variable> rhsVars = capture.getAllVariablesOnRHS();
       for (Variable var : lhsVars) {
+        if (!var.isCapturedWildcard()) {
+          continue;
+        }
         // An inference variable alpha appearing on the left-hand side of a bound of the
         // form G<..., alpha, ...> = capture(G<...>) depends on the resolution of every
         // other inference variable mentioned in this bound (on both sides of the = sign).
@@ -342,7 +358,7 @@ public class BoundSet implements ReductionResult {
       LinkedHashSet<Variable> alphaDependencies =
           new LinkedHashSet<>(alpha.getBounds().getVariablesMentionedInBounds());
 
-      if (alpha.isCaptureVariable()) {
+      if (alpha.isCapturedWildcard()) {
         // If alpha appears on the left-hand side of another bound of the form
         // G<..., alpha, ...> = capture(G<...>), then beta depends on the resolution of
         // alpha.
@@ -351,8 +367,17 @@ public class BoundSet implements ReductionResult {
         }
       } else {
         for (Variable beta : alphaDependencies) {
-          if (!beta.isCaptureVariable()) {
-            // Otherwise, alpha depends on the resolution of beta.
+          if (!beta.isCaptureVariable() || beta.isCapturedWildcard()) {
+            // Beta is not a capture variable, or beta is a capture variable whose type argument to
+            // be captured is a wildcard.  In either case, alpha depends on the resolution of beta.
+            //
+            // The second case is why this method's result includes a dependency on a capture
+            // variable for a wildcard.  JLS 18.5.2.1 creates a fresh variable for each type
+            // argument of a wildcard-parameterized return type, so a bound such as
+            // `G<beta1, beta2> <: alpha` has to make alpha depend on beta1 and beta2.  If this
+            // method's result omitted that dependency, then resolution would resolve alpha first,
+            // alpha's lower bound `G<beta1, beta2>` would not yet be proper, and alpha would
+            // resolve to its upper bound instead.  See tests/all-systems/Issue8053.java.
             dependencies.putOrAdd(alpha, beta);
           }
         }
@@ -418,7 +443,7 @@ public class BoundSet implements ReductionResult {
         // AssertionError that aborts the entire compilation.
         throw new BugInCF(
             "Max incorporation steps (%d) reached without reaching a fixed point: %s",
-            MAX_INCORPORATION_STEPS, context.pathToExpression.getLeaf());
+            MAX_INCORPORATION_STEPS, context.getPathToExpression().getLeaf());
       }
     } while (!containsFalse);
   }

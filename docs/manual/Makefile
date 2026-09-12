@@ -38,7 +38,7 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 	cd ../.. && ./gradlew getGitScripts
 
 ../../checker/bin-devel/.plume-scripts:
-	cd ../.. && ./gradlew getPlumeScripts
+	cd ../.. && ./gradlew -q getPlumeScripts
 
 # Because `contributors.tex` is .PHONY, any target that depends on it is always remade.
 .PHONY: contributors.tex
@@ -69,7 +69,7 @@ plume-bib:
 # Leaves manual.html, and .svg files that it references.
 .PHONY: clean
 clean:
-	@\rm -f *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc manual.image.tex
+	@\rm -f *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc manual.image.tex TAGS
 
 .PHONY: very-clean very_clean
 very-clean: very_clean

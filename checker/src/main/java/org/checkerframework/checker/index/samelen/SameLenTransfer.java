@@ -164,6 +164,9 @@ public class SameLenTransfer extends CFTransfer {
       try {
         je = atypeFactory.parseJavaExpressionString(exprString, currentPath);
       } catch (JavaExpressionParseException e) {
+        // Do not report the error here; that would duplicate the one that DependentTypesHelper
+        // issues for the `@SameLen` annotation, whose `value` element is a `@JavaExpression`.
+        // Skipping the expression only loses precision.
         continue;
       }
       store.clearValue(je);

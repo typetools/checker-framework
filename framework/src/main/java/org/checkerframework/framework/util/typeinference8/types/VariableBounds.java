@@ -9,6 +9,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
@@ -18,6 +19,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
 
 /** Data structure that stores the bounds of a variable. */
@@ -709,15 +711,31 @@ public class VariableBounds {
         if (supers == null) {
           continue;
         }
-        List<AbstractType> s1TypeArgs = supers.first.getTypeArguments();
-        List<AbstractType> s2TypeArgs = supers.second.getTypeArguments();
-        if (!s1TypeArgs.equals(s2TypeArgs)) {
+        if (!annotatedTypeArguments(supers.first).equals(annotatedTypeArguments(supers.second))) {
           return true;
         }
       }
     }
 
     return false;
+  }
+
+  /**
+   * Returns the annotated types of the type arguments of {@code type}.
+   *
+   * <p>This is a helper method for {@link #hasLowerBoundDifferentParam}. It compares the annotated
+   * types rather than the {@link AbstractType}s because {@link AbstractType#equals} also compares
+   * {@code ignoreAnnotations}, which is a property of a bound rather than of a parameterization:
+   * two bounds that differ only in whether their annotations are ignored are the same
+   * parameterization.
+   *
+   * @param type a declared type
+   * @return the annotated types of the type arguments of {@code type}
+   */
+  private static List<AnnotatedTypeMirror> annotatedTypeArguments(AbstractType type) {
+    List<AbstractType> typeArgs = type.getTypeArguments();
+    assert typeArgs != null : "@AssumeAssertion(nullness): the caller passes a declared type";
+    return CollectionsP.mapList(AbstractType::getAnnotatedType, typeArgs);
   }
 
   /**
@@ -784,6 +802,13 @@ public class VariableBounds {
 
     for (AbstractType bound : bounds.get(VariableBounds.BoundKind.EQUAL)) {
       if (bound.isProper() || bound.isInferenceType()) {
+        if (TypesUtils.isCapturedTypeVariable(bound.getJavaType())) {
+          // Unlike javac, the Checker Framework may infer an expression a second time, against a
+          // target type that a previous inference produced; in that case, ignore this bound
+          // (adding no constraints for it) so that this inference reuses the exact value that the
+          // previous inference computed.
+          continue;
+        }
         // var = R implies the bound false
         return null;
       }

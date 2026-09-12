@@ -957,6 +957,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       try {
         exprAndOffset = getExpressionAndOffsetFromJavaExpressionString(expression, treePath);
       } catch (JavaExpressionParseException e) {
+        // Do not report the error here; that would duplicate the one that DependentTypesHelper
+        // issues for the `@LessThan` annotation that supplied the expression.  Skipping the
+        // expression only loses precision.
         exprAndOffset = null;
       }
       if (exprAndOffset == null) {

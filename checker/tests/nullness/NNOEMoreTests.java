@@ -12,7 +12,7 @@ public class NNOEMoreTests {
     }
 
     @RequiresNonNull("xxx")
-    // :: error: [flowexpr.parse.error]
+    // :: error: [flowexpr.parse.error.contract]
     void test2() {
       // :: error: [dereference.of.nullable]
       nullable.toString();

@@ -43,11 +43,11 @@ public class Postcondition {
   void valueF1() {}
 
   @EnsuresQualifier(expression = "---", qualifier = ValueTypeAnno.class)
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   void error() {}
 
   @EnsuresQualifier(expression = "#1.#2", qualifier = ValueTypeAnno.class)
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   void error2(final String p1, final String p2) {}
 
   @EnsuresQualifier(expression = "f1", qualifier = ValueTypeAnno.class)
@@ -156,7 +156,7 @@ public class Postcondition {
   @EnsuresQualifier.List({
     @EnsuresQualifier(expression = "---", qualifier = Odd.class),
   })
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   void error2() {}
 
   // basic postcondition test
