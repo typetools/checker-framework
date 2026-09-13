@@ -41,14 +41,16 @@ public class Issue8053 {
     return types.stream().map(t -> wild(t)).collect(Collectors.toList());
   }
 
-  static final Map<String, List<Getter<?, ?>>> CACHE = new HashMap<>();
-
   static native <P> Getter<P, ?> createGetter(Class<P> clazz, String name);
 
   // The Beam shape: the whole thing is the mapping function of Map.computeIfAbsent, and the
-  // Class argument is itself wildcard-typed.
+  // Class argument is itself wildcard-typed.  The map is a local variable rather than a field so
+  // that a checker that reasons about the receiver of `computeIfAbsent` (such as the Modifiability
+  // Checker, whose `computeIfAbsent` requires a receiver that permits growing) can refine its type
+  // from the `new HashMap<>()`; a field's type is not refined that way.
   static <T> List<Getter<?, ?>> beamShape(Class<? super T> clazz, List<String> types, String key) {
-    return CACHE.computeIfAbsent(
+    Map<String, List<Getter<?, ?>>> cache = new HashMap<>();
+    return cache.computeIfAbsent(
         key, c -> types.stream().map(t -> createGetter(clazz, t)).collect(Collectors.toList()));
   }
 

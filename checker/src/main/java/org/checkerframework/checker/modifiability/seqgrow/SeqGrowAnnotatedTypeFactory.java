@@ -15,7 +15,7 @@ import org.checkerframework.checker.modifiability.qual.PolySeqGrowable;
 import org.checkerframework.checker.modifiability.qual.SeqGrowable;
 import org.checkerframework.checker.modifiability.qual.SeqUngrowable;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TypesUtils;
@@ -68,7 +68,7 @@ public class SeqGrowAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeF
    * @param canonicalName the canonical name of a type that may not be present
    * @return the erasure of the named type, or null
    */
-  private @Nullable TypeMirror optionalErasureOf(@CanonicalName String canonicalName) {
+  private @Nullable TypeMirror optionalErasureOf(@FullyQualifiedName String canonicalName) {
     TypeElement element = elements.getTypeElement(canonicalName);
     return element == null ? null : types.erasure(element.asType());
   }

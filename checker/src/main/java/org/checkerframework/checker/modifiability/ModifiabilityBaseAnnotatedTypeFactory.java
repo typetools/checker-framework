@@ -16,7 +16,7 @@ import org.checkerframework.checker.modifiability.qual.PreservesModifiability;
 import org.checkerframework.checker.modifiability.qual.Unmodifiable;
 import org.checkerframework.checker.modifiability.qual.UnmodifiableParam;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -68,10 +68,15 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
   /**
    * Returns the erasure of the named type.
    *
+   * <p>The parameter is {@code @FullyQualifiedName} rather than {@code @CanonicalName}, which is
+   * what {@link javax.lang.model.util.Elements#getTypeElement} really requires, because the
+   * Signature Checker cannot prove that a string literal such as {@code "java.util.Map.Entry"} is a
+   * canonical name.
+   *
    * @param canonicalName the canonical name of a type that is always present
    * @return the erasure of the named type
    */
-  protected final TypeMirror erasureOf(@CanonicalName String canonicalName) {
+  protected final TypeMirror erasureOf(@FullyQualifiedName String canonicalName) {
     return types.erasure(elements.getTypeElement(canonicalName).asType());
   }
 
