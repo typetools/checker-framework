@@ -1,9 +1,8 @@
 # DO NOT EDIT azure-pipelines.yml.  Edit azure-pipelines.yml.m4 and defs.m4 instead.
-
+changequote
 changequote(`[',`]')dnl
 include([defs-common.m4])dnl
 include([defs.m4])dnl
-# Workaround for https://status.dev.azure.com/_event/179641421
 trigger:
   batch: true
   branches:
@@ -22,22 +21,23 @@ jobs:
 
   # The dependsOn clauses are:
   #  * Everything depends on the canary jobs (the main jdk25 jobs), except those jobs themselves.
-  #  * Any other *_jdkNN job depends on the corresponding *_jdk25 job.
+  #  * Any *_jdkNN job (NN != 25) depends on the corresponding *_jdk25 job.
 
   - job: canary_jobs
     dependsOn:
-      - junit_part1_jdk[]canary_version
-      - junit_part2_jdk[]canary_version
-      - nonjunit_jdk[]canary_version
-      - inference_part1_jdk[]canary_version
-      - inference_part2_jdk[]canary_version
-      - typecheck_part1_jdk[]canary_version
-      - typecheck_part2_jdk[]canary_version
-      - misc_jdk[]canary_version
-      - misc_jdk[]latest_version
+      - junit_part1_jdk[]canary_jdk
+      - junit_part2_jdk[]canary_jdk
+      - nonjunit_jdk[]canary_jdk
+      - inference_part1_jdk[]canary_jdk
+      - inference_part2_jdk[]canary_jdk
+      - typecheck_part1_jdk[]canary_jdk
+      - typecheck_part2_jdk[]canary_jdk
+      - misc_jdk[]canary_jdk
+      - misc_jdk[]latest_jdk
     pool:
       vmImage: 'ubuntu-latest'
     steps:
+      - checkout: none
       - bash: true
         displayName: canary_jobs
 

@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * The annotated expression evaluates to an integer greater than or equal to -1. ("GTE" stands for
- * ``Greater Than or Equal to''.)
+ * "Greater Than or Equal to".)
  *
  * <p>As an example use case, consider the definition of the read() method in java.io.InputStream:
  *

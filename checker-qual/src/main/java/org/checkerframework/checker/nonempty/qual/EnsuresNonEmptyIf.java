@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
- * Indicates that the specific expressions are non-empty, if the method returns the given result
+ * Indicates that the specified expressions are non-empty, if the method returns the given result
  * (either true or false).
  *
  * <p>Here are ways this conditional postcondition annotation can be used:
@@ -22,7 +22,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * </pre>
  *
  * because, if {@code isLengthGreaterThanZero} returns true, then {@code items} was non-empty. Note
- * that you can write more than one {@code @EnsuresNonEmptyIf} annotations on a single method.
+ * that you can write more than one {@code @EnsuresNonEmptyIf} annotation on a single method.
  *
  * <p><b>Fields:</b> The value expression can refer to fields, even private ones. For example:
  *

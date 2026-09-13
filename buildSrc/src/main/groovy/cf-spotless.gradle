@@ -94,7 +94,7 @@ spotless {
     formatAnnotations()
   }
 
-  // Only define a groovyGradle task on the root project, for simplicity in setting the target pattern
+  // Only define a groovyGradle task on the root project, for simplicity in setting the target pattern.
   if (project == project.rootProject) {
     // eclipse.org flakiness leads to "Failed to provision P2 dependencies".
     if (false) {

@@ -1,6 +1,6 @@
 .PHONY: all test clean default
 default: all
-all: azure-pipelines.yml azure-pipelines-daily.yml
+all:
 
 test: all
 
@@ -10,10 +10,11 @@ PLUME_SCRIPTS=../checker/bin-devel/.plume-scripts
 	@chmod -f +w $@ || true
 	m4 $< > $@
 	${PLUME_SCRIPTS}/squeeze-blank-lines $@
-	@chmod -w $@
+# Don't do this for now, because it breaks prek's end-of-file-fixer.
+#	@chmod -w $@
 
 ${PLUME_SCRIPTS}:
-	make -C .. get-plume-scripts
+	cd .. && ./gradlew -q getPlumeScripts
 
 clean:
 	@rm -f azure-pipelines.yml azure-pipelines-daily.yml

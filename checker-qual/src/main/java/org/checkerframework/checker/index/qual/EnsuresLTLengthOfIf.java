@@ -76,8 +76,8 @@ public @interface EnsuresLTLengthOfIf {
   String[] expression();
 
   /**
-   * Sequences, each of which is longer than each of the expressions' value after the method returns
-   * the given result.
+   * Sequences, each of which is longer than each of the expressions' values after the method
+   * returns the given result.
    */
   @JavaExpression
   @QualifierArgument("value")
@@ -85,7 +85,7 @@ public @interface EnsuresLTLengthOfIf {
 
   /**
    * This expression plus each of the expressions is less than the length of the sequence after the
-   * method returns the given result. The {@code offset} element must ether be empty or the same
+   * method returns the given result. The {@code offset} element must either be empty or the same
    * length as {@code targetValue}.
    *
    * @return the offset expressions

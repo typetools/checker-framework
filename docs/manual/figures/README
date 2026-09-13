@@ -9,9 +9,9 @@ listed in order of preference:
  * LibreOffice/OpenOffice
 Please don't use:
  * https://www.draw.io (no tool installation required)
-    * The .svg files it exports don't convert to pdf with correct formatting
+    * The .svg files it exports don't convert to PDF with correct formatting
       if they have multiline text
-    * The figures might require fine tuning with Inkscape afterwards, or
+    * The figures might require fine-tuning with Inkscape afterwards, or
       editing of the .svg files with a text editor.
  * macSVG, which saves the .svg file as one line (!).
     * Unless you manually fix the .svg file afterward.

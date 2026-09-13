@@ -70,7 +70,7 @@ import org.checkerframework.checker.index.qual.Positive;
 class MyClass {
   @Positive int x;
   MyClass() {
-    foo(this);
+    foo();
     x = 1;
   }
 
@@ -148,7 +148,7 @@ There is also a method declaration annotation:
 
 \sectionAndLabel{Comparison to the Initialization Checker}{initialized-fields-vs-initialization}
 
-The Initialized Fields Checker is a lightweight version of the  Initialization Checker
+The Initialized Fields Checker is a lightweight version of the Initialization Checker
 (Section~\ref{initialization-checker}).  Here is a comparison between them.
 
 \noindent

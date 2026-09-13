@@ -11,8 +11,6 @@
     <rule ref="category/java/bestpractices.xml/AccessorMethodGeneration" />
     <rule ref="category/java/bestpractices.xml/ArrayIsStoredDirectly" />
     <rule ref="category/java/bestpractices.xml/AvoidMessageDigestField" />
-    <rule ref="category/java/bestpractices.xml/AvoidReassigningCatchVariables" />
-    <rule ref="category/java/bestpractices.xml/AvoidReassigningLoopVariables" />
     <rule ref="category/java/bestpractices.xml/AvoidStringBufferField" />
     <rule ref="category/java/bestpractices.xml/AvoidUsingHardCodedIP" />
     <rule ref="category/java/bestpractices.xml/CheckResultSet" />
@@ -23,7 +21,7 @@
     <rule ref="category/java/bestpractices.xml/ForLoopVariableCount" />
     <rule ref="category/java/bestpractices.xml/GuardLogStatement">
         <properties>
-            <property name="logLevels" value="trace,debug,info,warn,error,log,finest,finer,fine,info,warning,severe" />
+            <property name="logLevels" value="trace,debug,warn,error,log,finest,finer,fine,info,warning,severe" />
             <!-- Adds "isEnabled" to the default list. -->
             <property name="guardsMethods" value="isTraceEnabled,isDebugEnabled,isInfoEnabled,isWarnEnabled,isErrorEnabled,isLoggable,isEnabled" />
         </properties>
@@ -57,8 +55,9 @@
     <!-- best practices rules we are not using
     <rule ref="category/java/bestpractices.xml/AvoidPrintStackTrace" />
     <rule ref="category/java/bestpractices.xml/AvoidReassigningParameters" />
-    <rule ref="category/java/bestpractices.xml/ExhaustiveSwitchHasDefault" />
-      Including a default is protection against future changes to the enum.
+    <rule ref="category/java/bestpractices.xml/AvoidReassigningCatchVariables" />
+    <rule ref="category/java/bestpractices.xml/AvoidReassigningLoopVariables" />
+    <rule ref="category/java/bestpractices.xml/ExhaustiveSwitchHasDefault" /> Including a default is protection against future changes to the enum.
     <rule ref="category/java/bestpractices.xml/LiteralsFirstInComparisons" />
     <rule ref="category/java/bestpractices.xml/LooseCoupling" />
     <rule ref="category/java/bestpractices.xml/PreserveStackTrace" />
@@ -103,7 +102,6 @@
     <rule ref="category/java/codestyle.xml/UnnecessaryBoxing" />
     <rule ref="category/java/codestyle.xml/UnnecessaryFullyQualifiedName" />
     <rule ref="category/java/codestyle.xml/UnnecessaryImport" />
-    <rule ref="category/java/codestyle.xml/UnnecessaryReturn" />
     <rule ref="category/java/codestyle.xml/UnnecessarySemicolon" />
     <rule ref="category/java/codestyle.xml/UseDiamondOperator" />
     <rule ref="category/java/codestyle.xml/UseExplicitTypes" />
@@ -142,6 +140,7 @@
     <rule ref="category/java/codestyle.xml/TooManyStaticImports" />
     <rule ref="category/java/codestyle.xml/TypeParameterNamingConventions" />
     <rule ref="category/java/codestyle.xml/UnnecessaryModifier" />      Redundant `public` can be useful.
+    <rule ref="category/java/codestyle.xml/UnnecessaryReturn" /> `return;` can be useful.
     <rule ref="category/java/codestyle.xml/UselessParentheses" />      Redundant parens can be helpful, for example to emphasize subexpressions in string concatenation.
     <rule ref="category/java/codestyle.xml/VariableCanBeInlined" />      Naming a value can improve readability.
      -->
@@ -149,7 +148,7 @@
     <!-- design rules -->
     <rule ref="category/java/design.xml/AbstractClassWithoutAnyMethod" />
     <rule ref="category/java/design.xml/AvoidRethrowingException" />
-    <rule ref="category/java/design.xml/AvoidThrowingNewInstanceOfSameException" />
+    <rule ref="category/java/design.xml/AvoidThrowingNewInstanceOfSameException" /> <!-- buggy: complains even if the message is changed. -->
     <rule ref="category/java/design.xml/AvoidThrowingNullPointerException" />
     <rule ref="category/java/design.xml/AvoidUncheckedExceptionsInSignatures" />
     <rule ref="category/java/design.xml/ClassWithOnlyPrivateConstructorsShouldBeFinal" />
@@ -163,7 +162,6 @@
     <rule ref="category/java/design.xml/SimplifiedTernary" />
     <rule ref="category/java/design.xml/SimplifyBooleanExpressions" />
     <rule ref="category/java/design.xml/SimplifyConditional" />
-    <rule ref="category/java/design.xml/TooManyFields" />
     <rule ref="category/java/design.xml/UselessOverridingMethod" />
     <rule ref="category/java/design.xml/UseUtilityClass" />
 
@@ -195,6 +193,7 @@
     <rule ref="category/java/design.xml/NPathComplexity" />
     <rule ref="category/java/design.xml/SimplifyBooleanReturns" />      Suggests too-clever boolean expressions to replace simpler code.
     <rule ref="category/java/design.xml/SwitchDensity" />
+    <rule ref="category/java/design.xml/TooManyFields" />
     <rule ref="category/java/design.xml/TooManyMethods" />
     -->
 
@@ -334,12 +333,10 @@
 
     <!-- performance rules -->
     <rule ref="category/java/performance.xml/AddEmptyString" />
-    <rule ref="category/java/performance.xml/AppendCharacterWithChar" />
     <rule ref="category/java/performance.xml/AvoidArrayLoops" />
     <rule ref="category/java/performance.xml/AvoidCalendarDateCreation" />
     <rule ref="category/java/performance.xml/AvoidFileStream" />
     <rule ref="category/java/performance.xml/BigIntegerInstantiation" />
-    <rule ref="category/java/performance.xml/ConsecutiveLiteralAppends" />
     <rule ref="category/java/performance.xml/InefficientEmptyStringCheck" />
     <rule ref="category/java/performance.xml/InefficientStringBuffering" />
     <rule ref="category/java/performance.xml/InsufficientStringBufferDeclaration" />
@@ -353,8 +350,10 @@
     <rule ref="category/java/performance.xml/UseStringBufferLength" />
 
     <!-- performance rules we are not using
+    <rule ref="category/java/performance.xml/AppendCharacterWithChar" /> I'm not convinced this matters; the JIT should optimize it.
     <rule ref="category/java/performance.xml/AvoidInstantiatingObjectsInLoops" />      Blanket prohibition on `new` in loops is too broad.
     <rule ref="category/java/performance.xml/ConsecutiveAppendsShouldReuse" />      It's not clear this helps, and "fluent" appends are harder to read.
+    <rule ref="category/java/performance.xml/ConsecutiveLiteralAppends" /> Sometimes grouping is clearer, and the JIT should optimize.
     <rule ref="category/java/performance.xml/RedundantFieldInitializer" />  Explicit initializers are better style.
     <rule ref="category/java/performance.xml/TooFewBranchesForSwitch" />
     <rule ref="category/java/performance.xml/UseStringBufferForStringAppends" />

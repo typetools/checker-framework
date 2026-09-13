@@ -21,7 +21,7 @@ import org.plumelib.util.StringsP;
  * itself after every call so you can string together configuration methods as follows:
  *
  * <p>{@code new TestConfigurationBuilder() .addOption("-Awarns") .addSourceFile("src1.java")
- * .addDiagnosticFile("src1.out") }
+ * .addDiagnosticFile("src1.goal") }
  *
  * @see TestConfiguration
  */

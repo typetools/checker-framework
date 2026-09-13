@@ -222,6 +222,9 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
     try {
       expressionJe = valueAtypeFactory.parseJavaExpressionString(expression, path);
     } catch (JavaExpressionParseException e) {
+      // Do not report the error.  The argument is an offset equation such as "n + 1", which the
+      // parser does not handle, so failing to parse it is not necessarily a user error.
+      // Returning the least informative bound is conservative.
       return Long.MIN_VALUE;
     }
 

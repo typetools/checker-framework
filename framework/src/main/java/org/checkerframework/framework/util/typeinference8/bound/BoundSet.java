@@ -12,6 +12,7 @@ import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
+import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.StringsP;
 
 /**
@@ -73,6 +74,8 @@ public class BoundSet implements ReductionResult {
     this.captures = new LinkedHashSet<>(toCopy.captures);
     this.variables = new LinkedHashSet<>(toCopy.variables);
     this.uncheckedConversion = toCopy.uncheckedConversion;
+    this.annoInferenceFailed = toCopy.annoInferenceFailed;
+    this.errorMsg = toCopy.errorMsg;
   }
 
   /**
@@ -181,12 +184,12 @@ public class BoundSet implements ReductionResult {
    *     capture(G<...>)} for any variable in {@code as}
    */
   public boolean containsCapture(Collection<Variable> as) {
-    List<Variable> list = new ArrayList<>();
+    Set<Variable> lhsVariables = new LinkedHashSet<>();
     for (CaptureBound c : captures) {
-      list.addAll(c.getAllVariablesOnLHS());
+      lhsVariables.addAll(c.getAllVariablesOnLHS());
     }
     for (Variable ai : as) {
-      if (list.contains(ai)) {
+      if (lhsVariables.contains(ai)) {
         return true;
       }
     }
@@ -235,7 +238,8 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Returns the dependencies between variables.
+   * Returns the dependencies between variables. This method has the same side effect on this bound
+   * set as {@link #getDependencies(Collection)}.
    *
    * @return the dependencies between variables
    */
@@ -244,22 +248,46 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Adds the {@code additionalVars} to this bound set and returns the dependencies between all
-   * variables in this bound set.
+   * Returns the dependencies between all variables in this bound set and in {@code additionalVars}.
+   * The {@code additionalVars} are used only to compute the result; they are not added to this
+   * bound set.
    *
-   * @param additionalVars variables to add to this bound set
-   * @return the dependencies between all variables in this bound set
+   * <p>As a side effect, this method adds to this bound set every variable of every {@link Theta}
+   * created so far in this inference context. That is how variables created by a nested inference
+   * problem become part of this bound set and therefore get resolved by {@link Resolution}; without
+   * that side effect, those variables would never be instantiated.
+   *
+   * @param additionalVars variables to include in the dependency computation, in addition to the
+   *     variables of this bound set
+   * @return the dependencies between all variables in this bound set and in {@code additionalVars}
    */
   public Dependencies getDependencies(Collection<Variable> additionalVars) {
+    // This is a side effect on `variables`; see the method's Javadoc.
     for (Theta t : context.maps.values()) {
       variables.addAll(t.values());
     }
     Dependencies dependencies = new Dependencies();
 
+    // The two rules below apply only to a capture variable for a wildcard, though JLS 18.4 states
+    // them for every variable on the left-hand side of a capture bound.  This follows javac:
+    // Infer#generateReturnConstraints captures the return type and then adds an inference variable
+    // only for a type argument that capture conversion replaced, that is, only for a wildcard,
+    // whereas JLS 18.5.2.1 creates one for each of the n type arguments.
+    //
+    // The difference matters because these rules reverse the usual direction of a dependency.  For
+    // a non-wildcard type argument Ai, the bound alphai = Ai holds, so applying them makes every
+    // variable mentioned in Ai's bounds depend on alphai, and that can create a cycle where javac
+    // has none.  See tests/all-systems/Issue7694.java: applying them to the variable that captures
+    // `E` in `Collector<E, ?, List<E>>` puts the variable for `Optional.empty()` in the same
+    // resolution set as the variable it is a lower bound of, and resolution then discards that
+    // lower bound for not being proper.
     for (CaptureBound capture : captures) {
       List<? extends CaptureVariable> lhsVars = capture.getAllVariablesOnLHS();
       Set<Variable> rhsVars = capture.getAllVariablesOnRHS();
       for (Variable var : lhsVars) {
+        if (!var.isCapturedWildcard()) {
+          continue;
+        }
         // An inference variable alpha appearing on the left-hand side of a bound of the
         // form G<..., alpha, ...> = capture(G<...>) depends on the resolution of every
         // other inference variable mentioned in this bound (on both sides of the = sign).
@@ -273,7 +301,7 @@ public class BoundSet implements ReductionResult {
       LinkedHashSet<Variable> alphaDependencies =
           new LinkedHashSet<>(alpha.getBounds().getVariablesMentionedInBounds());
 
-      if (alpha.isCaptureVariable()) {
+      if (alpha.isCapturedWildcard()) {
         // If alpha appears on the left-hand side of another bound of the form
         // G<..., alpha, ...> = capture(G<...>), then beta depends on the resolution of
         // alpha.
@@ -282,8 +310,17 @@ public class BoundSet implements ReductionResult {
         }
       } else {
         for (Variable beta : alphaDependencies) {
-          if (!beta.isCaptureVariable()) {
-            // Otherwise, alpha depends on the resolution of beta.
+          if (!beta.isCaptureVariable() || beta.isCapturedWildcard()) {
+            // Beta is not a capture variable, or beta is a capture variable whose type argument to
+            // be captured is a wildcard.  In either case, alpha depends on the resolution of beta.
+            //
+            // The second case is why this method's result includes a dependency on a capture
+            // variable for a wildcard.  JLS 18.5.2.1 creates a fresh variable for each type
+            // argument of a wildcard-parameterized return type, so a bound such as
+            // `G<beta1, beta2> <: alpha` has to make alpha depend on beta1 and beta2.  If this
+            // method's result omitted that dependency, then resolution would resolve alpha first,
+            // alpha's lower bound `G<beta1, beta2>` would not yet be proper, and alpha would
+            // resolve to its upper bound instead.  See tests/all-systems/Issue8053.java.
             dependencies.putOrAdd(alpha, beta);
           }
         }
@@ -304,10 +341,12 @@ public class BoundSet implements ReductionResult {
    * <p>Incorporation creates new constraints that are then reduced to a bound set which is further
    * incorporated into this bound set. Incorporation terminates when the bounds set has reached a
    * fixed point. <a
-   * href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.3">JLS 18 .1</a>
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.3">JLS 18.3</a>
    * defines this fixed point and further explains incorporation.
    *
    * @param newBounds bounds to incorporate
+   * @throws BugInCF if incorporation does not reach a fixed point within {@link
+   *     #MAX_INCORPORATION_STEPS} steps
    */
   public void incorporateToFixedPoint(final BoundSet newBounds) {
     this.containsFalse |= newBounds.containsFalse;
@@ -318,16 +357,13 @@ public class BoundSet implements ReductionResult {
     int count = 0;
     do {
       count++;
-      List<Variable> instantiations = getInstantiatedVariables();
-      boolean boundsChangeInst = false;
-      if (!instantiations.isEmpty()) {
-        for (Variable var : variables) {
-          boundsChangeInst = var.getBounds().applyInstantiationsToBounds();
-        }
-      }
-      boundsChangeInst |= captures.addAll(newBounds.captures);
-      for (Variable alpha : variables) {
-        boundsChangeInst = alpha.getBounds().applyInstantiationsToBounds();
+      boolean boundsChangeInst = captures.addAll(newBounds.captures);
+      // Iterate over a copy of `variables`, because the call to `merge` below may add to
+      // `variables`.  Any variable added this way is processed by the next iteration of the
+      // enclosing do-while loop, which runs because `boundsChangeInst` is set to true whenever
+      // `merge` is called.
+      for (Variable alpha : new ArrayList<>(variables)) {
+        boundsChangeInst |= alpha.getBounds().applyInstantiationsToBounds();
 
         while (!alpha.getBounds().constraints.isEmpty()) {
           boundsChangeInst = true;
@@ -344,8 +380,24 @@ public class BoundSet implements ReductionResult {
       }
 
       containsFalse |= newBounds.containsFalse;
-      assert count < MAX_INCORPORATION_STEPS : "Max incorporation steps reached.";
-    } while (!containsFalse && count < MAX_INCORPORATION_STEPS);
+      if (!containsFalse && count >= MAX_INCORPORATION_STEPS) {
+        // Throw rather than assert, so that this is reported as a
+        // "type.argument.inference.crashed" error for this one expression, rather than as an
+        // AssertionError that aborts the entire compilation.
+        throw new BugInCF(
+            "Max incorporation steps (%d) reached without reaching a fixed point: %s",
+            MAX_INCORPORATION_STEPS, context.getPathToExpression().getLeaf());
+      }
+    } while (!containsFalse);
+  }
+
+  /**
+   * Incorporates this bound set into itself until it reaches a fixed point. Use this method after
+   * adding bounds directly to the variables of this bound set, rather than via a {@link BoundSet}
+   * that can be passed to {@link #incorporateToFixedPoint}.
+   */
+  public void reachFixedPoint() {
+    incorporateToFixedPoint(new BoundSet(context));
   }
 
   /**
@@ -354,7 +406,7 @@ public class BoundSet implements ReductionResult {
    * @param as a set of variables
    */
   public void removeCaptures(Set<Variable> as) {
-    captures.removeIf((CaptureBound c) -> c.isCaptureMentionsAny(as));
+    captures.removeIf((CaptureBound c) -> c.mentionsAny(as));
   }
 
   @Override

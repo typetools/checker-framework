@@ -29,11 +29,11 @@ import java.lang.annotation.Target;
  *
  * <h2>Type system semantics</h2>
  *
- * Within the Must Call Checker's type system, {@code @MustCallAlias} annotations have a semantics
- * different from a standard polymorphic annotation, in that the relevant actual parameter type and
- * return type at a call site are not equated in all cases. Given an actual parameter {@code p}
- * passed in a {@code @MustCallAlias} position at a call site, the return type of the call is
- * defined as follows:
+ * Within the Must Call Checker's type system, {@code @MustCallAlias} annotations have semantics
+ * different from those of a standard polymorphic annotation, in that the relevant actual parameter
+ * type and return type at a call site are not equated in all cases. Given an actual parameter
+ * {@code p} passed in a {@code @MustCallAlias} position at a call site, the return type of the call
+ * is defined as follows:
  *
  * <ul>
  *   <li>If the base return type has a non-empty {@code @InheritableMustCall("m")} annotation on its
@@ -42,8 +42,8 @@ import java.lang.annotation.Target;
  *   <li>In all other cases, the return type has the same {@code @MustCall} type as {@code p}.
  * </ul>
  *
- * {@link PolyMustCall} has an identical type system semantics. This special treatment is required
- * to allow for a wrapper object to have a must-call method with a different name than the must-call
+ * {@link PolyMustCall} has identical type system semantics. This special treatment is required to
+ * allow for a wrapper object to have a must-call method with a different name than the must-call
  * method name for the wrapped object.
  *
  * <h2>Verifying {@code @MustCallAlias} annotations</h2>
@@ -53,7 +53,8 @@ import java.lang.annotation.Target;
  * <p>For a constructor:
  *
  * <ul>
- *   <li>The constructor must always write p into exactly one field {@code f} of the new object.
+ *   <li>The constructor must always write {@code p} into exactly one field {@code f} of the new
+ *       object.
  *   <li>Field {@code f} must be annotated {@code @}{@link Owning}.
  * </ul>
  *
@@ -62,15 +63,15 @@ import java.lang.annotation.Target;
  * <ul>
  *   <li>All return sites must be calls to other methods or constructors with {@code @MustCallAlias}
  *       return types, and this method's {@code @MustCallAlias} parameter must be passed in the
- *       {@code MustCallAlias} position to that method or constructor (i.e., the calls must pass
+ *       {@code MustCallAlias} position to that method or constructor (i.e., the calls must pass the
  *       {@code @MustCallAlias} parameter through a chain of {@code @MustCallAlias}-annotated
  *       parameters and returns).
  * </ul>
  *
- * When the -AnoResourceAliases command-line argument is passed to the checker, this annotation is
- * treated identically to {@link PolyMustCall}. That is, the annotation still impacts {@link
- * MustCall} types as a polymorphic annotation (see "Type system semantics" above), but it is not
- * used by the Resource Leak Checker to more precisely reason about when obligations have been
+ * When the {@code -AnoResourceAliases} command-line argument is passed to the checker, this
+ * annotation is treated identically to {@link PolyMustCall}. That is, the annotation still impacts
+ * {@link MustCall} types as a polymorphic annotation (see "Type system semantics" above), but it is
+ * not used by the Resource Leak Checker to more precisely reason about when obligations have been
  * satisfied.
  *
  * @checker_framework.manual #resource-leak-checker Resource Leak Checker

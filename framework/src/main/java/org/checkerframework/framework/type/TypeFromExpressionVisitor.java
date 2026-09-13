@@ -344,12 +344,12 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     }
     // Add all dimension annotations.
     int idx = 0;
-    AnnotatedTypeMirror level = result;
-    while (level.getKind() == TypeKind.ARRAY) {
-      AnnotatedArrayType array = (AnnotatedArrayType) level;
+    AnnotatedTypeMirror componentType = result;
+    while (componentType.getKind() == TypeKind.ARRAY) {
+      AnnotatedArrayType array = (AnnotatedArrayType) componentType;
       List<? extends AnnotationMirror> annos = TreeUtils.annotationsFromArrayCreation(tree, idx++);
       array.addAnnotations(annos);
-      level = array.getComponentType();
+      componentType = array.getComponentType();
     }
 
     // Add top-level annotations.

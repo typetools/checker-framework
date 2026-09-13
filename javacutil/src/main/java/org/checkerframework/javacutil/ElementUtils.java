@@ -327,14 +327,33 @@ public final class ElementUtils {
    * @return a user-friendly name for the method
    */
   public static CharSequence getSimpleDescription(ExecutableElement element) {
-    String enclosingTypeName =
-        ((TypeElement) element.getEnclosingElement()).getSimpleName().toString();
+    CharSequence enclosingTypeName =
+        getSimpleDescription((TypeElement) element.getEnclosingElement());
     Name methodName = element.getSimpleName();
     return switch (methodName.toString()) {
       case "<init>" -> enclosingTypeName + " constructor";
       case "<clinit>" -> "class initializer for " + enclosingTypeName;
       default -> enclosingTypeName + "." + methodName;
     };
+  }
+
+  /**
+   * Returns a user-friendly name for the given type. Does not return the empty string as {@link
+   * TypeElement#getSimpleName()} does for an anonymous class.
+   *
+   * @param element a type declaration
+   * @return a user-friendly name for the type
+   */
+  public static CharSequence getSimpleDescription(TypeElement element) {
+    Name simpleName = element.getSimpleName();
+    if (!simpleName.isEmpty()) {
+      return simpleName;
+    }
+    // An anonymous class has an empty simple name, so name it by its supertype: the interface it
+    // implements if there is one, and otherwise the class it extends.
+    List<? extends TypeMirror> interfaces = element.getInterfaces();
+    TypeMirror supertype = interfaces.isEmpty() ? element.getSuperclass() : interfaces.get(0);
+    return "anonymous " + TypesUtils.simpleTypeName(supertype);
   }
 
   /**
@@ -734,6 +753,21 @@ public final class ElementUtils {
       meths.addAll(ElementFilter.methodsIn(atype.getEnclosedElements()));
     }
     return Collections.unmodifiableList(meths);
+  }
+
+  /**
+   * Returns the no-argument constructor of the given type, or null if it has none.
+   *
+   * @param type a type
+   * @return the type's no-argument constructor, or null if it has none
+   */
+  public static @Nullable ExecutableElement getNoArgumentConstructor(TypeElement type) {
+    for (ExecutableElement constructor : ElementFilter.constructorsIn(type.getEnclosedElements())) {
+      if (constructor.getParameters().isEmpty()) {
+        return constructor;
+      }
+    }
+    return null;
   }
 
   /**

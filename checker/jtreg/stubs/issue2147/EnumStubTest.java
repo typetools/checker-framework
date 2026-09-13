@@ -4,8 +4,8 @@
  *
  * @compile SampleEnum.java
  *
- * @compile/fail/ref=WithoutStub.out -XDrawDiagnostics -processor org.checkerframework.checker.tainting.TaintingChecker -AstubWarnIfNotFound EnumStubTest.java
- * @compile/fail/ref=WithStub.out -XDrawDiagnostics -processor org.checkerframework.checker.tainting.TaintingChecker -AstubWarnIfNotFound -Astubs=SampleEnum.astub EnumStubTest.java
+ * @compile/fail/ref=WithoutStub.goal -XDrawDiagnostics -processor org.checkerframework.checker.tainting.TaintingChecker -AstubWarnIfNotFound EnumStubTest.java
+ * @compile/fail/ref=WithStub.goal -XDrawDiagnostics -processor org.checkerframework.checker.tainting.TaintingChecker -AstubWarnIfNotFound -Astubs=SampleEnum.astub EnumStubTest.java
  */
 
 import org.checkerframework.checker.tainting.qual.*;

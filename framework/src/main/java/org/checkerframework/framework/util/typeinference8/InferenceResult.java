@@ -12,6 +12,7 @@ import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -143,23 +144,23 @@ public class InferenceResult {
     for (Variable variable : variables) {
       Map<TypeVariable, AnnotatedTypeMirror> typeMap =
           map.computeIfAbsent(variable.getInvocation(), k -> new HashMap<>());
-      typeMap.put(variable.getJavaType(), variable.getInstantiation().getAnnotatedType());
+      ProperType instantiation = variable.getInstantiation();
+      assert instantiation != null : "@AssumeAssertion(nullness): variables are instantiated";
+      typeMap.put(variable.getJavaType(), instantiation.getAnnotatedType());
     }
     return map;
   }
 
   /**
-   * Returns a mapping from type variable to its type argument for the {@code expressionTree}.
+   * Returns a mapping from type variable to its type argument for the {@code expressionTree}. If no
+   * type arguments were inferred for {@code expressionTree}, then this returns an empty map.
    *
    * @param expressionTree a tree for which type arguments were inferred
    * @return a mapping from type variable to its type argument for the {@code expressionTree}
    */
   public Map<TypeVariable, AnnotatedTypeMirror> getTypeArgumentsForExpression(
       ExpressionTree expressionTree) {
-    if (this == emptyResult || results.isEmpty()) {
-      return Collections.emptyMap();
-    }
-    return results.get(expressionTree);
+    return results.getOrDefault(expressionTree, Collections.emptyMap());
   }
 
   /**
@@ -183,6 +184,10 @@ public class InferenceResult {
   /* package-private */ InferenceResult swapTypeVariables(
       AnnotatedExecutableType executableType, ExpressionTree tree) {
     Map<TypeVariable, AnnotatedTypeMirror> map = results.get(tree);
+    if (map == null) {
+      // No type arguments were inferred for tree, so there is nothing to swap.
+      return this;
+    }
     for (AnnotatedTypeVariable tv : executableType.getTypeVariables()) {
       TypeVariable typeVariable = tv.getUnderlyingType();
       for (TypeVariable t : new HashSet<>(map.keySet())) {

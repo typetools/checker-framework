@@ -40,7 +40,7 @@ import org.checkerframework.framework.qual.UpperBoundFor;
 @SubtypeOf(GuardedByUnknown.class)
 @DefaultQualifierInHierarchy
 // These are required because the default for local variables is @GuardedByUnknown, but if the local
-// variable is one of these type kinds, the default should be @GuardedByUnknown.
+// variable is one of these type kinds, the default should be @GuardedBy.
 @DefaultFor(
     value = {TypeUseLocation.EXCEPTION_PARAMETER, TypeUseLocation.UPPER_BOUND},
     typeKinds = {

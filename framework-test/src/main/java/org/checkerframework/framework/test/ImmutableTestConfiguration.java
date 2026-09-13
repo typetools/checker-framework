@@ -38,7 +38,7 @@ public class ImmutableTestConfiguration implements TestConfiguration {
   /**
    * The source files to compile. If the file is expected to emit errors on compilation, the file
    * should contain expected error diagnostics OR should have a companion file with the same
-   * path/name but with the extension .out instead of .java if they
+   * path/name but with the extension .goal instead of .java if they
    */
   private final List<File> testSourceFiles;
 

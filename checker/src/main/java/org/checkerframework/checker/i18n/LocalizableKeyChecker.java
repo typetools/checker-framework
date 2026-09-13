@@ -13,14 +13,14 @@ import org.checkerframework.checker.propkey.PropertyKeyChecker;
  *
  * <ol>
  *   <li value="1">Properties files: A common method for localization using a properties file,
- *       mapping the localization keys to localized messages. Programmers pass the property file
- *       location via {@code propfiles} option (e.g. {@code
- *       -Apropfiles=/path/to/messages.properties}), separating multiple files by {@link
- *       java.io.File#pathSeparator}.
+ *                 mapping the localization keys to localized messages. Programmers pass the
+ *                 property file location via {@code propfiles} option (e.g. {@code
+ *                 -Apropfiles=/path/to/messages.properties}), separating multiple files by {@link
+ *                 java.io.File#pathSeparator}.
  *   <li value="2">{@link ResourceBundle}: The proper recommended mechanism for localization.
- *       Programmers pass the {@code baseName} name of the bundle via {@code bundlename} (e.g.
- *       {@code -Abundlename=MyResource}. The checker uses the resource associated with the default
- *       {@link Locale} in the compilation system.
+ *                 Programmers pass the {@code baseName} name of the bundle via {@code bundlename}
+ *                 (e.g. {@code -Abundlename=MyResource}. The checker uses the resource associated
+ *                 with the default {@link Locale} in the compilation system.
  * </ol>
  */
 @SupportedOptions({"propfiles", "bundlenames"})

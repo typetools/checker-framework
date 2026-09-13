@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * <p>This property is verified by the checker that type-checks the {@code when} element value
  * qualifier.
  *
- * <p><b>Example</b> Consider a class, {@code Table}, with a locking field, {@code lock}. The lock
+ * <p><b>Example:</b> Consider a class, {@code Table}, with a locking field, {@code lock}. The lock
  * is used when a {@code Table} instance is shared across threads. When running in a local thread,
  * the {@code lock} field ought not to be used.
  *

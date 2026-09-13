@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * The bottom type of the lower bound type system. A variable annotated with this value cannot take
+ * The bottom type of the lower bound type system. A variable annotated with this type cannot take
  * on any integer values.
  *
  * @checker_framework.manual #index-checker Index Checker

@@ -12,7 +12,7 @@ underlying problem, by changing the code or its annotations.  For each
 warning, follow the methodology in Section~\ref{handling-warnings} to
 correct the underlying problem.
 
-This section describes what to do if the methodology of
+This chapter describes what to do if the methodology of
 Section~\ref{handling-warnings} indicates that you need to suppress the
 warning.  You won't change your code, but you will prevent the Checker
 Framework from reporting this particular warning to you.  (Changing the
@@ -20,7 +20,7 @@ code to fix a bug is another way to prevent the Checker Framework from
 issuing a warning, but it is not what this chapter is about.)
 
 You may wish to suppress checker warnings because of unannotated libraries
-or un-annotated portions of your own code, because of application
+or unannotated portions of your own code, because of application
 invariants that are beyond the capabilities of the type system, because of
 checker limitations, because you are interested in only some of the
 guarantees provided by a checker, or for other reasons.
@@ -56,7 +56,7 @@ You can suppress warnings throughout the codebase by using the following mechani
   the \code{-AuseConservativeDefaultsForUncheckedCode=source} command-line
   option (Section~\ref{compiling-libraries}),
 \item
-  the \code{-Alint} command-line option enables/disables optional checks (Section~\ref{alint}),
+  the \code{-Alint} command-line option, which enables/disables optional checks (Section~\ref{alint}),
 \item
   changing the specification of a method (Section~\ref{suppressing-warnings-stub}), or
 \item
@@ -64,7 +64,7 @@ You can suppress warnings throughout the codebase by using the following mechani
   (Section~\ref{no-processor}).
 \end{itemize}
 
-Some type checkers can suppress warnings via
+Some type-checkers can suppress warnings via
 \begin{itemize}
 \item
   checker-specific mechanisms (Section~\ref{checker-specific-suppression}).
@@ -109,7 +109,7 @@ or
 \code{"\emph{messagekey}"}.
 
 The argument \emph{checkername} is the checker name, without ``Checker''.
-It is lower case by default, though a checker can choose a different casing.
+It is lowercase by default, though a checker can choose a different casing.
 For
 example, if you invoke a checker as
 \code{javac -processor MyNiftyChecker ...},
@@ -217,8 +217,8 @@ its body.  Or, you can use \<@AssumeAssertion> on an \<assert> statement;
 see Section~\ref{assumeassertion}.
 
 As an example, consider suppressing a warning at an assignment that you know is
-safe.  Here is an example that uses the Tainting Checker
-(Section~\ref{tainting-checker}).  Assume that \<expr> has compile-time
+safe.  This example uses the Tainting Checker
+(Chapter~\ref{tainting-checker}).  Assume that \<expr> has compile-time
 (declared) type \<@Tainted String>, but you know that the run-time value of
 \<expr> is untainted.
 
@@ -378,7 +378,7 @@ while (c != Object.class) {
   c = c.getSuperclass();
   assert c != null
     : "@AssumeAssertion(nullness): c was not Object, so its superclass is not null";
- }
+}
 \end{Verbatim}
 
 \noindent
@@ -443,7 +443,7 @@ the concepts apply to any checker.
 
 The purpose of assertions is to aid debugging by throwing an exception
 when a program does not work correctly.  Sometimes, programmers use assertions for a
-different  purpose:  documenting how
+different purpose:  documenting how
 the program works.  By default, the Checker Framework assumes that each assertion
 is used for its primary purpose of debugging:  the assertion might fail at run time, and the programmer
 wishes to be informed at compile time about such possible run-time errors.
@@ -459,7 +459,7 @@ doing so would defeat the very purpose of the Checker Framework, which is
 to detect errors at compile time and prevent them from occurring at run
 time.
 
-A non-standard use for annotations is to document facts that a programmer
+A non-standard use for assertions is to document facts that a programmer
 has independently verified to be true.  The Checker Framework can
 leverage these assertions in order to avoid issuing false positive
 warnings.  The programmer marks such assertions with the \<@AssumeAssertion>
@@ -501,7 +501,7 @@ take a principled stand on this'' (that is, write the annotation
 within the Google codebase.)
 
 By default, the Checker Framework uses Guava's annotations as written.  If
-you wish to  take the principled stand in order to prevent \emph{all}
+you wish to take the principled stand in order to prevent \emph{all}
 \<NullPointerException>s, you can
 use a different version of Guava with a small change to your build file.  Where the
 build file refers to Maven Central's \<guava> artifact, change the group
@@ -571,7 +571,7 @@ You can suppress all errors and warnings at all \emph{uses} of a given
 class, or suppress all errors and warnings \emph{except} those at uses of a given
 class.  (The class itself is still type-checked, unless you also use
 the \code{-AskipDefs}, \code{-AonlyDefs}, \code{-AskipFiles}, or \code{-AonlyFiles}
-command-line option, see~\ref{askipdefs}).
+command-line option; see Section~\ref{askipdefs}).
 You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipUses} command-line option to a
@@ -607,7 +607,7 @@ because it can have unexpected results.  For example, if the
 given regular expression does not match classes in the JDK, then the
 Checker Framework will suppress every warning that involves a JDK class
 such as \<Object> or \<String>.  The meaning of \code{-AonlyUses} may be
-refined in the future.  Oftentimes \code{-AskipUses} is more useful.
+refined in the future.  Often, \code{-AskipUses} is more useful.
 
 % The desired meaning of -AonlyUses is tricky, because what is a "use"?
 % Maybe only check calls of methods on the class (though don't check
@@ -622,8 +622,8 @@ refined in the future.  Oftentimes \code{-AskipUses} is more useful.
 You can suppress all errors and warnings in the \emph{definition} of a given
 class, or suppress all errors and warnings \emph{except} those in the definition
 of a given class.  (Uses of the class are still type-checked, unless you also use
-the \code{-AskipUses} or \code{-AonlyUses} command-line option,
-see~\ref{askipuses}.)
+the \code{-AskipUses} or \code{-AonlyUses} command-line option;
+see Section~\ref{askipuses}.)
 You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipDefs} command-line option to a
@@ -659,7 +659,7 @@ or change.  In such a situation, a programmer may find it easier to supply
 an extra command-line argument, than to change the set of files that is
 compiled.
 
-A common scenario for using the arguments is when you are starting out by
+A common scenario for using these options is when you are starting out by
 type-checking only part of a legacy codebase.  After you have verified the
 most important parts, you can incrementally check more classes until you
 are type-checking the whole thing.
@@ -688,7 +688,7 @@ when invoking
 If you supply both \code{-AskipFiles} and \code{-AonlyFiles}, then
 \code{-AskipFiles} takes precedence.
 
-A common scenario for using this argument is when you want to exclude certain
+A common scenario for using these options is when you want to exclude certain
 directories/folders (such as those containing generated or legacy code) from
 type-checking.
 Another scenario is when a file contains multiple top-level classes, only
@@ -712,13 +712,13 @@ options (and possibly more, see the checker's documentation):
 \begin{itemize}
 
 \item
-  \code{cast:unsafe} (default: on) warn about unsafe casts that are not
+  \code{cast:unsafe} (default: on) Warn about unsafe casts that are not
   checked at run time, as in \code{((@NonNull String) myref)}.  Such casts
   are generally not necessary because of type refinement
   (Section~\ref{type-refinement}).
 
 \item
-  \code{cast:redundant} (default: on) warn about redundant
+  \code{cast:redundant} (default: on) Warn about redundant
   casts that are guaranteed to succeed at run time,
   as in \code{((@NonNull String) "m")}.  Such casts are not necessary,
   because the target expression of the cast already has the given type
@@ -748,7 +748,7 @@ options (and possibly more, see the checker's documentation):
 
 \noindent
 To activate a lint option, write \code{-Alint=} followed by a
-comma-delimited list of check names.  If the option is preceded by a
+comma-delimited list of check names.  If a check name is preceded by a
 hyphen (\code{-}), the warning is disabled.  For example, to disable all
 lint options except redundant casts, you can pass
 \code{-Alint=-all,cast:redundant} on the command line.
@@ -805,7 +805,7 @@ tells Maven not to compile (or run) the tests.
 \sectionAndLabel{Checker-specific mechanisms}{checker-specific-suppression}
 
 Finally, some checkers have special rules.  For example, the Nullness
-checker (Chapter~\ref{nullness-checker}) uses
+Checker (Chapter~\ref{nullness-checker}) uses
 the special \<castNonNull> method to suppress warnings
 (Section~\ref{suppressing-warnings-with-assertions}).
 This manual also explains special mechanisms for
@@ -819,18 +819,19 @@ suppressing warnings issued by the Fenum Checker
 % LocalWords:  unselect checkbox classpath Djsr bak Nullness nullness java lang
 % LocalWords:  checkername util myref nulltest html ESC buildfile mynifty Fenum
 % LocalWords:  MyNiftyChecker messagekey basetype uncommenting Anomsgtext
-% LocalWords:  AskipDefs mypackage Makefile PLXCOMP expr
+% LocalWords:  AskipDefs mypackage Makefile PLXCOMP expr AskipFiles upvote
 % LocalWords:  TODO AsuppressWarnings AssumeAssertion AonlyUses AonlyDefs
-% LocalWords:  ing warningkey redundantNullComparison qual proc Decl
+% LocalWords:  ing warningkey redundantNullComparison qual proc Decl astub
 % LocalWords:  lastsinglesuppression classfiles AwarnUnneededSuppressions
 % LocalWords:  AshowSuppressWarningsStrings NullableType NonNullType JUnit's
 % LocalWords:  PolyNullType MonotonicNonNullType KeyForType NullableDecl
 % LocalWords:  NonNullDecl PolyNullDecl MonotonicNonNullDecl KeyForDecl
-% LocalWords:  refactored AassumeAssertionsAreEnabled assertNotNull
+% LocalWords:  refactored AassumeAssertionsAreEnabled assertNotNull Astubs
 % LocalWords:  AassumeAssertionsAreDisabled NullnessUtil checkNotNull
 % LocalWords:  ElementType AuseSafeDefaultsForUnannotatedSourceCode
 % LocalWords:  AuseConservativeDefaultsForUncheckedCode checkerframework askipuses
 % LocalWords:  suppresswarnings ArequirePrefixInWarningSuppressions
 % LocalWords:  assumeassertion askipdefs alint compat substring myGet
 % LocalWords:  AcheckPurityAnnotations allcheckers requireNonNull
-% LocalWords:  verifyNotNull subcheckers subchecker
+% LocalWords:  verifyNotNull subcheckers subchecker AonlyFiles NullAway's
+% LocalWords:  askipfiles
