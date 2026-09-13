@@ -22,6 +22,8 @@ public abstract class VivifyingMap<K, V> extends WrapperMap<K, V> {
    * generally provides a superset of the functionality of the backing map, it is rarely useful to
    * access the backing map directly; the parameter is given mainly so you can provide a new map of
    * your favorite class ({@link java.util.HashMap}, {@link java.util.LinkedHashMap}, etc.).
+   *
+   * @param back the backing map
    */
   public VivifyingMap(Map<K, V> back) {
     super(back);

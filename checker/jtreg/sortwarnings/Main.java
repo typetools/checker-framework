@@ -6,8 +6,8 @@
  * sorted in order of checker; hence, -Anomsgtext is not passed so that
  * -AshowSuppressWarningsStrings has an effect.
  *
- * @compile/fail/ref=ErrorOrders.out -XDrawDiagnostics -processor org.checkerframework.checker.index.IndexChecker OrderOfCheckers.java ErrorOrders.java
- * @compile/fail/ref=OrderOfCheckers.out -XDrawDiagnostics -processor org.checkerframework.checker.index.IndexChecker OrderOfCheckers.java -AshowSuppressWarningsStrings
+ * @compile/fail/ref=ErrorOrders.goal -XDrawDiagnostics -processor org.checkerframework.checker.index.IndexChecker OrderOfCheckers.java ErrorOrders.java
+ * @compile/fail/ref=OrderOfCheckers.goal -XDrawDiagnostics -processor org.checkerframework.checker.index.IndexChecker OrderOfCheckers.java -AshowSuppressWarningsStrings
  */
 
 public class Main {}

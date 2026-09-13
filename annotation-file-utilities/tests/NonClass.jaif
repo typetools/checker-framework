@@ -47,4 +47,3 @@ package:
 class NonClass$I: @X
 implements 0: @X
 inner-type 3, 0: @X
-

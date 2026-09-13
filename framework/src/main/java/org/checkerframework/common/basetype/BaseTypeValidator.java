@@ -488,7 +488,6 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   }
 
   @Override
-  @SuppressWarnings("signature:argument") // PrimitiveType.toString(): @PrimitiveType
   public Void visitPrimitive(AnnotatedPrimitiveType type, Tree tree) {
     if (!checkTopLevelDeclaredOrPrimitiveType
         || checker.shouldSkipUses(type.getUnderlyingType().toString())) {
@@ -504,12 +503,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
   @Override
   public Void visitArray(AnnotatedArrayType type, Tree tree) {
-    // TODO: is there already or add a helper method
-    // to determine the non-array component type
-    AnnotatedTypeMirror comp = type;
-    do {
-      comp = ((AnnotatedArrayType) comp).getComponentType();
-    } while (comp.getKind() == TypeKind.ARRAY);
+    AnnotatedTypeMirror comp = AnnotatedTypes.innermostComponentType(type);
 
     if (comp.getKind() == TypeKind.DECLARED
         && checker.shouldSkipUses(((AnnotatedDeclaredType) comp).getUnderlyingType().asElement())) {

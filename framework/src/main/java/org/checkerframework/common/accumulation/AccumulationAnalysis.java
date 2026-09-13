@@ -37,7 +37,8 @@ public class AccumulationAnalysis
   @Override
   public @Nullable AccumulationValue createAbstractValue(
       AnnotationMirrorSet annotations, TypeMirror underlyingType) {
-    if (!CFAbstractValue.validateSet(annotations, underlyingType, atypeFactory)) {
+    if (!CFAbstractValue.hasAnnotationFromEveryHierarchy(
+        annotations, underlyingType, atypeFactory)) {
       return null;
     }
     return new AccumulationValue(this, annotations, underlyingType);

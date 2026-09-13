@@ -24,4 +24,3 @@ class Initializers$MyEnum:
 
     field o:
         insert-annotation Class.initializer 1, Block.statement 0, Variable.initializer, NewClass.identifier: @X
-

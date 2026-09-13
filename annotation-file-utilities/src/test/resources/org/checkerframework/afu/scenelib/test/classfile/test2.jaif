@@ -24,4 +24,3 @@ class Foo:
     field baz:
         type:
             inner-type 0, 0: @p2.C
-

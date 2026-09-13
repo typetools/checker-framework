@@ -11,7 +11,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * The top qualifier for the Interning Checker. It indicates lack of knowledge about whether values
- * are interned or not. It is not written by programmers, but is used internally by the type system.
+ * are interned. It is not written by programmers, but is used internally by the type system.
  *
  * @see org.checkerframework.checker.interning.InterningChecker
  * @checker_framework.manual #interning-checker Interning Checker

@@ -16,7 +16,7 @@ import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.objectweb.asm.TypePath;
 import org.plumelib.util.IPair;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Specifies something that needs to be inserted into a source file, including the "what" and the
@@ -241,7 +241,7 @@ public abstract class Insertion {
       return "["
           + System.lineSeparator()
           + "  "
-          + StringsPlume.join(System.lineSeparator() + "  ", list)
+          + StringsP.join(System.lineSeparator() + "  ", list)
           + System.lineSeparator()
           + "]";
     }

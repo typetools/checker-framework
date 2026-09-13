@@ -33,9 +33,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.plumelib.reflection.ReflectionPlume;
+import org.plumelib.reflection.ReflectionP;
 import org.plumelib.util.ArrayMap;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Builds an annotation mirror that may have some values.
@@ -185,7 +185,7 @@ public class AnnotationBuilder {
               ? "Is the class in checker-qual.jar?"
               : "Is the class on the compilation classpath, which is:"
                   + System.lineSeparator()
-                  + ReflectionPlume.classpathToString();
+                  + ReflectionP.classpathToString();
       throw new UserError("AnnotationBuilder: fromClass can't load class %s%n" + extra, name);
     }
     return res;
@@ -268,6 +268,11 @@ public class AnnotationBuilder {
     }
   }
 
+  /**
+   * Returns the newly-built AnnotationMirror.
+   *
+   * @return the newly-built AnnotationMirror
+   */
   public AnnotationMirror build() {
     assertNotBuilt();
     wasBuilt = true;
@@ -339,7 +344,13 @@ public class AnnotationBuilder {
     }
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, AnnotationMirror value) {
     setValue(elementName, (Object) value);
     return this;
@@ -384,47 +395,112 @@ public class AnnotationBuilder {
     return this;
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param values the new values for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Object[] values) {
     return setValue(elementName, Arrays.asList(values));
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Boolean value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
+  public AnnotationBuilder setValue(CharSequence elementName, Byte value) {
+    return setValue(elementName, (Object) value);
+  }
+
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Character value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Double value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Float value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Integer value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Long value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Short value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, String value) {
     return setValue(elementName, (Object) value);
   }
@@ -446,6 +522,13 @@ public class AnnotationBuilder {
         : types.erasure(type);
   }
 
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, TypeMirror value) {
     assertNotBuilt();
     value = getErasedOrBoxedType(value);
@@ -470,17 +553,38 @@ public class AnnotationBuilder {
     return TypesUtils.typeFromClass(clazz, types, elements);
   }
 
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Class<?> value) {
     TypeMirror type = typeFromClass(value);
     return setValue(elementName, getErasedOrBoxedType(type));
   }
 
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Enum<?> value) {
     assertNotBuilt();
     VariableElement enumElt = findEnumElement(value);
     return setValue(elementName, enumElt);
   }
 
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, VariableElement value) {
     ExecutableElement var = findElement(elementName);
     if (var.getReturnType().getKind() != TypeKind.DECLARED) {
@@ -493,6 +597,13 @@ public class AnnotationBuilder {
     return this;
   }
 
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param values the new values for the element/field
+   * @return this
+   */
   // Keep this version synchronized with the VariableElement[] version below
   public AnnotationBuilder setValue(CharSequence elementName, Enum<?>[] values) {
     assertNotBuilt();
@@ -529,6 +640,13 @@ public class AnnotationBuilder {
     return this;
   }
 
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param values the new values for the element/field
+   * @return this
+   */
   // Keep this version synchronized with the Enum<?>[] version above.
   // Which one is more useful/general? Unifying adds overhead of creating
   // another array.
@@ -584,6 +702,13 @@ public class AnnotationBuilder {
     throw new BugInCF("cannot be here");
   }
 
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param key the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   private AnnotationBuilder setValue(CharSequence key, Object value) {
     assertNotBuilt();
     AnnotationValue val = createValue(value);
@@ -767,7 +892,7 @@ public class AnnotationBuilder {
       } else if (value instanceof Character) {
         toStringVal = "\'" + value + "\'";
       } else if (value instanceof List<?> list) {
-        toStringVal = "{" + StringsPlume.join(", ", list) + "}";
+        toStringVal = "{" + StringsP.join(", ", list) + "}";
       } else if (value instanceof VariableElement var) {
         // for Enums
         String encl = var.getEnclosingElement().toString();
@@ -793,6 +918,8 @@ public class AnnotationBuilder {
         return v.visitArray((List<? extends AnnotationValue>) list, p);
       } else if (value instanceof Boolean b) {
         return v.visitBoolean(b, p);
+      } else if (value instanceof Byte b) {
+        return v.visitByte(b, p);
       } else if (value instanceof Character c) {
         return v.visitChar(c, p);
       } else if (value instanceof Double d) {

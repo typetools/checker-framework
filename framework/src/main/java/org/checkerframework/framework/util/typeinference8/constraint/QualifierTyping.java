@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util.typeinference8.constraint;
 
+import java.util.Objects;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.util.typeinference8.types.AbstractQualifier;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
@@ -130,5 +131,24 @@ public class QualifierTyping implements Constraint {
         yield super.toString();
       }
     };
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    QualifierTyping that = (QualifierTyping) o;
+
+    return kind == that.kind && Q.equals(that.Q) && R.equals(that.R);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(kind, Q, R);
   }
 }

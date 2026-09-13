@@ -21,7 +21,8 @@ Please see the [pull
 requests](https://checkerframework.org/manual/developer-manual.html#pull-requests)
 section of the Developer Manual.
 
-Submit changes to the annotated JDK at <https://github.com/typetools/jdk/pulls> .
+Submit changes to the annotated JDK
+at <https://github.com/typetools/jdk/pulls> .
 Annotations for other libraries can be contributed as stub files in this
 repository, in a fork of the library in <https://github.com/typetools/>, or
 in the library's own repository.

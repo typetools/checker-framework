@@ -1,7 +1,9 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 public class NonNullIteratorNext {
   interface MyIterator<E> extends java.util.Iterator<E> {
+    @SideEffectsOnly("this")
     @NonNull E next();
   }
 

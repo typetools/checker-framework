@@ -579,20 +579,25 @@ def get_announcement_email(version: str) -> str:
     Returns:
         the template for the e-mail announcing a new release of the Checker Framework.
     """
-    return f"""
+    return (
+        f"""
 To:  checker-framework-discuss@googlegroups.com
 Subject: Release {version} of the Checker Framework
 
 We have released a new version of the Checker Framework.
-The Checker Framework lets you create and/or run pluggable type checkers, in order to detect and prevent bugs in your code.
+The Checker Framework lets you create and/or run pluggable type checkers, """
+        f"""in order to detect and prevent bugs in your code.
 
 You can find documentation and download links at:
 https://CheckerFramework.org/
 
 Changes for Checker Framework version {version}:
 
-<<Insert latest Checker Framework changelog entry from https://github.com/typetools/checker-framework/blob/master/docs/CHANGELOG.md, preserving its formatting.>>
-"""  # noqa: E501
+<<Insert latest Checker Framework changelog entry from """
+        """https://github.com/typetools/checker-framework/blob/master/docs/CHANGELOG.md, """
+        """preserving its formatting.>>
+"""
+    )
 
 
 # =========================================================================================

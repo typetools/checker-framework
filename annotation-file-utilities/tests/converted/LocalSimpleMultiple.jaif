@@ -15,4 +15,3 @@ class LocalSimpleMultiple:
     method bar(Ljava/lang/Object;)V:
         return:
         insert-annotation Method.body, Block.statement 0, Variable.type: @java.lang.Tainted
-

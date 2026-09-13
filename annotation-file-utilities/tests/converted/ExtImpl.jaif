@@ -35,4 +35,3 @@ class ExtImpl$C2:
     insert-annotation Class.bound 1, ParameterizedType.typeArgument 1: @F
     insert-annotation Class.bound 0: @A
     insert-annotation Class.bound 1: @D
-

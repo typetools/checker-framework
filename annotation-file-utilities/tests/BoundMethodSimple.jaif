@@ -18,4 +18,3 @@ class BoundMethodSimple:
 
     method foo3(Ljava/util/List;Ljava/util/Comparator;)V:
         bound 0 & 0: @org.checkerframework.checker.nullness.qual.Nullable @org.checkerframework.checker.nullness.qual.UnknownKeyFor
-

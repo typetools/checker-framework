@@ -123,10 +123,10 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
-import org.plumelib.util.SystemPlume;
+import org.plumelib.util.SystemP;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
@@ -1512,7 +1512,7 @@ public abstract class GenericAnnotatedTypeFactory<
         lambdaToCFG.put(lambda, cfgLambda);
 
         List<AnnotationMirrorSet> returnedExpressionAnnos =
-            CollectionsPlume.mapList(
+            CollectionsP.mapList(
                 tree -> getAnnotatedType(tree).getPrimaryAnnotations(),
                 TreeUtils.getReturnedExpressions(lambda));
         List<AnnotationMirrorSet> prevReturnedExpressionAnnos = lambdaToResultTypes.get(lambda);
@@ -1752,7 +1752,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns the type of a left-hand side of an assignment.
+   * Returns the type of the left-hand side of an assignment.
    *
    * <p>The default implementation returns the type without considering dataflow type refinement.
    * Subclass can override this method and add additional logic for computing the type of a LHS.
@@ -1761,6 +1761,14 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return AnnotatedTypeMirror of {@code lhsTree}
    */
   public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree lhsTree) {
+
+    if (lhsTree instanceof VariableTree variableTree
+        && TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)) {
+      // If a variable is declared with var, then the type of the LHS depends on the type of the RHS
+      // which requires dataflow to be typed properly.
+      return getAnnotatedType(lhsTree);
+    }
+
     AnnotatedTypeMirror res;
     boolean oldUseFlow = useFlow;
     boolean oldShouldCache = shouldCache;
@@ -2466,7 +2474,7 @@ public abstract class GenericAnnotatedTypeFactory<
   private static void log(String format, Object... args) {
     if (debug) {
       System.out.flush();
-      SystemPlume.sleep(1); // logging can interleave with typechecker output
+      SystemP.sleep(1); // logging can interleave with typechecker output
       System.out.printf(format, args);
     }
   }

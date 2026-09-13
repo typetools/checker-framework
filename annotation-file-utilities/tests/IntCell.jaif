@@ -16,4 +16,3 @@ class IntCell:
 
     method get()I:
         receiver: @java.lang.Tainted
-

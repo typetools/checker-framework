@@ -15,7 +15,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  *
  * <p>Its relationships are set up via the FenumAnnotatedTypeFactory.
  *
- * @checker_framework.manual #propkey-checker Property File Checker
+ * @checker_framework.manual #fenum-checker Fake Enum Checker
  * @checker_framework.manual #bottom-type the bottom type
  */
 @Documented

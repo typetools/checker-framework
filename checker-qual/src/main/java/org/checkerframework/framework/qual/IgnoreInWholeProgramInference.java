@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  * then no type qualifier will be inferred for any field annotated by {@code @Inject}.
  *
  * <p>This is appropriate for fields that are set reflectively, so there are no calls in client code
- * that type inference can learn from. Examples of qualifiers that should be meta-annotated with
+ * that type inference can learn from. Examples of annotations that should be meta-annotated with
  * {@code @IgnoreInWholeProgramInference} include <a
  * href="https://docs.oracle.com/javaee/7/api/javax/inject/Inject.html">{@code @Inject}</a>, <a
  * href="https://docs.oracle.com/javaee/7/api/javax/inject/Singleton.html">{@code @Singleton}</a>,
@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
  * annotates.
  *
  * <p>See
- * org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes#updateFromFieldAssignment
+ * org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes#updateFromFieldAssignment.
  *
  * @checker_framework.manual #whole-program-inference-ignores-some-code Whole-program inference
  *     ignores some code

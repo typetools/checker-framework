@@ -4,9 +4,9 @@
  * Test case for Issue 1582
  * https://github.com/typetools/checker-framework/issues/1582
  *
- * @compile/fail/ref=Foo.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext foo/Foo.java
+ * @compile/fail/ref=Foo.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext foo/Foo.java
  * @compile foo/Foo.java
- * @compile/fail/ref=JavaExpressionParseError.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext mainrepropkg/JavaExpressionParseError.java
+ * @compile/fail/ref=JavaExpressionParseError.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext mainrepropkg/JavaExpressionParseError.java
  * @compile -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext mainrepropkg/JavaExpressionParseError.java -AsuppressWarnings=flowexpr.parse.error.postcondition
  *
  */

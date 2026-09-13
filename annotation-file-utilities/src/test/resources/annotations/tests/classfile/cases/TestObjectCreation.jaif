@@ -28,4 +28,3 @@ class TestObjectCreation:
   method test4()V :
   	new # 1 : @A
   	new # 13 : @B(value="self test")
-

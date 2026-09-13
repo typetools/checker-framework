@@ -16,4 +16,3 @@ class FieldGenericArray:
         inner-type 0, 0, 3, 0: @GenericType
 
     method <init>()V:
-

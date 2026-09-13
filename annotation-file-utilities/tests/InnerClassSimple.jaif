@@ -10,4 +10,3 @@ class InnerClassSimple$ActualInnerClass: @java.lang.Tainted
 
 package org.checkerframework.afu.annotator.tests:
 class InnerClassSimple$ActualInnerClass: @java.lang.DoesNotExist
-

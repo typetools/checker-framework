@@ -4,4 +4,3 @@ annotation @Tainted: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.a
 package org.checkerframework.afu.annotator.tests:
 class BoundClassSimple:
     insert-annotation Class.typeParameter 0, TypeParameter.bound 0: @java.lang.Tainted
-

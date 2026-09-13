@@ -39,7 +39,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.plumelib.util.ArraySet;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * Utility methods for analyzing {@code Element}s. This complements {@link Elements}, providing
@@ -327,14 +327,33 @@ public final class ElementUtils {
    * @return a user-friendly name for the method
    */
   public static CharSequence getSimpleDescription(ExecutableElement element) {
-    String enclosingTypeName =
-        ((TypeElement) element.getEnclosingElement()).getSimpleName().toString();
+    CharSequence enclosingTypeName =
+        getSimpleDescription((TypeElement) element.getEnclosingElement());
     Name methodName = element.getSimpleName();
     return switch (methodName.toString()) {
       case "<init>" -> enclosingTypeName + " constructor";
       case "<clinit>" -> "class initializer for " + enclosingTypeName;
       default -> enclosingTypeName + "." + methodName;
     };
+  }
+
+  /**
+   * Returns a user-friendly name for the given type. Does not return the empty string as {@link
+   * TypeElement#getSimpleName()} does for an anonymous class.
+   *
+   * @param element a type declaration
+   * @return a user-friendly name for the type
+   */
+  public static CharSequence getSimpleDescription(TypeElement element) {
+    Name simpleName = element.getSimpleName();
+    if (!simpleName.isEmpty()) {
+      return simpleName;
+    }
+    // An anonymous class has an empty simple name, so name it by its supertype: the interface it
+    // implements if there is one, and otherwise the class it extends.
+    List<? extends TypeMirror> interfaces = element.getInterfaces();
+    TypeMirror supertype = interfaces.isEmpty() ? element.getSuperclass() : interfaces.get(0);
+    return "anonymous " + TypesUtils.simpleTypeName(supertype);
   }
 
   /**
@@ -737,6 +756,21 @@ public final class ElementUtils {
   }
 
   /**
+   * Returns the no-argument constructor of the given type, or null if it has none.
+   *
+   * @param type a type
+   * @return the type's no-argument constructor, or null if it has none
+   */
+  public static @Nullable ExecutableElement getNoArgumentConstructor(TypeElement type) {
+    for (ExecutableElement constructor : ElementFilter.constructorsIn(type.getEnclosedElements())) {
+      if (constructor.getParameters().isEmpty()) {
+        return constructor;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Returns all nested/inner classes/interfaces declared in the given type.
    *
    * @param type a type
@@ -961,7 +995,7 @@ public final class ElementUtils {
   public static List<TypeElement> getAllSupertypes(TypeElement type, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-    return CollectionsPlume.<Type, TypeElement>mapList(
+    return CollectionsP.<Type, TypeElement>mapList(
         t -> (TypeElement) t.tsym, javacTypes.closure(((Symbol) type).type));
   }
 

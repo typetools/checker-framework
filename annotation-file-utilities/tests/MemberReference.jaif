@@ -59,4 +59,3 @@ class MemberReference:
 
     method main([Ljava/lang/String;)V:
         reference #27: @A
-

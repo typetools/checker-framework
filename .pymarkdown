@@ -1,0 +1,14 @@
+{
+  "mode": {
+    "strict-config": true
+  },
+  "plugins": {
+    "line-length": {
+      "enabled": false,
+      "line_length": 100
+    }
+  },
+  "extensions": {
+    "front_matter": true
+  }
+}

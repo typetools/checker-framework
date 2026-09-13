@@ -167,4 +167,3 @@ class Outer$StaticInner2$StaticInner3:
     method m()V:
         return:
         insert-annotation Method.parameter -1: @O
-

@@ -26,7 +26,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * length of the sequence passed as the first argument.
  *
  * <p>The name of this annotation, "substring index for", is intended to mean that the annotated
- * expression is a index of a substring (returned by {@code indexOf} or similar methods) for the
+ * expression is an index of a substring (returned by {@code indexOf} or similar methods) for the
  * specified sequence.
  *
  * @checker_framework.manual #index-substringindex Index Checker

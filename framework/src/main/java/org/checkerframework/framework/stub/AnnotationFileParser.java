@@ -102,6 +102,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -112,9 +113,9 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArrayMap;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
-import org.plumelib.util.SystemPlume;
+import org.plumelib.util.SystemP;
 
 // From an implementation perspective, this class represents a single annotation file (stub file or
 // ajava file), notably its annotated types and its declaration annotations.
@@ -346,7 +347,7 @@ public final class AnnotationFileParser {
       if (componentsInCanonicalConstructor != null) {
         return componentsInCanonicalConstructor;
       } else {
-        return CollectionsPlume.mapList(c -> c.type, componentsByName.values());
+        return CollectionsP.mapList(c -> c.type, componentsByName.values());
       }
     }
   }
@@ -588,7 +589,7 @@ public final class AnnotationFileParser {
 
           TypeElement importType = elements.getTypeElement(imported);
           if (importType == null && !importDecl.isStatic()) {
-            // Class or nested class (according to JSL), but we can't resolve
+            // Class or nested class (according to JLS), but we can't resolve
 
             stubWarnNotFound(importDecl, "Imported type not found: " + imported);
           } else if (importType == null) {
@@ -1481,6 +1482,12 @@ public final class AnnotationFileParser {
     }
   }
 
+  /**
+   * Returns a ClassOrInterfaceType for the given type, possibly unwrapping a reference type.
+   *
+   * @param type a type
+   * @return a ClassOrInterfaceType for the given type
+   */
   private @Nullable ClassOrInterfaceType unwrapDeclaredType(Type type) {
     if (type instanceof ClassOrInterfaceType coit) {
       return coit;
@@ -1685,20 +1692,6 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Returns the innermost component type of {@code type}.
-   *
-   * @param type array type
-   * @return the innermost component type of {@code type}
-   */
-  private AnnotatedTypeMirror innermostComponentType(AnnotatedArrayType type) {
-    AnnotatedTypeMirror componentType = type;
-    while (componentType.getKind() == TypeKind.ARRAY) {
-      componentType = ((AnnotatedArrayType) componentType).getComponentType();
-    }
-    return componentType;
-  }
-
-  /**
    * Adds {@code annotations} to the innermost component type of {@code type}.
    *
    * @param type array type
@@ -1707,7 +1700,7 @@ public final class AnnotationFileParser {
    */
   private void annotateInnermostComponentType(
       AnnotatedArrayType type, List<AnnotationExpr> annotations, NodeWithRange<?> astNode) {
-    annotate(innermostComponentType(type), annotations, astNode);
+    annotate(AnnotatedTypes.innermostComponentType(type), annotations, astNode);
   }
 
   /**
@@ -3062,12 +3055,12 @@ public final class AnnotationFileParser {
       String warning = String.format(fmt, args);
       if (warnings.add(warning)) {
         System.out.flush();
-        SystemPlume.sleep(1);
+        SystemP.sleep(1);
         processingEnv
             .getMessager()
             .printMessage(Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
         System.out.flush();
-        SystemPlume.sleep(1);
+        SystemP.sleep(1);
       }
     }
   }
@@ -3086,12 +3079,12 @@ public final class AnnotationFileParser {
     String warning = String.format(fmt, args);
     if (warnings.add(warning)) {
       System.out.flush();
-      SystemPlume.sleep(1);
+      SystemP.sleep(1);
       processingEnv
           .getMessager()
           .printMessage(Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
       System.out.flush();
-      SystemPlume.sleep(1);
+      SystemP.sleep(1);
     }
   }
 
@@ -3130,7 +3123,19 @@ public final class AnnotationFileParser {
         if (elt != null) {
           if (elt.getKind() == ElementKind.FIELD) {
             VariableDeclarator varDecl = (VariableDeclarator) javaParserNode;
-            processField((FieldDeclaration) varDecl.getParentNode().get(), elt);
+            // In a parsed AST, the parent of a field's VariableDeclarator is always a
+            // FieldDeclaration, but be defensive in case the AST was built programmatically.
+            Node varDeclParent = varDecl.getParentNode().orElse(null);
+            if (varDeclParent instanceof FieldDeclaration fieldDecl) {
+              processField(fieldDecl, elt);
+            } else {
+              throw new BugInCF(
+                  "Expected FieldDeclaration parent for %s [%s], found %s [%s]",
+                  varDecl,
+                  varDecl.getClass(),
+                  varDeclParent,
+                  varDeclParent == null ? "null" : varDeclParent.getClass());
+            }
           }
 
           if (elt.getKind() == ElementKind.ENUM_CONSTANT) {

@@ -34,7 +34,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Utility methods for adding the annotations that are stored in an Element to the type that
@@ -66,10 +66,10 @@ public class ElementAnnotationUtil {
       throw new BugInCF(
           "Number of types and elements don't match. "
               + "types ( "
-              + StringsPlume.join(", ", types)
+              + StringsP.join(", ", types)
               + " ) "
               + "element ( "
-              + StringsPlume.join(", ", elements)
+              + StringsP.join(", ", elements)
               + " ) ");
     }
 
@@ -94,7 +94,7 @@ public class ElementAnnotationUtil {
       AnnotatedTypeMirror type, List<? extends AnnotationMirror> annotations) {
     // The code here should be similar to
     // org.checkerframework.framework.type.TypeFromMemberVisitor.visitVariable
-    AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(type);
+    AnnotatedTypeMirror innerType = AnnotatedTypes.innermostComponentType(type);
     if (innerType != type) {
       for (AnnotationMirror annotation : annotations) {
         if (AnnotationUtils.annotationName(annotation).startsWith("org.checkerframework")) {

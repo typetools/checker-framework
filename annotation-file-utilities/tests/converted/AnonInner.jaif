@@ -42,4 +42,3 @@ class AnonInner$InnerOne$2:
         return:
         insert-annotation Method.body, Block.statement 0, Return.expression, NewClass.identifier: @F
         insert-annotation Method.type: @E
-

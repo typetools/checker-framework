@@ -38,4 +38,3 @@ class BoundMethodMultiple:
         return:
         insert-annotation Method.typeParameter 0, TypeParameter.bound 0: @java.lang.E
         insert-annotation Method.typeParameter 1, TypeParameter.bound 0: @java.lang.F
-

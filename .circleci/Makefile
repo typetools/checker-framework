@@ -1,5 +1,9 @@
-all default: config.yml
-# TODO: all default: config.yml config-daily.yml
+.PHONY: all test clean default validate
+default: all
+all: config.yml
+# TODO: all: config.yml config-daily.yml
+
+test: all
 
 PLUME_SCRIPTS=../checker/bin-devel/.plume-scripts
 
@@ -7,13 +11,14 @@ PLUME_SCRIPTS=../checker/bin-devel/.plume-scripts
 	@chmod -f +w $@ || true
 	m4 $< > $@
 	${PLUME_SCRIPTS}/squeeze-blank-lines $@
-	@chmod -w $@
+# Don't do this for now, because it breaks prek's end-of-file-fixer.
+#	@chmod -w $@
 
 validate: config.yml
 	cd .. && circleci config validate
 
 ${PLUME_SCRIPTS}:
-	make -C .. get-plume-scripts
+	cd .. && ./gradlew -q getPlumeScripts
 
 clean:
 	@rm -f config.yml

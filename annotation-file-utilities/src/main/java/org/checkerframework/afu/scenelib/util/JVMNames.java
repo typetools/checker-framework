@@ -108,7 +108,7 @@ public final class JVMNames {
       // replace w/erasure (== erasure of 1st conjunct)
       return typeToJvmlString(type.tsym.erasure_field);
     } else if (type.getKind() == TypeKind.VOID) {
-      return "V"; // special case since UtilPlume doesn't handle void
+      return "V"; // special case since UtilP doesn't handle void
     } else {
       return Signatures.binaryNameToFieldDescriptor(type.tsym.flatName().toString());
     }

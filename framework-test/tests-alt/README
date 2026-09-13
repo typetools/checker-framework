@@ -1,4 +1,3 @@
 Contains trivial tests to test annotating tests with @TestRootDirectory.
 
 Please do not place tests in this directory unless testing @TestRootDirectory.
-

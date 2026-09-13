@@ -78,6 +78,11 @@ public class LocalVariableNode extends Node {
     return receiver;
   }
 
+  /**
+   * Returns the name of the variable.
+   *
+   * @return the name of the variable
+   */
   public String getName() {
     if (tree instanceof IdentifierTree itree) {
       return itree.getName().toString();

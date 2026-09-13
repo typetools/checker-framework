@@ -38,7 +38,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.DeepCopyable;
 
 /**
@@ -65,21 +65,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   /** An EqualityAtmComparer. */
   protected static final EqualityAtmComparer EQUALITY_COMPARER = new EqualityAtmComparer();
 
-  /** A HashcodeAtmVisitor. */
-  protected static final HashcodeAtmVisitor HASHCODE_VISITOR = new HashcodeAtmVisitor();
-
   /** The factory to use for lazily creating annotated types. */
   protected final AnnotatedTypeFactory atypeFactory;
 
   /** The actual type wrapped by this AnnotatedTypeMirror. */
   protected final TypeMirror underlyingType;
-
-  /**
-   * Saves the result of {@code underlyingType.toString().hashCode()} to use when computing the hash
-   * code of this. (Because AnnotatedTypeMirrors are mutable, the hash code for this cannot be
-   * saved.) Call {@link #getUnderlyingTypeHashCode()} rather than using the field directly.
-   */
-  private int underlyingTypeHashCode = -1;
 
   /** The annotations on this type. */
   // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
@@ -173,10 +163,36 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     return EQUALITY_COMPARER.visit(this, atm, null);
   }
 
+  /**
+   * Returns a hash code for this type.
+   *
+   * <p>This hashes only the top-level type: its underlying type and its primary annotations. It
+   * does not descend into component types, even though {@link #equals} does. That is permitted --
+   * unequal types may share a hash code -- and it makes this method constant-time for every
+   * underlying type, except time for {@code ArrayType} is proportional to the array's nesting
+   * depth.
+   *
+   * <p>Every part of this hash must be derived from something that {@code equals} compares. In
+   * particular, it must not be derived from the underlying type's printed representation: {@code
+   * equals} compares underlying types with {@code Type.equals}, which is reference equality for
+   * every javac type but {@code ArrayType}, so types that print alike but wrap distinct {@code
+   * Type} objects would hash alike and compare unequal, making hash table operations long scans of
+   * colliding, never-equal entries.
+   *
+   * @return a hash code for this type
+   */
   @Pure
   @Override
   public final int hashCode() {
-    return HASHCODE_VISITOR.visit(this);
+    int result = 31 + underlyingType.hashCode();
+    for (AnnotationMirror anno : primaryAnnotations) {
+      // Hash the annotation's name, because AnnotationUtils.areSame() compares names.  (Hashing
+      // the annotation type's element would depend on javac interning one Symbol per name per
+      // Context.)  Addition is commutative, so that sets with the same elements in different
+      // order hash the same, also consistent with AnnotationUtils.areSame().
+      result += AnnotationUtils.annotationName(anno).hashCode();
+    }
+    return result;
   }
 
   /**
@@ -788,7 +804,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * Returns the erasure type of this type, according to JLS specifications.
    *
    * @see <a
-   *     href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.6">https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.6</a>
+   *     href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.6">https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.6</a>
    * @return the erasure of this AnnotatedTypeMirror, this is always a copy even if the erasure and
    *     the original type are equivalent
    */
@@ -885,19 +901,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
         atypeFactory.fromElement(atypeFactory.elements.getTypeElement("java.lang.Record"));
     recordType.declaration = false;
     return recordType;
-  }
-
-  /**
-   * Returns the result of calling {@code underlyingType.toString().hashcode()}. This method saves
-   * the result in a field so that it isn't recomputed each time.
-   *
-   * @return the result of calling {@code underlyingType.toString().hashcode()}
-   */
-  public int getUnderlyingTypeHashCode() {
-    if (underlyingTypeHashCode == -1) {
-      underlyingTypeHashCode = underlyingType.toString().hashCode();
-    }
-    return underlyingTypeHashCode;
   }
 
   /** Represents a declared type (whether class or interface). */
@@ -1029,7 +1032,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
         }
         typeArgs = Collections.unmodifiableList(ts);
       } else {
-        List<AnnotatedTypeMirror> uses = CollectionsPlume.mapList(AnnotatedTypeMirror::asUse, ts);
+        List<AnnotatedTypeMirror> uses = CollectionsP.mapList(AnnotatedTypeMirror::asUse, ts);
         typeArgs = Collections.unmodifiableList(uses);
       }
     }
@@ -1142,7 +1145,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       erased.addAnnotations(this.getPrimaryAnnotations());
       AnnotatedDeclaredType erasedEnclosing = erased.getEnclosingType();
       AnnotatedDeclaredType thisEnclosing = this.getEnclosingType();
-      while (erasedEnclosing != null) {
+      while (erasedEnclosing != null && thisEnclosing != null) {
         erasedEnclosing.addAnnotations(thisEnclosing.getPrimaryAnnotations());
         erasedEnclosing = erasedEnclosing.getEnclosingType();
         thisEnclosing = thisEnclosing.getEnclosingType();
@@ -1549,7 +1552,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      * @return erased annotated type mirrors
      */
     private List<AnnotatedTypeMirror> erasureList(Iterable<? extends AnnotatedTypeMirror> lst) {
-      return CollectionsPlume.mapList(AnnotatedTypeMirror::getErased, lst);
+      return CollectionsP.mapList(AnnotatedTypeMirror::getErased, lst);
     }
   }
 
@@ -2378,8 +2381,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       if (bounds == null) {
         List<? extends TypeMirror> ubounds = ((IntersectionType) underlyingType).getBounds();
         List<AnnotatedTypeMirror> res =
-            CollectionsPlume.mapList(
-                (TypeMirror bnd) -> createType(bnd, atypeFactory, false), ubounds);
+            CollectionsP.mapList((TypeMirror bnd) -> createType(bnd, atypeFactory, false), ubounds);
         bounds = Collections.unmodifiableList(res);
         fixupBoundAnnotations();
       }
@@ -2477,7 +2479,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       if (alternatives == null) {
         List<? extends TypeMirror> ualts = ((UnionType) underlyingType).getAlternatives();
         List<AnnotatedDeclaredType> res =
-            CollectionsPlume.mapList(
+            CollectionsP.mapList(
                 (TypeMirror alt) -> (AnnotatedDeclaredType) createType(alt, atypeFactory, false),
                 ualts);
         alternatives = Collections.unmodifiableList(res);

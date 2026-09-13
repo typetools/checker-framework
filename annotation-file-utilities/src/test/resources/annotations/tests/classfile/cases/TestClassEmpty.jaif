@@ -3,4 +3,3 @@ annotation @A: @java.lang.annotation.Retention(RUNTIME) @java.lang.annotation.Ta
 
 package annotations.tests.classfile.cases:
 class TestClassEmpty: @annotations.tests.classfile.foo.A
-

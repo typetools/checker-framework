@@ -24,7 +24,7 @@ methods, rather than the imprecise one for \<Method.invoke>.
 
 If the estimate of invoked methods is small,
 the checker issues fewer false positive warnings.
-If the estimate of invoked methods is large, these types may be no better than the
+If the estimate of invoked methods is large, the resulting types may be no better than the
 conservative library annotations.
 
 Reflection resolution is disabled by default, because it increases the time
@@ -42,7 +42,7 @@ command-line option if, for some call site of \<Method.invoke> or
   compile time,
   and
 \item
-  the reflectively invoked methods/constructors are on the class path at
+  the reflectively invoked methods/constructors are on the classpath at
   compile time.
 \end{enumerate}
 
@@ -102,7 +102,7 @@ error: [dereference.of.nullable] dereference of possibly-null reference currentL
 \end{Verbatim}
 
 \begin{sloppypar}
-When reflection resolution is enabled, the MethodVal Checker infers that the \<@MethodVal> annotation for \<getCurrentLocationObj>  is:
+When reflection resolution is enabled, the MethodVal Checker infers that the \<@MethodVal> annotation for \<getCurrentLocationObj> is:
 \end{sloppypar}
 
 \quad \<@MethodVal(className="LocationInfo", methodName="getCurrentLocation", params=0)>
@@ -124,7 +124,7 @@ Using this more precise signature, the Nullness Checker does not issue the false
 The implementation of reflection resolution internally uses the ClassVal
 Checker (Section~\ref{classval-checker}) and the MethodVal Checker
 (Section~\ref{methodval-checker}).  They are similar to the Constant
-Value Checker (Section~\ref{constant-value-checker}) in that their
+Value Checker (Chapter~\ref{constant-value-checker}) in that their
 annotations estimate the run-time value of an expression.
 
 In some cases, you may need to write annotations such as
@@ -153,7 +153,7 @@ known to be in that set.
 
 Each argument is a ``fully-qualified binary name''
 (\refqualclass{checker/signature/qual}{FqBinaryName}):  a primitive or binary name
-(\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-13.html#jls-13.1}{JLS
+(\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-13.html#jls-13.1}{JLS
   \S 13.1}), possibly followed by array brackets.
 
 \item[\reflectionAnno{ClassBound}{(String[] value)}]
@@ -168,7 +168,7 @@ subclass of some class in that set.
 
 Each argument is a ``fully-qualified binary name''
 (\refqualclass{checker/signature/qual}{FqBinaryName}):  a primitive or binary name
-(\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-13.html#jls-13.1}{JLS
+(\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-13.html#jls-13.1}{JLS
   \S 13.1}), possibly followed by array brackets.
 
 \item[\reflectionAnno{UnknownClass}{}] Indicates that there is no
@@ -187,7 +187,7 @@ and \<@ClassValBottom>) should never be written in source code; they are used in
 \end{figure}
 
 \subsubsectionAndLabel{Subtyping rules}{classval-subtyping-rules}
-Figure~\ref{fig-classval-hierarchy} shows part of the type hierarchy of  the
+Figure~\ref{fig-classval-hierarchy} shows part of the type hierarchy of the
 ClassVal type system.
 \<@ClassVal(A)> is a subtype of \<@ClassVal(B)> if A is a subset of B.
 \<@ClassBound(A)> is a subtype of \<@ClassBound(B)> if A is a subset of B.
@@ -242,11 +242,11 @@ and \<@MethodValBottom>) should never be written in source code; they are used i
 \end{figure}
 
 \subsubsectionAndLabel{Subtyping rules}{methodval-subtyping-rules}
-Figure~\ref{fig-methodval-hierarchy} shows part of the type hierarchy of  the
-MethodVal type system.  \<@MethodVal(classname=CA, methodname=MA, params=PA)> is a subtype of
-\<@MethodVal(classname=CB, methodname=MB, params=PB)> if
+Figure~\ref{fig-methodval-hierarchy} shows part of the type hierarchy of the
+MethodVal type system.  \<@MethodVal(className=CA, methodName=MA, params=PA)> is a subtype of
+\<@MethodVal(className=CB, methodName=MB, params=PB)> if
 
-\[\forall \textrm{indexes} i \exists \textrm{an index} j:  CA[i] = CB[j], MA[i] = MA[j], and PA[i] = PB[j]\]
+\[\forall \textrm{ indexes } i \; \exists \textrm{ an index } j:  CA[i] = CB[j], MA[i] = MB[j], \textrm{ and } PA[i] = PB[j]\]
 
 \noindent
 where CA, MA, and PA are lists of equal size and CB, MB, and PB are lists of equal size.

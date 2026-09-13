@@ -1,6 +1,10 @@
-.PHONY: all  nullnessOnly nullnessRegex nullnessBad nonsense
+.PHONY: all test clean nullnessOnly nullnessRegex nullnessBad nonsense
 
 all: nullnessOnly nullnessRegex nullnessBad nonsense
+
+test: all
+
+clean:
 
 nullnessOnly:
 	rm -f Out.txt

@@ -47,12 +47,12 @@ public class PersonalBlogService {
   public static final String EMOTICON_VALUES = "emoticon.values";
   public static final String EMOTICON_IMAGES = "emoticon.images";
   public static final String LOGON_ID = "logon.id";
-  public static final String LOGON_PASSWORD = "logon.password";
+  public static final String LOGON_PASSWORD = "logon.password"; // pragma: allowlist secret
   public static final String EDITOR = "weblog.editor";
   public static final String EMAIL_HOST = "mail.smtp.host";
   public static final String EMAIL_TRANSPORT = "mail.transport";
   public static final String EMAIL_USERNAME = "mail.username";
-  public static final String EMAIL_PASSWORD = "mail.password";
+  public static final String EMAIL_PASSWORD = "mail.password"; // pragma: allowlist secret
   public static final String CATEGORY_TITLES = "category.titles";
   public static final String CATEGORY_VALUES = "category.values";
   public static final String CATEGORY_IMAGES = "category.images";

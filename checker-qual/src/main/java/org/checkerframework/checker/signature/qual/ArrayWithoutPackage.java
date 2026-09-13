@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * An identifier or primitive type, followed by any number of array square brackets.
  *
- * <p>Example: Foobar[][] Example: Baz22
+ * <p>Examples: Foobar[][], Baz22
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */

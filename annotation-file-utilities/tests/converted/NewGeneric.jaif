@@ -12,4 +12,3 @@ class NewGeneric:
         insert-annotation Method.body, Block.statement 0, Variable.initializer, TypeCast.type, ParameterizedType.typeArgument 0: @java.lang.UnderInitialization
         insert-annotation Method.body, Block.statement 0, Variable.initializer, TypeCast.type: @java.lang.Tainted
         insert-annotation Method.body, Block.statement 1, Variable.initializer, TypeCast.type: @java.lang.UnderInitialization
-

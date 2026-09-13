@@ -8,4 +8,3 @@ class LocalVariables:
 
     method foo()V:
         local a: @java.lang.UnderInitialization
-

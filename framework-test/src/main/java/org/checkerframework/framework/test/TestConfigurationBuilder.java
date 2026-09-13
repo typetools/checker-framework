@@ -14,14 +14,14 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Used to create an instance of TestConfiguration. TestConfigurationBuilder is fluent: it returns
  * itself after every call so you can string together configuration methods as follows:
  *
  * <p>{@code new TestConfigurationBuilder() .addOption("-Awarns") .addSourceFile("src1.java")
- * .addDiagnosticFile("src1.out") }
+ * .addDiagnosticFile("src1.goal") }
  *
  * @see TestConfiguration
  */
@@ -522,9 +522,9 @@ public class TestConfigurationBuilder {
 
   @Override
   public String toString() {
-    return StringsPlume.joinLines(
+    return StringsP.joinLines(
         "TestConfigurationBuilder:",
-        "testSourceFiles=" + StringsPlume.join(" ", testSourceFiles),
+        "testSourceFiles=" + StringsP.join(" ", testSourceFiles),
         "processors=" + String.join(", ", processors),
         "options=" + String.join(", ", options.getOptionsAsList()),
         "shouldEmitDebugInfo=" + shouldEmitDebugInfo);

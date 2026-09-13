@@ -24,7 +24,7 @@ public @interface DoesNotUnrefineReceiver {
    * The name of the checker(s) that this annotation affects. For example, "modifiability" or
    * "nullness". Use "allcheckers" to affect all checkers.
    *
-   * @return the name of the checker that this annotation affects
+   * @return the names of the checkers that this annotation affects
    */
   String[] value();
 }

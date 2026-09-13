@@ -23,4 +23,3 @@ class GenericCell:
         return: @java.lang.PolyRaw
             inner-type 3, 0: @java.lang.PolyRaw
         receiver: @java.lang.PolyRaw
-

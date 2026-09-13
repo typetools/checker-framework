@@ -16,8 +16,8 @@ The Annotation File Utilities (AFU) include programs for extracting
 annotations from Java class files and inserting annotations into Java
 source or class files, in accordance with the Java language and virtual
 machine specification.  This
-document uses AFU in the singular, in reference to the source
-insertion program except where otherwise noted.
+document uses AFU in the singular, in reference to the source-insertion
+program, except where otherwise noted.
 
 The AFU suffers from multiple design flaws that impede performance and
 maintainability, including:
@@ -55,7 +55,7 @@ preserving formatting and commentary by incorporating non-leaf text
 
 The current AFU source code (3.6.16 as of 11 June 2015) is organized
 into four packages (not counting the
-\texttt{scene\_lib} sub-project):
+\texttt{scene-lib} sub-project):
 \begin{itemize}
 \item  \texttt{org.checkerframework.afu.annotator}, containing the main class and a class
 representing source text;
@@ -140,7 +140,7 @@ the scene as a ``specification'' and subsequent extraction of
 \texttt{Criteria} will be eliminated, as the necessary information can
 be determined directly from the \texttt{Scene}.  Second, the source text
 will be incorporated into the augmented AST in a more convenient form,
-so there will no need to refer back to the source itself.
+so there will be no need to refer back to the source itself.
 
 The division of responsibilities among classes will remain largely the
 same, with the major differences corresponding to the changes in the
@@ -160,7 +160,7 @@ within the AST can be determined directly from the \texttt{Scene}.
 
 The redesign can be broken down into two independent parts:
 \begin{description}
-\item{Path-based positioning.} Eliminate the \texttt{Criterion}
+\item[Path-based positioning.] Eliminate the \texttt{Criterion}
 hierarchy; determine the insertion location and the text to be inserted
 during (a single) scene traversal; let the scene traversal rather than
 an AST traversal be the outer loop.  Advantages: since insertion is
@@ -168,7 +168,7 @@ based on the node rather than a numeric position, there is only one
 positioning logic (even if there are still two matching objects); an
 entire pass and a large amount of intermediate data are eliminated, thus
 improving time and space efficiency.
-\item{Tree transformation.}  Eliminate the \texttt{Insertion} hierarchy;
+\item[Tree transformation.]  Eliminate the \texttt{Insertion} hierarchy;
 instead of calculating numeric positions, apply a transformation to the
 appropriate subtree.  Advantage: the logic of tree transformation is
 both closer to the specification and easier to comprehend (and maintain)
@@ -186,7 +186,7 @@ quickly a revised implementation achieves the same level of reliability.
 
 \subsection{Path-based Positioning}
 
-The current AFU creates transforms the scene into a set of
+The current AFU transforms the scene into a set of
 \texttt{Insertions}, each with its own \texttt{Criteria} (a collection
 of objects of various \texttt{Criterion} subclasses).  In doing so, it
 throws away information about hierarchical relationships that could be
@@ -209,7 +209,7 @@ corresponds to a class node in an AST, each time one of the method
 specifications (\texttt{AMethod}) is visited, the corresponding method
 node (see Figure~\ref{fig:corresp}) should be visited as well to see
 whether any insertions under the \texttt{AMethod} apply to it.  This
-strategy not only obviates an additional pass but avoids much useless
+strategy not only obviates an additional pass but also avoids much useless
 test repetition, as there is no need to test \emph{every} potential
 insertion against \emph{every} AST node encountered before the correct
 insertion site.  With this change, it becomes possible to generate
@@ -236,13 +236,13 @@ insertion order dependencies and making it harder to find the source of
 a bug.
 
 A new class hierarchy, the ``Augmented AST'' (\texttt{AAST}), will
-directly manage non-leaf text--that is, inter-leaf text (whitespace and
+directly manage non-leaf text---that is, inter-leaf text (whitespace and
 comments) and intra-branch text (implicit or contained in branch node
 data members).  It will be an implementation of
-\texttt{com.sun.source.Tree} that provides needed bits from
+\texttt{com.sun.source.tree.Tree} that provides needed bits from
 \texttt{com.sun.tools.javac.tree.JCTree} and defines a parallel subclass
 hierarchy.  AAST and subclasses provide methods to retrieve the
-inter-leaf text segments that precede and follow an AST node and
+inter-leaf text segments that precede and follow an AST node, and
 printing methods that preserve the formatting of the source code.
 
 Non-leaf text will be stored in three types of locations in an AAST:
@@ -253,7 +253,7 @@ follows.
 that is represented in the source code but not in a descendant node, the
 node will store any whitespace and comments that follow, unless the
 content is at the end of the node's text.
-\item  The computation unit node will store any text that precedes the
+\item  The compilation unit node will store any text that precedes the
 beginning of the Java code.
 \end{enumerate}
 In this way, all text segment references occur exactly once in the AST,
@@ -350,12 +350,12 @@ Thus, doing the full job should take about six weeks.
 \section{API extensions (non-exhaustive)}
 
 \begin{jcode}
-public abstract class AAST extends com.sun.source.Tree {
+public abstract class AAST implements com.sun.source.tree.Tree {
   /** Interleaves non-leaf text with text serialization of AAST. */
   public void prettyPrint(java.io.Writer w) throws java.io.IOException;
 
   /** Insert single annotation at given path. */
-  public insertAnnotation(TreePath path, Annotation anno);
+  public void insertAnnotation(TreePath path, Annotation anno);
 }
 
 // main loop

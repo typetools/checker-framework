@@ -24,4 +24,3 @@ class GenericCell:
         insert-annotation Method.type, ParameterizedType.typeArgument 0: @java.lang.PolyRaw
         insert-annotation Method.parameter -1: @java.lang.PolyRaw
         insert-annotation Method.type: @java.lang.PolyRaw
-

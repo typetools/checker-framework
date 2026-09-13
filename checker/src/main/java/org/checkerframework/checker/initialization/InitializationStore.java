@@ -20,7 +20,7 @@ import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.ToStringComparator;
 
 /**
@@ -241,7 +241,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
             "initialized fields", ToStringComparator.sorted(initializedFields));
 
     List<VariableElement> invariantVars =
-        CollectionsPlume.mapList(FieldAccess::getField, invariantFields.keySet());
+        CollectionsP.mapList(FieldAccess::getField, invariantFields.keySet());
     String invariantVisualize =
         viz.visualizeStoreKeyVal("invariant fields", ToStringComparator.sorted(invariantVars));
 

@@ -6,4 +6,3 @@ class Package:
 
     field o:
         insert-annotation Variable.type: @A
-

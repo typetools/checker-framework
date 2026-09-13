@@ -6,4 +6,3 @@ class FieldSimple:
 
     field field:
         insert-annotation Variable.type: @java.lang.UnderInitialization
-

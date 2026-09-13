@@ -11,4 +11,3 @@ class LocalGenericShadow:
     method method()V:
         local 1 #2+8:
             type: @java.lang.UnderInitialization
-

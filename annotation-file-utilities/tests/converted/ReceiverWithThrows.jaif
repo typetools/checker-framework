@@ -14,4 +14,3 @@ class ReceiverWithThrows:
     method bar()V:
         return:
         insert-annotation Method.parameter -1: @java.lang.Tainted
-

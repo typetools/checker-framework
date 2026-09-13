@@ -50,7 +50,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.MapsP;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Determines the default qualifiers on a type. Default qualifiers are specified via the {@link
@@ -188,11 +188,11 @@ public class QualifierDefaults {
   @Override
   public String toString() {
     // displays the checked and unchecked code defaults
-    return StringsPlume.joinLines(
+    return StringsP.joinLines(
         "Checked code defaults: ",
-        StringsPlume.joinLines(checkedCodeDefaults),
+        StringsP.joinLines(checkedCodeDefaults),
         "Unchecked code defaults: ",
-        StringsPlume.joinLines(uncheckedCodeDefaults),
+        StringsP.joinLines(uncheckedCodeDefaults),
         "useConservativeDefaultsSource: " + useConservativeDefaultsSource,
         "useConservativeDefaultsBytecode: " + useConservativeDefaultsBytecode);
   }
@@ -324,17 +324,17 @@ public class QualifierDefaults {
     elementDefaults.put(elem, prevset);
   }
 
+  /**
+   * Throws an exception if the given location is not a valid location for an unchecked code
+   * default.
+   *
+   * @param uncheckedDefaultAnno the unchecked code default annotation; used only for the error
+   *     message
+   * @param location the location to check
+   */
   private void checkIsValidUncheckedCodeLocation(
       AnnotationMirror uncheckedDefaultAnno, TypeUseLocation location) {
-    boolean isValidUntypeLocation = false;
-    for (TypeUseLocation validLoc : validLocationsForUncheckedCodeDefaults()) {
-      if (location == validLoc) {
-        isValidUntypeLocation = true;
-        break;
-      }
-    }
-
-    if (!isValidUntypeLocation) {
+    if (!validLocationsForUncheckedCodeDefaults().contains(location)) {
       throw new BugInCF(
           "Invalid unchecked code default location: " + location + " -> " + uncheckedDefaultAnno);
     }
@@ -1180,7 +1180,7 @@ public class QualifierDefaults {
         }
       } else {
         throw new BugInCF(
-            StringsPlume.joinLines(
+            StringsP.joinLines(
                 "Unexpected tree type for typeVar Element:",
                 "typeParamElem=" + typeParamElem,
                 typeParamDecl));

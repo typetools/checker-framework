@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 
 /**
- * A polymorphic qualifier for @GrowOnly type system.
+ * A polymorphic qualifier for the GrowShrink type system.
  *
  * @checker_framework.manual #index-checker Index Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism

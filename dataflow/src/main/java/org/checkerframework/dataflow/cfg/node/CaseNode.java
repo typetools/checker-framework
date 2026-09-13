@@ -9,7 +9,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * A node for a case in a switch statement. Although a case has no abstract value, it can imply
@@ -102,7 +102,7 @@ public class CaseNode extends Node {
 
   @Override
   public String toString() {
-    return "case " + StringsPlume.join(", ", getCaseOperands()) + ":";
+    return "case " + StringsP.join(", ", getCaseOperands()) + ":";
   }
 
   @Override

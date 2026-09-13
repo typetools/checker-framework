@@ -25,28 +25,22 @@ if [ "${JAVA_VER}" != "8" ] && [ "${JAVA_VER}" != "11" ]; then
   # ./gradlew spotlessGroovy > /dev/null 2>&1 || (echo "spotlessGroovy failed" && sleep 60 && true)
   # echo "Finished: ./gradlew spotlessGroovy"
   # ./gradlew spotlessCheck --warning-mode=all -x spotlessGroovy -x spotlessGroovyGradle
-  ./gradlew spotlessCheck --warning-mode=all
+  gradle_retry spotlessCheck --warning-mode=all
 fi
 if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --exclude-dir=tests --exclude="*.astub" --exclude="*.tex" '^\(import static \|import .*\*;$\)'; then
   echo "Don't use static import or wildcard import"
   exit 1
 fi
 
-# Under CI, there are two CPUs, but limit to 1 to avoid out-of-memory error.
-if [ -n "$("$CHECKERFRAMEWORK"/checker/bin-devel/is-ci.sh)" ]; then
-  num_jobs=1
-else
-  num_jobs="$(nproc || sysctl -n hw.ncpu || getconf _NPROCESSORS_ONLN || echo 1)"
-fi
-make style-check --jobs="${num_jobs}"
+# The rest of the code style is handled by prek, which is run as a
+# pre-commit hook and in GitHub Actions.
 
 declare -a failures=()
 
 ## Javadoc documentation
-# Try twice in case of network lossage.
-(./gradlew javadoc --warning-mode=all || (sleep 60 && ./gradlew javadoc --warning-mode=all)) || failures+=("gradlew javadoc")
-./gradlew javadocPrivate --warning-mode=all || failures+=("gradlew javadocPrivate")
-./gradlew buildSrc:javadoc --warning-mode=all || failures+=("gradlew buildSrc:javadoc")
+gradle_retry javadoc --warning-mode=all || failures+=("gradlew javadoc")
+gradle_retry javadocPrivate --warning-mode=all || failures+=("gradlew javadocPrivate")
+gradle_retry buildSrc:javadoc --warning-mode=all || failures+=("gradlew buildSrc:javadoc")
 # For refactorings that touch a lot of code that you don't understand, create
 # top-level file SKIP-REQUIRE-JAVADOC.  Delete it after the pull request is merged.
 if [ -f SKIP-REQUIRE-JAVADOC ]; then
@@ -64,7 +58,7 @@ if [ ${#failures[@]} -gt 0 ]; then
 fi
 
 ## User documentation
-./gradlew manual
+gradle_retry manual
 git diff --exit-code docs/manual/contributors.tex \
   || (set +x && set +v \
     && echo "docs/manual/contributors.tex is not up to date." \
@@ -78,4 +72,4 @@ git diff --exit-code docs/manual/contributors.tex \
     && false)
 
 ## Listing tasks should succeed; this helps ensure importing Checker Framework into IDEs like IntelliJ works.
-./gradlew tasks --all --warning-mode=all
+gradle_retry tasks --all --warning-mode=all

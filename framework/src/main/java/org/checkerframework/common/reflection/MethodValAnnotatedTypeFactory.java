@@ -37,7 +37,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.MapsP;
 
 /** AnnotatedTypeFactory for the MethodVal Checker. */
@@ -231,7 +231,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (AnnotationUtils.areSameByName(a1, a2)) {
         List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
         List<MethodSignature> a2Sigs = getListOfMethodSignatures(a2);
-        List<MethodSignature> lubSigs = CollectionsPlume.listUnion(a1Sigs, a2Sigs);
+        List<MethodSignature> lubSigs = CollectionsP.listUnion(a1Sigs, a2Sigs);
         AnnotationMirror result = createMethodVal(lubSigs);
         return result;
       }
@@ -250,7 +250,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (AnnotationUtils.areSameByName(a1, a2)) {
         List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
         List<MethodSignature> a2Sigs = getListOfMethodSignatures(a2);
-        List<MethodSignature> lubSigs = CollectionsPlume.listIntersection(a1Sigs, a2Sigs);
+        List<MethodSignature> lubSigs = CollectionsP.listIntersection(a1Sigs, a2Sigs);
         AnnotationMirror result = createMethodVal(lubSigs);
         return result;
       }

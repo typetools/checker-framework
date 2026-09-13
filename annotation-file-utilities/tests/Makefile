@@ -33,8 +33,10 @@ DEBUG :=
 
 default : all
 
-.PHONY: all
+.PHONY: all test clean default
 all : $(DIFFS) abbreviated converted enum-imports ad-hoc issue155 system-test source-extension showdiffs results
+
+test: all
 
 .PHONY: abbreviated
 abbreviated:
@@ -86,15 +88,15 @@ compile :
 	mkdir -p bin
 	$(JAVAC) -g -cp ../build/classes/java/main -d bin *.java
 
-.PRECIOUS : bin/annotator/tests/%.class
+.PRECIOUS: bin/annotator/tests/%.class %.output
+
 bin/annotator/tests/%.class: %.java
 	mkdir -p bin
-# Added "-Xlint:-options" to see if it permits Jenkins job to succeed, due to
-# problem "target value 1.8 is obsolete and will be removed in a future release"
 	$(JAVAC) -Xlint:-options -g -cp bin:../dist/annotation-file-utilities-all.jar -d bin -sourcepath . $*.java
+# Added "-Xlint:-options" above to see if it permits Jenkins job to succeed, due
+# to "target value 1.8 is obsolete and will be removed in a future release".
 
 # Actually runs the annotator to create the annotated java file.
-.PRECIOUS: %.output
 %.output: %.jaif %.java bin/annotator/tests/%.class ../build/classes/java/main ../dist/annotation-file-utilities-all.jar
 	$(JAVA) \
 	-cp ../dist/annotation-file-utilities-all.jar:bin \
@@ -119,10 +121,10 @@ clean :
 	@rm -f *.diff
 	@rm -f *.log
 	@rm -f *.output
-	@${MAKE} -C abbreviated clean
-	@${MAKE} -C converted clean
-	@${MAKE} -C enum-imports clean
-	@${MAKE} -C ad-hoc clean
-	@${MAKE} -C issue155 clean
-	@${MAKE} -C source-extension clean
-	@${MAKE} -C system-test clean
+	@${MAKE} -C abbreviated --quiet clean
+	@${MAKE} -C converted --quiet clean
+	@${MAKE} -C enum-imports --quiet clean
+	@${MAKE} -C ad-hoc --quiet clean
+	@${MAKE} -C issue155 --quiet clean
+	@${MAKE} -C source-extension --quiet clean
+	@${MAKE} -C system-test --quiet clean

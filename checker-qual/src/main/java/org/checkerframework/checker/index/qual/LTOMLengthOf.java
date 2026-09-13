@@ -12,8 +12,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * The annotated expression evaluates to an integer whose value is at least 2 less than the lengths
  * of all the given sequences.
  *
- * <p>For example, an expression with type {@code @LTLengthOf({"a", "b"})} is less than or equal to
- * both {@code a.length-2} and {@code b.length-2}. Equivalently, it is less than both {@code
+ * <p>For example, an expression with type {@code @LTOMLengthOf({"a", "b"})} is less than or equal
+ * to both {@code a.length-2} and {@code b.length-2}. Equivalently, it is less than both {@code
  * a.length-1} and {@code b.length-1}. The sequences {@code a} and {@code b} might have different
  * lengths.
  *
@@ -31,7 +31,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf(LTLengthOf.class)
 public @interface LTOMLengthOf {
   /**
-   * Sequences, each of whose lengths is at least 1 larger than the annotated expression's value.
+   * Sequences, each of whose lengths is at least 2 larger than the annotated expression's value.
    */
   @JavaExpression
   public String[] value();

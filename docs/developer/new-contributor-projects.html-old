@@ -947,5 +947,3 @@ as <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/ut
 and <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Collections.html#emptyList()">Collections.emptyList</a>
 must be annotated to return the less-capable supertype.
 </p>
-
-

@@ -22,4 +22,3 @@ class GenericMultiLevel:
         insert-annotation Variable.type, ParameterizedType.typeArgument 0: @java.lang.B
         insert-annotation Variable.type, ParameterizedType.typeArgument 1: @java.lang.G
         insert-annotation Variable.type: @java.lang.A
-

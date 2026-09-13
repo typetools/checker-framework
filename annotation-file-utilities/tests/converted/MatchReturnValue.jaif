@@ -6,4 +6,3 @@ class MatchReturnValue:
 
     method clone()Lannotator/tests/MatchReturnValue;: @java.lang.A
         return:
-

@@ -7,11 +7,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A method is called <em>side-effect-free</em> if it has no visible side-effects, such as setting a
+ * A method is called <em>side-effect-free</em> if it has no visible side effects, such as setting a
  * field of an object that existed before the method was called.
  *
  * <p>Only the visible side effects are important. The method is allowed to cache the answer to a
- * computationally expensive query, for instance. It is also allowed to modify newly-created
+ * computationally expensive query, for instance. It is also allowed to modify newly created
  * objects. A constructor is side-effect-free if it does not modify any objects that existed before
  * it was called in ways that are externally visible.
  *
@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  *
  * <ol>
  *   <li>Assignment to any expression, except for local variables and method parameters.<br>
- *       (Note that storing into an array element, such a {@code a[i] = x}, is not an assignment to
+ *       (Note that storing into an array element, such as {@code a[i] = x}, is not an assignment to
  *       a variable and is therefore forbidden.)
  *   <li>A method invocation of a method that is not {@code @SideEffectFree}.
  *   <li>Construction of a new object where the constructor is not {@code @SideEffectFree}.

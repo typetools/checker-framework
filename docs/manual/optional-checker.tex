@@ -17,7 +17,7 @@ The article
 regular nullable references rather than \<Optional>.  However, if you do use
 \<Optional>, then the Optional Checker will help you avoid
 \<Optional>'s pitfalls.
-Most notably, the Optional Checker guarantees your code will not suffer a
+Most notably, the Optional Checker guarantees that your code will not suffer a
 \<NoSuchElementException> due to use of an empty \<Optional>.
 
 Stuart Marks gave
@@ -105,7 +105,7 @@ apply to the method itself rather than to some particular type.
 \begin{description}
 
 \item[\refqualclass{checker/optional/qual}{RequiresPresent}]
-  indicates a method precondition:  The annotated method expects the
+  indicates a method precondition.  The annotated method expects the
   specified expression to be a present Optional when this
   method is invoked. \<@RequiresPresent> is a useful annotation for a method
   that requires a \<@MaybePresent> field to be \<@Present>.
@@ -119,22 +119,22 @@ apply to the method itself rather than to some particular type.
   Optional expression is present after the method returns.  With
   \<@EnsuresPresentIf>, if the annotated
   method returns the given boolean value (true or false), then the given
-  Optional expression is present. See the Javadoc for examples of their use.
+  Optional expression is present. See the Javadoc for examples of its use.
 
 \end{description}
 
 
 \sectionAndLabel{What the Optional Checker guarantees}{optional-guarantees}
 
-The Optional Checker guarantees that your code will not throw a \<NoSuchElementException> exception
+The Optional Checker guarantees that your code will not throw a \<NoSuchElementException>
 due to use of an absent \<Optional> where a present \<Optional> is needed.
 More specifically, the Optional Checker will issue an error if you call
 \sunjavadoc{java.base/java/util/Optional.html\#get()}{get}
 or
 \sunjavadoc{java.base/java/util/Optional.html\#orElseThrow()}{orElseThrow()}
-on a \<@MaybePresent Optional> receiver, because each of these methods
-throws a \<NoSuchElementException> exception if the receiver is a possibly-absent
-\<Optional>.
+on a \<@MaybePresent Optional> receiver, because the receiver may be absent and
+each of these methods throws a \<NoSuchElementException> if the receiver is
+empty at run time.
 
 By contrast, the Optional Checker does not issue an error if you call
 \sunjavadoc{java.base/java/util/Optional.html\#orElseThrow(java.util.function.Supplier)}{orElseThrow(Supplier)}
@@ -215,8 +215,8 @@ Here are three ways to suppress a warning in such cases:
 The rest of this section discusses the \<castPresent> method.
 It is useful if you wish to suppress a warning within an expression.
 
-The Optional Checker considers both the return value, and also the
-argument, to be an instance of a present Optional after the \<castPresent>
+The Optional Checker considers both the return value and the
+argument to be a present Optional after the \<castPresent>
 method call.
 The Optional Checker issues no warnings in any of the following
 code:

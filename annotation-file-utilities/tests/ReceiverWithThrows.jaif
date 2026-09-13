@@ -14,4 +14,3 @@ class ReceiverWithThrows:
 
     method bar()V:
         receiver: @java.lang.Tainted
-

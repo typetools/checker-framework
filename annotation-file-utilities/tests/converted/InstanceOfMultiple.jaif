@@ -13,4 +13,3 @@ class InstanceOfMultiple:
         insert-annotation Method.body, Block.statement 0, If.condition, Parenthesized.expression, InstanceOf.type: @java.lang.Tainted
         insert-annotation Method.body, Block.statement 1, If.condition, Parenthesized.expression, InstanceOf.type: @java.lang.UnderInitialization
         insert-annotation Method.body, Block.statement 1, If.condition, Parenthesized.expression, InstanceOf.type, ParameterizedType.typeArgument 0: @java.lang.Tainted
-

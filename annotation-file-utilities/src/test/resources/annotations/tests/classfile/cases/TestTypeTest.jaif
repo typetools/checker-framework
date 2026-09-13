@@ -30,4 +30,3 @@ class TestTypeTest:
   	instanceof # 44 : @annotations.tests.classfile.foo.A
   	instanceof # 60 : @annotations.tests.classfile.foo.B(value="fourth")
   	instanceof # 76 : @annotations.tests.classfile.foo.A
-

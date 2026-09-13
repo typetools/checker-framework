@@ -66,7 +66,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * LockAnnotatedTypeFactory builds types with @LockHeld and @LockPossiblyHeld annotations. LockHeld
@@ -416,6 +416,9 @@ public class LockAnnotatedTypeFactory
     RELEASESNOLOCKS("@ReleasesNoLocks", ReleasesNoLocks.class),
     /** The method does not acquire or release any locks. */
     LOCKINGFREE("@LockingFree", LockingFree.class),
+    // `@SideEffectsOnly` is intentionally absent from this enum.  It constrains which expressions
+    // a method modifies, but it promises nothing about acquiring or releasing locks, so a
+    // `@SideEffectsOnly` method gets the same locking guarantee as an unannotated one.
     /** The method has no side effects. */
     SIDEEFFECTFREE("@SideEffectFree", SideEffectFree.class),
     /** The method has no side effects and is deterministic. */
@@ -754,7 +757,7 @@ public class LockAnnotatedTypeFactory
     if (value instanceof List) {
       @SuppressWarnings("unchecked")
       List<AnnotationValue> la = (List<AnnotationValue>) value;
-      lockExpressions = CollectionsPlume.mapList((AnnotationValue a) -> (String) a.getValue(), la);
+      lockExpressions = CollectionsP.mapList((AnnotationValue a) -> (String) a.getValue(), la);
     } else if (value instanceof String) {
       lockExpressions = Collections.singletonList((String) value);
     } else {

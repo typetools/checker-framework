@@ -32,6 +32,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.FormalParameter;
@@ -62,7 +63,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * A class that helps checkers use qualifiers that are represented by annotations with Java
@@ -683,7 +684,7 @@ public class DependentTypesHelper {
 
     // For use in stringToJavaExpr below, to avoid re-computation. Especially
     // important for the TreePath, which is expensive to compute.
-    List<JavaExpression> argsAsExprs = CollectionsPlume.mapList(LocalVariable::fromNode, arguments);
+    List<JavaExpression> argsAsExprs = CollectionsP.mapList(LocalVariable::fromNode, arguments);
     JavaExpression receiverAsExpr = receiver == null ? null : LocalVariable.fromNode(receiver);
     TreePath path = factory.getPath(invocationTree);
 
@@ -861,7 +862,7 @@ public class DependentTypesHelper {
             factory.getProcessingEnv(), AnnotationUtils.annotationName(originalAnno));
     builder.copyElementValuesFromAnnotation(originalAnno, elementMap.keySet());
     for (Map.Entry<ExecutableElement, List<JavaExpression>> entry : elementMap.entrySet()) {
-      List<String> strings = CollectionsPlume.mapList(JavaExpression::toString, entry.getValue());
+      List<String> strings = CollectionsP.mapList(JavaExpression::toString, entry.getValue());
       builder.setValue(entry.getKey(), strings);
     }
     return builder.build();
@@ -1271,7 +1272,10 @@ public class DependentTypesHelper {
 
       if (from.getKind() != to.getKind()
           || (from.getKind() == TypeKind.TYPEVAR
-              && TypesUtils.isCapturedTypeVariable(to.getUnderlyingType()))) {
+              && (TypesUtils.isCapturedTypeVariable(to.getUnderlyingType())
+                  || !TypesUtils.areSame(
+                      (TypeVariable) from.getUnderlyingType(),
+                      (TypeVariable) to.getUnderlyingType())))) {
         // If the underlying types don't match, then from has been substituted for a
         // from variable, so don't recur. The primary annotation was copied because
         // the from variable might have had a primary annotation at a use.
@@ -1280,6 +1284,10 @@ public class DependentTypesHelper {
         // void use(@KeyFor("b") String s) {
         //      method(s);  // the from of the parameter should be @KeyFor("a") String
         // }
+        // A type variable may also be substituted by a different type variable, in which case
+        // both kinds are TYPEVAR but the bounds of `to` are unrelated to those of `from`.
+        // Recurring would copy `from`'s bound annotations onto `to`'s bounds, and, if `to`'s
+        // bound is itself a type variable, would corrupt that bound's own bounds.
         return null;
       }
       return super.scan(from, to);

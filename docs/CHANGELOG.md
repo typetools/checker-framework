@@ -3,13 +3,47 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 4.2.2 (2026-08-01)
+## Version 4.2.4 (2026-10-01)
 
 ### User-visible changes
 
-### Implementation details
+### Changes for type system implementers
+
+Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
+
+Removed the unused method
+`WholeProgramInferenceScenesStorage.updateAnnotationSetInScene()`.
 
 ### Closed issues
+
+## Version 4.2.3 (2026-09-01)
+
+### User-visible changes
+
+The `-AsuggestPureMethods` command-line option and the `purity.effectively.pure`
+warning no longer require `-AcheckPurityAnnotations` to also be supplied.
+
+### Changes for type system implementers
+
+Made the field `Java8InferenceContext.pathToExpression` private; use
+`getPathToExpression()` and `setPathToExpression()` instead.
+
+Renamed `TreeUtils.isLikeDiamondMemberReference()` to `isRawTypedMemberReference()`.
+
+### Closed issues
+
+\#2816, #7677, #7678, #7681, #7682, #7684, #7693, #7694, #7696, #7698, #7701,
+\#7702, #7875, #8046, #8047, #8048, #8050, #8052.
+
+## Version 4.2.2 (2026-08-06)
+
+### Implementation details
+
+Renamed `CFAbstractValue.validateSet()` to `hasAnnotationFromEveryHierarchy()`.
+
+### Closed issues
+
+\#7723, #7784, #7806.
 
 ## Version 4.2.1 (2026-07-01)
 
@@ -31,7 +65,7 @@ In `AnnotatedTypeFactory`:
 
 In `TypeHierarchy`:
 
-* new methods `equalsShallowEffective()`.
+* new method `equalsShallowEffective()`.
 
 ### Closed issues
 
@@ -119,7 +153,7 @@ to list here.
 
 ### Implementation details
 
-All previously-deprecated methods and classes have been removed.  If your
+All previously deprecated methods and classes have been removed.  If your
 project builds upon the Checker Framework, we suggest that you upgrade to
 version 3.55.1, resolve all the deprecation warnings, then upgrade to version
 4.0.0.
@@ -821,8 +855,9 @@ Renamed Gradle task `copyJarsToDist` to `assembleForJavac`.
 Dropped support for `-ApermitUnsupportedJdkVersion` command-line argument.
 You can now run the Checker Framework under any JDK version, without a warning.
 
-Pass `-Astubs=permit-nullness-assertion-exception.astub` to not be warned about null
-pointer exceptions within nullness assertion methods like `Objects.requireNonNull`.
+Pass `-Astubs=permit-nullness-assertion-exception.astub` to not be warned about
+null pointer exceptions within nullness assertion methods like
+`Objects.requireNonNull`.
 
 Pass `-Astubs=sometimes-nullable.astub` to unsoundly permit passing null to
 calls if null is sometimes but not always permitted.
@@ -1115,6 +1150,8 @@ Java records are type-checked.  Thanks to Neil Brown.
 
 Method renamings and signature changes (old methods are removed) in `GenericAnnotatedTypeFactory`:
 
+<!-- markdownlint-disable line-length -->
+
 * `getPreconditionAnnotation(VariableElement, AnnotatedTypeMirror)` => `getPreconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror)`
 * `getPostconditionAnnotation(VariableElement, AnnotatedTypeMirror, List<AnnotationMirror>)` => `getPostconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror, List<AnnotationMirror>)`
 * `getPreOrPostconditionAnnotation(VariableElement, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)` => `getPreOrPostconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)`
@@ -1123,6 +1160,8 @@ Method renamings and signature changes (old methods are removed) in `GenericAnno
 Method renamings and signature changes (old method is removed) in `WholeProgramInferenceStorage`:
 
 * `getPreOrPostconditionsForField(Analysis.BeforeOrAfter, ExecutableElement, VariableElement, AnnotatedTypeFactory)` =>  `getPreOrPostconditions(Analysis.BeforeOrAfter, ExecutableElement, String, AnnotatedTypeMirror, AnnotatedTypeFactory)`
+
+<!-- markdownlint-enable line-length -->
 
 Method renamings:
 
@@ -1804,7 +1843,8 @@ BackwardAnalysis, BackwardTransferFunction, and BackwardAnalysisImpl.
 To adapt existing code:
 
 * `extends Analysis<V, S, T>` => `extends ForwardAnalysisImpl<V, S, T>`
-* `implements TransferFunction<V, S>` => `implements ForwardTransferFunction<V, S>`
+* `implements TransferFunction<V, S>`
+  => `implements ForwardTransferFunction<V, S>`
 
 In AbstractQualifierPolymorphism, use AnnotationMirrors instead of sets of
 annotation mirrors.
@@ -3018,7 +3058,7 @@ Added the GUI Effect Checker, which prevents "invalid thread access" errors
 when a background thread in a GUI attempts to access the UI.
 
 Changed the Java package of all type-checkers and qualifiers.  The package
-"checkers" has been renamed to "org.checkerframeork.checker".  This
+"checkers" has been renamed to "org.checkerframework.checker".  This
 requires you to change your import statements, such as from
   import checkers.nullness.quals.*;
 to
@@ -4537,8 +4577,8 @@ Framework
 
 * Added support for annotations found in classfiles
 * Added support for the ARRAY-IN array syntax
-* Added AnnotationBuilder, to create AnotationMirrors with values
-* Improved the readability of recursive types string representation
+* Added AnnotationBuilder, to create AnnotationMirrors with values
+* Improved the readability of the string representation of recursive types
 
 Nullness Checker
 

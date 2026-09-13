@@ -22,7 +22,7 @@ public class IndexIssue6046 {
         keyMapper,
         LinkedHashMap::new,
         Collector.<R, Result<V>[], Result<V>>of(
-            // :: error:  (array.access.unsafe.high.constant)
+            // :: error: [array.access.unsafe.high.constant]
             () -> new Result[1], (x, r) -> {}, (r1, r2) -> r1, r -> r[0]));
   }
 

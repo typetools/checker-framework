@@ -11,4 +11,3 @@ class InnerClassSimple$ActualInnerClass: @java.lang.DoesNotExist @java.lang.Tain
 
     field d:
         insert-annotation Variable.type: @java.lang.Tainted
-

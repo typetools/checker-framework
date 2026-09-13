@@ -35,8 +35,10 @@ DEBUG :=
 
 default : all
 
-.PHONY: all
+.PHONY: all test clean default
 all : $(DIFFS) results
+
+test: all
 
 # Display results of all .diff files.
 .PHONY: results
@@ -56,14 +58,14 @@ compile : $(SRC)
 	mkdir -p bin
 	$(JAVAC) -g -cp ../../build/classes/java/main -d bin $(SRC)
 
+.PRECIOUS : bin/annotator/tests/%.class %.output
+
 # Compiles just one test case
-.PRECIOUS : bin/annotator/tests/%.class
 bin/annotator/tests/%.class: %.java
 	mkdir -p bin
 	$(JAVAC) -g -cp bin:../../build/classes/java/main -d bin -sourcepath . $<
 
 # Actually runs the annotator to create the annotated java file.
-.PRECIOUS: %.output
 %.output: %.jaif %.java bin/annotator/tests/%.class ../../build/classes/java/main ../../dist/annotation-file-utilities-all.jar
 	$(JAVA) \
 	-cp ../../dist/annotation-file-utilities-all.jar:bin \

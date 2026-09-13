@@ -220,6 +220,12 @@ public class AnnotationFileUtil {
     return element.getSimpleName().toString();
   }
 
+  /**
+   * Returns a string representation of the given element, or null.
+   *
+   * @param element an Element
+   * @return a string representation of the given element, or null
+   */
   /*package-private*/ static @Nullable String toString(Element element) {
     if (element instanceof ExecutableElement ee) {
       return toString(ee);

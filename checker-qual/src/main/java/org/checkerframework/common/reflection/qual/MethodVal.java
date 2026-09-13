@@ -12,7 +12,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * java.lang.reflect.Constructor Constructor} values. If an expression's type has
  * {@code @MethodVal}, then the expression's run-time value is one of those values.
  *
- * <p>Each of {@code @MethodVal}'s argument lists must be of equal length, and { className[i],
+ * <p>All of {@code @MethodVal}'s argument lists must be of equal length, and { className[i],
  * methodName[i], params[i] } represents one of the {@code Method} or {@code Constructor} values in
  * the set.
  *
@@ -24,7 +24,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf({UnknownMethod.class})
 public @interface MethodVal {
   /**
-   * The <a href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-13.html#jls-13.1">binary
+   * The <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-13.html#jls-13.1">binary
    * name</a> of the class that declares this method.
    */
   String[] className();

@@ -4,4 +4,3 @@ class Date:
     field t:
 
     method <init>()V:
-

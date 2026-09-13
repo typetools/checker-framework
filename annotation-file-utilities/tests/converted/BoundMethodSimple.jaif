@@ -13,4 +13,3 @@ class BoundMethodSimple:
     method foo2(Ljava/lang/Object;)V:
         return:
         insert-annotation Method.typeParameter 0, TypeParameter.bound 0: @java.lang.Tainted
-

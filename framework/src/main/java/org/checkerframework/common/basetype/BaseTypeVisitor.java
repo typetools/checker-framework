@@ -54,7 +54,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -77,6 +76,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -95,6 +95,7 @@ import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Impure;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
 import org.checkerframework.dataflow.util.PurityKind;
@@ -150,8 +151,8 @@ import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
-import org.plumelib.util.ArraysPlume;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.ArraysP;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
 
 /**
@@ -242,6 +243,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** The {@code when} element/field of the @Unused annotation. */
   protected final ExecutableElement unusedWhenElement;
 
+  /** The SideEffectsOnly.value field/element. */
+  protected final ExecutableElement sideEffectsOnlyValueElement;
+
   /** True if "-Ashowchecks" was passed on the command line. */
   protected final boolean showchecks;
 
@@ -321,6 +325,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         atypeFactory.fromElement(elements.getTypeElement(Vector.class.getCanonicalName()));
     targetValueElement = TreeUtils.getMethod(Target.class, "value", 0, env);
     unusedWhenElement = TreeUtils.getMethod(Unused.class, "when", 0, env);
+    sideEffectsOnlyValueElement = TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, env);
     showchecks = checker.hasOption("showchecks");
     infer = checker.hasOption("infer");
     suggestPureMethods = checker.hasOption("suggestPureMethods") || infer;
@@ -889,15 +894,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * <ol>
    *   <!-- The item numbering is referred to in the body of the method.-->
    *   <li value="1">If the superclass of {@code classTree} has a field invariant, then the field
-   *       invariant for {@code classTree} must include all the fields in the superclass invariant
-   *       and those fields' annotations must be a subtype (or equal) to the annotations for those
-   *       fields in the superclass.
+   *                 invariant for {@code classTree} must include all the fields in the superclass
+   *                 invariant and those fields' annotations must be a subtype (or equal) to the
+   *                 annotations for those fields in the superclass.
    *   <li value="2">The fields in the invariant must be a.) final and b.) declared in a superclass
-   *       of {@code classTree}.
+   *                 of {@code classTree}.
    *   <li value="3">The qualifier for each field must be a subtype of the annotation on the
-   *       declaration of that field.
+   *                 declaration of that field.
    *   <li value="4">The field invariant has an equal number of fields and qualifiers, or it has one
-   *       qualifier and at least one field.
+   *                 qualifier and at least one field.
    * </ol>
    *
    * @param classTree class that might have a field invariant
@@ -1054,6 +1059,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       checkPurityAnnotations(tree);
+      checkSideEffectsOnlyExpressions(tree, methodElement);
 
       // Passing the whole method/constructor validates the return type
       validateTypeOf(tree);
@@ -1093,7 +1099,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               || methodElement.getModifiers().contains(Modifier.NATIVE);
 
       List<String> formalParamNames =
-          CollectionsPlume.mapList(
+          CollectionsP.mapList(
               (VariableTree param) -> param.getName().toString(), tree.getParameters());
       checkContractsAtMethodDeclaration(tree, methodElement, formalParamNames, abstractMethod);
 
@@ -1146,11 +1152,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, tree);
 
-    if (!checkPurityAnnotations) {
-      return;
-    }
+    // If the method is already @Pure, there is nothing to suggest.
+    boolean needToSuggest =
+        suggestPureMethods
+            && !(purityKinds.contains(PurityKind.SIDE_EFFECT_FREE)
+                && purityKinds.contains(PurityKind.DETERMINISTIC));
+    boolean needToCheck = checkPurityAnnotations && !purityKinds.isEmpty();
 
-    if (!suggestPureMethods && !PurityUtils.hasPurityAnnotation(atypeFactory, tree)) {
+    if (!needToSuggest && !needToCheck) {
       // There is no work to do.
       return;
     }
@@ -1159,91 +1168,169 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       checker.reportWarning(tree, "purity.effectively.pure", tree.getName());
     }
 
-    // `body` is lazily assigned.
-    TreePath body = null;
-    boolean bodyAssigned = false;
-
-    if (suggestPureMethods
-        || purityKinds.contains(PurityKind.SIDE_EFFECT_FREE)
-        || purityKinds.contains(PurityKind.DETERMINISTIC)) {
-
-      // check "no" purity
-      boolean isDeterministic = purityKinds.contains(PurityKind.DETERMINISTIC);
-      if (isDeterministic) {
-        // @Deterministic makes no sense for a void method or constructor
-        if (TreeUtils.isConstructor(tree)) {
-          checker.reportWarning(tree, "purity.deterministic.constructor");
-        } else if (TreeUtils.isVoidReturn(tree)) {
-          checker.reportWarning(tree, "purity.deterministic.void.method");
-        }
+    // check "no" purity
+    boolean isDeterministic = purityKinds.contains(PurityKind.DETERMINISTIC);
+    if (isDeterministic) {
+      // @Deterministic makes no sense for a void method or constructor
+      if (TreeUtils.isConstructor(tree)) {
+        checker.reportWarning(tree, "purity.deterministic.constructor");
+      } else if (TreeUtils.isVoidReturn(tree)) {
+        checker.reportWarning(tree, "purity.deterministic.void.method");
       }
+    }
 
-      body = atypeFactory.getPath(tree.getBody());
-      bodyAssigned = true;
-      PurityResult r;
-      if (body == null) {
-        r = new PurityResult();
+    TreePath body = atypeFactory.getPath(tree.getBody());
+    PurityResult r;
+    if (body == null) {
+      r = new PurityResult();
+    } else {
+      r =
+          PurityChecker.checkPurity(
+              body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
+    }
+    if (!r.isPure(purityKinds)) {
+      reportPurityErrors(r, tree, purityKinds);
+    }
+
+    if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
+      // Issue a warning if the method is pure, but not annotated as such.
+      EnumSet<PurityKind> additionalKinds = r.getKinds().clone();
+      if (!infer) {
+        // During WPI, propagate all purity kinds, even those that are already
+        // present (because they were inferred in a previous WPI round).
+        additionalKinds.removeAll(purityKinds);
+      }
+      if (TreeUtils.isConstructor(tree) || TreeUtils.isVoidReturn(tree)) {
+        additionalKinds.remove(PurityKind.DETERMINISTIC);
+      }
+      if (infer) {
+        WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
+        inferPurityAnno(additionalKinds, wpi, methodElt);
+        // The purity of overridden methods is impacted by the purity of this method. If
+        // a superclass method is pure, but an implementation in a subclass is not, WPI
+        // ought to treat **neither** as pure. The purity kind of the superclass method
+        // is the LUB of its own purity and the purity of all the methods that override
+        // it. Logically, this rule is the same as the WPI rule for overrides, but
+        // purity isn't a type system and therefore must be special-cased.
+        Set<? extends ExecutableElement> overriddenMethods =
+            ElementUtils.getOverriddenMethods(methodElt, types);
+        for (ExecutableElement overriddenElt : overriddenMethods) {
+          inferPurityAnno(additionalKinds, wpi, overriddenElt);
+        }
+      } else if (additionalKinds.isEmpty()) {
+        // No need to suggest @Impure, since it is equivalent to no annotation.
       } else {
-        r =
-            PurityChecker.checkPurity(
-                body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
-      }
-      if (!r.isPure(purityKinds)) {
-        reportPurityErrors(r, tree, purityKinds);
-      }
-
-      if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
-        // Issue a warning if the method is pure, but not annotated as such.
-        EnumSet<PurityKind> additionalKinds = r.getKinds().clone();
-        if (!infer) {
-          // During WPI, propagate all purity kinds, even those that are already
-          // present (because they were inferred in a previous WPI round).
-          additionalKinds.removeAll(purityKinds);
-        }
-        if (TreeUtils.isConstructor(tree) || TreeUtils.isVoidReturn(tree)) {
-          additionalKinds.remove(PurityKind.DETERMINISTIC);
-        }
-        if (infer) {
-          WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
-          ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
-          inferPurityAnno(additionalKinds, wpi, methodElt);
-          // The purity of overridden methods is impacted by the purity of this method. If
-          // a superclass method is pure, but an implementation in a subclass is not, WPI
-          // ought to treat **neither** as pure. The purity kind of the superclass method
-          // is the LUB of its own purity and the purity of all the methods that override
-          // it. Logically, this rule is the same as the WPI rule for overrides, but
-          // purity isn't a type system and therefore must be special-cased.
-          Set<? extends ExecutableElement> overriddenMethods =
-              ElementUtils.getOverriddenMethods(methodElt, types);
-          for (ExecutableElement overriddenElt : overriddenMethods) {
-            inferPurityAnno(additionalKinds, wpi, overriddenElt);
-          }
-        } else if (additionalKinds.isEmpty()) {
-          // No need to suggest @Impure, since it is equivalent to no annotation.
+        boolean isSef = additionalKinds.contains(PurityKind.SIDE_EFFECT_FREE);
+        boolean isDet = additionalKinds.contains(PurityKind.DETERMINISTIC);
+        if (isSef && isDet) {
+          checker.reportWarning(tree, "purity.more.pure", tree.getName());
+        } else if (isSef) {
+          checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
+        } else if (isDet) {
+          checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
         } else {
-          boolean isSef = additionalKinds.contains(PurityKind.SIDE_EFFECT_FREE);
-          boolean isDet = additionalKinds.contains(PurityKind.DETERMINISTIC);
-          if (isSef && isDet) {
-            checker.reportWarning(tree, "purity.more.pure", tree.getName());
-          } else if (isSef) {
-            checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
-          } else if (isDet) {
-            checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
-          } else {
-            throw new BugInCF("Unexpected purity kind in " + additionalKinds);
-          }
+          throw new BugInCF("Unexpected purity kind in " + additionalKinds);
         }
       }
     }
+  }
 
-    // There will be code here that *may* use `body` (and may set `body` before using it).
-    // The below is just a placeholder so `bodyAssigned` is not a dead variable.
-    // ...
-    if (!bodyAssigned) {
-      body = atypeFactory.getPath(tree.getBody());
-      bodyAssigned = true;
+  /**
+   * Returns a diagnostic message for an annotation expression that cannot be parsed, describing
+   * where the expression appears in addition to why it cannot be parsed.
+   *
+   * <p>The message for {@code messageKey} takes {@code contextArgs} followed by the arguments of
+   * the parse failure, so the description precedes the explanation of the failure.
+   *
+   * @param ex the parse failure
+   * @param messageKey a message key whose message describes where the expression appears
+   * @param contextArgs the arguments to {@code messageKey} that precede those of {@code ex}
+   * @return a diagnostic message about the unparseable expression
+   */
+  private static DiagMessage parseErrorInContext(
+      JavaExpressionParseException ex,
+      @CompilerMessageKey String messageKey,
+      Object... contextArgs) {
+    if (!ex.isFlowParseError()) {
+      // Some other message key, whose format string this method does not know.
+      return new DiagMessage(ex);
     }
-    // ...
+    Object[] args = new Object[contextArgs.length + ex.args.length];
+    System.arraycopy(contextArgs, 0, args, 0, contextArgs.length);
+    System.arraycopy(ex.args, 0, args, contextArgs.length, ex.args.length);
+    return new DiagMessage(Diagnostic.Kind.ERROR, messageKey, args);
+  }
+
+  /**
+   * Returns a diagnostic message for a {@code @SideEffectsOnly} expression that cannot be parsed.
+   * The message names the method whose annotation contains the expression, because the message
+   * might be issued at a call site, which may be far from that method's declaration.
+   *
+   * @param ex the parse failure
+   * @param declaringMethod the method on whose declaration the annotation appears
+   * @param declExpr the expression as written in the annotation
+   * @return a diagnostic message about the unparseable expression
+   */
+  public static DiagMessage sideEffectsOnlyParseError(
+      JavaExpressionParseException ex, ExecutableElement declaringMethod, String declExpr) {
+    return parseErrorInContext(
+        ex,
+        "flowexpr.parse.error.sideeffectsonly",
+        declExpr,
+        ElementUtils.getSimpleDescription(declaringMethod));
+  }
+
+  /**
+   * Returns a diagnostic message for a contract expression that cannot be parsed. The message names
+   * the contract annotation and the method that it appears on, because a method declaration may
+   * carry several contract annotations.
+   *
+   * @param ex the parse failure
+   * @param contract the contract whose expression cannot be parsed
+   * @param methodTree the method declaration on which the contract annotation appears
+   * @return a diagnostic message about the unparseable expression
+   */
+  private static DiagMessage contractParseError(
+      JavaExpressionParseException ex, Contract contract, MethodTree methodTree) {
+    return parseErrorInContext(
+        ex,
+        "flowexpr.parse.error.contract",
+        contract.kind.errorKey,
+        contract.expressionString,
+        contract.contractAnnotation.getAnnotationType().asElement().getSimpleName(),
+        ElementUtils.getSimpleDescription(TreeUtils.elementFromDeclaration(methodTree)));
+  }
+
+  /**
+   * Issues an error for each expression of the method's {@code @SideEffectsOnly} annotation that
+   * cannot be parsed in the scope of the method declaration.
+   *
+   * <p>A call to the method also issues the error, because the callee's declaration might not be
+   * under compilation. This check issues the error where the programmer can fix it, and does so
+   * even if the method is never called.
+   *
+   * @param tree a method declaration
+   * @param methodElement the element for {@code tree}
+   */
+  protected void checkSideEffectsOnlyExpressions(MethodTree tree, ExecutableElement methodElement) {
+    AnnotationMirror sideEffectsOnly =
+        atypeFactory.getDeclAnnotation(methodElement, SideEffectsOnly.class);
+    if (sideEffectsOnly == null) {
+      // An inherited annotation is checked at the declaration that writes it.
+      return;
+    }
+    for (String expression :
+        AnnotationUtils.getElementValueArray(
+            sideEffectsOnly, sideEffectsOnlyValueElement, String.class)) {
+      try {
+        StringToJavaExpression.atMethodDecl(expression, methodElement, checker);
+      } catch (JavaExpressionParseException ex) {
+        // Every checker of a compound checker performs this check, so report the error only once.
+        checker.reportOnce(
+            getCurrentPath(), sideEffectsOnlyParseError(ex, methodElement, expression));
+      }
+    }
   }
 
   /**
@@ -1403,19 +1490,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       try {
         exprJe = StringToJavaExpression.atMethodBody(expressionString, methodTree, checker);
       } catch (JavaExpressionParseException e) {
-        DiagMessage diagMessage = new DiagMessage(e);
-        if (diagMessage.getMessageKey().equals("flowexpr.parse.error")) {
-          String s =
-              String.format(
-                  "'%s' in the %s %s on the declaration of method '%s': ",
-                  expressionString,
-                  contract.kind.errorKey,
-                  contract.contractAnnotation.getAnnotationType().asElement().getSimpleName(),
-                  methodTree.getName().toString());
-          checker.reportError(methodTree, "flowexpr.parse.error", s + diagMessage.getArgs()[0]);
-        } else {
-          checker.report(methodTree, new DiagMessage(e));
-        }
+        checker.report(methodTree, contractParseError(e, contract, methodTree));
         continue;
       }
       if (!CFAbstractStore.canInsertJavaExpression(exprJe)) {
@@ -1912,8 +1987,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     List<AnnotatedTypeMirror> typeargs = mType.typeArgs();
 
     List<AnnotatedTypeParameterBounds> paramBounds =
-        CollectionsPlume.mapList(
-            AnnotatedTypeVariable::getBounds, invokedMethod.getTypeVariables());
+        CollectionsP.mapList(AnnotatedTypeVariable::getBounds, invokedMethod.getTypeVariables());
 
     ExecutableElement method = invokedMethod.getElement();
     CharSequence methodName = ElementUtils.getSimpleDescription(method);
@@ -2274,8 +2348,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     checkVarargs(constructorType, tree);
 
     List<AnnotatedTypeParameterBounds> paramBounds =
-        CollectionsPlume.mapList(
-            AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
+        CollectionsP.mapList(AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
 
     checkTypeArguments(
         tree,
@@ -2338,10 +2411,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     return super.visitMemberReference(tree, p);
   }
 
-  /** A set containing {@code Tree.Kind.METHOD} and {@code Tree.Kind.LAMBDA_EXPRESSION}. */
-  private ArraySet<Tree.Kind> methodAndLambdaExpression =
-      new ArraySet<>(Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION));
-
   /**
    * Checks that the type of the return expression is a subtype of the enclosing method required
    * return type. If not, it issues a "return" error.
@@ -2357,7 +2426,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     long startMillis = System.currentTimeMillis();
     Tree startSlowTypeCheckingTree = slowTypecheckingTree;
 
-    Tree enclosing = TreePathUtil.enclosingOfKind(getCurrentPath(), methodAndLambdaExpression);
+    Tree enclosing = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
 
     AnnotatedTypeMirror declaredReturnType = null;
     if (enclosing instanceof MethodTree enclosingMethod) {
@@ -3285,9 +3354,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       String valueTypeString = pair.found;
       String varTypeString = pair.required;
       checker.reportError(
-          errorLocation,
-          errorKey,
-          ArraysPlume.concatenate(extraArgs, valueTypeString, varTypeString));
+          errorLocation, errorKey, ArraysP.concatenate(extraArgs, valueTypeString, varTypeString));
     }
 
     commonAssignmentCheckEndDiagnostic(result, null, varType, valueType, errorLocation);
@@ -3988,7 +4055,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     MemberReferenceKind memRefKind =
         MemberReferenceKind.getMemberReferenceKind(memberReferenceTree);
     AnnotatedTypeMirror enclosingType;
-    if (TreeUtils.isLikeDiamondMemberReference(memberReferenceTree)) {
+    if (TreeUtils.isRawTypedMemberReference(memberReferenceTree)) {
       TypeElement typeElt = TypesUtils.getTypeElement(TreeUtils.typeOf(preColonTree));
       enclosingType = atypeFactory.getAnnotatedType(typeElt);
     } else if (memberReferenceTree.getMode() == ReferenceMode.NEW
@@ -4187,23 +4254,44 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               overriderTree,
               "purity.methodref",
               overriderType,
-              subPurity,
+              purityKindsToString(subPurity),
               overrider,
               overriddenType,
-              superPurity,
+              purityKindsToString(superPurity),
               overridden);
         } else {
           checker.reportError(
               overriderTree,
               "purity.overriding",
               overriderType,
-              subPurity,
+              purityKindsToString(subPurity),
               overrider,
               overriddenType,
-              superPurity,
+              purityKindsToString(superPurity),
               overridden);
         }
       }
+    }
+
+    /**
+     * Formats purity kinds for a diagnostic message, as the annotations that a user writes rather
+     * than as the enum constant names that {@code EnumSet.toString} would produce.
+     *
+     * @param purityKinds a set of purity kinds
+     * @return the annotations corresponding to {@code purityKinds}, space-separated
+     */
+    private String purityKindsToString(EnumSet<PurityKind> purityKinds) {
+      if (purityKinds.isEmpty()) {
+        return "(no side effect annotation)";
+      }
+      StringJoiner result = new StringJoiner(" ");
+      for (PurityKind purityKind : purityKinds) {
+        switch (purityKind) {
+          case SIDE_EFFECT_FREE -> result.add("@SideEffectFree");
+          case DETERMINISTIC -> result.add("@Deterministic");
+        }
+      }
+      return result.toString();
     }
 
     /**
@@ -4411,7 +4499,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       List<AnnotatedTypeMirror> overriddenParams = overridden.getParameterTypes();
 
       // Fix up method reference parameters.
-      // See https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.13.1
+      // See https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.13.1
       if (isMethodReference) {
         // The functional interface of an unbound member reference has an extra parameter
         // (the receiver).
@@ -4631,19 +4719,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     for (IPair<JavaExpression, AnnotationMirror> weak : mustSubset) {
       JavaExpression jexpr = weak.first;
-      boolean found = false;
+      TypeMirror jexprTM = jexpr.getType();
 
-      for (IPair<JavaExpression, AnnotationMirror> strong : set) {
-        // are we looking at a contract of the same receiver?
-        if (jexpr.equals(strong.first)) {
-          // check subtyping relationship of annotations
-          TypeMirror jexprTM = jexpr.getType();
-          if (qualHierarchy.isSubtypeShallow(strong.second, jexprTM, weak.second, jexprTM)) {
-            found = true;
-            break;
-          }
-        }
-      }
+      // Is there a contract of the same receiver, whose annotation is a subtype?
+      boolean found =
+          set.stream()
+              .anyMatch(
+                  strong ->
+                      jexpr.equals(strong.first)
+                          && qualHierarchy.isSubtypeShallow(
+                              strong.second, jexprTM, weak.second, jexprTM));
 
       if (!found) {
 

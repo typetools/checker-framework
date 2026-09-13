@@ -14,4 +14,3 @@ class TypeCastMultiple:
         new *0: @java.lang.UnderInitialization
         instanceof *0: @java.lang.UnderInitialization
         typecast *1: @java.lang.Tainted
-

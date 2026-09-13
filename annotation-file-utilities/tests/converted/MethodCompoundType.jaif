@@ -7,4 +7,3 @@ class MethodCompoundType:
     method m()[Ljava/util/Map;:
         return:
         insert-annotation Method.type: @A
-

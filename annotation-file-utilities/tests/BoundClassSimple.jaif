@@ -9,4 +9,3 @@ class BoundClassSimple:
     field misleadingField:
 
     method <init>()V:
-

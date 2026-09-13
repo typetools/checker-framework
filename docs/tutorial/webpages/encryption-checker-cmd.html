@@ -87,7 +87,7 @@
         <li><a href="#setup">An Encryption Checker</a>
         </li>
 
-        <li><a href="#annotation">Write type annotation
+        <li><a href="#annotation">Write the type annotation
         definitions</a></li>
 
         <li><a href="#run1">Run the Encryption Checker &mdash; 2 errors</a></li>
@@ -110,7 +110,7 @@
     <h4>1. An Encryption Checker</h4>
 
     <p>As an example, suppose that you wish to only allow encrypted
-    information to be sent over the internet. To do so, you can write an
+    information to be sent over the Internet. To do so, you can write an
     Encryption Checker.</p>
   </div>
 
@@ -132,11 +132,11 @@ $ <strong>javacheck myqual/Encrypted.java myqual/PossiblyUnencrypted.java myqual
     <h4>3. Run the Encryption Checker</h4>
 
     <p>The <code>@Encrypted</code> annotations have already been written
-    in file EncryptionDemo.java. The default for types without annotations is
+    in file <code>EncryptionDemo.java</code>. The default for types without annotations is
     <code>@PossiblyUnencrypted</code>.</p>
 
     <p><b>Invoke the compiler</b> with the Subtyping Checker.
-    Specify the @Encrypted, @PossiblyUnencrypted, and @PolyEncrypted annotations using the -Aquals
+    Specify the @Encrypted, @PossiblyUnencrypted, and @PolyEncrypted annotations using the <code>-Aquals</code>
     command-line option, and add the Encrypted, PossiblyUnencrypted, and PolyEncrypted
     classfiles to the processor classpath:</p>
     <pre>
@@ -156,10 +156,10 @@ encrypted/EncryptionDemo.java:32: error: [argument] incompatible types in argume
   </div>
 
   <div id="error1">
-    <h4>4. Suppress the First Error</h4>
+    <h4>4. Suppress the first error</h4>
 
-    <p>The first error needs to be suppressed, because the string on the
-    left is considered "encrypted" in this encryption scheme. All
+    <p>The first error needs to be suppressed, because the expression on the
+    right is considered "encrypted" in this encryption scheme. All
     <code>@SuppressWarnings</code> should have a comment explaining why
     suppressing the warning is the correct action. See the correction
     below.</p>
@@ -188,7 +188,7 @@ encrypted/EncryptionDemo.java:34: error: [argument] incompatible types in argume
   </div>
 
   <div id="error2">
-    <h4>6. Correct the Second Error</h4>
+    <h4>6. Correct the second error</h4>
 
     <p>The password should be encrypted before it is sent over the
     Internet. The correction is below.</p>
