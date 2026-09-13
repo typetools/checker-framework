@@ -41,8 +41,8 @@ import org.checkerframework.javacutil.TypesUtils;
  * "Subtyping"</a>.
  *
  * <p>Note: The visit methods of this class must be public but it is intended to be used through a
- * TypeHierarchy interface reference which will only allow isSubtype to be called. Clients should
- * not call the visit methods.
+ * TypeHierarchy interface reference which will only allow {@code isSubtype} to be called. Clients
+ * should not call the visit methods.
  *
  * <p>The visit methods return true if the first argument is a subtype of the second argument.
  */
@@ -51,7 +51,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   /**
    * The type-checker that is associated with this.
    *
-   * <p>Used for processingEnvironment when needed.
+   * <p>Used for {@code processingEnvironment} when needed.
    */
   protected final BaseTypeChecker checker;
 
@@ -872,7 +872,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
   @Override
   public Boolean visitNull_Null(AnnotatedNullType subtype, AnnotatedNullType supertype, Void p) {
-    // this can occur when comparing typevar lower bounds since they are usually null types
+    // This can occur when comparing typevar lower bounds since they are usually null types.
     return isPrimarySubtype(subtype, supertype);
   }
 
@@ -1329,7 +1329,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         // intersection type.
         // (This is a bug in the GLB algorithm; see
         // https://bugs.openjdk.org/browse/JDK-8039222)
-        // In this case, the upperbound is not a subtype of `supertype` and the Checker
+        // In this case, the upper bound is not a subtype of `supertype` and the Checker
         // Framework crashes. So catch that crash and just return false.
         // TODO: catch the problem more locally.
         return false;
