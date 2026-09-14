@@ -1,7 +1,6 @@
 package org.checkerframework.checker.modifiability;
 
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -141,7 +140,8 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
    * {@code @Modifiable} and {@code @Unmodifiable} weaken to the top qualifier on {@code type}. For
    * example, {@code Map.Entry} cannot grow.
    *
-   * @param type the type on which an alias was written
+   * @param type the type on which an alias was written; it is an upper bound, so it is never a type
+   *     variable or a wildcard
    * @return true if {@code type} structurally cannot support this checker's capability
    */
   protected boolean typeLacksCapability(TypeMirror type) {
@@ -154,7 +154,8 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
    * because a polymorphic qualifier may usefully carry a capability that the type itself cannot
    * exercise; for example, {@code Map.Entry} carries the replace capability of its map.
    *
-   * @param type the type on which {@code @PolyModifiable} was written
+   * @param type the type on which {@code @PolyModifiable} was written; it is an upper bound, so it
+   *     is never a type variable or a wildcard
    * @return true if {@code @PolyModifiable} weakens to the top qualifier on {@code type}
    */
   protected boolean polyLacksCapability(TypeMirror type) {
@@ -172,17 +173,21 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
    *
    * <p>When {@code tm} is null, as for an alias written in {@code @DefaultQualifier}, no structural
    * weakening is applied.
+   *
+   * <p>A type variable or wildcard is classified by its upper bound, so that, for example, {@code
+   * <T extends Deque<String>>} has the same capabilities as {@code Deque}.
    */
   @Override
   public AnnotationMirror canonicalAnnotation(
       AnnotationMirror annotation, @Nullable TypeMirror tm) {
     if (expandsModifiabilityAliases()) {
+      TypeMirror bound = tm == null ? null : TypesUtils.upperBound(tm);
       if (areSameByClass(annotation, Modifiable.class)) {
-        return tm != null && typeLacksCapability(tm) ? topAnnotation() : positiveCapability();
+        return bound != null && typeLacksCapability(bound) ? topAnnotation() : positiveCapability();
       } else if (areSameByClass(annotation, Unmodifiable.class)) {
-        return tm != null && typeLacksCapability(tm) ? topAnnotation() : negativeCapability();
+        return bound != null && typeLacksCapability(bound) ? topAnnotation() : negativeCapability();
       } else if (areSameByClass(annotation, PolyModifiable.class)) {
-        return tm != null && polyLacksCapability(tm) ? topAnnotation() : polyCapability();
+        return bound != null && polyLacksCapability(bound) ? topAnnotation() : polyCapability();
       } else if (areSameByClass(annotation, MaybeModifiable.class)
           || areSameByClass(annotation, UnmodifiableParam.class)) {
         return topAnnotation();
@@ -327,13 +332,14 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
       return;
     }
 
-    Tree receiverTree = TreeUtils.getReceiverTree(tree);
-    if (receiverTree == null) {
-      // TODO: The receiver is the implicit `this`, whose type is the receiver type of the
-      // enclosing method.  Until that is implemented, leave the declared result alone.
+    // `getReceiverType()` also handles an implicit `this` receiver, whose type is the receiver
+    // type of the enclosing method.
+    AnnotatedTypeMirror receiverType = getReceiverType(tree);
+    if (receiverType == null) {
+      // The receiver's type is unknown, so nothing is known about its iterator.
+      returnType.replaceAnnotation(topAnnotation());
       return;
     }
-    AnnotatedTypeMirror receiverType = getAnnotatedType(receiverTree);
 
     // The iterator of a collection that lacks the capability also lacks the capability, even if
     // the declaration says that the iterator has it (as ArrayList's does).
@@ -345,8 +351,9 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
     // The receiver has the capability; its iterator does too if the receiver is @IteratorPolyMod.
     if (receiverType.hasPrimaryAnnotation(positiveCapability())) {
       AnnotatedTypeMirror iteratorHierarchyType =
-          getTypeFactoryOfSubchecker(IteratorChecker.class).getAnnotatedType(receiverTree);
-      if (iteratorHierarchyType.hasPrimaryAnnotation(ITERATOR_POLY_MOD)) {
+          getTypeFactoryOfSubchecker(IteratorChecker.class).getReceiverType(tree);
+      if (iteratorHierarchyType != null
+          && iteratorHierarchyType.hasPrimaryAnnotation(ITERATOR_POLY_MOD)) {
         returnType.replaceAnnotation(positiveCapability());
         return;
       }

@@ -99,6 +99,9 @@ public class GrowAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeFact
    */
   @Override
   protected boolean polyLacksCapability(TypeMirror type) {
+    if (type.getKind() != TypeKind.DECLARED) {
+      return false;
+    }
     return TypesUtils.isErasedSubtype(type, mapEntryErasure, types);
   }
 

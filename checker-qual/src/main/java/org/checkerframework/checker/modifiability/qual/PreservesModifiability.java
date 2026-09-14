@@ -24,4 +24,10 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
+// TODO: This annotation is trusted, not verified:  no check ensures that the method body actually
+// preserves the capabilities of its first argument, so an incorrect use is unsound.  It also lacks
+// @InheritedAnnotation, so a call through an override that does not repeat the annotation is not
+// refined; the type of a call therefore depends on the static type of the receiver.  Either verify
+// the contract in ModifiabilityBaseVisitor, or make the annotation @InheritedAnnotation and
+// document it as trusted.
 public @interface PreservesModifiability {}
