@@ -201,6 +201,10 @@ public class ProperType extends AbstractType {
    * that their underlying Java types have already been found to be the same. If either type is
    * marked as having annotations that should be ignored, then the annotations are not compared.
    *
+   * <p>Neither type may be an uncaptured wildcard: the type hierarchy compares a wildcard's {@code
+   * extends} bound against the other type, which for a lower-bounded wildcard is not the bound that
+   * holds its qualifiers.
+   *
    * @param other the type to compare against
    * @return {@link ConstraintSet#TRUE} if the annotations are ignored or if the annotations of
    *     {@code this} are the same as those of {@code other}; otherwise {@link

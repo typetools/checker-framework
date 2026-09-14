@@ -204,6 +204,33 @@ public class ConflictingParameterizedBounds {
     B<Pair<Object, ? super @Tainted Holder<String>>> x = wildcardLowerBound();
   }
 
+  // The inference variable that the wildcard's bound mentions is instantiated before the
+  // constraint between the two wildcards is reduced, so both wildcards are proper types.  Their
+  // qualifiers are on their bounds, which an uncaptured wildcard does not expose to the type
+  // hierarchy, so the constraint must still reduce to a constraint between the bounds.
+  <X, S extends A<Pair<X, ? extends @Untainted Holder<X>>>> S properWildcardUpperBound(X x) {
+    throw new RuntimeException();
+  }
+
+  void useProperWildcardUpperBound(String s) {
+    // :: error: [type.arguments.not.inferred]
+    B<Pair<String, ? extends @Tainted Holder<String>>> x = properWildcardUpperBound(s);
+  }
+
+  void useProperWildcardUpperBoundSameQualifiers(@Untainted String s) {
+    B<Pair<@Untainted String, ? extends @Untainted Holder<@Untainted String>>> x =
+        properWildcardUpperBound(s);
+  }
+
+  <X, S extends A<Pair<X, ? super @Untainted Holder<X>>>> S properWildcardLowerBound(X x) {
+    throw new RuntimeException();
+  }
+
+  void useProperWildcardLowerBound(String s) {
+    // :: error: [type.arguments.not.inferred]
+    B<Pair<String, ? super @Tainted Holder<String>>> x = properWildcardLowerBound(s);
+  }
+
   // TODO: This is a false negative.  No such S exists, but the conflict is in the argument of an
   // enclosing type, and neither the constraints implied by incorporation nor the equality
   // constraint between two declared types cover enclosing type arguments.

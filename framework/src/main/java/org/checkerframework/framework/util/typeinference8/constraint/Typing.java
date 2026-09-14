@@ -464,11 +464,15 @@ public class Typing extends TypeConstraint {
    */
   private ReductionResult reduceEquality() {
     if (S.isProper()) {
-      if (T.isProper()) {
+      if (T.isProper() && S.getTypeKind() != TypeKind.WILDCARD) {
         // If S and T are proper types, the constraint reduces to true if S is the same
         // as T (4.3.4), and false otherwise.  javac has already checked that the Java types
         // are the same, so only the qualifiers remain to be checked, and they are checked only
         // for a constraint that an inference variable's bounds imply.
+        //
+        // A wildcard is excluded because its qualifiers are on its bounds, which an uncaptured
+        // wildcard does not expose to the type hierarchy: the constraint between two wildcards
+        // is reduced to a constraint between their bounds, at the end of this method.
         return qualifiersMustMatch
             ? ((ProperType) S).checkAnnotationEquality((ProperType) T)
             : ConstraintSet.TRUE;
