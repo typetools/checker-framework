@@ -179,7 +179,7 @@ public class Typing extends TypeConstraint {
       case TYPE_COMPATIBILITY -> reduceCompatible();
       case SUBTYPE -> reduceSubtyping(context);
       case CONTAINED -> reduceContained();
-      case TYPE_EQUALITY -> reduceEquality(context);
+      case TYPE_EQUALITY -> reduceEquality();
       default -> throw new BugInCF("Unexpected kind: " + getKind());
     };
   }
@@ -460,10 +460,9 @@ public class Typing extends TypeConstraint {
    * Returns the result of reducing this constraint, assume it is an equality constraint. See JLS
    * 18.2.4
    *
-   * @param context the context
    * @return the result of reducing the constraint
    */
-  private ReductionResult reduceEquality(Java8InferenceContext context) {
+  private ReductionResult reduceEquality() {
     if (S.isProper()) {
       if (T.isProper()) {
         // If S and T are proper types, the constraint reduces to true if S is the same
@@ -503,15 +502,13 @@ public class Typing extends TypeConstraint {
       // Assume if both have type arguments, then S and T are class or interface types with
       // the same erasure
 
-      // If these types must have the same qualifiers, then so must their type arguments, except
-      // at a covariant type argument.
-      List<Integer> covariantArgIndexes =
-          qualifiersMustMatch
-              ? context
-                  .typeFactory
-                  .getTypeHierarchy()
-                  .getCovariantArgIndexes((AnnotatedDeclaredType) T.getAnnotatedType())
-              : Collections.emptyList();
+      // If these types must have the same qualifiers, then so must their type arguments, at a
+      // covariant type argument as well: `@Covariant` relaxes subtyping, not equality, and two
+      // parameterizations that differ at a covariant type argument are different types.  The
+      // exemption for a covariant type argument belongs to
+      // VariableBounds#getConstraintsFromParameterized, where the two types are supertypes of one
+      // type rather than the two sides of an equality.
+
       ConstraintSet constraintSet = new ConstraintSet();
       addQualifierEqualityConstraints(constraintSet);
       for (int i = 0; i < tTypeArgs.size(); i++) {
@@ -525,7 +522,7 @@ public class Typing extends TypeConstraint {
                   sTypeArgs.get(i),
                   Kind.TYPE_EQUALITY,
                   false,
-                  qualifiersMustMatch && !covariantArgIndexes.contains(i)));
+                  qualifiersMustMatch));
         }
       }
       // An inner class type's own type arguments are not all of the type arguments it mentions;

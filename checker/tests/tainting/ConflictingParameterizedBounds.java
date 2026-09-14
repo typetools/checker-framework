@@ -134,6 +134,18 @@ public class ConflictingParameterizedBounds {
     CovariantSecond<@Tainted String, @Untainted String> x = covariantSecond();
   }
 
+  // A covariant type argument nested inside an invariant one must still match.  The two bounds
+  // relate S to each parameterization, but relate the two parameterizations to each other by
+  // equality, which `@Covariant` does not relax.
+  <X, S extends A<CovariantSup<Pair<X, @Untainted String>>>> S covariantNestedArg(X x) {
+    throw new RuntimeException();
+  }
+
+  void useCovariantNestedArg(String s) {
+    // :: error: [type.arguments.not.inferred]
+    B<CovariantSup<Pair<String, @Tainted String>>> x = covariantNestedArg(s);
+  }
+
   // The conflicting type argument mentions an inference variable, so it is not a proper type
   // until the constraint is reduced.
   interface Pair<X, Y> {}
