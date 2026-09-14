@@ -161,6 +161,38 @@ public class ProperType extends AbstractType {
   }
 
   /**
+   * Is {@code this} the same type as {@code other}? The underlying Java types are assumed to have
+   * already been found to be the same; only the qualifiers are compared, including those of the
+   * enclosing type of an inner class type.
+   *
+   * @param other another proper type, whose Java type is the same as this type's Java type
+   * @return {@link ConstraintSet#TRUE} if the qualifiers of {@code this} and {@code other} are the
+   *     same; otherwise {@link ConstraintSet#TRUE_ANNO_FAIL}
+   */
+  public ReductionResult isSameType(ProperType other) {
+    ConstraintSet result = checkAnnotationSubtype(other);
+    if (result != ConstraintSet.TRUE) {
+      return result;
+    }
+    result = other.checkAnnotationSubtype(this);
+    if (result != ConstraintSet.TRUE) {
+      return result;
+    }
+    // checkAnnotationSubtype compares the qualifiers of the types themselves and of their type
+    // arguments, but not those of their enclosing types, which are part of an inner class type.
+    AbstractType thisEnclosing = getEnclosingType();
+    AbstractType otherEnclosing = other.getEnclosingType();
+    if (thisEnclosing == null || otherEnclosing == null) {
+      // The Java types are the same, so either neither type is an inner class type or the
+      // enclosing types are not represented; there is nothing more to compare.
+      return ConstraintSet.TRUE;
+    }
+    // The enclosing type of a proper type is a proper type, because neither mentions an inference
+    // variable.
+    return ((ProperType) thisEnclosing).isSameType((ProperType) otherEnclosing);
+  }
+
+  /**
    * Is {@code this} an unchecked subtype of {@code superType}?
    *
    * @param superType super type

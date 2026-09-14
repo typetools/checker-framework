@@ -155,6 +155,10 @@ public class Expression extends TypeConstraint {
     // here would replace that message by "type.arguments.not.inferred" and would also suppress
     // every other check that BaseTypeVisitor performs on the invocation, because
     // BaseTypeVisitor.visitMethodInvocation returns as soon as inference fails.
+    //
+    // Typing.reduceEquality does compare the qualifiers of two proper types, but only for a
+    // constraint that relates the type arguments of two parameterized bounds of an inference
+    // variable rather than two types that appear in the program.
 
     // TODO: This should return false in some cases.
     // com.sun.tools.javac.code.Types.isConvertible(com.sun.tools.javac.code.Type,
