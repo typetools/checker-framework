@@ -8,19 +8,13 @@
 ### User-visible changes
 
 New warning `class.not.completed` is issued when a class file that is needed to
-compute an element's declaration annotations cannot be read.  Previously, the
-Checker Framework crashed on such a classpath.
+compute an element's declaration annotations cannot be read.
 
 ### Changes for type system implementers
 
 Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
 
-`AnnotatedTypeMirror.createType()` no longer throws `BugInCF` for a type whose
-kind is `ERROR`; it returns an `AnnotatedDeclaredType`, as it does for `DECLARED`.
-
 ### Closed issues
-
-\#8055.
 
 ## Version 4.2.3 (2026-09-01)
 
