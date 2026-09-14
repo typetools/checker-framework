@@ -256,11 +256,9 @@ public final class PurityChecker {
      * {@link #visitNewClass}.
      *
      * <p>The body's effects occur where the lambda's functional method is invoked, and that
-     * invocation is checked like any other method call. Therefore, do not scan the body. Not
-     * scanning the body is sound only because the body is checked elsewhere, against the purity
-     * annotations on the functional method that the lambda implements; see {@code
-     * BaseTypeVisitor#checkLambdaPurity}. (The analogous check for a method reference is {@code
-     * BaseTypeVisitor.OverrideChecker#checkPurity}.)
+     * invocation is checked like any other method call. Therefore, do not scan the body. The body
+     * is checked elsewhere, against the purity annotations on the functional method that the lambda
+     * implements; see {@code BaseTypeVisitor#checkLambdaPurity}.
      *
      * @param tree a lambda expression
      * @param ignore an unused parameter
@@ -273,15 +271,12 @@ public final class PurityChecker {
     }
 
     /**
-     * Declaring a local or anonymous class has no effect; the effects of its methods occur where
-     * those methods are invoked. Therefore, do not scan the class's methods. They are checked
+     * Declaring a local or anonymous class has no side effect. The class's methods are checked
      * against their own purity annotations, like the methods of any other class.
      *
-     * <p>Do scan the class's other members. A field initializer or an initializer block runs when
-     * the class is instantiated (or, if static, when the class is initialized), and it is part of
-     * no method declaration, so no other check examines it. Attributing it to the method that
-     * contains the class declaration is conservative: the effect is reported even if the class is
-     * never instantiated.
+     * <p>Do scan the class's non-method members. Attributing a field initializer or an initializer
+     * block to the method that contains the class declaration is conservative: the effect is
+     * reported even if the class is never instantiated.
      *
      * @param tree a class declaration
      * @param ignore an unused parameter

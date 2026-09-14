@@ -2413,6 +2413,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * <p>Under {@code -Ainfer}, reports no error, but instead infers the purity of the functional
    * interface method from the lambda's body.
    *
+   * <p>The analogous check for a method reference is {@link
+   * BaseTypeVisitor.OverrideChecker#checkPurity}.
+   *
    * @param tree a lambda expression
    * @param functionType the type of the functional interface method that {@code tree} implements
    */
