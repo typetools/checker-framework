@@ -535,7 +535,9 @@ public class VariableBounds {
    * </ul>
    *
    * In either case, the type argument is not invariant, and its qualifier must not be compared to
-   * the qualifier of another type argument.
+   * the qualifier of another type argument. The qualifier is a copy only if it is the same as the
+   * one on {@code type}; a programmer can write a different qualifier at either position, and such
+   * a qualifier is invariant.
    *
    * @param type one of the two types whose parameterized supertypes are being compared
    * @param typeArgument a type argument of a parameterized supertype of {@code type}
@@ -543,6 +545,11 @@ public class VariableBounds {
    */
   private boolean isSelfReferentialTypeArgument(AbstractType type, AbstractType typeArgument) {
     if (!context.typeFactory.types.isSameType(typeArgument.getJavaType(), type.getJavaType())) {
+      return false;
+    }
+    // A qualifier that differs from the one on `type` is not a copy of it, so a programmer wrote
+    // it at an invariant position, as in `enum E implements Box<@Untainted E>`.
+    if (!typeArgument.getQualifiers().equals(type.getQualifiers())) {
       return false;
     }
     if (type.getTypeKind() == TypeKind.TYPEVAR) {
