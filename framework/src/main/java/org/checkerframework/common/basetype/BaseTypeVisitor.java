@@ -135,6 +135,7 @@ import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.JavaParserUtil;
+import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.typeinference8.InferenceResult;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -457,7 +458,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     Map<Tree, com.github.javaparser.ast.Node> treePairs = new HashMap<>();
     try (InputStream reader = root.getSourceFile().openInputStream()) {
-      CompilationUnit javaParserRoot = JavaParserUtil.parseCompilationUnit(reader);
+      CompilationUnit javaParserRoot = StaticJavaParserUtil.parseCompilationUnit(reader);
       JavaParserUtil.concatenateAddedStringLiterals(javaParserRoot);
       new JointVisitorWithDefaultAction() {
         @Override
@@ -503,7 +504,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     CompilationUnit originalAst;
     try (InputStream originalInputStream = root.getSourceFile().openInputStream()) {
-      originalAst = JavaParserUtil.parseCompilationUnit(originalInputStream);
+      originalAst = StaticJavaParserUtil.parseCompilationUnit(originalInputStream);
     } catch (IOException e) {
       throw new BugInCF("Error while reading Java file: " + root.getSourceFile().toUri(), e);
     }
@@ -523,7 +524,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     CompilationUnit modifiedAst = null;
     try {
-      modifiedAst = JavaParserUtil.parseCompilationUnit(withAnnotations);
+      modifiedAst = StaticJavaParserUtil.parseCompilationUnit(withAnnotations);
     } catch (ParseProblemException e) {
       throw new BugInCF("Failed to parse code after annotation insertion: " + withAnnotations, e);
     }
