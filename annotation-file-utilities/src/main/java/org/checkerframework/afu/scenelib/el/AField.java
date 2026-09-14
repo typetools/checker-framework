@@ -158,6 +158,13 @@ public class AField extends ADeclaration {
     return v.visitField(this, t);
   }
 
+  /**
+   * Returns a new {@link LinkedHashMap}-backed map from keys to {@link AField}s, which vivifies
+   * missing values.
+   *
+   * @param <K> the type of the map keys
+   * @return a new vivifying map from keys to {@link AField}s
+   */
   static <K extends Object> VivifyingMap<K, AField> newVivifyingLHMap_AF() {
     return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override

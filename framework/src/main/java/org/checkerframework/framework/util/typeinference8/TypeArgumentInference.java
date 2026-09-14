@@ -1,7 +1,10 @@
 package org.checkerframework.framework.util.typeinference8;
 
 import com.sun.source.tree.ExpressionTree;
+import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
 /**
@@ -45,13 +48,16 @@ public interface TypeArgumentInference {
       AnnotatedExecutableType executableType);
 
   /**
-   * Returns true if type argument inference for some method or constructor invocation is currently
-   * in progress anywhere on the call stack, that is, if this method is called while a previous,
-   * not-yet-returned call to {@link #inferTypeArgs} is running.
+   * If {@code param} is an implicitly typed lambda parameter whose type an in-progress inference
+   * has already determined, returns that type. Otherwise, returns null.
    *
-   * @return true if type argument inference for some invocation is currently in progress
+   * <p>If an already completed inference, determined the type of the lambda parameter, null is
+   * returned.
+   *
+   * @param param an element that might be an implicitly typed lambda parameter
+   * @return the type of {@code param} as computed by an in-progress inference, or null
    */
-  default boolean isAnyInferenceInProgress() {
-    return false;
+  default @Nullable AnnotatedTypeMirror getLambdaParameterType(VariableElement param) {
+    return null;
   }
 }

@@ -664,12 +664,11 @@ currently disabled by default?
 
 <p>
 There is no need to annotate new code for this project.  Just use existing
-annotated codebases, such as those that are type-checked as part of the
-Checker
-Framework's <a href="https://github.com/typetools/checker-framework/blob/master/.azure/azure-pipelines.yml">Azure
-    Pipeline</a>.  In other words, you can start by enabling Azure
-Pipelines for your fork and then changing the default behavior in a
-branch.  The Azure Pipelines job will show you what new warnings appear.
+annotated codebases, such as those that are type-checked as part of
+continuous integration.
+In other words, you can start by using GitHub Actions (or enabling CircleCI)
+for your fork and then changing the default behavior in a
+branch.  CI will show you what new warnings appear.
 </p>
 
 <p>

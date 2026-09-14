@@ -1,6 +1,6 @@
 .PHONY: all test clean default
 default: all
-all: azure-pipelines-daily.yml
+all:
 
 test: all
 
@@ -14,7 +14,7 @@ PLUME_SCRIPTS=../checker/bin-devel/.plume-scripts
 #	@chmod -w $@
 
 ${PLUME_SCRIPTS}:
-	make -C .. get-plume-scripts
+	cd .. && ./gradlew -q getPlumeScripts
 
 clean:
 	@rm -f azure-pipelines.yml azure-pipelines-daily.yml

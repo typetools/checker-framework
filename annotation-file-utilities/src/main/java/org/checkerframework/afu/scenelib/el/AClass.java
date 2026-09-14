@@ -33,13 +33,16 @@ public class AClass extends ADeclaration {
    */
   public final VivifyingMap<String, AMethod> methods = createMethodMap();
 
+  /** The class's annotated static initializer blocks; map key is the index of the block. */
   public final VivifyingMap<Integer, ABlock> staticInits = createInitBlockMap();
 
+  /** The class's annotated instance initializer blocks; map key is the index of the block. */
   public final VivifyingMap<Integer, ABlock> instanceInits = createInitBlockMap();
 
   /** The class's annotated fields; map key is field name. */
   public final VivifyingMap<String, AField> fields = AField.<String>newVivifyingLHMap_AF();
 
+  /** The class's annotated field initializers; map key is field name. */
   public final VivifyingMap<String, AExpression> fieldInits = createFieldInitMap();
 
   /**
@@ -101,6 +104,17 @@ public class AClass extends ADeclaration {
     copyMapContents(clazz.instanceInits, instanceInits);
     copyMapContents(clazz.methods, methods);
     copyMapContents(clazz.staticInits, staticInits);
+    // The following fields are not annotations, but information about the class declaration.
+    // A copy needs them too, because clients such as the Checker Framework's stub file writer
+    // consult them when printing a copy of a scene.
+    typeElement = clazz.typeElement;
+    enums.addAll(clazz.enums);
+    if (clazz.enumConstants != null) {
+      enumConstants = new ArrayList<>(clazz.enumConstants);
+    }
+    annotationTypes.addAll(clazz.annotationTypes);
+    interfaces.addAll(clazz.interfaces);
+    records.addAll(clazz.records);
   }
 
   @Override
@@ -225,6 +239,11 @@ public class AClass extends ADeclaration {
 
   // Static methods
 
+  /**
+   * Returns a new map from method signature to {@link AMethod}, which vivifies missing values.
+   *
+   * @return a new vivifying map from method signature to {@link AMethod}
+   */
   private static VivifyingMap<String, AMethod> createMethodMap() {
     return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
@@ -239,6 +258,12 @@ public class AClass extends ADeclaration {
     };
   }
 
+  /**
+   * Returns a new map from initializer block index to {@link ABlock}, which vivifies missing
+   * values.
+   *
+   * @return a new vivifying map from initializer block index to {@link ABlock}
+   */
   private static VivifyingMap<Integer, ABlock> createInitBlockMap() {
     return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
@@ -253,6 +278,12 @@ public class AClass extends ADeclaration {
     };
   }
 
+  /**
+   * Returns a new map from field name to the {@link AExpression} for its initializer, which
+   * vivifies missing values.
+   *
+   * @return a new vivifying map from field name to field initializer
+   */
   private static VivifyingMap<String, AExpression> createFieldInitMap() {
     return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override

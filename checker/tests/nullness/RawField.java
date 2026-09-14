@@ -61,7 +61,6 @@ class MultiVersionControl {
 //     Object f;
 //
 //     public UseUnknownInitializationField() {
-//         // :: error: [initialization.field.write.in.constructor]
 //         f = HasStaticUnknownInitializationField.f;
 //     }
 //

@@ -17,8 +17,11 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.Element;
@@ -90,6 +93,42 @@ public final class TreePathUtil {
    */
   public static @Nullable TreePath pathTillMethod(TreePath path) {
     return pathTillOfKind(path, Tree.Kind.METHOD);
+  }
+
+  /**
+   * Returns the instance field initializers and instance initializer blocks of the class that
+   * encloses the given code. They run as part of every constructor that does not delegate to
+   * another constructor of the same class.
+   *
+   * @param path the path defining the tree node
+   * @return paths to the instance initializers of the class that encloses {@code path}
+   */
+  public static List<TreePath> getInstanceInitializers(TreePath path) {
+    TreePath pathOfClass = pathTillClass(path);
+    if (pathOfClass == null) {
+      return Collections.emptyList();
+    }
+    ClassTree classTree = (ClassTree) pathOfClass.getLeaf();
+    if (classTree.getKind() == Kind.INTERFACE || classTree.getKind() == Kind.ANNOTATION_TYPE) {
+      // An interface has no instance initializers:  every field of an interface is static, and an
+      // interface may not contain an initializer block.  A field of an interface is implicitly
+      // static, so its modifiers do not necessarily contain `static`.
+      return Collections.emptyList();
+    }
+    List<TreePath> result = new ArrayList<>(2);
+    for (Tree member : classTree.getMembers()) {
+      if (member instanceof VariableTree variable) {
+        // A static field's initializer runs at class initialization rather than at construction.
+        // (This also excludes an enum constant, which is static.)
+        if (variable.getInitializer() != null
+            && !variable.getModifiers().getFlags().contains(Modifier.STATIC)) {
+          result.add(new TreePath(pathOfClass, member));
+        }
+      } else if (member instanceof BlockTree block && !block.isStatic()) {
+        result.add(new TreePath(pathOfClass, member));
+      }
+    }
+    return result;
   }
 
   //

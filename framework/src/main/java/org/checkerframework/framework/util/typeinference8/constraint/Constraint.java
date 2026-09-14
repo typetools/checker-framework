@@ -57,6 +57,13 @@ public interface Constraint extends ReductionResult {
      */
     METHOD_REF_EXCEPTION,
 
+    /**
+     * The additional argument constraints produced by the body of an implicitly typed lambda
+     * expression, deferred until the lambda's parameter types are proper types. See {@link
+     * LambdaBodyConstraint}.
+     */
+    LAMBDA_BODY,
+
     /** {@code < Q <: R >}: A qualifier Q is a subtype of a qualifier R. */
     QUALIFIER_SUBTYPE,
 

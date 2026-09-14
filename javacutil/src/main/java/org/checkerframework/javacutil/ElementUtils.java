@@ -756,6 +756,21 @@ public final class ElementUtils {
   }
 
   /**
+   * Returns the no-argument constructor of the given type, or null if it has none.
+   *
+   * @param type a type
+   * @return the type's no-argument constructor, or null if it has none
+   */
+  public static @Nullable ExecutableElement getNoArgumentConstructor(TypeElement type) {
+    for (ExecutableElement constructor : ElementFilter.constructorsIn(type.getEnclosedElements())) {
+      if (constructor.getParameters().isEmpty()) {
+        return constructor;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Returns all nested/inner classes/interfaces declared in the given type.
    *
    * @param type a type

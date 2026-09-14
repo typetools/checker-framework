@@ -111,6 +111,13 @@ public class ATypeElement extends AElement {
     return v.visitTypeElement(this, t);
   }
 
+  /**
+   * Returns a new {@link LinkedHashMap}-backed map from keys to {@link ATypeElement}s, which
+   * vivifies missing values.
+   *
+   * @param <K> the type of the map keys
+   * @return a new vivifying map from keys to {@link ATypeElement}s
+   */
   static <K extends Object> VivifyingMap<K, ATypeElement> newVivifyingLHMap_ATE() {
     return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override

@@ -29,6 +29,55 @@ fi
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
+# Runs "./gradlew" with the arguments after the first, in the current
+# directory.  Retries if the failure looks like a transient network problem,
+# such as HTTP status code 429 ("Too Many Requests") from Maven Central.  The
+# pattern below matches only messages that indicate a network problem; in
+# particular it does not match Gradle's "Could not resolve".
+# The first argument is a space-separated list of the delays, in seconds,
+# before successive retries.  Its last element must be 0, which means "do not
+# retry again".
+gradle_retry_with_delays() {
+  local log status delay
+  local -a delays
+  read -r -a delays <<< "$1"
+  shift
+  log="$(mktemp)"
+  for delay in "${delays[@]}"; do
+    # "set +e" keeps a failure of the pipeline from aborting the script before
+    # the retry logic below runs; it is needed whether or not "set -o pipefail"
+    # is in effect.  ${PIPESTATUS[0]} is the exit status of "./gradlew".
+    set +e
+    ./gradlew "$@" 2>&1 | tee "$log"
+    status="${PIPESTATUS[0]}"
+    set -e
+    if [ "$status" -eq 0 ]; then
+      rm -f "$log"
+      return 0
+    fi
+    if [ "$delay" -eq 0 ] \
+      || ! grep -q -E '(status|response) code:? (429|5[0-9][0-9])|Connect(ion)? timed out|Connection (reset|refused)|Read timed out|Network is unreachable|UnknownHostException|Temporary failure in name resolution|Premature end of Content-Length|Remote host terminated the handshake' "$log"; then
+      rm -f "$log"
+      return "$status"
+    fi
+    echo "gradle_retry: \"./gradlew $*\" failed for an apparent network reason; retrying in ${delay} seconds."
+    sleep "$delay"
+  done
+}
+
+# Runs "./gradlew" with the given arguments, in the current directory, retrying
+# up to twice if the failure looks like a transient network problem.
+gradle_retry() {
+  gradle_retry_with_delays "60 300 0" "$@"
+}
+
+# Like "gradle_retry", but retries at most once and after a shorter delay.  Use
+# this for a task that runs for a long time, where a full sequence of retries
+# could exceed the CI job's time limit and thereby hide the underlying failure.
+gradle_retry_once() {
+  gradle_retry_with_delays "60 0" "$@"
+}
+
 echo "initial JAVA_HOME=${JAVA_HOME}"
 if [ "$(uname)" == "Darwin" ]; then
   export JAVA_HOME=${JAVA_HOME:-$(/usr/libexec/java_home)}
@@ -89,18 +138,14 @@ if [ -n "${JAVA21_HOME:-}" ] && [ -x "${JAVA21_HOME}/bin/java" ]; then
   export JAVA_HOME="${JAVA21_HOME}"
 fi
 
-# Download Gradle and dependencies, retrying in case of network problems.
-# Under CircleCI, the `timeout` command seems to hang forever.
-if [ -z "$CIRCLECI" ]; then
-  # echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
-  if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
-    # Note that "timeout" is not compatible with shell functions.
-    TERM=dumb ./gradlew --write-verification-metadata sha256 help --dry-run --quiet \
-      || { echo "./gradlew --write-verification-metadata sha256 help --dry-run failed; sleeping before trying again." \
-        && sleep 1m \
-        && echo "Trying again: ./gradlew --write-verification-metadata sha256 help --dry-run" \
-        && TERM=dumb ./gradlew --write-verification-metadata sha256 help --dry-run; }
-  fi
+# Download Gradle and dependencies, retrying in case of network problems,
+# before the expensive part of the build.
+# Do not do this under CircleCI:  every CircleCI job sources this script, so on
+# a cache miss all of them would resolve every configuration against Maven
+# Central at once, which is what provokes HTTP status code 429.
+# echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
+if [ -z "${CIRCLECI:-}" ] && [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
+  (TERM=dumb gradle_retry --write-verification-metadata sha256 help --dry-run --quiet)
 fi
 
 echo "Exiting checker/bin-devel/clone-related.sh $* in $(pwd)"
