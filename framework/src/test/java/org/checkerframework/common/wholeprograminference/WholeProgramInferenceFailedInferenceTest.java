@@ -31,7 +31,7 @@ public class WholeProgramInferenceFailedInferenceTest {
    * A compilation unit that calls an element of an annotation type. The scenes (JAIF) storage has
    * no storage location for an annotation element, so whole-program inference fails for the call.
    */
-  private static final String SOURCE =
+  private static final String ANNO_SOURCE =
       String.join(
           System.lineSeparator(),
           "package testpkg;",
@@ -42,6 +42,31 @@ public class WholeProgramInferenceFailedInferenceTest {
           "}",
           "@interface MyAnno {",
           "  String value();",
+          "}");
+
+  /**
+   * A compilation unit that uses compiler-generated methods and constructors: an enum's {@code
+   * values()} and {@code valueOf()} methods and a generated default constructor. Whole-program
+   * inference has no storage location for any of them, but none of them has a declaration on which
+   * a user could write an annotation, so a failed-inference message about them would not be
+   * actionable.
+   */
+  private static final String GENERATED_SOURCE =
+      String.join(
+          System.lineSeparator(),
+          "package testpkg;",
+          "public class UsesGenerated {",
+          "  Object use() {",
+          "    MyEnum[] values = MyEnum.values();",
+          "    MyEnum a = MyEnum.valueOf(\"A\");",
+          "    HasDefaultConstructor h = new HasDefaultConstructor();",
+          "    return values.length + a.ordinal() == 0 ? h : this;",
+          "  }",
+          "}",
+          "enum MyEnum {",
+          "  A;",
+          "}",
+          "class HasDefaultConstructor {",
           "}");
 
   /**
@@ -56,7 +81,7 @@ public class WholeProgramInferenceFailedInferenceTest {
    */
   @Test
   public void methodInvocationWithoutStorageLocation() {
-    String output = runInference();
+    String output = runInference("UsesAnno.java", ANNO_SOURCE, "jaifs");
     Assert.assertTrue(
         "-AshowWpiFailedInferences did not report the call to MyAnno.value(); output was:"
             + System.lineSeparator()
@@ -67,16 +92,36 @@ public class WholeProgramInferenceFailedInferenceTest {
   }
 
   /**
-   * Runs the Value Checker with whole-program inference over {@link #SOURCE} and returns everything
-   * that the checker printed to standard output.
+   * No failed inference may be reported for a method or constructor that has no declaration in
+   * source code, because a user could not act on the message.
+   */
+  @Test
+  public void generatedMethodsAreNotReported() {
+    String output = runInference("UsesGenerated.java", GENERATED_SOURCE, "ajava");
+    Assert.assertFalse(
+        "-AshowWpiFailedInferences reported a compiler-generated method or constructor, about"
+            + " which a user can do nothing; output was:"
+            + System.lineSeparator()
+            + output,
+        output.contains("WPI could not store"));
+  }
+
+  /**
+   * Runs the Value Checker with whole-program inference over the given source code and returns
+   * everything that the checker printed to standard output.
    *
+   * @param fileName the name of the file to write {@code source} to; must match the public class
+   *     that {@code source} declares
+   * @param source the contents of the compilation unit to analyze
+   * @param inferenceFormat the format in which to write inference results: the argument to the
+   *     {@code -Ainfer} command-line option
    * @return the standard output of the compilation
    */
-  private String runInference() {
+  private String runInference(String fileName, String source, String inferenceFormat) {
     Path directory = temporaryFolder.getRoot().toPath();
-    Path sourceFile = directory.resolve("UsesAnno.java");
+    Path sourceFile = directory.resolve(fileName);
     try {
-      Files.write(sourceFile, SOURCE.getBytes(StandardCharsets.UTF_8));
+      Files.write(sourceFile, source.getBytes(StandardCharsets.UTF_8));
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
@@ -84,7 +129,7 @@ public class WholeProgramInferenceFailedInferenceTest {
         Arrays.asList(
             "-processor",
             "org.checkerframework.common.value.ValueChecker",
-            "-Ainfer=jaifs",
+            "-Ainfer=" + inferenceFormat,
             "-AinferOutputDirectory=" + directory,
             "-AshowWpiFailedInferences",
             "-Awarns",
@@ -112,7 +157,9 @@ public class WholeProgramInferenceFailedInferenceTest {
     String output = new String(capturedOutput.toByteArray(), StandardCharsets.UTF_8);
     if (!success) {
       Assert.fail(
-          "Compilation of UsesAnno.java failed."
+          "Compilation of "
+              + fileName
+              + " failed."
               + System.lineSeparator()
               + "Diagnostics:"
               + System.lineSeparator()

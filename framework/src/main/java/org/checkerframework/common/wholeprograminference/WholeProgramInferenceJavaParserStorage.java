@@ -90,6 +90,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.JavaParserUtil;
+import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -597,7 +598,7 @@ public class WholeProgramInferenceJavaParserStorage
 
     CompilationUnit root;
     try {
-      root = JavaParserUtil.parseCompilationUnit(new File(path));
+      root = StaticJavaParserUtil.parseCompilationUnit(new File(path));
     } catch (FileNotFoundException e) {
       throw new BugInCF("Failed to read Java file " + path, e);
     }
@@ -1198,7 +1199,10 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Adds an explicit receiver type to a JavaParser method declaration.
+   * Adds an explicit receiver type to a JavaParser method declaration. Does nothing if the method
+   * is not declared in a {@code TypeDeclaration}; this is not an error, because a method of an
+   * anonymous class has an {@code ObjectCreationExpr} parent, and such a method cannot be given an
+   * explicit receiver. Callers must therefore not assume that a receiver was added.
    *
    * @param methodDeclaration declaration to add a receiver to
    */
@@ -1207,7 +1211,7 @@ public class WholeProgramInferenceJavaParserStorage
       return;
     }
 
-    com.github.javaparser.ast.Node parent = methodDeclaration.getParentNode().get();
+    com.github.javaparser.ast.Node parent = methodDeclaration.getParentNode().orElse(null);
     if (!(parent instanceof TypeDeclaration<?> parentDecl)) {
       return;
     }
@@ -1549,11 +1553,12 @@ public class WholeProgramInferenceJavaParserStorage
      * {@code AnnotatedTypeMirror} for that location using {@code type} and {@code atf} to a wrapper
      * around the base type for the parameter.
      *
-     * @param type type for the parameter at {@code index}, used for initializing the returned
-     *     {@code AnnotatedTypeMirror} the first time it's accessed
+     * @param type type for the parameter at {@code index_1based}, used for initializing the
+     *     returned {@code AnnotatedTypeMirror} the first time it's accessed
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
-     * @param index_1based index of the parameter to return the inferred annotations of (1-based)
+     * @param index_1based index of the parameter to return the inferred annotations of (1-based;
+     *     note that the sibling method {@link #getParameterType} uses a 0-based index)
      * @return an {@code AnnotatedTypeMirror} containing all annotations inferred for the parameter
      *     at the given index
      */
@@ -1578,17 +1583,20 @@ public class WholeProgramInferenceJavaParserStorage
      * Returns the inferred type for the parameter at the given index, or null if there's no
      * parameter at the given index or there's no inferred type for that parameter.
      *
-     * @param index index of the parameter to return the inferred annotations of
+     * <p>Unlike most of the whole-program inference API, and unlike {@link
+     * #getParameterTypeInitialized}, this method's index is 0-based.
+     *
+     * @param index_0based index of the parameter to return the inferred annotations of (0-based)
      * @return an {@code AnnotatedTypeMirror} containing all annotations inferred for the parameter
-     *     at the given index, or null if there's no parameter at {@code index} or if there's not
-     *     inferred annotations for that parameter
+     *     at the given index, or null if there's no parameter at {@code index_0based} or if there's
+     *     not inferred annotations for that parameter
      */
-    public @Nullable AnnotatedTypeMirror getParameterType(int index) {
-      if (parameterTypes == null || index < 0 || index >= parameterTypes.size()) {
+    public @Nullable AnnotatedTypeMirror getParameterType(int index_0based) {
+      if (parameterTypes == null || index_0based < 0 || index_0based >= parameterTypes.size()) {
         return null;
       }
 
-      return parameterTypes.get(index);
+      return parameterTypes.get(index_0based);
     }
 
     /**
@@ -1988,19 +1996,31 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Transfers all annotations inferred by whole program inference on this field to the JavaParser
      * nodes for that field.
+     *
+     * @throws BugInCF if the wrapped declarator's parent is not a {@code FieldDeclaration}
      */
     public void transferAnnotations() {
+      // In a parsed AST, the parent of a field's VariableDeclarator is always a FieldDeclaration,
+      // but be defensive in case the AST was built programmatically.  Report the problem rather
+      // than silently discarding the inferred annotations.
+      Node declParent = declaration.getParentNode().orElse(null);
+      if (!(declParent instanceof FieldDeclaration decl)) {
+        throw new BugInCF(
+            "Expected FieldDeclaration parent for %s [%s], found %s [%s]",
+            declaration,
+            declaration.getClass(),
+            declParent,
+            declParent == null ? "null" : declParent.getClass());
+      }
+
       if (declarationAnnotations != null) {
         // Don't add directly to the type of the variable declarator,
         // because declaration annotations need to be attached to the FieldDeclaration
         // node instead.
-        Node declParent = declaration.getParentNode().orElse(null);
-        if (declParent instanceof FieldDeclaration decl) {
-          for (AnnotationMirror annotation : declarationAnnotations) {
-            decl.addAnnotation(
-                AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
-                    annotation));
-          }
+        for (AnnotationMirror annotation : declarationAnnotations) {
+          decl.addAnnotation(
+              AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
+                  annotation));
         }
       }
 
@@ -2016,7 +2036,7 @@ public class WholeProgramInferenceJavaParserStorage
       // WholeProgramInferenceImplementation to use: to determine that there are siblings,
       // a parse tree is needed.
       boolean foundVariableDeclarator = false;
-      for (Node child : this.declaration.getParentNode().get().getChildNodes()) {
+      for (Node child : decl.getChildNodes()) {
         if (child instanceof VariableDeclarator) {
           if (foundVariableDeclarator) {
             // This is the second VariableDeclarator that was found.
