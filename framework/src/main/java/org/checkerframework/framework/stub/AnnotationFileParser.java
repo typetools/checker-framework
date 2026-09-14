@@ -104,6 +104,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.JavaParserUtil;
+import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -756,7 +757,7 @@ public final class AnnotationFileParser {
     stubDebug(
         "started parsing annotation file %s for %s",
         filename, atypeFactory.getClass().getSimpleName());
-    stubUnit = JavaParserUtil.parseStubUnit(inputStream);
+    stubUnit = StaticJavaParserUtil.parseStubUnit(inputStream);
 
     // getImportedAnnotations() also modifies importedConstants and importedTypes. This should
     // be refactored to be nicer.
@@ -3123,7 +3124,19 @@ public final class AnnotationFileParser {
         if (elt != null) {
           if (elt.getKind() == ElementKind.FIELD) {
             VariableDeclarator varDecl = (VariableDeclarator) javaParserNode;
-            processField((FieldDeclaration) varDecl.getParentNode().get(), elt);
+            // In a parsed AST, the parent of a field's VariableDeclarator is always a
+            // FieldDeclaration, but be defensive in case the AST was built programmatically.
+            Node varDeclParent = varDecl.getParentNode().orElse(null);
+            if (varDeclParent instanceof FieldDeclaration fieldDecl) {
+              processField(fieldDecl, elt);
+            } else {
+              throw new BugInCF(
+                  "Expected FieldDeclaration parent for %s [%s], found %s [%s]",
+                  varDecl,
+                  varDecl.getClass(),
+                  varDeclParent,
+                  varDeclParent == null ? "null" : varDeclParent.getClass());
+            }
           }
 
           if (elt.getKind() == ElementKind.ENUM_CONSTANT) {
