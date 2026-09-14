@@ -104,6 +104,17 @@ public class AClass extends ADeclaration {
     copyMapContents(clazz.instanceInits, instanceInits);
     copyMapContents(clazz.methods, methods);
     copyMapContents(clazz.staticInits, staticInits);
+    // The following fields are not annotations, but information about the class declaration.
+    // A copy needs them too, because clients such as the Checker Framework's stub file writer
+    // consult them when printing a copy of a scene.
+    typeElement = clazz.typeElement;
+    enums.addAll(clazz.enums);
+    if (clazz.enumConstants != null) {
+      enumConstants = new ArrayList<>(clazz.enumConstants);
+    }
+    annotationTypes.addAll(clazz.annotationTypes);
+    interfaces.addAll(clazz.interfaces);
+    records.addAll(clazz.records);
   }
 
   @Override
