@@ -395,6 +395,8 @@ public class VariableBounds {
    * @param s left-hand side type of the new constraint
    * @param t right-hand side type of the new constraint
    * @param kind the kind of the new constraint
+   * @param qualifiersMustMatch true if reducing the new constraint should compare the qualifiers of
+   *     two proper types
    * @return the new constraint
    */
   private Typing createImpliedConstraint(
