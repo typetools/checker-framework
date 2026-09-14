@@ -171,6 +171,27 @@ public class ConflictingParameterizedBounds {
     B<String @Tainted []> x = qualifierOnArrayWithVariable(s);
   }
 
+  // The qualifiers differ in the bound of a wildcard type argument.  The bound mentions an
+  // inference variable that is not yet instantiated, so the constraint between the two wildcards
+  // is not between two proper types and reduces to a constraint between their bounds.
+  <X, S extends A<Pair<Object, ? extends @Untainted Holder<X>>>> S wildcardUpperBound() {
+    throw new RuntimeException();
+  }
+
+  void useWildcardUpperBound() {
+    // :: error: [type.arguments.not.inferred]
+    B<Pair<Object, ? extends @Tainted Holder<String>>> x = wildcardUpperBound();
+  }
+
+  <X, S extends A<Pair<Object, ? super @Untainted Holder<X>>>> S wildcardLowerBound() {
+    throw new RuntimeException();
+  }
+
+  void useWildcardLowerBound() {
+    // :: error: [type.arguments.not.inferred]
+    B<Pair<Object, ? super @Tainted Holder<String>>> x = wildcardLowerBound();
+  }
+
   // TODO: This is a false negative.  No such S exists, but the conflict is in the argument of an
   // enclosing type, and neither the constraints implied by incorporation nor the equality
   // constraint between two declared types cover enclosing type arguments.
@@ -184,5 +205,16 @@ public class ConflictingParameterizedBounds {
 
   void useEnclosingTypeArg() {
     B<Outer<@Tainted String>.In> x = enclosingTypeArg();
+  }
+
+  // When the enclosing type mentions an inference variable, a constraint between the two enclosing
+  // types is created and the qualifiers of their type arguments are compared.
+  <X, S extends A<Outer<@Untainted Holder<X>>.In>> S enclosingTypeArgWithVariable(X x) {
+    throw new RuntimeException();
+  }
+
+  void useEnclosingTypeArgWithVariable(String s) {
+    // :: error: [type.arguments.not.inferred]
+    B<Outer<@Tainted Holder<String>>.In> x = enclosingTypeArgWithVariable(s);
   }
 }

@@ -319,7 +319,7 @@ public class Typing extends TypeConstraint {
     if (lhsEnclosing.equals(rhsEnclosing)) {
       return;
     }
-    set.add(new Typing(this, lhsEnclosing, rhsEnclosing, kind));
+    set.add(new Typing(this, lhsEnclosing, rhsEnclosing, kind, false, qualifiersMustMatch));
   }
 
   /**
@@ -560,10 +560,20 @@ public class Typing extends TypeConstraint {
         return ConstraintSet.TRUE;
       } else if (!S.isLowerBoundedWildcard() && !T.isLowerBoundedWildcard()) {
         return new Typing(
-            this, S.getWildcardUpperBound(), T.getWildcardUpperBound(), Kind.TYPE_EQUALITY);
+            this,
+            S.getWildcardUpperBound(),
+            T.getWildcardUpperBound(),
+            Kind.TYPE_EQUALITY,
+            false,
+            qualifiersMustMatch);
       } else if (T.isLowerBoundedWildcard() && S.isLowerBoundedWildcard()) {
         return new Typing(
-            this, T.getWildcardLowerBound(), S.getWildcardLowerBound(), Kind.TYPE_EQUALITY);
+            this,
+            T.getWildcardLowerBound(),
+            S.getWildcardLowerBound(),
+            Kind.TYPE_EQUALITY,
+            false,
+            qualifiersMustMatch);
       }
     }
     return ConstraintSet.FALSE;
