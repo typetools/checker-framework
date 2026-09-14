@@ -205,7 +205,7 @@ public class NonNullMapValue {
     @EnsuresNonNullIf(result = true, expression = "get(#1)")
     // The following error is issued because, unlike in interface MyMap2,
     // this interface has no get() method.
-    // :: error: [flowexpr.parse.error]
+    // :: error: [flowexpr.parse.error.contract]
     boolean containsKey(@Nullable Object a1);
   }
 }

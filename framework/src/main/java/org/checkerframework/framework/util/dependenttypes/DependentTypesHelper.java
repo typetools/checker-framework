@@ -32,6 +32,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.FormalParameter;
@@ -1271,7 +1272,10 @@ public class DependentTypesHelper {
 
       if (from.getKind() != to.getKind()
           || (from.getKind() == TypeKind.TYPEVAR
-              && TypesUtils.isCapturedTypeVariable(to.getUnderlyingType()))) {
+              && (TypesUtils.isCapturedTypeVariable(to.getUnderlyingType())
+                  || !TypesUtils.areSame(
+                      (TypeVariable) from.getUnderlyingType(),
+                      (TypeVariable) to.getUnderlyingType())))) {
         // If the underlying types don't match, then from has been substituted for a
         // from variable, so don't recur. The primary annotation was copied because
         // the from variable might have had a primary annotation at a use.
@@ -1280,6 +1284,10 @@ public class DependentTypesHelper {
         // void use(@KeyFor("b") String s) {
         //      method(s);  // the from of the parameter should be @KeyFor("a") String
         // }
+        // A type variable may also be substituted by a different type variable, in which case
+        // both kinds are TYPEVAR but the bounds of `to` are unrelated to those of `from`.
+        // Recurring would copy `from`'s bound annotations onto `to`'s bounds, and, if `to`'s
+        // bound is itself a type variable, would corrupt that bound's own bounds.
         return null;
       }
       return super.scan(from, to);

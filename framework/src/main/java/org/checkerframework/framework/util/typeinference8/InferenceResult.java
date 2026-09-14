@@ -12,6 +12,7 @@ import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -143,7 +144,9 @@ public class InferenceResult {
     for (Variable variable : variables) {
       Map<TypeVariable, AnnotatedTypeMirror> typeMap =
           map.computeIfAbsent(variable.getInvocation(), k -> new HashMap<>());
-      typeMap.put(variable.getJavaType(), variable.getInstantiation().getAnnotatedType());
+      ProperType instantiation = variable.getInstantiation();
+      assert instantiation != null : "@AssumeAssertion(nullness): variables are instantiated";
+      typeMap.put(variable.getJavaType(), instantiation.getAnnotatedType());
     }
     return map;
   }

@@ -20,7 +20,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf({UnknownClass.class})
 public @interface ClassVal {
   /**
-   * The name of the type that this Class object represents. The name is a "fully-qualified binary
+   * The name of the type that this Class object represents. The name is a "fully qualified binary
    * name" ({@link org.checkerframework.checker.signature.qual.FqBinaryName}): a primitive or <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-13.html#jls-13.1">binary name</a>,
    * possibly followed by some number of array brackets.

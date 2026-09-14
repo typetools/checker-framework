@@ -60,7 +60,7 @@ because you forgot some \refqualclass{checker/lock/qual}{GuardedBy}
 annotations.
 %
 Your program might release and
-re-acquire the lock, when correctness requires it to hold it throughout a
+re-acquire a lock when correctness requires holding it throughout a
 computation.
 %
 And, there are other concurrency errors that cannot, or
@@ -183,7 +183,7 @@ of a problem that would occur if this rule were relaxed.
   current design that \code{@GuardSatisfied} may not be written on
   array elements or on local variables.
 
-  A return type can only be annotated with \<@GuardSatisfied(index)>,
+  A return type can only be annotated with \<@GuardSatisfied(\emph{index})>,
   not \<@GuardSatisfied>.
 
   See Section~\ref{lock-checker-polymorphism-example}
@@ -207,11 +207,11 @@ method itself rather than to some particular type.
 
 \begin{sloppypar}
 \begin{description}
-\item[\refqualclass{checker/lock/qual}{Holding}\small{(String[] locks)}]
+\item[\refqualclass{checker/lock/qual}{Holding}\small{(String[] value)}]
   All the given lock expressions
   are held at the method call site.
 
-\item[\refqualclass{checker/lock/qual}{EnsuresLockHeld}\small{(String[] locks)}]
+\item[\refqualclass{checker/lock/qual}{EnsuresLockHeld}\small{(String[] value)}]
   The given lock
   expressions are
   locked upon method return if the method
@@ -219,7 +219,7 @@ method itself rather than to some particular type.
   method that acquires a lock such as
   \sunjavadoc{java.base/java/util/concurrent/locks/ReentrantLock.html\#lock()}{ReentrantLock.lock()}.
 
-\item[\refqualclass{checker/lock/qual}{EnsuresLockHeldIf}\small{(String[] locks, boolean result)}]
+\item[\refqualclass{checker/lock/qual}{EnsuresLockHeldIf}\small{(String[] expression, boolean result)}]
   If the annotated method returns the given
   boolean value (true or false), the given lock
   expressions are locked upon method return if the method
@@ -254,7 +254,7 @@ method itself rather than to some particular type.
   \refqualclass{checker/lock/qual}{EnsuresLockHeldIf}).
 
   This is the default for methods being type-checked that have no \<@LockingFree>,
-  \<@MayReleaseLocks>, \code{@SideEffectFree}, or \code{@Pure}
+  \<@MayReleaseLocks>, \<@SideEffectFree>, or \<@Pure>
   annotation.
 
 \item[\refqualclass{checker/lock/qual}{MayReleaseLocks}]
@@ -295,8 +295,8 @@ the following additional rules.
     index cannot be assigned to.
   \item
     If the left-hand side is a formal parameter with type
-    \<@GuardSatisfied(\emph{index})>, the right-hand-side must have
-    identical \<@GuardSatisfied(\emph{index})> type.
+    \<@GuardSatisfied(\emph{index})>, the right-hand side must have
+    an identical \<@GuardSatisfied(\emph{index})> type.
   \end{itemize}
 
   If a formal parameter type is
@@ -362,7 +362,7 @@ the \<@GuardedBy> type hierarchy, including \<@GuardedBy(\{\})>.
 \item[Overriding methods annotated with \code{@Holding}]
   If class $B$ overrides method $m$ from class $A$, then the expressions in
   $B$'s \<@Holding>
-  annotation must be a subset of or equal to that of $A$'s \<@Holding>
+  annotation must be a subset of those in $A$'s \<@Holding>
   annotation.
 
 \item[Overriding methods annotated with side effect annotations]
@@ -412,7 +412,7 @@ the \<@GuardedBy> type hierarchy, including \<@GuardedBy(\{\})>.
   After a call to a method annotated with \code{@LockingFree},
   \code{@ReleasesNoLocks}, \code{@SideEffectFree}, or \code{@Pure},
   the Lock Checker's estimate of held locks
-  after a method call is the same as that prior to the method call.
+  is the same as that prior to the method call.
   After a call to a method annotated with \code{@MayReleaseLocks},
   the estimate of held locks is conservatively reset to the empty set,
   except for those locks specified to be held after the call
@@ -430,7 +430,7 @@ the \<@GuardedBy> type hierarchy, including \<@GuardedBy(\{\})>.
 \sectionAndLabel{Examples}{lock-examples}
 
 The Lock Checker guarantees that a value that was computed from an expression of \code{@GuardedBy} type is
-dereferenced only when the current thread holds all the expressions in the
+dereferenced only when the current thread holds all the locks named in the
 \code{@GuardedBy} annotation.
 
 \subsectionAndLabel{Examples of @GuardedBy}{lock-examples-guardedby}
@@ -471,8 +471,8 @@ explicitly write \code{new @GuardedBy("lock") Object()} but it is not
 required.
 
 The following example demonstrates that using \code{<self>} as a lock expression
-allows a guarded value to be dereferenced even when the original
-variable name the value was originally assigned to falls out of scope.
+allows a guarded value to be dereferenced even when the variable to which
+the value was originally assigned falls out of scope.
 
 \begin{Verbatim}
 class MyClass {
@@ -507,8 +507,8 @@ class MyOtherClass {
 
 \textbf{@GuardedBy(exprSet)}
 
-The following example demonstrates the reason the Lock Checker enforces the
-following rule:  if \emph{exprSet1} $\neq$ \emph{exprSet2}, then
+The following example demonstrates the reason the Lock Checker enforces this
+rule:  if \emph{exprSet1} $\neq$ \emph{exprSet2}, then
 \code{@GuardedBy(\emph{exprSet1})} and \code{@GuardedBy(\emph{exprSet2})} are siblings in the type
 hierarchy.
 
@@ -606,7 +606,7 @@ public class Monitor {
 
 \code{@LockingFree} is useful when a method does not make any use of synchronization
 or locks but causes other side effects (hence \code{@SideEffectFree} is not appropriate).
-\code{@SideEffectFree} implies \code{@LockingFree}, therefore if both are applicable,
+\code{@SideEffectFree} implies \code{@LockingFree}; therefore, if both are applicable,
 you should only write \code{@SideEffectFree}. \code{@ReleasesNoLocks} has a weaker guarantee
 than \code{@LockingFree}, and \code{@MayReleaseLocks} provides no guarantees.
 
@@ -680,7 +680,7 @@ public @GuardSatisfied(1) StringBuffer append(@GuardSatisfied(1) StringBuffer th
 \end{verbatim}
 
 The method manipulates the values of its arguments, so all their locks must
-be held.  However, the declaration does not know what those are and they
+be held.  However, the declaration does not know what those locks are, and they
 might not even be in scope at the declaration.  Therefore, the declaration
 cannot use \<@GuardedBy> and must use \<@GuardSatisfied>.  The arguments to
 \<@GuardSatisfied> indicate that the receiver and result (which are the
@@ -734,7 +734,7 @@ Java provides two types of locking:  monitor locks and explicit locks.
   The lock is automatically released when execution exits the block or the
   method body, respectively.
   We use the term ``monitor lock'' for a lock acquired using a
-  \<synchronized>  block or \<synchronized> method modifier.
+  \<synchronized> block or \<synchronized> method modifier.
 \item A method call, such as
   \sunjavadoc{java.base/java/util/concurrent/locks/Lock.html\#lock()}{Lock.lock()},
   acquires a lock that implements the
@@ -742,7 +742,7 @@ Java provides two types of locking:  monitor locks and explicit locks.
   interface.
   The lock is released by another method call, such as
   \sunjavadoc{java.base/java/util/concurrent/locks/Lock.html\#unlock()}{Lock.unlock()}.
-  We use the term ``explicit lock'' for a lock expression acquired in this
+  We use the term ``explicit lock'' for a lock acquired in this
   way.
 \end{itemize}
 
@@ -779,7 +779,7 @@ The \code{@LockHeld} and \code{@LockPossiblyHeld} type qualifiers are used inter
 and should never be written by the programmer.
 If you
 see a warning mentioning \code{@LockHeld} or \code{@LockPossiblyHeld},
-please contact the Checker Framework developers as it is likely to
+please contact the Checker Framework developers, as it is likely to
 indicate a bug in the Checker Framework.
 
 
@@ -822,17 +822,17 @@ approaches are useful, and the Lock Checker supports both.
   is not expressible as locks over the parameters to a method.  For example, a global lock
   or a lock on a different object might need to be held.  By requiring locks to be
   held, you can create protocol primitives without giving up
-  the benefits of the annotations and checking of them.
+  the benefits of the annotations and of checking them.
 
 \paragraphAndLabel{Method summary that simplifies reasoning}{lock-checker-holding-method-summary}
 
   \code{@Holding} can be a method summary that simplifies reasoning.  In
-  this case, the \code{@Holding} doesn't necessarily introduce a new
+  this case, the \code{@Holding} annotation doesn't necessarily introduce a new
   correctness constraint; the program might be correct even if the lock
   were not already acquired.
 
   Rather, here \code{@Holding} expresses a fact about execution:  when
-  execution reaches this point, the following locks are known to be already held.  This
+  execution reaches this point, the given locks are known to be already held.  This
   fact enables people and tools to reason intra- rather than
   inter-procedurally.
 
@@ -859,13 +859,13 @@ during the body, to write
 \end{Verbatim}
 
 
-It is better to write a \code{@Holding} annotation rather than writing the
-extra synchronized block.  Here are reasons:
+It is better to write a \code{@Holding} annotation than to write the
+extra synchronized block.  Here are the reasons:
 
 \begin{itemize}
 \item
   The annotation documents the fact that the lock is intended to already be
-  held;  that is, the method's contract requires that the lock be held when
+  held; that is, the method's contract requires that the lock be held when
   the method is called.
 \item
   The Lock Checker enforces that the lock is held when the method is
@@ -877,7 +877,7 @@ extra synchronized block.  Here are reasons:
   error.
 \item
   The annotation has no run-time overhead.  The lock re-acquisition
-  consumes time, even if it succeeds.
+  consumes time, even when it succeeds.
 \end{itemize}
 
 
@@ -950,7 +950,7 @@ The Lock Checker renames the method annotation to
 that can apply not just to a field but to an arbitrary type (including the
 type of a parameter, return value, local variable, generic type parameter,
 etc.).  Another important distinction is that the Lock Checker's
-annotations express and enforce a locking discipline over values, just like
+annotations express and enforce a locking discipline over values, just as
 the JLS expresses Java's locking semantics; by contrast, JCIP's annotations
 express a locking discipline that protects variable names and does not
 prevent race conditions.

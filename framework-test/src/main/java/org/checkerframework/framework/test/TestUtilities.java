@@ -352,9 +352,16 @@ public final class TestUtilities {
     return new File("tests", fileRelativeToTestsDir);
   }
 
+  /**
+   * Returns the file that contains the expected output for the given test file: a file in the same
+   * directory, with the ".java" extension replaced by ".goal". The result might not exist.
+   *
+   * @param testFile a Java file that is a test input
+   * @return the file that contains the expected output for {@code testFile}
+   */
   public static File findComparisonFile(File testFile) {
     File comparisonFile =
-        new File(testFile.getParent(), testFile.getName().replace(".java", ".out"));
+        new File(testFile.getParent(), testFile.getName().replace(".java", ".goal"));
     return comparisonFile;
   }
 

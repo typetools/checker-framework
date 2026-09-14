@@ -12,7 +12,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * java.lang.reflect.Constructor Constructor} values. If an expression's type has
  * {@code @MethodVal}, then the expression's run-time value is one of those values.
  *
- * <p>Each of {@code @MethodVal}'s argument lists must be of equal length, and { className[i],
+ * <p>All of {@code @MethodVal}'s argument lists must be of equal length, and { className[i],
  * methodName[i], params[i] } represents one of the {@code Method} or {@code Constructor} values in
  * the set.
  *

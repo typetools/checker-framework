@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * The {@link java.util.Collection Collection}, {@link java.util.Iterator Iterator}, {@link Iterable
- * Iterable}, or {@link java.util.Map Map}, or {@link java.util.stream.Stream Stream} is definitely
+ * Iterable}, {@link java.util.Map Map}, or {@link java.util.stream.Stream Stream} is definitely
  * non-empty.
  */
 // Reinstate when the Non-Empty Checker is publicized.

@@ -22,10 +22,6 @@ jar {
   }
 }
 
-javadoc {
-  modularity.inferModulePath = false
-}
-
 jar {
   manifest {
     attributes("Export-Package": "*")

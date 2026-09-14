@@ -72,17 +72,41 @@ public class Dependencies {
   }
 
   /**
-   * Returns the set of dependencies of {@code alpha}.
+   * Returns the set of dependencies of {@code alpha}, always including {@code alpha} itself,
+   * because JLS 18.4 says that an inference variable depends on the resolution of itself.
+   *
+   * <p>If no dependency of {@code alpha} has been added to this object, the result is {@code
+   * {alpha}}. That case arises only for a variable that is absent from the bound set that created
+   * this object, because {@code BoundSet.getDependencies} records every variable of the bound set
+   * as a dependency of itself. For such a variable, {@code {alpha}} is a lower bound on its true
+   * dependencies: any dependency arising from its bounds is unknown to this object, so a caller may
+   * treat {@code alpha} as resolvable earlier or more independently than JLS 18.4 permits.
+   * Computing more than {@code {alpha}} here is not possible, because the transitive closure that
+   * {@code BoundSet.getDependencies} computes needs the whole bound set. {@code
+   * Resolution.getSmallestDependencySet} and {@code ConstraintSet.getClosedSubset} both query
+   * variables that the bound set does not necessarily contain, and letting such a variable depend
+   * on only itself lets inference proceed rather than crashing.
+   *
+   * <p>The result is a new, mutable set; the caller may modify it.
    *
    * @param alpha a variable
    * @return the set of dependencies of {@code alpha}
    */
   public Set<Variable> get(Variable alpha) {
-    return new LinkedHashSet<>(map.get(alpha));
+    LinkedHashSet<Variable> alphaDependencies = map.get(alpha);
+    LinkedHashSet<Variable> result =
+        alphaDependencies == null ? new LinkedHashSet<>() : new LinkedHashSet<>(alphaDependencies);
+    // JLS 18.4: "An inference variable alpha depends on the resolution of itself."
+    result.add(alpha);
+    return result;
   }
 
   /**
-   * Returns the set of dependencies for all variables in {@code variables}.
+   * Returns the set of dependencies for all variables in {@code variables}. Every variable in
+   * {@code variables} is in the result; a variable to which no dependency has been added
+   * contributes only itself. See {@link #get(Variable)}.
+   *
+   * <p>The result is a new, mutable set; the caller may modify it.
    *
    * @param variables list of variables
    * @return the set of dependencies for all variables in {@code variables}

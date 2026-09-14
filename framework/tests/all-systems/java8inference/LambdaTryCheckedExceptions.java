@@ -7,6 +7,10 @@
 // `List.addAll`, every `try` with no resources, with no catch clauses, or with no `finally` block
 // made type argument inference crash with a `NullPointerException`, which was reported as a
 // "type.argument.inference.crashed" error.
+//
+// The methods below cover every legal combination of present and absent resources, catch clauses,
+// and `finally` block, and both outcomes of the `removeAssignable` call that discards the
+// exceptions that the catch clauses would catch.
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -61,12 +65,39 @@ public class LambdaTryCheckedExceptions {
         });
   }
 
+  /**
+   * A `try` whose catch clause catches nothing that the `try` block throws, so `removeAssignable`
+   * runs on a non-empty list but removes nothing and the checked exception survives.
+   */
+  static String tryCatchUnrelated() throws IOException {
+    return call(
+        () -> {
+          try {
+            return mightThrow();
+          } catch (RuntimeException e) {
+            return "";
+          }
+        });
+  }
+
   /** A try-with-resources with no catch clauses and no `finally` block. */
   static String tryWithResources() throws IOException {
     return call(
         () -> {
           try (Closeable c = open()) {
             return risky();
+          }
+        });
+  }
+
+  /** A `try` with resources and a catch clause, but no `finally` block. */
+  static String tryResourcesAndCatch() throws IOException {
+    return call(
+        () -> {
+          try (Closeable c = open()) {
+            return mightThrow();
+          } catch (RuntimeException e) {
+            return "";
           }
         });
   }

@@ -13,14 +13,10 @@ name: CI
     branches:
       - "**"
 
-# concurrency:
-#   group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
-#   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
-
-# Cancel in-progress jobs that originate from a fork.
+# Auto-cancel any in-progress jobs from the same branch or PR.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.fork && github.event.pull_request.head.ref || github.ref }}
-  cancel-in-progress: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -53,18 +49,44 @@ jobs:
         run: true
   ci_info:
     runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk[]canary_jdk-plus:latest
     steps:
       - uses: actions/checkout@v7
         with:
           set-safe-directory: true
-          # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+          show-progress: false
+          persist-credentials: false
+gradle_cache()dnl
       - name: clone_plume_scripts
-        run: git clone https://github.com/plume-lib/plume-scripts.git /tmp/plume-scripts
-      - name: ci_info
-        run: /tmp/plume-scripts/ci-info --debug
+        run: ./gradlew -q getPlumeScripts
+      - name: ci_org_and_branch
+        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+      - name: git_changes
+        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
 
 include([../../.azure/jobs.m4])dnl
+
+  all_green:
+    if: always()
+    needs:
+      - junit_jdk17
+      - junit_jdk21
+      - junit_jdk26
+      - nonjunit_jdk21
+      - misc_jdk21
+      - daikon_part1_jdk[]canary_jdk
+      - daikon_part2_jdk[]canary_jdk
+      - daikon_part3_jdk[]canary_jdk
+      - guava_part1_jdk[]canary_jdk
+      - guava_part2_jdk[]canary_jdk
+      - plume_lib_jdk[]canary_jdk
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any dependency failed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
 
 ifelse([
 Local Variables:

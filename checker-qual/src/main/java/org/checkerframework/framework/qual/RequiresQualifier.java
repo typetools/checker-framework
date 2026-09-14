@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 /**
  * A precondition annotation to indicate that a method requires certain expressions to have a
  * certain qualifier at the time of the call to the method. The expressions for which the annotation
- * must hold after the method's execution are indicated by {@code expression} and are specified
+ * must hold before the method's execution are indicated by {@code expression} and are specified
  * using a string. The qualifier is specified by {@code qualifier}.
  *
  * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
@@ -22,9 +22,9 @@ import java.lang.annotation.Target;
 @Repeatable(RequiresQualifier.List.class)
 public @interface RequiresQualifier {
   /**
-   * Returns the Java expressions for which the annotation need to be present.
+   * Returns the Java expressions for which the annotation needs to be present.
    *
-   * @return the Java expressions for which the annotation need to be present
+   * @return the Java expressions for which the annotation needs to be present
    * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
    */
   String[] expression();

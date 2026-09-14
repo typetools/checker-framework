@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * A sequence of dot-separated identifiers, followed by any number of array square brackets.
- * Represents a fully-qualified name as defined in the <a
+ * Represents a fully qualified name as defined in the <a
  * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-6.html#jls-6.7">Java Language
  * Specification, section 6.7</a>.
  *
@@ -24,7 +24,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * java.lang.Integer[][][]
  * }</pre>
  *
- * <p>in
+ * <p>For example, in
  *
  * <pre>
  *  package org.checkerframework.checker.signature;
@@ -33,7 +33,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *  }
  * </pre>
  *
- * the fully-qualified names for the two types are
+ * the fully qualified names for the two types are
  * org.checkerframework.checker.signature.SignatureChecker and
  * org.checkerframework.checker.signature.SignatureChecker.Inner.
  *

@@ -66,7 +66,7 @@
     <p>This example uses the Tainting Checker to verify that user input
     does not contain SQL statements, thus preventing SQL injection. (If
     you have not already done so, download <a href=
-    "../sourcefiles.zip">the tutorial sourcefiles</a>.)</p>
+    "../sourcefiles.zip">the tutorial source files</a>.)</p>
 
     <div class="well">
       <h5>Outline</h5>
@@ -127,7 +127,7 @@ Total time: 2 seconds
     </div>
 
     <div id="error1">
-      <h4>2. Correct the Error</h4>
+      <h4>2. Correct the error</h4>
 
       <p>To correct this error, <b>add <code>@Untainted</code></b> to the
       type of the <code>category</code> parameter.</p>
@@ -144,7 +144,7 @@ method.
       <p>Run the Tainting Checker again.</p>
 
       <pre>
-$ <strong>ant</strong>
+$ <b>ant</b>
 Buildfile: .../personalblog-demo/build.xml
 
 clean:
@@ -169,13 +169,13 @@ Total time: 2 seconds
 </pre>
 
       <p>There is an error in <code>ReadAction.executeSub()</code>, which
-      is a client of <code>getPostsByCategory</code>. The
-      <code>reqCategory</code> is accepted from the user (from request
+      is a client of <code>getPostsByCategory</code>.
+      <code>reqCategory</code> is accepted from the user (from the request
       object) without validation.</p>
     </div>
 
     <div id="error2">
-      <h4>4. Correct the New Error</h4>To correct, <b>use the
+      <h4>4. Correct the new error</h4>To correct, <b>use the
       <code>validate</code> method</b> as shown below.
       <pre>
     String reqCategory = <b>validate(</b>cleanNull(request.getParameter("cat"))<b>)</b>;
@@ -187,7 +187,7 @@ Total time: 2 seconds
 
       <p>There should be no errors.</p>
       <pre>
-$ <strong>ant</strong>
+$ <b>ant</b>
 Buildfile: .../personalblog-demo/build.xml
 
 clean:
@@ -203,10 +203,10 @@ Total time: 2 seconds
 </pre>
 
       <p>You are done with the personalblog-demo project,
-      so return to the parent directory</p>
+      so return to the parent directory.</p>
 
       <pre>
-$ <strong>cd ..</strong>
+$ <b>cd ..</b>
 </pre>
 
       <p>For a complete discussion of how to use the Tainting Checker,

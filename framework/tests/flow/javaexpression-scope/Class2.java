@@ -7,7 +7,7 @@ import pkg1.Class1;
 
 public class Class2 {
   @RequiresOdd("Class1.field")
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   public void requiresOddParseError() {
     // :: error: [assignment]
     @Odd Object odd = Class1.field;
@@ -19,7 +19,7 @@ public class Class2 {
   }
 
   @EnsuresOdd("Class1.field")
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   public void ensuresOddParseError() {
     // :: warning: [cast.unsafe.constructor.invocation]
     Class1.field = new @Odd Object();

@@ -28,6 +28,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -272,8 +273,18 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
             StringToJavaExpression.atMethodInvocation(
                 postcond.expression(), node.getTree(), atypeFactory.getChecker());
       } catch (JavaExpressionParseException ex) {
-        // This parse error will be reported later. For now, we'll skip this malformed
-        // postcondition and move on to the others.
+        if (ex.isFlowParseError()) {
+          Object[] args = new Object[ex.args.length + 1];
+          args[0] = ElementUtils.getSimpleSignature(method);
+          System.arraycopy(ex.args, 0, args, 1, ex.args.length);
+          atypeFactory
+              .getChecker()
+              .reportError(node.getTree(), "flowexpr.parse.error.postcondition", args);
+        } else {
+          atypeFactory.getChecker().report(node.getTree(), new DiagMessage(ex));
+        }
+        // Skip this malformed postcondition and move on to the others.  Dropping it only removes
+        // facts from the store, which is conservative.
         continue;
       }
 

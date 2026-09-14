@@ -8,7 +8,7 @@ in particular, it does not enforce that the methods are called before
 objects are de-allocated.
 The Must Call Checker is intended to be run as a subchecker of another checker.
 The primary client
-of the Must Call Checker is the Resource Leak Checker (Section~\ref{resource-leak-checker}),
+of the Must Call Checker is the Resource Leak Checker (\chapterpageref{resource-leak-checker}),
 which enforces that every method in a must-call obligation for an expression is called
 before that expression is de-allocated.
 
@@ -27,8 +27,8 @@ before it is de-allocated''.
 If you are running the Resource Leak Checker
 (\chapterpageref{resource-leak-checker}), then there is no need to run the
 Must Call Checker, because the Resource Leak Checker does so automatically.
-Running both may lead to warning suppressions for the Must Call Checker not
-working.
+Running both may cause warning suppressions for the Must Call Checker not to
+work.
 
 
 \sectionAndLabel{Must Call annotations}{must-call-annotations}
@@ -146,9 +146,9 @@ a declaration annotation.
 \sectionAndLabel{Relationship to lightweight ownership}{must-call-non-owning-parameter}
 
 The Must Call Checker interacts with the \<@Owning> and \<@NotOwning> annotations of the
-Resource Leak Checker (Section~\ref{resource-leak-checker}). In particular, any location that
-the Resource Leak Checker would consider ``non-owning'' (e.g., unannotated parameters, \<@NotOwning>
-returns, etc.) is treated as \<@MustCall({})> by the Must Call Checker. This can lead to surprising
+Resource Leak Checker (\chapterpageref{resource-leak-checker}). In particular, any location that
+the Resource Leak Checker would consider ``non-owning'' (e.g., unannotated parameters and \<@NotOwning>
+returns) is treated as \<@MustCall(\{\})> by the Must Call Checker. This can lead to surprising
 results when running the Must Call Checker alone (which is not recommended). For example,
 consider the following program:
 
@@ -159,7 +159,7 @@ consider the following program:
 \end{Verbatim}
 
 The Must Call Checker will not issue a warning about this code, because \<arg>
-is non-owning (and therefore treated as \<@MustCall({})>).
+is non-owning (and therefore treated as \<@MustCall(\{\})>).
 
 
 \sectionAndLabel{Assumptions about reflection}{must-call-reflection}
@@ -183,10 +183,10 @@ For example, consider the following example (from
 interface with explicit upper bounds and a client with implicit upper
 bounds:
 \begin{Verbatim}
-  interface Partition<ELEMENT extends @Nullable Object, CLASS extends @Nullable Object> {}
+  interface Partitioner<ELEMENT extends @Nullable Object, CLASS extends @Nullable Object> {}
 
   class MultiRandSelector<T> {
-    private Partition<T, T> eq;
+    private Partitioner<T, T> eq;
   }
 \end{Verbatim}
 
@@ -221,8 +221,8 @@ You can either:
 \item
   add an explicit bound to \<MultiRandSelector>, changing its declaration to
   \code{class MultiRandSelector<T extends Object>}, or
-\item remove the explicit bound from \<Partition>, changing its declaration to
-  \code{interface Partition<ELEMENT, CLASS>}.
+\item remove the explicit bound from \<Partitioner>, changing its declaration to
+  \code{interface Partitioner<ELEMENT, CLASS>}.
 \end{itemize}
 
 % LocalWords:  de subchecker OutputStream MustCall MustCallUnknown

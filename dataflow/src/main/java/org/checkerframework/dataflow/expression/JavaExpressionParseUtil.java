@@ -10,7 +10,6 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.plumelib.javacparse.JavacParse;
-import org.plumelib.javacparse.JavacParseResult;
 import org.plumelib.util.StringsP;
 
 /**
@@ -77,12 +76,7 @@ public final class JavaExpressionParseUtil {
         StringsP.replaceAll(expression, PARAMETER_PATTERN, PARAMETER_REPLACEMENT);
     ExpressionTree exprTree;
     try {
-      JavacParseResult<ExpressionTree> jpr =
-          JavacParse.parseExpression(expressionWithParameterNames);
-      if (jpr.hasParseError()) {
-        throw JavaExpressionParseException.construct(expression, jpr.getParseErrorMessages());
-      }
-      exprTree = jpr.getTree();
+      exprTree = JavacParse.parseExpression(expressionWithParameterNames);
     } catch (IllegalArgumentException e) {
       @SuppressWarnings("nullness:assignment") // presently always non-null; could change in future
       @NonNull String msg = e.getMessage();
