@@ -83,72 +83,47 @@ the method that creates the lambda.  For example:
 \end{Verbatim}
 
 
-\subsectionAndLabel{Functional-interface parameters}{purity-functional-interface-parameters}
+\subsectionAndLabel{Functional-interface parameters of side-effect-free methods}{purity-functional-interface-parameters}
 
-For a side-effect-free method, the default type is \<@SideEffectFree> for any
-parameter that is a functional interface.
-That is, the following two declarations are equivalent:
-
-\begin{Verbatim}
-  @SideEffectFree
-  int apply(Function<String, Integer> f, String s) { ... }
-
-  @SideEffectFree
-  int apply(@SideEffectFree Function<String, Integer> f, String s) { ... }
-\end{Verbatim}
-
-
-A side-effect-free method may call arguments that are functional interface,
-but only if the corresponding parameter is side-effect-free.
+For a side-effect-free method, the functional method of any parameter that is
+a functional interface is treated as side-effect-free.
 
 \begin{Verbatim}
   @SideEffectFree
-  int apply(Function<String, Integer> f, String s) { // f is implicitly @SideEffectFree
-    return f.apply(s);  // permitted: the called method f is @SideEffectFree
+  int m(Function<String, Integer> f, String s) {
+    return f.apply(s);  // permitted: apply is treated as side-effect-free
   }
 \end{Verbatim}
 
-\noindent
-and, at calls to \<apply>:
+At calls to \<m>, the functional method of the argument's declared type must
+be \<@SideEffectFree>.
 
 \begin{Verbatim}
-  apply(s -> s.length(), "hi");  // OK: the lambda body is side-effect-free
-  apply(s -> count++, "hi");     // error: the lambda body has a side effect
+  m(String::length, "hi");  // OK: String.length() is side-effect-free
 \end{Verbatim}
 
-A \<@SideEffectFree> method \<m> may call \<m2.apply()> only if \<m2> is a
-side-effect-free method reference or is a formal parameter.
+If the argument is a lambda, then the body of the lambda is checked directly
+for side effects.
 
-The requirement on callers is imposed on every parameter whose type is a
-functional interface, whether or not the method's body ever calls it, so that
-a caller can read the requirement off the signature alone.  The requirement
-is imposed only when the functional method is unannotated; when the
-functional method is itself annotated \<@SideEffectFree>, that annotation
-governs both the call in the body and the obligation on the argument,
-exactly as for any other method.
+\begin{Verbatim}
+  m(s -> s.length(), "hi");  // OK: the lambda body is side-effect-free
+  m(s -> count++, "hi");     // error: the lambda body has a side effect
+\end{Verbatim}
 
-Suppose that \<sem> is a \<@SideEffectFree> method or constructor with a
-parameter \<fi> of functional-interface type.[[TODO:  I think this is true
-whenever \<fi> is itself \<@SideEffectFree>, whether or not \<sem> is.]]
-At each call to \<sem>,
-the argument corresponding to \<fi> must be side-effect-free:
-
-\begin{itemize}
-\item
-  If the argument is a lambda, its body is checked directly and no
-  annotation on it is needed.
-\item
-  If the argument is a method reference, the referenced method must be
-  \<@SideEffectFree>.
-\item
-  If the argument is a functional-interface parameter of the enclosing
-  method, and that method is itself \<@SideEffectFree>, then the enclosing
-  method's own callers have already discharged the requirement, so the
-  argument is permitted.
-\item
-  Otherwise, the functional method of the argument's declared type must be
-  \<@SideEffectFree>.
-\end{itemize}
+%% TODO: we could implement a type system for functional interfaces with a
+%% qualifier \<@SideEffectFreeFunctionalInterface>.  Then the default for a
+%% \<@SideEffectFree> method would be:
+%For a side-effect-free method, the default type is
+%\<@SideEffectFreeFunctionalInterface> for any parameter that is a functional
+%interface.  That is, the following two declarations are equivalent:
+%
+%\begin{Verbatim}
+%  @SideEffectFree
+%  int apply(Function<String, Integer> f, String s) { ... }
+%
+%  @SideEffectFree
+%  int apply(@SideEffectFreeFunctionalInterface Function<String, Integer> f, String s) { ... }
+%\end{Verbatim}
 
 
 \sectionAndLabel{Purity annotations are trusted}{purity-trusted}
@@ -257,6 +232,6 @@ of the following is true:
 \end{itemize}
 
 
-%%  LocalWords:  AsuggestPureMethods AcheckPurityAnnotations Ainfer m2 fi
+%%  LocalWords:  AsuggestPureMethods AcheckPurityAnnotations Ainfer
 %%  LocalWords:  AsuppressWarnings AassumeSideEffectFree SideEffectsOnly
 % LocalWords:  TODO AassumeDeterministic AassumePure AassumePureGetters
