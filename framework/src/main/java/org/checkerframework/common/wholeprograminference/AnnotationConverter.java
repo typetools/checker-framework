@@ -2,9 +2,11 @@ package org.checkerframework.common.wholeprograminference;
 
 import com.sun.tools.javac.code.Type.ArrayType;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -208,6 +210,15 @@ public class AnnotationConverter {
   }
 
   /**
+   * Cache for {@link #annotationTypeToAnnotationDef}, which is called once per annotation-valued
+   * element per storage write. The keys are weak because a {@code TypeElement} lives only as long
+   * as the compilation that created it; for the entries to be collectable, an {@code AnnotationDef}
+   * in this map must not retain its key.
+   */
+  private static final Map<TypeElement, AnnotationDef> annotationDefCache =
+      Collections.synchronizedMap(new WeakHashMap<>());
+
+  /**
    * Returns the definition of the given annotation type. Unlike the definition that {@link
    * #annotationMirrorToAnnotation} creates, this one contains every element of the annotation type,
    * not just those that some particular annotation writes.
@@ -216,18 +227,24 @@ public class AnnotationConverter {
    * @return the definition of the given annotation type
    */
   private static AnnotationDef annotationTypeToAnnotationDef(TypeElement annotationElt) {
+    AnnotationDef cached = annotationDefCache.get(annotationElt);
+    if (cached != null) {
+      return cached;
+    }
     List<ExecutableElement> elements = ElementFilter.methodsIn(annotationElt.getEnclosedElements());
     Map<String, AnnotationFieldType> fieldTypes = new ArrayMap<>(elements.size());
     for (ExecutableElement element : elements) {
       fieldTypes.put(element.getSimpleName().toString(), getAnnotationFieldType(element));
     }
+    String annotationName = annotationElt.getQualifiedName().toString();
+    // The source is a plain string rather than a supplier because it is just a concatenation of
+    // `annotationName`, which has already been computed.  Capturing `annotationElt` in a supplier
+    // would prevent this map's keys from being collected.
     @SuppressWarnings("signature:argument") // TODO: bug for inner classes
     AnnotationDef result =
         new AnnotationDef(
-            annotationElt.getQualifiedName().toString(),
-            fieldTypes,
-            // The source is computed lazily because it is used only for diagnostics.
-            () -> "annotationTypeToAnnotationDef " + annotationElt);
+            annotationName, fieldTypes, "annotationTypeToAnnotationDef " + annotationName);
+    annotationDefCache.put(annotationElt, result);
     return result;
   }
 

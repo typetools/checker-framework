@@ -106,13 +106,13 @@ public interface WholeProgramInference {
       MethodTree methodTree, ExecutableElement methodElt, AnnotatedExecutableType overriddenMethod);
 
   /**
-   * Updates the type of {@code lhs} based on an assignment of {@code rhs} to {@code lhs}.
+   * Updates the type of the formal parameter {@code lhs} based on an assignment of {@code rhs} to
+   * {@code lhs} within the body of the method that declares {@code lhs}.
    *
    * <ul>
-   *   <li>If there is no stored annotated type for lhs, then use the type of the corresponding
-   *       argument in the method call methodInvNode.
+   *   <li>If there is no stored annotated type for lhs, then use the type of rhs.
    *   <li>If there is a stored annotated type for lhs, then its new type will be the LUB between
-   *       the previous type and the type of the corresponding argument in the method call.
+   *       the previous type and the type of rhs.
    * </ul>
    *
    * @param lhs the node representing the formal parameter
@@ -175,9 +175,9 @@ public interface WholeProgramInference {
    * Updates the preconditions or postconditions of the current method, from a store.
    *
    * @param className the name of the class, for debugging only
-   * @param methodElement the method or constructor whose preconditions or postconditions to update
    * @param preOrPost what to update: preconditions ({@code BEFORE}) or postconditions ({@code
    *     AFTER})
+   * @param methodElement the method or constructor whose preconditions or postconditions to update
    * @param store the store at the method's entry or normal exit, for reading types of expressions
    */
   void updateContracts(
@@ -196,7 +196,7 @@ public interface WholeProgramInference {
    * @param sourceCodeATM the annotated type on the source code; side effected by this method
    * @param ajavaATM the annotated type on the annotation file
    */
-  public void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM);
+  void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM);
 
   /**
    * Updates a method to add a declaration annotation.
