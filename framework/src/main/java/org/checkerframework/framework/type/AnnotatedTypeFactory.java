@@ -4208,23 +4208,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * annotations could not be read.
    *
    * @param elt the element whose declaration annotations are incomplete
-   * @param cf the failure to read a class file
+   * @param completionFailure the failure to read a class file
    */
   private void reportCompletionFailure(
-      Element elt, com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
+      Element elt, com.sun.tools.javac.code.Symbol.CompletionFailure completionFailure) {
     String eltName = ElementUtils.getQualifiedName(elt);
     try {
-      checker.reportWarning(elt, "class.not.completed", eltName, cf.getMessage());
+      checker.reportWarning(elt, "class.not.completed", eltName, completionFailure.getMessage());
     } catch (com.sun.tools.javac.code.Symbol.CompletionFailure nested) {
       // Deciding whether the warning is suppressed reads the annotations of `elt` and of its
       // enclosing elements, which can fail to read a class file too.
       checker.message(
           Diagnostic.Kind.WARNING,
           "Cannot read a class file that is needed to compute the declaration annotations of %s:"
-              + " %s.  Annotations inherited from a supertype may be missed.  Make sure your"
-              + " classpath is set correctly.",
+              + " %s. Make sure your classpath is set correctly.",
           eltName,
-          cf.getMessage());
+          completionFailure.getMessage());
     }
   }
 
