@@ -147,6 +147,30 @@ public class ConflictingParameterizedBounds {
     B<Pair<String, @Tainted String>> x = typeArgWithVariable(s);
   }
 
+  // The qualifier that differs is on a type argument that mentions an inference variable, so the
+  // constraint between the two type arguments is not between two proper types and reduces to a
+  // constraint on their type arguments.
+  interface Holder<X> {}
+
+  <X, S extends A<@Untainted Holder<X>>> S qualifierOnTypeArgWithVariable(X x) {
+    throw new RuntimeException();
+  }
+
+  void useQualifierOnTypeArgWithVariable(String s) {
+    // :: error: [type.arguments.not.inferred]
+    B<@Tainted Holder<String>> x = qualifierOnTypeArgWithVariable(s);
+  }
+
+  // Likewise for the qualifier on an array whose component type mentions an inference variable.
+  <X, S extends A<X @Untainted []>> S qualifierOnArrayWithVariable(X x) {
+    throw new RuntimeException();
+  }
+
+  void useQualifierOnArrayWithVariable(String s) {
+    // :: error: [type.arguments.not.inferred]
+    B<String @Tainted []> x = qualifierOnArrayWithVariable(s);
+  }
+
   // TODO: This is a false negative.  No such S exists, but the conflict is in the argument of an
   // enclosing type, and neither the constraints implied by incorporation nor the equality
   // constraint between two declared types cover enclosing type arguments.
