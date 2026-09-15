@@ -1,20 +1,27 @@
 \htmlhr
 \chapterAndLabel{Purity Checker}{purity-checker}
 
-The Purity Checker identifies methods that have no side effects, that
-return the same value each time they are called on the same argument, or both.
+A \emph{side-effect-free} method is one that changes no object that exists
+when it is called.
+A \emph{deterministic} method returns the same value each time it is called
+on the same arguments.
+A \emph{pure} method is both side-effect-free and deterministic.
+The Purity Checker can check and infer all three types of methods,
+and ``purity'' refers to all concepts.
 
-Purity analysis aids type refinement (Section~\ref{type-refinement}).
+All checkers utilize purity annotations to aid type refinement
+(Section~\ref{type-refinement}).  By default, purity annotations are
+trusted, not checked.
 
-All checkers utilize purity annotations on called methods.
-You do not need to run the Purity Checker directly.
-However, you may run just the Purity Checker by
-supplying the following command-line option to javac:
+To check purity annotations, pass \<-AcheckPurityAnnotations> to any
+checker.
+To run \emph{only} the Purity Checker (this is uncommon),
+supply the following command-line option to javac:
 \code{-processor org.checkerframework.framework.util.PurityChecker}.
 
-The Checker Framework can infer purity annotations.
-If you supply the command-line option \<-AsuggestPureMethods>, then the
-Checker Framework will suggest methods that can be marked as
+To infer purity annotations,
+supply the command-line option \<-AsuggestPureMethods>.
+The Checker Framework will suggest methods that can be marked as
 \<@SideEffectFree>, \<@Deterministic>, or \<@Pure>.
 In addition, such suggestions are output by \<-Ainfer> and when using
 whole-program inference.
@@ -43,10 +50,86 @@ whole-program inference.
 \end{description}
 
 
+\sectionAndLabel{Lambdas, method references, and functional interfaces}{purity-functional-interfaces}
+
+Creating a lambda, or declaring a local or anonymous class, is not itself a
+side effect.  A lambda expression evaluates to an object but does not run the code
+in the lambda's body.  A side-effect-free method may therefore create a lambda
+whose body has side effects:
+
+\begin{Verbatim}
+  @SideEffectFree
+  Runnable makeRunnable() {
+    return () -> count++;  // OK: creating the lambda has no side effect
+  }
+\end{Verbatim}
+
+\noindent
+The effects of the body occur where the functional method is invoked, and
+each such invocation is checked on its own.
+
+The body of a lambda is checked against the purity annotations on the
+functional interface method that the lambda implements, not against those on
+the method that creates the lambda.  For example:
+
+\begin{Verbatim}
+  @FunctionalInterface
+  interface PureSupplier {
+    @SideEffectFree String get();
+  }
+
+  PureSupplier s1 = () -> "hello";                  // OK
+  PureSupplier s2 = () -> { count++; return ""; };  // error: the body has a side effect
+\end{Verbatim}
+
+
+\subsectionAndLabel{Functional-interface parameters of side-effect-free methods}{purity-functional-interface-parameters}
+
+For a side-effect-free method, the functional method of any parameter that is
+a functional interface is treated as side-effect-free.
+
+\begin{Verbatim}
+  @SideEffectFree
+  int m(Function<String, Integer> f, String s) {
+    return f.apply(s);  // permitted: apply is treated as side-effect-free
+  }
+\end{Verbatim}
+
+At calls to \<m>, the functional method of the argument's declared type must
+be \<@SideEffectFree>.
+
+\begin{Verbatim}
+  m(String::length, "hi");  // OK: String.length() is side-effect-free
+\end{Verbatim}
+
+If the argument is a lambda, then the body of the lambda is checked directly
+for side effects.
+
+\begin{Verbatim}
+  m(s -> s.length(), "hi");  // OK: the lambda body is side-effect-free
+  m(s -> count++, "hi");     // error: the lambda body has a side effect
+\end{Verbatim}
+
+%% TODO: we could implement a type system for functional interfaces with a
+%% qualifier \<@SideEffectFreeFunctionalInterface>.  Then the default for a
+%% \<@SideEffectFree> method would be:
+%For a side-effect-free method, the default type is
+%\<@SideEffectFreeFunctionalInterface> for any parameter that is a functional
+%interface.  That is, the following two declarations are equivalent:
+%
+%\begin{Verbatim}
+%  @SideEffectFree
+%  int apply(Function<String, Integer> f, String s) { ... }
+%
+%  @SideEffectFree
+%  int apply(@SideEffectFreeFunctionalInterface Function<String, Integer> f, String s) { ... }
+%\end{Verbatim}
+
+
 \sectionAndLabel{Purity annotations are trusted}{purity-trusted}
 
-By default, purity annotations are trusted.  Purity annotations on called
-methods affect type-checking of client code.  However, you can make a
+By default, purity annotations are trusted by every checker built with the
+Checker Framework, and the Purity Checker is not run.  However, you can make a
 mistake
 %
 by writing \refqualclass{dataflow/qual}{SideEffectFree} on the
@@ -61,9 +144,9 @@ or
 by writing \refqualclass{dataflow/qual}{Deterministic} on the
 declaration of a method that is not deterministic.
 
-To enable
-checking of the annotations, supply the command-line option
-\<-AcheckPurityAnnotations>.  It is not enabled by default because of a high false
+To run the Purity Checker together with another checker, supply the
+command-line option \<-AcheckPurityAnnotations>.  The Purity Checker is not
+enabled by default because of a high false
 positive rate.  In the future, after a new purity-checking analysis is
 implemented, the Checker Framework will default to checking purity
 annotations.
@@ -149,5 +232,6 @@ of the following is true:
 \end{itemize}
 
 
-%%  LocalWords:  AsuggestPureMethods AcheckPurityAnnotations
-%%  LocalWords:  AsuppressWarnings AassumeSideEffectFree
+%%  LocalWords:  AsuggestPureMethods AcheckPurityAnnotations Ainfer
+%%  LocalWords:  AsuppressWarnings AassumeSideEffectFree SideEffectsOnly
+% LocalWords:  TODO AassumeDeterministic AassumePure AassumePureGetters
