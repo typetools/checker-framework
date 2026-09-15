@@ -431,6 +431,9 @@ public class VariableBounds {
    * ({@code 1 <= i <= n}), if Si and Ti are types (not wildcards), the constraint formula {@code
    * <Si = Ti>} is implied.
    *
+   * <p>If G is an inner class, then its enclosing types contribute type arguments as well, and the
+   * same constraint formula is implied between each pair of them.
+   *
    * <p>The implied constraints ignore the qualifiers of a type argument that is {@link
    * org.checkerframework.framework.qual.Covariant} or that is a self-reference to one of the
    * bounds; see {@link #isSelfReferentialTypeArgument}. Two bounds imply nothing about such a
@@ -444,20 +447,56 @@ public class VariableBounds {
    */
   private List<Typing> getConstraintsFromParameterized(
       Constraint parent, AbstractType s, AbstractType t) {
-    String description = "Constraint from parameterized bound";
-
     IPair<AbstractType, AbstractType> pair =
         context.inferenceTypeFactory.getParameterizedSupers(s, t);
 
     if (pair == null) {
       return new ArrayList<>();
     }
+
+    List<Typing> constraints = new ArrayList<>();
+    // An inner class type's own type arguments are not all of the type arguments it mentions; its
+    // enclosing types contribute more, which getTypeArguments() omits.
     AbstractType sAsSuper = pair.first;
     AbstractType tAsSuper = pair.second;
+    while (sAsSuper != null && tAsSuper != null) {
+      addConstraintsFromTypeArguments(parent, s, sAsSuper, t, tAsSuper, constraints);
+      sAsSuper = sAsSuper.getEnclosingType();
+      tAsSuper = tAsSuper.getEnclosingType();
+    }
+    return constraints;
+  }
+
+  /**
+   * Adds to {@code constraints} the constraints between the type arguments of {@code sAsSuper} and
+   * those of {@code tAsSuper}, which are parameterizations of the same generic class: either a
+   * supertype of both {@code s} and {@code t}, or an enclosing type of that supertype.
+   *
+   * @param parent the constraint whose reduction created the bound that implies the new
+   *     constraints, or null if no constraint did
+   * @param s a bound of this variable
+   * @param sAsSuper a parameterized supertype of {@code s}, or an enclosing type of one
+   * @param t a bound of this variable
+   * @param tAsSuper the parameterization of the same class for {@code t} that {@code sAsSuper} is
+   *     for {@code s}
+   * @param constraints the list to which to add the implied constraints
+   */
+  private void addConstraintsFromTypeArguments(
+      Constraint parent,
+      AbstractType s,
+      AbstractType sAsSuper,
+      AbstractType t,
+      AbstractType tAsSuper,
+      List<Typing> constraints) {
+    String description = "Constraint from parameterized bound";
 
     List<AbstractType> sAsSuperTypeArguments = sAsSuper.getTypeArguments();
     List<AbstractType> tAsSuperTypeArguments = tAsSuper.getTypeArguments();
     if (sAsSuperTypeArguments.size() != tAsSuperTypeArguments.size()) {
+      if (sAsSuper.isRaw() || tAsSuper.isRaw()) {
+        // A raw type has no type arguments, so the two types imply nothing about one another's.
+        return;
+      }
       throw new BugInCF(
           "Parameterized supertypes %s and %s have different numbers of type arguments.",
           sAsSuper, tAsSuper);
@@ -472,7 +511,6 @@ public class VariableBounds {
             .getTypeHierarchy()
             .getCovariantArgIndexes((AnnotatedDeclaredType) sAsSuper.getAnnotatedType());
 
-    List<Typing> constraints = new ArrayList<>();
     for (int i = 0; i < sAsSuperTypeArguments.size(); i++) {
       AbstractType si = sAsSuperTypeArguments.get(i);
       AbstractType ti = tAsSuperTypeArguments.get(i);
@@ -491,7 +529,6 @@ public class VariableBounds {
             new Typing(parent, description, si, ti, Kind.TYPE_EQUALITY, qualifiersMustMatch));
       }
     }
-    return constraints;
   }
 
   /**
