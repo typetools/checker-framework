@@ -4220,8 +4220,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // enclosing elements, which can fail to read a class file too.
       checker.message(
           Diagnostic.Kind.WARNING,
-          "Cannot read a class file that is needed to compute the declaration annotations of %s:"
-              + " %s. Make sure your classpath is set correctly.",
+          // Keep this in sync with the class.not.completed message in messages.properties.
+          "Cannot read a class file that is needed by %s: %s. Make sure your classpath is set"
+              + " correctly.",
           eltName,
           completionFailure.getMessage());
     }
