@@ -1,8 +1,10 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,6 +65,13 @@ public class VariableBounds {
 
   /** Constraints implied by complementary pairs of bounds found during incorporation. */
   public final ConstraintSet constraints = new ConstraintSet();
+
+  /**
+   * The supertypes of an enum class {@code E} whose type argument {@code E} bears a qualifier
+   * copied from {@code E} itself; see {@link #isSelfReferentialTypeArgument}.
+   */
+  private static final Set<String> ENUM_SELF_PARAMETERIZED =
+      new HashSet<>(Arrays.asList("java.lang.Enum", "java.lang.Comparable"));
 
   /** True if this variable has a throws bound. */
   private boolean hasThrowsBound = false;
@@ -480,8 +489,8 @@ public class VariableBounds {
         // about the two qualifiers.
         boolean qualifiersMustMatch =
             !covariantArgIndexes.contains(i)
-                && !isSelfReferentialTypeArgument(s, si)
-                && !isSelfReferentialTypeArgument(t, ti);
+                && !isSelfReferentialTypeArgument(pair.first, s, si)
+                && !isSelfReferentialTypeArgument(pair.second, t, ti);
         constraints.add(
             new Typing(parent, description, si, ti, Kind.TYPE_EQUALITY, qualifiersMustMatch));
       }
@@ -508,11 +517,14 @@ public class VariableBounds {
    * one on {@code type}; a programmer can write a different qualifier at either position, and such
    * a qualifier is invariant.
    *
+   * @param parameterizedSuper the parameterized supertype of {@code type} whose type arguments are
+   *     being compared
    * @param type one of the two types whose parameterized supertypes are being compared
-   * @param typeArgument a type argument of a parameterized supertype of {@code type}
+   * @param typeArgument a type argument of {@code parameterizedSuper}
    * @return true if the qualifier on {@code typeArgument} was copied from {@code type}
    */
-  private boolean isSelfReferentialTypeArgument(AbstractType type, AbstractType typeArgument) {
+  private boolean isSelfReferentialTypeArgument(
+      AbstractType parameterizedSuper, AbstractType type, AbstractType typeArgument) {
     if (!context.typeFactory.types.isSameType(typeArgument.getJavaType(), type.getJavaType())) {
       return false;
     }
@@ -525,7 +537,13 @@ public class VariableBounds {
       return true;
     }
     TypeElement element = TypesUtils.getTypeElement(type.getJavaType());
-    return element != null && element.getKind() == ElementKind.ENUM;
+    if (element == null || element.getKind() != ElementKind.ENUM) {
+      return false;
+    }
+    // Only `Enum<E>` and the `Comparable<E>` that it implements bear the copied qualifier.  An
+    // interface that the enum declaration itself parameterizes by the enum, as in `enum E
+    // implements Box<E>`, has a written qualifier at an invariant position.
+    return TypesUtils.isDeclaredOfName(parameterizedSuper.getJavaType(), ENUM_SELF_PARAMETERIZED);
   }
 
   /**
