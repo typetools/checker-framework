@@ -452,13 +452,15 @@ public class VariableBounds {
     if (pair == null) {
       return new ArrayList<>();
     }
+    AbstractType sAsSuper = pair.first;
+    AbstractType tAsSuper = pair.second;
 
-    List<AbstractType> ss = pair.first.getTypeArguments();
-    List<AbstractType> ts = pair.second.getTypeArguments();
-    if (ss.size() != ts.size()) {
+    List<AbstractType> sAsSuperTypeArguments = sAsSuper.getTypeArguments();
+    List<AbstractType> tAsSuperTypeArguments = tAsSuper.getTypeArguments();
+    if (sAsSuperTypeArguments.size() != tAsSuperTypeArguments.size()) {
       throw new BugInCF(
           "Parameterized supertypes %s and %s have different numbers of type arguments.",
-          pair.first, pair.second);
+          sAsSuper, tAsSuper);
     }
 
     // At a covariant type argument of G, a type whose supertype is one of these
@@ -468,12 +470,12 @@ public class VariableBounds {
         context
             .typeFactory
             .getTypeHierarchy()
-            .getCovariantArgIndexes((AnnotatedDeclaredType) pair.first.getAnnotatedType());
+            .getCovariantArgIndexes((AnnotatedDeclaredType) sAsSuper.getAnnotatedType());
 
     List<Typing> constraints = new ArrayList<>();
-    for (int i = 0; i < ss.size(); i++) {
-      AbstractType si = ss.get(i);
-      AbstractType ti = ts.get(i);
+    for (int i = 0; i < sAsSuperTypeArguments.size(); i++) {
+      AbstractType si = sAsSuperTypeArguments.get(i);
+      AbstractType ti = tAsSuperTypeArguments.get(i);
       if (si.getTypeKind() != TypeKind.WILDCARD && ti.getTypeKind() != TypeKind.WILDCARD) {
         // If the type argument is covariant, then si and ti are merely supertypes of the
         // corresponding type argument of this variable; that relates each of their qualifiers to
@@ -483,8 +485,8 @@ public class VariableBounds {
         // about the two qualifiers.
         boolean qualifiersMustMatch =
             !covariantArgIndexes.contains(i)
-                && !isSelfReferentialTypeArgument(pair.first, s, si)
-                && !isSelfReferentialTypeArgument(pair.second, t, ti);
+                && !isSelfReferentialTypeArgument(sAsSuper, s, si)
+                && !isSelfReferentialTypeArgument(tAsSuper, t, ti);
         constraints.add(
             new Typing(parent, description, si, ti, Kind.TYPE_EQUALITY, qualifiersMustMatch));
       }
