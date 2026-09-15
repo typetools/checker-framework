@@ -9,7 +9,13 @@
 
 ### Changes for type system implementers
 
+`JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,
+`parseStubUnit()`, and `parseExpression()` into new class `StaticJavaParserUtil`.
+
 Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
+
+Removed the unused method
+`WholeProgramInferenceScenesStorage.updateAnnotationSetInScene()`.
 
 ### Closed issues
 
