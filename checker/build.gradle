@@ -371,6 +371,7 @@ tasks.register("ainferTestCheckerGenerateStubs", Test) {
   doFirst {
     delete("tests/ainfer-testchecker/annotated")
     delete("${buildDir}/ainfer-testchecker/")
+    deleteWpiOutputDirectory()
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-testchecker")
@@ -437,6 +438,7 @@ tasks.register("ainferTestCheckerGenerateAjava", Test) {
   doFirst {
     delete("tests/ainfer-testchecker/annotated")
     delete("${buildDir}/ainfer-testchecker/")
+    deleteWpiOutputDirectory()
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-testchecker")
@@ -480,6 +482,14 @@ tasks.register("ainferTestCheckerValidateAjava", Test) {
     exceptionFormat = "full"
     events("passed", "skipped", "failed")
   }
+}
+
+// Deletes the directory that WPI writes into.  A generation task must call this from `doFirst`:
+// the directory is only renamed away in `doLast`, which does not run when the test fails, so a
+// failed run would otherwise leave stale output that the next generation task would fold into its
+// own results and feed to its validation task.
+void deleteWpiOutputDirectory() {
+  delete("${buildDir}/whole-program-inference/")
 }
 
 // Copies directories as needed by WPI tests.
@@ -552,6 +562,7 @@ tasks.register("ainferTestCheckerGenerateJaifs", Test) {
   }
   doFirst {
     delete("tests/ainfer-testchecker/annotated")
+    deleteWpiOutputDirectory()
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-testchecker")
@@ -634,9 +645,13 @@ tasks.register("ainferIndexGenerateAjava", Test) {
   // Resolve these directories at configuration time, and delete them with `File.deleteDir()`
   // rather than with `Project.delete()`, because the Gradle configuration cache forbids using
   // a project object from within a task action.
+  // This list includes `build/whole-program-inference`, for the reason given in the
+  // documentation of `deleteWpiOutputDirectory` (which this task cannot call, per the comment
+  // just above).
   List<File> ainferIndexDirsToDelete = [
     file("tests/ainfer-index/annotated"),
     layout.buildDirectory.dir("ainfer-index").get().asFile,
+    layout.buildDirectory.dir("whole-program-inference").get().asFile,
   ]
   doFirst {
     ainferIndexDirsToDelete.forEach { dirToDelete ->
@@ -701,6 +716,7 @@ tasks.register("ainferNullnessGenerateAjava", Test) {
   doFirst {
     delete("tests/ainfer-nullness/annotated")
     delete("${buildDir}/ainfer-nullness/")
+    deleteWpiOutputDirectory()
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-nullness")
@@ -755,6 +771,7 @@ tasks.register("ainferResourceLeakGenerateAjava", Test) {
   doFirst {
     delete("tests/ainfer-resourceleak/annotated")
     delete("${buildDir}/ainfer-resourceleak/")
+    deleteWpiOutputDirectory()
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-resourceleak")
@@ -808,6 +825,7 @@ tasks.register("ainferNullnessGenerateJaifs", Test) {
   }
   doFirst {
     delete("tests/ainfer-nullness/annotated")
+    deleteWpiOutputDirectory()
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-nullness")
