@@ -7,6 +7,9 @@
 
 ### User-visible changes
 
+Added support for IntelliJ IDEA annotation files (`annotations.xml`) via the
+`-AintellijAnnotations` command-line option.
+
 ### Changes for type system implementers
 
 `JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,
@@ -18,6 +21,8 @@ Removed the unused method
 `WholeProgramInferenceScenesStorage.updateAnnotationSetInScene()`.
 
 ### Closed issues
+
+(Filled in at release time.)
 
 ## Version 4.2.3 (2026-09-01)
 
