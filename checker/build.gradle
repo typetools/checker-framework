@@ -703,9 +703,14 @@ tasks.register("ainferRelevanceGenerateAjava", Test) {
   // Resolve these directories at configuration time, and delete them with `File.deleteDir()`
   // rather than with `Project.delete()`, because the Gradle configuration cache forbids using
   // a project object from within a task action.
+  // `build/whole-program-inference` is where WPI writes, and is what
+  // `AinferRelevanceAjavaGenerationTest` reads when comparing to the goal files.  It is only
+  // renamed away in `doLast`, which does not run if the test fails, so it must be deleted here to
+  // prevent this task from reading stale output (possibly from a different ainfer task).
   List<File> ainferRelevanceDirsToDelete = [
     file("tests/ainfer-relevance/annotated"),
     layout.buildDirectory.dir("ainfer-relevance").get().asFile,
+    layout.buildDirectory.dir("whole-program-inference").get().asFile,
   ]
   doFirst {
     ainferRelevanceDirsToDelete.forEach { dirToDelete ->

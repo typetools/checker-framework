@@ -1681,9 +1681,7 @@ public class WholeProgramInferenceJavaParserStorage
 
       if (classAnnotations != null && classDeclaration != null) {
         for (AnnotationMirror annotation : classAnnotations) {
-          classDeclaration.addAnnotation(
-              AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
-                  annotation));
+          writeDeclarationAnnotation(classDeclaration, annotation);
         }
       }
 
