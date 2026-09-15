@@ -7,9 +7,6 @@
 
 ### User-visible changes
 
-New warning `class.not.completed` is issued when a class file that is needed to
-compute an element's declaration annotations cannot be read.
-
 ### Changes for type system implementers
 
 `JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,

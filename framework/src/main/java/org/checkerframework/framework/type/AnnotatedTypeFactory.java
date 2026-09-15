@@ -4221,8 +4221,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       checker.message(
           Diagnostic.Kind.WARNING,
           // Keep this in sync with the class.not.completed message in messages.properties.
-          "Cannot read a class file that is needed by %s: %s. Make sure your classpath is set"
-              + " correctly.",
+          "Cannot read a class file that is needed by %s: %s. "
+              + "Make sure your classpath is set correctly.",
           eltName,
           completionFailure.getMessage());
     }
