@@ -386,6 +386,7 @@ public class StubGenerator {
    * @param lst a list to format
    * @return a string representation of the list, without surrounding square brackets
    */
+  @SuppressWarnings("collectionownership:argument") //  defaulting/inference for StringsP.join
   private String formatList(@MustCallUnknown List<? extends @MustCallUnknown Object> lst) {
     return StringsP.join(", ", lst);
   }

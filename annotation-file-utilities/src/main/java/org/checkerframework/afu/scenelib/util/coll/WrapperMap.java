@@ -3,6 +3,8 @@ package org.checkerframework.afu.scenelib.util.coll;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 /**
@@ -49,7 +51,7 @@ public class WrapperMap<K, V> implements Map<K, V> {
   }
 
   @Override
-  public V get(Object key) {
+  public @NotOwning @Nullable V get(Object key) {
     return back.get(key);
   }
 
@@ -69,7 +71,7 @@ public class WrapperMap<K, V> implements Map<K, V> {
     "nullness:return" // generics lower bound problem
   })
   @SideEffectsOnly("this")
-  public V put(K key, V value) {
+  public @NotOwning V put(K key, V value) {
     return back.put(key, value);
   }
 
