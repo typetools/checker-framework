@@ -480,9 +480,9 @@ public class VariableBounds {
         // If the type argument is covariant, then si and ti are merely supertypes of the
         // corresponding type argument of this variable; that relates each of their qualifiers to
         // that type argument's qualifier, but not to one another.  If the type argument is a
-        // self-reference to the bound, then its qualifier is a copy of the bound's qualifier
-        // rather than one that a programmer wrote.  In either case, the two bounds imply nothing
-        // about the two qualifiers.
+        // self-reference to the bound with the bound's own qualifier, then that qualifier came
+        // from the bound rather than from a programmer.  In either case, the two bounds imply
+        // nothing about the two qualifiers.
         boolean qualifiersMustMatch =
             !covariantArgIndexes.contains(i)
                 && !isSelfReferentialTypeArgument(sAsSuper, s, si)
@@ -495,37 +495,31 @@ public class VariableBounds {
   }
 
   /**
-   * Returns true if {@code typeArgument} is a self-reference to {@code type}, whose qualifier is a
-   * copy of the qualifier on {@code type} rather than a qualifier that a programmer wrote. There
-   * are two such cases.
+   * Returns true if {@code typeArgument} is a self-reference to {@code type} that has the same
+   * qualifier as {@code type}. Only two kinds of {@code type} have such a type argument.
    *
    * <ul>
-   *   <li>{@code type} is a use of an F-bounded type variable, such as {@code S} declared as {@code
-   *       S extends Store<S>}. The upper bound of the use {@code @Nullable S} is {@code @Nullable
-   *       Store<@Nullable S>}, whose type argument bears the qualifier that was written on the use.
-   *   <li>{@code type} is an enum class {@code E}. Its supertype is {@code Enum<E>}, which in turn
-   *       implements {@code Comparable<E>}. Both supertypes have the type argument {@code E}, whose
-   *       qualifier {@code SupertypeFinder.createEnumSuperType} copies from {@code type}.
+   *   <li>A use of an F-bounded type variable, such as {@code S} declared as {@code S extends
+   *       Store<S>}: the upper bound of the use {@code @Nullable S} is {@code @Nullable
+   *       Store<@Nullable S>}, whose type argument has the qualifier that was written on the use.
+   *   <li>An enum class {@code E}: its supertype is {@code Enum<E>}, which in turn implements
+   *       {@code Comparable<E>}, and {@code SupertypeFinder.createEnumSuperType} copies the
+   *       qualifier of {@code E} onto the type argument of each.
    * </ul>
    *
-   * In either case, the type argument is not invariant, and its qualifier must not be compared to
-   * the qualifier of another type argument. The qualifier is a copy only if it is the same as the
-   * one on {@code type}; a programmer can write a different qualifier at either position, and such
-   * a qualifier is invariant.
-   *
-   * @param parameterizedSuper the parameterized supertype of {@code type} whose type arguments are
-   *     being compared
-   * @param type one of the two types whose parameterized supertypes are being compared
-   * @param typeArgument a type argument of {@code parameterizedSuper}
-   * @return true if the qualifier on {@code typeArgument} was copied from {@code type}
+   * @param typeAsSuper a parameterized supertype of {@code type}
+   * @param type a type
+   * @param typeArgument a type argument of {@code typeAsSuper}
+   * @return true if {@code typeArgument} is a self-reference to {@code type} with the same
+   *     qualifier as {@code type}
    */
   private boolean isSelfReferentialTypeArgument(
-      AbstractType parameterizedSuper, AbstractType type, AbstractType typeArgument) {
+      AbstractType typeAsSuper, AbstractType type, AbstractType typeArgument) {
     if (!context.typeFactory.types.isSameType(typeArgument.getJavaType(), type.getJavaType())) {
       return false;
     }
-    // A qualifier that differs from the one on `type` is not a copy of it, so a programmer wrote
-    // it at an invariant position, as in `enum E implements Box<@Untainted E>`.
+    // A qualifier that differs from the one on `type` was written by a programmer at an invariant
+    // position, as in `enum E implements Box<@Untainted E>`.
     if (!typeArgument.getQualifiers().equals(type.getQualifiers())) {
       return false;
     }
@@ -536,10 +530,10 @@ public class VariableBounds {
     if (element == null || element.getKind() != ElementKind.ENUM) {
       return false;
     }
-    // Only `Enum<E>` and the `Comparable<E>` that it implements bear the copied qualifier.  An
+    // Only `Enum<E>` and the `Comparable<E>` that it implements get their qualifier from `E`.  An
     // interface that the enum declaration itself parameterizes by the enum, as in `enum E
     // implements Box<E>`, has a written qualifier at an invariant position.
-    return TypesUtils.isDeclaredOfName(parameterizedSuper.getJavaType(), ENUM_SELF_PARAMETERIZED);
+    return TypesUtils.isDeclaredOfName(typeAsSuper.getJavaType(), ENUM_SELF_PARAMETERIZED);
   }
 
   /**
