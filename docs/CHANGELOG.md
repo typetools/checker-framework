@@ -17,6 +17,9 @@ Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
 Removed the unused method
 `WholeProgramInferenceScenesStorage.updateAnnotationSetInScene()`.
 
+Renamed field `GenericAnnotatedTypeFactory.arraysAreRelevant` to
+`arrayTypesAreRelevant`, and added method `arrayTypesAreRelevant()`.
+
 ### Closed issues
 
 ## Version 4.2.3 (2026-09-01)
