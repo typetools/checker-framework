@@ -323,7 +323,8 @@ public class Typing extends TypeConstraint {
    * <p>JLS 18.2.3 and 18.2.4 speak of "the type arguments of T", which for an inner class type such
    * as {@code Outer<String>.Inner} include the type arguments of the enclosing type. {@link
    * AbstractType#getTypeArguments} returns only a type's own type arguments, so without this method
-   * a type variable that occurs only in an enclosing type would receive no bound.
+   * a type variable that occurs only in an enclosing type would receive no bound, and the
+   * qualifiers of an enclosing type argument would never be compared.
    *
    * @param set the constraint set to add to
    * @param lhs the type that is the left-hand side of the new constraint
@@ -337,11 +338,14 @@ public class Typing extends TypeConstraint {
     if (lhsEnclosing == null || rhsEnclosing == null) {
       return;
     }
-    // The only purpose of this constraint is to bound an inference variable that occurs in an
-    // enclosing type, so do not create it if neither enclosing type mentions an inference
-    // variable.  Such a constraint would compare two types that inference does not govern; the
-    // type-checker compares them independently of inference.
-    if (lhsEnclosing.isProper() && rhsEnclosing.isProper()) {
+    // A constraint between two proper types has two possible purposes: to bound an inference
+    // variable, which two proper types do not mention, and to compare their qualifiers, which only
+    // an equality constraint that requires matching qualifiers does.  Without either purpose the
+    // constraint would compare two types that inference does not govern; the type-checker compares
+    // them independently of inference.
+    if (lhsEnclosing.isProper()
+        && rhsEnclosing.isProper()
+        && !(kind == Kind.TYPE_EQUALITY && qualifiersMustMatch)) {
       return;
     }
     if (lhsEnclosing.equals(rhsEnclosing)) {

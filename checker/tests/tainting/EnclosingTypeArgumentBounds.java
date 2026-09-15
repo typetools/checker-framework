@@ -17,7 +17,15 @@ public class EnclosingTypeArgumentBounds {
     class Sub<U> extends Sup<U> {}
 
     void useSup(Sup<@Tainted String> s) {}
+
+    void useB(B<Sup<@Tainted String>> b) {}
   }
+
+  interface Sup2<T> {}
+
+  interface A<T> extends Sup2<T> {}
+
+  interface B<T> extends Sup2<T> {}
 
   <S extends Outer<String>.Sup<String>> S sup() {
     throw new RuntimeException();
@@ -46,6 +54,22 @@ public class EnclosingTypeArgumentBounds {
     untainted.useSup(sub());
 
     tainted.useSup(sub());
+  }
+
+  <X, S extends A<Outer<String>.Sup<X>>> S nested() {
+    throw new RuntimeException();
+  }
+
+  // The enclosing types are compared within an equality constraint between two type arguments,
+  // one of which mentions an inference variable.
+  void useNested(Outer<@Untainted String> untainted, Outer<@Tainted String> tainted) {
+    // The bounds imply `Outer<@Tainted String>.Sup<X> = Outer<@Untainted String>.Sup<@Tainted
+    // String>`, which reduces to `X = @Tainted String` and to a constraint between the enclosing
+    // types, which does not hold.
+    // :: error: [type.arguments.not.inferred]
+    untainted.useB(nested());
+
+    tainted.useB(nested());
   }
 
   @Covariant(0)
