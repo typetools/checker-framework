@@ -3,6 +3,8 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
+New Confidential Checker to identify sensitive information exposure.
+
 ## Version 4.2.4 (2026-10-01)
 
 ### User-visible changes

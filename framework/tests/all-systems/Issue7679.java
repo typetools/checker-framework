@@ -9,6 +9,7 @@ public class Issue7679 {
 
   static <T> void handle(Box<T> box) {}
 
+  @SuppressWarnings("confidential:type.arguments.not.inferred") // CF bug?
   void test() throws Exception {
     try {
       x();
