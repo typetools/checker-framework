@@ -6,6 +6,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.modifiability.iterator.IteratorChecker;
 import org.checkerframework.checker.modifiability.qual.IteratorPolyMod;
 import org.checkerframework.checker.modifiability.qual.MaybeModifiable;
@@ -75,7 +76,9 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
    * @param canonicalName the canonical name of a type that is always present
    * @return the erasure of the named type
    */
-  protected final TypeMirror erasureOf(@FullyQualifiedName String canonicalName) {
+  protected final TypeMirror erasureOf(
+      @UnderInitialization(BaseAnnotatedTypeFactory.class) ModifiabilityBaseAnnotatedTypeFactory this,
+      @FullyQualifiedName String canonicalName) {
     return types.erasure(elements.getTypeElement(canonicalName).asType());
   }
 

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -97,7 +98,12 @@ public class ModifiabilityBaseVisitor
    * @param tree a class
    */
   private void processClassConstructors(ClassTree tree) {
-    TypeMirror classTM = TreeUtils.elementFromDeclaration(tree).asType();
+    TypeElement classElement = TreeUtils.elementFromDeclaration(tree);
+    if (classElement == null) {
+      // Some anonymous classes have no element; see TreeUtils.elementFromDeclaration(ClassTree).
+      return;
+    }
+    TypeMirror classTM = classElement.asType();
     if (!atypeFactory.isRelevant(classTM)) {
       return;
     }

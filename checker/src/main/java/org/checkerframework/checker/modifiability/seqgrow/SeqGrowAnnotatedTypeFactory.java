@@ -8,6 +8,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.modifiability.ModifiabilityBaseAnnotatedTypeFactory;
 import org.checkerframework.checker.modifiability.qual.BottomSeqGrowable;
 import org.checkerframework.checker.modifiability.qual.MaybeSeqGrowable;
@@ -68,7 +69,9 @@ public class SeqGrowAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeF
    * @param canonicalName the canonical name of a type that may not be present
    * @return the erasure of the named type, or null
    */
-  private @Nullable TypeMirror optionalErasureOf(@FullyQualifiedName String canonicalName) {
+  private @Nullable TypeMirror optionalErasureOf(
+      @UnderInitialization(ModifiabilityBaseAnnotatedTypeFactory.class) SeqGrowAnnotatedTypeFactory this,
+      @FullyQualifiedName String canonicalName) {
     TypeElement element = elements.getTypeElement(canonicalName);
     return element == null ? null : types.erasure(element.asType());
   }
