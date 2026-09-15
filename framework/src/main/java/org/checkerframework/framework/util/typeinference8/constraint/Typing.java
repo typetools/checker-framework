@@ -133,6 +133,35 @@ public class Typing extends TypeConstraint {
   }
 
   /**
+   * Creates a typing constraint that incorporating a bound of an inference variable implies,
+   * recording how the constraint came about so that {@link TypeConstraint#constraintHistory} can
+   * explain it.
+   *
+   * @param parent the constraint whose reduction created the bound that implies this constraint, or
+   *     null if no constraint did
+   * @param description how the bound gave rise to this constraint
+   * @param S left-hand side type
+   * @param t right-hand side type
+   * @param kind the kind of constraint
+   * @param qualifiersMustMatch true if reducing this constraint should compare the qualifiers of
+   *     two proper types; see {@link #qualifiersMustMatch}
+   */
+  public Typing(
+      Constraint parent,
+      String description,
+      AbstractType S,
+      AbstractType t,
+      Kind kind,
+      boolean qualifiersMustMatch) {
+    this(parent, S, t, kind, false, qualifiersMustMatch);
+    if (parent == null) {
+      this.source = description;
+    } else {
+      this.derivation = description;
+    }
+  }
+
+  /**
    * Returns one of the abstract types in this constraint.
    *
    * @return one of the abstract types in this constraint

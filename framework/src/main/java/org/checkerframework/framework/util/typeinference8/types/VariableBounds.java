@@ -382,37 +382,7 @@ public class VariableBounds {
    */
   private void addComplementaryBoundConstraint(
       Constraint parent, AbstractType s, AbstractType t, Kind kind) {
-    constraints.add(createImpliedConstraint(parent, "From complementary bound", s, t, kind, false));
-  }
-
-  /**
-   * Creates a constraint that incorporating a bound of this variable implies, recording how the
-   * constraint came about so that {@link TypeConstraint#constraintHistory} can explain it.
-   *
-   * @param parent the constraint whose reduction created the bound that implies the new constraint,
-   *     or null if no constraint did
-   * @param description how the bound gave rise to the new constraint
-   * @param s left-hand side type of the new constraint
-   * @param t right-hand side type of the new constraint
-   * @param kind the kind of the new constraint
-   * @param qualifiersMustMatch true if reducing the new constraint should compare the qualifiers of
-   *     two proper types
-   * @return the new constraint
-   */
-  private Typing createImpliedConstraint(
-      Constraint parent,
-      String description,
-      AbstractType s,
-      AbstractType t,
-      Kind kind,
-      boolean qualifiersMustMatch) {
-    Typing constraint = new Typing(parent, s, t, kind, false, qualifiersMustMatch);
-    if (parent == null) {
-      constraint.source = description;
-    } else {
-      constraint.derivation = description;
-    }
-    return constraint;
+    constraints.add(new Typing(parent, "From complementary bound", s, t, kind, false));
   }
 
   /**
@@ -513,8 +483,7 @@ public class VariableBounds {
                 && !isSelfReferentialTypeArgument(s, si)
                 && !isSelfReferentialTypeArgument(t, ti);
         constraints.add(
-            createImpliedConstraint(
-                parent, description, si, ti, Kind.TYPE_EQUALITY, qualifiersMustMatch));
+            new Typing(parent, description, si, ti, Kind.TYPE_EQUALITY, qualifiersMustMatch));
       }
     }
     return constraints;
