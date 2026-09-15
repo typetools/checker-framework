@@ -18,7 +18,7 @@ public class IShouldBeSibling1 {
     // annotation is nonetheless a declaration annotation.
     @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1
     @org.checkerframework.dataflow.qual.Pure
-     @org.checkerframework.checker.testchecker.ainfer.qual.AinferTop double iShouldBeSibling1(double d) {
+      double iShouldBeSibling1(double d) {
         return d;
     }
 }
