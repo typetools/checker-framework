@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.util.typeinference8.types.AbstractQualifier;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
@@ -543,7 +542,10 @@ public class Typing extends TypeConstraint {
       // type rather than the two sides of an equality.
 
       ConstraintSet constraintSet = new ConstraintSet();
-      addQualifierEqualityConstraints(constraintSet);
+      if (qualifiersMustMatch && !S.ignoreAnnotations && !T.ignoreAnnotations) {
+        QualifierTyping.addQualifierConstraints(
+            constraintSet, S.getQualifiers(), T.getQualifiers(), Kind.QUALIFIER_EQUALITY);
+      }
       for (int i = 0; i < tTypeArgs.size(); i++) {
         // The constraint between two equal type arguments reduces to true (JLS 18.2.4), so do
         // not create it.
@@ -568,7 +570,10 @@ public class Typing extends TypeConstraint {
     AbstractType tComponentType = T.getComponentType();
     if (sComponentType != null && tComponentType != null) {
       ConstraintSet constraintSet = new ConstraintSet();
-      addQualifierEqualityConstraints(constraintSet);
+      if (qualifiersMustMatch && !S.ignoreAnnotations && !T.ignoreAnnotations) {
+        QualifierTyping.addQualifierConstraints(
+            constraintSet, S.getQualifiers(), T.getQualifiers(), Kind.QUALIFIER_EQUALITY);
+      }
       constraintSet.add(
           new Typing(
               this,
@@ -609,32 +614,6 @@ public class Typing extends TypeConstraint {
     return ConstraintSet.FALSE;
   }
 
-  /**
-   * If reducing this constraint should compare qualifiers, adds to {@code constraintSet} an
-   * equality constraint between each pair of primary qualifiers of {@link #S} and {@link #T} that
-   * are in the same hierarchy.
-   *
-   * <p>Call this from a branch of {@link #reduceEquality} that relates the parts of {@link #S} and
-   * {@link #T} -- their type arguments or their component types. Relating the parts says nothing
-   * about the primary qualifiers of {@link #S} and {@link #T} themselves, so without this the
-   * constraint would compare fewer qualifiers than {@link ProperType#checkAnnotationEquality} does
-   * for the same constraint between two proper types.
-   *
-   * @param constraintSet the constraint set to add the qualifier constraints to
-   */
-  private void addQualifierEqualityConstraints(ConstraintSet constraintSet) {
-    if (!qualifiersMustMatch || S.ignoreAnnotations || T.ignoreAnnotations) {
-      return;
-    }
-    for (AbstractQualifier sQual : S.getQualifiers()) {
-      for (AbstractQualifier tQual : T.getQualifiers()) {
-        if (!sQual.equals(tQual) && sQual.sameHierarchy(tQual)) {
-          constraintSet.add(new QualifierTyping(sQual, tQual, Kind.QUALIFIER_EQUALITY));
-        }
-      }
-    }
-  }
-
   @Override
   public String toString() {
     return switch (kind) {
@@ -663,9 +642,6 @@ public class Typing extends TypeConstraint {
 
     Typing typing = (Typing) o;
 
-    // qualifiersMustMatch is compared because it changes how this constraint reduces: a
-    // constraint set drops a constraint that is equal to one it already contains, so a constraint
-    // that compares qualifiers must not be dropped in favor of one that does not.
     return S.equals(typing.S)
         && kind == typing.kind
         && qualifiersMustMatch == typing.qualifiersMustMatch;

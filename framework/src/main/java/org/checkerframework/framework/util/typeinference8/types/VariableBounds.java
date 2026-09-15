@@ -276,13 +276,7 @@ public class VariableBounds {
    */
   private void addQualifierConstraint(
       Set<? extends AbstractQualifier> setT, Set<? extends AbstractQualifier> setS, Kind kind) {
-    for (AbstractQualifier t : setT) {
-      for (AbstractQualifier s : setS) {
-        if (!s.equals(t) && s.sameHierarchy(t)) {
-          constraints.add(new QualifierTyping(t, s, kind));
-        }
-      }
-    }
+    QualifierTyping.addQualifierConstraints(constraints, setT, setS, kind);
   }
 
   /**
