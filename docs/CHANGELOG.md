@@ -7,6 +7,11 @@
 
 ### User-visible changes
 
+Whole-program inference no longer writes, into an `.ajava` file, an annotation
+that is irrelevant where it appears -- that is, one written on a Java type
+that the checker's `@RelevantJavaTypes` excludes.  Such an annotation was
+clutter; omitting it does not change the result of type-checking.
+
 ### Changes for type system implementers
 
 `JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,
