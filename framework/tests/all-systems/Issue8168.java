@@ -46,10 +46,38 @@ class Issue8168Outer extends Issue8168Gen<Integer> {
   }
 }
 
+/**
+ * {@code Issue8168GenericInnerSub}'s superclass is a generic inner class of an unrelated generic
+ * class. The qualified super constructor invocation's enclosing instance, {@code
+ * Issue8168Gen<String>}, does not instantiate {@code GenericInner}'s own type variable; the direct
+ * superclass type does.
+ */
+abstract class Issue8168GenericInnerSub extends Issue8168Gen<String>.GenericInner<Integer> {
+  Issue8168GenericInnerSub(Issue8168Gen<String> outer, Integer i) {
+    outer.super(i);
+  }
+
+  void call(String s, Integer i) {
+    use(s, i);
+    String unused1 = getArg();
+    Integer unused2 = getInnerArg();
+  }
+}
+
 class Issue8168Gen<T> {
   abstract class Inner {
     abstract void use(T arg);
 
     abstract T getArg();
+  }
+
+  abstract class GenericInner<U> {
+    GenericInner(U u) {}
+
+    abstract void use(T t, U u);
+
+    abstract T getArg();
+
+    abstract U getInnerArg();
   }
 }

@@ -521,9 +521,13 @@ public final class AnnotatedTypes {
             receiverType,
             atypeFactory.getAnnotatedType(enclosingClassOfMember));
     if (searchRoot == null) {
-      // `receiverType` is not a subtype of member's declaring class.  That is so for the
-      // constructor of an inner class that is invoked as `outer.super(...)` or
-      // `outer.new Inner(...)`, where `receiverType` is the enclosing instance.
+      // `receiverType` is not a subtype of member's declaring class, so no supertype of it
+      // instantiates the type variables that member's declaration uses.  Search `receiverType`
+      // itself, which at least instantiates the type variables of the classes that enclose it.
+      // Callers that view a constructor as a member of a type pass the type being constructed,
+      // not the enclosing instance, so that the type variables of the constructor's own class
+      // are instantiated; see `constructorFromUse` and `methodFromUse` in
+      // `AnnotatedTypeFactory`.
       searchRoot = receiverType;
     }
 

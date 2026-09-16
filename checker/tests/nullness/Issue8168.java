@@ -41,6 +41,16 @@ class Gen8168<T extends @Nullable Object> {
       throw new AssertionError();
     }
   }
+
+  class GenericInner<U extends @Nullable Object> {
+    GenericInner(U arg) {}
+
+    void use(T t, U u) {}
+
+    U getInner() {
+      throw new AssertionError();
+    }
+  }
 }
 
 class Sub8168 extends Gen8168<@NonNull String>.Inner {
@@ -53,6 +63,27 @@ class Sub8168 extends Gen8168<@NonNull String>.Inner {
     // :: error: (argument)
     use(nble);
     @NonNull String s = get();
+  }
+}
+
+// The enclosing instance of the qualified super constructor invocation does not instantiate
+// `GenericInner`'s own type variable `U`; the superclass type `Gen8168<...>.GenericInner<...>`
+// does.
+class GenericInnerSub8168 extends Gen8168<@NonNull String>.GenericInner<@NonNull Integer> {
+  GenericInnerSub8168(Gen8168<@NonNull String> outer, @NonNull Integer nn) {
+    outer.super(nn);
+  }
+
+  GenericInnerSub8168(Gen8168<@NonNull String> outer, @Nullable Integer nble, boolean dummy) {
+    // :: error: (argument)
+    outer.super(nble);
+  }
+
+  void callInherited(@Nullable String nble, @NonNull String nn, @NonNull Integer nnInt) {
+    use(nn, nnInt);
+    // :: error: (argument)
+    use(nble, nnInt);
+    @NonNull Integer i = getInner();
   }
 }
 
