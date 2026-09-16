@@ -8,6 +8,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -268,6 +269,29 @@ public final class PurityChecker {
     public Void visitLambdaExpression(LambdaExpressionTree tree, Void ignore) {
       purityResult.addNotDetReason(tree, "object.creation");
       return null;
+    }
+
+    /**
+     * Evaluating a method reference creates an object; it does not run the referenced method.
+     *
+     * <p>Creating an object is not deterministic, just as a {@code new} expression is not; see
+     * {@link #visitNewClass}. JLS 15.13.3 leaves it unspecified whether two evaluations of the same
+     * method reference produce the same object.
+     *
+     * <p>The referenced method's effects occur where the functional method is invoked, and that
+     * invocation is checked like any other method call.
+     *
+     * <p>Do scan the children. The qualifier expression of {@code EXPR::m} is evaluated where the
+     * method reference appears, unlike the body of a lambda.
+     *
+     * @param tree a method reference
+     * @param ignore an unused parameter
+     * @return null
+     */
+    @Override
+    public Void visitMemberReference(MemberReferenceTree tree, Void ignore) {
+      purityResult.addNotDetReason(tree, "object.creation");
+      return super.visitMemberReference(tree, ignore);
     }
 
     /**
