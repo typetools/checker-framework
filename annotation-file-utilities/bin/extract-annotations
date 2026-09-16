@@ -27,7 +27,7 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-AFU=${AFU:-$(dirname "$0")/..}
+AFU="${AFU:-$(CDPATH='' cd -P -- "$(dirname -- "$0")/.." && pwd -P)}"
 ANNOTATION_FILE_UTILS=${AFU}/dist/annotation-file-utilities-all.jar
 
 # Need open to access CommandLine.parse dynamically to check its type:

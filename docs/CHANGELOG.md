@@ -7,18 +7,8 @@
 
 ### User-visible changes
 
-Under `-AcheckPurityAnnotations`, a method annotated `@SideEffectFree`,
-`@Deterministic`, `@Pure`, or `@SideEffectsOnly` may call the functional method
-of its own functional-interface parameters.  At every call to such a method,
-each argument passed to a functional-interface parameter is checked: a lambda's
-body must have the callee's purity, a method reference's referenced method must
-be declared with it, and any other argument must have it on the functional
-method of its declared type.  The new error message key is
-`purity.functional.argument`.
-
-This affects existing code that calls an annotated JDK method with a
-functional-interface parameter, such as `Optional.map`, `Collections.min`, or
-`List.sort`.
+The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
+warnings that it did not previously.
 
 ### Changes for type system implementers
 
