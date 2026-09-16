@@ -62,6 +62,19 @@ public class JavaParserUtilTest {
 
     // A private member type is never inherited.
     assertResolvesTo(null, SUPERPKG, "class SamePackageSub extends Base { Secret f; }", "Secret");
+
+    // `Intermediate.Visible` hides `Base.Visible`.  A subtype of `Intermediate` therefore does not
+    // inherit `Base.Visible`, whether or not it inherits `Intermediate.Visible`.
+    assertResolvesTo(
+        SUPERPKG + ".Intermediate.Visible",
+        SUPERPKG,
+        "class SamePackageIntermediateSub extends Intermediate { Visible f; }",
+        "Visible");
+    assertResolvesTo(
+        null,
+        SUBPKG,
+        "class IntermediateSub extends " + SUPERPKG + ".Intermediate { Visible f; }",
+        "Visible");
   }
 
   /**

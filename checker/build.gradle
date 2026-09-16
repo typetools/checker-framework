@@ -727,6 +727,10 @@ tasks.register("ainferRelevanceGenerateAjava", Test) {
     layout.buildDirectory.dir("ainfer-relevance").get().asFile,
     layout.buildDirectory.dir("whole-program-inference").get().asFile,
   ]
+  // Resolved at configuration time, and deleted with `File.delete()`, for the reason given just
+  // above.
+  File irrelevantTypeVariableAnnotated =
+      file("tests/ainfer-relevance/annotated/IrrelevantTypeVariable.java")
   doFirst {
     ainferRelevanceDirsToDelete.forEach { dirToDelete ->
       // Unlike `Project.delete()`, `File.deleteDir()` reports failure by returning false rather
@@ -746,7 +750,7 @@ tasks.register("ainferRelevanceGenerateAjava", Test) {
     // the test.  The `// ::` comment that states the expectation is removed by
     // `copyNonannotatedToAnnotatedDirectory`, so the second (validation) pass would report the
     // warning as unexpected.
-    delete("tests/ainfer-relevance/annotated/IrrelevantTypeVariable.java")
+    irrelevantTypeVariableAnnotated.delete()
   }
 }
 

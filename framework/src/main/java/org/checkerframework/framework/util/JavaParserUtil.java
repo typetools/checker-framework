@@ -190,9 +190,10 @@ public final class JavaParserUtil {
    * typeElement} declares or inherits, or null if there is no such member type.
    *
    * <p>{@code typeElement} and its supertypes are searched in breadth-first order, so a member type
-   * that is declared in a nearer supertype hides one that is declared in a farther supertype. A
-   * member type that {@code typeElement} does not inherit, because the member type is private or is
-   * package-private in another package, is skipped.
+   * that is declared in a nearer supertype hides one that is declared in a farther supertype. The
+   * search stops at the nearest declaration of the name, even if {@code typeElement} does not
+   * inherit it because it is private or is package-private in another package: a hidden member type
+   * is not inherited either, so the name resolves to nothing.
    *
    * @param elements used for looking up names
    * @param typeElement the type whose member types to search
@@ -211,8 +212,12 @@ public final class JavaParserUtil {
     while (!worklist.isEmpty()) {
       TypeElement current = worklist.remove();
       for (TypeElement member : ElementFilter.typesIn(current.getEnclosedElements())) {
-        if (member.getSimpleName().contentEquals(firstComponent)
-            && isInheritedInPackage(elements, member, referencePackage)) {
+        if (member.getSimpleName().contentEquals(firstComponent)) {
+          if (!isInheritedInPackage(elements, member, referencePackage)) {
+            // `member` hides any member type of the same name in a supertype of `current`, so no
+            // supertype of `current` supplies the name.
+            return null;
+          }
           if (suffix.isEmpty()) {
             return member;
           }
