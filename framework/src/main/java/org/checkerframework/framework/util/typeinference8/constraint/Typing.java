@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.util.typeinference8.types.AbstractQualifier;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
@@ -547,7 +548,10 @@ public class Typing extends TypeConstraint {
       ConstraintSet constraintSet = new ConstraintSet();
       if (qualifiersMustMatch && !S.ignoreAnnotations && !T.ignoreAnnotations) {
         QualifierTyping.addQualifierConstraints(
-            constraintSet, S.getQualifiers(), T.getQualifiers(), Kind.QUALIFIER_EQUALITY);
+            constraintSet,
+            AbstractQualifier.removeUnsolvedPolymorphic(S.getQualifiers()),
+            AbstractQualifier.removeUnsolvedPolymorphic(T.getQualifiers()),
+            Kind.QUALIFIER_EQUALITY);
       }
       for (int i = 0; i < tTypeArgs.size(); i++) {
         // The constraint between two equal type arguments reduces to true (JLS 18.2.4), so do
@@ -575,7 +579,10 @@ public class Typing extends TypeConstraint {
       ConstraintSet constraintSet = new ConstraintSet();
       if (qualifiersMustMatch && !S.ignoreAnnotations && !T.ignoreAnnotations) {
         QualifierTyping.addQualifierConstraints(
-            constraintSet, S.getQualifiers(), T.getQualifiers(), Kind.QUALIFIER_EQUALITY);
+            constraintSet,
+            AbstractQualifier.removeUnsolvedPolymorphic(S.getQualifiers()),
+            AbstractQualifier.removeUnsolvedPolymorphic(T.getQualifiers()),
+            Kind.QUALIFIER_EQUALITY);
       }
       constraintSet.add(
           new Typing(

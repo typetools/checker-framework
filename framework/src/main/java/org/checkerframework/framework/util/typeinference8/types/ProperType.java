@@ -7,10 +7,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -205,6 +208,13 @@ public class ProperType extends AbstractType {
    * extends} bound against the other type, which for a lower-bounded wildcard is not the bound that
    * holds its qualifiers.
    *
+   * <p>If either type mentions a polymorphic qualifier, the annotations are not compared. The type
+   * hierarchy compares a polymorphic qualifier as though it were concrete, so it reports a conflict
+   * with every qualifier that the polymorphic qualifier could be instantiated to. Skipping the
+   * comparison can miss a real conflict elsewhere in the two types; see {@link
+   * AbstractQualifier#isUnsolvedPolymorphic} for why inference cannot solve for the qualifier
+   * instead.
+   *
    * @param other the type to compare against
    * @return {@link ConstraintSet#TRUE} if the annotations are ignored or if the annotations of
    *     {@code this} are the same as those of {@code other}; otherwise {@link
@@ -216,6 +226,9 @@ public class ProperType extends AbstractType {
     }
     AnnotatedTypeMirror thisATM = getAnnotatedType();
     AnnotatedTypeMirror otherATM = other.getAnnotatedType();
+    if (hasPolymorphicQualifier(thisATM) || hasPolymorphicQualifier(otherATM)) {
+      return ConstraintSet.TRUE;
+    }
     // Compare using the type hierarchy in both directions rather than AnnotatedTypeMirror#equals,
     // which requires the underlying types to be the same object.
     if (typeFactory.getTypeHierarchy().isSubtype(thisATM, otherATM)
@@ -224,6 +237,31 @@ public class ProperType extends AbstractType {
     } else {
       return ConstraintSet.TRUE_ANNO_FAIL;
     }
+  }
+
+  /**
+   * Returns true if {@code type}, or any type that it contains, has a polymorphic primary
+   * annotation.
+   *
+   * @param type an annotated type
+   * @return true if {@code type}, or any type that it contains, has a polymorphic primary
+   *     annotation
+   */
+  private boolean hasPolymorphicQualifier(AnnotatedTypeMirror type) {
+    QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
+    SimpleAnnotatedTypeScanner<Boolean, Void> scanner =
+        new SimpleAnnotatedTypeScanner<>(
+            (t, p) -> {
+              for (AnnotationMirror anno : t.getPrimaryAnnotations()) {
+                if (qualifierHierarchy.isPolymorphicQualifier(anno)) {
+                  return true;
+                }
+              }
+              return false;
+            },
+            Boolean::logicalOr,
+            false);
+    return scanner.visit(type);
   }
 
   @Override
