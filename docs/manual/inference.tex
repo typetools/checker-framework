@@ -110,12 +110,13 @@ Each has advantages and disadvantages, discussed below:
 
 \begin{itemize}
     \item
-    To run whole-program inference on a single project without modifying its
-    source code, use the \<wpi2.sh> script (Section~\ref{wpi-two}). This script
-    requires you to make a few changes to your buildfile.
+    To run whole-program inference on a single project, with a few changes to
+    its buildfile but no changes to its source code, use the \<wpi2.sh> script
+    (Section~\ref{wpi-two}).
 
     \item
-    To run whole-program inference on a single project without modifying its source code,
+    To run whole-program inference on a single project without modifying either its
+    buildfile or its source code,
     use the \<wpi.sh> script (Section~\ref{wpi-one}). This script can automatically understand
     many Ant, Maven, and Gradle build files, so it requires little manual configuration.
     However, it is based on a no-longer-maintained project, \<dljc>, so it is not guaranteed to work.
@@ -147,9 +148,11 @@ First, set up your buildfile to run the Checker Framework.
 
 Then, add the
 \<-Aajava>,
-\<-Ainfer>,
+\<-Ainfer=ajava>,
 \<-AinferOutputDirectory>, and
 \<-Awarns> command-line arguments.
+(\<-Ainfer> with no argument does not produce the \<.ajava> files that
+\<wpi2.sh> requires.)
 
 Also remove or comment out \<-Werror>, because the
 \<wpi2.sh> script will halt if the Checker Framework fails, including when it
@@ -161,7 +164,6 @@ Here is a Gradle example:
 checkerFramework {
   extraJavacArgs = [
     "-Ainfer=ajava",
-    "-AinferOutputOriginal", // optional
     "-AinferOutputDirectory=" + project.rootDir + "/whole-program-inference-new",
     "-Aajava=" + project.rootDir + "/whole-program-inference-output",
     "-Awarns",
@@ -171,6 +173,12 @@ checkerFramework {
   ...
 }
 \end{Verbatim}
+
+Do not use \<-AinferOutputOriginal> with \<wpi2.sh>.  It writes, into the
+inference output directory, a copy of each source file with no inferred
+annotations.  \<wpi2.sh> moves that directory to
+\<whole-program-inference-output>, which is the \<-Aajava> argument, so the
+compiler would read those un-annotated copies as annotation input.
 
 The two directories must be absolute paths, because the build system might
 run the compiler in a different directory than the one in which you run
@@ -192,7 +200,8 @@ source files.
 
 \subsectionAndLabel{Running \<wpi2.sh>}{wpi-two-command}
 
-Second, run \<wpi2.sh>.  Its argument is the command that runs the Checker Framework.
+Second, run \<wpi2.sh>.  Its arguments are the command that runs the Checker
+Framework, and that command's arguments.
 Here is a typical invocation:
 
 \begin{Verbatim}
@@ -201,11 +210,17 @@ Here is a typical invocation:
 
 The \<clean> task is needed because \<wpi2.sh> runs the Checker Framework
 repeatedly, and Gradle does nothing if the old (but still up-to-date)
-compilation output is present.
+compilation output is present.  If the command does not recompile every
+source file, then \<wpi2.sh> halts with an error rather than discarding the
+annotations that it inferred for the files that were not recompiled.
 
 The output of \<wpi2.sh> is a top-level directory
-\<whole-program-inference-output> that contains \<.ajava> files for each file of
-your project.  \<wpi2.sh> uses two other top-level directories:
+\<whole-program-inference-output>.  For each of your project's source files
+for which the Checker Framework inferred an annotation, it contains a file
+\<\emph{package}/\emph{ClassName}-\emph{checkername}.ajava>, where
+\emph{checkername} is the fully-qualified name of the checker that ran.  A
+source file for which nothing was inferred has no \<.ajava> file.
+\<wpi2.sh> uses two other top-level directories:
 \<whole-program-inference-new>, which the compiler writes each iteration's
 results to and which \<wpi2.sh> removes when inference converges, and \<whole-program-inference-diffs>, which contains one diff
 file per iteration (\<iteration-1.diff>, \<iteration-2.diff>, etc.) for
@@ -215,13 +230,15 @@ your \<.gitignore> file.
 If \<wpi2.sh> fails --- for example, because the Checker Framework crashed or
 your buildfile is misconfigured --- then the annotations that it inferred so
 far remain in \<whole-program-inference-output>.  A subsequent run of
-\<wpi2.sh> continues from them rather than starting over.  To start inference
-from scratch, remove \<whole-program-inference-output> before running
-\<wpi2.sh>.
+\<wpi2.sh> continues from them rather than starting over; it retains the
+earlier run's diff files and numbers the new ones after them.  To start
+inference from scratch, remove \<whole-program-inference-output> before
+running \<wpi2.sh>.
 
 \<wpi2.sh> runs the command at most 10 times.  If inference has not converged
 by then, \<wpi2.sh> reports that fact and exits; set the
-\<WPI2\_MAX\_ITERATIONS> environment variable to change the bound.
+\<WPI2\_MAX\_ITERATIONS> environment variable to a positive integer to change
+the bound.
 
 
 \sectionAndLabel{Running whole-program inference on a single project, without buildfile editing}{wpi-one}

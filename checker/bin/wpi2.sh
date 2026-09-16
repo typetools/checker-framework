@@ -14,7 +14,8 @@ set -e
 
 if [ $# -eq 0 ]; then
   echo "Usage: wpi2.sh COMMAND [ARG...]" 1>&2
-  echo "  COMMAND builds the project, running the Checker Framework with -Ainfer." 1>&2
+  echo "  COMMAND builds the project, running the Checker Framework with" 1>&2
+  echo "  -Ainfer=ajava, -AinferOutputDirectory, and -Aajava." 1>&2
   exit 2
 fi
 
@@ -32,19 +33,39 @@ diffdir=whole-program-inference-diffs
 # after a few iterations, so more iterations than this suggests that it never
 # will.  Set the WPI2_MAX_ITERATIONS environment variable to change the bound.
 max_iterations=${WPI2_MAX_ITERATIONS:-10}
+case $max_iterations in
+  '' | *[!0-9]*) max_iterations=0 ;;
+esac
+if [ "$max_iterations" -lt 1 ]; then
+  echo "wpi2.sh: WPI2_MAX_ITERATIONS must be a positive integer," 1>&2
+  echo "wpi2.sh: but it is \"$WPI2_MAX_ITERATIONS\"." 1>&2
+  exit 2
+fi
 
-if [ -d "$outdir" ] && [ -n "$(ls -A "$outdir")" ]; then
+# A directory for this script's own temporary files.
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+
+if [ -d "$outdir" ] && [ -n "$(find "$outdir" -type f | head -n 1)" ]; then
   echo "wpi2.sh: continuing inference from the annotations in $outdir/." 1>&2
   echo "wpi2.sh: To start over, remove $outdir/ before running wpi2.sh." 1>&2
 else
   mkdir -p "$outdir"
+  # This run starts from scratch, so the previous run's diffs are irrelevant.
+  rm -rf "$diffdir"
 fi
-
-rm -rf "$diffdir"
 mkdir -p "$diffdir"
 
+# Number this run's diffs after those of any previous run, whose diffs this run
+# retains because it continues where the previous run left off.
+diffoffset=$(find "$diffdir" -maxdepth 1 -name 'iteration-*.diff' \
+  | sed -n 's/.*iteration-\([0-9][0-9]*\)\.diff$/\1/p' | sort -n | tail -n 1)
+if [ -z "$diffoffset" ]; then
+  diffoffset=0
+fi
+
 iteration=0
-while : ; do
+while :; do
   iteration=$((iteration + 1))
   if [ "$iteration" -gt "$max_iterations" ]; then
     echo "wpi2.sh: inference did not converge after $max_iterations iterations." 1>&2
@@ -57,23 +78,52 @@ while : ; do
   rm -rf "$newdir"
   "$@"
 
+  if [ -d "$newdir" ]; then
+    (cd "$newdir" && find . -type f) | LC_ALL=C sort > "$tmpdir/newdir-files"
+  else
+    : > "$tmpdir/newdir-files"
+  fi
+
   # The command did not write any inference output; for example, the build system considered its
-  # compilation tasks up to date and did not re-run them.  Stop rather than proceeding, because
-  # the rest of the loop body would delete the output of the previous iterations.  This test also
-  # rejects a directory that the compiler created but wrote no files to, which happens when the
-  # build system recompiled only some of the project's source files.
-  if [ ! -d "$newdir" ] || [ -z "$(ls -A "$newdir")" ]; then
+  # compilation tasks up to date and did not re-run them.  (The compiler might have created
+  # directories in $newdir without writing any files to them, so this tests for files rather than
+  # for directory entries.)  Stop rather than proceeding, because the rest of the loop body would
+  # delete the output of the previous iterations.
+  if [ ! -s "$tmpdir/newdir-files" ]; then
     echo "wpi2.sh: $* did not write any files to $newdir/." 1>&2
-    echo "wpi2.sh: The command must compile every source file of the project," 1>&2
-    echo "wpi2.sh: passing -Ainfer=ajava and -AinferOutputDirectory=<absolute path to $newdir>." 1>&2
+    echo "wpi2.sh: The command must compile every source file of the project, passing" 1>&2
+    echo "wpi2.sh: -Ainfer=ajava, -AinferOutputDirectory=<absolute path to $newdir>," 1>&2
+    echo "wpi2.sh: and -Aajava=<absolute path to $outdir>." 1>&2
     if [ "$iteration" -gt 1 ]; then
       echo "wpi2.sh: The output of the previous iterations is in $outdir/." 1>&2
     fi
     exit 1
   fi
 
+  # The command wrote some, but not all, of the inference output; for example, the build system
+  # recompiled only some of the project's source files.  Stop rather than proceeding, because the
+  # rest of the loop body would delete the annotations that were inferred for the files that the
+  # command did not recompile.
+  (cd "$outdir" && find . -type f) | LC_ALL=C sort > "$tmpdir/outdir-files"
+  missing=$(comm -23 "$tmpdir/outdir-files" "$tmpdir/newdir-files")
+  if [ -n "$missing" ]; then
+    nmissing=$(echo "$missing" | wc -l | tr -d ' ')
+    if [ "$nmissing" -eq 1 ]; then plural=""; else plural="s"; fi
+    echo "wpi2.sh: $* did not write $nmissing file$plural to $newdir/ that a previous" 1>&2
+    echo "wpi2.sh: iteration wrote to $outdir/:" 1>&2
+    echo "$missing" | head -n 10 | sed 's|^\./|  |' 1>&2
+    if [ "$nmissing" -gt 10 ]; then
+      echo "  ... and $((nmissing - 10)) more" 1>&2
+    fi
+    echo "wpi2.sh: The command must compile every source file of the project, every time." 1>&2
+    echo "wpi2.sh: The output of the previous iterations is in $outdir/.  If you deleted" 1>&2
+    echo "wpi2.sh: source files since the previous iteration, remove $outdir/ and re-run." 1>&2
+    exit 1
+  fi
+
   diffstatus=0
-  diff -ur "$outdir" "$newdir" > "$diffdir/iteration-$iteration.diff" || diffstatus=$?
+  diffpath="$diffdir/iteration-$((diffoffset + iteration)).diff"
+  diff -ur "$outdir" "$newdir" > "$diffpath" || diffstatus=$?
   # `diff` exits with status 1 if the directories differ, and with status 2 or more if it failed.
   if [ "$diffstatus" -gt 1 ]; then
     echo "wpi2.sh: \`diff -ur $outdir $newdir\` failed with status $diffstatus." 1>&2
