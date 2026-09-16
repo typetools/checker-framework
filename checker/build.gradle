@@ -750,7 +750,11 @@ tasks.register("ainferRelevanceGenerateAjava", Test) {
     // the test.  The `// ::` comment that states the expectation is removed by
     // `copyNonannotatedToAnnotatedDirectory`, so the second (validation) pass would report the
     // warning as unexpected.
-    irrelevantTypeVariableAnnotated.delete()
+    // `File.delete()` reports failure by returning false rather than by throwing.  Without this
+    // test, the validation pass would report a confusing unexpected diagnostic instead.
+    if (!irrelevantTypeVariableAnnotated.delete()) {
+      throw new GradleException("Could not delete ${irrelevantTypeVariableAnnotated}")
+    }
   }
 }
 
