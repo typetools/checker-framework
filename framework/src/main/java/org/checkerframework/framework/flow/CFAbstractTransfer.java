@@ -477,6 +477,10 @@ public abstract class CFAbstractTransfer<
         PurityChecker.checkPurity(
             expressionOrStatement,
             aTypeFactory,
+            // This is an arbitrary expression, not a method body, so no method's parameters are
+            // known to hold side-effect-free values.
+            null,
+            null,
             isAssumeSideEffectFreeEnabled,
             isAssumeDeterministicEnabled,
             aTypeFactory.getChecker().hasOption("assumePureGetters"));

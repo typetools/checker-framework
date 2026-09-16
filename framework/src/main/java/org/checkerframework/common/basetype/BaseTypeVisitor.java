@@ -1187,7 +1187,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     } else {
       r =
           PurityChecker.checkPurity(
-              body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
+              body,
+              atypeFactory,
+              tree,
+              atypeFactory.getProcessingEnv(),
+              assumeSideEffectFree,
+              assumeDeterministic,
+              assumePureGetters);
     }
     if (!r.isPure(purityKinds)) {
       reportPurityErrors(r, purityKinds);
@@ -1398,6 +1404,153 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             constructorElement, "inconsistent.constructor.type", constructorAnno, top);
       }
     }
+  }
+
+  /**
+   * If the invoked method or constructor has a purity annotation, checks each argument that is
+   * passed to a functional-interface parameter: the code that the argument denotes must have the
+   * purity that the callee requires of it, because the callee's body is permitted to call it.
+   *
+   * <p>How the argument is checked depends on its form. The body of a lambda is checked directly. A
+   * method reference is checked against the declaration of the method it refers to. An effectively
+   * final functional-interface parameter of the enclosing method needs no check, since the caller
+   * of that method already performed one. Any other argument is checked against the functional
+   * method of its declared type.
+   *
+   * <p>This check is skipped for a requirement that the parameter's own functional method already
+   * makes, because {@link #checkLambdaPurity} and {@link
+   * BaseTypeVisitor.OverrideChecker#checkPurity} check that.
+   *
+   * @param callee the invoked method or constructor
+   * @param args the arguments to {@code callee}
+   */
+  protected void checkFunctionalArguments(
+      ExecutableElement callee, List<? extends ExpressionTree> args) {
+    if (!checkPurityAnnotations || infer) {
+      return;
+    }
+    EnumSet<PurityKind> calleeKinds = PurityChecker.functionalParameterKinds(atypeFactory, callee);
+    if (calleeKinds.isEmpty()) {
+      return;
+    }
+    ProcessingEnvironment env = atypeFactory.getProcessingEnv();
+    List<? extends VariableElement> params = callee.getParameters();
+    // For a varargs call, the trailing arguments have the component type of the last parameter,
+    // which is an array and therefore not a functional interface.
+    int numToCheck = Math.min(params.size(), args.size());
+    for (int i = 0; i < numToCheck; i++) {
+      TypeMirror paramType = PurityChecker.functionalInterfaceType(params.get(i).asType(), env);
+      if (paramType == null) {
+        continue;
+      }
+      EnumSet<PurityKind> required = EnumSet.copyOf(calleeKinds);
+      required.removeAll(
+          PurityUtils.getPurityKinds(atypeFactory, TypesUtils.findFunction(paramType, env)));
+      if (required.isEmpty()) {
+        continue;
+      }
+      checkFunctionalArgument(args.get(i), required, params.get(i), callee);
+    }
+  }
+
+  /**
+   * Checks that one argument to a functional-interface parameter has the given purity.
+   *
+   * @param arg the argument
+   * @param required the purity that the argument's functional method must have
+   * @param param the parameter that {@code arg} is passed to
+   * @param callee the invoked method or constructor
+   */
+  protected void checkFunctionalArgument(
+      ExpressionTree arg,
+      EnumSet<PurityKind> required,
+      VariableElement param,
+      ExecutableElement callee) {
+    ProcessingEnvironment env = atypeFactory.getProcessingEnv();
+    ExpressionTree argument = TreeUtils.withoutParens(arg);
+
+    if (argument instanceof LambdaExpressionTree lambda) {
+      TreePath lambdaPath = new TreePath(getCurrentPath(), argument);
+      PurityResult r =
+          PurityChecker.checkPurity(
+              new TreePath(lambdaPath, lambda.getBody()),
+              atypeFactory,
+              null,
+              null,
+              assumeSideEffectFree,
+              assumeDeterministic,
+              assumePureGetters);
+      if (!r.isPure(required)) {
+        reportPurityErrors(r, required);
+      }
+      return;
+    }
+
+    EnumSet<PurityKind> argKinds;
+    if (argument instanceof MemberReferenceTree) {
+      argKinds = implementationPurityKinds((ExecutableElement) TreeUtils.elementFromUse(argument));
+    } else {
+      TypeMirror argType = PurityChecker.functionalInterfaceType(TreeUtils.typeOf(argument), env);
+      if (argType == null) {
+        // The argument is the null literal, or its type is not a functional interface (which
+        // javac has already reported).  There is no functional method to check.
+        return;
+      }
+      argKinds = implementationPurityKinds(TypesUtils.findFunction(argType, env));
+      MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
+      if (PurityChecker.isFunctionalInterfaceParameter(argument, enclosingMethod, env)) {
+        argKinds.addAll(
+            PurityChecker.functionalParameterKinds(
+                atypeFactory, TreeUtils.elementFromDeclaration(enclosingMethod)));
+      }
+    }
+
+    if (!argKinds.containsAll(required)) {
+      checker.reportError(
+          arg,
+          "purity.functional.argument",
+          param.getSimpleName(),
+          ElementUtils.getSimpleDescription(callee),
+          purityKindsToString(argKinds),
+          purityKindsToString(required));
+    }
+  }
+
+  /**
+   * Returns the purity of a method that implements a functional method: its declared purity, plus
+   * determinism if it returns no value.
+   *
+   * @param method a method or constructor
+   * @return the purity kinds of {@code method}
+   */
+  private EnumSet<PurityKind> implementationPurityKinds(ExecutableElement method) {
+    EnumSet<PurityKind> result = EnumSet.copyOf(PurityUtils.getPurityKinds(atypeFactory, method));
+    if (method.getKind() != ElementKind.CONSTRUCTOR
+        && method.getReturnType().getKind() == TypeKind.VOID) {
+      result.add(PurityKind.DETERMINISTIC);
+    }
+    return result;
+  }
+
+  /**
+   * Formats purity kinds for a diagnostic message, as the annotations that a user writes rather
+   * than as the enum constant names that {@code EnumSet.toString} would produce.
+   *
+   * @param purityKinds a set of purity kinds
+   * @return the annotations corresponding to {@code purityKinds}, space-separated
+   */
+  protected static String purityKindsToString(EnumSet<PurityKind> purityKinds) {
+    if (purityKinds.isEmpty()) {
+      return "(no side effect annotation)";
+    }
+    StringJoiner result = new StringJoiner(" ");
+    for (PurityKind purityKind : purityKinds) {
+      switch (purityKind) {
+        case SIDE_EFFECT_FREE -> result.add("@SideEffectFree");
+        case DETERMINISTIC -> result.add("@Deterministic");
+      }
+    }
+    return result.toString();
   }
 
   /**
@@ -2001,6 +2154,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypes.adaptParameters(atypeFactory, invokedMethod, tree.getArguments(), tree);
     checkArguments(params, tree.getArguments(), methodName, method.getParameters());
     checkVarargs(invokedMethod, tree);
+    checkFunctionalArguments(method, tree.getArguments());
 
     if (ElementUtils.isMethod(
         invokedMethod.getElement(), vectorCopyInto, atypeFactory.getProcessingEnv())) {
@@ -2345,6 +2499,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     checkArguments(params, passedArguments, constructorName, constructor.getParameters());
     checkVarargs(constructorType, tree);
+    checkFunctionalArguments(constructor, passedArguments);
 
     List<AnnotatedTypeParameterBounds> paramBounds =
         CollectionsP.mapList(AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
@@ -2437,7 +2592,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     TreePath body = new TreePath(getCurrentPath(), tree.getBody());
     PurityResult r =
         PurityChecker.checkPurity(
-            body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
+            body,
+            atypeFactory,
+            // A lambda body is constrained by the functional method that the lambda implements,
+            // not by the method that contains the lambda.
+            null,
+            null,
+            assumeSideEffectFree,
+            assumeDeterministic,
+            assumePureGetters);
     if (needToCheck && !r.isPure(purityKinds)) {
       reportPurityErrors(r, purityKinds);
     }
@@ -4325,27 +4488,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               overridden);
         }
       }
-    }
-
-    /**
-     * Formats purity kinds for a diagnostic message, as the annotations that a user writes rather
-     * than as the enum constant names that {@code EnumSet.toString} would produce.
-     *
-     * @param purityKinds a set of purity kinds
-     * @return the annotations corresponding to {@code purityKinds}, space-separated
-     */
-    private String purityKindsToString(EnumSet<PurityKind> purityKinds) {
-      if (purityKinds.isEmpty()) {
-        return "(no side effect annotation)";
-      }
-      StringJoiner result = new StringJoiner(" ");
-      for (PurityKind purityKind : purityKinds) {
-        switch (purityKind) {
-          case SIDE_EFFECT_FREE -> result.add("@SideEffectFree");
-          case DETERMINISTIC -> result.add("@Deterministic");
-        }
-      }
-      return result.toString();
     }
 
     /**

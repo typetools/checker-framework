@@ -19,17 +19,24 @@ import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.IPair;
 
 /**
@@ -56,6 +63,12 @@ public final class PurityChecker {
    *
    * @param statement the statement to check
    * @param annoProvider the annotation provider
+   * @param enclosingMethod the method whose body {@code statement} is part of, or null if {@code
+   *     statement} is not a method body. A call to the functional method of one of that method's
+   *     functional-interface parameters has the method's own purity; see {@link
+   *     #isFunctionalInterfaceParameter}. Pass null for a lambda body, which is constrained by the
+   *     functional method that it implements rather than by the enclosing method.
+   * @param env the processing environment; used only if {@code enclosingMethod} is non-null
    * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
    * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
    * @param assumePureGetters true if all getter methods should be assumed to be @Pure
@@ -65,14 +78,99 @@ public final class PurityChecker {
   public static PurityResult checkPurity(
       TreePath statement,
       AnnotationProvider annoProvider,
+      @Nullable MethodTree enclosingMethod,
+      @Nullable ProcessingEnvironment env,
       boolean assumeSideEffectFree,
       boolean assumeDeterministic,
       boolean assumePureGetters) {
     PurityCheckerHelper helper =
         new PurityCheckerHelper(
-            annoProvider, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
+            annoProvider,
+            enclosingMethod,
+            env,
+            assumeSideEffectFree,
+            assumeDeterministic,
+            assumePureGetters);
     helper.scan(statement, null);
     return helper.purityResult;
+  }
+
+  /**
+   * Returns the kinds of purity that a method promises for the functional method of its
+   * functional-interface parameters. At a call to {@code method}, each argument passed to a
+   * functional-interface parameter is required to have those kinds, so within the body the
+   * parameters may be assumed to have them.
+   *
+   * @param annoProvider the annotation provider
+   * @param method a method or constructor, or null
+   * @return the purity kinds that {@code method} requires of its functional-interface arguments;
+   *     empty if {@code method} is null or has no purity annotation
+   */
+  public static EnumSet<PurityKind> functionalParameterKinds(
+      AnnotationProvider annoProvider, @Nullable ExecutableElement method) {
+    if (method == null) {
+      return EnumSet.noneOf(PurityKind.class);
+    }
+    EnumSet<PurityKind> result = EnumSet.copyOf(PurityUtils.getPurityKinds(annoProvider, method));
+    if (annoProvider.getDeclAnnotation(method, SideEffectsOnly.class) != null) {
+      // A @SideEffectsOnly method may modify the listed expressions, but the code it is handed
+      // may not modify anything.
+      result.add(PurityKind.SIDE_EFFECT_FREE);
+    }
+    return result;
+  }
+
+  /**
+   * Returns true if {@code expr} is an effectively final formal parameter of {@code method} whose
+   * type is a functional interface.
+   *
+   * <p>The expression must be the parameter itself. A local variable that aliases it, a field that
+   * holds it, or the result of a call does not qualify: only the parameter is known to hold the
+   * value that the caller supplied. The parameter must be effectively final because a body that
+   * reassigns it no longer holds that value.
+   *
+   * @param expr an expression, or null
+   * @param method a method or constructor declaration, or null
+   * @param env the processing environment
+   * @return true if {@code expr} is an effectively final functional-interface parameter of {@code
+   *     method}
+   */
+  public static boolean isFunctionalInterfaceParameter(
+      @Nullable ExpressionTree expr, @Nullable MethodTree method, ProcessingEnvironment env) {
+    if (expr == null
+        || method == null
+        || !(TreeUtils.withoutParens(expr) instanceof IdentifierTree id)) {
+      return false;
+    }
+    Element element = TreeUtils.elementFromUse(id);
+    if (element == null
+        || element.getKind() != ElementKind.PARAMETER
+        || element.getEnclosingElement() != TreeUtils.elementFromDeclaration(method)
+        || !ElementUtils.isEffectivelyFinal(element)) {
+      return false;
+    }
+    TypeMirror type = functionalInterfaceType(element.asType(), env);
+    return type != null;
+  }
+
+  /**
+   * Returns {@code type}, or its upper bound if it is a type variable, if that is a functional
+   * interface type; otherwise returns null. Use {@link TypesUtils#findFunction} on the result to
+   * obtain the functional method.
+   *
+   * @param type a type
+   * @param env the processing environment
+   * @return the functional interface type that {@code type} denotes, or null
+   */
+  public static @Nullable TypeMirror functionalInterfaceType(
+      TypeMirror type, ProcessingEnvironment env) {
+    if (type.getKind() == TypeKind.TYPEVAR) {
+      type = TypesUtils.upperBound(type);
+    }
+    if (type.getKind() != TypeKind.DECLARED && type.getKind() != TypeKind.INTERSECTION) {
+      return null;
+    }
+    return TypesUtils.isFunctionalInterface(type, env) ? type : null;
   }
 
   /**
@@ -206,6 +304,19 @@ public final class PurityChecker {
     /** The annotation provider (typically an AnnotatedTypeFactory). */
     protected final AnnotationProvider annoProvider;
 
+    /** The method whose body is being checked, or null if a method body is not being checked. */
+    private final @Nullable MethodTree enclosingMethod;
+
+    /** The processing environment; null if {@link #enclosingMethod} is null. */
+    private final @Nullable ProcessingEnvironment env;
+
+    /**
+     * The purity that {@link #enclosingMethod} promises for the functional method of its
+     * functional-interface parameters. Empty if there is no enclosing method or it has no purity
+     * annotation, in which case no call gets the assumption.
+     */
+    private final EnumSet<PurityKind> functionalParameterKinds;
+
     /**
      * True if all methods should be assumed to be @SideEffectFree, for the purposes of
      * org.checkerframework.dataflow analysis.
@@ -228,19 +339,65 @@ public final class PurityChecker {
      * Create a PurityCheckerHelper.
      *
      * @param annoProvider the annotation provider
+     * @param enclosingMethod the method whose body is being checked, or null
+     * @param env the processing environment; used only if {@code enclosingMethod} is non-null
      * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
      * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
      * @param assumePureGetters true if getter methods should be assumed to be @Pure
      */
     public PurityCheckerHelper(
         AnnotationProvider annoProvider,
+        @Nullable MethodTree enclosingMethod,
+        @Nullable ProcessingEnvironment env,
         boolean assumeSideEffectFree,
         boolean assumeDeterministic,
         boolean assumePureGetters) {
       this.annoProvider = annoProvider;
+      this.enclosingMethod = enclosingMethod;
+      this.env = env;
+      this.functionalParameterKinds =
+          enclosingMethod == null
+              ? EnumSet.noneOf(PurityKind.class)
+              : functionalParameterKinds(
+                  annoProvider, TreeUtils.elementFromDeclaration(enclosingMethod));
       this.assumeSideEffectFree = assumeSideEffectFree;
       this.assumeDeterministic = assumeDeterministic;
       this.assumePureGetters = assumePureGetters;
+    }
+
+    /**
+     * Returns true if {@code tree} invokes the functional method of an effectively final
+     * functional-interface parameter of the method being checked.
+     *
+     * <p>Such a call has the purity that the method promises, because at every call to the method
+     * the argument was required to have it.
+     *
+     * @param tree a method invocation
+     * @param invoked the invoked method
+     * @return true if {@code tree} calls a functional-interface parameter of the enclosing method
+     */
+    private boolean isCallOnFunctionalInterfaceParameter(
+        MethodInvocationTree tree, ExecutableElement invoked) {
+      if (functionalParameterKinds.isEmpty()) {
+        // There is no enclosing method, or it promises nothing.
+        return false;
+      }
+      ProcessingEnvironment env = this.env;
+      if (env == null) {
+        return false;
+      }
+      ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
+      if (!isFunctionalInterfaceParameter(receiver, enclosingMethod, env)) {
+        return false;
+      }
+      Element receiverElement = TreeUtils.elementFromUse(receiver);
+      TypeMirror receiverType = functionalInterfaceType(receiverElement.asType(), env);
+      ExecutableElement functionalMethod = TypesUtils.findFunction(receiverType, env);
+      // Only the functional method gets the assumption; a default method such as
+      // `Function.andThen` does not.
+      return invoked == functionalMethod
+          || env.getElementUtils()
+              .overrides(invoked, functionalMethod, (TypeElement) invoked.getEnclosingElement());
     }
 
     @Override
@@ -300,6 +457,10 @@ public final class PurityChecker {
     public Void visitMethodInvocation(MethodInvocationTree tree, Void ignore) {
       ExecutableElement elt = TreeUtils.elementFromUse(tree);
       EnumSet<PurityKind> eltPurityKinds = PurityUtils.getPurityKinds(annoProvider, elt);
+      if (isCallOnFunctionalInterfaceParameter(tree, elt)) {
+        eltPurityKinds = EnumSet.copyOf(eltPurityKinds);
+        eltPurityKinds.addAll(functionalParameterKinds);
+      }
       if (!eltPurityKinds.contains(PurityKind.SIDE_EFFECT_FREE)
           && !eltPurityKinds.contains(PurityKind.DETERMINISTIC)) {
         // The called method has no purity annotation, so the callee is not pure either.
