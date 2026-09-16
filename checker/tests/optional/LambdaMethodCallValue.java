@@ -1,6 +1,7 @@
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.checkerframework.checker.optional.qual.*;
 import org.checkerframework.common.aliasing.qual.*;
 import org.checkerframework.dataflow.qual.*;
@@ -47,6 +48,49 @@ class Main {
             container.getOpt();
             container.name();
             container.getOpt().get(); // OK
+          });
+    }
+  }
+
+  // Creating a function object is not deterministic, so a lambda whose body creates one is not
+  // pure and the initial store loses what it knew about modifiable method call expressions.  All
+  // three spellings of "create a function object" behave alike.
+
+  void test5a(OptContainer container, List<String> strs) {
+    if (container.getOpt().isPresent()) {
+      strs.forEach(
+          s -> {
+            Supplier<String> f = container::name;
+            // :: error: [method.invocation]
+            container.getOpt().get(); // Not ok
+          });
+    }
+  }
+
+  void test5b(OptContainer container, List<String> strs) {
+    if (container.getOpt().isPresent()) {
+      strs.forEach(
+          s -> {
+            Supplier<String> f = () -> "x";
+            // :: error: [method.invocation]
+            container.getOpt().get(); // Not ok
+          });
+    }
+  }
+
+  void test5c(OptContainer container, List<String> strs) {
+    if (container.getOpt().isPresent()) {
+      strs.forEach(
+          s -> {
+            Supplier<String> f =
+                new Supplier<String>() {
+                  @Override
+                  public String get() {
+                    return "x";
+                  }
+                };
+            // :: error: [method.invocation]
+            container.getOpt().get(); // Not ok
           });
     }
   }
