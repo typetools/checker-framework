@@ -9,6 +9,11 @@ import org.checkerframework.framework.qual.RelevantJavaTypes;
  * Like {@link AinferTestChecker}, but only some Java types are relevant. It uses the same type
  * system and the same visitor.
  *
+ * <p>Unlike {@link AinferTestChecker}, this checker does not use the Value Checker as a subchecker.
+ * A subchecker would not make these tests test relevance any more thoroughly, and its inference
+ * results would clutter the goal files that {@code AinferRelevanceAjavaGenerationTest} compares
+ * against.
+ *
  * <p>This checker exists so that the tests exercise whole-program inference for a checker that
  * restricts the Java types on which its qualifiers may be written. {@code int} and {@code
  * CharSequence} are relevant because they are listed. {@code String} is relevant because of

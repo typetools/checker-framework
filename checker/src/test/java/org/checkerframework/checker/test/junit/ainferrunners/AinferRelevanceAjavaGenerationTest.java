@@ -7,6 +7,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker;
 import org.checkerframework.framework.test.AinferGeneratePerDirectoryTest;
@@ -57,48 +60,127 @@ public class AinferRelevanceAjavaGenerationTest extends AinferGeneratePerDirecto
   /** The suffix of a goal file's name. */
   private static final String goalSuffix = ".ajava.goal";
 
+  /** The suffix of a generated ajava file's name. */
+  private static final String ajavaSuffix =
+      "-" + AinferRelevanceTestChecker.class.getCanonicalName() + ".ajava";
+
   /**
-   * Compares each generated ajava file to its goal file, if the goal file exists. A goal file is
-   * named {@code <ClassName>.ajava.goal}.
+   * Compares each generated ajava file to its goal file. A goal file is named {@code
+   * <ClassName>.ajava.goal}. Every generated ajava file must have a goal file and vice versa, so
+   * that no inference result goes unexamined.
    *
    * <p>Unlike the second (validation) pass of this test, this comparison detects an annotation that
    * inference wrote even though the annotation is irrelevant where it appears. Such an annotation
    * clutters the ajava file, but it does not change the result of type-checking, so no diagnostic
    * would reveal it.
+   *
+   * @throws IOException if a file cannot be listed or read
    */
   @AfterClass
   public static void compareToGoalFiles() throws IOException {
-    try (Stream<Path> goalFiles = Files.list(goalDir)) {
-      goalFiles
-          .filter(goalFile -> goalFile.getFileName().toString().endsWith(goalSuffix))
-          .forEach(AinferRelevanceAjavaGenerationTest::compareToGoalFile);
+    if (!Files.isDirectory(inferenceOutputDir)) {
+      Assert.fail(
+          String.format(
+              "Inference created no directory %s, so it wrote no ajava file.%n",
+              inferenceOutputDir.toAbsolutePath()));
+    }
+
+    // Goal files that no generated ajava file corresponds to.  Entries are removed below.
+    SortedSet<Path> goalFilesWithoutAjavaFile = new TreeSet<>(goalFiles());
+
+    for (Path ajavaFile : generatedAjavaFiles()) {
+      Path goalFile = goalFileFor(ajavaFile);
+      goalFilesWithoutAjavaFile.remove(goalFile);
+      compareToGoalFile(ajavaFile, goalFile);
+    }
+
+    if (!goalFilesWithoutAjavaFile.isEmpty()) {
+      Assert.fail(
+          String.format(
+              "Inference wrote no ajava file for these goal files:  %s%n"
+                  + "Either inference inferred nothing for those classes, or the ajava files have"
+                  + " unexpected names.  If inferring nothing is desirable, delete the goal"
+                  + " files.%n",
+              goalFilesWithoutAjavaFile));
     }
   }
 
   /**
-   * Compares the generated ajava file that corresponds to the given goal file, to the goal file.
+   * Returns the goal files: the files in {@link #goalDir} whose names end in {@link #goalSuffix}.
    *
-   * @param goalFile a goal file
+   * @return the goal files
+   * @throws IOException if {@link #goalDir} cannot be listed
    */
-  private static void compareToGoalFile(Path goalFile) {
-    String goalFileName = goalFile.getFileName().toString();
-    String className = goalFileName.substring(0, goalFileName.length() - goalSuffix.length());
-    Path ajavaFile =
-        inferenceOutputDir.resolve(
-            className + "-" + AinferRelevanceTestChecker.class.getCanonicalName() + ".ajava");
-    String message =
-        String.format(
-            "%s differs from %s.  If the difference is desirable, overwrite the goal file:%n"
-                + "  cp %s %s%n",
-            ajavaFile.toAbsolutePath(),
-            goalFile.toAbsolutePath(),
-            ajavaFile.toAbsolutePath(),
-            goalFile.toAbsolutePath());
-    if (!Files.exists(ajavaFile)) {
-      // Inference wrote no ajava file for the class:  it inferred nothing, or the file has an
-      // unexpected name.  Report this the same way as a difference in contents, rather than
-      // throwing an uninformative IOException.
-      Assert.fail(message);
+  private static List<Path> goalFiles() throws IOException {
+    try (Stream<Path> files = Files.list(goalDir)) {
+      return files
+          .filter(file -> file.getFileName().toString().endsWith(goalSuffix))
+          .collect(Collectors.toList());
+    }
+  }
+
+  /**
+   * Returns the ajava files that inference wrote for {@link AinferRelevanceTestChecker}. The search
+   * is recursive, because inference writes a class's ajava file into a subdirectory that
+   * corresponds to the class's package.
+   *
+   * @return the generated ajava files
+   * @throws IOException if {@link #inferenceOutputDir} cannot be walked
+   */
+  private static List<Path> generatedAjavaFiles() throws IOException {
+    try (Stream<Path> files = Files.walk(inferenceOutputDir)) {
+      return files
+          .filter(file -> file.getFileName().toString().endsWith(ajavaSuffix))
+          .sorted()
+          .collect(Collectors.toList());
+    }
+  }
+
+  /**
+   * Returns the goal file that corresponds to the given generated ajava file. The goal file need
+   * not exist.
+   *
+   * @param ajavaFile a generated ajava file
+   * @return the goal file that corresponds to {@code ajavaFile}
+   */
+  private static Path goalFileFor(Path ajavaFile) {
+    if (!inferenceOutputDir.equals(ajavaFile.getParent())) {
+      // Inference writes a class's ajava file into a subdirectory that corresponds to the class's
+      // package, but the goal files are all in one directory, so a goal file for a class in a
+      // named package could never match.  Every test input is in the unnamed package, so this
+      // failure means that a new test input declares a package.
+      Assert.fail(
+          String.format(
+              "%s is not directly in %s, so its class is not in the unnamed package.  Either put"
+                  + " the test input in the unnamed package, or generalize"
+                  + " AinferRelevanceAjavaGenerationTest to give each goal file a name that"
+                  + " includes the package.%n",
+              ajavaFile.toAbsolutePath(), inferenceOutputDir.toAbsolutePath()));
+    }
+    String ajavaFileName = ajavaFile.getFileName().toString();
+    String className = ajavaFileName.substring(0, ajavaFileName.length() - ajavaSuffix.length());
+    return goalDir.resolve(className + goalSuffix);
+  }
+
+  /**
+   * Compares a generated ajava file to its goal file.
+   *
+   * @param ajavaFile a generated ajava file
+   * @param goalFile the goal file that corresponds to {@code ajavaFile}
+   */
+  private static void compareToGoalFile(Path ajavaFile, Path goalFile) {
+    String copyCommand =
+        String.format("  cp %s %s%n", ajavaFile.toAbsolutePath(), goalFile.toAbsolutePath());
+    if (!Files.exists(goalFile)) {
+      // Requiring a goal file for every generated ajava file ensures that no inference result --
+      // in particular, no annotation that inference wrote on an irrelevant type -- goes
+      // unexamined.
+      Assert.fail(
+          String.format(
+              "Goal file %s does not exist, but inference wrote %s.  Every generated ajava file"
+                  + " needs a goal file.  If the generated file is correct, create the goal"
+                  + " file:%n%s",
+              goalFile.toAbsolutePath(), ajavaFile.toAbsolutePath(), copyCommand));
     }
     String goalContents;
     String ajavaContents;
@@ -108,6 +190,10 @@ public class AinferRelevanceAjavaGenerationTest extends AinferGeneratePerDirecto
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
+    String message =
+        String.format(
+            "%s differs from %s.  If the difference is desirable, overwrite the goal file:%n%s",
+            ajavaFile.toAbsolutePath(), goalFile.toAbsolutePath(), copyCommand);
     Assert.assertEquals(message, goalContents, ajavaContents);
   }
 }
