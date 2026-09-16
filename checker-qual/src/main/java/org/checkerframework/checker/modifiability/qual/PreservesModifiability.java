@@ -17,9 +17,11 @@ import java.lang.annotation.Target;
  * capability hierarchy, then the return type is the top qualifier in that hierarchy.
  *
  * <p>It is an error to write this annotation on a method that does not have exactly one formal
- * parameter and a non-void result, because the annotation relates the result to the first argument.
- * If such a method is nonetheless annotated -- in an annotation file, say, which is not checked --
- * then the annotation has no effect on it.
+ * parameter, which is not a varargs parameter, and a non-void result, because the annotation
+ * relates the result to the first argument. (In a call to a varargs method, the first argument is
+ * an element of the varargs array rather than the sole formal parameter.) If such a method is
+ * nonetheless annotated -- in an annotation file, say, which is not checked -- then the annotation
+ * has no effect on it.
  *
  * @checker_framework.manual #modifiability-checker Modifiability Checker
  */

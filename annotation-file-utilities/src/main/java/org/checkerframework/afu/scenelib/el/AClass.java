@@ -16,16 +16,17 @@ import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
 import org.checkerframework.checker.modifiability.qual.Growable;
 import org.checkerframework.checker.modifiability.qual.Modifiable;
 import org.checkerframework.checker.modifiability.qual.Replaceable;
+import org.checkerframework.checker.modifiability.qual.Shrinkable;
 import org.plumelib.util.MapsP;
 
 /** An annotated class. */
 public class AClass extends ADeclaration {
   /** The class's annotated type parameter bounds. */
-  public final @Growable @Replaceable VivifyingMap<BoundLocation, ATypeElement> bounds =
+  public final @Growable @Replaceable @Shrinkable VivifyingMap<BoundLocation, ATypeElement> bounds =
       ATypeElement.<BoundLocation>newVivifyingLHMap_ATE();
 
   /** -1 maps to superclass, non-negative integers map to implemented or extended interfaces. */
-  public final VivifyingMap<TypeIndexLocation, ATypeElement> extendsImplements =
+  public final @Shrinkable VivifyingMap<TypeIndexLocation, ATypeElement> extendsImplements =
       ATypeElement.<TypeIndexLocation>newVivifyingLHMap_ATE();
 
   /**
@@ -34,16 +35,18 @@ public class AClass extends ADeclaration {
    * The annotation scene library does not validate the keys, nor does it check that annotated
    * subelements of the {@link AMethod}s exist in the signature.
    */
-  public final @Growable VivifyingMap<String, AMethod> methods = createMethodMap();
+  public final @Growable @Shrinkable VivifyingMap<String, AMethod> methods = createMethodMap();
 
   /** The class's annotated static initializer blocks; map key is the index of the block. */
-  public final @Growable VivifyingMap<Integer, ABlock> staticInits = createInitBlockMap();
+  public final @Growable @Shrinkable VivifyingMap<Integer, ABlock> staticInits =
+      createInitBlockMap();
 
   /** The class's annotated instance initializer blocks; map key is the index of the block. */
-  public final @Growable VivifyingMap<Integer, ABlock> instanceInits = createInitBlockMap();
+  public final @Growable @Shrinkable VivifyingMap<Integer, ABlock> instanceInits =
+      createInitBlockMap();
 
   /** The class's annotated fields; map key is field name. */
-  public final @Growable VivifyingMap<String, AField> fields =
+  public final @Growable @Shrinkable VivifyingMap<String, AField> fields =
       AField.<String>newVivifyingLHMap_AF();
 
   /** The class's annotated field initializers; map key is field name. */

@@ -52,9 +52,13 @@ public abstract class VivifyingMap<K, V> extends WrapperMap<K, V> {
    */
   protected abstract V createValueFor(K k);
 
-  /** Prunes this map by deleting entries with empty values. */
+  /**
+   * Prunes this map by deleting entries with empty values.
+   *
+   * <p>The receiver must be {@code @Shrinkable}, because pruning removes entries from the map.
+   */
   @SuppressWarnings("modifiability:assignment") // entrySet() is not @IteratorPolyMod.
-  public void prune() {
+  public void prune(@Shrinkable VivifyingMap<K, V> this) {
     // It would be cleaner to write
     //   for (Map.Entry<K, V> entry : entrySet()) {
     // but using an iterator affords efficient deletion.

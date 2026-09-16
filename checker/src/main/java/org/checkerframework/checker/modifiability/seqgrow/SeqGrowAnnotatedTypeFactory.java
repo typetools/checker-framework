@@ -6,7 +6,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
@@ -118,17 +117,6 @@ public class SeqGrowAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeF
    */
   @Override
   protected boolean typeLacksCapability(TypeMirror type) {
-    if (type.getKind() == TypeKind.INTERSECTION) {
-      // A value of an intersection type is a value of each of its bounds, so it has the capability
-      // if any bound does.  For example, the upper bound of `<T extends Deque<String> & Cloneable>`
-      // is an intersection type, and such a `T` can be sequenced-grown.
-      for (TypeMirror bound : ((IntersectionType) type).getBounds()) {
-        if (!typeLacksCapability(bound)) {
-          return false;
-        }
-      }
-      return true;
-    }
     if (type.getKind() != TypeKind.DECLARED) {
       return true;
     }

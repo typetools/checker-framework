@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
 
 /**
  * A generic method whose return type contains a wildcard, invoked as the body of a lambda passed to
@@ -41,16 +42,16 @@ public class Issue8053 {
     return types.stream().map(t -> wild(t)).collect(Collectors.toList());
   }
 
+  static final @Modifiable Map<String, List<Getter<?, ?>>> CACHE = new HashMap<>();
+
   static native <P> Getter<P, ?> createGetter(Class<P> clazz, String name);
 
   // The Beam shape: the whole thing is the mapping function of Map.computeIfAbsent, and the
-  // Class argument is itself wildcard-typed.  The map is a local variable rather than a field so
-  // that a checker that reasons about the receiver of `computeIfAbsent` (such as the Modifiability
-  // Checker, whose `computeIfAbsent` requires a receiver that permits growing) can refine its type
-  // from the `new HashMap<>()`; a field's type is not refined that way.
+  // Class argument is itself wildcard-typed.  The receiver must be a field, as in Beam: a field's
+  // type is not refined from its initializer, so the inference context differs from that of a
+  // local variable.
   static <T> List<Getter<?, ?>> beamShape(Class<? super T> clazz, List<String> types, String key) {
-    Map<String, List<Getter<?, ?>>> cache = new HashMap<>();
-    return cache.computeIfAbsent(
+    return CACHE.computeIfAbsent(
         key, c -> types.stream().map(t -> createGetter(clazz, t)).collect(Collectors.toList()));
   }
 

@@ -455,7 +455,10 @@ any other qualifier, the return type is the top qualifier (\<@MaybeGrowable>,
 \<@MaybeSeqGrowable>, \<@MaybeShrinkable>, \<@MaybeReplaceable>, or \<@MaybeIteratorPolyMod>) in
 the corresponding hierarchy.
 
-This annotation may only be written on non-void, one-argument method declarations.
+This annotation may only be written on non-void, one-argument method
+declarations.  The formal parameter may not be a varargs parameter, because
+the first argument of a call to a varargs method is an element of the varargs
+array rather than the sole formal parameter.
 
 \end{description}
 

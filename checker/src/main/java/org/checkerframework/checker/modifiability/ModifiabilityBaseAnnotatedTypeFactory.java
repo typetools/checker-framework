@@ -2,8 +2,10 @@ package org.checkerframework.checker.modifiability;
 
 import com.sun.source.tree.MethodInvocationTree;
 import java.util.List;
+import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
@@ -131,7 +133,8 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
    * example, {@code Map.Entry} cannot grow.
    *
    * @param type the type on which an alias was written; it is an upper bound, so it is never a type
-   *     variable or a wildcard
+   *     variable or a wildcard, and {@link #lacksCapability} has already decomposed intersection
+   *     types, so it is never an intersection type either
    * @return true if {@code type} structurally cannot support this checker's capability
    */
   protected boolean typeLacksCapability(TypeMirror type) {
@@ -145,11 +148,35 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
    * exercise; for example, {@code Map.Entry} carries the replace capability of its map.
    *
    * @param type the type on which {@code @PolyModifiable} was written; it is an upper bound, so it
-   *     is never a type variable or a wildcard
+   *     is never a type variable or a wildcard, and {@link #lacksCapability} has already decomposed
+   *     intersection types, so it is never an intersection type either
    * @return true if {@code @PolyModifiable} weakens to the top qualifier on {@code type}
    */
   protected boolean polyLacksCapability(TypeMirror type) {
     return false;
+  }
+
+  /**
+   * Returns the result of {@code lacks} on {@code type}, decomposing an intersection type. A value
+   * of an intersection type is a value of each of its bounds, so it has a capability if any bound
+   * does; for example, the upper bound of {@code <T extends Deque<String> & Cloneable>} is an
+   * intersection type, and such a {@code T} can be sequenced-grown.
+   *
+   * @param type the type on which an alias was written; it is an upper bound, so it is never a type
+   *     variable or a wildcard
+   * @param lacks {@link #typeLacksCapability} or {@link #polyLacksCapability}
+   * @return true if {@code lacks} holds of {@code type} or of every bound of {@code type}
+   */
+  private boolean lacksCapability(TypeMirror type, Predicate<TypeMirror> lacks) {
+    if (type.getKind() == TypeKind.INTERSECTION) {
+      for (TypeMirror bound : ((IntersectionType) type).getBounds()) {
+        if (!lacksCapability(bound, lacks)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return lacks.test(type);
   }
 
   /**
@@ -186,11 +213,17 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
     if (expandsModifiabilityAliases()) {
       TypeMirror bound = tm == null ? null : TypesUtils.upperBound(tm);
       if (areSameByClass(annotation, Modifiable.class)) {
-        return bound != null && typeLacksCapability(bound) ? topAnnotation() : positiveCapability();
+        return bound != null && lacksCapability(bound, this::typeLacksCapability)
+            ? topAnnotation()
+            : positiveCapability();
       } else if (areSameByClass(annotation, Unmodifiable.class)) {
-        return bound != null && typeLacksCapability(bound) ? topAnnotation() : negativeCapability();
+        return bound != null && lacksCapability(bound, this::typeLacksCapability)
+            ? topAnnotation()
+            : negativeCapability();
       } else if (areSameByClass(annotation, PolyModifiable.class)) {
-        return bound != null && polyLacksCapability(bound) ? topAnnotation() : polyCapability();
+        return bound != null && lacksCapability(bound, this::polyLacksCapability)
+            ? topAnnotation()
+            : polyCapability();
       } else if (areSameByClass(annotation, MaybeModifiable.class)
           || areSameByClass(annotation, UnmodifiableParam.class)) {
         return topAnnotation();
@@ -243,8 +276,8 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
   /**
    * Refines the return type of a {@code @PreservesModifiability} method.
    *
-   * <p>If the method does not have exactly one formal parameter and a non-void result, then the
-   * annotation has no effect.
+   * <p>If the method does not have exactly one formal parameter, which is not a varargs parameter,
+   * and a non-void result, then the annotation has no effect.
    *
    * <p>Otherwise, if the declared return type has a qualifier other than the top qualifier, that
    * declared qualifier is used. If the first argument has this checker's positive qualifier (for
@@ -265,11 +298,14 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
       MethodInvocationTree tree, AnnotatedExecutableType methodType) {
     AnnotatedTypeMirror returnType = methodType.getReturnType();
     if (methodType.getParameterTypes().size() != 1
+        || methodType.getElement().isVarArgs()
         || tree.getArguments().isEmpty()
         || returnType.getUnderlyingType().getKind() == TypeKind.VOID) {
       // The annotation relates the result to the sole argument, so it says nothing about such a
-      // method.  `ModifiabilityVisitor` issues an error for a source declaration like this; the
-      // declaration might also come from an annotation file, which is not checked.
+      // method.  (For a varargs method, the first argument of a call is an element of the varargs
+      // array rather than the sole formal parameter.)  `ModifiabilityVisitor` issues an error for a
+      // source declaration like this; the declaration might also come from an annotation file,
+      // which is not checked.
       return;
     }
     AnnotationMirror declaredReturnAnno =

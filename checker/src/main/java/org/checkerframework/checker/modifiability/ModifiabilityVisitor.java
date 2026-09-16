@@ -64,11 +64,15 @@ public class ModifiabilityVisitor extends SourceVisitor<Void, Void> {
 
   /**
    * Issues an error if {@code tree} is annotated as {@code @PreservesModifiability} but is not a
-   * method that has exactly one formal parameter and a non-void result.
+   * method that has exactly one formal parameter, which is not a varargs parameter, and a non-void
+   * result.
    *
    * <p>The annotation relates the method's result to its first argument, so it says nothing about
    * such a method. Worse, on a method with more than one formal parameter it would silently use the
-   * first argument, which need not be the one that the programmer had in mind.
+   * first argument, which need not be the one that the programmer had in mind. A varargs method is
+   * rejected for the same reason: a call's first argument is an element of the varargs array rather
+   * than the sole formal parameter, so the annotation would relate the result to a value of a
+   * different type.
    *
    * @param tree a method declaration
    */
@@ -78,6 +82,7 @@ public class ModifiabilityVisitor extends SourceVisitor<Void, Void> {
       return;
     }
     if (methodElt.getParameters().size() == 1
+        && !methodElt.isVarArgs()
         && methodElt.getReturnType().getKind() != TypeKind.VOID) {
       return;
     }

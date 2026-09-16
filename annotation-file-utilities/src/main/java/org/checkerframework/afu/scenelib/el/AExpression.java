@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.modifiability.qual.Shrinkable;
 
 /**
  * Manages all annotations within expressions, that is, annotations on typecasts, instanceofs, and
@@ -14,37 +15,37 @@ import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
  */
 public class AExpression extends AElement {
   /** The method's annotated typecasts; map key is the offset of the checkcast bytecode. */
-  public final VivifyingMap<RelativeLocation, ATypeElement> typecasts =
+  public final @Shrinkable VivifyingMap<RelativeLocation, ATypeElement> typecasts =
       ATypeElement.<RelativeLocation>newVivifyingLHMap_ATE();
 
   /**
    * The method's annotated "instanceof" tests; map key is the offset of the instanceof bytecode.
    */
-  public final VivifyingMap<RelativeLocation, ATypeElement> instanceofs =
+  public final @Shrinkable VivifyingMap<RelativeLocation, ATypeElement> instanceofs =
       ATypeElement.<RelativeLocation>newVivifyingLHMap_ATE();
 
   /** The method's annotated "new" invocations; map key is the offset of the new bytecode. */
-  public final VivifyingMap<RelativeLocation, ATypeElement> news =
+  public final @Shrinkable VivifyingMap<RelativeLocation, ATypeElement> news =
       ATypeElement.<RelativeLocation>newVivifyingLHMap_ATE();
 
   /**
    * A method invocation's annotated type arguments; map key is the offset of the invokestatic
    * bytecode
    */
-  public final VivifyingMap<RelativeLocation, ATypeElement> calls =
+  public final @Shrinkable VivifyingMap<RelativeLocation, ATypeElement> calls =
       ATypeElement.<RelativeLocation>newVivifyingLHMap_ATE();
 
   /**
    * A member reference's annotated type parameters; map key is the offset of the invokestatic
    * bytecode
    */
-  public final VivifyingMap<RelativeLocation, ATypeElement> refs =
+  public final @Shrinkable VivifyingMap<RelativeLocation, ATypeElement> refs =
       ATypeElement.<RelativeLocation>newVivifyingLHMap_ATE();
 
   /**
    * The method's annotated lambda expressions; map key is the offset of the invokedynamic bytecode
    */
-  public final VivifyingMap<RelativeLocation, AMethod> funs =
+  public final @Shrinkable VivifyingMap<RelativeLocation, AMethod> funs =
       new VivifyingMap<>(new LinkedHashMap<>()) {
         @Override
         public AMethod createValueFor(RelativeLocation k) {

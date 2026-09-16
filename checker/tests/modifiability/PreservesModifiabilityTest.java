@@ -37,6 +37,15 @@ class PreservesModifiabilityTest {
     return new ArrayList<>(values);
   }
 
+  // A varargs method has one formal parameter, but the first argument of a call to it is an
+  // element of the varargs array rather than that parameter.
+  // :: error: [preservesmodifiability.location]
+  @PreservesModifiability
+  @SafeVarargs
+  static <T> List<T> annotatedVarargs(Collection<T>... values) {
+    return new ArrayList<>(values[0]);
+  }
+
   void preservesCapabilities(
       @Growable List<String> growable,
       @Shrinkable List<String> shrinkable,
@@ -73,5 +82,7 @@ class PreservesModifiabilityTest {
     annotatedVoid(growable);
     // :: error: [assignment]
     @Growable List<String> g = annotatedTwoArguments(growable, growable);
+    // :: error: [assignment]
+    @Growable List<String> v = annotatedVarargs(growable, growable);
   }
 }
