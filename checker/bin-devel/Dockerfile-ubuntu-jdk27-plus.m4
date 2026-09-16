@@ -1,5 +1,5 @@
 # Create a Docker image that is ready to run the full Checker Framework tests,
-# including building the manual and Javadoc, using JDK 26.
+# including building the manual and Javadoc, using JDK 27.
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
 # Both might lag behind; as of 2024-11-16, ubuntu:rolling was still 24.04 rather than 24.10.
@@ -12,8 +12,8 @@ include(`Dockerfile-contents-ubuntu-plus.m4')dnl
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -qqy install \
-  openjdk-26-jdk \
-&& update-java-alternatives --set java-1.26.0-openjdk-amd64
-ENV JAVA26_HOME=/usr/lib/jvm/java-26-openjdk-amd64
+  openjdk-27-jdk \
+&& update-java-alternatives --set java-1.27.0-openjdk-amd64
+ENV JAVA27_HOME=/usr/lib/jvm/java-27-openjdk-amd64
 
 include(`Dockerfile-contents-apt-clean.m4')

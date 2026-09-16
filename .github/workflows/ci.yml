@@ -39,7 +39,7 @@ jobs:
       - typecheck_part1_jdk25
       - typecheck_part2_jdk25
       - misc_jdk25
-      - misc_jdk26
+      - misc_jdk27
     runs-on: ubuntu-latest
     steps:
       - name: canary_jobs
@@ -207,14 +207,14 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
-  junit_jdk26:
+  junit_jdk27:
     needs:
       - canary_jobs
       - junit_part1_jdk25
       - junit_part2_jdk25
     runs-on: ubuntu-latest
     container:
-      image: mdernst/cf-ubuntu-jdk26:latest
+      image: mdernst/cf-ubuntu-jdk27:latest
     timeout-minutes: 70
     steps:
       - uses: actions/checkout@v7
@@ -240,7 +240,7 @@ jobs:
       - name: test-cftests-junit.sh
         run: ./checker/bin-devel/test-cftests-junit.sh
         env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "26"
+          ORG_GRADLE_PROJECT_jdkTestVersion: "27"
 
   nonjunit_jdk21:
     needs:
@@ -430,10 +430,10 @@ jobs:
         run: ./checker/bin-devel/test-misc.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
-  misc_jdk26:
+  misc_jdk27:
     runs-on: ubuntu-latest
     container:
-      image: mdernst/cf-ubuntu-jdk26-plus:latest
+      image: mdernst/cf-ubuntu-jdk27-plus:latest
     steps:
       - uses: actions/checkout@v7
         with:
@@ -459,7 +459,7 @@ jobs:
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "26"
+          ORG_GRADLE_PROJECT_jdkTestVersion: "27"
 
   typecheck_part1_jdk25:
     runs-on: ubuntu-latest
@@ -719,7 +719,7 @@ jobs:
     needs:
       - junit_jdk17
       - junit_jdk21
-      - junit_jdk26
+      - junit_jdk27
       - nonjunit_jdk21
       - misc_jdk21
       - daikon_part1_jdk25

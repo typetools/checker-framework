@@ -7,6 +7,8 @@
 
 ### User-visible changes
 
+The Checker Framework runs under JDK 27 -- that is, it runs on a version 27 JVM.
+
 ### Changes for type system implementers
 
 `JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,
