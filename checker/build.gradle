@@ -740,6 +740,13 @@ tasks.register("ainferRelevanceGenerateAjava", Test) {
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-relevance")
+
+    // This test writes an annotation on a use of a type variable whose upper bound is
+    // irrelevant, so the checker issues an `anno.on.irrelevant` warning for it in both passes of
+    // the test.  The `// ::` comment that states the expectation is removed by
+    // `copyNonannotatedToAnnotatedDirectory`, so the second (validation) pass would report the
+    // warning as unexpected.
+    delete("tests/ainfer-relevance/annotated/IrrelevantTypeVariable.java")
   }
 }
 

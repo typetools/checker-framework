@@ -30,6 +30,7 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
+import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
 import com.github.javaparser.ast.nodeTypes.NodeWithVariables;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -1280,9 +1281,77 @@ public class WholeProgramInferenceJavaParserStorage
     }
     if (type instanceof ClassOrInterfaceType classType) {
       TypeElement typeElt = JavaParserUtil.resolveTypeName(elements, classType);
-      return typeElt == null ? null : typeElt.asType();
+      if (typeElt != null) {
+        return typeElt.asType();
+      }
+      // `classType` might name a type variable, which has no TypeElement.
+      return typeVariableUpperBound(classType);
     }
     // An intersection type, a union type, `var`, a wildcard, a type parameter declaration, etc.
+    return null;
+  }
+
+  /**
+   * If the given JavaParser type names a type variable, returns the TypeMirror for the type
+   * variable's upper bound. Otherwise, or if the upper bound cannot be determined, returns null.
+   *
+   * <p>The upper bound stands in for the type variable itself, which has no TypeMirror here. That
+   * is sound for deciding relevance, because {@code GenericAnnotatedTypeFactory.isRelevant} treats
+   * a type variable as relevant exactly when its upper bound is.
+   *
+   * <p>Call this only for a type name that did not resolve to a type, because a type name is
+   * resolved in the scope that encloses it, where a type declaration can shadow a type variable of
+   * the same name.
+   *
+   * @param type a JavaParser class or interface type
+   * @return the TypeMirror for the upper bound of the type variable that {@code type} names, or
+   *     null
+   */
+  private @Nullable TypeMirror typeVariableUpperBound(ClassOrInterfaceType type) {
+    TypeParameter typeParameter = typeParameterDeclaration(type);
+    if (typeParameter == null) {
+      return null;
+    }
+    NodeList<ClassOrInterfaceType> bounds = typeParameter.getTypeBound();
+    if (bounds.isEmpty()) {
+      // The implicit upper bound is `Object`.
+      TypeElement objectElt = elements.getTypeElement("java.lang.Object");
+      return objectElt == null ? null : objectElt.asType();
+    }
+    if (bounds.size() > 1) {
+      // The upper bound is an intersection type, which `Types` cannot create.  Be conservative.
+      return null;
+    }
+    // The bound may itself be a type variable, as in `<T extends U, U extends CharSequence>`; the
+    // recursion terminates because Java forbids a cycle among type variable bounds.
+    return typeToTypeMirror(bounds.get(0));
+  }
+
+  /**
+   * If the given JavaParser type names a type variable, returns the type variable's declaration.
+   * Otherwise returns null.
+   *
+   * @param type a JavaParser class or interface type
+   * @return the declaration of the type variable that {@code type} names, or null if {@code type}
+   *     does not name a type variable
+   */
+  private static @Nullable TypeParameter typeParameterDeclaration(ClassOrInterfaceType type) {
+    String name = type.getNameWithScope();
+    if (name.indexOf('.') != -1) {
+      // A type variable has no member types, so a qualified name does not name a type variable.
+      return null;
+    }
+    for (Node ancestor = type.getParentNode().orElse(null);
+        ancestor != null;
+        ancestor = ancestor.getParentNode().orElse(null)) {
+      if (ancestor instanceof NodeWithTypeParameters<?> genericDeclaration) {
+        for (TypeParameter typeParameter : genericDeclaration.getTypeParameters()) {
+          if (typeParameter.getNameAsString().equals(name)) {
+            return typeParameter;
+          }
+        }
+      }
+    }
     return null;
   }
 
