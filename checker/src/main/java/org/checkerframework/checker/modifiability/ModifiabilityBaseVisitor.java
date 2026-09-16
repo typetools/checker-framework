@@ -397,11 +397,14 @@ public class ModifiabilityBaseVisitor
 
     if (overriddenReceiver.hasPrimaryAnnotation(positiveCapability)
         && !overriderReceiver.hasPrimaryAnnotation(positiveCapability)) {
+      // Use FoundRequired, as the framework's own `override.receiver` report does, so that the
+      // message key is rendered the same way no matter which check produced it.
+      FoundRequired pair = FoundRequired.of(overriderReceiver, overriddenReceiver);
       checker.reportError(
           overriderTree,
           "override.receiver",
-          overriderReceiver,
-          overriddenReceiver,
+          pair.found,
+          pair.required,
           overriderType,
           overriderMethodType,
           overriddenType,

@@ -10,9 +10,14 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * The top qualifier in the Iterator hierarchy. The iterator of the annotated collection is not
- * known to preserve the collection's modifiability, so the result of {@code iterator()} and {@code
- * listIterator()} is the top qualifier in every capability hierarchy: {@code @MaybeShrinkable}, and
- * for a {@code ListIterator} also {@code @MaybeGrowable} and {@code @MaybeReplaceable}.
+ * known to preserve the collection's capabilities, so the result of {@code iterator()} and {@code
+ * listIterator()} does not acquire a capability from the collection: it is the top qualifier in
+ * every capability hierarchy -- {@code @MaybeShrinkable}, and for a {@code ListIterator} also
+ * {@code @MaybeGrowable} and {@code @MaybeReplaceable}.
+ *
+ * <p>The iterator does inherit the collection's <em>lack</em> of a capability, since a collection
+ * that cannot be modified has no iterator that can modify it. For example, an
+ * {@code @Unshrinkable @MaybeIteratorPolyMod} collection has an {@code @Unshrinkable} iterator.
  *
  * <p>This is the default qualifier for unannotated types.
  *

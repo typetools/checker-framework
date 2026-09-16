@@ -19,8 +19,23 @@ class PreservesModifiabilityTest {
     return new ArrayList<>(values);
   }
 
+  // The annotation relates the result to the first argument, so it may not be written on a method
+  // that returns void or that does not have exactly one formal parameter.
+  // :: error: [preservesmodifiability.location]
   @PreservesModifiability
   static <T> void annotatedVoid(Collection<T> values) {}
+
+  // :: error: [preservesmodifiability.location]
+  @PreservesModifiability
+  static <T> List<T> annotatedNoArguments() {
+    return new ArrayList<>();
+  }
+
+  // :: error: [preservesmodifiability.location]
+  @PreservesModifiability
+  static <T> List<T> annotatedTwoArguments(Collection<T> values, Collection<T> other) {
+    return new ArrayList<>(values);
+  }
 
   void preservesCapabilities(
       @Growable List<String> growable,
@@ -53,7 +68,10 @@ class PreservesModifiabilityTest {
     @Modifiable List<String> m = unannotated(modifiable);
   }
 
-  void voidAnnotatedMethodHasNoEffect(@Growable List<String> growable) {
+  // Despite the error on its declaration, the annotation has no effect on a call to such a method.
+  void misplacedAnnotationHasNoEffect(@Growable List<String> growable) {
     annotatedVoid(growable);
+    // :: error: [assignment]
+    @Growable List<String> g = annotatedTwoArguments(growable, growable);
   }
 }

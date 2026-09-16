@@ -3,6 +3,9 @@ package org.checkerframework.checker.modifiability;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.MethodTree;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.modifiability.qual.PreservesModifiability;
 import org.checkerframework.checker.modifiability.qual.UnmodifiableParam;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -13,6 +16,10 @@ public class ModifiabilityVisitor extends SourceVisitor<Void, Void> {
 
   /** Fully-qualified name for {@link UnmodifiableParam}. */
   private static final String unmodifiableParamQualifiedName = UnmodifiableParam.class.getName();
+
+  /** Fully-qualified name for {@link PreservesModifiability}. */
+  private static final String preservesModifiabilityQualifiedName =
+      PreservesModifiability.class.getName();
 
   /** {@link ModifiabilityChecker}. */
   private final ModifiabilityChecker checker;
@@ -41,6 +48,7 @@ public class ModifiabilityVisitor extends SourceVisitor<Void, Void> {
   @Override
   public Void visitMethod(MethodTree tree, Void p) {
     storeSuppressWarningsAnno(tree);
+    checkPreservesModifiabilityLocation(tree);
     scan(tree.getModifiers(), p);
     scan(tree.getReturnType(), p);
     scan(tree.getTypeParameters(), p);
@@ -52,6 +60,36 @@ public class ModifiabilityVisitor extends SourceVisitor<Void, Void> {
     scan(tree.getBody(), p);
     scan(tree.getDefaultValue(), p);
     return null;
+  }
+
+  /**
+   * Issues an error if {@code tree} is annotated as {@code @PreservesModifiability} but is not a
+   * method that has exactly one formal parameter and a non-void result.
+   *
+   * <p>The annotation relates the method's result to its first argument, so it says nothing about
+   * such a method. Worse, on a method with more than one formal parameter it would silently use the
+   * first argument, which need not be the one that the programmer had in mind.
+   *
+   * @param tree a method declaration
+   */
+  private void checkPreservesModifiabilityLocation(MethodTree tree) {
+    ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
+    if (methodElt == null || methodElt.getAnnotation(PreservesModifiability.class) == null) {
+      return;
+    }
+    if (methodElt.getParameters().size() == 1
+        && methodElt.getReturnType().getKind() != TypeKind.VOID) {
+      return;
+    }
+    for (AnnotationTree annoTree : tree.getModifiers().getAnnotations()) {
+      AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(annoTree);
+      if (anno != null
+          && AnnotationUtils.areSameByName(anno, preservesModifiabilityQualifiedName)) {
+        checker.reportError(annoTree, "preservesmodifiability.location");
+        return;
+      }
+    }
+    checker.reportError(tree, "preservesmodifiability.location");
   }
 
   @Override

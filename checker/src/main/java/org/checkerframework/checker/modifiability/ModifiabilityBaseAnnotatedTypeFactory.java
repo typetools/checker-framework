@@ -243,7 +243,8 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
   /**
    * Refines the return type of a {@code @PreservesModifiability} method.
    *
-   * <p>If the method has no parameters or returns {@code void}, then the annotation has no effect.
+   * <p>If the method does not have exactly one formal parameter and a non-void result, then the
+   * annotation has no effect.
    *
    * <p>Otherwise, if the declared return type has a qualifier other than the top qualifier, that
    * declared qualifier is used. If the first argument has this checker's positive qualifier (for
@@ -263,8 +264,12 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
   protected void refineReturnTypeForPreservesModifiability(
       MethodInvocationTree tree, AnnotatedExecutableType methodType) {
     AnnotatedTypeMirror returnType = methodType.getReturnType();
-    if (tree.getArguments().isEmpty()
+    if (methodType.getParameterTypes().size() != 1
+        || tree.getArguments().isEmpty()
         || returnType.getUnderlyingType().getKind() == TypeKind.VOID) {
+      // The annotation relates the result to the sole argument, so it says nothing about such a
+      // method.  `ModifiabilityVisitor` issues an error for a source declaration like this; the
+      // declaration might also come from an annotation file, which is not checked.
       return;
     }
     AnnotationMirror declaredReturnAnno =

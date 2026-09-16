@@ -3526,8 +3526,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Class that creates string representations of {@link AnnotatedTypeMirror}s which are only
    * verbose if required to differentiate the two types.
+   *
+   * <p>It is protected so that a subclass that reports one of the message keys that take a
+   * found/required pair, such as {@code override.receiver}, renders the pair the same way that this
+   * class does.
    */
-  private static final class FoundRequired {
+  protected static final class FoundRequired {
     /** The found type. */
     public final String found;
 
@@ -3559,7 +3563,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Creates string representations of {@link AnnotatedTypeMirror}s which are only verbose if
      * required to differentiate the two types.
      */
-    static FoundRequired of(AnnotatedTypeMirror found, AnnotatedTypeMirror required) {
+    public static FoundRequired of(AnnotatedTypeMirror found, AnnotatedTypeMirror required) {
       return new FoundRequired(found, required);
     }
 
@@ -3568,7 +3572,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * AnnotatedTypeParameterBounds}s which are only verbose if required to differentiate the two
      * types.
      */
-    static FoundRequired of(AnnotatedTypeMirror found, AnnotatedTypeParameterBounds required) {
+    public static FoundRequired of(
+        AnnotatedTypeMirror found, AnnotatedTypeParameterBounds required) {
       return new FoundRequired(found, required);
     }
   }

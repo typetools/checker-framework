@@ -16,8 +16,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * l.listIterator()} also has type {@code @Replaceable}.
  *
  * <p>If the collection itself is {@code @Unmodifiable}, then its iterator is {@code @Unshrinkable}.
- * For any collection whose type is {@code @MaybeIteratorPolyMod}, its iterator is
- * {@code @MaybeShrinkable}.
+ * That holds no matter what the collection's Iterator qualifier is: a {@code @MaybeIteratorPolyMod}
+ * collection's iterator does not acquire the collection's capabilities, but it does inherit the
+ * collection's lack of them. Only a collection that has neither the capability nor its negation --
+ * for example, a {@code @MaybeShrinkable @MaybeIteratorPolyMod} collection -- has a
+ * {@code @MaybeShrinkable} iterator.
  *
  * <p>The Grow, Shrink, and Replace Checkers consult this annotation; the SeqGrow Checker does not,
  * because an iterator has no sequenced-grow methods.

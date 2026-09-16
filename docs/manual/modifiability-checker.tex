@@ -455,7 +455,7 @@ any other qualifier, the return type is the top qualifier (\<@MaybeGrowable>,
 \<@MaybeSeqGrowable>, \<@MaybeShrinkable>, \<@MaybeReplaceable>, or \<@MaybeIteratorPolyMod>) in
 the corresponding hierarchy.
 
-This annotation should only be written on non-void, one-argument method declarations.
+This annotation may only be written on non-void, one-argument method declarations.
 
 \end{description}
 
@@ -508,7 +508,7 @@ Queue q = list;
 The following rules define this weakening.  The first qualifier in each
 capability row is used for \<@Modifiable>; the second is used for
 \<@Unmodifiable>.  If the weakening condition holds, both aliases use the
-corresponding \<@Maybe*> qualifier instead.x
+corresponding \<@Maybe*> qualifier instead.
 
 
 
