@@ -7,6 +7,10 @@
 
 ### User-visible changes
 
+The new Modifiability Checker warns when a program might throw
+`UnsupportedOperationException` at run time because it calls a mutating method on
+a collection that does not support the method.
+
 The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
 warnings that it did not previously.
 
@@ -80,10 +84,6 @@ In `TypeHierarchy`:
 ## Version 4.1.0 (2026-05-01)
 
 ### User-visible changes
-
-The new Modifiability Checker warns when a program might throw
-`UnsupportedOperationException` at run time because it calls a mutating method on
-a collection that does not support the method.
 
 Removed deprecated script `checker/bin-devel/build.sh`; use `./gradlew assemble`
 instead.
