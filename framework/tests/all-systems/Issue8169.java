@@ -2,6 +2,7 @@
 
 import java.util.List;
 
+@SuppressWarnings("all") // Just check for crashes.
 public class Issue8169 {
   interface SerializableFunction<InputT, OutputT> {
     OutputT apply(InputT input);
