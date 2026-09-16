@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -76,13 +75,6 @@ public abstract class AbstractType {
   public final boolean ignoreAnnotations;
 
   /**
-   * The hash code of the fields that {@link #sameInferenceProblem} compares. Those fields are
-   * final, and every {@link AbstractType} of one inference problem has the same value here, so this
-   * is computed once rather than on every call to {@link #inferenceProblemHashCode}.
-   */
-  private final int inferenceProblemHash;
-
-  /**
    * Creates an {@link AbstractType}.
    *
    * @param context the context object
@@ -92,7 +84,6 @@ public abstract class AbstractType {
     this.context = context;
     this.typeFactory = context.typeFactory;
     this.ignoreAnnotations = ignoreAnnotations;
-    this.inferenceProblemHash = Objects.hash(ignoreAnnotations, context, typeFactory);
   }
 
   /**
@@ -762,6 +753,6 @@ public abstract class AbstractType {
    * @return a hash code for the fields that {@link #sameInferenceProblem} compares
    */
   protected final int inferenceProblemHashCode() {
-    return inferenceProblemHash;
+    return context.inferenceProblemHashCode(ignoreAnnotations);
   }
 }
