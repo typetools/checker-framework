@@ -10,10 +10,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceFactory;
@@ -80,6 +84,14 @@ public class Java8InferenceContext {
   public final AnnotatedTypeFactory typeFactory;
 
   /**
+   * Scans a type for a polymorphic primary annotation. One scanner serves every call, because
+   * {@link
+   * org.checkerframework.framework.type.visitor.AnnotatedTypeScanner#visit(org.checkerframework.framework.type.AnnotatedTypeMirror)}
+   * resets it.
+   */
+  private final SimpleAnnotatedTypeScanner<Boolean, Void> polymorphicQualifierScanner;
+
+  /**
    * Where an implicitly typed lambda parameter's type comes from: the target type of the lambda
    * that declares it, and the parameter's index in the lambda's parameter list.
    *
@@ -139,6 +151,31 @@ public class Java8InferenceContext {
         TypesUtils.typeFromClass(RuntimeException.class, env.getTypeUtils(), env.getElementUtils());
     this.inferenceTypeFactory = new InferenceFactory(this);
     this.object = inferenceTypeFactory.getObject();
+    QualifierHierarchy qualifierHierarchy = factory.getQualifierHierarchy();
+    this.polymorphicQualifierScanner =
+        new SimpleAnnotatedTypeScanner<>(
+            (type, p) -> {
+              for (AnnotationMirror anno : type.getPrimaryAnnotations()) {
+                if (qualifierHierarchy.isPolymorphicQualifier(anno)) {
+                  return true;
+                }
+              }
+              return false;
+            },
+            Boolean::logicalOr,
+            false);
+  }
+
+  /**
+   * Returns true if {@code type}, or any type that it contains, has a polymorphic primary
+   * annotation.
+   *
+   * @param type an annotated type
+   * @return true if {@code type}, or any type that it contains, has a polymorphic primary
+   *     annotation
+   */
+  public boolean hasPolymorphicQualifier(AnnotatedTypeMirror type) {
+    return polymorphicQualifierScanner.visit(type);
   }
 
   /**
