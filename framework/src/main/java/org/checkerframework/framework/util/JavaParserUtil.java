@@ -7,20 +7,24 @@ import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
+import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,7 +57,8 @@ public final class JavaParserUtil {
   /**
    * Returns the element for the given JavaParser type, whose name is resolved in the scope of the
    * type declarations and the compilation unit that contain it. Returns null if the name cannot be
-   * resolved, which happens for a type variable and for a type that is not on the classpath.
+   * resolved: it names a type variable, a local class, a member of a local or anonymous class, or a
+   * type that is not on the classpath.
    *
    * <p>A client that resolves many names should call {@link #resolveTypeName(Elements,
    * ClassOrInterfaceType, Map)}, which memoizes the name lookups.
@@ -100,12 +105,17 @@ public final class JavaParserUtil {
       suffix = name.substring(dotIndex);
     }
 
-    // A type parameter, or a type that is lexically enclosed in a type declaration, takes
-    // precedence over an import, over a type in the same package, over a type in `java.lang`, and
-    // over the interpretation of `name` as a fully-qualified name.
+    // A type parameter, a local class, or a type that is lexically enclosed in a type declaration,
+    // takes precedence over an import, over a type in the same package, over a type in
+    // `java.lang`, and over the interpretation of `name` as a fully-qualified name.
+    //
+    // `child` is the child of `ancestor` that contains `type`.  It distinguishes a use of `name`
+    // within a class body, where the class's member types are in scope, from a use in the class's
+    // own supertype names, where they are not.
+    Node child = type;
     for (Node ancestor = type.getParentNode().orElse(null);
         ancestor != null;
-        ancestor = ancestor.getParentNode().orElse(null)) {
+        child = ancestor, ancestor = ancestor.getParentNode().orElse(null)) {
       if (ancestor instanceof NodeWithTypeParameters<?> genericDeclaration) {
         for (TypeParameter typeParameter : genericDeclaration.getTypeParameters()) {
           if (typeParameter.getNameAsString().equals(firstComponent)) {
@@ -115,8 +125,42 @@ public final class JavaParserUtil {
           }
         }
       }
-      if (ancestor instanceof TypeDeclaration<?> enclosingType) {
-        String enclosingName = enclosingType.getFullyQualifiedName().orElse(null);
+
+      if (declaresLocalType(ancestor, firstComponent)) {
+        // `name` names a local class, or is nested within one.  A local class shadows any type of
+        // the same name, and `Elements` cannot look up a local class by name.
+        return null;
+      }
+
+      if (ancestor instanceof EnumConstantDeclaration enumConstant
+          && declaresMemberType(enumConstant.getClassBody(), firstComponent)) {
+        // The body of an enum constant declares an anonymous class.  A member type of an
+        // anonymous class has no name that `Elements` can look up.  (There is no need to search
+        // the anonymous class's supertype, which is the enum:  the enum declaration is an
+        // ancestor, so a later iteration of this loop searches it.)
+        return null;
+      }
+
+      // The member types of a class that `Elements` cannot look up by name -- an anonymous class,
+      // a local class, or a class that is nested within one -- shadow types that are declared
+      // outside the class.  `unnameableSupertypes` is non-null if `type` appears within the body
+      // of such a class, in which case it holds the class's supertypes, which this method searches
+      // for a member type that `name` might refer to.
+      List<ClassOrInterfaceType> unnameableSupertypes = null;
+      if (ancestor instanceof ObjectCreationExpr creation) {
+        List<? extends Node> body = creation.getAnonymousClassBody().orElse(null);
+        List<ClassOrInterfaceType> supertypes = Collections.singletonList(creation.getType());
+        // If `child` is the supertype name, then `type` is not in the anonymous class's body, and
+        // testing `child` also prevents infinite recursion on the recursive call below.
+        if (body != null && !containsSame(supertypes, child)) {
+          if (declaresMemberType(body, firstComponent)) {
+            // A member type of an anonymous class has no name that `Elements` can look up.
+            return null;
+          }
+          unnameableSupertypes = supertypes;
+        }
+      } else if (ancestor instanceof TypeDeclaration<?> enclosingType) {
+        String enclosingName = nameableFullyQualifiedName(enclosingType);
         if (enclosingName != null) {
           TypeElement result = getTypeElement(elements, enclosingName + "." + name, cache);
           if (result != null) {
@@ -129,6 +173,32 @@ public final class JavaParserUtil {
             if (result != null) {
               return result;
             }
+          }
+        } else {
+          List<ClassOrInterfaceType> supertypes = supertypes(enclosingType);
+          // If `child` is one of the supertype names, then `type` is not in the class's body, and
+          // testing `child` also prevents infinite recursion on the recursive call below.
+          if (!containsSame(supertypes, child)) {
+            if (declaresMemberType(enclosingType.getMembers(), firstComponent)) {
+              // A member type of an unnameable class has no name that `Elements` can look up.
+              return null;
+            }
+            unnameableSupertypes = supertypes;
+          }
+        }
+      }
+      if (unnameableSupertypes != null) {
+        for (ClassOrInterfaceType supertype : unnameableSupertypes) {
+          TypeElement supertypeElement = resolveTypeName(elements, supertype, cache);
+          if (supertypeElement == null) {
+            // The supertype could not be determined, so neither could the member types that the
+            // unnameable class inherits and that might shadow `name`.
+            return null;
+          }
+          TypeElement result =
+              resolveMemberType(elements, supertypeElement, firstComponent, suffix, cache);
+          if (result != null) {
+            return result;
           }
         }
       }
@@ -229,6 +299,119 @@ public final class JavaParserUtil {
     TypeElement result = elements.getTypeElement(name);
     cache.put(name, result);
     return result;
+  }
+
+  /**
+   * Returns true if {@code node} directly contains a statement that declares a local class,
+   * interface, enum, or record whose name is {@code name}. Such a declaration shadows, throughout
+   * the block that contains it, every type of the same name that is declared elsewhere.
+   *
+   * @param node a JavaParser node, such as a block
+   * @param name a simple type name
+   * @return true if {@code node} declares a local type named {@code name}
+   */
+  private static boolean declaresLocalType(Node node, String name) {
+    for (Node child : node.getChildNodes()) {
+      if (child instanceof Statement) {
+        // A local type declaration is the only kind of statement whose child is a type
+        // declaration.
+        for (Node grandchild : child.getChildNodes()) {
+          if (grandchild instanceof TypeDeclaration<?> localType
+              && localType.getNameAsString().equals(name)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if one of the given body declarations is a type declaration whose name is {@code
+   * name}.
+   *
+   * @param members the body declarations of a class or interface
+   * @param name a simple type name
+   * @return true if {@code members} contains a type declaration named {@code name}
+   */
+  private static boolean declaresMemberType(List<? extends Node> members, String name) {
+    for (Node member : members) {
+      if (member instanceof TypeDeclaration<?> memberType
+          && memberType.getNameAsString().equals(name)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns the fully-qualified name by which {@link Elements} can look up the given type
+   * declaration, or null if there is none: {@code typeDecl} is a local class, or it is a member of
+   * a local class or of an anonymous class (including the body of an enum constant). ({@link
+   * TypeDeclaration#getFullyQualifiedName} does not make this distinction; it returns a name that
+   * {@link Elements} might resolve to a different type declaration.)
+   *
+   * @param typeDecl a JavaParser type declaration
+   * @return the fully-qualified name of {@code typeDecl}, or null if it has none
+   */
+  private static @Nullable String nameableFullyQualifiedName(TypeDeclaration<?> typeDecl) {
+    for (Node node = typeDecl; node != null; node = node.getParentNode().orElse(null)) {
+      if (node instanceof TypeDeclaration<?>) {
+        Node parent = node.getParentNode().orElse(null);
+        // The parent of a local type declaration is the statement that declares it.  The parent
+        // of a member of an anonymous class is the object creation expression, or the enum
+        // constant declaration, that declares the anonymous class.
+        if (parent instanceof Statement
+            || parent instanceof ObjectCreationExpr
+            || parent instanceof EnumConstantDeclaration) {
+          return null;
+        }
+      }
+    }
+    return typeDecl.getFullyQualifiedName().orElse(null);
+  }
+
+  /**
+   * Returns the supertypes that the given type declaration names: its {@code extends} clause and
+   * its {@code implements} clause. The result does not include an implicit supertype such as {@code
+   * java.lang.Object}, none of which declares a member type.
+   *
+   * @param typeDecl a JavaParser type declaration
+   * @return the supertypes that {@code typeDecl} names
+   */
+  private static List<ClassOrInterfaceType> supertypes(TypeDeclaration<?> typeDecl) {
+    if (typeDecl instanceof ClassOrInterfaceDeclaration classDecl) {
+      List<ClassOrInterfaceType> result = new ArrayList<>(classDecl.getExtendedTypes());
+      result.addAll(classDecl.getImplementedTypes());
+      return result;
+    }
+    if (typeDecl instanceof EnumDeclaration enumDecl) {
+      return enumDecl.getImplementedTypes();
+    }
+    if (typeDecl instanceof RecordDeclaration recordDecl) {
+      return recordDecl.getImplementedTypes();
+    }
+    // An annotation declaration's only supertype is `java.lang.annotation.Annotation`.
+    return Collections.emptyList();
+  }
+
+  /**
+   * Returns true if one of the given nodes is the given node, compared by reference equality.
+   * JavaParser's {@code equals()} is structural, so {@link List#contains} does not distinguish two
+   * occurrences of the same type name.
+   *
+   * @param nodes some JavaParser nodes
+   * @param node a JavaParser node
+   * @return true if {@code nodes} contains {@code node} itself
+   */
+  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
+  private static boolean containsSame(List<? extends Node> nodes, Node node) {
+    for (Node n : nodes) {
+      if (n == node) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

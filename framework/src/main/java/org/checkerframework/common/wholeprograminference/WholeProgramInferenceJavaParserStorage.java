@@ -136,6 +136,15 @@ public class WholeProgramInferenceJavaParserStorage
   protected final Elements elements;
 
   /**
+   * Memoizes the name lookups that {@link JavaParserUtil#resolveTypeName} performs while writing
+   * ajava files. Resolving one name looks up many candidate names, most of which name no type, and
+   * the same names are looked up for every annotation in every ajava file. {@link
+   * #writeResultsToFile} clears this before writing, because a name that names no type in one
+   * annotation processing round might name a generated type in a later round.
+   */
+  private final Map<String, @Nullable TypeElement> typeElementCache = new HashMap<>();
+
+  /**
    * Maps from binary class name to the wrapper containing the class. Contains all classes in Java
    * source files containing an Element for which an annotation has been inferred.
    */
@@ -1035,6 +1044,8 @@ public class WholeProgramInferenceJavaParserStorage
 
     setSupertypesAndSubtypesModified();
 
+    typeElementCache.clear();
+
     for (String path : modifiedFiles) {
       // This calls deepCopy() because wpiPrepareCompilationUnitForWriting performs side
       // effects on the inference results that we don't want to be persistent.  The JavaParser
@@ -1286,7 +1297,7 @@ public class WholeProgramInferenceJavaParserStorage
       return types.getNoType(TypeKind.VOID);
     }
     if (type instanceof ClassOrInterfaceType classType) {
-      TypeElement typeElt = JavaParserUtil.resolveTypeName(elements, classType);
+      TypeElement typeElt = JavaParserUtil.resolveTypeName(elements, classType, typeElementCache);
       return typeElt == null ? null : typeElt.asType();
     }
     // An intersection type, a union type, `var`, a wildcard, a type parameter declaration, etc.
