@@ -12,10 +12,10 @@ public class RelevantSubtype implements CharSequence {
     }
 
     // `char` is irrelevant to this checker:  it is not listed in `@RelevantJavaTypes`, and it is not
-    // related to a listed type by subtyping.  The goal file records that inference nonetheless
-    // writes `@AinferTop` on this return type.
+    // related to a listed type by subtyping.  The goal file shows that inference omits the
+    // `@AinferTop` that it infers for this return type.
     @org.checkerframework.dataflow.qual.Pure
-    public  @org.checkerframework.checker.testchecker.ainfer.qual.AinferTop char charAt(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType RelevantSubtype this,  @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType int index) {
+    public   char charAt(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType RelevantSubtype this,  @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType int index) {
         return 'a';
     }
 
