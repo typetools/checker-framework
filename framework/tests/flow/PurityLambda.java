@@ -23,6 +23,20 @@ public class PurityLambda {
 
   void takesRunnable(Runnable r) {}
 
+  static String staticString() {
+    return "";
+  }
+
+  @SideEffectFree
+  String pureString() {
+    return "";
+  }
+
+  PurityLambda impureSelf() {
+    count++;
+    return this;
+  }
+
   // Creating an impure lambda is not an effect of the enclosing method.
 
   @SideEffectFree
@@ -65,6 +79,47 @@ public class PurityLambda {
   @SideEffectsOnly("this.count")
   Runnable sideEffectsOnlyReturnsImpureLambda() {
     return () -> impureVoid();
+  }
+
+  // Creating a method reference is creating an object, just as creating a lambda is.  The
+  // referenced method is not run, so its effects are not the enclosing method's.
+
+  @SideEffectFree
+  Supplier<String> returnsImpureMethodRef() {
+    return this::impureString;
+  }
+
+  @Deterministic
+  Supplier<String> returnsBoundMethodRef() {
+    // :: error: [purity.not.deterministic.object.creation]
+    return this::impureString;
+  }
+
+  @Deterministic
+  Supplier<String> returnsUnboundMethodRef() {
+    // :: error: [purity.not.deterministic.object.creation]
+    return PurityLambda::staticString;
+  }
+
+  @Deterministic
+  Supplier<String> returnsConstructorRef() {
+    // :: error: [purity.not.deterministic.object.creation]
+    return String::new;
+  }
+
+  @SideEffectFree
+  Supplier<String> createsMethodRefInSideEffectFreeMethod() {
+    // No error:  creating an object has no side effect.
+    return this::pureString;
+  }
+
+  // The qualifier expression of EXPR::m is evaluated where the method reference appears, unlike
+  // the body of a lambda.
+
+  @SideEffectFree
+  Supplier<String> effectInMethodRefQualifier() {
+    // :: error: [purity.not.sideeffectfree.call]
+    return impureSelf()::pureString;
   }
 
   // Declaring a local or anonymous class is not an effect of the enclosing method, but
