@@ -162,7 +162,7 @@ checkerFramework {
   extraJavacArgs = [
     "-Ainfer=ajava",
     "-AinferOutputOriginal", // optional
-    "-AinferOutputDirectory=" + project.rootDir + "/build/whole-program-inference",
+    "-AinferOutputDirectory=" + project.rootDir + "/whole-program-inference-new",
     "-Aajava=" + project.rootDir + "/whole-program-inference-output",
     "-Awarns",
     // "-Werror", // remove or comment out any occurrence of "-Werror".
@@ -176,12 +176,18 @@ The two directories must be absolute paths, because the build system might
 run the compiler in a different directory than the one in which you run
 \<wpi2.sh>.  They must also be the same for every subproject of a
 multi-project build, because \<wpi2.sh> manages a single pair of
-directories:  \<build/whole-program-inference> and
+directories:  \<whole-program-inference-new> and
 \<whole-program-inference-output>, both relative to the directory in which
 you run \<wpi2.sh>.  That is why the example uses \<project.rootDir> rather
 than \<project.projectDir>; the two are the same in a single-project build,
 but only \<project.rootDir> is the same in every subproject of a
 multi-project build.
+
+Do not put either directory under your build system's output directory, such
+as \<build/> or \<target/>.  Your build system's \<clean> task would delete
+the inference output, possibly in the middle of a build:  a build system is
+free to run \<clean> after it has already compiled some of the project's
+source files.
 
 
 \subsectionAndLabel{Running \<wpi2.sh>}{wpi-two-command}
@@ -199,7 +205,23 @@ compilation output is present.
 
 The output of \<wpi2.sh> is a top-level directory
 \<whole-program-inference-output> that contains \<.ajava> files for each file of
-your project.
+your project.  \<wpi2.sh> uses two other top-level directories:
+\<whole-program-inference-new>, which the compiler writes each iteration's
+results to and which \<wpi2.sh> removes when inference converges, and \<whole-program-inference-diffs>, which contains one diff
+file per iteration (\<iteration-1.diff>, \<iteration-2.diff>, etc.) for
+diagnostic purposes.  You may wish to add \<whole-program-inference-*> to
+your \<.gitignore> file.
+
+If \<wpi2.sh> fails --- for example, because the Checker Framework crashed or
+your buildfile is misconfigured --- then the annotations that it inferred so
+far remain in \<whole-program-inference-output>.  A subsequent run of
+\<wpi2.sh> continues from them rather than starting over.  To start inference
+from scratch, remove \<whole-program-inference-output> before running
+\<wpi2.sh>.
+
+\<wpi2.sh> runs the command at most 10 times.  If inference has not converged
+by then, \<wpi2.sh> reports that fact and exits; set the
+\<WPI2\_MAX\_ITERATIONS> environment variable to change the bound.
 
 
 \sectionAndLabel{Running whole-program inference on a single project, without buildfile editing}{wpi-one}
