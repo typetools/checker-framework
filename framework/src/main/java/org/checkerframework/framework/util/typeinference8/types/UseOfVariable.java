@@ -180,8 +180,11 @@ public class UseOfVariable extends AbstractType {
       // ignored. Also, set to bottom or top, unless the bound is a type variable. This way if all
       // the bounds of a variable have annotations to be ignored, the instantiation of that variable
       // is as flexible as possible.
-      AnnotatedTypeMirror boundCopyATM = bound.getAnnotatedType().deepCopy();
-      AbstractType boundCopy = bound.create(boundCopyATM, true);
+      AbstractType boundCopy = bound.create(bound.getAnnotatedType().deepCopy(), true);
+      // `create` may copy its argument rather than storing it (`UseOfVariable`'s constructor
+      // deep-copies, and `InferenceType`'s calls `asUse()`), so mutate the annotated type that
+      // `boundCopy` actually holds.  It is already a fresh copy, so mutating it is safe.
+      AnnotatedTypeMirror boundCopyATM = boundCopy.getAnnotatedType();
       if (boundCopyATM.getKind() == TypeKind.TYPEVAR && kind == BoundKind.EQUAL) {
         variable.getBounds().addBound(parent, kind, boundCopy);
       } else if (kind == BoundKind.LOWER) {
@@ -194,8 +197,8 @@ public class UseOfVariable extends AbstractType {
         boundCopyATM.replaceAnnotations(tops);
         variable.getBounds().addBound(parent, BoundKind.UPPER, boundCopy);
 
-        AnnotatedTypeMirror boundCopyATM2 = bound.getAnnotatedType().deepCopy();
-        AbstractType boundCopy2 = bound.create(boundCopyATM2, true);
+        AbstractType boundCopy2 = bound.create(bound.getAnnotatedType().deepCopy(), true);
+        AnnotatedTypeMirror boundCopyATM2 = boundCopy2.getAnnotatedType();
         boundCopyATM2.replaceAnnotations(bots);
         variable.getBounds().addBound(parent, BoundKind.LOWER, boundCopy2);
       }
