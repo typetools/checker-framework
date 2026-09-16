@@ -228,16 +228,17 @@ public final class AnnotatedTypes {
    * of {@code superType}, then this method returns the result of calling {@code
    * asSuper(atypeFactory, type.getEnclosingType(), superType)}.
    *
-   * <p>Otherwise, throws {@link BugInCF}.
+   * <p>Otherwise, this method returns null.
    *
    * @param types types utils
    * @param atypeFactory the type factory
    * @param type a type
    * @param superType a supertype of {@code type} or a supertype of an enclosing type of {@code
    *     type}
-   * @return {@code type} or an enclosing type of {@code type} as {@code superType}
+   * @return {@code type} or an enclosing type of {@code type} as {@code superType}, or null if
+   *     neither {@code type} nor a type that encloses it is a subtype of {@code superType}
    */
-  private static AnnotatedTypeMirror asOuterSuper(
+  private static @Nullable AnnotatedTypeMirror asOuterSuper(
       Types types,
       AnnotatedTypeFactory atypeFactory,
       AnnotatedTypeMirror type,
@@ -255,7 +256,7 @@ public final class AnnotatedTypes {
         enclosingType = enclosingType.getEnclosingType();
       }
       if (enclosingType == null) {
-        throw new BugInCF("Enclosing type not found: type: %s supertype: %s", dt, superType);
+        return null;
       }
       return asSuper(atypeFactory, dt, superType);
     }
@@ -558,6 +559,9 @@ public final class AnnotatedTypes {
     AnnotatedDeclaredType enclosingType = atypeFactory.getAnnotatedType(enclosingClassOfElem);
     AnnotatedDeclaredType base =
         (AnnotatedDeclaredType) asOuterSuper(types, atypeFactory, t, enclosingType);
+    if (base == null) {
+      throw new BugInCF("Enclosing type not found: type: %s supertype: %s", t, enclosingType);
+    }
     base = (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(base);
 
     List<AnnotatedTypeVariable> ownerParams =
