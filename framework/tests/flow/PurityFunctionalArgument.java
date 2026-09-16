@@ -85,6 +85,70 @@ public class PurityFunctionalArgument {
     callee(String::length, s);
   }
 
+  // Each result expression of a conditional or switch expression is checked on its own.  The type
+  // of such an expression is the parameter's type, which says nothing about the code that any
+  // result expression denotes.
+
+  void conditionalArguments(boolean b, String s) {
+    callee(b ? t -> t.length() : t -> 0, s);
+    // :: error: [purity.not.sideeffectfree.assign.field]
+    callee(b ? t -> count++ : t -> 0, s);
+    callee(b ? this::pureLength : String::length, s);
+    // :: error: [purity.functional.argument]
+    callee(b ? this::pureLength : this::impureLength, s);
+  }
+
+  void switchArguments(int i, String s) {
+    callee(
+        switch (i) {
+          case 1 -> t -> t.length();
+          default -> t -> 0;
+        },
+        s);
+    callee(
+        switch (i) {
+          // :: error: [purity.not.sideeffectfree.assign.field]
+          case 1 -> t -> count++;
+          default -> t -> 0;
+        },
+        s);
+    callee(
+        switch (i) {
+          case 1 -> this::pureLength;
+          // :: error: [purity.functional.argument]
+          default -> this::impureLength;
+        },
+        s);
+  }
+
+  // A result expression may also be the value of a `yield` statement.
+
+  void yieldArguments(int i, String s) {
+    callee(
+        switch (i) {
+          case 1:
+            {
+              // :: error: [purity.functional.argument]
+              yield this::impureLength;
+            }
+          default:
+            yield this::pureLength;
+        },
+        s);
+  }
+
+  // Parentheses do not change how an argument is checked.
+
+  void parenthesizedArguments(boolean b, String s) {
+    callee((t -> t.length()), s);
+    // :: error: [purity.not.sideeffectfree.assign.field]
+    callee((t -> count++), s);
+    // :: error: [purity.functional.argument]
+    callee((this::impureLength), s);
+    // :: error: [purity.functional.argument]
+    callee(b ? (this::pureLength) : (this::impureLength), s);
+  }
+
   // Any other argument is checked against the functional method of its declared type.
 
   void otherArguments(String s) {

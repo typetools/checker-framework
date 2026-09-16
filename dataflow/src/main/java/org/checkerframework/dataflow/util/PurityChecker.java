@@ -65,11 +65,13 @@ public final class PurityChecker {
    *
    * @param statement the statement to check
    * @param annoProvider the annotation provider
-   * @param enclosingMethod the method whose body {@code statement} is part of, or null if {@code
-   *     statement} is not a method body. A call to the functional method of one of that method's
+   * @param enclosingMethod the method declaration that lexically encloses {@code statement}, or
+   *     null if none does. A call to the functional method of one of that method's
    *     functional-interface parameters has the method's own purity; see {@link
-   *     #isFunctionalInterfaceParameter}. Pass null for a lambda body, which is constrained by the
-   *     functional method that it implements rather than by the enclosing method.
+   *     #isFunctionalInterfaceParameter}. Pass the enclosing method for a lambda body too: the body
+   *     is checked against the functional method that the lambda implements, but the enclosing
+   *     method's parameters still hold values that its caller was required to check, whenever the
+   *     lambda runs. Pass null for an arbitrary expression, which no method's contract governs.
    * @param env the processing environment; used only if {@code enclosingMethod} is non-null
    * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
    * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
@@ -139,25 +141,39 @@ public final class PurityChecker {
    */
   public static boolean isFunctionalInterfaceParameter(
       @Nullable ExpressionTree expr, @Nullable MethodTree method, ProcessingEnvironment env) {
+    return functionalInterfaceParameterType(expr, method, env) != null;
+  }
+
+  /**
+   * Returns the functional interface type of {@code expr}, if {@code expr} is an effectively final
+   * formal parameter of {@code method} whose type is a functional interface; otherwise returns
+   * null.
+   *
+   * @param expr an expression, or null
+   * @param method a method or constructor declaration, or null
+   * @param env the processing environment
+   * @return the functional interface type of {@code expr}, or null
+   */
+  private static @Nullable TypeMirror functionalInterfaceParameterType(
+      @Nullable ExpressionTree expr, @Nullable MethodTree method, ProcessingEnvironment env) {
     if (expr == null
         || method == null
         || !(TreeUtils.withoutParens(expr) instanceof IdentifierTree id)) {
-      return false;
+      return null;
     }
-    Element element = TreeUtils.elementFromUse(id);
+    Element element = TreeUtils.elementFromTree(id);
     if (element == null
         || element.getKind() != ElementKind.PARAMETER
         || !ElementUtils.isEffectivelyFinal(element)) {
-      return false;
+      return null;
     }
     // Test membership in the parameter list rather than the enclosing element, because javac
     // gives a lambda's parameters the enclosing method as their enclosing element.  A lambda's
     // parameter is not checked at any call site.
     if (!isParameterOf(element, method)) {
-      return false;
+      return null;
     }
-    TypeMirror type = functionalInterfaceType(element.asType(), env);
-    return type != null;
+    return functionalInterfaceType(element.asType(), env);
   }
 
   /**
@@ -327,7 +343,7 @@ public final class PurityChecker {
     /** The annotation provider (typically an AnnotatedTypeFactory). */
     protected final AnnotationProvider annoProvider;
 
-    /** The method whose body is being checked, or null if a method body is not being checked. */
+    /** The method declaration that lexically encloses the checked statement, or null if none. */
     private final @Nullable MethodTree enclosingMethod;
 
     /** The processing environment; null if {@link #enclosingMethod} is null. */
@@ -362,7 +378,8 @@ public final class PurityChecker {
      * Create a PurityCheckerHelper.
      *
      * @param annoProvider the annotation provider
-     * @param enclosingMethod the method whose body is being checked, or null
+     * @param enclosingMethod the method declaration that lexically encloses the checked statement,
+     *     or null if none does
      * @param env the processing environment; used only if {@code enclosingMethod} is non-null
      * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
      * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
@@ -410,11 +427,10 @@ public final class PurityChecker {
         return false;
       }
       ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
-      if (!isFunctionalInterfaceParameter(receiver, enclosingMethod, env)) {
+      TypeMirror receiverType = functionalInterfaceParameterType(receiver, enclosingMethod, env);
+      if (receiverType == null) {
         return false;
       }
-      Element receiverElement = TreeUtils.elementFromUse(receiver);
-      TypeMirror receiverType = functionalInterfaceType(receiverElement.asType(), env);
       ExecutableElement functionalMethod = TypesUtils.findFunction(receiverType, env);
       // Only the functional method gets the assumption; a default method such as
       // `Function.andThen` does not.

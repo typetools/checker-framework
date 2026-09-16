@@ -1413,10 +1413,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * purity that the callee requires of it, because the callee's body is permitted to call it.
    *
    * <p>How the argument is checked depends on its form. The body of a lambda is checked directly. A
-   * method reference is checked against the declaration of the method it refers to. An effectively
-   * final functional-interface parameter of the enclosing method needs no check, since the caller
-   * of that method already performed one. Any other argument is checked against the functional
-   * method of its declared type.
+   * method reference is checked against the declaration of the method it refers to. Each result
+   * expression of a conditional or switch expression is checked on its own, because the type of
+   * such an expression is the parameter's type and says nothing about the code that any result
+   * expression denotes. An effectively final functional-interface parameter of the enclosing method
+   * needs no check, since the caller of that method already performed one. Any other argument is
+   * checked against the functional method of its declared type.
    *
    * <p>This check is skipped for a requirement that the parameter's own functional method already
    * makes, because {@link #checkLambdaPurity} and {@link
@@ -1493,6 +1495,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (!r.isPure(required)) {
         reportPurityErrors(r, required);
       }
+      return;
+    }
+
+    if (argument instanceof ConditionalExpressionTree conditional) {
+      checkFunctionalArgument(
+          conditional.getTrueExpression(), required, paramFunction, param, callee);
+      checkFunctionalArgument(
+          conditional.getFalseExpression(), required, paramFunction, param, callee);
+      return;
+    }
+
+    if (argument instanceof SwitchExpressionTree switchExpression) {
+      SwitchExpressionScanner<Void, Void> scanner =
+          new FunctionalSwitchExpressionScanner<>(
+              (ExpressionTree resultExpression, Void unused) -> {
+                checkFunctionalArgument(resultExpression, required, paramFunction, param, callee);
+                return null;
+              },
+              (r1, r2) -> null);
+      scanner.scanSwitchExpression(switchExpression, null);
       return;
     }
 
@@ -2563,9 +2585,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     checkArguments(params, passedArguments, constructorName, constructor.getParameters());
     checkVarargs(constructorType, tree);
-    // For an anonymous class, the arguments are passed to the super constructor; the anonymous
-    // class's own constructor is synthetic and carries no annotation.
-    checkFunctionalArguments(TreeUtils.getSuperConstructor(tree), passedArguments);
+    if (checkPurityAnnotations && !infer) {
+      // For an anonymous class, the arguments are passed to the super constructor; the anonymous
+      // class's own constructor is synthetic and carries no annotation.  Do not compute the super
+      // constructor unless it is needed:  for an anonymous class, doing so searches the class's
+      // synthetic constructor for the super call.
+      checkFunctionalArguments(TreeUtils.getSuperConstructor(tree), passedArguments);
+    }
 
     List<AnnotatedTypeParameterBounds> paramBounds =
         CollectionsP.mapList(AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
