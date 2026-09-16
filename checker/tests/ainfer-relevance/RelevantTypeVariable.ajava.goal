@@ -1,0 +1,25 @@
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+
+// A use of a type variable is relevant if the type variable's upper bound is relevant.  Inference
+// must not discard an annotation that it infers for such a use.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+public class RelevantTypeVariable<T extends CharSequence> {
+
+    @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 T field;
+
+    @org.checkerframework.dataflow.qual.Impure
+    void assignField(T t) {
+        // :: warning: [assignment]
+        field = t;
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    void useField() {
+        // :: warning: [argument]
+        expectsSibling1(field);
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    static <U extends CharSequence> void expectsSibling1(U u) {
+    }
+}

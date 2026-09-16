@@ -135,6 +135,7 @@ import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.JavaParserUtil;
+import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.typeinference8.InferenceResult;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -457,7 +458,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     Map<Tree, com.github.javaparser.ast.Node> treePairs = new HashMap<>();
     try (InputStream reader = root.getSourceFile().openInputStream()) {
-      CompilationUnit javaParserRoot = JavaParserUtil.parseCompilationUnit(reader);
+      CompilationUnit javaParserRoot = StaticJavaParserUtil.parseCompilationUnit(reader);
       JavaParserUtil.concatenateAddedStringLiterals(javaParserRoot);
       new JointVisitorWithDefaultAction() {
         @Override
@@ -503,7 +504,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     CompilationUnit originalAst;
     try (InputStream originalInputStream = root.getSourceFile().openInputStream()) {
-      originalAst = JavaParserUtil.parseCompilationUnit(originalInputStream);
+      originalAst = StaticJavaParserUtil.parseCompilationUnit(originalInputStream);
     } catch (IOException e) {
       throw new BugInCF("Error while reading Java file: " + root.getSourceFile().toUri(), e);
     }
@@ -523,7 +524,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     CompilationUnit modifiedAst = null;
     try {
-      modifiedAst = JavaParserUtil.parseCompilationUnit(withAnnotations);
+      modifiedAst = StaticJavaParserUtil.parseCompilationUnit(withAnnotations);
     } catch (ParseProblemException e) {
       throw new BugInCF("Failed to parse code after annotation insertion: " + withAnnotations, e);
     }
@@ -1189,7 +1190,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
     }
     if (!r.isPure(purityKinds)) {
-      reportPurityErrors(r, tree, purityKinds);
+      reportPurityErrors(r, purityKinds);
     }
 
     if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
@@ -1402,12 +1403,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Reports errors found during purity checking.
    *
-   * @param result true if the method is deterministic and/or side-effect-free
-   * @param tree the method
+   * @param result the result of the purity analysis
    * @param expectedKinds the expected purity for the method
    */
-  protected void reportPurityErrors(
-      PurityResult result, MethodTree tree, EnumSet<PurityKind> expectedKinds) {
+  protected void reportPurityErrors(PurityResult result, EnumSet<PurityKind> expectedKinds) {
     assert !result.isPure(expectedKinds);
     EnumSet<PurityKind> violations = EnumSet.copyOf(expectedKinds);
     violations.removeAll(result.getKinds());
@@ -2402,7 +2401,62 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // TODO: Postconditions?
     // https://github.com/typetools/checker-framework/issues/801
 
+    checkLambdaPurity(tree, functionType);
+
     return super.visitLambdaExpression(tree, p);
+  }
+
+  /**
+   * If the functional interface method that the given lambda implements is annotated
+   * {@code @SideEffectFree}, {@code @Deterministic}, or {@code @Pure}, checks the lambda's body
+   * against that annotation.
+   *
+   * <p>Under {@code -Ainfer}, reports no error, but instead infers the purity of the functional
+   * interface method from the lambda's body.
+   *
+   * <p>The analogous check for a method reference is {@link
+   * BaseTypeVisitor.OverrideChecker#checkPurity}.
+   *
+   * @param tree a lambda expression
+   * @param functionType the type of the functional interface method that {@code tree} implements
+   */
+  protected void checkLambdaPurity(
+      LambdaExpressionTree tree, AnnotatedExecutableType functionType) {
+    ExecutableElement functionalMethod = functionType.getElement();
+    EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, functionalMethod);
+    // Do not report errors while inferring.  The purity annotations on `functionalMethod` may
+    // have been written by inference, which has not yet taken this lambda into account; the
+    // code below does that.  The annotations are checked when the inference output is
+    // type-checked.
+    boolean needToCheck = checkPurityAnnotations && !infer && !purityKinds.isEmpty();
+    if (!needToCheck && !infer) {
+      // There is no work to do.
+      return;
+    }
+
+    TreePath body = new TreePath(getCurrentPath(), tree.getBody());
+    PurityResult r =
+        PurityChecker.checkPurity(
+            body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
+    if (needToCheck && !r.isPure(purityKinds)) {
+      reportPurityErrors(r, purityKinds);
+    }
+
+    if (infer) {
+      // A lambda implements the functional interface method, so it constrains that method's
+      // purity just as an overriding method does; see the treatment of overridden methods in
+      // `checkPurityAnnotations`.
+      EnumSet<PurityKind> lambdaKinds = r.getKinds().clone();
+      if (functionalMethod.getReturnType().getKind() == TypeKind.VOID) {
+        lambdaKinds.remove(PurityKind.DETERMINISTIC);
+      }
+      WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+      inferPurityAnno(lambdaKinds, wpi, functionalMethod);
+      for (ExecutableElement overriddenElt :
+          ElementUtils.getOverriddenMethods(functionalMethod, types)) {
+        inferPurityAnno(lambdaKinds, wpi, overriddenElt);
+      }
+    }
   }
 
   @Override
