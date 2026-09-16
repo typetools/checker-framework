@@ -462,7 +462,11 @@ public class WholeProgramInferenceJavaParserStorage
       // See the comment on the similar exception in #getParameterAnnotations, above.
       return false;
     }
-    return methodAnnos.removeDeclarationAnnotation(anno);
+    boolean wasRemoved = methodAnnos.removeDeclarationAnnotation(anno);
+    if (wasRemoved) {
+      setFileModified(getFileForElement(elt));
+    }
+    return wasRemoved;
   }
 
   @Override
