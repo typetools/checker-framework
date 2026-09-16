@@ -1055,6 +1055,12 @@ public class InferenceFactory {
       glb = glbATM.getUnderlyingType();
     }
     if (a.ignoreAnnotations != b.ignoreAnnotations) {
+      if (glbATM == aAtm || glbATM == bAtm) {
+        // `AnnotatedTypes#annotatedGLB` returned one of its arguments, whose annotated type may be
+        // stored in a hash set of bounds.  Replacing annotations in place would change that bound's
+        // hash code while it is in the set, so copy before mutating.
+        glbATM = glbATM.deepCopy();
+      }
       if (a.ignoreAnnotations) {
         glbATM.replaceAnnotations(bAtm.getPrimaryAnnotations());
       } else {
@@ -1199,11 +1205,14 @@ public class InferenceFactory {
             context.env.getTypeUtils());
     AnnotatedWildcardType wildcardAtm =
         (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wildcard, typeFactory, false);
+    // Copy the bounds' annotated types, because `setSuperBound` and `setExtendsBound` call
+    // `fixupBoundAnnotations`, which replaces annotations in the type that was just installed, and
+    // the argument types may be stored in a hash set of bounds, whose hash code would change.
     if (lowerBound != null) {
-      wildcardAtm.setSuperBound(lowerBound.getAnnotatedType());
+      wildcardAtm.setSuperBound(lowerBound.getAnnotatedType().deepCopy());
     }
     if (upperBound != null) {
-      wildcardAtm.setExtendsBound(upperBound.getAnnotatedType());
+      wildcardAtm.setExtendsBound(upperBound.getAnnotatedType().deepCopy());
     }
     return new ProperType(wildcardAtm, context);
   }
@@ -1235,13 +1244,17 @@ public class InferenceFactory {
     // Initialize bounds.
     typeVariable.getUpperBound();
     typeVariable.getLowerBound();
+    // Copy the bounds' annotated types, because this method mutates them in place (via
+    // `setLowerBound`/`setUpperBound`, which call `fixupBoundAnnotations`, and via
+    // `addDefaultAnnotations` and `capturedTypeVarSubstitutor.substitute` below), and the argument
+    // types may be stored in a hash set of bounds, whose hash code would change.
     if (lowerBound != null) {
-      typeVariable.setLowerBound(lowerBound.getAnnotatedType());
+      typeVariable.setLowerBound(lowerBound.getAnnotatedType().deepCopy());
     } else {
       typeVariable.getLowerBound().addAnnotations(lowerBoundAnnos);
     }
     if (upperBound != null) {
-      typeVariable.setUpperBound(upperBound.getAnnotatedType());
+      typeVariable.setUpperBound(upperBound.getAnnotatedType().deepCopy());
     } else {
       typeVariable.getUpperBound().addAnnotations(upperBoundAnnos);
     }
