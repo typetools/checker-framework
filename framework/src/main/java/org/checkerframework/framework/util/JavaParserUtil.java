@@ -75,7 +75,8 @@ public final class JavaParserUtil {
   /**
    * Returns the element for the given JavaParser type, whose name is resolved in the scope of the
    * type declarations and the compilation unit that contain it. Returns null if the name cannot be
-   * resolved, which happens for a type variable and for a type that is not on the classpath.
+   * resolved: it names a type variable, a local class, a member of a local or anonymous class, or a
+   * type that is not on the classpath.
    *
    * <p>Resolving one name looks up many candidate names, most of which name no type, so a client
    * that resolves many names should pass the same cache to each call. A cache should not be reused
@@ -110,8 +111,9 @@ public final class JavaParserUtil {
     // `java.lang`, and over the interpretation of `name` as a fully-qualified name.
     //
     // `child` is the child of `ancestor` that contains `type`.  It distinguishes a use of `name`
-    // within a class body, where the class's member types are in scope, from a use in the class's
-    // own supertype names, where they are not.
+    // within a class body, where the class's member types are in scope, from a use elsewhere in
+    // the class declaration -- in its annotations, its type parameter section, or its supertype
+    // names -- where they are not.
     Node child = type;
     for (Node ancestor = type.getParentNode().orElse(null);
         ancestor != null;
@@ -133,8 +135,10 @@ public final class JavaParserUtil {
       }
 
       if (ancestor instanceof EnumConstantDeclaration enumConstant
+          && containsSame(enumConstant.getClassBody(), child)
           && declaresMemberType(enumConstant.getClassBody(), firstComponent)) {
-        // The body of an enum constant declares an anonymous class.  A member type of an
+        // The body of an enum constant declares an anonymous class, whose member types are in
+        // scope only in that body and not in the constant's arguments.  A member type of an
         // anonymous class has no name that `Elements` can look up.  (There is no need to search
         // the anonymous class's supertype, which is the enum:  the enum declaration is an
         // ancestor, so a later iteration of this loop searches it.)
@@ -149,17 +153,21 @@ public final class JavaParserUtil {
       List<ClassOrInterfaceType> unnameableSupertypes = null;
       if (ancestor instanceof ObjectCreationExpr creation) {
         List<? extends Node> body = creation.getAnonymousClassBody().orElse(null);
-        List<ClassOrInterfaceType> supertypes = Collections.singletonList(creation.getType());
-        // If `child` is the supertype name, then `type` is not in the anonymous class's body, and
-        // testing `child` also prevents infinite recursion on the recursive call below.
-        if (body != null && !containsSame(supertypes, child)) {
+        // The anonymous class's member types are in scope only in its body, and not in the
+        // creation expression's scope, type arguments, supertype name, or arguments.  Testing
+        // `child` also prevents infinite recursion on the recursive call below.
+        if (body != null && containsSame(body, child)) {
           if (declaresMemberType(body, firstComponent)) {
             // A member type of an anonymous class has no name that `Elements` can look up.
             return null;
           }
-          unnameableSupertypes = supertypes;
+          unnameableSupertypes = Collections.singletonList(creation.getType());
         }
-      } else if (ancestor instanceof TypeDeclaration<?> enclosingType) {
+      } else if (ancestor instanceof TypeDeclaration<?> enclosingType
+          // The class's member types, declared and inherited, are in scope only in its body, and
+          // not in its annotations, its type parameter section, or its supertype names.  Testing
+          // `child` also prevents infinite recursion on the recursive call below.
+          && containsSame(scopeOfMemberTypes(enclosingType), child)) {
         String enclosingName = nameableFullyQualifiedName(enclosingType);
         if (enclosingName != null) {
           TypeElement result = getTypeElement(elements, enclosingName + "." + name, cache);
@@ -175,16 +183,11 @@ public final class JavaParserUtil {
             }
           }
         } else {
-          List<ClassOrInterfaceType> supertypes = supertypes(enclosingType);
-          // If `child` is one of the supertype names, then `type` is not in the class's body, and
-          // testing `child` also prevents infinite recursion on the recursive call below.
-          if (!containsSame(supertypes, child)) {
-            if (declaresMemberType(enclosingType.getMembers(), firstComponent)) {
-              // A member type of an unnameable class has no name that `Elements` can look up.
-              return null;
-            }
-            unnameableSupertypes = supertypes;
+          if (declaresMemberType(enclosingType.getMembers(), firstComponent)) {
+            // A member type of an unnameable class has no name that `Elements` can look up.
+            return null;
           }
+          unnameableSupertypes = supertypes(enclosingType);
         }
       }
       if (unnameableSupertypes != null) {
@@ -372,12 +375,15 @@ public final class JavaParserUtil {
   }
 
   /**
-   * Returns the supertypes that the given type declaration names: its {@code extends} clause and
-   * its {@code implements} clause. The result does not include an implicit supertype such as {@code
-   * java.lang.Object}, none of which declares a member type.
+   * Returns the supertypes of the given type declaration from which it can inherit a member type:
+   * those that its {@code extends} clause and its {@code implements} clause name, plus the implicit
+   * superclass {@code java.lang.Enum} of an enum, which declares the member type {@code
+   * Enum.EnumDesc}. The result does not include the other implicit supertypes -- {@code
+   * java.lang.Object}, {@code java.lang.Record}, and {@code java.lang.annotation.Annotation} --
+   * none of which declares a member type.
    *
    * @param typeDecl a JavaParser type declaration
-   * @return the supertypes that {@code typeDecl} names
+   * @return the supertypes of {@code typeDecl} that might declare a member type
    */
   private static List<ClassOrInterfaceType> supertypes(TypeDeclaration<?> typeDecl) {
     if (typeDecl instanceof ClassOrInterfaceDeclaration classDecl) {
@@ -386,13 +392,53 @@ public final class JavaParserUtil {
       return result;
     }
     if (typeDecl instanceof EnumDeclaration enumDecl) {
-      return enumDecl.getImplementedTypes();
+      // Copy the list rather than side-effecting the AST by adding to it.
+      List<ClassOrInterfaceType> result = new ArrayList<>(enumDecl.getImplementedTypes());
+      result.add(javaLangEnum());
+      return result;
     }
     if (typeDecl instanceof RecordDeclaration recordDecl) {
       return recordDecl.getImplementedTypes();
     }
     // An annotation declaration's only supertype is `java.lang.annotation.Annotation`.
     return Collections.emptyList();
+  }
+
+  /**
+   * Returns a new JavaParser type that names {@code java.lang.Enum}, the implicit superclass of
+   * every enum. The result is not part of any AST, so {@link #resolveTypeName} resolves its name as
+   * a fully-qualified name.
+   *
+   * @return a JavaParser type that names {@code java.lang.Enum}
+   */
+  private static ClassOrInterfaceType javaLangEnum() {
+    return new ClassOrInterfaceType(
+        new ClassOrInterfaceType(new ClassOrInterfaceType(null, "java"), "lang"), "Enum");
+  }
+
+  /**
+   * Returns the children of the given type declaration in which its member types are in scope: its
+   * body declarations, an enum's constants, and a record's components. The result does not include
+   * a child in which they are not in scope: an annotation on the declaration, a type parameter, or
+   * a supertype name.
+   *
+   * @param typeDecl a JavaParser type declaration
+   * @return the children of {@code typeDecl} in which its member types are in scope
+   */
+  private static List<? extends Node> scopeOfMemberTypes(TypeDeclaration<?> typeDecl) {
+    if (typeDecl instanceof EnumDeclaration enumDecl) {
+      // A member type is in scope in a constant's arguments and in its class body.
+      List<Node> result = new ArrayList<>(enumDecl.getMembers());
+      result.addAll(enumDecl.getEntries());
+      return result;
+    }
+    if (typeDecl instanceof RecordDeclaration recordDecl) {
+      // A member type is in scope in the type of a record component.
+      List<Node> result = new ArrayList<>(recordDecl.getMembers());
+      result.addAll(recordDecl.getParameters());
+      return result;
+    }
+    return typeDecl.getMembers();
   }
 
   /**
