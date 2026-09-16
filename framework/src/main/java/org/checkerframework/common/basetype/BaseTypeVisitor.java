@@ -1578,6 +1578,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (type.getKind() == TypeKind.TYPEVAR) {
       type = TypesUtils.upperBound(type);
     }
+    if (type.getKind() != TypeKind.DECLARED && type.getKind() != TypeKind.INTERSECTION) {
+      // Only a class or interface type declares methods.  The null type, which is the type of
+      // the null literal, has an element whose members cannot be queried.
+      return null;
+    }
     TypeElement typeElement = TypesUtils.getTypeElement(type);
     if (typeElement == null) {
       return null;

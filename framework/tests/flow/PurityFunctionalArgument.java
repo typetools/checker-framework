@@ -3,6 +3,7 @@
 //
 //  * a lambda:  its body must be side-effect-free;
 //  * a method reference:  the referenced method must be @SideEffectFree;
+//  * a conditional or switch expression:  each of its result expressions is checked on its own;
 //  * a functional-interface parameter of an enclosing @SideEffectFree method:  the caller of that
 //    method has already discharged the obligation;
 //  * anything else:  checked against the functional method of the argument's declared type.
@@ -147,6 +148,19 @@ public class PurityFunctionalArgument {
     callee((this::impureLength), s);
     // :: error: [purity.functional.argument]
     callee(b ? (this::pureLength) : (this::impureLength), s);
+  }
+
+  // The null literal denotes no code, so there is nothing to check.
+
+  void nullArguments(boolean b, int i, String s) {
+    callee(null, s);
+    callee(b ? null : this::pureLength, s);
+    callee(
+        switch (i) {
+          case 1 -> null;
+          default -> this::pureLength;
+        },
+        s);
   }
 
   // Any other argument is checked against the functional method of its declared type.
