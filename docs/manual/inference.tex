@@ -105,14 +105,20 @@ uses in the program.  For example, the inferred type for a field is the
 least upper bound of the types of all the expressions that are assigned
 into the field.
 
-There are three scripts that you can use to run whole-program inference.
+There are four scripts that you can use to run whole-program inference.
 Each has advantages and disadvantages, discussed below:
 
 \begin{itemize}
     \item
+    To run whole-program inference on a single project without modifying its
+    source code, use the \<wpi2.sh> script (Section~\ref{wpi-two}). This script
+    requires you to make a few changes to your buildfile.
+
+    \item
     To run whole-program inference on a single project without modifying its source code,
     use the \<wpi.sh> script (Section~\ref{wpi-one}). This script can automatically understand
     many Ant, Maven, and Gradle build files, so it requires little manual configuration.
+    However, it is based on a no-longer-maintained project, \<dljc>, so it is not guaranteed to work.
 
     \item
     To run whole-program inference on many projects without modifying their source code
@@ -126,11 +132,77 @@ Each has advantages and disadvantages, discussed below:
 
 These type inference scripts appear in the \<checker/bin/> directory.
 The remainder of this chapter describes them
-(Sections~\ref{wpi-one}--\ref{wpi-insert}), then concludes with discussion
+(Sections~\ref{wpi-two}--\ref{wpi-insert}), then concludes with discussion
 that applies to all of them.
 
 
-\sectionAndLabel{Running whole-program inference on a single project}{wpi-one}
+\sectionAndLabel{Running whole-program inference on a single project, with buildfile editing}{wpi-two}
+
+You need to edit your buildfile, then run the \<wpi2.sh> script.
+
+
+\subsectionAndLabel{Editing your buildfile}{wpi-two-buildfile}
+
+First, set up your buildfile to run the Checker Framework.
+
+Then, add the
+\<-Aajava>,
+\<-Ainfer>,
+\<-AinferOutputDirectory>, and
+\<-Awarns> command-line arguments.
+
+Also remove or comment out \<-Werror>, because the
+\<wpi2.sh> script will halt if the Checker Framework fails, including when it
+issues an error.
+
+Here is a Gradle example:
+
+\begin{Verbatim}
+checkerFramework {
+  extraJavacArgs = [
+    "-Ainfer=ajava",
+    "-AinferOutputOriginal", // optional
+    "-AinferOutputDirectory=" + project.rootDir + "/build/whole-program-inference",
+    "-Aajava=" + project.rootDir + "/whole-program-inference-output",
+    "-Awarns",
+    // "-Werror", // remove or comment out any occurrence of "-Werror".
+    ...
+  ]
+  ...
+}
+\end{Verbatim}
+
+The two directories must be absolute paths, because the build system might
+run the compiler in a different directory than the one in which you run
+\<wpi2.sh>.  They must also be the same for every subproject of a
+multi-project build, because \<wpi2.sh> manages a single pair of
+directories:  \<build/whole-program-inference> and
+\<whole-program-inference-output>, both relative to the directory in which
+you run \<wpi2.sh>.  That is why the example uses \<project.rootDir> rather
+than \<project.projectDir>; the two are the same in a single-project build,
+but only \<project.rootDir> is the same in every subproject of a
+multi-project build.
+
+
+\subsectionAndLabel{Running \<wpi2.sh>}{wpi-two-command}
+
+Second, run \<wpi2.sh>.  Its argument is the command that runs the Checker Framework.
+Here is a typical invocation:
+
+\begin{Verbatim}
+  $CHECKERFRAMEWORK/checker/bin/wpi2.sh ./gradlew clean assemble
+\end{Verbatim}
+
+The \<clean> task is needed because \<wpi2.sh> runs the Checker Framework
+repeatedly, and Gradle does nothing if the old (but still up-to-date)
+compilation output is present.
+
+The output of \<wpi2.sh> is a top-level directory
+\<whole-program-inference-output> that contains \<.ajava> files for each file of
+your project.
+
+
+\sectionAndLabel{Running whole-program inference on a single project, without buildfile editing}{wpi-one}
 
 A typical invocation of \<wpi.sh> is
 
