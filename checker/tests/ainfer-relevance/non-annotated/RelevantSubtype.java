@@ -10,6 +10,9 @@ public class RelevantSubtype implements CharSequence {
     return 0;
   }
 
+  // `char` is irrelevant to this checker:  it is not listed in `@RelevantJavaTypes`, and it is not
+  // related to a listed type by subtyping.  Inference must not write an annotation on this return
+  // type.
   @Override
   public char charAt(int index) {
     return 'a';
