@@ -442,6 +442,16 @@ public final class Resolution {
       asList.add(ai);
       Set<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
       ProperType lowerBound = context.inferenceTypeFactory.lub(lowerBounds);
+      if (lowerBound != null) {
+        // The annotated type is mutated below and by `createFreshTypeVariable`, but `lub` may
+        // return a type that shares its AnnotatedTypeMirror with one of `lowerBounds`, which is
+        // still stored in a hash set of bounds.  Replacing annotations in place would change that
+        // bound's hash code while it is in the set, so copy before mutating.
+        lowerBound =
+            (ProperType)
+                lowerBound.create(
+                    lowerBound.getAnnotatedType().deepCopy(), lowerBound.ignoreAnnotations);
+      }
 
       Set<? extends AnnotationMirror> lowerBoundAnnos;
       Set<AbstractQualifier> qualifierLowerBounds =
@@ -450,11 +460,6 @@ public final class Resolution {
         QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
         lowerBoundAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
         if (lowerBound != null) {
-          // See the comment in `resolveWithLowerBounds` about copying before mutating.
-          lowerBound =
-              (ProperType)
-                  lowerBound.create(
-                      lowerBound.getAnnotatedType().deepCopy(), lowerBound.ignoreAnnotations);
           if (lowerBound.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
             Set<? extends AnnotationMirror> newLubAnnos =
                 qh.leastUpperBoundsQualifiersOnly(
@@ -476,17 +481,19 @@ public final class Resolution {
 
       Set<AbstractType> upperBounds = ai.getBounds().upperBounds();
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
+      if (upperBound != null) {
+        // `glb` returns its argument when `upperBounds` is a singleton, and that type is still
+        // stored in `ai`'s set of upper bounds.  See the comment about `lowerBound` above.
+        upperBound =
+            upperBound.create(
+                upperBound.getAnnotatedType().deepCopy(), upperBound.ignoreAnnotations);
+      }
       Set<? extends AnnotationMirror> upperBoundAnnos;
       Set<AbstractQualifier> qualifierUpperBounds =
           ai.getBounds().qualifierBounds.get(BoundKind.UPPER);
       if (!qualifierUpperBounds.isEmpty()) {
         upperBoundAnnos = AbstractQualifier.glb(qualifierUpperBounds, context);
         if (upperBound != null) {
-          // `glb` returns its argument when `upperBounds` is a singleton, and that type is still
-          // stored in `ai`'s set of upper bounds.  See the comment in `resolveWithLowerBounds`.
-          upperBound =
-              upperBound.create(
-                  upperBound.getAnnotatedType().deepCopy(), upperBound.ignoreAnnotations);
           upperBoundAnnos =
               context
                   .typeFactory
