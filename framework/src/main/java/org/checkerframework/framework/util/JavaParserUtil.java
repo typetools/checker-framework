@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
@@ -76,14 +77,16 @@ public final class JavaParserUtil {
     }
 
     // A type parameter, or a type that is lexically enclosed in a type declaration, takes
-    // precedence over an import, over a type in the same package, and over a type in `java.lang`.
+    // precedence over an import, over a type in the same package, over a type in `java.lang`, and
+    // over the interpretation of `name` as a fully-qualified name.
     for (Node ancestor = type.getParentNode().orElse(null);
         ancestor != null;
         ancestor = ancestor.getParentNode().orElse(null)) {
-      if (ancestor instanceof NodeWithTypeParameters<?> generic) {
-        for (TypeParameter typeParameter : generic.getTypeParameters()) {
+      if (ancestor instanceof NodeWithTypeParameters<?> genericDeclaration) {
+        for (TypeParameter typeParameter : genericDeclaration.getTypeParameters()) {
           if (typeParameter.getNameAsString().equals(firstComponent)) {
-            // `name` is a type variable, or is nested within one.
+            // `name` names a type parameter, or is nested within one.  A type parameter shadows
+            // any type of the same name, and it has no TypeElement.
             return null;
           }
         }
@@ -125,9 +128,9 @@ public final class JavaParserUtil {
         if (result != null) {
           return result;
         }
-        // When `importedName` equals `firstComponent`, the import has no qualifier, so it names
-        // no container to search.  (JavaParser accepts such an import even though javac does not.)
-        if (importDecl.isStatic() && importedName.length() > firstComponent.length()) {
+        // If `importedName` equals `firstComponent`, the import has no qualifier, so it names no
+        // container to search.  (JavaParser accepts such an import even though javac does not.)
+        if (importDecl.isStatic() && !importedName.equals(firstComponent)) {
           // A static import can name a member type that the named type inherits.  (A static
           // import that names a field or a method resolves to no type element at all.)
           String containerName =
@@ -144,7 +147,8 @@ public final class JavaParserUtil {
     }
 
     // The type might be in the same package, in a package or type that is imported on demand, or
-    // in `java.lang`.  A name in the unnamed package has no prefix.
+    // in `java.lang`.  A type in the same package shadows the others, so it is looked up first.  A
+    // name in the unnamed package has no prefix.
     List<String> containerPrefixes = new ArrayList<>();
     containerPrefixes.add(
         cu.getPackageDeclaration().map(pkg -> pkg.getNameAsString() + ".").orElse(""));
@@ -176,6 +180,8 @@ public final class JavaParserUtil {
     }
 
     // The name might be fully-qualified, or might be a top-level type in the unnamed package.
+    // This lookup is last, because a type that is in scope shadows a type whose fully-qualified
+    // name is `name`.
     return elements.getTypeElement(name);
   }
 
@@ -184,7 +190,9 @@ public final class JavaParserUtil {
    * typeElement} declares or inherits, or null if there is no such member type.
    *
    * <p>{@code typeElement} and its supertypes are searched in breadth-first order, so a member type
-   * that is declared in a nearer supertype hides one that is declared in a farther supertype.
+   * that is declared in a nearer supertype hides one that is declared in a farther supertype. A
+   * member type that {@code typeElement} does not inherit, because the member type is private or is
+   * package-private in another package, is skipped.
    *
    * @param elements used for looking up names
    * @param typeElement the type whose member types to search
@@ -195,6 +203,7 @@ public final class JavaParserUtil {
    */
   private static @Nullable TypeElement resolveMemberType(
       Elements elements, TypeElement typeElement, String firstComponent, String suffix) {
+    PackageElement referencePackage = elements.getPackageOf(typeElement);
     Set<TypeElement> visited = new HashSet<>();
     visited.add(typeElement);
     Deque<TypeElement> worklist = new ArrayDeque<>();
@@ -202,9 +211,8 @@ public final class JavaParserUtil {
     while (!worklist.isEmpty()) {
       TypeElement current = worklist.remove();
       for (TypeElement member : ElementFilter.typesIn(current.getEnclosedElements())) {
-        // A private member type is not inherited.
         if (member.getSimpleName().contentEquals(firstComponent)
-            && !member.getModifiers().contains(Modifier.PRIVATE)) {
+            && isInheritedInPackage(elements, member, referencePackage)) {
           if (suffix.isEmpty()) {
             return member;
           }
@@ -220,6 +228,28 @@ public final class JavaParserUtil {
       }
     }
     return null;
+  }
+
+  /**
+   * Returns true if a subtype that is declared in {@code referencePackage} inherits the given
+   * member type. A private member type is never inherited, and a package-private member type is
+   * inherited only within the package that declares it.
+   *
+   * @param elements used for looking up names
+   * @param member a member type
+   * @param referencePackage the package of the type through which {@code member} is named
+   * @return true if a subtype in {@code referencePackage} inherits {@code member}
+   */
+  private static boolean isInheritedInPackage(
+      Elements elements, TypeElement member, PackageElement referencePackage) {
+    Set<Modifier> modifiers = member.getModifiers();
+    if (modifiers.contains(Modifier.PRIVATE)) {
+      return false;
+    }
+    if (modifiers.contains(Modifier.PUBLIC) || modifiers.contains(Modifier.PROTECTED)) {
+      return true;
+    }
+    return referencePackage.equals(elements.getPackageOf(member));
   }
 
   /**
