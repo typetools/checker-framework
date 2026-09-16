@@ -136,6 +136,15 @@ public class WholeProgramInferenceJavaParserStorage
   protected final Elements elements;
 
   /**
+   * Memoizes the name lookups that {@link JavaParserUtil#resolveTypeName} performs while writing
+   * ajava files. Resolving one name looks up many candidate names, most of which name no type, and
+   * the same names are looked up for every annotation in every ajava file. {@link
+   * #writeResultsToFile} clears this before writing, because a name that names no type in one
+   * annotation processing round might name a generated type in a later round.
+   */
+  private final Map<String, @Nullable TypeElement> typeElementCache = new HashMap<>();
+
+  /**
    * Maps from binary class name to the wrapper containing the class. Contains all classes in Java
    * source files containing an Element for which an annotation has been inferred.
    */
@@ -1031,6 +1040,8 @@ public class WholeProgramInferenceJavaParserStorage
 
     setSupertypesAndSubtypesModified();
 
+    typeElementCache.clear();
+
     for (String path : modifiedFiles) {
       // This calls deepCopy() because wpiPrepareCompilationUnitForWriting performs side
       // effects on the inference results that we don't want to be persistent.  The JavaParser
@@ -1139,6 +1150,14 @@ public class WholeProgramInferenceJavaParserStorage
     // a formal parameter.  Such an annotation is treated as a type qualifier on the declaration's
     // element type -- except when the declaration's type is `void`, on which no type qualifier can
     // be written, so the annotation is certainly a declaration annotation.
+    //
+    // Only two of the cases below can arise from the annotations that inference writes:  the
+    // `Type` case and the varargs part of the `Parameter` case.  `transferAnnotations` first
+    // removes every annotation from the AST, then adds only `@AnnotatedFor` (which is not a
+    // supported qualifier), declaration annotations that `writeDeclarationAnnotation` marks, type
+    // qualifiers on `Type` nodes, and varargs annotations.  The other cases are defensive:  they
+    // are not exercised by the test suite, but they keep this method correct for any other
+    // annotation that might appear in the AST.
 
     if (parentNode instanceof Type type) {
       return typeIsRelevant(gatf, type);
@@ -1165,8 +1184,9 @@ public class WholeProgramInferenceJavaParserStorage
     if (parentNode instanceof MethodDeclaration method) {
       if (method.getType() instanceof VoidType) {
         // No type qualifier can be written on `void`, so the annotation is a declaration
-        // annotation that is also a type qualifier, as `addMethodDeclarationAnnotation` can
-        // create.  Be conservative.
+        // annotation that is also a type qualifier -- of the sort that
+        // `addMethodDeclarationAnnotation` creates, though such an annotation is marked and is
+        // handled above.  Be conservative.
         return true;
       }
       return typeIsRelevant(gatf, innermostComponentType(method.getType()));
@@ -1273,7 +1293,7 @@ public class WholeProgramInferenceJavaParserStorage
       return types.getNoType(TypeKind.VOID);
     }
     if (type instanceof ClassOrInterfaceType classType) {
-      TypeElement typeElt = JavaParserUtil.resolveTypeName(elements, classType);
+      TypeElement typeElt = JavaParserUtil.resolveTypeName(elements, classType, typeElementCache);
       return typeElt == null ? null : typeElt.asType();
     }
     // An intersection type, a union type, `var`, a wildcard, a type parameter declaration, etc.
