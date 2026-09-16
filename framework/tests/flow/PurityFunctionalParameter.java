@@ -110,6 +110,19 @@ public class PurityFunctionalParameter {
     return f.apply(s);
   }
 
+  // A lambda's body may call a functional-interface parameter of the enclosing method, which
+  // holds a value that the caller of that method was required to check, whenever the lambda runs.
+
+  @SideEffectFree
+  PureFunc lambdaCallsParameter(Function<String, Integer> f) {
+    return () -> "" + f.apply("x");
+  }
+
+  PureFunc unannotatedMethodsLambdaCallsParameter(Function<String, Integer> f) {
+    // :: error: [purity.not.sideeffectfree.call]
+    return () -> "" + f.apply("x");
+  }
+
   /** An unannotated method promises nothing, so nothing in its body is checked. */
   int unannotatedEnclosingMethod(Function<String, Integer> f, String s) {
     count++;

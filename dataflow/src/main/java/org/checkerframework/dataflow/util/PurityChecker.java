@@ -14,6 +14,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
@@ -145,12 +146,33 @@ public final class PurityChecker {
     Element element = TreeUtils.elementFromUse(id);
     if (element == null
         || element.getKind() != ElementKind.PARAMETER
-        || element.getEnclosingElement() != TreeUtils.elementFromDeclaration(method)
         || !ElementUtils.isEffectivelyFinal(element)) {
+      return false;
+    }
+    // Test membership in the parameter list rather than the enclosing element, because javac
+    // gives a lambda's parameters the enclosing method as their enclosing element.  A lambda's
+    // parameter is not checked at any call site.
+    if (!isParameterOf(element, method)) {
       return false;
     }
     TypeMirror type = functionalInterfaceType(element.asType(), env);
     return type != null;
+  }
+
+  /**
+   * Returns true if {@code element} is one of {@code method}'s formal parameters.
+   *
+   * @param element an element
+   * @param method a method or constructor declaration
+   * @return true if {@code element} is a formal parameter of {@code method}
+   */
+  private static boolean isParameterOf(Element element, MethodTree method) {
+    for (VariableTree parameter : method.getParameters()) {
+      if (TreeUtils.elementFromDeclaration(parameter) == element) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

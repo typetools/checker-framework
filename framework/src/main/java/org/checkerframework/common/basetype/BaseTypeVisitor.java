@@ -76,6 +76,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
@@ -1443,13 +1444,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (paramType == null) {
         continue;
       }
+      ExecutableElement paramFunction = TypesUtils.findFunction(paramType, env);
       EnumSet<PurityKind> required = EnumSet.copyOf(calleeKinds);
-      required.removeAll(
-          PurityUtils.getPurityKinds(atypeFactory, TypesUtils.findFunction(paramType, env)));
+      required.removeAll(PurityUtils.getPurityKinds(atypeFactory, paramFunction));
+      if (paramFunction.getReturnType().getKind() == TypeKind.VOID) {
+        // A functional method that returns no value is deterministic, whatever implements it.
+        required.remove(PurityKind.DETERMINISTIC);
+      }
       if (required.isEmpty()) {
         continue;
       }
-      checkFunctionalArgument(args.get(i), required, params.get(i), callee);
+      checkFunctionalArgument(args.get(i), required, paramFunction, params.get(i), callee);
     }
   }
 
@@ -1458,12 +1463,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param arg the argument
    * @param required the purity that the argument's functional method must have
+   * @param paramFunction the functional method of the parameter's type
    * @param param the parameter that {@code arg} is passed to
    * @param callee the invoked method or constructor
    */
   protected void checkFunctionalArgument(
       ExpressionTree arg,
       EnumSet<PurityKind> required,
+      ExecutableElement paramFunction,
       VariableElement param,
       ExecutableElement callee) {
     ProcessingEnvironment env = atypeFactory.getProcessingEnv();
@@ -1475,8 +1482,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           PurityChecker.checkPurity(
               new TreePath(lambdaPath, lambda.getBody()),
               atypeFactory,
-              null,
-              null,
+              // The body may call the enclosing method's functional-interface parameters: they
+              // hold values that the caller of that method was required to check, whenever the
+              // lambda runs.
+              TreePathUtil.enclosingMethod(getCurrentPath()),
+              env,
               assumeSideEffectFree,
               assumeDeterministic,
               assumePureGetters);
@@ -1487,16 +1497,24 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     EnumSet<PurityKind> argKinds;
-    if (argument instanceof MemberReferenceTree) {
-      argKinds = implementationPurityKinds((ExecutableElement) TreeUtils.elementFromUse(argument));
+    if (argument instanceof MemberReferenceTree memberReference) {
+      if (isArrayConstructorReference(memberReference)) {
+        // Creating an array modifies nothing that exists before the call.  It is not
+        // deterministic, like any object creation.
+        argKinds = EnumSet.of(PurityKind.SIDE_EFFECT_FREE);
+      } else {
+        argKinds =
+            implementationPurityKinds((ExecutableElement) TreeUtils.elementFromUse(argument));
+      }
     } else {
-      TypeMirror argType = PurityChecker.functionalInterfaceType(TreeUtils.typeOf(argument), env);
-      if (argType == null) {
-        // The argument is the null literal, or its type is not a functional interface (which
-        // javac has already reported).  There is no functional method to check.
+      ExecutableElement argFunction =
+          functionalMethodOf(TreeUtils.typeOf(argument), paramFunction, env);
+      if (argFunction == null) {
+        // The argument is the null literal, or its type does not implement the parameter's
+        // functional method (which javac has already reported).  There is nothing to check.
         return;
       }
-      argKinds = implementationPurityKinds(TypesUtils.findFunction(argType, env));
+      argKinds = implementationPurityKinds(argFunction);
       MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
       if (PurityChecker.isFunctionalInterfaceParameter(argument, enclosingMethod, env)) {
         argKinds.addAll(
@@ -1514,6 +1532,52 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           purityKindsToString(argKinds),
           purityKindsToString(required));
     }
+  }
+
+  /**
+   * Returns the method that {@code type} supplies for the functional method {@code paramFunction},
+   * or null if it has none.
+   *
+   * <p>This is {@code paramFunction} itself when {@code type} is the functional interface, but an
+   * argument may also be of a class type, including an anonymous class, that implements the
+   * interface. The implementation is what will run, so its annotations are what matter.
+   *
+   * @param type the type of an argument
+   * @param paramFunction the functional method of the parameter's type
+   * @param env the processing environment
+   * @return the method of {@code type} that implements {@code paramFunction}, or null
+   */
+  private @Nullable ExecutableElement functionalMethodOf(
+      TypeMirror type, ExecutableElement paramFunction, ProcessingEnvironment env) {
+    TypeMirror functionalType = PurityChecker.functionalInterfaceType(type, env);
+    if (functionalType != null) {
+      return TypesUtils.findFunction(functionalType, env);
+    }
+    if (type.getKind() == TypeKind.TYPEVAR) {
+      type = TypesUtils.upperBound(type);
+    }
+    TypeElement typeElement = TypesUtils.getTypeElement(type);
+    if (typeElement == null) {
+      return null;
+    }
+    Elements elements = env.getElementUtils();
+    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(typeElement))) {
+      if (method.equals(paramFunction) || elements.overrides(method, paramFunction, typeElement)) {
+        return method;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns true if the given method reference creates an array, as in {@code String[]::new}.
+   *
+   * @param tree a method reference
+   * @return true if {@code tree} refers to an array constructor
+   */
+  private static boolean isArrayConstructorReference(MemberReferenceTree tree) {
+    return tree.getMode() == MemberReferenceTree.ReferenceMode.NEW
+        && TreeUtils.withoutParens(tree.getQualifierExpression()) instanceof ArrayTypeTree;
   }
 
   /**
@@ -2499,7 +2563,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     checkArguments(params, passedArguments, constructorName, constructor.getParameters());
     checkVarargs(constructorType, tree);
-    checkFunctionalArguments(constructor, passedArguments);
+    // For an anonymous class, the arguments are passed to the super constructor; the anonymous
+    // class's own constructor is synthetic and carries no annotation.
+    checkFunctionalArguments(TreeUtils.getSuperConstructor(tree), passedArguments);
 
     List<AnnotatedTypeParameterBounds> paramBounds =
         CollectionsP.mapList(AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
@@ -2594,10 +2660,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         PurityChecker.checkPurity(
             body,
             atypeFactory,
-            // A lambda body is constrained by the functional method that the lambda implements,
-            // not by the method that contains the lambda.
-            null,
-            null,
+            // The functional method that the lambda implements constrains the body, but the
+            // enclosing method's functional-interface parameters still hold values that its
+            // caller was required to check, whenever the lambda runs.
+            TreePathUtil.enclosingMethod(getCurrentPath()),
+            atypeFactory.getProcessingEnv(),
             assumeSideEffectFree,
             assumeDeterministic,
             assumePureGetters);

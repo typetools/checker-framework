@@ -31,6 +31,13 @@ public class PurityFunctionalConstructor {
     new UnannotatedHolder(t -> count++);
   }
 
+  /** An anonymous class's arguments are passed to the super constructor. */
+  void anonymousSubclass() {
+    new Holder(t -> t.length()) {};
+    // :: error: [purity.not.sideeffectfree.assign.field]
+    new Holder(t -> count++) {};
+  }
+
   /** A functional-interface parameter may be passed onward to a constructor. */
   @SideEffectFree
   Holder passesParameterToConstructor(Function<String, Integer> f) {

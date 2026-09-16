@@ -11,7 +11,9 @@
 // one under test.  The callees do not call their parameters; that is tested in
 // PurityFunctionalParameter.java.
 
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 public class PurityFunctionalArgument {
@@ -124,6 +126,89 @@ public class PurityFunctionalArgument {
 
   void ordinaryArguments(String s) {
     ordinaryParameters(s, count);
+  }
+
+  // An argument whose type is a class that implements the functional interface is checked against
+  // the class's implementation of the functional method, which is the code that will run.
+
+  static class ImpureFunction implements Function<String, Integer> {
+    int n = 0;
+
+    @Override
+    public Integer apply(String s) {
+      return n++;
+    }
+  }
+
+  static class SideEffectFreeFunction implements Function<String, Integer> {
+    @Override
+    @SideEffectFree
+    public Integer apply(String s) {
+      return s.length();
+    }
+  }
+
+  void classTypedArguments(ImpureFunction impure, SideEffectFreeFunction pure, String s) {
+    // :: error: [purity.functional.argument]
+    callee(impure, s);
+    callee(pure, s);
+  }
+
+  void anonymousClassArguments(String s) {
+    callee(
+        // :: error: [purity.functional.argument]
+        new Function<String, Integer>() {
+          @Override
+          public Integer apply(String t) {
+            return count++;
+          }
+        },
+        s);
+    callee(
+        new Function<String, Integer>() {
+          @Override
+          @SideEffectFree
+          public Integer apply(String t) {
+            return t.length();
+          }
+        },
+        s);
+  }
+
+  // A lambda's body may call a functional-interface parameter of the enclosing method, which holds
+  // a value that the caller of that method was required to check, whenever the lambda runs.
+
+  @SideEffectFree
+  int lambdaCallsEnclosingParameter(Function<String, Integer> f, String s) {
+    return callee(t -> f.apply(t), s);
+  }
+
+  int unannotatedMethodsLambdaCallsParameter(Function<String, Integer> f, String s) {
+    // :: error: [purity.not.sideeffectfree.call]
+    return callee(t -> f.apply(t), s);
+  }
+
+  /** A lambda's own parameter is checked at no call site, so passing it on is not permitted. */
+  @SideEffectFree
+  void lambdaParameterIsNotDischarged(Function<String, Integer> f, String s) {
+    Consumer<Function<String, Integer>> c =
+        g -> {
+          // :: error: [purity.functional.argument]
+          callee(g, s);
+        };
+    // :: error: [purity.not.sideeffectfree.call]
+    c.accept(f);
+  }
+
+  // An array constructor cannot be annotated, and creating an array modifies nothing.
+
+  @SideEffectFree
+  static String[] arrayCallee(IntFunction<String[]> generator) {
+    return generator.apply(0);
+  }
+
+  String[] arrayConstructorReference() {
+    return arrayCallee(String[]::new);
   }
 
   // A method reference assigned to an annotated functional interface is checked against its

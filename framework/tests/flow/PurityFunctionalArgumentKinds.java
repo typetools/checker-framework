@@ -84,6 +84,30 @@ public class PurityFunctionalArgumentKinds {
     sideEffectFreeCallee(t -> deterministicOnly(t), s);
   }
 
+  // A functional method that returns no value is deterministic, whatever implements it, so a @Pure
+  // callee requires only side-effect-freeness of it.
+
+  @Pure
+  static int pureRunnableCallee(Runnable r) {
+    return 0;
+  }
+
+  @SideEffectFree
+  void sideEffectFreeVoid() {}
+
+  void impureVoid() {
+    count++;
+  }
+
+  void voidFunctionalMethod() {
+    pureRunnableCallee(() -> sideEffectFreeVoid());
+    pureRunnableCallee(this::sideEffectFreeVoid);
+    // :: error: [purity.not.sideeffectfree.call]
+    pureRunnableCallee(() -> impureVoid());
+    // :: error: [purity.functional.argument]
+    pureRunnableCallee(this::impureVoid);
+  }
+
   // A method reference's annotations must cover the callee's.
 
   void methodReferenceArguments(String s) {
