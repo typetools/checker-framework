@@ -3,7 +3,8 @@
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
 # Both might lag behind; as of 2024-11-16, ubuntu:rolling was still 24.04 rather than 24.10.
-FROM ubuntu:rolling
+# For JDK pre-releases, use a numbered Ubuntu such as "ubuntu:26.10" for JDK 27 pre-release.
+FROM ubuntu:26.10
 include(`Dockerfile-contents-ubuntu-base.m4')
 
 include(`Dockerfile-contents-ubuntu-plus.m4')dnl
