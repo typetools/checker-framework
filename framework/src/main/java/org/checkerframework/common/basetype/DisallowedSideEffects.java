@@ -7,7 +7,6 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -23,7 +22,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -85,12 +83,6 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * such an object is not a side effect that is visible to the caller.
    */
   protected final Set<VariableElement> freshLocals;
-
-  /**
-   * The lambdas whose bodies this scanner scans, because they are passed to a call that might
-   * invoke them. See {@link #checkCallbackArguments}.
-   */
-  protected final Set<LambdaExpressionTree> scannedLambdas = new HashSet<>(2);
 
   /** The checker to use. */
   protected final BaseTypeChecker checker;
@@ -355,53 +347,6 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       if (isDisallowedSideEffectedExpression(expr)) {
         disallowedSideEffects.add(IPair.of(node, expr));
       }
-    }
-    checkCallbackArguments(node.getArguments());
-  }
-
-  /**
-   * Checks each argument that is a functional interface, because the callee might invoke as a
-   * callback.
-   *
-   * <p>If the functional interface method is annotated, this method does nothing: {@code
-   * BaseTypeVisitor.checkLambdaSideEffectsOnly} checks the lambda's body.
-   *
-   * <p>Otherwise, a lambda argument's body is scanned as part of the code being checked, because
-   * the callee might run it before returning. Any other argument, such as a variable that holds a
-   * lambda, is reported: its body is not at hand to be scanned.
-   *
-   * @param arguments the arguments of a call to a method or constructor that is annotated with
-   *     {@link SideEffectsOnly}
-   */
-  protected void checkCallbackArguments(List<? extends ExpressionTree> arguments) {
-    ProcessingEnvironment processingEnv = checker.getProcessingEnvironment();
-    AnnotatedTypeFactory atypeFactory = checker.getTypeFactory();
-    for (ExpressionTree argument : arguments) {
-      ExpressionTree arg = TreeUtils.withoutParens(argument);
-      TypeMirror argType = TreeUtils.typeOf(arg);
-      if (!TypesUtils.isFunctionalInterface(argType, processingEnv)) {
-        continue;
-      }
-      ExecutableElement functionalMethod = TypesUtils.findFunction(argType, processingEnv);
-      if (atypeFactory.getDeclAnnotation(functionalMethod, SideEffectsOnly.class) != null
-          || modifiesNothing(functionalMethod)) {
-        continue;
-      }
-      if (arg instanceof LambdaExpressionTree lambda) {
-        // The body is at hand, so check it as part of the code being checked.
-        scannedLambdas.add(lambda);
-        continue;
-      }
-      if (arg instanceof MemberReferenceTree memberReference) {
-        ExecutableElement referenced = TreeUtils.elementFromUse(memberReference);
-        if (referenced != null && modifiesNothing(referenced)) {
-          continue;
-        }
-      }
-      checker.reportError(
-          arg,
-          "purity.unknown.sideeffectsonly",
-          ElementUtils.getSimpleDescription(functionalMethod));
     }
   }
 
@@ -681,7 +626,6 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         disallowedSideEffects.add(IPair.of(node, expr));
       }
     }
-    checkCallbackArguments(node.getArguments());
     return super.visitNewClass(node, aVoid);
   }
 
@@ -895,11 +839,6 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
 
   @Override
   public Void visitLambdaExpression(LambdaExpressionTree node, Void aVoid) {
-    if (scannedLambdas.contains(node)) {
-      // The lambda is passed to a call that might invoke it before it returns, and no annotation
-      // constrains what the invocation modifies.  See `checkCallbackArguments`.
-      return super.visitLambdaExpression(node, aVoid);
-    }
     // The body of a lambda runs when the lambda is invoked, which is not necessarily within the
     // method being checked.  Wherever it is invoked, the invocation is a call to a method of a
     // functional interface, and `visitMethodInvocation` checks that call.  The body itself is
