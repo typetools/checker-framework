@@ -51,10 +51,6 @@ import org.checkerframework.javacutil.TreeUtils;
 public class ModifiabilityBaseVisitor
     extends BaseTypeVisitor<ModifiabilityBaseAnnotatedTypeFactory> {
 
-  // /** Package that contains the modifiability type-use qualifiers. */
-  // private static final String MODIFIABILITY_QUAL_PACKAGE =
-  //     "org.checkerframework.checker.modifiability.qual";
-
   /**
    * Create a ModifiabilityBaseVisitor.
    *
@@ -107,10 +103,6 @@ public class ModifiabilityBaseVisitor
     if (!atypeFactory.isRelevant(classTM)) {
       return;
     }
-
-    // It seems difficult to go from an ExecutableElement to the annotations.
-    // List<ExecutableElement> constructors =
-    // ElementFilter.constructorsIn(elem.getEnclosedElements());
 
     List<MethodTree> methods = new ArrayList<>();
     List<MethodTree> constructors = new ArrayList<>();
@@ -225,18 +217,16 @@ public class ModifiabilityBaseVisitor
       // Nothing to check.
       return;
     }
+    // There is no predicate for the bottom annotation.
     if (!AnnotationUtils.areSameByName(receiverAnno, positiveCapability())) {
       // The only qualifier left is the bottom one.
       checker.reportError(method, "bottom.annotation.on.receiver");
       return;
     }
 
-    // The receiver requires the capability, so whether the method body should throw
-    // UnsupportedOperationException depends on the constructor annotation.
+    // `receiverAnno` is positive; that is, the receiver requires the capability.  Whether the
+    // method body should throw UnsupportedOperationException depends on the constructor annotation.
     if (!atypeFactory.hasNegativeCapability()) {
-      // The Iterator hierarchy has no negative qualifier: @IteratorPolyMod states what a
-      // collection's iterator preserves, not whether a method throws
-      // UnsupportedOperationException.
       return;
     }
     String constructorAnnoName =
@@ -295,7 +285,7 @@ public class ModifiabilityBaseVisitor
     ExpressionTree identifier = nct.getIdentifier();
     if (identifier instanceof IdentifierTree it) {
       // TODO: This can be fooled if a different UnsupportedOperationException is imported.
-      // You can check the type of exception:
+      // A way to prevent that, is to check the type of exception:
       // types.isSameType(TreeUtils.typeOf(exception), ...);
       return it.getName().contentEquals("UnsupportedOperationException");
     } else if (identifier instanceof MemberSelectTree mst) {
@@ -394,34 +384,6 @@ public class ModifiabilityBaseVisitor
   protected boolean shouldCheckReceiverOverrideCapabilityPreservation() {
     return true;
   }
-
-  // /**
-  //  * Returns true if {@code annotation} is a non-maybe modifiability qualifier that (if written
-  // on a
-  //  * constructor result type) should trigger a warning about an unverified collection class
-  //  * implementation.
-  //  *
-  //  * @param annotation an annotation mirror written on a constructor result type
-  //  * @return true if {@code annotation} should trigger a warning
-  //  */
-  // private boolean isNonTopModifiabilityAnnotation(AnnotationMirror annotation) {
-  //   Element element = annotation.getAnnotationType().asElement();
-  //   if (!(element instanceof TypeElement typeElement)) {
-  //     return false;
-  //   }
-  //
-  //   // Only annotations in the modifiability qualifier package are relevant.
-  //   String qualifiedName = typeElement.getQualifiedName().toString();
-  //   if (!qualifiedName.startsWith(MODIFIABILITY_QUAL_PACKAGE + ".")) {
-  //     return false;
-  //   }
-  //
-  //   // @Maybe* annotations and @UnmodifiableParam are the top in the hierarchy, so do not warn.
-  //   String simpleName = typeElement.getSimpleName().toString();
-  //   boolean isTopQualifier =
-  //       simpleName.startsWith("Maybe") || simpleName.equals("UnmodifiableParam");
-  //   return !isTopQualifier;
-  // }
 
   // Suppresses the framework's "constructor result must be TOP" check.
   // Collection constructors (e.g., new ArrayList()) legitimately produce @Modifiable, which is a

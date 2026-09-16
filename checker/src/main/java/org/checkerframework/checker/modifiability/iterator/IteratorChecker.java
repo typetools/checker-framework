@@ -26,7 +26,6 @@ public class IteratorChecker extends ModifiabilityBaseChecker {
 
   @Override
   protected boolean usesIteratorChecker() {
-    // This checker would otherwise be its own subchecker.
     return false;
   }
 }

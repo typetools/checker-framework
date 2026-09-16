@@ -126,19 +126,6 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
   // -- Expansion of the whole-modifiability aliases ----------
 
   /**
-   * Returns true if this checker's hierarchy is one of the capabilities that the
-   * whole-modifiability aliases ({@code @Modifiable}, {@code @Unmodifiable},
-   * {@code @MaybeModifiable}, {@code @UnmodifiableParam}, and {@code @PolyModifiable}) expand into.
-   * The Iterator hierarchy is not: it states what a collection's iterator preserves rather than
-   * whether a mutating method throws {@link UnsupportedOperationException}.
-   *
-   * @return true if the whole-modifiability aliases expand into this checker's hierarchy
-   */
-  protected boolean expandsModifiabilityAliases() {
-    return true;
-  }
-
-  /**
    * Returns true if {@code type} structurally cannot support this checker's capability, so that
    * {@code @Modifiable} and {@code @Unmodifiable} weaken to the top qualifier on {@code type}. For
    * example, {@code Map.Entry} cannot grow.
@@ -163,6 +150,19 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
    */
   protected boolean polyLacksCapability(TypeMirror type) {
     return false;
+  }
+
+  /**
+   * Returns true if this checker's hierarchy is one of the capabilities that the
+   * whole-modifiability aliases ({@code @Modifiable}, {@code @Unmodifiable},
+   * {@code @MaybeModifiable}, {@code @UnmodifiableParam}, and {@code @PolyModifiable}) expand into.
+   * The Iterator hierarchy is not: it states what a collection's iterator preserves rather than
+   * whether a mutating method throws {@link UnsupportedOperationException}.
+   *
+   * @return true if the whole-modifiability aliases expand into this checker's hierarchy
+   */
+  protected boolean expandsModifiabilityAliases() {
+    return true;
   }
 
   /**
@@ -234,7 +234,7 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
 
     ExecutableElement invokedMethod = TreeUtils.elementFromUse(tree);
     if (getDeclAnnotation(invokedMethod, PreservesModifiability.class) != null) {
-      refinePreservesModifiabilityReturnType(tree, method);
+      refineReturnTypeForPreservesModifiability(tree, method);
     }
 
     return mType;
@@ -260,7 +260,7 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
    * @param tree an invocation of a {@code @PreservesModifiability} method
    * @param methodType the annotated executable type of the invoked method
    */
-  protected void refinePreservesModifiabilityReturnType(
+  protected void refineReturnTypeForPreservesModifiability(
       MethodInvocationTree tree, AnnotatedExecutableType methodType) {
     AnnotatedTypeMirror returnType = methodType.getReturnType();
     if (tree.getArguments().isEmpty()

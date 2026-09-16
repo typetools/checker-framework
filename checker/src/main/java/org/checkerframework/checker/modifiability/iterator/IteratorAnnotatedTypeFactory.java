@@ -56,13 +56,13 @@ public class IteratorAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedType
   }
 
   @Override
-  protected boolean expandsModifiabilityAliases() {
-    return false;
+  protected AnnotationMirror polyCapability() {
+    return POLY_ITERATOR_POLY_MOD;
   }
 
   @Override
-  protected AnnotationMirror polyCapability() {
-    return POLY_ITERATOR_POLY_MOD;
+  protected boolean expandsModifiabilityAliases() {
+    return false;
   }
 
   @Override
