@@ -368,9 +368,11 @@ tasks.register("ainferTestCheckerGenerateStubs", Test) {
     exceptionFormat = "full"
     events("passed", "skipped", "failed")
   }
+  File wpiOutputDir = wpiOutputDirectory()
   doFirst {
     delete("tests/ainfer-testchecker/annotated")
     delete("${buildDir}/ainfer-testchecker/")
+    WpiOutputDirectory.delete(wpiOutputDir)
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-testchecker")
@@ -434,9 +436,11 @@ tasks.register("ainferTestCheckerGenerateAjava", Test) {
     exceptionFormat = "full"
     events("passed", "skipped", "failed")
   }
+  File wpiOutputDir = wpiOutputDirectory()
   doFirst {
     delete("tests/ainfer-testchecker/annotated")
     delete("${buildDir}/ainfer-testchecker/")
+    WpiOutputDirectory.delete(wpiOutputDir)
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-testchecker")
@@ -479,6 +483,33 @@ tasks.register("ainferTestCheckerValidateAjava", Test) {
     // Show the found unexpected diagnostics and the expected diagnostics not found.
     exceptionFormat = "full"
     events("passed", "skipped", "failed")
+  }
+}
+
+// Returns the directory that WPI writes into.  Call this at configuration time, not from within
+// a task action, because the Gradle configuration cache forbids using a project object from
+// within a task action.
+File wpiOutputDirectory() {
+  return layout.buildDirectory.dir("whole-program-inference").get().asFile
+}
+
+// This class exists only to hold a `static` method.  The method cannot be a method of this build
+// script, because the Gradle configuration cache forbids calling a build script's methods from
+// within a task action.
+class WpiOutputDirectory {
+  // Deletes the directory that WPI writes into.  A generation task must call this from `doFirst`:
+  // the directory is only renamed away in `doLast`, which does not run when the test fails, so a
+  // failed run would otherwise leave stale output that the next generation task would fold into
+  // its own results and feed to its validation task.  The caller passes in the directory, which
+  // it obtained at configuration time from `wpiOutputDirectory()`.
+  static void delete(File wpiOutputDir) {
+    // Unlike `Project.delete()`, `File.deleteDir()` reports failure by returning false rather
+    // than by throwing.  (It returns true if the directory does not exist, and false if the path
+    // exists but is not a directory.)  Without this test, the caller would run against stale
+    // output after a failed deletion.
+    if (!wpiOutputDir.deleteDir()) {
+      throw new GradleException("Could not delete ${wpiOutputDir}")
+    }
   }
 }
 
@@ -550,8 +581,10 @@ tasks.register("ainferTestCheckerGenerateJaifs", Test) {
     exceptionFormat = "full"
     events("passed", "skipped", "failed")
   }
+  File wpiOutputDir = wpiOutputDirectory()
   doFirst {
     delete("tests/ainfer-testchecker/annotated")
+    WpiOutputDirectory.delete(wpiOutputDir)
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-testchecker")
@@ -638,6 +671,7 @@ tasks.register("ainferIndexGenerateAjava", Test) {
     file("tests/ainfer-index/annotated"),
     layout.buildDirectory.dir("ainfer-index").get().asFile,
   ]
+  File wpiOutputDir = wpiOutputDirectory()
   doFirst {
     ainferIndexDirsToDelete.forEach { dirToDelete ->
       // Unlike `Project.delete()`, `File.deleteDir()` reports failure by returning false rather
@@ -648,6 +682,7 @@ tasks.register("ainferIndexGenerateAjava", Test) {
         throw new GradleException("Could not delete ${dirToDelete}")
       }
     }
+    WpiOutputDirectory.delete(wpiOutputDir)
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-index")
@@ -698,9 +733,11 @@ tasks.register("ainferNullnessGenerateAjava", Test) {
     exceptionFormat = "full"
     events("passed", "skipped", "failed")
   }
+  File wpiOutputDir = wpiOutputDirectory()
   doFirst {
     delete("tests/ainfer-nullness/annotated")
     delete("${buildDir}/ainfer-nullness/")
+    WpiOutputDirectory.delete(wpiOutputDir)
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-nullness")
@@ -752,9 +789,11 @@ tasks.register("ainferResourceLeakGenerateAjava", Test) {
     exceptionFormat = "full"
     events("passed", "skipped", "failed")
   }
+  File wpiOutputDir = wpiOutputDirectory()
   doFirst {
     delete("tests/ainfer-resourceleak/annotated")
     delete("${buildDir}/ainfer-resourceleak/")
+    WpiOutputDirectory.delete(wpiOutputDir)
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-resourceleak")
@@ -806,8 +845,10 @@ tasks.register("ainferNullnessGenerateJaifs", Test) {
     exceptionFormat = "full"
     events("passed", "skipped", "failed")
   }
+  File wpiOutputDir = wpiOutputDirectory()
   doFirst {
     delete("tests/ainfer-nullness/annotated")
+    WpiOutputDirectory.delete(wpiOutputDir)
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-nullness")
