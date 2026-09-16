@@ -24,10 +24,7 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
 import com.github.javaparser.ast.expr.CharLiteralExpr;
-import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
-import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.nodeTypes.NodeWithVariables;
@@ -69,6 +66,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -1328,49 +1326,19 @@ public class WholeProgramInferenceJavaParserStorage
       // and crashes when adding annotations in certain locations.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
-      // To avoid cluttering the output, do not print:
-      //  * invisible qualifiers
-      //  * irrelevant qualifiers, if `omitIrrelevantAnnotations` is true.
-      Set<String> invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
+      // The compilation unit is cloned because this method side-effects it:  it removes the
+      // annotations that should not be printed.  Removing them from the AST, rather than
+      // suppressing them in the pretty-printer, prevents the pretty-printer from outputting the
+      // whitespace that would have separated an annotation from what follows it.
+      CompilationUnit compilationUnit = root.compilationUnit.clone();
+      removeUnprintedAnnotations(compilationUnit, omitIrrelevantAnnotations);
+
       DefaultPrettyPrinter prettyPrinter =
           new DefaultPrettyPrinter() {
             @Override
             public String print(Node node) {
               VoidVisitor<Void> visitor =
                   new DefaultPrettyPrinterVisitor(getConfiguration()) {
-                    @Override
-                    public void visit(MarkerAnnotationExpr n, Void arg) {
-                      if (invisibleQualifierNames.contains(n.getName().toString())) {
-                        return;
-                      }
-                      if (omitIrrelevantAnnotations && !annotationIsRelevant(n)) {
-                        return;
-                      }
-                      super.visit(n, arg);
-                    }
-
-                    @Override
-                    public void visit(SingleMemberAnnotationExpr n, Void arg) {
-                      if (invisibleQualifierNames.contains(n.getName().toString())) {
-                        return;
-                      }
-                      if (omitIrrelevantAnnotations && !annotationIsRelevant(n)) {
-                        return;
-                      }
-                      super.visit(n, arg);
-                    }
-
-                    @Override
-                    public void visit(NormalAnnotationExpr n, Void arg) {
-                      if (invisibleQualifierNames.contains(n.getName().toString())) {
-                        return;
-                      }
-                      if (omitIrrelevantAnnotations && !annotationIsRelevant(n)) {
-                        return;
-                      }
-                      super.visit(n, arg);
-                    }
-
                     // visit(CharLiteralExpr) and visit(StringLiteralExpr) work around bugs in
                     // JavaParser, with respect to handling lonely surrogate characters.
 
@@ -1398,10 +1366,42 @@ public class WholeProgramInferenceJavaParserStorage
             }
           };
 
-      String fileContent = prettyPrinter.print(root.compilationUnit);
+      String fileContent = prettyPrinter.print(compilationUnit);
       writer.write(fileContent);
     } catch (IOException e) {
       throw new BugInCF("Error while writing ajava file " + outputPath, e);
+    }
+  }
+
+  /**
+   * Removes from the given compilation unit the annotations that an ajava file should not contain,
+   * because they would clutter it:
+   *
+   * <ul>
+   *   <li>invisible qualifiers
+   *   <li>irrelevant qualifiers, if {@code omitIrrelevantAnnotations} is true
+   * </ul>
+   *
+   * @param compilationUnit the compilation unit to side-effect
+   * @param omitIrrelevantAnnotations if true, also remove annotations that are irrelevant where
+   *     they appear
+   */
+  private void removeUnprintedAnnotations(
+      CompilationUnit compilationUnit, boolean omitIrrelevantAnnotations) {
+    Set<String> invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
+    Predicate<AnnotationExpr> shouldRemove =
+        anno ->
+            invisibleQualifierNames.contains(anno.getNameAsString())
+                || (omitIrrelevantAnnotations && !annotationIsRelevant(anno));
+    for (Node node : compilationUnit.findAll(Node.class)) {
+      if (node instanceof NodeWithAnnotations<?> annotated) {
+        annotated.getAnnotations().removeIf(shouldRemove);
+      }
+      if (node instanceof Parameter param) {
+        // A varargs annotation is on the array type that `...` creates, as in
+        // `void m(String @Anno ... args)`.  It is not in `param.getAnnotations()`.
+        param.getVarArgsAnnotations().removeIf(shouldRemove);
+      }
     }
   }
 

@@ -56,7 +56,7 @@ public class RelevantTypes {
     // the goal file contains only `@AinferSibling1 String ...`:  the annotation on the array type is
     // omitted, because arrays are irrelevant to this checker.
     @org.checkerframework.dataflow.qual.SideEffectFree
-    static void varargs(@org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 String ... args) {
+    static void varargs(@org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 String... args) {
     }
 
     @org.checkerframework.dataflow.qual.Impure

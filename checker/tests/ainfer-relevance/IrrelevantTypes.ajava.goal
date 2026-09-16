@@ -6,11 +6,11 @@
 @org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
 public class IrrelevantTypes {
 
-    static   double doubleField;
+    static double doubleField;
 
-    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType String  [] arrayField;
+    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType String[] arrayField;
 
-    static java.util. Date dateField;
+    static java.util.Date dateField;
 
     @org.checkerframework.dataflow.qual.Impure
     static void assignFields() {
@@ -20,12 +20,12 @@ public class IrrelevantTypes {
     }
 
     @org.checkerframework.dataflow.qual.Pure
-    static   double doubleReturn() {
+    static double doubleReturn() {
         return doubleField;
     }
 
     @org.checkerframework.dataflow.qual.Pure
-    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType String  [] arrayReturn() {
+    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType String[] arrayReturn() {
         return arrayField;
     }
 }
