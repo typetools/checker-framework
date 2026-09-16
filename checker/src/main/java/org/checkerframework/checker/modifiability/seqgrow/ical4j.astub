@@ -1,7 +1,0 @@
-import org.checkerframework.checker.modifiability.qual.*;
-
-package net.fortuna.ical4j.model;
-
-@Modifiable class ComponentList<T extends Component> {}
-
-@Modifiable class PropertyList<T extends Property> {}

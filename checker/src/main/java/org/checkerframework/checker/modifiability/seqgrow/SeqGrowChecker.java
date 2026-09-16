@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.Map;
 import org.checkerframework.checker.modifiability.ModifiabilityBaseChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
-import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SuppressWarningsPrefix;
 
 /**
@@ -20,7 +19,6 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
  * @checker_framework.manual #modifiability-checker Modifiability Checker
  */
 @RelevantJavaTypes({Collection.class, Iterator.class, Map.class, Map.Entry.class})
-@StubFiles({"ical4j.astub", "javaparser.astub"})
 @SuppressWarningsPrefix({"seqgrowable", "modifiability"})
 public class SeqGrowChecker extends ModifiabilityBaseChecker {
   /** Creates a SeqGrowChecker. */
