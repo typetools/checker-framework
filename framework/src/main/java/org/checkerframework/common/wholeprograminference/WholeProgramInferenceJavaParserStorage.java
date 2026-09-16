@@ -1339,12 +1339,17 @@ public class WholeProgramInferenceJavaParserStorage
       // and crashes when adding annotations in certain locations.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
-      // The compilation unit is cloned because this method side-effects it:  it removes the
-      // annotations that should not be printed.  Removing them from the AST, rather than
-      // suppressing them in the pretty-printer, prevents the pretty-printer from outputting the
-      // whitespace that would have separated an annotation from what follows it.
-      CompilationUnit compilationUnit = root.compilationUnit.clone();
-      removeUnprintedAnnotations(compilationUnit, omitIrrelevantAnnotations);
+      // Some annotations should not be printed.  They are removed from the AST, rather than
+      // suppressed in the pretty-printer, to prevent the pretty-printer from outputting the
+      // whitespace that would have separated an annotation from what follows it.  The compilation
+      // unit is cloned first, because removal side-effects it and it is shared among checkers.
+      CompilationUnit compilationUnit = root.compilationUnit;
+      Set<String> invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
+      if (!invisibleQualifierNames.isEmpty() || omitIrrelevantAnnotations) {
+        compilationUnit = compilationUnit.clone();
+        removeUnprintedAnnotations(
+            compilationUnit, invisibleQualifierNames, omitIrrelevantAnnotations);
+      }
 
       DefaultPrettyPrinter prettyPrinter =
           new DefaultPrettyPrinter() {
@@ -1396,26 +1401,29 @@ public class WholeProgramInferenceJavaParserStorage
    * </ul>
    *
    * @param compilationUnit the compilation unit to side-effect
+   * @param invisibleQualifierNames the canonical names of the invisible qualifiers to remove
    * @param omitIrrelevantAnnotations if true, also remove annotations that are irrelevant where
    *     they appear
    */
   private void removeUnprintedAnnotations(
-      CompilationUnit compilationUnit, boolean omitIrrelevantAnnotations) {
-    Set<String> invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
+      CompilationUnit compilationUnit,
+      Set<String> invisibleQualifierNames,
+      boolean omitIrrelevantAnnotations) {
     Predicate<AnnotationExpr> shouldRemove =
         anno ->
             invisibleQualifierNames.contains(anno.getNameAsString())
                 || (omitIrrelevantAnnotations && !annotationIsRelevant(anno));
-    for (Node node : compilationUnit.findAll(Node.class)) {
-      if (node instanceof NodeWithAnnotations<?> annotated) {
-        annotated.getAnnotations().removeIf(shouldRemove);
-      }
-      if (node instanceof Parameter param) {
-        // A varargs annotation is on the array type that `...` creates, as in
-        // `void m(String @Anno ... args)`.  It is not in `param.getAnnotations()`.
-        param.getVarArgsAnnotations().removeIf(shouldRemove);
-      }
-    }
+    compilationUnit.walk(
+        node -> {
+          if (node instanceof NodeWithAnnotations<?> annotated) {
+            annotated.getAnnotations().removeIf(shouldRemove);
+          }
+          if (node instanceof Parameter param) {
+            // A varargs annotation is on the array type that `...` creates, as in
+            // `void m(String @Anno ... args)`.  It is not in `param.getAnnotations()`.
+            param.getVarArgsAnnotations().removeIf(shouldRemove);
+          }
+        });
   }
 
   // TODO: Move these two routines to StringUtils.
