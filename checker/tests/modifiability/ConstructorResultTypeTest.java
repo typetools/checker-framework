@@ -2,6 +2,7 @@
 // which are performed by ModifiabilityBaseVisitor.processClassTree.
 
 import java.util.AbstractList;
+import java.util.List;
 import org.checkerframework.checker.modifiability.qual.BottomGrowable;
 import org.checkerframework.checker.modifiability.qual.Growable;
 import org.checkerframework.checker.modifiability.qual.Ungrowable;
@@ -59,5 +60,41 @@ public class ConstructorResultTypeTest {
 
     // :: error: [bottom.annotation.on.receiver]
     public void bottomReceiver(@BottomGrowable BottomReceiver this) {}
+  }
+
+  // The interface declares no constructor, so the checks about constructors do nothing, but the
+  // bottom qualifier on a receiver is still an error.
+  interface NoConstructor extends List<String> {
+    // :: error: [bottom.annotation.on.receiver]
+    default void bottomReceiver(@BottomGrowable NoConstructor this) {}
+  }
+
+  // The constructors disagree, but the bottom qualifier on a receiver is still an error.
+  static class InconsistentConstructorsAndBottomReceiver extends AbstractList<String> {
+    @Growable InconsistentConstructorsAndBottomReceiver() {}
+
+    // :: error: [inconsistent.constructor.result.type]
+    @Ungrowable InconsistentConstructorsAndBottomReceiver(int capacity) {}
+
+    @Override
+    public String get(int index) {
+      return "value";
+    }
+
+    @Override
+    public int size() {
+      return 0;
+    }
+
+    // :: error: [bottom.annotation.on.receiver]
+    public void bottomReceiver(@BottomGrowable InconsistentConstructorsAndBottomReceiver this) {}
+  }
+
+  // The method has no body, but the bottom qualifier on its receiver is still an error.
+  abstract static class AbstractBottomReceiver extends AbstractList<String> {
+    @Growable AbstractBottomReceiver() {}
+
+    // :: error: [bottom.annotation.on.receiver]
+    public abstract void bottomReceiver(@BottomGrowable AbstractBottomReceiver this);
   }
 }

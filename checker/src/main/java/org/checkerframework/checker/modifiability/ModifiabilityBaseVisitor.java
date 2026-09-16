@@ -71,7 +71,7 @@ public class ModifiabilityBaseVisitor
    * including at the implicit {@code super()} call of a constructor that has no explicit one.
    *
    * <p>What makes the suppression less unsafe is that the declared modifiability of a class is
-   * checked against its method bodies; see {@link #processClassConstructors}. That check is not
+   * checked against its method bodies; see {@link #processClassMembers}. That check is not
    * complete, so the suppression does permit some unsound code. The check does nothing unless some
    * constructor of the class declares a qualifier in this hierarchy, and it examines only the
    * methods that the class declares, not those that it inherits without overriding.
@@ -85,15 +85,16 @@ public class ModifiabilityBaseVisitor
   @Override
   public void processClassTree(ClassTree tree) {
     super.processClassTree(tree);
-    processClassConstructors(tree);
+    processClassMembers(tree);
   }
 
   /**
-   * Processes the constructors of a class.
+   * Processes the members of a class: checks that no method writes the bottom qualifier on its
+   * receiver, and checks the constructors against one another and against the method bodies.
    *
    * @param tree a class
    */
-  private void processClassConstructors(ClassTree tree) {
+  private void processClassMembers(ClassTree tree) {
     TypeElement classElement = TreeUtils.elementFromDeclaration(tree);
     if (classElement == null) {
       // Some anonymous classes have no element; see TreeUtils.elementFromDeclaration(ClassTree).
@@ -114,6 +115,12 @@ public class ModifiabilityBaseVisitor
           methods.add(mt);
         }
       }
+    }
+
+    // Writing the bottom qualifier on a receiver is an error no matter what the class's
+    // constructors say, so this check is done before, and independently of, the checks below.
+    for (MethodTree method : methods) {
+      checkReceiverNotBottom(method);
     }
 
     boolean thisClassWarned = false;
@@ -157,6 +164,44 @@ public class ModifiabilityBaseVisitor
         checkImplOK(method, receiverAnno, constructorAnno);
       }
     }
+  }
+
+  /**
+   * Issues an error if {@code method} writes the bottom qualifier on its receiver parameter.
+   *
+   * <p>The bottom qualifier is a subtype of every qualifier in the hierarchy, so no value has it
+   * and no method can be called on such a receiver. Writing it is always a mistake, whatever the
+   * enclosing class's constructors declare, and whether or not the method has a body.
+   *
+   * @param method a method declaration
+   */
+  private void checkReceiverNotBottom(MethodTree method) {
+    if (method.getReceiverParameter() == null) {
+      // The receiver qualifier was defaulted, so the programmer did not write the bottom
+      // qualifier on it.
+      return;
+    }
+    AnnotatedDeclaredType receiverType = atypeFactory.getAnnotatedType(method).getReceiverType();
+    if (receiverType == null) {
+      return;
+    }
+    AnnotationMirror receiverAnno =
+        receiverType.getPrimaryAnnotationInHierarchy(atypeFactory.topAnnotation());
+    if (receiverAnno == null) {
+      return;
+    }
+    // Every modifiability hierarchy contains a top qualifier, a positive qualifier, and a
+    // polymorphic qualifier.  Every hierarchy but the Iterator one also contains a negative and a
+    // bottom qualifier.  There is no predicate for the bottom annotation, so it is recognized by
+    // eliminating all the others.  (In the Iterator hierarchy, the positive qualifier is the
+    // bottom qualifier, and writing it on a receiver is legitimate.)
+    if (AnnotationUtils.areSameByName(receiverAnno, atypeFactory.topAnnotation())
+        || AnnotationUtils.areSameByName(receiverAnno, atypeFactory.polyCapability())
+        || AnnotationUtils.areSameByName(receiverAnno, positiveCapability())
+        || isNegativeCapability(receiverAnno)) {
+      return;
+    }
+    checker.reportError(method, "bottom.annotation.on.receiver");
   }
 
   /**
@@ -208,19 +253,10 @@ public class ModifiabilityBaseVisitor
    */
   private void checkImplOK(
       MethodTree method, AnnotationMirror receiverAnno, AnnotationMirror constructorAnno) {
-    // Every modifiability hierarchy contains a top qualifier, a positive qualifier, and a
-    // polymorphic qualifier.  Every hierarchy but the Iterator one also contains a negative and a
-    // bottom qualifier.
-    if (AnnotationUtils.areSameByName(receiverAnno, atypeFactory.topAnnotation())
-        || AnnotationUtils.areSameByName(receiverAnno, atypeFactory.polyCapability())
-        || isNegativeCapability(receiverAnno)) {
-      // Nothing to check.
-      return;
-    }
-    // There is no predicate for the bottom annotation.
     if (!AnnotationUtils.areSameByName(receiverAnno, positiveCapability())) {
-      // The only qualifier left is the bottom one.
-      checker.reportError(method, "bottom.annotation.on.receiver");
+      // The receiver does not require the capability -- it is the top, polymorphic, negative, or
+      // bottom qualifier -- so the method body is unconstrained.  (Writing the bottom qualifier on
+      // a receiver is diagnosed by checkReceiverNotBottom.)
       return;
     }
 
