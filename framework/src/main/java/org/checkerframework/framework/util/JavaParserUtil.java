@@ -461,11 +461,24 @@ public final class JavaParserUtil {
   }
 
   /**
+   * A type whose member types {@link #resolveMemberType} searches, together with whether the type's
+   * package-private member types are inherited by the type at which the search started.
+   *
+   * @param typeElement the type whose member types to search
+   * @param packagePrivateIsInherited true if a package-private member type of {@code typeElement}
+   *     is a member of the type at which the search started
+   */
+  private record SearchedType(TypeElement typeElement, boolean packagePrivateIsInherited) {}
+
+  /**
    * Returns the element for the member type named {@code firstComponent + suffix} that {@code
    * typeElement} declares or inherits, or null if there is no such member type.
    *
    * <p>{@code typeElement} and its supertypes are searched in breadth-first order, so a member type
-   * that is declared in a nearer supertype hides one that is declared in a farther supertype.
+   * that is declared in a nearer supertype hides one that is declared in a farther supertype. A
+   * declaration hides whatever its declaring type would otherwise inherit, even if the declaration
+   * is not itself inherited: a private member type is inherited by no type, and a package-private
+   * member type is inherited only within its own package.
    *
    * @param elements used for looking up names
    * @param typeElement the type whose member types to search
@@ -484,27 +497,84 @@ public final class JavaParserUtil {
       Map<String, @Nullable TypeElement> cache) {
     Set<TypeElement> visited = new HashSet<>();
     visited.add(typeElement);
-    Deque<TypeElement> worklist = new ArrayDeque<>();
-    worklist.add(typeElement);
+    Deque<SearchedType> worklist = new ArrayDeque<>();
+    // Every member type that `typeElement` declares is a member of `typeElement`, whatever its
+    // access modifier is.
+    worklist.add(new SearchedType(typeElement, true));
     while (!worklist.isEmpty()) {
-      TypeElement current = worklist.remove();
-      for (TypeElement member : ElementFilter.typesIn(current.getEnclosedElements())) {
-        // A private member type is not inherited.
-        if (member.getSimpleName().contentEquals(firstComponent)
-            && !member.getModifiers().contains(Modifier.PRIVATE)) {
-          if (suffix.isEmpty()) {
-            return member;
-          }
-          return getTypeElement(elements, member.getQualifiedName() + suffix, cache);
+      SearchedType current = worklist.remove();
+      TypeElement currentElement = current.typeElement();
+      // A type declares at most one member type with a given simple name.
+      TypeElement declared = null;
+      for (TypeElement member : ElementFilter.typesIn(currentElement.getEnclosedElements())) {
+        if (member.getSimpleName().contentEquals(firstComponent)) {
+          declared = member;
+          break;
         }
       }
-      for (TypeElement supertype : ElementUtils.getDirectSuperTypeElements(current, elements)) {
+      if (declared != null) {
+        if (isInherited(declared, current.packagePrivateIsInherited())) {
+          if (suffix.isEmpty()) {
+            return declared;
+          }
+          return getTypeElement(elements, declared.getQualifiedName() + suffix, cache);
+        }
+        // `declared` is not a member of the type at which the search started, and it hides every
+        // member type of the same name that `currentElement` would otherwise inherit, so do not
+        // search the supertypes of `currentElement`.
+        continue;
+      }
+      for (TypeElement supertype :
+          ElementUtils.getDirectSuperTypeElements(currentElement, elements)) {
         if (visited.add(supertype)) {
-          worklist.add(supertype);
+          // `currentElement` inherits a package-private member type of `supertype` only if the two
+          // types are in the same package.
+          worklist.add(
+              new SearchedType(
+                  supertype,
+                  current.packagePrivateIsInherited()
+                      && inSamePackage(elements, supertype, currentElement)));
         }
       }
     }
     return null;
+  }
+
+  /**
+   * Returns true if {@code member} is a member of the type at which a search by {@link
+   * #resolveMemberType} started -- that is, if every type between that type and the type that
+   * declares {@code member} inherits it.
+   *
+   * @param member a member type of the type that is currently being searched
+   * @param packagePrivateIsInherited true if a package-private member type of the type that is
+   *     currently being searched is a member of the type at which the search started
+   * @return true if {@code member} is a member of the type at which the search started
+   */
+  private static boolean isInherited(TypeElement member, boolean packagePrivateIsInherited) {
+    Set<Modifier> modifiers = member.getModifiers();
+    if (modifiers.contains(Modifier.PRIVATE)) {
+      // A private member type is not inherited.
+      return false;
+    }
+    if (modifiers.contains(Modifier.PUBLIC) || modifiers.contains(Modifier.PROTECTED)) {
+      return true;
+    }
+    return packagePrivateIsInherited;
+  }
+
+  /**
+   * Returns true if the two types are declared in the same package.
+   *
+   * @param elements used for looking up the package that contains a type
+   * @param type1 a type
+   * @param type2 a type
+   * @return true if {@code type1} and {@code type2} are declared in the same package
+   */
+  private static boolean inSamePackage(Elements elements, TypeElement type1, TypeElement type2) {
+    return elements
+        .getPackageOf(type1)
+        .getQualifiedName()
+        .contentEquals(elements.getPackageOf(type2).getQualifiedName());
   }
 
   /**
