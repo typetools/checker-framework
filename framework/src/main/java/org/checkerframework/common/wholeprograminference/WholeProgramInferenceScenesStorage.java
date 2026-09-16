@@ -546,40 +546,6 @@ public class WholeProgramInferenceScenesStorage
   }
 
   /**
-   * Returns the scene-lib representation of the given className in the scene identified by the
-   * given jaifPath.
-   *
-   * @param className the name of the class to get, in binary form
-   * @param jaifPath the path to the jaif file that would represent that class (must end in ".jaif")
-   * @param classSymbol optionally, the ClassSymbol representing the class. Used to set the symbol
-   *     information stored on an AClass.
-   * @return a version of the scene-lib representation of the class, augmented with symbol
-   *     information if {@code classSymbol} was non-null
-   */
-  protected AClass getAClass(
-      @BinaryName String className, String jaifPath, @Nullable ClassSymbol classSymbol) {
-    // Possibly reads .jaif file to obtain a Scene.
-    ASceneWrapper scene = getScene(jaifPath);
-    AClass aClass = scene.getAScene().classes.getVivify(className);
-    scene.updateSymbolInformation(aClass, classSymbol);
-    return aClass;
-  }
-
-  /**
-   * Returns the scene-lib representation of the given className in the scene identified by the
-   * given jaifPath.
-   *
-   * @param className the name of the class to get, in binary form
-   * @param jaifPath the path to the jaif file that would represent that class (must end in ".jaif")
-   * @return the scene-lib representation of the class, possibly augmented with symbol information
-   *     if {@link #getAClass(String, String, com.sun.tools.javac.code.Symbol.ClassSymbol)} has
-   *     already been called with a non-null third argument
-   */
-  protected AClass getAClass(@BinaryName String className, String jaifPath) {
-    return getAClass(className, jaifPath, null);
-  }
-
-  /**
    * Returns true if {@code am} should not be inserted in source code, for example {@link
    * org.checkerframework.common.value.qual.BottomVal}. This happens when {@code am} cannot be
    * inserted in source code or is the default for the location passed as argument.
