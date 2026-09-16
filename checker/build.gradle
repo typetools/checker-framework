@@ -710,7 +710,6 @@ tasks.register("ainferRelevanceGenerateAjava", Test) {
   // compare the inference output to the goal files.
   List<File> ainferRelevanceDirsToDelete = [
     file("tests/ainfer-relevance/annotated"),
-    layout.buildDirectory.dir("ainfer-relevance").get().asFile,
     layout.buildDirectory.dir("whole-program-inference").get().asFile,
   ]
   doFirst {
