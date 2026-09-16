@@ -1,6 +1,6 @@
 /*
  * @test
- * @compile/timeout=600 -Werror -processor org.checkerframework.checker.nullness.NullnessChecker -AslowTypecheckingSeconds=20 Issue7023.java
+ * @compile/timeout=600 -Werror -processor org.checkerframework.checker.nullness.NullnessChecker -AslowTypecheckingSeconds=15 Issue7023.java
  */
 import java.util.Map;
 
