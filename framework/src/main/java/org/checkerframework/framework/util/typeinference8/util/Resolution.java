@@ -390,6 +390,13 @@ public final class Resolution {
     Set<AbstractQualifier> qualifierLowerBounds =
         ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
     if (!qualifierLowerBounds.isEmpty()) {
+      // `lub` may return a type that shares its AnnotatedTypeMirror with one of `lowerBounds`,
+      // which is still stored in a hash set of bounds.  Replacing annotations in place would
+      // change that bound's hash code while it is in the set, so copy before mutating.
+      lubProperType =
+          (ProperType)
+              lubProperType.create(
+                  lubProperType.getAnnotatedType().deepCopy(), lubProperType.ignoreAnnotations);
       QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
       Set<AnnotationMirror> lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
       if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
@@ -443,6 +450,11 @@ public final class Resolution {
         QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
         lowerBoundAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
         if (lowerBound != null) {
+          // See the comment in `resolveWithLowerBounds` about copying before mutating.
+          lowerBound =
+              (ProperType)
+                  lowerBound.create(
+                      lowerBound.getAnnotatedType().deepCopy(), lowerBound.ignoreAnnotations);
           if (lowerBound.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
             Set<? extends AnnotationMirror> newLubAnnos =
                 qh.leastUpperBoundsQualifiersOnly(
@@ -470,6 +482,11 @@ public final class Resolution {
       if (!qualifierUpperBounds.isEmpty()) {
         upperBoundAnnos = AbstractQualifier.glb(qualifierUpperBounds, context);
         if (upperBound != null) {
+          // `glb` returns its argument when `upperBounds` is a singleton, and that type is still
+          // stored in `ai`'s set of upper bounds.  See the comment in `resolveWithLowerBounds`.
+          upperBound =
+              upperBound.create(
+                  upperBound.getAnnotatedType().deepCopy(), upperBound.ignoreAnnotations);
           upperBoundAnnos =
               context
                   .typeFactory

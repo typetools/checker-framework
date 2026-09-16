@@ -967,6 +967,11 @@ public class InferenceFactory {
   /**
    * Returns the least upper bounds of {@code properTypes}, or null if {@code properTypes} is empty.
    *
+   * <p>The result may share its {@link AnnotatedTypeMirror} with an element of {@code properTypes};
+   * in particular, it does when {@code properTypes} has one element. A caller must not mutate the
+   * result's annotated type in place, because an element of {@code properTypes} may be stored in a
+   * hash set of bounds, whose hash code would change.
+   *
    * @param properTypes types to lub
    * @return the least upper bounds of {@code properTypes}, or null
    */
@@ -1012,6 +1017,10 @@ public class InferenceFactory {
   /**
    * Returns the greatest lower bound of {@code abstractTypes}, or null if {@code abstractTypes} is
    * empty.
+   *
+   * <p>As with {@link #lub(Set)}, the result may share its {@link AnnotatedTypeMirror} with an
+   * element of {@code abstractTypes} -- it returns the element itself when {@code abstractTypes}
+   * has one element -- so a caller must not mutate the result's annotated type in place.
    *
    * @param abstractTypes types to glb
    * @return the greatest lower bound of {@code abstractTypes}, or null
