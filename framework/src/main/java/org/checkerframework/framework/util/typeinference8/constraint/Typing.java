@@ -52,13 +52,6 @@ public class Typing extends TypeConstraint {
    * Whether reducing this constraint should compare the qualifiers of two proper types. It is set
    * for the equality constraints that incorporating two bounds on an inference variable implies, in
    * {@code VariableBounds.getConstraintsFromParameterized}.
-   *
-   * <p>Ordinarily the qualifiers should not be compared: a constraint between two proper types
-   * mentions no inference variable, so no choice of type arguments makes it hold or fail, and
-   * {@code BaseTypeVisitor} separately issues a more informative message about the qualifiers. But
-   * a constraint that was implied by two bounds on an inference variable is different: it holds
-   * only if the qualifiers match, and if they do not, then the variable has no instantiation and
-   * nothing else reports it.
    */
   private final boolean qualifiersMustMatch;
 
