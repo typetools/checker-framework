@@ -742,11 +742,27 @@ tasks.register("ainferRelevanceGenerateAjava", Test) {
     file("tests/ainfer-relevance/annotated"),
     wpiOutputDirectory(),
   ]
+  // Resolved at configuration time, and deleted with `File.delete()` rather than with
+  // `Project.delete()`, because the Gradle configuration cache forbids using a project object
+  // from within a task action.
+  File irrelevantTypeVariableAnnotated =
+      file("tests/ainfer-relevance/annotated/IrrelevantTypeVariable.java")
   doFirst {
     DirectoryDeleter.deleteDirectories(dirsToDelete)
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-relevance")
+
+    // This test writes an annotation on a use of a type variable whose upper bound is
+    // irrelevant, so the checker issues an `anno.on.irrelevant` warning for it in both passes of
+    // the test.  The `// ::` comment that states the expectation is removed by
+    // `copyNonannotatedToAnnotatedDirectory`, so the second (validation) pass would report the
+    // warning as unexpected.
+    // `File.delete()` reports failure by returning false rather than by throwing.  Without this
+    // test, the validation pass would report a confusing unexpected diagnostic instead.
+    if (!irrelevantTypeVariableAnnotated.delete()) {
+      throw new GradleException("Could not delete ${irrelevantTypeVariableAnnotated}")
+    }
   }
 }
 
