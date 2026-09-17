@@ -10,10 +10,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.visitor.DoubleAnnotatedTypeScanner;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceFactory;
@@ -21,6 +26,7 @@ import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 
 /**
  * An object to pass around for use during invocation type inference. One context is created per
@@ -78,6 +84,23 @@ public class Java8InferenceContext {
 
   /** The annotated type factory. */
   public final AnnotatedTypeFactory typeFactory;
+
+  /**
+   * Scans a type for a polymorphic primary annotation. One scanner serves every call, because
+   * {@link
+   * org.checkerframework.framework.type.visitor.AnnotatedTypeScanner#visit(org.checkerframework.framework.type.AnnotatedTypeMirror)}
+   * resets it.
+   */
+  private final SimpleAnnotatedTypeScanner<Boolean, Void> polymorphicQualifierScanner;
+
+  /**
+   * Replaces each polymorphic primary annotation in one of two types by the annotation at the same
+   * position and in the same qualifier hierarchy in the other type. One scanner serves every call,
+   * because {@link
+   * org.checkerframework.framework.type.visitor.AnnotatedTypeScanner#visit(org.checkerframework.framework.type.AnnotatedTypeMirror,
+   * Object)} resets it.
+   */
+  private final DoubleAnnotatedTypeScanner<Void> polymorphicQualifierReplacer;
 
   /**
    * Where an implicitly typed lambda parameter's type comes from: the target type of the lambda
@@ -139,6 +162,79 @@ public class Java8InferenceContext {
         TypesUtils.typeFromClass(RuntimeException.class, env.getTypeUtils(), env.getElementUtils());
     this.inferenceTypeFactory = new InferenceFactory(this);
     this.object = inferenceTypeFactory.getObject();
+    QualifierHierarchy qualifierHierarchy = factory.getQualifierHierarchy();
+    this.polymorphicQualifierScanner =
+        new SimpleAnnotatedTypeScanner<>(
+            (type, p) -> {
+              for (AnnotationMirror anno : type.getPrimaryAnnotations()) {
+                if (qualifierHierarchy.isPolymorphicQualifier(anno)) {
+                  return true;
+                }
+              }
+              return false;
+            },
+            Boolean::logicalOr,
+            false);
+    this.polymorphicQualifierReplacer =
+        new DoubleAnnotatedTypeScanner<Void>() {
+          @Override
+          protected Void defaultAction(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+            if (type1 == null || type2 == null) {
+              return null;
+            }
+            for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
+              AnnotationMirror anno1 = type1.getPrimaryAnnotationInHierarchy(top);
+              AnnotationMirror anno2 = type2.getPrimaryAnnotationInHierarchy(top);
+              if (anno1 == null || anno2 == null) {
+                // A type without a primary annotation in this hierarchy, such as a use of a type
+                // variable, has no qualifier here for the other type to conflict with.
+                continue;
+              }
+              if (qualifierHierarchy.isPolymorphicQualifier(anno1)) {
+                if (!qualifierHierarchy.isPolymorphicQualifier(anno2)) {
+                  type1.replaceAnnotation(anno2);
+                }
+              } else if (qualifierHierarchy.isPolymorphicQualifier(anno2)) {
+                type2.replaceAnnotation(anno1);
+              }
+            }
+            return null;
+          }
+        };
+  }
+
+  /**
+   * Returns true if {@code type}, or any type that it contains, has a polymorphic primary
+   * annotation.
+   *
+   * @param type an annotated type
+   * @return true if {@code type}, or any type that it contains, has a polymorphic primary
+   *     annotation
+   */
+  public boolean hasPolymorphicQualifier(AnnotatedTypeMirror type) {
+    return polymorphicQualifierScanner.visit(type);
+  }
+
+  /**
+   * Returns copies of {@code type1} and {@code type2} in which each polymorphic primary annotation
+   * has been replaced by the annotation at the same position and in the same qualifier hierarchy in
+   * the other type. A comparison of the copies therefore succeeds wherever a polymorphic qualifier
+   * is compared -- a polymorphic qualifier could be instantiated to whatever it is compared against
+   * -- and is unchanged everywhere else.
+   *
+   * <p>The two types must have the same structure, which holds when their underlying Java types are
+   * the same.
+   *
+   * @param type1 a type
+   * @param type2 a type with the same structure as {@code type1}
+   * @return copies of the two types, in the order the arguments were given
+   */
+  public IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> replacePolymorphicQualifiers(
+      AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+    AnnotatedTypeMirror copy1 = type1.deepCopy();
+    AnnotatedTypeMirror copy2 = type2.deepCopy();
+    polymorphicQualifierReplacer.visit(copy1, copy2);
+    return IPair.of(copy1, copy2);
   }
 
   /**
