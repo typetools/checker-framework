@@ -1,0 +1,20 @@
+package otherpkg;
+
+// This class exists so that a class in the unnamed package can extend a class, in a different
+// package, that declares member types with different accessibilities.  It is used by
+// `PackagePrivateNotInherited.java`.
+//
+// This is the only test input that is in a named package, so its goal file is the only one whose
+// name includes a package name.
+public class PackagePrivateMemberTypes {
+
+  // A package-private member type is not inherited by a subclass in another package, so the
+  // simple name "CharBuffer" does not refer to this type in such a subclass.  This type is
+  // irrelevant, because it is not a subtype of any type in the checker's `@RelevantJavaTypes`.
+  static class CharBuffer {}
+
+  // A protected member type is inherited by a subclass in another package, so the simple name
+  // "Protected" does refer to this type in such a subclass.  This type is relevant, because it is
+  // a subtype of `CharSequence`, which the checker's `@RelevantJavaTypes` lists.
+  protected abstract static class Protected implements CharSequence {}
+}

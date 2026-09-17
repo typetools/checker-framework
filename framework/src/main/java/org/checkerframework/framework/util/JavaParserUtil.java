@@ -116,6 +116,13 @@ public final class JavaParserUtil {
       suffix = name.substring(dotIndex);
     }
 
+    CompilationUnit cu = type.findCompilationUnit().orElse(null);
+    // The package that contains the use of `name`.  A use in the unnamed package, or in a node
+    // that is not part of a compilation unit, has no package name.  Accessibility of a
+    // package-private member type depends on this package.
+    String usePackage =
+        cu == null ? "" : cu.getPackageDeclaration().map(pkg -> pkg.getNameAsString()).orElse("");
+
     // A type parameter, a local class, or a type that is lexically enclosed in a type declaration,
     // takes precedence over an import, over a type in the same package, over a type in
     // `java.lang`, and over the interpretation of `name` as a fully-qualified name.
@@ -196,7 +203,9 @@ public final class JavaParserUtil {
           // The enclosing type might inherit the member type rather than declare it.
           TypeElement enclosingElement = getTypeElement(elements, enclosingName, cache);
           if (enclosingElement != null) {
-            result = resolveMemberType(elements, enclosingElement, firstComponent, suffix, cache);
+            result =
+                resolveMemberType(
+                    elements, enclosingElement, firstComponent, suffix, usePackage, cache);
             if (result != null) {
               return result;
             }
@@ -222,7 +231,8 @@ public final class JavaParserUtil {
             return null;
           }
           TypeElement fromSupertype =
-              resolveMemberType(elements, supertypeElement, firstComponent, suffix, cache);
+              resolveMemberType(
+                  elements, supertypeElement, firstComponent, suffix, usePackage, cache);
           if (fromSupertype != null) {
             if (inherited == null) {
               inherited = fromSupertype;
@@ -239,7 +249,6 @@ public final class JavaParserUtil {
       }
     }
 
-    CompilationUnit cu = type.findCompilationUnit().orElse(null);
     if (cu == null) {
       // The name might be fully-qualified.
       return getTypeElement(elements, name, cache);
@@ -266,7 +275,9 @@ public final class JavaParserUtil {
               importedName.substring(0, importedName.length() - firstComponent.length() - 1);
           TypeElement containerElement = getTypeElement(elements, containerName, cache);
           if (containerElement != null) {
-            result = resolveMemberType(elements, containerElement, firstComponent, suffix, cache);
+            result =
+                resolveMemberType(
+                    elements, containerElement, firstComponent, suffix, usePackage, cache);
             if (result != null) {
               return result;
             }
@@ -279,8 +290,7 @@ public final class JavaParserUtil {
     // in `java.lang`.  A type in the same package shadows the others, so it is looked up first.  A
     // name in the unnamed package has no prefix.
     List<String> containerPrefixes = new ArrayList<>();
-    containerPrefixes.add(
-        cu.getPackageDeclaration().map(pkg -> pkg.getNameAsString() + ".").orElse(""));
+    containerPrefixes.add(usePackage.isEmpty() ? "" : usePackage + ".");
     for (ImportDeclaration importDecl : cu.getImports()) {
       if (importDecl.isAsterisk()) {
         containerPrefixes.add(importDecl.getNameAsString() + ".");
@@ -301,7 +311,8 @@ public final class JavaParserUtil {
         TypeElement importedElement = getTypeElement(elements, importDecl.getNameAsString(), cache);
         if (importedElement != null) {
           TypeElement result =
-              resolveMemberType(elements, importedElement, firstComponent, suffix, cache);
+              resolveMemberType(
+                  elements, importedElement, firstComponent, suffix, usePackage, cache);
           if (result != null) {
             return result;
           }
@@ -501,11 +512,17 @@ public final class JavaParserUtil {
    * <p>{@code typeElement} and its supertypes are searched in breadth-first order, so a member type
    * that is declared in a nearer supertype hides one that is declared in a farther supertype.
    *
+   * <p>A member type that is not inherited is ignored, and therefore hides nothing: a private
+   * member type, and a package-private member type that is declared in a package other than {@code
+   * usePackage}. A protected member type is inherited even from a different package.
+   *
    * @param elements used for looking up names
    * @param typeElement the type whose member types to search
    * @param firstComponent the simple name of a member type of {@code typeElement}
    * @param suffix the rest of the type name, which names a type nested within {@code
    *     firstComponent}; it is empty or starts with "."
+   * @param usePackage the name of the package that contains the use of the type name, or "" for the
+   *     unnamed package
    * @param cache maps a name to the type it names, or to null if it names no type; this method both
    *     reads and writes it
    * @return the element for the member type, or null if it cannot be determined
@@ -515,6 +532,7 @@ public final class JavaParserUtil {
       TypeElement typeElement,
       String firstComponent,
       String suffix,
+      String usePackage,
       Map<String, @Nullable TypeElement> cache) {
     Set<TypeElement> visited = new HashSet<>();
     visited.add(typeElement);
@@ -523,14 +541,25 @@ public final class JavaParserUtil {
     while (!worklist.isEmpty()) {
       TypeElement current = worklist.remove();
       for (TypeElement member : ElementFilter.typesIn(current.getEnclosedElements())) {
-        // A private member type is not inherited.
-        if (member.getSimpleName().contentEquals(firstComponent)
-            && !member.getModifiers().contains(Modifier.PRIVATE)) {
-          if (suffix.isEmpty()) {
-            return member;
-          }
-          return getTypeElement(elements, member.getQualifiedName() + suffix, cache);
+        if (!member.getSimpleName().contentEquals(firstComponent)) {
+          continue;
         }
+        Set<Modifier> modifiers = member.getModifiers();
+        if (modifiers.contains(Modifier.PRIVATE)) {
+          // A private member type is not inherited.
+          continue;
+        }
+        if (!modifiers.contains(Modifier.PUBLIC)
+            && !modifiers.contains(Modifier.PROTECTED)
+            && !elements.getPackageOf(member).getQualifiedName().contentEquals(usePackage)) {
+          // A package-private member type is not inherited by a class in another package, and it
+          // is not accessible at the use site.
+          continue;
+        }
+        if (suffix.isEmpty()) {
+          return member;
+        }
+        return getTypeElement(elements, member.getQualifiedName() + suffix, cache);
       }
       for (TypeElement supertype : ElementUtils.getDirectSuperTypeElements(current, elements)) {
         if (visited.add(supertype)) {
