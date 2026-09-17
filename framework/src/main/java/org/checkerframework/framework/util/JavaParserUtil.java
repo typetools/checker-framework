@@ -134,7 +134,7 @@ public final class JavaParserUtil {
         }
       }
 
-      if (declaresLocalType(ancestor, firstComponent)) {
+      if (declaresLocalType(ancestor, firstComponent, child)) {
         // `name` names a local class, or is nested within one.  A local class shadows any type of
         // the same name, and `Elements` cannot look up a local class by name.
         return null;
@@ -326,24 +326,32 @@ public final class JavaParserUtil {
 
   /**
    * Returns true if {@code node} directly contains a statement that declares a local class,
-   * interface, enum, or record whose name is {@code name}. Such a declaration shadows, throughout
-   * the block that contains it, every type of the same name that is declared elsewhere.
+   * interface, enum, or record whose name is {@code name}, and that declaration is in scope at
+   * {@code child}. The scope of a local type declaration is the rest of the block that contains it,
+   * including the declaration itself; a use that appears earlier in the block refers to some other
+   * type of the same name.
    *
    * @param node a JavaParser node, such as a block
    * @param name a simple type name
-   * @return true if {@code node} declares a local type named {@code name}
+   * @param child the child of {@code node} that contains the use of {@code name}
+   * @return true if {@code node} declares a local type named {@code name} that is in scope at
+   *     {@code child}
    */
-  private static boolean declaresLocalType(Node node, String name) {
-    for (Node child : node.getChildNodes()) {
-      if (child instanceof Statement) {
+  private static boolean declaresLocalType(Node node, String name, Node child) {
+    for (Node statement : node.getChildNodes()) {
+      if (statement instanceof Statement) {
         // A local type declaration is the only kind of statement whose child is a type
         // declaration.
-        for (Node grandchild : child.getChildNodes()) {
+        for (Node grandchild : statement.getChildNodes()) {
           if (grandchild instanceof TypeDeclaration<?> localType
               && localType.getNameAsString().equals(name)) {
             return true;
           }
         }
+      }
+      if (statement == child) {
+        // A local type that is declared later in the block is not in scope at `child`.
+        return false;
       }
     }
     return false;
