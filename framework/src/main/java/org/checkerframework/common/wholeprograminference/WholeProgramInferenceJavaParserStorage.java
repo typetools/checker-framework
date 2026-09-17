@@ -157,6 +157,19 @@ public class WholeProgramInferenceJavaParserStorage
   private @MonotonicNonNull Set<String> invisibleQualifierNames = null;
 
   /**
+   * Returns the names of the invisible qualifiers supported by {@link #atypeFactory}, computing
+   * them if they have not yet been computed.
+   *
+   * @return the names of the invisible qualifiers supported by {@link #atypeFactory}
+   */
+  private Set<String> getInvisibleQualifierNames() {
+    if (invisibleQualifierNames == null) {
+      invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
+    }
+    return invisibleQualifierNames;
+  }
+
+  /**
    * Returns the names of all qualifiers that are marked with {@link InvisibleQualifier}, and that
    * are supported by the given type factory.
    *
@@ -1102,14 +1115,13 @@ public class WholeProgramInferenceJavaParserStorage
       // Some annotations should not be printed.  They are removed from the AST, rather than
       // suppressed in the pretty-printer, to prevent the pretty-printer from outputting the
       // whitespace that would have separated an annotation from what follows it.  The compilation
-      // unit is cloned first, because removal side-effects it and it is shared among checkers.
+      // unit is cloned first, because removal side-effects it and the same AST is printed more
+      // than once:  it is shared by every CompilationUnitAnnos for the source file, and under
+      // `-AinferOutputOriginal` it is also printed before annotations are transferred into it.
       CompilationUnit compilationUnit = root.compilationUnit;
-      if (invisibleQualifierNames == null) {
-        invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
-      }
-      if (!invisibleQualifierNames.isEmpty()) {
+      if (hasUnprintedAnnotations()) {
         compilationUnit = compilationUnit.clone();
-        removeUnprintedAnnotations(compilationUnit, invisibleQualifierNames);
+        removeUnprintedAnnotations(compilationUnit);
       }
 
       DefaultPrettyPrinter prettyPrinter =
@@ -1153,17 +1165,25 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
+   * Returns true if {@link #removeUnprintedAnnotations} might remove an annotation. If it returns
+   * false, then the caller need not clone the compilation unit before printing it.
+   *
+   * @return true if {@link #removeUnprintedAnnotations} might remove an annotation
+   */
+  private boolean hasUnprintedAnnotations() {
+    return !getInvisibleQualifierNames().isEmpty();
+  }
+
+  /**
    * Removes from the given compilation unit the annotations that an ajava file should not contain,
    * because they would clutter it: the invisible qualifiers.
    *
    * @param compilationUnit the compilation unit to side-effect
-   * @param invisibleQualifierNames the canonical names of the annotations to remove; must not be
-   *     empty
    */
-  private void removeUnprintedAnnotations(
-      CompilationUnit compilationUnit, Set<String> invisibleQualifierNames) {
+  private void removeUnprintedAnnotations(CompilationUnit compilationUnit) {
+    Set<String> unprintedNames = getInvisibleQualifierNames();
     Predicate<AnnotationExpr> shouldRemove =
-        anno -> invisibleQualifierNames.contains(anno.getNameAsString());
+        anno -> unprintedNames.contains(anno.getNameAsString());
     compilationUnit.walk(
         node -> {
           if (node instanceof NodeWithAnnotations<?> annotated) {
