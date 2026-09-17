@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -37,7 +38,9 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.ArrayAccess;
+import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
@@ -240,7 +243,11 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
           node, "purity.unknown.sideeffectsonly", TypesUtils.simpleTypeName(superclass));
       return;
     }
-    checkImplicitCall(node, superConstructor, null);
+    // The receiver of the inserted call is the object under construction, which the constructor
+    // being checked also writes as `this`.  `checkSideEffectsOnlyConstructor` has put `this` in the
+    // permitted expressions, so what the superclass constructor does to the object under
+    // construction is permitted, exactly as if the constructor's own body did it.
+    checkImplicitCall(node, superConstructor, new ThisReference(classElt.asType()));
   }
 
   /**
@@ -325,9 +332,12 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       return;
     }
     AnnotatedTypeFactory atypeFactory = checker.getTypeFactory();
-    AnnotationMirror seOnlyAnnotation =
-        atypeFactory.getDeclAnnotation(invokedElem, SideEffectsOnly.class);
-    if (seOnlyAnnotation == null) {
+    // The callee might inherit its `@SideEffectsOnly` annotation rather than declare it, and
+    // `@SideEffectsOnly` is not inherited as an annotation, so `getDeclAnnotation` would not find
+    // it; see `AnnotatedTypeFactory.getSideEffectsOnlyExpressionMap`.
+    Map<ExecutableElement, List<String>> seOnlyExpressionStrings =
+        atypeFactory.getSideEffectsOnlyExpressionMap(invokedElem);
+    if (seOnlyExpressionStrings == null) {
       // The callee has no side-effect annotation, so it might modify arbitrary state.
       checker.reportError(
           node, "purity.unknown.sideeffectsonly", ElementUtils.getSimpleDescription(invokedElem));
@@ -335,7 +345,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     }
 
     // The callee modifies at most the expressions listed in its own `@SideEffectsOnly` annotation.
-    for (JavaExpression expr : calleeSideEffectedExpressions(node, invokedElem, seOnlyAnnotation)) {
+    for (JavaExpression expr :
+        calleeSideEffectedExpressions(node, invokedElem, seOnlyExpressionStrings)) {
       if (isDisallowedSideEffectedExpression(expr)) {
         disallowedSideEffects.add(IPair.of(node, expr));
       }
@@ -360,43 +371,127 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * Returns the expressions that the invoked method may side-effect: the arguments/elements of its
    * {@link SideEffectsOnly} annotation, viewpoint-adapted to the given call site.
    *
-   * @param node a call to a method that is annotated with {@link SideEffectsOnly}
+   * <p>An expression that denotes an object that the call site allocates, in the sense of {@link
+   * #isNewObjectTree}, is omitted from the result.
+   *
+   * @param node a call to a method to which a {@link SideEffectsOnly} annotation applies
    * @param invokedElem the invoked method
-   * @param seOnlyAnnotation the invoked method's {@link SideEffectsOnly} annotation
+   * @param seOnlyExpressionStrings the {@link SideEffectsOnly} expressions that apply to {@code
+   *     invokedElem}, indexed by the method whose declaration contains them
    * @return the expressions that the invoked method side-effects, viewpoint-adapted to {@code node}
    */
   protected List<JavaExpression> calleeSideEffectedExpressions(
-      MethodInvocationTree node, ExecutableElement invokedElem, AnnotationMirror seOnlyAnnotation) {
-    List<String> exprStrings =
-        checker.getTypeFactory().getSideEffectsOnlyExpressions(seOnlyAnnotation);
-    List<JavaExpression> result = new ArrayList<>(exprStrings.size());
-    for (String exprString : exprStrings) {
-      try {
+      MethodInvocationTree node,
+      ExecutableElement invokedElem,
+      Map<ExecutableElement, List<String>> seOnlyExpressionStrings) {
+    List<JavaExpression> result = new ArrayList<>(seOnlyExpressionStrings.size());
+    for (Map.Entry<ExecutableElement, List<String>> entry : seOnlyExpressionStrings.entrySet()) {
+      // The method whose `@SideEffectsOnly` annotation contains the expressions.  It is the
+      // invoked method, unless the invoked method inherits the annotation.
+      ExecutableElement declaringMethod = entry.getKey();
+      for (String exprString : entry.getValue()) {
+        JavaExpression atDeclaration;
+        try {
+          // An expression is parsed in the scope of the method that declares it, which is not
+          // necessarily the scope of `invokedElem`.
+          atDeclaration = StringToJavaExpression.atMethodDecl(exprString, declaringMethod, checker);
+        } catch (JavaExpressionParseException ex) {
+          checker.reportError(
+              node,
+              "purity.unparseable.sideeffectsonly",
+              exprString,
+              ElementUtils.getSimpleDescription(invokedElem));
+          // If an expression cannot be parsed at the call site, the checker cannot tell what the
+          // callee modifies.  The error above informs the user; report no further side effect for
+          // this call, because none can be determined.
+          return Collections.emptyList();
+        }
+        ExpressionTree denotedTree =
+            callSiteTree(
+                atDeclaration, invokedElem, TreeUtils.getReceiverTree(node), node.getArguments());
+        if (denotedTree != null && isNewObjectTree(denotedTree)) {
+          // The expression denotes an object that this call site allocates, so no caller can
+          // observe a modification of it.
+          continue;
+        }
         // At a call of the form `super.m()`, viewpoint-adapting the callee's `this` yields `super`,
         // which denotes the same object that the caller writes as `this`.  See
         // `expressionFromTree`.
-        result.add(
-            JavaExpression.superToThis(
-                StringToJavaExpression.atMethodInvocation(exprString, node, checker)));
-      } catch (JavaExpressionParseException ex) {
-        checker.reportError(
-            node,
-            "purity.unparseable.sideeffectsonly",
-            exprString,
-            ElementUtils.getSimpleDescription(invokedElem));
-        // If an expression cannot be parsed at the call site, the checker cannot tell what the
-        // callee modifies.  The error above informs the user; report no further side effect for
-        // this call, because none can be determined.
-        return Collections.emptyList();
+        result.add(JavaExpression.superToThis(atDeclaration.atMethodInvocation(node)));
       }
     }
     return result;
+  }
+
+  /**
+   * Returns the tree at the given call site that the given expression denotes in its entirety: the
+   * receiver if the expression is {@code this}, or the corresponding argument if the expression is
+   * a formal parameter. Returns null if the expression is neither, or if there is no such tree.
+   *
+   * <p>A larger expression that merely <em>contains</em> {@code this} or a formal parameter, such
+   * as {@code this.f}, has no such tree: {@code this.f} denotes a different object than {@code
+   * this} does, and that object may have existed before the call.
+   *
+   * @param atDeclaration an expression written at the declaration of the invoked method
+   * @param invokedElem the invoked method or constructor
+   * @param receiverTree the receiver at the call site, or null if there is none
+   * @param argTrees the arguments at the call site
+   * @return the tree that {@code atDeclaration} denotes at the call site, or null if there is none
+   */
+  protected static @Nullable ExpressionTree callSiteTree(
+      JavaExpression atDeclaration,
+      ExecutableElement invokedElem,
+      @Nullable ExpressionTree receiverTree,
+      List<? extends ExpressionTree> argTrees) {
+    if (atDeclaration instanceof ThisReference) {
+      return receiverTree;
+    }
+    if (atDeclaration instanceof FormalParameter formalParameter) {
+      // `FormalParameter.getIndex` is 1-based.
+      int index = formalParameter.getIndex();
+      if (invokedElem.isVarArgs() && index == invokedElem.getParameters().size()) {
+        // The last formal parameter of a varargs method may stand for an array that the call site
+        // creates out of several arguments, rather than for a single argument expression.  That
+        // array is freshly allocated, which `isFreshlyAllocated` recognizes after viewpoint
+        // adaptation turns the formal parameter into an `ArrayCreation`.
+        return null;
+      }
+      if (index <= argTrees.size()) {
+        return argTrees.get(index - 1);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns true if the given tree is a {@code new} expression for an object, so its value is an
+   * object that the code being checked just created. Modifying such an object is not a side effect
+   * that is visible to the caller.
+   *
+   * <p>This test is made on the tree rather than on the {@link JavaExpression}, because {@link
+   * JavaExpression#fromTree} maps such a tree to {@link
+   * org.checkerframework.dataflow.expression.Unknown}, which does not record that the object is
+   * freshly allocated. A {@code new} expression for an <em>array</em> needs no such treatment:
+   * {@code fromTree} maps it to an {@link ArrayCreation}, which {@link #isFreshlyAllocated}
+   * recognizes.
+   *
+   * @param tree an expression tree
+   * @return true if the given tree is a {@code new} expression for an object
+   */
+  protected static boolean isNewObjectTree(ExpressionTree tree) {
+    return TreeUtils.withoutParens(tree) instanceof NewClassTree;
   }
 
   // An enhanced `for` loop and a try-with-resources statement contain calls that appear only after
   // the compiler desugars them.  `visitEnhancedForLoop` and `visitTry` check those calls.  The
   // methods they call are supposed to side effect at most the receiver, so these checks should
   // rarely report anything.
+  //
+  // One other desugaring introduces an implicit call: string concatenation calls `toString()` on a
+  // reference operand.  That call is not checked, so an overriding `toString()` that modifies
+  // arbitrary state goes unreported; for example, `String s = "" + f;` in a method annotated
+  // `@SideEffectsOnly("this")` runs `f.toString()`.  This matches `PurityChecker`, which also does
+  // not treat string concatenation as a call.
 
   @Override
   public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void aVoid) {
@@ -416,7 +511,12 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         checker.reportError(node, "purity.unknown.sideeffectsonly", "iterator");
         return super.visitEnhancedForLoop(node, aVoid);
       }
-      checkImplicitCall(node, iteratorMethod, expressionFromTree(iterableExpr));
+      // A `new` expression has no `JavaExpression` representation, but the object it creates is
+      // one that no caller can refer to, which is what a null receiver denotes.
+      checkImplicitCall(
+          node,
+          iteratorMethod,
+          isNewObjectTree(iterableExpr) ? null : expressionFromTree(iterableExpr));
       TypeMirror iteratorType = iteratorMethod.getReturnType();
       for (String iteratorMethodName : new String[] {"hasNext", "next"}) {
         ExecutableElement iteratorElem = noArgumentMethod(iteratorType, iteratorMethodName);
@@ -461,8 +561,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    *
    * @param node the tree to report an error at
    * @param invokedElem the implicitly invoked method or constructor, which takes no arguments
-   * @param receiver the receiver of the call, or null if the receiver is an object that the
-   *     desugaring created and that therefore no caller can refer to
+   * @param receiver the receiver of the call, or null if the receiver is an object that no caller
+   *     can refer to: one that the desugaring created, or one that a {@code new} expression in the
+   *     code being checked created
    */
   protected void checkImplicitCall(
       Tree node, ExecutableElement invokedElem, @Nullable JavaExpression receiver) {
@@ -470,53 +571,62 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       return;
     }
     AnnotatedTypeFactory atypeFactory = checker.getTypeFactory();
-    AnnotationMirror seOnlyAnnotation =
-        atypeFactory.getDeclAnnotation(invokedElem, SideEffectsOnly.class);
-    if (seOnlyAnnotation == null) {
+    // The callee might inherit its `@SideEffectsOnly` annotation rather than declare it, and
+    // `@SideEffectsOnly` is not inherited as an annotation, so `getDeclAnnotation` would not find
+    // it; see `AnnotatedTypeFactory.getSideEffectsOnlyExpressionMap`.
+    Map<ExecutableElement, List<String>> seOnlyExpressionStrings =
+        atypeFactory.getSideEffectsOnlyExpressionMap(invokedElem);
+    if (seOnlyExpressionStrings == null) {
       // The callee has no side-effect annotation, so it might modify arbitrary state.
       checker.reportError(
           node, "purity.unknown.sideeffectsonly", ElementUtils.getSimpleDescription(invokedElem));
       return;
     }
 
-    List<String> exprStrings = atypeFactory.getSideEffectsOnlyExpressions(seOnlyAnnotation);
-    for (String exprString : exprStrings) {
-      JavaExpression atDeclaration;
-      try {
-        atDeclaration = StringToJavaExpression.atMethodDecl(exprString, invokedElem, checker);
-      } catch (JavaExpressionParseException ex) {
-        checker.reportError(
-            node,
-            "purity.unparseable.sideeffectsonly",
-            exprString,
-            ElementUtils.getSimpleDescription(invokedElem));
-        return;
-      }
-      JavaExpression atCallSite;
-      if (receiver == null) {
-        if (atDeclaration instanceof ThisReference) {
-          // The expression is the object that the desugaring created, which no caller can refer
-          // to, so modifying it is not a side effect that is visible to the caller.
-          continue;
-        }
-        if (atDeclaration.containedOfClass(ThisReference.class) != null) {
-          // The expression is reached through the object that the desugaring created.  That object
-          // is not nameable here, so the expression cannot be viewpoint-adapted; and its value may
-          // be an object that existed before the call, so it cannot be dismissed as unobservable
-          // either.
+    for (Map.Entry<ExecutableElement, List<String>> entry : seOnlyExpressionStrings.entrySet()) {
+      // The method whose `@SideEffectsOnly` annotation contains the expressions.  It is the
+      // invoked method, unless the invoked method inherits the annotation.
+      ExecutableElement declaringMethod = entry.getKey();
+      for (String exprString : entry.getValue()) {
+        JavaExpression atDeclaration;
+        try {
+          // An expression is parsed in the scope of the method that declares it, which is not
+          // necessarily the scope of `invokedElem`.
+          atDeclaration = StringToJavaExpression.atMethodDecl(exprString, declaringMethod, checker);
+        } catch (JavaExpressionParseException ex) {
           checker.reportError(
               node,
-              "purity.unknown.sideeffectsonly",
+              "purity.unparseable.sideeffectsonly",
+              exprString,
               ElementUtils.getSimpleDescription(invokedElem));
           return;
         }
-        // The expression mentions no `this`, so viewpoint adaptation would not change it.
-        atCallSite = atDeclaration;
-      } else {
-        atCallSite = withReceiver(atDeclaration, receiver);
-      }
-      if (isDisallowedSideEffectedExpression(atCallSite)) {
-        disallowedSideEffects.add(IPair.of(node, atCallSite));
+        JavaExpression atCallSite;
+        if (receiver == null) {
+          if (atDeclaration instanceof ThisReference) {
+            // The expression is the object that no caller can refer to, so modifying it is not a
+            // side effect that is visible to the caller.
+            continue;
+          }
+          if (atDeclaration.containedOfClass(ThisReference.class) != null) {
+            // The expression is reached through the object that no caller can refer to.  That
+            // object is not nameable here, so the expression cannot be viewpoint-adapted; and its
+            // value may be an object that existed before the call, so it cannot be dismissed as
+            // unobservable either.
+            checker.reportError(
+                node,
+                "purity.unknown.sideeffectsonly",
+                ElementUtils.getSimpleDescription(invokedElem));
+            return;
+          }
+          // The expression mentions no `this`, so viewpoint adaptation would not change it.
+          atCallSite = atDeclaration;
+        } else {
+          atCallSite = withReceiver(atDeclaration, receiver);
+        }
+        if (isDisallowedSideEffectedExpression(atCallSite)) {
+          disallowedSideEffects.add(IPair.of(node, atCallSite));
+        }
       }
     }
   }
@@ -600,6 +710,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       return super.visitNewClass(node, aVoid);
     }
     AnnotatedTypeFactory atypeFactory = checker.getTypeFactory();
+    // A constructor overrides nothing, so it cannot inherit a `@SideEffectsOnly` annotation, and
+    // `getDeclAnnotation` finds every annotation that applies to it.
     AnnotationMirror seOnlyAnnotation =
         atypeFactory.getDeclAnnotation(constructorElt, SideEffectsOnly.class);
     if (seOnlyAnnotation == null) {
@@ -632,6 +744,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * <em>contains</em> {@code this}, such as {@code this.f}, gets no such exemption: its value may
    * be an object that existed before the call, as it does for a constructor whose body contains
    * {@code this.f = p;} where {@code p} is a formal parameter.
+   *
+   * <p>An expression that denotes an object that the call site allocates, in the sense of {@link
+   * #isNewObjectTree}, is also omitted.
    *
    * <p>If an expression cannot be parsed, this reports {@code purity.unparseable.sideeffectsonly}
    * and returns an empty list, just as {@link #calleeSideEffectedExpressions} does.
@@ -674,6 +789,15 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
             "purity.unknown.sideeffectsonly",
             ElementUtils.getSimpleDescription(constructorElt));
         return Collections.emptyList();
+      }
+      // The receiver is null because the code above has already handled every expression that
+      // mentions the constructor's `this`.
+      ExpressionTree denotedTree =
+          callSiteTree(atDeclaration, constructorElt, null, node.getArguments());
+      if (denotedTree != null && isNewObjectTree(denotedTree)) {
+        // The expression denotes an object that this call site allocates, so no caller can observe
+        // a modification of it.
+        continue;
       }
       result.add(atDeclaration.atConstructorInvocation(node));
     }
@@ -730,20 +854,29 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   }
 
   /**
-   * Returns true if the given expression is a local variable that always holds an object that the
-   * method being checked created. The object did not exist before the call, so modifying it is not
-   * a side effect that is visible to the caller.
+   * Returns true if the given expression always evaluates to an object that the method being
+   * checked created: an array creation expression, or a local variable that always holds such an
+   * object. The object did not exist before the call, so modifying it is not a side effect that is
+   * visible to the caller.
    *
    * <p>If the object escapes -- if the method stores it into pre-existing state -- then that store
    * is itself a side effect, which is reported unless the annotation covers it. If it is covered,
    * then so is every modification of the object, because the object is then reached through a
    * listed expression.
    *
+   * <p>A {@code new} expression for an object, rather than for an array, has no {@link
+   * JavaExpression} representation; see {@link #isNewObjectTree}.
+   *
    * @param expr an expression
-   * @return true if the given expression is a local variable holding an object that this method
-   *     created
+   * @return true if the given expression evaluates to an object that this method created
    */
   protected boolean isFreshlyAllocated(JavaExpression expr) {
+    if (expr instanceof ArrayCreation) {
+      // The expression is an array that the code being checked creates: either a `new` expression
+      // for an array, or the array that a call site builds out of the arguments to a varargs
+      // formal parameter.
+      return true;
+    }
     return expr instanceof LocalVariable localVariable
         && freshLocals.contains(localVariable.getElement());
   }

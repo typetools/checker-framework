@@ -21,6 +21,51 @@ public class FreshlyAllocated {
     fresh.add("x");
   }
 
+  // The value of a `new` expression is also an object that this method created, whether the call
+  // is made on it or it is passed to the call.
+  @SideEffectsOnly("this")
+  void modifiesNewObject() {
+    new ArrayList<String>().add("x");
+  }
+
+  @SideEffectsOnly("this")
+  void passesNewObject() {
+    modifies(new ArrayList<String>());
+  }
+
+  @SideEffectsOnly("#1")
+  void modifies(List<String> l) {
+    l.add("x");
+  }
+
+  // So is an array that a `new` expression creates, or that the call site creates out of the
+  // arguments to a varargs formal parameter.
+  @SideEffectsOnly("this")
+  void passesNewArray() {
+    modifiesArray(new String[1]);
+  }
+
+  @SideEffectsOnly("this")
+  void passesVarargs() {
+    modifiesVarargs("a", "b");
+  }
+
+  @SideEffectsOnly("this")
+  void passesExistingArray(String[] a) {
+    // :: error: (purity.incorrect.sideeffectsonly)
+    modifiesVarargs(a);
+  }
+
+  @SideEffectsOnly("#1")
+  void modifiesArray(String[] a) {
+    a[0] = "x";
+  }
+
+  @SideEffectsOnly("#1")
+  void modifiesVarargs(String... a) {
+    a[0] = "x";
+  }
+
   // Assigning to a field of a freshly created object is not visible to the caller either.
   @SideEffectsOnly("this")
   void assignsFieldOfFreshObject() {
