@@ -233,7 +233,9 @@ public final class PurityChecker {
   /**
    * Helper class to keep {@link PurityChecker}'s interface clean.
    *
-   * <p>The scanner is run on a single statement, not on a class or method.
+   * <p>The scanner is run on statements and on the class members that contain code that runs during
+   * construction (a field declaration or an initializer block). It is not run on a class or method
+   * declaration.
    */
   protected static class PurityCheckerHelper extends TreePathScanner<Void, Void> {
 
@@ -483,8 +485,7 @@ public final class PurityChecker {
           // so assigning one is a side effect wherever the assignment appears.
           && !ElementUtils.isStatic(fieldElt)
           && isFieldInCurrentClass(fieldElt)
-          && inConstructorNotInLambda()
-          && inConstructorOrInitializer()) {
+          && inConstructorOrInstanceInitializer()) {
         // assigning an instance field in a constructor or an instance initializer
         // TODO: add a check for ArrayAccessTree too.
         return;
@@ -502,62 +503,39 @@ public final class PurityChecker {
     }
 
     /**
-     * Returns true if the current path is within a constructor, a field initializer, or an
-     * initializer block of the innermost enclosing class, and is not within a lambda expression.
+     * Returns true if the current path is in a constructor, or in an instance initializer (an
+     * instance initializer block, or the initializer of a non-static field) of the class that
+     * immediately encloses it, and is not within a lambda expression. Such code runs while the
+     * object is being constructed, before the object is visible to other code.
      *
-     * <p>{@link #assignmentCheck} permits a constructor to assign to a field of its own class,
-     * because the object is not yet visible to other code. That reasoning does not extend to a
-     * lambda that a constructor creates: the lambda's body may run long after the constructor has
-     * returned, when the object is visible.
+     * <p>{@link #assignmentCheck} permits such code to assign to a field of its own class, because
+     * the object is not yet visible to other code. That reasoning does not extend to a lambda that
+     * the code creates: the lambda's body may run long after construction has finished, when the
+     * object is visible. Nor does it extend to a static initializer block or the initializer of a
+     * static field, which run at class initialization rather than during construction.
      *
-     * @return true if the current path is within a constructor, field initializer, or initializer
-     *     block, and within no lambda expression
+     * <p>This differs from {@link TreePathUtil#inConstructor} for code in a local or anonymous
+     * class: an initializer of such a class runs when the class is instantiated, so what matters is
+     * the class member that encloses the code, not the method that encloses the class declaration.
+     *
+     * @return true if the current path is in a constructor or an instance initializer, and within
+     *     no lambda expression
      */
-    private boolean inConstructorNotInLambda() {
+    private boolean inConstructorOrInstanceInitializer() {
       // The search stops at the innermost enclosing class, because a method or lambda outside
       // that class does not contain the current path's code:  the code of a field initializer
       // or initializer block runs when the class is instantiated or initialized.
+      Tree child = null;
       for (TreePath path = getCurrentPath(); path != null; path = path.getParentPath()) {
         Tree leaf = path.getLeaf();
         if (leaf instanceof MethodTree methodTree) {
           return TreeUtils.isConstructor(methodTree);
         } else if (leaf instanceof LambdaExpressionTree) {
           return false;
-        } else if (TreeUtils.classTreeKinds().contains(leaf.getKind())) {
-          // This is a field initializer or an initializer block.
-          return true;
-        }
-      }
-      // This is a field initializer or an initializer block; the scan started within it, so no
-      // class declaration was encountered.
-      return true;
-    }
-
-    /**
-     * Returns true if the current path is in a constructor, or in an instance initializer of the
-     * class that immediately encloses it (an instance initializer block, or the initializer of a
-     * non-static field). Such code runs while the object is being constructed, before the object is
-     * visible to other code.
-     *
-     * <p>A static initializer block and the initializer of a static field are not such code. They
-     * run at class initialization, and the static fields they assign are visible to other code.
-     *
-     * <p>This differs from {@link TreePathUtil#inConstructor} for code in a local or anonymous
-     * class: an initializer of such a class runs when the class is instantiated, so what matters is
-     * the class member that encloses the code, not the method that encloses the class declaration.
-     *
-     * @return true if the current path is in a constructor or in an instance initializer
-     */
-    private boolean inConstructorOrInitializer() {
-      Tree child = null;
-      for (TreePath p = getCurrentPath(); p != null; p = p.getParentPath()) {
-        Tree leaf = p.getLeaf();
-        if (leaf instanceof MethodTree methodTree) {
-          return TreeUtils.isConstructor(methodTree);
-        }
-        if (leaf instanceof ClassTree) {
-          // No method intervenes between the class and the code, so `child` is the member of the
-          // class that contains the code:  an initializer block or a field declaration.
+        } else if (leaf instanceof ClassTree) {
+          // No method or lambda intervenes between the class and the code, so `child` is the
+          // member of the class that contains the code:  an initializer block or a field
+          // declaration.
           if (child instanceof BlockTree blockTree) {
             return !blockTree.isStatic();
           } else if (child instanceof VariableTree variableTree) {
@@ -571,6 +549,8 @@ public final class PurityChecker {
         }
         child = leaf;
       }
+      // The scan started outside any class declaration, so the code is not in a constructor or an
+      // instance initializer.
       return false;
     }
 
