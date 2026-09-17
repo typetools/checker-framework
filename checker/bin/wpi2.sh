@@ -1,21 +1,22 @@
 #!/bin/sh
 
-# This script performs whole-program inference on a project.
-# Run it from the project root.
-# Its output is a directory `whole-program-inference-output/`
+# This script performs whole-program inference on a project.  Run it from the
+# project root.  Its output is a directory `whole-program-inference-output/`
 # that contains .ajava files.
 
-# For usage, see the "Whole-program inference"
-# section of the Checker Framework manual:
-# https://checkerframework.org/manual/#whole-program-inference
+# For usage, see the "Whole-program inference" section of the Checker Framework
+# manual:  https://checkerframework.org/manual/#whole-program-inference
 
 # Exit the script if any statement fails.
 set -e
 
 if [ $# -eq 0 ]; then
   echo "Usage: wpi2.sh COMMAND [ARG...]" 1>&2
-  echo "  COMMAND builds the project, running the Checker Framework with" 1>&2
-  echo "  -Ainfer=ajava, -AinferOutputDirectory, and -Aajava." 1>&2
+  echo "COMMAND builds the project, running the Checker Framework with" 1>&2
+  echo "  -Ainfer=ajava" 1>&2
+  echo "  -AinferOutputDirectory=.../whole-program-inference-new" 1>&2
+  echo "  -Aajava=.../whole-program-inference-output" 1>&2
+  echo "  -Awarns" 1>&2
   exit 2
 fi
 
@@ -93,8 +94,10 @@ while :; do
   if [ ! -s "$tmpdir/newdir-files" ]; then
     echo "wpi2.sh: $* did not write any files to $newdir/." 1>&2
     echo "wpi2.sh: The command must compile every source file of the project, passing" 1>&2
-    echo "wpi2.sh: -Ainfer=ajava, -AinferOutputDirectory=<absolute path to $newdir>," 1>&2
-    echo "wpi2.sh: and -Aajava=<absolute path to $outdir>." 1>&2
+    echo "  -Ainfer=ajava" 1>&2
+    echo "  -AinferOutputDirectory=.../whole-program-inference-new" 1>&2
+    echo "  -Aajava=.../whole-program-inference-output" 1>&2
+    echo "  -Awarns" 1>&2
     if [ "$iteration" -gt 1 ]; then
       echo "wpi2.sh: The output of the previous iterations is in $outdir/." 1>&2
     fi
