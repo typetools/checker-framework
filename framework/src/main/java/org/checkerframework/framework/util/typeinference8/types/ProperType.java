@@ -16,6 +16,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.ReductionRe
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 
 /** A type that does not contain any inference variables. */
 public class ProperType extends AbstractType {
@@ -194,6 +195,54 @@ public class ProperType extends AbstractType {
     } else {
       return ConstraintSet.FALSE;
     }
+  }
+
+  /**
+   * Checks whether the annotations of {@code this} are the same as those of {@code other}, assuming
+   * that their underlying Java types have already been found to be the same. If either type is
+   * marked as having annotations that should be ignored, then the annotations are not compared.
+   *
+   * <p>Neither type may be an uncaptured wildcard: the type hierarchy compares a wildcard's {@code
+   * extends} bound against the other type, which for a lower-bounded wildcard is not the bound that
+   * holds its qualifiers.
+   *
+   * <p>The type hierarchy compares a polymorphic qualifier as though it were concrete, so it
+   * reports a conflict with every qualifier that the polymorphic qualifier could be instantiated
+   * to; see {@link AbstractQualifier#isUnsolvedPolymorphic} for why inference cannot solve for the
+   * qualifier instead. If the comparison fails, it is therefore retried on copies in which each
+   * polymorphic qualifier has been replaced by the qualifier it is compared against; see {@link
+   * Java8InferenceContext#replacePolymorphicQualifiers}. The retry suppresses only the positions
+   * and qualifier hierarchies that a polymorphic qualifier occupies, so a conflict at another type
+   * argument, or one in another qualifier hierarchy, is still reported.
+   *
+   * @param other the type to compare against
+   * @return {@link ConstraintSet#TRUE} if the annotations are ignored or if the annotations of
+   *     {@code this} are the same as those of {@code other}; otherwise {@link
+   *     ConstraintSet#TRUE_ANNO_FAIL}
+   */
+  public ConstraintSet checkAnnotationEquality(ProperType other) {
+    if (ignoreAnnotations || other.ignoreAnnotations) {
+      return ConstraintSet.TRUE;
+    }
+    AnnotatedTypeMirror thisATM = getAnnotatedType();
+    AnnotatedTypeMirror otherATM = other.getAnnotatedType();
+    // Compare using the type hierarchy in both directions rather than AnnotatedTypeMirror#equals,
+    // which requires the underlying types to be the same object.
+    if (typeFactory.getTypeHierarchy().isSubtype(thisATM, otherATM)
+        && typeFactory.getTypeHierarchy().isSubtype(otherATM, thisATM)) {
+      return ConstraintSet.TRUE;
+    }
+    // Scan for a polymorphic qualifier only now: when the annotations match, the result is the
+    // same either way, and the scan is the more expensive of the two tests.
+    if (context.hasPolymorphicQualifier(thisATM) || context.hasPolymorphicQualifier(otherATM)) {
+      IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> replaced =
+          context.replacePolymorphicQualifiers(thisATM, otherATM);
+      if (typeFactory.getTypeHierarchy().isSubtype(replaced.first, replaced.second)
+          && typeFactory.getTypeHierarchy().isSubtype(replaced.second, replaced.first)) {
+        return ConstraintSet.TRUE;
+      }
+    }
+    return ConstraintSet.TRUE_ANNO_FAIL;
   }
 
   @Override
