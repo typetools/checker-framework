@@ -40,6 +40,8 @@ public class PurityArrayFields {
 
   // The array must be freshly created no matter how indirectly it is stored in the field.
   static class IndirectlyAliasedArrayField {
+    // The initializer is overwritten below, so the field is owned only if the minimum over all
+    // assignments is taken.
     int[] a = new int[3];
 
     @SideEffectFree
@@ -99,6 +101,7 @@ public class PurityArrayFields {
     @SideEffectFree
     OtherObjectArrayField(OtherObjectArrayField other) {
       a[0] = 1;
+      this.a[0] = 1;
       // :: error: [purity.not.sideeffectfree.assign.array]
       other.a[0] = 2;
     }
