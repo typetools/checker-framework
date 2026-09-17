@@ -334,8 +334,6 @@ public final class JavaParserUtil {
           // ended, but it might inherit it.
           TypeElement enclosingElement = getTypeElement(elements, enclosingName, cache);
           if (enclosingElement != null) {
-            // The search starts at `enclosingElement` itself, every one of whose declared member
-            // types is a member of it.
             TypeElement result =
                 resolveMemberType(
                     elements,
@@ -344,7 +342,6 @@ public final class JavaParserUtil {
                     new SearchedType(enclosingElement, true, true),
                     firstComponent,
                     suffix,
-                    true,
                     cache);
             if (result != null) {
               return ResolvedName.of(result);
@@ -367,14 +364,6 @@ public final class JavaParserUtil {
             // unnameable class inherits and that might shadow `name`.
             return ResolvedName.NONE;
           }
-          // The unnameable class inherits a package-private member type of `supertypeElement` only
-          // if the two types are in the same package.  (The unnameable class has no TypeElement,
-          // so its package is that of the compilation unit that declares it.)
-          boolean packagePrivateIsInherited =
-              elements
-                  .getPackageOf(supertypeElement)
-                  .getQualifiedName()
-                  .contentEquals(packageNameOf(type));
           TypeElement fromSupertype =
               resolveMemberType(
                   elements,
@@ -386,7 +375,6 @@ public final class JavaParserUtil {
                       supertypeElement, false, inPackage(elements, supertypeElement, packageName)),
                   firstComponent,
                   suffix,
-                  packagePrivateIsInherited,
                   cache);
           if (fromSupertype != null) {
             if (inherited == null) {
@@ -438,7 +426,6 @@ public final class JavaParserUtil {
                     new SearchedType(containerElement, false, true),
                     firstComponent,
                     suffix,
-                    true,
                     cache);
             if (result != null) {
               return ResolvedName.of(result);
@@ -480,7 +467,6 @@ public final class JavaParserUtil {
                   new SearchedType(importedElement, false, true),
                   firstComponent,
                   suffix,
-                  true,
                   cache);
           if (result != null) {
             return ResolvedName.of(result);
@@ -630,20 +616,6 @@ public final class JavaParserUtil {
   }
 
   /**
-   * Returns the name of the package that declares the given JavaParser node, or "" if the node is
-   * in the unnamed package or is not part of a compilation unit.
-   *
-   * @param node a JavaParser node
-   * @return the name of the package that declares {@code node}
-   */
-  private static String packageNameOf(Node node) {
-    return node.findCompilationUnit()
-        .flatMap(CompilationUnit::getPackageDeclaration)
-        .map(pkg -> pkg.getNameAsString())
-        .orElse("");
-  }
-
-  /**
    * Returns the supertypes of the given type declaration from which it can inherit a member type:
    * those that its {@code extends} clause and its {@code implements} clause name, plus the implicit
    * superclass {@code java.lang.Enum} of an enum, which declares the member type {@code
@@ -759,11 +731,6 @@ public final class JavaParserUtil {
    * @param firstComponent the simple name of a member type of {@code start}'s type
    * @param suffix the rest of the type name, which names a type nested within {@code
    *     firstComponent}; it is empty or starts with "."
-   * @param packagePrivateIsInherited true if a package-private member type of {@code typeElement}
-   *     is a member of the type on whose behalf the search is being made. This is false when the
-   *     search is made on behalf of a type -- such as a local or an anonymous class, which has no
-   *     {@code TypeElement} -- that is not in the package of {@code typeElement}; it is true when
-   *     the search is made on behalf of {@code typeElement} itself.
    * @param cache maps a name to the type it names, or to null if it names no type; this method both
    *     reads and writes it
    * @return the element for the member type, or null if it cannot be determined
@@ -773,7 +740,6 @@ public final class JavaParserUtil {
       SearchedType start,
       String firstComponent,
       String suffix,
-      boolean packagePrivateIsInherited,
       Map<String, @Nullable TypeElement> cache) {
     Set<TypeElement> visited = new HashSet<>();
     visited.add(start.typeElement());
