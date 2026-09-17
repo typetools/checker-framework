@@ -349,7 +349,9 @@ public final class JavaParserUtil {
           }
         }
       }
-      if (statement == child) {
+      @SuppressWarnings("interning:not.interned")
+      boolean sameNode = statement == child;
+      if (sameNode) {
         // A local type that is declared later in the block is not in scope at `child`.
         return false;
       }
