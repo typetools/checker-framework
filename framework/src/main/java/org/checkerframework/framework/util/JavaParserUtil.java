@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -97,6 +98,26 @@ public final class JavaParserUtil {
    */
   public static @Nullable TypeElement resolveTypeName(
       Elements elements, ClassOrInterfaceType type, Map<String, @Nullable TypeElement> cache) {
+    return resolveTypeName(elements, type, cache, new IdentityHashMap<>(4));
+  }
+
+  /**
+   * Returns the element for the given JavaParser type, as {@link #resolveTypeName(Elements,
+   * ClassOrInterfaceType, Map)} does.
+   *
+   * @param elements used for looking up names
+   * @param type a JavaParser class or interface type
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it
+   * @param nodeCache memoizes the recursive calls that this method makes; this method both reads
+   *     and writes it
+   * @return the element for {@code type}, or null if it cannot be determined
+   */
+  private static @Nullable TypeElement resolveTypeName(
+      Elements elements,
+      ClassOrInterfaceType type,
+      Map<String, @Nullable TypeElement> cache,
+      IdentityHashMap<ClassOrInterfaceType, @Nullable TypeElement> nodeCache) {
     String name = type.getNameWithScope();
 
     // `firstComponent` is what a single-type import must import; the rest of `name` names a
@@ -111,6 +132,12 @@ public final class JavaParserUtil {
       firstComponent = name.substring(0, dotIndex);
       suffix = name.substring(dotIndex);
     }
+
+    CompilationUnit cu = type.findCompilationUnit().orElse(null);
+    // The package that contains `type`.  The empty string names the unnamed package, which is also
+    // the fallback when `type` is not in a compilation unit.
+    String packageName =
+        cu == null ? "" : cu.getPackageDeclaration().map(pkg -> pkg.getNameAsString()).orElse("");
 
     // A type parameter, a local class, or a type that is lexically enclosed in a type declaration,
     // takes precedence over an import, over a type in the same package, over a type in
@@ -189,7 +216,13 @@ public final class JavaParserUtil {
           // The enclosing type might inherit the member type rather than declare it.
           TypeElement enclosingElement = getTypeElement(elements, enclosingName, cache);
           if (enclosingElement != null) {
-            result = resolveMemberType(elements, enclosingElement, firstComponent, suffix, cache);
+            result =
+                resolveMemberType(
+                    elements,
+                    new SearchedType(enclosingElement, true, true),
+                    firstComponent,
+                    suffix,
+                    cache);
             if (result != null) {
               return result;
             }
@@ -208,14 +241,25 @@ public final class JavaParserUtil {
         // is inherited from another.
         TypeElement inherited = null;
         for (ClassOrInterfaceType supertype : unnameableSupertypes) {
-          TypeElement supertypeElement = resolveTypeName(elements, supertype, cache);
+          TypeElement supertypeElement =
+              resolveTypeNameMemoized(elements, supertype, cache, nodeCache);
           if (supertypeElement == null) {
             // The supertype could not be determined, so neither could the member types that the
             // unnameable class inherits and that might shadow `name`.
             return null;
           }
           TypeElement fromSupertype =
-              resolveMemberType(elements, supertypeElement, firstComponent, suffix, cache);
+              resolveMemberType(
+                  elements,
+                  // The unnameable class inherits a package-private member type of
+                  // `supertypeElement` only if the two are in the same package.  The unnameable
+                  // class is declared in the compilation unit that contains `type`, so its package
+                  // is `packageName`.
+                  new SearchedType(
+                      supertypeElement, false, inPackage(elements, supertypeElement, packageName)),
+                  firstComponent,
+                  suffix,
+                  cache);
           if (fromSupertype != null) {
             if (inherited == null) {
               inherited = fromSupertype;
@@ -232,7 +276,6 @@ public final class JavaParserUtil {
       }
     }
 
-    CompilationUnit cu = type.findCompilationUnit().orElse(null);
     if (cu == null) {
       // The name might be fully-qualified.
       return getTypeElement(elements, name, cache);
@@ -259,7 +302,15 @@ public final class JavaParserUtil {
               importedName.substring(0, importedName.length() - firstComponent.length() - 1);
           TypeElement containerElement = getTypeElement(elements, containerName, cache);
           if (containerElement != null) {
-            result = resolveMemberType(elements, containerElement, firstComponent, suffix, cache);
+            // An import imports only the member types that `containerElement` inherits; the ones
+            // that it declares have canonical names, which the lookup above already tried.
+            result =
+                resolveMemberType(
+                    elements,
+                    new SearchedType(containerElement, false, true),
+                    firstComponent,
+                    suffix,
+                    cache);
             if (result != null) {
               return result;
             }
@@ -272,8 +323,7 @@ public final class JavaParserUtil {
     // in `java.lang`.  A type in the same package shadows the others, so it is looked up first.  A
     // name in the unnamed package has no prefix.
     List<String> containerPrefixes = new ArrayList<>();
-    containerPrefixes.add(
-        cu.getPackageDeclaration().map(pkg -> pkg.getNameAsString() + ".").orElse(""));
+    containerPrefixes.add(packageName.isEmpty() ? "" : packageName + ".");
     for (ImportDeclaration importDecl : cu.getImports()) {
       if (importDecl.isAsterisk()) {
         containerPrefixes.add(importDecl.getNameAsString() + ".");
@@ -293,8 +343,15 @@ public final class JavaParserUtil {
       if (importDecl.isAsterisk()) {
         TypeElement importedElement = getTypeElement(elements, importDecl.getNameAsString(), cache);
         if (importedElement != null) {
+          // An import imports only the member types that `importedElement` inherits; the ones that
+          // it declares have canonical names, which the lookup above already tried.
           TypeElement result =
-              resolveMemberType(elements, importedElement, firstComponent, suffix, cache);
+              resolveMemberType(
+                  elements,
+                  new SearchedType(importedElement, false, true),
+                  firstComponent,
+                  suffix,
+                  cache);
           if (result != null) {
             return result;
           }
@@ -306,6 +363,38 @@ public final class JavaParserUtil {
     // This lookup is last, because a type that is in scope shadows a type whose fully-qualified
     // name is `name`.
     return getTypeElement(elements, name, cache);
+  }
+
+  /**
+   * Returns the element for the given JavaParser type, memoizing the result under the identity of
+   * the AST node.
+   *
+   * <p>Resolving a name that appears in the body of an anonymous or local class resolves that
+   * class's supertype names, each of which may itself appear in the body of an anonymous or local
+   * class. Without memoization, the same supertype name would be resolved once for every path
+   * through the enclosing classes, which is exponential in the nesting depth.
+   *
+   * @param elements used for looking up names
+   * @param type a JavaParser class or interface type
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it
+   * @param nodeCache maps an AST node to the type it names, or to null if that cannot be
+   *     determined; this method both reads and writes it. Its keys are compared by reference
+   *     equality, because JavaParser's {@code equals()} is structural but two occurrences of the
+   *     same type name can name different types.
+   * @return the element for {@code type}, or null if it cannot be determined
+   */
+  private static @Nullable TypeElement resolveTypeNameMemoized(
+      Elements elements,
+      ClassOrInterfaceType type,
+      Map<String, @Nullable TypeElement> cache,
+      IdentityHashMap<ClassOrInterfaceType, @Nullable TypeElement> nodeCache) {
+    if (nodeCache.containsKey(type)) {
+      return nodeCache.get(type);
+    }
+    TypeElement result = resolveTypeName(elements, type, cache, nodeCache);
+    nodeCache.put(type, result);
+    return result;
   }
 
   /**
@@ -496,28 +585,41 @@ public final class JavaParserUtil {
   }
 
   /**
-   * A type whose member types {@link #resolveMemberType} searches, together with whether the type's
-   * package-private member types are inherited by the type at which the search started.
+   * A type whose member types {@link #resolveMemberType} searches, together with which of its
+   * member types are members at the place where the name is being resolved -- that is, of the type
+   * in whose scope the name appears, or, for a name that an import declaration resolves, of the
+   * imported type.
+   *
+   * <p>The search starts at that type itself only when the type can be looked up by name. The
+   * search for a name that appears in an anonymous or local class starts at a supertype of that
+   * class instead, and the search for a name that an import declaration resolves starts at the
+   * imported type. In those cases a member type is a member at the place where the name is being
+   * resolved only if it is inherited.
    *
    * @param typeElement the type whose member types to search
-   * @param packagePrivateIsInherited true if a package-private member type of {@code typeElement}
-   *     is a member of the type at which the search started
+   * @param privateIsMember true if a private member type of {@code typeElement} is a member at the
+   *     place where the name is being resolved; true only if the search starts at {@code
+   *     typeElement} itself, because a private member type is inherited by no type
+   * @param packagePrivateIsMember true if a package-private member type of {@code typeElement} is a
+   *     member at the place where the name is being resolved
    */
-  private record SearchedType(TypeElement typeElement, boolean packagePrivateIsInherited) {}
+  private record SearchedType(
+      TypeElement typeElement, boolean privateIsMember, boolean packagePrivateIsMember) {}
 
   /**
    * Returns the element for the member type named {@code firstComponent + suffix} that {@code
-   * typeElement} declares or inherits, or null if there is no such member type.
+   * start}'s type declares or inherits, or null if there is no such member type.
    *
-   * <p>{@code typeElement} and its supertypes are searched in breadth-first order, so a member type
-   * that is declared in a nearer supertype hides one that is declared in a farther supertype. A
-   * declaration hides whatever its declaring type would otherwise inherit, even if the declaration
-   * is not itself inherited: a private member type is inherited by no type, and a package-private
-   * member type is inherited only within its own package.
+   * <p>{@code start}'s type and its supertypes are searched in breadth-first order, so a member
+   * type that is declared in a nearer supertype hides one that is declared in a farther supertype.
+   * A declaration hides whatever its declaring type would otherwise inherit, even if the
+   * declaration is not itself inherited: a private member type is inherited by no type, and a
+   * package-private member type is inherited only within its own package.
    *
    * @param elements used for looking up names
-   * @param typeElement the type whose member types to search
-   * @param firstComponent the simple name of a member type of {@code typeElement}
+   * @param start the type whose member types to search, together with which of its member types are
+   *     members at the place where the name is being resolved
+   * @param firstComponent the simple name of a member type of {@code start}'s type
    * @param suffix the rest of the type name, which names a type nested within {@code
    *     firstComponent}; it is empty or starts with "."
    * @param cache maps a name to the type it names, or to null if it names no type; this method both
@@ -526,16 +628,14 @@ public final class JavaParserUtil {
    */
   private static @Nullable TypeElement resolveMemberType(
       Elements elements,
-      TypeElement typeElement,
+      SearchedType start,
       String firstComponent,
       String suffix,
       Map<String, @Nullable TypeElement> cache) {
     Set<TypeElement> visited = new HashSet<>();
-    visited.add(typeElement);
+    visited.add(start.typeElement());
     Deque<SearchedType> worklist = new ArrayDeque<>();
-    // Every member type that `typeElement` declares is a member of `typeElement`, whatever its
-    // access modifier is.
-    worklist.add(new SearchedType(typeElement, true));
+    worklist.add(start);
     while (!worklist.isEmpty()) {
       SearchedType current = worklist.remove();
       TypeElement currentElement = current.typeElement();
@@ -548,7 +648,7 @@ public final class JavaParserUtil {
         }
       }
       if (declared != null) {
-        if (isInherited(declared, current.packagePrivateIsInherited())) {
+        if (isMember(declared, current)) {
           if (suffix.isEmpty()) {
             return declared;
           }
@@ -562,11 +662,14 @@ public final class JavaParserUtil {
           // canonical name.  Resolve the components of `suffix` one at a time instead, so that each
           // one is searched for in the supertypes of the type that contains it.
           int dot = suffix.indexOf('.', 1);
+          // Every member type that `declared` declares is a member of `declared`, whatever its
+          // access modifier is.
+          SearchedType nestedStart = new SearchedType(declared, true, true);
           if (dot == -1) {
-            return resolveMemberType(elements, declared, suffix.substring(1), "", cache);
+            return resolveMemberType(elements, nestedStart, suffix.substring(1), "", cache);
           }
           return resolveMemberType(
-              elements, declared, suffix.substring(1, dot), suffix.substring(dot), cache);
+              elements, nestedStart, suffix.substring(1, dot), suffix.substring(dot), cache);
         }
         // `declared` is not a member of the type at which the search started, and it hides every
         // member type of the same name that `currentElement` would otherwise inherit, so do not
@@ -576,12 +679,14 @@ public final class JavaParserUtil {
       for (TypeElement supertype :
           ElementUtils.getDirectSuperTypeElements(currentElement, elements)) {
         if (visited.add(supertype)) {
-          // `currentElement` inherits a package-private member type of `supertype` only if the two
-          // types are in the same package.
           worklist.add(
               new SearchedType(
                   supertype,
-                  current.packagePrivateIsInherited()
+                  // A private member type is inherited by no type.
+                  false,
+                  // `currentElement` inherits a package-private member type of `supertype` only if
+                  // the two types are in the same package.
+                  current.packagePrivateIsMember()
                       && inSamePackage(elements, supertype, currentElement)));
         }
       }
@@ -590,25 +695,37 @@ public final class JavaParserUtil {
   }
 
   /**
-   * Returns true if {@code member} is a member of the type at which a search by {@link
-   * #resolveMemberType} started -- that is, if every type between that type and the type that
-   * declares {@code member} inherits it.
+   * Returns true if {@code member} is a member at the place where {@link #resolveMemberType} is
+   * resolving a name -- that is, if every type between {@code searchedType}'s type and the type
+   * that declares {@code member} inherits it, and {@code searchedType}'s type either declares
+   * {@code member} or inherits it.
    *
-   * @param member a member type of the type that is currently being searched
-   * @param packagePrivateIsInherited true if a package-private member type of the type that is
-   *     currently being searched is a member of the type at which the search started
-   * @return true if {@code member} is a member of the type at which the search started
+   * @param member a member type that {@code searchedType}'s type declares
+   * @param searchedType the type that is currently being searched
+   * @return true if {@code member} is a member at the place where the name is being resolved
    */
-  private static boolean isInherited(TypeElement member, boolean packagePrivateIsInherited) {
+  private static boolean isMember(TypeElement member, SearchedType searchedType) {
     Set<Modifier> modifiers = member.getModifiers();
     if (modifiers.contains(Modifier.PRIVATE)) {
-      // A private member type is not inherited.
-      return false;
+      return searchedType.privateIsMember();
     }
     if (modifiers.contains(Modifier.PUBLIC) || modifiers.contains(Modifier.PROTECTED)) {
       return true;
     }
-    return packagePrivateIsInherited;
+    return searchedType.packagePrivateIsMember();
+  }
+
+  /**
+   * Returns true if the given type is declared in the given package.
+   *
+   * @param elements used for looking up the package that contains a type
+   * @param type a type
+   * @param packageName the fully-qualified name of a package; the empty string names the unnamed
+   *     package
+   * @return true if {@code type} is declared in the package named {@code packageName}
+   */
+  private static boolean inPackage(Elements elements, TypeElement type, String packageName) {
+    return elements.getPackageOf(type).getQualifiedName().contentEquals(packageName);
   }
 
   /**
