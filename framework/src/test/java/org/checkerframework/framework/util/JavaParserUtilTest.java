@@ -112,6 +112,29 @@ public class JavaParserUtilTest {
   }
 
   /**
+   * Tests that {@link JavaParserUtil#resolveTypeName} resolves a nested type name whose first
+   * component names a member type of an enclosing class and whose later components name inherited
+   * member types. Such a name is not canonical, so it cannot be looked up directly.
+   */
+  @Test
+  public void testResolveNestedNameOfDeclaredMemberType() {
+    String memberOwner =
+        "class MemberOwner { private static class Member extends Base {}"
+            + " Member.Visible f; Member.Secret g; }";
+
+    // The name of the member type itself is canonical.
+    assertResolvesTo(SUPERPKG + ".MemberOwner.Member", SUPERPKG, memberOwner, "Member");
+
+    // `Member` inherits `Visible` rather than declaring it, so `Member.Visible` is not canonical
+    // and the member types of `Member`'s supertypes must be searched.
+    assertResolvesTo(SUPERPKG + ".Base.Visible", SUPERPKG, memberOwner, "Member.Visible");
+
+    // A member type of an enclosing class shadows every other type whose name starts with the
+    // member type's simple name, so a suffix that names no member type of `Member` names nothing.
+    assertResolvesTo(null, SUPERPKG, memberOwner, "Member.Secret");
+  }
+
+  /**
    * Returns the declaration of a class named {@code Outer}, which is not a subtype of {@code Base},
    * that declares a local class that extends {@code Base} and that uses the given type name.
    *

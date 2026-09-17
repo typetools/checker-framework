@@ -273,7 +273,27 @@ public final class JavaParserUtil {
         // If `name` has a suffix, then the suffix names a type that is nested within the member
         // type.  If there is no such type, then `name` names nothing, because the member type
         // shadows every other type whose name starts with `firstComponent`.
-        return ResolvedName.of(getTypeElement(elements, enclosingName + "." + name, cache));
+        TypeElement result = getTypeElement(elements, enclosingName + "." + name, cache);
+        if (result != null || suffix.isEmpty()) {
+          return ResolvedName.of(result);
+        }
+        // `enclosingName + "." + name` is not a canonical name if any component of `suffix` names
+        // an inherited member type, and `getTypeElement` finds a type only by its canonical name.
+        // Search `enclosingType`'s member types instead, which resolves the components of `suffix`
+        // one at a time.
+        TypeElement enclosingElement = getTypeElement(elements, enclosingName, cache);
+        if (enclosingElement == null) {
+          return ResolvedName.NONE;
+        }
+        return ResolvedName.of(
+            resolveMemberType(
+                elements,
+                // Every member type that `enclosingElement` declares is a member of it, whatever
+                // its access modifier is.
+                new SearchedType(enclosingElement, true, true),
+                firstComponent,
+                suffix,
+                cache));
       }
 
       if (ancestor instanceof NodeWithTypeParameters<?> genericDeclaration) {
