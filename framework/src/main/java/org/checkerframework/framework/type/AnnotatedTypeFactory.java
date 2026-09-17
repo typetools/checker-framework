@@ -4990,7 +4990,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Create the ground target type of the functional interface.
    *
    * <p>Basically, it replaces the wildcards with their bounds doing a capture conversion like glb
-   * for extends bounds.
+   * for extends bounds. The ground target type of a raw functional interface type is its erasure,
+   * so that its function type is erased too.
    *
    * @see "JLS 9.9"
    * @param functionalType the functional interface type
@@ -4999,16 +5000,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   private AnnotatedDeclaredType makeGroundTargetType(
       AnnotatedDeclaredType functionalType, DeclaredType groundTargetJavaType) {
+    if (TypesUtils.isRaw(groundTargetJavaType)) {
+      // JLS 9.9: "The function type of the raw type of a generic functional interface I<...>
+      // is the erasure of the function type of the generic functional interface I<...>."
+      // Returning the erasure is enough to erase the function type, because
+      // AnnotatedTypes.asMemberOf erases a member that is accessed through a raw receiver.
+      return functionalType.getErased();
+    }
     if (functionalType.getTypeArguments().isEmpty()) {
       return functionalType;
     }
-
-    List<AnnotatedTypeParameterBounds> bounds =
-        this.typeVariablesFromUse(
-            functionalType, (TypeElement) functionalType.getUnderlyingType().asElement());
-
-    boolean sizesDiffer =
-        functionalType.getTypeArguments().size() != groundTargetJavaType.getTypeArguments().size();
 
     // This is the declared type of the functional type meaning that the type arguments are the
     // type parameters.
@@ -5029,16 +5030,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           // subtyping and containment checks.
           typeVarToTypeArg.put(typeVariable, wildcardType);
         } else if (isExtendsWildcard(wildcardType)) {
-          TypeMirror correctArgType;
-          if (sizesDiffer) {
-            // The Java type is raw.
-            TypeMirror typeParamUbType = bounds.get(i).getUpperBound().getUnderlyingType();
-            correctArgType =
-                TypesUtils.greatestLowerBound(
-                    typeParamUbType, wildcardUbType, this.checker.getProcessingEnvironment());
-          } else {
-            correctArgType = groundTargetJavaType.getTypeArguments().get(i);
-          }
+          TypeMirror correctArgType = groundTargetJavaType.getTypeArguments().get(i);
 
           final AnnotatedTypeMirror newArg;
           if (types.isSameType(wildcardUbType, correctArgType)) {
