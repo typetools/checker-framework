@@ -95,8 +95,8 @@ while :; do
     echo "wpi2.sh: $* did not write any files to $newdir/." 1>&2
     echo "wpi2.sh: The command must compile every source file of the project, passing" 1>&2
     echo "  -Ainfer=ajava" 1>&2
-    echo "  -AinferOutputDirectory=.../whole-program-inference-new" 1>&2
-    echo "  -Aajava=.../whole-program-inference-output" 1>&2
+    echo "  -AinferOutputDirectory=$PWD/$newdir" 1>&2
+    echo "  -Aajava=$PWD/$outdir" 1>&2
     echo "  -Awarns" 1>&2
     if [ "$iteration" -gt 1 ]; then
       echo "wpi2.sh: The output of the previous iterations is in $outdir/." 1>&2
