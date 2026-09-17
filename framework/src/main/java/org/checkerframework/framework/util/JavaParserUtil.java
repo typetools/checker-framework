@@ -533,8 +533,8 @@ public final class JavaParserUtil {
   /**
    * Returns the children of the given type declaration in which its member types are in scope: its
    * body declarations, an enum's constants, and a record's components. The result does not include
-   * a child in which they are not in scope: an annotation on the declaration, a type parameter, or
-   * a supertype name.
+   * a child in which they are not in scope: an annotation on the declaration, a type parameter, a
+   * supertype name, or a permitted subtype name.
    *
    * @param typeDecl a JavaParser type declaration
    * @return the children of {@code typeDecl} in which its member types are in scope
