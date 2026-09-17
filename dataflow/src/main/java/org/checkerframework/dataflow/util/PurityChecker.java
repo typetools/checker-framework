@@ -145,6 +145,39 @@ public final class PurityChecker {
   }
 
   /**
+   * Returns true if {@code expr} is an effectively final functional-interface parameter of {@code
+   * method} and {@code invoked} is the functional method of {@code expr}'s type.
+   *
+   * <p>The code that such an expression denotes has the purity that {@code method} promises,
+   * because at every call to {@code method} the argument was required to have it. Only the
+   * functional method carries that guarantee; a default method such as {@code Function.andThen}
+   * does not.
+   *
+   * @param expr an expression, or null
+   * @param invoked a method that {@code expr} is used to invoke or to refer to
+   * @param method a method or constructor declaration, or null
+   * @param env the processing environment
+   * @return true if {@code invoked} is the functional method of a functional-interface parameter of
+   *     {@code method}
+   */
+  public static boolean isFunctionalMethodOfParameter(
+      @Nullable ExpressionTree expr,
+      ExecutableElement invoked,
+      @Nullable MethodTree method,
+      ProcessingEnvironment env) {
+    TypeMirror parameterType = functionalInterfaceParameterType(expr, method, env);
+    if (parameterType == null) {
+      return false;
+    }
+    ExecutableElement functionalMethod = TypesUtils.findFunction(parameterType, env);
+    @SuppressWarnings("interning:not.interned") // Checking for exact object.
+    boolean isFunctionalMethod = invoked == functionalMethod;
+    return isFunctionalMethod
+        || env.getElementUtils()
+            .overrides(invoked, functionalMethod, (TypeElement) invoked.getEnclosingElement());
+  }
+
+  /**
    * Returns the functional interface type of {@code expr}, if {@code expr} is an effectively final
    * formal parameter of {@code method} whose type is a functional interface; otherwise returns
    * null.
@@ -427,19 +460,8 @@ public final class PurityChecker {
       if (env == null) {
         return false;
       }
-      ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
-      TypeMirror receiverType = functionalInterfaceParameterType(receiver, enclosingMethod, env);
-      if (receiverType == null) {
-        return false;
-      }
-      ExecutableElement functionalMethod = TypesUtils.findFunction(receiverType, env);
-      // Only the functional method gets the assumption; a default method such as
-      // `Function.andThen` does not.
-      @SuppressWarnings("interning:not.interned") // Checking for exact object.
-      boolean isFunctionalMethod = invoked == functionalMethod;
-      return isFunctionalMethod
-          || env.getElementUtils()
-              .overrides(invoked, functionalMethod, (TypeElement) invoked.getEnclosingElement());
+      return isFunctionalMethodOfParameter(
+          TreeUtils.getReceiverTree(tree), invoked, enclosingMethod, env);
     }
 
     @Override

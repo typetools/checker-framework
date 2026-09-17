@@ -187,6 +187,34 @@ public class PurityFunctionalArgument {
     return callee(f, s);
   }
 
+  // A method reference to the functional method of such a parameter denotes the same code, so it
+  // is passed onward in the same way.
+
+  @SideEffectFree
+  int passesParameterMethodReference(Function<String, Integer> f, String s) {
+    return callee(f::apply, s);
+  }
+
+  int unannotatedMethodPassesParameterMethodReference(Function<String, Integer> f, String s) {
+    // :: error: [purity.functional.argument]
+    return callee(f::apply, s);
+  }
+
+  /** A default method is not the functional method, so the caller checked nothing about it. */
+  @SideEffectFree
+  int passesParameterDefaultMethodReference(DefaultFunction f, String s) {
+    // :: error: [purity.functional.argument]
+    return callee(f::applyTwice, s);
+  }
+
+  /** A functional interface with a default method of the same signature as its functional one. */
+  @FunctionalInterface
+  interface DefaultFunction extends Function<String, Integer> {
+    default Integer applyTwice(String s) {
+      return apply(s) + apply(s);
+    }
+  }
+
   // An unannotated callee imposes no obligation on its arguments.
 
   void unannotatedCalleeTakesAnything(String s) {

@@ -1579,8 +1579,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // deterministic, like any object creation.
         argKinds = EnumSet.of(PurityKind.SIDE_EFFECT_FREE);
       } else {
-        argKinds =
-            implementationPurityKinds((ExecutableElement) TreeUtils.elementFromUse(argument));
+        ExecutableElement referenced = (ExecutableElement) TreeUtils.elementFromUse(argument);
+        argKinds = implementationPurityKinds(referenced);
+        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
+        if (PurityChecker.isFunctionalMethodOfParameter(
+            memberReference.getQualifierExpression(), referenced, enclosingMethod, env)) {
+          // `f::apply`, where `f` is a functional-interface parameter of the enclosing method,
+          // denotes the code that the caller of that method was required to check.
+          argKinds.addAll(
+              PurityChecker.functionalParameterKinds(
+                  atypeFactory, TreeUtils.elementFromDeclaration(enclosingMethod)));
+        }
       }
     } else {
       ExecutableElement argFunction =
@@ -1663,16 +1672,32 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Returns the purity of a method that implements a functional method: its declared purity, plus
-   * determinism if it returns no value.
+   * determinism if it returns no value, plus whatever the command-line assumptions grant it.
    *
    * @param method a method or constructor
    * @return the purity kinds of {@code method}
    */
   private EnumSet<PurityKind> implementationPurityKinds(ExecutableElement method) {
-    EnumSet<PurityKind> result = EnumSet.copyOf(PurityUtils.getPurityKinds(atypeFactory, method));
+    EnumSet<PurityKind> declared = PurityUtils.getPurityKinds(atypeFactory, method);
+    EnumSet<PurityKind> result = EnumSet.copyOf(declared);
     if (method.getKind() != ElementKind.CONSTRUCTOR
         && method.getReturnType().getKind() == TypeKind.VOID) {
       result.add(PurityKind.DETERMINISTIC);
+    }
+    if (!declared.isEmpty()) {
+      // Like PurityChecker, apply an assumption only to a method that has a purity annotation,
+      // so that a method reference is treated exactly like a lambda whose body calls the
+      // referenced method.
+      if (assumeSideEffectFree) {
+        result.add(PurityKind.SIDE_EFFECT_FREE);
+      }
+      if (assumeDeterministic) {
+        result.add(PurityKind.DETERMINISTIC);
+      }
+      if (assumePureGetters && ElementUtils.isGetter(method)) {
+        result.add(PurityKind.SIDE_EFFECT_FREE);
+        result.add(PurityKind.DETERMINISTIC);
+      }
     }
     return result;
   }
