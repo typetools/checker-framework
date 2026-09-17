@@ -2,8 +2,7 @@
 
 # Concatenates multiple descriptions of annotations into a single one.
 
-SCENE_LIB=$(dirname "$0")
-WORKSPACE=$SCENE_LIB/..
+WORKSPACE="$(CDPATH='' cd -P -- "$(dirname -- "$0")/.." && pwd -P)" || exit 1
 
 export CLASSPATH="$WORKSPACE"/dist/annotation-file-utilities-all.jar:"$CLASSPATH"
 java org.checkerframework.afu.scenelib.tools.Anncat "$@"
