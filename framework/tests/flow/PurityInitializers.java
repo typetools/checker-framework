@@ -66,6 +66,23 @@ public class PurityInitializers {
     }
   }
 
+  // A static field is visible to other code even while an object is being constructed, so assigning
+  // one is a side effect, in a constructor and in an instance initializer alike.
+  static class AssignStaticField {
+    static int s;
+
+    {
+      // :: error: [purity.not.sideeffectfree.assign.field]
+      s = 1;
+    }
+
+    @SideEffectFree
+    AssignStaticField() {
+      // :: error: [purity.not.sideeffectfree.assign.field]
+      s = 2;
+    }
+  }
+
   // Pure initializers do not make the constructor impure.
   static class PureInitializer {
     int x = pureValue();
@@ -132,6 +149,45 @@ public class PurityInitializers {
 
       {
         x = 1;
+      }
+
+      @SideEffectFree
+      Local() {}
+    }
+    return new Local();
+  }
+
+  // The same holds for an anonymous class:  its initializers run when it is instantiated, so what
+  // matters is the class member that encloses them.  The Purity Checker conservatively attributes
+  // them to the method that contains the class declaration.
+  @SideEffectFree
+  Object anonymousClass() {
+    // The error is for the call to the superclass constructor `Object()`, which is not annotated;
+    // it is unrelated to the initializers below.
+    // :: error: [purity.not.sideeffectfree.call]
+    return new Object() {
+      int x;
+
+      // :: error: [purity.not.sideeffectfree.call]
+      int y = bump();
+
+      {
+        // No error:  assigning a field of the object that is being constructed.
+        x = 1;
+      }
+    };
+  }
+
+  // A static initializer runs at class initialization rather than during construction, so assigning
+  // a static field in one is a side effect even though the field belongs to the same class.
+  @SideEffectFree
+  Object staticInitializerAssignment() {
+    class Local {
+      static int s;
+
+      static {
+        // :: error: [purity.not.sideeffectfree.assign.field]
+        s = 1;
       }
 
       @SideEffectFree

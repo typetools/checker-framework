@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.util;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -15,6 +16,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
@@ -477,10 +479,13 @@ public final class PurityChecker {
       variable = TreeUtils.withoutParens(variable);
       VariableElement fieldElt = TreeUtils.asFieldAccess(variable);
       if (fieldElt != null
+          // A static field is visible to other code even while an object is being constructed,
+          // so assigning one is a side effect wherever the assignment appears.
+          && !ElementUtils.isStatic(fieldElt)
           && isFieldInCurrentClass(fieldElt)
           && inConstructorNotInLambda()
           && inConstructorOrInitializer()) {
-        // assigning a field in a constructor or an initializer
+        // assigning an instance field in a constructor or an instance initializer
         // TODO: add a check for ArrayAccessTree too.
         return;
       }
@@ -529,28 +534,42 @@ public final class PurityChecker {
     }
 
     /**
-     * Returns true if the current path is in a constructor, or in an initializer of the class that
-     * immediately encloses it (an instance or static initializer block, or the initializer of a
-     * field). Such code runs while the object is being constructed, before it is visible to other
-     * code.
+     * Returns true if the current path is in a constructor, or in an instance initializer of the
+     * class that immediately encloses it (an instance initializer block, or the initializer of a
+     * non-static field). Such code runs while the object is being constructed, before the object is
+     * visible to other code.
+     *
+     * <p>A static initializer block and the initializer of a static field are not such code. They
+     * run at class initialization, and the static fields they assign are visible to other code.
      *
      * <p>This differs from {@link TreePathUtil#inConstructor} for code in a local or anonymous
      * class: an initializer of such a class runs when the class is instantiated, so what matters is
      * the class member that encloses the code, not the method that encloses the class declaration.
      *
-     * @return true if the current path is in a constructor or in an initializer
+     * @return true if the current path is in a constructor or in an instance initializer
      */
     private boolean inConstructorOrInitializer() {
+      Tree child = null;
       for (TreePath p = getCurrentPath(); p != null; p = p.getParentPath()) {
         Tree leaf = p.getLeaf();
         if (leaf instanceof MethodTree methodTree) {
           return TreeUtils.isConstructor(methodTree);
         }
         if (leaf instanceof ClassTree) {
-          // No method intervenes between the class and the code, so the code is in an
-          // initializer of the class.
-          return true;
+          // No method intervenes between the class and the code, so `child` is the member of the
+          // class that contains the code:  an initializer block or a field declaration.
+          if (child instanceof BlockTree blockTree) {
+            return !blockTree.isStatic();
+          } else if (child instanceof VariableTree variableTree) {
+            VariableElement fieldElt = TreeUtils.elementFromDeclaration(variableTree);
+            // A field of an interface is implicitly static, so consult the element rather than
+            // the modifiers of the declaration.
+            return fieldElt != null && !ElementUtils.isStatic(fieldElt);
+          } else {
+            return false;
+          }
         }
+        child = leaf;
       }
       return false;
     }
