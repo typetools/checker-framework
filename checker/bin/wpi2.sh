@@ -42,7 +42,7 @@ max_iterations=${WPI2_MAX_ITERATIONS:-10}
 # `if` condition, so suppress the comparison's error message and treat failure as invalid; a
 # comparison that fails every time would make the loop below run forever.
 if ! [ "$max_iterations" -ge 2 ] 2> /dev/null; then
-  echo "wpi2.sh: WPI2_MAX_ITERATIONS must be an integer 2 or greater," 1>&2
+  echo "wpi2.sh: WPI2_MAX_ITERATIONS must be an integer between 2 and the shell's maximum," 1>&2
   echo "wpi2.sh: but it is \"$WPI2_MAX_ITERATIONS\"." 1>&2
   exit 2
 fi
@@ -89,10 +89,20 @@ while :; do
   fi
 
   rm -rf "$newdir"
-  "$@"
+  buildstatus=0
+  "$@" || buildstatus=$?
+  if [ "$buildstatus" -ne 0 ]; then
+    echo "wpi2.sh: $* failed with status $buildstatus." 1>&2
+    if [ -n "$(find "$outdir" -type f | head -n 1)" ]; then
+      echo "wpi2.sh: The annotations inferred so far are in $outdir/;" 1>&2
+      echo "wpi2.sh: re-running wpi2.sh continues from them." 1>&2
+    fi
+    exit "$buildstatus"
+  fi
 
   if [ -d "$newdir" ]; then
-    (cd "$newdir" && find . -type f) | LC_ALL=C sort > "$tmpdir/newdir-files"
+    (cd "$newdir" && find . -type f) > "$tmpdir/newdir-files-unsorted"
+    LC_ALL=C sort "$tmpdir/newdir-files-unsorted" > "$tmpdir/newdir-files"
   else
     : > "$tmpdir/newdir-files"
   fi
@@ -121,7 +131,8 @@ while :; do
   # recompiled only some of the project's source files.  Stop rather than proceeding, because the
   # rest of the loop body would delete the annotations that were inferred for the files that the
   # command did not recompile.
-  (cd "$outdir" && find . -type f) | LC_ALL=C sort > "$tmpdir/outdir-files"
+  (cd "$outdir" && find . -type f) > "$tmpdir/outdir-files-unsorted"
+  LC_ALL=C sort "$tmpdir/outdir-files-unsorted" > "$tmpdir/outdir-files"
   missing=$(LC_ALL=C comm -23 "$tmpdir/outdir-files" "$tmpdir/newdir-files")
   if [ -n "$missing" ]; then
     nmissing=$(echo "$missing" | wc -l | tr -d ' ')
@@ -150,8 +161,11 @@ while :; do
 
   if [ "$diffstatus" -eq 0 ]; then
     rm -rf "$newdir"
-    if [ "$iteration" -eq 1 ]; then plural=""; else plural="s"; fi
-    echo "wpi2.sh: inference converged after $iteration iteration$plural; its output is in $outdir/."
+    # Count the iterations of previous runs too, so that this count is consistent with the
+    # iteration numbers of the files in $diffdir.
+    totaliterations=$((diffoffset + iteration))
+    if [ "$totaliterations" -eq 1 ]; then plural=""; else plural="s"; fi
+    echo "wpi2.sh: inference converged after $totaliterations iteration$plural; its output is in $outdir/."
     exit 0
   fi
 
