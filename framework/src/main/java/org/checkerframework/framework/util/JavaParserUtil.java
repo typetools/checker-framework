@@ -210,9 +210,9 @@ public final class JavaParserUtil {
     // `java.lang`, and over the interpretation of `name` as a fully-qualified name.
     //
     // `child` is the child of `ancestor` that contains `type`.  It distinguishes a use of `name`
-    // within a class body, where the class's member types are in scope, from a use elsewhere in
-    // the class declaration -- in its annotations, its type parameter section, or its supertype
-    // names -- where they are not.
+    // within a class body, where the class's member types are in scope, from a use in the class's
+    // header -- its annotations, its type parameter bounds, and its own supertype names -- where
+    // they are not.
     Node child = type;
     for (Node ancestor = type.getParentNode().orElse(null);
         ancestor != null;
@@ -279,6 +279,12 @@ public final class JavaParserUtil {
           if (declaresMemberType(body, firstComponent)) {
             // A member type of an anonymous class has no name that `Elements` can look up.
             return ResolvedName.NONE;
+          }
+          if (creation.getScope().isPresent()) {
+            // In `outer.new Inner() { ... }`, `Inner` is a member of the type of `outer` rather
+            // than a name that is resolved in the scope of the expression, so this method cannot
+            // determine the member types that the anonymous class inherits.
+            return null;
           }
           unnameableSupertypes = Collections.singletonList(creation.getType());
         }
