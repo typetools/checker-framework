@@ -227,7 +227,9 @@ public abstract class CFAbstractAnalysis<
   private JavaExpression parseSideEffectsOnlyExpression(
       String expression, ExecutableElement declaringMethod) throws JavaExpressionParseException {
     CompilationUnitTree root = checker.getPathToCompilationUnit().getCompilationUnit();
-    if (seOnlyParseCacheRoot != root) {
+    @SuppressWarnings("interning:not.interned") // checking for identity, for caching
+    boolean differentTree = seOnlyParseCacheRoot != root;
+    if (differentTree) {
       seOnlyParseCache.clear();
       seOnlyParseCacheRoot = root;
     }
