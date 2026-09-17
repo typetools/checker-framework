@@ -183,6 +183,7 @@ public final class PurityChecker {
    * @param method a method or constructor declaration
    * @return true if {@code element} is a formal parameter of {@code method}
    */
+  @SuppressWarnings("interning:not.interned") // Checking for exact object.
   private static boolean isParameterOf(Element element, MethodTree method) {
     for (VariableTree parameter : method.getParameters()) {
       if (TreeUtils.elementFromDeclaration(parameter) == element) {
@@ -434,7 +435,9 @@ public final class PurityChecker {
       ExecutableElement functionalMethod = TypesUtils.findFunction(receiverType, env);
       // Only the functional method gets the assumption; a default method such as
       // `Function.andThen` does not.
-      return invoked == functionalMethod
+      @SuppressWarnings("interning:not.interned") // Checking for exact object.
+      boolean isFunctionalMethod = invoked == functionalMethod;
+      return isFunctionalMethod
           || env.getElementUtils()
               .overrides(invoked, functionalMethod, (TypeElement) invoked.getEnclosingElement());
     }
