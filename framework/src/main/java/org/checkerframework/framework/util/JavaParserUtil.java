@@ -64,7 +64,7 @@ public final class JavaParserUtil {
    */
   public static @Nullable TypeElement resolveTypeName(
       Elements elements, ClassOrInterfaceType type) {
-    return resolveTypeName(elements, type, new HashMap<>(4));
+    return resolveTypeName(elements, type, new HashMap<>());
   }
 
   /**
@@ -80,7 +80,8 @@ public final class JavaParserUtil {
    * @param elements used for looking up names
    * @param type a JavaParser class or interface type
    * @param cache maps a name to the type it names, or to null if it names no type; this method both
-   *     reads and writes it
+   *     reads and writes it. It must permit null values, so it cannot be a {@code
+   *     ConcurrentHashMap}; this method is not thread-safe.
    * @return the element for {@code type}, or null if it cannot be determined
    */
   public static @Nullable TypeElement resolveTypeName(
