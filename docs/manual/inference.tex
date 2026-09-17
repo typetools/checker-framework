@@ -145,8 +145,11 @@ You need to edit your buildfile, then run the \<wpi2.sh> script.
 \subsectionAndLabel{Editing your buildfile}{wpi-two-buildfile}
 
 First, set up your buildfile to run the Checker Framework.
+If you use the
+\ahreforurl{https://github.com/typetools/checkerframework-gradle-plugin}{Checker
+  Framework Gradle plugin}, then there is nothing to do.
 
-Then, add these command-line arguments:
+Otherwise, add these command-line arguments:
 \begin{itemize}
 \item \<-Ainfer=ajava>
 \item \<-AinferOutputDirectory=.../whole-program-inference-new>
@@ -188,10 +191,12 @@ the inference output, possibly in the middle of a build.
 \subsectionAndLabel{Running \<wpi2.sh>}{wpi-two-command}
 
 The arguments to \<wpi2.sh> are a command that runs the Checker Framework.
-Here is a typical invocation:
+Here is a typical invocation (if you use the
+\ahreforurl{https://github.com/typetools/checkerframework-gradle-plugin}{Checker
+  Framework Gradle plugin}).
 
 \begin{Verbatim}
-  $CHECKERFRAMEWORK/checker/bin/wpi2.sh ./gradlew clean assemble
+  $CHECKERFRAMEWORK/checker/bin/wpi2.sh ./gradlew -Pwpi2 clean assemble
 \end{Verbatim}
 
 \noindent
@@ -206,11 +211,14 @@ for which the Checker Framework inferred an annotation, it contains a file
 \<\emph{package}/\emph{ClassName}-\emph{checkername}.ajava>, where
 \emph{checkername} is the fully-qualified name of the checker that ran.  A
 source file for which nothing was inferred has no \<.ajava> file.
-\<wpi2.sh> uses two other top-level directories:
+\<wpi2.sh> uses three other top-level directories:
 \<whole-program-inference-new>, which the compiler writes each iteration's
-results to and which \<wpi2.sh> removes when inference converges, and \<whole-program-inference-diffs>, which contains one diff
+results to and which \<wpi2.sh> removes when inference converges;
+\<whole-program-inference-diffs>, which contains one diff
 file per iteration (\<iteration-1.diff>, \<iteration-2.diff>, etc.) for
-diagnostic purposes.  You may wish to add \<whole-program-inference-*> to
+diagnostic purposes; and \<whole-program-inference-previous>, which exists
+only while each iteration's results replace the previous iteration's.
+You may wish to add \<whole-program-inference-*> to
 your \<.gitignore> file.
 
 If \<wpi2.sh> fails --- for example, because the Checker Framework crashed
@@ -220,7 +228,7 @@ continues from the annotations that it inferred so far in
 \<whole-program-inference-output> before running \<wpi2.sh>.
 
 \<wpi2.sh> runs the command at most 10 times.  Set the
-\<WPI2\_MAX\_ITERATIONS> environment variable to a positive integer to
+\<WPI2\_MAX\_ITERATIONS> environment variable to an integer 2 or greater to
 change the bound.
 
 

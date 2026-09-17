@@ -19,6 +19,9 @@ outdir=whole-program-inference-output
 # The directory that holds, for diagnostic purposes, the annotations that each
 # iteration added.
 diffdir=whole-program-inference-diffs
+# The directory that $outdir is moved to while $newdir replaces it.  It exists
+# only during that replacement, or after a run that was interrupted during it.
+prevdir=whole-program-inference-previous
 
 if [ $# -eq 0 ]; then
   echo "Usage: wpi2.sh COMMAND [ARG...]" 1>&2
@@ -38,8 +41,8 @@ max_iterations=${WPI2_MAX_ITERATIONS:-10}
 # rather than yielding false.  `set -e` does not halt a script when the failing command is an
 # `if` condition, so suppress the comparison's error message and treat failure as invalid; a
 # comparison that fails every time would make the loop below run forever.
-if ! [ "$max_iterations" -ge 1 ] 2> /dev/null; then
-  echo "wpi2.sh: WPI2_MAX_ITERATIONS must be a positive integer," 1>&2
+if ! [ "$max_iterations" -ge 2 ] 2> /dev/null; then
+  echo "wpi2.sh: WPI2_MAX_ITERATIONS must be an integer 2 or greater," 1>&2
   echo "wpi2.sh: but it is \"$WPI2_MAX_ITERATIONS\"." 1>&2
   exit 2
 fi
@@ -47,6 +50,14 @@ fi
 # A directory for this script's own temporary files.
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
+
+# A previous run of wpi2.sh was interrupted while $newdir replaced $outdir.
+# Recover the annotations that the interrupted run had moved aside.
+if [ ! -d "$outdir" ] && [ -d "$prevdir" ]; then
+  echo "wpi2.sh: an interrupted run of wpi2.sh left no $outdir/;" 1>&2
+  echo "wpi2.sh: recovering it from $prevdir/." 1>&2
+  mv "$prevdir" "$outdir"
+fi
 
 if [ -d "$outdir" ] && [ -n "$(find "$outdir" -type f | head -n 1)" ]; then
   echo "wpi2.sh: continuing inference from the annotations in $outdir/." 1>&2
@@ -93,13 +104,15 @@ while :; do
   # delete the output of the previous iterations.
   if [ ! -s "$tmpdir/newdir-files" ]; then
     echo "wpi2.sh: $* did not write any files to $newdir/." 1>&2
-    echo "wpi2.sh: The command must compile every source file of the project, passing" 1>&2
+    echo "wpi2.sh: Either the Checker Framework inferred nothing about the project, or the" 1>&2
+    echo "wpi2.sh: command did not compile it.  The command must compile every source file" 1>&2
+    echo "wpi2.sh: of the project, passing" 1>&2
     echo "  -Ainfer=ajava" 1>&2
     echo "  -AinferOutputDirectory=$PWD/$newdir" 1>&2
     echo "  -Aajava=$PWD/$outdir" 1>&2
     echo "  -Awarns" 1>&2
-    if [ "$iteration" -gt 1 ]; then
-      echo "wpi2.sh: The output of the previous iterations is in $outdir/." 1>&2
+    if [ -n "$(find "$outdir" -type f | head -n 1)" ]; then
+      echo "wpi2.sh: The annotations inferred so far are in $outdir/." 1>&2
     fi
     exit 1
   fi
@@ -109,7 +122,7 @@ while :; do
   # rest of the loop body would delete the annotations that were inferred for the files that the
   # command did not recompile.
   (cd "$outdir" && find . -type f) | LC_ALL=C sort > "$tmpdir/outdir-files"
-  missing=$(comm -23 "$tmpdir/outdir-files" "$tmpdir/newdir-files")
+  missing=$(LC_ALL=C comm -23 "$tmpdir/outdir-files" "$tmpdir/newdir-files")
   if [ -n "$missing" ]; then
     nmissing=$(echo "$missing" | wc -l | tr -d ' ')
     if [ "$nmissing" -eq 1 ]; then plural=""; else plural="s"; fi
@@ -142,6 +155,9 @@ while :; do
     exit 0
   fi
 
-  rm -rf "$outdir"
+  # Replace $outdir by $newdir.
+  rm -rf "$prevdir"
+  mv "$outdir" "$prevdir"
   mv "$newdir" "$outdir"
+  rm -rf "$prevdir"
 done
