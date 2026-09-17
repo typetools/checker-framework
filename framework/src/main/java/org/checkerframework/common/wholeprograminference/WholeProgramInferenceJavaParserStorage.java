@@ -176,6 +176,14 @@ public class WholeProgramInferenceJavaParserStorage
   private final boolean inferOutputOriginal;
 
   /**
+   * The names of the invisible qualifiers supported by {@link #atypeFactory}, or null if they have
+   * not yet been computed. They are computed lazily because {@link
+   * AnnotatedTypeFactory#getSupportedTypeQualifiers} might not yet yield its final result when this
+   * object is constructed.
+   */
+  private @MonotonicNonNull Set<String> invisibleQualifierNames = null;
+
+  /**
    * Returns the names of all qualifiers that are marked with {@link InvisibleQualifier}, and that
    * are supported by the given type factory.
    *
@@ -1355,7 +1363,9 @@ public class WholeProgramInferenceJavaParserStorage
       // whitespace that would have separated an annotation from what follows it.  The compilation
       // unit is cloned first, because removal side-effects it and it is shared among checkers.
       CompilationUnit compilationUnit = root.compilationUnit;
-      Set<String> invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
+      if (invisibleQualifierNames == null) {
+        invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
+      }
       if (!invisibleQualifierNames.isEmpty() || omitIrrelevantAnnotations) {
         compilationUnit = compilationUnit.clone();
         removeUnprintedAnnotations(
