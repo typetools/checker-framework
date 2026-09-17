@@ -33,10 +33,11 @@ diffdir=whole-program-inference-diffs
 # after a few iterations, so more iterations than this suggests that it never
 # will.  Set the WPI2_MAX_ITERATIONS environment variable to change the bound.
 max_iterations=${WPI2_MAX_ITERATIONS:-10}
-case $max_iterations in
-  '' | *[!0-9]*) max_iterations=0 ;;
-esac
-if [ "$max_iterations" -lt 1 ]; then
+# If $max_iterations is not a number, or is too large for the shell, then the comparison fails
+# rather than yielding false.  `set -e` does not halt a script when the failing command is an
+# `if` condition, so suppress the comparison's error message and treat failure as invalid; a
+# comparison that fails every time would make the loop below run forever.
+if ! [ "$max_iterations" -ge 1 ] 2> /dev/null; then
   echo "wpi2.sh: WPI2_MAX_ITERATIONS must be a positive integer," 1>&2
   echo "wpi2.sh: but it is \"$WPI2_MAX_ITERATIONS\"." 1>&2
   exit 2
