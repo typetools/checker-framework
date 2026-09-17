@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.typeinference8.constraint;
 
 import java.util.Objects;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.util.typeinference8.types.AbstractQualifier;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
@@ -49,6 +50,31 @@ public class QualifierTyping implements Constraint {
     this.R = R;
     this.Q = Q;
     this.kind = kind;
+  }
+
+  /**
+   * For each qualifier in {@code lhs} and each qualifier in {@code rhs} that are in the same
+   * hierarchy, adds to {@code constraintSet} a {@link QualifierTyping} constraint of kind {@code
+   * kind} between them. Two equal qualifiers are skipped, because a constraint between them reduces
+   * to true.
+   *
+   * @param constraintSet the constraint set to add the constraints to
+   * @param lhs the qualifiers on the left-hand side of the new constraints
+   * @param rhs the qualifiers on the right-hand side of the new constraints
+   * @param kind the kind of the new constraints
+   */
+  public static void addQualifierConstraints(
+      ConstraintSet constraintSet,
+      Set<? extends AbstractQualifier> lhs,
+      Set<? extends AbstractQualifier> rhs,
+      Kind kind) {
+    for (AbstractQualifier q : lhs) {
+      for (AbstractQualifier r : rhs) {
+        if (!q.equals(r) && q.sameHierarchy(r)) {
+          constraintSet.add(new QualifierTyping(q, r, kind));
+        }
+      }
+    }
   }
 
   @Override
