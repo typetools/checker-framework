@@ -149,6 +149,27 @@ public class WholeProgramInferenceJavaParserStorage
   private final boolean inferOutputOriginal;
 
   /**
+   * The names of the invisible qualifiers supported by {@link #atypeFactory}, or null if they have
+   * not yet been computed. They are computed lazily because {@link
+   * AnnotatedTypeFactory#getSupportedTypeQualifiers} might not yet yield its final result when this
+   * object is constructed.
+   */
+  private @MonotonicNonNull Set<String> invisibleQualifierNames = null;
+
+  /**
+   * Returns the names of the invisible qualifiers supported by {@link #atypeFactory}, computing
+   * them if they have not yet been computed.
+   *
+   * @return the names of the invisible qualifiers supported by {@link #atypeFactory}
+   */
+  private Set<String> getInvisibleQualifierNames() {
+    if (invisibleQualifierNames == null) {
+      invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
+    }
+    return invisibleQualifierNames;
+  }
+
+  /**
    * Returns the names of all qualifiers that are marked with {@link InvisibleQualifier}, and that
    * are supported by the given type factory.
    *
@@ -1091,12 +1112,17 @@ public class WholeProgramInferenceJavaParserStorage
       // and crashes when adding annotations in certain locations.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
-      // The compilation unit is cloned because this method side-effects it:  it removes the
-      // annotations that should not be printed.  Removing them from the AST, rather than
-      // suppressing them in the pretty-printer, prevents the pretty-printer from outputting the
-      // whitespace that would have separated an annotation from what follows it.
-      CompilationUnit compilationUnit = root.compilationUnit.clone();
-      removeUnprintedAnnotations(compilationUnit);
+      // Some annotations should not be printed.  They are removed from the AST, rather than
+      // suppressed in the pretty-printer, to prevent the pretty-printer from outputting the
+      // whitespace that would have separated an annotation from what follows it.  The compilation
+      // unit is cloned first, because removal side-effects it and the same AST is printed more
+      // than once:  it is shared by every CompilationUnitAnnos for the source file, and under
+      // `-AinferOutputOriginal` it is also printed before annotations are transferred into it.
+      CompilationUnit compilationUnit = root.compilationUnit;
+      if (hasUnprintedAnnotations()) {
+        compilationUnit = compilationUnit.clone();
+        removeUnprintedAnnotations(compilationUnit);
+      }
 
       DefaultPrettyPrinter prettyPrinter =
           new DefaultPrettyPrinter() {
@@ -1139,25 +1165,36 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
+   * Returns true if {@link #removeUnprintedAnnotations} might remove an annotation. If it returns
+   * false, then the caller need not clone the compilation unit before printing it.
+   *
+   * @return true if {@link #removeUnprintedAnnotations} might remove an annotation
+   */
+  private boolean hasUnprintedAnnotations() {
+    return !getInvisibleQualifierNames().isEmpty();
+  }
+
+  /**
    * Removes from the given compilation unit the annotations that an ajava file should not contain,
    * because they would clutter it: the invisible qualifiers.
    *
    * @param compilationUnit the compilation unit to side-effect
    */
   private void removeUnprintedAnnotations(CompilationUnit compilationUnit) {
-    Set<String> invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
+    Set<String> unprintedNames = getInvisibleQualifierNames();
     Predicate<AnnotationExpr> shouldRemove =
-        anno -> invisibleQualifierNames.contains(anno.getNameAsString());
-    for (Node node : compilationUnit.findAll(Node.class)) {
-      if (node instanceof NodeWithAnnotations<?> annotated) {
-        annotated.getAnnotations().removeIf(shouldRemove);
-      }
-      if (node instanceof Parameter param) {
-        // A varargs annotation is on the array type that `...` creates, as in
-        // `void m(String @Anno ... args)`.  It is not in `param.getAnnotations()`.
-        param.getVarArgsAnnotations().removeIf(shouldRemove);
-      }
-    }
+        anno -> unprintedNames.contains(anno.getNameAsString());
+    compilationUnit.walk(
+        node -> {
+          if (node instanceof NodeWithAnnotations<?> annotated) {
+            annotated.getAnnotations().removeIf(shouldRemove);
+          }
+          if (node instanceof Parameter param) {
+            // A varargs annotation is on the array type that `...` creates, as in
+            // `void m(String @Anno ... args)`.  It is not in `param.getAnnotations()`.
+            param.getVarArgsAnnotations().removeIf(shouldRemove);
+          }
+        });
   }
 
   // TODO: Move these two routines to StringUtils.
