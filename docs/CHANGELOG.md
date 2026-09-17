@@ -7,9 +7,18 @@
 
 ### User-visible changes
 
+The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
+warnings that it did not previously.
+
 ### Changes for type system implementers
 
+`JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,
+`parseStubUnit()`, and `parseExpression()` into new class `StaticJavaParserUtil`.
+
 Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
+
+Removed the unused method
+`WholeProgramInferenceScenesStorage.updateAnnotationSetInScene()`.
 
 ### Closed issues
 

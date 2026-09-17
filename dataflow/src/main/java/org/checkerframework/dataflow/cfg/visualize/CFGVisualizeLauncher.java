@@ -68,7 +68,7 @@ public final class CFGVisualizeLauncher {
       void performAnalysis(CFGVisualizeOptions config, @Nullable Analysis<V, S, T> analysis) {
     if (!config.isStringOutput()) {
       if (analysis == null) {
-        generateDOTofCFGWithoutAnalysis(
+        generatePdfOfCfgWithoutAnalysis(
             config.getInputFile(),
             config.getOutputDirectory(),
             config.getMethodName(),
@@ -76,7 +76,7 @@ public final class CFGVisualizeLauncher {
             config.isPdfOutput(),
             config.isVerbose());
       } else {
-        generateDOTofCFG(
+        generatePdfOfCfg(
             config.getInputFile(),
             config.getOutputDirectory(),
             config.getMethodName(),
@@ -128,14 +128,14 @@ public final class CFGVisualizeLauncher {
    * @param pdf also generate a PDF
    * @param verbose show verbose information in CFG
    */
-  private static void generateDOTofCFGWithoutAnalysis(
+  private static void generatePdfOfCfgWithoutAnalysis(
       String inputFile,
       String outputDir,
       String method,
       String clas,
       boolean pdf,
       boolean verbose) {
-    generateDOTofCFG(inputFile, outputDir, method, clas, pdf, verbose, null);
+    generatePdfOfCfg(inputFile, outputDir, method, clas, pdf, verbose, null);
   }
 
   /**
@@ -177,7 +177,7 @@ public final class CFGVisualizeLauncher {
    *     to be performed)
    */
   private static <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
-      void generateDOTofCFG(
+      void generatePdfOfCfg(
           String inputFile,
           String outputDir,
           String method,
@@ -186,7 +186,7 @@ public final class CFGVisualizeLauncher {
           boolean verbose,
           @Nullable Analysis<V, S, T> analysis) {
     ControlFlowGraph cfg = generateMethodCFG(inputFile, method, clas, analysis);
-    generateDOTofCFG(cfg, outputDir, pdf, verbose, analysis);
+    generatePdfOfCfg(cfg, outputDir, pdf, verbose, analysis);
   }
 
   /**
@@ -203,7 +203,7 @@ public final class CFGVisualizeLauncher {
    *     to be performed)
    */
   public static <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
-      void generateDOTofCFG(
+      void generatePdfOfCfg(
           ControlFlowGraph cfg,
           String outputDir,
           boolean pdf,

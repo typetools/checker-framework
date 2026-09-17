@@ -20,11 +20,11 @@ ifelse([A "!" pattern removes files that an earlier pattern matched, so the
 include pattern must enumerate files, via "/**", rather than name the
 directory, which "actions/cache" would archive whole.])dnl
 define([gradle_cache], [dnl
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.gradle/wrapper
           key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: |
             ~/.gradle/caches/modules-2/**
