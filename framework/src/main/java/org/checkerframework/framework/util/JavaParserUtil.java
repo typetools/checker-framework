@@ -217,7 +217,7 @@ public final class JavaParserUtil {
     for (Node ancestor = type.getParentNode().orElse(null);
         ancestor != null;
         child = ancestor, ancestor = ancestor.getParentNode().orElse(null)) {
-      if (declaresLocalType(ancestor, firstComponent)) {
+      if (declaresLocalType(ancestor, firstComponent, child)) {
         // `name` names a local class, or is nested within one.  A local class shadows any type of
         // the same name, including a type parameter, and `Elements` cannot look up a local class
         // by name.
@@ -284,7 +284,7 @@ public final class JavaParserUtil {
             // In `outer.new Inner() { ... }`, `Inner` is a member of the type of `outer` rather
             // than a name that is resolved in the scope of the expression, so this method cannot
             // determine the member types that the anonymous class inherits.
-            return null;
+            return ResolvedName.NONE;
           }
           unnameableSupertypes = Collections.singletonList(creation.getType());
         }
@@ -311,6 +311,10 @@ public final class JavaParserUtil {
         }
       }
       if (unnameableSupertypes != null) {
+        // Every direct supertype is searched, rather than returning the first member type that is
+        // found, because a member type that is inherited from one supertype does not hide one that
+        // is inherited from another.
+        TypeElement inherited = null;
         for (ClassOrInterfaceType supertype : unnameableSupertypes) {
           TypeElement supertypeElement = resolveTypeName(elements, supertype, cache);
           if (supertypeElement == null) {
@@ -318,11 +322,20 @@ public final class JavaParserUtil {
             // unnameable class inherits and that might shadow `name`.
             return ResolvedName.NONE;
           }
-          TypeElement result =
+          TypeElement fromSupertype =
               resolveMemberType(elements, supertypeElement, firstComponent, suffix, cache);
-          if (result != null) {
-            return ResolvedName.of(result);
+          if (fromSupertype != null) {
+            if (inherited == null) {
+              inherited = fromSupertype;
+            } else if (!inherited.equals(fromSupertype)) {
+              // The class inherits two different member types with the same simple name.  Which
+              // one `name` refers to (if either is accessible) cannot be determined here.
+              return ResolvedName.NONE;
+            }
           }
+        }
+        if (inherited != null) {
+          return ResolvedName.of(inherited);
         }
       }
     }
@@ -426,14 +439,20 @@ public final class JavaParserUtil {
 
   /**
    * Returns true if {@code node} directly contains a statement that declares a local class,
-   * interface, enum, or record whose name is {@code name}. Such a declaration shadows, throughout
-   * the block that contains it, every type of the same name that is declared elsewhere.
+   * interface, enum, or record whose name is {@code name}, at or before the child {@code
+   * lastChild}. Such a declaration shadows, throughout the rest of the block that contains it,
+   * every type of the same name that is declared elsewhere. It does not shadow a type that is used
+   * earlier in the block, so this method ignores the children that follow {@code lastChild}.
    *
    * @param node a JavaParser node, such as a block
    * @param name a simple type name
-   * @return true if {@code node} declares a local type named {@code name}
+   * @param lastChild the last child of {@code node} to examine; the use whose name is being
+   *     resolved appears within it
+   * @return true if {@code node} declares a local type named {@code name}, at or before {@code
+   *     lastChild}
    */
-  private static boolean declaresLocalType(Node node, String name) {
+  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
+  private static boolean declaresLocalType(Node node, String name, Node lastChild) {
     for (Node child : node.getChildNodes()) {
       if (child instanceof Statement) {
         // A local type declaration is the only kind of statement whose child is a type
@@ -444,6 +463,10 @@ public final class JavaParserUtil {
             return true;
           }
         }
+      }
+      if (child == lastChild) {
+        // A declaration that appears later in the block does not shadow a use within `lastChild`.
+        return false;
       }
     }
     return false;
