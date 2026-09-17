@@ -1214,6 +1214,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (infer) {
         WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
         ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
+        // Do not infer a kind that would newly constrain the arguments at call sites.
+        additionalKinds.removeAll(kindsRequiredOfArguments(methodElt, additionalKinds));
         inferPurityAnno(additionalKinds, wpi, methodElt);
         // The purity of overridden methods is impacted by the purity of this method. If
         // a superclass method is pure, but an implementation in a subclass is not, WPI
@@ -1436,28 +1438,80 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (calleeKinds.isEmpty()) {
       return;
     }
-    ProcessingEnvironment env = atypeFactory.getProcessingEnv();
     List<? extends VariableElement> params = callee.getParameters();
     // For a varargs call, the trailing arguments have the component type of the last parameter,
     // which is an array and therefore not a functional interface.
     int numToCheck = Math.min(params.size(), args.size());
     for (int i = 0; i < numToCheck; i++) {
-      TypeMirror paramType = PurityChecker.functionalInterfaceType(params.get(i).asType(), env);
-      if (paramType == null) {
+      ExecutableElement paramFunction = parameterFunctionalMethod(params.get(i));
+      if (paramFunction == null) {
         continue;
       }
-      ExecutableElement paramFunction = TypesUtils.findFunction(paramType, env);
-      EnumSet<PurityKind> required = EnumSet.copyOf(calleeKinds);
-      required.removeAll(PurityUtils.getPurityKinds(atypeFactory, paramFunction));
-      if (paramFunction.getReturnType().getKind() == TypeKind.VOID) {
-        // A functional method that returns no value is deterministic, whatever implements it.
-        required.remove(PurityKind.DETERMINISTIC);
-      }
+      EnumSet<PurityKind> required = purityRequiredOfArgument(paramFunction, calleeKinds);
       if (required.isEmpty()) {
         continue;
       }
       checkFunctionalArgument(args.get(i), required, paramFunction, params.get(i), callee);
     }
+  }
+
+  /**
+   * Returns the functional method of {@code param}'s type, or null if that type is not a functional
+   * interface.
+   *
+   * @param param a formal parameter
+   * @return the functional method of {@code param}'s type, or null
+   */
+  private @Nullable ExecutableElement parameterFunctionalMethod(VariableElement param) {
+    ProcessingEnvironment env = atypeFactory.getProcessingEnv();
+    TypeMirror paramType = PurityChecker.functionalInterfaceType(param.asType(), env);
+    return paramType == null ? null : TypesUtils.findFunction(paramType, env);
+  }
+
+  /**
+   * Returns the purity that a method whose purity is {@code methodKinds} requires of the argument
+   * that is passed to a functional-interface parameter whose functional method is {@code
+   * paramFunction}: the kinds that {@code paramFunction} does not already promise.
+   *
+   * @param paramFunction the functional method of a parameter's type
+   * @param methodKinds the purity that a method requires of its functional-interface arguments
+   * @return the purity required of the argument, which may be empty
+   */
+  private EnumSet<PurityKind> purityRequiredOfArgument(
+      ExecutableElement paramFunction, EnumSet<PurityKind> methodKinds) {
+    EnumSet<PurityKind> required = EnumSet.copyOf(methodKinds);
+    required.removeAll(PurityUtils.getPurityKinds(atypeFactory, paramFunction));
+    if (paramFunction.getReturnType().getKind() == TypeKind.VOID) {
+      // A functional method that returns no value is deterministic, whatever implements it.
+      required.remove(PurityKind.DETERMINISTIC);
+    }
+    return required;
+  }
+
+  /**
+   * Returns the subset of {@code kinds} that {@code method} would require of the arguments at its
+   * call sites, if {@code method} were annotated with {@code kinds}: those that the functional
+   * method of some functional-interface parameter does not already promise. See {@link
+   * #checkFunctionalArguments}.
+   *
+   * <p>Whole-program inference does not infer such a kind. It cannot annotate a lambda expression
+   * or a method reference, so it cannot make an argument meet the requirement, and inferring the
+   * kind would introduce errors at call sites.
+   *
+   * @param method a method or constructor
+   * @param kinds the purity kinds that might be inferred for {@code method}
+   * @return the subset of {@code kinds} that calls to {@code method} would require of arguments
+   */
+  private EnumSet<PurityKind> kindsRequiredOfArguments(
+      ExecutableElement method, EnumSet<PurityKind> kinds) {
+    EnumSet<PurityKind> result = EnumSet.noneOf(PurityKind.class);
+    for (VariableElement param : method.getParameters()) {
+      ExecutableElement paramFunction = parameterFunctionalMethod(param);
+      if (paramFunction != null) {
+        result.addAll(purityRequiredOfArgument(paramFunction, kinds));
+      }
+    }
+    return result;
   }
 
   /**
@@ -2711,6 +2765,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (functionalMethod.getReturnType().getKind() == TypeKind.VOID) {
         lambdaKinds.remove(PurityKind.DETERMINISTIC);
       }
+      // Do not infer a kind that would newly constrain the arguments at call sites.
+      lambdaKinds.removeAll(kindsRequiredOfArguments(functionalMethod, lambdaKinds));
       WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
       inferPurityAnno(lambdaKinds, wpi, functionalMethod);
       for (ExecutableElement overriddenElt :
