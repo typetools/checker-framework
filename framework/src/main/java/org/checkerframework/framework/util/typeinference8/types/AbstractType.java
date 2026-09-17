@@ -290,8 +290,9 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns the ground target type of {@code type}, which is a functional interface type. For an
-   * {@link AnnotatedDeclaredType}, this is {@link #makeGround(AnnotatedDeclaredType,
+   * Returns the ground target type of {@code type}, which is a functional interface type. For a raw
+   * {@link AnnotatedDeclaredType}, this is its erasure, so that its function type is erased too.
+   * For any other {@link AnnotatedDeclaredType}, this is {@link #makeGround(AnnotatedDeclaredType,
    * AnnotatedTypeFactory)}. For an intersection type that induces a notional functional interface
    * (<a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9">JLS section
    * 9.9</a>), each bound is made ground; this is the annotated-type analog of the notional
@@ -307,7 +308,15 @@ public abstract class AbstractType {
       AnnotatedTypeMirror type, AnnotatedTypeFactory typeFactory) {
     switch (type.getKind()) {
       case DECLARED -> {
-        return makeGround((AnnotatedDeclaredType) type, typeFactory);
+        AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
+        if (declaredType.isUnderlyingTypeRaw()) {
+          // JLS 9.9: "The function type of the raw type of a generic functional interface
+          // I<...> is the erasure of the function type of the generic functional interface
+          // I<...>."  Returning the erasure is enough to erase the function type, because
+          // AnnotatedTypes.asMemberOf erases a member that is accessed through a raw receiver.
+          return declaredType.getErased();
+        }
+        return makeGround(declaredType, typeFactory);
       }
       case INTERSECTION -> {
         AnnotatedIntersectionType intersection = ((AnnotatedIntersectionType) type).shallowCopy();

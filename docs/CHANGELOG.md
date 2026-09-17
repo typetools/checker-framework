@@ -7,6 +7,9 @@
 
 ### User-visible changes
 
+The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
+warnings that it did not previously.
+
 ### Changes for type system implementers
 
 `JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,
