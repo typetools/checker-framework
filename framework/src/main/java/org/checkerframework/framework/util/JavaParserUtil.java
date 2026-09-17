@@ -270,10 +270,22 @@ public final class JavaParserUtil {
           // A member type of an unnameable class has no name that `Elements` can look up.
           return ResolvedName.NONE;
         }
+        TypeElement enclosingElement = getTypeElement(elements, enclosingName, cache);
+        if (enclosingElement == null) {
+          return ResolvedName.NONE;
+        }
         // If `name` has a suffix, then the suffix names a type that is nested within the member
         // type.  If there is no such type, then `name` names nothing, because the member type
         // shadows every other type whose name starts with `firstComponent`.
-        return ResolvedName.of(getTypeElement(elements, enclosingName + "." + name, cache));
+        return ResolvedName.of(
+            resolveMemberType(
+                elements,
+                // Every member type that `enclosingElement` declares is a member of it, whatever
+                // its access modifier is.
+                new SearchedType(enclosingElement, true, true),
+                firstComponent,
+                suffix,
+                cache));
       }
 
       if (ancestor instanceof NodeWithTypeParameters<?> genericDeclaration) {
