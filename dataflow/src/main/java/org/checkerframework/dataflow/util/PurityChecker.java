@@ -633,8 +633,10 @@ public final class PurityChecker {
    * class and no other code can obtain a reference to it.
    *
    * <p>The array's depth is limited by every assignment that stores a value that might be aliased,
-   * and is 0 if the field's value is ever used as a whole, since it could then be stored anywhere.
-   * Indexing the array and reading its length do not give out a reference to it.
+   * and by every use of a value read out of the field as a whole, since it could then be stored
+   * anywhere: to 0 if the field's own value is used, and to {@code n} if a value read through
+   * {@code n} array accesses is. Indexing an array and reading its length do not give out a
+   * reference to it.
    */
   private static class OwnedArrayScanner extends TreeScanner<Void, Void> {
 
@@ -678,6 +680,41 @@ public final class PurityChecker {
         return scan(memberSelect.getExpression(), null);
       }
       return null;
+    }
+
+    /**
+     * Returns the number of array accesses through which the given expression indexes {@link
+     * #field}: 0 if the expression is an access to the field itself, 1 for {@code field[i]}, and so
+     * on.
+     *
+     * @param tree an expression
+     * @return the number of array accesses through which the expression indexes the field, or -1 if
+     *     it does not
+     */
+    private int indexedFieldDepth(ExpressionTree tree) {
+      int indices = 0;
+      ExpressionTree array = TreeUtils.withoutParens(tree);
+      while (array instanceof ArrayAccessTree arrayAccess) {
+        indices++;
+        array = TreeUtils.withoutParens(arrayAccess.getExpression());
+      }
+      return isAccessOfField(array) ? indices : -1;
+    }
+
+    /**
+     * Scans the indices of an indexed access of {@link #field}, and the receiver of the field
+     * access, but not the arrays that are indexed.
+     *
+     * @param tree an expression for which {@link #indexedFieldDepth} is nonnegative
+     * @return null
+     */
+    private Void scanIndices(ExpressionTree tree) {
+      ExpressionTree array = TreeUtils.withoutParens(tree);
+      while (array instanceof ArrayAccessTree arrayAccess) {
+        scan(arrayAccess.getIndex(), null);
+        array = TreeUtils.withoutParens(arrayAccess.getExpression());
+      }
+      return scanReceiver(array);
     }
 
     /**
@@ -756,21 +793,22 @@ public final class PurityChecker {
 
     @Override
     public Void visitArrayAccess(ArrayAccessTree tree, Void ignore) {
-      ExpressionTree array = TreeUtils.withoutParens(tree.getExpression());
-      if (isAccessOfField(array)) {
-        // Indexing the array does not give out a reference to it.
-        scanReceiver(array);
-        return scan(tree.getIndex(), ignore);
+      int indices = indexedFieldDepth(tree);
+      if (indices < 0) {
+        return super.visitArrayAccess(tree, ignore);
       }
-      return super.visitArrayAccess(tree, ignore);
+      // Indexing does not give out a reference to the arrays that are indexed, but the value that
+      // is read is used as a whole here, so it might be stored anywhere.
+      depth = Math.min(depth, indices);
+      return scanIndices(tree);
     }
 
     @Override
     public Void visitMemberSelect(MemberSelectTree tree, Void ignore) {
       ExpressionTree receiver = TreeUtils.withoutParens(tree.getExpression());
-      if (tree.getIdentifier().contentEquals("length") && isAccessOfField(receiver)) {
+      if (tree.getIdentifier().contentEquals("length") && indexedFieldDepth(receiver) >= 0) {
         // Reading the length does not give out a reference to the array.
-        return scanReceiver(receiver);
+        return scanIndices(receiver);
       }
       if (isAccessOfField(tree)) {
         // The field's value is used as a whole, so it might be stored anywhere.

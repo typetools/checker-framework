@@ -82,6 +82,38 @@ public class PurityArrayFields {
     }
   }
 
+  // An array element that escapes to other code may not have its own elements written, even though
+  // the array that holds it never escapes.
+  static class EscapingNestedArrayField {
+    int[][] b = new int[2][2];
+
+    @SideEffectFree
+    EscapingNestedArrayField() {
+      // The outer array is still owned, so its elements may be replaced.
+      b[0] = new int[2];
+      // :: error: [purity.not.sideeffectfree.assign.array]
+      b[0][1] = 2;
+    }
+
+    int[] leak() {
+      return b[0];
+    }
+  }
+
+  // Indexing a nested array and reading its length do not give out a reference to it.
+  static class NestedLengthArrayField {
+    int[][] b = new int[2][2];
+
+    @SideEffectFree
+    NestedLengthArrayField() {
+      for (int i = 0; i < b.length; i++) {
+        for (int j = 0; j < b[i].length; j++) {
+          b[i][j] = b[0][0];
+        }
+      }
+    }
+  }
+
   // A static field is not part of the object under construction, so its array is not the
   // constructor's to write.
   static class StaticArrayField {
