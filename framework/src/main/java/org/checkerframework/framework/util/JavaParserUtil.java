@@ -29,10 +29,8 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -510,7 +508,9 @@ public final class JavaParserUtil {
    * typeElement} declares or inherits, or null if there is no such member type.
    *
    * <p>{@code typeElement} and its supertypes are searched in breadth-first order, so a member type
-   * that is declared in a nearer supertype hides one that is declared in a farther supertype.
+   * that is declared in a nearer supertype hides one that is declared in a farther supertype. If
+   * two supertypes that are equally near declare different member types with this name, then
+   * neither hides the other, the name is ambiguous, and this method returns null.
    *
    * <p>A member type that is not inherited is ignored, and therefore hides nothing: a private
    * member type, and a package-private member type that is declared in a package other than {@code
@@ -525,7 +525,7 @@ public final class JavaParserUtil {
    *     unnamed package
    * @param cache maps a name to the type it names, or to null if it names no type; this method both
    *     reads and writes it
-   * @return the element for the member type, or null if it cannot be determined
+   * @return the element for the member type, or null if there is none or it cannot be determined
    */
   private static @Nullable TypeElement resolveMemberType(
       Elements elements,
@@ -536,36 +536,55 @@ public final class JavaParserUtil {
       Map<String, @Nullable TypeElement> cache) {
     Set<TypeElement> visited = new HashSet<>();
     visited.add(typeElement);
-    Deque<TypeElement> worklist = new ArrayDeque<>();
-    worklist.add(typeElement);
-    while (!worklist.isEmpty()) {
-      TypeElement current = worklist.remove();
-      for (TypeElement member : ElementFilter.typesIn(current.getEnclosedElements())) {
-        if (!member.getSimpleName().contentEquals(firstComponent)) {
-          continue;
+    // The types that are the same distance from `typeElement`:  first `typeElement` itself, then
+    // its direct supertypes, and so forth.
+    List<TypeElement> currentTypes = Collections.singletonList(typeElement);
+    while (!currentTypes.isEmpty()) {
+      // Every type at the current distance is searched, rather than returning the first member
+      // type that is found, because a member type that is declared in one of them does not hide
+      // one that is declared in another.
+      TypeElement found = null;
+      for (TypeElement current : currentTypes) {
+        for (TypeElement member : ElementFilter.typesIn(current.getEnclosedElements())) {
+          if (!member.getSimpleName().contentEquals(firstComponent)) {
+            continue;
+          }
+          Set<Modifier> modifiers = member.getModifiers();
+          if (modifiers.contains(Modifier.PRIVATE)) {
+            // A private member type is not inherited.
+            continue;
+          }
+          if (!modifiers.contains(Modifier.PUBLIC)
+              && !modifiers.contains(Modifier.PROTECTED)
+              && !elements.getPackageOf(member).getQualifiedName().contentEquals(usePackage)) {
+            // A package-private member type is not inherited by a class in another package, and
+            // it is not accessible at the use site.
+            continue;
+          }
+          if (found == null) {
+            found = member;
+          } else if (!found.equals(member)) {
+            // Two equally near supertypes declare different member types with this name, so the
+            // name is ambiguous.
+            return null;
+          }
         }
-        Set<Modifier> modifiers = member.getModifiers();
-        if (modifiers.contains(Modifier.PRIVATE)) {
-          // A private member type is not inherited.
-          continue;
-        }
-        if (!modifiers.contains(Modifier.PUBLIC)
-            && !modifiers.contains(Modifier.PROTECTED)
-            && !elements.getPackageOf(member).getQualifiedName().contentEquals(usePackage)) {
-          // A package-private member type is not inherited by a class in another package, and it
-          // is not accessible at the use site.
-          continue;
-        }
+      }
+      if (found != null) {
         if (suffix.isEmpty()) {
-          return member;
+          return found;
         }
-        return getTypeElement(elements, member.getQualifiedName() + suffix, cache);
+        return getTypeElement(elements, found.getQualifiedName() + suffix, cache);
       }
-      for (TypeElement supertype : ElementUtils.getDirectSuperTypeElements(current, elements)) {
-        if (visited.add(supertype)) {
-          worklist.add(supertype);
+      List<TypeElement> nextTypes = new ArrayList<>();
+      for (TypeElement current : currentTypes) {
+        for (TypeElement supertype : ElementUtils.getDirectSuperTypeElements(current, elements)) {
+          if (visited.add(supertype)) {
+            nextTypes.add(supertype);
+          }
         }
       }
+      currentTypes = nextTypes;
     }
     return null;
   }
