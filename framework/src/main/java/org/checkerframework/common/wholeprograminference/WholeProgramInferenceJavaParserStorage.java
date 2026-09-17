@@ -1124,7 +1124,6 @@ public class WholeProgramInferenceJavaParserStorage
    * @param anno an annotation
    * @return true if the annotation might be relevant
    */
-  @SuppressWarnings("interning:not.interned")
   boolean annotationIsRelevant(AnnotationExpr anno) {
     if (!(atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf)) {
       return true;
@@ -1172,6 +1171,9 @@ public class WholeProgramInferenceJavaParserStorage
     // annotation that might appear in the AST.
 
     if (parentNode instanceof Type type) {
+      // JavaParser's `TypeParameter` is a `Type`, so an annotation on a type parameter
+      // declaration, as in `<@Anno T>`, takes this branch.  `typeToTypeMirror` returns null for a
+      // type parameter declaration, so such an annotation is retained.
       return typeIsRelevant(gatf, type);
     }
     if (parentNode instanceof ArrayCreationLevel level) {
@@ -1181,7 +1183,9 @@ public class WholeProgramInferenceJavaParserStorage
     if (parentNode instanceof Parameter param) {
       // Use reference equality.  `NodeList.contains()` would use structural equality, which does
       // not distinguish the two annotations in `void m(@Anno String @Anno ... args)`.
-      if (param.getVarArgsAnnotations().stream().anyMatch(a -> a == anno)) {
+      @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
+      boolean isVarArgsAnnotation = param.getVarArgsAnnotations().stream().anyMatch(a -> a == anno);
+      if (isVarArgsAnnotation) {
         // The annotation is on the array type that `...` creates, as in
         // `void m(String @Anno ... args)`.
         return typeIsRelevant(gatf, param.getType(), 1);
@@ -1211,14 +1215,15 @@ public class WholeProgramInferenceJavaParserStorage
       // element type, even if they have different numbers of array levels as in `int i, a[];`.
       NodeList<VariableDeclarator> variables = declaration.getVariables();
       if (variables.isEmpty()) {
-        throw new BugInCF(
-            "No variables in declaration %s [%s]", declaration, declaration.getClass());
+        // This should not occur, but printing a superfluous annotation is better than crashing.
+        // Be conservative.
+        return true;
       }
       return typeIsRelevant(gatf, innermostComponentType(variables.get(0).getType()));
     }
 
-    // The annotation is on some other declaration:  a type declaration, a type parameter
-    // declaration, a constructor, etc.  Be conservative.
+    // The annotation is on some other declaration:  a type declaration, a constructor, etc.  Be
+    // conservative.
     return true;
   }
 
@@ -1366,10 +1371,15 @@ public class WholeProgramInferenceJavaParserStorage
       if (invisibleQualifierNames == null) {
         invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
       }
-      if (!invisibleQualifierNames.isEmpty() || omitIrrelevantAnnotations) {
+      // Unless the checker declares `@RelevantJavaTypes`, `annotationIsRelevant` returns true for
+      // every annotation, so there is no need to test relevance.
+      boolean omitIrrelevant =
+          omitIrrelevantAnnotations
+              && atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf
+              && gatf.relevantJavaTypes != null;
+      if (!invisibleQualifierNames.isEmpty() || omitIrrelevant) {
         compilationUnit = compilationUnit.clone();
-        removeUnprintedAnnotations(
-            compilationUnit, invisibleQualifierNames, omitIrrelevantAnnotations);
+        removeUnprintedAnnotations(compilationUnit, invisibleQualifierNames, omitIrrelevant);
       }
 
       DefaultPrettyPrinter prettyPrinter =
