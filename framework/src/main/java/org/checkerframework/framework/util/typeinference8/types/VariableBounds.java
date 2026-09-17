@@ -1,15 +1,20 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
@@ -60,6 +65,13 @@ public class VariableBounds {
 
   /** Constraints implied by complementary pairs of bounds found during incorporation. */
   public final ConstraintSet constraints = new ConstraintSet();
+
+  /**
+   * The supertypes of an enum class {@code E} whose type argument {@code E} bears a qualifier
+   * copied from {@code E} itself; see {@link #isSelfReferentialTypeArgument}.
+   */
+  private static final Set<String> ENUM_SELF_PARAMETERIZED =
+      new HashSet<>(Arrays.asList("java.lang.Enum", "java.lang.Comparable"));
 
   /** True if this variable has a throws bound. */
   private boolean hasThrowsBound = false;
@@ -264,13 +276,7 @@ public class VariableBounds {
    */
   private void addQualifierConstraint(
       Set<? extends AbstractQualifier> setT, Set<? extends AbstractQualifier> setS, Kind kind) {
-    for (AbstractQualifier t : setT) {
-      for (AbstractQualifier s : setS) {
-        if (!s.equals(t) && s.sameHierarchy(t)) {
-          constraints.add(new QualifierTyping(t, s, kind));
-        }
-      }
-    }
+    QualifierTyping.addQualifierConstraints(constraints, setT, setS, kind);
   }
 
   /**
@@ -379,30 +385,7 @@ public class VariableBounds {
    */
   private void addComplementaryBoundConstraint(
       Constraint parent, AbstractType s, AbstractType t, Kind kind) {
-    constraints.add(createImpliedConstraint(parent, "From complementary bound", s, t, kind));
-  }
-
-  /**
-   * Creates a constraint that incorporating a bound of this variable implies, recording how the
-   * constraint came about so that {@link TypeConstraint#constraintHistory} can explain it.
-   *
-   * @param parent the constraint whose reduction created the bound that implies the new constraint,
-   *     or null if no constraint did
-   * @param description how the bound gave rise to the new constraint
-   * @param s left-hand side type of the new constraint
-   * @param t right-hand side type of the new constraint
-   * @param kind the kind of the new constraint
-   * @return the new constraint
-   */
-  private Typing createImpliedConstraint(
-      Constraint parent, String description, AbstractType s, AbstractType t, Kind kind) {
-    Typing constraint = new Typing(parent, s, t, kind);
-    if (parent == null) {
-      constraint.source = description;
-    } else {
-      constraint.derivation = description;
-    }
-    return constraint;
+    constraints.add(new Typing(parent, "From complementary bound", s, t, kind, false));
   }
 
   /**
@@ -448,6 +431,14 @@ public class VariableBounds {
    * ({@code 1 <= i <= n}), if Si and Ti are types (not wildcards), the constraint formula {@code
    * <Si = Ti>} is implied.
    *
+   * <p>If G is an inner class, then its enclosing types contribute type arguments as well, and the
+   * same constraint formula is implied between each pair of them.
+   *
+   * <p>The implied constraints ignore the qualifiers of a type argument that is {@link
+   * org.checkerframework.framework.qual.Covariant} or that is a self-reference to one of the
+   * bounds; see {@link #isSelfReferentialTypeArgument}. Two bounds imply nothing about such a
+   * qualifier.
+   *
    * @param parent the constraint whose reduction created the bound that implies the returned
    *     constraints, or null if no constraint did
    * @param s a type argument
@@ -456,8 +447,6 @@ public class VariableBounds {
    */
   private List<Typing> getConstraintsFromParameterized(
       Constraint parent, AbstractType s, AbstractType t) {
-    String description = "Constraint from parameterized bound";
-
     IPair<AbstractType, AbstractType> pair =
         context.inferenceTypeFactory.getParameterizedSupers(s, t);
 
@@ -465,23 +454,123 @@ public class VariableBounds {
       return new ArrayList<>();
     }
 
-    List<AbstractType> ss = pair.first.getTypeArguments();
-    List<AbstractType> ts = pair.second.getTypeArguments();
-    if (ss.size() != ts.size()) {
-      throw new BugInCF(
-          "Parameterized supertypes %s and %s have different numbers of type arguments.",
-          pair.first, pair.second);
-    }
-
     List<Typing> constraints = new ArrayList<>();
-    for (int i = 0; i < ss.size(); i++) {
-      AbstractType si = ss.get(i);
-      AbstractType ti = ts.get(i);
-      if (si.getTypeKind() != TypeKind.WILDCARD && ti.getTypeKind() != TypeKind.WILDCARD) {
-        constraints.add(createImpliedConstraint(parent, description, si, ti, Kind.TYPE_EQUALITY));
-      }
+    // An inner class type's own type arguments are not all of the type arguments it mentions; its
+    // enclosing types contribute more, which getTypeArguments() omits.
+    AbstractType sAsSuper = pair.first;
+    AbstractType tAsSuper = pair.second;
+    while (sAsSuper != null && tAsSuper != null) {
+      addConstraintsFromTypeArguments(parent, s, sAsSuper, t, tAsSuper, constraints);
+      sAsSuper = sAsSuper.getEnclosingType();
+      tAsSuper = tAsSuper.getEnclosingType();
     }
     return constraints;
+  }
+
+  /**
+   * Adds to {@code constraints} the constraints between the type arguments of {@code sAsSuper} and
+   * those of {@code tAsSuper}, which are parameterizations of the same generic class: either a
+   * supertype of both {@code s} and {@code t}, or an enclosing type of that supertype.
+   *
+   * @param parent the constraint whose reduction created the bound that implies the new
+   *     constraints, or null if no constraint did
+   * @param s a bound of this variable
+   * @param sAsSuper a parameterized supertype of {@code s}, or an enclosing type of one
+   * @param t a bound of this variable
+   * @param tAsSuper the parameterization of the same class for {@code t} that {@code sAsSuper} is
+   *     for {@code s}
+   * @param constraints the list to which to add the implied constraints
+   */
+  private void addConstraintsFromTypeArguments(
+      Constraint parent,
+      AbstractType s,
+      AbstractType sAsSuper,
+      AbstractType t,
+      AbstractType tAsSuper,
+      List<Typing> constraints) {
+    String description = "Constraint from parameterized bound";
+
+    List<AbstractType> sAsSuperTypeArguments = sAsSuper.getTypeArguments();
+    List<AbstractType> tAsSuperTypeArguments = tAsSuper.getTypeArguments();
+    if (sAsSuperTypeArguments.size() != tAsSuperTypeArguments.size()) {
+      if (sAsSuper.isRaw() || tAsSuper.isRaw()) {
+        // A raw type has no type arguments, so the two types imply nothing about one another's.
+        return;
+      }
+      throw new BugInCF(
+          "Parameterized supertypes %s and %s have different numbers of type arguments.",
+          sAsSuper, tAsSuper);
+    }
+
+    // At a covariant type argument of G, a type whose supertype is one of these
+    // parameterizations can still be a subtype of the other, so the qualifiers need not match.
+    // The cast is safe because getTypeArguments() above returned non-null.
+    List<Integer> covariantArgIndexes =
+        context
+            .typeFactory
+            .getTypeHierarchy()
+            .getCovariantArgIndexes((AnnotatedDeclaredType) sAsSuper.getAnnotatedType());
+
+    for (int i = 0; i < sAsSuperTypeArguments.size(); i++) {
+      AbstractType si = sAsSuperTypeArguments.get(i);
+      AbstractType ti = tAsSuperTypeArguments.get(i);
+      if (si.getTypeKind() != TypeKind.WILDCARD && ti.getTypeKind() != TypeKind.WILDCARD) {
+        // If the type argument is covariant, then si and ti are merely supertypes of the
+        // corresponding type argument of this variable; that relates each of their qualifiers to
+        // that type argument's qualifier, but not to one another.  If the type argument is a
+        // self-reference to the bound with the bound's own qualifier, then that qualifier came
+        // from the bound rather than from a programmer.  In either case, the two bounds imply
+        // nothing about the two qualifiers.
+        boolean qualifiersMustMatch =
+            !covariantArgIndexes.contains(i)
+                && !isSelfReferentialTypeArgument(sAsSuper, s, si)
+                && !isSelfReferentialTypeArgument(tAsSuper, t, ti);
+        constraints.add(
+            new Typing(parent, description, si, ti, Kind.TYPE_EQUALITY, qualifiersMustMatch));
+      }
+    }
+  }
+
+  /**
+   * Returns true if {@code typeArgument} is a self-reference to {@code type} that has the same
+   * qualifier as {@code type}. Only two kinds of {@code type} have such a type argument.
+   *
+   * <ul>
+   *   <li>A use of an F-bounded type variable, such as {@code S} declared as {@code S extends
+   *       Store<S>}: the upper bound of the use {@code @Nullable S} is {@code @Nullable
+   *       Store<@Nullable S>}, whose type argument has the qualifier that was written on the use.
+   *   <li>An enum class {@code E}: its supertype is {@code Enum<E>}, which in turn implements
+   *       {@code Comparable<E>}, and {@code SupertypeFinder.createEnumSuperType} copies the
+   *       qualifier of {@code E} onto the type argument of each.
+   * </ul>
+   *
+   * @param typeAsSuper a parameterized supertype of {@code type}
+   * @param type a type
+   * @param typeArgument a type argument of {@code typeAsSuper}
+   * @return true if {@code typeArgument} is a self-reference to {@code type} with the same
+   *     qualifier as {@code type}
+   */
+  private boolean isSelfReferentialTypeArgument(
+      AbstractType typeAsSuper, AbstractType type, AbstractType typeArgument) {
+    if (!context.typeFactory.types.isSameType(typeArgument.getJavaType(), type.getJavaType())) {
+      return false;
+    }
+    // A qualifier that differs from the one on `type` was written by a programmer at an invariant
+    // position, as in `enum E implements Box<@Untainted E>`.
+    if (!typeArgument.getQualifiers().equals(type.getQualifiers())) {
+      return false;
+    }
+    if (type.getTypeKind() == TypeKind.TYPEVAR) {
+      return true;
+    }
+    TypeElement element = TypesUtils.getTypeElement(type.getJavaType());
+    if (element == null || element.getKind() != ElementKind.ENUM) {
+      return false;
+    }
+    // Only `Enum<E>` and the `Comparable<E>` that it implements get their qualifier from `E`.  An
+    // interface that the enum declaration itself parameterizes by the enum, as in `enum E
+    // implements Box<E>`, has a written qualifier at an invariant position.
+    return TypesUtils.isDeclaredOfName(typeAsSuper.getJavaType(), ENUM_SELF_PARAMETERIZED);
   }
 
   /**
