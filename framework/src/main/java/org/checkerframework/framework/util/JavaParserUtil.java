@@ -18,9 +18,12 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
 import com.github.javaparser.ast.stmt.Statement;
+import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.PrimitiveType;
+import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
+import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -36,8 +39,10 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -656,6 +661,57 @@ public final class JavaParserUtil {
       case LONG -> TypeKind.LONG;
       case SHORT -> TypeKind.SHORT;
     };
+  }
+
+  /**
+   * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined. It
+   * cannot be determined for an intersection type, a union type, {@code var}, a wildcard, a type
+   * parameter declaration, or a type that is not on the classpath.
+   *
+   * <p>A client that converts many types should call {@link #typeToTypeMirror(Elements, Types,
+   * Type, Map)}, which memoizes the name lookups.
+   *
+   * @param elements used for looking up names
+   * @param types used for creating types
+   * @param type a JavaParser type
+   * @return the TypeMirror for {@code type}, or null if it cannot be determined
+   */
+  public static @Nullable TypeMirror typeToTypeMirror(Elements elements, Types types, Type type) {
+    return typeToTypeMirror(elements, types, type, new HashMap<>());
+  }
+
+  /**
+   * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined. It
+   * cannot be determined for an intersection type, a union type, {@code var}, a wildcard, a type
+   * parameter declaration, or a type that is not on the classpath.
+   *
+   * @param elements used for looking up names
+   * @param types used for creating types
+   * @param type a JavaParser type
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it. See {@link #resolveTypeName(Elements, ClassOrInterfaceType, Map)} for
+   *     restrictions on it.
+   * @return the TypeMirror for {@code type}, or null if it cannot be determined
+   */
+  public static @Nullable TypeMirror typeToTypeMirror(
+      Elements elements, Types types, Type type, Map<String, @Nullable TypeElement> cache) {
+    if (type instanceof ArrayType arrayType) {
+      TypeMirror componentType =
+          typeToTypeMirror(elements, types, arrayType.getComponentType(), cache);
+      return componentType == null ? null : types.getArrayType(componentType);
+    }
+    if (type instanceof PrimitiveType primitiveType) {
+      return types.getPrimitiveType(typeKindForPrimitive(primitiveType));
+    }
+    if (type instanceof VoidType) {
+      return types.getNoType(TypeKind.VOID);
+    }
+    if (type instanceof ClassOrInterfaceType classType) {
+      TypeElement typeElt = resolveTypeName(elements, classType, cache);
+      return typeElt == null ? null : typeElt.asType();
+    }
+    // An intersection type, a union type, `var`, a wildcard, a type parameter declaration, etc.
+    return null;
   }
 
   //
