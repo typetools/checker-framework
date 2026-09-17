@@ -61,10 +61,18 @@ jobs:
 gradle_cache()dnl
       - name: clone_plume_scripts
         run: ./gradlew -q getPlumeScripts
-      - name: ci_org_and_branch
-        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
-      - name: git_changes
-        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
+      - name: set_ci_org_and_branch
+        run: |
+          PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+          # shellcheck disable=SC2034  # used by the sourced script
+          CI_DEBUG=1
+          . "$PLUME_SCRIPTS"/set-ci-org-and-branch
+      - name: set_git_range
+        run: |
+          PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+          # shellcheck disable=SC2034  # used by the sourced script
+          CI_DEBUG=1
+          . "$PLUME_SCRIPTS"/set-git-range
 
 include([../../.azure/jobs.m4])dnl
 

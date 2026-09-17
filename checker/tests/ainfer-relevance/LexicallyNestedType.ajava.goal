@@ -1,0 +1,37 @@
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+
+// A nested type declaration shadows a type of the same name that is declared elsewhere, such as in
+// `java.lang`.  Inference must resolve the name "Number" to the nested type
+// `LexicallyNestedType.Number`, which is relevant because it is a subtype of `CharSequence`, rather
+// than to `java.lang.Number`, which is irrelevant.  If inference resolves the name incorrectly and
+// therefore discards the annotation, then the second (validation) pass of this test issues the
+// warning that is written below.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+public class LexicallyNestedType {
+
+    abstract static class Number implements CharSequence {
+    }
+
+    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 Number nestedNumber;
+
+    @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "LexicallyNestedType.class.nestedNumber" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+    @org.checkerframework.dataflow.qual.Impure
+    static void assignField() {
+        nestedNumber = getSibling1();
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    static void useField() {
+        // :: warning: [argument]
+        expectsSibling1(nestedNumber);
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    static void expectsSibling1(Number n) {
+    }
+
+    @org.checkerframework.dataflow.qual.Pure
+    static Number getSibling1() {
+        return null;
+    }
+}

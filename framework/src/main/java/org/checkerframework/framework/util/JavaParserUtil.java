@@ -22,8 +22,10 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -53,13 +55,37 @@ public final class JavaParserUtil {
    * type declarations and the compilation unit that contain it. Returns null if the name cannot be
    * resolved, which happens for a type variable and for a type that is not on the classpath.
    *
+   * <p>A client that resolves many names should call {@link #resolveTypeName(Elements,
+   * ClassOrInterfaceType, Map)}, which memoizes the name lookups.
+   *
    * @param elements used for looking up names
    * @param type a JavaParser class or interface type
    * @return the element for {@code type}, or null if it cannot be determined
    */
-  @SuppressWarnings("signature:argument") // calls to getTypeElement() whose result is checked
   public static @Nullable TypeElement resolveTypeName(
       Elements elements, ClassOrInterfaceType type) {
+    return resolveTypeName(elements, type, new HashMap<>());
+  }
+
+  /**
+   * Returns the element for the given JavaParser type, whose name is resolved in the scope of the
+   * type declarations and the compilation unit that contain it. Returns null if the name cannot be
+   * resolved, which happens for a type variable and for a type that is not on the classpath.
+   *
+   * <p>Resolving one name looks up many candidate names, most of which name no type, so a client
+   * that resolves many names should pass the same cache to each call. A cache should not be reused
+   * across annotation processing rounds or across {@code Elements} instances: a name that names no
+   * type in one round might name a generated type in a later round.
+   *
+   * @param elements used for looking up names
+   * @param type a JavaParser class or interface type
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it. It must permit null values, so it cannot be a {@code
+   *     ConcurrentHashMap}; this method is not thread-safe.
+   * @return the element for {@code type}, or null if it cannot be determined
+   */
+  public static @Nullable TypeElement resolveTypeName(
+      Elements elements, ClassOrInterfaceType type, Map<String, @Nullable TypeElement> cache) {
     String name = type.getNameWithScope();
 
     // `firstComponent` is what a single-type import must import; the rest of `name` names a
@@ -93,14 +119,14 @@ public final class JavaParserUtil {
       if (ancestor instanceof TypeDeclaration<?> enclosingType) {
         String enclosingName = enclosingType.getFullyQualifiedName().orElse(null);
         if (enclosingName != null) {
-          TypeElement result = elements.getTypeElement(enclosingName + "." + name);
+          TypeElement result = getTypeElement(elements, enclosingName + "." + name, cache);
           if (result != null) {
             return result;
           }
           // The enclosing type might inherit the member type rather than declare it.
-          TypeElement enclosingElement = elements.getTypeElement(enclosingName);
+          TypeElement enclosingElement = getTypeElement(elements, enclosingName, cache);
           if (enclosingElement != null) {
-            result = resolveMemberType(elements, enclosingElement, firstComponent, suffix);
+            result = resolveMemberType(elements, enclosingElement, firstComponent, suffix, cache);
             if (result != null) {
               return result;
             }
@@ -112,7 +138,7 @@ public final class JavaParserUtil {
     CompilationUnit cu = type.findCompilationUnit().orElse(null);
     if (cu == null) {
       // The name might be fully-qualified.
-      return elements.getTypeElement(name);
+      return getTypeElement(elements, name, cache);
     }
 
     // A single-type import or a single-static import of a member type takes precedence over an
@@ -123,7 +149,7 @@ public final class JavaParserUtil {
       }
       String importedName = importDecl.getNameAsString();
       if (importedName.equals(firstComponent) || importedName.endsWith("." + firstComponent)) {
-        TypeElement result = elements.getTypeElement(importedName + suffix);
+        TypeElement result = getTypeElement(elements, importedName + suffix, cache);
         if (result != null) {
           return result;
         }
@@ -134,9 +160,9 @@ public final class JavaParserUtil {
           // import that names a field or a method resolves to no type element at all.)
           String containerName =
               importedName.substring(0, importedName.length() - firstComponent.length() - 1);
-          TypeElement containerElement = elements.getTypeElement(containerName);
+          TypeElement containerElement = getTypeElement(elements, containerName, cache);
           if (containerElement != null) {
-            result = resolveMemberType(elements, containerElement, firstComponent, suffix);
+            result = resolveMemberType(elements, containerElement, firstComponent, suffix, cache);
             if (result != null) {
               return result;
             }
@@ -158,7 +184,7 @@ public final class JavaParserUtil {
     }
     containerPrefixes.add("java.lang.");
     for (String containerPrefix : containerPrefixes) {
-      TypeElement result = elements.getTypeElement(containerPrefix + name);
+      TypeElement result = getTypeElement(elements, containerPrefix + name, cache);
       if (result != null) {
         return result;
       }
@@ -168,9 +194,10 @@ public final class JavaParserUtil {
     // type inherits.
     for (ImportDeclaration importDecl : cu.getImports()) {
       if (importDecl.isAsterisk()) {
-        TypeElement importedElement = elements.getTypeElement(importDecl.getNameAsString());
+        TypeElement importedElement = getTypeElement(elements, importDecl.getNameAsString(), cache);
         if (importedElement != null) {
-          TypeElement result = resolveMemberType(elements, importedElement, firstComponent, suffix);
+          TypeElement result =
+              resolveMemberType(elements, importedElement, firstComponent, suffix, cache);
           if (result != null) {
             return result;
           }
@@ -181,7 +208,28 @@ public final class JavaParserUtil {
     // The name might be fully-qualified, or might be a top-level type in the unnamed package.
     // This lookup is last, because a type that is in scope shadows a type whose fully-qualified
     // name is `name`.
-    return elements.getTypeElement(name);
+    return getTypeElement(elements, name, cache);
+  }
+
+  /**
+   * Returns the element for the type that {@code name} names, or null if it names no type. The
+   * result of every lookup, including a lookup that finds no type, is memoized in {@code cache}.
+   *
+   * @param elements used for looking up names
+   * @param name a name that might name a type
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it
+   * @return the element for the type named {@code name}, or null if there is none
+   */
+  @SuppressWarnings("signature:argument") // a call to getTypeElement() whose result is checked
+  private static @Nullable TypeElement getTypeElement(
+      Elements elements, String name, Map<String, @Nullable TypeElement> cache) {
+    if (cache.containsKey(name)) {
+      return cache.get(name);
+    }
+    TypeElement result = elements.getTypeElement(name);
+    cache.put(name, result);
+    return result;
   }
 
   /**
@@ -196,10 +244,16 @@ public final class JavaParserUtil {
    * @param firstComponent the simple name of a member type of {@code typeElement}
    * @param suffix the rest of the type name, which names a type nested within {@code
    *     firstComponent}; it is empty or starts with "."
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it
    * @return the element for the member type, or null if it cannot be determined
    */
   private static @Nullable TypeElement resolveMemberType(
-      Elements elements, TypeElement typeElement, String firstComponent, String suffix) {
+      Elements elements,
+      TypeElement typeElement,
+      String firstComponent,
+      String suffix,
+      Map<String, @Nullable TypeElement> cache) {
     Set<TypeElement> visited = new HashSet<>();
     visited.add(typeElement);
     Deque<TypeElement> worklist = new ArrayDeque<>();
@@ -213,9 +267,7 @@ public final class JavaParserUtil {
           if (suffix.isEmpty()) {
             return member;
           }
-          @SuppressWarnings("signature:argument") // concatenation of canonical names is canonical
-          TypeElement result = elements.getTypeElement(member.getQualifiedName() + suffix);
-          return result;
+          return getTypeElement(elements, member.getQualifiedName() + suffix, cache);
         }
       }
       for (TypeElement supertype : ElementUtils.getDirectSuperTypeElements(current, elements)) {

@@ -20,11 +20,9 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.CharLiteralExpr;
-import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
-import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
@@ -60,6 +58,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -148,6 +147,27 @@ public class WholeProgramInferenceJavaParserStorage
 
   /** True if the {@code -AinferOutputOriginal} option was supplied to the checker. */
   private final boolean inferOutputOriginal;
+
+  /**
+   * The names of the invisible qualifiers supported by {@link #atypeFactory}, or null if they have
+   * not yet been computed. They are computed lazily because {@link
+   * AnnotatedTypeFactory#getSupportedTypeQualifiers} might not yet yield its final result when this
+   * object is constructed.
+   */
+  private @MonotonicNonNull Set<String> invisibleQualifierNames = null;
+
+  /**
+   * Returns the names of the invisible qualifiers supported by {@link #atypeFactory}, computing
+   * them if they have not yet been computed.
+   *
+   * @return the names of the invisible qualifiers supported by {@link #atypeFactory}
+   */
+  private Set<String> getInvisibleQualifierNames() {
+    if (invisibleQualifierNames == null) {
+      invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
+    }
+    return invisibleQualifierNames;
+  }
 
   /**
    * Returns the names of all qualifiers that are marked with {@link InvisibleQualifier}, and that
@@ -1092,38 +1112,24 @@ public class WholeProgramInferenceJavaParserStorage
       // and crashes when adding annotations in certain locations.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
-      // Do not print invisible qualifiers, to avoid cluttering the output.
-      Set<String> invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
+      // Some annotations should not be printed.  They are removed from the AST, rather than
+      // suppressed in the pretty-printer, to prevent the pretty-printer from outputting the
+      // whitespace that would have separated an annotation from what follows it.  The compilation
+      // unit is cloned first, because removal side-effects it and the same AST is printed more
+      // than once:  it is shared by every CompilationUnitAnnos for the source file, and under
+      // `-AinferOutputOriginal` it is also printed before annotations are transferred into it.
+      CompilationUnit compilationUnit = root.compilationUnit;
+      if (hasUnprintedAnnotations()) {
+        compilationUnit = compilationUnit.clone();
+        removeUnprintedAnnotations(compilationUnit);
+      }
+
       DefaultPrettyPrinter prettyPrinter =
           new DefaultPrettyPrinter() {
             @Override
             public String print(Node node) {
               VoidVisitor<Void> visitor =
                   new DefaultPrettyPrinterVisitor(getConfiguration()) {
-                    @Override
-                    public void visit(MarkerAnnotationExpr n, Void arg) {
-                      if (invisibleQualifierNames.contains(n.getName().toString())) {
-                        return;
-                      }
-                      super.visit(n, arg);
-                    }
-
-                    @Override
-                    public void visit(SingleMemberAnnotationExpr n, Void arg) {
-                      if (invisibleQualifierNames.contains(n.getName().toString())) {
-                        return;
-                      }
-                      super.visit(n, arg);
-                    }
-
-                    @Override
-                    public void visit(NormalAnnotationExpr n, Void arg) {
-                      if (invisibleQualifierNames.contains(n.getName().toString())) {
-                        return;
-                      }
-                      super.visit(n, arg);
-                    }
-
                     // visit(CharLiteralExpr) and visit(StringLiteralExpr) work around bugs in
                     // JavaParser, with respect to handling lonely surrogate characters.
 
@@ -1151,11 +1157,44 @@ public class WholeProgramInferenceJavaParserStorage
             }
           };
 
-      String fileContent = prettyPrinter.print(root.compilationUnit);
+      String fileContent = prettyPrinter.print(compilationUnit);
       writer.write(fileContent);
     } catch (IOException e) {
       throw new BugInCF("Error while writing ajava file " + outputPath, e);
     }
+  }
+
+  /**
+   * Returns true if {@link #removeUnprintedAnnotations} might remove an annotation. If it returns
+   * false, then the caller need not clone the compilation unit before printing it.
+   *
+   * @return true if {@link #removeUnprintedAnnotations} might remove an annotation
+   */
+  private boolean hasUnprintedAnnotations() {
+    return !getInvisibleQualifierNames().isEmpty();
+  }
+
+  /**
+   * Removes from the given compilation unit the annotations that an ajava file should not contain,
+   * because they would clutter it: the invisible qualifiers.
+   *
+   * @param compilationUnit the compilation unit to side-effect
+   */
+  private void removeUnprintedAnnotations(CompilationUnit compilationUnit) {
+    Set<String> unprintedNames = getInvisibleQualifierNames();
+    Predicate<AnnotationExpr> shouldRemove =
+        anno -> unprintedNames.contains(anno.getNameAsString());
+    compilationUnit.walk(
+        node -> {
+          if (node instanceof NodeWithAnnotations<?> annotated) {
+            annotated.getAnnotations().removeIf(shouldRemove);
+          }
+          if (node instanceof Parameter param) {
+            // A varargs annotation is on the array type that `...` creates, as in
+            // `void m(String @Anno ... args)`.  It is not in `param.getAnnotations()`.
+            param.getVarArgsAnnotations().removeIf(shouldRemove);
+          }
+        });
   }
 
   // TODO: Move these two routines to StringUtils.

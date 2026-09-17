@@ -9,6 +9,9 @@
 
 The Checker Framework runs under JDK 27 -- that is, it runs on a version 27 JVM.
 
+The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
+warnings that it did not previously.
+
 ### Changes for type system implementers
 
 `JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,

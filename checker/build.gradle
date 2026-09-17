@@ -209,6 +209,8 @@ clean {
   delete("tests/ainfer-nullness/inference-output")
   delete("tests/ainfer-index/annotated")
   delete("tests/ainfer-index/inference-output")
+  delete("tests/ainfer-relevance/annotated")
+  delete("tests/ainfer-relevance/inference-output")
   delete("tests/ainfer-resourceleak/annotated")
   delete("tests/ainfer-resourceleak/inference-output")
 }
@@ -346,6 +348,7 @@ test {
     excludeCategories("org.checkerframework.checker.test.junit.ainferrunners.AinferNullnessJaifsGenerationTest")
     excludeCategories("org.checkerframework.checker.test.junit.ainferrunners.AinferNullnessAjavaGenerationTest")
     excludeCategories("org.checkerframework.checker.test.junit.ainferrunners.AinferIndexAjavaGenerationTest")
+    excludeCategories("org.checkerframework.checker.test.junit.ainferrunners.AinferRelevanceAjavaGenerationTest")
     excludeCategories("org.checkerframework.checker.test.junit.ainferrunners.AinferResourceLeakAjavaGenerationTest")
   }
 }
@@ -368,9 +371,13 @@ tasks.register("ainferTestCheckerGenerateStubs", Test) {
     exceptionFormat = "full"
     events("passed", "skipped", "failed")
   }
+  List<File> dirsToDelete = [
+    file("tests/ainfer-testchecker/annotated"),
+    file("build/ainfer-testchecker"),
+    wpiOutputDirectory(),
+  ]
   doFirst {
-    delete("tests/ainfer-testchecker/annotated")
-    delete("${buildDir}/ainfer-testchecker/")
+    DirectoryDeleter.deleteDirectories(dirsToDelete)
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-testchecker")
@@ -434,9 +441,13 @@ tasks.register("ainferTestCheckerGenerateAjava", Test) {
     exceptionFormat = "full"
     events("passed", "skipped", "failed")
   }
+  List<File> dirsToDelete = [
+    file("tests/ainfer-testchecker/annotated"),
+    file("build/ainfer-testchecker"),
+    wpiOutputDirectory(),
+  ]
   doFirst {
-    delete("tests/ainfer-testchecker/annotated")
-    delete("${buildDir}/ainfer-testchecker/")
+    DirectoryDeleter.deleteDirectories(dirsToDelete)
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-testchecker")
@@ -482,6 +493,40 @@ tasks.register("ainferTestCheckerValidateAjava", Test) {
   }
 }
 
+// Returns the directory that WPI writes into.  WPI resolves "build/whole-program-inference"
+// against its working directory, which for these `Test` tasks is the project directory, and so
+// does `file()`.  Call this at configuration time, not from within a task action, because the
+// Gradle configuration cache forbids using a project object from within a task action.
+File wpiOutputDirectory() {
+  return file("build/whole-program-inference")
+}
+
+// This class exists only to hold a `static` method.  The method cannot be a method of this build
+// script, because the Gradle configuration cache forbids calling a build script's methods from
+// within a task action.
+class DirectoryDeleter {
+  // Deletes each of the given directories.  The caller resolves them at configuration time and
+  // passes them in, because the Gradle configuration cache forbids using a project object from
+  // within a task action; that is also why this uses `File.deleteDir()` rather than
+  // `Project.delete()`.
+  //
+  // Every `ainfer*Generate*` task deletes the WPI output directory (see `wpiOutputDirectory`)
+  // from `doFirst`: the directory is only renamed away in `doLast`, which does not run when the
+  // test fails, so a failed run would otherwise leave stale output that the next generation task
+  // would fold into its own results and feed to its validation task.
+  static void deleteDirectories(List<File> dirsToDelete) {
+    dirsToDelete.forEach { dirToDelete ->
+      // Unlike `Project.delete()`, `File.deleteDir()` reports failure by returning false rather
+      // than by throwing.  (It returns true if the directory does not exist, and false if the
+      // path exists but is not a directory.)  Without this test, the caller would run against
+      // stale output after a failed deletion.
+      if (!dirToDelete.deleteDir()) {
+        throw new GradleException("Could not delete ${dirToDelete}")
+      }
+    }
+  }
+}
+
 // Copies directories as needed by WPI tests.
 // Formal parameter testdir is, for example, "ainfer-testchecker".
 // Does work in directory "tests/${testdir}/".
@@ -509,7 +554,7 @@ void copyNonannotatedToAnnotatedDirectory(String testdir) {
   }
 
   delete("tests/${testdir}/inference-output")
-  file("build/whole-program-inference").renameTo(file("tests/${testdir}/inference-output"))
+  wpiOutputDirectory().renameTo(file("tests/${testdir}/inference-output"))
 }
 
 // This task is similar to the ainferTestCheckerJaifTest task below, but it doesn't
@@ -550,8 +595,12 @@ tasks.register("ainferTestCheckerGenerateJaifs", Test) {
     exceptionFormat = "full"
     events("passed", "skipped", "failed")
   }
+  List<File> dirsToDelete = [
+    file("tests/ainfer-testchecker/annotated"),
+    wpiOutputDirectory(),
+  ]
   doFirst {
-    delete("tests/ainfer-testchecker/annotated")
+    DirectoryDeleter.deleteDirectories(dirsToDelete)
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-testchecker")
@@ -631,23 +680,13 @@ tasks.register("ainferIndexGenerateAjava", Test) {
     exceptionFormat = "full"
     events("passed", "skipped", "failed")
   }
-  // Resolve these directories at configuration time, and delete them with `File.deleteDir()`
-  // rather than with `Project.delete()`, because the Gradle configuration cache forbids using
-  // a project object from within a task action.
-  List<File> ainferIndexDirsToDelete = [
+  List<File> dirsToDelete = [
     file("tests/ainfer-index/annotated"),
-    layout.buildDirectory.dir("ainfer-index").get().asFile,
+    file("build/ainfer-index"),
+    wpiOutputDirectory(),
   ]
   doFirst {
-    ainferIndexDirsToDelete.forEach { dirToDelete ->
-      // Unlike `Project.delete()`, `File.deleteDir()` reports failure by returning false rather
-      // than by throwing.  (It returns true if the directory does not exist, and false if the
-      // path exists but is not a directory.)  Without this test, this task would run against
-      // stale output after a failed deletion.
-      if (!dirToDelete.deleteDir()) {
-        throw new GradleException("Could not delete ${dirToDelete}")
-      }
-    }
+    DirectoryDeleter.deleteDirectories(dirsToDelete)
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-index")
@@ -681,6 +720,63 @@ tasks.register("ainferIndexAjavaTest") {
   outputs.upToDateWhen { false }
 }
 
+tasks.register("ainferRelevanceGenerateAjava", Test) {
+  description = "Internal task.  Users should run ainferRelevanceAjavaTest instead.  This type-checks the ainfer-relevance files with -Ainfer=ajava to generate ajava files."
+  addTestListener(new RerunAdvice(":checker:ainferRelevanceAjavaTest"))
+  dependsOn(compileTestJava)
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+  outputs.upToDateWhen { false }
+  include("**/AinferRelevanceAjavaGenerationTest.class")
+  testLogging {
+    // Always run the tests
+    outputs.upToDateWhen { false }
+
+    // Show the found unexpected diagnostics and the expected diagnostics not found.
+    exceptionFormat = "full"
+    events("passed", "skipped", "failed")
+  }
+  // `AinferRelevanceAjavaGenerationTest` reads the WPI output directory directly, to compare the
+  // inference output to the goal files.
+  List<File> dirsToDelete = [
+    file("tests/ainfer-relevance/annotated"),
+    wpiOutputDirectory(),
+  ]
+  doFirst {
+    DirectoryDeleter.deleteDirectories(dirsToDelete)
+  }
+  doLast {
+    copyNonannotatedToAnnotatedDirectory("ainfer-relevance")
+  }
+}
+
+tasks.register("ainferRelevanceValidateAjava", Test) {
+  description = "Internal task.  Users should run ainferRelevanceAjavaTest instead.  This re-type-checks the ainfer-relevance files using the ajava files generated by ainferRelevanceGenerateAjava"
+  addTestListener(new RerunAdvice(":checker:ainferRelevanceAjavaTest"))
+  dependsOn(ainferRelevanceGenerateAjava)
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+  outputs.upToDateWhen { false }
+  include("**/AinferRelevanceAjavaValidationTest.class")
+  testLogging {
+    // Always run the tests
+    outputs.upToDateWhen { false }
+
+    // Show the found unexpected diagnostics and the expected diagnostics not found.
+    exceptionFormat = "full"
+    events("passed", "skipped", "failed")
+  }
+}
+
+tasks.register("ainferRelevanceAjavaTest") {
+  dependsOn("shadowJar")
+  description = "Run tests for whole-program inference using ajava files and a checker that declares @RelevantJavaTypes"
+  group = "Verification"
+  dependsOn(ainferRelevanceValidateAjava)
+  outputs.upToDateWhen { false }
+}
+
 tasks.register("ainferNullnessGenerateAjava", Test) {
   description = "Internal task.  Users should run ainferNullnessAjavaTest instead.  This type-checks the ainfer-nullness files with -Ainfer=ajava to generate ajava files."
   addTestListener(new RerunAdvice(":checker:ainferNullnessAjavaTest"))
@@ -698,9 +794,13 @@ tasks.register("ainferNullnessGenerateAjava", Test) {
     exceptionFormat = "full"
     events("passed", "skipped", "failed")
   }
+  List<File> dirsToDelete = [
+    file("tests/ainfer-nullness/annotated"),
+    file("build/ainfer-nullness"),
+    wpiOutputDirectory(),
+  ]
   doFirst {
-    delete("tests/ainfer-nullness/annotated")
-    delete("${buildDir}/ainfer-nullness/")
+    DirectoryDeleter.deleteDirectories(dirsToDelete)
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-nullness")
@@ -752,9 +852,13 @@ tasks.register("ainferResourceLeakGenerateAjava", Test) {
     exceptionFormat = "full"
     events("passed", "skipped", "failed")
   }
+  List<File> dirsToDelete = [
+    file("tests/ainfer-resourceleak/annotated"),
+    file("build/ainfer-resourceleak"),
+    wpiOutputDirectory(),
+  ]
   doFirst {
-    delete("tests/ainfer-resourceleak/annotated")
-    delete("${buildDir}/ainfer-resourceleak/")
+    DirectoryDeleter.deleteDirectories(dirsToDelete)
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-resourceleak")
@@ -806,8 +910,12 @@ tasks.register("ainferNullnessGenerateJaifs", Test) {
     exceptionFormat = "full"
     events("passed", "skipped", "failed")
   }
+  List<File> dirsToDelete = [
+    file("tests/ainfer-nullness/annotated"),
+    wpiOutputDirectory(),
+  ]
   doFirst {
-    delete("tests/ainfer-nullness/annotated")
+    DirectoryDeleter.deleteDirectories(dirsToDelete)
   }
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-nullness")
@@ -868,6 +976,7 @@ tasks.register("ainferTest") {
   dependsOn("ainferNullnessJaifTest")
   dependsOn("ainferNullnessAjavaTest")
   dependsOn("ainferIndexAjavaTest")
+  dependsOn("ainferRelevanceAjavaTest")
   dependsOn("ainferResourceLeakAjavaTest")
 }
 
