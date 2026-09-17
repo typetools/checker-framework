@@ -338,33 +338,32 @@ public final class JavaParserUtil {
 
   /**
    * Returns true if {@code node} directly contains a statement that declares a local class,
-   * interface, enum, or record whose name is {@code name}, at or before the child {@code
-   * lastChild}. Such a declaration shadows, throughout the rest of the block that contains it,
-   * every type of the same name that is declared elsewhere. It does not shadow a type that is used
-   * earlier in the block, so this method ignores the children that follow {@code lastChild}.
+   * interface, enum, or record whose name is {@code name}, and that declaration is in scope at
+   * {@code child}. The scope of a local type declaration is the rest of the block that contains it,
+   * including the declaration itself; a use that appears earlier in the block refers to some other
+   * type of the same name.
    *
    * @param node a JavaParser node, such as a block
    * @param name a simple type name
-   * @param lastChild the last child of {@code node} to examine; the use whose name is being
-   *     resolved appears within it
-   * @return true if {@code node} declares a local type named {@code name}, at or before {@code
-   *     lastChild}
+   * @param child the child of {@code node} that contains the use of {@code name}
+   * @return true if {@code node} declares a local type named {@code name} that is in scope at
+   *     {@code child}
    */
   @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
-  private static boolean declaresLocalType(Node node, String name, Node lastChild) {
-    for (Node child : node.getChildNodes()) {
-      if (child instanceof Statement) {
+  private static boolean declaresLocalType(Node node, String name, Node child) {
+    for (Node statement : node.getChildNodes()) {
+      if (statement instanceof Statement) {
         // A local type declaration is the only kind of statement whose child is a type
         // declaration.
-        for (Node grandchild : child.getChildNodes()) {
+        for (Node grandchild : statement.getChildNodes()) {
           if (grandchild instanceof TypeDeclaration<?> localType
               && localType.getNameAsString().equals(name)) {
             return true;
           }
         }
       }
-      if (child == lastChild) {
-        // A declaration that appears later in the block does not shadow a use within `lastChild`.
+      if (statement == child) {
+        // A local type that is declared later in the block is not in scope at `child`.
         return false;
       }
     }
