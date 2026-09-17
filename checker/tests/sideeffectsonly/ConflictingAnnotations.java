@@ -20,6 +20,14 @@ public class ConflictingAnnotations {
     return 1;
   }
 
+  // Writing an alias for @Pure is the same as writing @Pure.
+  @SideEffectsOnly("#1")
+  @org.jmlspecs.annotation.Pure
+  // :: error: (purity.annotation.conflict)
+  int test3(Collection<Integer> first) {
+    return 1;
+  }
+
   static class PureSuper {
     @Pure
     int m() {

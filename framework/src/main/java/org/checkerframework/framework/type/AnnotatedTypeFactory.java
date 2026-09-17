@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -4207,29 +4208,80 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns true if the given declaration annotation is written on the given element itself --
    * either in source code or in an annotation file -- rather than being inherited.
    *
+   * <p>Writing an alias for {@code anno} counts as writing {@code anno}, because {@link
+   * #getDeclAnnotation} returns the canonical annotation rather than the alias that is written; see
+   * {@link #addAliasedDeclAnnotation}.
+   *
    * @param elt an element
-   * @param anno a declaration annotation that applies to {@code elt}
-   * @return true if {@code anno} is written on {@code elt} itself
+   * @param anno a declaration annotation that applies to {@code elt}, in canonical form
+   * @return true if {@code anno}, or an alias for it, is written on {@code elt} itself
    */
   public boolean isDeclAnnotationWrittenOn(Element elt, AnnotationMirror anno) {
-    return AnnotationUtils.containsSameByName(elt.getAnnotationMirrors(), anno)
-        || containsSameByName(stubTypes.getDeclAnnotations(elt), anno)
-        || containsSameByName(ajavaTypes.getDeclAnnotations(elt), anno)
-        || (currentFileAjavaTypes != null
-            && containsSameByName(currentFileAjavaTypes.getDeclAnnotations(elt), anno));
+    if (isDeclAnnotationWrittenOn(elt, am -> AnnotationUtils.areSameByName(am, anno))) {
+      return true;
+    }
+    for (IPair<AnnotationMirror, Set<Class<? extends Annotation>>> aliasPair :
+        declAliases.values()) {
+      if (AnnotationUtils.areSameByName(aliasPair.first, anno)
+          && isDeclAnnotationWrittenOn(elt, am -> isAnyOfClasses(am, aliasPair.second))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
-   * Returns true if the given collection contains an annotation with the same name as the given
-   * one. Returns false if the collection is null.
+   * Returns true if some declaration annotation that is written on the given element itself --
+   * either in source code or in an annotation file -- satisfies the given predicate.
+   *
+   * @param elt an element
+   * @param pred a predicate over annotations
+   * @return true if some annotation written on {@code elt} itself satisfies {@code pred}
+   */
+  private boolean isDeclAnnotationWrittenOn(Element elt, Predicate<AnnotationMirror> pred) {
+    return anyMatch(elt.getAnnotationMirrors(), pred)
+        || anyMatch(stubTypes.getDeclAnnotations(elt), pred)
+        || anyMatch(ajavaTypes.getDeclAnnotations(elt), pred)
+        || (currentFileAjavaTypes != null
+            && anyMatch(currentFileAjavaTypes.getDeclAnnotations(elt), pred));
+  }
+
+  /**
+   * Returns true if the given collection contains an annotation that satisfies the given predicate.
+   * Returns false if the collection is null.
    *
    * @param annos a collection of annotations, or null
-   * @param anno an annotation
-   * @return true if {@code annos} contains an annotation with the same name as {@code anno}
+   * @param pred a predicate over annotations
+   * @return true if {@code annos} contains an annotation that satisfies {@code pred}
    */
-  private static boolean containsSameByName(
-      @Nullable Collection<? extends AnnotationMirror> annos, AnnotationMirror anno) {
-    return annos != null && AnnotationUtils.containsSameByName(annos, anno);
+  private static boolean anyMatch(
+      @Nullable Collection<? extends AnnotationMirror> annos, Predicate<AnnotationMirror> pred) {
+    if (annos == null) {
+      return false;
+    }
+    for (AnnotationMirror anno : annos) {
+      if (pred.test(anno)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if the given annotation has one of the given classes.
+   *
+   * @param anno an annotation
+   * @param annoClasses annotation classes
+   * @return true if {@code anno} has one of the classes in {@code annoClasses}
+   */
+  private boolean isAnyOfClasses(
+      AnnotationMirror anno, Set<Class<? extends Annotation>> annoClasses) {
+    for (Class<? extends Annotation> annoClass : annoClasses) {
+      if (areSameByClass(anno, annoClass)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

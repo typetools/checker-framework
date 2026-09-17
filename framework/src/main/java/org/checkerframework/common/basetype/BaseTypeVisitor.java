@@ -1486,12 +1486,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param methodElement the element for {@code tree}
    */
   protected void checkSideEffectsOnlyExpressions(MethodTree tree, ExecutableElement methodElement) {
-    if (!checkPurityAnnotationsOption) {
-      // Checking a @SideEffectsOnly annotation happens only when -AcheckPurityAnnotations was
-      // itself supplied, like every other purity check.  Control can reach here without it,
-      // because issuing a purity suggestion does not require it.
-      return;
-    }
+    // This check is not conditional on "-AcheckPurityAnnotations", unlike the check of the method
+    // body against the annotation.  Dataflow acts on a `@SideEffectsOnly` annotation whether or
+    // not that option was supplied, so an annotation whose expressions cannot be parsed is an
+    // error in every configuration.
     AnnotationMirror sideEffectsOnly =
         atypeFactory.getDeclAnnotation(methodElement, SideEffectsOnly.class);
     if (sideEffectsOnly == null) {
@@ -4560,6 +4558,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
       checkPreAndPostConditions();
       checkPurity();
+      checkSideEffectsOnly();
 
       return result;
     }
@@ -4612,6 +4611,174 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         switch (purityKind) {
           case SIDE_EFFECT_FREE -> result.add("@SideEffectFree");
           case DETERMINISTIC -> result.add("@Deterministic");
+        }
+      }
+      return result.toString();
+    }
+
+    /**
+     * Check that an override side-effects no more than the overridden method's
+     * {@code @SideEffectsOnly} annotation permits.
+     *
+     * <p>This check is necessary for soundness. A call site is checked against the
+     * {@code @SideEffectsOnly} annotation of the method that the call statically resolves to, but
+     * the call may execute an override of that method. Without this check, the override's extra
+     * side effects would be invisible at every call whose receiver is statically of the supertype.
+     *
+     * <p>The check also reports a method that overrides methods in two supertypes with incompatible
+     * {@code @SideEffectsOnly} annotations, even if the method writes no annotation of its own:
+     * such a method inherits the union of what the supertypes permit, which is more than either one
+     * of them permits. See {@code AnnotatedTypeFactory.getSideEffectsOnlyExpressionMap}.
+     */
+    private void checkSideEffectsOnly() {
+      if (isMethodReference) {
+        // TODO: Check a method reference against the `@SideEffectsOnly` annotation of the
+        // functional interface method.  The two annotations are written in unrelated scopes:  the
+        // referenced method's formal parameters do not correspond to the interface method's when
+        // the receiver of the reference stands for the interface method's first parameter.
+        // Comparing them requires viewpoint adaptation that this check does not perform.
+        return;
+      }
+      Map<ExecutableElement, List<String>> overriddenExpressionStrings =
+          atypeFactory.getSideEffectsOnlyExpressionMap(overridden.getElement());
+      if (overriddenExpressionStrings == null) {
+        // The overridden method has no `@SideEffectsOnly` annotation, so it permits every side
+        // effect that the overriding method might have.  (If the overridden method is
+        // `@SideEffectFree` or `@Pure`, `checkPurity` has already compared the two methods.)
+        return;
+      }
+      ExecutableElement overriderElement = overrider.getElement();
+      if (PurityUtils.isSideEffectFree(atypeFactory, overriderElement)) {
+        // The overriding method side-effects nothing, which is no more than any
+        // `@SideEffectsOnly` annotation permits.
+        return;
+      }
+      List<JavaExpression> permitted = parseSideEffectsOnly(overriddenExpressionStrings);
+      if (permitted == null) {
+        // An expression of the overridden method's annotation cannot be parsed, so what that
+        // method permits is unknown.  The parse error is reported at its declaration and at every
+        // call of it.
+        return;
+      }
+      Map<ExecutableElement, List<String>> overriderExpressionStrings =
+          atypeFactory.getSideEffectsOnlyExpressionMap(overriderElement);
+      if (overriderExpressionStrings == null) {
+        // The overriding method promises nothing, so it may side-effect more than is permitted.
+        reportSideEffectsOnlyOverride(null, overriddenExpressionStrings, null);
+        return;
+      }
+
+      for (Map.Entry<ExecutableElement, List<String>> entry :
+          overriderExpressionStrings.entrySet()) {
+        // The method whose `@SideEffectsOnly` annotation contains the expressions.  It is the
+        // overriding method, unless that method inherits the annotation.
+        ExecutableElement declaringMethod = entry.getKey();
+        for (String exprString : entry.getValue()) {
+          JavaExpression expr;
+          try {
+            // An expression is parsed in the scope of the method that declares it, which is not
+            // necessarily the scope of the overriding method.
+            expr = StringToJavaExpression.atMethodDecl(exprString, declaringMethod, checker);
+          } catch (JavaExpressionParseException ex) {
+            // The parse error is reported at the declaration that writes the expression.
+            continue;
+          }
+          if (!isPermittedSideEffect(expr, permitted)) {
+            reportSideEffectsOnlyOverride(
+                overriderExpressionStrings, overriddenExpressionStrings, exprString);
+          }
+        }
+      }
+    }
+
+    /**
+     * Returns true if side-effecting the given expression is permitted by the given
+     * {@code @SideEffectsOnly} expressions: it is one of them, or is reached through one of them.
+     *
+     * @param expr an expression that a method may side-effect
+     * @param permitted the expressions that the method is permitted to side-effect
+     * @return true if side-effecting {@code expr} is permitted
+     */
+    private boolean isPermittedSideEffect(JavaExpression expr, List<JavaExpression> permitted) {
+      for (JavaExpression permittedExpression : permitted) {
+        if (expr.containsAsReceiver(atypeFactory, permittedExpression)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /**
+     * Parses the given {@code @SideEffectsOnly} expressions, each in the scope of the method that
+     * declares it. Returns null if any of them cannot be parsed.
+     *
+     * <p>Two expressions that are written in different methods' annotations are comparable to one
+     * another, because {@link JavaExpression#syntacticEquals} compares a formal parameter by its
+     * index and a field by its element, neither of which depends on the scope.
+     *
+     * @param expressionStrings {@code @SideEffectsOnly} expressions, indexed by the method whose
+     *     declaration contains them
+     * @return the parsed expressions, or null if any of them cannot be parsed
+     */
+    private @Nullable List<JavaExpression> parseSideEffectsOnly(
+        Map<ExecutableElement, List<String>> expressionStrings) {
+      List<JavaExpression> result = new ArrayList<>(expressionStrings.size());
+      for (Map.Entry<ExecutableElement, List<String>> entry : expressionStrings.entrySet()) {
+        ExecutableElement declaringMethod = entry.getKey();
+        for (String exprString : entry.getValue()) {
+          try {
+            result.add(StringToJavaExpression.atMethodDecl(exprString, declaringMethod, checker));
+          } catch (JavaExpressionParseException ex) {
+            return null;
+          }
+        }
+      }
+      return result;
+    }
+
+    /**
+     * Reports that the overriding method may side-effect more than the overridden method permits.
+     *
+     * @param overriderExpressionStrings the {@code @SideEffectsOnly} expressions that apply to the
+     *     overriding method, or null if none does
+     * @param overriddenExpressionStrings the {@code @SideEffectsOnly} expressions that apply to the
+     *     overridden method
+     * @param exprString the overriding method's expression that the overridden method does not
+     *     permit, or null if the overriding method has no {@code @SideEffectsOnly} annotation
+     */
+    private void reportSideEffectsOnlyOverride(
+        @Nullable Map<ExecutableElement, List<String>> overriderExpressionStrings,
+        Map<ExecutableElement, List<String>> overriddenExpressionStrings,
+        @Nullable String exprString) {
+      checker.reportError(
+          overriderTree,
+          "purity.sideeffectsonly.overriding",
+          overriderType,
+          sideEffectsOnlyToString(overriderExpressionStrings),
+          overrider,
+          overriddenType,
+          sideEffectsOnlyToString(overriddenExpressionStrings),
+          overridden,
+          exprString == null ? "arbitrary expressions" : "\"" + exprString + "\"");
+    }
+
+    /**
+     * Formats {@code @SideEffectsOnly} expressions for a diagnostic message, as the annotation that
+     * a user writes rather than as the map that represents them.
+     *
+     * @param expressionStrings {@code @SideEffectsOnly} expressions, indexed by the method whose
+     *     declaration contains them; or null if no {@code @SideEffectsOnly} annotation applies
+     * @return the annotation corresponding to {@code expressionStrings}
+     */
+    private String sideEffectsOnlyToString(
+        @Nullable Map<ExecutableElement, List<String>> expressionStrings) {
+      if (expressionStrings == null) {
+        return "(no side effect annotation)";
+      }
+      StringJoiner result = new StringJoiner(", ", "@SideEffectsOnly({", "})");
+      for (List<String> expressions : expressionStrings.values()) {
+        for (String expression : expressions) {
+          result.add("\"" + expression + "\"");
         }
       }
       return result.toString();
