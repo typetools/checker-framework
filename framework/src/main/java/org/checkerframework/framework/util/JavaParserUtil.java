@@ -438,7 +438,6 @@ public final class JavaParserUtil {
    * @return true if {@code node} declares a local type named {@code name} that is in scope at
    *     {@code child}
    */
-  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
   private static boolean declaresLocalType(Node node, String name, Node child) {
     for (Node statement : node.getChildNodes()) {
       if (statement instanceof Statement) {
