@@ -454,9 +454,7 @@ public final class PurityChecker {
      */
     protected void assignmentCheck(ExpressionTree variable) {
       variable = TreeUtils.withoutParens(variable);
-      if (TreePathUtil.inConstructor(getCurrentPath())
-          && writesFieldInCurrentClass(variable, 0)
-          && inConstructorNotInLambda()) {
+      if (inConstructorNotInLambda() && writesFieldInCurrentClass(variable, 0)) {
         // assigning a field of the object being constructed, or an element of an array that such
         // a field owns
         return;
