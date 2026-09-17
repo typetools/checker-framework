@@ -28,9 +28,7 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.nodeTypes.NodeWithVariables;
-import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.VoidType;
@@ -182,6 +180,19 @@ public class WholeProgramInferenceJavaParserStorage
    * object is constructed.
    */
   private @MonotonicNonNull Set<String> invisibleQualifierNames = null;
+
+  /**
+   * Returns the names of the invisible qualifiers supported by {@link #atypeFactory}, computing
+   * them if they have not yet been computed.
+   *
+   * @return the names of the invisible qualifiers supported by {@link #atypeFactory}
+   */
+  private Set<String> getInvisibleQualifierNames() {
+    if (invisibleQualifierNames == null) {
+      invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
+    }
+    return invisibleQualifierNames;
+  }
 
   /**
    * Returns the names of all qualifiers that are marked with {@link InvisibleQualifier}, and that
@@ -1172,8 +1183,8 @@ public class WholeProgramInferenceJavaParserStorage
 
     if (parentNode instanceof Type type) {
       // JavaParser's `TypeParameter` is a `Type`, so an annotation on a type parameter
-      // declaration, as in `<@Anno T>`, takes this branch.  `typeToTypeMirror` returns null for a
-      // type parameter declaration, so such an annotation is retained.
+      // declaration, as in `<@Anno T>`, takes this branch.  `JavaParserUtil.typeToTypeMirror`
+      // returns null for a type parameter declaration, so such an annotation is retained.
       return typeIsRelevant(gatf, type);
     }
     if (parentNode instanceof ArrayCreationLevel level) {
@@ -1192,10 +1203,10 @@ public class WholeProgramInferenceJavaParserStorage
       }
       // The annotation precedes the type, so it is on the element type; in
       // `void m(@Anno String... args)`, `@Anno` is on `String`.
-      return typeIsRelevant(gatf, innermostComponentType(param.getType()));
+      return typeIsRelevant(gatf, param.getType().getElementType());
     }
     if (parentNode instanceof ReceiverParameter receiverParam) {
-      return typeIsRelevant(gatf, innermostComponentType(receiverParam.getType()));
+      return typeIsRelevant(gatf, receiverParam.getType().getElementType());
     }
     if (parentNode instanceof MethodDeclaration method) {
       if (method.getType() instanceof VoidType) {
@@ -1205,10 +1216,10 @@ public class WholeProgramInferenceJavaParserStorage
         // handled above.  Be conservative.
         return true;
       }
-      return typeIsRelevant(gatf, innermostComponentType(method.getType()));
+      return typeIsRelevant(gatf, method.getType().getElementType());
     }
     if (parentNode instanceof AnnotationMemberDeclaration member) {
-      return typeIsRelevant(gatf, innermostComponentType(member.getType()));
+      return typeIsRelevant(gatf, member.getType().getElementType());
     }
     if (parentNode instanceof NodeWithVariables<?> declaration) {
       // A field declaration or a local variable declaration.  All its variables have the same
@@ -1219,7 +1230,7 @@ public class WholeProgramInferenceJavaParserStorage
         // Be conservative.
         return true;
       }
-      return typeIsRelevant(gatf, innermostComponentType(variables.get(0).getType()));
+      return typeIsRelevant(gatf, variables.get(0).getType().getElementType());
     }
 
     // The annotation is on some other declaration:  a type declaration, a constructor, etc.  Be
@@ -1252,12 +1263,12 @@ public class WholeProgramInferenceJavaParserStorage
    */
   private boolean typeIsRelevant(
       GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf, Type componentType, int arrayLevels) {
-    TypeMirror tm = typeToTypeMirror(componentType);
+    Types types = atypeFactory.getProcessingEnv().getTypeUtils();
+    TypeMirror tm = JavaParserUtil.typeToTypeMirror(elements, types, componentType);
     if (tm == null) {
       // The type could not be determined.  Be conservative.
       return true;
     }
-    Types types = atypeFactory.getProcessingEnv().getTypeUtils();
     for (int i = 0; i < arrayLevels; i++) {
       tm = types.getArrayType(tm);
     }
@@ -1289,88 +1300,6 @@ public class WholeProgramInferenceJavaParserStorage
     }
     // Be conservative.
     return true;
-  }
-
-  /**
-   * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined.
-   *
-   * @param type a JavaParser type
-   * @return the TypeMirror for {@code type}, or null if it cannot be determined
-   */
-  private @Nullable TypeMirror typeToTypeMirror(Type type) {
-    Types types = atypeFactory.getProcessingEnv().getTypeUtils();
-    if (type instanceof ArrayType arrayType) {
-      TypeMirror componentType = typeToTypeMirror(arrayType.getComponentType());
-      return componentType == null ? null : types.getArrayType(componentType);
-    }
-    if (type instanceof PrimitiveType primitiveType) {
-      return types.getPrimitiveType(JavaParserUtil.typeKindForPrimitive(primitiveType));
-    }
-    if (type instanceof VoidType) {
-      return types.getNoType(TypeKind.VOID);
-    }
-    if (type instanceof ClassOrInterfaceType classType) {
-      TypeElement typeElt = JavaParserUtil.resolveTypeName(elements, classType, typeElementCache);
-      if (typeElt != null) {
-        return typeElt.asType();
-      }
-      // `classType` might name a type variable, which has no TypeElement.
-      return typeVariableUpperBound(classType);
-    }
-    // An intersection type, a union type, `var`, a wildcard, a type parameter declaration, etc.
-    return null;
-  }
-
-  /**
-   * If the given JavaParser type names a type variable, returns the TypeMirror for the type
-   * variable's upper bound. Otherwise, or if the upper bound cannot be determined, returns null.
-   *
-   * <p>The upper bound stands in for the type variable itself, which has no TypeMirror here. That
-   * is sound for deciding relevance, because {@code GenericAnnotatedTypeFactory.isRelevant} treats
-   * a type variable as relevant exactly when its upper bound is.
-   *
-   * @param type a JavaParser class or interface type
-   * @return the TypeMirror for the upper bound of the type variable that {@code type} names, or
-   *     null
-   */
-  private @Nullable TypeMirror typeVariableUpperBound(ClassOrInterfaceType type) {
-    if (type.getNameWithScope().indexOf('.') != -1) {
-      // A type variable has no member types, so a qualified name does not name a type variable.
-      return null;
-    }
-    TypeParameter typeParameter =
-        JavaParserUtil.resolveTypeVariableName(elements, type, typeElementCache);
-    if (typeParameter == null) {
-      return null;
-    }
-    NodeList<ClassOrInterfaceType> bounds = typeParameter.getTypeBound();
-    if (bounds.isEmpty()) {
-      // The implicit upper bound is `Object`.
-      TypeElement objectElt = elements.getTypeElement("java.lang.Object");
-      return objectElt == null ? null : objectElt.asType();
-    }
-    if (bounds.size() > 1) {
-      // The upper bound is an intersection type, which `Types` cannot create.  Be conservative.
-      return null;
-    }
-    // The bound may itself be a type variable, as in `<T extends U, U extends CharSequence>`; the
-    // recursion terminates because Java forbids a cycle among type variable bounds.
-    return typeToTypeMirror(bounds.get(0));
-  }
-
-  /**
-   * Returns the element type of the given type: the type itself if it is not an array type, or its
-   * innermost component type if it is.
-   *
-   * @param type a JavaParser type
-   * @return the element type of {@code type}
-   */
-  private static Type innermostComponentType(Type type) {
-    Type componentType = type;
-    while (componentType instanceof ArrayType arrayType) {
-      componentType = arrayType.getComponentType();
-    }
-    return componentType;
   }
 
   /**
@@ -1407,20 +1336,19 @@ public class WholeProgramInferenceJavaParserStorage
       // Some annotations should not be printed.  They are removed from the AST, rather than
       // suppressed in the pretty-printer, to prevent the pretty-printer from outputting the
       // whitespace that would have separated an annotation from what follows it.  The compilation
-      // unit is cloned first, because removal side-effects it and it is shared among checkers.
+      // unit is cloned first, because removal side-effects it and the same AST is printed more
+      // than once:  it is shared by every CompilationUnitAnnos for the source file, and under
+      // `-AinferOutputOriginal` it is also printed before annotations are transferred into it.
       CompilationUnit compilationUnit = root.compilationUnit;
-      if (invisibleQualifierNames == null) {
-        invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
-      }
       // Unless the checker declares `@RelevantJavaTypes`, `annotationIsRelevant` returns true for
       // every annotation, so there is no need to test relevance.
       boolean omitIrrelevant =
           omitIrrelevantAnnotations
               && atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf
               && gatf.relevantJavaTypes != null;
-      if (!invisibleQualifierNames.isEmpty() || omitIrrelevant) {
+      if (hasUnprintedAnnotations(omitIrrelevant)) {
         compilationUnit = compilationUnit.clone();
-        removeUnprintedAnnotations(compilationUnit, invisibleQualifierNames, omitIrrelevant);
+        removeUnprintedAnnotations(compilationUnit, omitIrrelevant);
       }
 
       DefaultPrettyPrinter prettyPrinter =
@@ -1464,6 +1392,18 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
+   * Returns true if {@link #removeUnprintedAnnotations} might remove an annotation. If it returns
+   * false, then the caller need not clone the compilation unit before printing it.
+   *
+   * @param omitIrrelevantAnnotations if true, annotations that are irrelevant where they appear are
+   *     also removed
+   * @return true if {@link #removeUnprintedAnnotations} might remove an annotation
+   */
+  private boolean hasUnprintedAnnotations(boolean omitIrrelevantAnnotations) {
+    return omitIrrelevantAnnotations || !getInvisibleQualifierNames().isEmpty();
+  }
+
+  /**
    * Removes from the given compilation unit the annotations that an ajava file should not contain,
    * because they would clutter it:
    *
@@ -1473,14 +1413,12 @@ public class WholeProgramInferenceJavaParserStorage
    * </ul>
    *
    * @param compilationUnit the compilation unit to side-effect
-   * @param invisibleQualifierNames the canonical names of the invisible qualifiers to remove
    * @param omitIrrelevantAnnotations if true, also remove annotations that are irrelevant where
    *     they appear
    */
   private void removeUnprintedAnnotations(
-      CompilationUnit compilationUnit,
-      Set<String> invisibleQualifierNames,
-      boolean omitIrrelevantAnnotations) {
+      CompilationUnit compilationUnit, boolean omitIrrelevantAnnotations) {
+    Set<String> invisibleQualifierNames = getInvisibleQualifierNames();
     Predicate<AnnotationExpr> shouldRemove =
         anno ->
             invisibleQualifierNames.contains(anno.getNameAsString())
