@@ -10,16 +10,6 @@
 # Exit the script if any statement fails.
 set -e
 
-if [ $# -eq 0 ]; then
-  echo "Usage: wpi2.sh COMMAND [ARG...]" 1>&2
-  echo "COMMAND builds the project, running the Checker Framework with" 1>&2
-  echo "  -Ainfer=ajava" 1>&2
-  echo "  -AinferOutputDirectory=.../whole-program-inference-new" 1>&2
-  echo "  -Aajava=.../whole-program-inference-output" 1>&2
-  echo "  -Awarns" 1>&2
-  exit 2
-fi
-
 # The directory that the compiler writes inference results to; that is, the
 # value of the -AinferOutputDirectory command-line argument.
 newdir=whole-program-inference-new
@@ -29,6 +19,16 @@ outdir=whole-program-inference-output
 # The directory that holds, for diagnostic purposes, the annotations that each
 # iteration added.
 diffdir=whole-program-inference-diffs
+
+if [ $# -eq 0 ]; then
+  echo "Usage: wpi2.sh COMMAND [ARG...]" 1>&2
+  echo "COMMAND builds the project, running the Checker Framework with" 1>&2
+  echo "  -Ainfer=ajava" 1>&2
+  echo "  -AinferOutputDirectory=$PWD/$newdir" 1>&2
+  echo "  -Aajava=$PWD/$outdir" 1>&2
+  echo "  -Awarns" 1>&2
+  exit 2
+fi
 
 # The maximum number of times to run the command.  Inference usually converges
 # after a few iterations, so more iterations than this suggests that it never
