@@ -64,4 +64,24 @@ public class PolymorphicQualifierBound {
     // :: error: [type.arguments.not.inferred]
     takeTainted(untaintedBound());
   }
+
+  // A polymorphic qualifier nested in a type argument makes the implied constraint compare two
+  // whole parameterized types, so it must not suppress the comparison of the other type argument.
+  interface Pair<T, U> {}
+
+  void takePolyPair(A<Pair<@PolyTainted String, @Tainted String>> a) {}
+
+  <S extends B<Pair<@Tainted String, @Tainted String>>> S matchingPair() {
+    throw new RuntimeException();
+  }
+
+  <S extends B<Pair<@Tainted String, @Untainted String>>> S mismatchedPair() {
+    throw new RuntimeException();
+  }
+
+  void nestedPolymorphicQualifier() {
+    takePolyPair(matchingPair());
+    // :: error: [type.arguments.not.inferred]
+    takePolyPair(mismatchedPair());
+  }
 }

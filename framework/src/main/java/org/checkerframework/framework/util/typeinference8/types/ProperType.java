@@ -16,6 +16,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.ReductionRe
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 
 /** A type that does not contain any inference variables. */
 public class ProperType extends AbstractType {
@@ -205,16 +206,14 @@ public class ProperType extends AbstractType {
    * extends} bound against the other type, which for a lower-bounded wildcard is not the bound that
    * holds its qualifiers.
    *
-   * <p>If the comparison fails and either type mentions a polymorphic qualifier, the failure is
-   * discarded. The type hierarchy compares a polymorphic qualifier as though it were concrete, so
-   * it reports a conflict with every qualifier that the polymorphic qualifier could be instantiated
+   * <p>The type hierarchy compares a polymorphic qualifier as though it were concrete, so it
+   * reports a conflict with every qualifier that the polymorphic qualifier could be instantiated
    * to; see {@link AbstractQualifier#isUnsolvedPolymorphic} for why inference cannot solve for the
-   * qualifier instead. Discarding the failure loses any other conflict that the same comparison
-   * found, because the comparison covers the whole of both types: a conflict at another type
-   * argument, or one in another qualifier hierarchy, in which the polymorphic qualifier plays no
-   * part. Reporting only the conflicts outside the polymorphic qualifier's hierarchy would require
-   * {@link org.checkerframework.framework.type.TypeHierarchy} to expose a per-hierarchy deep
-   * subtype test, which it does not.
+   * qualifier instead. If the comparison fails, it is therefore retried on copies in which each
+   * polymorphic qualifier has been replaced by the qualifier it is compared against; see {@link
+   * Java8InferenceContext#replacePolymorphicQualifiers}. The retry suppresses only the positions
+   * and qualifier hierarchies that a polymorphic qualifier occupies, so a conflict at another type
+   * argument, or one in another qualifier hierarchy, is still reported.
    *
    * @param other the type to compare against
    * @return {@link ConstraintSet#TRUE} if the annotations are ignored or if the annotations of
@@ -236,7 +235,12 @@ public class ProperType extends AbstractType {
     // Scan for a polymorphic qualifier only now: when the annotations match, the result is the
     // same either way, and the scan is the more expensive of the two tests.
     if (context.hasPolymorphicQualifier(thisATM) || context.hasPolymorphicQualifier(otherATM)) {
-      return ConstraintSet.TRUE;
+      IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> replaced =
+          context.replacePolymorphicQualifiers(thisATM, otherATM);
+      if (typeFactory.getTypeHierarchy().isSubtype(replaced.first, replaced.second)
+          && typeFactory.getTypeHierarchy().isSubtype(replaced.second, replaced.first)) {
+        return ConstraintSet.TRUE;
+      }
     }
     return ConstraintSet.TRUE_ANNO_FAIL;
   }
