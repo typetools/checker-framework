@@ -289,12 +289,20 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     // expression statement itself.
     Void result = super.visitExpressionStatement(tree, p);
     if (tree.getExpression() instanceof MethodInvocationTree invocation) {
-      if (invocation.getMethodSelect() instanceof IdentifierTree identifier) {
+      ExpressionTree methodSelect = invocation.getMethodSelect();
+      if (methodSelect instanceof IdentifierTree identifier) {
         if (identifier.getName().contentEquals("this")
             || identifier.getName().contentEquals("super")) {
           trees.remove(tree);
           trees.remove(identifier);
         }
+      } else if (methodSelect instanceof MemberSelectTree memberSelect
+          && memberSelect.getIdentifier().contentEquals("super")) {
+        // A qualified superclass constructor invocation such as "outer.super()".  JavaParser
+        // stores the receiver in the explicit constructor invocation itself, so only the
+        // enclosing expression statement has no corresponding JavaParser node.  (The member
+        // select is removed by visitMethodInvocation.)
+        trees.remove(tree);
       }
     }
 

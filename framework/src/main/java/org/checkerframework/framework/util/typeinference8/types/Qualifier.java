@@ -14,6 +14,9 @@ public class Qualifier extends AbstractQualifier {
   /** The name of the annotation. Cached because {@link #hashCode} is called often. */
   private final @CanonicalName String annotationName;
 
+  /** True if {@link #annotation} is a polymorphic qualifier. */
+  private final boolean isPolymorphic;
+
   /**
    * A wrapper around an {@link AnnotationMirror}.
    *
@@ -24,6 +27,8 @@ public class Qualifier extends AbstractQualifier {
     super(annotation, context);
     this.annotation = annotation;
     this.annotationName = AnnotationUtils.annotationName(annotation);
+    this.isPolymorphic =
+        context.typeFactory.getQualifierHierarchy().isPolymorphicQualifier(annotation);
   }
 
   /**
@@ -38,6 +43,11 @@ public class Qualifier extends AbstractQualifier {
   @Override
   public AnnotationMirror getInstantiation() {
     return annotation;
+  }
+
+  @Override
+  public boolean isUnsolvedPolymorphic() {
+    return isPolymorphic;
   }
 
   @Override
