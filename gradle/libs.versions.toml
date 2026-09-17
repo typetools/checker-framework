@@ -8,7 +8,7 @@ errorprone-version = "2.50.0"
 
 junit-junit = "4.13.2"
 
-jgit-version = "7.7.1.202607240634-r"
+jgit-version = "7.8.0.202609011348-r"
 
 [libraries]
 
@@ -32,7 +32,7 @@ aws-java-sdk-ec2 = { module = "com.amazonaws:aws-java-sdk-ec2" }
 
 aws-java-sdk-kms = { module = "com.amazonaws:aws-java-sdk-kms" }
 
-classgraph = "io.github.classgraph:classgraph:4.8.194"
+classgraph = "io.github.classgraph:classgraph:4.8.195"
 
 commons-io = "commons-io:commons-io:2.22.0"
 

@@ -3252,13 +3252,34 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   //
 
   /**
-   * Log (that is, print) a user error.
+   * Returns the line separator to use when printing exceptions: the value of the {@code
+   * -AexceptionLineSeparator} command-line option, or the system line separator if that option was
+   * not supplied or was supplied without a value.
+   *
+   * @return the line separator to use when printing exceptions
+   */
+  private String getExceptionLineSeparator() {
+    String result = getOptions().get("exceptionLineSeparator");
+    return result == null ? System.lineSeparator() : result;
+  }
+
+  /**
+   * Log (that is, print) a user error, along with its causes if it has any.
    *
    * @param ce the user error to output
    */
   private void logUserError(UserError ce) {
-    String msg = ce.getMessage();
-    printMessage(msg);
+    if (ce.getCause() == null) {
+      printMessage(ce.getMessage());
+      return;
+    }
+    String lineSeparator = getExceptionLineSeparator();
+    StringJoiner msg = new StringJoiner(lineSeparator);
+    msg.add(ce.getMessage());
+    for (Throwable cause = ce.getCause(); cause != null; cause = cause.getCause()) {
+      msg.add("  Underlying cause: " + cause);
+    }
+    printMessage(msg.toString());
   }
 
   /**
@@ -3298,8 +3319,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param culprit a message to print about the cause
    */
   private void logBug(Throwable ce, String culprit) {
-    String lineSeparator =
-        getOptions().getOrDefault("exceptionLineSeparator", System.lineSeparator());
+    String lineSeparator = getExceptionLineSeparator();
     StringJoiner msg = new StringJoiner(lineSeparator);
     if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
       msg.add(
@@ -3309,11 +3329,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
               Runtime.getRuntime().totalMemory(),
               Runtime.getRuntime().freeMemory()));
     } else {
-      String message;
-      if (getOptions().containsKey("exceptionLineSeparator")) {
-        message = ce.getMessage().replaceAll(System.lineSeparator(), lineSeparator);
-      } else {
-        message = ce.getMessage();
+      String message = ce.getMessage();
+      if (!lineSeparator.equals(System.lineSeparator())) {
+        message = message.replaceAll(System.lineSeparator(), lineSeparator);
       }
       msg.add(message);
       boolean noPrintErrorStack =

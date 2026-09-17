@@ -53,7 +53,7 @@ public class AnnotationBuilder {
   boolean active = true;
 
   /**
-   * The tyypes of the annotation fields/elements. Generally, don't use this. Use method {@link
+   * The types of the annotation fields/elements. Generally, don't use this. Use method {@link
    * #fieldTypes()} instead.
    */
   private Map<String, AnnotationFieldType> fieldTypes = new LinkedHashMap<>();
@@ -267,7 +267,7 @@ public class AnnotationBuilder {
     }
     active = false;
     if (def == null) {
-      assert typeName != null : "@AssumeAssertion(nullness): one of def and typename is non-null";
+      assert typeName != null : "@AssumeAssertion(nullness): one of def and typeName is non-null";
       assert fieldTypes != null;
       def = new AnnotationDef(typeName, tlAnnotationsHere, fieldTypes, source);
     } else {

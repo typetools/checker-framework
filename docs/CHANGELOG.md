@@ -7,13 +7,18 @@
 
 ### User-visible changes
 
-Under `-AcheckPurityAnnotations`, a constructor's purity annotation is now
-checked against its class's instance initializers, in addition to its body.
-This may cause new purity errors to be issued.
+The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
+warnings that it did not previously.
 
 ### Changes for type system implementers
 
+`JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,
+`parseStubUnit()`, and `parseExpression()` into new class `StaticJavaParserUtil`.
+
 Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
+
+Removed the unused method
+`WholeProgramInferenceScenesStorage.updateAnnotationSetInScene()`.
 
 ### Closed issues
 

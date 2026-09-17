@@ -13,7 +13,6 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
@@ -22,7 +21,6 @@ import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -252,8 +250,7 @@ public class InferenceFactory {
         return new ProperType(res, this.context);
       }
       case RETURN -> {
-        Set<Kind> kinds = EnumSet.of(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD);
-        Tree enclosing = TreePathUtil.enclosingOfKind(path, kinds);
+        Tree enclosing = TreePathUtil.enclosingMethodOrLambda(path);
         if (enclosing instanceof MethodTree methodTree) {
           AnnotatedTypeMirror res = factory.getMethodReturnType(methodTree);
           return new ProperType(res, this.context);
