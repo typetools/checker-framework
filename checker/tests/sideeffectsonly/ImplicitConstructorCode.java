@@ -51,6 +51,22 @@ public class ImplicitConstructorCode {
     ImplicitSuperCallPermitted() {}
   }
 
+  static class ThisSubexpressionSuper {
+    List<Integer> f = new ArrayList<>();
+
+    @SideEffectsOnly("this.f")
+    ThisSubexpressionSuper() {
+      f.add(1);
+    }
+  }
+
+  static class ImplicitSuperCallThisSubexpression extends ThisSubexpressionSuper {
+    // The receiver of the inserted call is the object under construction, so `this.f` in
+    // `ThisSubexpressionSuper()`'s annotation denotes a field of that object, which `this` covers.
+    @SideEffectsOnly("this")
+    ImplicitSuperCallThisSubexpression() {}
+  }
+
   static class InstanceInitializersAreChecked {
     // A field initializer runs as part of every constructor that does not delegate to another
     // constructor of the same class.

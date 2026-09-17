@@ -1,0 +1,53 @@
+import java.util.*;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+
+// A type in the compilation unit's own package shadows a type that is imported on demand and a
+// type in `java.lang`.  This compilation unit is in the unnamed package, whose members are the
+// top-level types of every compilation unit that has no package declaration.  Inference must
+// resolve the name "Runnable" to the top-level class `Runnable` rather than to
+// `java.lang.Runnable`, and the name "List" to the top-level class `List` rather than to
+// `java.util.List`.  Both top-level classes are relevant because they are subtypes of
+// `CharSequence`, whereas `java.lang.Runnable` and `java.util.List` are irrelevant.  If inference
+// resolves either name incorrectly and therefore discards the annotation, then the second
+// (validation) pass of this test issues the warning that is written below.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+public class SamePackageShadows {
+
+    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 Runnable runnableField;
+
+    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 List listField;
+
+    @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "SamePackageShadows.class.listField" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+    @org.checkerframework.dataflow.qual.Impure
+    static void assignFields() {
+        runnableField = getSibling1Runnable();
+        listField = getSibling1List();
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    static void useFields() {
+        // :: warning: [argument]
+        expectsSibling1Runnable(runnableField);
+        // :: warning: [argument]
+        expectsSibling1List(listField);
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    static void expectsSibling1Runnable(Runnable r) {
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    static void expectsSibling1List(List l) {
+    }
+
+    @org.checkerframework.dataflow.qual.Pure
+    static Runnable getSibling1Runnable() {
+        return null;
+    }
+
+    @org.checkerframework.framework.qual.RequiresQualifier(expression = { "SamePackageShadows.class.runnableField" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+    @org.checkerframework.dataflow.qual.Pure
+    static List getSibling1List() {
+        return null;
+    }
+}

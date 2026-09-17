@@ -4,7 +4,10 @@
 // suggestion does not require the latter option and must not enable body checking as a side
 // effect.
 //
-// Every method below would produce an error if it were checked; the test expects none.
+// Every method below would produce an error if its body were checked; the test expects none,
+// except for the one annotation that cannot be parsed.  Dataflow acts on a `@SideEffectsOnly`
+// annotation whether or not `-AcheckPurityAnnotations` was supplied, so an unparseable annotation
+// is an error in every configuration.
 
 import java.util.Collection;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
@@ -42,13 +45,14 @@ public class NotCheckedWithoutOption {
     a.add(1);
   }
 
-  // Would report `flowexpr.parse.error`.
+  // The syntax of the annotation is checked even without `-AcheckPurityAnnotations`.
   @SideEffectsOnly("#1.noSuchMethod()")
+  // :: error: flowexpr.parse.error.sideeffectsonly
   void unparseableAnnotation(Collection<Integer> a) {
     a.add(1);
   }
 
-  // Would report `purity.nondeterministic.sideeffectsonly`:  two evaluations of `#1.iterator()`
+  // Would report `purity.impure.sideeffectsonly`:  two evaluations of `#1.iterator()`
   // may yield unrelated values.
   @SideEffectsOnly("#1.iterator()")
   void nondeterministicAnnotation(Collection<Integer> a) {

@@ -20,14 +20,14 @@ public class LambdaNondeterministicSideEffectsOnly {
   interface Mutator {
     // `#1.getList()` may denote a different list each time it is evaluated.
     @SideEffectsOnly("#1.getList()")
-    // :: error: (purity.nondeterministic.sideeffectsonly)
+    // :: error: (purity.impure.sideeffectsonly)
     void mutate(Holder h);
   }
 
   void useLambda() {
     // The interface method's annotation is rejected here too.  Its declaration may be in a stub
     // file or in another compilation unit, where the error above would not be issued.
-    // :: error: (purity.nondeterministic.sideeffectsonly)
+    // :: error: (purity.impure.sideeffectsonly)
     Mutator m = h -> h.getList().add("x");
   }
 }

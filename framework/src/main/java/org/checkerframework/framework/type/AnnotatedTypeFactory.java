@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -2491,10 +2492,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       MethodInvocationTree tree, boolean inferTypeArgs) {
     ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
     AnnotatedTypeMirror receiverType = getReceiverType(tree);
-    if (receiverType == null && TreeUtils.isSuperConstructorCall(tree)) {
-      // super() calls don't have a receiver, but they should be view-point adapted as if
-      // "this" is the receiver.
-      receiverType = getSelfType(tree);
+    if (TreeUtils.isSuperConstructorCall(tree)) {
+      // A super() call has no receiver, and it should be view-point adapted as if "this" is the
+      // receiver.  In `outer.super(...)`, `outer` is the enclosing instance rather than the
+      // receiver; using it here would lose the instantiation of the superclass's own type
+      // variables, which comes from the direct superclass type, as in
+      // `class Sub extends Gen<String>.Inner<Integer>`.
+      AnnotatedTypeMirror selfType = getSelfType(tree);
+      if (selfType != null) {
+        receiverType = selfType;
+      }
     }
     if (receiverType != null && receiverType.getKind() == TypeKind.DECLARED) {
       receiverType = applyCaptureConversion(receiverType);
@@ -4207,29 +4214,80 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns true if the given declaration annotation is written on the given element itself --
    * either in source code or in an annotation file -- rather than being inherited.
    *
+   * <p>Writing an alias for {@code anno} counts as writing {@code anno}, because {@link
+   * #getDeclAnnotation} returns the canonical annotation rather than the alias that is written; see
+   * {@link #addAliasedDeclAnnotation}.
+   *
    * @param elt an element
-   * @param anno a declaration annotation that applies to {@code elt}
-   * @return true if {@code anno} is written on {@code elt} itself
+   * @param anno a declaration annotation that applies to {@code elt}, in canonical form
+   * @return true if {@code anno}, or an alias for it, is written on {@code elt} itself
    */
   public boolean isDeclAnnotationWrittenOn(Element elt, AnnotationMirror anno) {
-    return AnnotationUtils.containsSameByName(elt.getAnnotationMirrors(), anno)
-        || containsSameByName(stubTypes.getDeclAnnotations(elt), anno)
-        || containsSameByName(ajavaTypes.getDeclAnnotations(elt), anno)
-        || (currentFileAjavaTypes != null
-            && containsSameByName(currentFileAjavaTypes.getDeclAnnotations(elt), anno));
+    if (isDeclAnnotationWrittenOn(elt, am -> AnnotationUtils.areSameByName(am, anno))) {
+      return true;
+    }
+    for (IPair<AnnotationMirror, Set<Class<? extends Annotation>>> aliasPair :
+        declAliases.values()) {
+      if (AnnotationUtils.areSameByName(aliasPair.first, anno)
+          && isDeclAnnotationWrittenOn(elt, am -> isAnyOfClasses(am, aliasPair.second))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
-   * Returns true if the given collection contains an annotation with the same name as the given
-   * one. Returns false if the collection is null.
+   * Returns true if some declaration annotation that is written on the given element itself --
+   * either in source code or in an annotation file -- satisfies the given predicate.
+   *
+   * @param elt an element
+   * @param pred a predicate over annotations
+   * @return true if some annotation written on {@code elt} itself satisfies {@code pred}
+   */
+  private boolean isDeclAnnotationWrittenOn(Element elt, Predicate<AnnotationMirror> pred) {
+    return anyMatch(elt.getAnnotationMirrors(), pred)
+        || anyMatch(stubTypes.getDeclAnnotations(elt), pred)
+        || anyMatch(ajavaTypes.getDeclAnnotations(elt), pred)
+        || (currentFileAjavaTypes != null
+            && anyMatch(currentFileAjavaTypes.getDeclAnnotations(elt), pred));
+  }
+
+  /**
+   * Returns true if the given collection contains an annotation that satisfies the given predicate.
+   * Returns false if the collection is null.
    *
    * @param annos a collection of annotations, or null
-   * @param anno an annotation
-   * @return true if {@code annos} contains an annotation with the same name as {@code anno}
+   * @param pred a predicate over annotations
+   * @return true if {@code annos} contains an annotation that satisfies {@code pred}
    */
-  private static boolean containsSameByName(
-      @Nullable Collection<? extends AnnotationMirror> annos, AnnotationMirror anno) {
-    return annos != null && AnnotationUtils.containsSameByName(annos, anno);
+  private static boolean anyMatch(
+      @Nullable Collection<? extends AnnotationMirror> annos, Predicate<AnnotationMirror> pred) {
+    if (annos == null) {
+      return false;
+    }
+    for (AnnotationMirror anno : annos) {
+      if (pred.test(anno)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if the given annotation has one of the given classes.
+   *
+   * @param anno an annotation
+   * @param annoClasses annotation classes
+   * @return true if {@code anno} has one of the classes in {@code annoClasses}
+   */
+  private boolean isAnyOfClasses(
+      AnnotationMirror anno, Set<Class<? extends Annotation>> annoClasses) {
+    for (Class<? extends Annotation> annoClass : annoClasses) {
+      if (areSameByClass(anno, annoClass)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -5027,7 +5085,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Create the ground target type of the functional interface.
    *
    * <p>Basically, it replaces the wildcards with their bounds doing a capture conversion like glb
-   * for extends bounds.
+   * for extends bounds. The ground target type of a raw functional interface type is its erasure,
+   * so that its function type is erased too.
    *
    * @see "JLS 9.9"
    * @param functionalType the functional interface type
@@ -5036,16 +5095,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   private AnnotatedDeclaredType makeGroundTargetType(
       AnnotatedDeclaredType functionalType, DeclaredType groundTargetJavaType) {
+    if (TypesUtils.isRaw(groundTargetJavaType)) {
+      // JLS 9.9: "The function type of the raw type of a generic functional interface I<...>
+      // is the erasure of the function type of the generic functional interface I<...>."
+      // Returning the erasure is enough to erase the function type, because
+      // AnnotatedTypes.asMemberOf erases a member that is accessed through a raw receiver.
+      return functionalType.getErased();
+    }
     if (functionalType.getTypeArguments().isEmpty()) {
       return functionalType;
     }
-
-    List<AnnotatedTypeParameterBounds> bounds =
-        this.typeVariablesFromUse(
-            functionalType, (TypeElement) functionalType.getUnderlyingType().asElement());
-
-    boolean sizesDiffer =
-        functionalType.getTypeArguments().size() != groundTargetJavaType.getTypeArguments().size();
 
     // This is the declared type of the functional type meaning that the type arguments are the
     // type parameters.
@@ -5066,16 +5125,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           // subtyping and containment checks.
           typeVarToTypeArg.put(typeVariable, wildcardType);
         } else if (isExtendsWildcard(wildcardType)) {
-          TypeMirror correctArgType;
-          if (sizesDiffer) {
-            // The Java type is raw.
-            TypeMirror typeParamUbType = bounds.get(i).getUpperBound().getUnderlyingType();
-            correctArgType =
-                TypesUtils.greatestLowerBound(
-                    typeParamUbType, wildcardUbType, this.checker.getProcessingEnvironment());
-          } else {
-            correctArgType = groundTargetJavaType.getTypeArguments().get(i);
-          }
+          TypeMirror correctArgType = groundTargetJavaType.getTypeArguments().get(i);
 
           final AnnotatedTypeMirror newArg;
           if (types.isSameType(wildcardUbType, correctArgType)) {
