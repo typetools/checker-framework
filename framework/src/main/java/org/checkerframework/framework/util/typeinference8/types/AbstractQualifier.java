@@ -59,6 +59,43 @@ public abstract class AbstractQualifier {
   abstract @Nullable AnnotationMirror getInstantiation();
 
   /**
+   * Returns true if this is a polymorphic annotation that inference does not solve for.
+   *
+   * <p>A polymorphic annotation becomes a {@link QualifierVar} only when it appears in the
+   * signature of the invocation whose type arguments are being inferred. One that reaches inference
+   * some other way -- from the parameter type of an enclosing invocation, for instance -- is
+   * wrapped in a {@link Qualifier}, where it is indistinguishable from a concrete qualifier.
+   * Requiring such a qualifier to equal a concrete one always fails, even though the polymorphic
+   * qualifier could be instantiated to it.
+   *
+   * @return true if this is a polymorphic annotation that inference does not solve for
+   */
+  public boolean isUnsolvedPolymorphic() {
+    return false;
+  }
+
+  /**
+   * Returns the qualifiers in {@code quals} other than those for which {@link
+   * #isUnsolvedPolymorphic} holds, or {@code quals} itself if it contains no such qualifier.
+   *
+   * @param quals a set of qualifiers
+   * @return the qualifiers in {@code quals} that inference can compare against another qualifier
+   */
+  public static Set<? extends AbstractQualifier> removeUnsolvedPolymorphic(
+      Set<? extends AbstractQualifier> quals) {
+    Set<AbstractQualifier> result = null;
+    for (AbstractQualifier qual : quals) {
+      if (qual.isUnsolvedPolymorphic()) {
+        if (result == null) {
+          result = new HashSet<>(quals);
+        }
+        result.remove(qual);
+      }
+    }
+    return result == null ? quals : result;
+  }
+
+  /**
    * Returns the least upper bounds of {@code quals}.
    *
    * @param quals a set of qualifiers; can contain multiple qualifiers for multiple hierarchies and
