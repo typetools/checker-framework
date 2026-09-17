@@ -38,6 +38,21 @@ public class PurityFunctionalConstructor {
     new Holder(t -> count++) {};
   }
 
+  static class VarargsHolder {
+    // The parameter type is not generic, to avoid javac's warnings about generic varargs.
+    @SideEffectFree
+    VarargsHolder(Runnable... rs) {}
+  }
+
+  /** A varargs constructor checks each argument that the call passes to its array. */
+  void varargsConstructorCallSites() {
+    new VarargsHolder(() -> {});
+    // :: error: [purity.not.sideeffectfree.assign.field]
+    new VarargsHolder(() -> count++);
+    // :: error: [purity.not.sideeffectfree.assign.field]
+    new VarargsHolder(() -> {}, () -> count++) {};
+  }
+
   /** A functional-interface parameter may be passed onward to a constructor. */
   @SideEffectFree
   Holder passesParameterToConstructor(Function<String, Integer> f) {

@@ -72,6 +72,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -1419,8 +1420,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * expression of a conditional or switch expression is checked on its own, because the type of
    * such an expression is the parameter's type and says nothing about the code that any result
    * expression denotes. An effectively final functional-interface parameter of the enclosing method
-   * needs no check, since the caller of that method already performed one. Any other argument is
-   * checked against the functional method of its declared type.
+   * needs no check, since the caller of that method already performed one. Each initializer of an
+   * array literal is checked on its own, because such an argument is the array that a varargs call
+   * passes in its array form. Any other argument is checked against the functional method of its
+   * declared type.
    *
    * <p>This check is skipped for a requirement that the parameter's own functional method already
    * makes, because {@link #checkLambdaPurity} and {@link
@@ -1428,9 +1431,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param callee the invoked method or constructor
    * @param args the arguments to {@code callee}
+   * @param varargsCall true if {@code args} are in the expanded form of a varargs call, so that the
+   *     arguments from the last parameter onward are elements of its array
    */
   protected void checkFunctionalArguments(
-      ExecutableElement callee, List<? extends ExpressionTree> args) {
+      ExecutableElement callee, List<? extends ExpressionTree> args, boolean varargsCall) {
     if (!checkPurityAnnotations || infer) {
       return;
     }
@@ -1439,11 +1444,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
     List<? extends VariableElement> params = callee.getParameters();
-    // For a varargs call, the trailing arguments have the component type of the last parameter,
-    // which is an array and therefore not a functional interface.
-    int numToCheck = Math.min(params.size(), args.size());
+    int numParams = params.size();
+    if (numParams == 0) {
+      return;
+    }
+    // In the expanded form of a varargs call, every argument from the last parameter onward is
+    // an element of that parameter's array.  Otherwise each argument is passed to the parameter
+    // at its own index; the counts can still differ, as for an enum constructor, whose two
+    // parameters no call passes.
+    int numToCheck = varargsCall ? args.size() : Math.min(numParams, args.size());
     for (int i = 0; i < numToCheck; i++) {
-      ExecutableElement paramFunction = parameterFunctionalMethod(params.get(i));
+      int paramIndex = Math.min(i, numParams - 1);
+      ExecutableElement paramFunction = parameterFunctionalMethod(callee, paramIndex);
       if (paramFunction == null) {
         continue;
       }
@@ -1451,21 +1463,29 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (required.isEmpty()) {
         continue;
       }
-      checkFunctionalArgument(args.get(i), required, paramFunction, params.get(i), callee);
+      checkFunctionalArgument(args.get(i), required, paramFunction, params.get(paramIndex), callee);
     }
   }
 
   /**
-   * Returns the functional method of {@code param}'s type, or null if that type is not a functional
-   * interface.
+   * Returns the functional method of the type of {@code method}'s parameter at {@code index}, or
+   * null if that type is not a functional interface. For a varargs parameter, this is the
+   * functional method of the array's component type, which is the type of each argument that a call
+   * passes to it.
    *
-   * @param param a formal parameter
-   * @return the functional method of {@code param}'s type, or null
+   * @param method a method or constructor
+   * @param index the index of one of {@code method}'s formal parameters
+   * @return the functional method of that parameter's type, or null
    */
-  private @Nullable ExecutableElement parameterFunctionalMethod(VariableElement param) {
+  private @Nullable ExecutableElement parameterFunctionalMethod(
+      ExecutableElement method, int index) {
+    TypeMirror paramType = method.getParameters().get(index).asType();
+    if (method.isVarArgs() && index == method.getParameters().size() - 1) {
+      paramType = ((ArrayType) paramType).getComponentType();
+    }
     ProcessingEnvironment env = atypeFactory.getProcessingEnv();
-    TypeMirror paramType = PurityChecker.functionalInterfaceType(param.asType(), env);
-    return paramType == null ? null : TypesUtils.findFunction(paramType, env);
+    TypeMirror functionalType = PurityChecker.functionalInterfaceType(paramType, env);
+    return functionalType == null ? null : TypesUtils.findFunction(functionalType, env);
   }
 
   /**
@@ -1505,8 +1525,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   private EnumSet<PurityKind> kindsRequiredOfArguments(
       ExecutableElement method, EnumSet<PurityKind> kinds) {
     EnumSet<PurityKind> result = EnumSet.noneOf(PurityKind.class);
-    for (VariableElement param : method.getParameters()) {
-      ExecutableElement paramFunction = parameterFunctionalMethod(param);
+    for (int i = 0; i < method.getParameters().size(); i++) {
+      ExecutableElement paramFunction = parameterFunctionalMethod(method, i);
       if (paramFunction != null) {
         result.addAll(purityRequiredOfArgument(paramFunction, kinds));
       }
@@ -1548,6 +1568,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               assumePureGetters);
       if (!r.isPure(required)) {
         reportPurityErrors(r, required);
+      }
+      return;
+    }
+
+    if (argument instanceof NewArrayTree newArray) {
+      // The argument is the array of a varargs call in its array form.  Each initializer of an
+      // array literal denotes code that the call passes, so each is checked on its own.  An
+      // element that is stored into the array elsewhere is not checked, just as the elements of
+      // an array that the call receives from somewhere else are not.
+      List<? extends ExpressionTree> initializers = newArray.getInitializers();
+      if (initializers != null) {
+        for (ExpressionTree initializer : initializers) {
+          checkFunctionalArgument(initializer, required, paramFunction, param, callee);
+        }
       }
       return;
     }
@@ -2324,7 +2358,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypes.adaptParameters(atypeFactory, invokedMethod, tree.getArguments(), tree);
     checkArguments(params, tree.getArguments(), methodName, method.getParameters());
     checkVarargs(invokedMethod, tree);
-    checkFunctionalArguments(method, tree.getArguments());
+    checkFunctionalArguments(method, tree.getArguments(), TreeUtils.isVarargsCall(tree));
 
     if (ElementUtils.isMethod(
         invokedMethod.getElement(), vectorCopyInto, atypeFactory.getProcessingEnv())) {
@@ -2674,7 +2708,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // class's own constructor is synthetic and carries no annotation.  Do not compute the super
       // constructor unless it is needed:  for an anonymous class, doing so searches the class's
       // synthetic constructor for the super call.
-      checkFunctionalArguments(TreeUtils.getSuperConstructor(tree), passedArguments);
+      checkFunctionalArguments(
+          TreeUtils.getSuperConstructor(tree), passedArguments, TreeUtils.isVarargsCall(tree));
     }
 
     List<AnnotatedTypeParameterBounds> paramBounds =
