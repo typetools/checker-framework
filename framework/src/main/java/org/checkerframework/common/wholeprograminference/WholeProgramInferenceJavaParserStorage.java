@@ -173,6 +173,19 @@ public class WholeProgramInferenceJavaParserStorage
   private @MonotonicNonNull Set<String> invisibleQualifierNames = null;
 
   /**
+   * Returns the names of the invisible qualifiers supported by {@link #atypeFactory}, computing
+   * them if they have not yet been computed.
+   *
+   * @return the names of the invisible qualifiers supported by {@link #atypeFactory}
+   */
+  private Set<String> getInvisibleQualifierNames() {
+    if (invisibleQualifierNames == null) {
+      invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
+    }
+    return invisibleQualifierNames;
+  }
+
+  /**
    * Returns the names of all qualifiers that are marked with {@link InvisibleQualifier}, and that
    * are supported by the given type factory.
    *
@@ -1312,20 +1325,19 @@ public class WholeProgramInferenceJavaParserStorage
       // Some annotations should not be printed.  They are removed from the AST, rather than
       // suppressed in the pretty-printer, to prevent the pretty-printer from outputting the
       // whitespace that would have separated an annotation from what follows it.  The compilation
-      // unit is cloned first, because removal side-effects it and it is shared among checkers.
+      // unit is cloned first, because removal side-effects it and the same AST is printed more
+      // than once:  it is shared by every CompilationUnitAnnos for the source file, and under
+      // `-AinferOutputOriginal` it is also printed before annotations are transferred into it.
       CompilationUnit compilationUnit = root.compilationUnit;
-      if (invisibleQualifierNames == null) {
-        invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
-      }
       // Unless the checker declares `@RelevantJavaTypes`, `annotationIsRelevant` returns true for
       // every annotation, so there is no need to test relevance.
       boolean omitIrrelevant =
           omitIrrelevantAnnotations
               && atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf
               && gatf.relevantJavaTypes != null;
-      if (!invisibleQualifierNames.isEmpty() || omitIrrelevant) {
+      if (hasUnprintedAnnotations(omitIrrelevant)) {
         compilationUnit = compilationUnit.clone();
-        removeUnprintedAnnotations(compilationUnit, invisibleQualifierNames, omitIrrelevant);
+        removeUnprintedAnnotations(compilationUnit, omitIrrelevant);
       }
 
       DefaultPrettyPrinter prettyPrinter =
@@ -1369,6 +1381,18 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
+   * Returns true if {@link #removeUnprintedAnnotations} might remove an annotation. If it returns
+   * false, then the caller need not clone the compilation unit before printing it.
+   *
+   * @param omitIrrelevantAnnotations if true, annotations that are irrelevant where they appear are
+   *     also removed
+   * @return true if {@link #removeUnprintedAnnotations} might remove an annotation
+   */
+  private boolean hasUnprintedAnnotations(boolean omitIrrelevantAnnotations) {
+    return omitIrrelevantAnnotations || !getInvisibleQualifierNames().isEmpty();
+  }
+
+  /**
    * Removes from the given compilation unit the annotations that an ajava file should not contain,
    * because they would clutter it:
    *
@@ -1378,14 +1402,12 @@ public class WholeProgramInferenceJavaParserStorage
    * </ul>
    *
    * @param compilationUnit the compilation unit to side-effect
-   * @param invisibleQualifierNames the canonical names of the invisible qualifiers to remove
    * @param omitIrrelevantAnnotations if true, also remove annotations that are irrelevant where
    *     they appear
    */
   private void removeUnprintedAnnotations(
-      CompilationUnit compilationUnit,
-      Set<String> invisibleQualifierNames,
-      boolean omitIrrelevantAnnotations) {
+      CompilationUnit compilationUnit, boolean omitIrrelevantAnnotations) {
+    Set<String> invisibleQualifierNames = getInvisibleQualifierNames();
     Predicate<AnnotationExpr> shouldRemove =
         anno ->
             invisibleQualifierNames.contains(anno.getNameAsString())
