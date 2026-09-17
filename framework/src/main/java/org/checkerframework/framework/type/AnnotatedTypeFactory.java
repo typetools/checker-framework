@@ -2491,10 +2491,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       MethodInvocationTree tree, boolean inferTypeArgs) {
     ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
     AnnotatedTypeMirror receiverType = getReceiverType(tree);
-    if (receiverType == null && TreeUtils.isSuperConstructorCall(tree)) {
-      // super() calls don't have a receiver, but they should be view-point adapted as if
-      // "this" is the receiver.
-      receiverType = getSelfType(tree);
+    if (TreeUtils.isSuperConstructorCall(tree)) {
+      // A super() call has no receiver, and it should be view-point adapted as if "this" is the
+      // receiver.  In `outer.super(...)`, `outer` is the enclosing instance rather than the
+      // receiver; using it here would lose the instantiation of the superclass's own type
+      // variables, which comes from the direct superclass type, as in
+      // `class Sub extends Gen<String>.Inner<Integer>`.
+      AnnotatedTypeMirror selfType = getSelfType(tree);
+      if (selfType != null) {
+        receiverType = selfType;
+      }
     }
     if (receiverType != null && receiverType.getKind() == TypeKind.DECLARED) {
       receiverType = applyCaptureConversion(receiverType);

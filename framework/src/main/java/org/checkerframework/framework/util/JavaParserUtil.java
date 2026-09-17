@@ -6,9 +6,11 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
+import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -17,7 +19,9 @@ import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
+import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
+import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.PrimitiveType;
@@ -161,7 +165,10 @@ public final class JavaParserUtil {
         }
       }
 
-      if (declaresLocalType(ancestor, firstComponent, child)) {
+      // A local type declaration is a block statement, so only a block or a switch entry can
+      // directly contain one.
+      if ((ancestor instanceof BlockStmt || ancestor instanceof SwitchEntry)
+          && declaresLocalType(ancestor, firstComponent, child)) {
         // `name` names a local class, or is nested within one.  A local class shadows any type of
         // the same name, and `Elements` cannot look up a local class by name.
         return null;
@@ -206,7 +213,7 @@ public final class JavaParserUtil {
           // The class's member types, declared and inherited, are in scope only in its body, and
           // not in its annotations, its type parameter section, or its supertype names.  Testing
           // `child` also prevents infinite recursion on the recursive call below.
-          && containsSame(scopeOfMemberTypes(enclosingType), child)) {
+          && inScopeOfMemberTypes(child)) {
         String enclosingName = nameableFullyQualifiedName(enclosingType);
         if (enclosingName != null) {
           TypeElement result = getTypeElement(elements, enclosingName + "." + name, cache);
@@ -420,33 +427,34 @@ public final class JavaParserUtil {
 
   /**
    * Returns true if {@code node} directly contains a statement that declares a local class,
-   * interface, enum, or record whose name is {@code name}, at or before the child {@code
-   * lastChild}. Such a declaration shadows, throughout the rest of the block that contains it,
-   * every type of the same name that is declared elsewhere. It does not shadow a type that is used
-   * earlier in the block, so this method ignores the children that follow {@code lastChild}.
+   * interface, enum, or record whose name is {@code name}, and that declaration is in scope at
+   * {@code child}. The scope of a local type declaration is the rest of the block that contains it,
+   * including the declaration itself; a use that appears earlier in the block refers to some other
+   * type of the same name.
    *
    * @param node a JavaParser node, such as a block
    * @param name a simple type name
-   * @param lastChild the last child of {@code node} to examine; the use whose name is being
-   *     resolved appears within it
-   * @return true if {@code node} declares a local type named {@code name}, at or before {@code
-   *     lastChild}
+   * @param child the child of {@code node} that contains the use of {@code name}
+   * @return true if {@code node} declares a local type named {@code name} that is in scope at
+   *     {@code child}
    */
   @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
-  private static boolean declaresLocalType(Node node, String name, Node lastChild) {
-    for (Node child : node.getChildNodes()) {
-      if (child instanceof Statement) {
+  private static boolean declaresLocalType(Node node, String name, Node child) {
+    for (Node statement : node.getChildNodes()) {
+      if (statement instanceof Statement) {
         // A local type declaration is the only kind of statement whose child is a type
         // declaration.
-        for (Node grandchild : child.getChildNodes()) {
+        for (Node grandchild : statement.getChildNodes()) {
           if (grandchild instanceof TypeDeclaration<?> localType
               && localType.getNameAsString().equals(name)) {
             return true;
           }
         }
       }
-      if (child == lastChild) {
-        // A declaration that appears later in the block does not shadow a use within `lastChild`.
+      @SuppressWarnings("interning:not.interned")
+      boolean sameNode = statement == child;
+      if (sameNode) {
+        // A local type that is declared later in the block is not in scope at `child`.
         return false;
       }
     }
@@ -522,7 +530,8 @@ public final class JavaParserUtil {
       return result;
     }
     if (typeDecl instanceof RecordDeclaration recordDecl) {
-      return recordDecl.getImplementedTypes();
+      // Copy the list rather than side-effecting the AST by adding to it.
+      return new ArrayList<>(recordDecl.getImplementedTypes());
     }
     // An annotation declaration's only supertype is `java.lang.annotation.Annotation`.
     return Collections.emptyList();
@@ -541,28 +550,19 @@ public final class JavaParserUtil {
   }
 
   /**
-   * Returns the children of the given type declaration in which its member types are in scope: its
-   * body declarations, an enum's constants, and a record's components. The result does not include
-   * a child in which they are not in scope: an annotation on the declaration, a type parameter, a
-   * supertype name, or a permitted subtype name.
+   * Returns true if the member types of a type declaration are in scope in the given child of it:
+   * one of its body declarations, an enum's constant, or a record's component. They are not in
+   * scope in its other children: an annotation on the declaration, a type parameter, a supertype
+   * name, or a permitted subtype name.
    *
-   * @param typeDecl a JavaParser type declaration
-   * @return the children of {@code typeDecl} in which its member types are in scope
+   * @param child a child of a JavaParser type declaration
+   * @return true if the type declaration's member types are in scope in {@code child}
    */
-  private static List<? extends Node> scopeOfMemberTypes(TypeDeclaration<?> typeDecl) {
-    if (typeDecl instanceof EnumDeclaration enumDecl) {
-      // A member type is in scope in a constant's arguments and in its class body.
-      List<Node> result = new ArrayList<>(enumDecl.getMembers());
-      result.addAll(enumDecl.getEntries());
-      return result;
-    }
-    if (typeDecl instanceof RecordDeclaration recordDecl) {
-      // A member type is in scope in the type of a record component.
-      List<Node> result = new ArrayList<>(recordDecl.getMembers());
-      result.addAll(recordDecl.getParameters());
-      return result;
-    }
-    return typeDecl.getMembers();
+  private static boolean inScopeOfMemberTypes(Node child) {
+    // A member is a body declaration, and so is an enum constant (whose arguments and class body
+    // are both in the scope of the member types).  A record's component is a `Parameter`; a type
+    // declaration has no other child of that type.
+    return child instanceof BodyDeclaration<?> || child instanceof Parameter;
   }
 
   /**
@@ -821,23 +821,6 @@ public final class JavaParserUtil {
       case LONG -> TypeKind.LONG;
       case SHORT -> TypeKind.SHORT;
     };
-  }
-
-  /**
-   * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined. It
-   * cannot be determined for an intersection type, a union type, {@code var}, a wildcard, a type
-   * parameter declaration, or a type that is not on the classpath.
-   *
-   * <p>A client that converts many types should call {@link #typeToTypeMirror(Elements, Types,
-   * Type, Map)}, which memoizes the name lookups.
-   *
-   * @param elements used for looking up names
-   * @param types used for creating types
-   * @param type a JavaParser type
-   * @return the TypeMirror for {@code type}, or null if it cannot be determined
-   */
-  public static @Nullable TypeMirror typeToTypeMirror(Elements elements, Types types, Type type) {
-    return typeToTypeMirror(elements, types, type, new HashMap<>());
   }
 
   /**

@@ -967,6 +967,11 @@ public class InferenceFactory {
   /**
    * Returns the least upper bounds of {@code properTypes}, or null if {@code properTypes} is empty.
    *
+   * <p>The result may share its {@link AnnotatedTypeMirror} with an element of {@code properTypes};
+   * in particular, it does when {@code properTypes} has one element. A caller must not mutate the
+   * result's annotated type in place, because an element of {@code properTypes} may be stored in a
+   * hash set of bounds, whose hash code would change.
+   *
    * @param properTypes types to lub
    * @return the least upper bounds of {@code properTypes}, or null
    */
@@ -1013,6 +1018,10 @@ public class InferenceFactory {
    * Returns the greatest lower bound of {@code abstractTypes}, or null if {@code abstractTypes} is
    * empty.
    *
+   * <p>As with {@link #lub(Set)}, the result may share its {@link AnnotatedTypeMirror} with an
+   * element of {@code abstractTypes} -- it returns the element itself when {@code abstractTypes}
+   * has one element -- so a caller must not mutate the result's annotated type in place.
+   *
    * @param abstractTypes types to glb
    * @return the greatest lower bound of {@code abstractTypes}, or null
    */
@@ -1046,6 +1055,14 @@ public class InferenceFactory {
       glb = glbATM.getUnderlyingType();
     }
     if (a.ignoreAnnotations != b.ignoreAnnotations) {
+      @SuppressWarnings("interning:not.interned") // Checking for exact object.
+      boolean glbIsArgument = glbATM == aAtm || glbATM == bAtm;
+      if (glbIsArgument) {
+        // `AnnotatedTypes#annotatedGLB` returned one of its arguments, whose annotated type may be
+        // stored in a hash set of bounds.  Replacing annotations in place would change that bound's
+        // hash code while it is in the set, so copy before mutating.
+        glbATM = glbATM.deepCopy();
+      }
       if (a.ignoreAnnotations) {
         glbATM.replaceAnnotations(bAtm.getPrimaryAnnotations());
       } else {
@@ -1190,17 +1207,25 @@ public class InferenceFactory {
             context.env.getTypeUtils());
     AnnotatedWildcardType wildcardAtm =
         (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wildcard, typeFactory, false);
+    // Copy the bounds' annotated types, because `setSuperBound` and `setExtendsBound` call
+    // `fixupBoundAnnotations`, which replaces annotations in the type that was just installed, and
+    // the argument types may be stored in a hash set of bounds, whose hash code would change.
     if (lowerBound != null) {
-      wildcardAtm.setSuperBound(lowerBound.getAnnotatedType());
+      wildcardAtm.setSuperBound(lowerBound.getAnnotatedType().deepCopy());
     }
     if (upperBound != null) {
-      wildcardAtm.setExtendsBound(upperBound.getAnnotatedType());
+      wildcardAtm.setExtendsBound(upperBound.getAnnotatedType().deepCopy());
     }
     return new ProperType(wildcardAtm, context);
   }
 
   /**
    * Creates a fresh type variable using the upper and lower bounds provided.
+   *
+   * <p>This method takes ownership of the annotated types of {@code lowerBound} and {@code
+   * upperBound}: it installs them in the fresh type variable and mutates them in place. The caller
+   * must not pass a type whose annotated type is shared, such as one that is stored in a hash set
+   * of bounds.
    *
    * @param lowerBound a proper type or null
    * @param lowerBoundAnnos annotations to use if {@code lowerBound} is null; a hierarchy that it
@@ -1226,6 +1251,9 @@ public class InferenceFactory {
     // Initialize bounds.
     typeVariable.getUpperBound();
     typeVariable.getLowerBound();
+    // These mutate the bounds' annotated types in place (via `setLowerBound`/`setUpperBound`, which
+    // call `fixupBoundAnnotations`, and via `addDefaultAnnotations` and
+    // `capturedTypeVarSubstitutor.substitute` below), so the caller must own them; see the Javadoc.
     if (lowerBound != null) {
       typeVariable.setLowerBound(lowerBound.getAnnotatedType());
     } else {
