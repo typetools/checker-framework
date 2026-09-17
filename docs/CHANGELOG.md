@@ -7,6 +7,8 @@
 
 ### User-visible changes
 
+The Checker Framework runs noticeably faster, due to performance tuning.
+
 ### Changes for type system implementers
 
 `JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,
