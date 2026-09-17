@@ -1264,7 +1264,8 @@ public class WholeProgramInferenceJavaParserStorage
   private boolean typeIsRelevant(
       GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf, Type componentType, int arrayLevels) {
     Types types = atypeFactory.getProcessingEnv().getTypeUtils();
-    TypeMirror tm = JavaParserUtil.typeToTypeMirror(elements, types, componentType);
+    TypeMirror tm =
+        JavaParserUtil.typeToTypeMirror(elements, types, componentType, typeElementCache);
     if (tm == null) {
       // The type could not be determined.  Be conservative.
       return true;
