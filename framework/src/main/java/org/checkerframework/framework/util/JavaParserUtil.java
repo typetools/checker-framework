@@ -552,7 +552,21 @@ public final class JavaParserUtil {
           if (suffix.isEmpty()) {
             return declared;
           }
-          return getTypeElement(elements, declared.getQualifiedName() + suffix, cache);
+          TypeElement nested =
+              getTypeElement(elements, declared.getQualifiedName() + suffix, cache);
+          if (nested != null) {
+            return nested;
+          }
+          // `declared.getQualifiedName() + suffix` is not a canonical name if any component of
+          // `suffix` names an inherited member type, and `getTypeElement` finds a type only by its
+          // canonical name.  Resolve the components of `suffix` one at a time instead, so that each
+          // one is searched for in the supertypes of the type that contains it.
+          int dot = suffix.indexOf('.', 1);
+          if (dot == -1) {
+            return resolveMemberType(elements, declared, suffix.substring(1), "", cache);
+          }
+          return resolveMemberType(
+              elements, declared, suffix.substring(1, dot), suffix.substring(dot), cache);
         }
         // `declared` is not a member of the type at which the search started, and it hides every
         // member type of the same name that `currentElement` would otherwise inherit, so do not
