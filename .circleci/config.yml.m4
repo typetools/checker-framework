@@ -50,11 +50,17 @@ gradle_restore_cache()
           command: ./gradlew -q getPlumeScripts
 gradle_save_cache()
       - run:
-          name: ci-org-and-branch
-          command: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+          name: set-ci-org-and-branch
+          command: |
+            PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+            CI_DEBUG=1
+            . "$PLUME_SCRIPTS"/set-ci-org-and-branch
       - run:
-          name: git-changes
-          command: ./checker/bin-devel/.plume-scripts/git-changes --debug
+          name: set-git-range
+          command: |
+            PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+            CI_DEBUG=1
+            . "$PLUME_SCRIPTS"/set-git-range
 
 include([../.azure/jobs.m4])dnl
 
