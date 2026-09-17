@@ -28,9 +28,7 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.nodeTypes.NodeWithVariables;
-import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.VoidType;
@@ -1161,8 +1159,8 @@ public class WholeProgramInferenceJavaParserStorage
 
     if (parentNode instanceof Type type) {
       // JavaParser's `TypeParameter` is a `Type`, so an annotation on a type parameter
-      // declaration, as in `<@Anno T>`, takes this branch.  `typeToTypeMirror` returns null for a
-      // type parameter declaration, so such an annotation is retained.
+      // declaration, as in `<@Anno T>`, takes this branch.  `JavaParserUtil.typeToTypeMirror`
+      // returns null for a type parameter declaration, so such an annotation is retained.
       return typeIsRelevant(gatf, type);
     }
     if (parentNode instanceof ArrayCreationLevel level) {
@@ -1181,10 +1179,10 @@ public class WholeProgramInferenceJavaParserStorage
       }
       // The annotation precedes the type, so it is on the element type; in
       // `void m(@Anno String... args)`, `@Anno` is on `String`.
-      return typeIsRelevant(gatf, innermostComponentType(param.getType()));
+      return typeIsRelevant(gatf, param.getType().getElementType());
     }
     if (parentNode instanceof ReceiverParameter receiverParam) {
-      return typeIsRelevant(gatf, innermostComponentType(receiverParam.getType()));
+      return typeIsRelevant(gatf, receiverParam.getType().getElementType());
     }
     if (parentNode instanceof MethodDeclaration method) {
       if (method.getType() instanceof VoidType) {
@@ -1194,10 +1192,10 @@ public class WholeProgramInferenceJavaParserStorage
         // handled above.  Be conservative.
         return true;
       }
-      return typeIsRelevant(gatf, innermostComponentType(method.getType()));
+      return typeIsRelevant(gatf, method.getType().getElementType());
     }
     if (parentNode instanceof AnnotationMemberDeclaration member) {
-      return typeIsRelevant(gatf, innermostComponentType(member.getType()));
+      return typeIsRelevant(gatf, member.getType().getElementType());
     }
     if (parentNode instanceof NodeWithVariables<?> declaration) {
       // A field declaration or a local variable declaration.  All its variables have the same
@@ -1208,7 +1206,7 @@ public class WholeProgramInferenceJavaParserStorage
         // Be conservative.
         return true;
       }
-      return typeIsRelevant(gatf, innermostComponentType(variables.get(0).getType()));
+      return typeIsRelevant(gatf, variables.get(0).getType().getElementType());
     }
 
     // The annotation is on some other declaration:  a type declaration, a constructor, etc.  Be
@@ -1241,12 +1239,12 @@ public class WholeProgramInferenceJavaParserStorage
    */
   private boolean typeIsRelevant(
       GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf, Type componentType, int arrayLevels) {
-    TypeMirror tm = typeToTypeMirror(componentType);
+    Types types = atypeFactory.getProcessingEnv().getTypeUtils();
+    TypeMirror tm = JavaParserUtil.typeToTypeMirror(elements, types, componentType);
     if (tm == null) {
       // The type could not be determined.  Be conservative.
       return true;
     }
-    Types types = atypeFactory.getProcessingEnv().getTypeUtils();
     for (int i = 0; i < arrayLevels; i++) {
       tm = types.getArrayType(tm);
     }
@@ -1278,47 +1276,6 @@ public class WholeProgramInferenceJavaParserStorage
     }
     // Be conservative.
     return true;
-  }
-
-  /**
-   * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined.
-   *
-   * @param type a JavaParser type
-   * @return the TypeMirror for {@code type}, or null if it cannot be determined
-   */
-  private @Nullable TypeMirror typeToTypeMirror(Type type) {
-    Types types = atypeFactory.getProcessingEnv().getTypeUtils();
-    if (type instanceof ArrayType arrayType) {
-      TypeMirror componentType = typeToTypeMirror(arrayType.getComponentType());
-      return componentType == null ? null : types.getArrayType(componentType);
-    }
-    if (type instanceof PrimitiveType primitiveType) {
-      return types.getPrimitiveType(JavaParserUtil.typeKindForPrimitive(primitiveType));
-    }
-    if (type instanceof VoidType) {
-      return types.getNoType(TypeKind.VOID);
-    }
-    if (type instanceof ClassOrInterfaceType classType) {
-      TypeElement typeElt = JavaParserUtil.resolveTypeName(elements, classType);
-      return typeElt == null ? null : typeElt.asType();
-    }
-    // An intersection type, a union type, `var`, a wildcard, a type parameter declaration, etc.
-    return null;
-  }
-
-  /**
-   * Returns the element type of the given type: the type itself if it is not an array type, or its
-   * innermost component type if it is.
-   *
-   * @param type a JavaParser type
-   * @return the element type of {@code type}
-   */
-  private static Type innermostComponentType(Type type) {
-    Type componentType = type;
-    while (componentType instanceof ArrayType arrayType) {
-      componentType = arrayType.getComponentType();
-    }
-    return componentType;
   }
 
   /**
