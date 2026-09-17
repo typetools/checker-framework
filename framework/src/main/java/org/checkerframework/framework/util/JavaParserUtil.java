@@ -217,7 +217,7 @@ public final class JavaParserUtil {
     for (Node ancestor = type.getParentNode().orElse(null);
         ancestor != null;
         child = ancestor, ancestor = ancestor.getParentNode().orElse(null)) {
-      if (declaresLocalType(ancestor, firstComponent)) {
+      if (declaresLocalType(ancestor, firstComponent, child)) {
         // `name` names a local class, or is nested within one.  A local class shadows any type of
         // the same name, including a type parameter, and `Elements` cannot look up a local class
         // by name.
@@ -284,7 +284,7 @@ public final class JavaParserUtil {
             // In `outer.new Inner() { ... }`, `Inner` is a member of the type of `outer` rather
             // than a name that is resolved in the scope of the expression, so this method cannot
             // determine the member types that the anonymous class inherits.
-            return null;
+            return ResolvedName.NONE;
           }
           unnameableSupertypes = Collections.singletonList(creation.getType());
         }
@@ -330,12 +330,12 @@ public final class JavaParserUtil {
             } else if (!inherited.equals(fromSupertype)) {
               // The class inherits two different member types with the same simple name.  Which
               // one `name` refers to (if either is accessible) cannot be determined here.
-              return null;
+              return ResolvedName.NONE;
             }
           }
         }
         if (inherited != null) {
-          return inherited;
+          return ResolvedName.of(inherited);
         }
       }
     }
