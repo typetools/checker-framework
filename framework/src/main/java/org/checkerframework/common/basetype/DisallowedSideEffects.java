@@ -37,24 +37,16 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.ArrayAccess;
-import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
-import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.LocalVariable;
-import org.checkerframework.dataflow.expression.MethodCall;
-import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
-import org.checkerframework.dataflow.expression.ValueLiteral;
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.StringToJavaExpression;
-import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -361,9 +353,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       // The user asked that the method be assumed to modify nothing.
       return true;
     }
-    AnnotatedTypeFactory atypeFactory = checker.getTypeFactory();
-    return atypeFactory.getDeclAnnotation(elt, Pure.class) != null
-        || atypeFactory.getDeclAnnotation(elt, SideEffectFree.class) != null;
+    return PurityUtils.isSideEffectFree(checker.getTypeFactory(), elt);
   }
 
   /**
@@ -502,6 +492,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
             ElementUtils.getSimpleDescription(invokedElem));
         return;
       }
+      JavaExpression atCallSite;
       if (receiver == null) {
         if (atDeclaration instanceof ThisReference) {
           // The expression is the object that the desugaring created, which no caller can refer
@@ -519,11 +510,13 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
               ElementUtils.getSimpleDescription(invokedElem));
           return;
         }
+        // The expression mentions no `this`, so viewpoint adaptation would not change it.
+        atCallSite = atDeclaration;
       } else {
-        atDeclaration = withReceiver(atDeclaration, receiver);
+        atCallSite = withReceiver(atDeclaration, receiver);
       }
-      if (isDisallowedSideEffectedExpression(atDeclaration)) {
-        disallowedSideEffects.add(IPair.of(node, atDeclaration));
+      if (isDisallowedSideEffectedExpression(atCallSite)) {
+        disallowedSideEffects.add(IPair.of(node, atCallSite));
       }
     }
   }
@@ -793,50 +786,6 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     return false;
   }
 
-  /**
-   * Returns true if every evaluation of the given expression yields the same location or value.
-   *
-   * <p>A {@code @Deterministic} method returns the same value every time it is called with the same
-   * arguments, so a call to one is deterministic so long as its receiver and its arguments are.
-   *
-   * @param expression an expression
-   * @param provider how to get annotations
-   * @return true if every evaluation of the expression yields the same location or value
-   */
-  protected static boolean isDeterministic(JavaExpression expression, AnnotationProvider provider) {
-    if (expression instanceof LocalVariable
-        || expression instanceof FormalParameter
-        || expression instanceof ThisReference
-        || expression instanceof SuperReference
-        || expression instanceof ClassName
-        || expression instanceof ValueLiteral) {
-      return true;
-    } else if (expression instanceof FieldAccess fieldAccess) {
-      return isDeterministic(fieldAccess.getReceiver(), provider);
-    } else if (expression instanceof ArrayAccess arrayAccess) {
-      return isDeterministic(arrayAccess.getArray(), provider)
-          && isDeterministic(arrayAccess.getIndex(), provider);
-    } else if (expression instanceof MethodCall methodCall) {
-      ExecutableElement method = methodCall.getElement();
-      if (!PurityUtils.isDeterministic(provider, method)
-          || !PurityUtils.isSideEffectFree(provider, method)) {
-        return false;
-      }
-      // For a static method, the receiver is a ClassName, which is deterministic.
-      if (!isDeterministic(methodCall.getReceiver(), provider)) {
-        return false;
-      }
-      for (JavaExpression argument : methodCall.getArguments()) {
-        if (!isDeterministic(argument, provider)) {
-          return false;
-        }
-      }
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   @Override
   public Void visitLambdaExpression(LambdaExpressionTree node, Void aVoid) {
     // The body of a lambda runs when the lambda is invoked, which is not necessarily within the
@@ -917,9 +866,13 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * Finds the local variables that are assigned only {@code new} expressions. The result is {@link
    * #freshlyAssigned} minus {@link #otherwiseAssigned}.
    *
-   * <p>A local variable that a lambda or a local class assigns is not effectively final, so it
-   * cannot be captured; therefore, scanning the whole method body -- including such bodies, which
-   * {@link DisallowedSideEffects} itself does not always scan -- cannot miss an assignment.
+   * <p>This scanner descends into the body of a lambda and of a local or anonymous class, which
+   * {@link DisallowedSideEffects} itself does not scan. That is harmless. Such a body can assign to
+   * a local variable only if the body itself declares that variable: Java permits the body to use a
+   * local variable of an enclosing method only if that variable is effectively final, and assigning
+   * to a variable makes it not effectively final. Therefore, the extra variables that this scanner
+   * finds in such a body are ones that the code being checked cannot refer to, and no assignment to
+   * a local variable of the code being checked goes unseen.
    */
   private static class FreshLocalScanner extends TreeScanner<Void, Void> {
 
@@ -956,8 +909,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
 
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void aVoid) {
-      // The result of `+=`, the only compound assignment that applies to a reference type, is a
-      // new String rather than an object that this code created.
+      // The only compound assignment that applies to a reference type is `+=` on a String.  Its
+      // result is a fresh String, but a String cannot be modified, so nothing is gained by
+      // treating the variable as fresh.
       VariableElement local = localVariable(TreeUtils.elementFromTree(node.getVariable()));
       if (local != null) {
         otherwiseAssigned.add(local);
@@ -978,6 +932,10 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       if (local == null) {
         return;
       }
+      // Only a `new` expression is guaranteed to yield an object that did not exist before the
+      // method being checked was called.  Any other value may be an object that the caller can
+      // also reach; for example, a string literal is interned, so `String s = "hello";` does not
+      // make `s` fresh.  (That is of no consequence for a String, which cannot be modified.)
       Tree.Kind valueKind = TreeUtils.withoutParens(value).getKind();
       if (valueKind == Tree.Kind.NEW_CLASS || valueKind == Tree.Kind.NEW_ARRAY) {
         freshlyAssigned.add(local);

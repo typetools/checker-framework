@@ -48,7 +48,7 @@ public class NotCheckedWithoutOption {
     a.add(1);
   }
 
-  // Would report `purity.nondeterministic.sideeffectsonly`:  two evaluations of `#1.iterator()`
+  // Would report `purity.impure.sideeffectsonly`:  two evaluations of `#1.iterator()`
   // may yield unrelated values.
   @SideEffectsOnly("#1.iterator()")
   void nondeterministicAnnotation(Collection<Integer> a) {

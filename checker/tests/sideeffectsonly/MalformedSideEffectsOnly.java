@@ -1,3 +1,4 @@
+import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
@@ -22,14 +23,14 @@ public class MalformedSideEffectsOnly {
   // body modifies would ever be recognized as the listed expression, not even the syntactically
   // identical `h.getList()`.
   @SideEffectsOnly("#1.getList()")
-  // :: error: (purity.nondeterministic.sideeffectsonly)
+  // :: error: (purity.impure.sideeffectsonly)
   void nondeterministicExpression(Holder h) {
     h.getList().add("x");
   }
 
   // An array access is deterministic only if its index is deterministic too.
   @SideEffectsOnly("#1.lists[#1.size()]")
-  // :: error: (purity.nondeterministic.sideeffectsonly)
+  // :: error: (purity.impure.sideeffectsonly)
   void nondeterministicIndex(Holder h) {}
 
   // A field access, an array access, and a formal parameter are all deterministic.
@@ -66,14 +67,20 @@ public class MalformedSideEffectsOnly {
 
   // `getPureAt` is `@Pure`, but its argument may differ between two evaluations.
   @SideEffectsOnly("#1.getPureAt(#1.size())")
-  // :: error: (purity.nondeterministic.sideeffectsonly)
+  // :: error: (purity.impure.sideeffectsonly)
   void nondeterministicPureCallArgument(Holder h) {}
 
   // `@SideEffectFree` alone is not enough:  a method that is not `@Deterministic` may return a
   // different object each time it is called.
   @SideEffectsOnly("#1.getSideEffectFreeList()")
-  // :: error: (purity.nondeterministic.sideeffectsonly)
+  // :: error: (purity.impure.sideeffectsonly)
   void nondeterministicSideEffectFreeCall(Holder h) {}
+
+  // `@Deterministic` alone is not enough either:  a method that is not `@SideEffectFree` changes
+  // the environment, so a later call to it may return a different object.
+  @SideEffectsOnly("#1.getDeterministicList()")
+  // :: error: (purity.impure.sideeffectsonly)
+  void sideEffectingDeterministicCall(Holder h) {}
 
   static class Holder {
     java.util.List<String>[] lists;
@@ -94,6 +101,11 @@ public class MalformedSideEffectsOnly {
 
     @SideEffectFree
     java.util.List<String> getSideEffectFreeList() {
+      throw new Error("not called");
+    }
+
+    @Deterministic
+    java.util.List<String> getDeterministicList() {
       throw new Error("not called");
     }
 

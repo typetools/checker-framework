@@ -1330,9 +1330,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           // necessarily the scope of `tree`.
           JavaExpression exprJe =
               StringToJavaExpression.atMethodDecl(st, declaringMethod, checker).atMethodBody(tree);
-          if (!DisallowedSideEffects.isDeterministic(exprJe, atypeFactory)) {
-            // Two evaluations of a nondeterministic expression may denote different values.
-            checker.reportError(tree, "purity.nondeterministic.sideeffectsonly", st);
+          if (!PurityUtils.isPure(atypeFactory, exprJe)) {
+            // Two evaluations of an impure expression may denote different locations or values.
+            checker.reportError(tree, "purity.impure.sideeffectsonly", st);
             return;
           }
           seOnlyExpressions.add(exprJe);
@@ -2611,8 +2611,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         continue;
       }
       JavaExpression seOnlyExpression = converter.convert(atDeclaration);
-      if (!DisallowedSideEffects.isDeterministic(seOnlyExpression, atypeFactory)) {
-        checker.reportError(tree, "purity.nondeterministic.sideeffectsonly", st);
+      if (!PurityUtils.isPure(atypeFactory, seOnlyExpression)) {
+        checker.reportError(tree, "purity.impure.sideeffectsonly", st);
         return;
       }
       seOnlyExpressions.add(seOnlyExpression);
