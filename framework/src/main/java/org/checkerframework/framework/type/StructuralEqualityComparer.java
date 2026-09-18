@@ -19,7 +19,6 @@ import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.StringsP;
 
 /**
  * A visitor used to compare two type mirrors for "structural" equality. Structural equality implies
@@ -131,9 +130,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
       Collection<? extends AnnotatedTypeMirror> types1,
       Collection<? extends AnnotatedTypeMirror> types2) {
     if (types1.size() != types2.size()) {
-      throw new BugInCF(
-          "Mismatching collection sizes:%n    types 1: %s (%d)%n    types 2: %s (%d)",
-          StringsP.join("; ", types1), types1.size(), StringsP.join("; ", types2), types2.size());
+      return false;
     }
 
     Iterator<? extends AnnotatedTypeMirror> types1Iter = types1.iterator();
@@ -202,20 +199,32 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
       return pastResult;
     }
 
-    // TODO: same class/interface is not enforced. Why?
+    if (!type1.atypeFactory.types.isSameType(
+        type1.atypeFactory.types.erasure(type1.getUnderlyingType()),
+        type2.atypeFactory.types.erasure(type2.getUnderlyingType()))) {
+      return false;
+    }
 
     if (!arePrimaryAnnosEqual(type1, type2)) {
       return false;
     }
+
     // Prevent infinite recursion e.g. in Issue1587b
     visitHistory.put(type1, type2, currentTop, true);
 
     List<AnnotatedTypeMirror> type1Args = type1.getTypeArguments();
     List<AnnotatedTypeMirror> type2Args = type2.getTypeArguments();
 
-    // Capture the types because the wildcards are only not equal if they are provably distinct.
-    // Provably distinct is computed using the captured and erased upper bounds of wildcards.
-    // See JLS 4.5.1. Type Arguments of Parameterized Types.
+    if (type1Args.size() != type2Args.size()) {
+      if (type1.atypeFactory.ignoreRawTypeArguments
+          && (type1.isUnderlyingTypeRaw() || type2.isUnderlyingTypeRaw())) {
+        visitHistory.put(type1, type2, currentTop, true);
+        return true;
+      }
+      visitHistory.put(type1, type2, currentTop, false);
+      return false;
+    }
+
     AnnotatedTypeFactory atypeFactory = type1.atypeFactory;
     AnnotatedDeclaredType capturedType1 =
         (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(type1);
@@ -288,6 +297,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   @Override
   public Boolean visitPrimitive_Primitive(
       AnnotatedPrimitiveType type1, AnnotatedPrimitiveType type2, Void p) {
+    if (type1.getKind() != type2.getKind()) {
+      return false;
+    }
     return arePrimaryAnnosEqual(type1, type2);
   }
 
