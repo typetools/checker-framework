@@ -4,13 +4,12 @@ import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 // `Number` is not listed in the checker's `@RelevantJavaTypes` and is not related to a listed type
 // by subtyping, so inference must not write, into the .ajava file, an annotation that it infers
 // for a use of `T`.  The checker rejects the annotation that is written below, for the same
-// reason; that is why the Gradle build does not run the second (validation) pass of this test on
-// this file.
+// reason, in both passes of this test.
 public class IrrelevantTypeVariable<T extends Number> {
 
   T field;
 
-  // :: warning: [anno.on.irrelevant]
+  @SuppressWarnings("anno.on.irrelevant") // intentional:  `T`'s upper bound is irrelevant
   void assignField(@AinferSibling1 T t) {
     field = t;
   }
@@ -22,7 +21,7 @@ class IrrelevantIntersectionTypeVariable<T extends Number & java.io.Serializable
 
   T field;
 
-  // :: warning: [anno.on.irrelevant]
+  @SuppressWarnings("anno.on.irrelevant") // intentional:  `T`'s upper bound is irrelevant
   void assignField(@AinferSibling1 T t) {
     field = t;
   }

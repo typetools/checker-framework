@@ -133,8 +133,8 @@ public final class JavaParserUtil {
    * declarations and the compilation unit that contain it, so the result is null if a type
    * declaration shadows a type variable of the same name.
    *
-   * <p>If the name has more than one component, as in {@code T.Inner}, then its first component is
-   * the one that might name a type variable.
+   * <p>A name with more than one component, as in {@code T.Inner}, never names a type variable,
+   * because a type variable has no member types.
    *
    * @param elements used for looking up names
    * @param type a JavaParser class or interface type
@@ -156,7 +156,7 @@ public final class JavaParserUtil {
    * @param typeParameter the declaration of the type variable that the name refers to, or null if
    *     it refers to no type variable
    */
-  private record ResolvedName(
+  public record ResolvedName(
       @Nullable TypeElement typeElement, @Nullable TypeParameter typeParameter) {
 
     /** A name that refers to neither a type nor a type variable. */
@@ -188,13 +188,20 @@ public final class JavaParserUtil {
    * The name is resolved in the scope of the type declarations and the compilation unit that
    * contain it.
    *
+   * <p>Resolving a name walks the enclosing scopes and searches supertypes, which is far more work
+   * than the cache avoids. A client that needs to know both whether the name names a type and
+   * whether it names a type variable should call this method once, rather than calling both {@link
+   * #resolveTypeName(Elements, ClassOrInterfaceType, Map)} and {@link
+   * #resolveTypeVariableName(Elements, ClassOrInterfaceType, Map)}, each of which repeats the walk.
+   *
    * @param elements used for looking up names
    * @param type a JavaParser class or interface type
    * @param cache maps a name to the type it names, or to null if it names no type; this method both
-   *     reads and writes it
+   *     reads and writes it. See {@link #resolveTypeName(Elements, ClassOrInterfaceType, Map)} for
+   *     restrictions on it.
    * @return what the name of {@code type} refers to
    */
-  private static ResolvedName resolveName(
+  public static ResolvedName resolveName(
       Elements elements, ClassOrInterfaceType type, Map<String, @Nullable TypeElement> cache) {
     return resolveName(elements, type, cache, new IdentityHashMap<>(4));
   }
@@ -296,8 +303,9 @@ public final class JavaParserUtil {
           if (typeParameter.getNameAsString().equals(firstComponent)) {
             // `name` names a type parameter, or is nested within one.  A type parameter shadows
             // any type of the same name that is declared outside `ancestor`, and it has no
-            // TypeElement.
-            return ResolvedName.of(typeParameter);
+            // TypeElement.  A type variable has no member types, so if `name` has a suffix, as
+            // in `T.Inner`, then it names nothing at all.
+            return suffix.isEmpty() ? ResolvedName.of(typeParameter) : ResolvedName.NONE;
           }
         }
       }
