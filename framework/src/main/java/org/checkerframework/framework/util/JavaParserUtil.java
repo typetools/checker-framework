@@ -204,7 +204,7 @@ public final class JavaParserUtil {
           if (enclosingElement != null) {
             result =
                 resolveMemberType(
-                    elements, enclosingElement, firstComponent, suffix, usePackage, cache);
+                    elements, enclosingElement, firstComponent, suffix, usePackage, true, cache);
             if (result != null) {
               return result;
             }
@@ -231,7 +231,7 @@ public final class JavaParserUtil {
           }
           TypeElement fromSupertype =
               resolveMemberType(
-                  elements, supertypeElement, firstComponent, suffix, usePackage, cache);
+                  elements, supertypeElement, firstComponent, suffix, usePackage, true, cache);
           if (fromSupertype != null) {
             if (inherited == null) {
               inherited = fromSupertype;
@@ -276,7 +276,7 @@ public final class JavaParserUtil {
           if (containerElement != null) {
             result =
                 resolveMemberType(
-                    elements, containerElement, firstComponent, suffix, usePackage, cache);
+                    elements, containerElement, firstComponent, suffix, usePackage, false, cache);
             if (result != null) {
               return result;
             }
@@ -311,7 +311,7 @@ public final class JavaParserUtil {
         if (importedElement != null) {
           TypeElement result =
               resolveMemberType(
-                  elements, importedElement, firstComponent, suffix, usePackage, cache);
+                  elements, importedElement, firstComponent, suffix, usePackage, false, cache);
           if (result != null) {
             return result;
           }
@@ -523,7 +523,9 @@ public final class JavaParserUtil {
    * subclass in the package that declares it, and it is accessible only within that package; this
    * method therefore uses one only if every type from {@code typeElement} to the type that declares
    * it is in package {@code usePackage}. A protected member type is inherited even from a different
-   * package.
+   * package, but outside the package that declares it, it is accessible only within the body of a
+   * subclass of the type that declares it; this method therefore uses one that is declared in
+   * another package only if {@code inSubclassBody} is true.
    *
    * @param elements used for looking up names
    * @param typeElement the type whose member types to search
@@ -532,6 +534,9 @@ public final class JavaParserUtil {
    *     firstComponent}; it is empty or starts with "."
    * @param usePackage the name of the package that contains the use of the type name, or "" for the
    *     unnamed package
+   * @param inSubclassBody true if the use of the type name is within the body of {@code
+   *     typeElement} or of a subclass of it, as it is for an ordinary lookup in the scope of a
+   *     class, but not for the lookup that an import performs
    * @param cache maps a name to the type it names, or to null if it names no type; this method both
    *     reads and writes it
    * @return the element for the member type, or null if there is none or it cannot be determined
@@ -542,6 +547,7 @@ public final class JavaParserUtil {
       String firstComponent,
       String suffix,
       String usePackage,
+      boolean inSubclassBody,
       Map<String, @Nullable TypeElement> cache) {
     Set<TypeElement> visited = new HashSet<>();
     visited.add(typeElement);
@@ -564,7 +570,9 @@ public final class JavaParserUtil {
         if (member != null) {
           // This declaration hides every declaration of the same name in a supertype of `current`,
           // so the supertypes of `current` are not searched.
-          if (isInheritedAndAccessible(member, samePackagePath)) {
+          boolean protectedIsAccessible =
+              inSubclassBody || isInPackage(elements, current, usePackage);
+          if (isInheritedAndAccessible(member, samePackagePath, protectedIsAccessible)) {
             if (found == null) {
               found = member;
             } else if (!found.equals(member)) {
@@ -638,17 +646,25 @@ public final class JavaParserUtil {
    * @param samePackagePath true if the type that declares {@code member}, and every type between it
    *     and the type whose member types are being searched, is in the package that contains the use
    *     of the type name
+   * @param protectedIsAccessible true if a protected member of the type that declares {@code
+   *     member} is accessible at the use site
    * @return true if {@code member} is inherited and is accessible at the use site
    */
-  private static boolean isInheritedAndAccessible(TypeElement member, boolean samePackagePath) {
+  private static boolean isInheritedAndAccessible(
+      TypeElement member, boolean samePackagePath, boolean protectedIsAccessible) {
     Set<Modifier> modifiers = member.getModifiers();
     if (modifiers.contains(Modifier.PRIVATE)) {
       // A private member type is not inherited.
       return false;
     }
-    if (modifiers.contains(Modifier.PUBLIC) || modifiers.contains(Modifier.PROTECTED)) {
-      // A protected member type is inherited even by a subclass in a different package.
+    if (modifiers.contains(Modifier.PUBLIC)) {
       return true;
+    }
+    if (modifiers.contains(Modifier.PROTECTED)) {
+      // A protected member type is inherited even by a subclass in a different package, but
+      // outside the package that declares it, it is accessible only within the body of such a
+      // subclass.
+      return protectedIsAccessible;
     }
     // A package-private member type is inherited only by a subclass in the package that declares
     // it, and it is accessible only within that package.
