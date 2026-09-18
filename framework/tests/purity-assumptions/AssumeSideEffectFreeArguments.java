@@ -46,11 +46,8 @@ public class AssumeSideEffectFreeArguments {
     callee(deterministicVariable, s);
   }
 
-  /** A method with no purity annotation gets the assumption too. */
+  /** A method with no purity annotation gets the assumption too, in either form. */
   void unannotatedMethods(String s) {
-    // TODO: A lambda's body is checked by PurityChecker, which still applies an assumption only
-    // to a method that has a purity annotation.  Remove this expectation once it does not.
-    // :: error: [purity.not.sideeffectfree.call]
     callee(t -> unannotatedLength(t), s);
     callee(this::unannotatedLength, s);
   }

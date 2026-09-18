@@ -12,6 +12,12 @@ The Checker Framework runs noticeably faster, due to performance tuning.
 The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
 warnings that it did not previously.
 
+The `-AassumeSideEffectFree`, `-AassumeDeterministic`, `-AassumePure`, and
+`-AassumePureGetters` command-line options now apply to a called method that has
+no purity annotation, which is what their documentation promises and what makes
+them useful for an unannotated library.  Previously, the Purity Checker applied
+them only to a method that was already annotated.
+
 ### Changes for type system implementers
 
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration
