@@ -316,38 +316,32 @@ public final class PurityChecker {
       return null;
     }
 
-    /** Represents a method that is both deterministic and side-effect free. */
-    private static final EnumSet<PurityKind> detAndSeFree =
-        EnumSet.of(PurityKind.DETERMINISTIC, PurityKind.SIDE_EFFECT_FREE);
-
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void ignore) {
       ExecutableElement elt = TreeUtils.elementFromUse(tree);
       EnumSet<PurityKind> eltPurityKinds = PurityUtils.getPurityKinds(annoProvider, elt);
-      if (!eltPurityKinds.contains(PurityKind.SIDE_EFFECT_FREE)
-          && !eltPurityKinds.contains(PurityKind.DETERMINISTIC)) {
-        // The called method has no purity annotation, so the callee is not pure either.
+      // Each assumption applies to every called method, including one with no purity
+      // annotation:  that is what makes the assumptions useful for an unannotated library.
+      boolean pureGetter = assumePureGetters && ElementUtils.isGetter(elt);
+      boolean seFree =
+          assumeSideEffectFree
+              || pureGetter
+              || eltPurityKinds.contains(PurityKind.SIDE_EFFECT_FREE);
+      boolean det =
+          assumeDeterministic
+              || pureGetter
+              || eltPurityKinds.contains(PurityKind.DETERMINISTIC)
+              // A side-effect-free method that returns no value changes nothing and yields
+              // nothing, so calling it cannot make the caller's result differ.  Without
+              // side-effect-freedom, returning no value says nothing:  the method could
+              // change a field that the caller goes on to return.
+              || (seFree && elt.getReturnType().getKind() == TypeKind.VOID);
+      if (!det && !seFree) {
         purityResult.addNotBothReason(tree, "call");
-      } else {
-        // The called method has a purity annotation:  @SideEffectFree, @Deterministic, or both.
-        EnumSet<PurityKind> purityKinds =
-            ((assumeDeterministic && assumeSideEffectFree)
-                    || (assumePureGetters && ElementUtils.isGetter(elt)))
-                // Avoid computation if not necessary
-                ? detAndSeFree
-                : eltPurityKinds;
-        boolean det =
-            assumeDeterministic
-                || purityKinds.contains(PurityKind.DETERMINISTIC)
-                || elt.getReturnType().getKind() == TypeKind.VOID;
-        boolean seFree = assumeSideEffectFree || purityKinds.contains(PurityKind.SIDE_EFFECT_FREE);
-        if (!det && !seFree) {
-          purityResult.addNotBothReason(tree, "call");
-        } else if (!det) {
-          purityResult.addNotDetReason(tree, "call");
-        } else if (!seFree) {
-          purityResult.addNotSEFreeReason(tree, "call");
-        }
+      } else if (!det) {
+        purityResult.addNotDetReason(tree, "call");
+      } else if (!seFree) {
+        purityResult.addNotSEFreeReason(tree, "call");
       }
       return super.visitMethodInvocation(tree, ignore);
     }
