@@ -310,11 +310,18 @@ public final class JavaParserUtil {
           TypeElement containerElement = getTypeElement(elements, containerName, cache);
           if (containerElement != null) {
             // An import imports only the member types that `containerElement` inherits; the ones
-            // that it declares have canonical names, which the lookup above already tried.
+            // that it declares have canonical names, which the lookup above already tried.  A
+            // package-private member type is a member of `containerElement` only if every type
+            // from `containerElement` to the type that declares it is in `containerElement`'s
+            // package; such a member type is accessible at this use, and therefore imported, only
+            // if that package is also `packageName`.
             result =
                 resolveMemberType(
                     elements,
-                    new SearchedType(containerElement, false, true),
+                    new SearchedType(
+                        containerElement,
+                        false,
+                        inPackage(elements, containerElement, packageName)),
                     firstComponent,
                     suffix,
                     cache);
@@ -351,11 +358,16 @@ public final class JavaParserUtil {
         TypeElement importedElement = getTypeElement(elements, importDecl.getNameAsString(), cache);
         if (importedElement != null) {
           // An import imports only the member types that `importedElement` inherits; the ones that
-          // it declares have canonical names, which the lookup above already tried.
+          // it declares have canonical names, which the lookup above already tried.  A
+          // package-private member type is a member of `importedElement` only if every type from
+          // `importedElement` to the type that declares it is in `importedElement`'s package; such
+          // a member type is accessible at this use, and therefore imported, only if that package
+          // is also `packageName`.
           TypeElement result =
               resolveMemberType(
                   elements,
-                  new SearchedType(importedElement, false, true),
+                  new SearchedType(
+                      importedElement, false, inPackage(elements, importedElement, packageName)),
                   firstComponent,
                   suffix,
                   cache);
@@ -594,6 +606,11 @@ public final class JavaParserUtil {
    * class instead, and the search for a name that an import declaration resolves starts at the
    * imported type. In those cases a member type is a member at the place where the name is being
    * resolved only if it is inherited.
+   *
+   * <p>An import declaration imports only the member types that are accessible where it appears,
+   * and a package-private member type is accessible only in the package that declares it. For a
+   * name that an import declaration resolves, {@code packagePrivateIsMember} is therefore true only
+   * if the imported type is in the package that contains the import declaration.
    *
    * @param typeElement the type whose member types to search
    * @param privateIsMember true if a private member type of {@code typeElement} is a member at the
