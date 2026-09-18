@@ -638,16 +638,32 @@ public class VariableBounds {
   public boolean applyInstantiationsToBounds() {
     boolean changed = false;
     for (Set<AbstractType> boundList : bounds.values()) {
-      LinkedHashSet<AbstractType> newBounds = new LinkedHashSet<>(boundList.size());
+      if (boundList.isEmpty()) {
+        // Most variables have no bound of most kinds, and iterating a LinkedHashSet allocates.
+        continue;
+      }
+      // Collect the new bounds in a list rather than a set: an ArrayList does not hash its
+      // elements, and hashing an AbstractType is expensive.  Most calls to this method replace
+      // no bound at all, and then the addAll() below -- the only place that hashes every bound
+      // -- is skipped.
+      List<AbstractType> newBounds = new ArrayList<>(boundList.size());
+      boolean boundListChanged = false;
       for (AbstractType bound : boundList) {
         AbstractType newBound = bound.applyInstantiations();
-        if (newBound != bound && !boundList.contains(newBound)) {
-          changed = true;
+        if (newBound != bound) {
+          boundListChanged = true;
+          if (!boundList.contains(newBound)) {
+            changed = true;
+          }
         }
         newBounds.add(newBound);
       }
-      boundList.clear();
-      boundList.addAll(newBounds);
+      if (boundListChanged) {
+        // `boundList` is a LinkedHashSet, so re-adding the bounds in order discards duplicates
+        // and keeps each remaining bound at the position of its first occurrence.
+        boundList.clear();
+        boundList.addAll(newBounds);
+      }
     }
     constraints.applyInstantiations();
 

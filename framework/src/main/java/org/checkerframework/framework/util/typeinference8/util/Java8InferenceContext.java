@@ -9,6 +9,7 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
@@ -103,6 +104,32 @@ public class Java8InferenceContext {
   private final DoubleAnnotatedTypeScanner<Void> polymorphicQualifierReplacer;
 
   /**
+   * The value of {@link AbstractType#inferenceProblemHashCode()} for an {@link AbstractType} of
+   * this inference problem whose {@link AbstractType#ignoreAnnotations} field is true.
+   */
+  private final int inferenceProblemHashIgnoringAnnotations;
+
+  /**
+   * The value of {@link AbstractType#inferenceProblemHashCode()} for an {@link AbstractType} of
+   * this inference problem whose {@link AbstractType#ignoreAnnotations} field is false.
+   */
+  private final int inferenceProblemHashNotIgnoringAnnotations;
+
+  /**
+   * Returns a hash code for the fields that {@link AbstractType#sameInferenceProblem} compares.
+   * Those fields are final, so an {@link AbstractType} of this inference problem has one of only
+   * two values: this is computed once per context rather than once per {@link AbstractType}.
+   *
+   * @param ignoreAnnotations the value of {@link AbstractType#ignoreAnnotations}
+   * @return a hash code for the fields that {@link AbstractType#sameInferenceProblem} compares
+   */
+  public int inferenceProblemHashCode(boolean ignoreAnnotations) {
+    return ignoreAnnotations
+        ? inferenceProblemHashIgnoringAnnotations
+        : inferenceProblemHashNotIgnoringAnnotations;
+  }
+
+  /**
    * Where an implicitly typed lambda parameter's type comes from: the target type of the lambda
    * that declares it, and the parameter's index in the lambda's parameter list.
    *
@@ -160,6 +187,8 @@ public class Java8InferenceContext {
     this.error = TypesUtils.typeFromClass(Error.class, env.getTypeUtils(), env.getElementUtils());
     this.runtimeException =
         TypesUtils.typeFromClass(RuntimeException.class, env.getTypeUtils(), env.getElementUtils());
+    this.inferenceProblemHashIgnoringAnnotations = Objects.hash(true, this, factory);
+    this.inferenceProblemHashNotIgnoringAnnotations = Objects.hash(false, this, factory);
     this.inferenceTypeFactory = new InferenceFactory(this);
     this.object = inferenceTypeFactory.getObject();
     QualifierHierarchy qualifierHierarchy = factory.getQualifierHierarchy();

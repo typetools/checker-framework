@@ -65,9 +65,9 @@ public class AinferRelevanceAjavaGenerationTest extends AinferGeneratePerDirecto
       "-" + AinferRelevanceTestChecker.class.getCanonicalName() + ".ajava";
 
   /**
-   * Compares each generated ajava file to its goal file. A goal file is named {@code
-   * <FullyQualifiedClassName>.ajava.goal}. Every generated ajava file must have a goal file and
-   * vice versa, so that no inference result goes unexamined.
+   * Compares each generated ajava file to its goal file; see {@link #goalFileFor} for a goal file's
+   * name. Every generated ajava file must have a goal file and vice versa, so that no inference
+   * result goes unexamined.
    *
    * <p>Unlike the second (validation) pass of this test, this comparison detects an annotation that
    * inference wrote even though the annotation is irrelevant where it appears. Such an annotation
@@ -140,18 +140,19 @@ public class AinferRelevanceAjavaGenerationTest extends AinferGeneratePerDirecto
    * Returns the goal file that corresponds to the given generated ajava file. The goal file need
    * not exist.
    *
-   * <p>Inference writes a class's ajava file into a subdirectory of {@link #inferenceOutputDir}
-   * that corresponds to the class's package, but the goal files are all in {@link #goalDir}, so a
-   * goal file's name starts with the class's fully-qualified name.
+   * <p>Inference writes a class's ajava file into a subdirectory that corresponds to the class's
+   * package, but the goal files are all in one directory. Therefore, a goal file is named for the
+   * class's fully-qualified name: {@code <ClassName>.ajava.goal} for a class in the unnamed
+   * package, and {@code <package>.<ClassName>.ajava.goal} for a class in a named package.
    *
    * @param ajavaFile a generated ajava file
    * @return the goal file that corresponds to {@code ajavaFile}
    */
   private static Path goalFileFor(Path ajavaFile) {
-    Path relativeToOutputDir = inferenceOutputDir.relativize(ajavaFile);
-    String ajavaFileName = relativeToOutputDir.getFileName().toString();
+    Path relative = inferenceOutputDir.relativize(ajavaFile);
+    String ajavaFileName = relative.getFileName().toString();
     String className = ajavaFileName.substring(0, ajavaFileName.length() - ajavaSuffix.length());
-    Path packageDir = relativeToOutputDir.getParent();
+    Path packageDir = relative.getParent();
     String qualifiedName =
         packageDir == null
             ? className
