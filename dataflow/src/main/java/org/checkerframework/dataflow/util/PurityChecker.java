@@ -329,6 +329,9 @@ public final class PurityChecker {
           assumeDeterministic
               || pureGetter
               || eltPurityKinds.contains(PurityKind.DETERMINISTIC)
+              // A side-effect-free method with no return value is deterministic:  two calls
+              // return the same (absent) value.  This includes a `this()` or `super()` call,
+              // whose element's return type is void.
               || (seFree && elt.getReturnType().getKind() == TypeKind.VOID);
       if (!det && !seFree) {
         purityResult.addNotBothReason(tree, "call");
