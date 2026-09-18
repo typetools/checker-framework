@@ -6,9 +6,11 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
+import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -17,7 +19,9 @@ import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
+import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
+import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.PrimitiveType;
@@ -25,12 +29,11 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -112,6 +115,13 @@ public final class JavaParserUtil {
       suffix = name.substring(dotIndex);
     }
 
+    CompilationUnit cu = type.findCompilationUnit().orElse(null);
+    // The package that contains the use of `name`.  A use in the unnamed package, or in a node
+    // that is not part of a compilation unit, has no package name.  Accessibility of a
+    // package-private member type depends on this package.
+    String usePackage =
+        cu == null ? "" : cu.getPackageDeclaration().map(pkg -> pkg.getNameAsString()).orElse("");
+
     // A type parameter, a local class, or a type that is lexically enclosed in a type declaration,
     // takes precedence over an import, over a type in the same package, over a type in
     // `java.lang`, and over the interpretation of `name` as a fully-qualified name.
@@ -134,7 +144,10 @@ public final class JavaParserUtil {
         }
       }
 
-      if (declaresLocalType(ancestor, firstComponent, child)) {
+      // A local type declaration is a block statement, so only a block or a switch entry can
+      // directly contain one.
+      if ((ancestor instanceof BlockStmt || ancestor instanceof SwitchEntry)
+          && declaresLocalType(ancestor, firstComponent, child)) {
         // `name` names a local class, or is nested within one.  A local class shadows any type of
         // the same name, and `Elements` cannot look up a local class by name.
         return null;
@@ -143,7 +156,8 @@ public final class JavaParserUtil {
       if (ancestor instanceof EnumConstantDeclaration enumConstant
           && containsSame(enumConstant.getClassBody(), child)
           && declaresMemberType(enumConstant.getClassBody(), firstComponent)) {
-        // The body of an enum constant declares an anonymous class.  A member type of an
+        // The body of an enum constant declares an anonymous class, whose member types are in
+        // scope only in that body and not in the constant's arguments.  A member type of an
         // anonymous class has no name that `Elements` can look up.  (There is no need to search
         // the anonymous class's supertype, which is the enum:  the enum declaration is an
         // ancestor, so a later iteration of this loop searches it.)
@@ -158,9 +172,9 @@ public final class JavaParserUtil {
       List<ClassOrInterfaceType> unnameableSupertypes = null;
       if (ancestor instanceof ObjectCreationExpr creation) {
         List<? extends Node> body = creation.getAnonymousClassBody().orElse(null);
-        // The member types are in scope only in the anonymous class's body, not in the supertype
-        // name or in the constructor arguments.  Testing `child` also prevents infinite recursion
-        // on the recursive call below.
+        // The anonymous class's member types are in scope only in its body, and not in the
+        // creation expression's scope, type arguments, supertype name, or arguments.  Testing
+        // `child` also prevents infinite recursion on the recursive call below.
         if (body != null && containsSame(body, child)) {
           if (declaresMemberType(body, firstComponent)) {
             // A member type of an anonymous class has no name that `Elements` can look up.
@@ -175,7 +189,10 @@ public final class JavaParserUtil {
           unnameableSupertypes = Collections.singletonList(creation.getType());
         }
       } else if (ancestor instanceof TypeDeclaration<?> enclosingType
-          && isInBody(enclosingType, child)) {
+          // The class's member types, declared and inherited, are in scope only in its body, and
+          // not in its annotations, its type parameter section, or its supertype names.  Testing
+          // `child` also prevents infinite recursion on the recursive call below.
+          && inScopeOfMemberTypes(child)) {
         String enclosingName = nameableFullyQualifiedName(enclosingType);
         if (enclosingName != null) {
           TypeElement result = getTypeElement(elements, enclosingName + "." + name, cache);
@@ -185,7 +202,9 @@ public final class JavaParserUtil {
           // The enclosing type might inherit the member type rather than declare it.
           TypeElement enclosingElement = getTypeElement(elements, enclosingName, cache);
           if (enclosingElement != null) {
-            result = resolveMemberType(elements, enclosingElement, firstComponent, suffix, cache);
+            result =
+                resolveMemberType(
+                    elements, enclosingElement, firstComponent, suffix, usePackage, true, cache);
             if (result != null) {
               return result;
             }
@@ -195,22 +214,14 @@ public final class JavaParserUtil {
             // A member type of an unnameable class has no name that `Elements` can look up.
             return null;
           }
-          if (enclosingType instanceof EnumDeclaration) {
-            // An enum's implicit supertype `java.lang.Enum` declares the member type `EnumDesc`.
-            TypeElement enumElement = getTypeElement(elements, "java.lang.Enum", cache);
-            if (enumElement == null) {
-              return null;
-            }
-            TypeElement result =
-                resolveMemberType(elements, enumElement, firstComponent, suffix, cache);
-            if (result != null) {
-              return result;
-            }
-          }
           unnameableSupertypes = supertypes(enclosingType);
         }
       }
       if (unnameableSupertypes != null) {
+        // Every direct supertype is searched, rather than returning the first member type that is
+        // found, because a member type that is inherited from one supertype does not hide one that
+        // is inherited from another.
+        TypeElement inherited = null;
         for (ClassOrInterfaceType supertype : unnameableSupertypes) {
           TypeElement supertypeElement = resolveTypeName(elements, supertype, cache);
           if (supertypeElement == null) {
@@ -218,16 +229,25 @@ public final class JavaParserUtil {
             // unnameable class inherits and that might shadow `name`.
             return null;
           }
-          TypeElement result =
-              resolveMemberType(elements, supertypeElement, firstComponent, suffix, cache);
-          if (result != null) {
-            return result;
+          TypeElement fromSupertype =
+              resolveMemberType(
+                  elements, supertypeElement, firstComponent, suffix, usePackage, true, cache);
+          if (fromSupertype != null) {
+            if (inherited == null) {
+              inherited = fromSupertype;
+            } else if (!inherited.equals(fromSupertype)) {
+              // The class inherits two different member types with the same simple name.  Which
+              // one `name` refers to (if either is accessible) cannot be determined here.
+              return null;
+            }
           }
+        }
+        if (inherited != null) {
+          return inherited;
         }
       }
     }
 
-    CompilationUnit cu = type.findCompilationUnit().orElse(null);
     if (cu == null) {
       // The name might be fully-qualified.
       return getTypeElement(elements, name, cache);
@@ -254,7 +274,9 @@ public final class JavaParserUtil {
               importedName.substring(0, importedName.length() - firstComponent.length() - 1);
           TypeElement containerElement = getTypeElement(elements, containerName, cache);
           if (containerElement != null) {
-            result = resolveMemberType(elements, containerElement, firstComponent, suffix, cache);
+            result =
+                resolveMemberType(
+                    elements, containerElement, firstComponent, suffix, usePackage, false, cache);
             if (result != null) {
               return result;
             }
@@ -265,10 +287,10 @@ public final class JavaParserUtil {
 
     // The type might be in the same package, in a package or type that is imported on demand, or
     // in `java.lang`.  A type in the same package shadows the others, so it is looked up first.  A
-    // name in the unnamed package has no prefix.
+    // name in the unnamed package has no prefix.  An import on demand, whether static or not,
+    // imports the member types that the named type inherits as well as those it declares.
     List<String> containerPrefixes = new ArrayList<>();
-    containerPrefixes.add(
-        cu.getPackageDeclaration().map(pkg -> pkg.getNameAsString() + ".").orElse(""));
+    containerPrefixes.add(usePackage.isEmpty() ? "" : usePackage + ".");
     for (ImportDeclaration importDecl : cu.getImports()) {
       if (importDecl.isAsterisk()) {
         containerPrefixes.add(importDecl.getNameAsString() + ".");
@@ -276,23 +298,27 @@ public final class JavaParserUtil {
     }
     containerPrefixes.add("java.lang.");
     for (String containerPrefix : containerPrefixes) {
-      TypeElement result = getTypeElement(elements, containerPrefix + name, cache);
-      if (result != null) {
-        return result;
-      }
-    }
-
-    // An import on demand, whether static or not, also imports the member types that the named
-    // type inherits.
-    for (ImportDeclaration importDecl : cu.getImports()) {
-      if (importDecl.isAsterisk()) {
-        TypeElement importedElement = getTypeElement(elements, importDecl.getNameAsString(), cache);
-        if (importedElement != null) {
-          TypeElement result =
-              resolveMemberType(elements, importedElement, firstComponent, suffix, cache);
-          if (result != null) {
-            return result;
-          }
+      // If the prefix names a type rather than a package, then the import on demand imports only
+      // the member types that the type declares or inherits *and* that are accessible at the use
+      // site, so the member type is looked up rather than merely its qualified name.
+      TypeElement containerElement =
+          containerPrefix.isEmpty()
+              ? null
+              : getTypeElement(
+                  elements, containerPrefix.substring(0, containerPrefix.length() - 1), cache);
+      if (containerElement != null) {
+        TypeElement result =
+            resolveMemberType(
+                elements, containerElement, firstComponent, suffix, usePackage, false, cache);
+        if (result != null) {
+          return result;
+        }
+        // This type imports no accessible member type with this name, but another import on demand
+        // might, so the search continues.
+      } else {
+        TypeElement result = getTypeElement(elements, containerPrefix + name, cache);
+        if (result != null) {
+          return result;
         }
       }
     }
@@ -405,14 +431,15 @@ public final class JavaParserUtil {
   }
 
   /**
-   * Returns the supertypes that the given type declaration names: its {@code extends} clause and
-   * its {@code implements} clause. The result does not include an implicit supertype such as {@code
-   * java.lang.Object} or {@code java.lang.Enum}. Of those, only {@code java.lang.Enum} declares a
-   * member type, so a caller that searches the result for an inherited member type must search
-   * {@code java.lang.Enum} itself when {@code typeDecl} is an enum.
+   * Returns the supertypes of the given type declaration from which it can inherit a member type:
+   * those that its {@code extends} clause and its {@code implements} clause name, plus the implicit
+   * superclass {@code java.lang.Enum} of an enum, which declares the member type {@code
+   * Enum.EnumDesc}. The result does not include the other implicit supertypes -- {@code
+   * java.lang.Object}, {@code java.lang.Record}, and {@code java.lang.annotation.Annotation} --
+   * none of which declares a member type.
    *
    * @param typeDecl a JavaParser type declaration
-   * @return the supertypes that {@code typeDecl} names
+   * @return the supertypes of {@code typeDecl} that might declare a member type
    */
   private static List<ClassOrInterfaceType> supertypes(TypeDeclaration<?> typeDecl) {
     if (typeDecl instanceof ClassOrInterfaceDeclaration classDecl) {
@@ -421,38 +448,45 @@ public final class JavaParserUtil {
       return result;
     }
     if (typeDecl instanceof EnumDeclaration enumDecl) {
-      return enumDecl.getImplementedTypes();
+      // Copy the list rather than side-effecting the AST by adding to it.
+      List<ClassOrInterfaceType> result = new ArrayList<>(enumDecl.getImplementedTypes());
+      result.add(javaLangEnum());
+      return result;
     }
     if (typeDecl instanceof RecordDeclaration recordDecl) {
-      return recordDecl.getImplementedTypes();
+      // Copy the list rather than side-effecting the AST by adding to it.
+      return new ArrayList<>(recordDecl.getImplementedTypes());
     }
     // An annotation declaration's only supertype is `java.lang.annotation.Annotation`.
     return Collections.emptyList();
   }
 
   /**
-   * Returns true if the given child of the given type declaration is part of its body, rather than
-   * part of its header: its annotations, its modifiers, its name, its type parameters and their
-   * bounds, or its supertype names. The member types of a type declaration are in scope in its
-   * body, but not in its header.
+   * Returns a new JavaParser type that names {@code java.lang.Enum}, the implicit superclass of
+   * every enum. The result is not part of any AST, so {@link #resolveTypeName} resolves its name as
+   * a fully-qualified name.
    *
-   * @param typeDecl a JavaParser type declaration
-   * @param child a child node of {@code typeDecl}
-   * @return true if {@code child} is part of the body of {@code typeDecl}
+   * @return a JavaParser type that names {@code java.lang.Enum}
    */
-  private static boolean isInBody(TypeDeclaration<?> typeDecl, Node child) {
-    if (containsSame(typeDecl.getMembers(), child)) {
-      return true;
-    }
-    if (typeDecl instanceof EnumDeclaration enumDecl) {
-      // An enum's constants are part of its body, but are not among its members.
-      return containsSame(enumDecl.getEntries(), child);
-    }
-    if (typeDecl instanceof RecordDeclaration recordDecl) {
-      // A record's components are part of its header, but its member types are in scope in them.
-      return containsSame(recordDecl.getParameters(), child);
-    }
-    return false;
+  private static ClassOrInterfaceType javaLangEnum() {
+    return new ClassOrInterfaceType(
+        new ClassOrInterfaceType(new ClassOrInterfaceType(null, "java"), "lang"), "Enum");
+  }
+
+  /**
+   * Returns true if the member types of a type declaration are in scope in the given child of it:
+   * one of its body declarations, an enum's constant, or a record's component. They are not in
+   * scope in its other children: an annotation on the declaration, a type parameter, a supertype
+   * name, or a permitted subtype name.
+   *
+   * @param child a child of a JavaParser type declaration
+   * @return true if the type declaration's member types are in scope in {@code child}
+   */
+  private static boolean inScopeOfMemberTypes(Node child) {
+    // A member is a body declaration, and so is an enum constant (whose arguments and class body
+    // are both in the scope of the member types).  A record's component is a `Parameter`; a type
+    // declaration has no other child of that type.
+    return child instanceof BodyDeclaration<?> || child instanceof Parameter;
   }
 
   /**
@@ -478,47 +512,169 @@ public final class JavaParserUtil {
    * Returns the element for the member type named {@code firstComponent + suffix} that {@code
    * typeElement} declares or inherits, or null if there is no such member type.
    *
-   * <p>{@code typeElement} and its supertypes are searched in breadth-first order, so a member type
-   * that is declared in a nearer supertype hides one that is declared in a farther supertype.
+   * <p>{@code typeElement} and its supertypes are searched in breadth-first order. If two
+   * supertypes that are equally near declare different member types with this name, then neither
+   * hides the other, the name is ambiguous, and this method returns null. Java considers the name
+   * ambiguous even if the two supertypes are at different distances, because neither declaration
+   * hides the other (see below); this method returns the nearer declaration, which affects no valid
+   * program, because a use of an ambiguous name does not compile.
+   *
+   * <p>A member type declaration hides every declaration of the same name in a supertype of the
+   * type that declares it, even if the declaration is not inherited or is not accessible. Such a
+   * declaration therefore ends the search through the type that contains it: the supertypes of that
+   * type are not searched, and if the declaration is not inherited or is not accessible, then that
+   * type contributes no member type at all.
+   *
+   * <p>A private member type is not inherited. A package-private member type is inherited only by a
+   * subclass in the package that declares it, and it is accessible only within that package; this
+   * method therefore uses one only if every type from {@code typeElement} to the type that declares
+   * it is in package {@code usePackage}. A protected member type is inherited even from a different
+   * package, but outside the package that declares it, it is accessible only within the body of a
+   * subclass of the type that declares it; this method therefore uses one that is declared in
+   * another package only if {@code inSubclassBody} is true.
    *
    * @param elements used for looking up names
    * @param typeElement the type whose member types to search
    * @param firstComponent the simple name of a member type of {@code typeElement}
    * @param suffix the rest of the type name, which names a type nested within {@code
    *     firstComponent}; it is empty or starts with "."
+   * @param usePackage the name of the package that contains the use of the type name, or "" for the
+   *     unnamed package
+   * @param inSubclassBody true if the use of the type name is within the body of {@code
+   *     typeElement} or of a subclass of it, as it is for an ordinary lookup in the scope of a
+   *     class, but not for the lookup that an import performs
    * @param cache maps a name to the type it names, or to null if it names no type; this method both
    *     reads and writes it
-   * @return the element for the member type, or null if it cannot be determined
+   * @return the element for the member type, or null if there is none or it cannot be determined
    */
   private static @Nullable TypeElement resolveMemberType(
       Elements elements,
       TypeElement typeElement,
       String firstComponent,
       String suffix,
+      String usePackage,
+      boolean inSubclassBody,
       Map<String, @Nullable TypeElement> cache) {
     Set<TypeElement> visited = new HashSet<>();
     visited.add(typeElement);
-    Deque<TypeElement> worklist = new ArrayDeque<>();
-    worklist.add(typeElement);
-    while (!worklist.isEmpty()) {
-      TypeElement current = worklist.remove();
-      for (TypeElement member : ElementFilter.typesIn(current.getEnclosedElements())) {
-        // A private member type is not inherited.
-        if (member.getSimpleName().contentEquals(firstComponent)
-            && !member.getModifiers().contains(Modifier.PRIVATE)) {
-          if (suffix.isEmpty()) {
-            return member;
+    // The types that are the same distance from `typeElement`:  first `typeElement` itself, then
+    // its direct supertypes, and so forth.  Each one maps to true if it, and every type between it
+    // and `typeElement`, is in package `usePackage` -- which is what makes a package-private member
+    // type that it declares both inherited by `typeElement` and accessible at the use site.
+    Map<TypeElement, Boolean> currentTypes = new LinkedHashMap<>();
+    currentTypes.put(typeElement, isInPackage(elements, typeElement, usePackage));
+    while (!currentTypes.isEmpty()) {
+      // Every type at the current distance is searched, rather than returning the first member
+      // type that is found, because a member type that is declared in one of them does not hide
+      // one that is declared in another.
+      TypeElement found = null;
+      Map<TypeElement, Boolean> nextTypes = new LinkedHashMap<>();
+      for (Map.Entry<TypeElement, Boolean> entry : currentTypes.entrySet()) {
+        TypeElement current = entry.getKey();
+        boolean samePackagePath = entry.getValue();
+        TypeElement member = declaredMemberType(current, firstComponent);
+        if (member != null) {
+          // This declaration hides every declaration of the same name in a supertype of `current`,
+          // so the supertypes of `current` are not searched.
+          boolean protectedIsAccessible =
+              inSubclassBody || isInPackage(elements, current, usePackage);
+          if (isInheritedAndAccessible(member, samePackagePath, protectedIsAccessible)) {
+            if (found == null) {
+              found = member;
+            } else if (!found.equals(member)) {
+              // Two equally near supertypes declare different member types with this name, so the
+              // name is ambiguous.
+              return null;
+            }
           }
-          return getTypeElement(elements, member.getQualifiedName() + suffix, cache);
+          continue;
+        }
+        for (TypeElement supertype : ElementUtils.getDirectSuperTypeElements(current, elements)) {
+          if (!visited.contains(supertype)) {
+            // A supertype that more than one path reaches at this distance is searched once.  A
+            // package-private member type that it declares is inherited if any of those paths
+            // stays within package `usePackage`.
+            nextTypes.merge(
+                supertype,
+                samePackagePath && isInPackage(elements, supertype, usePackage),
+                (b1, b2) -> b1 || b2);
+          }
         }
       }
-      for (TypeElement supertype : ElementUtils.getDirectSuperTypeElements(current, elements)) {
-        if (visited.add(supertype)) {
-          worklist.add(supertype);
+      if (found != null) {
+        if (suffix.isEmpty()) {
+          return found;
         }
+        return getTypeElement(elements, found.getQualifiedName() + suffix, cache);
+      }
+      visited.addAll(nextTypes.keySet());
+      currentTypes = nextTypes;
+    }
+    return null;
+  }
+
+  /**
+   * Returns the member type that {@code typeElement} declares with the given simple name, or null
+   * if it declares none. A type declares at most one member type with a given simple name.
+   *
+   * @param typeElement a type
+   * @param name a simple name
+   * @return the member type that {@code typeElement} declares with the given simple name, or null
+   *     if it declares none
+   */
+  private static @Nullable TypeElement declaredMemberType(TypeElement typeElement, String name) {
+    for (TypeElement member : ElementFilter.typesIn(typeElement.getEnclosedElements())) {
+      if (member.getSimpleName().contentEquals(name)) {
+        return member;
       }
     }
     return null;
+  }
+
+  /**
+   * Returns true if the given type is in the given package.
+   *
+   * @param elements used for looking up names
+   * @param typeElement a type
+   * @param packageName the name of a package, or "" for the unnamed package
+   * @return true if {@code typeElement} is in the package named {@code packageName}
+   */
+  private static boolean isInPackage(
+      Elements elements, TypeElement typeElement, String packageName) {
+    return elements.getPackageOf(typeElement).getQualifiedName().contentEquals(packageName);
+  }
+
+  /**
+   * Returns true if the given member type is inherited by the subtypes of the type that declares
+   * it, and is accessible at the use site.
+   *
+   * @param member a member type
+   * @param samePackagePath true if the type that declares {@code member}, and every type between it
+   *     and the type whose member types are being searched, is in the package that contains the use
+   *     of the type name
+   * @param protectedIsAccessible true if a protected member of the type that declares {@code
+   *     member} is accessible at the use site
+   * @return true if {@code member} is inherited and is accessible at the use site
+   */
+  private static boolean isInheritedAndAccessible(
+      TypeElement member, boolean samePackagePath, boolean protectedIsAccessible) {
+    Set<Modifier> modifiers = member.getModifiers();
+    if (modifiers.contains(Modifier.PRIVATE)) {
+      // A private member type is not inherited.
+      return false;
+    }
+    if (modifiers.contains(Modifier.PUBLIC)) {
+      return true;
+    }
+    if (modifiers.contains(Modifier.PROTECTED)) {
+      // A protected member type is inherited even by a subclass in a different package, but
+      // outside the package that declares it, it is accessible only within the body of such a
+      // subclass.
+      return protectedIsAccessible;
+    }
+    // A package-private member type is inherited only by a subclass in the package that declares
+    // it, and it is accessible only within that package.
+    return samePackagePath;
   }
 
   /**
@@ -599,23 +755,6 @@ public final class JavaParserUtil {
       case LONG -> TypeKind.LONG;
       case SHORT -> TypeKind.SHORT;
     };
-  }
-
-  /**
-   * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined. It
-   * cannot be determined for an intersection type, a union type, {@code var}, a wildcard, a type
-   * parameter declaration, or a type that is not on the classpath.
-   *
-   * <p>A client that converts many types should call {@link #typeToTypeMirror(Elements, Types,
-   * Type, Map)}, which memoizes the name lookups.
-   *
-   * @param elements used for looking up names
-   * @param types used for creating types
-   * @param type a JavaParser type
-   * @return the TypeMirror for {@code type}, or null if it cannot be determined
-   */
-  public static @Nullable TypeMirror typeToTypeMirror(Elements elements, Types types, Type type) {
-    return typeToTypeMirror(elements, types, type, new HashMap<>());
   }
 
   /**
