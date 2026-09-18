@@ -7,23 +7,12 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
-import org.checkerframework.dataflow.qual.Pure;
 
 public class PurityFunctionalArgumentJdk {
 
   int count = 0;
-
-  /**
-   * Collections.min is @Pure, so a comparator passed to it must be @Pure, not merely pure of side
-   * effects.
-   */
-  @FunctionalInterface
-  interface PureComparator<T> extends Comparator<T> {
-    @Override
-    @Pure
-    int compare(T a, T b);
-  }
 
   // Optional.map is @SideEffectFree:  "the mapper must not have side effects".
 
@@ -34,26 +23,29 @@ public class PurityFunctionalArgumentJdk {
   }
 
   // Collections.min is @Pure and List.sort is @SideEffectsOnly("this"), so each requires a
-  // side-effect-free comparator.  Comparator.compare is not annotated, so a value of that type
-  // does not have one.
+  // side-effect-free comparator.  Comparator.compare is @Pure, so a value of that type has one.
 
   void comparatorArguments(Collection<String> c, List<String> l, Comparator<String> comparator) {
-    // :: error: [purity.functional.argument]
     java.util.Collections.min(c, comparator);
-    // :: error: [purity.functional.argument]
     l.sort(comparator);
   }
 
-  /** Declaring the purity in the comparator's own type is what makes such a value passable. */
-  void pureComparatorArguments(Collection<String> c, List<String> l, PureComparator<String> pure) {
-    java.util.Collections.min(c, pure);
-    l.sort(pure);
+  /**
+   * A value whose functional method promises no purity cannot be passed: Function.apply is not
+   * annotated.
+   */
+  void unannotatedFunctionalValue(Optional<String> o, Function<String, Integer> f) {
+    // :: error: [purity.functional.argument]
+    o.map(f);
   }
 
-  /** A comparator written at the call site is checked directly, and this one is pure. */
+  /**
+   * A comparator written at the call site is checked directly, against the @Pure on
+   * Comparator.compare.
+   */
   void comparatorWrittenHere(List<String> l) {
     l.sort((a, b) -> a.length() - b.length());
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.not.deterministic.not.sideeffectfree.assign.field]
     l.sort((a, b) -> count++);
   }
 
