@@ -227,9 +227,11 @@ public final class JavaParserUtil {
             result =
                 resolveMemberType(
                     elements,
-                    new SearchedType(enclosingElement, true, true),
+                    new SearchedType(enclosingElement, true, true, true),
                     firstComponent,
                     suffix,
+                    packageName,
+                    true,
                     cache);
             if (result != null) {
               return result;
@@ -264,9 +266,14 @@ public final class JavaParserUtil {
                   // class is declared in the compilation unit that contains `type`, so its package
                   // is `packageName`.
                   new SearchedType(
-                      supertypeElement, false, inPackage(elements, supertypeElement, packageName)),
+                      supertypeElement,
+                      false,
+                      inPackage(elements, supertypeElement, packageName),
+                      true),
                   firstComponent,
                   suffix,
+                  packageName,
+                  true,
                   cache);
           if (fromSupertype != null) {
             if (inherited == null) {
@@ -315,16 +322,19 @@ public final class JavaParserUtil {
             // package-private member type is a member of `containerElement` only if every type
             // from `containerElement` to the type that declares it is in `containerElement`'s
             // package; such a member type is accessible at this use, and therefore imported, only
-            // if that package is also `packageName`.
+            // if that package is also `packageName`.  A protected member type that
+            // `containerElement` declares is accessible at this use only under the same condition,
+            // because an import declaration is not within the body of a subclass.
+            boolean containerInUsePackage = inPackage(elements, containerElement, packageName);
             result =
                 resolveMemberType(
                     elements,
                     new SearchedType(
-                        containerElement,
-                        false,
-                        inPackage(elements, containerElement, packageName)),
+                        containerElement, false, containerInUsePackage, containerInUsePackage),
                     firstComponent,
                     suffix,
+                    packageName,
+                    false,
                     cache);
             if (result != null) {
               return result;
@@ -370,14 +380,19 @@ public final class JavaParserUtil {
           // A package-private member type is a member of `importedElement` only if every type from
           // `importedElement` to the type that declares it is in `importedElement`'s package; such
           // a member type is accessible at this use, and therefore imported, only if that package
-          // is also `packageName`.
+          // is also `packageName`.  A protected member type that `importedElement` declares is
+          // accessible at this use only under the same condition, because an import declaration is
+          // not within the body of a subclass.
+          boolean importedInUsePackage = inPackage(elements, importedElement, packageName);
           TypeElement result =
               resolveMemberType(
                   elements,
                   new SearchedType(
-                      importedElement, false, inPackage(elements, importedElement, packageName)),
+                      importedElement, false, importedInUsePackage, importedInUsePackage),
                   firstComponent,
                   suffix,
+                  packageName,
+                  false,
                   cache);
           if (result != null) {
             return result;
@@ -615,10 +630,13 @@ public final class JavaParserUtil {
    * imported type. In those cases a member type is a member at the place where the name is being
    * resolved only if it is inherited.
    *
-   * <p>An import declaration imports only the member types that are accessible where it appears,
-   * and a package-private member type is accessible only in the package that declares it. For a
-   * name that an import declaration resolves, {@code packagePrivateIsMember} is therefore true only
-   * if the imported type is in the package that contains the import declaration.
+   * <p>An import declaration imports only the member types that are accessible where it appears. A
+   * package-private member type is accessible only in the package that declares it, and, outside
+   * the package that declares it, a protected member type is accessible only within the body of a
+   * subclass of the type that declares it -- which an import declaration is not within. For a name
+   * that an import declaration resolves, {@code packagePrivateIsMember} and {@code
+   * protectedIsMember} are therefore true only if {@code typeElement} is in the package that
+   * contains the import declaration.
    *
    * @param typeElement the type whose member types to search
    * @param privateIsMember true if a private member type of {@code typeElement} is a member at the
@@ -626,22 +644,29 @@ public final class JavaParserUtil {
    *     typeElement} itself, because a private member type is inherited by no type
    * @param packagePrivateIsMember true if a package-private member type of {@code typeElement} is a
    *     member at the place where the name is being resolved
+   * @param protectedIsMember true if a protected member type of {@code typeElement} is a member at
+   *     the place where the name is being resolved
    */
   private record SearchedType(
-      TypeElement typeElement, boolean privateIsMember, boolean packagePrivateIsMember) {}
+      TypeElement typeElement,
+      boolean privateIsMember,
+      boolean packagePrivateIsMember,
+      boolean protectedIsMember) {}
 
   /**
    * Returns the element for the member type named {@code firstComponent + suffix} that {@code
    * start}'s type declares or inherits, or null if there is no such member type.
    *
-   * <p>{@code start}'s type and its supertypes are searched in breadth-first order, so a member
-   * type that is declared in a nearer supertype hides one that is declared in a farther supertype.
-   * A declaration hides whatever its declaring type would otherwise inherit, even if the
-   * declaration is not itself inherited: a private member type is inherited by no type, and a
-   * package-private member type is inherited only within its own package.
+   * <p>{@code start}'s type and its supertypes are searched in breadth-first order. A declaration
+   * hides whatever its declaring type would otherwise inherit, even if the declaration is not
+   * itself inherited: a private member type is inherited by no type, and a package-private member
+   * type is inherited only within its own package.
    *
-   * <p>If two supertypes that are equally near declare different member types with this name, then
-   * neither hides the other, the name is ambiguous, and this method returns null.
+   * <p>If two supertypes declare different member types with this name, then neither hides the
+   * other and the name is ambiguous. If the two supertypes are equally near, this method returns
+   * null. Java considers the name ambiguous even if the two supertypes are at different distances,
+   * because distance creates no hiding relationship; this method returns the nearer declaration,
+   * which affects no valid program, because a use of an ambiguous name does not compile.
    *
    * @param elements used for looking up names
    * @param start the type whose member types to search, together with which of its member types are
@@ -649,6 +674,12 @@ public final class JavaParserUtil {
    * @param firstComponent the simple name of a member type of {@code start}'s type
    * @param suffix the rest of the type name, which names a type nested within {@code
    *     firstComponent}; it is empty or starts with "."
+   * @param usePackage the name of the package that contains the use of the type name, or "" for the
+   *     unnamed package
+   * @param inSubclassBody true if the use of the type name is within the body of a subclass of the
+   *     types that are searched, as it is for a name in the scope of a class but not for a name
+   *     that an import declaration resolves; a protected member type that a type in another package
+   *     declares is accessible only within such a body
    * @param cache maps a name to the type it names, or to null if it names no type; this method both
    *     reads and writes it
    * @return the element for the member type, or null if there is none or it cannot be determined
@@ -658,6 +689,8 @@ public final class JavaParserUtil {
       SearchedType start,
       String firstComponent,
       String suffix,
+      String usePackage,
+      boolean inSubclassBody,
       Map<String, @Nullable TypeElement> cache) {
     Set<TypeElement> visited = new HashSet<>();
     visited.add(start.typeElement());
@@ -702,7 +735,11 @@ public final class JavaParserUtil {
                     // `currentElement` inherits a package-private member type of `supertype` only
                     // if the two types are in the same package.
                     current.packagePrivateIsMember()
-                        && inSamePackage(elements, supertype, currentElement));
+                        && inSamePackage(elements, supertype, currentElement),
+                    // A protected member type of `supertype` is inherited even by a subclass in
+                    // another package, but outside the package that declares it, it is accessible
+                    // only within the body of such a subclass.
+                    inSubclassBody || inPackage(elements, supertype, usePackage));
             // A package-private member type of `supertype` is a member at the place where the
             // name is being resolved if any of the paths that reach `supertype` inherits it.
             nextTypes.merge(
@@ -725,12 +762,19 @@ public final class JavaParserUtil {
         int dot = suffix.indexOf('.', 1);
         // Every member type that `found` declares is a member of `found`, whatever its access
         // modifier is.
-        SearchedType nestedStart = new SearchedType(found, true, true);
+        SearchedType nestedStart = new SearchedType(found, true, true, true);
         if (dot == -1) {
-          return resolveMemberType(elements, nestedStart, suffix.substring(1), "", cache);
+          return resolveMemberType(
+              elements, nestedStart, suffix.substring(1), "", usePackage, inSubclassBody, cache);
         }
         return resolveMemberType(
-            elements, nestedStart, suffix.substring(1, dot), suffix.substring(dot), cache);
+            elements,
+            nestedStart,
+            suffix.substring(1, dot),
+            suffix.substring(dot),
+            usePackage,
+            inSubclassBody,
+            cache);
       }
       visited.addAll(nextTypes.keySet());
       currentTypes = nextTypes.values();
@@ -759,8 +803,8 @@ public final class JavaParserUtil {
   /**
    * Returns true if {@code member} is a member at the place where {@link #resolveMemberType} is
    * resolving a name -- that is, if every type between {@code searchedType}'s type and the type
-   * that declares {@code member} inherits it, and {@code searchedType}'s type either declares
-   * {@code member} or inherits it.
+   * that declares {@code member} inherits it, {@code searchedType}'s type either declares {@code
+   * member} or inherits it, and {@code member} is accessible there.
    *
    * @param member a member type that {@code searchedType}'s type declares
    * @param searchedType the type that is currently being searched
@@ -771,8 +815,11 @@ public final class JavaParserUtil {
     if (modifiers.contains(Modifier.PRIVATE)) {
       return searchedType.privateIsMember();
     }
-    if (modifiers.contains(Modifier.PUBLIC) || modifiers.contains(Modifier.PROTECTED)) {
+    if (modifiers.contains(Modifier.PUBLIC)) {
       return true;
+    }
+    if (modifiers.contains(Modifier.PROTECTED)) {
+      return searchedType.protectedIsMember();
     }
     return searchedType.packagePrivateIsMember();
   }
@@ -780,12 +827,11 @@ public final class JavaParserUtil {
   /**
    * Returns true if a use in package {@code usePackage} can access {@code type}: no type from
    * {@code type} to the top-level type that contains it is private, and every one of them that is
-   * package-private is in package {@code usePackage}.
+   * package-private or protected is in package {@code usePackage}.
    *
    * <p>This method is for a type that an import on demand might import. An import declaration is
-   * not within the body of a type, so a private member type is never accessible to one. A protected
-   * member type is not accessible to one either, but this method treats one as accessible, as
-   * {@link #isMember} does.
+   * not within the body of a type, so a private member type is never accessible to one, and a
+   * protected member type is accessible to one only within the package that declares it.
    *
    * @param elements used for looking up the package that contains a type
    * @param type a type
@@ -802,7 +848,6 @@ public final class JavaParserUtil {
         return false;
       }
       if (!modifiers.contains(Modifier.PUBLIC)
-          && !modifiers.contains(Modifier.PROTECTED)
           && !inPackage(elements, (TypeElement) element, usePackage)) {
         return false;
       }
