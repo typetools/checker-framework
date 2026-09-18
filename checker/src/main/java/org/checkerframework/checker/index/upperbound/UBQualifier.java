@@ -23,7 +23,6 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
 
 /**
@@ -894,7 +893,7 @@ public abstract class UBQualifier {
           || !containsSame(other.map.keySet(), lubMap.keySet())) {
         return;
       }
-      List<IPair<String, OffsetEquation>> remove = new ArrayList<>();
+      List<SequenceAndOffset> remove = new ArrayList<>();
       for (Map.Entry<String, Set<OffsetEquation>> entry : lubMap.entrySet()) {
         String sequence = entry.getKey();
         Set<OffsetEquation> lubOffsets = entry.getValue();
@@ -908,7 +907,7 @@ public abstract class UBQualifier {
             int thisInt = OffsetEquation.getIntOffsetEquation(thisOffsets).getInt();
             int otherInt = OffsetEquation.getIntOffsetEquation(otherOffsets).getInt();
             if (thisInt != otherInt) {
-              remove.add(IPair.of(sequence, lubEq));
+              remove.add(new SequenceAndOffset(sequence, lubEq));
             }
           } else if (thisOffsets.contains(lubEq) && otherOffsets.contains(lubEq)) {
             //  continue;
@@ -917,15 +916,23 @@ public abstract class UBQualifier {
           }
         }
       }
-      for (IPair<String, OffsetEquation> pair : remove) {
-        String sequence = pair.first;
+      for (SequenceAndOffset pair : remove) {
+        String sequence = pair.sequence();
         Set<OffsetEquation> offsets = lubMap.get(sequence);
-        offsets.remove(pair.second);
+        offsets.remove(pair.offset());
         if (offsets.isEmpty()) {
           lubMap.remove(sequence);
         }
       }
     }
+
+    /**
+     * A sequence and one of its offsets.
+     *
+     * @param sequence a sequence
+     * @param offset an offset for {@code sequence}
+     */
+    private record SequenceAndOffset(String sequence, OffsetEquation offset) {}
 
     @Override
     public UBQualifier glb(UBQualifier other) {

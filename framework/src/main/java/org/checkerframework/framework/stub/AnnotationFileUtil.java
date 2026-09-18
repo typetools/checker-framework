@@ -34,7 +34,6 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.IPair;
 
 /** Utility class for annotation files (stub files and ajava files). */
 public class AnnotationFileUtil {
@@ -237,19 +236,27 @@ public class AnnotationFileUtil {
   }
 
   /**
+   * A qualified name, split into the part before the last period and the part after it.
+   *
+   * @param typeName the part before the last period
+   * @param memberName the part after the last period; the name of a field or method of {@code
+   *     typeName}
+   */
+  public record QualifiedName(@FullyQualifiedName String typeName, String memberName) {}
+
+  /**
    * Split a name (which comes from an import statement) into the part before the last period and
    * the part after the last period.
    *
    * @param imported the name to split
-   * @return a pair of the type name and the field name
+   * @return the type name and the member name
    */
   @SuppressWarnings("signature") // string parsing
-  public static IPair<@FullyQualifiedName String, String> partitionQualifiedName(String imported) {
+  public static QualifiedName partitionQualifiedName(String imported) {
     int lastDot = imported.lastIndexOf('.');
     @FullyQualifiedName String typeName = imported.substring(0, lastDot);
-    String name = imported.substring(lastDot + 1);
-    IPair<String, String> typeParts = IPair.of(typeName, name);
-    return typeParts;
+    String memberName = imported.substring(lastDot + 1);
+    return new QualifiedName(typeName, memberName);
   }
 
   private static final class ElementPrinter extends SimpleVoidVisitor<Void> {
