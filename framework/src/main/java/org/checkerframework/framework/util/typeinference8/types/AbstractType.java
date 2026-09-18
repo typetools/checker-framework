@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -763,6 +762,6 @@ public abstract class AbstractType {
    * @return a hash code for the fields that {@link #sameInferenceProblem} compares
    */
   protected final int inferenceProblemHashCode() {
-    return Objects.hash(ignoreAnnotations, context, typeFactory);
+    return context.inferenceProblemHashCode(ignoreAnnotations);
   }
 }
