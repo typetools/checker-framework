@@ -411,14 +411,14 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   }
 
   /**
-   * A {@link ParameterizedTypeTree} and its type.
+   * A type and its {@link ParameterizedTypeTree}.
    *
-   * @param typeTree a parameterized type tree, or null if there is none
    * @param type the type of {@code typeTree}, or the type that was searched if {@code typeTree} is
    *     null
+   * @param typeTree a parameterized type tree, or null if there is none
    */
   private record TypeAndTree(
-      @Nullable ParameterizedTypeTree typeTree, AnnotatedDeclaredType type) {}
+      AnnotatedDeclaredType type, @Nullable ParameterizedTypeTree typeTree) {}
 
   /**
    * If {@code tree} has a {@link ParameterizedTypeTree}, then the tree and its type is returned.
@@ -490,7 +490,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         // No need to do anything further.
     }
 
-    return new TypeAndTree(typeargtree, type);
+    return new TypeAndTree(type, typeargtree);
   }
 
   @Override
