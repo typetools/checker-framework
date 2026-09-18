@@ -29,10 +29,8 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -270,10 +268,22 @@ public final class JavaParserUtil {
           // A member type of an unnameable class has no name that `Elements` can look up.
           return ResolvedName.NONE;
         }
+        TypeElement enclosingElement = getTypeElement(elements, enclosingName, cache);
+        if (enclosingElement == null) {
+          return ResolvedName.NONE;
+        }
         // If `name` has a suffix, then the suffix names a type that is nested within the member
         // type.  If there is no such type, then `name` names nothing, because the member type
         // shadows every other type whose name starts with `firstComponent`.
-        return ResolvedName.of(getTypeElement(elements, enclosingName + "." + name, cache));
+        return ResolvedName.of(
+            resolveMemberType(
+                elements,
+                // Every member type that `enclosingElement` declares is a member of it, whatever
+                // its access modifier is.
+                new SearchedType(enclosingElement, true, true),
+                firstComponent,
+                suffix,
+                cache));
       }
 
       if (ancestor instanceof NodeWithTypeParameters<?> genericDeclaration) {
@@ -547,7 +557,6 @@ public final class JavaParserUtil {
    * @return true if {@code node} declares a local type named {@code name} that is in scope at
    *     {@code child}
    */
-  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
   private static boolean declaresLocalType(Node node, String name, Node child) {
     for (Node statement : node.getChildNodes()) {
       if (statement instanceof Statement) {
@@ -725,6 +734,9 @@ public final class JavaParserUtil {
    * declaration is not itself inherited: a private member type is inherited by no type, and a
    * package-private member type is inherited only within its own package.
    *
+   * <p>If two supertypes that are equally near declare different member types with this name, then
+   * neither hides the other, the name is ambiguous, and this method returns null.
+   *
    * @param elements used for looking up names
    * @param start the type whose member types to search, together with which of its member types are
    *     members at the place where the name is being resolved
@@ -733,7 +745,7 @@ public final class JavaParserUtil {
    *     firstComponent}; it is empty or starts with "."
    * @param cache maps a name to the type it names, or to null if it names no type; this method both
    *     reads and writes it
-   * @return the element for the member type, or null if it cannot be determined
+   * @return the element for the member type, or null if there is none or it cannot be determined
    */
   private static @Nullable TypeElement resolveMemberType(
       Elements elements,
@@ -743,62 +755,78 @@ public final class JavaParserUtil {
       Map<String, @Nullable TypeElement> cache) {
     Set<TypeElement> visited = new HashSet<>();
     visited.add(start.typeElement());
-    Deque<SearchedType> worklist = new ArrayDeque<>();
-    worklist.add(start);
-    while (!worklist.isEmpty()) {
-      SearchedType current = worklist.remove();
-      TypeElement currentElement = current.typeElement();
-      // A type declares at most one member type with a given simple name.
-      TypeElement declared = null;
-      for (TypeElement member : ElementFilter.typesIn(currentElement.getEnclosedElements())) {
-        if (member.getSimpleName().contentEquals(firstComponent)) {
-          declared = member;
-          break;
+    // The types that are the same distance from `start`'s type:  first that type itself, then its
+    // direct supertypes, and so forth.
+    List<SearchedType> currentTypes = Collections.singletonList(start);
+    while (!currentTypes.isEmpty()) {
+      // Every type at the current distance is searched, rather than returning the first member
+      // type that is found, because a member type that is declared in one of them does not hide
+      // one that is declared in another.
+      TypeElement found = null;
+      List<SearchedType> nextTypes = new ArrayList<>();
+      for (SearchedType current : currentTypes) {
+        TypeElement currentElement = current.typeElement();
+        // A type declares at most one member type with a given simple name.
+        TypeElement declared = null;
+        for (TypeElement member : ElementFilter.typesIn(currentElement.getEnclosedElements())) {
+          if (member.getSimpleName().contentEquals(firstComponent)) {
+            declared = member;
+            break;
+          }
+        }
+        if (declared != null) {
+          if (isMember(declared, current)) {
+            if (found == null) {
+              found = declared;
+            } else if (!found.equals(declared)) {
+              // Two equally near supertypes declare different member types with this name, so the
+              // name is ambiguous.
+              return null;
+            }
+          }
+          // `declared` hides every member type of the same name that `currentElement` would
+          // otherwise inherit -- even if `declared` is not a member of the type at which the
+          // search started -- so do not search the supertypes of `currentElement`.
+          continue;
+        }
+        for (TypeElement supertype :
+            ElementUtils.getDirectSuperTypeElements(currentElement, elements)) {
+          if (visited.add(supertype)) {
+            nextTypes.add(
+                new SearchedType(
+                    supertype,
+                    // A private member type is inherited by no type.
+                    false,
+                    // `currentElement` inherits a package-private member type of `supertype` only
+                    // if the two types are in the same package.
+                    current.packagePrivateIsMember()
+                        && inSamePackage(elements, supertype, currentElement)));
+          }
         }
       }
-      if (declared != null) {
-        if (isMember(declared, current)) {
-          if (suffix.isEmpty()) {
-            return declared;
-          }
-          TypeElement nested =
-              getTypeElement(elements, declared.getQualifiedName() + suffix, cache);
-          if (nested != null) {
-            return nested;
-          }
-          // `declared.getQualifiedName() + suffix` is not a canonical name if any component of
-          // `suffix` names an inherited member type, and `getTypeElement` finds a type only by its
-          // canonical name.  Resolve the components of `suffix` one at a time instead, so that each
-          // one is searched for in the supertypes of the type that contains it.
-          int dot = suffix.indexOf('.', 1);
-          // Every member type that `declared` declares is a member of `declared`, whatever its
-          // access modifier is.
-          SearchedType nestedStart = new SearchedType(declared, true, true);
-          if (dot == -1) {
-            return resolveMemberType(elements, nestedStart, suffix.substring(1), "", cache);
-          }
-          return resolveMemberType(
-              elements, nestedStart, suffix.substring(1, dot), suffix.substring(dot), cache);
+      if (found != null) {
+        if (suffix.isEmpty()) {
+          return found;
         }
-        // `declared` is not a member of the type at which the search started, and it hides every
-        // member type of the same name that `currentElement` would otherwise inherit, so do not
-        // search the supertypes of `currentElement`.
-        continue;
-      }
-      for (TypeElement supertype :
-          ElementUtils.getDirectSuperTypeElements(currentElement, elements)) {
-        if (visited.add(supertype)) {
-          worklist.add(
-              new SearchedType(
-                  supertype,
-                  // A private member type is inherited by no type.
-                  false,
-                  // `currentElement` inherits a package-private member type of `supertype` only if
-                  // the two types are in the same package.
-                  current.packagePrivateIsMember()
-                      && inSamePackage(elements, supertype, currentElement)));
+        TypeElement nested = getTypeElement(elements, found.getQualifiedName() + suffix, cache);
+        if (nested != null) {
+          return nested;
         }
+        // `found.getQualifiedName() + suffix` is not a canonical name if any component of `suffix`
+        // names an inherited member type, and `getTypeElement` finds a type only by its canonical
+        // name.  Resolve the components of `suffix` one at a time instead, so that each one is
+        // searched for in the supertypes of the type that contains it.
+        int dot = suffix.indexOf('.', 1);
+        // Every member type that `found` declares is a member of `found`, whatever its access
+        // modifier is.
+        SearchedType nestedStart = new SearchedType(found, true, true);
+        if (dot == -1) {
+          return resolveMemberType(elements, nestedStart, suffix.substring(1), "", cache);
+        }
+        return resolveMemberType(
+            elements, nestedStart, suffix.substring(1, dot), suffix.substring(dot), cache);
       }
+      currentTypes = nextTypes;
     }
     return null;
   }
