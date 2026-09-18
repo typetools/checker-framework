@@ -1133,7 +1133,7 @@ public final class Main {
         } else if (separateLine2 && !separateLine1) {
           return -1;
         } else {
-          return -i1.getText().compareTo(i2.getText());
+          return i2.getText().compareTo(i1.getText());
         }
       };
 
