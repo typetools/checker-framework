@@ -1,7 +1,7 @@
 // Under -AassumeSideEffectFree, an argument to a functional-interface parameter is checked with
 // the same assumption whatever its form:  a lambda body, a method reference, or the functional
-// method of the argument's type.  Like PurityChecker, the assumption applies only to a method
-// that has a purity annotation.
+// method of the argument's type.  The assumption applies to every method, including one with no
+// purity annotation, which is the case the option exists for:  an unannotated library.
 
 import java.util.function.Function;
 import org.checkerframework.dataflow.qual.Deterministic;
@@ -46,12 +46,18 @@ public class AssumeSideEffectFreeArguments {
     callee(deterministicVariable, s);
   }
 
-  /** A method with no purity annotation gets no assumption, in either form. */
+  /** A method with no purity annotation gets the assumption too. */
   void unannotatedMethods(String s) {
+    // TODO: A lambda's body is checked by PurityChecker, which still applies an assumption only
+    // to a method that has a purity annotation.  Remove this expectation once it does not.
     // :: error: [purity.not.sideeffectfree.call]
     callee(t -> unannotatedLength(t), s);
-    // :: error: [purity.functional.argument]
     callee(this::unannotatedLength, s);
+  }
+
+  /** A value of an unannotated functional-interface type gets the assumption too. */
+  void unannotatedVariable(Function<String, Integer> f, String s) {
+    callee(f, s);
   }
 
   /** The assumption is that a called method has no side effect, not that this code has none. */

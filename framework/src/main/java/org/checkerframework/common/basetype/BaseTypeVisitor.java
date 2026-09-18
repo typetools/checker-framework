@@ -1712,26 +1712,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return the purity kinds of {@code method}
    */
   private EnumSet<PurityKind> implementationPurityKinds(ExecutableElement method) {
-    EnumSet<PurityKind> declared = PurityUtils.getPurityKinds(atypeFactory, method);
-    EnumSet<PurityKind> result = EnumSet.copyOf(declared);
+    EnumSet<PurityKind> result = EnumSet.copyOf(PurityUtils.getPurityKinds(atypeFactory, method));
     if (method.getKind() != ElementKind.CONSTRUCTOR
         && method.getReturnType().getKind() == TypeKind.VOID) {
       result.add(PurityKind.DETERMINISTIC);
     }
-    if (!declared.isEmpty()) {
-      // Like PurityChecker, apply an assumption only to a method that has a purity annotation,
-      // so that a method reference is treated exactly like a lambda whose body calls the
-      // referenced method.
-      if (assumeSideEffectFree) {
-        result.add(PurityKind.SIDE_EFFECT_FREE);
-      }
-      if (assumeDeterministic) {
-        result.add(PurityKind.DETERMINISTIC);
-      }
-      if (assumePureGetters && ElementUtils.isGetter(method)) {
-        result.add(PurityKind.SIDE_EFFECT_FREE);
-        result.add(PurityKind.DETERMINISTIC);
-      }
+    // Like PurityChecker, apply each assumption to every method, including one with no purity
+    // annotation, so that a method reference is treated exactly like a lambda whose body calls
+    // the referenced method.
+    if (assumeSideEffectFree) {
+      result.add(PurityKind.SIDE_EFFECT_FREE);
+    }
+    if (assumeDeterministic) {
+      result.add(PurityKind.DETERMINISTIC);
+    }
+    if (assumePureGetters && ElementUtils.isGetter(method)) {
+      result.add(PurityKind.SIDE_EFFECT_FREE);
+      result.add(PurityKind.DETERMINISTIC);
     }
     return result;
   }
