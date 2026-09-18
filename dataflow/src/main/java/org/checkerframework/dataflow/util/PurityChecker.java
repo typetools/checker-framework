@@ -320,8 +320,6 @@ public final class PurityChecker {
     public Void visitMethodInvocation(MethodInvocationTree tree, Void ignore) {
       ExecutableElement elt = TreeUtils.elementFromUse(tree);
       EnumSet<PurityKind> eltPurityKinds = PurityUtils.getPurityKinds(annoProvider, elt);
-      // Each assumption applies to every called method, including one with no purity
-      // annotation:  that is what makes the assumptions useful for an unannotated library.
       boolean pureGetter = assumePureGetters && ElementUtils.isGetter(elt);
       boolean seFree =
           assumeSideEffectFree
