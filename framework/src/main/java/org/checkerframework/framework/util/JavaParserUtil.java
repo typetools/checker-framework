@@ -508,10 +508,12 @@ public final class JavaParserUtil {
    * Returns the element for the member type named {@code firstComponent + suffix} that {@code
    * typeElement} declares or inherits, or null if there is no such member type.
    *
-   * <p>{@code typeElement} and its supertypes are searched in breadth-first order, so a member type
-   * that is declared in a nearer supertype hides one that is declared in a farther supertype. If
-   * two supertypes that are equally near declare different member types with this name, then
-   * neither hides the other, the name is ambiguous, and this method returns null.
+   * <p>{@code typeElement} and its supertypes are searched in breadth-first order. If two
+   * supertypes that are equally near declare different member types with this name, then neither
+   * hides the other, the name is ambiguous, and this method returns null. Java considers the name
+   * ambiguous even if the two supertypes are at different distances, because neither declaration
+   * hides the other (see below); this method returns the nearer declaration, which affects no valid
+   * program, because a use of an ambiguous name does not compile.
    *
    * <p>A member type declaration hides every declaration of the same name in a supertype of the
    * type that declares it, even if the declaration is not inherited or is not accessible. Such a
