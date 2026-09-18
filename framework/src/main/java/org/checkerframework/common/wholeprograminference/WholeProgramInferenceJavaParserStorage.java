@@ -1306,9 +1306,10 @@ public class WholeProgramInferenceJavaParserStorage
    * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined.
    *
    * <p>This differs from {@link JavaParserUtil#typeToTypeMirror} in that a use of a type variable,
-   * which has no TypeMirror here, yields the type variable's upper bound. That is sound for
-   * deciding relevance, because {@code GenericAnnotatedTypeFactory.isRelevant} treats a type
-   * variable as relevant exactly when its upper bound is.
+   * which has no TypeMirror here, yields the type variable's effective upper bound as computed by
+   * {@link #typeVariableUpperBound}. That is sound for deciding relevance, because {@code
+   * GenericAnnotatedTypeFactory.isRelevant} erases the type and treats a type variable as relevant
+   * exactly when its upper bound is.
    *
    * @param type a JavaParser type
    * @return the TypeMirror for {@code type}, or null if it cannot be determined
@@ -1338,9 +1339,12 @@ public class WholeProgramInferenceJavaParserStorage
    * If the given JavaParser type names a type variable, returns the TypeMirror for the type
    * variable's upper bound. Otherwise, or if the upper bound cannot be determined, returns null.
    *
+   * <p>When the upper bound is an intersection type, which {@code Types} cannot create, this
+   * returns the intersection type's erasure -- that is, its leftmost bound.
+   *
    * @param type a JavaParser class or interface type
-   * @return the TypeMirror for the upper bound of the type variable that {@code type} names, or
-   *     null
+   * @return the TypeMirror for the upper bound of the type variable that {@code type} names, erased
+   *     if that bound is an intersection type, or null
    */
   private @Nullable TypeMirror typeVariableUpperBound(ClassOrInterfaceType type) {
     if (type.getNameWithScope().indexOf('.') != -1) {
@@ -1358,10 +1362,9 @@ public class WholeProgramInferenceJavaParserStorage
       TypeElement objectElt = elements.getTypeElement("java.lang.Object");
       return objectElt == null ? null : objectElt.asType();
     }
-    if (bounds.size() > 1) {
-      // The upper bound is an intersection type, which `Types` cannot create.  Be conservative.
-      return null;
-    }
+    // If there are multiple bounds, the upper bound is an intersection type, which `Types` cannot
+    // create.  Use its leftmost bound, which is its erasure; that is sufficient because the client,
+    // `GenericAnnotatedTypeFactory.isRelevant`, erases the type before testing relevance.
     // The bound may itself be a type variable, as in `<T extends U, U extends CharSequence>`; the
     // recursion terminates because Java forbids a cycle among type variable bounds.
     return typeToTypeMirror(bounds.get(0));
