@@ -287,7 +287,8 @@ public final class JavaParserUtil {
 
     // The type might be in the same package, in a package or type that is imported on demand, or
     // in `java.lang`.  A type in the same package shadows the others, so it is looked up first.  A
-    // name in the unnamed package has no prefix.
+    // name in the unnamed package has no prefix.  An import on demand, whether static or not,
+    // imports the member types that the named type inherits as well as those it declares.
     List<String> containerPrefixes = new ArrayList<>();
     containerPrefixes.add(usePackage.isEmpty() ? "" : usePackage + ".");
     for (ImportDeclaration importDecl : cu.getImports()) {
@@ -297,24 +298,27 @@ public final class JavaParserUtil {
     }
     containerPrefixes.add("java.lang.");
     for (String containerPrefix : containerPrefixes) {
-      TypeElement result = getTypeElement(elements, containerPrefix + name, cache);
-      if (result != null) {
-        return result;
-      }
-    }
-
-    // An import on demand, whether static or not, also imports the member types that the named
-    // type inherits.
-    for (ImportDeclaration importDecl : cu.getImports()) {
-      if (importDecl.isAsterisk()) {
-        TypeElement importedElement = getTypeElement(elements, importDecl.getNameAsString(), cache);
-        if (importedElement != null) {
-          TypeElement result =
-              resolveMemberType(
-                  elements, importedElement, firstComponent, suffix, usePackage, false, cache);
-          if (result != null) {
-            return result;
-          }
+      // If the prefix names a type rather than a package, then the import on demand imports only
+      // the member types that the type declares or inherits *and* that are accessible at the use
+      // site, so the member type is looked up rather than merely its qualified name.
+      TypeElement containerElement =
+          containerPrefix.isEmpty()
+              ? null
+              : getTypeElement(
+                  elements, containerPrefix.substring(0, containerPrefix.length() - 1), cache);
+      if (containerElement != null) {
+        TypeElement result =
+            resolveMemberType(
+                elements, containerElement, firstComponent, suffix, usePackage, false, cache);
+        if (result != null) {
+          return result;
+        }
+        // This type imports no accessible member type with this name, but another import on demand
+        // might, so the search continues.
+      } else {
+        TypeElement result = getTypeElement(elements, containerPrefix + name, cache);
+        if (result != null) {
+          return result;
         }
       }
     }
