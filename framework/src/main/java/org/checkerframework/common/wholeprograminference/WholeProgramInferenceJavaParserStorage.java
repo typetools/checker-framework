@@ -1316,46 +1316,49 @@ public class WholeProgramInferenceJavaParserStorage
    */
   private @Nullable TypeMirror typeToTypeMirror(Type type) {
     Types types = atypeFactory.getProcessingEnv().getTypeUtils();
-    TypeMirror result = JavaParserUtil.typeToTypeMirror(elements, types, type, typeElementCache);
-    if (result != null) {
-      return result;
+    // An array type's element type is what might name a type variable, and a non-array type is
+    // its own element type.
+    Type elementType = type.getElementType();
+    TypeMirror result;
+    if (elementType instanceof ClassOrInterfaceType classType) {
+      // Resolving the name once yields both what it might name:  a type or a type variable.
+      // Looking each up separately would walk the enclosing scopes twice.
+      JavaParserUtil.ResolvedName resolved =
+          JavaParserUtil.resolveName(elements, classType, typeElementCache);
+      TypeElement typeElt = resolved.typeElement();
+      TypeParameter typeParameter = resolved.typeParameter();
+      if (typeElt != null) {
+        result = typeElt.asType();
+      } else if (typeParameter != null) {
+        // A type variable has no TypeMirror here, so use its upper bound.
+        result = typeVariableUpperBound(typeParameter);
+      } else {
+        return null;
+      }
+    } else {
+      result = JavaParserUtil.typeToTypeMirror(elements, types, elementType, typeElementCache);
     }
-    // The element type of `type` might name a type variable, which has no TypeElement and
-    // therefore no TypeMirror that `JavaParserUtil.typeToTypeMirror` can return.
-    if (!(type.getElementType() instanceof ClassOrInterfaceType elementType)) {
-      return null;
-    }
-    TypeMirror bound = typeVariableUpperBound(elementType);
-    if (bound == null) {
+    if (result == null) {
       return null;
     }
     for (int i = type.getArrayLevel(); i > 0; i--) {
-      bound = types.getArrayType(bound);
+      result = types.getArrayType(result);
     }
-    return bound;
+    return result;
   }
 
   /**
-   * If the given JavaParser type names a type variable, returns the TypeMirror for the type
-   * variable's upper bound. Otherwise, or if the upper bound cannot be determined, returns null.
+   * Returns the TypeMirror for the given type variable's upper bound, or null if the upper bound
+   * cannot be determined.
    *
    * <p>When the upper bound is an intersection type, which {@code Types} cannot create, this
    * returns the intersection type's erasure -- that is, its leftmost bound.
    *
-   * @param type a JavaParser class or interface type
-   * @return the TypeMirror for the upper bound of the type variable that {@code type} names, erased
-   *     if that bound is an intersection type, or null
+   * @param typeParameter the declaration of a type variable
+   * @return the TypeMirror for the upper bound of {@code typeParameter}, erased if that bound is an
+   *     intersection type, or null
    */
-  private @Nullable TypeMirror typeVariableUpperBound(ClassOrInterfaceType type) {
-    if (type.getNameWithScope().indexOf('.') != -1) {
-      // A type variable has no member types, so a qualified name does not name a type variable.
-      return null;
-    }
-    TypeParameter typeParameter =
-        JavaParserUtil.resolveTypeVariableName(elements, type, typeElementCache);
-    if (typeParameter == null) {
-      return null;
-    }
+  private @Nullable TypeMirror typeVariableUpperBound(TypeParameter typeParameter) {
     NodeList<ClassOrInterfaceType> bounds = typeParameter.getTypeBound();
     if (bounds.isEmpty()) {
       // The implicit upper bound is `Object`.
