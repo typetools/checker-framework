@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.util.typeinference8.types.AbstractQualifier;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
@@ -49,6 +50,13 @@ public class Typing extends TypeConstraint {
   private final boolean isCovarTypeArg;
 
   /**
+   * Whether reducing this constraint should compare the qualifiers of two proper types. It is set
+   * for the equality constraints that incorporating two bounds on an inference variable implies, in
+   * {@code VariableBounds.getConstraintsFromParameterized}.
+   */
+  private final boolean qualifiersMustMatch;
+
+  /**
    * Creates a typing constraint.
    *
    * @param parent the constraint whose reduction created this constraint
@@ -84,6 +92,27 @@ public class Typing extends TypeConstraint {
    */
   public Typing(
       Constraint parent, AbstractType S, AbstractType t, Kind kind, boolean covarTypeArg) {
+    this(parent, S, t, kind, covarTypeArg, false);
+  }
+
+  /**
+   * Creates a typing constraint.
+   *
+   * @param parent the constraint whose reduction created this constraint
+   * @param S left-hand side type
+   * @param t right-hand side type
+   * @param kind the kind of constraint
+   * @param covarTypeArg true if the constraint is for a covariant type argument
+   * @param qualifiersMustMatch true if reducing this constraint should compare the qualifiers of
+   *     two proper types; see {@link #qualifiersMustMatch}
+   */
+  public Typing(
+      Constraint parent,
+      AbstractType S,
+      AbstractType t,
+      Kind kind,
+      boolean covarTypeArg,
+      boolean qualifiersMustMatch) {
     super(parent, t);
     assert S != null;
     switch (kind) {
@@ -93,6 +122,36 @@ public class Typing extends TypeConstraint {
     this.S = S;
     this.kind = kind;
     this.isCovarTypeArg = covarTypeArg;
+    this.qualifiersMustMatch = qualifiersMustMatch;
+  }
+
+  /**
+   * Creates a typing constraint that incorporating a bound of an inference variable implies,
+   * recording how the constraint came about so that {@link TypeConstraint#constraintHistory} can
+   * explain it.
+   *
+   * @param parent the constraint whose reduction created the bound that implies this constraint, or
+   *     null if no constraint did
+   * @param description how the bound gave rise to this constraint
+   * @param S left-hand side type
+   * @param t right-hand side type
+   * @param kind the kind of constraint
+   * @param qualifiersMustMatch true if reducing this constraint should compare the qualifiers of
+   *     two proper types; see {@link #qualifiersMustMatch}
+   */
+  public Typing(
+      Constraint parent,
+      String description,
+      AbstractType S,
+      AbstractType t,
+      Kind kind,
+      boolean qualifiersMustMatch) {
+    this(parent, S, t, kind, false, qualifiersMustMatch);
+    if (parent == null) {
+      this.source = description;
+    } else {
+      this.derivation = description;
+    }
   }
 
   /**
@@ -258,7 +317,8 @@ public class Typing extends TypeConstraint {
    * <p>JLS 18.2.3 and 18.2.4 speak of "the type arguments of T", which for an inner class type such
    * as {@code Outer<String>.Inner} include the type arguments of the enclosing type. {@link
    * AbstractType#getTypeArguments} returns only a type's own type arguments, so without this method
-   * a type variable that occurs only in an enclosing type would receive no bound.
+   * a type variable that occurs only in an enclosing type would receive no bound, and the
+   * qualifiers of an enclosing type argument would never be compared.
    *
    * @param set the constraint set to add to
    * @param lhs the type that is the left-hand side of the new constraint
@@ -272,17 +332,20 @@ public class Typing extends TypeConstraint {
     if (lhsEnclosing == null || rhsEnclosing == null) {
       return;
     }
-    // The only purpose of this constraint is to bound an inference variable that occurs in an
-    // enclosing type, so do not create it if neither enclosing type mentions an inference
-    // variable.  Such a constraint would compare two types that inference does not govern; the
-    // type-checker compares them independently of inference.
-    if (lhsEnclosing.isProper() && rhsEnclosing.isProper()) {
+    // A constraint between two proper types has two possible purposes: to bound an inference
+    // variable, which two proper types do not mention, and to compare their qualifiers, which only
+    // an equality constraint that requires matching qualifiers does.  Without either purpose the
+    // constraint would compare two types that inference does not govern; the type-checker compares
+    // them independently of inference.
+    if (lhsEnclosing.isProper()
+        && rhsEnclosing.isProper()
+        && !(kind == Kind.TYPE_EQUALITY && qualifiersMustMatch)) {
       return;
     }
     if (lhsEnclosing.equals(rhsEnclosing)) {
       return;
     }
-    set.add(new Typing(this, lhsEnclosing, rhsEnclosing, kind));
+    set.add(new Typing(this, lhsEnclosing, rhsEnclosing, kind, false, qualifiersMustMatch));
   }
 
   /**
@@ -427,10 +490,24 @@ public class Typing extends TypeConstraint {
    */
   private ReductionResult reduceEquality() {
     if (S.isProper()) {
-      if (T.isProper()) {
+      if (T.isProper()
+          && S.getTypeKind() != TypeKind.WILDCARD
+          && T.getTypeKind() != TypeKind.WILDCARD) {
         // If S and T are proper types, the constraint reduces to true if S is the same
-        // as T (4.3.4), and false otherwise.
-        return ConstraintSet.TRUE;
+        // as T (4.3.4), and false otherwise.  javac has already checked that the Java types
+        // are the same, so only the qualifiers remain to be checked, and they are checked only
+        // for a constraint that an inference variable's bounds imply.
+        //
+        // Neither type may be a wildcard, because a wildcard's qualifiers are on its bounds,
+        // which an uncaptured wildcard does not expose to the type hierarchy.  Excluding both
+        // sides sends a constraint between two wildcards to the wildcard branch at the end of
+        // this method, which reduces it to a constraint between their bounds, and keeps
+        // ProperType#checkAnnotationEquality from being passed a wildcard.  A wildcard on one
+        // side and a type on the other means that the two Java types differ, which javac
+        // rejects before this code runs; such a constraint deliberately reduces to false.
+        return qualifiersMustMatch
+            ? ((ProperType) S).checkAnnotationEquality((ProperType) T)
+            : ConstraintSet.TRUE;
       }
       ProperType sProper = (ProperType) S;
       if (sProper.getTypeKind() == TypeKind.NULL || sProper.getTypeKind().isPrimitive()) {
@@ -460,13 +537,34 @@ public class Typing extends TypeConstraint {
     if (sTypeArgs != null && tTypeArgs != null && sTypeArgs.size() == tTypeArgs.size()) {
       // Assume if both have type arguments, then S and T are class or interface types with
       // the same erasure
+
+      // If these types must have the same qualifiers, then so must their type arguments, at a
+      // covariant type argument as well: `@Covariant` relaxes subtyping, not equality, and two
+      // parameterizations that differ at a covariant type argument are different types.  The
+      // exemption for a covariant type argument belongs to
+      // VariableBounds#getConstraintsFromParameterized, where the two types are supertypes of one
+      // type rather than the two sides of an equality.
+
       ConstraintSet constraintSet = new ConstraintSet();
+      if (qualifiersMustMatch && !S.ignoreAnnotations && !T.ignoreAnnotations) {
+        QualifierTyping.addQualifierConstraints(
+            constraintSet,
+            AbstractQualifier.removeUnsolvedPolymorphic(S.getQualifiers()),
+            AbstractQualifier.removeUnsolvedPolymorphic(T.getQualifiers()),
+            Kind.QUALIFIER_EQUALITY);
+      }
       for (int i = 0; i < tTypeArgs.size(); i++) {
         // The constraint between two equal type arguments reduces to true (JLS 18.2.4), so do
         // not create it.
         if (!tTypeArgs.get(i).equals(sTypeArgs.get(i))) {
           constraintSet.add(
-              new Typing(this, tTypeArgs.get(i), sTypeArgs.get(i), Kind.TYPE_EQUALITY));
+              new Typing(
+                  this,
+                  tTypeArgs.get(i),
+                  sTypeArgs.get(i),
+                  Kind.TYPE_EQUALITY,
+                  false,
+                  qualifiersMustMatch));
         }
       }
       // An inner class type's own type arguments are not all of the type arguments it mentions;
@@ -478,7 +576,23 @@ public class Typing extends TypeConstraint {
     AbstractType sComponentType = S.getComponentType();
     AbstractType tComponentType = T.getComponentType();
     if (sComponentType != null && tComponentType != null) {
-      return new Typing(this, sComponentType, tComponentType, Kind.TYPE_EQUALITY);
+      ConstraintSet constraintSet = new ConstraintSet();
+      if (qualifiersMustMatch && !S.ignoreAnnotations && !T.ignoreAnnotations) {
+        QualifierTyping.addQualifierConstraints(
+            constraintSet,
+            AbstractQualifier.removeUnsolvedPolymorphic(S.getQualifiers()),
+            AbstractQualifier.removeUnsolvedPolymorphic(T.getQualifiers()),
+            Kind.QUALIFIER_EQUALITY);
+      }
+      constraintSet.add(
+          new Typing(
+              this,
+              sComponentType,
+              tComponentType,
+              Kind.TYPE_EQUALITY,
+              false,
+              qualifiersMustMatch));
+      return constraintSet;
     }
 
     if (S.getTypeKind() == TypeKind.TYPEVAR && T.getTypeKind() == TypeKind.TYPEVAR && S.equals(T)) {
@@ -491,10 +605,20 @@ public class Typing extends TypeConstraint {
         return ConstraintSet.TRUE;
       } else if (!S.isLowerBoundedWildcard() && !T.isLowerBoundedWildcard()) {
         return new Typing(
-            this, S.getWildcardUpperBound(), T.getWildcardUpperBound(), Kind.TYPE_EQUALITY);
+            this,
+            S.getWildcardUpperBound(),
+            T.getWildcardUpperBound(),
+            Kind.TYPE_EQUALITY,
+            false,
+            qualifiersMustMatch);
       } else if (T.isLowerBoundedWildcard() && S.isLowerBoundedWildcard()) {
         return new Typing(
-            this, T.getWildcardLowerBound(), S.getWildcardLowerBound(), Kind.TYPE_EQUALITY);
+            this,
+            T.getWildcardLowerBound(),
+            S.getWildcardLowerBound(),
+            Kind.TYPE_EQUALITY,
+            false,
+            qualifiersMustMatch);
       }
     }
     return ConstraintSet.FALSE;
@@ -528,11 +652,13 @@ public class Typing extends TypeConstraint {
 
     Typing typing = (Typing) o;
 
-    return S.equals(typing.S) && kind == typing.kind;
+    return S.equals(typing.S)
+        && kind == typing.kind
+        && qualifiersMustMatch == typing.qualifiersMustMatch;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), S, kind);
+    return Objects.hash(super.hashCode(), S, kind, qualifiersMustMatch);
   }
 }
