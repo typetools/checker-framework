@@ -1183,8 +1183,9 @@ public class WholeProgramInferenceJavaParserStorage
 
     if (parentNode instanceof Type type) {
       // JavaParser's `TypeParameter` is a `Type`, so an annotation on a type parameter
-      // declaration, as in `<@Anno T>`, takes this branch.  `JavaParserUtil.typeToTypeMirror`
-      // returns null for a type parameter declaration, so such an annotation is retained.
+      // declaration, as in `<@Anno T>`, takes this branch.
+      // `JavaParserUtil.typeToTypeMirrorErasingTypeVariables` returns null for a type parameter
+      // declaration, so such an annotation is retained.
       return typeIsRelevant(gatf, type);
     }
     if (parentNode instanceof ArrayCreationLevel level) {
@@ -1256,6 +1257,10 @@ public class WholeProgramInferenceJavaParserStorage
    * type is {@code componentType} wrapped in {@code arrayLevels} array levels. This implementation
    * is conservative and only returns false if such a qualifier is definitely not relevant.
    *
+   * <p>A use of a type variable is resolved to the type variable's upper bound, which is sound
+   * because {@link GenericAnnotatedTypeFactory#isRelevant} treats a type variable as relevant
+   * exactly when its upper bound is.
+   *
    * @param gatf the type factory associated with this
    * @param componentType a JavaParser type
    * @param arrayLevels the number of array levels to wrap {@code componentType} in; may be 0
@@ -1265,7 +1270,8 @@ public class WholeProgramInferenceJavaParserStorage
       GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf, Type componentType, int arrayLevels) {
     Types types = atypeFactory.getProcessingEnv().getTypeUtils();
     TypeMirror tm =
-        JavaParserUtil.typeToTypeMirror(elements, types, componentType, typeElementCache);
+        JavaParserUtil.typeToTypeMirrorErasingTypeVariables(
+            elements, types, componentType, typeElementCache);
     if (tm == null) {
       // The type could not be determined.  Be conservative.
       return true;
