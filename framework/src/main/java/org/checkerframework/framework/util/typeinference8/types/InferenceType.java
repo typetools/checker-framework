@@ -223,7 +223,12 @@ public final class InferenceType extends AbstractType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(inferenceProblemHashCode(), qualifierVars, type, Kind.INFERENCE_TYPE);
+    // This is Objects.hash() expanded, to avoid allocating an array and boxing.  This method is
+    // hot: inference puts these types in hash sets and rebuilds those sets repeatedly.
+    int result = 31 + inferenceProblemHashCode();
+    result = 31 * result + Objects.hashCode(qualifierVars);
+    result = 31 * result + Objects.hashCode(type);
+    return 31 * result + Kind.INFERENCE_TYPE.hashCode();
   }
 
   @Override

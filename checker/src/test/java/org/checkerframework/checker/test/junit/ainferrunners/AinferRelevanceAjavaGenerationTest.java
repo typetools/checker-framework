@@ -65,9 +65,9 @@ public class AinferRelevanceAjavaGenerationTest extends AinferGeneratePerDirecto
       "-" + AinferRelevanceTestChecker.class.getCanonicalName() + ".ajava";
 
   /**
-   * Compares each generated ajava file to its goal file. A goal file is named {@code
-   * <ClassName>.ajava.goal}. Every generated ajava file must have a goal file and vice versa, so
-   * that no inference result goes unexamined.
+   * Compares each generated ajava file to its goal file; see {@link #goalFileFor} for a goal file's
+   * name. Every generated ajava file must have a goal file and vice versa, so that no inference
+   * result goes unexamined.
    *
    * <p>Unlike the second (validation) pass of this test, this comparison detects an annotation that
    * inference wrote even though the annotation is irrelevant where it appears. Such an annotation
@@ -140,26 +140,24 @@ public class AinferRelevanceAjavaGenerationTest extends AinferGeneratePerDirecto
    * Returns the goal file that corresponds to the given generated ajava file. The goal file need
    * not exist.
    *
+   * <p>Inference writes a class's ajava file into a subdirectory that corresponds to the class's
+   * package, but the goal files are all in one directory. Therefore, a goal file is named for the
+   * class's fully-qualified name: {@code <ClassName>.ajava.goal} for a class in the unnamed
+   * package, and {@code <package>.<ClassName>.ajava.goal} for a class in a named package.
+   *
    * @param ajavaFile a generated ajava file
    * @return the goal file that corresponds to {@code ajavaFile}
    */
   private static Path goalFileFor(Path ajavaFile) {
-    if (!inferenceOutputDir.equals(ajavaFile.getParent())) {
-      // Inference writes a class's ajava file into a subdirectory that corresponds to the class's
-      // package, but the goal files are all in one directory, so a goal file for a class in a
-      // named package could never match.  Every test input is in the unnamed package, so this
-      // failure means that a new test input declares a package.
-      Assert.fail(
-          String.format(
-              "%s is not directly in %s, so its class is not in the unnamed package.  Either put"
-                  + " the test input in the unnamed package, or generalize"
-                  + " AinferRelevanceAjavaGenerationTest to give each goal file a name that"
-                  + " includes the package.%n",
-              ajavaFile.toAbsolutePath(), inferenceOutputDir.toAbsolutePath()));
-    }
-    String ajavaFileName = ajavaFile.getFileName().toString();
+    Path relative = inferenceOutputDir.relativize(ajavaFile);
+    String ajavaFileName = relative.getFileName().toString();
     String className = ajavaFileName.substring(0, ajavaFileName.length() - ajavaSuffix.length());
-    return goalDir.resolve(className + goalSuffix);
+    Path packageDir = relative.getParent();
+    String qualifiedName =
+        packageDir == null
+            ? className
+            : packageDir.toString().replace(File.separatorChar, '.') + "." + className;
+    return goalDir.resolve(qualifiedName + goalSuffix);
   }
 
   /**
