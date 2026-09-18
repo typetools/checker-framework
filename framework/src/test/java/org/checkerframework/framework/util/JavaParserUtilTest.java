@@ -204,13 +204,10 @@ public class JavaParserUtilTest {
     assertNamesTypeVariable(
         null, SUPERPKG, "class SamePackageSub extends Base { Visible f; }", "Visible");
 
-    // If the name has several components, its first component is the one that might name a type
-    // variable.
+    // A type variable has no member types, so a name with several components, whose first
+    // component names a type variable, names nothing at all.
     assertNamesTypeVariable(
-        "T extends CharSequence",
-        SUPERPKG,
-        "class SamePackageSub<T extends CharSequence> { T.Inner f; }",
-        "T.Inner");
+        null, SUPERPKG, "class SamePackageSub<T extends CharSequence> { T.Inner f; }", "T.Inner");
   }
 
   /**
