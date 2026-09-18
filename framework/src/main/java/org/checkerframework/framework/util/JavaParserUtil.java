@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -107,7 +108,7 @@ public final class JavaParserUtil {
 
   /**
    * Returns the element for the given JavaParser type, as {@link #resolveTypeName(Elements,
-   * ClassOrInterfaceType, Map)} does.
+   * ClassOrInterfaceType, Map)} does. This method also reads and writes a cache, for efficiency.
    *
    * @param elements used for looking up names
    * @param type a JavaParser class or interface type
@@ -333,11 +334,19 @@ public final class JavaParserUtil {
       }
     }
 
-    // The type might be in the same package, in a package or type that is imported on demand, or
-    // in `java.lang`.  A type in the same package shadows the others, so it is looked up first.  A
-    // name in the unnamed package has no prefix.
+    // The type might be in the same package.  A type in the same package shadows one that is
+    // imported on demand, so it is looked up first.  A name in the unnamed package has no prefix.
+    TypeElement samePackage =
+        getTypeElement(elements, packageName.isEmpty() ? name : packageName + "." + name, cache);
+    if (samePackage != null) {
+      return samePackage;
+    }
+
+    // The type might be in a package or type that is imported on demand, or in `java.lang`, which
+    // is imported on demand implicitly.  An import on demand imports only the types that are
+    // accessible where it appears, so an inaccessible type does not resolve the name and does not
+    // prevent a later import on demand from resolving it.
     List<String> containerPrefixes = new ArrayList<>();
-    containerPrefixes.add(packageName.isEmpty() ? "" : packageName + ".");
     for (ImportDeclaration importDecl : cu.getImports()) {
       if (importDecl.isAsterisk()) {
         containerPrefixes.add(importDecl.getNameAsString() + ".");
@@ -346,20 +355,19 @@ public final class JavaParserUtil {
     containerPrefixes.add("java.lang.");
     for (String containerPrefix : containerPrefixes) {
       TypeElement result = getTypeElement(elements, containerPrefix + name, cache);
-      if (result != null) {
+      if (result != null && isAccessible(elements, result, packageName)) {
         return result;
       }
     }
 
-    // An import on demand, whether static or not, also imports the member types that the named
-    // type inherits.
+    // A static import on demand also imports the member types that the named type inherits.  A
+    // type import on demand does not:  it imports only the member types that the named type
+    // declares, which the lookup above already tried, because they have canonical names.
     for (ImportDeclaration importDecl : cu.getImports()) {
-      if (importDecl.isAsterisk()) {
+      if (importDecl.isAsterisk() && importDecl.isStatic()) {
         TypeElement importedElement = getTypeElement(elements, importDecl.getNameAsString(), cache);
         if (importedElement != null) {
-          // An import imports only the member types that `importedElement` inherits; the ones that
-          // it declares have canonical names, which the lookup above already tried.  A
-          // package-private member type is a member of `importedElement` only if every type from
+          // A package-private member type is a member of `importedElement` only if every type from
           // `importedElement` to the type that declares it is in `importedElement`'s package; such
           // a member type is accessible at this use, and therefore imported, only if that package
           // is also `packageName`.
@@ -767,6 +775,39 @@ public final class JavaParserUtil {
       return true;
     }
     return searchedType.packagePrivateIsMember();
+  }
+
+  /**
+   * Returns true if a use in package {@code usePackage} can access {@code type}: no type from
+   * {@code type} to the top-level type that contains it is private, and every one of them that is
+   * package-private is in package {@code usePackage}.
+   *
+   * <p>This method is for a type that an import on demand might import. An import declaration is
+   * not within the body of a type, so a private member type is never accessible to one. A protected
+   * member type is not accessible to one either, but this method treats one as accessible, as
+   * {@link #isMember} does.
+   *
+   * @param elements used for looking up the package that contains a type
+   * @param type a type
+   * @param usePackage the fully-qualified name of the package that contains the use of the type's
+   *     name; the empty string names the unnamed package
+   * @return true if a use in package {@code usePackage} can access {@code type}
+   */
+  private static boolean isAccessible(Elements elements, TypeElement type, String usePackage) {
+    for (Element element = type;
+        element instanceof TypeElement;
+        element = element.getEnclosingElement()) {
+      Set<Modifier> modifiers = element.getModifiers();
+      if (modifiers.contains(Modifier.PRIVATE)) {
+        return false;
+      }
+      if (!modifiers.contains(Modifier.PUBLIC)
+          && !modifiers.contains(Modifier.PROTECTED)
+          && !inPackage(elements, (TypeElement) element, usePackage)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
