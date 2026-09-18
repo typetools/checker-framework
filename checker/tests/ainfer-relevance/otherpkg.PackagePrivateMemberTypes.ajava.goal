@@ -1,10 +1,10 @@
 package otherpkg;
 
-// This class exists so that a class in the unnamed package can extend a class, in a different
-// package, that declares member types with different accessibilities.  It is used by
-// `PackagePrivateNotInherited.java`.
+// This class exists so that a class in another package can extend a class that declares member
+// types with different accessibilities.  It is used by `PackagePrivateNotInherited.java` and by
+// `otherpkg/NotInheritedThroughOtherPackage.java`.
 //
-// This is the only test input that is in a named package, so its goal file is the only one whose
+// The goal file of a test input that is in a named package is the only kind of goal file whose
 // name includes a package name.
 @org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
 public class PackagePrivateMemberTypes {

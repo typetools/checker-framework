@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -512,9 +513,17 @@ public final class JavaParserUtil {
    * two supertypes that are equally near declare different member types with this name, then
    * neither hides the other, the name is ambiguous, and this method returns null.
    *
-   * <p>A member type that is not inherited is ignored, and therefore hides nothing: a private
-   * member type, and a package-private member type that is declared in a package other than {@code
-   * usePackage}. A protected member type is inherited even from a different package.
+   * <p>A member type declaration hides every declaration of the same name in a supertype of the
+   * type that declares it, even if the declaration is not inherited or is not accessible. Such a
+   * declaration therefore ends the search through the type that contains it: the supertypes of that
+   * type are not searched, and if the declaration is not inherited or is not accessible, then that
+   * type contributes no member type at all.
+   *
+   * <p>A private member type is not inherited. A package-private member type is inherited only by a
+   * subclass in the package that declares it, and it is accessible only within that package; this
+   * method therefore uses one only if every type from {@code typeElement} to the type that declares
+   * it is in package {@code usePackage}. A protected member type is inherited even from a different
+   * package.
    *
    * @param elements used for looking up names
    * @param typeElement the type whose member types to search
@@ -537,36 +546,44 @@ public final class JavaParserUtil {
     Set<TypeElement> visited = new HashSet<>();
     visited.add(typeElement);
     // The types that are the same distance from `typeElement`:  first `typeElement` itself, then
-    // its direct supertypes, and so forth.
-    List<TypeElement> currentTypes = Collections.singletonList(typeElement);
+    // its direct supertypes, and so forth.  Each one maps to true if it, and every type between it
+    // and `typeElement`, is in package `usePackage` -- which is what makes a package-private member
+    // type that it declares both inherited by `typeElement` and accessible at the use site.
+    Map<TypeElement, Boolean> currentTypes = new LinkedHashMap<>();
+    currentTypes.put(typeElement, isInPackage(elements, typeElement, usePackage));
     while (!currentTypes.isEmpty()) {
       // Every type at the current distance is searched, rather than returning the first member
       // type that is found, because a member type that is declared in one of them does not hide
       // one that is declared in another.
       TypeElement found = null;
-      for (TypeElement current : currentTypes) {
-        for (TypeElement member : ElementFilter.typesIn(current.getEnclosedElements())) {
-          if (!member.getSimpleName().contentEquals(firstComponent)) {
-            continue;
+      Map<TypeElement, Boolean> nextTypes = new LinkedHashMap<>();
+      for (Map.Entry<TypeElement, Boolean> entry : currentTypes.entrySet()) {
+        TypeElement current = entry.getKey();
+        boolean samePackagePath = entry.getValue();
+        TypeElement member = declaredMemberType(current, firstComponent);
+        if (member != null) {
+          // This declaration hides every declaration of the same name in a supertype of `current`,
+          // so the supertypes of `current` are not searched.
+          if (isInheritedAndAccessible(member, samePackagePath)) {
+            if (found == null) {
+              found = member;
+            } else if (!found.equals(member)) {
+              // Two equally near supertypes declare different member types with this name, so the
+              // name is ambiguous.
+              return null;
+            }
           }
-          Set<Modifier> modifiers = member.getModifiers();
-          if (modifiers.contains(Modifier.PRIVATE)) {
-            // A private member type is not inherited.
-            continue;
-          }
-          if (!modifiers.contains(Modifier.PUBLIC)
-              && !modifiers.contains(Modifier.PROTECTED)
-              && !elements.getPackageOf(member).getQualifiedName().contentEquals(usePackage)) {
-            // A package-private member type is not inherited by a class in another package, and
-            // it is not accessible at the use site.
-            continue;
-          }
-          if (found == null) {
-            found = member;
-          } else if (!found.equals(member)) {
-            // Two equally near supertypes declare different member types with this name, so the
-            // name is ambiguous.
-            return null;
+          continue;
+        }
+        for (TypeElement supertype : ElementUtils.getDirectSuperTypeElements(current, elements)) {
+          if (!visited.contains(supertype)) {
+            // A supertype that more than one path reaches at this distance is searched once.  A
+            // package-private member type that it declares is inherited if any of those paths
+            // stays within package `usePackage`.
+            nextTypes.merge(
+                supertype,
+                samePackagePath && isInPackage(elements, supertype, usePackage),
+                (b1, b2) -> b1 || b2);
           }
         }
       }
@@ -576,17 +593,66 @@ public final class JavaParserUtil {
         }
         return getTypeElement(elements, found.getQualifiedName() + suffix, cache);
       }
-      List<TypeElement> nextTypes = new ArrayList<>();
-      for (TypeElement current : currentTypes) {
-        for (TypeElement supertype : ElementUtils.getDirectSuperTypeElements(current, elements)) {
-          if (visited.add(supertype)) {
-            nextTypes.add(supertype);
-          }
-        }
-      }
+      visited.addAll(nextTypes.keySet());
       currentTypes = nextTypes;
     }
     return null;
+  }
+
+  /**
+   * Returns the member type that {@code typeElement} declares with the given simple name, or null
+   * if it declares none. A type declares at most one member type with a given simple name.
+   *
+   * @param typeElement a type
+   * @param name a simple name
+   * @return the member type that {@code typeElement} declares with the given simple name, or null
+   *     if it declares none
+   */
+  private static @Nullable TypeElement declaredMemberType(TypeElement typeElement, String name) {
+    for (TypeElement member : ElementFilter.typesIn(typeElement.getEnclosedElements())) {
+      if (member.getSimpleName().contentEquals(name)) {
+        return member;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns true if the given type is in the given package.
+   *
+   * @param elements used for looking up names
+   * @param typeElement a type
+   * @param packageName the name of a package, or "" for the unnamed package
+   * @return true if {@code typeElement} is in the package named {@code packageName}
+   */
+  private static boolean isInPackage(
+      Elements elements, TypeElement typeElement, String packageName) {
+    return elements.getPackageOf(typeElement).getQualifiedName().contentEquals(packageName);
+  }
+
+  /**
+   * Returns true if the given member type is inherited by the subtypes of the type that declares
+   * it, and is accessible at the use site.
+   *
+   * @param member a member type
+   * @param samePackagePath true if the type that declares {@code member}, and every type between it
+   *     and the type whose member types are being searched, is in the package that contains the use
+   *     of the type name
+   * @return true if {@code member} is inherited and is accessible at the use site
+   */
+  private static boolean isInheritedAndAccessible(TypeElement member, boolean samePackagePath) {
+    Set<Modifier> modifiers = member.getModifiers();
+    if (modifiers.contains(Modifier.PRIVATE)) {
+      // A private member type is not inherited.
+      return false;
+    }
+    if (modifiers.contains(Modifier.PUBLIC) || modifiers.contains(Modifier.PROTECTED)) {
+      // A protected member type is inherited even by a subclass in a different package.
+      return true;
+    }
+    // A package-private member type is inherited only by a subclass in the package that declares
+    // it, and it is accessible only within that package.
+    return samePackagePath;
   }
 
   /**
