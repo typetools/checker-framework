@@ -7,6 +7,8 @@
 
 ### User-visible changes
 
+The Checker Framework runs noticeably faster, due to performance tuning.
+
 The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
 warnings that it did not previously.
 

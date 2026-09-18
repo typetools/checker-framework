@@ -256,7 +256,14 @@ public class UseOfVariable extends AbstractType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        inferenceProblemHashCode(), variable, hasPrimaryAnno, bots, tops, qualifierVars, type);
+    // This is Objects.hash() expanded, to avoid allocating an array and boxing.  This method is
+    // hot: inference puts these types in hash sets and rebuilds those sets repeatedly.
+    int result = 31 + inferenceProblemHashCode();
+    result = 31 * result + Objects.hashCode(variable);
+    result = 31 * result + Boolean.hashCode(hasPrimaryAnno);
+    result = 31 * result + Objects.hashCode(bots);
+    result = 31 * result + Objects.hashCode(tops);
+    result = 31 * result + Objects.hashCode(qualifierVars);
+    return 31 * result + Objects.hashCode(type);
   }
 }
