@@ -329,10 +329,6 @@ public final class PurityChecker {
           assumeDeterministic
               || pureGetter
               || eltPurityKinds.contains(PurityKind.DETERMINISTIC)
-              // A side-effect-free method that returns no value changes nothing and yields
-              // nothing, so calling it cannot make the caller's result differ.  Without
-              // side-effect-freedom, returning no value says nothing:  the method could
-              // change a field that the caller goes on to return.
               || (seFree && elt.getReturnType().getKind() == TypeKind.VOID);
       if (!det && !seFree) {
         purityResult.addNotBothReason(tree, "call");
