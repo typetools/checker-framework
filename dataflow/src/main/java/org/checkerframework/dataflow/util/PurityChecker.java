@@ -541,7 +541,7 @@ public final class PurityChecker {
     }
 
     /**
-     * Returns true if the given field access reads a field of {@code this}, rather than of some
+     * Returns true if the given field access accesses a field of {@code this}, rather than of some
      * other object.
      *
      * @param fieldAccess a field access, without parentheses
@@ -568,6 +568,14 @@ public final class PurityChecker {
      *
      * <p>This assumes that no other code observes the object while its constructor runs, which
      * holds because a constructor that leaks {@code this} is not side-effect-free.
+     *
+     * <p>Only the outermost class that encloses the current path is scanned, so an assignment to
+     * the field in a different top-level class or in a different compilation unit is not seen. Such
+     * an assignment cannot store an alias in the object under construction, because reaching the
+     * field requires a reference to that object and a side-effect-free constructor does not give
+     * one out. The canonical constructor that javac generates for a record does assign the field of
+     * the object under construction, but it is not side-effect-free, so no side-effect-free
+     * constructor can delegate to it.
      *
      * @param fieldElt a field of the current class
      * @return the number of levels of indexing under which writes to the field's array cannot be
