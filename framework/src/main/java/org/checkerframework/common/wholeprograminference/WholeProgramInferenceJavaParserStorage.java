@@ -1358,10 +1358,9 @@ public class WholeProgramInferenceJavaParserStorage
       TypeElement objectElt = elements.getTypeElement("java.lang.Object");
       return objectElt == null ? null : objectElt.asType();
     }
-    if (bounds.size() > 1) {
-      // The upper bound is an intersection type, which `Types` cannot create.  Be conservative.
-      return null;
-    }
+    // If there are multiple bounds, the upper bound is an intersection type, which `Types` cannot
+    // create.  Use its leftmost bound, which is its erasure; that is sufficient because the client,
+    // `GenericAnnotatedTypeFactory.isRelevant`, erases the type before testing relevance.
     // The bound may itself be a type variable, as in `<T extends U, U extends CharSequence>`; the
     // recursion terminates because Java forbids a cycle among type variable bounds.
     return typeToTypeMirror(bounds.get(0));

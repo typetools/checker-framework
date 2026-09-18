@@ -15,3 +15,15 @@ public class IrrelevantTypeVariable<T extends Number> {
     field = t;
   }
 }
+
+// Likewise when the upper bound is an intersection type.  Its erasure is its leftmost bound,
+// `Number`, which is not relevant.
+class IrrelevantIntersectionTypeVariable<T extends Number & java.io.Serializable> {
+
+  T field;
+
+  // :: warning: [anno.on.irrelevant]
+  void assignField(@AinferSibling1 T t) {
+    field = t;
+  }
+}
