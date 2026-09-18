@@ -30,10 +30,12 @@ import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -757,23 +759,19 @@ public final class JavaParserUtil {
     visited.add(start.typeElement());
     // The types that are the same distance from `start`'s type:  first that type itself, then its
     // direct supertypes, and so forth.
-    List<SearchedType> currentTypes = Collections.singletonList(start);
+    Collection<SearchedType> currentTypes = Collections.singletonList(start);
     while (!currentTypes.isEmpty()) {
       // Every type at the current distance is searched, rather than returning the first member
       // type that is found, because a member type that is declared in one of them does not hide
       // one that is declared in another.
       TypeElement found = null;
-      List<SearchedType> nextTypes = new ArrayList<>();
+      // The types at the next distance, keyed by type element so that a supertype that more than
+      // one path reaches at that distance is searched just once, for the union of what those paths
+      // make a member.
+      Map<TypeElement, SearchedType> nextTypes = new LinkedHashMap<>();
       for (SearchedType current : currentTypes) {
         TypeElement currentElement = current.typeElement();
-        // A type declares at most one member type with a given simple name.
-        TypeElement declared = null;
-        for (TypeElement member : ElementFilter.typesIn(currentElement.getEnclosedElements())) {
-          if (member.getSimpleName().contentEquals(firstComponent)) {
-            declared = member;
-            break;
-          }
-        }
+        TypeElement declared = declaredMemberType(currentElement, firstComponent);
         if (declared != null) {
           if (isMember(declared, current)) {
             if (found == null) {
@@ -791,8 +789,8 @@ public final class JavaParserUtil {
         }
         for (TypeElement supertype :
             ElementUtils.getDirectSuperTypeElements(currentElement, elements)) {
-          if (visited.add(supertype)) {
-            nextTypes.add(
+          if (!visited.contains(supertype)) {
+            SearchedType next =
                 new SearchedType(
                     supertype,
                     // A private member type is inherited by no type.
@@ -800,7 +798,11 @@ public final class JavaParserUtil {
                     // `currentElement` inherits a package-private member type of `supertype` only
                     // if the two types are in the same package.
                     current.packagePrivateIsMember()
-                        && inSamePackage(elements, supertype, currentElement)));
+                        && inSamePackage(elements, supertype, currentElement));
+            // A package-private member type of `supertype` is a member at the place where the
+            // name is being resolved if any of the paths that reach `supertype` inherits it.
+            nextTypes.merge(
+                supertype, next, (st1, st2) -> st1.packagePrivateIsMember() ? st1 : st2);
           }
         }
       }
@@ -826,7 +828,26 @@ public final class JavaParserUtil {
         return resolveMemberType(
             elements, nestedStart, suffix.substring(1, dot), suffix.substring(dot), cache);
       }
-      currentTypes = nextTypes;
+      visited.addAll(nextTypes.keySet());
+      currentTypes = nextTypes.values();
+    }
+    return null;
+  }
+
+  /**
+   * Returns the member type that {@code typeElement} declares with the given simple name, or null
+   * if it declares none. A type declares at most one member type with a given simple name.
+   *
+   * @param typeElement a type
+   * @param name a simple name
+   * @return the member type that {@code typeElement} declares with the given simple name, or null
+   *     if it declares none
+   */
+  private static @Nullable TypeElement declaredMemberType(TypeElement typeElement, String name) {
+    for (TypeElement member : ElementFilter.typesIn(typeElement.getEnclosedElements())) {
+      if (member.getSimpleName().contentEquals(name)) {
+        return member;
+      }
     }
     return null;
   }
