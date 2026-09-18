@@ -1142,6 +1142,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
+   * Returns the purity of a method or lambda body, for the purpose of inferring or suggesting a
+   * purity annotation. Unlike type-checking, inference does not apply the {@code -Aassume*}
+   * command-line options: an inferred or suggested annotation outlives the command line that
+   * produced it, and would be trusted by a later run that makes no such assumption.
+   *
+   * @param body the path to the body, or null if the method has no body
+   * @return the purity of {@code body}, ignoring the {@code -Aassume*} command-line options
+   */
+  private PurityResult purityForInference(@Nullable TreePath body) {
+    return body == null
+        ? new PurityResult()
+        : PurityChecker.checkPurity(body, atypeFactory, false, false, false);
+  }
+
+  /**
    * Check method purity if needed. Note that overriding rules are checked as part of {@link
    * #checkOverride(MethodTree, AnnotatedTypeMirror.AnnotatedExecutableType,
    * AnnotatedTypeMirror.AnnotatedDeclaredType, AnnotatedTypeMirror.AnnotatedExecutableType,
@@ -1181,21 +1196,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     TreePath body = atypeFactory.getPath(tree.getBody());
-    PurityResult r;
-    if (body == null) {
-      r = new PurityResult();
-    } else {
-      r =
-          PurityChecker.checkPurity(
-              body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
-    }
-    if (!r.isPure(purityKinds)) {
-      reportPurityErrors(r, purityKinds);
+    if (needToCheck) {
+      PurityResult r =
+          body == null
+              ? new PurityResult()
+              : PurityChecker.checkPurity(
+                  body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
+      if (!r.isPure(purityKinds)) {
+        reportPurityErrors(r, purityKinds);
+      }
     }
 
     if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
       // Issue a warning if the method is pure, but not annotated as such.
-      EnumSet<PurityKind> additionalKinds = r.getKinds().clone();
+      EnumSet<PurityKind> additionalKinds = purityForInference(body).getKinds().clone();
       if (!infer) {
         // During WPI, propagate all purity kinds, even those that are already
         // present (because they were inferred in a previous WPI round).
@@ -2435,18 +2449,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     TreePath body = new TreePath(getCurrentPath(), tree.getBody());
-    PurityResult r =
-        PurityChecker.checkPurity(
-            body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
-    if (needToCheck && !r.isPure(purityKinds)) {
-      reportPurityErrors(r, purityKinds);
+    if (needToCheck) {
+      PurityResult r =
+          PurityChecker.checkPurity(
+              body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
+      if (!r.isPure(purityKinds)) {
+        reportPurityErrors(r, purityKinds);
+      }
     }
 
     if (infer) {
       // A lambda implements the functional interface method, so it constrains that method's
       // purity just as an overriding method does; see the treatment of overridden methods in
       // `checkPurityAnnotations`.
-      EnumSet<PurityKind> lambdaKinds = r.getKinds().clone();
+      EnumSet<PurityKind> lambdaKinds = purityForInference(body).getKinds().clone();
       if (functionalMethod.getReturnType().getKind() == TypeKind.VOID) {
         lambdaKinds.remove(PurityKind.DETERMINISTIC);
       }
