@@ -586,7 +586,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /** Mapping from a Tree to its TreePath. Shared between all instances. */
   private final TreePathCacher treePathCache;
 
-  /** Mapping from CFG-generated trees to their enclosing elements. */
+  /**
+   * Mapping from CFG-generated trees to their enclosing elements.
+   *
+   * <p>Do not read or write this field directly; use {@link #artificialTreeMap} instead. When
+   * subcheckers share control flow graphs, they also share the artificial trees in them, so only
+   * the ultimate parent checker's map is used. This field is populated only in the factory that
+   * {@link #artificialTreeMap} directs writes to.
+   */
   protected final Map<Tree, Element> artificialTreeToEnclosingElementMap;
 
   /** If true, ignore type arguments from raw types. */
@@ -3865,7 +3872,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return null;
     }
 
-    if (artificialTreeToEnclosingElementMap.containsKey(tree)) {
+    if (artificialTreeMap().containsKey(tree)) {
       return null;
     }
 
@@ -3940,7 +3947,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the method {@link Element} enclosing the argument, or null if none has been recorded
    */
   public final @Nullable Element getEnclosingElementForArtificialTree(Tree tree) {
-    return artificialTreeToEnclosingElementMap.get(tree);
+    return artificialTreeMap().get(tree);
   }
 
   /**
@@ -3953,7 +3960,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param enclosing element that encloses {@code tree}
    */
   public final void setEnclosingElementForArtificialTree(Tree tree, Element enclosing) {
-    artificialTreeToEnclosingElementMap.put(tree, enclosing);
+    artificialTreeMap().put(tree, enclosing);
+  }
+
+  /**
+   * Returns the map from CFG-generated trees to their enclosing elements, which may be another type
+   * factory's map.
+   *
+   * <p>An artificial tree belongs to a control flow graph, and subcheckers share control flow
+   * graphs, so all the type factories of a group of subcheckers must agree on which trees are
+   * artificial. Otherwise, a subchecker that did not build the CFG treats an artificial tree as an
+   * ordinary one and searches the whole compilation unit for it, fruitlessly and repeatedly.
+   *
+   * @return the map from CFG-generated trees to their enclosing elements
+   */
+  protected Map<Tree, Element> artificialTreeMap() {
+    return artificialTreeToEnclosingElementMap;
   }
 
   /**

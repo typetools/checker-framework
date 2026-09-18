@@ -1,11 +1,8 @@
 package otherpkg;
 
 // This class exists so that a class in another package can extend a class that declares member
-// types with different accessibilities.  It is used by `PackagePrivateNotInherited.java` and by
+// types with different accessibilities.  It is used by `CrossPackageMemberTypes.java` and by
 // `otherpkg/NotInheritedThroughOtherPackage.java`.
-//
-// The goal file of a test input that is in a named package is the only kind of goal file whose
-// name includes a package name.
 public class PackagePrivateMemberTypes {
 
   // A package-private member type is not inherited by a subclass in another package, so the
