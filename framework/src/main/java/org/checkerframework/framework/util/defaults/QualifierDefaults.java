@@ -12,7 +12,9 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -127,19 +129,20 @@ public class QualifierDefaults {
    * element defaults needs no entry, because its precedence list is one of the two shared arrays
    * {@link #checkedCodeDefaultsArray} and {@link #uncheckedThenCheckedArray}.
    */
-  private final IdentityHashMap<Element, Default[]> precedenceListCache = new IdentityHashMap<>();
+  private final IdentityHashMap<Element, PrecedenceList> precedenceListCache =
+      new IdentityHashMap<>();
 
   /**
    * The precedence list for a scope that has no element defaults and to which conservative defaults
    * do not apply. Computed on demand by {@link #getCheckedCodeDefaultsArray}.
    */
-  private Default @Nullable [] checkedCodeDefaultsArray = null;
+  private @Nullable PrecedenceList checkedCodeDefaultsArray = null;
 
   /**
    * The precedence list for a scope that has no element defaults and to which conservative defaults
    * apply. Computed on demand by {@link #getUncheckedThenCheckedArray}.
    */
-  private Default @Nullable [] uncheckedThenCheckedArray = null;
+  private @Nullable PrecedenceList uncheckedThenCheckedArray = null;
 
   /** A mapping of Element &rarr; Whether or not that element is AnnotatedFor this type system. */
   private final IdentityHashMap<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
@@ -155,6 +158,33 @@ public class QualifierDefaults {
   /** CLIMB locations whose standard default is bottom for a given type system. */
   public static final List<TypeUseLocation> STANDARD_CLIMB_DEFAULTS_BOTTOM =
       List.of(TypeUseLocation.IMPLICIT_LOWER_BOUND);
+
+  /**
+   * Locations whose default, when applied at the top level of a type, annotates some node other
+   * than the node being visited: the alternatives of a union type, or the parameter, receiver, or
+   * return types of an executable type.
+   */
+  private static final Set<TypeUseLocation> CROSS_NODE_LOCATIONS =
+      Collections.unmodifiableSet(
+          EnumSet.of(
+              TypeUseLocation.EXCEPTION_PARAMETER,
+              TypeUseLocation.RECEIVER,
+              TypeUseLocation.PARAMETER,
+              TypeUseLocation.RETURN,
+              TypeUseLocation.CONSTRUCTOR_RESULT));
+
+  /** Locations whose default can annotate a node below the top level of a type. */
+  private static final Set<TypeUseLocation> DESCENDANT_LOCATIONS =
+      Collections.unmodifiableSet(
+          EnumSet.of(
+              TypeUseLocation.LOWER_BOUND,
+              TypeUseLocation.EXPLICIT_LOWER_BOUND,
+              TypeUseLocation.IMPLICIT_LOWER_BOUND,
+              TypeUseLocation.UPPER_BOUND,
+              TypeUseLocation.EXPLICIT_UPPER_BOUND,
+              TypeUseLocation.IMPLICIT_UPPER_BOUND,
+              TypeUseLocation.OTHERWISE,
+              TypeUseLocation.ALL));
 
   /** List of TypeUseLocations that are valid for unchecked code defaults. */
   private static final List<TypeUseLocation> validUncheckedCodeDefaultLocations =
@@ -813,13 +843,10 @@ public class QualifierDefaults {
    * @checker_framework.manual #annotating-libraries Annotating libraries
    */
   private void applyDefaultsElement(Element annotationScope, AnnotatedTypeMirror type) {
-    Default[] defaults = precedenceList(annotationScope);
+    PrecedenceList defaults = precedenceList(annotationScope);
     DefaultApplierElement applier =
         createDefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
-
-    for (Default def : defaults) {
-      applier.applyDefault(def);
-    }
+    applier.applyDefaults(defaults);
   }
 
   /**
@@ -834,12 +861,12 @@ public class QualifierDefaults {
    *     for the type, or null
    * @return the defaults that apply to {@code annotationScope}, in the order to apply them
    */
-  protected Default[] precedenceList(@Nullable Element annotationScope) {
+  protected PrecedenceList precedenceList(@Nullable Element annotationScope) {
     if (annotationScope == null) {
       return getCheckedCodeDefaultsArray();
     }
 
-    Default[] cached = precedenceListCache.get(annotationScope);
+    PrecedenceList cached = precedenceListCache.get(annotationScope);
     if (cached != null) {
       return cached;
     }
@@ -858,7 +885,7 @@ public class QualifierDefaults {
       list.addAll(uncheckedCodeDefaults);
     }
     list.addAll(checkedCodeDefaults);
-    Default[] result = minimizeDefaults(list).toArray(new Default[0]);
+    PrecedenceList result = new PrecedenceList(minimizeDefaults(list));
 
     if (atypeFactory.shouldCache && !atypeFactory.isParsingAnnotationFiles()) {
       precedenceListCache.put(annotationScope, result);
@@ -872,10 +899,10 @@ public class QualifierDefaults {
    *
    * @return the precedence list consisting of just the checked code defaults
    */
-  private Default[] getCheckedCodeDefaultsArray() {
+  private PrecedenceList getCheckedCodeDefaultsArray() {
     if (checkedCodeDefaultsArray == null) {
       checkedCodeDefaultsArray =
-          minimizeDefaults(new ArrayList<>(checkedCodeDefaults)).toArray(new Default[0]);
+          new PrecedenceList(minimizeDefaults(new ArrayList<>(checkedCodeDefaults)));
     }
     return checkedCodeDefaultsArray;
   }
@@ -887,13 +914,55 @@ public class QualifierDefaults {
    * @return the precedence list consisting of the unchecked code defaults then the checked code
    *     defaults
    */
-  private Default[] getUncheckedThenCheckedArray() {
+  private PrecedenceList getUncheckedThenCheckedArray() {
     if (uncheckedThenCheckedArray == null) {
       List<Default> list = new ArrayList<>(uncheckedCodeDefaults);
       list.addAll(checkedCodeDefaults);
-      uncheckedThenCheckedArray = minimizeDefaults(list).toArray(new Default[0]);
+      uncheckedThenCheckedArray = new PrecedenceList(minimizeDefaults(list));
     }
     return uncheckedThenCheckedArray;
+  }
+
+  /**
+   * A precedence list: every {@link Default} that applies to some scope, in the order in which to
+   * apply them, together with whether applying them all in one traversal of the type gives the same
+   * result as traversing the type once per {@link Default}.
+   *
+   * <p>The two orders differ only when a {@link Default} that annotates a node below the top level
+   * of the type precedes a {@link Default} that annotates, from the top-level node, some node other
+   * than the top-level node. Within a single {@link DefaultSet} that cannot happen, because a
+   * {@link DefaultSet} is sorted by {@link TypeUseLocation} and the cross-node locations all
+   * precede the descendant locations. It can happen where two {@link DefaultSet}s are concatenated,
+   * because the second one starts over at a low {@link TypeUseLocation}.
+   */
+  protected static class PrecedenceList {
+
+    /** The defaults, in the order in which to apply them. Callers must not modify this array. */
+    public final Default[] defaults;
+
+    /** True if one traversal of the type suffices for all of {@link #defaults}. */
+    public final boolean singlePassSafe;
+
+    /**
+     * Creates a PrecedenceList.
+     *
+     * @param defaults the defaults, in the order in which to apply them
+     */
+    public PrecedenceList(List<Default> defaults) {
+      this.defaults = defaults.toArray(new Default[0]);
+      boolean safe = true;
+      boolean sawDescendantLocation = false;
+      for (Default def : this.defaults) {
+        if (sawDescendantLocation && CROSS_NODE_LOCATIONS.contains(def.location)) {
+          safe = false;
+          break;
+        }
+        if (DESCENDANT_LOCATIONS.contains(def.location)) {
+          sawDescendantLocation = true;
+        }
+      }
+      this.singlePassSafe = safe;
+    }
   }
 
   /**
@@ -949,8 +1018,17 @@ public class QualifierDefaults {
     /** The type to which to apply the default. */
     protected final AnnotatedTypeMirror type;
 
-    /** Location to which to apply the default. (Should only be set by the applyDefault method.) */
+    /**
+     * Location of the default currently being applied. (Should only be set by {@link
+     * #applyDefaults}.)
+     */
     protected TypeUseLocation location;
+
+    /** The defaults to apply at each node. (Should only be set by {@link #applyDefaults}.) */
+    protected Default[] defaults = new Default[0];
+
+    /** Reused by {@link #applyDefault}, so that one default costs no array allocation. */
+    private final Default[] singletonDefaults = new Default[1];
 
     /** The default element applier implementation. */
     protected final DefaultApplierElementImpl impl;
@@ -986,8 +1064,28 @@ public class QualifierDefaults {
      * @param def default to apply
      */
     public void applyDefault(Default def) {
-      this.location = def.location;
-      impl.visit(type, def.anno);
+      singletonDefaults[0] = def;
+      this.defaults = singletonDefaults;
+      impl.visit(type, null);
+    }
+
+    /**
+     * Apply every default in a precedence list to the type.
+     *
+     * <p>When the precedence list permits, this traverses the type once and applies every default
+     * at each node, rather than traversing the type once per default.
+     *
+     * @param precedenceList the defaults to apply, in the order in which to apply them
+     */
+    public void applyDefaults(PrecedenceList precedenceList) {
+      if (precedenceList.singlePassSafe) {
+        this.defaults = precedenceList.defaults;
+        impl.visit(type, null);
+      } else {
+        for (Default def : precedenceList.defaults) {
+          applyDefault(def);
+        }
+      }
     }
 
     /**
@@ -1023,16 +1121,33 @@ public class QualifierDefaults {
       }
     }
 
-    protected class DefaultApplierElementImpl extends AnnotatedTypeScanner<Void, AnnotationMirror> {
+    protected class DefaultApplierElementImpl extends AnnotatedTypeScanner<Void, Void> {
 
       @Override
-      public Void scan(@FindDistinct AnnotatedTypeMirror t, AnnotationMirror qual) {
+      public Void scan(@FindDistinct AnnotatedTypeMirror t, Void p) {
         if (!shouldBeAnnotated(t, t == defaultableTypeVar)) {
-          return super.scan(t, qual);
+          return super.scan(t, p);
         }
 
         // Some defaults only apply to the top level type.
         boolean isTopLevelType = t == type;
+        for (Default def : defaults) {
+          location = def.location;
+          applyDefaultAtNode(t, def.anno, isTopLevelType);
+        }
+
+        return super.scan(t, p);
+      }
+
+      /**
+       * Apply one default at one node of the type, without traversing below the node.
+       *
+       * @param t the node
+       * @param qual the default's qualifier
+       * @param isTopLevelType true if {@code t} is the type that defaults are being applied to
+       */
+      protected void applyDefaultAtNode(
+          @FindDistinct AnnotatedTypeMirror t, AnnotationMirror qual, boolean isTopLevelType) {
         switch (location) {
           case FIELD -> {
             if (scope != null && scope.getKind() == ElementKind.FIELD && isTopLevelType) {
@@ -1163,8 +1278,6 @@ public class QualifierDefaults {
               throw new BugInCF(
                   "QualifierDefaults.DefaultApplierElement: unhandled location: " + location);
         }
-
-        return super.scan(t, qual);
       }
 
       @Override
@@ -1185,22 +1298,22 @@ public class QualifierDefaults {
       private BoundType boundType = BoundType.UNBOUNDED;
 
       @Override
-      public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotationMirror qual) {
+      public Void visitTypeVariable(AnnotatedTypeVariable type, Void p) {
         if (visitedNodes.containsKey(type)) {
           return visitedNodes.get(type);
         }
 
-        visitBounds(type, type.getUpperBound(), type.getLowerBound(), qual);
+        visitBounds(type, type.getUpperBound(), type.getLowerBound(), p);
         return null;
       }
 
       @Override
-      public Void visitWildcard(AnnotatedWildcardType type, AnnotationMirror qual) {
+      public Void visitWildcard(AnnotatedWildcardType type, Void p) {
         if (visitedNodes.containsKey(type)) {
           return visitedNodes.get(type);
         }
 
-        visitBounds(type, type.getExtendsBound(), type.getSuperBound(), qual);
+        visitBounds(type, type.getExtendsBound(), type.getSuperBound(), p);
         return null;
       }
 
@@ -1212,7 +1325,7 @@ public class QualifierDefaults {
           AnnotatedTypeMirror boundedType,
           AnnotatedTypeMirror upperBound,
           AnnotatedTypeMirror lowerBound,
-          AnnotationMirror qual) {
+          Void p) {
 
         boolean prevIsUpperBound = isUpperBound;
         boolean prevIsLowerBound = isLowerBound;
@@ -1223,13 +1336,13 @@ public class QualifierDefaults {
         try {
           isLowerBound = true;
           isUpperBound = false;
-          scanAndReduce(lowerBound, qual, null);
+          scanAndReduce(lowerBound, p, null);
 
           visitedNodes.put(type, null);
 
           isLowerBound = false;
           isUpperBound = true;
-          scanAndReduce(upperBound, qual, null);
+          scanAndReduce(upperBound, p, null);
 
           visitedNodes.put(type, null);
 
