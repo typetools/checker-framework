@@ -146,7 +146,7 @@ public class StubGenerator {
     boolean newPackage = !newPackageName.equals(currentPackage);
     currentPackage = newPackageName;
 
-    if (newPackage) {
+    if (newPackage && !currentPackage.isEmpty()) {
       indent();
 
       out.print("package ");
@@ -156,13 +156,14 @@ public class StubGenerator {
     }
     String fullClassName = ElementUtils.getQualifiedClassName(typeElement).toString();
 
-    String className =
-        fullClassName.substring(
-            fullClassName.indexOf(currentPackage)
-                + currentPackage.length()
-                // +1 because currentPackage doesn't include
-                // the . between the package name and the classname
-                + 1);
+    // The class name, including the names of any outer classes, but not the package name.
+    String className;
+    if (currentPackage.isEmpty()) {
+      className = fullClassName;
+    } else {
+      // +1 for the "." between the package name and the class name.
+      className = fullClassName.substring(currentPackage.length() + 1);
+    }
 
     int index = className.lastIndexOf('.');
     if (index == -1) {
