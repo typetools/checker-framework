@@ -1,9 +1,12 @@
 package fakeoverrides;
+import java.util.List;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
 class SuperClass implements SuperInterface {
     // fake override:
     @Untainted int m();
+    // fake override, with a type argument in a formal parameter type:
+    @Untainted int g(List<String> l);
 }
 
 interface SubInterface extends SuperInterface {
