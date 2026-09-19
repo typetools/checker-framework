@@ -2670,8 +2670,8 @@ public final class AnnotationFileParser {
   private Object convert(Number number, TypeKind expectedKind, boolean negate) {
     byte scalefactor = (byte) (negate ? -1 : 1);
     return switch (expectedKind) {
-      case BYTE -> number.byteValue() * scalefactor;
-      case SHORT -> number.shortValue() * scalefactor;
+      case BYTE -> (byte) (number.byteValue() * scalefactor);
+      case SHORT -> (short) (number.shortValue() * scalefactor);
       case INT -> number.intValue() * scalefactor;
       case LONG -> number.longValue() * scalefactor;
       case CHAR -> {
@@ -2743,6 +2743,8 @@ public final class AnnotationFileParser {
    */
   private void builderSetValue(AnnotationBuilder builder, String name, Object value) {
     if (value instanceof Boolean b) {
+      builder.setValue(name, b);
+    } else if (value instanceof Byte b) {
       builder.setValue(name, b);
     } else if (value instanceof Character c) {
       builder.setValue(name, c);
