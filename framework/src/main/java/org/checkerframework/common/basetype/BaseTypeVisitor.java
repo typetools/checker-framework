@@ -4732,6 +4732,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           overridden);
     }
 
+    /**
+     * Returns true if each parameter type of the overridden method is a subtype of the
+     * corresponding parameter type of the overriding method.
+     *
+     * @return true if the parameter types are correct
+     */
     private boolean checkParameters() {
       List<AnnotatedTypeMirror> overriderParams = overrider.getParameterTypes();
       List<AnnotatedTypeMirror> overriddenParams = overridden.getParameterTypes();
