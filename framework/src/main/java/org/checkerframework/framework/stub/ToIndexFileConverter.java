@@ -4,6 +4,7 @@ import com.github.javaparser.ParseException;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
@@ -24,6 +25,7 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -185,7 +187,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @throws DefException if two different definitions of the same annotation cannot be unified
    * @throws IOException if there is trouble with file reading or writing
    */
-  private static void convert(AScene scene, InputStream in, OutputStream out)
+  // Not private, so that tests can call it.
+  static void convert(AScene scene, InputStream in, OutputStream out)
       throws IOException, DefException, ParseException {
     StubUnit iu;
     try {
@@ -559,6 +562,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
           public String visit(ClassOrInterfaceType type, Void v) {
             @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
             @FullyQualifiedName String typeName = type.getNameAsString();
+            if (!type.getScope().isPresent()) {
+              TypeParameter typeParam = typeParameterInScope(type, typeName);
+              if (typeParam != null) {
+                // The JVML descriptor uses the erasure, which is the first bound, or Object if
+                // the type parameter has no bound.
+                NodeList<ClassOrInterfaceType> bounds = typeParam.getTypeBound();
+                return bounds.isEmpty() ? "Ljava/lang/Object;" : bounds.get(0).accept(this, null);
+              }
+            }
             @SuppressWarnings("signature" // TODO:  bug in ToIndexFileConverter:
             // resolve requires a @BinaryName, but this passes a @FullyQualifiedName.
             // They differ for inner classes.
@@ -610,6 +622,27 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
+   * Returns the type parameter named {@code name} that is in scope at {@code node}, or null if no
+   * such type parameter is in scope.
+   *
+   * @param node a node in the stub file's AST
+   * @param name a type name, without type arguments
+   * @return the type parameter that {@code name} refers to at {@code node}, or null
+   */
+  private static @Nullable TypeParameter typeParameterInScope(Node node, String name) {
+    for (Node n = node; n != null; n = n.getParentNode().orElse(null)) {
+      if (n instanceof NodeWithTypeParameters) {
+        for (TypeParameter typeParam : ((NodeWithTypeParameters<?>) n).getTypeParameters()) {
+          if (typeParam.getNameAsString().equals(name)) {
+            return typeParam;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
    * Finds the fully qualified name of the class with the given name.
    *
    * @param className possibly unqualified name of class
@@ -636,7 +669,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
     for (String declName : imports) {
       String qualifiedName = mergeImport(declName, className);
-      if (loadClass(qualifiedName) != null) {
+      if (qualifiedName != null && loadClass(qualifiedName) != null) {
         return qualifiedName;
       }
     }
@@ -690,7 +723,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private static @Nullable Class<?> loadClass(@ClassGetName String className) {
     assert className != null;
     try {
-      return Class.forName(className, false, null);
+      return Class.forName(className, false, ToIndexFileConverter.class.getClassLoader());
     } catch (ClassNotFoundException e) {
       return null;
     }
