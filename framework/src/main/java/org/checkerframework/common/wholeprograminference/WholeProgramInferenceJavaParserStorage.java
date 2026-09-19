@@ -1183,8 +1183,8 @@ public class WholeProgramInferenceJavaParserStorage
 
     if (parentNode instanceof Type type) {
       // JavaParser's `TypeParameter` is a `Type`, so an annotation on a type parameter
-      // declaration, as in `<@Anno T>`, takes this branch.  `typeToTypeMirror` returns null for a
-      // type parameter declaration, so such an annotation is retained.
+      // declaration, as in `<@Anno T>`, takes this branch.  `JavaParserUtil.typeToTypeMirror`
+      // returns null for a type parameter declaration, so such an annotation is retained.
       return typeIsRelevant(gatf, type);
     }
     if (parentNode instanceof ArrayCreationLevel level) {
@@ -1263,12 +1263,13 @@ public class WholeProgramInferenceJavaParserStorage
    */
   private boolean typeIsRelevant(
       GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf, Type componentType, int arrayLevels) {
-    TypeMirror tm = typeToTypeMirror(componentType);
+    Types types = atypeFactory.getProcessingEnv().getTypeUtils();
+    TypeMirror tm =
+        JavaParserUtil.typeToTypeMirror(elements, types, componentType, typeElementCache);
     if (tm == null) {
       // The type could not be determined.  Be conservative.
       return true;
     }
-    Types types = atypeFactory.getProcessingEnv().getTypeUtils();
     for (int i = 0; i < arrayLevels; i++) {
       tm = types.getArrayType(tm);
     }
@@ -1300,77 +1301,6 @@ public class WholeProgramInferenceJavaParserStorage
     }
     // Be conservative.
     return true;
-  }
-
-  /**
-   * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined.
-   *
-   * <p>This differs from {@link JavaParserUtil#typeToTypeMirror} in that a use of a type variable,
-   * which has no TypeMirror here, yields the type variable's effective upper bound as computed by
-   * {@link #typeVariableUpperBound}. That is sound for deciding relevance, because {@code
-   * GenericAnnotatedTypeFactory.isRelevant} erases the type and treats a type variable as relevant
-   * exactly when its upper bound is.
-   *
-   * @param type a JavaParser type
-   * @return the TypeMirror for {@code type}, or null if it cannot be determined
-   */
-  private @Nullable TypeMirror typeToTypeMirror(Type type) {
-    Types types = atypeFactory.getProcessingEnv().getTypeUtils();
-    // An array type's element type is what might name a type variable, and a non-array type is
-    // its own element type.
-    Type elementType = type.getElementType();
-    TypeMirror result;
-    if (elementType instanceof ClassOrInterfaceType classType) {
-      // Resolving the name once yields both what it might name:  a type or a type variable.
-      // Looking each up separately would walk the enclosing scopes twice.
-      JavaParserUtil.ResolvedName resolved =
-          JavaParserUtil.resolveName(elements, classType, typeElementCache);
-      TypeElement typeElt = resolved.typeElement();
-      TypeParameter typeParameter = resolved.typeParameter();
-      if (typeElt != null) {
-        result = typeElt.asType();
-      } else if (typeParameter != null) {
-        // A type variable has no TypeMirror here, so use its upper bound.
-        result = typeVariableUpperBound(typeParameter);
-      } else {
-        return null;
-      }
-    } else {
-      result = JavaParserUtil.typeToTypeMirror(elements, types, elementType, typeElementCache);
-    }
-    if (result == null) {
-      return null;
-    }
-    for (int i = type.getArrayLevel(); i > 0; i--) {
-      result = types.getArrayType(result);
-    }
-    return result;
-  }
-
-  /**
-   * Returns the TypeMirror for the given type variable's upper bound, or null if the upper bound
-   * cannot be determined.
-   *
-   * <p>When the upper bound is an intersection type, which {@code Types} cannot create, this
-   * returns the intersection type's erasure -- that is, its leftmost bound.
-   *
-   * @param typeParameter the declaration of a type variable
-   * @return the TypeMirror for the upper bound of {@code typeParameter}, erased if that bound is an
-   *     intersection type, or null
-   */
-  private @Nullable TypeMirror typeVariableUpperBound(TypeParameter typeParameter) {
-    NodeList<ClassOrInterfaceType> bounds = typeParameter.getTypeBound();
-    if (bounds.isEmpty()) {
-      // The implicit upper bound is `Object`.
-      TypeElement objectElt = elements.getTypeElement("java.lang.Object");
-      return objectElt == null ? null : objectElt.asType();
-    }
-    // If there are multiple bounds, the upper bound is an intersection type, which `Types` cannot
-    // create.  Use its leftmost bound, which is its erasure; that is sufficient because the client,
-    // `GenericAnnotatedTypeFactory.isRelevant`, erases the type before testing relevance.
-    // The bound may itself be a type variable, as in `<T extends U, U extends CharSequence>`; the
-    // recursion terminates because Java forbids a cycle among type variable bounds.
-    return typeToTypeMirror(bounds.get(0));
   }
 
   /**

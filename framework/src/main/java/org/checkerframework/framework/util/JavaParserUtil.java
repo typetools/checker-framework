@@ -5,6 +5,7 @@ import com.github.javaparser.ParserConfiguration.LanguageLevel;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -1099,6 +1100,10 @@ public final class JavaParserUtil {
    * cannot be determined for an intersection type, a union type, {@code var}, a wildcard, a type
    * parameter declaration, or a type that is not on the classpath.
    *
+   * <p>A use of a type variable has no TypeMirror here, so this returns the type variable's
+   * effective upper bound, as computed by {@link #typeVariableUpperBound}. A client that
+   * distinguishes a type variable from its upper bound should call {@link #resolveName} instead.
+   *
    * @param elements used for looking up names
    * @param types used for creating types
    * @param type a JavaParser type
@@ -1121,11 +1126,56 @@ public final class JavaParserUtil {
       return types.getNoType(TypeKind.VOID);
     }
     if (type instanceof ClassOrInterfaceType classType) {
-      TypeElement typeElt = resolveTypeName(elements, classType, cache);
-      return typeElt == null ? null : typeElt.asType();
+      // Resolving the name once yields both what it might name:  a type or a type variable.
+      // Looking each up separately would walk the enclosing scopes twice.
+      ResolvedName resolved = resolveName(elements, classType, cache);
+      TypeElement typeElt = resolved.typeElement();
+      if (typeElt != null) {
+        return typeElt.asType();
+      }
+      TypeParameter typeParameter = resolved.typeParameter();
+      if (typeParameter != null) {
+        // A type variable has no TypeMirror here, so use its upper bound.
+        return typeVariableUpperBound(elements, types, typeParameter, cache);
+      }
+      return null;
     }
     // An intersection type, a union type, `var`, a wildcard, a type parameter declaration, etc.
     return null;
+  }
+
+  /**
+   * Returns the TypeMirror for the given type variable's upper bound, or null if the upper bound
+   * cannot be determined.
+   *
+   * <p>When the upper bound is an intersection type, which {@code Types} cannot create, this
+   * returns the intersection type's erasure -- that is, its leftmost bound.
+   *
+   * @param elements used for looking up names
+   * @param types used for creating types
+   * @param typeParameter the declaration of a type variable
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it. See {@link #resolveTypeName(Elements, ClassOrInterfaceType, Map)} for
+   *     restrictions on it.
+   * @return the TypeMirror for the upper bound of {@code typeParameter}, erased if that bound is an
+   *     intersection type, or null
+   */
+  public static @Nullable TypeMirror typeVariableUpperBound(
+      Elements elements,
+      Types types,
+      TypeParameter typeParameter,
+      Map<String, @Nullable TypeElement> cache) {
+    NodeList<ClassOrInterfaceType> bounds = typeParameter.getTypeBound();
+    if (bounds.isEmpty()) {
+      // The implicit upper bound is `Object`.
+      TypeElement objectElt = elements.getTypeElement("java.lang.Object");
+      return objectElt == null ? null : objectElt.asType();
+    }
+    // If there are multiple bounds, the upper bound is an intersection type, which `Types` cannot
+    // create.  Use its leftmost bound, which is its erasure.
+    // The bound may itself be a type variable, as in `<T extends U, U extends CharSequence>`; the
+    // recursion terminates because Java forbids a cycle among type variable bounds.
+    return typeToTypeMirror(elements, types, bounds.get(0), cache);
   }
 
   //
