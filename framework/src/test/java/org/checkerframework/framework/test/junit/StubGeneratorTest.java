@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.Set;
+import java.util.regex.Pattern;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -26,6 +27,10 @@ import org.junit.Test;
 /** Tests for {@link StubGenerator}. */
 public class StubGeneratorTest {
 
+  /** Matches a package declaration, which starts a line. */
+  private static final Pattern packageDeclarationPattern =
+      Pattern.compile("^[ \t]*package\\s", Pattern.MULTILINE);
+
   /** Creates a new StubGeneratorTest. */
   public StubGeneratorTest() {}
 
@@ -34,8 +39,20 @@ public class StubGeneratorTest {
     String stub =
         generateStub("Foo.java", "public class Foo { public static class Inner {} }", "Foo.Inner");
     Assert.assertTrue(stub, stub.contains("class Foo$Inner"));
-    // The default package has no package declaration.
-    Assert.assertFalse(stub, stub.contains("package"));
+    assertNoPackageDeclaration(stub);
+  }
+
+  @Test
+  public void doublyNestedClass() {
+    String stub =
+        generateStub(
+            "p/Qux.java",
+            "package p;"
+                + " public class Qux { public static class Inner { public static class Innermost"
+                + " {} } }",
+            "p.Qux");
+    Assert.assertTrue(stub, stub.contains("class Qux$Inner"));
+    Assert.assertTrue(stub, stub.contains("class Qux$Inner$Innermost"));
   }
 
   @Test
@@ -53,7 +70,17 @@ public class StubGeneratorTest {
   public void topLevelClassInDefaultPackage() {
     String stub = generateStub("Baz.java", "public class Baz {}", "Baz");
     Assert.assertTrue(stub, stub.contains("class Baz"));
-    Assert.assertFalse(stub, stub.contains("package"));
+    assertNoPackageDeclaration(stub);
+  }
+
+  /**
+   * Asserts that the given stub file text contains no package declaration, as is correct for the
+   * default package.
+   *
+   * @param stub the text of a stub file
+   */
+  private void assertNoPackageDeclaration(String stub) {
+    Assert.assertFalse(stub, packageDeclarationPattern.matcher(stub).find());
   }
 
   /**
@@ -69,20 +96,21 @@ public class StubGeneratorTest {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     Assert.assertNotNull("No system Java compiler is available.", compiler);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    StubGeneratorProcessor processor =
-        new StubGeneratorProcessor(typeName, new PrintStream(baos, true, StandardCharsets.UTF_8));
-    JavaCompiler.CompilationTask task =
-        compiler.getTask(
-            null,
-            null,
-            null,
-            // "-proc:only" means do not generate class files.
-            Arrays.asList("-proc:only"),
-            null,
-            Collections.singletonList(new SourceFile(fileName, source)));
-    task.setProcessors(Collections.singletonList(processor));
-    Assert.assertTrue("Compilation of " + fileName + " failed.", task.call());
-    Assert.assertTrue("Did not find type " + typeName + ".", processor.foundType);
+    try (PrintStream out = new PrintStream(baos, true, StandardCharsets.UTF_8)) {
+      StubGeneratorProcessor processor = new StubGeneratorProcessor(typeName, out);
+      JavaCompiler.CompilationTask task =
+          compiler.getTask(
+              null,
+              null,
+              null,
+              // "-proc:only" means do not generate class files.
+              Arrays.asList("-proc:only"),
+              null,
+              Collections.singletonList(new SourceFile(fileName, source)));
+      task.setProcessors(Collections.singletonList(processor));
+      Assert.assertTrue("Compilation of " + fileName + " failed.", task.call());
+      Assert.assertTrue("Did not find type " + typeName + ".", processor.foundType);
+    }
     return baos.toString(StandardCharsets.UTF_8);
   }
 
