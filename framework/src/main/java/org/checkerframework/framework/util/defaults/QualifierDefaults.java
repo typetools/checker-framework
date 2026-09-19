@@ -1121,7 +1121,14 @@ public class QualifierDefaults {
       }
     }
 
+    /**
+     * Applies {@link DefaultApplierElement#defaults} at every node of a type, where each default
+     * applies.
+     */
     protected class DefaultApplierElementImpl extends AnnotatedTypeScanner<Void, Void> {
+
+      /** Creates a {@code DefaultApplierElementImpl}. */
+      protected DefaultApplierElementImpl() {}
 
       @Override
       public Void scan(@FindDistinct AnnotatedTypeMirror t, Void p) {
