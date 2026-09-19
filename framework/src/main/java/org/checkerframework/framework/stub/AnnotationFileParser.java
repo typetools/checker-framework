@@ -917,6 +917,26 @@ public final class AnnotationFileParser {
   }
 
   /**
+   * Returns {@code qualifiedName} without the given package name and the dot that follows it. If
+   * {@code qualifiedName} is not in package {@code packageName}, returns {@code qualifiedName}
+   * unchanged.
+   *
+   * @param qualifiedName the fully-qualified name of a class
+   * @param packageName the name of a package, or null for the unnamed package
+   * @return {@code qualifiedName} with the package name stripped off
+   */
+  private static String removePackage(String qualifiedName, @Nullable String packageName) {
+    if (packageName == null) {
+      return qualifiedName;
+    }
+    String packagePrefix = packageName + ".";
+    if (qualifiedName.startsWith(packagePrefix)) {
+      return qualifiedName.substring(packagePrefix.length());
+    }
+    return qualifiedName;
+  }
+
+  /**
    * Process a type declaration: copy its annotations to {@code #annotationFileAnnos}.
    *
    * <p>This method stores the declaration's type parameters in {@link #typeParameters}. When
@@ -943,7 +963,8 @@ public final class AnnotationFileParser {
     TypeElement typeElt;
     if (classTree != null) {
       typeElt = TreeUtils.elementFromDeclaration(classTree);
-      innerName = typeElt.getQualifiedName().toString();
+      // An FqName's className does not include the package name, but getQualifiedName() does.
+      innerName = removePackage(typeElt.getQualifiedName().toString(), typeBeingParsed.packageName);
       typeBeingParsed = new FqName(typeBeingParsed.packageName, innerName);
       fqTypeName = typeBeingParsed.toString();
     } else {
