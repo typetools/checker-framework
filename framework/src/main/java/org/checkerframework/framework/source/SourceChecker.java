@@ -2952,9 +2952,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       if (colonPos == -1) {
         // `currentSuppressWarningsInEffect` has no colon, so it is not of the form
         // prefix:partial-message-key.
-        if (prefixes.contains(currentSuppressWarningsInEffect)) {
-          // The value in the @SuppressWarnings is exactly a prefix.
-          // Suppress the warning unless its message key is "unneeded.suppression".
+        if (prefixes.contains(currentSuppressWarningsInEffect)
+            || (!requirePrefixInWarningSuppressions
+                && (currentSuppressWarningsInEffect.equals("all")
+                    || currentSuppressWarningsInEffect.equals("allcheckers")))) {
+          // The value in the @SuppressWarnings is exactly a prefix, or -- when prefixes
+          // aren't required -- is the messagekey "all" or the checkername "allcheckers".
+          // Such a value suppresses every warning except "unneeded.suppression".  For that
+          // message key, examine the remaining values, so that a later value such as
+          // "unneeded.suppression" still has an effect.
           if (!messageKey.equals("unneeded.suppression")) {
             return true;
           }
@@ -2962,15 +2968,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         } else if (requirePrefixInWarningSuppressions) {
           // A prefix is required, but this SuppressWarnings string does not have a
           // prefix.
-          continue;
-        } else if (currentSuppressWarningsInEffect.equals("all")
-            || currentSuppressWarningsInEffect.equals("allcheckers")) {
-          // Prefixes aren't required and the whole SuppressWarnings string is
-          // the messagekey "all" or the checkername "allcheckers".
-          // Suppress the warning unless its message key is "unneeded.suppression".
-          if (!messageKey.equals("unneeded.suppression")) {
-            return true;
-          }
           continue;
         }
         // The currentSuppressWarningsInEffect is not a checker name, so
