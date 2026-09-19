@@ -699,12 +699,19 @@ public class QualifierDefaults {
       qualifiers.addAll(parentDefaults);
     }
 
-    if (qualifiers != null && !qualifiers.isEmpty()) {
-      defaultsAtCache.put(elt, qualifiers);
-      return qualifiers;
-    } else {
-      return DefaultSet.EMPTY;
+    if (qualifiers == null || qualifiers.isEmpty()) {
+      qualifiers = DefaultSet.EMPTY;
     }
+
+    // Memoize the empty answer as well as a non-empty one: most elements have no applicable
+    // default, and recomputing that walks the whole chain of enclosing scopes every time.
+    // Do not memoize while an annotation file is being parsed, because getDeclAnnotation can
+    // return null for an element whose annotation file has not been read yet.
+    if (atypeFactory.shouldCache && !atypeFactory.isParsingAnnotationFiles()) {
+      defaultsAtCache.put(elt, qualifiers);
+    }
+
+    return qualifiers;
   }
 
   /**
