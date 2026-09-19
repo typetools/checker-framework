@@ -15,6 +15,8 @@ import issue1542.ExampleAnno.ByteArrayExample;
 import issue1542.ExampleAnno.ByteExample;
 import issue1542.ExampleAnno.ShortArrayExample;
 import issue1542.ExampleAnno.ShortExample;
+import issue1542.ExampleAnno.FloatArrayExample;
+import issue1542.ExampleAnno.FloatExample;
 
 public class Stub {
     @CharArrayExample({1, 'a'}) int x1;
@@ -48,6 +50,15 @@ public class Stub {
     @ShortExample(1) int x25;
     @ShortExample(-32768) int x26;
     @ShortArrayExample({1, -32768}) int x27;
+
+    @FloatExample(0) int x28;
+    @FloatExample(0L) int x29;
+    @FloatExample(1.5) int x30;
+    @FloatExample(1.5f) int x31;
+    @FloatExample(-1.5f) int x32;
+    @FloatArrayExample({0, 0L, 1.5, 1.5F, -1.5F}) int x33;
+    @DoubleExample(-1.5) int x34;
+    @DoubleArrayExample({-1.5, -1.5f}) int x35;
 
     class InnerStub {
         @ClassArrayExample({InnerStub.class, Stub.class, InnerStub2.class}) int x20;

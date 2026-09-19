@@ -28,6 +28,14 @@ public class Stub {
   int x25;
   int x26;
   int x27;
+  int x28;
+  int x29;
+  int x30;
+  int x31;
+  int x32;
+  int x33;
+  int x34;
+  int x35;
 
   public class InnerStub {
     int x20;
