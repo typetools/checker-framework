@@ -55,4 +55,37 @@ public class ToIndexFileConverterTest {
         jaif.contains(
             "method myMethod(Lorg/checkerframework/framework/stub/ToIndexFileConverter;)V"));
   }
+
+  /** A single-type import shadows a class of the same name in the stub file's own package. */
+  @Test
+  public void testSingleTypeImportShadowsOwnPackage() throws Exception {
+    // Both org.checkerframework.framework.util.PurityChecker and
+    // org.checkerframework.dataflow.util.PurityChecker are on the classpath.
+    String jaif =
+        convert(
+            "package org.checkerframework.framework.util;",
+            "import org.checkerframework.dataflow.util.PurityChecker;",
+            "class MyClass {",
+            "  void myMethod(PurityChecker c) {}",
+            "}");
+    Assert.assertTrue(
+        jaif,
+        jaif.contains("method myMethod(Lorg/checkerframework/dataflow/util/PurityChecker;)V"));
+  }
+
+  /** A varargs parameter's JVML descriptor is an array type. */
+  @Test
+  public void testVarargs() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass<S extends CharSequence> {",
+            "  MyClass(int i, String... ss) {}",
+            "  <T extends Number> void myMethod(T... ts) {}",
+            "  void myOtherMethod(S[]... ss) {}",
+            "}");
+    Assert.assertTrue(jaif, jaif.contains("method <init>(I[Ljava/lang/String;)V"));
+    Assert.assertTrue(jaif, jaif.contains("method myMethod([Ljava/lang/Number;)V"));
+    Assert.assertTrue(jaif, jaif.contains("method myOtherMethod([[Ljava/lang/CharSequence;)V"));
+  }
 }

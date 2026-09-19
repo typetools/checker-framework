@@ -100,8 +100,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private final @DotSeparatedIdentifiers String pkgName;
 
-  /** Imports that appear in the stub file. */
-  private final List<String> imports;
+  /** Single-type imports that appear in the stub file, such as {@code import p.Foo;}. */
+  private final List<String> singleTypeImports;
+
+  /** Import-on-demand declarations that appear in the stub file, such as {@code import p.*;}. */
+  private final List<String> onDemandImports;
 
   /** A scene read from the input JAIF file, and will be written to the output JAIF file. */
   private final AScene scene;
@@ -119,22 +122,26 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     this.scene = scene;
     pkgName = pkgDecl == null ? null : pkgDecl.getNameAsString();
     if (importDecls == null) {
-      imports = Collections.emptyList();
+      singleTypeImports = Collections.emptyList();
+      onDemandImports = Collections.emptyList();
     } else {
-      ArrayList<String> imps = new ArrayList<>(importDecls.size());
+      ArrayList<String> singles = new ArrayList<>(importDecls.size());
+      ArrayList<String> onDemands = new ArrayList<>(importDecls.size());
       for (ImportDeclaration decl : importDecls) {
         if (!decl.isStatic()) {
           Matcher m = importPattern.matcher(decl.toString());
           if (m.find()) {
             String s = m.group(1);
             if (s != null) {
-              imps.add(s);
+              (s.endsWith("*") ? onDemands : singles).add(s);
             }
           }
         }
       }
-      imps.trimToSize();
-      imports = Collections.unmodifiableList(imps);
+      singles.trimToSize();
+      onDemands.trimToSize();
+      singleTypeImports = Collections.unmodifiableList(singles);
+      onDemandImports = Collections.unmodifiableList(onDemands);
     }
   }
 
@@ -283,8 +290,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     // Some of the methods in the generated parser use null to represent an empty list.
     if (params != null) {
       for (Parameter param : params) {
-        Type ptype = param.getType();
-        sb.append(getJVML(ptype));
+        sb.append(getJVML(param));
       }
     }
     sb.append(")V");
@@ -351,8 +357,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     AMethod method;
     if (params != null) {
       for (Parameter param : params) {
-        Type ptype = param.getType();
-        sb.append(getJVML(ptype));
+        sb.append(getJVML(param));
       }
     }
     sb.append(')').append(getJVML(type));
@@ -550,6 +555,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
+   * Computes a formal parameter's JVML descriptor.
+   *
+   * @param param a formal parameter
+   * @return the JVML descriptor of {@code param}'s type
+   */
+  private String getJVML(Parameter param) {
+    // For a varargs parameter, `getType()` returns the element type rather than the array type.
+    return (param.isVarArgs() ? "[" : "") + getJVML(param.getType());
+  }
+
+  /**
    * Computes a type's "binary name".
    *
    * @param type the type
@@ -651,9 +667,27 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private @Nullable @BinaryName String resolve(@BinaryName String className) {
 
+    // The order of the lookups below is the order in which Java resolves a type name: a
+    // single-type import shadows a type in the current package, which shadows a type that an
+    // import-on-demand declaration makes available.
+
+    for (String declName : singleTypeImports) {
+      String qualifiedName = mergeImport(declName, className);
+      if (qualifiedName != null && loadClass(qualifiedName) != null) {
+        return qualifiedName;
+      }
+    }
+
     if (pkgName != null) {
       String qualifiedName = Signatures.addPackage(pkgName, className);
       if (loadClass(qualifiedName) != null) {
+        return qualifiedName;
+      }
+    }
+
+    for (String declName : onDemandImports) {
+      String qualifiedName = mergeImport(declName, className);
+      if (qualifiedName != null && loadClass(qualifiedName) != null) {
         return qualifiedName;
       }
     }
@@ -663,13 +697,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       // so see whether this class is in that package.
       String qualifiedName = Signatures.addPackage("java.lang", className);
       if (loadClass(qualifiedName) != null) {
-        return qualifiedName;
-      }
-    }
-
-    for (String declName : imports) {
-      String qualifiedName = mergeImport(declName, className);
-      if (qualifiedName != null && loadClass(qualifiedName) != null) {
         return qualifiedName;
       }
     }
@@ -718,13 +745,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * Finds the {@link Class} corresponding to a name.
    *
    * @param className a class name
-   * @return the {@link Class} object corresponding to {@code className}, or null if none found
+   * @return the {@link Class} object corresponding to {@code className}, or null if none is found
+   *     or it cannot be loaded
    */
   private static @Nullable Class<?> loadClass(@ClassGetName String className) {
     assert className != null;
     try {
       return Class.forName(className, false, ToIndexFileConverter.class.getClassLoader());
-    } catch (ClassNotFoundException e) {
+    } catch (ClassNotFoundException | LinkageError e) {
+      // A LinkageError, such as NoClassDefFoundError, means that the class exists but cannot be
+      // used -- for example, one of its supertypes is not on the classpath.  Treat it the same
+      // as a class that does not exist, rather than aborting the whole conversion.
       return null;
     }
   }
