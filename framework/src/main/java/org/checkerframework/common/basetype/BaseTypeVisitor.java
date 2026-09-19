@@ -4350,8 +4350,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     private @Nullable Map<TypeVariable, AnnotatedTypeMirror> createTypeVarMapping() {
       if (isMethodReference) {
-        // A method reference does not implement a generic method of a functional interface, so
-        // there are no corresponding type variables.
+        // The type arguments of the method reference's compile-time declaration have already been
+        // inferred, and its type variables do not correspond to those of the functional
+        // interface's method.
         return null;
       }
       List<AnnotatedTypeVariable> overriderTypeVars = overrider.getTypeVariables();
@@ -4752,15 +4753,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
       }
 
-      // Express the overriding method's parameter types in terms of the overridden method's type
-      // variables, so that the two can be compared.
-      overriderParams = CollectionsP.mapList(this::adaptToOverridden, overriderParams);
-
       boolean result = true;
       for (int i = 0; i < overriderParams.size(); ++i) {
         AnnotatedTypeMirror capturedParam =
             atypeFactory.applyCaptureConversion(overriddenParams.get(i));
-        boolean success = typeHierarchy.isSubtype(capturedParam, overriderParams.get(i));
+        // Express the overriding method's parameter type in terms of the overridden method's type
+        // variables, so that the two can be compared.  Diagnostics use the unadapted type, which
+        // names the type variables that the overriding method declares.
+        boolean success =
+            typeHierarchy.isSubtype(capturedParam, adaptToOverridden(overriderParams.get(i)));
 
         checkParametersMsg(success, i, overriderParams, overriddenParams);
         result &= success;
