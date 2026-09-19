@@ -11,6 +11,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -119,6 +121,25 @@ public class QualifierDefaults {
    * Element, including the defaults contributed by the Element's enclosing scopes.
    */
   private final IdentityHashMap<Element, DefaultSet> defaultsAtCache = new IdentityHashMap<>();
+
+  /**
+   * Memoizes {@link #precedenceList} for the scopes that have element defaults. A scope without
+   * element defaults needs no entry, because its precedence list is one of the two shared arrays
+   * {@link #checkedCodeDefaultsArray} and {@link #uncheckedThenCheckedArray}.
+   */
+  private final IdentityHashMap<Element, Default[]> precedenceListCache = new IdentityHashMap<>();
+
+  /**
+   * The precedence list for a scope that has no element defaults and to which conservative defaults
+   * do not apply. Computed on demand by {@link #getCheckedCodeDefaultsArray}.
+   */
+  private Default @Nullable [] checkedCodeDefaultsArray = null;
+
+  /**
+   * The precedence list for a scope that has no element defaults and to which conservative defaults
+   * apply. Computed on demand by {@link #getUncheckedThenCheckedArray}.
+   */
+  private Default @Nullable [] uncheckedThenCheckedArray = null;
 
   /** A mapping of Element &rarr; Whether or not that element is AnnotatedFor this type system. */
   private final IdentityHashMap<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
@@ -279,6 +300,7 @@ public class QualifierDefaults {
    */
   public void addCheckedCodeDefault(
       AnnotationMirror absoluteDefaultAnno, TypeUseLocation location) {
+    clearDefaultsCaches();
     checkDuplicates(checkedCodeDefaults, absoluteDefaultAnno, location);
     checkedCodeDefaults.add(new Default(absoluteDefaultAnno, location));
   }
@@ -291,6 +313,7 @@ public class QualifierDefaults {
    */
   public void addUncheckedCodeDefault(
       AnnotationMirror uncheckedDefaultAnno, TypeUseLocation location) {
+    clearDefaultsCaches();
     checkDuplicates(uncheckedCodeDefaults, uncheckedDefaultAnno, location);
     checkIsValidUncheckedCodeLocation(uncheckedDefaultAnno, location);
 
@@ -329,8 +352,21 @@ public class QualifierDefaults {
       elementDeclaredDefaults.put(elem, prevset);
     }
     prevset.add(new Default(elementDefaultAnno, location));
-    // A previously-memoized answer may not account for the new default.
+    clearDefaultsCaches();
+  }
+
+  /**
+   * Discards every memoized answer that a newly-added default could invalidate. The standard
+   * defaults methods {@code addClimbStandardDefaults}, {@code addUncheckedStandardDefaults}, and
+   * the plural {@code add*CodeDefaults} all funnel through {@link #addCheckedCodeDefault} or {@link
+   * #addUncheckedCodeDefault}, so those two methods plus {@link #addElementDefault} are the only
+   * callers this method needs.
+   */
+  private void clearDefaultsCaches() {
     defaultsAtCache.clear();
+    precedenceListCache.clear();
+    checkedCodeDefaultsArray = null;
+    uncheckedThenCheckedArray = null;
   }
 
   /**
@@ -726,6 +762,12 @@ public class QualifierDefaults {
       return false;
     }
 
+    if (!useConservativeDefaultsBytecode && !useConservativeDefaultsSource) {
+      // Every path below returns false when both flags are false, and the checks below are
+      // expensive.
+      return false;
+    }
+
     if (uncheckedCodeDefaults.isEmpty()) {
       return false;
     }
@@ -771,23 +813,120 @@ public class QualifierDefaults {
    * @checker_framework.manual #annotating-libraries Annotating libraries
    */
   private void applyDefaultsElement(Element annotationScope, AnnotatedTypeMirror type) {
-    DefaultSet defaults = defaultsAt(annotationScope);
+    Default[] defaults = precedenceList(annotationScope);
     DefaultApplierElement applier =
         createDefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
 
     for (Default def : defaults) {
       applier.applyDefault(def);
     }
+  }
 
-    if (applyConservativeDefaults(annotationScope)) {
-      for (Default def : uncheckedCodeDefaults) {
-        applier.applyDefault(def);
+  /**
+   * Returns every default that applies to the given scope, in the order in which the defaults are
+   * to be applied: first the defaults of the scope itself and of the scope's enclosing scopes, then
+   * the conservative defaults if conservative defaults apply to the scope, and last the checked
+   * code defaults.
+   *
+   * <p>The result is memoized, and callers must not modify the result.
+   *
+   * @param annotationScope the element representing the nearest enclosing default annotation scope
+   *     for the type, or null
+   * @return the defaults that apply to {@code annotationScope}, in the order to apply them
+   */
+  protected Default[] precedenceList(@Nullable Element annotationScope) {
+    if (annotationScope == null) {
+      return getCheckedCodeDefaultsArray();
+    }
+
+    Default[] cached = precedenceListCache.get(annotationScope);
+    if (cached != null) {
+      return cached;
+    }
+
+    DefaultSet scopeDefaults = defaultsAt(annotationScope);
+    boolean conservative = applyConservativeDefaults(annotationScope);
+
+    if (scopeDefaults.isEmpty()) {
+      // The common case.  Return a shared array, so that the overwhelming majority of scopes
+      // need no per-scope storage at all.
+      return conservative ? getUncheckedThenCheckedArray() : getCheckedCodeDefaultsArray();
+    }
+
+    List<Default> list = new ArrayList<>(scopeDefaults);
+    if (conservative) {
+      list.addAll(uncheckedCodeDefaults);
+    }
+    list.addAll(checkedCodeDefaults);
+    Default[] result = minimizeDefaults(list).toArray(new Default[0]);
+
+    if (atypeFactory.shouldCache && !atypeFactory.isParsingAnnotationFiles()) {
+      precedenceListCache.put(annotationScope, result);
+    }
+    return result;
+  }
+
+  /**
+   * Returns the precedence list for a scope that has no element defaults and to which conservative
+   * defaults do not apply.
+   *
+   * @return the precedence list consisting of just the checked code defaults
+   */
+  private Default[] getCheckedCodeDefaultsArray() {
+    if (checkedCodeDefaultsArray == null) {
+      checkedCodeDefaultsArray =
+          minimizeDefaults(new ArrayList<>(checkedCodeDefaults)).toArray(new Default[0]);
+    }
+    return checkedCodeDefaultsArray;
+  }
+
+  /**
+   * Returns the precedence list for a scope that has no element defaults and to which conservative
+   * defaults apply.
+   *
+   * @return the precedence list consisting of the unchecked code defaults then the checked code
+   *     defaults
+   */
+  private Default[] getUncheckedThenCheckedArray() {
+    if (uncheckedThenCheckedArray == null) {
+      List<Default> list = new ArrayList<>(uncheckedCodeDefaults);
+      list.addAll(checkedCodeDefaults);
+      uncheckedThenCheckedArray = minimizeDefaults(list).toArray(new Default[0]);
+    }
+    return uncheckedThenCheckedArray;
+  }
+
+  /**
+   * Removes from a precedence list every {@link Default} that a preceding {@link Default} makes
+   * redundant, namely one whose location and qualifier hierarchy both already appeared.
+   *
+   * <p>Dropping such a {@link Default} does not change the result. Two {@link Default}s with the
+   * same location reach {@link DefaultApplierElement#addAnnotation} at exactly the same nodes,
+   * because which nodes a scan annotates depends on the location, the scope, and the structure of
+   * the type, but never on the qualifier. {@code addAnnotation} fills a hierarchy only when that
+   * hierarchy is empty, and the two {@link Default}s are in the same hierarchy, so the later one is
+   * a no-op. Keeping the earlier one preserves which qualifier wins.
+   *
+   * <p>A subclass that overrides {@link DefaultApplierElement#addAnnotation} with semantics other
+   * than "fill the hierarchy if the hierarchy is empty" should override this method to return its
+   * argument unchanged.
+   *
+   * @param defaults a precedence list
+   * @return the precedence list, without the redundant entries
+   */
+  protected List<Default> minimizeDefaults(List<Default> defaults) {
+    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
+    EnumMap<TypeUseLocation, AnnotationMirrorSet> seen = new EnumMap<>(TypeUseLocation.class);
+    List<Default> result = new ArrayList<>(defaults.size());
+    for (Default def : defaults) {
+      AnnotationMirror top = qualHierarchy.getTopAnnotation(def.anno);
+      AnnotationMirrorSet tops =
+          seen.computeIfAbsent(def.location, __ -> new AnnotationMirrorSet());
+      if (tops.add(top)) {
+        result.add(def);
       }
     }
-
-    for (Default def : checkedCodeDefaults) {
-      applier.applyDefault(def);
-    }
+    return result;
   }
 
   protected DefaultApplierElement createDefaultApplierElement(
