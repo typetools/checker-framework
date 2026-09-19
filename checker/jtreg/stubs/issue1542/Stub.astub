@@ -11,6 +11,10 @@ import issue1542.ExampleAnno.MyEnumArrayExample;
 import issue1542.ExampleAnno.MyEnumExample;
 import issue1542.ExampleAnno.ClassArrayExample;
 import issue1542.ExampleAnno.ClassExample;
+import issue1542.ExampleAnno.ByteArrayExample;
+import issue1542.ExampleAnno.ByteExample;
+import issue1542.ExampleAnno.ShortArrayExample;
+import issue1542.ExampleAnno.ShortExample;
 
 public class Stub {
     @CharArrayExample({1, 'a'}) int x1;
@@ -36,6 +40,14 @@ public class Stub {
     @ClassArrayExample(ClassExample.class) int x18;
     @ClassArrayExample({ClassExample.class, java.lang.String.class, String.class}) int x19;
     @ClassArrayExample({InnerStub.class, Stub.class, Stub.InnerStub.class}) int x20;
+
+    @ByteExample(1) int x21;
+    @ByteExample(-128) int x22;
+    @ByteArrayExample(1) int x23;
+    @ByteArrayExample({1, -128}) int x24;
+    @ShortExample(1) int x25;
+    @ShortExample(-32768) int x26;
+    @ShortArrayExample({1, -32768}) int x27;
 
     class InnerStub {
         @ClassArrayExample({InnerStub.class, Stub.class, InnerStub2.class}) int x20;
