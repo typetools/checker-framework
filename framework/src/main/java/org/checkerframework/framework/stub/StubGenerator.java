@@ -224,8 +224,19 @@ public class StubGenerator {
       out.print('>');
     }
 
-    // Extends
-    if (typeElement.getSuperclass().getKind() != TypeKind.NONE
+    // Record components, which are part of a record's header
+    if (typeElement.getKind() == ElementKind.RECORD) {
+      StringJoiner components = new StringJoiner(", ", "(", ")");
+      for (Element component : typeElement.getRecordComponents()) {
+        components.add(formatType(component.asType()) + " " + component.getSimpleName());
+      }
+      out.print(components.toString());
+    }
+
+    // Extends.  A record may not have an `extends` clause; its superclass is always
+    // java.lang.Record.
+    if (typeElement.getKind() != ElementKind.RECORD
+        && typeElement.getSuperclass().getKind() != TypeKind.NONE
         && !TypesUtils.isObject(typeElement.getSuperclass())) {
       out.print(" extends ");
       out.print(formatType(typeElement.getSuperclass()));
