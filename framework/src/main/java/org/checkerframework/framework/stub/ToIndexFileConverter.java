@@ -552,7 +552,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param type the type
    * @return the type's binary name
    */
-  private String getJVML(Type type) {
+  // Not private, so that it can be tested.
+  String getJVML(Type type) {
     return type.accept(
         new GenericVisitorAdapter<String, Void>() {
           @Override
@@ -603,7 +604,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
           @Override
           public String visit(WildcardType type, Void v) {
-            return type.getSuperType().get().accept(this, null);
+            // The erasure of a wildcard is the erasure of its upper bound.  The upper bound of an
+            // unbounded wildcard, and of a "super" wildcard, is Object.
+            ReferenceType extendedType = type.getExtendedType().orElse(null);
+            if (extendedType == null) {
+              return "Ljava/lang/Object;";
+            }
+            return extendedType.accept(this, null);
           }
         },
         null);
