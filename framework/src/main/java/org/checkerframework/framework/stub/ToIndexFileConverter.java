@@ -527,8 +527,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             for (AnnotationExpr expr : type.getAnnotations()) {
               Annotation anno = extractAnnotation(expr);
               typeElem.tlAnnotationsHere.add(anno);
-              type.accept(this, loc);
             }
+            // Descend into the type's own inner types, exactly once, whether or not the type
+            // itself is annotated.
+            type.accept(this, loc);
           }
 
           /**
