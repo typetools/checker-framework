@@ -80,7 +80,14 @@ public class SubtypeVisitHistory {
     }
   }
 
-  /** Remove {@code type1} and {@code type2}. */
+  /**
+   * Remove {@code type1} and {@code type2}.
+   *
+   * @param type1 the first type
+   * @param type2 the second type
+   * @param currentTop the top of the relevant type hierarchy; only annotations from that hierarchy
+   *     are considered
+   */
   public void remove(
       AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, AnnotationMirror currentTop) {
     TypePair key = new TypePair(type1, type2);
@@ -97,6 +104,10 @@ public class SubtypeVisitHistory {
    * Returns true if type1 and type2 (or an equivalent pair) have been passed to the put method
    * previously.
    *
+   * @param type1 the first type
+   * @param type2 the second type
+   * @param currentTop the top of the relevant type hierarchy; only annotations from that hierarchy
+   *     are considered
    * @return true if an equivalent pair has already been added to the history
    */
   public boolean contains(

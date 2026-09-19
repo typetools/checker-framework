@@ -342,6 +342,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
    *
    * <p>This is useful for expressions like "n+1", for which {@link #parseJavaExpressionString}
    * returns null because the whole expression is not a receiver.
+   *
+   * @param s a Java expression, possibly with a constant offset
+   * @param atypeFactory the type factory
+   * @param currentPath the location at which {@code s} is evaluated
+   * @return the JavaExpression and offset for {@code s}, or null if {@code s} cannot be parsed
    */
   static @Nullable JavaExpressionAndOffset getExpressionAndOffsetFromJavaExpressionString(
       String s, UpperBoundAnnotatedTypeFactory atypeFactory, TreePath currentPath) {

@@ -81,6 +81,9 @@ public final class PurityChecker {
    */
   public static class PurityResult {
 
+    /** Creates a new PurityResult. */
+    public PurityResult() {}
+
     /**
      * A reason that a method is impure: a tree, and a message key explaining what is wrong with it.
      *

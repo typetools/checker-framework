@@ -46,6 +46,7 @@ import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -622,7 +623,10 @@ public class IndexFileSpecification {
    * @return the {@link CastInsertion} and {@link CloseParenthesisInsertion}
    */
   private CastInsertions createCastInsertion(
-      Type type, String annotationString, List<Insertion> innerTypeInsertions, Criteria criteria) {
+      Type type,
+      @Nullable String annotationString,
+      List<Insertion> innerTypeInsertions,
+      Criteria criteria) {
     if (annotationString != null) {
       type.addAnnotation(annotationString);
     }
@@ -687,7 +691,12 @@ public class IndexFileSpecification {
    */
   private record AnnotationAndText(String text, Annotation annotation) {}
 
-  // Returns a string representation of the annotations at the element.
+  /**
+   * Returns the annotations at the element, each with its string representation.
+   *
+   * @param element an element
+   * @return the annotations at {@code element}, each with its string representation
+   */
   private Set<AnnotationAndText> getElementAnnotations(AElement element) {
     Set<AnnotationAndText> result = new LinkedHashSet<>(element.tlAnnotationsHere.size());
     for (Annotation a : element.tlAnnotationsHere) {

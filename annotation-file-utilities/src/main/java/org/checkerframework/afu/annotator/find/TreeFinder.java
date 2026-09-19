@@ -291,7 +291,11 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
     }
 
     /**
+     * Returns the path and insertion position for a type annotation on the base type of {@code t}:
+     * that is, on {@code t} with any package name, array brackets, and type arguments stripped off.
+     *
      * @param t an expression for a type
+     * @return the path and insertion position for a type annotation on the base type of {@code t}
      */
     private ASTRecordAndPosition getBaseTypePosition(JCTree t) {
       while (true) {
@@ -494,7 +498,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
     //   new int[][] {...}
     //   { ... }            -- as in: String[] names2 = { "Alice", "Bob" };
     @Override
-    public ASTRecordAndPosition visitNewArray(NewArrayTree node, Insertion ins) {
+    public @Nullable ASTRecordAndPosition visitNewArray(NewArrayTree node, Insertion ins) {
       dbug.debug("TypePositionFinder.visitNewArray%n");
       JCNewArray na = (JCNewArray) node;
       GenericArrayLocationCriterion galc = ins.getCriteria().getGenericArrayLocation();
@@ -962,10 +966,19 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
    */
   public record PositionAndASTPath(int pos, @Nullable ASTPath astPath) {}
 
+  /** Finds the position at which to insert a type annotation. */
   private final TypePositionFinder tpf;
+
+  /** Finds the position at which to insert a declaration annotation. */
   private final DeclarationPositionFinder dpf;
+
+  /** The source tree that is being searched. */
   private final JCCompilationUnit tree;
+
+  /** The insertions, indexed by the position at which to insert them. */
   private final SetMultimap<PositionAndASTPath, Insertion> insertions;
+
+  /** The insertions, indexed by the AST record of the tree to insert them on. */
   private final SetMultimap<ASTRecord, Insertion> astInsertions;
 
   /**
