@@ -20,6 +20,8 @@ public class Class2<X> extends Class1<X> {
     class1.wildcardSuper(gen);
   }
 
+  // The stub file declares the upper bound of the overridden method's type parameter as
+  // @NonNull Object.  Widening the upper bound is legal, because it permits more type arguments.
   @Override
   public <T> T methodTypeParam(T t) {
     return super.methodTypeParam(t);
