@@ -1,5 +1,6 @@
 package fakeoverrides;
 
+import java.util.List;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
 /*
@@ -15,5 +16,10 @@ public class Use extends SuperClass implements SubInterface {
   void use(Use d) {
     // Ok, because the fake override in SuperClasses is taken over the one in SubInterface.
     @Untainted int i = d.m();
+  }
+
+  void useGeneric(Use d, List<String> l) {
+    // Ok, because of the fake override in SuperClass.
+    @Untainted int i = d.g(l);
   }
 }

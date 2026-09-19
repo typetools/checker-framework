@@ -2064,7 +2064,8 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Returns true if the two types are the same.
+   * Returns true if the two types are the same. The comparison is on erasures: type arguments are
+   * ignored.
    *
    * @param javacType type in javac form
    * @param javaParserType type in JavaParser form
@@ -2103,8 +2104,9 @@ public final class AnnotationFileParser {
         }
         com.sun.tools.javac.code.Type javacTypeInternal = (com.sun.tools.javac.code.Type) javacType;
 
-        // Use asString() because toString() includes annotations.
-        String javaParserString = javaParserClassType.asString();
+        // Use getNameWithScope() rather than asString(), because asString() includes annotations
+        // and type arguments, neither of which appears in the name of the javac element.
+        String javaParserString = javaParserClassType.getNameWithScope();
         Element javacElement = javacTypeInternal.asElement();
         // Check both fully-qualified name and simple name.
         return javacElement.toString().equals(javaParserString)
