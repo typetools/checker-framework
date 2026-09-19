@@ -171,12 +171,7 @@ public class OptionalImplVisitor
   }
 
   /**
-   * Is the expression a call to {@code isPresent} or {@code isEmpty}? If not, returns null. If so,
-   * returns a pair of (boolean, receiver expression). The boolean is true if the given expression
-   * is a call to {@code isPresent} and is false if the given expression is a call to {@code
-   * isEmpty}.
-   *
-   * <p>A call to {@code Optional.isPresent} or {@code Optional.isEmpty}.
+   * A call to {@code Optional.isPresent} or {@code Optional.isEmpty}.
    *
    * @param isPresent true if the call tests that the receiver is present, false if it tests that
    *     the receiver is empty
