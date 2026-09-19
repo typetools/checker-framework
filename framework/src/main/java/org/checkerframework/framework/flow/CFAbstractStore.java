@@ -1471,8 +1471,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   @Override
   public int hashCode() {
-    // What is a good hash code to use?
-    return 22;
+    // `equals` is mutual containment of the five maps, so equal stores have equal key sets, and
+    // `Set.hashCode` does not depend on iteration order.
+    // This hashes only the keys, not the values, because `CFAbstractValue.hashCode` is not
+    // consistent with `CFAbstractValue.equals`: `equals` compares underlying types with
+    // `Types.isSameType` and annotations with `AnnotationUtils.areSame`, but `hashCode` uses the
+    // identity hash codes of the javac `Type` and of each javac annotation mirror.
+    return Objects.hash(
+        localVariableValues.keySet(),
+        fieldValues.keySet(),
+        arrayValues.keySet(),
+        methodCallExpressions.keySet(),
+        classValues.keySet());
   }
 
   @SideEffectFree
