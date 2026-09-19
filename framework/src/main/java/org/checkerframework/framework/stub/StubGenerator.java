@@ -133,7 +133,11 @@ public class StubGenerator {
     printMethodDecl(elt);
   }
 
-  /** Generate the stub file for provided class. The generated file includes the package name. */
+  /**
+   * Generate the stub file for provided class. The generated file includes the package name.
+   *
+   * @param typeElement the class to generate a stub file for
+   */
   public void stubFromType(TypeElement typeElement) {
 
     // only output stub for classes, interfaces, and records.  not enums
@@ -303,6 +307,7 @@ public class StubGenerator {
    * Helper method that outputs the public or protected inner members of a class.
    *
    * @param members list of the class members
+   * @param innerClass a list to which this method adds the inner classes it encounters
    */
   private void printTypeMembers(List<? extends Element> members, List<TypeElement> innerClass) {
     for (Element element : members) {
@@ -312,7 +317,12 @@ public class StubGenerator {
     }
   }
 
-  /** Helper method that outputs the declaration of the member. */
+  /**
+   * Helper method that outputs the declaration of the member.
+   *
+   * @param member the member whose declaration to output
+   * @param innerClass a list to which this method adds {@code member} if it is an inner class
+   */
   private void printMember(Element member, List<TypeElement> innerClass) {
     if (member.getKind() == ElementKind.ENUM_CONSTANT) {
       // Enum constants are printed before all the other members of an enum.
