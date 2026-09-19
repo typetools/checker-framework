@@ -498,7 +498,7 @@ public class AnnotationFileElementTypes {
 
       if (canTransferAnnotationsToSameName && enclosingType.getKind() == ElementKind.RECORD) {
         AnnotationFileParser.RecordStub recordStub =
-            annotationFileAnnos.records.get(enclosingType.getSimpleName().toString());
+            annotationFileAnnos.records.get(ElementUtils.getQualifiedName(enclosingType));
         if (recordStub != null
             && recordStub.componentsByName.containsKey(elt.getSimpleName().toString())) {
           RecordComponentStub recordComponentStub =
