@@ -40,7 +40,6 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.IPair;
 
 /**
  * {@link CFAbstractAnalysis} is an extensible org.checkerframework.dataflow analysis for the
@@ -128,8 +127,16 @@ public abstract class CFAbstractAnalysis<
    * <p>Expressions that fail to parse are not cached: the exception is reported once per call site,
    * and such expressions are rare.
    */
-  private final Map<IPair<ExecutableElement, String>, JavaExpression> seOnlyParseCache =
-      new HashMap<>(2);
+  private final Map<SeOnlyParseCacheKey, JavaExpression> seOnlyParseCache = new HashMap<>(2);
+
+  /**
+   * A key for {@link #seOnlyParseCache}: an expression of a {@code @SideEffectsOnly} annotation,
+   * together with the method on whose declaration the annotation appears.
+   *
+   * @param declaringMethod the method on whose declaration the annotation appears
+   * @param expression the expression as written in the annotation
+   */
+  private record SeOnlyParseCacheKey(ExecutableElement declaringMethod, String expression) {}
 
   /** The compilation unit for which {@link #seOnlyParseCache} holds; null if the cache is empty. */
   private @Nullable CompilationUnitTree seOnlyParseCacheRoot;
@@ -233,7 +240,7 @@ public abstract class CFAbstractAnalysis<
       seOnlyParseCache.clear();
       seOnlyParseCacheRoot = root;
     }
-    IPair<ExecutableElement, String> key = IPair.of(declaringMethod, expression);
+    SeOnlyParseCacheKey key = new SeOnlyParseCacheKey(declaringMethod, expression);
     JavaExpression result = seOnlyParseCache.get(key);
     if (result == null) {
       result = StringToJavaExpression.atMethodDecl(expression, declaringMethod, checker);

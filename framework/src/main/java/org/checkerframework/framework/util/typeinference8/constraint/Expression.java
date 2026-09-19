@@ -35,7 +35,6 @@ import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchEx
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.IPair;
 
 /**
  * &lt;Expression &rarr; T&gt; An expression is compatible in a loose invocation context with type T
@@ -316,13 +315,13 @@ public class Expression extends TypeConstraint {
   // See https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2.1-200
   private ReductionResult reduceLambda(Java8InferenceContext context) {
     LambdaExpressionTree lambda = (LambdaExpressionTree) expression;
-    IPair<AbstractType, BoundSet> pair = getGroundTargetType(T, lambda, context);
+    GroundTargetType pair = getGroundTargetType(T, lambda, context);
     if (pair == null) {
       // JLS 18.2.1: "If no valid function type can be found, the constraint reduces to false."
       return ConstraintSet.FALSE;
     }
-    AbstractType tPrime = pair.first;
-    BoundSet boundSet = pair.second == null ? new BoundSet(context) : pair.second;
+    AbstractType tPrime = pair.groundTargetType();
+    BoundSet boundSet = pair.boundSet() == null ? new BoundSet(context) : pair.boundSet();
 
     ConstraintSet constraintSet = new ConstraintSet();
 
@@ -383,18 +382,18 @@ public class Expression extends TypeConstraint {
    * This method sets up functional interface parameterization inference for {@code lambda} as
    * defined in JLS 18.5.3.
    *
-   * <p>Computes the ground target type of {@code t}. Returned as the first in the pair. This
-   * process might create additional bounds, if so the second in the returned pair will be non-null.
+   * <p>Computes the ground target type of {@code t}. This process might create additional bounds;
+   * if so, the returned {@code boundSet} is non-null.
    *
    * @param t the target type of {@code lambda}
    * @param lambda a lambda to infer functional interface parameterization
    * @param context the context
-   * @return a pair of the ground target type and the additional bounds it created, if any
+   * @return the ground target type and the additional bounds it created, if any
    */
-  private @Nullable IPair<AbstractType, BoundSet> getGroundTargetType(
+  private @Nullable GroundTargetType getGroundTargetType(
       AbstractType t, LambdaExpressionTree lambda, Java8InferenceContext context) {
     if (!t.isWildcardParameterizedType()) {
-      return IPair.of(t, null);
+      return new GroundTargetType(t, null);
     }
     // 15.27.3:
     // If T is a wildcard-parameterized functional interface type and the lambda expression is
@@ -406,9 +405,18 @@ public class Expression extends TypeConstraint {
       // is implicitly typed, then the ground target type is the non-wildcard parameterization
       // (9.9) of T.
       // https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9-200-C
-      return IPair.of(nonWildcardParameterization(t, context), null);
+      return new GroundTargetType(nonWildcardParameterization(t, context), null);
     }
   }
+
+  /**
+   * The ground target type of a lambda expression, and any additional bounds that computing it
+   * created.
+   *
+   * @param groundTargetType the ground target type
+   * @param boundSet the bound set that needs to be resolved, or null if none was created
+   */
+  private record GroundTargetType(AbstractType groundTargetType, @Nullable BoundSet boundSet) {}
 
   /**
    * Returns the non-wildcard parameterization of {@code t} as defined in <a
@@ -458,10 +466,10 @@ public class Expression extends TypeConstraint {
    * @param t the target type of the lambda
    * @param lambda a lambda expression
    * @param context the context
-   * @return a pair of the type of the lambda and the bound set that needs to be resolved, or null
-   *     if no valid parameterization exists
+   * @return the type of the lambda and the bound set that needs to be resolved, or null if no valid
+   *     parameterization exists
    */
-  private @Nullable IPair<AbstractType, BoundSet> explicitlyTypedLambdaWithWildcard(
+  private @Nullable GroundTargetType explicitlyTypedLambdaWithWildcard(
       AbstractType t, LambdaExpressionTree lambda, Java8InferenceContext context) {
     // Where a lambda expression with explicit parameter types P1, ..., Pn targets a functional
     // interface type F<A1, ..., Am> with at least one wildcard type argument, then a
@@ -489,7 +497,7 @@ public class Expression extends TypeConstraint {
     assert qs != null : "@AssumeAssertion(nullness): tPrime is a functional interface";
     if (qs.size() != ps.size()) {
       // 18.5.3: If n != k, no valid parameterization exists.
-      return IPair.of(t, falseBoundSet(context));
+      return new GroundTargetType(t, falseBoundSet(context));
     }
 
     // A set of constraint formulas is formed with, for all i (1 <= i <= n), <Pi = Qi>.
@@ -549,9 +557,9 @@ public class Expression extends TypeConstraint {
     // are types, or the non-wildcard parameterization (9.9) of F<A'1, ..., A'm>, if one or more
     // type arguments are still wildcards.
     if (hasWildcard) {
-      return IPair.of(nonWildcardParameterization(target, context), b);
+      return new GroundTargetType(nonWildcardParameterization(target, context), b);
     }
-    return IPair.of(target, b);
+    return new GroundTargetType(target, b);
   }
 
   /**
