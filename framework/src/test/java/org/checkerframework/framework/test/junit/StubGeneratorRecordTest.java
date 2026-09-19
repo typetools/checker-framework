@@ -140,6 +140,16 @@ public class StubGeneratorRecordTest {
     assertParses(stub);
   }
 
+  @Test
+  public void topLevelEnum() {
+    String stub =
+        generateStub("p/Color.java", "package p; public enum Color { RED, BLUE }", "p.Color");
+    Assert.assertTrue(stub, stub.contains("package p;"));
+    Assert.assertTrue(stub, stub.contains("enum Color"));
+    Assert.assertTrue(stub, stub.contains("RED, BLUE;"));
+    assertParses(stub);
+  }
+
   /**
    * Returns a source file that declares an annotation in package {@code p}.
    *

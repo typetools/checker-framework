@@ -140,10 +140,11 @@ public class StubGenerator {
    */
   public void stubFromType(TypeElement typeElement) {
 
-    // only output stub for classes, interfaces, and records.  not enums
+    // only output stub for classes, interfaces, records, and enums.  not annotation types
     if (typeElement.getKind() != ElementKind.CLASS
         && typeElement.getKind() != ElementKind.INTERFACE
-        && typeElement.getKind() != ElementKind.RECORD) {
+        && typeElement.getKind() != ElementKind.RECORD
+        && typeElement.getKind() != ElementKind.ENUM) {
       return;
     }
 
