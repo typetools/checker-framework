@@ -40,6 +40,12 @@ import org.plumelib.util.IPair;
  * org.checkerframework.dataflow.qual.Pure}) of a statement or expression. The entry point is method
  * {@link #checkPurity}.
  *
+ * <p>This class does not check {@link org.checkerframework.dataflow.qual.SideEffectsOnly}, which is
+ * the other purity annotation. Verifying {@code @SideEffectsOnly} requires parsing the Java
+ * expressions in the annotation and viewpoint-adapting them at each call site, which this module
+ * cannot do. {@code org.checkerframework.common.basetype.DisallowedSideEffects}, which {@code
+ * BaseTypeVisitor} calls, checks {@code @SideEffectsOnly}.
+ *
  * @see SideEffectFree
  * @see Deterministic
  * @see Pure
@@ -94,7 +100,9 @@ public final class PurityChecker {
     /**
      * Contains the varieties of purity that the expression has. Starts out with the purities that a
      * method body can be analyzed for ({@link PurityKind#SIDE_EFFECT_FREE} and {@link
-     * PurityKind#DETERMINISTIC}), and elements are removed from it as violations are found.
+     * PurityKind#DETERMINISTIC}), and elements are removed from it as violations are found. {@link
+     * PurityKind#SIDE_EFFECTS_ONLY} is not tracked here; it is checked separately, since it does
+     * not correspond to a property that this analysis computes about a method body.
      */
     protected EnumSet<PurityKind> kinds =
         EnumSet.of(PurityKind.SIDE_EFFECT_FREE, PurityKind.DETERMINISTIC);
