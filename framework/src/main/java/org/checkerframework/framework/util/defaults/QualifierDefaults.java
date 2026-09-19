@@ -107,11 +107,18 @@ public class QualifierDefaults {
   protected final Map<Element, BoundType> elementToBoundType = MapsP.createLruCache(CACHE_SIZE);
 
   /**
-   * Defaults that apply for a certain Element. On the one hand this is used for caching (an earlier
-   * name for the field was "qualifierCache"). It can also be used by type systems to set defaults
-   * for certain Elements.
+   * Defaults that a type system has explicitly declared for an Element, via {@link
+   * #addElementDefault}. These compose with the defaults written as {@code @DefaultQualifier} on
+   * the element and with the defaults of the element's enclosing scopes; see {@link #defaultsAt}.
    */
-  private final IdentityHashMap<Element, DefaultSet> elementDefaults = new IdentityHashMap<>();
+  private final IdentityHashMap<Element, DefaultSet> elementDeclaredDefaults =
+      new IdentityHashMap<>();
+
+  /**
+   * Memoizes {@link #defaultsAt}: a mapping from an Element to all the defaults that apply to that
+   * Element, including the defaults contributed by the Element's enclosing scopes.
+   */
+  private final IdentityHashMap<Element, DefaultSet> defaultsAtCache = new IdentityHashMap<>();
 
   /** A mapping of Element &rarr; Whether or not that element is AnnotatedFor this type system. */
   private final IdentityHashMap<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
@@ -314,14 +321,16 @@ public class QualifierDefaults {
    */
   public void addElementDefault(
       Element elem, AnnotationMirror elementDefaultAnno, TypeUseLocation location) {
-    DefaultSet prevset = elementDefaults.get(elem);
+    DefaultSet prevset = elementDeclaredDefaults.get(elem);
     if (prevset != null) {
       checkDuplicates(prevset, elementDefaultAnno, location);
     } else {
       prevset = new DefaultSet();
+      elementDeclaredDefaults.put(elem, prevset);
     }
     prevset.add(new Default(elementDefaultAnno, location));
-    elementDefaults.put(elem, prevset);
+    // A previously-memoized answer may not account for the new default.
+    defaultsAtCache.clear();
   }
 
   /**
@@ -627,17 +636,27 @@ public class QualifierDefaults {
       return DefaultSet.EMPTY;
     }
 
-    if (elementDefaults.containsKey(elt)) {
-      return elementDefaults.get(elt);
+    DefaultSet cached = defaultsAtCache.get(elt);
+    if (cached != null) {
+      return cached;
     }
 
     DefaultSet qualifiers = null;
+
+    DefaultSet declared = elementDeclaredDefaults.get(elt);
+    if (declared != null) {
+      // Copy, because addElementDefault may add to the stored DefaultSet later.
+      qualifiers = new DefaultSet();
+      qualifiers.addAll(declared);
+    }
 
     {
       AnnotationMirror dqAnno = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
 
       if (dqAnno != null) {
-        qualifiers = new DefaultSet();
+        if (qualifiers == null) {
+          qualifiers = new DefaultSet();
+        }
         Set<Default> p = fromDefaultQualifier(dqAnno);
 
         if (p != null) {
@@ -681,7 +700,7 @@ public class QualifierDefaults {
     }
 
     if (qualifiers != null && !qualifiers.isEmpty()) {
-      elementDefaults.put(elt, qualifiers);
+      defaultsAtCache.put(elt, qualifiers);
       return qualifiers;
     } else {
       return DefaultSet.EMPTY;
