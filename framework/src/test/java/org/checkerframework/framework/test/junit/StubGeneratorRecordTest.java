@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -25,7 +26,7 @@ import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
-/** Tests that {@link StubGenerator} generates a parseable stub file for a record. */
+/** Tests that {@link StubGenerator} generates a parseable stub file for a record or an enum. */
 public class StubGeneratorRecordTest {
 
   /** Creates a new StubGeneratorRecordTest. */
@@ -56,6 +57,111 @@ public class StubGeneratorRecordTest {
     Assert.assertTrue(stub, stub.contains("record Outer$Pair<K, V>(K key, V value)"));
     Assert.assertTrue(stub, stub.contains("implements Cloneable"));
     assertParses(stub);
+  }
+
+  @Test
+  public void topLevelRecord() {
+    String stub =
+        generateStub(
+            "p/Point.java", "package p; public record Point(int x, String name) {}", "p.Point");
+    Assert.assertTrue(stub, stub.contains("package p;"));
+    Assert.assertTrue(stub, stub.contains("record Point(int x, String name)"));
+    assertParses(stub);
+  }
+
+  @Test
+  public void typeAnnotatedRecordComponents() {
+    String stub =
+        generateStub(
+            "p.Outer",
+            annotationDeclaration("TypeAnno", "TYPE_USE"),
+            new SourceFile(
+                "p/Outer.java",
+                "package p;"
+                    + " public class Outer {"
+                    + "   public record Annotated(@TypeAnno int x, @TypeAnno String s) {} }"));
+    Assert.assertTrue(
+        stub, stub.contains("record Outer$Annotated(@p.TypeAnno int x, @p.TypeAnno String s)"));
+    assertParses(stub);
+  }
+
+  @Test
+  public void declarationAnnotatedRecordComponents() {
+    String stub =
+        generateStub(
+            "p.Outer",
+            annotationDeclaration("CompAnno", "RECORD_COMPONENT"),
+            new SourceFile(
+                "p/Outer.java",
+                "package p;"
+                    + " public class Outer { public record Annotated(@CompAnno int x) {} }"));
+    Assert.assertTrue(stub, stub.contains("record Outer$Annotated(@p.CompAnno int x)"));
+    assertParses(stub);
+  }
+
+  /**
+   * An annotation that is applicable to both a record component and a type use is reported both as
+   * a declaration annotation and as a type annotation, but it should be printed only once.
+   */
+  @Test
+  public void recordComponentAnnotationPrintedOnce() {
+    String stub =
+        generateStub(
+            "p.Outer",
+            annotationDeclaration("BothAnno", "RECORD_COMPONENT", "TYPE_USE"),
+            new SourceFile(
+                "p/Outer.java",
+                "package p;"
+                    + " public class Outer { public record Annotated(@BothAnno String s) {} }"));
+    Assert.assertTrue(stub, stub.contains("record Outer$Annotated(@p.BothAnno String s)"));
+    assertParses(stub);
+  }
+
+  @Test
+  public void nestedEnum() {
+    String stub =
+        generateStub(
+            "p/Outer.java",
+            "package p; public class Outer { public enum Color { RED, BLUE } }",
+            "p.Outer");
+    Assert.assertTrue(stub, stub.contains("enum Outer$Color"));
+    Assert.assertTrue(stub, stub.contains("RED, BLUE;"));
+    // An enum's superclass is java.lang.Enum, which must not appear in an extends clause.
+    Assert.assertFalse(stub, stub.contains("extends Enum"));
+    assertParses(stub);
+  }
+
+  @Test
+  public void nestedEnumWithoutConstants() {
+    String stub =
+        generateStub(
+            "p/Outer.java", "package p; public class Outer { public enum Empty {} }", "p.Outer");
+    Assert.assertTrue(stub, stub.contains("enum Outer$Empty"));
+    assertParses(stub);
+  }
+
+  /**
+   * Returns a source file that declares an annotation in package {@code p}.
+   *
+   * @param name the simple name of the annotation
+   * @param targets the simple names of the {@code ElementType} constants that the annotation may be
+   *     written on
+   * @return a source file that declares the annotation
+   */
+  private SourceFile annotationDeclaration(String name, String... targets) {
+    StringJoiner targetList = new StringJoiner(", ", "{", "}");
+    for (String target : targets) {
+      targetList.add("java.lang.annotation.ElementType." + target);
+    }
+    return new SourceFile(
+        "p/" + name + ".java",
+        "package p;"
+            + " @java.lang.annotation.Target("
+            + targetList
+            + ")"
+            + " public @interface "
+            + name
+            + " {}");
   }
 
   @Test
@@ -93,6 +199,18 @@ public class StubGeneratorRecordTest {
    * @return the generated stub file text
    */
   private String generateStub(String fileName, String source, String typeName) {
+    return generateStub(typeName, new SourceFile(fileName, source));
+  }
+
+  /**
+   * Runs {@link StubGenerator#stubFromType} on a type declared in the given source files.
+   *
+   * @param typeName the canonical name of the type to generate a stub for; the type is declared in
+   *     one of {@code files}
+   * @param files the Java source files to compile
+   * @return the generated stub file text
+   */
+  private String generateStub(String typeName, SourceFile... files) {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     Assert.assertNotNull("No system Java compiler is available.", compiler);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -106,9 +224,9 @@ public class StubGeneratorRecordTest {
             // "-proc:only" means do not generate class files.
             Arrays.asList("-proc:only"),
             null,
-            Collections.singletonList(new SourceFile(fileName, source)));
+            Arrays.asList(files));
     task.setProcessors(Collections.singletonList(processor));
-    Assert.assertTrue("Compilation of " + fileName + " failed.", task.call());
+    Assert.assertTrue("Compilation of " + typeName + " failed.", task.call());
     Assert.assertTrue("Did not find type " + typeName + ".", processor.foundType);
     return baos.toString(StandardCharsets.UTF_8);
   }

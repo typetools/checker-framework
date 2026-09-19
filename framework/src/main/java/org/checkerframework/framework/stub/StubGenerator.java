@@ -25,6 +25,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
@@ -135,9 +136,10 @@ public class StubGenerator {
   /** Generate the stub file for provided class. The generated file includes the package name. */
   public void stubFromType(TypeElement typeElement) {
 
-    // only output stub for classes or interfaces.  not enums
+    // only output stub for classes, interfaces, and records.  not enums
     if (typeElement.getKind() != ElementKind.CLASS
-        && typeElement.getKind() != ElementKind.INTERFACE) {
+        && typeElement.getKind() != ElementKind.INTERFACE
+        && typeElement.getKind() != ElementKind.RECORD) {
       return;
     }
 
@@ -228,14 +230,28 @@ public class StubGenerator {
     if (typeElement.getKind() == ElementKind.RECORD) {
       StringJoiner components = new StringJoiner(", ", "(", ")");
       for (Element component : typeElement.getRecordComponents()) {
-        components.add(formatType(component.asType()) + " " + component.getSimpleName());
+        StringBuilder sb = new StringBuilder();
+        List<? extends AnnotationMirror> typeAnnos = component.asType().getAnnotationMirrors();
+        for (AnnotationMirror am : component.getAnnotationMirrors()) {
+          // An annotation that is applicable to both a record component and a type use appears
+          // both here and within the component's type, so do not print it twice.
+          if (!AnnotationUtils.containsSameByName(typeAnnos, am)) {
+            sb.append(am);
+            sb.append(' ');
+          }
+        }
+        sb.append(formatType(component.asType()));
+        sb.append(' ');
+        sb.append(component.getSimpleName());
+        components.add(sb);
       }
       out.print(components.toString());
     }
 
-    // Extends.  A record may not have an `extends` clause; its superclass is always
-    // java.lang.Record.
+    // Extends.  A record or an enum may not have an `extends` clause; its superclass is always
+    // java.lang.Record or java.lang.Enum, respectively.
     if (typeElement.getKind() != ElementKind.RECORD
+        && typeElement.getKind() != ElementKind.ENUM
         && typeElement.getSuperclass().getKind() != TypeKind.NONE
         && !TypesUtils.isObject(typeElement.getSuperclass())) {
       out.print(" extends ");
@@ -255,6 +271,19 @@ public class StubGenerator {
     String tempIndentation = currentIndentation;
 
     currentIndentation = currentIndentation + INDENTATION;
+
+    // Enum constants, which must precede all other members of an enum.  The trailing semicolon is
+    // required even if the enum has no constants.
+    if (typeElement.getKind() == ElementKind.ENUM) {
+      StringJoiner constants = new StringJoiner(", ");
+      for (Element member : typeElement.getEnclosedElements()) {
+        if (member.getKind() == ElementKind.ENUM_CONSTANT) {
+          constants.add(member.getSimpleName());
+        }
+      }
+      indent();
+      out.println(constants + ";");
+    }
 
     // Inner classes, which the stub generator prints later.
     List<TypeElement> innerClass = new ArrayList<>();
@@ -285,6 +314,10 @@ public class StubGenerator {
 
   /** Helper method that outputs the declaration of the member. */
   private void printMember(Element member, List<TypeElement> innerClass) {
+    if (member.getKind() == ElementKind.ENUM_CONSTANT) {
+      // Enum constants are printed before all the other members of an enum.
+      return;
+    }
     if (member.getKind().isField()) {
       printFieldDecl((VariableElement) member);
     } else if (member instanceof ExecutableElement ee) {
@@ -419,7 +452,13 @@ public class StubGenerator {
 
     while (tokenizer.hasMoreTokens()) {
       String token = tokenizer.nextToken();
-      if (token.length() == 1 || token.lastIndexOf('.') == -1) {
+      int atIndex = token.indexOf('@');
+      if (atIndex != -1) {
+        // The token contains a type annotation, as in "java.lang.@p.Anno".  Discard the package
+        // name that precedes the annotation, and retain the annotation's fully-qualified name,
+        // because the generated stub file contains no import statements.
+        sb.append(token, atIndex, token.length());
+      } else if (token.length() == 1 || token.lastIndexOf('.') == -1) {
         sb.append(token);
       } else {
         int index = token.lastIndexOf('.');
