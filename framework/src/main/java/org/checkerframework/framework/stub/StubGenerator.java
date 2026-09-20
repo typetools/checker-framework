@@ -153,7 +153,8 @@ public class StubGenerator {
     boolean newPackage = !newPackageName.equals(currentPackage);
     currentPackage = newPackageName;
 
-    if (newPackage) {
+    // The unnamed package has no package declaration.
+    if (newPackage && !currentPackage.isEmpty()) {
       indent();
 
       out.print("package ");
@@ -164,12 +165,14 @@ public class StubGenerator {
     String fullClassName = ElementUtils.getQualifiedClassName(typeElement).toString();
 
     String className =
-        fullClassName.substring(
-            fullClassName.indexOf(currentPackage)
-                + currentPackage.length()
-                // +1 because currentPackage doesn't include
-                // the . between the package name and the classname
-                + 1);
+        currentPackage.isEmpty()
+            ? fullClassName
+            : fullClassName.substring(
+                fullClassName.indexOf(currentPackage)
+                    + currentPackage.length()
+                    // +1 because currentPackage doesn't include
+                    // the . between the package name and the classname
+                    + 1);
 
     int index = className.lastIndexOf('.');
     if (index == -1) {
@@ -283,7 +286,13 @@ public class StubGenerator {
       StringJoiner constants = new StringJoiner(", ");
       for (Element member : typeElement.getEnclosedElements()) {
         if (member.getKind() == ElementKind.ENUM_CONSTANT) {
-          constants.add(member.getSimpleName());
+          StringBuilder sb = new StringBuilder();
+          for (AnnotationMirror am : member.getAnnotationMirrors()) {
+            sb.append(am);
+            sb.append(' ');
+          }
+          sb.append(member.getSimpleName());
+          constants.add(sb);
         }
       }
       indent();

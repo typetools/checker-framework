@@ -150,6 +150,36 @@ public class StubGeneratorRecordTest {
     assertParses(stub);
   }
 
+  @Test
+  public void annotatedEnumConstants() {
+    String stub =
+        generateStub(
+            "p.Color",
+            annotationDeclaration("FieldAnno", "FIELD"),
+            new SourceFile(
+                "p/Color.java", "package p; public enum Color { @FieldAnno RED, BLUE }"));
+    Assert.assertTrue(stub, stub.contains("@p.FieldAnno RED, BLUE;"));
+    assertParses(stub);
+  }
+
+  @Test
+  public void unnamedPackageRecord() {
+    String stub = generateStub("Point.java", "public record Point(int x, String name) {}", "Point");
+    // The unnamed package has no package declaration.
+    Assert.assertFalse(stub, stub.contains("package"));
+    Assert.assertTrue(stub, stub.contains("record Point(int x, String name)"));
+    assertParses(stub);
+  }
+
+  @Test
+  public void unnamedPackageNestedRecord() {
+    String stub =
+        generateStub("Outer.java", "public class Outer { public record Point(int x) {} }", "Outer");
+    Assert.assertFalse(stub, stub.contains("package"));
+    Assert.assertTrue(stub, stub.contains("record Outer$Point(int x)"));
+    assertParses(stub);
+  }
+
   /**
    * Returns a source file that declares an annotation in package {@code p}.
    *
