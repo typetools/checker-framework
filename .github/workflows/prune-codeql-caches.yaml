@@ -39,6 +39,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/workflows/prune-codeql-caches.py
+          sparse-checkout-cone-mode: false
+          show-progress: false
+          persist-credentials: false
       - name: Delete every CodeQL cache but the newest of each kind
         env:
           DRY_RUN: ${{ inputs.dry_run }}
@@ -51,100 +57,4 @@ jobs:
           gh api --paginate \
             "repos/${GH_REPO}/actions/caches?per_page=100&sort=created_at&direction=desc" \
             --jq '.actions_caches[]' > "${RUNNER_TEMP}/caches.jsonl"
-          python3 - <<'PYTHON'
-          import json
-          import os
-          import re
-          import subprocess
-          import sys
-
-          # A cache is reachable only if it is the newest one whose key matches
-          # the restore key that CodeQL looks it up by.  Each pattern captures
-          # that restore key; what follows it varies from one run to the next.
-          FAMILIES = [
-              re.compile(r"^(codeql-dependencies-.*-)[0-9a-f]{64}$"),
-              re.compile(
-                  r"^(codeql-overlay-base-database-.*-[0-9.]+-)[0-9a-f]{40}-\d+-\d+$"
-              ),
-          ]
-
-          def restore_key(key):
-              """Return the restore key that selects KEY, or None if unrecognized."""
-              for family in FAMILIES:
-                  match = family.match(key)
-                  if match:
-                      return match.group(1)
-              return None
-
-          repo = os.environ["GH_REPO"]
-          dry_run = os.environ.get("DRY_RUN") == "true"
-
-          newest = {}
-          doomed = []
-          seen = set()
-          with open(os.path.join(os.environ["RUNNER_TEMP"], "caches.jsonl")) as caches:
-              for line in caches:
-                  line = line.strip()
-                  if not line:
-                      continue
-                  cache = json.loads(line)
-                  # Paging can list a cache twice; deleting the duplicate would
-                  # delete the cache that this run decided to keep.
-                  if cache["id"] in seen:
-                      continue
-                  seen.add(cache["id"])
-                  key = restore_key(cache["key"])
-                  if key is None:
-                      # An unrecognized key shape might be reachable, so leave
-                      # it.  Report the CodeQL ones: if CodeQL changes its key
-                      # format, this workflow deletes nothing, and the log is
-                      # the only place that says so.
-                      if cache["key"].startswith("codeql-"):
-                          print("unrecognized  {:8.0f} MB  {}".format(
-                              cache["size_in_bytes"] / 1e6, cache["key"]))
-                      continue
-                  # A cache is scoped to the ref that wrote it, so the newest
-                  # cache of a family on one ref does not shadow another ref's.
-                  group = (cache["ref"], key)
-                  previous = newest.get(group)
-                  if previous is None or cache["created_at"] > previous["created_at"]:
-                      if previous is not None:
-                          doomed.append(previous)
-                      newest[group] = cache
-                  else:
-                      doomed.append(cache)
-
-          for cache in sorted(newest.values(), key=lambda c: c["key"]):
-              print("keep          {:8.0f} MB  {}".format(
-                  cache["size_in_bytes"] / 1e6, cache["key"]))
-
-          freed = 0
-          failures = 0
-          verb = "would delete" if dry_run else "delete      "
-          for cache in sorted(doomed, key=lambda c: c["key"]):
-              print("{} {:8.0f} MB  {}".format(
-                  verb, cache["size_in_bytes"] / 1e6, cache["key"]))
-              if not dry_run:
-                  try:
-                      subprocess.run(
-                          ["gh", "api", "-X", "DELETE", "--silent",
-                           "repos/{}/actions/caches/{}".format(repo, cache["id"])],
-                          check=True)
-                  except subprocess.CalledProcessError:
-                      # GitHub may have evicted the cache since it was listed,
-                      # or may be rate-limiting.  The other caches are still
-                      # worth deleting.
-                      failures += 1
-                      print("FAILED TO DELETE            {}".format(cache["key"]))
-                      continue
-              freed += cache["size_in_bytes"]
-
-          if dry_run:
-              print("would delete {} caches, freeing {:.2f} GB".format(
-                  len(doomed), freed / 1e9))
-          else:
-              print("deleted {} caches, freeing {:.2f} GB".format(
-                  len(doomed) - failures, freed / 1e9))
-          if failures:
-              sys.exit("{} of {} deletions failed".format(failures, len(doomed)))
-          PYTHON
+          python3 .github/workflows/prune-codeql-caches.py "${RUNNER_TEMP}/caches.jsonl"
