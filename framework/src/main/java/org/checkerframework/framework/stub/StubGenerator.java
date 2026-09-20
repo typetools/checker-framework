@@ -146,7 +146,7 @@ public class StubGenerator {
     boolean newPackage = !newPackageName.equals(currentPackage);
     currentPackage = newPackageName;
 
-    if (newPackage) {
+    if (newPackage && !currentPackage.isEmpty()) {
       indent();
 
       out.print("package ");
@@ -156,13 +156,14 @@ public class StubGenerator {
     }
     String fullClassName = ElementUtils.getQualifiedClassName(typeElement).toString();
 
-    String className =
-        fullClassName.substring(
-            fullClassName.indexOf(currentPackage)
-                + currentPackage.length()
-                // +1 because currentPackage doesn't include
-                // the . between the package name and the classname
-                + 1);
+    // The class name, including the names of any outer classes, but not the package name.
+    String className;
+    if (currentPackage.isEmpty()) {
+      className = fullClassName;
+    } else {
+      // +1 for the "." between the package name and the class name.
+      className = fullClassName.substring(currentPackage.length() + 1);
+    }
 
     int index = className.lastIndexOf('.');
     if (index == -1) {
@@ -182,8 +183,8 @@ public class StubGenerator {
    * Helper method that prints the stub file for the provided class.
    *
    * @param typeElement the class to output
-   * @param outerClass the outer class of the class, or null if {@code typeElement} is a top-level
-   *     class
+   * @param outerClass the names of the outer classes of {@code typeElement}, separated by "$", or
+   *     null if {@code typeElement} is a top-level class
    */
   private void printClass(TypeElement typeElement, @Nullable String outerClass) {
     indent();
@@ -212,10 +213,10 @@ public class StubGenerator {
     }
 
     out.print(' ');
-    if (outerClass != null) {
-      out.print(outerClass + "$");
-    }
-    out.print(typeElement.getSimpleName());
+    // The name of the class, including the names of all its outer classes, separated by "$".
+    String nestedClassName =
+        (outerClass == null ? "" : outerClass + "$") + typeElement.getSimpleName();
+    out.print(nestedClassName);
 
     // Type parameters
     if (!typeElement.getTypeParameters().isEmpty()) {
@@ -255,7 +256,7 @@ public class StubGenerator {
     out.println("}");
 
     for (TypeElement element : innerClass) {
-      printClass(element, typeElement.getSimpleName().toString());
+      printClass(element, nestedClassName);
     }
   }
 
