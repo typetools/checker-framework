@@ -2145,8 +2145,11 @@ public final class AnnotationFileParser {
         javax.lang.model.type.WildcardType javacWildcardType =
             (javax.lang.model.type.WildcardType) javacType;
         return sameBound(
-                javacWildcardType.getExtendsBound(), javaParserWildcardType.getExtendedType())
-            && sameBound(javacWildcardType.getSuperBound(), javaParserWildcardType.getSuperType());
+                javacWildcardType.getExtendsBound(),
+                javaParserWildcardType.getExtendedType().orElse(null))
+            && sameBound(
+                javacWildcardType.getSuperBound(),
+                javaParserWildcardType.getSuperType().orElse(null));
       }
       case ARRAY -> {
         return javaParserType.isArrayType()
@@ -2217,16 +2220,16 @@ public final class AnnotationFileParser {
    * Returns true if the two wildcard bounds, each of which may be absent, are the same.
    *
    * @param javacBound a wildcard bound in javac form, or null if the wildcard has no such bound
-   * @param javaParserBound a wildcard bound in JavaParser form, or empty if the wildcard has no
-   *     such bound
+   * @param javaParserBound a wildcard bound in JavaParser form, or null if the wildcard has no such
+   *     bound
    * @return true if the two bounds are the same
    */
   private boolean sameBound(
-      @Nullable TypeMirror javacBound, Optional<ReferenceType> javaParserBound) {
+      @Nullable TypeMirror javacBound, @Nullable ReferenceType javaParserBound) {
     if (javacBound == null) {
-      return !javaParserBound.isPresent();
+      return javaParserBound == null;
     }
-    return javaParserBound.isPresent() && sameType(javacBound, javaParserBound.get());
+    return javaParserBound != null && sameType(javacBound, javaParserBound);
   }
 
   /**
