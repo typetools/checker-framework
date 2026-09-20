@@ -274,9 +274,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-nonjunit-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-cf-
+            gradle-modules-nonjunit-
             gradle-modules-
       - name: test-cftests-nonjunit.sh
         run: ./checker/bin-devel/test-cftests-nonjunit.sh
@@ -306,9 +306,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-nonjunit-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-cf-
+            gradle-modules-nonjunit-
             gradle-modules-
       - name: test-cftests-nonjunit.sh
         run: ./checker/bin-devel/test-cftests-nonjunit.sh
@@ -406,9 +406,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-misc-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-cf-
+            gradle-modules-misc-
             gradle-modules-
       - name: clone_plume_scripts
         run: ./checker/bin-devel/clone-plume-scripts.sh
@@ -438,9 +438,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-misc-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-cf-
+            gradle-modules-misc-
             gradle-modules-
       - name: clone_plume_scripts
         run: ./checker/bin-devel/clone-plume-scripts.sh
@@ -470,9 +470,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-misc-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-cf-
+            gradle-modules-misc-
             gradle-modules-
       - name: clone_plume_scripts
         run: ./checker/bin-devel/clone-plume-scripts.sh

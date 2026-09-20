@@ -13,27 +13,39 @@ because a distribution of the wrong version is useless: Gradle would download
 the pinned version anyway, and the stale distribution would bloat the cache.])dnl
 ifelse([The module cache is per group of jobs rather than per job. A cache per
 job would hold about 20 copies of a 350MB cache, and CodeQL's caches already
-account for most of the repository's 10GB cache quota.])dnl
+account for most of the repository's 10GB cache quota. The 4 groups below
+hold 4 copies.])dnl
 ifelse(["actions/cache" saves nothing when the key was an exact hit, and only
-one job can reserve a key, so within a group whichever job gets there first
-fixes the entry's contents until the key changes. A group therefore holds
-jobs that resolve the same dependencies. Group "plume-lib" is the lone job
-that runs Gradle in another project's directory, once per plume-lib package.
-Every other job, the Daikon and Guava ones included, resolves only this
-project's dependencies: Daikon builds with "make" and Guava with Maven, whose
-artifacts this cache does not cover. Measured "cf" caches differ by under
-4MB.])dnl
+one job can reserve a key, so whichever job in a group saves first fixes that
+entry's contents until the key changes. A job that resolves more than the
+entry holds downloads the difference on every run, so a job belongs in a
+group with jobs that resolve the same dependencies. A job that is the only
+one to resolve a dependency pinned by a file in the key gets its own
+group:])dnl
+ifelse([ * "nonjunit" is the only group that runs ":checker:exampleTests",
+   which builds "docs/examples/errorprone" and "docs/examples/lombok". Those
+   builds pin plugin and library versions that this project does not use.])dnl
+ifelse([ * "misc" is the only group that runs Spotless, the Javadoc linting
+   tasks, and the manual's build.])dnl
+ifelse([ * "plume-lib" is the lone job that runs Gradle in another project's
+   directory, once per plume-lib package.])dnl
+ifelse([Group "cf" holds every other job. Those jobs build and test this
+project alone: Daikon builds with "make" and Guava with Maven, whose
+artifacts this cache does not cover.])dnl
 ifelse([The key must cover every file that pins a dependency version. Add to
-that list any file that gains a hardcoded dependency or plugin version.])dnl
+that list any file that gains a hardcoded dependency or plugin version. One
+key formula serves every group, so a change to a file that only one group
+resolves invalidates all of them, which costs one run.])dnl
 ifelse([A "restore-keys" entry is a key prefix. The bare "gradle-modules-"
-entry lets a group start from the other group's cache rather than from
-nothing; that is a partial hit, after which the job does save, so over time
-the two entries tend toward the same contents. Neither module key is a prefix
-of a "gradle-wrapper-" key, so neither cache can restore the other.])dnl
+entry lets a group whose own entry does not exist yet start from another
+group's cache rather than from nothing. That is a partial hit rather than an
+exact one, so the job goes on to save its own entry. Neither module key is a
+prefix of a "gradle-wrapper-" key, so neither cache can restore the
+other.])dnl
 ifelse([A "!" pattern removes files that an earlier pattern matched, so the
 include pattern must enumerate files, via "/**", rather than name the
 directory, which "actions/cache" would archive whole.])dnl
-ifelse([Takes 1 argument: the cache group, "cf" or "plume-lib".])dnl
+ifelse([Takes 1 argument: the cache group.])dnl
 define([gradle_cache], [dnl
       - uses: actions/cache@v6
         with:
@@ -54,7 +66,8 @@ dnl
 ifelse([Takes 1 argument: the name of the test script that a job runs.
 Expands to the cache group that the job belongs to.])dnl
 define([cache_group], [dnl
-ifelse($1,test-plume-lib.sh,[plume-lib],
+ifelse($1,test-cftests-nonjunit.sh,[nonjunit],
+       $1,test-plume-lib.sh,[plume-lib],
        [cf])])dnl
 dnl
 ifelse([Gradle derives its user home from the JVM's "user.home" property, which
@@ -172,7 +185,7 @@ gradle_user_home()dnl
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
-gradle_cache(cf)dnl
+gradle_cache(misc)dnl
 clone_plume_scripts_step()dnl
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
