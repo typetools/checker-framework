@@ -19,7 +19,9 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -52,6 +54,12 @@ public class StubGenerator {
 
   /** the package of the class being processed. */
   private String currentPackage = null;
+
+  /**
+   * The name of the class being processed, including the names of its outer classes separated by
+   * "$"; null if no class declaration is being processed.
+   */
+  private @Nullable String currentClassName = null;
 
   /** Constructs a {@code StubGenerator} that outputs to {@code System.out}. */
   public StubGenerator() {
@@ -227,18 +235,14 @@ public class StubGenerator {
     out.print(nestedClassName);
 
     // Type parameters
-    if (!typeElement.getTypeParameters().isEmpty()) {
-      out.print('<');
-      out.print(formatList(typeElement.getTypeParameters()));
-      out.print('>');
-    }
+    out.print(formatTypeParameters(typeElement.getTypeParameters()));
 
     // Record components, which are part of a record's header
     if (typeElement.getKind() == ElementKind.RECORD) {
       StringJoiner components = new StringJoiner(", ", "(", ")");
       for (Element component : typeElement.getRecordComponents()) {
         StringBuilder sb = new StringBuilder();
-        List<? extends AnnotationMirror> typeAnnos = component.asType().getAnnotationMirrors();
+        List<AnnotationMirror> typeAnnos = typeAnnotations(component.asType());
         for (AnnotationMirror am : component.getAnnotationMirrors()) {
           // An annotation that is applicable to both a record component and a type use appears
           // both here and within the component's type, so do not print it twice.
@@ -265,8 +269,10 @@ public class StubGenerator {
       out.print(formatType(typeElement.getSuperclass()));
     }
 
-    // implements
-    if (!typeElement.getInterfaces().isEmpty()) {
+    // implements.  An annotation type may not have an `implements` clause; it always
+    // implements java.lang.annotation.Annotation.
+    if (typeElement.getKind() != ElementKind.ANNOTATION_TYPE
+        && !typeElement.getInterfaces().isEmpty()) {
       boolean isInterface = typeElement.getKind() == ElementKind.INTERFACE;
       out.print(isInterface ? " extends " : " implements ");
       List<String> ls =
@@ -276,8 +282,10 @@ public class StubGenerator {
 
     out.println(" {");
     String tempIndentation = currentIndentation;
+    String tempClassName = currentClassName;
 
     currentIndentation = currentIndentation + INDENTATION;
+    currentClassName = nestedClassName;
 
     // Enum constants, which must precede all other members of an enum.  The trailing semicolon is
     // required even if the enum has no constants.
@@ -304,6 +312,7 @@ public class StubGenerator {
     printTypeMembers(typeElement.getEnclosedElements(), innerClass);
 
     currentIndentation = tempIndentation;
+    currentClassName = tempClassName;
     indent();
     out.println("}");
 
@@ -409,9 +418,8 @@ public class StubGenerator {
 
     // print Generic arguments
     if (!method.getTypeParameters().isEmpty()) {
-      out.print('<');
-      out.print(formatList(method.getTypeParameters()));
-      out.print("> ");
+      out.print(formatTypeParameters(method.getTypeParameters()));
+      out.print(" ");
     }
 
     // not return type for constructors
@@ -420,7 +428,12 @@ public class StubGenerator {
       out.print(" ");
       out.print(method.getSimpleName());
     } else {
-      out.print(method.getEnclosingElement().getSimpleName());
+      // A constructor's name is the name of the class declaration that contains it, which for a
+      // nested class contains "$" separators.
+      out.print(
+          currentClassName != null
+              ? currentClassName
+              : method.getEnclosingElement().getSimpleName().toString());
     }
 
     StringJoiner params = new StringJoiner(", ", "(", ")");
@@ -457,6 +470,53 @@ public class StubGenerator {
   private boolean isPublicOrProtected(Element element) {
     return element.getModifiers().contains(Modifier.PUBLIC)
         || element.getModifiers().contains(Modifier.PROTECTED);
+  }
+
+  /**
+   * Returns the annotations that {@link #formatType} prints for the given type: those on the type
+   * itself and, if it is an array type, those on its component type at any depth. An annotation on
+   * an array's element type, as in {@code @p.Anno String[]}, is on the component type rather than
+   * on the array type.
+   *
+   * @param typeRep a type
+   * @return the annotations that {@link #formatType} prints for {@code typeRep}
+   */
+  private static List<AnnotationMirror> typeAnnotations(TypeMirror typeRep) {
+    List<AnnotationMirror> result = new ArrayList<>();
+    TypeMirror componentType = typeRep;
+    while (true) {
+      result.addAll(componentType.getAnnotationMirrors());
+      if (componentType.getKind() != TypeKind.ARRAY) {
+        return result;
+      }
+      componentType = ((ArrayType) componentType).getComponentType();
+    }
+  }
+
+  /**
+   * Returns a string representation of the type parameters, including their bounds and surrounded
+   * by angle brackets, as in {@code <K, V extends Number>}. Returns the empty string if there are
+   * no type parameters.
+   *
+   * @param typeParameters the type parameters of a class or a method
+   * @return a string representation of the type parameters
+   */
+  private static String formatTypeParameters(List<? extends TypeParameterElement> typeParameters) {
+    if (typeParameters.isEmpty()) {
+      return "";
+    }
+    StringJoiner result = new StringJoiner(", ", "<", ">");
+    for (TypeParameterElement typeParameter : typeParameters) {
+      StringBuilder sb = new StringBuilder(typeParameter.getSimpleName());
+      List<? extends TypeMirror> bounds = typeParameter.getBounds();
+      // A single bound of java.lang.Object is implicit, so do not print it.
+      if (!(bounds.size() == 1 && TypesUtils.isObject(bounds.get(0)))) {
+        sb.append(" extends ");
+        sb.append(StringsP.join(" & ", CollectionsP.mapList(StubGenerator::formatType, bounds)));
+      }
+      result.add(sb);
+    }
+    return result.toString();
   }
 
   /**

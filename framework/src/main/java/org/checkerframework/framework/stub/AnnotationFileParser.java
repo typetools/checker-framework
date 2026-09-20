@@ -953,6 +953,21 @@ public final class AnnotationFileParser {
       typeBeingParsed = new FqName(typeBeingParsed.packageName, innerName);
       fqTypeName = typeBeingParsed.toString();
       typeElt = elements.getTypeElement(fqTypeName);
+      if (typeElt == null && innerName.indexOf('$') != -1) {
+        // StubGenerator writes a nested type's declaration at the top level of the stub file and
+        // separates the names of its outer classes by "$", as in "record Outer$Inner(int x) {}",
+        // because the name in a type declaration is a single identifier.  Look up such a name by
+        // its canonical form.
+        String canonicalInnerName = innerName.replace('$', '.');
+        FqName canonicalName = new FqName(typeBeingParsed.packageName, canonicalInnerName);
+        TypeElement canonicalTypeElt = elements.getTypeElement(canonicalName.toString());
+        if (canonicalTypeElt != null) {
+          innerName = canonicalInnerName;
+          typeBeingParsed = canonicalName;
+          fqTypeName = canonicalName.toString();
+          typeElt = canonicalTypeElt;
+        }
+      }
     }
 
     if (!isAnnotatedForThisChecker(typeDecl.getAnnotations())) {
@@ -1036,8 +1051,11 @@ public final class AnnotationFileParser {
                 findFieldElement(typeElt, recordMember.getNameAsString(), recordMember));
         byName.put(recordMember.getNameAsString(), stub);
       }
+      // Use the element's name rather than the declaration's, because a stub file may write a
+      // nested record's name with "$" separators.  AnnotationFileElementTypes looks the record up
+      // by the element's name.
       annotationFileAnnos.records.put(
-          recordDecl.getFullyQualifiedName().get(), new RecordStub(byName));
+          ElementUtils.getQualifiedName(typeElt), new RecordStub(byName));
     }
 
     IPair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>> members =
@@ -2549,7 +2567,16 @@ public final class AnnotationFileParser {
                 "the floating-point value %s is not a value of type %s",
                 expr, typeKindName(valueKind)));
       }
-      return convert(dle.asDouble(), valueKind);
+      // No Java literal denotes an infinite value, so an infinite value means that the
+      // literal is too large for its type.
+      double doubleValue = dle.asDouble();
+      if (Double.isInfinite(doubleValue)) {
+        throw new AnnotationFileParserException(
+            String.format(
+                "the floating-point value %s is outside the range of type %s",
+                expr, typeKindName(valueKind)));
+      }
+      return convert(doubleValue, valueKind);
     } else if (expr instanceof IntegerLiteralExpr ile) {
       return convert(ile.asNumber(), valueKind);
     } else if (expr instanceof LongLiteralExpr lle) {
@@ -2677,10 +2704,33 @@ public final class AnnotationFileParser {
       case LONG -> longValue;
       case CHAR ->
           (char) checkInRange(longValue, expectedKind, Character.MIN_VALUE, Character.MAX_VALUE);
-      case FLOAT -> number.floatValue() * scalefactor;
+      case FLOAT -> checkRepresentableAsFloat(number, scalefactor);
       case DOUBLE -> number.doubleValue() * scalefactor;
       default -> throw new BugInCF("Unexpected expectedKind: " + expectedKind);
     };
+  }
+
+  /**
+   * Returns {@code number * scalefactor} as a float. Java widens an integral value to float without
+   * a cast, so any integral value is permitted. Java does not narrow a double value to float, so a
+   * double value that float cannot represent exactly is rejected; converting it would give the
+   * annotation a meaning that its source text does not have.
+   *
+   * @param number the value of an annotation element whose type is float
+   * @param scalefactor 1, or -1 to negate {@code number}
+   * @return {@code number * scalefactor} as a float
+   * @throws AnnotationFileParserException if {@code number} is a double value that float cannot
+   *     represent exactly
+   */
+  private static float checkRepresentableAsFloat(Number number, int scalefactor)
+      throws AnnotationFileParserException {
+    float result = number.floatValue() * scalefactor;
+    if (number instanceof Double
+        && Double.compare((double) result, number.doubleValue() * scalefactor) != 0) {
+      throw new AnnotationFileParserException(
+          String.format("the double value %s is not a value of type float", number));
+    }
+    return result;
   }
 
   /**
