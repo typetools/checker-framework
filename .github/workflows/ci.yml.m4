@@ -58,7 +58,8 @@ jobs:
           fetch-depth: 0
           show-progress: false
           persist-credentials: false
-ifelse([This job runs no Gradle task, so it needs no Gradle cache.])dnl
+ifelse([This job runs no Gradle task, so it needs neither a Gradle cache nor
+GRADLE_USER_HOME.])dnl
 clone_plume_scripts_step()dnl
       - name: set_ci_org_and_branch
         run: |

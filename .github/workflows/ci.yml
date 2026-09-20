@@ -81,6 +81,8 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk17:latest
     timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -98,9 +100,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-cftests-junit.sh
         run: ./checker/bin-devel/test-cftests-junit.sh
@@ -116,6 +118,8 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk21:latest
     timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -133,9 +137,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-cftests-junit.sh
         run: ./checker/bin-devel/test-cftests-junit.sh
@@ -147,6 +151,8 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -164,9 +170,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-cftests-junit.sh part1
         run: ./checker/bin-devel/test-cftests-junit.sh part1
@@ -177,6 +183,8 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -194,9 +202,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-cftests-junit.sh part2
         run: ./checker/bin-devel/test-cftests-junit.sh part2
@@ -212,6 +220,8 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk26:latest
     timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -229,9 +239,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-cftests-junit.sh
         run: ./checker/bin-devel/test-cftests-junit.sh
@@ -245,6 +255,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk21:latest
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -262,9 +274,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-nonjunit-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-nonjunit-
             gradle-modules-
       - name: test-cftests-nonjunit.sh
         run: ./checker/bin-devel/test-cftests-nonjunit.sh
@@ -275,6 +287,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -292,9 +306,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-nonjunit-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-nonjunit-
             gradle-modules-
       - name: test-cftests-nonjunit.sh
         run: ./checker/bin-devel/test-cftests-nonjunit.sh
@@ -307,6 +321,8 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 90
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -324,9 +340,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-cftests-inference-part1.sh
         run: ./checker/bin-devel/test-cftests-inference-part1.sh
@@ -337,6 +353,8 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 90
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -354,9 +372,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-cftests-inference-part2.sh
         run: ./checker/bin-devel/test-cftests-inference-part2.sh
@@ -370,6 +388,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk21-plus:latest
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -386,9 +406,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-misc-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-misc-
             gradle-modules-
       - name: clone_plume_scripts
         run: ./checker/bin-devel/clone-plume-scripts.sh
@@ -400,6 +420,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25-plus:latest
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -416,9 +438,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-misc-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-misc-
             gradle-modules-
       - name: clone_plume_scripts
         run: ./checker/bin-devel/clone-plume-scripts.sh
@@ -430,6 +452,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk26-plus:latest
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -446,9 +470,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-misc-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-misc-
             gradle-modules-
       - name: clone_plume_scripts
         run: ./checker/bin-devel/clone-plume-scripts.sh
@@ -461,6 +485,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -478,9 +504,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-typecheck-part1.sh
         run: ./checker/bin-devel/test-typecheck-part1.sh
@@ -490,6 +516,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -507,9 +535,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-typecheck-part2.sh
         run: ./checker/bin-devel/test-typecheck-part2.sh
@@ -523,6 +551,8 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -540,9 +570,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-daikon-part1.sh
         run: ./checker/bin-devel/test-daikon-part1.sh
@@ -555,6 +585,8 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -572,9 +604,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-daikon-part2.sh
         run: ./checker/bin-devel/test-daikon-part2.sh
@@ -587,6 +619,8 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -604,9 +638,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-daikon-part3.sh
         run: ./checker/bin-devel/test-daikon-part3.sh
@@ -620,6 +654,8 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -637,9 +673,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-guava-part1.sh
         run: ./checker/bin-devel/test-guava-part1.sh
@@ -652,6 +688,8 @@ jobs:
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -669,9 +707,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-guava-part2.sh
         run: ./checker/bin-devel/test-guava-part2.sh
@@ -684,6 +722,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
       - uses: actions/checkout@v7
         with:
@@ -701,9 +741,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-plume-lib-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-${{ github.job }}-
+            gradle-modules-plume-lib-
             gradle-modules-
       - name: test-plume-lib.sh
         run: ./checker/bin-devel/test-plume-lib.sh
