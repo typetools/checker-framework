@@ -548,10 +548,11 @@ public final class AnnotationFileParser {
     Map<String, TypeElement> result = new HashMap<>();
 
     // An annotation file may contain more than one compilation unit:  stubparser starts a new
-    // compilation unit at each package declaration that follows a type declaration.  All of the
-    // compilation units of a StubUnit share a single list that holds every import in the file, no
-    // matter which package declaration an import follows.  So, reading the imports of the first
-    // compilation unit reads all of the file's imports.
+    // compilation unit at each package declaration that follows a type declaration.  Imports may
+    // appear at the top of the file or immediately after any package declaration, but not after a
+    // type declaration.  All of the compilation units of a StubUnit share a single list that holds
+    // every import in the file, no matter which package declaration an import follows.  So, reading
+    // the imports of the first compilation unit reads all of the file's imports.
     assert !stubUnit.getCompilationUnits().isEmpty();
     CompilationUnit cu = stubUnit.getCompilationUnits().get(0);
 
