@@ -41,29 +41,17 @@ jobs:
           paths:
             - .git
       - run:
-          name: Compute Gradle cache key
-          command: >-
-            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
-            buildSrc/build.gradle docs/examples/errorprone/build.gradle
-            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
-      - restore_cache:
-          keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
-            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
-            - gradle-v1-
-      - run:
-          name: getPlumeScripts
-          command: ./gradlew -q getPlumeScripts
-      - run:
-          name: Prune Gradle cache
+          name: clone_plume_scripts
           command: |
-            find ~/.gradle/caches -name '*.lock' -delete || true
-            rm -f ~/.gradle/caches/modules-2/gc.properties
-      - save_cache:
-          key: *gradle-cache
-          paths:
-            - ~/.gradle/caches/modules-2
-            - ~/.gradle/wrapper
+            PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+            clone_plume_scripts() {
+              # A failed clone can leave a non-empty directory, which would
+              # make every later attempt fail with "destination path already
+              # exists".
+              rm -rf "$PLUME_SCRIPTS"
+              git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git "$PLUME_SCRIPTS"
+            }
+            clone_plume_scripts || (sleep 60 && clone_plume_scripts)
       - run:
           name: set-ci-org-and-branch
           command: |
@@ -507,8 +495,17 @@ jobs:
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
-          name: getPlumeScripts
-          command: ./gradlew -q getPlumeScripts
+          name: clone_plume_scripts
+          command: |
+            PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+            clone_plume_scripts() {
+              # A failed clone can leave a non-empty directory, which would
+              # make every later attempt fail with "destination path already
+              # exists".
+              rm -rf "$PLUME_SCRIPTS"
+              git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git "$PLUME_SCRIPTS"
+            }
+            clone_plume_scripts || (sleep 60 && clone_plume_scripts)
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
@@ -555,8 +552,17 @@ jobs:
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
-          name: getPlumeScripts
-          command: ./gradlew -q getPlumeScripts
+          name: clone_plume_scripts
+          command: |
+            PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+            clone_plume_scripts() {
+              # A failed clone can leave a non-empty directory, which would
+              # make every later attempt fail with "destination path already
+              # exists".
+              rm -rf "$PLUME_SCRIPTS"
+              git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git "$PLUME_SCRIPTS"
+            }
+            clone_plume_scripts || (sleep 60 && clone_plume_scripts)
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
@@ -603,8 +609,17 @@ jobs:
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
-          name: getPlumeScripts
-          command: ./gradlew -q getPlumeScripts
+          name: clone_plume_scripts
+          command: |
+            PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+            clone_plume_scripts() {
+              # A failed clone can leave a non-empty directory, which would
+              # make every later attempt fail with "destination path already
+              # exists".
+              rm -rf "$PLUME_SCRIPTS"
+              git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git "$PLUME_SCRIPTS"
+            }
+            clone_plume_scripts || (sleep 60 && clone_plume_scripts)
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh

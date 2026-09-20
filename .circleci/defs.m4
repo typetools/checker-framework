@@ -32,6 +32,25 @@ define([gradle_save_cache], [dnl
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper])dnl
 dnl
+ifelse([Clones plume-scripts into "checker/bin-devel/.plume-scripts".  Uses
+"git clone" rather than "./gradlew getPlumeScripts", which would compile
+"buildSrc" and thereby resolve JGit, Bouncy Castle, and the Spotless plugin
+against Maven Central; Maven Central sometimes rejects such a request with
+HTTP status code 403.])dnl
+define([clone_plume_scripts_step], [dnl
+      - run:
+          name: clone_plume_scripts
+          command: |
+            PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+            clone_plume_scripts() {
+              # A failed clone can leave a non-empty directory, which would
+              # make every later attempt fail with "destination path already
+              # exists".
+              rm -rf "$PLUME_SCRIPTS"
+              git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git "$PLUME_SCRIPTS"
+            }
+            clone_plume_scripts || (sleep 60 && clone_plume_scripts)])dnl
+dnl
 ifelse([Takes 4 arguments: OS, JDK version number, name, command line.])dnl
 define([boilerplate], [dnl
     docker:
@@ -132,9 +151,7 @@ dnl
 define([misc_job], [dnl
   job_name(misc_jdk$1)
 circleci_boilerplate($1,-plus,full)
-      - run:
-          name: getPlumeScripts
-          command: ./gradlew -q getPlumeScripts
+clone_plume_scripts_step()
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh

@@ -44,11 +44,8 @@ jobs:
           key: *sourcefull-cache
           paths:
             - .git
-gradle_restore_cache()
-      - run:
-          name: getPlumeScripts
-          command: ./gradlew -q getPlumeScripts
-gradle_save_cache()
+ifelse([This job runs no Gradle task, so it needs no Gradle cache.])dnl
+clone_plume_scripts_step()
       - run:
           name: set-ci-org-and-branch
           command: |

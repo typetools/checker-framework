@@ -11,19 +11,23 @@ cache entry, whose key mentions no job. The key covers only the file that pins
 the distribution's version. The distribution cache has no "restore-keys",
 because a distribution of the wrong version is useless: Gradle would download
 the pinned version anyway, and the stale distribution would bloat the cache.])dnl
-ifelse([The module cache is per group of jobs rather than per job, because a
-cache per job would hold about 20 near-copies of a 350MB cache, which does not
-fit in the repository's 10GB cache quota. Group "cf" resolves only this
-project's dependencies; group "ext" also resolves those of Daikon, Guava, and
-plume-lib. The two groups need separate entries because "actions/cache" saves
-nothing when the key was an exact hit, so a job sharing a key with a job that
-resolves fewer dependencies would never store the difference.])dnl
+ifelse([The module cache is per group of jobs rather than per job. A cache per
+job would hold about 20 copies of a 350MB cache, and CodeQL's caches already
+spoke for most of the repository's 10GB cache quota, so GitHub would evict
+entries that a run was about to use.])dnl
+ifelse(["actions/cache" saves nothing when the key was an exact hit, so within
+a group the job that finishes first fixes the entry's contents until the key
+changes. The groups are therefore chosen so that the jobs in one resolve
+nearly the same dependencies: group "cf" builds only this project, whereas
+group "ext" also builds Daikon, Guava, and plume-lib. Measured "cf" caches
+differ by under 4MB.])dnl
 ifelse([The key must cover every file that pins a dependency version. Add to
 that list any file that gains a hardcoded dependency or plugin version.])dnl
-ifelse([A "restore-keys" entry is a key prefix. A group falls back to any
-group's cache, which is a partial hit, after which the job does save. Neither
-module key is a prefix of a "gradle-wrapper-" key, so neither cache can
-restore the other.])dnl
+ifelse([A "restore-keys" entry is a key prefix. The bare "gradle-modules-"
+entry lets a group start from the other group's cache rather than from
+nothing; that is a partial hit, after which the job does save, so over time
+the two entries tend toward the same contents. Neither module key is a prefix
+of a "gradle-wrapper-" key, so neither cache can restore the other.])dnl
 ifelse([A "!" pattern removes files that an earlier pattern matched, so the
 include pattern must enumerate files, via "/**", rather than name the
 directory, which "actions/cache" would archive whole.])dnl
