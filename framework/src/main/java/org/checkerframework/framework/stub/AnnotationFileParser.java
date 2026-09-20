@@ -2567,6 +2567,28 @@ public final class AnnotationFileParser {
                 "the floating-point value %s is not a value of type %s",
                 expr, typeKindName(valueKind)));
       }
+      // A literal with an `f` or `F` suffix denotes a float; every other floating-point literal
+      // denotes a double.  `1.1f` and `1.1` denote different values, so each literal is parsed
+      // as its own type.  (JavaParser's `asDouble()` ignores the suffix.)
+      String literal = dle.getValue();
+      char suffix = literal.charAt(literal.length() - 1);
+      if (suffix == 'f' || suffix == 'F') {
+        // Underscores are permitted within a literal, but `Float.parseFloat` rejects them.
+        float floatValue = Float.parseFloat(literal.replace("_", ""));
+        // No Java literal denotes an infinite value, so an infinite value means that the
+        // literal is too large for its type.
+        if (Float.isInfinite(floatValue)) {
+          throw new AnnotationFileParserException(
+              String.format(
+                  "the floating-point value %s is outside the range of type float", expr));
+        }
+        if (valueKind == TypeKind.FLOAT) {
+          return floatValue;
+        } else {
+          // Java widens a float to a double without a cast.
+          return (double) floatValue;
+        }
+      }
       // No Java literal denotes an infinite value, so an infinite value means that the
       // literal is too large for its type.
       double doubleValue = dle.asDouble();

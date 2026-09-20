@@ -20,4 +20,6 @@ public class Annotated {
     @FloatExample(1e300) int x8;
     @FloatExample(1.1) int x9;
     @DoubleExample(1e400) int x10;
+    @FloatExample(1e300f) int x11;
+    @DoubleExample(1e300f) int x12;
 }

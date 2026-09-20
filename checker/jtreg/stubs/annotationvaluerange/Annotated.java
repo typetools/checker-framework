@@ -11,4 +11,6 @@ public class Annotated {
   int x8;
   int x9;
   int x10;
+  int x11;
+  int x12;
 }
