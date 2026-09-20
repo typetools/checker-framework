@@ -1,0 +1,15 @@
+- compiler.warn.proc.messager: Annotated.astub:(line 11,col 18): For annotation @ByteExample(200), could not add  value=200  because the value 200 is outside the range of type byte
+- compiler.warn.proc.messager: Annotated.astub:(line 11,col 5): Unknown annotation @ByteExample(200)
+- compiler.warn.proc.messager: Annotated.astub:(line 12,col 18): For annotation @ByteExample(-129), could not add  value=-129  because the value -129 is outside the range of type byte
+- compiler.warn.proc.messager: Annotated.astub:(line 12,col 5): Unknown annotation @ByteExample(-129)
+- compiler.warn.proc.messager: Annotated.astub:(line 13,col 19): For annotation @ShortExample(32768), could not add  value=32768  because the value 32768 is outside the range of type short
+- compiler.warn.proc.messager: Annotated.astub:(line 13,col 5): Unknown annotation @ShortExample(32768)
+- compiler.warn.proc.messager: Annotated.astub:(line 14,col 19): For annotation @ShortExample(-32769), could not add  value=-32769  because the value -32769 is outside the range of type short
+- compiler.warn.proc.messager: Annotated.astub:(line 14,col 5): Unknown annotation @ShortExample(-32769)
+- compiler.warn.proc.messager: Annotated.astub:(line 15,col 17): For annotation @IntExample(2147483648L), could not add  value=2147483648L  because the value 2147483648 is outside the range of type int
+- compiler.warn.proc.messager: Annotated.astub:(line 15,col 5): Unknown annotation @IntExample(2147483648L)
+- compiler.warn.proc.messager: Annotated.astub:(line 16,col 18): For annotation @CharExample(-1), could not add  value=-1  because the value -1 is outside the range of type char
+- compiler.warn.proc.messager: Annotated.astub:(line 16,col 5): Unknown annotation @CharExample(-1)
+- compiler.warn.proc.messager: Annotated.astub:(line 17,col 17): For annotation @IntExample(1.5), could not add  value=1.5  because the floating-point value 1.5 is not a value of type int
+- compiler.warn.proc.messager: Annotated.astub:(line 17,col 5): Unknown annotation @IntExample(1.5)
+14 warnings

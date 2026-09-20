@@ -1,0 +1,18 @@
+package annotationvaluerange;
+
+import annotationvaluerange.ExampleAnno.ByteExample;
+import annotationvaluerange.ExampleAnno.CharExample;
+import annotationvaluerange.ExampleAnno.IntExample;
+import annotationvaluerange.ExampleAnno.ShortExample;
+
+public class Annotated {
+    // Java rejects each of these annotations, so the annotation file parser warns about each one
+    // rather than silently truncating the value.
+    @ByteExample(200) int x1;
+    @ByteExample(-129) int x2;
+    @ShortExample(32768) int x3;
+    @ShortExample(-32769) int x4;
+    @IntExample(2147483648L) int x5;
+    @CharExample(-1) int x6;
+    @IntExample(1.5) int x7;
+}

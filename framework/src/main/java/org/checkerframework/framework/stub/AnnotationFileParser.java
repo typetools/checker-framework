@@ -65,6 +65,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -546,7 +547,12 @@ public final class AnnotationFileParser {
   private Map<String, TypeElement> getImportedAnnotations() {
     Map<String, TypeElement> result = new HashMap<>();
 
-    // TODO: The size can be greater than 1, but this ignores all but the first element.
+    // An annotation file may contain more than one compilation unit:  stubparser starts a new
+    // compilation unit at each package declaration that follows a type declaration.  Imports may
+    // appear at the top of the file or immediately after any package declaration, but not after a
+    // type declaration.  All of the compilation units of a StubUnit share a single list that holds
+    // every import in the file, no matter which package declaration an import follows.  So, reading
+    // the imports of the first compilation unit reads all of the file's imports.
     assert !stubUnit.getCompilationUnits().isEmpty();
     CompilationUnit cu = stubUnit.getCompilationUnits().get(0);
 
@@ -917,6 +923,26 @@ public final class AnnotationFileParser {
   }
 
   /**
+   * Returns {@code qualifiedName} without the given package name and the dot that follows it. If
+   * {@code qualifiedName} is not in package {@code packageName}, returns {@code qualifiedName}
+   * unchanged.
+   *
+   * @param qualifiedName the fully-qualified name of a class
+   * @param packageName the name of a package, or null for the unnamed package
+   * @return {@code qualifiedName} with the package name stripped off
+   */
+  private static String removePackage(String qualifiedName, @Nullable String packageName) {
+    if (packageName == null) {
+      return qualifiedName;
+    }
+    String packagePrefix = packageName + ".";
+    if (qualifiedName.startsWith(packagePrefix)) {
+      return qualifiedName.substring(packagePrefix.length());
+    }
+    return qualifiedName;
+  }
+
+  /**
    * Process a type declaration: copy its annotations to {@code #annotationFileAnnos}.
    *
    * <p>This method stores the declaration's type parameters in {@link #typeParameters}. When
@@ -943,7 +969,8 @@ public final class AnnotationFileParser {
     TypeElement typeElt;
     if (classTree != null) {
       typeElt = TreeUtils.elementFromDeclaration(classTree);
-      innerName = typeElt.getQualifiedName().toString();
+      // An FqName's className does not include the package name, but getQualifiedName() does.
+      innerName = removePackage(typeElt.getQualifiedName().toString(), typeBeingParsed.packageName);
       typeBeingParsed = new FqName(typeBeingParsed.packageName, innerName);
       fqTypeName = typeBeingParsed.toString();
     } else {
@@ -1041,6 +1068,10 @@ public final class AnnotationFileParser {
 
     IPair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>> members =
         getMembers(typeDecl, typeElt, typeDecl);
+    // Processing a nested type sets typeBeingParsed to the nested type.  Restore typeBeingParsed
+    // afterward, so that members declared after the nested type resolve simple names relative to
+    // typeDecl rather than relative to the nested type.
+    FqName thisTypeBeingParsed = typeBeingParsed;
     for (Map.Entry<Element, BodyDeclaration<?>> entry : members.first.entrySet()) {
       Element elt = entry.getKey();
       BodyDeclaration<?> decl = entry.getValue();
@@ -1064,12 +1095,13 @@ public final class AnnotationFileParser {
         }
         case CONSTRUCTOR, METHOD ->
             processCallableDeclaration((CallableDeclaration<?>) decl, (ExecutableElement) elt);
-        case CLASS, INTERFACE ->
-            // Not processing an ajava file, so ignore the return value.
-            processTypeDecl((ClassOrInterfaceDeclaration) decl, innerName, null);
-        case ENUM ->
-            // Not processing an ajava file, so ignore the return value.
-            processTypeDecl((EnumDeclaration) decl, innerName, null);
+        // The declaration's kind need not match the element's kind; for example, a record is
+        // often written as a class in a stub file.  processTypeDecl handles any mismatch.
+        case CLASS, INTERFACE, ENUM, RECORD -> {
+          // Not processing an ajava file, so ignore the return value.
+          processTypeDecl((TypeDeclaration<?>) decl, innerName, null);
+          typeBeingParsed = thisTypeBeingParsed;
+        }
         default ->
             /* do nothing */
             stubWarnNotFound(decl, "AnnotationFileParser ignoring: " + elt);
@@ -1974,12 +2006,17 @@ public final class AnnotationFileParser {
         putIfAbsent(elementsToDecl, elt, member);
       }
     } else if (member instanceof ClassOrInterfaceDeclaration coid) {
-      Element elt = findElement(typeElt, coid);
+      Element elt = findElement(typeElt, coid, "Class/interface");
       if (elt != null) {
         putIfAbsent(elementsToDecl, elt, member);
       }
     } else if (member instanceof EnumDeclaration ed) {
-      Element elt = findElement(typeElt, ed);
+      Element elt = findElement(typeElt, ed, "Enum");
+      if (elt != null) {
+        putIfAbsent(elementsToDecl, elt, member);
+      }
+    } else if (member instanceof RecordDeclaration rd) {
+      Element elt = findElement(typeElt, rd, "Record");
       if (elt != null) {
         putIfAbsent(elementsToDecl, elt, member);
       }
@@ -2177,53 +2214,25 @@ public final class AnnotationFileParser {
 
   /**
    * Looks for the nested type element in the typeElt and returns it if the element has the same
-   * name as provided class or interface declaration. In case nested element is not found it returns
-   * null.
+   * name as provided type declaration. In case nested element is not found it returns null.
    *
    * @param typeElt an element where nested type element should be looked for
-   * @param ciDecl class or interface declaration which name should be found among nested elements
-   *     of the typeElt
-   * @return nested in typeElt element with the name of the class or interface, or null if nested
-   *     element is not found
-   */
-  private @Nullable Element findElement(TypeElement typeElt, ClassOrInterfaceDeclaration ciDecl) {
-    String wantedClassOrInterfaceName = ciDecl.getNameAsString();
-    for (TypeElement typeElement : ElementUtils.getAllTypeElementsIn(typeElt)) {
-      if (wantedClassOrInterfaceName.equals(typeElement.getSimpleName().toString())) {
-        return typeElement;
-      }
-    }
-
-    stubWarnNotFound(
-        ciDecl, "Class/interface " + wantedClassOrInterfaceName + " not found in type " + typeElt);
-    if (debugAnnotationFileParser) {
-      stubDebug("  Here are the type declarations of %s:", typeElt);
-      for (TypeElement method : ElementFilter.typesIn(typeElt.getEnclosedElements())) {
-        stubDebug("    %s", method);
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Looks for the nested enum element in the typeElt and returns it if the element has the same
-   * name as provided enum declaration. In case nested element is not found it returns null.
-   *
-   * @param typeElt an element where nested enum element should be looked for
-   * @param enumDecl enum declaration which name should be found among nested elements of the
+   * @param nestedTypeDecl type declaration which name should be found among nested elements of the
    *     typeElt
-   * @return nested in typeElt enum element with the name of the provided enum, or null if nested
+   * @param kind the kind of {@code nestedTypeDecl}, for use in a diagnostic message
+   * @return nested in typeElt element with the name of the type declaration, or null if nested
    *     element is not found
    */
-  private @Nullable Element findElement(TypeElement typeElt, EnumDeclaration enumDecl) {
-    String wantedEnumName = enumDecl.getNameAsString();
+  private @Nullable Element findElement(
+      TypeElement typeElt, TypeDeclaration<?> nestedTypeDecl, String kind) {
+    String wantedName = nestedTypeDecl.getNameAsString();
     for (TypeElement typeElement : ElementUtils.getAllTypeElementsIn(typeElt)) {
-      if (wantedEnumName.equals(typeElement.getSimpleName().toString())) {
+      if (wantedName.equals(typeElement.getSimpleName().toString())) {
         return typeElement;
       }
     }
 
-    stubWarnNotFound(enumDecl, "Enum " + wantedEnumName + " not found in type " + typeElt);
+    stubWarnNotFound(nestedTypeDecl, kind + " " + wantedName + " not found in type " + typeElt);
     if (debugAnnotationFileParser) {
       stubDebug("  Here are the type declarations of %s:", typeElt);
       for (TypeElement method : ElementFilter.typesIn(typeElt.getEnclosedElements())) {
@@ -2564,9 +2573,15 @@ public final class AnnotationFileParser {
     } else if (expr instanceof CharLiteralExpr cle) {
       return convert((int) cle.asChar(), valueKind);
     } else if (expr instanceof DoubleLiteralExpr dle) {
-      // No conversion needed if the expression is a double, the annotation value must be a
-      // double, too.
-      return dle.asDouble();
+      // JavaParser represents both `float` and `double` literals as a DoubleLiteralExpr, so the
+      // value may need to be converted to a float.
+      if (valueKind != TypeKind.FLOAT && valueKind != TypeKind.DOUBLE) {
+        throw new AnnotationFileParserException(
+            String.format(
+                "the floating-point value %s is not a value of type %s",
+                expr, typeKindName(valueKind)));
+      }
+      return convert(dle.asDouble(), valueKind);
     } else if (expr instanceof IntegerLiteralExpr ile) {
       return convert(ile.asNumber(), valueKind);
     } else if (expr instanceof LongLiteralExpr lle) {
@@ -2581,7 +2596,13 @@ public final class AnnotationFileParser {
         case "-2147483648" -> convert(Integer.MIN_VALUE, valueKind, false);
         default -> {
           if (ue.getOperator() == UnaryExpr.Operator.MINUS) {
-            Object value = getValueOfExpressionInAnnotation(name, ue.getExpression(), valueKind);
+            // Obtain the operand's value without narrowing it to `valueKind`, so that
+            // `convert` can range-check the negated value.
+            TypeKind operandKind =
+                (valueKind == TypeKind.FLOAT || valueKind == TypeKind.DOUBLE)
+                    ? TypeKind.DOUBLE
+                    : TypeKind.LONG;
+            Object value = getValueOfExpressionInAnnotation(name, ue.getExpression(), operandKind);
             if (value instanceof Number n) {
               yield convert(n, valueKind, true);
             }
@@ -2653,8 +2674,15 @@ public final class AnnotationFileParser {
    * </code></pre>
    *
    * To properly build @Anno, the IntegerLiteralExpr "1" must be converted from an int to a long.
+   *
+   * @param number a Number value to be converted
+   * @param expectedKind one of type {byte, short, int, long, char, float, double}
+   * @return the converted Object
+   * @throws AnnotationFileParserException if {@code number} is outside the range of {@code
+   *     expectedKind}
    */
-  private Object convert(Number number, TypeKind expectedKind) {
+  private Object convert(Number number, TypeKind expectedKind)
+      throws AnnotationFileParserException {
     return convert(number, expectedKind, false);
   }
 
@@ -2666,27 +2694,58 @@ public final class AnnotationFileParser {
    * @param expectedKind one of type {byte, short, int, long, char, float, double}
    * @param negate if true, negate the value of the Number Object while converting
    * @return the converted Object
+   * @throws AnnotationFileParserException if the converted value is outside the range of {@code
+   *     expectedKind}
    */
-  private Object convert(Number number, TypeKind expectedKind, boolean negate) {
-    byte scalefactor = (byte) (negate ? -1 : 1);
+  private Object convert(Number number, TypeKind expectedKind, boolean negate)
+      throws AnnotationFileParserException {
+    int scalefactor = negate ? -1 : 1;
+    // For an integral `expectedKind`, the value before it is narrowed to `expectedKind`.
+    long longValue = number.longValue() * scalefactor;
     return switch (expectedKind) {
-      case BYTE -> number.byteValue() * scalefactor;
-      case SHORT -> number.shortValue() * scalefactor;
-      case INT -> number.intValue() * scalefactor;
-      case LONG -> number.longValue() * scalefactor;
-      case CHAR -> {
-        // It's not possible for `number` to be negative when `expectedkind` is a CHAR, and
-        // casting a negative value to char is illegal.
-        if (negate) {
-          throw new BugInCF(
-              "convert(%s, %s, %s): can't negate a char", number, expectedKind, negate);
-        }
-        yield (char) number.intValue();
-      }
+      case BYTE -> (byte) checkInRange(longValue, expectedKind, Byte.MIN_VALUE, Byte.MAX_VALUE);
+      case SHORT -> (short) checkInRange(longValue, expectedKind, Short.MIN_VALUE, Short.MAX_VALUE);
+      case INT -> (int) checkInRange(longValue, expectedKind, Integer.MIN_VALUE, Integer.MAX_VALUE);
+      case LONG -> longValue;
+      case CHAR ->
+          (char) checkInRange(longValue, expectedKind, Character.MIN_VALUE, Character.MAX_VALUE);
       case FLOAT -> number.floatValue() * scalefactor;
       case DOUBLE -> number.doubleValue() * scalefactor;
       default -> throw new BugInCF("Unexpected expectedKind: " + expectedKind);
     };
+  }
+
+  /**
+   * Returns {@code value}, which must be within the range {@code [min..max]} of {@code
+   * expectedKind}. Java forbids an annotation element whose value does not fit in its declared
+   * type, so silently truncating the value would give the annotation a meaning that its source text
+   * does not have.
+   *
+   * @param value the value of an annotation element
+   * @param expectedKind the integral type of the annotation element, for diagnostic messages
+   * @param min the smallest value that {@code expectedKind} can represent
+   * @param max the largest value that {@code expectedKind} can represent
+   * @return {@code value}
+   * @throws AnnotationFileParserException if {@code value} is outside the range {@code [min..max]}
+   */
+  private static long checkInRange(long value, TypeKind expectedKind, long min, long max)
+      throws AnnotationFileParserException {
+    if (value < min || value > max) {
+      throw new AnnotationFileParserException(
+          String.format(
+              "the value %d is outside the range of type %s", value, typeKindName(expectedKind)));
+    }
+    return value;
+  }
+
+  /**
+   * Returns the Java source name of {@code typeKind}, such as "byte".
+   *
+   * @param typeKind a primitive type kind
+   * @return the Java source name of {@code typeKind}
+   */
+  private static String typeKindName(TypeKind typeKind) {
+    return typeKind.toString().toLowerCase(Locale.ROOT);
   }
 
   /**
@@ -2743,6 +2802,8 @@ public final class AnnotationFileParser {
    */
   private void builderSetValue(AnnotationBuilder builder, String name, Object value) {
     if (value instanceof Boolean b) {
+      builder.setValue(name, b);
+    } else if (value instanceof Byte b) {
       builder.setValue(name, b);
     } else if (value instanceof Character c) {
       builder.setValue(name, c);
@@ -3102,6 +3163,11 @@ public final class AnnotationFileParser {
 
     @Override
     public Void visitClass(ClassTree javacTree, Node javaParserNode) {
+      // processTypeDecl sets typeBeingParsed to javacTree's type, which is correct while
+      // visiting javacTree's members.  Restore it afterward, so that members of the enclosing
+      // type that are declared after javacTree resolve simple names relative to the enclosing
+      // type rather than relative to javacTree's type.
+      FqName outerTypeBeingParsed = typeBeingParsed;
       List<AnnotatedTypeVariable> typeDeclTypeParameters = null;
       if (javaParserNode instanceof TypeDeclaration<?>
           && !(javaParserNode instanceof AnnotationDeclaration)) {
@@ -3113,6 +3179,7 @@ public final class AnnotationFileParser {
       if (typeDeclTypeParameters != null) {
         typeParameters.removeAll(typeDeclTypeParameters);
       }
+      typeBeingParsed = outerTypeBeingParsed;
 
       return null;
     }
