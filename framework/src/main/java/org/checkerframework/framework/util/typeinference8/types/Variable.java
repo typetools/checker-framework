@@ -49,6 +49,9 @@ import org.checkerframework.javacutil.TypesUtils;
   /** The context. */
   protected final Java8InferenceContext context;
 
+  /** This variable's hash code, or 0 if it has not been computed yet. */
+  private int hashCode = 0;
+
   /**
    * Creates a variable.
    *
@@ -170,7 +173,16 @@ import org.checkerframework.javacutil.TypesUtils;
 
   @Override
   public int hashCode() {
-    return Objects.hash(TypesUtils.hashCodeForAreSame(typeVariableJava), invocation);
+    // The fields that `equals` compares are final, and hashCodeForAreSame() builds a String, so
+    // compute this once.  This method is hot: inference puts these variables, and types that
+    // delegate to them, in hash sets.
+    if (hashCode == 0) {
+      // Objects.hashCode() is null-safe; `invocation` is null in some tests.
+      hashCode =
+          31 * (31 + TypesUtils.hashCodeForAreSame(typeVariableJava))
+              + Objects.hashCode(invocation);
+    }
+    return hashCode;
   }
 
   @Override

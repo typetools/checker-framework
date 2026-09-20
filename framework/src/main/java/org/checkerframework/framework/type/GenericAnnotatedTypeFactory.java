@@ -3041,6 +3041,27 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * {@inheritDoc}
+   *
+   * <p>Because a group of subcheckers shares control flow graphs, and therefore the artificial
+   * trees in them, this returns the ultimate parent checker's map: the one whose CFG builder
+   * created the artificial trees, and the one that {@link #clearSharedCFG} clears.
+   */
+  @Override
+  protected Map<Tree, Element> artificialTreeMap() {
+    if (!hasOrIsSubchecker) {
+      return super.artificialTreeMap();
+    }
+    BaseTypeChecker ultimateParent = this.checker.getUltimateParentChecker();
+    @SuppressWarnings("interning") // Checking reference equality.
+    boolean parentIsThisChecker = ultimateParent == this.checker;
+    if (parentIsThisChecker) {
+      return super.artificialTreeMap();
+    }
+    return ultimateParent.getTypeFactory().artificialTreeMap();
+  }
+
+  /**
    * Returns the shared control flow graph used for {@code tree} by this checker's topmost
    * superchecker. Returns null if no information is available about the given tree, or if this
    * checker has a parent checker that does not have a GenericAnnotatedTypeFactory.
