@@ -475,26 +475,24 @@ public class StubGenerator {
     int annoArgDepth = 0;
     // True if the previous token was an annotation, so an argument list may follow.
     boolean afterAnnotation = false;
-    // True if the current position is within a string literal in an annotation's arguments.
-    boolean inStringLiteral = false;
+    // The delimiter of the string or character literal that the current position is within, or 0
+    // if the current position is not within a literal.  Meaningful only within an annotation's
+    // arguments.
+    char literalDelimiter = 0;
 
     while (tokenizer.hasMoreTokens()) {
       String token = tokenizer.nextToken();
       if (annoArgDepth > 0) {
         // Output an annotation's arguments verbatim; for example, do not shorten the class
         // literal in "@p.Anno(p.Target.class)".
-        if (!inStringLiteral) {
+        if (literalDelimiter == 0) {
           if (token.equals("(")) {
             annoArgDepth++;
           } else if (token.equals(")")) {
             annoArgDepth--;
           }
         }
-        // A token is either a single delimiter character or a maximal run of non-delimiter
-        // characters, so a token that is a parenthesis cannot also contain a quote character.
-        if (hasOddNumberOfQuotes(token)) {
-          inStringLiteral = !inStringLiteral;
-        }
+        literalDelimiter = literalStateAfter(token, literalDelimiter);
         sb.append(token);
         continue;
       }
@@ -525,24 +523,31 @@ public class StubGenerator {
   }
 
   /**
-   * Returns true if the given text contains an odd number of unescaped double-quote characters,
-   * that is, if the text starts or ends a string literal.
+   * Returns the string-literal or character-literal nesting at the end of the given text, given the
+   * nesting at the beginning of the text.
    *
    * @param text a substring of a type's string representation
-   * @return true if the text contains an odd number of unescaped double-quote characters
+   * @param startDelimiter the delimiter of the literal that is open at the beginning of {@code
+   *     text}: a double quote, a single quote, or 0 if no literal is open
+   * @return the delimiter of the literal that is open at the end of {@code text}, or 0 if no
+   *     literal is open
    */
-  private static boolean hasOddNumberOfQuotes(String text) {
-    boolean result = false;
+  private static char literalStateAfter(String text, char startDelimiter) {
+    char delimiter = startDelimiter;
     for (int i = 0; i < text.length(); i++) {
       char c = text.charAt(i);
-      if (c == '\\') {
+      if (delimiter == 0) {
+        if (c == '"' || c == '\'') {
+          delimiter = c;
+        }
+      } else if (c == '\\') {
         // Skip the escaped character.
         i++;
-      } else if (c == '"') {
-        result = !result;
+      } else if (c == delimiter) {
+        delimiter = 0;
       }
     }
-    return result;
+    return delimiter;
   }
 
   /**

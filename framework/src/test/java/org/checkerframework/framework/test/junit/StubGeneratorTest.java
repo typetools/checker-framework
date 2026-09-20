@@ -100,6 +100,21 @@ public class StubGeneratorTest {
     Assert.assertTrue(stub, stub.contains("@p.Anno2(\"a.b.method()\") String field"));
   }
 
+  @Test
+  public void typeUseAnnotationWithCharArgumentContainingParenthesis() {
+    String stub =
+        generateStub(
+            "p/UsesChar.java",
+            "package p;"
+                + " public class UsesChar { public @Anno3(ch = ')', type = java.util.Map.class)"
+                + " String field; }"
+                + " @java.lang.annotation.Target(java.lang.annotation.ElementType.TYPE_USE)"
+                + " @interface Anno3 { char ch(); Class<?> type(); }",
+            "p.UsesChar");
+    Assert.assertTrue(
+        stub, stub.contains("@p.Anno3(ch=')', type=java.util.Map.class) String field"));
+  }
+
   /**
    * Asserts that the given stub file text contains no package declaration, as is correct for the
    * default package.
