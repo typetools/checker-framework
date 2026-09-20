@@ -13,8 +13,7 @@ because a distribution of the wrong version is useless: Gradle would download
 the pinned version anyway, and the stale distribution would bloat the cache.])dnl
 ifelse([The module cache is per group of jobs rather than per job. A cache per
 job would hold about 20 copies of a 350MB cache, and CodeQL's caches already
-spoke for most of the repository's 10GB cache quota, so GitHub would evict
-entries that a run was about to use.])dnl
+account for most of the repository's 10GB cache quota.])dnl
 ifelse(["actions/cache" saves nothing when the key was an exact hit, and only
 one job can reserve a key, so within a group whichever job gets there first
 fixes the entry's contents until the key changes. A group therefore holds
