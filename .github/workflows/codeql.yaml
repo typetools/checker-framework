@@ -1,0 +1,61 @@
+# CodeQL analysis, in place of code scanning's "default setup".
+# Only advanced setup, which is to say this file, makes "dependency-caching"
+# configurable; default setup turns it on and offers no way to turn it off.
+name: CodeQL
+
+"on":
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  schedule:
+    # Weekly, matching the schedule that default setup used.
+    - cron: "37 4 * * 1"
+
+# Auto-cancel any in-progress jobs from the same branch or PR.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      actions: read
+      contents: read
+      packages: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - actions
+          - java-kotlin
+          - python
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          # Each Java dependency cache holds about 1GB of "~/.m2/repository" and
+          # "~/.gradle/caches", and its key covers every "*.gradle" file, so a
+          # handful of them crowds every other cache out of the repository's
+          # 10GB quota.
+          dependency-caching: false
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          # Matches the category that default setup used, so that existing
+          # alerts keep their identity rather than being reported anew.
+          category: /language:${{ matrix.language }}
