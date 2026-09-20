@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Clones a git repository, or updates an existing clone.  Retries once, after a
-# delay, in case the failure was a transient network problem.
+# Clones a git repository, or updates an existing clone.  Retries cloning once,
+# after a delay, in case the failure was a transient network problem.
 #
 # Usage: clone-or-update.sh URL DIRECTORY
 #
@@ -16,7 +16,7 @@
 # Within a Gradle build, depend on the task instead; "buildSrc" is compiled in
 # that case regardless, so the task costs nothing extra.
 
-echo "Entering checker/bin-devel/clone-or-update.sh $* in $(pwd)"
+# echo "Entering checker/bin-devel/clone-or-update.sh $* in $(pwd)"
 
 # Fail the whole script if any command fails
 set -e
@@ -48,4 +48,4 @@ clone_or_update() {
 
 clone_or_update || (sleep 60 && clone_or_update)
 
-echo "Exiting checker/bin-devel/clone-or-update.sh $* in $(pwd)"
+# echo "Exiting checker/bin-devel/clone-or-update.sh $* in $(pwd)"
