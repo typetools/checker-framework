@@ -1447,12 +1447,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @SuppressWarnings("compilermessages")
     @CompilerMessageKey String msgKey = msgKeyPrefix + reason;
     if (reason.equals("call")) {
+      ExecutableElement calleeElement;
       if (r.first instanceof MethodInvocationTree mitree) {
-        checker.reportError(r.first, msgKey, mitree.getMethodSelect());
+        calleeElement = TreeUtils.elementFromUse(mitree);
       } else {
-        NewClassTree nctree = (NewClassTree) r.first;
-        checker.reportError(r.first, msgKey, nctree.getIdentifier());
+        calleeElement = TreeUtils.elementFromUse((NewClassTree) r.first);
       }
+      checker.reportError(
+          r.first, msgKey, calleeElement.getEnclosingElement(), calleeElement.getSimpleName());
     } else {
       checker.reportError(r.first, msgKey);
     }
