@@ -11,16 +11,23 @@ cache entry, whose key mentions no job. The key covers only the file that pins
 the distribution's version. The distribution cache has no "restore-keys",
 because a distribution of the wrong version is useless: Gradle would download
 the pinned version anyway, and the stale distribution would bloat the cache.])dnl
-ifelse([Every job resolves nearly the same set of dependencies, so one cache
-entry serves them all. A cache per job would hold about 20 near-copies of a
-350MB cache, which does not fit in the repository's 10GB cache quota. The
-key must cover every file that pins a dependency version. Add to that list any
-file that gains a hardcoded dependency or plugin version.])dnl
-ifelse([A "restore-keys" entry is a key prefix. "gradle-modules-" matches no
-"gradle-wrapper-" key, so neither cache can restore the other.])dnl
+ifelse([The module cache is per group of jobs rather than per job, because a
+cache per job would hold about 20 near-copies of a 350MB cache, which does not
+fit in the repository's 10GB cache quota. Group "cf" resolves only this
+project's dependencies; group "ext" also resolves those of Daikon, Guava, and
+plume-lib. The two groups need separate entries because "actions/cache" saves
+nothing when the key was an exact hit, so a job sharing a key with a job that
+resolves fewer dependencies would never store the difference.])dnl
+ifelse([The key must cover every file that pins a dependency version. Add to
+that list any file that gains a hardcoded dependency or plugin version.])dnl
+ifelse([A "restore-keys" entry is a key prefix. A group falls back to any
+group's cache, which is a partial hit, after which the job does save. Neither
+module key is a prefix of a "gradle-wrapper-" key, so neither cache can
+restore the other.])dnl
 ifelse([A "!" pattern removes files that an earlier pattern matched, so the
 include pattern must enumerate files, via "/**", rather than name the
 directory, which "actions/cache" would archive whole.])dnl
+ifelse([Takes 1 argument: the cache group, "cf" or "ext".])dnl
 define([gradle_cache], [dnl
       - uses: actions/cache@v6
         with:
@@ -32,8 +39,34 @@ define([gradle_cache], [dnl
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
-          restore-keys: gradle-modules-
+          key: gradle-modules-$1-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-$1-
+            gradle-modules-
+])dnl
+dnl
+ifelse([Takes 1 argument: the name of the test script that a job runs.
+Expands to the cache group that the job belongs to.])dnl
+define([cache_group], [dnl
+ifelse($1,test-daikon-part1.sh,[ext],
+       $1,test-daikon-part2.sh,[ext],
+       $1,test-daikon-part3.sh,[ext],
+       $1,test-guava-part1.sh,[ext],
+       $1,test-guava-part2.sh,[ext],
+       $1,test-plume-lib.sh,[ext],
+       [cf])])dnl
+dnl
+ifelse([Gradle derives its user home from the JVM's "user.home" property, which
+on Linux comes from the passwd database rather than from "$HOME". Each job
+that runs Gradle runs as root in a container, so Gradle would write to
+"/root/.gradle", whereas "actions/cache" expands "~" to "$HOME", which the
+runner sets to "/github/home". Setting GRADLE_USER_HOME makes the two agree,
+so that the caches above hold the files that Gradle wrote. "/github/home"
+exists only in a container job, which is why this is per job rather than for
+the whole workflow.])dnl
+define([gradle_user_home], [dnl
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
 ])dnl
 dnl
 ifelse([Clones plume-scripts into "checker/bin-devel/.plume-scripts".  Uses
@@ -46,6 +79,9 @@ define([clone_plume_scripts_step], [dnl
         run: |
           PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
           clone_plume_scripts() {
+            # A failed clone can leave a non-empty directory, which would make
+            # every later attempt fail with "destination path already exists".
+            rm -rf "$PLUME_SCRIPTS"
             git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git "$PLUME_SCRIPTS"
           }
           clone_plume_scripts || (sleep 60 && clone_plume_scripts)
@@ -66,6 +102,7 @@ ifelse($3,test-cftests-nonjunit.sh,[],
 ],
 [    timeout-minutes: 70
 ])dnl
+gradle_user_home()dnl
     steps:
       - uses: actions/checkout@v7
         with:
@@ -73,7 +110,7 @@ ifelse($3,test-cftests-nonjunit.sh,[],
           fetch-depth: 25
           show-progress: false
           persist-credentials: false
-gradle_cache()dnl
+gradle_cache(cache_group($3))dnl
       - name: $3
         run: $4
         env:
@@ -140,13 +177,14 @@ ifelse($1,canary_jdk,,$1,latest_jdk,,[    dependsOn:
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk$1-plus[]docker_testing:latest
+gradle_user_home()dnl
     steps:
       - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
-gradle_cache()dnl
+gradle_cache(cf)dnl
 clone_plume_scripts_step()dnl
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
