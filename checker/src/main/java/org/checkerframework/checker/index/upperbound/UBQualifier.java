@@ -441,10 +441,10 @@ public abstract class UBQualifier {
     /*package-private*/ boolean literalIsSubtype(int i) {
       for (Map.Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
         for (OffsetEquation equation : entry.getValue()) {
-          if (!equation.isInt()) {
+          if (!equation.isOnlyInt()) {
             return false;
           }
-          int offset = equation.getInt();
+          int offset = equation.getIntPart();
           if (i + offset > -1) {
             return false;
           }
@@ -628,7 +628,7 @@ public abstract class UBQualifier {
         return true;
       }
       for (OffsetEquation offset : offsets) {
-        if (offset.isNonNegative()) {
+        if (offset.isNonNegativeInt()) {
           return true;
         }
       }
@@ -863,30 +863,30 @@ public abstract class UBQualifier {
     }
 
     /**
+     * Widens {@code lubMap}, which is the least upper bound of {@code this} and {@code other}, so
+     * that dataflow analysis of a loop terminates. If {@code this} and {@code other} contain all
+     * the same sequences with all the same non-constant offsets, but some constant offset differs
+     * between them, then that sequence-offset pair is removed from {@code lubMap}. Otherwise,
+     * {@code lubMap} is left unchanged. This widened lub should only be used in order to break
+     * dataflow analysis loops.
+     *
+     * <p>For example, the lub of {@code LTLengthOf(value={"a", "b"}, offset={"0", "0"})} and {@code
+     * LTLengthOf(value={"a", "b"}, offset={"-20", "0"})} is widened to {@code LTLengthOf("b")}.
+     *
+     * <p>Without this widening, dataflow never stops analyzing the following loop, because the type
+     * of {@code i} changes after each analysis of the loop:
+     *
      * <pre>@LTLengthOf("a") int i = ...;
      * while (expr) {
      *   i++;
      * }</pre>
      *
-     * <p>Dataflow never stops analyzing the above loop, because the type of i always changes after
-     * each analysis of the loop:
+     * <p>The successive types of {@code i} are {@code LTLengthOf(value="a", offset="-1")}, then
+     * {@code LTLengthOf(value="a", offset="-2")}, then {@code LTLengthOf(value="a", offset="-3")},
+     * and so on.
      *
-     * <p>1. @LTLengthOf(value="a', offset="-1")
-     *
-     * <p>2. @LTLengthOf(value="a', offset="-2")
-     *
-     * <p>3. @LTLengthOf(value="a', offset="-3")
-     *
-     * <p>In order to prevent this, if both types passed to lub include all the same sequences with
-     * the same non-constant value offsets and if the constant value offsets are different then
-     * remove that sequence-offset pair from lub.
-     *
-     * <p>For example:
-     *
-     * <p>LUB @LTLengthOf(value={"a", "b"}, offset={"0", "0") and @LTLengthOf(value={"a", "b"},
-     * offset={"-20", "0") is @LTLengthOf("b")
-     *
-     * <p>This widened lub should only be used in order to break dataflow analysis loops.
+     * @param other the qualifier whose lub with {@code this} is {@code lubMap}
+     * @param lubMap the lub of {@code this} and {@code other}; is side-effected by this method
      */
     private void widenLub(LessThanLengthOf other, Map<String, Set<OffsetEquation>> lubMap) {
       if (!containsSame(this.map.keySet(), lubMap.keySet())
@@ -903,9 +903,9 @@ public abstract class UBQualifier {
           return;
         }
         for (OffsetEquation lubEq : lubOffsets) {
-          if (lubEq.isInt()) {
-            int thisInt = OffsetEquation.getIntOffsetEquation(thisOffsets).getInt();
-            int otherInt = OffsetEquation.getIntOffsetEquation(otherOffsets).getInt();
+          if (lubEq.isOnlyInt()) {
+            int thisInt = OffsetEquation.getOnlyIntOffsetEquation(thisOffsets).getIntPart();
+            int otherInt = OffsetEquation.getOnlyIntOffsetEquation(otherOffsets).getIntPart();
             if (thisInt != otherInt) {
               remove.add(new SequenceAndOffset(sequence, lubEq));
             }
@@ -975,7 +975,7 @@ public abstract class UBQualifier {
       Set<OffsetEquation> newOff = new HashSet<>(offsets.size());
       OffsetEquation literal = null;
       for (OffsetEquation eq : offsets) {
-        if (eq.isInt()) {
+        if (eq.isOnlyInt()) {
           if (literal == null) {
             literal = eq;
           } else {
@@ -1132,7 +1132,7 @@ public abstract class UBQualifier {
             if (newEq == null) {
               return null;
             }
-            if (newEq.getInt() == -1) {
+            if (newEq.getIntPart() == -1) {
               return newEq.copyAdd('+', OffsetEquation.ONE);
             }
             return newEq;
@@ -1166,7 +1166,7 @@ public abstract class UBQualifier {
       if (divisor == 1) {
         return this;
       } else if (divisor > 1) {
-        OffsetEquationFunction divideFunc = eq -> (eq.isNegativeOrZero() ? eq : null);
+        OffsetEquationFunction divideFunc = eq -> (eq.isNonPositiveInt() ? eq : null);
         return computeNewOffsets(divideFunc);
       }
       return UpperBoundUnknownQualifier.UNKNOWN;
@@ -1178,9 +1178,9 @@ public abstract class UBQualifier {
         return false;
       }
       for (OffsetEquation offset : offsets) {
-        if (offset.isInt()) {
+        if (offset.isOnlyInt()) {
           // This expression must not overflow
-          return (long) minlen - offset.getInt() > value;
+          return (long) minlen - offset.getIntPart() > value;
         }
       }
       return false;

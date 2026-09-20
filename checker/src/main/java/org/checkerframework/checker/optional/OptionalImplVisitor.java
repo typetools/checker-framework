@@ -290,7 +290,8 @@ public class OptionalImplVisitor
     }
 
     ExpressionTree getReceiver = TreeUtils.getReceiverTree(trueReceiver);
-    ExpressionTree receiver = isPresentCall.receiver();
+    @SuppressWarnings("nullness:assignment") // a call to `isPresent()` has a receiver
+    @NonNull ExpressionTree receiver = isPresentCall.receiver();
     if (sameExpression(receiver, getReceiver)) {
       ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
       checker.reportWarning(
@@ -491,8 +492,10 @@ public class OptionalImplVisitor
     if (!isCallToGet(invokArg)) {
       return;
     }
-    ExpressionTree isPresentReceiver = isPresentCall.receiver();
-    ExpressionTree getReceiver = TreeUtils.getReceiverTree(invokArg);
+    @SuppressWarnings("nullness:assignment") // a call to `isPresent()` has a receiver
+    @NonNull ExpressionTree isPresentReceiver = isPresentCall.receiver();
+    @SuppressWarnings("nullness:assignment") // a call to `get()` has a receiver
+    @NonNull ExpressionTree getReceiver = TreeUtils.getReceiverTree(invokArg);
     if (!isPresentReceiver.toString().equals(getReceiver.toString())) {
       return;
     }
