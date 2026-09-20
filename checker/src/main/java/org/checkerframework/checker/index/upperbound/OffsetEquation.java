@@ -197,6 +197,11 @@ public class OffsetEquation {
     return copy;
   }
 
+  /**
+   * Adds the given equation to this equation, side-effecting this equation.
+   *
+   * @param eq the equation to add to this equation
+   */
   private void plus(OffsetEquation eq) {
     addInt(eq.getIntPart());
     for (String term : eq.addedTerms) {
@@ -207,6 +212,11 @@ public class OffsetEquation {
     }
   }
 
+  /**
+   * Subtracts the given equation from this equation, side-effecting this equation.
+   *
+   * @param eq the equation to subtract from this equation
+   */
   private void minus(OffsetEquation eq) {
     addInt(-1 * eq.getIntPart());
     for (String term : eq.addedTerms) {
@@ -407,7 +417,16 @@ public class OffsetEquation {
     return intPattern.matcher(string).matches();
   }
 
-  /** Returns the first index of a or b in string, or -1 if neither char is in string. */
+  /**
+   * Returns the first index of a or b in string, at or after index, or -1 if neither char occurs in
+   * string at or after index.
+   *
+   * @param string the string to search in
+   * @param a a character to search for
+   * @param b another character to search for
+   * @param index the index at which to start the search
+   * @return the first index of a or b in string at or after index, or -1 if neither char occurs
+   */
   private static int indexOfEither(String string, char a, char b, int index) {
     int aIndex = string.indexOf(a, index);
     int bIndex = string.indexOf(b, index);
