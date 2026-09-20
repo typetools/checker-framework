@@ -5,7 +5,7 @@
 #   Looking in Actions cache for overlay-base database with restore key
 #     codeql-overlay-base-database-1-<confighash>-java-<codeqlversion>-
 #   Downloading cache for java with key codeql-dependencies-1-Linux-java-<hash>
-#     and restore keys codeql-dependencies-
+#     and restore keys codeql-dependencies-1-Linux-java-
 #
 # A restore key selects the most recently created cache that it matches, so
 # only the newest cache of each kind is ever read.  The older ones are
@@ -21,9 +21,11 @@ name: Prune CodeQL caches
 
 "on":
   schedule:
-    # Daily.  CodeQL adds about 1GB per analysis, so a single day's
-    # accumulation is already a large fraction of the quota.
-    - cron: "17 5 * * *"
+    # Hourly.  CodeQL adds about 1GB per analysis, so a day of them exceeds
+    # the entire 10GB quota.  Pruning daily would leave most of each day
+    # over quota, which is when GitHub evicts caches that are in use.  A run
+    # with nothing to delete costs one API request.
+    - cron: "17 * * * *"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -65,4 +67,6 @@ jobs:
           gh api --paginate \
             "repos/${GH_REPO}/actions/caches?per_page=100&sort=created_at&direction=desc" \
             --jq '.actions_caches[]' > "${RUNNER_TEMP}/caches.jsonl"
-          python3 .github/workflows/prune-codeql-caches.py "${RUNNER_TEMP}/caches.jsonl"
+          # "-u" because Actions gives the step a pipe, which block-buffers
+          # output; a run that hits the timeout would log nothing at all.
+          python3 -u .github/workflows/prune-codeql-caches.py "${RUNNER_TEMP}/caches.jsonl"
