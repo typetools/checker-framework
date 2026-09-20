@@ -73,6 +73,33 @@ public class StubGeneratorTest {
     assertNoPackageDeclaration(stub);
   }
 
+  @Test
+  public void typeUseAnnotationWithClassLiteralArgument() {
+    String stub =
+        generateStub(
+            "p/Uses.java",
+            "package p;"
+                + " public class Uses { public @Anno(Tgt.class) String field; }"
+                + " @java.lang.annotation.Target(java.lang.annotation.ElementType.TYPE_USE)"
+                + " @interface Anno { Class<?> value(); }"
+                + " class Tgt {}",
+            "p.Uses");
+    Assert.assertTrue(stub, stub.contains("@p.Anno(p.Tgt.class) String field"));
+  }
+
+  @Test
+  public void typeUseAnnotationWithStringArgumentContainingParentheses() {
+    String stub =
+        generateStub(
+            "p/UsesString.java",
+            "package p;"
+                + " public class UsesString { public @Anno2(\"a.b.method()\") String field; }"
+                + " @java.lang.annotation.Target(java.lang.annotation.ElementType.TYPE_USE)"
+                + " @interface Anno2 { String value(); }",
+            "p.UsesString");
+    Assert.assertTrue(stub, stub.contains("@p.Anno2(\"a.b.method()\") String field"));
+  }
+
   /**
    * Asserts that the given stub file text contains no package declaration, as is correct for the
    * default package.

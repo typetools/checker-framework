@@ -460,24 +460,61 @@ public class StubGenerator {
   }
 
   /**
-   * Returns the simple name of the type.
+   * Returns a string representation of the type, in which each type name is replaced by its simple
+   * name. Annotations retain their fully-qualified names, because the generated stub file contains
+   * no import statements. The arguments of an annotation are output verbatim.
    *
    * @param typeRep a type
-   * @return the simple name of the type
+   * @return a string representation of the type
    */
   private static String formatType(TypeMirror typeRep) {
     StringTokenizer tokenizer = new StringTokenizer(typeRep.toString(), "()<>[], ", true);
     StringBuilder sb = new StringBuilder();
 
+    // The nesting depth of annotation argument lists; 0 when not within an annotation's arguments.
+    int annoArgDepth = 0;
+    // True if the previous token was an annotation, so an argument list may follow.
+    boolean afterAnnotation = false;
+    // True if the current position is within a string literal in an annotation's arguments.
+    boolean inStringLiteral = false;
+
     while (tokenizer.hasMoreTokens()) {
       String token = tokenizer.nextToken();
+      if (annoArgDepth > 0) {
+        // Output an annotation's arguments verbatim; for example, do not shorten the class
+        // literal in "@p.Anno(p.Target.class)".
+        if (!inStringLiteral) {
+          if (token.equals("(")) {
+            annoArgDepth++;
+          } else if (token.equals(")")) {
+            annoArgDepth--;
+          }
+        }
+        // A token is either a single delimiter character or a maximal run of non-delimiter
+        // characters, so a token that is a parenthesis cannot also contain a quote character.
+        if (hasOddNumberOfQuotes(token)) {
+          inStringLiteral = !inStringLiteral;
+        }
+        sb.append(token);
+        continue;
+      }
       int atIndex = token.indexOf('@');
       if (atIndex != -1) {
         // The token contains a type annotation, as in "java.lang.@p.Anno".  Discard the package
         // name that precedes the annotation, and retain the annotation's fully-qualified name,
         // because the generated stub file contains no import statements.
         sb.append(token, atIndex, token.length());
-      } else if (token.length() == 1 || token.lastIndexOf('.') == -1) {
+        afterAnnotation = true;
+        continue;
+      }
+      if (afterAnnotation && token.equals("(")) {
+        annoArgDepth = 1;
+        afterAnnotation = false;
+        sb.append(token);
+        continue;
+      }
+      afterAnnotation = false;
+      if (token.length() == 1 || token.lastIndexOf('.') == -1) {
         sb.append(token);
       } else {
         int index = token.lastIndexOf('.');
@@ -485,6 +522,27 @@ public class StubGenerator {
       }
     }
     return sb.toString();
+  }
+
+  /**
+   * Returns true if the given text contains an odd number of unescaped double-quote characters,
+   * that is, if the text starts or ends a string literal.
+   *
+   * @param text a substring of a type's string representation
+   * @return true if the text contains an odd number of unescaped double-quote characters
+   */
+  private static boolean hasOddNumberOfQuotes(String text) {
+    boolean result = false;
+    for (int i = 0; i < text.length(); i++) {
+      char c = text.charAt(i);
+      if (c == '\\') {
+        // Skip the escaped character.
+        i++;
+      } else if (c == '"') {
+        result = !result;
+      }
+    }
+    return result;
   }
 
   /**
