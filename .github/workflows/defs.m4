@@ -36,6 +36,11 @@ define([gradle_cache], [dnl
             gradle-modules-
 ])dnl
 dnl
+define([clone_plume_scripts_step], [dnl
+      - name: clone_plume_scripts
+        run: ./checker/bin-devel/clone-plume-scripts.sh
+])dnl
+dnl
 ifelse([Takes 4 arguments: OS, JDK version number, name, command line.])dnl
 define([boilerplate], [dnl
     runs-on: ubuntu-latest
@@ -132,8 +137,7 @@ ifelse($1,canary_jdk,,$1,latest_jdk,,[    dependsOn:
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
 gradle_cache()dnl
-      - name: getPlumeScripts
-        run: ./gradlew -q getPlumeScripts
+clone_plume_scripts_step()dnl
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:

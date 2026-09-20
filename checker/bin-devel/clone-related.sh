@@ -89,13 +89,7 @@ echo "JAVA_HOME=${JAVA_HOME}"
 
 # Using `(cd "$CHECKERFRAMEWORK" && ./gradlew getGitScripts -q)` leads to infinite regress.
 GIT_SCRIPTS="${SCRIPT_DIR}/.git-scripts"
-if [ -d "$GIT_SCRIPTS" ]; then
-  (cd "$GIT_SCRIPTS" && (git pull -q || true))
-else
-  (cd "${SCRIPT_DIR}" \
-    && (git clone --depth=1 -q https://github.com/plume-lib/git-scripts.git .git-scripts \
-      || (sleep 60 && git clone --depth=1 -q https://github.com/plume-lib/git-scripts.git .git-scripts)))
-fi
+"${SCRIPT_DIR}"/clone-or-update.sh https://github.com/plume-lib/git-scripts.git "$GIT_SCRIPTS"
 
 # Clone the annotated JDK into ../jdk .
 "$GIT_SCRIPTS/git-clone-related" ${DEBUG_FLAG} typetools jdk
