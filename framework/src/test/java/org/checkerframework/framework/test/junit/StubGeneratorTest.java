@@ -2,8 +2,10 @@ package org.checkerframework.framework.test.junit;
 
 import java.util.regex.Pattern;
 import org.checkerframework.framework.stub.StubGenerator;
+import org.checkerframework.framework.test.junit.StubGeneratorTestHelper.SourceFile;
 import org.junit.Assert;
 import org.junit.Test;
+import org.plumelib.util.StringsP;
 
 /** Tests for {@link StubGenerator}. */
 public class StubGeneratorTest {
@@ -122,6 +124,28 @@ public class StubGeneratorTest {
             "p.Bounded");
     Assert.assertTrue(stub, stub.contains("class Bounded<T extends Number & Serializable>"));
     Assert.assertTrue(stub, stub.contains("<U extends CharSequence> void m(U u)"));
+    StubGeneratorTestHelper.assertParses(stub);
+  }
+
+  @Test
+  public void annotatedTypeParameters() {
+    String stub =
+        StubGeneratorTestHelper.generateStub(
+            "p.Annotated",
+            StubGeneratorTestHelper.annotationDeclaration("TypeAnno", "TYPE_USE"),
+            StubGeneratorTestHelper.annotationDeclaration("ParamAnno", "TYPE_PARAMETER"),
+            StubGeneratorTestHelper.annotationDeclaration("BothAnno", "TYPE_USE", "TYPE_PARAMETER"),
+            new SourceFile(
+                "p/Annotated.java",
+                "package p;"
+                    + " public class Annotated<@TypeAnno T, @ParamAnno U, @BothAnno V> {"
+                    + "   public <@TypeAnno A extends @TypeAnno Number> void m(A a) {} }"));
+    Assert.assertTrue(
+        stub, stub.contains("class Annotated<@p.TypeAnno T, @p.ParamAnno U, @p.BothAnno V>"));
+    // An annotation that is applicable to both a type parameter and a type use is printed once.
+    Assert.assertEquals(stub, 1, StringsP.count(stub, "@p.BothAnno"));
+    Assert.assertTrue(
+        stub, stub.contains("<@p.TypeAnno A extends @p.TypeAnno Number> void m(A a)"));
     StubGeneratorTestHelper.assertParses(stub);
   }
 

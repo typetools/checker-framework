@@ -494,9 +494,9 @@ public class StubGenerator {
   }
 
   /**
-   * Returns a string representation of the type parameters, including their bounds and surrounded
-   * by angle brackets, as in {@code <K, V extends Number>}. Returns the empty string if there are
-   * no type parameters.
+   * Returns a string representation of the type parameters, including their annotations and bounds
+   * and surrounded by angle brackets, as in {@code <K, V extends Number>}. Returns the empty string
+   * if there are no type parameters.
    *
    * @param typeParameters the type parameters of a class or a method
    * @return a string representation of the type parameters
@@ -507,7 +507,17 @@ public class StubGenerator {
     }
     StringJoiner result = new StringJoiner(", ", "<", ">");
     for (TypeParameterElement typeParameter : typeParameters) {
-      StringBuilder sb = new StringBuilder(typeParameter.getSimpleName());
+      StringBuilder sb = new StringBuilder();
+      List<AnnotationMirror> typeAnnos = typeAnnotations(typeParameter.asType());
+      for (AnnotationMirror am : typeParameter.getAnnotationMirrors()) {
+        // An annotation that is applicable to both a type parameter and a type use appears both
+        // here and within the type parameter's type, so do not print it twice.
+        if (!AnnotationUtils.containsSameByName(typeAnnos, am)) {
+          sb.append(am);
+          sb.append(' ');
+        }
+      }
+      sb.append(formatType(typeParameter.asType()));
       List<? extends TypeMirror> bounds = typeParameter.getBounds();
       // A single bound of java.lang.Object is implicit, so do not print it.
       if (!(bounds.size() == 1 && TypesUtils.isObject(bounds.get(0)))) {
