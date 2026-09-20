@@ -14,6 +14,8 @@ class SuperClass implements SuperInterface {
     @Untainted int wildcard(List<? extends Number> l);
     // fake override, with a varargs formal parameter:
     @Untainted int varargs(String... s);
+    // fake override, with a type argument on an enclosing type:
+    @Untainted int enclosing(Enclosing<String>.Nested<Integer> e);
     // fake override of a method whose type variable has an intersection bound; the stub file
     // writes the erasure, which is the leftmost bound:
     @Untainted int intersection(Number t);

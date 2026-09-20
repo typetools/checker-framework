@@ -39,6 +39,11 @@ public class Use extends SuperClass implements SubInterface {
     @Untainted int i = d.varargs(s);
   }
 
+  void useEnclosing(Use d, Enclosing<String>.Nested<Integer> e) {
+    // Ok, because of the fake override in SuperClass.
+    @Untainted int i = d.enclosing(e);
+  }
+
   void useIntersection(Use d, Integer n) {
     // Ok, because of the fake override in SuperClass.
     @Untainted int i = d.intersection(n);

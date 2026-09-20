@@ -26,9 +26,17 @@ interface SuperInterface {
     return 0;
   }
 
+  default int enclosing(Enclosing<String>.Nested<Integer> e) {
+    return 0;
+  }
+
   default <T extends Number & Comparable<T>> int intersection(T t) {
     return 0;
   }
+}
+
+class Enclosing<T> {
+  class Nested<U> {}
 }
 
 class SuperClass implements SuperInterface {
@@ -38,6 +46,7 @@ class SuperClass implements SuperInterface {
   // @Untainted int nested(Map.Entry<String, String> e);
   // @Untainted int wildcard(List<? extends Number> l);
   // @Untainted int varargs(String... s);
+  // @Untainted int enclosing(Enclosing<String>.Nested<Integer> e);
   // @Untainted int intersection(Number t);
 }
 

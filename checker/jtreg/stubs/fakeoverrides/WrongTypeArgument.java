@@ -13,8 +13,16 @@ import java.util.List;
  */
 public class WrongTypeArgument {}
 
+class WrongEnclosing<T> {
+  class WrongNested<U> {}
+}
+
 interface WrongTypeArgumentSuper {
   default int g(List<String> l) {
+    return 0;
+  }
+
+  default int enclosing(WrongEnclosing<String>.WrongNested<Integer> e) {
     return 0;
   }
 }

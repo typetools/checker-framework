@@ -2161,7 +2161,8 @@ public final class AnnotationFileParser {
   /**
    * Returns true if the type arguments written in the JavaParser type match those of the javac
    * type. A JavaParser type with no type arguments matches any javac type; this permits a stub file
-   * to write, say, {@code List} for {@code List<String>}.
+   * to write, say, {@code List} for {@code List<String>}. Type arguments written on an enclosing
+   * type, as in {@code Outer<String>.Inner<Integer>}, are compared as well.
    *
    * @param javacType type in javac form
    * @param javaParserType type in JavaParser form
@@ -2169,11 +2170,21 @@ public final class AnnotationFileParser {
    */
   private boolean sameTypeArguments(TypeMirror javacType, ClassOrInterfaceType javaParserType) {
     NodeList<Type> javaParserTypeArgs = javaParserType.getTypeArguments().orElse(null);
-    if (javaParserTypeArgs == null) {
+    ClassOrInterfaceType javaParserScope = javaParserType.getScope().orElse(null);
+    // If no enclosing type is written with type arguments, then the enclosing types need not be
+    // compared, just as a type with no type arguments matches any type arguments.
+    boolean compareScope = javaParserScope != null && writesTypeArguments(javaParserScope);
+    if (javaParserTypeArgs == null && !compareScope) {
       return true;
     }
     if (!(javacType instanceof DeclaredType javacDeclaredType)) {
       return false;
+    }
+    if (compareScope && !sameTypeArguments(javacDeclaredType.getEnclosingType(), javaParserScope)) {
+      return false;
+    }
+    if (javaParserTypeArgs == null) {
+      return true;
     }
     List<? extends TypeMirror> javacTypeArgs = javacDeclaredType.getTypeArguments();
     if (javacTypeArgs.size() != javaParserTypeArgs.size()) {
@@ -2185,6 +2196,21 @@ public final class AnnotationFileParser {
       }
     }
     return true;
+  }
+
+  /**
+   * Returns true if the given JavaParser type, or any type that encloses it, is written with type
+   * arguments.
+   *
+   * @param javaParserType type in JavaParser form
+   * @return true if the type or one of its enclosing types is written with type arguments
+   */
+  private static boolean writesTypeArguments(ClassOrInterfaceType javaParserType) {
+    if (javaParserType.getTypeArguments().isPresent()) {
+      return true;
+    }
+    ClassOrInterfaceType scope = javaParserType.getScope().orElse(null);
+    return scope != null && writesTypeArguments(scope);
   }
 
   /**
