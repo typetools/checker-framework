@@ -590,8 +590,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             }
             String name = resolve(typeName);
             if (name == null) {
-              // could be defined in the same stub file
-              return "L" + typeName.replace('.', '/') + ";";
+              // The type might be declared in the stub file itself, in which case it is a member
+              // of the stub file's package.  Qualified names are left alone, because there is no
+              // way to tell how many of their leading components are package names.
+              String unresolved =
+                  (pkgName != null && !type.getScope().isPresent())
+                      ? pkgName + "." + typeName
+                      : typeName;
+              return "L" + unresolved.replace('.', '/') + ";";
             }
             return "L" + name.replace('.', '/') + ";";
           }

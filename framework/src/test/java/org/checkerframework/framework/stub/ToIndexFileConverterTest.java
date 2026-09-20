@@ -111,6 +111,22 @@ public class ToIndexFileConverterTest {
         jaif, jaif.contains("method myMethod(Ljava/util/Map$Entry;Ljava/util/Map$Entry;)V"));
   }
 
+  /** An unresolvable unqualified name is assumed to be in the stub file's own package. */
+  @Test
+  public void testUnresolvedTypeInOwnPackage() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass {",
+            "  void myMethod(MyOtherClass c) {}",
+            "}",
+            "class MyOtherClass {",
+            "  void myOtherMethod(MyClass c) {}",
+            "}");
+    Assert.assertTrue(jaif, jaif.contains("method myMethod(Lmypackage/MyOtherClass;)V"));
+    Assert.assertTrue(jaif, jaif.contains("method myOtherMethod(Lmypackage/MyClass;)V"));
+  }
+
   /** A type variable whose bound is a fully qualified name erases to that name. */
   @Test
   public void testFullyQualifiedTypeVariableBound() throws Exception {
