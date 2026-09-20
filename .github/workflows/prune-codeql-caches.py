@@ -53,7 +53,7 @@ def partition(listing: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]
     Returns:
         the reachable caches and the unreachable ones, each sorted by key.
     """
-    newest: dict[tuple[str, str], dict[str, Any]] = {}
+    newest: dict[tuple[str, str, str], dict[str, Any]] = {}
     doomed: list[dict[str, Any]] = []
     seen: set[int] = set()
     with listing.open() as caches:
@@ -76,8 +76,11 @@ def partition(listing: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]
                     print(describe("unrecognized", cache))
                 continue
             # A cache is scoped to the ref that wrote it, so the newest cache
-            # of a family on one ref does not shadow another ref's.
-            group = (cache["ref"], key)
+            # of a family on one ref does not shadow another ref's.  A restore
+            # also matches only caches whose version -- a hash of the paths and
+            # the compression method -- equals the one it asks for, so caches
+            # that differ in version do not shadow one another either.
+            group = (cache["ref"], cache["version"], key)
             previous = newest.get(group)
             if previous is None or cache["created_at"] > previous["created_at"]:
                 if previous is not None:
