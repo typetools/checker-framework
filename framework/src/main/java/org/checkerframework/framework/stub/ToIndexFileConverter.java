@@ -573,12 +573,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Computes a type's "binary name".
+   * Computes a type's JVML representation: its field descriptor, such as {@code I} for {@code int}
+   * or {@code [[Ljava/lang/String;} for {@code String[][]}. For {@code void}, the result is {@code
+   * V}.
    *
    * @param type the type
-   * @return the type's binary name
+   * @return the type's JVML representation
    */
-  private String getJVML(Type type) {
+  // Not private, so that it can be tested.
+  String getJVML(Type type) {
     return type.accept(
         new GenericVisitorAdapter<String, Void>() {
           @Override
@@ -629,7 +632,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
           @Override
           public String visit(WildcardType type, Void v) {
-            return type.getSuperType().get().accept(this, null);
+            // The erasure of a wildcard is the erasure of its upper bound.  The upper bound of an
+            // unbounded wildcard, and of a "super" wildcard, is Object.
+            ReferenceType extendedType = type.getExtendedType().orElse(null);
+            if (extendedType == null) {
+              return "Ljava/lang/Object;";
+            }
+            return extendedType.accept(this, null);
           }
         },
         null);
