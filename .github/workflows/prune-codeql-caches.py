@@ -101,34 +101,50 @@ def main() -> None:
         print(describe("keep", cache))
 
     freed = 0
+    deleted = 0
+    gone = 0
     failures = 0
     for cache in doomed:
         print(describe("would delete" if dry_run else "delete", cache))
-        if not dry_run:
-            try:
-                subprocess.run(
-                    [
-                        "gh",
-                        "api",
-                        "-X",
-                        "DELETE",
-                        "--silent",
-                        f"repos/{repo}/actions/caches/{cache['id']}",
-                    ],
-                    check=True,
-                )
-            except subprocess.CalledProcessError:
-                # GitHub may have evicted the cache since it was listed, or may
-                # be rate-limiting.  The other caches are still worth deleting.
-                failures += 1
-                print(f"FAILED TO DELETE  {cache['key']}")
-                continue
-        freed += cache["size_in_bytes"]
+        if dry_run:
+            freed += cache["size_in_bytes"]
+            continue
+        deletion = subprocess.run(
+            [
+                "gh",
+                "api",
+                "-X",
+                "DELETE",
+                "--silent",
+                f"repos/{repo}/actions/caches/{cache['id']}",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if deletion.returncode == 0:
+            deleted += 1
+            freed += cache["size_in_bytes"]
+        elif "HTTP 404" in deletion.stderr:
+            # GitHub evicted the cache between the listing and now, which is
+            # likeliest when the quota is full -- the situation this workflow
+            # exists to fix.  The cache is gone, which is what this run wanted,
+            # so do not fail.  Another run deleting it concurrently looks the
+            # same and is equally fine.
+            gone += 1
+            print(f"ALREADY GONE      {cache['key']}")
+        else:
+            # Something else, such as rate-limiting.  The other caches are
+            # still worth deleting.
+            failures += 1
+            print(f"FAILED TO DELETE  {cache['key']}: {deletion.stderr.strip()}")
 
     if dry_run:
         print(f"would delete {len(doomed)} caches, freeing {freed / 1e9:.2f} GB")
     else:
-        print(f"deleted {len(doomed) - failures} caches, freeing {freed / 1e9:.2f} GB")
+        print(f"deleted {deleted} caches, freeing {freed / 1e9:.2f} GB")
+        if gone:
+            print(f"{gone} caches were already gone")
     if failures:
         sys.exit(f"{failures} of {len(doomed)} deletions failed")
 

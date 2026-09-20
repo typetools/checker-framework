@@ -32,7 +32,15 @@ name: Prune CodeQL caches
         default: false
 
 permissions:
+  # "contents: read" is what actions/checkout authenticates its fetch with.
+  contents: read
   actions: write
+
+# A run recomputes which caches to delete, so a queued run needs no state from
+# the one before it; it only needs not to race it and delete what it listed.
+concurrency:
+  group: prune-codeql-caches
+  cancel-in-progress: false
 
 jobs:
   prune:
