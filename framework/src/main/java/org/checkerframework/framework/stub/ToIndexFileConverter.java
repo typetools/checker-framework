@@ -25,6 +25,8 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithExtends;
+import com.github.javaparser.ast.nodeTypes.NodeWithImplements;
 import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ArrayType;
@@ -50,8 +52,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.afu.scenelib.Annotation;
@@ -588,22 +592,22 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                 return bounds.isEmpty() ? "Ljava/lang/Object;" : bounds.get(0).accept(this, null);
               }
             }
+            // A type that the stub file declares shadows an import and a type on the classpath,
+            // so look for such a declaration before consulting imports and the classpath.  Such a
+            // type is a member of the stub file's package.
+            String declared = declaredInStubFile(type, typeName);
+            if (declared != null) {
+              String name = (pkgName != null) ? pkgName + "." + declared : declared;
+              return "L" + name.replace('.', '/') + ";";
+            }
             String name = resolve(typeName);
             if (name == null) {
-              // The type might be declared in the stub file itself, in which case it is a member
-              // of the stub file's package.
-              String unresolved = declaredInStubFile(type, typeName);
-              if (unresolved == null) {
-                // Qualified names are left alone, because there is no way to tell how many of
-                // their leading components are package names.
-                unresolved =
-                    (pkgName != null && !type.getScope().isPresent())
-                        ? pkgName + "." + typeName
-                        : typeName;
-              } else if (pkgName != null) {
-                unresolved = pkgName + "." + unresolved;
-              }
-              return "L" + unresolved.replace('.', '/') + ";";
+              // Qualified names are left alone, because there is no way to tell how many of
+              // their leading components are package names.
+              name =
+                  (pkgName != null && !type.getScope().isPresent())
+                      ? pkgName + "." + typeName
+                      : typeName;
             }
             return "L" + name.replace('.', '/') + ";";
           }
@@ -659,55 +663,143 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *     not declare {@code typeName}
    */
   private static @Nullable String declaredInStubFile(Node node, String typeName) {
+    TypeDeclaration<?> declaration = stubTypeDeclaration(node, typeName, true);
+    return declaration == null ? null : stubBinaryName(declaration);
+  }
+
+  /**
+   * Returns the type declaration in the stub file that {@code typeName} names at {@code node}, or
+   * null if the stub file declares no such type.
+   *
+   * @param node the node in the stub file's AST at which {@code typeName} appears
+   * @param typeName a type name, in which a {@code .} separates a nested class from its enclosing
+   *     class
+   * @param inherited if true, a class's member types include the ones that it inherits
+   * @return the declaration of {@code typeName}, or null
+   */
+  private static @Nullable TypeDeclaration<?> stubTypeDeclaration(
+      Node node, String typeName, boolean inherited) {
     String[] identifiers = typeName.split("\\.", -1);
     // Search each enclosing class, innermost first, and finally the stub file's top-level classes.
     // That is the order in which Java resolves a type name.
     for (Node n = node; n != null; n = n.getParentNode().orElse(null)) {
       if (n instanceof TypeDeclaration<?>) {
-        TypeDeclaration<?> enclosing = (TypeDeclaration<?>) n;
-        String binaryName = declaredAmong(enclosing.getMembers(), identifiers);
-        if (binaryName != null) {
-          return stubBinaryName(enclosing) + "$" + binaryName;
+        TypeDeclaration<?> declaration =
+            memberTypeDeclaration((TypeDeclaration<?>) n, identifiers[0], inherited, visitedSet());
+        if (declaration != null) {
+          TypeDeclaration<?> result = nestedTypeDeclaration(declaration, identifiers, inherited);
+          if (result != null) {
+            return result;
+          }
         }
       } else if (n instanceof CompilationUnit) {
-        return declaredAmong(((CompilationUnit) n).getTypes(), identifiers);
+        for (TypeDeclaration<?> topLevel : ((CompilationUnit) n).getTypes()) {
+          if (topLevel.getNameAsString().equals(identifiers[0])) {
+            return nestedTypeDeclaration(topLevel, identifiers, inherited);
+          }
+        }
+        return null;
       }
     }
     return null;
   }
 
   /**
-   * Returns the binary name, without its package, of the type that {@code identifiers} names among
-   * {@code members} and their nested types, or null if {@code members} does not contain such a
-   * type.
+   * Resolves {@code identifiers}, other than its first element which {@code declaration} names,
+   * against the member types of {@code declaration}.
    *
-   * @param members declarations in a class body or in a stub file's top level
+   * @param declaration the declaration that {@code identifiers[0]} names
    * @param identifiers a type name that has been split at its {@code .} separators
-   * @return the binary name of {@code identifiers}, relative to {@code members}, or null
+   * @param inherited if true, a class's member types include the ones that it inherits
+   * @return the declaration that {@code identifiers} names, or null if there is none
    */
-  private static @Nullable String declaredAmong(
-      List<? extends BodyDeclaration<?>> members, String[] identifiers) {
-    StringBuilder binaryName = new StringBuilder();
-    List<? extends BodyDeclaration<?>> scope = members;
-    for (String identifier : identifiers) {
-      TypeDeclaration<?> declaration = null;
-      for (BodyDeclaration<?> member : scope) {
-        if (member instanceof TypeDeclaration<?>
-            && ((TypeDeclaration<?>) member).getNameAsString().equals(identifier)) {
-          declaration = (TypeDeclaration<?>) member;
-          break;
-        }
-      }
-      if (declaration == null) {
+  private static @Nullable TypeDeclaration<?> nestedTypeDeclaration(
+      TypeDeclaration<?> declaration, String[] identifiers, boolean inherited) {
+    TypeDeclaration<?> result = declaration;
+    for (int i = 1; i < identifiers.length; i++) {
+      result = memberTypeDeclaration(result, identifiers[i], inherited, visitedSet());
+      if (result == null) {
         return null;
       }
-      if (binaryName.length() > 0) {
-        binaryName.append('$');
-      }
-      binaryName.append(identifier);
-      scope = declaration.getMembers();
     }
-    return binaryName.toString();
+    return result;
+  }
+
+  /**
+   * Returns the member type named {@code identifier} that {@code declaration} declares or, if
+   * {@code inherited} is true, inherits from a supertype that the stub file also declares.
+   *
+   * @param declaration a type declaration in a stub file
+   * @param identifier the simple name of a member type
+   * @param inherited if true, search the supertypes that the stub file declares
+   * @param visited the type declarations whose members have already been searched; this method adds
+   *     {@code declaration} to it
+   * @return the declaration of {@code identifier}, or null if there is none
+   */
+  private static @Nullable TypeDeclaration<?> memberTypeDeclaration(
+      TypeDeclaration<?> declaration,
+      String identifier,
+      boolean inherited,
+      Set<TypeDeclaration<?>> visited) {
+    if (!visited.add(declaration)) {
+      // The stub file declares a cyclic inheritance hierarchy, which is not legal Java.
+      return null;
+    }
+    for (BodyDeclaration<?> member : declaration.getMembers()) {
+      if (member instanceof TypeDeclaration<?>
+          && ((TypeDeclaration<?>) member).getNameAsString().equals(identifier)) {
+        return (TypeDeclaration<?>) member;
+      }
+    }
+    if (!inherited) {
+      return null;
+    }
+    for (ClassOrInterfaceType supertype : supertypes(declaration)) {
+      // Resolving the supertype's name does not consider inherited member types, which guarantees
+      // that this method terminates.
+      TypeDeclaration<?> supertypeDeclaration =
+          stubTypeDeclaration(declaration, supertype.getNameWithScope(), false);
+      if (supertypeDeclaration == null) {
+        // The supertype is not declared in the stub file, so its members are unknown.
+        continue;
+      }
+      TypeDeclaration<?> result =
+          memberTypeDeclaration(supertypeDeclaration, identifier, true, visited);
+      // A private member type is not inherited.
+      if (result != null && !result.isPrivate()) {
+        return result;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the direct supertypes that {@code declaration}'s {@code extends} and {@code implements}
+   * clauses name.
+   *
+   * @param declaration a type declaration in a stub file
+   * @return the direct supertypes of {@code declaration}
+   */
+  private static List<ClassOrInterfaceType> supertypes(TypeDeclaration<?> declaration) {
+    List<ClassOrInterfaceType> result = new ArrayList<>(2);
+    if (declaration instanceof NodeWithExtends<?>) {
+      result.addAll(((NodeWithExtends<?>) declaration).getExtendedTypes());
+    }
+    if (declaration instanceof NodeWithImplements<?>) {
+      result.addAll(((NodeWithImplements<?>) declaration).getImplementedTypes());
+    }
+    return result;
+  }
+
+  /**
+   * Returns a new, empty set that compares type declarations by identity.
+   *
+   * @return a new, empty set of type declarations
+   */
+  private static Set<TypeDeclaration<?>> visitedSet() {
+    // A set that uses equals() would conflate two structurally identical declarations, because
+    // JavaParser's Node.equals() compares the structure of two ASTs.
+    return Collections.newSetFromMap(new IdentityHashMap<TypeDeclaration<?>, Boolean>());
   }
 
   /**

@@ -141,6 +141,47 @@ public class ToIndexFileConverterTest {
         jaif, jaif.contains("method myMethod(Ljava/util/List;Ljava/util/Map$Entry;)V"));
   }
 
+  /** A class declared in the stub file shadows a class of the same name on the classpath. */
+  @Test
+  public void testStubFileDeclarationShadowsClasspath() throws Exception {
+    // org.checkerframework.dataflow.util.PurityChecker is on the classpath.
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import org.checkerframework.dataflow.util.PurityChecker;",
+            "class MyClass {",
+            "  class PurityChecker {}",
+            "  void myMethod(PurityChecker c) {}",
+            "}");
+    Assert.assertTrue(jaif, jaif.contains("method myMethod(Lmypackage/MyClass$PurityChecker;)V"));
+  }
+
+  /** A method's JVML descriptor uses the binary name of an inherited member type. */
+  @Test
+  public void testInheritedNestedClass() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MySuperClass {",
+            "  class MyNestedClass {}",
+            "}",
+            "interface MyInterface {",
+            "  class MyInterfaceNestedClass {}",
+            "}",
+            "class MyMiddleClass extends MySuperClass implements MyInterface {}",
+            "class MyClass extends MyMiddleClass {",
+            "  void myMethod(MyNestedClass c, MyInterfaceNestedClass i) {}",
+            "  void myOtherMethod(MyMiddleClass.MyNestedClass c) {}",
+            "}");
+    Assert.assertTrue(
+        jaif,
+        jaif.contains(
+            "method myMethod(Lmypackage/MySuperClass$MyNestedClass;"
+                + "Lmypackage/MyInterface$MyInterfaceNestedClass;)V"));
+    Assert.assertTrue(
+        jaif, jaif.contains("method myOtherMethod(Lmypackage/MySuperClass$MyNestedClass;)V"));
+  }
+
   /** A nested class declared in the stub file is qualified with the stub file's package. */
   @Test
   public void testUnresolvedNestedTypeInOwnPackage() throws Exception {
