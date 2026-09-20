@@ -42,16 +42,7 @@ jobs:
             - .git
       - run:
           name: clone_plume_scripts
-          command: |
-            PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
-            clone_plume_scripts() {
-              # A failed clone can leave a non-empty directory, which would
-              # make every later attempt fail with "destination path already
-              # exists".
-              rm -rf "$PLUME_SCRIPTS"
-              git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git "$PLUME_SCRIPTS"
-            }
-            clone_plume_scripts || (sleep 60 && clone_plume_scripts)
+          command: ./checker/bin-devel/clone-plume-scripts.sh
       - run:
           name: set-ci-org-and-branch
           command: |
@@ -496,16 +487,7 @@ jobs:
             - gradle-v1-
       - run:
           name: clone_plume_scripts
-          command: |
-            PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
-            clone_plume_scripts() {
-              # A failed clone can leave a non-empty directory, which would
-              # make every later attempt fail with "destination path already
-              # exists".
-              rm -rf "$PLUME_SCRIPTS"
-              git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git "$PLUME_SCRIPTS"
-            }
-            clone_plume_scripts || (sleep 60 && clone_plume_scripts)
+          command: ./checker/bin-devel/clone-plume-scripts.sh
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
@@ -553,16 +535,7 @@ jobs:
             - gradle-v1-
       - run:
           name: clone_plume_scripts
-          command: |
-            PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
-            clone_plume_scripts() {
-              # A failed clone can leave a non-empty directory, which would
-              # make every later attempt fail with "destination path already
-              # exists".
-              rm -rf "$PLUME_SCRIPTS"
-              git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git "$PLUME_SCRIPTS"
-            }
-            clone_plume_scripts || (sleep 60 && clone_plume_scripts)
+          command: ./checker/bin-devel/clone-plume-scripts.sh
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
@@ -610,16 +583,7 @@ jobs:
             - gradle-v1-
       - run:
           name: clone_plume_scripts
-          command: |
-            PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
-            clone_plume_scripts() {
-              # A failed clone can leave a non-empty directory, which would
-              # make every later attempt fail with "destination path already
-              # exists".
-              rm -rf "$PLUME_SCRIPTS"
-              git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git "$PLUME_SCRIPTS"
-            }
-            clone_plume_scripts || (sleep 60 && clone_plume_scripts)
+          command: ./checker/bin-devel/clone-plume-scripts.sh
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
