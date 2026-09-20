@@ -18,7 +18,7 @@ validate: config.yml
 	cd .. && circleci config validate
 
 ${PLUME_SCRIPTS}:
-	../checker/bin-devel/clone-plume-scripts.sh
+	cd .. && ./gradlew -q getPlumeScripts
 
 clean:
 	@rm -f config.yml

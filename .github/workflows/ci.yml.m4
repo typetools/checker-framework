@@ -51,6 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk[]canary_jdk-plus:latest
+gradle_user_home()dnl
     steps:
       - uses: actions/checkout@v7
         with:
@@ -58,18 +59,17 @@ jobs:
           fetch-depth: 0
           show-progress: false
           persist-credentials: false
-ifelse([This job runs no Gradle task, so it needs no Gradle cache.])dnl
-clone_plume_scripts_step()dnl
+gradle_cache(cf)dnl
+      - name: clone_plume_scripts
+        run: ./gradlew -q getPlumeScripts
       - name: set_ci_org_and_branch
         run: |
-          # PLUME_SCRIPTS is the documented way to tell these scripts where they live.
           PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
           # shellcheck disable=SC2034  # used by the sourced script
           CI_DEBUG=1
           . "$PLUME_SCRIPTS"/set-ci-org-and-branch
       - name: set_git_range
         run: |
-          # The sourced script reads PLUME_SCRIPTS, to find set-ci-org-and-branch.
           PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
           # shellcheck disable=SC2034  # used by the sourced script
           CI_DEBUG=1

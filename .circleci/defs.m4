@@ -32,11 +32,6 @@ define([gradle_save_cache], [dnl
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper])dnl
 dnl
-define([clone_plume_scripts_step], [dnl
-      - run:
-          name: clone_plume_scripts
-          command: ./checker/bin-devel/clone-plume-scripts.sh])dnl
-dnl
 ifelse([Takes 4 arguments: OS, JDK version number, name, command line.])dnl
 define([boilerplate], [dnl
     docker:
@@ -137,7 +132,9 @@ dnl
 define([misc_job], [dnl
   job_name(misc_jdk$1)
 circleci_boilerplate($1,-plus,full)
-clone_plume_scripts_step()
+      - run:
+          name: getPlumeScripts
+          command: ./gradlew -q getPlumeScripts
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
