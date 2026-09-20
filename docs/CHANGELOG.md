@@ -12,6 +12,11 @@ The Checker Framework runs noticeably faster, due to performance tuning.
 The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
 warnings that it did not previously.
 
+An annotation file that gives an annotation element a value outside the range of
+the element's declared type, as in `@Anno(200)` where `Anno.value()` is declared
+as a `byte`, now issues a warning and ignores the annotation.  Previously, the
+value was silently truncated.
+
 ### Changes for type system implementers
 
 `JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,
