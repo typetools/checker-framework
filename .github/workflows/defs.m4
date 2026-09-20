@@ -36,6 +36,21 @@ define([gradle_cache], [dnl
             gradle-modules-
 ])dnl
 dnl
+ifelse([Clones plume-scripts into "checker/bin-devel/.plume-scripts".  Uses
+"git clone" rather than "./gradlew getPlumeScripts", which would compile
+"buildSrc" and thereby resolve JGit, Bouncy Castle, and the Spotless plugin
+against Maven Central; Maven Central sometimes rejects such a request with
+HTTP status code 403.])dnl
+define([clone_plume_scripts_step], [dnl
+      - name: clone_plume_scripts
+        run: |
+          PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+          clone_plume_scripts() {
+            git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git "$PLUME_SCRIPTS"
+          }
+          clone_plume_scripts || (sleep 60 && clone_plume_scripts)
+])dnl
+dnl
 ifelse([Takes 4 arguments: OS, JDK version number, name, command line.])dnl
 define([boilerplate], [dnl
     runs-on: ubuntu-latest
@@ -132,8 +147,7 @@ ifelse($1,canary_jdk,,$1,latest_jdk,,[    dependsOn:
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
 gradle_cache()dnl
-      - name: getPlumeScripts
-        run: ./gradlew -q getPlumeScripts
+clone_plume_scripts_step()dnl
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:

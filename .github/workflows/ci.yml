@@ -22,6 +22,7 @@ env:
   GIT_CONFIG_COUNT: "1"
   GIT_CONFIG_KEY_0: safe.directory
   GIT_CONFIG_VALUE_0: ${{ github.workspace }}
+  GRADLE_USER_HOME: /github/home/.gradle
 
 jobs:
 
@@ -55,22 +56,13 @@ jobs:
           fetch-depth: 0
           show-progress: false
           persist-credentials: false
-      - uses: actions/cache@v6
-        with:
-          path: ~/.gradle/wrapper
-          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-      - uses: actions/cache@v6
-        with:
-          path: |
-            ~/.gradle/caches/modules-2/**
-            !~/.gradle/caches/modules-2/**/*.lock
-            !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
-          restore-keys: |
-            gradle-modules-${{ github.job }}-
-            gradle-modules-
       - name: clone_plume_scripts
-        run: ./gradlew -q getPlumeScripts
+        run: |
+          PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+          clone_plume_scripts() {
+            git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git "$PLUME_SCRIPTS"
+          }
+          clone_plume_scripts || (sleep 60 && clone_plume_scripts)
       - name: set_ci_org_and_branch
         run: |
           PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
@@ -402,8 +394,13 @@ jobs:
           restore-keys: |
             gradle-modules-${{ github.job }}-
             gradle-modules-
-      - name: getPlumeScripts
-        run: ./gradlew -q getPlumeScripts
+      - name: clone_plume_scripts
+        run: |
+          PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+          clone_plume_scripts() {
+            git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git "$PLUME_SCRIPTS"
+          }
+          clone_plume_scripts || (sleep 60 && clone_plume_scripts)
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:
@@ -432,8 +429,13 @@ jobs:
           restore-keys: |
             gradle-modules-${{ github.job }}-
             gradle-modules-
-      - name: getPlumeScripts
-        run: ./gradlew -q getPlumeScripts
+      - name: clone_plume_scripts
+        run: |
+          PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+          clone_plume_scripts() {
+            git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git "$PLUME_SCRIPTS"
+          }
+          clone_plume_scripts || (sleep 60 && clone_plume_scripts)
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:
@@ -462,8 +464,13 @@ jobs:
           restore-keys: |
             gradle-modules-${{ github.job }}-
             gradle-modules-
-      - name: getPlumeScripts
-        run: ./gradlew -q getPlumeScripts
+      - name: clone_plume_scripts
+        run: |
+          PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+          clone_plume_scripts() {
+            git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git "$PLUME_SCRIPTS"
+          }
+          clone_plume_scripts || (sleep 60 && clone_plume_scripts)
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:

@@ -25,6 +25,13 @@ env:
   GIT_CONFIG_COUNT: "1"
   GIT_CONFIG_KEY_0: safe.directory
   GIT_CONFIG_VALUE_0: ${{ github.workspace }}
+ifelse([Gradle derives its default user home from the JVM's "user.home"
+property, which on Linux comes from the passwd database rather than from
+"$HOME".  In a container job the two differ:  the job runs as root, so Gradle
+would write to "/root/.gradle", whereas "actions/cache" expands "~" to "$HOME",
+which the runner sets to "/github/home".  Setting GRADLE_USER_HOME makes the
+two agree, so that the caches below actually hold the files Gradle wrote.])dnl
+  GRADLE_USER_HOME: /github/home/.gradle
 
 jobs:
 
@@ -58,9 +65,8 @@ jobs:
           fetch-depth: 0
           show-progress: false
           persist-credentials: false
-gradle_cache()dnl
-      - name: clone_plume_scripts
-        run: ./gradlew -q getPlumeScripts
+ifelse([This job runs no Gradle task, so it needs no Gradle cache.])dnl
+clone_plume_scripts_step()dnl
       - name: set_ci_org_and_branch
         run: |
           PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
