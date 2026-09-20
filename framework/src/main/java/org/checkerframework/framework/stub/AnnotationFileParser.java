@@ -1064,12 +1064,11 @@ public final class AnnotationFileParser {
         }
         case CONSTRUCTOR, METHOD ->
             processCallableDeclaration((CallableDeclaration<?>) decl, (ExecutableElement) elt);
-        case CLASS, INTERFACE ->
+        // The declaration's kind need not match the element's kind; for example, a record is
+        // often written as a class in a stub file.  processTypeDecl handles any mismatch.
+        case CLASS, INTERFACE, ENUM, RECORD ->
             // Not processing an ajava file, so ignore the return value.
-            processTypeDecl((ClassOrInterfaceDeclaration) decl, innerName, null);
-        case ENUM ->
-            // Not processing an ajava file, so ignore the return value.
-            processTypeDecl((EnumDeclaration) decl, innerName, null);
+            processTypeDecl((TypeDeclaration<?>) decl, innerName, null);
         default ->
             /* do nothing */
             stubWarnNotFound(decl, "AnnotationFileParser ignoring: " + elt);
@@ -1974,12 +1973,17 @@ public final class AnnotationFileParser {
         putIfAbsent(elementsToDecl, elt, member);
       }
     } else if (member instanceof ClassOrInterfaceDeclaration coid) {
-      Element elt = findElement(typeElt, coid);
+      Element elt = findElement(typeElt, coid, "Class/interface");
       if (elt != null) {
         putIfAbsent(elementsToDecl, elt, member);
       }
     } else if (member instanceof EnumDeclaration ed) {
-      Element elt = findElement(typeElt, ed);
+      Element elt = findElement(typeElt, ed, "Enum");
+      if (elt != null) {
+        putIfAbsent(elementsToDecl, elt, member);
+      }
+    } else if (member instanceof RecordDeclaration rd) {
+      Element elt = findElement(typeElt, rd, "Record");
       if (elt != null) {
         putIfAbsent(elementsToDecl, elt, member);
       }
@@ -2177,53 +2181,25 @@ public final class AnnotationFileParser {
 
   /**
    * Looks for the nested type element in the typeElt and returns it if the element has the same
-   * name as provided class or interface declaration. In case nested element is not found it returns
-   * null.
+   * name as provided type declaration. In case nested element is not found it returns null.
    *
    * @param typeElt an element where nested type element should be looked for
-   * @param ciDecl class or interface declaration which name should be found among nested elements
-   *     of the typeElt
-   * @return nested in typeElt element with the name of the class or interface, or null if nested
-   *     element is not found
-   */
-  private @Nullable Element findElement(TypeElement typeElt, ClassOrInterfaceDeclaration ciDecl) {
-    String wantedClassOrInterfaceName = ciDecl.getNameAsString();
-    for (TypeElement typeElement : ElementUtils.getAllTypeElementsIn(typeElt)) {
-      if (wantedClassOrInterfaceName.equals(typeElement.getSimpleName().toString())) {
-        return typeElement;
-      }
-    }
-
-    stubWarnNotFound(
-        ciDecl, "Class/interface " + wantedClassOrInterfaceName + " not found in type " + typeElt);
-    if (debugAnnotationFileParser) {
-      stubDebug("  Here are the type declarations of %s:", typeElt);
-      for (TypeElement method : ElementFilter.typesIn(typeElt.getEnclosedElements())) {
-        stubDebug("    %s", method);
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Looks for the nested enum element in the typeElt and returns it if the element has the same
-   * name as provided enum declaration. In case nested element is not found it returns null.
-   *
-   * @param typeElt an element where nested enum element should be looked for
-   * @param enumDecl enum declaration which name should be found among nested elements of the
+   * @param nestedTypeDecl type declaration which name should be found among nested elements of the
    *     typeElt
-   * @return nested in typeElt enum element with the name of the provided enum, or null if nested
+   * @param kind the kind of {@code nestedTypeDecl}, for use in a diagnostic message
+   * @return nested in typeElt element with the name of the type declaration, or null if nested
    *     element is not found
    */
-  private @Nullable Element findElement(TypeElement typeElt, EnumDeclaration enumDecl) {
-    String wantedEnumName = enumDecl.getNameAsString();
+  private @Nullable Element findElement(
+      TypeElement typeElt, TypeDeclaration<?> nestedTypeDecl, String kind) {
+    String wantedName = nestedTypeDecl.getNameAsString();
     for (TypeElement typeElement : ElementUtils.getAllTypeElementsIn(typeElt)) {
-      if (wantedEnumName.equals(typeElement.getSimpleName().toString())) {
+      if (wantedName.equals(typeElement.getSimpleName().toString())) {
         return typeElement;
       }
     }
 
-    stubWarnNotFound(enumDecl, "Enum " + wantedEnumName + " not found in type " + typeElt);
+    stubWarnNotFound(nestedTypeDecl, kind + " " + wantedName + " not found in type " + typeElt);
     if (debugAnnotationFileParser) {
       stubDebug("  Here are the type declarations of %s:", typeElt);
       for (TypeElement method : ElementFilter.typesIn(typeElt.getEnclosedElements())) {
