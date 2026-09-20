@@ -15,12 +15,15 @@ ifelse([The module cache is per group of jobs rather than per job. A cache per
 job would hold about 20 copies of a 350MB cache, and CodeQL's caches already
 spoke for most of the repository's 10GB cache quota, so GitHub would evict
 entries that a run was about to use.])dnl
-ifelse(["actions/cache" saves nothing when the key was an exact hit, so within
-a group the job that finishes first fixes the entry's contents until the key
-changes. The groups are therefore chosen so that the jobs in one resolve
-nearly the same dependencies: group "cf" builds only this project, whereas
-group "ext" also builds Daikon, Guava, and plume-lib. Measured "cf" caches
-differ by under 4MB.])dnl
+ifelse(["actions/cache" saves nothing when the key was an exact hit, and only
+one job can reserve a key, so within a group whichever job gets there first
+fixes the entry's contents until the key changes. A group therefore holds
+jobs that resolve the same dependencies. Group "plume-lib" is the lone job
+that runs Gradle in another project's directory, once per plume-lib package.
+Every other job, the Daikon and Guava ones included, resolves only this
+project's dependencies: Daikon builds with "make" and Guava with Maven, whose
+artifacts this cache does not cover. Measured "cf" caches differ by under
+4MB.])dnl
 ifelse([The key must cover every file that pins a dependency version. Add to
 that list any file that gains a hardcoded dependency or plugin version.])dnl
 ifelse([A "restore-keys" entry is a key prefix. The bare "gradle-modules-"
@@ -31,7 +34,7 @@ of a "gradle-wrapper-" key, so neither cache can restore the other.])dnl
 ifelse([A "!" pattern removes files that an earlier pattern matched, so the
 include pattern must enumerate files, via "/**", rather than name the
 directory, which "actions/cache" would archive whole.])dnl
-ifelse([Takes 1 argument: the cache group, "cf" or "ext".])dnl
+ifelse([Takes 1 argument: the cache group, "cf" or "plume-lib".])dnl
 define([gradle_cache], [dnl
       - uses: actions/cache@v6
         with:
@@ -52,12 +55,7 @@ dnl
 ifelse([Takes 1 argument: the name of the test script that a job runs.
 Expands to the cache group that the job belongs to.])dnl
 define([cache_group], [dnl
-ifelse($1,test-daikon-part1.sh,[ext],
-       $1,test-daikon-part2.sh,[ext],
-       $1,test-daikon-part3.sh,[ext],
-       $1,test-guava-part1.sh,[ext],
-       $1,test-guava-part2.sh,[ext],
-       $1,test-plume-lib.sh,[ext],
+ifelse($1,test-plume-lib.sh,[plume-lib],
        [cf])])dnl
 dnl
 ifelse([Gradle derives its user home from the JVM's "user.home" property, which

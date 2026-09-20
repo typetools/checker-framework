@@ -600,9 +600,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-ext-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-ext-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-daikon-part1.sh
         run: ./checker/bin-devel/test-daikon-part1.sh
@@ -634,9 +634,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-ext-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-ext-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-daikon-part2.sh
         run: ./checker/bin-devel/test-daikon-part2.sh
@@ -668,9 +668,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-ext-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-ext-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-daikon-part3.sh
         run: ./checker/bin-devel/test-daikon-part3.sh
@@ -703,9 +703,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-ext-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-ext-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-guava-part1.sh
         run: ./checker/bin-devel/test-guava-part1.sh
@@ -737,9 +737,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-ext-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-ext-
+            gradle-modules-cf-
             gradle-modules-
       - name: test-guava-part2.sh
         run: ./checker/bin-devel/test-guava-part2.sh
@@ -771,9 +771,9 @@ jobs:
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-ext-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          key: gradle-modules-plume-lib-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
           restore-keys: |
-            gradle-modules-ext-
+            gradle-modules-plume-lib-
             gradle-modules-
       - name: test-plume-lib.sh
         run: ./checker/bin-devel/test-plume-lib.sh
