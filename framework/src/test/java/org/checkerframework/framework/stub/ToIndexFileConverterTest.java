@@ -1,8 +1,11 @@
 package org.checkerframework.framework.stub;
 
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.StubUnit;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -52,6 +55,10 @@ public class ToIndexFileConverterTest {
   /** The type path of the type argument of a type argument: {@code List<List<HERE>>}. */
   private static final List<TypePathEntry> innerTypeArgument =
       Arrays.asList(firstTypeArgument, firstTypeArgument);
+
+  /** The converter used by the {@code getJVML} tests. */
+  private final ToIndexFileConverter converter =
+      new ToIndexFileConverter(null, Collections.emptyList(), new AScene());
 
   /**
    * Tests that an annotation on a nested type argument is recorded even when no annotation appears
@@ -182,6 +189,46 @@ public class ToIndexFileConverterTest {
     Assert.assertEquals("wrong type paths", Arrays.asList(innerTypeArgument), typePaths(field));
     ATypeElement inner = field.type.innerTypes.get(innerTypeArgument);
     Assert.assertNotNull("@A was not recorded on the nested type argument", inner.lookup("A"));
+  }
+
+  /** Tests {@code getJVML} on wildcard types. */
+  @Test
+  public void testGetJVMLWildcard() {
+    // The erasure of a wildcard is the erasure of its upper bound.
+    assertJVML("Ljava/lang/Object;", parseWildcard("?"));
+    assertJVML("Ljava/lang/Object;", parseWildcard("? super Number"));
+    assertJVML("Ljava/lang/Number;", parseWildcard("? extends Number"));
+  }
+
+  /** Tests {@code getJVML} on types other than wildcards. */
+  @Test
+  public void testGetJVMLNonWildcard() {
+    assertJVML("I", StaticJavaParser.parseType("int"));
+    assertJVML("V", StaticJavaParser.parseType("void"));
+    assertJVML("[[Ljava/lang/String;", StaticJavaParser.parseType("String[][]"));
+  }
+
+  /**
+   * Parses a wildcard type. JavaParser cannot parse a wildcard on its own, so this parses a type
+   * that has the wildcard as its sole type argument.
+   *
+   * @param wildcard a wildcard, in Java syntax
+   * @return the AST node for {@code wildcard}
+   */
+  private static Type parseWildcard(String wildcard) {
+    ClassOrInterfaceType type =
+        (ClassOrInterfaceType) StaticJavaParser.parseType("java.util.List<" + wildcard + ">");
+    return type.getTypeArguments().get().get(0);
+  }
+
+  /**
+   * Asserts that {@code type} has the given JVML representation.
+   *
+   * @param expected the expected JVML representation
+   * @param type a type
+   */
+  private void assertJVML(String expected, Type type) {
+    Assert.assertEquals(type.asString(), expected, converter.getJVML(type));
   }
 
   /**
