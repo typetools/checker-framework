@@ -1,8 +1,5 @@
 package org.checkerframework.framework.test.junit;
 
-import static org.checkerframework.framework.test.junit.StubGeneratorTestHelper.assertParses;
-import static org.checkerframework.framework.test.junit.StubGeneratorTestHelper.generateStub;
-
 import java.util.regex.Pattern;
 import org.checkerframework.framework.stub.StubGenerator;
 import org.junit.Assert;
@@ -21,7 +18,8 @@ public class StubGeneratorTest {
   @Test
   public void nestedClassInDefaultPackage() {
     String stub =
-        generateStub("Foo.java", "public class Foo { public static class Inner {} }", "Foo.Inner");
+        StubGeneratorTestHelper.generateStub(
+            "Foo.java", "public class Foo { public static class Inner {} }", "Foo.Inner");
     Assert.assertTrue(stub, stub.contains("class Foo$Inner"));
     assertNoPackageDeclaration(stub);
   }
@@ -29,7 +27,7 @@ public class StubGeneratorTest {
   @Test
   public void doublyNestedClass() {
     String stub =
-        generateStub(
+        StubGeneratorTestHelper.generateStub(
             "p/Qux.java",
             "package p;"
                 + " public class Qux { public static class Inner { public static class Innermost"
@@ -42,7 +40,7 @@ public class StubGeneratorTest {
   @Test
   public void nestedClassInNamedPackage() {
     String stub =
-        generateStub(
+        StubGeneratorTestHelper.generateStub(
             "p/Bar.java",
             "package p; public class Bar { public static class Inner {} }",
             "p.Bar.Inner");
@@ -52,7 +50,7 @@ public class StubGeneratorTest {
 
   @Test
   public void topLevelClassInDefaultPackage() {
-    String stub = generateStub("Baz.java", "public class Baz {}", "Baz");
+    String stub = StubGeneratorTestHelper.generateStub("Baz.java", "public class Baz {}", "Baz");
     Assert.assertTrue(stub, stub.contains("class Baz"));
     assertNoPackageDeclaration(stub);
   }
@@ -60,7 +58,7 @@ public class StubGeneratorTest {
   @Test
   public void typeUseAnnotationWithClassLiteralArgument() {
     String stub =
-        generateStub(
+        StubGeneratorTestHelper.generateStub(
             "p/Uses.java",
             "package p;"
                 + " public class Uses { public @Anno(Tgt.class) String field; }"
@@ -74,7 +72,7 @@ public class StubGeneratorTest {
   @Test
   public void typeUseAnnotationWithStringArgumentContainingParentheses() {
     String stub =
-        generateStub(
+        StubGeneratorTestHelper.generateStub(
             "p/UsesString.java",
             "package p;"
                 + " public class UsesString { public @Anno2(\"a.b.method()\") String field; }"
@@ -87,7 +85,7 @@ public class StubGeneratorTest {
   @Test
   public void typeUseAnnotationWithCharArgumentContainingParenthesis() {
     String stub =
-        generateStub(
+        StubGeneratorTestHelper.generateStub(
             "p/UsesChar.java",
             "package p;"
                 + " public class UsesChar { public @Anno3(ch = ')', type = java.util.Map.class)"
@@ -102,7 +100,7 @@ public class StubGeneratorTest {
   @Test
   public void nestedAnnotationType() {
     String stub =
-        generateStub(
+        StubGeneratorTestHelper.generateStub(
             "p/Outer.java",
             "package p; public class Outer { public @interface Ann { int value(); } }",
             "p.Outer");
@@ -110,13 +108,13 @@ public class StubGeneratorTest {
     // An annotation type's superinterface is java.lang.annotation.Annotation, which may not
     // appear in an implements clause.
     Assert.assertFalse(stub, stub.contains("implements"));
-    assertParses(stub);
+    StubGeneratorTestHelper.assertParses(stub);
   }
 
   @Test
   public void typeParameterBounds() {
     String stub =
-        generateStub(
+        StubGeneratorTestHelper.generateStub(
             "p/Bounded.java",
             "package p;"
                 + " public class Bounded<T extends Number & java.io.Serializable> {"
@@ -124,7 +122,7 @@ public class StubGeneratorTest {
             "p.Bounded");
     Assert.assertTrue(stub, stub.contains("class Bounded<T extends Number & Serializable>"));
     Assert.assertTrue(stub, stub.contains("<U extends CharSequence> void m(U u)"));
-    assertParses(stub);
+    StubGeneratorTestHelper.assertParses(stub);
   }
 
   /**
