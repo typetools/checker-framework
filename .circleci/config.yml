@@ -46,12 +46,14 @@ jobs:
       - run:
           name: set-ci-org-and-branch
           command: |
+            # PLUME_SCRIPTS is the documented way to tell these scripts where they live.
             PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
             CI_DEBUG=1
             . "$PLUME_SCRIPTS"/set-ci-org-and-branch
       - run:
           name: set-git-range
           command: |
+            # The sourced script reads PLUME_SCRIPTS, to find set-ci-org-and-branch.
             PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
             CI_DEBUG=1
             . "$PLUME_SCRIPTS"/set-git-range

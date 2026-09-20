@@ -62,12 +62,14 @@ ifelse([This job runs no Gradle task, so it needs no Gradle cache.])dnl
 clone_plume_scripts_step()dnl
       - name: set_ci_org_and_branch
         run: |
+          # PLUME_SCRIPTS is the documented way to tell these scripts where they live.
           PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
           # shellcheck disable=SC2034  # used by the sourced script
           CI_DEBUG=1
           . "$PLUME_SCRIPTS"/set-ci-org-and-branch
       - name: set_git_range
         run: |
+          # The sourced script reads PLUME_SCRIPTS, to find set-ci-org-and-branch.
           PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
           # shellcheck disable=SC2034  # used by the sourced script
           CI_DEBUG=1

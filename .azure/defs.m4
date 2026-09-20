@@ -94,11 +94,13 @@ ifelse($1,canary_jdk,,$1,latest_jdk,,[    dependsOn:
       - bash: ./checker/bin-devel/clone-plume-scripts.sh
         displayName: clone_plume_scripts
       - bash: |
+          # PLUME_SCRIPTS is the documented way to tell these scripts where they live.
           PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
           CI_DEBUG=1
           . "$PLUME_SCRIPTS"/set-ci-org-and-branch
         displayName: set-ci-org-and-branch
       - bash: |
+          # The sourced script reads PLUME_SCRIPTS, to find set-ci-org-and-branch.
           PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
           CI_DEBUG=1
           . "$PLUME_SCRIPTS"/set-git-range
