@@ -25,7 +25,7 @@ prevdir=whole-program-inference-previous
 
 if [ $# -eq 0 ]; then
   echo "Usage: wpi2.sh COMMAND [ARG...]" 1>&2
-  echo "COMMAND builds the project, running the Checker Framework with" 1>&2
+  echo "COMMAND builds the project.  It must supply the Checker Framework with" 1>&2
   echo "  -Ainfer=ajava" 1>&2
   echo "  -AinferOutputDirectory=$PWD/$newdir" 1>&2
   echo "  -Aajava=$PWD/$outdir" 1>&2
@@ -54,7 +54,7 @@ trap 'rm -rf "$tmpdir"' EXIT
 # A previous run of wpi2.sh was interrupted while $newdir replaced $outdir.
 # Recover the annotations that the interrupted run had moved aside.
 if [ ! -d "$outdir" ] && [ -d "$prevdir" ]; then
-  echo "wpi2.sh: an interrupted run of wpi2.sh left no $outdir/;" 1>&2
+  echo "wpi2.sh: An interrupted run of wpi2.sh left no $outdir/;" 1>&2
   echo "wpi2.sh: recovering it from $prevdir/." 1>&2
   mv "$prevdir" "$outdir"
 elif [ -d "$prevdir" ]; then
@@ -66,7 +66,7 @@ elif [ -d "$prevdir" ]; then
 fi
 
 if [ -d "$outdir" ] && [ -n "$(find "$outdir" -type f | head -n 1)" ]; then
-  echo "wpi2.sh: continuing inference from the annotations in $outdir/." 1>&2
+  echo "wpi2.sh: Continuing inference from the annotations in $outdir/." 1>&2
   echo "wpi2.sh: To start over, remove $outdir/ before running wpi2.sh." 1>&2
 else
   mkdir -p "$outdir"
@@ -93,7 +93,7 @@ iteration=0
 while :; do
   iteration=$((iteration + 1))
   if [ "$iteration" -gt "$max_iterations" ]; then
-    echo "wpi2.sh: inference did not converge after $max_iterations iterations." 1>&2
+    echo "wpi2.sh: Inference did not converge after $max_iterations iterations." 1>&2
     echo "wpi2.sh: The output of the last iteration is in $outdir/," 1>&2
     echo "wpi2.sh: and $diffdir/ shows what each iteration changed." 1>&2
     echo "wpi2.sh: Set WPI2_MAX_ITERATIONS to run more iterations." 1>&2
