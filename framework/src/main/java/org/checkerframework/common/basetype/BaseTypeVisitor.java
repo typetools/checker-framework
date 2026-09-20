@@ -1450,12 +1450,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @SuppressWarnings("compilermessages")
     @CompilerMessageKey String msgKey = msgKeyPrefix + reason;
     if (reason.equals("call")) {
+      ExecutableElement calleeElement;
       if (tree instanceof MethodInvocationTree mitree) {
-        checker.reportError(tree, msgKey, mitree.getMethodSelect());
+        calleeElement = TreeUtils.elementFromUse(mitree);
       } else {
-        NewClassTree nctree = (NewClassTree) tree;
-        checker.reportError(tree, msgKey, nctree.getIdentifier());
+        calleeElement = TreeUtils.elementFromUse((NewClassTree) tree);
       }
+      checker.reportError(
+          tree, msgKey, calleeElement.getEnclosingElement(), calleeElement.getSimpleName());
     } else {
       checker.reportError(tree, msgKey);
     }
