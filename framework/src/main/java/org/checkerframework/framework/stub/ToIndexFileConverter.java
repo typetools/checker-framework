@@ -591,12 +591,18 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             String name = resolve(typeName);
             if (name == null) {
               // The type might be declared in the stub file itself, in which case it is a member
-              // of the stub file's package.  Qualified names are left alone, because there is no
-              // way to tell how many of their leading components are package names.
-              String unresolved =
-                  (pkgName != null && !type.getScope().isPresent())
-                      ? pkgName + "." + typeName
-                      : typeName;
+              // of the stub file's package.
+              String unresolved = declaredInStubFile(type, typeName);
+              if (unresolved == null) {
+                // Qualified names are left alone, because there is no way to tell how many of
+                // their leading components are package names.
+                unresolved =
+                    (pkgName != null && !type.getScope().isPresent())
+                        ? pkgName + "." + typeName
+                        : typeName;
+              } else if (pkgName != null) {
+                unresolved = pkgName + "." + unresolved;
+              }
               return "L" + unresolved.replace('.', '/') + ";";
             }
             return "L" + name.replace('.', '/') + ";";
@@ -638,6 +644,88 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
           }
         },
         null);
+  }
+
+  /**
+   * If the stub file declares the type named {@code typeName}, returns the part of that type's
+   * binary name that follows the package name; otherwise returns null. For example, if the stub
+   * file declares a top-level class {@code B} containing a nested class {@code C}, then this method
+   * maps {@code "B.C"} to {@code "B$C"}.
+   *
+   * @param node the node in the stub file's AST at which {@code typeName} appears
+   * @param typeName a type name, in which a {@code .} separates a nested class from its enclosing
+   *     class
+   * @return the binary name of {@code typeName} without its package, or null if the stub file does
+   *     not declare {@code typeName}
+   */
+  private static @Nullable String declaredInStubFile(Node node, String typeName) {
+    String[] identifiers = typeName.split("\\.", -1);
+    // Search each enclosing class, innermost first, and finally the stub file's top-level classes.
+    // That is the order in which Java resolves a type name.
+    for (Node n = node; n != null; n = n.getParentNode().orElse(null)) {
+      if (n instanceof TypeDeclaration<?>) {
+        TypeDeclaration<?> enclosing = (TypeDeclaration<?>) n;
+        String binaryName = declaredAmong(enclosing.getMembers(), identifiers);
+        if (binaryName != null) {
+          return stubBinaryName(enclosing) + "$" + binaryName;
+        }
+      } else if (n instanceof CompilationUnit) {
+        return declaredAmong(((CompilationUnit) n).getTypes(), identifiers);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the binary name, without its package, of the type that {@code identifiers} names among
+   * {@code members} and their nested types, or null if {@code members} does not contain such a
+   * type.
+   *
+   * @param members declarations in a class body or in a stub file's top level
+   * @param identifiers a type name that has been split at its {@code .} separators
+   * @return the binary name of {@code identifiers}, relative to {@code members}, or null
+   */
+  private static @Nullable String declaredAmong(
+      List<? extends BodyDeclaration<?>> members, String[] identifiers) {
+    StringBuilder binaryName = new StringBuilder();
+    List<? extends BodyDeclaration<?>> scope = members;
+    for (String identifier : identifiers) {
+      TypeDeclaration<?> declaration = null;
+      for (BodyDeclaration<?> member : scope) {
+        if (member instanceof TypeDeclaration<?>
+            && ((TypeDeclaration<?>) member).getNameAsString().equals(identifier)) {
+          declaration = (TypeDeclaration<?>) member;
+          break;
+        }
+      }
+      if (declaration == null) {
+        return null;
+      }
+      if (binaryName.length() > 0) {
+        binaryName.append('$');
+      }
+      binaryName.append(identifier);
+      scope = declaration.getMembers();
+    }
+    return binaryName.toString();
+  }
+
+  /**
+   * Returns the binary name, without its package, of a type that the stub file declares.
+   *
+   * @param declaration a type declaration in a stub file
+   * @return the binary name of {@code declaration}, without its package
+   */
+  private static String stubBinaryName(TypeDeclaration<?> declaration) {
+    StringBuilder binaryName = new StringBuilder(declaration.getNameAsString());
+    for (Node n = declaration.getParentNode().orElse(null);
+        n != null;
+        n = n.getParentNode().orElse(null)) {
+      if (n instanceof TypeDeclaration<?>) {
+        binaryName.insert(0, ((TypeDeclaration<?>) n).getNameAsString() + "$");
+      }
+    }
+    return binaryName.toString();
   }
 
   /**

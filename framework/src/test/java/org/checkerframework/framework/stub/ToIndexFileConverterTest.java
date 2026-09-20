@@ -140,4 +140,31 @@ public class ToIndexFileConverterTest {
     Assert.assertTrue(
         jaif, jaif.contains("method myMethod(Ljava/util/List;Ljava/util/Map$Entry;)V"));
   }
+
+  /** A nested class declared in the stub file is qualified with the stub file's package. */
+  @Test
+  public void testUnresolvedNestedTypeInOwnPackage() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass {",
+            "  void myMethod(MyOtherClass.MyNestedClass c) {}",
+            "}",
+            "class MyOtherClass {",
+            "  class MyNestedClass {",
+            "    class MyDoublyNestedClass {}",
+            "    void myNestedMethod(MyDoublyNestedClass c, MyOtherClass o) {}",
+            "  }",
+            "  void myOtherMethod(MyNestedClass c) {}",
+            "}");
+    Assert.assertTrue(
+        jaif, jaif.contains("method myMethod(Lmypackage/MyOtherClass$MyNestedClass;)V"));
+    Assert.assertTrue(
+        jaif, jaif.contains("method myOtherMethod(Lmypackage/MyOtherClass$MyNestedClass;)V"));
+    Assert.assertTrue(
+        jaif,
+        jaif.contains(
+            "method myNestedMethod(Lmypackage/MyOtherClass$MyNestedClass$MyDoublyNestedClass;"
+                + "Lmypackage/MyOtherClass;)V"));
+  }
 }
