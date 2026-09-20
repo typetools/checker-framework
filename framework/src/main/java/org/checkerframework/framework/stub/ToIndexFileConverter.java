@@ -547,10 +547,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Computes a type's "binary name".
+   * Computes a type's JVML representation: its field descriptor, such as {@code I} for {@code int}
+   * or {@code [[Ljava/lang/String;} for {@code String[][]}. For {@code void}, the result is {@code
+   * V}.
    *
    * @param type the type
-   * @return the type's binary name
+   * @return the type's JVML representation
    */
   // Not private, so that it can be tested.
   String getJVML(Type type) {
