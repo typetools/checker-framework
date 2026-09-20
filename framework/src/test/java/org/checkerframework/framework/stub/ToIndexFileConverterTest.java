@@ -24,6 +24,26 @@ public class ToIndexFileConverterTest {
     return out.toString(StandardCharsets.UTF_8.name());
   }
 
+  /**
+   * Asserts that {@code jaif} declares {@code method} in {@code className}.
+   *
+   * @param jaif a JAIF
+   * @param className the name of a class, without its package; a {@code $} separates a nested class
+   *     from its enclosing class
+   * @param method the JVML representation of a method, such as {@code "myMethod(I)V"}
+   */
+  private static void assertMethod(String jaif, String className, String method) {
+    String currentClass = null;
+    for (String line : jaif.split("\\R")) {
+      if (line.startsWith("class ") && line.endsWith(":")) {
+        currentClass = line.substring("class ".length(), line.length() - 1);
+      } else if (line.strip().equals("method " + method + ":") && className.equals(currentClass)) {
+        return;
+      }
+    }
+    Assert.fail("no method " + method + " in class " + className + System.lineSeparator() + jaif);
+  }
+
   /** A method's JVML descriptor uses the erasure of each type variable. */
   @Test
   public void testTypeVariableErasure() throws Exception {
@@ -33,11 +53,10 @@ public class ToIndexFileConverterTest {
             "class MyClass<S extends CharSequence> {",
             "  <T extends Number, U> void myMethod(T t, U u, S s, Object o) {}",
             "}");
-    Assert.assertTrue(
+    assertMethod(
         jaif,
-        jaif.contains(
-            "method myMethod(Ljava/lang/Number;Ljava/lang/Object;Ljava/lang/CharSequence;"
-                + "Ljava/lang/Object;)V"));
+        "MyClass",
+        "myMethod(Ljava/lang/Number;Ljava/lang/Object;Ljava/lang/CharSequence;Ljava/lang/Object;)V");
   }
 
   /** A method's JVML descriptor uses the fully qualified name of a class on the classpath. */
@@ -50,10 +69,8 @@ public class ToIndexFileConverterTest {
             "class MyClass {",
             "  void myMethod(ToIndexFileConverter c) {}",
             "}");
-    Assert.assertTrue(
-        jaif,
-        jaif.contains(
-            "method myMethod(Lorg/checkerframework/framework/stub/ToIndexFileConverter;)V"));
+    assertMethod(
+        jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/ToIndexFileConverter;)V");
   }
 
   /** A single-type import shadows a class of the same name in the stub file's own package. */
@@ -68,9 +85,7 @@ public class ToIndexFileConverterTest {
             "class MyClass {",
             "  void myMethod(PurityChecker c) {}",
             "}");
-    Assert.assertTrue(
-        jaif,
-        jaif.contains("method myMethod(Lorg/checkerframework/dataflow/util/PurityChecker;)V"));
+    assertMethod(jaif, "MyClass", "myMethod(Lorg/checkerframework/dataflow/util/PurityChecker;)V");
   }
 
   /** A varargs parameter's JVML descriptor is an array type. */
@@ -84,9 +99,9 @@ public class ToIndexFileConverterTest {
             "  <T extends Number> void myMethod(T... ts) {}",
             "  void myOtherMethod(S[]... ss) {}",
             "}");
-    Assert.assertTrue(jaif, jaif.contains("method <init>(I[Ljava/lang/String;)V"));
-    Assert.assertTrue(jaif, jaif.contains("method myMethod([Ljava/lang/Number;)V"));
-    Assert.assertTrue(jaif, jaif.contains("method myOtherMethod([[Ljava/lang/CharSequence;)V"));
+    assertMethod(jaif, "MyClass", "<init>(I[Ljava/lang/String;)V");
+    assertMethod(jaif, "MyClass", "myMethod([Ljava/lang/Number;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod([[Ljava/lang/CharSequence;)V");
   }
 
   /** A method's JVML descriptor uses a fully qualified name that appears in the stub file. */
@@ -94,7 +109,7 @@ public class ToIndexFileConverterTest {
   public void testFullyQualifiedName() throws Exception {
     String jaif =
         convert("package p;", "class MyClass {", "  void myMethod(java.util.List<?> l) {}", "}");
-    Assert.assertTrue(jaif, jaif.contains("method myMethod(Ljava/util/List;)V"));
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/List;)V");
   }
 
   /** A method's JVML descriptor uses the binary name of a nested class. */
@@ -107,8 +122,7 @@ public class ToIndexFileConverterTest {
             "class MyClass {",
             "  void myMethod(java.util.Map.Entry<?, ?> e1, Map.Entry<?, ?> e2) {}",
             "}");
-    Assert.assertTrue(
-        jaif, jaif.contains("method myMethod(Ljava/util/Map$Entry;Ljava/util/Map$Entry;)V"));
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;Ljava/util/Map$Entry;)V");
   }
 
   /** An unresolvable unqualified name is assumed to be in the stub file's own package. */
@@ -123,8 +137,26 @@ public class ToIndexFileConverterTest {
             "class MyOtherClass {",
             "  void myOtherMethod(MyClass c) {}",
             "}");
-    Assert.assertTrue(jaif, jaif.contains("method myMethod(Lmypackage/MyOtherClass;)V"));
-    Assert.assertTrue(jaif, jaif.contains("method myOtherMethod(Lmypackage/MyClass;)V"));
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyOtherClass;)V");
+    assertMethod(jaif, "MyOtherClass", "myOtherMethod(Lmypackage/MyClass;)V");
+  }
+
+  /**
+   * In an unresolvable name, an identifier that starts with an uppercase letter is assumed to be a
+   * class name and one that starts with a lowercase letter is assumed to be a package name.
+   */
+  @Test
+  public void testUnresolvedQualifiedType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass {",
+            "  void myMethod(MyOtherClass.MyNestedClass c, other.pkg.MyOtherClass o) {}",
+            "}");
+    assertMethod(
+        jaif,
+        "MyClass",
+        "myMethod(Lmypackage/MyOtherClass$MyNestedClass;Lother/pkg/MyOtherClass;)V");
   }
 
   /** A type variable whose bound is a fully qualified name erases to that name. */
@@ -137,8 +169,7 @@ public class ToIndexFileConverterTest {
             "  <T extends java.util.List<?>, U extends java.util.Map.Entry<?, ?>>",
             "  void myMethod(T t, U u) {}",
             "}");
-    Assert.assertTrue(
-        jaif, jaif.contains("method myMethod(Ljava/util/List;Ljava/util/Map$Entry;)V"));
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/List;Ljava/util/Map$Entry;)V");
   }
 
   /** A class declared in the stub file shadows a class of the same name on the classpath. */
@@ -153,7 +184,25 @@ public class ToIndexFileConverterTest {
             "  class PurityChecker {}",
             "  void myMethod(PurityChecker c) {}",
             "}");
-    Assert.assertTrue(jaif, jaif.contains("method myMethod(Lmypackage/MyClass$PurityChecker;)V"));
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyClass$PurityChecker;)V");
+  }
+
+  /** A nested class shadows a type parameter of an enclosing class. */
+  @Test
+  public void testNestedClassShadowsTypeParameter() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass<E> {",
+            "  void myMethod(E e) {}",
+            "  class MyNestedClass {",
+            "    class E {}",
+            "    void myNestedMethod(E e) {}",
+            "  }",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/lang/Object;)V");
+    assertMethod(
+        jaif, "MyClass$MyNestedClass", "myNestedMethod(Lmypackage/MyClass$MyNestedClass$E;)V");
   }
 
   /** A method's JVML descriptor uses the binary name of an inherited member type. */
@@ -173,13 +222,25 @@ public class ToIndexFileConverterTest {
             "  void myMethod(MyNestedClass c, MyInterfaceNestedClass i) {}",
             "  void myOtherMethod(MyMiddleClass.MyNestedClass c) {}",
             "}");
-    Assert.assertTrue(
+    assertMethod(
         jaif,
-        jaif.contains(
-            "method myMethod(Lmypackage/MySuperClass$MyNestedClass;"
-                + "Lmypackage/MyInterface$MyInterfaceNestedClass;)V"));
-    Assert.assertTrue(
-        jaif, jaif.contains("method myOtherMethod(Lmypackage/MySuperClass$MyNestedClass;)V"));
+        "MyClass",
+        "myMethod(Lmypackage/MySuperClass$MyNestedClass;"
+            + "Lmypackage/MyInterface$MyInterfaceNestedClass;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Lmypackage/MySuperClass$MyNestedClass;)V");
+  }
+
+  /** A member type that is inherited from a class on the classpath is resolved. */
+  @Test
+  public void testInheritedNestedClassOnClasspath() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import java.util.HashMap;",
+            "class MyClass extends HashMap {",
+            "  void myMethod(Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
   }
 
   /** A nested class declared in the stub file is qualified with the stub file's package. */
@@ -198,14 +259,73 @@ public class ToIndexFileConverterTest {
             "  }",
             "  void myOtherMethod(MyNestedClass c) {}",
             "}");
-    Assert.assertTrue(
-        jaif, jaif.contains("method myMethod(Lmypackage/MyOtherClass$MyNestedClass;)V"));
-    Assert.assertTrue(
-        jaif, jaif.contains("method myOtherMethod(Lmypackage/MyOtherClass$MyNestedClass;)V"));
-    Assert.assertTrue(
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyOtherClass$MyNestedClass;)V");
+    assertMethod(jaif, "MyOtherClass", "myOtherMethod(Lmypackage/MyOtherClass$MyNestedClass;)V");
+    assertMethod(
         jaif,
-        jaif.contains(
-            "method myNestedMethod(Lmypackage/MyOtherClass$MyNestedClass$MyDoublyNestedClass;"
-                + "Lmypackage/MyOtherClass;)V"));
+        "MyOtherClass$MyNestedClass",
+        "myNestedMethod(Lmypackage/MyOtherClass$MyNestedClass$MyDoublyNestedClass;"
+            + "Lmypackage/MyOtherClass;)V");
+  }
+
+  /** The stub file may refer to one of its own types by the type's fully qualified name. */
+  @Test
+  public void testFullyQualifiedNameOfStubFileType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass {",
+            "  void myMethod(mypackage.MyOtherClass.MyNestedClass c) {}",
+            "}",
+            "class MyOtherClass {",
+            "  class MyNestedClass {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyOtherClass$MyNestedClass;)V");
+  }
+
+  /** A single-type import of a type that the stub file declares is resolved. */
+  @Test
+  public void testSingleTypeImportOfStubFileType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import mypackage.MyOtherClass.MyNestedClass;",
+            "class MyClass {",
+            "  void myMethod(MyNestedClass c) {}",
+            "}",
+            "class MyOtherClass {",
+            "  class MyNestedClass {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyOtherClass$MyNestedClass;)V");
+  }
+
+  /** An import-on-demand of types that the stub file declares is resolved. */
+  @Test
+  public void testOnDemandImportOfStubFileType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import mypackage.MyOtherClass.*;",
+            "class MyClass {",
+            "  void myMethod(MyNestedClass c) {}",
+            "}",
+            "class MyOtherClass {",
+            "  class MyNestedClass {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyOtherClass$MyNestedClass;)V");
+  }
+
+  /** A single-type import does not supply part of a package name. */
+  @Test
+  public void testImportDoesNotSupplyPartialPackage() throws Exception {
+    // `util.Map` does not refer to java.util.Map, so the name is unresolvable.
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import java.util.Map;",
+            "class MyClass {",
+            "  void myMethod(util.Map m) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lutil/Map;)V");
   }
 }
