@@ -1062,6 +1062,10 @@ public final class AnnotationFileParser {
 
     IPair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>> members =
         getMembers(typeDecl, typeElt, typeDecl);
+    // Processing a nested type sets typeBeingParsed to the nested type.  Restore typeBeingParsed
+    // afterward, so that members declared after the nested type resolve simple names relative to
+    // typeDecl rather than relative to the nested type.
+    FqName thisTypeBeingParsed = typeBeingParsed;
     for (Map.Entry<Element, BodyDeclaration<?>> entry : members.first.entrySet()) {
       Element elt = entry.getKey();
       BodyDeclaration<?> decl = entry.getValue();
@@ -1085,12 +1089,16 @@ public final class AnnotationFileParser {
         }
         case CONSTRUCTOR, METHOD ->
             processCallableDeclaration((CallableDeclaration<?>) decl, (ExecutableElement) elt);
-        case CLASS, INTERFACE ->
-            // Not processing an ajava file, so ignore the return value.
-            processTypeDecl((ClassOrInterfaceDeclaration) decl, innerName, null);
-        case ENUM ->
-            // Not processing an ajava file, so ignore the return value.
-            processTypeDecl((EnumDeclaration) decl, innerName, null);
+        case CLASS, INTERFACE -> {
+          // Not processing an ajava file, so ignore the return value.
+          processTypeDecl((ClassOrInterfaceDeclaration) decl, innerName, null);
+          typeBeingParsed = thisTypeBeingParsed;
+        }
+        case ENUM -> {
+          // Not processing an ajava file, so ignore the return value.
+          processTypeDecl((EnumDeclaration) decl, innerName, null);
+          typeBeingParsed = thisTypeBeingParsed;
+        }
         default ->
             /* do nothing */
             stubWarnNotFound(decl, "AnnotationFileParser ignoring: " + elt);
@@ -3123,6 +3131,11 @@ public final class AnnotationFileParser {
 
     @Override
     public Void visitClass(ClassTree javacTree, Node javaParserNode) {
+      // processTypeDecl sets typeBeingParsed to javacTree's type, which is correct while
+      // visiting javacTree's members.  Restore it afterward, so that members of the enclosing
+      // type that are declared after javacTree resolve simple names relative to the enclosing
+      // type rather than relative to javacTree's type.
+      FqName outerTypeBeingParsed = typeBeingParsed;
       List<AnnotatedTypeVariable> typeDeclTypeParameters = null;
       if (javaParserNode instanceof TypeDeclaration<?>
           && !(javaParserNode instanceof AnnotationDeclaration)) {
@@ -3134,6 +3147,7 @@ public final class AnnotationFileParser {
       if (typeDeclTypeParameters != null) {
         typeParameters.removeAll(typeDeclTypeParameters);
       }
+      typeBeingParsed = outerTypeBeingParsed;
 
       return null;
     }
