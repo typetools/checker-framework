@@ -1,0 +1,2 @@
+- compiler.warn.proc.messager: WrongTypeArgument.astub:(line 7,col 5): Method g(List) not found in type fakeoverrides.WrongTypeArgumentSub
+1 warning
