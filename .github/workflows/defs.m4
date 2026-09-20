@@ -11,11 +11,13 @@ cache entry, whose key mentions no job. The key covers only the file that pins
 the distribution's version. The distribution cache has no "restore-keys",
 because a distribution of the wrong version is useless: Gradle would download
 the pinned version anyway, and the stale distribution would bloat the cache.])dnl
-ifelse([Each job resolves its own set of dependencies, so the module cache is
-per job. Its key must cover every file that pins a dependency version. Add to
-that list any file that gains a hardcoded dependency or plugin version.])dnl
-ifelse([A "restore-keys" entry is a key prefix, so the two caches use prefixes
-that match neither the other cache's keys nor its own "restore-keys".])dnl
+ifelse([Every job resolves nearly the same set of dependencies, so one cache
+entry serves them all. A cache per job would hold about 20 near-copies of a
+350MB cache, which does not fit in the repository's 10GB cache quota. The
+key must cover every file that pins a dependency version. Add to that list any
+file that gains a hardcoded dependency or plugin version.])dnl
+ifelse([A "restore-keys" entry is a key prefix. "gradle-modules-" matches no
+"gradle-wrapper-" key, so neither cache can restore the other.])dnl
 ifelse([A "!" pattern removes files that an earlier pattern matched, so the
 include pattern must enumerate files, via "/**", rather than name the
 directory, which "actions/cache" would archive whole.])dnl
@@ -30,10 +32,8 @@ define([gradle_cache], [dnl
             ~/.gradle/caches/modules-2/**
             !~/.gradle/caches/modules-2/**/*.lock
             !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-${{ github.job }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
-          restore-keys: |
-            gradle-modules-${{ github.job }}-
-            gradle-modules-
+          key: gradle-modules-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: gradle-modules-
 ])dnl
 dnl
 ifelse([Clones plume-scripts into "checker/bin-devel/.plume-scripts".  Uses
