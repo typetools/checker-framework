@@ -23,6 +23,19 @@ import org.checkerframework.javacutil.TreeUtils;
  * subtracted terms, and a single integer constant. The Java expression strings have been
  * standardized and viewpoint-adapted.
  *
+ * <p>For example, the offset equation for {@code "end - start - 1"} has {@code "end"} as its only
+ * added term, {@code "start"} as its only subtracted term, and -1 as its integer constant. Integer
+ * literals are folded into the integer constant rather than being kept as terms, so an offset
+ * equation with no added terms and no subtracted terms is just an integer constant, as {@link
+ * #ZERO} is.
+ *
+ * <p>An offset equation represents the {@code offset} element of an Index Checker annotation such
+ * as {@code @LTLengthOf}. For example, {@code @LTLengthOf(value = "a", offset = "end - start - 1")}
+ * means that the annotated expression plus {@code end - start - 1} is less than {@code a.length}.
+ * The Upper Bound Checker adds, subtracts, and compares offset equations in order to compute types;
+ * for instance, if {@code i} has that type, then {@code i + 1} has type {@code @LTLengthOf(value =
+ * "a", offset = "end - start - 2")}.
+ *
  * <p>An OffsetEquation is mutable.
  */
 public class OffsetEquation {
@@ -185,7 +198,7 @@ public class OffsetEquation {
   }
 
   private void plus(OffsetEquation eq) {
-    addInt(eq.intValue);
+    addInt(eq.getInt());
     for (String term : eq.addedTerms) {
       addTerm('+', term);
     }
@@ -195,7 +208,7 @@ public class OffsetEquation {
   }
 
   private void minus(OffsetEquation eq) {
-    addInt(-1 * eq.intValue);
+    addInt(-1 * eq.getInt());
     for (String term : eq.addedTerms) {
       addTerm('-', term);
     }
@@ -211,7 +224,7 @@ public class OffsetEquation {
    * @return true if this equation is known to be less than or equal to the other equation
    */
   public boolean lessThanOrEqual(OffsetEquation other) {
-    return (isInt() && other.isInt() && intValue <= other.getInt()) || this.equals(other);
+    return (isInt() && other.isInt() && getInt() <= other.getInt()) || this.equals(other);
   }
 
   /**
