@@ -76,7 +76,6 @@ import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.reflection.Signatures;
 
 /**
  * Convert a JAIF file plus a stub file into index files (JAIFs). Note that the resulting index
@@ -576,8 +575,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         new GenericVisitorAdapter<String, Void>() {
           @Override
           public String visit(ClassOrInterfaceType type, Void v) {
-            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
-            @FullyQualifiedName String typeName = type.getNameAsString();
+            // Use the name together with its scope, so that a qualified name such as
+            // `java.util.List` or `Map.Entry` is not truncated to its last identifier.
+            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameWithScope
+            @FullyQualifiedName String typeName = type.getNameWithScope();
             if (!type.getScope().isPresent()) {
               TypeParameter typeParam = typeParameterInScope(type, typeName);
               if (typeParam != null) {
@@ -587,16 +588,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                 return bounds.isEmpty() ? "Ljava/lang/Object;" : bounds.get(0).accept(this, null);
               }
             }
-            @SuppressWarnings("signature" // TODO:  bug in ToIndexFileConverter:
-            // resolve requires a @BinaryName, but this passes a @FullyQualifiedName.
-            // They differ for inner classes.
-            )
             String name = resolve(typeName);
             if (name == null) {
               // could be defined in the same stub file
-              return "L" + typeName + ";";
+              return "L" + typeName.replace('.', '/') + ";";
             }
-            return "L" + String.join("/", name.split("\\.")) + ";";
+            return "L" + name.replace('.', '/') + ";";
           }
 
           @Override
@@ -659,13 +656,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Finds the fully qualified name of the class with the given name.
+   * Finds the binary name of the class with the given name.
    *
-   * @param className possibly unqualified name of class
-   * @return fully qualified name of class that {@code className} identifies in the current context,
-   *     or null if resolution fails
+   * @param className possibly unqualified name of class, in which a {@code .} (not a {@code $})
+   *     separates a nested class from its enclosing class
+   * @return binary name of class that {@code className} identifies in the current context, or null
+   *     if resolution fails
    */
-  private @Nullable @BinaryName String resolve(@BinaryName String className) {
+  private @Nullable @BinaryName String resolve(@FullyQualifiedName String className) {
 
     // The order of the lookups below is the order in which Java resolves a type name: a
     // single-type import shadows a type in the current package, which shadows a type that an
@@ -673,51 +671,78 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
     for (String declName : singleTypeImports) {
       String qualifiedName = mergeImport(declName, className);
-      if (qualifiedName != null && loadClass(qualifiedName) != null) {
-        return qualifiedName;
+      if (qualifiedName != null) {
+        String binaryName = loadClassBinaryName(qualifiedName);
+        if (binaryName != null) {
+          return binaryName;
+        }
       }
     }
 
     if (pkgName != null) {
-      String qualifiedName = Signatures.addPackage(pkgName, className);
-      if (loadClass(qualifiedName) != null) {
-        return qualifiedName;
+      String binaryName = loadClassBinaryName(pkgName + "." + className);
+      if (binaryName != null) {
+        return binaryName;
       }
     }
 
     for (String declName : onDemandImports) {
       String qualifiedName = mergeImport(declName, className);
-      if (qualifiedName != null && loadClass(qualifiedName) != null) {
-        return qualifiedName;
+      if (qualifiedName != null) {
+        String binaryName = loadClassBinaryName(qualifiedName);
+        if (binaryName != null) {
+          return binaryName;
+        }
       }
     }
 
     {
       // Every Java program implicitly does "import java.lang.*",
       // so see whether this class is in that package.
-      String qualifiedName = Signatures.addPackage("java.lang", className);
-      if (loadClass(qualifiedName) != null) {
-        return qualifiedName;
+      String binaryName = loadClassBinaryName("java.lang." + className);
+      if (binaryName != null) {
+        return binaryName;
       }
     }
 
-    if (loadClass(className) != null) {
-      return className;
-    }
-
-    return null;
+    return loadClassBinaryName(className);
   }
 
   /**
-   * Combines an import with a partial binary name, yielding a binary name.
+   * Returns the binary name of the class that a fully qualified name refers to, or null if no such
+   * class can be loaded. A fully qualified name does not indicate which of its dot-separated
+   * components are packages and which are enclosing classes, so this method tries each possibility,
+   * starting with the one that has the fewest enclosing classes.
+   *
+   * @param fqName a fully qualified class name
+   * @return the binary name of the class that {@code fqName} refers to, or null
+   */
+  @SuppressWarnings("signature") // string manipulation of signature strings
+  private static @Nullable @BinaryName String loadClassBinaryName(String fqName) {
+    StringBuilder candidate = new StringBuilder(fqName);
+    int dot = candidate.length();
+    while (true) {
+      if (loadClass(candidate.toString()) != null) {
+        return candidate.toString();
+      }
+      dot = candidate.lastIndexOf(".", dot - 1);
+      if (dot < 0) {
+        return null;
+      }
+      candidate.setCharAt(dot, '$');
+    }
+  }
+
+  /**
+   * Combines an import with a partially qualified name, yielding a fully qualified name.
    *
    * @param importName package name or (for an inner class) the outer class name
    * @param className the class name
    * @return fully qualified class name if resolution succeeds, null otherwise
    */
   @SuppressWarnings("signature") // string manipulation of signature strings
-  private static @Nullable @BinaryName String mergeImport(
-      String importName, @BinaryName String className) {
+  private static @Nullable @FullyQualifiedName String mergeImport(
+      String importName, @FullyQualifiedName String className) {
     if (importName.isEmpty() || importName.equals(className)) {
       return className;
     }
@@ -726,10 +751,19 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     String importEnd = importSplit[importSplit.length - 1];
     if ("*".equals(importEnd)) {
       return importName.substring(0, importName.length() - 1) + className;
+    } else if (classSplit[0].equals(importEnd)) {
+      // The import supplies the prefix, such as in
+      //   import a.b.C;
+      //   C.D myvar;
+      return importName + className.substring(importEnd.length());
     } else {
       // find overlap such as in
       //   import a.b.C.D;
       //   C.D myvar;
+      if (classSplit.length > importSplit.length) {
+        // A single-type import cannot supply a prefix for a longer name.
+        return null;
+      }
       int i = importSplit.length;
       int n = i - classSplit.length;
       while (--i >= n) {

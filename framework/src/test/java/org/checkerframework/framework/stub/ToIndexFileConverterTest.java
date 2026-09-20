@@ -88,4 +88,40 @@ public class ToIndexFileConverterTest {
     Assert.assertTrue(jaif, jaif.contains("method myMethod([Ljava/lang/Number;)V"));
     Assert.assertTrue(jaif, jaif.contains("method myOtherMethod([[Ljava/lang/CharSequence;)V"));
   }
+
+  /** A method's JVML descriptor uses a fully qualified name that appears in the stub file. */
+  @Test
+  public void testFullyQualifiedName() throws Exception {
+    String jaif =
+        convert("package p;", "class MyClass {", "  void myMethod(java.util.List<?> l) {}", "}");
+    Assert.assertTrue(jaif, jaif.contains("method myMethod(Ljava/util/List;)V"));
+  }
+
+  /** A method's JVML descriptor uses the binary name of a nested class. */
+  @Test
+  public void testNestedClass() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import java.util.Map;",
+            "class MyClass {",
+            "  void myMethod(java.util.Map.Entry<?, ?> e1, Map.Entry<?, ?> e2) {}",
+            "}");
+    Assert.assertTrue(
+        jaif, jaif.contains("method myMethod(Ljava/util/Map$Entry;Ljava/util/Map$Entry;)V"));
+  }
+
+  /** A type variable whose bound is a fully qualified name erases to that name. */
+  @Test
+  public void testFullyQualifiedTypeVariableBound() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass {",
+            "  <T extends java.util.List<?>, U extends java.util.Map.Entry<?, ?>>",
+            "  void myMethod(T t, U u) {}",
+            "}");
+    Assert.assertTrue(
+        jaif, jaif.contains("method myMethod(Ljava/util/List;Ljava/util/Map$Entry;)V"));
+  }
 }
