@@ -11,8 +11,8 @@ public class RelevantSubtype implements CharSequence {
   }
 
   // `char` is irrelevant to this checker:  it is not listed in `@RelevantJavaTypes`, and it is not
-  // related to a listed type by subtyping.  The goal file records that inference nonetheless
-  // writes `@AinferTop` on this return type.
+  // related to a listed type by subtyping.  The goal file shows that inference omits the
+  // `@AinferTop` that it infers for this return type.
   @Override
   public char charAt(int index) {
     return 'a';

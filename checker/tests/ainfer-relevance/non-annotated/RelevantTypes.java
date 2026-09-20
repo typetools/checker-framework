@@ -43,9 +43,9 @@ public class RelevantTypes {
   }
 
   // A leading annotation on a varargs formal parameter is on the parameter's element type, not on
-  // the array type that `...` creates.  The goal file shows that inference writes an annotation on
-  // each of the two:  `@AinferSibling1 String @AinferTop ...`.  The annotation on the array type
-  // is clutter, because arrays are irrelevant to this checker.
+  // the array type that `...` creates.  Inference infers an annotation for each of the two, but
+  // the goal file contains only `@AinferSibling1 String ...`:  the annotation on the array type is
+  // omitted, because arrays are irrelevant to this checker.
   static void varargs(String... args) {}
 
   static void callVarargs() {
