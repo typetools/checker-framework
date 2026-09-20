@@ -225,6 +225,11 @@ only while each iteration's results replace the previous iteration's.
 You may wish to add \<whole-program-inference-*> to
 your \<.gitignore> file.
 
+\<wpi2.sh> exits with status 0 if inference converged, and with a nonzero
+status otherwise.  In particular, it exits with status 1 if the Checker
+Framework inferred no annotations at all --- most often because the buildfile
+is misconfigured, but also if your project is already fully annotated.
+
 If \<wpi2.sh> fails --- for example, because the Checker Framework crashed
 or your buildfile is misconfigured --- then a subsequent run of \<wpi2.sh>
 continues from the annotations that it inferred so far in

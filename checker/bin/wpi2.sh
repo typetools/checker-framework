@@ -57,6 +57,12 @@ if [ ! -d "$outdir" ] && [ -d "$prevdir" ]; then
   echo "wpi2.sh: an interrupted run of wpi2.sh left no $outdir/;" 1>&2
   echo "wpi2.sh: recovering it from $prevdir/." 1>&2
   mv "$prevdir" "$outdir"
+elif [ -d "$prevdir" ]; then
+  # $outdir exists, so $prevdir holds annotations that $outdir supersedes; an interrupted run
+  # left $prevdir behind after it had finished replacing $outdir.  Remove $prevdir now.  If it
+  # remained, then a later run that the user started over by removing $outdir would treat it as
+  # annotations to recover, above, and would not start over after all.
+  rm -rf "$prevdir"
 fi
 
 if [ -d "$outdir" ] && [ -n "$(find "$outdir" -type f | head -n 1)" ]; then
@@ -71,8 +77,14 @@ mkdir -p "$diffdir"
 
 # Number this run's diffs after those of any previous run, whose diffs this run
 # retains because it continues where the previous run left off.
-diffoffset=$(find "$diffdir" -maxdepth 1 -name 'iteration-*.diff' \
-  | sed -n 's/.*iteration-\([0-9][0-9]*\)\.diff$/\1/p' | sort -n | tail -n 1)
+# Run find separately from the pipeline that parses its output, so that the
+# exit status of the last pipeline stage does not mask a failure of find.
+if ! find "$diffdir" -maxdepth 1 -name 'iteration-*.diff' > "$tmpdir/diff-files"; then
+  echo "wpi2.sh: cannot list the diffs in $PWD/$diffdir/." 1>&2
+  exit 1
+fi
+diffoffset=$(sed -n 's/.*iteration-\([0-9][0-9]*\)\.diff$/\1/p' "$tmpdir/diff-files" \
+  | sort -n | tail -n 1)
 if [ -z "$diffoffset" ]; then
   diffoffset=0
 fi
@@ -114,16 +126,37 @@ while :; do
   # delete the output of the previous iterations.
   if [ ! -s "$tmpdir/newdir-files" ]; then
     echo "wpi2.sh: $* did not write any files to $newdir/." 1>&2
-    echo "wpi2.sh: Either the Checker Framework inferred nothing about the project, or the" 1>&2
-    echo "wpi2.sh: command did not compile it.  The command must compile every source file" 1>&2
-    echo "wpi2.sh: of the project, passing" 1>&2
-    echo "  -Ainfer=ajava" 1>&2
-    echo "  -AinferOutputDirectory=$PWD/$newdir" 1>&2
-    echo "  -Aajava=$PWD/$outdir" 1>&2
-    echo "  -Awarns" 1>&2
-    if [ -n "$(find "$outdir" -type f | head -n 1)" ]; then
-      echo "wpi2.sh: The annotations inferred so far are in $outdir/." 1>&2
+    if [ -d "$outdir" ] && [ -n "$(find "$outdir" -type f | head -n 1)" ]; then
+      # A previous iteration inferred annotations, so the Checker Framework would have written
+      # them again if the command had compiled the project.  (Every iteration writes an .ajava
+      # file for every source file about which the Checker Framework infers anything.)
+      echo "wpi2.sh: A previous iteration wrote files, so the command did not compile the" 1>&2
+      echo "wpi2.sh: project this time.  The command must compile every source file of the" 1>&2
+      echo "wpi2.sh: project, every time." 1>&2
+      echo "wpi2.sh: The annotations inferred so far are in $outdir/;" 1>&2
+      echo "wpi2.sh: re-running wpi2.sh continues from them." 1>&2
+    else
+      echo "wpi2.sh: Either the command did not compile the project, or the Checker Framework" 1>&2
+      echo "wpi2.sh: inferred nothing about it.  The command must compile every source file" 1>&2
+      echo "wpi2.sh: of the project, passing" 1>&2
+      echo "  -Ainfer=ajava" 1>&2
+      echo "  -AinferOutputDirectory=$PWD/$newdir" 1>&2
+      echo "  -Aajava=$PWD/$outdir" 1>&2
+      echo "  -Awarns" 1>&2
     fi
+    exit 1
+  fi
+
+  # The command deleted $outdir, which holds the annotations that the previous iterations
+  # inferred; for example, the build system's `clean` task removed it.  Stop rather than
+  # proceeding, because the rest of the loop body requires $outdir to exist.
+  if [ ! -d "$outdir" ]; then
+    echo "wpi2.sh: $* deleted $outdir/, which held the annotations inferred so far." 1>&2
+    echo "wpi2.sh: Do not put $outdir/ under your build system's output directory," 1>&2
+    echo "wpi2.sh: whose \`clean\` task deletes it, possibly in the middle of a build." 1>&2
+    mv "$newdir" "$outdir"
+    echo "wpi2.sh: This iteration's annotations are in $outdir/;" 1>&2
+    echo "wpi2.sh: re-running wpi2.sh continues from them." 1>&2
     exit 1
   fi
 
