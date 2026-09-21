@@ -863,12 +863,12 @@ public abstract class UBQualifier {
     }
 
     /**
-     * Widens {@code lubMap}, which is the least upper bound of {@code this} and {@code other}, so
-     * that dataflow analysis of a loop terminates. If {@code this} and {@code other} contain all
-     * the same sequences with all the same non-constant offsets, but some constant offset differs
-     * between them, then that sequence-offset pair is removed from {@code lubMap}. Otherwise,
-     * {@code lubMap} is left unchanged. This widened lub should only be used in order to break
-     * dataflow analysis loops.
+     * Widens {@code lubMap}, the map of the {@code LessThanLengthOf} that is the least upper bound
+     * of {@code this} and {@code other}, so that dataflow analysis of a loop terminates. If {@code
+     * this} and {@code other} contain all the same sequences with all the same non-constant
+     * offsets, but some constant offset differs between them, then that sequence-offset pair is
+     * removed from {@code lubMap}. Otherwise, {@code lubMap} is left unchanged. This widened lub
+     * should only be used in order to break dataflow analysis loops.
      *
      * <p>For example, the lub of {@code LTLengthOf(value={"a", "b"}, offset={"0", "0"})} and {@code
      * LTLengthOf(value={"a", "b"}, offset={"-20", "0"})} is widened to {@code LTLengthOf("b")}.
@@ -885,8 +885,11 @@ public abstract class UBQualifier {
      * {@code LTLengthOf(value="a", offset="-2")}, then {@code LTLengthOf(value="a", offset="-3")},
      * and so on.
      *
-     * @param other the qualifier whose lub with {@code this} is {@code lubMap}
-     * @param lubMap the lub of {@code this} and {@code other}; is side-effected by this method
+     * @param other the qualifier whose lub with {@code this} is represented by {@code lubMap}
+     * @param lubMap the {@code map} field of {@code this.lub(other)}, which the caller has checked
+     *     is a {@code LessThanLengthOf}; is side-effected by this method. Because {@code lubMap} is
+     *     not a copy, this method also mutates that qualifier; that is harmless only because the
+     *     caller discards it.
      */
     private void widenLub(LessThanLengthOf other, Map<String, Set<OffsetEquation>> lubMap) {
       if (!containsSame(this.map.keySet(), lubMap.keySet())
