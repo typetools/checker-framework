@@ -26,7 +26,6 @@ import org.checkerframework.framework.util.element.TypeVarUseApplier;
 import org.checkerframework.framework.util.element.VariableApplier;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.plumelib.util.IPair;
 
 /**
  * Utility methods for adding the annotations that are stored in an Element to the type that
@@ -183,23 +182,32 @@ public final class ElementAnnotationApplier {
   }
 
   /**
+   * A lambda parameter declaration and the lambda that declares it.
+   *
+   * @param param a lambda's formal parameter declaration
+   * @param lambda the lambda that declares {@code param}
+   */
+  public record LambdaParam(VariableTree param, LambdaExpressionTree lambda) {}
+
+  /**
    * Helper method to get the lambda tree for ParamApplier. Ideally, this method would be located in
    * ElementAnnotationUtil but since AnnotatedTypeFactory.declarationFromElement is protected, it
    * has been placed here.
    *
    * @param varEle the element that may represent a lambda's parameter
    * @param typeFactory the type factory
-   * @return a LambdaExpressionTree if the varEle represents a parameter in a lambda expression,
-   *     otherwise null
+   * @return the parameter declaration and its LambdaExpressionTree if {@code varEle} represents a
+   *     parameter in a lambda expression, otherwise null
    */
-  public static @Nullable IPair<VariableTree, LambdaExpressionTree> getParamAndLambdaTree(
+  public static @Nullable LambdaParam getParamAndLambdaTree(
       VariableElement varEle, AnnotatedTypeFactory typeFactory) {
     VariableTree paramDecl = (VariableTree) typeFactory.declarationFromElement(varEle);
 
     if (paramDecl != null) {
+      @SuppressWarnings("nullness:dereference.of.nullable") // paramDecl is in the current file
       Tree parentTree = typeFactory.getPath(paramDecl).getParentPath().getLeaf();
       if (parentTree instanceof LambdaExpressionTree let) {
-        return IPair.of(paramDecl, let);
+        return new LambdaParam(paramDecl, let);
       }
     }
 

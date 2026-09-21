@@ -21,6 +21,26 @@ public class Stub {
   int x18;
   int x19;
   int x20;
+  int x21;
+  int x22;
+  int x23;
+  int x24;
+  int x25;
+  int x26;
+  int x27;
+  int x28;
+  int x29;
+  int x30;
+  int x31;
+  int x32;
+  int x33;
+  int x34;
+  int x35;
+  int x36;
+  int x37;
+  int x38;
+  int x39;
+  int x40;
 
   public class InnerStub {
     int x20;

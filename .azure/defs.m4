@@ -91,14 +91,17 @@ ifelse($1,canary_jdk,,$1,latest_jdk,,[    dependsOn:
       - checkout: self
         # Unlimited fetchDepth (0) for misc jobs, because of need to make contributors.tex.
         fetchDepth: 0
-      - bash: mkdir -p /tmp && git -C /tmp clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git
+      - bash: ./checker/bin-devel/clone-plume-scripts.sh
+        displayName: clone_plume_scripts
       - bash: |
-          PLUME_SCRIPTS=/tmp/plume-scripts
+          # PLUME_SCRIPTS is the documented way to tell these scripts where they live.
+          PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
           CI_DEBUG=1
           . "$PLUME_SCRIPTS"/set-ci-org-and-branch
         displayName: set-ci-org-and-branch
       - bash: |
-          PLUME_SCRIPTS=/tmp/plume-scripts
+          # The sourced script reads PLUME_SCRIPTS, to find set-ci-org-and-branch.
+          PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
           CI_DEBUG=1
           . "$PLUME_SCRIPTS"/set-git-range
         displayName: set-git-range

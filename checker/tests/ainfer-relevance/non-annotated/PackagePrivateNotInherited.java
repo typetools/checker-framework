@@ -1,46 +1,32 @@
-import java.nio.CharBuffer;
 import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
-import otherpkg.PackagePrivateMemberTypes;
 
-// A subclass does not inherit a package-private member type of a superclass that is declared in a
-// different package, so such a member type shadows nothing.  Inference must resolve the name
-// "CharBuffer" to the single-type import `java.nio.CharBuffer`, which is relevant because it is a
-// subtype of `CharSequence`, rather than to `otherpkg.PackagePrivateMemberTypes.CharBuffer`, which
-// is package-private, is not inherited, and is irrelevant.
-//
-// By contrast, a protected member type is inherited even from a different package, so inference
-// must resolve the name "Protected" to `otherpkg.PackagePrivateMemberTypes.Protected`, which is
-// relevant.
-//
-// If inference resolves either name incorrectly and therefore discards the annotation, then the
-// second (validation) pass of this test issues the warnings that are written below.
-public class PackagePrivateNotInherited extends PackagePrivateMemberTypes {
+// A class does not inherit a package-private member type of a superclass that is in a different
+// package, and a declaration hides what its declaring class would otherwise inherit even when the
+// declaration itself is not inherited.  This class therefore inherits neither
+// `otherpackage.OtherPackageSuperclass.List` (which is package-private, and this compilation unit
+// is in the unnamed package) nor `otherpackage.OtherPackageGrandparent.List` (which is public, but
+// which `OtherPackageSuperclass` does not inherit, because `OtherPackageSuperclass` declares a
+// member type of the same name).  Inference must resolve the name "List" to the top-level class
+// `List` in the unnamed package, which is relevant because it is a subtype of `CharSequence`;
+// both member classes named `List` are irrelevant.  If inference resolves the name incorrectly and
+// therefore discards the annotation, then the second (validation) pass of this test issues the
+// warning that is written below.
+public class PackagePrivateNotInherited extends otherpackage.OtherPackageSuperclass {
 
-  CharBuffer charBufferField;
+  List field;
 
-  Protected protectedField;
-
-  void assignFields() {
-    charBufferField = getSibling1CharBuffer();
-    protectedField = getSibling1Protected();
+  void assignField() {
+    field = getSibling1();
   }
 
-  void useFields() {
+  void useField() {
     // :: warning: [argument]
-    expectsSibling1CharBuffer(charBufferField);
-    // :: warning: [argument]
-    expectsSibling1Protected(protectedField);
+    expectsSibling1(field);
   }
 
-  void expectsSibling1CharBuffer(@AinferSibling1 CharBuffer b) {}
+  void expectsSibling1(@AinferSibling1 List l) {}
 
-  void expectsSibling1Protected(@AinferSibling1 Protected p) {}
-
-  @AinferSibling1 CharBuffer getSibling1CharBuffer() {
-    return null;
-  }
-
-  @AinferSibling1 Protected getSibling1Protected() {
+  @AinferSibling1 List getSibling1() {
     return null;
   }
 }
