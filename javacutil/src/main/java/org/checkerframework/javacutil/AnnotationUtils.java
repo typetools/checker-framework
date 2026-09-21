@@ -71,21 +71,14 @@ public final class AnnotationUtils {
    * @param annotation the annotation whose name to return
    * @return the fully-qualified name of an annotation as a String
    */
-  @Pure
+  @SideEffectFree
   public static @CanonicalName String annotationName(AnnotationMirror annotation) {
     if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror cfam) {
       return cfam.annotationName;
     }
     DeclaredType annoType = annotation.getAnnotationType();
     TypeElement elm = (TypeElement) annoType.asElement();
-    // Name.toString() returns a String that is `equals` to, but not `==` to, the result of any
-    // previous call, so this method is not deterministic in the strict sense that @Deterministic
-    // requires.  Every client compares annotation names by content, so @Pure is the useful
-    // specification.
-    @SuppressWarnings({
-      "signature:assignment", // JDK needs annotations
-      "purity" // Name.toString() returns a fresh but always-equal String
-    })
+    @SuppressWarnings("signature:assignment") // JDK needs annotations
     @CanonicalName String name = elm.getQualifiedName().toString();
     return name;
   }
@@ -158,7 +151,7 @@ public final class AnnotationUtils {
    * @see #areSame(AnnotationMirror, AnnotationMirror)
    */
   @EqualsMethod
-  @Pure
+  @SideEffectFree
   public static int compareByName(AnnotationMirror a1, AnnotationMirror a2) {
     if (a1 == a2) {
       return 0;
