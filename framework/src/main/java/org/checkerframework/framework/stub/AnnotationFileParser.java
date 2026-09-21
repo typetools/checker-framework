@@ -79,6 +79,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -2049,7 +2050,9 @@ public final class AnnotationFileParser {
    * an interface.
    *
    * <p>As with regular overrides, the parameter types must be exact matches; contravariance is not
-   * permitted.
+   * permitted. A formal parameter type in the stub file may be written with a fully-qualified,
+   * partially-qualified, or simple name, and its type arguments may be omitted; see {@link
+   * #sameType}.
    *
    * @param typeElt the type in which the method appears
    * @param methodDecl the method declaration that does not correspond to an element
@@ -2092,7 +2095,8 @@ public final class AnnotationFileParser {
 
   /**
    * Returns true if the two signatures (represented as lists of formal parameters) are the same. No
-   * contravariance is permitted.
+   * contravariance is permitted. Each pair of formal parameter types is compared by {@link
+   * #sameType}.
    *
    * @param javacParams parameter list in javac form
    * @param javaParserParams parameter list in JavaParser form
@@ -2107,6 +2111,16 @@ public final class AnnotationFileParser {
       TypeMirror javacType = javacParams.get(i).asType();
       Parameter javaParserParam = javaParserParams.get(i);
       Type javaParserType = javaParserParam.getType();
+      if (javaParserParam.isVarArgs()) {
+        // For a varargs parameter, `javaParserType` already is the component type, because
+        // JavaParser represents the type of a varargs formal parameter such as `String... s` as the
+        // component type `String`.  javac represents it as the array type `String[]`, so we need to
+        // adjust `javacType`.
+        if (javacType.getKind() != TypeKind.ARRAY) {
+          return false;
+        }
+        javacType = ((ArrayType) javacType).getComponentType();
+      }
       if (javacType.getKind() == TypeKind.TYPEVAR) {
         // TODO: Hack, need to viewpoint-adapt.
         javacType = ((TypeVariable) javacType).getUpperBound();
@@ -2120,6 +2134,11 @@ public final class AnnotationFileParser {
 
   /**
    * Returns true if the two types are the same.
+   *
+   * <p>The JavaParser type comes from a stub file, so it is written leniently. Its name may be
+   * fully qualified, partially qualified (as in {@code Map.Entry}), or simple (as in {@code
+   * Entry}). Its type arguments may be omitted, in which case the javac type's type arguments are
+   * ignored; but if type arguments are written, then they must match the javac type's.
    *
    * @param javacType type in javac form
    * @param javaParserType type in JavaParser form
@@ -2158,12 +2177,36 @@ public final class AnnotationFileParser {
         }
         com.sun.tools.javac.code.Type javacTypeInternal = (com.sun.tools.javac.code.Type) javacType;
 
-        // Use asString() because toString() includes annotations.
-        String javaParserString = javaParserClassType.asString();
-        Element javacElement = javacTypeInternal.asElement();
-        // Check both fully-qualified name and simple name.
-        return javacElement.toString().equals(javaParserString)
-            || javacElement.getSimpleName().contentEquals(javaParserString);
+        // Use getNameWithScope() rather than asString(), because asString() includes type
+        // arguments, which do not appear in the name of the javac element.  (Neither method
+        // includes annotations, but toString() does.)  Type arguments are compared below.
+        String javaParserString = javaParserClassType.getNameWithScope();
+        String javacString = javacTypeInternal.asElement().toString();
+        // The stub file may write the name fully qualified, partially qualified, or simple.
+        if (!javacString.equals(javaParserString)
+            && !javacString.endsWith("." + javaParserString)) {
+          return false;
+        }
+        return sameTypeArguments(javacType, javaParserClassType);
+      }
+      case INTERSECTION -> {
+        // An intersection type reaches here as the upper bound of a type variable; see
+        // sameTypes.  Its erasure, which is what the stub file names, is its first bound.
+        List<? extends TypeMirror> bounds = ((IntersectionType) javacType).getBounds();
+        return !bounds.isEmpty() && sameType(bounds.get(0), javaParserType);
+      }
+      case WILDCARD -> {
+        if (!(javaParserType instanceof WildcardType javaParserWildcardType)) {
+          return false;
+        }
+        javax.lang.model.type.WildcardType javacWildcardType =
+            (javax.lang.model.type.WildcardType) javacType;
+        return sameBound(
+                javacWildcardType.getExtendsBound(),
+                javaParserWildcardType.getExtendedType().orElse(null))
+            && sameBound(
+                javacWildcardType.getSuperBound(),
+                javaParserWildcardType.getSuperType().orElse(null));
       }
       case ARRAY -> {
         return javaParserType.isArrayType()
@@ -2173,6 +2216,77 @@ public final class AnnotationFileParser {
       }
       default -> throw new BugInCF("Unhandled type %s of kind %s", javacType, javacType.getKind());
     }
+  }
+
+  /**
+   * Returns true if the type arguments written in the JavaParser type match those of the javac
+   * type. A JavaParser type with no type arguments matches any javac type; this permits a stub file
+   * to write, say, {@code List} for {@code List<String>}. Type arguments written on an enclosing
+   * type, as in {@code Outer<String>.Inner<Integer>}, are compared as well.
+   *
+   * @param javacType type in javac form
+   * @param javaParserType type in JavaParser form
+   * @return true if the type arguments of the two types match
+   */
+  private boolean sameTypeArguments(TypeMirror javacType, ClassOrInterfaceType javaParserType) {
+    NodeList<Type> javaParserTypeArgs = javaParserType.getTypeArguments().orElse(null);
+    ClassOrInterfaceType javaParserScope = javaParserType.getScope().orElse(null);
+    // If no enclosing type is written with type arguments, then the enclosing types need not be
+    // compared, just as a type with no type arguments matches any type arguments.
+    boolean compareScope = javaParserScope != null && writesTypeArguments(javaParserScope);
+    if (javaParserTypeArgs == null && !compareScope) {
+      return true;
+    }
+    if (!(javacType instanceof DeclaredType javacDeclaredType)) {
+      return false;
+    }
+    if (compareScope && !sameTypeArguments(javacDeclaredType.getEnclosingType(), javaParserScope)) {
+      return false;
+    }
+    if (javaParserTypeArgs == null) {
+      return true;
+    }
+    List<? extends TypeMirror> javacTypeArgs = javacDeclaredType.getTypeArguments();
+    if (javacTypeArgs.size() != javaParserTypeArgs.size()) {
+      return false;
+    }
+    for (int i = 0; i < javacTypeArgs.size(); i++) {
+      if (!sameType(javacTypeArgs.get(i), javaParserTypeArgs.get(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Returns true if the given JavaParser type, or any type that encloses it, is written with type
+   * arguments.
+   *
+   * @param javaParserType type in JavaParser form
+   * @return true if the type or one of its enclosing types is written with type arguments
+   */
+  private static boolean writesTypeArguments(ClassOrInterfaceType javaParserType) {
+    if (javaParserType.getTypeArguments().isPresent()) {
+      return true;
+    }
+    ClassOrInterfaceType scope = javaParserType.getScope().orElse(null);
+    return scope != null && writesTypeArguments(scope);
+  }
+
+  /**
+   * Returns true if the two wildcard bounds, each of which may be absent, are the same.
+   *
+   * @param javacBound a wildcard bound in javac form, or null if the wildcard has no such bound
+   * @param javaParserBound a wildcard bound in JavaParser form, or null if the wildcard has no such
+   *     bound
+   * @return true if the two bounds are the same
+   */
+  private boolean sameBound(
+      @Nullable TypeMirror javacBound, @Nullable ReferenceType javaParserBound) {
+    if (javacBound == null) {
+      return javaParserBound == null;
+    }
+    return javaParserBound != null && sameType(javacBound, javaParserBound);
   }
 
   /**
