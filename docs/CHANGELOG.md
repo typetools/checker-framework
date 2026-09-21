@@ -12,7 +12,26 @@ The Checker Framework runs noticeably faster, due to performance tuning.
 The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
 warnings that it did not previously.
 
+When a `@DefaultQualifier` annotation on a nested element and one on an
+enclosing element apply at the same location, the annotation on the nested
+element now wins, as the manual specifies.  Previously, which of the two won
+depended on the annotations' names.
+
 ### Changes for type system implementers
+
+A default that a type system registers through
+`QualifierDefaults.addElementDefault()` now composes with the
+`@DefaultQualifier` annotations on the element and on the element's enclosing
+scopes, rather than suppressing them.  Where a registered default and a
+`@DefaultQualifier` annotation apply at the same location, the registered
+default wins.
+
+`QualifierDefaults.DefaultApplierElement.DefaultApplierElementImpl` now extends
+`AnnotatedTypeScanner<Void, Void>` rather than
+`AnnotatedTypeScanner<Void, AnnotationMirror>`, because one traversal of a type
+may now apply more than one default; its `scan()`, `visitTypeVariable()`,
+`visitWildcard()`, and `visitBounds()` methods take a `Void` parameter
+accordingly.
 
 `JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,
 `parseStubUnit()`, and `parseExpression()` into new class `StaticJavaParserUtil`.

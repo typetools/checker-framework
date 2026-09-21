@@ -5,7 +5,10 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/** Tests that QualifierDefaults.addElementDefault composes with the other defaults. */
+/**
+ * Tests that QualifierDefaults.addElementDefault composes with the other defaults and takes
+ * precedence over them.
+ */
 public class ElementDefaultTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
