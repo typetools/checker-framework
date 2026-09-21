@@ -458,11 +458,6 @@ tasks.register("ainferTestCheckerGenerateAjava", Test) {
     delete("tests/ainfer-testchecker/annotated/all-systems/java8/memberref/Issue946.java")
     delete("tests/ainfer-testchecker/annotated/all-systems/java8/memberref/Receivers.java")
 
-    // This test must be deleted, because otherwise an error about a missing type in an
-    // ajava file is issued. The test itself shouldn't be run as an all-systems test while testing
-    // WPI; see the copy in the non-annotated WPI tests for an explanation.
-    delete("tests/ainfer-testchecker/annotated/all-systems/java8/memberref/Purity.java")
-
     // There is some kind of bad interaction between the purity checker's inference mode
     // and method references to constructors: every one of them in this test causes a
     // purity.methodref warning during validation. This problem only occurs for ajava-based

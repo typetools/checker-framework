@@ -4297,8 +4297,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return result;
     }
 
-    /** Check that an override respects purity. */
+    /**
+     * Check that an override respects purity. Like every other purity check, this one runs only
+     * when purity annotations are being checked; see {@link BaseTypeVisitor#checkLambdaPurity},
+     * which performs the analogous check for a lambda.
+     */
     private void checkPurity() {
+      if (!checkPurityAnnotations) {
+        return;
+      }
       EnumSet<PurityKind> superPurity =
           PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
       EnumSet<PurityKind> subPurity =
