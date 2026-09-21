@@ -38,13 +38,13 @@ import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.AnnotationWithMetaAnnotation;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.plumelib.util.CollectionsP;
-import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
 import org.plumelib.util.ToStringComparator;
 import org.plumelib.util.UniqueId;
@@ -471,12 +471,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return null;
     }
 
-    List<IPair<AnnotationMirror, AnnotationMirror>> fieldAnnotationPairs =
+    List<AnnotationWithMetaAnnotation> fieldAnnotationPairs =
         atypeFactory.getAnnotationWithMetaAnnotation(
             fieldAccess.getField(), MonotonicQualifier.class);
     List<AnnotationMirror> metaAnnotations =
         CollectionsP.withoutDuplicates(
-            CollectionsP.mapList(pair -> pair.second, fieldAnnotationPairs));
+            CollectionsP.mapList(
+                AnnotationWithMetaAnnotation::metaAnnotation, fieldAnnotationPairs));
     List<AnnotationMirror> monotonicAnnotations = new ArrayList<>(metaAnnotations.size());
     for (AnnotationMirror metaAnnotation : metaAnnotations) {
       @SuppressWarnings("deprecation") // permitted for use in the framework
@@ -849,10 +850,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return false;
     }
     AnnotatedTypeFactory atypeFactory = this.analysis.atypeFactory;
-    List<IPair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
+    List<AnnotationWithMetaAnnotation> fieldAnnotations =
         atypeFactory.getAnnotationWithMetaAnnotation(fieldAcc.getField(), MonotonicQualifier.class);
-    for (IPair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
-      AnnotationMirror metaAnnotation = fieldAnnotation.second;
+    for (AnnotationWithMetaAnnotation fieldAnnotation : fieldAnnotations) {
+      AnnotationMirror metaAnnotation = fieldAnnotation.metaAnnotation();
       @SuppressWarnings("deprecation") // permitted for use in the framework
       Name annoName = AnnotationUtils.getElementValueClassName(metaAnnotation, "value", false);
       AnnotationMirror monotonicAnnotation =
