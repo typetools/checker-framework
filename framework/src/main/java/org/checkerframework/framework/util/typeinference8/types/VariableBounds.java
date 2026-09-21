@@ -21,11 +21,11 @@ import org.checkerframework.framework.util.typeinference8.constraint.ConstraintS
 import org.checkerframework.framework.util.typeinference8.constraint.QualifierTyping;
 import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
+import org.checkerframework.framework.util.typeinference8.types.InferenceFactory.ParameterizedSupers;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsP;
-import org.plumelib.util.IPair;
 
 /** Data structure that stores the bounds of a variable. */
 public class VariableBounds {
@@ -447,8 +447,7 @@ public class VariableBounds {
    */
   private List<Typing> getConstraintsFromParameterized(
       Constraint parent, AbstractType s, AbstractType t) {
-    IPair<AbstractType, AbstractType> pair =
-        context.inferenceTypeFactory.getParameterizedSupers(s, t);
+    ParameterizedSupers pair = context.inferenceTypeFactory.getParameterizedSupers(s, t);
 
     if (pair == null) {
       return new ArrayList<>();
@@ -457,8 +456,8 @@ public class VariableBounds {
     List<Typing> constraints = new ArrayList<>();
     // An inner class type's own type arguments are not all of the type arguments it mentions; its
     // enclosing types contribute more, which getTypeArguments() omits.
-    AbstractType sAsSuper = pair.first;
-    AbstractType tAsSuper = pair.second;
+    AbstractType sAsSuper = pair.aAsSuper();
+    AbstractType tAsSuper = pair.bAsSuper();
     while (sAsSuper != null && tAsSuper != null) {
       addConstraintsFromTypeArguments(parent, s, sAsSuper, t, tAsSuper, constraints);
       sAsSuper = sAsSuper.getEnclosingType();
@@ -763,12 +762,12 @@ public class VariableBounds {
       AbstractType s1 = parameteredTypes.get(i);
       for (int j = i + 1; j < parameteredTypes.size(); j++) {
         AbstractType s2 = parameteredTypes.get(j);
-        IPair<AbstractType, AbstractType> supers =
-            context.inferenceTypeFactory.getParameterizedSupers(s1, s2);
+        ParameterizedSupers supers = context.inferenceTypeFactory.getParameterizedSupers(s1, s2);
         if (supers == null) {
           continue;
         }
-        if (!annotatedTypeArguments(supers.first).equals(annotatedTypeArguments(supers.second))) {
+        if (!annotatedTypeArguments(supers.aAsSuper())
+            .equals(annotatedTypeArguments(supers.bAsSuper()))) {
           return true;
         }
       }
