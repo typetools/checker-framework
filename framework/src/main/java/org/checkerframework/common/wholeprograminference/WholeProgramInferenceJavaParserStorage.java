@@ -1183,8 +1183,9 @@ public class WholeProgramInferenceJavaParserStorage
 
     if (parentNode instanceof Type type) {
       // JavaParser's `TypeParameter` is a `Type`, so an annotation on a type parameter
-      // declaration, as in `<@Anno T>`, takes this branch.  `JavaParserUtil.typeToTypeMirror`
-      // returns null for a type parameter declaration, so such an annotation is retained.
+      // declaration, as in `<@Anno T>`, takes this branch.
+      // `JavaParserUtil.typeToTypeMirrorOrUpperBound` returns null for a type parameter
+      // declaration, so such an annotation is retained.
       return typeIsRelevant(gatf, type);
     }
     if (parentNode instanceof ArrayCreationLevel level) {
@@ -1264,8 +1265,11 @@ public class WholeProgramInferenceJavaParserStorage
   private boolean typeIsRelevant(
       GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf, Type componentType, int arrayLevels) {
     Types types = atypeFactory.getProcessingEnv().getTypeUtils();
+    // Use the upper bound of a type variable.  That is sound here because `isRelevant` erases its
+    // argument, and the erasure of a type variable is the erasure of its upper bound.
     TypeMirror tm =
-        JavaParserUtil.typeToTypeMirror(elements, types, componentType, typeElementCache);
+        JavaParserUtil.typeToTypeMirrorOrUpperBound(
+            elements, types, componentType, typeElementCache);
     if (tm == null) {
       // The type could not be determined.  Be conservative.
       return true;

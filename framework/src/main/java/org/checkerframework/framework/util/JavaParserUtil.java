@@ -70,8 +70,7 @@ public final class JavaParserUtil {
    * Returns the element for the given JavaParser type, whose name is resolved in the scope of the
    * type declarations and the compilation unit that contain it. Returns null if the name cannot be
    * resolved: it names a type variable, a local class, a member of a local or anonymous class, or a
-   * type that is not on the classpath. To learn whether the name names a type variable, and which
-   * one, call {@link #resolveTypeVariableName(Elements, ClassOrInterfaceType, Map)}.
+   * type that is not on the classpath.
    *
    * <p>A client that resolves many names should call {@link #resolveTypeName(Elements,
    * ClassOrInterfaceType, Map)}, which memoizes the name lookups.
@@ -89,8 +88,7 @@ public final class JavaParserUtil {
    * Returns the element for the given JavaParser type, whose name is resolved in the scope of the
    * type declarations and the compilation unit that contain it. Returns null if the name cannot be
    * resolved: it names a type variable, a local class, a member of a local or anonymous class, or a
-   * type that is not on the classpath. To learn whether the name names a type variable, and which
-   * one, call {@link #resolveTypeVariableName(Elements, ClassOrInterfaceType, Map)}.
+   * type that is not on the classpath.
    *
    * <p>Resolving one name looks up many candidate names, most of which name no type, so a client
    * that resolves many names should pass the same cache to each call. A cache should not be reused
@@ -110,46 +108,6 @@ public final class JavaParserUtil {
   }
 
   /**
-   * Returns the declaration of the type variable that the given JavaParser type names, or null if
-   * the name does not name a type variable. The name is resolved in the scope of the type
-   * declarations and the compilation unit that contain it, so the result is null if a type
-   * declaration shadows a type variable of the same name.
-   *
-   * <p>A client that resolves many names should call {@link #resolveTypeVariableName(Elements,
-   * ClassOrInterfaceType, Map)}, which memoizes the name lookups.
-   *
-   * @param elements used for looking up names
-   * @param type a JavaParser class or interface type
-   * @return the declaration of the type variable that {@code type} names, or null if {@code type}
-   *     does not name a type variable
-   */
-  public static @Nullable TypeParameter resolveTypeVariableName(
-      Elements elements, ClassOrInterfaceType type) {
-    return resolveTypeVariableName(elements, type, new HashMap<>(4));
-  }
-
-  /**
-   * Returns the declaration of the type variable that the given JavaParser type names, or null if
-   * the name does not name a type variable. The name is resolved in the scope of the type
-   * declarations and the compilation unit that contain it, so the result is null if a type
-   * declaration shadows a type variable of the same name.
-   *
-   * <p>A name with more than one component, as in {@code T.Inner}, never names a type variable,
-   * because a type variable has no member types.
-   *
-   * @param elements used for looking up names
-   * @param type a JavaParser class or interface type
-   * @param cache maps a name to the type it names, or to null if it names no type; this method both
-   *     reads and writes it
-   * @return the declaration of the type variable that {@code type} names, or null if {@code type}
-   *     does not name a type variable
-   */
-  public static @Nullable TypeParameter resolveTypeVariableName(
-      Elements elements, ClassOrInterfaceType type, Map<String, @Nullable TypeElement> cache) {
-    return resolveName(elements, type, cache).typeParameter();
-  }
-
-  /**
    * What a type name refers to: a type, a type variable, or neither. At most one component is
    * non-null.
    *
@@ -157,7 +115,7 @@ public final class JavaParserUtil {
    * @param typeParameter the declaration of the type variable that the name refers to, or null if
    *     it refers to no type variable
    */
-  public record ResolvedName(
+  private record ResolvedName(
       @Nullable TypeElement typeElement, @Nullable TypeParameter typeParameter) {
 
     /** A name that refers to neither a type nor a type variable. */
@@ -190,10 +148,12 @@ public final class JavaParserUtil {
    * contain it.
    *
    * <p>Resolving a name walks the enclosing scopes and searches supertypes, which is far more work
-   * than the cache avoids. A client that needs to know both whether the name names a type and
-   * whether it names a type variable should call this method once, rather than calling both {@link
-   * #resolveTypeName(Elements, ClassOrInterfaceType, Map)} and {@link
-   * #resolveTypeVariableName(Elements, ClassOrInterfaceType, Map)}, each of which repeats the walk.
+   * than the cache avoids. A caller that needs to know both whether the name names a type and
+   * whether it names a type variable should call this method once, rather than asking the two
+   * questions separately, because each call repeats the walk.
+   *
+   * <p>A name with more than one component, as in {@code T.Inner}, never names a type variable,
+   * because a type variable has no member types.
    *
    * @param elements used for looking up names
    * @param type a JavaParser class or interface type
@@ -202,14 +162,14 @@ public final class JavaParserUtil {
    *     restrictions on it.
    * @return what the name of {@code type} refers to
    */
-  public static ResolvedName resolveName(
+  private static ResolvedName resolveName(
       Elements elements, ClassOrInterfaceType type, Map<String, @Nullable TypeElement> cache) {
     return resolveName(elements, type, cache, new IdentityHashMap<>(4));
   }
 
   /**
    * Returns what the given JavaParser type's name refers to, as {@link #resolveName(Elements,
-   * ClassOrInterfaceType, Map)} does. This method also reads and writes a cache, for efficiency.
+   * ClassOrInterfaceType, Map)} does. This method also memoizes its recursive calls.
    *
    * @param elements used for looking up names
    * @param type a JavaParser class or interface type
@@ -1097,12 +1057,8 @@ public final class JavaParserUtil {
 
   /**
    * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined. It
-   * cannot be determined for an intersection type, a union type, {@code var}, a wildcard, a type
-   * parameter declaration, or a type that is not on the classpath.
-   *
-   * <p>A use of a type variable has no TypeMirror here, so this returns the type variable's
-   * effective upper bound, as computed by {@link #typeVariableUpperBound}. A client that
-   * distinguishes a type variable from its upper bound should call {@link #resolveName} instead.
+   * cannot be determined for a use of a type variable, an intersection type, a union type, {@code
+   * var}, a wildcard, a type parameter declaration, or a type that is not on the classpath.
    *
    * @param elements used for looking up names
    * @param types used for creating types
@@ -1114,9 +1070,59 @@ public final class JavaParserUtil {
    */
   public static @Nullable TypeMirror typeToTypeMirror(
       Elements elements, Types types, Type type, Map<String, @Nullable TypeElement> cache) {
+    return typeToTypeMirror(elements, types, type, cache, false);
+  }
+
+  /**
+   * Returns the TypeMirror for the given JavaParser type, in which each use of a type variable is
+   * replaced by the type variable's upper bound, or by that bound's leftmost bound if the upper
+   * bound is an intersection type. Returns null if the result cannot be determined, which is the
+   * case for an intersection type, a union type, {@code var}, a wildcard, a type parameter
+   * declaration, or a type that is not on the classpath.
+   *
+   * <p>The result is not the type that {@code type} names, so a client that distinguishes a type
+   * variable from its upper bound should call {@link #typeToTypeMirror} instead. Replacing a type
+   * variable by its upper bound is sound only for a client that erases the result, such as one that
+   * determines whether a type qualifier is relevant: the erasure of a type variable is the erasure
+   * of its leftmost bound.
+   *
+   * @param elements used for looking up names
+   * @param types used for creating types
+   * @param type a JavaParser type
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it. See {@link #resolveTypeName(Elements, ClassOrInterfaceType, Map)} for
+   *     restrictions on it.
+   * @return the TypeMirror for {@code type} with each type variable replaced by its upper bound, or
+   *     null if it cannot be determined
+   */
+  public static @Nullable TypeMirror typeToTypeMirrorOrUpperBound(
+      Elements elements, Types types, Type type, Map<String, @Nullable TypeElement> cache) {
+    return typeToTypeMirror(elements, types, type, cache, true);
+  }
+
+  /**
+   * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined.
+   *
+   * @param elements used for looking up names
+   * @param types used for creating types
+   * @param type a JavaParser type
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it. See {@link #resolveTypeName(Elements, ClassOrInterfaceType, Map)} for
+   *     restrictions on it.
+   * @param substituteUpperBounds if true, a use of a type variable yields the type variable's upper
+   *     bound; if false, it yields null
+   * @return the TypeMirror for {@code type}, or null if it cannot be determined
+   */
+  private static @Nullable TypeMirror typeToTypeMirror(
+      Elements elements,
+      Types types,
+      Type type,
+      Map<String, @Nullable TypeElement> cache,
+      boolean substituteUpperBounds) {
     if (type instanceof ArrayType arrayType) {
       TypeMirror componentType =
-          typeToTypeMirror(elements, types, arrayType.getComponentType(), cache);
+          typeToTypeMirror(
+              elements, types, arrayType.getComponentType(), cache, substituteUpperBounds);
       return componentType == null ? null : types.getArrayType(componentType);
     }
     if (type instanceof PrimitiveType primitiveType) {
@@ -1135,8 +1141,10 @@ public final class JavaParserUtil {
       }
       TypeParameter typeParameter = resolved.typeParameter();
       if (typeParameter != null) {
-        // A type variable has no TypeMirror here, so use its upper bound.
-        return typeVariableUpperBound(elements, types, typeParameter, cache);
+        // A type variable has no TypeMirror here.
+        return substituteUpperBounds
+            ? typeVariableUpperBound(elements, types, typeParameter, cache)
+            : null;
       }
       return null;
     }
@@ -1149,7 +1157,8 @@ public final class JavaParserUtil {
    * cannot be determined.
    *
    * <p>When the upper bound is an intersection type, which {@code Types} cannot create, this
-   * returns the intersection type's erasure -- that is, its leftmost bound.
+   * returns the intersection type's leftmost bound, which has the same erasure as the intersection
+   * type.
    *
    * @param elements used for looking up names
    * @param types used for creating types
@@ -1157,10 +1166,10 @@ public final class JavaParserUtil {
    * @param cache maps a name to the type it names, or to null if it names no type; this method both
    *     reads and writes it. See {@link #resolveTypeName(Elements, ClassOrInterfaceType, Map)} for
    *     restrictions on it.
-   * @return the TypeMirror for the upper bound of {@code typeParameter}, erased if that bound is an
-   *     intersection type, or null
+   * @return the TypeMirror for the upper bound of {@code typeParameter}, or that bound's leftmost
+   *     bound if it is an intersection type, or null
    */
-  public static @Nullable TypeMirror typeVariableUpperBound(
+  private static @Nullable TypeMirror typeVariableUpperBound(
       Elements elements,
       Types types,
       TypeParameter typeParameter,
@@ -1168,14 +1177,14 @@ public final class JavaParserUtil {
     NodeList<ClassOrInterfaceType> bounds = typeParameter.getTypeBound();
     if (bounds.isEmpty()) {
       // The implicit upper bound is `Object`.
-      TypeElement objectElt = elements.getTypeElement("java.lang.Object");
+      TypeElement objectElt = getTypeElement(elements, "java.lang.Object", cache);
       return objectElt == null ? null : objectElt.asType();
     }
     // If there are multiple bounds, the upper bound is an intersection type, which `Types` cannot
-    // create.  Use its leftmost bound, which is its erasure.
+    // create.  Use its leftmost bound, which has the same erasure.
     // The bound may itself be a type variable, as in `<T extends U, U extends CharSequence>`; the
     // recursion terminates because Java forbids a cycle among type variable bounds.
-    return typeToTypeMirror(elements, types, bounds.get(0), cache);
+    return typeToTypeMirror(elements, types, bounds.get(0), cache, true);
   }
 
   //

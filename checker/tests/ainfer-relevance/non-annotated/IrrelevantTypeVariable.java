@@ -3,8 +3,8 @@ import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 // A use of a type variable is relevant only if the type variable's upper bound is relevant.
 // `Number` is not listed in the checker's `@RelevantJavaTypes` and is not related to a listed type
 // by subtyping, so inference must not write, into the .ajava file, an annotation that it infers
-// for a use of `T`.  The checker rejects the annotation that is written below, for the same
-// reason, in both passes of this test.
+// for a use of `T`.  The checker rejects such an annotation, for the same reason, in both passes
+// of this test.
 public class IrrelevantTypeVariable<T extends Number> {
 
   T field;
