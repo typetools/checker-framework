@@ -16,4 +16,12 @@ public class ExampleAnno {
   @interface CharExample {
     char value();
   }
+
+  @interface FloatExample {
+    float value();
+  }
+
+  @interface DoubleExample {
+    double value();
+  }
 }

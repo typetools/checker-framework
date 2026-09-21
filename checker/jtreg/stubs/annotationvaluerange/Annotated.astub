@@ -2,6 +2,8 @@ package annotationvaluerange;
 
 import annotationvaluerange.ExampleAnno.ByteExample;
 import annotationvaluerange.ExampleAnno.CharExample;
+import annotationvaluerange.ExampleAnno.DoubleExample;
+import annotationvaluerange.ExampleAnno.FloatExample;
 import annotationvaluerange.ExampleAnno.IntExample;
 import annotationvaluerange.ExampleAnno.ShortExample;
 
@@ -15,4 +17,9 @@ public class Annotated {
     @IntExample(2147483648L) int x5;
     @CharExample(-1) int x6;
     @IntExample(1.5) int x7;
+    @FloatExample(1e300) int x8;
+    @FloatExample(1.1) int x9;
+    @DoubleExample(1e400) int x10;
+    @FloatExample(1e300f) int x11;
+    @DoubleExample(1e300f) int x12;
 }

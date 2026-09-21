@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
 source "$SCRIPT_DIR"/clone-related.sh
 
-gradle_retry -q getPlumeScripts
+"$SCRIPT_DIR"/clone-plume-scripts.sh
 PLUME_SCRIPTS="$SCRIPT_DIR/.plume-scripts"
 
 # Pluggable type-checking:  run the Checker Framework on itself.
