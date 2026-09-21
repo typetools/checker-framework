@@ -121,6 +121,8 @@ public class ATypeElement extends AElement {
    * @param <K> the type of the map keys
    * @return a new vivifying map from keys to {@link ATypeElement}s
    */
+  @SuppressWarnings("modifiability:return") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
   static <K extends Object> @Modifiable VivifyingMap<K, ATypeElement> newVivifyingLHMap_ATE() {
     return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override

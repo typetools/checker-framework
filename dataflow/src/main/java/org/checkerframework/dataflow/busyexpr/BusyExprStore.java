@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.busyexpr;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.StringJoiner;
+import org.checkerframework.checker.modifiability.qual.Growable;
 import org.checkerframework.checker.modifiability.qual.Shrinkable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
@@ -16,7 +17,7 @@ import org.checkerframework.javacutil.BugInCF;
 public class BusyExprStore implements Store<BusyExprStore> {
 
   /** A set of busy expression abstract values. */
-  private final @Shrinkable Set<BusyExprValue> busyExprValueSet;
+  private final @Growable @Shrinkable Set<BusyExprValue> busyExprValueSet;
 
   /**
    * Create a new BusyExprStore.
@@ -24,7 +25,7 @@ public class BusyExprStore implements Store<BusyExprStore> {
    * @param busyExprValueSet a set of busy expression abstract values. The parameter is captured and
    *     the caller should not retain an alias.
    */
-  public BusyExprStore(@Shrinkable Set<BusyExprValue> busyExprValueSet) {
+  public BusyExprStore(@Growable @Shrinkable Set<BusyExprValue> busyExprValueSet) {
     this.busyExprValueSet = busyExprValueSet;
   }
 

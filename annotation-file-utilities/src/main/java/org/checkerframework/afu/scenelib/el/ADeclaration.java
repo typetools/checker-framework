@@ -12,6 +12,8 @@ public abstract class ADeclaration extends AElement {
   /**
    * The element's insert-annotation invocations; map key is the AST path to the insertion place.
    */
+  @SuppressWarnings("modifiability:assignment") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
   public final @Modifiable VivifyingMap<ASTPath, ATypeElement> insertAnnotations =
       new VivifyingMap<>(new TreeMap<>()) {
         @Override
@@ -29,6 +31,8 @@ public abstract class ADeclaration extends AElement {
    * The element's annotated insert-typecast invocations; map key is the AST path to the insertion
    * place
    */
+  @SuppressWarnings("modifiability:assignment") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
   public final @Modifiable VivifyingMap<ASTPath, ATypeElementWithType> insertTypecasts =
       new VivifyingMap<>(new TreeMap<>()) {
         @Override

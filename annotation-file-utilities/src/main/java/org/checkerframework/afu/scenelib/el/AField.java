@@ -166,6 +166,8 @@ public class AField extends ADeclaration {
    * @param <K> the type of the map keys
    * @return a new vivifying map from keys to {@link AField}s
    */
+  @SuppressWarnings("modifiability:return") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
   static <K extends Object> @Modifiable VivifyingMap<K, AField> newVivifyingLHMap_AF() {
     return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override

@@ -376,7 +376,7 @@ class ArrayList {
   @PolyShrinkable Iterator iterator(@PolyShrinkable ArrayList this) { ... }
 }
 class CopyOnWriteArrayList {
-  @Unshrinkable Iterator iterator(@PolyShrinkable ArrayList this) { ... }
+  @Unshrinkable Iterator iterator(@PolyShrinkable CopyOnWriteArrayList this) { ... }
 }
 \end{Verbatim}
 
@@ -476,7 +476,7 @@ capabilities.  In such cases, the Modifiability Checker weakens the
 structurally unavailable component to the corresponding top qualifier.
 For example, \<Iterator> has
 \<remove> but not \<add> or \<set>, so \<@Modifiable Iterator> expands to
-\<@MaybeGrowable @Shrinkable @MaybeReplaceable Iterator>.
+\<@MaybeGrowable @MaybeSeqGrowable @Shrinkable @MaybeReplaceable Iterator>.
 
 
 \subsectionAndLabel{Alternative design: use negative capability rather than top qualifier}{modifiability-modifiable-must-be-top}
@@ -603,7 +603,7 @@ Here are examples of its use:
   @Shrinkable Iterator<String> it = list.iterator();
   it.remove();  // OK
 
-  @Unshrinkable List<String> list2 = ...;
+  @IteratorPolyMod @Unshrinkable List<String> list2 = ...;
   @Unshrinkable Iterator<String> it2 = list2.iterator();
   it2.remove();  // Error: it2 is @Unshrinkable
 
