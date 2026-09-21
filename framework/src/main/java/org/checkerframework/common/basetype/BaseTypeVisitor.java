@@ -4301,6 +4301,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /** Check that an override respects purity. */
     private void checkPurity() {
+      if (!checkPurityAnnotations) {
+        return;
+      }
       EnumSet<PurityKind> superPurity =
           PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
       EnumSet<PurityKind> subPurity =
