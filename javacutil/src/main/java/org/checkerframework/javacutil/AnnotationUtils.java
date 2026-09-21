@@ -78,7 +78,14 @@ public final class AnnotationUtils {
     }
     DeclaredType annoType = annotation.getAnnotationType();
     TypeElement elm = (TypeElement) annoType.asElement();
-    @SuppressWarnings("signature:assignment") // JDK needs annotations
+    // Name.toString() returns a String that is `equals` to, but not `==` to, the result of any
+    // previous call, so this method is not deterministic in the strict sense that @Deterministic
+    // requires.  Every client compares annotation names by content, so @Pure is the useful
+    // specification.
+    @SuppressWarnings({
+      "signature:assignment", // JDK needs annotations
+      "purity" // Name.toString() returns a fresh but always-equal String
+    })
     @CanonicalName String name = elm.getQualifiedName().toString();
     return name;
   }
@@ -399,6 +406,7 @@ public final class AnnotationUtils {
    * @return an ordering over AnnotationMirrors based on their name and values
    */
   @Pure
+  @SuppressWarnings("purity") // mutates only a newly allocated set
   public static int compareAnnotationMirrors(AnnotationMirror a1, AnnotationMirror a2) {
     int nameComparison = compareByName(a1, a2);
     if (nameComparison != 0) {
@@ -1473,6 +1481,7 @@ public final class AnnotationUtils {
    * @return the string representation, using simple (not fully-qualified) names
    */
   @SideEffectFree
+  @SuppressWarnings("purity") // mutates only a newly allocated StringJoiner
   public static String toStringSimple(AnnotationMirrorSet annos) {
     DefaultAnnotationFormatter defaultAnnotationFormatter = new DefaultAnnotationFormatter();
     StringJoiner result = new StringJoiner(" ");

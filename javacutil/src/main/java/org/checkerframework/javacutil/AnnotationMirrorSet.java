@@ -135,6 +135,7 @@ public class AnnotationMirrorSet
     return shadowSet.isEmpty();
   }
 
+  @SuppressWarnings("purity") // containsSame iterates the set
   @Override
   public boolean contains(
       @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
@@ -261,6 +262,7 @@ public class AnnotationMirrorSet
     return containsAll(s);
   }
 
+  @SuppressWarnings("purity") // iterates the set
   @Override
   public int hashCode() {
     int result = 0;

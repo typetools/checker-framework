@@ -153,7 +153,12 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
    *
    * @return the compiler log, which contains errors and warnings
    */
+  // Log.instance() constructs the Log and registers it in the compiler Context on its first
+  // call, so it is not strictly side-effect-free.  @SideEffectFree is retained because javac
+  // creates the Log before any annotation processor runs, and because callers rely on it to
+  // preserve field refinements across the call.
   @SideEffectFree
+  @SuppressWarnings("purity") // Log.instance() registers the Log in the Context on the first call
   public Log getCompilerLog() {
     return Log.instance(((JavacProcessingEnvironment) processingEnv).getContext());
   }
