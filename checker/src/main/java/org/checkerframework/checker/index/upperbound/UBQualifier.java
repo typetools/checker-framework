@@ -902,11 +902,13 @@ public abstract class UBQualifier {
         if (lubOffsets.size() != thisOffsets.size() || lubOffsets.size() != otherOffsets.size()) {
           return;
         }
+        OffsetEquation thisIntEq = OffsetEquation.getOnlyIntOffsetEquation(thisOffsets);
+        OffsetEquation otherIntEq = OffsetEquation.getOnlyIntOffsetEquation(otherOffsets);
         for (OffsetEquation lubEq : lubOffsets) {
           if (lubEq.isOnlyInt()) {
-            int thisInt = OffsetEquation.getOnlyIntOffsetEquation(thisOffsets).getIntPart();
-            int otherInt = OffsetEquation.getOnlyIntOffsetEquation(otherOffsets).getIntPart();
-            if (thisInt != otherInt) {
+            assert thisIntEq != null : "@AssumeAssertion(nullness)";
+            assert otherIntEq != null : "@AssumeAssertion(nullness)";
+            if (thisIntEq.getIntPart() != otherIntEq.getIntPart()) {
               remove.add(new SequenceAndOffset(sequence, lubEq));
             }
           } else if (thisOffsets.contains(lubEq) && otherOffsets.contains(lubEq)) {

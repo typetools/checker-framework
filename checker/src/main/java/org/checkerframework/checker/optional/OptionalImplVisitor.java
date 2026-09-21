@@ -290,7 +290,8 @@ public class OptionalImplVisitor
       return;
     }
 
-    ExpressionTree getReceiver = TreeUtils.getReceiverTree(trueReceiver);
+    @SuppressWarnings("nullness:assignment") // a call to `get()` has a receiver
+    @NonNull ExpressionTree getReceiver = TreeUtils.getReceiverTree(trueReceiver);
     @SuppressWarnings("nullness:assignment") // a call to `isPresent()` has a receiver
     @NonNull ExpressionTree receiver = isPresentCall.receiver();
     if (sameExpression(receiver, getReceiver)) {
