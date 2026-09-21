@@ -18,7 +18,7 @@ public class OverrideTypeParamBound {
 
   static class LowerBoundRaisedSub extends LowerBoundRaisedSuper {
     @Override
-    // :: error: [override.type.parameter]
+    // :: error: [override.type.parameter.lower]
     <@Nullable T extends @Nullable Object> T pick(T p) {
       T t = null;
       return t;
@@ -41,7 +41,7 @@ public class OverrideTypeParamBound {
 
   static class UpperBoundLoweredSub extends UpperBoundLoweredSuper {
     @Override
-    // :: error: [override.type.parameter]
+    // :: error: [override.type.parameter.upper]
     <T extends @NonNull Object> T pick(T p) {
       p.hashCode();
       return p;
@@ -58,7 +58,7 @@ public class OverrideTypeParamBound {
 
   static class ReturnOnlySub extends ReturnOnlySuper {
     @Override
-    // :: error: [override.type.parameter]
+    // :: error: [override.type.parameter.lower]
     <@Nullable T extends @Nullable Object> T make() {
       T t = null;
       return t;
@@ -72,7 +72,7 @@ public class OverrideTypeParamBound {
 
   static class NestedOnlySub extends NestedOnlySuper {
     @Override
-    // :: error: [override.type.parameter]
+    // :: error: [override.type.parameter.lower]
     <@Nullable T extends @Nullable Object> void f(List<T> x) {
       x.set(0, null);
     }
@@ -85,7 +85,7 @@ public class OverrideTypeParamBound {
 
   static class UnusedTypeParamSub extends UnusedTypeParamSuper {
     @Override
-    // :: error: [override.type.parameter]
+    // :: error: [override.type.parameter.upper]
     <T extends @NonNull Object> void g() {}
   }
 

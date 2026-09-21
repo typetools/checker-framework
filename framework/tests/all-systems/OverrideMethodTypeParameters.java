@@ -43,7 +43,8 @@ public class OverrideMethodTypeParameters {
     <T> void unused() {}
   }
 
-  // Method references and lambdas are checked as overrides of the functional interface's method.
+  // A method reference is checked as an override of the functional interface's method.  A lambda
+  // is not; BaseTypeVisitor.visitLambdaExpression checks the lambda's parameters and body instead.
   static <T> Comparator<T> comparators(Comparator<T> c) {
     Comparator<T> c1 = (p1, p2) -> c.compare(p1, p2);
     Comparator<T> c2 = c::compare;

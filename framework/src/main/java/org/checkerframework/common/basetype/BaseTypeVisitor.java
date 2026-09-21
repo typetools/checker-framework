@@ -3559,36 +3559,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Create a FoundRequired for two sets of bounds.
-     *
-     * @param found the found bounds
-     * @param required the required bounds
-     */
-    private FoundRequired(
-        AnnotatedTypeParameterBounds found, AnnotatedTypeParameterBounds required) {
-      if (shouldPrintVerbose(found, required)) {
-        this.found = found.toString(true);
-        this.required = required.toString(true);
-      } else {
-        this.found = found.toString();
-        this.required = required.toString();
-      }
-    }
-
-    /**
-     * Creates string representations of two {@link AnnotatedTypeParameterBounds}s which are only
-     * verbose if required to differentiate them.
-     *
-     * @param found the found bounds
-     * @param required the required bounds
-     * @return a FoundRequired for the two sets of bounds
-     */
-    static FoundRequired of(
-        AnnotatedTypeParameterBounds found, AnnotatedTypeParameterBounds required) {
-      return new FoundRequired(found, required);
-    }
-
-    /**
      * Creates string representations of {@link AnnotatedTypeMirror}s which are only verbose if
      * required to differentiate the two types.
      */
@@ -3636,26 +3606,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return true;
     }
     return containsSameToString(atm, bounds.getUpperBound(), bounds.getLowerBound());
-  }
-
-  /**
-   * Returns true if the verbose toString should be used when printing two sets of bounds.
-   *
-   * @param bounds1 the first bounds
-   * @param bounds2 the second bounds
-   * @return true iff neither argument contains "@", or there are two annotated types (in either
-   *     argument) such that their toStrings are the same but their verbose toStrings differ
-   */
-  private static boolean shouldPrintVerbose(
-      AnnotatedTypeParameterBounds bounds1, AnnotatedTypeParameterBounds bounds2) {
-    if (!bounds1.toString().contains("@") && !bounds2.toString().contains("@")) {
-      return true;
-    }
-    return containsSameToString(
-        bounds1.getUpperBound(),
-        bounds1.getLowerBound(),
-        bounds2.getUpperBound(),
-        bounds2.getLowerBound());
   }
 
   /**
@@ -4298,11 +4248,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * A mapping from each type variable of the overriding method to the corresponding type variable
-     * of the overridden method; null if the two methods have no corresponding type variables.
+     * of the overridden method; null if the two methods have no corresponding type variables, and
+     * also null for every method reference.
      *
      * <p>Substituting according to this mapping expresses a type from the overriding method's
      * signature in terms of the overridden method's type variables, which is what makes the two
      * signatures comparable. See {@link #adaptToOverridden}.
+     *
+     * <p>Because this mapping is null for every method reference, {@link #checkTypeParameterBounds}
+     * does nothing for a method reference. That is safe because the type arguments of the method
+     * reference's compile-time declaration are inferred at the method reference, and Java's type
+     * argument inference rejects any type argument that the declaration's bounds forbid.
      */
     protected final @Nullable Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping;
 
@@ -4345,7 +4301,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Returns a mapping from each type variable of the overriding method to the corresponding type
      * variable of the overridden method, or null if the two methods have no corresponding type
-     * variables.
+     * variables. Always returns null for a method reference.
      *
      * @return a mapping from the overriding method's type variables to the overridden method's, or
      *     null
@@ -4689,42 +4645,47 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       for (int i = 0; i < overriderTypeVars.size(); i++) {
         AnnotatedTypeParameterBounds overriderBounds = overriderTypeVars.get(i).getBounds();
         AnnotatedTypeParameterBounds overriddenBounds = overriddenTypeVars.get(i).getBounds();
-        boolean success =
-            typeHierarchy.isSubtype(
-                    overriddenBounds.getUpperBound(),
-                    adaptToOverridden(overriderBounds.getUpperBound()))
-                && typeHierarchy.isSubtype(
-                    adaptToOverridden(overriderBounds.getLowerBound()),
-                    overriddenBounds.getLowerBound());
-        if (!success) {
+        AnnotatedTypeMirror overriderUpper = overriderBounds.getUpperBound();
+        AnnotatedTypeMirror overriddenUpper = overriddenBounds.getUpperBound();
+        if (!typeHierarchy.isSubtype(overriddenUpper, adaptToOverridden(overriderUpper))) {
           result = false;
-          reportTypeParameterBoundsError(i, overriderBounds, overriddenBounds);
+          reportTypeParameterBoundsError(
+              i, "override.type.parameter.upper", overriderUpper, overriddenUpper);
+        }
+        AnnotatedTypeMirror overriderLower = overriderBounds.getLowerBound();
+        AnnotatedTypeMirror overriddenLower = overriddenBounds.getLowerBound();
+        if (!typeHierarchy.isSubtype(adaptToOverridden(overriderLower), overriddenLower)) {
+          result = false;
+          reportTypeParameterBoundsError(
+              i, "override.type.parameter.lower", overriderLower, overriddenLower);
         }
       }
       return result;
     }
 
     /**
-     * Issue an error about the bounds of the overriding method's type parameter at the given index.
+     * Issue an error about one bound of the overriding method's type parameter at the given index.
      *
      * @param index the index of the type parameter, in the overriding method's type parameters
-     * @param overriderBounds the bounds of the overriding method's type parameter
-     * @param overriddenBounds the bounds of the overridden method's type parameter
+     * @param messageKey the message key, which names the bound that is in error
+     * @param overriderBound the bound of the overriding method's type parameter
+     * @param overriddenBound the bound of the overridden method's type parameter
      */
     private void reportTypeParameterBoundsError(
         int index,
-        AnnotatedTypeParameterBounds overriderBounds,
-        AnnotatedTypeParameterBounds overriddenBounds) {
+        @CompilerMessageKey String messageKey,
+        AnnotatedTypeMirror overriderBound,
+        AnnotatedTypeMirror overriddenBound) {
       List<? extends TypeParameterTree> typeParameterTrees =
           overriderTree instanceof MethodTree overriderMt
               ? overriderMt.getTypeParameters()
               : Collections.emptyList();
       Tree posTree =
           index < typeParameterTrees.size() ? typeParameterTrees.get(index) : overriderTree;
-      FoundRequired pair = FoundRequired.of(overriderBounds, overriddenBounds);
+      FoundRequired pair = FoundRequired.of(overriderBound, overriddenBound);
       checker.reportError(
           posTree,
-          "override.type.parameter",
+          messageKey,
           overrider.getElement().getTypeParameters().get(index).getSimpleName(),
           pair.found,
           pair.required,

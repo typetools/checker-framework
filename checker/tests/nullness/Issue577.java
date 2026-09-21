@@ -11,7 +11,7 @@ class Banana<T extends Number> extends Apple<int[]> {
   class InnerBanana extends InnerApple<long[]> {
     @Override
     // The upper bound @NonNull Object does not contain the overridden method's @Nullable Object.
-    // :: error: [override.type.parameter]
+    // :: error: [override.type.parameter.upper]
     <F2 extends Object> void foo(int[] array, long[] array2, F2 param3) {}
   }
 }
