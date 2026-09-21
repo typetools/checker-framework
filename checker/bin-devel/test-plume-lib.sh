@@ -18,7 +18,7 @@ if [[ "${GROUPARG}" == "icalavailable" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "javac-parse" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "javadoc-lookup" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "lookup" ]]; then PACKAGES=("${GROUPARG}"); fi
-if [[ "${GROUPARG}" == "marging" ]]; then PACKAGES=("${GROUPARG}"); fi
+if [[ "${GROUPARG}" == "merging" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "multi-version-control" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "options" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "plume-util" ]]; then PACKAGES=("${GROUPARG}"); fi
