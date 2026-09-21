@@ -924,6 +924,7 @@ public abstract class UBQualifier {
       for (SequenceAndOffset pair : remove) {
         String sequence = pair.sequence();
         Set<OffsetEquation> offsets = lubMap.get(sequence);
+        assert offsets != null : "@AssumeAssertion(nullness): key is deleted only by its last pair";
         offsets.remove(pair.offset());
         if (offsets.isEmpty()) {
           lubMap.remove(sequence);
