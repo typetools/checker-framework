@@ -4297,11 +4297,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return result;
     }
 
-    /**
-     * Check that an override respects purity. Like every other purity check, this one runs only
-     * when purity annotations are being checked; see {@link BaseTypeVisitor#checkLambdaPurity},
-     * which performs the analogous check for a lambda.
-     */
+    /** Check that an override respects purity. */
     private void checkPurity() {
       if (!checkPurityAnnotations) {
         return;
