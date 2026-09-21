@@ -257,21 +257,21 @@ public class Java8InferenceContext {
    * @param type2 a type with the same structure as {@code type1}
    * @return copies of the two types, in the order the arguments were given
    */
-  public TypeCopies replacePolymorphicQualifiers(
+  public ReplacedTypes replacePolymorphicQualifiers(
       AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
     AnnotatedTypeMirror copy1 = type1.deepCopy();
     AnnotatedTypeMirror copy2 = type2.deepCopy();
     polymorphicQualifierReplacer.visit(copy1, copy2);
-    return new TypeCopies(copy1, copy2);
+    return new ReplacedTypes(copy1, copy2);
   }
 
   /**
    * Copies of two types, as returned by {@link #replacePolymorphicQualifiers}.
    *
-   * @param copy1 a copy of the first type
-   * @param copy2 a copy of the second type
+   * @param type1 a copy of the first type
+   * @param type2 a copy of the second type
    */
-  public record TypeCopies(AnnotatedTypeMirror copy1, AnnotatedTypeMirror copy2) {}
+  public record ReplacedTypes(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {}
 
   /**
    * Returns the path to the expression whose type arguments are inferred.

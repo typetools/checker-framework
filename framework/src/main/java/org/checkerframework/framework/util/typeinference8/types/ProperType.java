@@ -14,7 +14,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
-import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext.TypeCopies;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext.ReplacedTypes;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -235,9 +235,9 @@ public class ProperType extends AbstractType {
     // Scan for a polymorphic qualifier only now: when the annotations match, the result is the
     // same either way, and the scan is the more expensive of the two tests.
     if (context.hasPolymorphicQualifier(thisATM) || context.hasPolymorphicQualifier(otherATM)) {
-      TypeCopies replaced = context.replacePolymorphicQualifiers(thisATM, otherATM);
-      if (typeFactory.getTypeHierarchy().isSubtype(replaced.copy1(), replaced.copy2())
-          && typeFactory.getTypeHierarchy().isSubtype(replaced.copy2(), replaced.copy1())) {
+      ReplacedTypes replaced = context.replacePolymorphicQualifiers(thisATM, otherATM);
+      if (typeFactory.getTypeHierarchy().isSubtype(replaced.type1(), replaced.type2())
+          && typeFactory.getTypeHierarchy().isSubtype(replaced.type2(), replaced.type1())) {
         return ConstraintSet.TRUE;
       }
     }
