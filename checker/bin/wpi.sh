@@ -164,7 +164,7 @@ if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" 
   if [ "${has_java_home}" = "yes" ]; then
     echo "Cannot determine Java version from JAVA_HOME"
   else
-    echo "No Java 8, 11, 17, 21, 24, 25, or 27 JDK found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, JAVA21_HOME, JAVA24_HOME, or JAVA25_HOME must be set."
+    echo "No Java 8, 11, 17, 21, 24, 25, or 27 JDK found. At least one of JAVA_HOME or JAVANN_HOME (where NN is 8, 11, 17, ...) must be set."
   fi
   echo "JAVA_HOME = ${JAVA_HOME}"
   echo "JAVA8_HOME = ${JAVA8_HOME}"
