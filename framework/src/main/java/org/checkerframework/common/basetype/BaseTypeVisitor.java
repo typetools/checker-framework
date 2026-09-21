@@ -4256,9 +4256,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * signatures comparable. See {@link #adaptToOverridden}.
      *
      * <p>Because this mapping is null for every method reference, {@link #checkTypeParameterBounds}
-     * does nothing for a method reference. That is safe because the type arguments of the method
-     * reference's compile-time declaration are inferred at the method reference, and Java's type
-     * argument inference rejects any type argument that the declaration's bounds forbid.
+     * does nothing for a method reference. No mapping is possible: the overrider is the invocation
+     * type of the method reference's compile-time declaration, whose type variables, when any
+     * remain, do not correspond to the functional interface method's type variables. The bounds are
+     * checked elsewhere: {@link BaseTypeVisitor#checkMethodReferenceAsOverride} infers the
+     * compile-time declaration's type arguments at the method reference, and an inference failure,
+     * such as one caused by a bound that the functional interface method's bounds do not satisfy,
+     * is reported as {@code type.arguments.not.inferred}.
      */
     protected final @Nullable Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping;
 
@@ -4308,9 +4312,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     private @Nullable Map<TypeVariable, AnnotatedTypeMirror> createTypeVarMapping() {
       if (isMethodReference) {
-        // The type arguments of the method reference's compile-time declaration have already been
-        // inferred, and its type variables do not correspond to those of the functional
-        // interface's method.
+        // The type variables of the method reference's compile-time declaration, when any remain
+        // after type argument inference, do not correspond to those of the functional interface's
+        // method.
         return null;
       }
       List<AnnotatedTypeVariable> overriderTypeVars = overrider.getTypeVariables();
@@ -4682,13 +4686,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               : Collections.emptyList();
       Tree posTree =
           index < typeParameterTrees.size() ? typeParameterTrees.get(index) : overriderTree;
-      FoundRequired pair = FoundRequired.of(overriderBound, overriddenBound);
+      // Print both bounds verbosely.  What is at issue is exactly the bounds' qualifiers, and the
+      // non-verbose rendering of a bound can omit the very qualifier that causes the error.  For
+      // example, the Nullness Checker prints a `@Nullable` lower bound as "null (NullType)".
       checker.reportError(
           posTree,
           messageKey,
           overrider.getElement().getTypeParameters().get(index).getSimpleName(),
-          pair.found,
-          pair.required,
+          overriderBound.toString(true),
+          overriddenBound.toString(true),
           overriderType,
           overrider,
           overriddenType,
