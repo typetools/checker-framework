@@ -97,6 +97,7 @@ import org.checkerframework.framework.ajava.DefaultJointVisitor;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.stub.AnnotationFileUtil.AnnotationFileType;
+import org.checkerframework.framework.stub.AnnotationFileUtil.QualifiedName;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -117,7 +118,6 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.CollectionsP;
-import org.plumelib.util.IPair;
 import org.plumelib.util.SystemP;
 
 // From an implementation perspective, this class represents a single annotation file (stub file or
@@ -296,8 +296,7 @@ public final class AnnotationFileParser {
      * overrides are always in subtypes of {@code ee.getEnclosingElement()}, which is the same as
      * {@code ee.getReceiverType()}.
      */
-    public final Map<ExecutableElement, List<IPair<TypeMirror, AnnotatedTypeMirror>>>
-        fakeOverrides = new HashMap<>(4);
+    public final Map<ExecutableElement, List<FakeOverride>> fakeOverrides = new HashMap<>(4);
 
     /** Maps fully qualified record name to information in the stub file. */
     public final Map<String, RecordStub> records = new HashMap<>();
@@ -603,10 +602,9 @@ public final class AnnotationFileParser {
           } else if (importType == null) {
             // static import of field or method.
 
-            IPair<@FullyQualifiedName String, String> typeParts =
-                AnnotationFileUtil.partitionQualifiedName(imported);
-            String type = typeParts.first;
-            String fieldName = typeParts.second;
+            QualifiedName typeParts = AnnotationFileUtil.partitionQualifiedName(imported);
+            String type = typeParts.typeName();
+            String fieldName = typeParts.memberName();
             TypeElement enclType =
                 getTypeElement(
                     type,
@@ -1081,17 +1079,17 @@ public final class AnnotationFileParser {
       // Use the element's name rather than the declaration's, because a stub file may write a
       // nested record's name with "$" separators.  AnnotationFileElementTypes looks the record up
       // by the element's name.
-      annotationFileAnnos.records.put(
-          ElementUtils.getQualifiedName(typeElt), new RecordStub(byName));
+      @SuppressWarnings("nullness:dereference.of.nullable") // non-null while process() is running
+      Map<String, RecordStub> records = annotationFileAnnos.records;
+      records.put(ElementUtils.getQualifiedName(typeElt), new RecordStub(byName));
     }
 
-    IPair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>> members =
-        getMembers(typeDecl, typeElt, typeDecl);
+    Members members = getMembers(typeDecl, typeElt, typeDecl);
     // Processing a nested type sets typeBeingParsed to the nested type.  Restore typeBeingParsed
     // afterward, so that members declared after the nested type resolve simple names relative to
     // typeDecl rather than relative to the nested type.
     FqName thisTypeBeingParsed = typeBeingParsed;
-    for (Map.Entry<Element, BodyDeclaration<?>> entry : members.first.entrySet()) {
+    for (Map.Entry<Element, BodyDeclaration<?>> entry : members.elementsToDecl().entrySet()) {
       Element elt = entry.getKey();
       BodyDeclaration<?> decl = entry.getValue();
       switch (elt.getKind()) {
@@ -1126,7 +1124,8 @@ public final class AnnotationFileParser {
             stubWarnNotFound(decl, "AnnotationFileParser ignoring: " + elt);
       }
     }
-    for (Map.Entry<Element, List<BodyDeclaration<?>>> entry : members.second.entrySet()) {
+    for (Map.Entry<Element, List<BodyDeclaration<?>>> entry :
+        members.fakeOverrideDecls().entrySet()) {
       ExecutableElement fakeOverridden = (ExecutableElement) entry.getKey();
       List<BodyDeclaration<?>> fakeOverrideDecls = entry.getValue();
       for (BodyDeclaration<?> bodyDecl : fakeOverrideDecls) {
@@ -1937,8 +1936,8 @@ public final class AnnotationFileParser {
    *     elements to fake overrides of them
    * @param astNode where to report errors
    */
-  private IPair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>>
-      getMembers(TypeDeclaration<?> typeDecl, TypeElement typeElt, NodeWithRange<?> astNode) {
+  private Members getMembers(
+      TypeDeclaration<?> typeDecl, TypeElement typeElt, NodeWithRange<?> astNode) {
     assert (typeElt.getSimpleName().contentEquals(typeDecl.getNameAsString())
             || typeDecl.getNameAsString().endsWith("$" + typeElt.getSimpleName()))
         : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
@@ -1964,8 +1963,18 @@ public final class AnnotationFileParser {
       }
     }
 
-    return IPair.of(elementsToDecl, fakeOverrideDecls);
+    return new Members(elementsToDecl, fakeOverrideDecls);
   }
+
+  /**
+   * The members of a type declaration, as computed by {@link #getMembers}.
+   *
+   * @param elementsToDecl a mapping from javac elements to their JavaParser declaration
+   * @param fakeOverrideDecls a mapping from javac elements to fake overrides of them
+   */
+  private record Members(
+      Map<Element, BodyDeclaration<?>> elementsToDecl,
+      Map<Element, List<BodyDeclaration<?>>> fakeOverrideDecls) {}
 
   // Used only by getMembers().
   /**
@@ -2311,10 +2320,20 @@ public final class AnnotationFileParser {
     NodeList<AnnotationExpr> annotations = decl.getAnnotations();
     annotate(methodType.getReturnType(), ((MethodDeclaration) decl).getType(), annotations, decl);
 
-    List<IPair<TypeMirror, AnnotatedTypeMirror>> l =
+    @SuppressWarnings("nullness:dereference.of.nullable") // non-null while process() is running
+    List<FakeOverride> l =
         annotationFileAnnos.fakeOverrides.computeIfAbsent(element, __ -> new ArrayList<>(1));
-    l.add(IPair.of(fakeLocation.asType(), methodType));
+    l.add(new FakeOverride(fakeLocation.asType(), methodType));
   }
+
+  /**
+   * A fake override: the type in which the fake override is declared, and the method type.
+   *
+   * @param location the type in which the fake override is declared
+   * @param methodType the type of the fake override; currently always an {@code
+   *     AnnotatedExecutableType}
+   */
+  public record FakeOverride(TypeMirror location, AnnotatedTypeMirror methodType) {}
 
   /**
    * Returns the annotated type corresponding to {@code type}, or null if none exists. More
@@ -3038,10 +3057,9 @@ public final class AnnotationFileParser {
     VariableElement res = null;
     boolean importFound = false;
     for (String imp : importedConstants) {
-      IPair<@FullyQualifiedName String, String> partitionedName =
-          AnnotationFileUtil.partitionQualifiedName(imp);
-      String typeName = partitionedName.first;
-      String fieldName = partitionedName.second;
+      QualifiedName qualifiedName = AnnotationFileUtil.partitionQualifiedName(imp);
+      String typeName = qualifiedName.typeName();
+      String fieldName = qualifiedName.memberName();
       if (fieldName.equals(nexpr.getNameAsString())) {
         TypeElement enclType =
             getTypeElement(

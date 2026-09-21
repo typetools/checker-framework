@@ -28,6 +28,9 @@ Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
 Removed the unused method
 `WholeProgramInferenceScenesStorage.updateAnnotationSetInScene()`.
 
+Methods that used to return (or accept) an `IPair` now use a record with
+meaningful component names.
+
 ### Closed issues
 
 ## Version 4.2.3 (2026-09-01)

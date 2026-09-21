@@ -194,15 +194,15 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
     }
 
     OffsetEquation offsetEquation = OffsetEquation.createOffsetFromJavaExpression(bigger);
-    if (offsetEquation.isInt()) {
+    if (offsetEquation.isOnlyInt()) {
       // bigger is an int literal
-      return smallerValue < offsetEquation.getInt();
+      return smallerValue < offsetEquation.getIntPart();
     }
     // If bigger is "expression + literal", then smaller < expression + literal
     // can be reduced to smaller - literal < expression + literal - literal
-    smallerValue = smallerValue - offsetEquation.getInt();
+    smallerValue = smallerValue - offsetEquation.getIntPart();
     offsetEquation =
-        offsetEquation.copyAdd('-', OffsetEquation.createOffsetForInt(offsetEquation.getInt()));
+        offsetEquation.copyAdd('-', OffsetEquation.createOffsetForInt(offsetEquation.getIntPart()));
 
     long minValueOfBigger = getMinValueFromString(offsetEquation.toString(), smaller, path);
     return smallerValue < minValueOfBigger;
