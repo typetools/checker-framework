@@ -994,23 +994,64 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       if (!(n instanceof TypeDeclaration<?>)) {
         continue;
       }
-      for (ClassOrInterfaceType supertype : supertypes((TypeDeclaration<?>) n)) {
-        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameWithScope
-        @FullyQualifiedName String supertypeName = supertype.getNameWithScope();
-        String supertypeBinaryName = resolve(supertypeName, cu);
-        if (supertypeBinaryName == null) {
-          continue;
+      String result = inheritedFromClasspath((TypeDeclaration<?>) n, identifiers, cu, visitedSet());
+      if (result != null) {
+        return result;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * If {@code declaration} inherits a member type named {@code identifiers} from a class on the
+   * classpath, returns that member type's binary name; otherwise returns null. A supertype that the
+   * stub file declares has no members on the classpath, so this method searches that supertype's
+   * own supertypes.
+   *
+   * @param declaration a type declaration in a stub file
+   * @param identifiers a type name that has been split at its {@code .} separators
+   * @param cu the stub file's compilation unit, or null
+   * @param visited the type declarations whose supertypes have already been searched; this method
+   *     adds {@code declaration} to it
+   * @return the binary name of the inherited member type, or null
+   */
+  private @Nullable String inheritedFromClasspath(
+      TypeDeclaration<?> declaration,
+      String[] identifiers,
+      @Nullable CompilationUnit cu,
+      Set<TypeDeclaration<?>> visited) {
+    if (!visited.add(declaration)) {
+      // The stub file declares a cyclic inheritance hierarchy, which is not legal Java.
+      return null;
+    }
+    for (ClassOrInterfaceType supertype : supertypes(declaration)) {
+      @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameWithScope
+      @FullyQualifiedName String supertypeName = supertype.getNameWithScope();
+      // Resolve the supertype's name without considering inherited member types, as
+      // `memberTypeDeclaration` does.
+      Node supertypeDeclaration = stubDeclaration(declaration, supertypeName, false);
+      if (supertypeDeclaration instanceof TypeDeclaration<?>) {
+        String result =
+            inheritedFromClasspath(
+                (TypeDeclaration<?>) supertypeDeclaration, identifiers, cu, visited);
+        if (result != null) {
+          return result;
         }
-        Class<?> clazz = loadClass(supertypeBinaryName);
-        for (String identifier : identifiers) {
-          clazz = memberClass(clazz, identifier, new HashSet<>());
-          if (clazz == null) {
-            break;
-          }
+        continue;
+      }
+      String supertypeBinaryName = resolve(supertypeName, cu);
+      if (supertypeBinaryName == null) {
+        continue;
+      }
+      Class<?> clazz = loadClass(supertypeBinaryName);
+      for (String identifier : identifiers) {
+        clazz = memberClass(clazz, identifier, new HashSet<>());
+        if (clazz == null) {
+          break;
         }
-        if (clazz != null) {
-          return clazz.getName();
-        }
+      }
+      if (clazz != null) {
+        return clazz.getName();
       }
     }
     return null;

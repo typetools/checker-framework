@@ -350,6 +350,56 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
   }
 
+  /**
+   * A member type that is inherited, through a supertype that the stub file declares, from a class
+   * on the classpath is resolved.
+   */
+  @Test
+  public void testIndirectlyInheritedNestedClassOnClasspath() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import java.util.HashMap;",
+            "class MyMiddleClass extends HashMap {}",
+            "class MyClass extends MyMiddleClass {",
+            "  void myMethod(Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+  }
+
+  /**
+   * A member type that is inherited, through a chain of supertypes that the stub file declares,
+   * from an interface on the classpath is resolved.
+   */
+  @Test
+  public void testIndirectlyInheritedNestedClassOnClasspathViaInterface() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "interface MyInterface extends java.util.Map {}",
+            "abstract class MyMiddleClass implements MyInterface {}",
+            "abstract class MyClass extends MyMiddleClass {",
+            "  void myMethod(Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+  }
+
+  /**
+   * A stub file that declares a cyclic inheritance hierarchy, which is not legal Java, does not
+   * cause infinite recursion while resolving an inherited member type.
+   */
+  @Test
+  public void testCyclicInheritanceOfNestedClassOnClasspath() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyFirstClass extends MySecondClass {}",
+            "class MySecondClass extends MyFirstClass {",
+            "  void myMethod(Entry e) {}",
+            "}");
+    assertMethod(jaif, "MySecondClass", "myMethod(Lmypackage/Entry;)V");
+  }
+
   /** A nested class declared in the stub file is qualified with the stub file's package. */
   @Test
   public void testUnresolvedNestedTypeInOwnPackage() throws Exception {
