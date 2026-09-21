@@ -11,6 +11,10 @@ The new Modifiability Checker warns when a program might throw
 `UnsupportedOperationException` at run time because it calls a mutating method on
 a collection that does not support the method.
 
+The Checker Framework runs noticeably faster, due to performance tuning.
+
+The new `wpi2.sh` script does whole-program inference, but requires buildfile edits.
+
 The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
 warnings that it did not previously.
 
