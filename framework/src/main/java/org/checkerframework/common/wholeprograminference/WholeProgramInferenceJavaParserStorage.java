@@ -107,7 +107,6 @@ import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsP;
 import org.plumelib.util.DeepCopyable;
-import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
 import org.plumelib.util.UtilP;
 
@@ -1777,8 +1776,16 @@ public class WholeProgramInferenceJavaParserStorage
      */
     private @MonotonicNonNull List<@Nullable AnnotatedTypeMirror> parameterTypes = null;
 
+    /**
+     * A declaration annotation on a formal parameter.
+     *
+     * @param index1based the 1-based index of the formal parameter
+     * @param annotation the declaration annotation on the formal parameter
+     */
+    private record ParamDeclAnno(@Positive int index1based, AnnotationMirror annotation) {}
+
     /** Declaration annotations on the parameters. */
-    private @MonotonicNonNull Set<IPair<Integer, AnnotationMirror>> paramsDeclAnnos = null;
+    private @MonotonicNonNull Set<ParamDeclAnno> paramsDeclAnnos = null;
 
     /**
      * Annotations on the callable declaration. This does not include preconditions and
@@ -1898,7 +1905,7 @@ public class WholeProgramInferenceJavaParserStorage
         paramsDeclAnnos = new ArraySet<>(4);
       }
 
-      return paramsDeclAnnos.add(IPair.of(index_1based, annotation));
+      return paramsDeclAnnos.add(new ParamDeclAnno(index_1based, annotation));
     }
 
     /**
@@ -2100,9 +2107,9 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       if (paramsDeclAnnos != null) {
-        for (IPair<Integer, AnnotationMirror> pair : paramsDeclAnnos) {
-          Parameter param = declaration.getParameter(pair.first - 1);
-          writeDeclarationAnnotation(param, pair.second);
+        for (ParamDeclAnno paramDeclAnno : paramsDeclAnnos) {
+          Parameter param = declaration.getParameter(paramDeclAnno.index1based() - 1);
+          writeDeclarationAnnotation(param, paramDeclAnno.annotation());
         }
       }
 
