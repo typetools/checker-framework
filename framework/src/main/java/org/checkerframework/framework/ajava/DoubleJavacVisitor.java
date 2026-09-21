@@ -147,7 +147,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   protected final void assertSameKind(@Nullable Tree tree1, @Nullable Tree tree2) {
     if (tree1 == null || tree2 == null) {
       throw new UserError(
-          "%s: one tree is null: tree1=%s [%s] tree2=%s [%s]",
+          "%s: at least one tree is null: tree1=%s [%s] tree2=%s [%s]",
           this.getClass().getCanonicalName(),
           tree1,
           (tree1 == null ? "null" : tree1.getKind()),
