@@ -14,6 +14,10 @@ New `wpi2.sh` script does whole-program inference, but requires buildfile edits.
 The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
 warnings that it did not previously.
 
+Running the Purity Checker on its own (`-processor
+org.checkerframework.framework.util.PurityChecker`) implies
+`-AcheckPurityAnnotations`, which no longer needs to be supplied explicitly.
+
 ### Changes for type system implementers
 
 `JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,
