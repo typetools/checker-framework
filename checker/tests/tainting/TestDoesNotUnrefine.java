@@ -26,12 +26,11 @@ public class TestDoesNotUnrefine {
     field.doesNotUnrefine();
     @Untainted MyClass anotherLocal = field;
 
-    field = untainted;
     field.doesNotUnrefineAllCheckers();
-    @Untainted MyClass anotherLocal3 = field;
+    @Untainted MyClass anotherLocal2 = field;
 
     field.doesUnrefine();
     // :: error: [assignment]
-    @Untainted MyClass anotherLocal2 = field;
+    @Untainted MyClass anotherLocal3 = field;
   }
 }
