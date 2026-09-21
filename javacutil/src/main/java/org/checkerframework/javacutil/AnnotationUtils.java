@@ -71,7 +71,8 @@ public final class AnnotationUtils {
    * @param annotation the annotation whose name to return
    * @return the fully-qualified name of an annotation as a String
    */
-  public static final @CanonicalName String annotationName(AnnotationMirror annotation) {
+  @Pure
+  public static @CanonicalName String annotationName(AnnotationMirror annotation) {
     if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror cfam) {
       return cfam.annotationName;
     }
@@ -150,6 +151,7 @@ public final class AnnotationUtils {
    * @see #areSame(AnnotationMirror, AnnotationMirror)
    */
   @EqualsMethod
+  @Pure
   public static int compareByName(AnnotationMirror a1, AnnotationMirror a2) {
     if (a1 == a2) {
       return 0;
@@ -705,7 +707,7 @@ public final class AnnotationUtils {
      *
      * @param message the detail message
      */
-    @Pure
+    @SideEffectFree
     public NoSuchElementException(String message) {
       super(message);
     }
