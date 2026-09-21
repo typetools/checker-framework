@@ -1060,8 +1060,9 @@ public final class AnnotationFileParser {
                 findFieldElement(typeElt, recordMember.getNameAsString(), recordMember));
         byName.put(recordMember.getNameAsString(), stub);
       }
-      annotationFileAnnos.records.put(
-          recordDecl.getFullyQualifiedName().get(), new RecordStub(byName));
+      @SuppressWarnings("nullness:dereference.of.nullable") // non-null while process() is running
+      Map<String, RecordStub> records = annotationFileAnnos.records;
+      records.put(recordDecl.getFullyQualifiedName().get(), new RecordStub(byName));
     }
 
     Members members = getMembers(typeDecl, typeElt, typeDecl);
@@ -2187,6 +2188,7 @@ public final class AnnotationFileParser {
     NodeList<AnnotationExpr> annotations = decl.getAnnotations();
     annotate(methodType.getReturnType(), ((MethodDeclaration) decl).getType(), annotations, decl);
 
+    @SuppressWarnings("nullness:dereference.of.nullable") // non-null while process() is running
     List<FakeOverride> l =
         annotationFileAnnos.fakeOverrides.computeIfAbsent(element, __ -> new ArrayList<>(1));
     l.add(new FakeOverride(fakeLocation.asType(), methodType));

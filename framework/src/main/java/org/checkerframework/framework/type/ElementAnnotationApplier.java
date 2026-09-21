@@ -204,6 +204,7 @@ public final class ElementAnnotationApplier {
     VariableTree paramDecl = (VariableTree) typeFactory.declarationFromElement(varEle);
 
     if (paramDecl != null) {
+      @SuppressWarnings("nullness:dereference.of.nullable") // paramDecl is in the current file
       Tree parentTree = typeFactory.getPath(paramDecl).getParentPath().getLeaf();
       if (parentTree instanceof LambdaExpressionTree let) {
         return new LambdaParam(paramDecl, let);

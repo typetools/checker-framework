@@ -102,9 +102,10 @@ public class TypeArgumentMapper {
 
         Set<TypeParameterElement> correspondingSuperArgs = subToSuperElements.get(subtypeParam);
         if (correspondingSuperArgs != null) {
-          for (TypeParameterElement supertypeParam : subToSuperElements.get(subtypeParam)) {
-            result.add(
-                new TypeParameterMapping(subtypeIndex, supertypeIndexes.get(supertypeParam)));
+          for (TypeParameterElement supertypeParam : correspondingSuperArgs) {
+            @SuppressWarnings("nullness:unboxing.of.nullable") // a type parameter of supertype
+            int supertypeIndex = supertypeIndexes.get(supertypeParam);
+            result.add(new TypeParameterMapping(subtypeIndex, supertypeIndex));
           }
         }
       }

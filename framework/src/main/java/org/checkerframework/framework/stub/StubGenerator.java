@@ -24,6 +24,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
@@ -49,8 +50,14 @@ public class StubGenerator {
   /** the current indentation for the line being processed. */
   private String currentIndentation = "";
 
-  /** the package of the class being processed. */
-  private String currentPackage = null;
+  /**
+   * The package of the class being processed, or null if no class has been processed yet. The empty
+   * string represents the default package.
+   *
+   * <p>An alternative design would initialize this field to "", since that also represents the
+   * default package, and thereby avoid the null value altogether.
+   */
+  private @MonotonicNonNull String currentPackage = null;
 
   /** Constructs a {@code StubGenerator} that outputs to {@code System.out}. */
   public StubGenerator() {

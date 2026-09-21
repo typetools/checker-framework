@@ -1179,8 +1179,9 @@ public abstract class GenericAnnotatedTypeFactory<
    *     {@link TransferResult} or an empty list if {@code method} has no return statements
    */
   public List<ReturnStatementStore<Value, Store>> getReturnStatementStores(MethodTree methodTree) {
-    assert returnStatementStores.containsKey(methodTree);
-    return returnStatementStores.get(methodTree);
+    List<ReturnStatementStore<Value, Store>> result = returnStatementStores.get(methodTree);
+    assert result != null : "@AssumeAssertion(nullness): methodTree was analyzed";
+    return result;
   }
 
   /**
@@ -1441,6 +1442,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         while (!lambdaQueue.isEmpty()) {
           LambdaAndStore<Store> lambdaPair = lambdaQueue.remove();
+          @SuppressWarnings("nullness:argument") // the lambda is in the current compilation unit
           MethodTree mt =
               (MethodTree)
                   TreePathUtil.enclosingOfKind(getPath(lambdaPair.lambda()), Tree.Kind.METHOD);

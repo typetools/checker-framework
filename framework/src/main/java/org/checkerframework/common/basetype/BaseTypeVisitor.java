@@ -4881,7 +4881,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checker.report(methodTree, new DiagMessage(e));
         continue;
       }
-      result.add(new LocalizedContract(exprJe, annotation));
+      @SuppressWarnings("nullness:argument") // the lambda stringToJavaExpr never returns null
+      LocalizedContract contract = new LocalizedContract(exprJe, annotation);
+      result.add(contract);
     }
     return result;
   }
