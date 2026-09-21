@@ -1144,10 +1144,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Check method purity if needed. Note that overriding rules are checked as part of {@link
-   * #checkOverride(MethodTree, AnnotatedTypeMirror.AnnotatedExecutableType,
-   * AnnotatedTypeMirror.AnnotatedDeclaredType, AnnotatedTypeMirror.AnnotatedExecutableType,
-   * AnnotatedTypeMirror.AnnotatedDeclaredType)}.
+   * Check method purity if needed. The purity annotations of an overridden method are inherited, so
+   * this checks an overriding method against the purity annotations of the methods it overrides,
+   * even if it has no purity annotation of its own.
    *
    * @param tree the method tree to check
    */
@@ -2420,7 +2419,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * interface method from the lambda's body.
    *
    * <p>The analogous check for a method reference is {@link
-   * BaseTypeVisitor.OverrideChecker#checkPurity}.
+   * BaseTypeVisitor.OverrideChecker#checkMethodReferencePurity}.
    *
    * @param tree a lambda expression
    * @param functionType the type of the functional interface method that {@code tree} implements
@@ -4290,44 +4289,40 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       result &= checkParameters();
       if (isMethodReference) {
         result &= checkMemberReferenceReceivers();
+        checkMethodReferencePurity();
       } else {
         result &= checkReceiverOverride();
       }
       checkPreAndPostConditions();
-      checkPurity();
 
       return result;
     }
 
-    /** Check that an override respects purity. */
-    private void checkPurity() {
+    /**
+     * Check that the referenced method is at least as pure as the functional interface method that
+     * the method reference implements.
+     *
+     * <p>Only a method reference needs this check. A method that overrides another one inherits its
+     * purity annotations, so it cannot be declared less pure than the method it overrides; {@link
+     * BaseTypeVisitor#checkPurityAnnotations} checks the overriding method's body against the
+     * inherited annotations. The referenced method of a method reference inherits nothing from the
+     * functional interface method, so its declared purity is checked here.
+     */
+    private void checkMethodReferencePurity() {
       EnumSet<PurityKind> superPurity =
           PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
       EnumSet<PurityKind> subPurity =
           PurityUtils.getPurityKinds(atypeFactory, overrider.getElement());
-      boolean ok = subPurity.containsAll(superPurity);
-      if (!ok) {
-        if (isMethodReference) {
-          checker.reportError(
-              overriderTree,
-              "purity.methodref",
-              overriderType,
-              purityKindsToString(subPurity),
-              overrider,
-              overriddenType,
-              purityKindsToString(superPurity),
-              overridden);
-        } else {
-          checker.reportError(
-              overriderTree,
-              "purity.overriding",
-              overriderType,
-              purityKindsToString(subPurity),
-              overrider,
-              overriddenType,
-              purityKindsToString(superPurity),
-              overridden);
-        }
+      if (!subPurity.containsAll(superPurity)) {
+        checker.reportError(
+            overriderTree,
+            "purity.methodref",
+            overriderType,
+            purityKindsToString(subPurity),
+            overrider,
+            overriddenType,
+            purityKindsToString(superPurity),
+            overridden);
       }
     }
 
