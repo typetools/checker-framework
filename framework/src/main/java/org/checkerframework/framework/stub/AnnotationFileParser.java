@@ -2112,8 +2112,10 @@ public final class AnnotationFileParser {
       Parameter javaParserParam = javaParserParams.get(i);
       Type javaParserType = javaParserParam.getType();
       if (javaParserParam.isVarArgs()) {
-        // JavaParser represents the type of a varargs formal parameter such as `String... s` as
-        // the component type `String`, whereas javac represents it as the array type `String[]`.
+        // For a varargs parameter, `javaParserType` already is the component type, because
+        // JavaParser represents the type of a varargs formal parameter such as `String... s` as the
+        // component type `String`.  javac represents it as the array type `String[]`, so we need to
+        // adjust `javacType`.
         if (javacType.getKind() != TypeKind.ARRAY) {
           return false;
         }
