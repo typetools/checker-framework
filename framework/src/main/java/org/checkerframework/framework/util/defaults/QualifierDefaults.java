@@ -1131,6 +1131,17 @@ public class QualifierDefaults {
     return result;
   }
 
+  /**
+   * Returns a new {@link DefaultApplierElement}. A subclass can override this method to use a
+   * subclass of {@link DefaultApplierElement}.
+   *
+   * @param atypeFactory the type factory
+   * @param annotationScope the element whose defaults are being applied
+   * @param type the type to which to apply defaults
+   * @param applyToTypeVar true if the default should be applied to the primary annotation of a
+   *     local variable whose type is a type variable
+   * @return a new {@link DefaultApplierElement}
+   */
   protected DefaultApplierElement createDefaultApplierElement(
       AnnotatedTypeFactory atypeFactory,
       Element annotationScope,
