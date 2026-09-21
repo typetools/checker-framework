@@ -93,7 +93,6 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
-import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
 import org.plumelib.util.SystemP;
 import org.plumelib.util.UtilP;
@@ -638,7 +637,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * rendering, because two checkers of a compound checker produce equal text from arguments that
    * are not {@code equals()} to one another.
    */
-  private final Set<IPair<Tree, String>> reportOnceReported = new HashSet<>();
+  private final Set<TreeAndMessage> reportOnceReported = new HashSet<>();
+
+  /**
+   * A tree and the string rendering of a message reported at it.
+   *
+   * @param tree a tree
+   * @param message the string rendering of a message reported at {@code tree}
+   */
+  private record TreeAndMessage(Tree tree, String message) {}
 
   /**
    * The compilation unit that contains the trees in {@link #reportOnceReported}, or null if that
@@ -1483,7 +1490,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       ultimateParent.reportOnceReported.clear();
       ultimateParent.reportOnceCompilationUnit = root;
     }
-    if (!ultimateParent.reportOnceReported.add(IPair.of(path.getLeaf(), d.toString()))) {
+    if (!ultimateParent.reportOnceReported.add(new TreeAndMessage(path.getLeaf(), d.toString()))) {
       return;
     }
     // The message does not depend on which checker computed it, so honor a `@SuppressWarnings`

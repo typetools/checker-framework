@@ -1,28 +1,11 @@
 package org.checkerframework.framework.test.junit;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.Set;
 import java.util.regex.Pattern;
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.SimpleJavaFileObject;
-import javax.tools.ToolProvider;
 import org.checkerframework.framework.stub.StubGenerator;
+import org.checkerframework.framework.test.junit.StubGeneratorTestHelper.SourceFile;
 import org.junit.Assert;
 import org.junit.Test;
+import org.plumelib.util.StringsP;
 
 /** Tests for {@link StubGenerator}. */
 public class StubGeneratorTest {
@@ -37,7 +20,8 @@ public class StubGeneratorTest {
   @Test
   public void nestedClassInDefaultPackage() {
     String stub =
-        generateStub("Foo.java", "public class Foo { public static class Inner {} }", "Foo.Inner");
+        StubGeneratorTestHelper.generateStub(
+            "Foo.java", "public class Foo { public static class Inner {} }", "Foo.Inner");
     Assert.assertTrue(stub, stub.contains("class Foo$Inner"));
     assertNoPackageDeclaration(stub);
   }
@@ -45,7 +29,7 @@ public class StubGeneratorTest {
   @Test
   public void doublyNestedClass() {
     String stub =
-        generateStub(
+        StubGeneratorTestHelper.generateStub(
             "p/Qux.java",
             "package p;"
                 + " public class Qux { public static class Inner { public static class Innermost"
@@ -58,7 +42,7 @@ public class StubGeneratorTest {
   @Test
   public void nestedClassInNamedPackage() {
     String stub =
-        generateStub(
+        StubGeneratorTestHelper.generateStub(
             "p/Bar.java",
             "package p; public class Bar { public static class Inner {} }",
             "p.Bar.Inner");
@@ -68,9 +52,101 @@ public class StubGeneratorTest {
 
   @Test
   public void topLevelClassInDefaultPackage() {
-    String stub = generateStub("Baz.java", "public class Baz {}", "Baz");
+    String stub = StubGeneratorTestHelper.generateStub("Baz.java", "public class Baz {}", "Baz");
     Assert.assertTrue(stub, stub.contains("class Baz"));
     assertNoPackageDeclaration(stub);
+  }
+
+  @Test
+  public void typeUseAnnotationWithClassLiteralArgument() {
+    String stub =
+        StubGeneratorTestHelper.generateStub(
+            "p/Uses.java",
+            "package p;"
+                + " public class Uses { public @Anno(Tgt.class) String field; }"
+                + " @java.lang.annotation.Target(java.lang.annotation.ElementType.TYPE_USE)"
+                + " @interface Anno { Class<?> value(); }"
+                + " class Tgt {}",
+            "p.Uses");
+    Assert.assertTrue(stub, stub.contains("@p.Anno(p.Tgt.class) String field"));
+  }
+
+  @Test
+  public void typeUseAnnotationWithStringArgumentContainingParentheses() {
+    String stub =
+        StubGeneratorTestHelper.generateStub(
+            "p/UsesString.java",
+            "package p;"
+                + " public class UsesString { public @Anno2(\"a.b.method()\") String field; }"
+                + " @java.lang.annotation.Target(java.lang.annotation.ElementType.TYPE_USE)"
+                + " @interface Anno2 { String value(); }",
+            "p.UsesString");
+    Assert.assertTrue(stub, stub.contains("@p.Anno2(\"a.b.method()\") String field"));
+  }
+
+  @Test
+  public void typeUseAnnotationWithCharArgumentContainingParenthesis() {
+    String stub =
+        StubGeneratorTestHelper.generateStub(
+            "p/UsesChar.java",
+            "package p;"
+                + " public class UsesChar { public @Anno3(ch = ')', type = java.util.Map.class)"
+                + " String field; }"
+                + " @java.lang.annotation.Target(java.lang.annotation.ElementType.TYPE_USE)"
+                + " @interface Anno3 { char ch(); Class<?> type(); }",
+            "p.UsesChar");
+    Assert.assertTrue(
+        stub, stub.contains("@p.Anno3(ch=')', type=java.util.Map.class) String field"));
+  }
+
+  @Test
+  public void nestedAnnotationType() {
+    String stub =
+        StubGeneratorTestHelper.generateStub(
+            "p/Outer.java",
+            "package p; public class Outer { public @interface Ann { int value(); } }",
+            "p.Outer");
+    Assert.assertTrue(stub, stub.contains("@interface Outer$Ann"));
+    // An annotation type's superinterface is java.lang.annotation.Annotation, which may not
+    // appear in an implements clause.
+    Assert.assertFalse(stub, stub.contains("implements"));
+    StubGeneratorTestHelper.assertParses(stub);
+  }
+
+  @Test
+  public void typeParameterBounds() {
+    String stub =
+        StubGeneratorTestHelper.generateStub(
+            "p/Bounded.java",
+            "package p;"
+                + " public class Bounded<T extends Number & java.io.Serializable> {"
+                + "   public <U extends CharSequence> void m(U u) {} }",
+            "p.Bounded");
+    Assert.assertTrue(stub, stub.contains("class Bounded<T extends Number & Serializable>"));
+    Assert.assertTrue(stub, stub.contains("<U extends CharSequence> void m(U u)"));
+    StubGeneratorTestHelper.assertParses(stub);
+  }
+
+  @Test
+  public void annotatedTypeParameters() {
+    String stub =
+        StubGeneratorTestHelper.generateStub(
+            "p.Annotated",
+            StubGeneratorTestHelper.annotationDeclaration("TypeAnno", "TYPE_USE"),
+            StubGeneratorTestHelper.annotationDeclaration("ParamAnno", "TYPE_PARAMETER"),
+            StubGeneratorTestHelper.annotationDeclaration("BothAnno", "TYPE_USE", "TYPE_PARAMETER"),
+            new SourceFile(
+                "p/Annotated.java",
+                "package p;"
+                    + " public class Annotated<@TypeAnno T, @ParamAnno U, @BothAnno V> {"
+                    + "   public <@TypeAnno A extends @TypeAnno Number> void m(A a) {} }"));
+    Assert.assertTrue(
+        stub, stub.contains("class Annotated<@p.TypeAnno T, @p.ParamAnno U, @p.BothAnno V>"));
+    // An annotation that is applicable to both a type parameter and a type use is printed once.
+    Assert.assertEquals(stub, 1, StringsP.count(stub, "@p.BothAnno"));
+    Assert.assertTrue(
+        stub, stub.contains("<@p.TypeAnno A extends @p.TypeAnno Number> void m(A a)"));
+    StubGeneratorTestHelper.assertParses(stub);
   }
 
   /**
@@ -81,107 +157,5 @@ public class StubGeneratorTest {
    */
   private void assertNoPackageDeclaration(String stub) {
     Assert.assertFalse(stub, packageDeclarationPattern.matcher(stub).find());
-  }
-
-  /**
-   * Runs {@link StubGenerator#stubFromType} on a type declared in the given source text.
-   *
-   * @param fileName the file name for the source text, such as {@code "p/Bar.java"}
-   * @param source the text of a Java source file
-   * @param typeName the canonical name of the type to generate a stub for; the type is declared in
-   *     {@code source}
-   * @return the generated stub file text
-   */
-  private String generateStub(String fileName, String source, String typeName) {
-    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-    Assert.assertNotNull("No system Java compiler is available.", compiler);
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    try (PrintStream out = new PrintStream(baos, true, StandardCharsets.UTF_8)) {
-      StubGeneratorProcessor processor = new StubGeneratorProcessor(typeName, out);
-      JavaCompiler.CompilationTask task =
-          compiler.getTask(
-              null,
-              null,
-              null,
-              // "-proc:only" means do not generate class files.
-              Arrays.asList("-proc:only"),
-              null,
-              Collections.singletonList(new SourceFile(fileName, source)));
-      task.setProcessors(Collections.singletonList(processor));
-      Assert.assertTrue("Compilation of " + fileName + " failed.", task.call());
-      Assert.assertTrue("Did not find type " + typeName + ".", processor.foundType);
-    }
-    return baos.toString(StandardCharsets.UTF_8);
-  }
-
-  /** A Java source file whose contents are a string. */
-  private static class SourceFile extends SimpleJavaFileObject {
-
-    /** The contents of the source file. */
-    private final String source;
-
-    /**
-     * Creates a new SourceFile.
-     *
-     * @param fileName the file name, such as {@code "p/Bar.java"}
-     * @param source the contents of the source file
-     */
-    SourceFile(String fileName, String source) {
-      super(URI.create("string:///" + fileName), JavaFileObject.Kind.SOURCE);
-      this.source = source;
-    }
-
-    @Override
-    public CharSequence getCharContent(boolean ignoreEncodingErrors) {
-      return source;
-    }
-  }
-
-  /** An annotation processor that generates a stub for one type. */
-  @SupportedAnnotationTypes("*")
-  private static class StubGeneratorProcessor extends AbstractProcessor {
-
-    /** The canonical name of the type to generate a stub for. */
-    private final String typeName;
-
-    /** Where to write the stub. */
-    private final PrintStream out;
-
-    /** True if the type named {@link #typeName} was found. */
-    boolean foundType = false;
-
-    /**
-     * Creates a new StubGeneratorProcessor.
-     *
-     * @param typeName the canonical name of the type to generate a stub for
-     * @param out where to write the stub
-     */
-    StubGeneratorProcessor(String typeName, PrintStream out) {
-      this.typeName = typeName;
-      this.out = out;
-    }
-
-    @Override
-    public SourceVersion getSupportedSourceVersion() {
-      return SourceVersion.latestSupported();
-    }
-
-    @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-      Deque<Element> worklist = new ArrayDeque<>(roundEnv.getRootElements());
-      while (!worklist.isEmpty()) {
-        Element element = worklist.remove();
-        if (!(element instanceof TypeElement)) {
-          continue;
-        }
-        TypeElement typeElement = (TypeElement) element;
-        if (typeElement.getQualifiedName().contentEquals(typeName)) {
-          foundType = true;
-          new StubGenerator(out).stubFromType(typeElement);
-        }
-        worklist.addAll(typeElement.getEnclosedElements());
-      }
-      return false;
-    }
   }
 }

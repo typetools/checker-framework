@@ -14,7 +14,6 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.CollectionsP;
-import org.plumelib.util.IPair;
 
 /** A set of utilities and factory methods useful for working with TestDiagnostics. */
 public final class TestDiagnosticUtils {
@@ -139,9 +138,9 @@ public final class TestDiagnosticUtils {
     // However, diagnostic.toString() may contain "[unchecked]" even though getMessage() does
     // not.
     // Since we want to match the error messages reported by javac exactly, we must parse.
-    IPair<String, String> messageAndFilename = messageAndFilename(diagnosticString);
-    String message = messageAndFilename.first;
-    String filename = messageAndFilename.second;
+    MessageAndFilename messageAndFilename = messageAndFilename(diagnosticString);
+    String message = messageAndFilename.message();
+    String filename = messageAndFilename.filename();
     return fromPatternMatching(
         DIAGNOSTIC_PATTERN, DIAGNOSTIC_WARNING_PATTERN, filename, null, message);
   }
@@ -203,10 +202,10 @@ public final class TestDiagnosticUtils {
     Matcher diagnosticMatcher = diagnosticPattern.matcher(diagnosticString);
     if (diagnosticMatcher.matches()) {
 
-      IPair<DiagnosticKind, Boolean> categoryAndFixable =
+      CategoryAndFixable categoryAndFixable =
           categoryAndFixable(diagnosticMatcher.group(1 + capturingGroupOffset));
-      kind = categoryAndFixable.first;
-      isFixable = categoryAndFixable.second;
+      kind = categoryAndFixable.kind();
+      isFixable = categoryAndFixable.isFixable();
       String msg = diagnosticMatcher.group(2 + capturingGroupOffset).trim();
 
       char firstChar = msg.isEmpty() ? ' ' : msg.charAt(0);
@@ -286,13 +285,21 @@ public final class TestDiagnosticUtils {
   static final Pattern filenamePattern = Pattern.compile(" (?:/[^: ]*/)([^/: ]+\\.[a-z]+):");
 
   /**
-   * Given a javax diagnostic, return a pair of (trimmed, filename), where "trimmed" is the first
-   * line of the message, without the leading filename.
+   * A diagnostic message and the name of the file it is about.
+   *
+   * @param message the first line of a diagnostic, without the leading filename
+   * @param filename the name of the file that the diagnostic is about, or ""
+   */
+  public record MessageAndFilename(String message, String filename) {}
+
+  /**
+   * Given a javax diagnostic, return the first line of the message, without the leading filename,
+   * and the filename.
    *
    * @param original a javax diagnostic
    * @return the diagnostic, split into message and filename
    */
-  public static IPair<String, String> messageAndFilename(String original) {
+  public static MessageAndFilename messageAndFilename(String original) {
     String trimmed = original;
     String filename = "";
     if (!retainAllLines(trimmed)) {
@@ -318,7 +325,7 @@ public final class TestDiagnosticUtils {
       }
     }
 
-    return IPair.of(trimmed, filename);
+    return new MessageAndFilename(trimmed, filename);
   }
 
   /**
@@ -341,9 +348,9 @@ public final class TestDiagnosticUtils {
    * corresponds with the category and whether or not it is an isFixable error.
    *
    * @param category a category string that may be prepended with "fixable-"
-   * @return a pair of the category and whether it was prepended with "fixable-"
+   * @return the category and whether it was prepended with "fixable-"
    */
-  private static IPair<DiagnosticKind, Boolean> categoryAndFixable(String category) {
+  private static CategoryAndFixable categoryAndFixable(String category) {
     String fixable = "fixable-";
     boolean isFixable = category.startsWith(fixable);
     if (isFixable) {
@@ -354,8 +361,16 @@ public final class TestDiagnosticUtils {
       throw new Error("Unparsable category: " + category);
     }
 
-    return IPair.of(categoryEnum, isFixable);
+    return new CategoryAndFixable(categoryEnum, isFixable);
   }
+
+  /**
+   * A diagnostic category and whether the diagnostic is fixable.
+   *
+   * @param kind the diagnostic category
+   * @param isFixable true if the category string was prepended with "fixable-"
+   */
+  private record CategoryAndFixable(DiagnosticKind kind, boolean isFixable) {}
 
   /**
    * Returns true if this line in a Java file indicates an expected diagnostic that might be

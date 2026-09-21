@@ -46,13 +46,13 @@ import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.plumelib.reflection.ReflectionP;
 import org.plumelib.util.FileIOException;
-import org.plumelib.util.IPair;
 
 /** Represents the annotations in an index file (a .jaif file). */
 public class IndexFileSpecification {
@@ -403,17 +403,17 @@ public class IndexFileSpecification {
     CastInsertion cast = null;
     CloseParenthesisInsertion closeParen = null;
     List<Insertion> annotationInsertions = new ArrayList<>();
-    Set<IPair<String, Annotation>> elementAnnotations = getElementAnnotations(element);
+    Set<AnnotationAndText> elementAnnotations = getElementAnnotations(element);
     if (elementAnnotations.isEmpty()) {
       Criteria criteria = clist.criteria();
       if (element instanceof ATypeElementWithType atewt) {
         // Still insert even if it's a cast insertion with no outer
         // annotations to just insert a cast, or insert a cast with
         // annotations on the compound types.
-        IPair<CastInsertion, CloseParenthesisInsertion> pair =
+        CastInsertions pair =
             createCastInsertion(atewt.getType(), null, innerTypeInsertions, criteria);
-        cast = pair.first;
-        closeParen = pair.second;
+        cast = pair.cast();
+        closeParen = pair.closeParen();
       } else if (!innerTypeInsertions.isEmpty()) {
         if (isOnReceiver(criteria)) {
           receiver = new ReceiverInsertion(new DeclaredType(), criteria, innerTypeInsertions);
@@ -423,10 +423,10 @@ public class IndexFileSpecification {
       }
     }
 
-    for (IPair<String, Annotation> p : elementAnnotations) {
+    for (AnnotationAndText p : elementAnnotations) {
       List<Insertion> elementInsertions = new ArrayList<>();
-      String annotationString = p.first;
-      Annotation annotation = p.second;
+      String annotationString = p.text();
+      Annotation annotation = p.annotation();
       Criteria criteria = clist.criteria();
       // If the annotation is only a type annotation, it will be inserted on the same line as the
       // following type.  If the annotation is also a declaration annotation, always insert it on
@@ -456,10 +456,10 @@ public class IndexFileSpecification {
         addInsertionSource(newI, annotation);
       } else if (element instanceof ATypeElementWithType atewt) {
         if (cast == null) {
-          IPair<CastInsertion, CloseParenthesisInsertion> insertions =
+          CastInsertions insertions =
               createCastInsertion(atewt.getType(), annotationString, innerTypeInsertions, criteria);
-          cast = insertions.first;
-          closeParen = insertions.second;
+          cast = insertions.cast();
+          closeParen = insertions.closeParen();
           elementInsertions.add(cast);
           elementInsertions.add(closeParen);
           // no addInsertionSource, as closeParen is not explicit in scene
@@ -622,8 +622,11 @@ public class IndexFileSpecification {
    * @param criteria the criteria for the location of this insertion
    * @return the {@link CastInsertion} and {@link CloseParenthesisInsertion}
    */
-  private IPair<CastInsertion, CloseParenthesisInsertion> createCastInsertion(
-      Type type, String annotationString, List<Insertion> innerTypeInsertions, Criteria criteria) {
+  private CastInsertions createCastInsertion(
+      Type type,
+      @Nullable String annotationString,
+      List<Insertion> innerTypeInsertions,
+      Criteria criteria) {
     if (annotationString != null) {
       type.addAnnotation(annotationString);
     }
@@ -631,8 +634,16 @@ public class IndexFileSpecification {
     CastInsertion cast = new CastInsertion(criteria, type);
     CloseParenthesisInsertion closeParen =
         new CloseParenthesisInsertion(criteria, cast.isSeparateLine());
-    return IPair.of(cast, closeParen);
+    return new CastInsertions(cast, closeParen);
   }
+
+  /**
+   * The two insertions that together make up a cast.
+   *
+   * @param cast the insertion for the cast itself
+   * @param closeParen the insertion for the close parenthesis after the cast expression
+   */
+  private record CastInsertions(CastInsertion cast, CloseParenthesisInsertion closeParen) {}
 
   /**
    * Fill in this.insertions with insertion pairs for the outer and inner types.
@@ -672,9 +683,22 @@ public class IndexFileSpecification {
     parseElement(outerClist, typeElement, innerInsertions);
   }
 
-  // Returns a string representation of the annotations at the element.
-  private Set<IPair<String, Annotation>> getElementAnnotations(AElement element) {
-    Set<IPair<String, Annotation>> result = new LinkedHashSet<>(element.tlAnnotationsHere.size());
+  /**
+   * An annotation and its string representation.
+   *
+   * @param text the string representation of {@code annotation}
+   * @param annotation an annotation
+   */
+  private record AnnotationAndText(String text, Annotation annotation) {}
+
+  /**
+   * Returns the annotations at the element, each with its string representation.
+   *
+   * @param element an element
+   * @return the annotations at {@code element}, each with its string representation
+   */
+  private Set<AnnotationAndText> getElementAnnotations(AElement element) {
+    Set<AnnotationAndText> result = new LinkedHashSet<>(element.tlAnnotationsHere.size());
     for (Annotation a : element.tlAnnotationsHere) {
       StringBuilder sb = new StringBuilder();
       sb.append('@');
@@ -701,7 +725,7 @@ public class IndexFileSpecification {
         sb.append(')');
       }
 
-      result.add(IPair.of(sb.toString(), a));
+      result.add(new AnnotationAndText(sb.toString(), a));
     }
     return result;
   }
