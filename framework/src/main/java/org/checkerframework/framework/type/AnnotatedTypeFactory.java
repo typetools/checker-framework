@@ -184,12 +184,7 @@ import org.plumelib.util.SystemP;
  */
 public class AnnotatedTypeFactory implements AnnotationProvider {
 
-  /**
-   * If true, output verbose, low-level debugging messages about {@link #getAnnotatedType}.
-   *
-   * <p>Guard every call to {@link #logGat} with a test of this field. Otherwise, the arguments to
-   * {@link #logGat} are computed, and a varargs array is allocated, even when logging is off.
-   */
+  /** If true, output verbose, low-level debugging messages about {@link #getAnnotatedType}. */
   public static final boolean debugGat = false;
 
   /** If true, print verbose debugging messages about stub files. */
