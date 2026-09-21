@@ -2286,14 +2286,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * nor implicitly. This method can be overridden for type-system specific behavior.
    *
    * @param tree location used to decide the type of {@code this}
-   * @return the type of {@code this} at the location of {@code tree}
+   * @return the type of {@code this} at the location of {@code tree}, or null if there is none
    */
   public @Nullable AnnotatedDeclaredType getSelfType(Tree tree) {
     if (debugGat) {
       logGat("getSelfType(%s) of kind %s%n", tree, tree.getKind());
     }
     if (TreeUtils.isClassTree(tree)) {
-      return getAnnotatedType(TreeUtils.elementFromDeclaration((ClassTree) tree));
+      TypeElement classElt = TreeUtils.elementFromDeclaration((ClassTree) tree);
+      if (classElt == null) {
+        // No element exists for certain kinds of anonymous classes.
+        return null;
+      }
+      return getAnnotatedType(classElt);
     }
 
     Tree enclosingTree = getEnclosingClassOrMethod(tree);
@@ -4060,10 +4065,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @see #getDeclAnnotationNoAliases
    * @param elt the element to retrieve the declaration annotation from
    * @param annoClass annotation class
-   * @return the annotation mirror for annoClass
+   * @return the annotation mirror for annoClass, or null if none exists
    */
   @Override
-  public final AnnotationMirror getDeclAnnotation(
+  public final @Nullable AnnotationMirror getDeclAnnotation(
       Element elt, Class<? extends Annotation> annoClass) {
     if (debugGat) {
       logGat("entering getDeclAnnotation(%s [%s], %s)%n", elt, elt.getKind(), annoClass);
@@ -6198,7 +6203,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param args arguments to the format string
    */
   @FormatMethod
-  public void logGat(String format, Object... args) {
+  public void logGat(String format, @Nullable Object... args) {
     if (debugGat) {
       SystemP.sleep(1); // logging can interleave with typechecker output
 
