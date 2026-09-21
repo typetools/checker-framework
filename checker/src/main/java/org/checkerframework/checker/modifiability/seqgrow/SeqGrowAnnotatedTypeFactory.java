@@ -128,4 +128,16 @@ public class SeqGrowAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeF
             || TypesUtils.isErasedSubtype(type, dequeErasure, types);
     return !canSeqGrow;
   }
+
+  /**
+   * For {@code Map.Entry}, only the replace bit is meaningful to carry from the map receiver, so
+   * the sequenced-grow bit of {@code @PolyModifiable} is {@code @MaybeSeqGrowable}.
+   */
+  @Override
+  protected boolean polyLacksCapability(TypeMirror type) {
+    if (type.getKind() != TypeKind.DECLARED) {
+      return false;
+    }
+    return TypesUtils.isErasedSubtype(type, mapEntryErasure, types);
+  }
 }

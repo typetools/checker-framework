@@ -59,7 +59,8 @@ public class AScene implements Cloneable {
   public final Map<String, Set<String>> imports = new LinkedHashMap<>();
 
   /** This scene's annotated classes; map key is class name. */
-  @SuppressWarnings("modifiability:assignment") // TODO
+  @SuppressWarnings("modifiability:assignment") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
   public final @Modifiable VivifyingMap</*@BinaryName*/ String, AClass> classes =
       new VivifyingMap<>(new LinkedHashMap<>()) {
         @Override

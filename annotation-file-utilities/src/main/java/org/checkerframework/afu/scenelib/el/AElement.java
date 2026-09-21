@@ -204,7 +204,8 @@ public class AElement implements Cloneable {
    * @param <K> the type of the map keys
    * @return a new vivifying map from keys to {@link AElement}s
    */
-  @SuppressWarnings("modifiability:return")
+  @SuppressWarnings("modifiability:return") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
   static <K extends Object> @Modifiable VivifyingMap<K, AElement> newVivifyingLHMap_AE() {
     return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override

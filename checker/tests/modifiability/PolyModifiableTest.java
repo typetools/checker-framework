@@ -1,8 +1,10 @@
 import java.util.Deque;
 import java.util.List;
+import java.util.Map;
 import org.checkerframework.checker.modifiability.qual.Growable;
 import org.checkerframework.checker.modifiability.qual.IteratorPolyMod;
 import org.checkerframework.checker.modifiability.qual.MaybeModifiable;
+import org.checkerframework.checker.modifiability.qual.MaybeSeqGrowable;
 import org.checkerframework.checker.modifiability.qual.Modifiable;
 import org.checkerframework.checker.modifiability.qual.PolyIteratorPolyMod;
 import org.checkerframework.checker.modifiability.qual.PolyModifiable;
@@ -28,6 +30,12 @@ public class PolyModifiableTest {
 
   /** A Deque-specific identity method for testing SeqGrow alias expansion on all supported JDKs. */
   @PolyModifiable Deque<String> identityDeque(@PolyModifiable Deque<String> x) {
+    return x;
+  }
+
+  /** A Map.Entry-specific identity method; only the replace capability is carried. */
+  Map.@PolyModifiable Entry<String, String> identityEntry(
+      Map.@PolyModifiable Entry<String, String> x) {
     return x;
   }
 
@@ -155,5 +163,17 @@ public class PolyModifiableTest {
     @MaybeModifiable Deque<String> unknown1 = identityDeque(unknown); // OK
     // :: error: [assignment]
     @SeqGrowable Deque<String> unknown2 = identityDeque(unknown); // Error: SeqGrow is unknown.
+  }
+
+  void testPolyOnEntry(
+      Map.@Modifiable Entry<String, String> mod, Map.@SeqGrowable Entry<String, String> seqGrow) {
+
+    // A Map.Entry has no grow, seq-grow, or shrink methods, so @PolyModifiable carries only the
+    // replace capability, just as @Modifiable expands to only the replace capability.
+    Map.@Replaceable Entry<String, String> e1 = identityEntry(mod); // OK
+
+    Map.@MaybeSeqGrowable Entry<String, String> e2 = identityEntry(seqGrow); // OK
+    // :: error: [assignment]
+    Map.@SeqGrowable Entry<String, String> e3 = identityEntry(seqGrow);
   }
 }

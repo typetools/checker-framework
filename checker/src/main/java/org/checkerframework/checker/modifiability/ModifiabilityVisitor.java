@@ -43,7 +43,9 @@ public class ModifiabilityVisitor extends SourceVisitor<Void, Void> {
    * parameter type from a disallowed one elsewhere in the same method.
    *
    * <p>The field needs no save-and-restore discipline, because a method declaration cannot appear
-   * within a formal parameter.
+   * within a formal parameter. It is reset in a {@code finally} clause because this visitor is
+   * reused for every compilation unit, and a stale true value would suppress every subsequent
+   * {@code unmodparam.location} error.
    */
   @Override
   public Void visitMethod(MethodTree tree, Void p) {
@@ -53,9 +55,12 @@ public class ModifiabilityVisitor extends SourceVisitor<Void, Void> {
     scan(tree.getReturnType(), p);
     scan(tree.getTypeParameters(), p);
     inParameterType = true;
-    scan(tree.getParameters(), p);
-    scan(tree.getReceiverParameter(), p);
-    inParameterType = false;
+    try {
+      scan(tree.getParameters(), p);
+      scan(tree.getReceiverParameter(), p);
+    } finally {
+      inParameterType = false;
+    }
     scan(tree.getThrows(), p);
     scan(tree.getBody(), p);
     scan(tree.getDefaultValue(), p);

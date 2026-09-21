@@ -508,32 +508,30 @@ Queue q = list;
 
 \subsectionAndLabel{Expansion rules for \<@Modifiable> and \<@Unmodifiable>}{modifiability-modifiable-expansion-rules}
 
-The following rules define this weakening.  The first qualifier in each
-capability row is used for \<@Modifiable>; the second is used for
-\<@Unmodifiable>.  If the weakening condition holds, both aliases use the
-corresponding \<@Maybe*> qualifier instead.
+The following rules define this weakening.  A capability is weakened to the
+corresponding \<@Maybe*> qualifier when the type satisfies that capability's
+condition in the table below.  For every other type, \<@Modifiable> expands to
+the capability's positive qualifier, such as \<@Growable>, and
+\<@Unmodifiable> expands to the capability's negative qualifier, such as
+\<@Ungrowable>.
 
 
 
 \noindent
-\begin{tabular}{l|l|l}
-\multicolumn{3}{c}{Expansion for
+\begin{tabular}{l|l}
+\multicolumn{2}{c}{Weakening conditions for
 \<@Modifiable>/\<@Unmodifiable>. ``$\backslash$'' means set difference.  A
 type includes its subtypes.} \\ \hline
-& Usual expansion to \<@>(\<Un>)\<*> & Expands to \<@Maybe*> \\ \hline
+& Expands to \<@Maybe*> \\ \hline
 Grow
-& \<ListIterator>
 & \<Map.Entry> or (\<Iterator>$\backslash$\<ListIterator>) \\
 SeqGrow
-& \<SequencedCollection>, \<SequencedMap>, or \<Deque>
 & not \<SequencedCollection>, \<SequencedMap>, or \<Deque> \\
 Shrink
-& not \<Map.Entry>
 & \<Map.Entry> \\
 Replace
-& \<LinkedList> or \<ListIterator>
 & exact \<Collection>, any \<Set>, (\<Queue>$\backslash$\<LinkedList>), \\
-&&  or (\<Iterator>$\backslash$\<ListIterator>) \\
+&  or (\<Iterator>$\backslash$\<ListIterator>) \\
 \end{tabular}
 
 These rules describe alias expansion, not the full specification of every JDK
@@ -575,6 +573,17 @@ The following are representative canonical expansions.
 \<Map.@Unmodifiable> & \<Entry> & = & \<@MaybeGrowable> & \<@MaybeSeqGrowable> & \<@MaybeShrinkable> & \<@Unreplaceable> & \<Map.Entry> \\
 \end{tabular}
 \end{smaller}
+
+
+\subsectionAndLabel{Expansion rules for \<@PolyModifiable>}{modifiability-polymodifiable-expansion-rules}
+
+\<@PolyModifiable> is weakened in only one case: on \<Map.Entry>, its grow,
+seq-grow, and shrink components are the corresponding \<@Maybe*> qualifiers,
+because no \<Map.Entry> has methods for those capabilities.  Every other type
+keeps all four polymorphic qualifiers, even a type such as \<Iterator> or
+\<Queue> whose \<@Modifiable> expansion is weakened, because a variable of
+such a type may hold a value of a subtype, such as \<ListIterator> or
+\<LinkedList>, that does have the methods.
 
 
 \sectionAndLabel{Behavior of the \<iterator()> method}{modifiability-iterator-behavior}

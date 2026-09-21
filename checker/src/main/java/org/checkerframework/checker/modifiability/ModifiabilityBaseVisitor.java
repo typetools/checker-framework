@@ -3,8 +3,6 @@ package org.checkerframework.checker.modifiability;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -28,6 +26,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Base visitor for the modifiability sub-checkers (Grow, SeqGrow, Shrink, Replace, and Iterator).
@@ -315,20 +314,11 @@ public class ModifiabilityBaseVisitor
       return false;
     }
     ExpressionTree exception = tt.getExpression();
-    if (!(exception instanceof NewClassTree nct)) {
+    if (!(exception instanceof NewClassTree)) {
       return false;
     }
-    ExpressionTree identifier = nct.getIdentifier();
-    if (identifier instanceof IdentifierTree it) {
-      // TODO: This can be fooled if a different UnsupportedOperationException is imported.
-      // A way to prevent that, is to check the type of exception:
-      // types.isSameType(TreeUtils.typeOf(exception), ...);
-      return it.getName().contentEquals("UnsupportedOperationException");
-    } else if (identifier instanceof MemberSelectTree mst) {
-      // TODO: For efficiency, to avoid call to `toString()`, could walk down the MemberSelectTree.
-      return mst.toString().equals("java.lang.UnsupportedOperationException");
-    }
-    return false;
+    return TypesUtils.isDeclaredOfName(
+        TreeUtils.typeOf(exception), "java.lang.UnsupportedOperationException");
   }
 
   /**
