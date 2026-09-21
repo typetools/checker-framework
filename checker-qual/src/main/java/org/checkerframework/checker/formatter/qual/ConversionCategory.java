@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
@@ -353,7 +353,10 @@ public enum ConversionCategory {
   }
 
   /** Returns a pretty-printed {@link ConversionCategory}. */
-  @Pure
+  // This is @SideEffectFree rather than @Pure because it returns a string that differs
+  // according to ==, and @Deterministic requires that two calls return == results.
+  @SideEffectFree
+  @SuppressWarnings("purity") // appends only to a local StringBuilder
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder(32);

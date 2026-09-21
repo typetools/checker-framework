@@ -1192,9 +1192,13 @@ subprojects {
       description = "Run the Checker Framework on itself (part 1)"
       group = "Verification"
       dependsOn("checkCompilerMessages", "checkFormatter", "checkInterning", "checkOptional")
-      // The Purity Checker passes only on javacutil so far.  To work on another subproject, run
-      // its `checkPurity` task directly, such as `./gradlew :dataflow:checkPurity`.
-      if (project.name.equals("javacutil")) {
+      // The Purity Checker does not yet pass on annotation-file-utilities, checker, dataflow,
+      // or framework.  To work on one of those, run its `checkPurity` task directly, such as
+      // `./gradlew :dataflow:checkPurity`.
+      if (!(project.name.equals("annotation-file-utilities")
+          || project.name.equals("checker")
+          || project.name.equals("dataflow")
+          || project.name.equals("framework"))) {
         dependsOn("checkPurity")
       }
     }
