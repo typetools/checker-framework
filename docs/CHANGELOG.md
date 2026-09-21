@@ -3,7 +3,7 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 4.2.4 (2026-10-01)
+## Version 4.3.0 (2026-10-01)
 
 ### User-visible changes
 
@@ -27,6 +27,9 @@ Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
 
 Removed the unused method
 `WholeProgramInferenceScenesStorage.updateAnnotationSetInScene()`.
+
+Methods that used to return (or accept) an `IPair` now use a record with
+meaningful component names.
 
 ### Closed issues
 

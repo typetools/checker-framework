@@ -20,6 +20,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory.UninitializedFields;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -41,7 +42,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.IPair;
 
 /**
  * The visitor for the freedom-before-commitment type-system. The freedom-before-commitment
@@ -349,11 +349,11 @@ public class InitializationVisitor<
       return;
     }
 
-    IPair<List<VariableTree>, List<VariableTree>> uninitializedFields =
+    UninitializedFields uninitializedFields =
         atypeFactory.getUninitializedFields(
             store, getCurrentPath(), staticFields, receiverAnnotations);
-    List<VariableTree> violatingFields = uninitializedFields.first;
-    List<VariableTree> nonviolatingFields = uninitializedFields.second;
+    List<VariableTree> violatingFields = uninitializedFields.withInvariantAnno();
+    List<VariableTree> nonviolatingFields = uninitializedFields.withoutInvariantAnno();
 
     // Remove fields that have already been initialized by an initializer block.
     violatingFields.removeAll(initializedFields);

@@ -19,6 +19,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.BinaryArgTypes;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -28,7 +29,6 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
-import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
 
 /**
@@ -231,10 +231,9 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       return null;
     }
 
-    IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes =
-        atypeFactory.binaryTreeArgTypes(tree);
-    AnnotatedTypeMirror type1 = argTypes.first;
-    AnnotatedTypeMirror type2 = argTypes.second;
+    BinaryArgTypes argTypes = atypeFactory.binaryTreeArgTypes(tree);
+    AnnotatedTypeMirror type1 = argTypes.left();
+    AnnotatedTypeMirror type2 = argTypes.right();
     Set<? extends AnnotationMirror> lubs =
         qualHierarchy.leastUpperBoundsShallow(
             type1.getAnnotations(),
