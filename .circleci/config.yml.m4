@@ -44,20 +44,19 @@ jobs:
           key: *sourcefull-cache
           paths:
             - .git
-gradle_restore_cache()
-      - run:
-          name: getPlumeScripts
-          command: ./gradlew -q getPlumeScripts
-gradle_save_cache()
+ifelse([This job runs no Gradle task, so it needs no Gradle cache.])dnl
+clone_plume_scripts_step()
       - run:
           name: set-ci-org-and-branch
           command: |
+            # PLUME_SCRIPTS is the documented way to tell these scripts where they live.
             PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
             CI_DEBUG=1
             . "$PLUME_SCRIPTS"/set-ci-org-and-branch
       - run:
           name: set-git-range
           command: |
+            # The sourced script reads PLUME_SCRIPTS, to find set-ci-org-and-branch.
             PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
             CI_DEBUG=1
             . "$PLUME_SCRIPTS"/set-git-range

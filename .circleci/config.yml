@@ -41,38 +41,19 @@ jobs:
           paths:
             - .git
       - run:
-          name: Compute Gradle cache key
-          command: >-
-            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
-            buildSrc/build.gradle docs/examples/errorprone/build.gradle
-            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
-      - restore_cache:
-          keys:
-            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
-            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
-            - gradle-v1-
-      - run:
-          name: getPlumeScripts
-          command: ./gradlew -q getPlumeScripts
-      - run:
-          name: Prune Gradle cache
-          command: |
-            find ~/.gradle/caches -name '*.lock' -delete || true
-            rm -f ~/.gradle/caches/modules-2/gc.properties
-      - save_cache:
-          key: *gradle-cache
-          paths:
-            - ~/.gradle/caches/modules-2
-            - ~/.gradle/wrapper
+          name: clone_plume_scripts
+          command: ./checker/bin-devel/clone-plume-scripts.sh
       - run:
           name: set-ci-org-and-branch
           command: |
+            # PLUME_SCRIPTS is the documented way to tell these scripts where they live.
             PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
             CI_DEBUG=1
             . "$PLUME_SCRIPTS"/set-ci-org-and-branch
       - run:
           name: set-git-range
           command: |
+            # The sourced script reads PLUME_SCRIPTS, to find set-ci-org-and-branch.
             PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
             CI_DEBUG=1
             . "$PLUME_SCRIPTS"/set-git-range
@@ -507,8 +488,8 @@ jobs:
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
-          name: getPlumeScripts
-          command: ./gradlew -q getPlumeScripts
+          name: clone_plume_scripts
+          command: ./checker/bin-devel/clone-plume-scripts.sh
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
@@ -555,8 +536,8 @@ jobs:
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
-          name: getPlumeScripts
-          command: ./gradlew -q getPlumeScripts
+          name: clone_plume_scripts
+          command: ./checker/bin-devel/clone-plume-scripts.sh
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
@@ -603,8 +584,8 @@ jobs:
             - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
             - gradle-v1-
       - run:
-          name: getPlumeScripts
-          command: ./gradlew -q getPlumeScripts
+          name: clone_plume_scripts
+          command: ./checker/bin-devel/clone-plume-scripts.sh
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
