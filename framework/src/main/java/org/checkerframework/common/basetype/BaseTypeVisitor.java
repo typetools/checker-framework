@@ -1400,6 +1400,33 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
   }
 
+  /** The purity property that a method was required to have, but does not have. */
+  private enum PurityViolation {
+    /** The method was required to be deterministic. */
+    DETERMINISTIC("deterministic", "non-deterministic"),
+    /** The method was required to be side-effect-free. */
+    SIDE_EFFECT_FREE("side-effect-free", "side-effecting"),
+    /** The method was required to be both deterministic and side-effect-free. */
+    BOTH("deterministic side-effect-free", "non-deterministic side-effecting");
+
+    /** How to describe the purity that the method was required to have. */
+    private final String purityAdjective;
+
+    /** How to describe a callee that does not have the required purity. */
+    private final String calleeAdjective;
+
+    /**
+     * Creates a PurityViolation.
+     *
+     * @param purityAdjective how to describe the purity that the method was required to have
+     * @param calleeAdjective how to describe a callee that does not have the required purity
+     */
+    PurityViolation(String purityAdjective, String calleeAdjective) {
+      this.purityAdjective = purityAdjective;
+      this.calleeAdjective = calleeAdjective;
+    }
+  }
+
   /**
    * Reports errors found during purity checking.
    *
@@ -1412,25 +1439,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     violations.removeAll(result.getKinds());
     if (violations.contains(PurityKind.DETERMINISTIC)
         || violations.contains(PurityKind.SIDE_EFFECT_FREE)) {
-      String msgKeyPrefix;
+      PurityViolation violation;
       if (!violations.contains(PurityKind.SIDE_EFFECT_FREE)) {
-        msgKeyPrefix = "purity.not.deterministic.";
+        violation = PurityViolation.DETERMINISTIC;
       } else if (!violations.contains(PurityKind.DETERMINISTIC)) {
-        msgKeyPrefix = "purity.not.sideeffectfree.";
+        violation = PurityViolation.SIDE_EFFECT_FREE;
       } else {
-        msgKeyPrefix = "purity.not.deterministic.not.sideeffectfree.";
+        violation = PurityViolation.BOTH;
       }
       for (IPair<Tree, String> r : result.getNotBothReasons()) {
-        reportPurityError(msgKeyPrefix, r);
+        reportPurityError(violation, r);
       }
       if (violations.contains(PurityKind.SIDE_EFFECT_FREE)) {
         for (IPair<Tree, String> r : result.getNotSEFreeReasons()) {
-          reportPurityError("purity.not.sideeffectfree.", r);
+          reportPurityError(PurityViolation.SIDE_EFFECT_FREE, r);
         }
       }
       if (violations.contains(PurityKind.DETERMINISTIC)) {
         for (IPair<Tree, String> r : result.getNotDetReasons()) {
-          reportPurityError("purity.not.deterministic.", r);
+          reportPurityError(PurityViolation.DETERMINISTIC, r);
         }
       }
     }
@@ -1439,13 +1466,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Reports a single purity error.
    *
-   * @param msgKeyPrefix the prefix of the message key to use when reporting
+   * @param violation the purity property that the method was required to have, but does not have
    * @param r the result to report
    */
-  private void reportPurityError(String msgKeyPrefix, IPair<Tree, String> r) {
+  private void reportPurityError(PurityViolation violation, IPair<Tree, String> r) {
     String reason = r.second;
-    @SuppressWarnings("compilermessages")
-    @CompilerMessageKey String msgKey = msgKeyPrefix + reason;
+    @CompilerMessageKey String msgKey =
+        switch (reason) {
+          case "assign.array" -> "purity.assign.array";
+          case "assign.field" -> "purity.assign.field";
+          case "call" -> "purity.call";
+          case "catch" -> "purity.catch";
+          case "object.creation" -> "purity.object.creation";
+          default -> throw new BugInCF("unexpected purity reason " + reason);
+        };
     if (reason.equals("call")) {
       ExecutableElement calleeElement;
       if (r.first instanceof MethodInvocationTree mitree) {
@@ -1454,9 +1488,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         calleeElement = TreeUtils.elementFromUse((NewClassTree) r.first);
       }
       checker.reportError(
-          r.first, msgKey, calleeElement.getEnclosingElement(), calleeElement.getSimpleName());
+          r.first,
+          msgKey,
+          violation.calleeAdjective,
+          calleeElement.getEnclosingElement(),
+          calleeElement.getSimpleName(),
+          violation.purityAdjective);
     } else {
-      checker.reportError(r.first, msgKey);
+      checker.reportError(r.first, msgKey, violation.purityAdjective);
     }
   }
 

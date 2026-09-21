@@ -3,9 +3,13 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 4.2.4 (2026-10-01)
+## Version 4.3.0 (2026-10-01)
 
 ### User-visible changes
+
+Renamed message keys `purity.not.deterministic.X`,
+`purity.not.sideeffectfree.X`, and
+`purity.not.deterministic.not.sideeffectfree.X` to `purity.X`.
 
 The Checker Framework runs noticeably faster, due to performance tuning.
 
