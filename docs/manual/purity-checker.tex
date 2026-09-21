@@ -90,8 +90,8 @@ class Object {
 (where \refqualclass{dataflow/qual}{Pure} means both
 \refqualclass{dataflow/qual}{SideEffectFree} and
 \refqualclass{dataflow/qual}{Deterministic}).  Therefore, every definition
-of \<hashCode>, including those in your program, is \<@Pure> and its body is
-checked accordingly:
+of \<hashCode>, including those in your program, is implicitly annotated
+as \<@Pure> and its body is checked accordingly:
 
 \begin{mysmall}
 \begin{Verbatim}

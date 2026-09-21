@@ -4303,10 +4303,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * the method reference implements.
      *
      * <p>Only a method reference needs this check. A method that overrides another one inherits its
-     * purity annotations, so it cannot be declared less pure than the method it overrides; {@link
-     * BaseTypeVisitor#checkPurityAnnotations} checks the overriding method's body against the
-     * inherited annotations. The referenced method of a method reference inherits nothing from the
-     * functional interface method, so its declared purity is checked here.
+     * purity annotations, and is checked by {@link BaseTypeVisitor#checkPurityAnnotations}.
      */
     private void checkMethodReferencePurity() {
       EnumSet<PurityKind> superPurity =
