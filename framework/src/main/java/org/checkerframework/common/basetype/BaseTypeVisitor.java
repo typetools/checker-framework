@@ -3564,6 +3564,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Creates string representations of {@link AnnotatedTypeMirror}s which are only verbose if
      * required to differentiate the two types.
+     *
+     * @param found the found type
+     * @param required the required type
+     * @return a FoundRequired for the two types
      */
     public static FoundRequired of(AnnotatedTypeMirror found, AnnotatedTypeMirror required) {
       return new FoundRequired(found, required);
@@ -3573,6 +3577,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Creates string representations of {@link AnnotatedTypeMirror} and {@link
      * AnnotatedTypeParameterBounds}s which are only verbose if required to differentiate the two
      * types.
+     *
+     * @param found the found type
+     * @param required the required bounds
+     * @return a FoundRequired for the type and the bounds
      */
     public static FoundRequired of(
         AnnotatedTypeMirror found, AnnotatedTypeParameterBounds required) {
