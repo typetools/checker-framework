@@ -39,4 +39,21 @@ class UnneededSuppressionsPartialKey {
   public String partialKeySuffixWithPrefix() {
     return "hello";
   }
+
+  // A broad suppression does not suppress the warning, but a later complete message key does.
+
+  @SuppressWarnings({"nullness:return", "nullness", "unneeded.suppression"})
+  public String prefixThenCompleteKey() {
+    return "hello";
+  }
+
+  @SuppressWarnings({"nullness:return", "all", "unneeded.suppression"})
+  public String allThenCompleteKey() {
+    return "hello";
+  }
+
+  @SuppressWarnings({"nullness:return", "allcheckers", "unneeded.suppression"})
+  public String allcheckersThenCompleteKey() {
+    return "hello";
+  }
 }
