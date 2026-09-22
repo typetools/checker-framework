@@ -9,10 +9,6 @@
 
 New `wpi2.sh` script does whole-program inference, but requires buildfile edits.
 
-`-AwarnUnneededSuppressions` issues warnings that it missed previously, because
-an `unneeded.suppression` warning is no longer suppressed by a partial message
-key such as `@SuppressWarnings("suppression")`.
-
 Purity Checker:
 
 * `-AcheckPurityAnnotations` issues warnings that it missed previously.
