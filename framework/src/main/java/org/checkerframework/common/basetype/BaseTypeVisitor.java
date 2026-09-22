@@ -1152,12 +1152,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * produced it, and would be trusted by a later run that makes no such assumption.
    *
    * @param body the path to the body, or null if the method has no body
+   * @param enclosingMethod the method declaration that lexically encloses {@code body}, or null if
+   *     none does
    * @return the purity of {@code body}, ignoring the {@code -Aassume*} command-line options
    */
-  private PurityResult purityForInference(@Nullable TreePath body) {
+  private PurityResult purityForInference(
+      @Nullable TreePath body, @Nullable MethodTree enclosingMethod) {
     return body == null
         ? new PurityResult()
-        : PurityChecker.checkPurity(body, atypeFactory, false, false, false);
+        : PurityChecker.checkPurity(
+            body,
+            atypeFactory,
+            enclosingMethod,
+            atypeFactory.getProcessingEnv(),
+            false,
+            false,
+            false);
   }
 
   /**
@@ -1218,7 +1228,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
       // Issue a warning if the method is pure, but not annotated as such.
-      EnumSet<PurityKind> additionalKinds = purityForInference(body).getKinds().clone();
+      EnumSet<PurityKind> additionalKinds = purityForInference(body, tree).getKinds().clone();
       if (!infer) {
         // During WPI, propagate all purity kinds, even those that are already
         // present (because they were inferred in a previous WPI round).
@@ -1442,7 +1452,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * <p>This check is skipped for a requirement that the parameter's own functional method already
    * makes, because {@link #checkLambdaPurity} and {@link
-   * BaseTypeVisitor.OverrideChecker#checkPurity} check that.
+   * BaseTypeVisitor.OverrideChecker#checkMethodReferencePurity} check that.
    *
    * @param callee the invoked method or constructor
    * @param args the arguments to {@code callee}
@@ -2842,7 +2852,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // A lambda implements the functional interface method, so it constrains that method's
       // purity just as an overriding method does; see the treatment of overridden methods in
       // `checkPurityAnnotations`.
-      EnumSet<PurityKind> lambdaKinds = purityForInference(body).getKinds().clone();
+      EnumSet<PurityKind> lambdaKinds =
+          purityForInference(body, TreePathUtil.enclosingMethod(getCurrentPath()))
+              .getKinds()
+              .clone();
       if (functionalMethod.getReturnType().getKind() == TypeKind.VOID) {
         lambdaKinds.remove(PurityKind.DETERMINISTIC);
       }
