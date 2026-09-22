@@ -83,7 +83,7 @@ include([../../.azure/jobs.m4])dnl
     needs:
       - junit_jdk17
       - junit_jdk21
-      - junit_jdk26
+      - junit_jdk[]latest_jdk
       - nonjunit_jdk21
       - misc_jdk21
       - daikon_part1_jdk[]canary_jdk
