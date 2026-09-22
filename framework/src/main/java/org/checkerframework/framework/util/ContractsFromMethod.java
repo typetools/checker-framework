@@ -19,11 +19,11 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.QualifierArgument;
 import org.checkerframework.framework.qual.RequiresQualifier;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.AnnotationWithMetaAnnotation;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.IPair;
 
 /**
  * A utility class to retrieve pre- and postconditions from a method.
@@ -146,13 +146,13 @@ public class ContractsFromMethod {
     // Check for type-system specific annotations.  These are the annotations that are
     // meta-annotated by `kind.metaAnnotation`, which is PreconditionAnnotation,
     // PostconditionAnnotation, or ConditionalPostconditionAnnotation.
-    List<IPair<AnnotationMirror, AnnotationMirror>> declAnnotations =
+    List<AnnotationWithMetaAnnotation> declAnnotations =
         factory.getDeclAnnotationWithMetaAnnotation(executableElement, kind.metaAnnotation);
-    for (IPair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
-      AnnotationMirror anno = r.first;
+    for (AnnotationWithMetaAnnotation r : declAnnotations) {
+      AnnotationMirror anno = r.annotation();
       // contractAnno is the meta-annotation on anno, such as PreconditionAnnotation,
       // PostconditionAnnotation, or ConditionalPostconditionAnnotation.
-      AnnotationMirror contractAnno = r.second;
+      AnnotationMirror contractAnno = r.metaAnnotation();
       AnnotationMirror enforcedQualifier =
           getQualifierEnforcedByContractAnnotation(contractAnno, anno);
       if (enforcedQualifier == null) {

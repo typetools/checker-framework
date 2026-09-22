@@ -31,7 +31,6 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.IPair;
 
 /**
  * A visitor that determines the purity (as defined by {@link
@@ -82,14 +81,25 @@ public final class PurityChecker {
    */
   public static class PurityResult {
 
+    /** Creates a new PurityResult. */
+    public PurityResult() {}
+
+    /**
+     * A reason that a method is impure: a tree, and a message key explaining what is wrong with it.
+     *
+     * @param tree the tree that makes the method impure
+     * @param msgId the message key for the reason that {@code tree} makes the method impure
+     */
+    public record ImpurityReason(Tree tree, String msgId) {}
+
     /** Reasons that the referenced method is not side-effect-free. */
-    protected final List<IPair<Tree, String>> notSEFreeReasons = new ArrayList<>(1);
+    protected final List<ImpurityReason> notSEFreeReasons = new ArrayList<>(1);
 
     /** Reasons that the referenced method is not deterministic. */
-    protected final List<IPair<Tree, String>> notDetReasons = new ArrayList<>(1);
+    protected final List<ImpurityReason> notDetReasons = new ArrayList<>(1);
 
     /** Reasons that the referenced method is not side-effect-free and deterministic. */
-    protected final List<IPair<Tree, String>> notBothReasons = new ArrayList<>(1);
+    protected final List<ImpurityReason> notBothReasons = new ArrayList<>(1);
 
     /**
      * Contains the varieties of purity that the expression has. Starts out with the purities that a
@@ -123,7 +133,7 @@ public final class PurityChecker {
      *
      * @return the reasons why the method is not side-effect-free
      */
-    public List<IPair<Tree, String>> getNotSEFreeReasons() {
+    public List<ImpurityReason> getNotSEFreeReasons() {
       return notSEFreeReasons;
     }
 
@@ -134,7 +144,7 @@ public final class PurityChecker {
      * @param msgId why the tree is not side-effect-free
      */
     public void addNotSEFreeReason(Tree t, String msgId) {
-      notSEFreeReasons.add(IPair.of(t, msgId));
+      notSEFreeReasons.add(new ImpurityReason(t, msgId));
       kinds.remove(PurityKind.SIDE_EFFECT_FREE);
     }
 
@@ -143,7 +153,7 @@ public final class PurityChecker {
      *
      * @return the reasons why the method is not deterministic
      */
-    public List<IPair<Tree, String>> getNotDetReasons() {
+    public List<ImpurityReason> getNotDetReasons() {
       return notDetReasons;
     }
 
@@ -154,7 +164,7 @@ public final class PurityChecker {
      * @param msgId why the tree is not deterministic
      */
     public void addNotDetReason(Tree t, String msgId) {
-      notDetReasons.add(IPair.of(t, msgId));
+      notDetReasons.add(new ImpurityReason(t, msgId));
       kinds.remove(PurityKind.DETERMINISTIC);
     }
 
@@ -163,7 +173,7 @@ public final class PurityChecker {
      *
      * @return the reasons why the method is not both side-effect-free and deterministic
      */
-    public List<IPair<Tree, String>> getNotBothReasons() {
+    public List<ImpurityReason> getNotBothReasons() {
       return notBothReasons;
     }
 
@@ -174,7 +184,7 @@ public final class PurityChecker {
      * @param msgId why the tree is not deterministic and side-effect-free
      */
     public void addNotBothReason(Tree t, String msgId) {
-      notBothReasons.add(IPair.of(t, msgId));
+      notBothReasons.add(new ImpurityReason(t, msgId));
       kinds.remove(PurityKind.DETERMINISTIC);
       kinds.remove(PurityKind.SIDE_EFFECT_FREE);
     }
@@ -316,38 +326,29 @@ public final class PurityChecker {
       return null;
     }
 
-    /** Represents a method that is both deterministic and side-effect free. */
-    private static final EnumSet<PurityKind> detAndSeFree =
-        EnumSet.of(PurityKind.DETERMINISTIC, PurityKind.SIDE_EFFECT_FREE);
-
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void ignore) {
       ExecutableElement elt = TreeUtils.elementFromUse(tree);
       EnumSet<PurityKind> eltPurityKinds = PurityUtils.getPurityKinds(annoProvider, elt);
-      if (!eltPurityKinds.contains(PurityKind.SIDE_EFFECT_FREE)
-          && !eltPurityKinds.contains(PurityKind.DETERMINISTIC)) {
-        // The called method has no purity annotation, so the callee is not pure either.
+      boolean pureGetter = assumePureGetters && ElementUtils.isGetter(elt);
+      boolean seFree =
+          assumeSideEffectFree
+              || pureGetter
+              || eltPurityKinds.contains(PurityKind.SIDE_EFFECT_FREE);
+      boolean det =
+          assumeDeterministic
+              || pureGetter
+              || eltPurityKinds.contains(PurityKind.DETERMINISTIC)
+              // A side-effect-free method with no return value is deterministic:  two calls
+              // return the same (absent) value.  This includes a `this()` or `super()` call,
+              // whose element's return type is void.
+              || (seFree && elt.getReturnType().getKind() == TypeKind.VOID);
+      if (!det && !seFree) {
         purityResult.addNotBothReason(tree, "call");
-      } else {
-        // The called method has a purity annotation:  @SideEffectFree, @Deterministic, or both.
-        EnumSet<PurityKind> purityKinds =
-            ((assumeDeterministic && assumeSideEffectFree)
-                    || (assumePureGetters && ElementUtils.isGetter(elt)))
-                // Avoid computation if not necessary
-                ? detAndSeFree
-                : eltPurityKinds;
-        boolean det =
-            assumeDeterministic
-                || purityKinds.contains(PurityKind.DETERMINISTIC)
-                || elt.getReturnType().getKind() == TypeKind.VOID;
-        boolean seFree = assumeSideEffectFree || purityKinds.contains(PurityKind.SIDE_EFFECT_FREE);
-        if (!det && !seFree) {
-          purityResult.addNotBothReason(tree, "call");
-        } else if (!det) {
-          purityResult.addNotDetReason(tree, "call");
-        } else if (!seFree) {
-          purityResult.addNotSEFreeReason(tree, "call");
-        }
+      } else if (!det) {
+        purityResult.addNotDetReason(tree, "call");
+      } else if (!seFree) {
+        purityResult.addNotSEFreeReason(tree, "call");
       }
       return super.visitMethodInvocation(tree, ignore);
     }

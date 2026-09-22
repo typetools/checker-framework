@@ -1,0 +1,10 @@
+package fakeoverrides;
+import java.util.List;
+import org.checkerframework.checker.tainting.qual.Untainted;
+
+class WrongTypeArgumentSub {
+    // Not a fake override:  the type argument should be String, not Integer.
+    public @Untainted int g(List<Integer> l);
+    // Not a fake override:  the enclosing type argument should be String, not Integer.
+    public @Untainted int enclosing(WrongEnclosing<Integer>.WrongNested<Integer> e);
+}
