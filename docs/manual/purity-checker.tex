@@ -69,13 +69,13 @@ implemented, the Checker Framework will default to checking purity
 annotations.
 
 
-\sectionAndLabel{Overriding methods inherit specifications from superclasses}{purity-override}
+\sectionAndLabel{Overriding methods inherit specifications from overridden methods}{purity-override}
 
-A purity annotation is inherited:  if a method in a superclass has a purity
-annotation, then every overriding definition has that annotation too, even
-if the annotation is not written on the overriding definition.  An
-overriding definition may strengthen the specification by writing a
-stronger annotation, but it cannot weaken it.
+A purity annotation is inherited:  if a method in a superclass or
+superinterface has a purity annotation, then every overriding definition has
+that annotation too, even if the annotation is not written on the overriding
+definition.  An overriding definition may strengthen the specification by
+writing a stronger annotation, but it cannot weaken it.
 
 For example, the \<Object> class is annotated as:
 
