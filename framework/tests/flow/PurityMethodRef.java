@@ -1,7 +1,8 @@
 // Test that a method reference is checked against the purity annotations on the functional
 // interface method that it implements.  This is the method-reference analog of
-// PurityLambdaSam.java; the check is performed by BaseTypeVisitor.OverrideChecker#checkPurity,
-// which treats the referenced method as an override of the functional method.
+// PurityLambdaSam.java; the check is performed by
+// BaseTypeVisitor.OverrideChecker#checkMethodReferencePurity, which treats the referenced method as
+// an override of the functional method.
 //
 // This test lives here, rather than in all-systems, because the check requires
 // -AcheckPurityAnnotations, which the all-systems suite is not run with.  That purity annotations
