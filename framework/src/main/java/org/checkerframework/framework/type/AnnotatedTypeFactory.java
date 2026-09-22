@@ -1693,10 +1693,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
     // Caching is disabled if annotation files are being parsed, because calls to this
     // method before the annotation files are fully read can return incorrect results.
-    if (shouldCache
-        && !stubTypes.isParsing()
-        && !ajavaTypes.isParsing()
-        && (currentFileAjavaTypes == null || !currentFileAjavaTypes.isParsing())) {
+    if (shouldCache && !isParsingAnnotationFiles()) {
       elementCache.put(elt, type.deepCopy());
     }
     return type;
@@ -4108,6 +4105,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Returns true if any annotation file -- a stub file or an ajava file -- is currently being
+   * parsed. While an annotation file is being parsed, a query about an element can return an
+   * incomplete answer, because the annotations that the file supplies for that element have not
+   * been recorded yet. A caller must therefore not cache such an answer.
+   *
+   * @return true if any annotation file is currently being parsed
+   */
+  public boolean isParsingAnnotationFiles() {
+    return stubTypes.isParsing()
+        || ajavaTypes.isParsing()
+        || (currentFileAjavaTypes != null && currentFileAjavaTypes.isParsing());
+  }
+
+  /**
    * Returns true if the element appears in a stub file (Currently only works for methods,
    * constructors, and fields).
    */
@@ -4242,9 +4253,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     // If parsing annotation files, return only the annotations in the element.
-    if (stubTypes.isParsing()
-        || ajavaTypes.isParsing()
-        || (currentFileAjavaTypes != null && currentFileAjavaTypes.isParsing())) {
+    if (isParsingAnnotationFiles()) {
       return results;
     }
 
