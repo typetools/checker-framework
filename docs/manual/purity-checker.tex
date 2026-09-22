@@ -63,10 +63,11 @@ or
 by writing \refqualclass{dataflow/qual}{Deterministic} on the
 declaration of a method that is not deterministic.
 
-To enable
-checking of the annotations, supply the command-line option
-\<-AcheckPurityAnnotations>.  It is not enabled by default because of a high false
-positive rate.  In the future, after a new purity-checking analysis is
+When you run the Purity Checker directly, it checks the annotations.
+To enable checking of the annotations when running any other checker,
+supply the command-line option \<-AcheckPurityAnnotations>.
+For checkers other than the Purity Checker, it is not enabled by default
+because of a high false positive rate.  In the future, after a new purity-checking analysis is
 implemented, the Checker Framework will default to checking purity
 annotations.
 
