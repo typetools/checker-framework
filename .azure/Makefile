@@ -1,6 +1,9 @@
 .PHONY: all test clean default
 default: all
+# `make all` currently does nothing in this directory.
 all:
+	${MAKE} -C ../.circleci/
+	${MAKE} -C ../.github/workflows/
 
 test: all
 

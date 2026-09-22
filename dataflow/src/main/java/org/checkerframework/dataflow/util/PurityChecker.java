@@ -554,8 +554,7 @@ public final class PurityChecker {
         eltPurityKinds = EnumSet.copyOf(eltPurityKinds);
         eltPurityKinds.addAll(functionalParameterKinds);
       }
-      // Each assumption applies to every called method, including one with no purity
-      // annotation:  that is what makes the assumptions useful for an unannotated library.
+
       boolean pureGetter = assumePureGetters && ElementUtils.isGetter(elt);
       boolean seFree =
           assumeSideEffectFree
@@ -565,10 +564,9 @@ public final class PurityChecker {
           assumeDeterministic
               || pureGetter
               || eltPurityKinds.contains(PurityKind.DETERMINISTIC)
-              // A side-effect-free method that returns no value changes nothing and yields
-              // nothing, so calling it cannot make the caller's result differ.  Without
-              // side-effect-freedom, returning no value says nothing:  the method could
-              // change a field that the caller goes on to return.
+              // A side-effect-free method with no return value is deterministic:  two calls
+              // return the same (absent) value.  This includes a `this()` or `super()` call,
+              // whose element's return type is void.
               || (seFree && elt.getReturnType().getKind() == TypeKind.VOID);
       if (!det && !seFree) {
         purityResult.addNotBothReason(tree, "call");

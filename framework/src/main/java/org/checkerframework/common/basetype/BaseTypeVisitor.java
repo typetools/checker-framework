@@ -1146,10 +1146,24 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Check method purity if needed. Note that overriding rules are checked as part of {@link
-   * #checkOverride(MethodTree, AnnotatedTypeMirror.AnnotatedExecutableType,
-   * AnnotatedTypeMirror.AnnotatedDeclaredType, AnnotatedTypeMirror.AnnotatedExecutableType,
-   * AnnotatedTypeMirror.AnnotatedDeclaredType)}.
+   * Returns the purity of a method or lambda body, for the purpose of inferring or suggesting a
+   * purity annotation. Unlike type-checking, inference does not apply the {@code -Aassume*}
+   * command-line options: an inferred or suggested annotation outlives the command line that
+   * produced it, and would be trusted by a later run that makes no such assumption.
+   *
+   * @param body the path to the body, or null if the method has no body
+   * @return the purity of {@code body}, ignoring the {@code -Aassume*} command-line options
+   */
+  private PurityResult purityForInference(@Nullable TreePath body) {
+    return body == null
+        ? new PurityResult()
+        : PurityChecker.checkPurity(body, atypeFactory, false, false, false);
+  }
+
+  /**
+   * Check method purity if needed. The purity annotations of an overridden method are inherited, so
+   * this checks an overriding method against the purity annotations of the methods it overrides,
+   * even if it has no purity annotation of its own.
    *
    * @param tree the method tree to check
    */
@@ -1185,27 +1199,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     TreePath body = atypeFactory.getPath(tree.getBody());
-    PurityResult r;
-    if (body == null) {
-      r = new PurityResult();
-    } else {
-      r =
-          PurityChecker.checkPurity(
-              body,
-              atypeFactory,
-              tree,
-              atypeFactory.getProcessingEnv(),
-              assumeSideEffectFree,
-              assumeDeterministic,
-              assumePureGetters);
-    }
-    if (!r.isPure(purityKinds)) {
-      reportPurityErrors(r, purityKinds);
+    if (needToCheck) {
+      PurityResult r =
+          body == null
+              ? new PurityResult()
+              : PurityChecker.checkPurity(
+                  body,
+                  atypeFactory,
+                  tree,
+                  atypeFactory.getProcessingEnv(),
+                  assumeSideEffectFree,
+                  assumeDeterministic,
+                  assumePureGetters);
+      if (!r.isPure(purityKinds)) {
+        reportPurityErrors(r, purityKinds);
+      }
     }
 
     if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
       // Issue a warning if the method is pure, but not annotated as such.
-      EnumSet<PurityKind> additionalKinds = r.getKinds().clone();
+      EnumSet<PurityKind> additionalKinds = purityForInference(body).getKinds().clone();
       if (!infer) {
         // During WPI, propagate all purity kinds, even those that are already
         // present (because they were inferred in a previous WPI round).
@@ -1840,6 +1853,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         stringExpr -> StringToJavaExpression.atMethodBody(stringExpr, methodTree, checker);
     for (Contract contract : contracts) {
       String expressionString = contract.expressionString;
+      // This also reports errors in the annotation's dependent type expressions, for every
+      // contract -- including preconditions and the contracts of abstract methods, whose
+      // qualifiers are not checked below.
       AnnotationMirror annotation =
           contract.viewpointAdaptDependentTypeAnnotation(
               atypeFactory, stringToJavaExpr, methodTree);
@@ -1858,7 +1874,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (!abstractMethod && contract.kind != Contract.Kind.PRECONDITION) {
         // Check the contract, which is a postcondition.
         // Preconditions are checked at method invocations, not declarations.
-
         switch (contract.kind) {
           case POSTCONDITION -> checkPostcondition(methodTree, annotation, exprJe);
           case CONDITIONALPOSTCONDITION ->
@@ -1940,6 +1955,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   protected void checkPostcondition(
       MethodTree methodTree, AnnotationMirror annotation, JavaExpression expression) {
+    @SuppressWarnings("nullness:assignment") // capture conversion of a @Nullable type variable
     CFAbstractStore<?, ?> exitStore = atypeFactory.getRegularExitStore(methodTree);
     if (exitStore == null) {
       // If there is no regular exitStore, then the method cannot reach the regular exit and
@@ -2548,6 +2564,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return;
       }
 
+      @SuppressWarnings("nullness:assignment") // capture conversion of a @Nullable type variable
       CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
       CFAbstractValue<?> value = null;
       if (CFAbstractStore.canInsertJavaExpression(exprJe)) {
@@ -2783,7 +2800,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * interface method from the lambda's body.
    *
    * <p>The analogous check for a method reference is {@link
-   * BaseTypeVisitor.OverrideChecker#checkPurity}.
+   * BaseTypeVisitor.OverrideChecker#checkMethodReferencePurity}.
    *
    * @param tree a lambda expression
    * @param functionType the type of the functional interface method that {@code tree} implements
@@ -2803,27 +2820,29 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     TreePath body = new TreePath(getCurrentPath(), tree.getBody());
-    PurityResult r =
-        PurityChecker.checkPurity(
-            body,
-            atypeFactory,
-            // The functional method that the lambda implements constrains the body, but the
-            // enclosing method's functional-interface parameters still hold values that its
-            // caller was required to check, whenever the lambda runs.
-            TreePathUtil.enclosingMethod(getCurrentPath()),
-            atypeFactory.getProcessingEnv(),
-            assumeSideEffectFree,
-            assumeDeterministic,
-            assumePureGetters);
-    if (needToCheck && !r.isPure(purityKinds)) {
-      reportPurityErrors(r, purityKinds);
+    if (needToCheck) {
+      PurityResult r =
+          PurityChecker.checkPurity(
+              body,
+              atypeFactory,
+              // The functional method that the lambda implements constrains the body, but the
+              // enclosing method's functional-interface parameters still hold values that its
+              // caller was required to check, whenever the lambda runs.
+              TreePathUtil.enclosingMethod(getCurrentPath()),
+              atypeFactory.getProcessingEnv(),
+              assumeSideEffectFree,
+              assumeDeterministic,
+              assumePureGetters);
+      if (!r.isPure(purityKinds)) {
+        reportPurityErrors(r, purityKinds);
+      }
     }
 
     if (infer) {
       // A lambda implements the functional interface method, so it constrains that method's
       // purity just as an overriding method does; see the treatment of overridden methods in
       // `checkPurityAnnotations`.
-      EnumSet<PurityKind> lambdaKinds = r.getKinds().clone();
+      EnumSet<PurityKind> lambdaKinds = purityForInference(body).getKinds().clone();
       if (functionalMethod.getReturnType().getKind() == TypeKind.VOID) {
         lambdaKinds.remove(PurityKind.DETERMINISTIC);
       }
@@ -3905,14 +3924,24 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Class that creates string representations of {@link AnnotatedTypeMirror}s which are only
    * verbose if required to differentiate the two types.
+   *
+   * <p>It is protected so that a subclass that reports one of the message keys that take a
+   * found/required pair, such as {@code override.receiver}, renders the pair the same way that this
+   * class does.
    */
-  private static final class FoundRequired {
+  protected static final class FoundRequired {
     /** The found type. */
     public final String found;
 
     /** The required type. */
     public final String required;
 
+    /**
+     * Creates a FoundRequired for two types.
+     *
+     * @param found the found type
+     * @param required the required type
+     */
     private FoundRequired(AnnotatedTypeMirror found, AnnotatedTypeMirror required) {
       if (shouldPrintVerbose(found, required)) {
         this.found = found.toString(true);
@@ -3923,7 +3952,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
-    /** Create a FoundRequired for a type and bounds. */
+    /**
+     * Creates a FoundRequired for a type and bounds.
+     *
+     * @param found the found type
+     * @param required the required bounds
+     */
     private FoundRequired(AnnotatedTypeMirror found, AnnotatedTypeParameterBounds required) {
       if (shouldPrintVerbose(found, required)) {
         this.found = found.toString(true);
@@ -3937,8 +3971,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Creates string representations of {@link AnnotatedTypeMirror}s which are only verbose if
      * required to differentiate the two types.
+     *
+     * @param found the found type
+     * @param required the required type
+     * @return a FoundRequired for the two types
      */
-    static FoundRequired of(AnnotatedTypeMirror found, AnnotatedTypeMirror required) {
+    public static FoundRequired of(AnnotatedTypeMirror found, AnnotatedTypeMirror required) {
       return new FoundRequired(found, required);
     }
 
@@ -3946,8 +3984,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Creates string representations of {@link AnnotatedTypeMirror} and {@link
      * AnnotatedTypeParameterBounds}s which are only verbose if required to differentiate the two
      * types.
+     *
+     * @param found the found type
+     * @param required the required bounds
+     * @return a FoundRequired for the type and the bounds
      */
-    static FoundRequired of(AnnotatedTypeMirror found, AnnotatedTypeParameterBounds required) {
+    public static FoundRequired of(
+        AnnotatedTypeMirror found, AnnotatedTypeParameterBounds required) {
       return new FoundRequired(found, required);
     }
   }
@@ -4339,6 +4382,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Returns true if both types are type variables and outer contains inner. Outer contains inner
    * implies: {@literal inner.upperBound <: outer.upperBound outer.lowerBound <: inner.lowerBound}.
    *
+   * @param inner the type that might be contained
+   * @param outer the type that might contain {@code inner}
    * @return true if both types are type variables and outer contains inner
    */
   protected boolean testTypevarContainment(AnnotatedTypeMirror inner, AnnotatedTypeMirror outer) {
@@ -4664,44 +4709,40 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       result &= checkParameters();
       if (isMethodReference) {
         result &= checkMemberReferenceReceivers();
+        checkMethodReferencePurity();
       } else {
         result &= checkReceiverOverride();
       }
       checkPreAndPostConditions();
-      checkPurity();
 
       return result;
     }
 
-    /** Check that an override respects purity. */
-    private void checkPurity() {
+    /**
+     * Check that the referenced method is at least as pure as the functional interface method that
+     * the method reference implements.
+     *
+     * <p>Only a method reference needs this check. A method that overrides another one inherits its
+     * purity annotations, and is checked by {@link BaseTypeVisitor#checkPurityAnnotations}.
+     */
+    private void checkMethodReferencePurity() {
+      if (!checkPurityAnnotations) {
+        return;
+      }
       EnumSet<PurityKind> superPurity =
           PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
       EnumSet<PurityKind> subPurity =
           PurityUtils.getPurityKinds(atypeFactory, overrider.getElement());
-      boolean ok = subPurity.containsAll(superPurity);
-      if (!ok) {
-        if (isMethodReference) {
-          checker.reportError(
-              overriderTree,
-              "purity.methodref",
-              overriderType,
-              purityKindsToString(subPurity),
-              overrider,
-              overriddenType,
-              purityKindsToString(superPurity),
-              overridden);
-        } else {
-          checker.reportError(
-              overriderTree,
-              "purity.overriding",
-              overriderType,
-              purityKindsToString(subPurity),
-              overrider,
-              overriddenType,
-              purityKindsToString(superPurity),
-              overridden);
-        }
+      if (!subPurity.containsAll(superPurity)) {
+        checker.reportError(
+            overriderTree,
+            "purity.methodref",
+            overriderType,
+            purityKindsToString(subPurity),
+            overrider,
+            overriddenType,
+            purityKindsToString(superPurity),
+            overridden);
       }
     }
 
@@ -4899,6 +4940,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return true;
     }
 
+    /**
+     * Returns true if each parameter type of the overridden method is a subtype of the
+     * corresponding parameter type of the overriding method.
+     *
+     * @return true if the parameter types are correct
+     */
     private boolean checkParameters() {
       List<AnnotatedTypeMirror> overriderParams = overrider.getParameterTypes();
       List<AnnotatedTypeMirror> overriddenParams = overridden.getParameterTypes();
