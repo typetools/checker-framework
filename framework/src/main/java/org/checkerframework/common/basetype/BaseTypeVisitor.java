@@ -4870,8 +4870,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * {@code @SideEffectsOnly} annotations, even if the method writes no annotation of its own:
      * such a method inherits the union of what the supertypes permit, which is more than either one
      * of them permits. See {@code AnnotatedTypeFactory.getSideEffectsOnlyExpressionMap}.
+     *
+     * <p>Like {@link #checkPurity}, this runs only under {@code -AcheckPurityAnnotations}.
      */
     private void checkSideEffectsOnly() {
+      if (!checkPurityAnnotations) {
+        return;
+      }
       if (isMethodReference) {
         // TODO: Check a method reference against the `@SideEffectsOnly` annotation of the
         // functional interface method.  The two annotations are written in unrelated scopes:  the
