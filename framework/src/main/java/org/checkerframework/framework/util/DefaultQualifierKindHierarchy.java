@@ -27,6 +27,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
+import org.plumelib.util.MapsP;
 import org.plumelib.util.StringsP;
 
 /**
@@ -244,8 +245,9 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
   protected Map<@Interned @CanonicalName String, DefaultQualifierKind> createQualifierKinds(
       @UnderInitialization DefaultQualifierKindHierarchy this,
       Collection<Class<? extends Annotation>> qualifierClasses) {
-    TreeMap<@Interned @CanonicalName String, DefaultQualifierKind> nameToQualifierKind =
-        new TreeMap<>();
+    // This is a HashMap, not a TreeMap, because the keys are long names with a long shared prefix.
+    HashMap<@Interned @CanonicalName String, DefaultQualifierKind> nameToQualifierKind =
+        new HashMap<>(MapsP.mapCapacity(qualifierClasses.size()));
     for (Class<? extends Annotation> clazz : qualifierClasses) {
       @SuppressWarnings("interning") // uniqueness is tested immediately below
       @Interned DefaultQualifierKind qualifierKind = new DefaultQualifierKind(clazz);

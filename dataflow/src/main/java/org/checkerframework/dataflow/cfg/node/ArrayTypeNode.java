@@ -4,7 +4,6 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -53,7 +52,7 @@ public class ArrayTypeNode extends Node {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getType());
+    return getType().hashCode();
   }
 
   @Override
