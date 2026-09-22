@@ -1495,7 +1495,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           case "call" -> "purity.call";
           case "catch" -> "purity.catch";
           case "object.creation" -> "purity.object.creation";
-          default -> throw new BugInCF("unexpected purity reason " + reason);
+          default -> customPurityMessageKey(reason);
         };
     if (reason.equals("call")) {
       ExecutableElement calleeElement;
@@ -1514,6 +1514,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     } else {
       checker.reportError(tree, msgKey, violation.purityAdjective);
     }
+  }
+
+  /**
+   * Returns the message key for a purity violation reason other than those that {@link
+   * PurityChecker} produces. A checker that records its own reason, by calling {@code
+   * PurityResult.addNotDetReason}, {@code addNotSEFreeReason}, or {@code addNotBothReason}, must
+   * define the returned key in its own {@code messages.properties} file.
+   *
+   * @param reason the reason for the purity violation
+   * @return the message key for the reason
+   */
+  @SuppressWarnings("compilermessages") // the key is defined by the checker that uses the reason
+  private static @CompilerMessageKey String customPurityMessageKey(String reason) {
+    return "purity." + reason;
   }
 
   /**

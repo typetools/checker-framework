@@ -22,8 +22,9 @@ public class Issue951 {
   @Pure
   public static int arbitraryExceptionArg1() {
     // :: error: [purity.call]
-    // :: error: [purity.call]
-    throw new MyException("" + arbitraryMethod());
+    throw new MyException(
+        // :: error: [purity.call]
+        "" + arbitraryMethod());
   }
 
   @Pure
@@ -37,8 +38,9 @@ public class Issue951 {
     // The method is safe, so this is a false positive warning;
     // in the future the Purity Checker may not issue this warning.
     // :: error: [purity.call]
-    // :: error: [purity.call]
-    throw new MyException("" + sefMethod());
+    throw new MyException(
+        // :: error: [purity.call]
+        "" + sefMethod());
   }
 
   @Pure
@@ -52,8 +54,9 @@ public class Issue951 {
   @Pure
   public static int detExceptionArg1() {
     // :: error: [purity.call]
-    // :: error: [purity.call]
-    throw new MyException("" + detMethod());
+    throw new MyException(
+        // :: error: [purity.call]
+        "" + detMethod());
   }
 
   @Pure
