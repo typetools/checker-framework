@@ -145,6 +145,7 @@ target/
 
 checker/tests/command-line/issue618/TwoCheckers.class
 checker/tests/command-line/issue618/out.txt
+checker/tests/command-line/override-message/OverrideMessage.actual
 checker/tests/nullness-extra/*.class
 checker/tests/nullness-extra/compat/Out.txt
 checker/tests/nullness-extra/compat/javax/annotation/Nullable.class
