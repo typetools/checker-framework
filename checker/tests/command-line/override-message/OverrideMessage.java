@@ -1,6 +1,5 @@
 // A diagnostic about an override names the type variables that the overriding method declares,
-// even though the two methods' signatures are compared in terms of the overridden method's type
-// variables.
+// rather than the corresponding type variables of the overridden method.
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;

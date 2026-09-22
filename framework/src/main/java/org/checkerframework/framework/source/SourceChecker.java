@@ -1842,7 +1842,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return the most specific SuppressWarnings string for the warning/error being printed
    */
   private String suppressWarningsString(Set<String> allPrefixes, String messageKey) {
-    Collection<String> prefixes = new TreeSet<>(allPrefixes);
+    NavigableSet<String> prefixes = new TreeSet<>(allPrefixes);
     prefixes.remove(SUPPRESS_ALL_PREFIX);
     if (showSuppressWarningsStrings) {
       List<String> list = new ArrayList<>(prefixes);
@@ -1858,7 +1858,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       if (prefixes.contains(defaultPrefix)) {
         return defaultPrefix + ":" + messageKey;
       } else {
-        String firstKey = prefixes.iterator().next();
+        String firstKey = prefixes.first();
         return firstKey + ":" + messageKey;
       }
     } else {
@@ -2961,9 +2961,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         // prefix:partial-message-key.
         if (prefixes.contains(currentSuppressWarningsInEffect)) {
           // The value in the @SuppressWarnings is exactly a prefix.
-          // Suppress the warning unless its message key is "unneeded.suppression".
-          boolean result = !messageKey.equals("unneeded.suppression");
-          return result;
+          if (!messageKey.equals("unneeded.suppression")) {
+            return true;
+          }
+          // An "unneeded.suppression" warning is suppressed only by the exact message key, so
+          // this prefix does not suppress it.  Proceed to the next SuppressWarnings string,
+          // which might be the exact message key.
+          continue;
         } else if (requirePrefixInWarningSuppressions) {
           // A prefix is required, but this SuppressWarnings string does not have a
           // prefix.
@@ -2972,9 +2976,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             || currentSuppressWarningsInEffect.equals("allcheckers")) {
           // Prefixes aren't required and the whole SuppressWarnings string is
           // the messagekey "all" or the checkername "allcheckers".
-          // Suppress the warning unless its message key is "unneeded.suppression".
-          boolean result = !messageKey.equals("unneeded.suppression");
-          return result;
+          if (!messageKey.equals("unneeded.suppression")) {
+            return true;
+          }
+          // An "unneeded.suppression" warning is suppressed only by the exact message key, so
+          // "all" and "allcheckers" do not suppress it.  Proceed to the next SuppressWarnings
+          // string, which might be the exact message key.
+          continue;
         }
         // The currentSuppressWarningsInEffect is not a checker name, so
         // it might be a message key.
@@ -2989,6 +2997,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           continue;
         }
         messageKeyInEffect = currentSuppressWarningsInEffect.substring(colonPos + 1);
+      }
+      if (messageKey.equals("unneeded.suppression")) {
+        // An "unneeded.suppression" warning is suppressed only by the exact message key, not by
+        // a partial message key such as "suppression".  Otherwise, a @SuppressWarnings string
+        // that the programmer wrote for some other warning would silently disable
+        // -AwarnUnneededSuppressions.
+        if (messageKeyInEffect.equals("unneeded.suppression")) {
+          return true;
+        }
+        continue;
       }
       // Check if the message key in the warning suppression is part of the message key that
       // the checker is emitting.
