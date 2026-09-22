@@ -5,7 +5,7 @@
  * @compile/ref=UnneededSuppressionsTestRequirePrefix.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AwarnUnneededSuppressions -ArequirePrefixInWarningSuppressions UnneededSuppressionsTestRequirePrefix.java
  */
 
-class UnneededSuppressionsTest {
+class UnneededSuppressionsTestRequirePrefix {
 
   @SuppressWarnings({"nullness:return"})
   public String getClassAndUid1() {
