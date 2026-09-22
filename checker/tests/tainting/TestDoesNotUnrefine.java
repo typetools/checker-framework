@@ -9,6 +9,11 @@ public class TestDoesNotUnrefine {
       return "";
     }
 
+    @DoesNotUnrefineReceiver("allcheckers")
+    String doesNotUnrefineAllCheckers() {
+      return "";
+    }
+
     String doesUnrefine() {
       return "";
     }
@@ -21,8 +26,11 @@ public class TestDoesNotUnrefine {
     field.doesNotUnrefine();
     @Untainted MyClass anotherLocal = field;
 
+    field.doesNotUnrefineAllCheckers();
+    @Untainted MyClass anotherLocal2 = field;
+
     field.doesUnrefine();
     // :: error: [assignment]
-    @Untainted MyClass anotherLocal2 = field;
+    @Untainted MyClass anotherLocal3 = field;
   }
 }

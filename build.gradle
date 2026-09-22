@@ -57,7 +57,7 @@ ext {
   gradleRunsOnJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
   gradleRunsOnJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
   gradleRunsOnJava25orHigher = JavaVersion.current() >= JavaVersion.VERSION_25
-  gradleRunsOnJava26orHigher = JavaVersion.current() >= JavaVersion.VERSION_26
+  gradleRunsOnJava28orHigher = JavaVersion.current() >= JavaVersion.VERSION_28
   // The JDK for running tests: the jdkTestVersion property or if not set, JavaVersion.current()
   jdkTestVersionProperty = providers.gradleProperty("jdkTestVersion").orNull
   if (jdkTestVersionProperty != null) {
@@ -72,9 +72,9 @@ ext {
   compilerJdkVersion = useJdk21Compiler ? 21 : testJdkVersion
   compilerRunsOnJava21orHigher = compilerJdkVersion >= 21
 
-  // As of 2026-03-11 (Lombok 1.18.44), delombok does not support JDK 26;
+  // As of 2026-09-01 (Lombok 1.18.48), delombok does not support JDK 28;
   // see https://projectlombok.org/changelog .
-  skipDelombok = gradleRunsOnJava26orHigher
+  skipDelombok = gradleRunsOnJava28orHigher
 
   parentDir = file("${rootDir}/../").absolutePath
   afuManualDir = "docs/annotation-file-utilities"

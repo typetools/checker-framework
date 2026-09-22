@@ -2,10 +2,10 @@
  * @test
  * @summary Test -AwarnUnneededSuppressions
  *
- * @compile/ref=UnneededSuppressionsTest.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AwarnUnneededSuppressions UnneededSuppressionsTest.java
+ * @compile/ref=UnneededSuppressionsNullnessTest.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AwarnUnneededSuppressions UnneededSuppressionsNullnessTest.java
  */
 
-class UnneededSuppressionsTest {
+class UnneededSuppressionsNullnessTest {
 
   @SuppressWarnings({"nullness:return"})
   public String getClassAndUid1() {

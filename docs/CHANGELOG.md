@@ -7,12 +7,15 @@
 
 ### User-visible changes
 
-The Checker Framework runs noticeably faster, due to performance tuning.
-
 New `wpi2.sh` script does whole-program inference, but requires buildfile edits.
 
-The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
-warnings that it did not previously.
+Purity Checker:
+
+* `-AcheckPurityAnnotations` issues warnings that it missed previously.
+
+The Checker Framework runs under JDK 27 -- that is, it runs on a version 27 JVM.
+
+The Checker Framework runs noticeably faster, due to performance tuning.
 
 ### Changes for type system implementers
 
