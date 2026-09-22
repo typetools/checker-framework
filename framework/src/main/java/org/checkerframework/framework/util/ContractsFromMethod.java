@@ -255,7 +255,8 @@ public class ContractsFromMethod {
    * @param argumentRenaming renaming of argument names, which maps from names in {@code
    *     argumentAnno} to names used in the returned annotation, or {@code null}
    * @return a qualifier whose type is that of {@code contractAnno.qualifier}, or an alias for it,
-   *     or null if it is not a supported qualifier of the type system
+   *     or null if the qualifier could not be loaded or is not a supported qualifier of the type
+   *     system
    */
   private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno,
@@ -273,6 +274,11 @@ public class ContractsFromMethod {
       AnnotationBuilder builder = new AnnotationBuilder(factory.getProcessingEnv(), c);
       builder.copyRenameElementValuesFromAnnotation(argumentAnno, argumentRenaming);
       anno = builder.build();
+    }
+
+    if (anno == null) {
+      // The annotation class could not be loaded.
+      return null;
     }
 
     anno = factory.canonicalAnnotation(anno);
