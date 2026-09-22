@@ -150,6 +150,22 @@ public class PurityFunctionalArgument {
     callee(b ? (this::pureLength) : (this::impureLength), s);
   }
 
+  // A cast does not change the code that an argument denotes, so the operand is checked.
+
+  void castArguments(String s) {
+    callee((Function<String, Integer>) t -> t.length(), s);
+    // :: error: [purity.not.sideeffectfree.assign.field]
+    callee((Function<String, Integer>) t -> count++, s);
+    callee((Function<String, Integer>) this::pureLength, s);
+    // :: error: [purity.functional.argument]
+    callee((Function<String, Integer>) this::impureLength, s);
+    // A cast of any other argument is checked against the functional method of the cast's type,
+    // just as an uncast argument is checked against the functional method of its own type.
+    // :: error: [purity.functional.argument]
+    callee((Function<String, Integer>) annotatedVariable, s);
+    callee((PureFunction<String, Integer>) unannotatedVariable, s);
+  }
+
   // The null literal denotes no code, so there is nothing to check.
 
   void nullArguments(boolean b, int i, String s) {

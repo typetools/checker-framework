@@ -1448,7 +1448,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * needs no check, since the caller of that method already performed one. Each initializer of an
    * array literal is checked on its own, because such an argument is the array that a varargs call
    * passes in its array form. Any other argument is checked against the functional method of its
-   * declared type.
+   * declared type. A cast of an argument that denotes code is ignored; see {@link
+   * #withoutCastsOfCode}.
    *
    * <p>This check is skipped for a requirement that the parameter's own functional method already
    * makes, because {@link #checkLambdaPurity} and {@link
@@ -1569,6 +1570,30 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
+   * Returns {@code expr} without parentheses, and also without casts if what they wrap denotes
+   * code: a lambda, a method reference, a conditional expression, or a switch expression. A cast of
+   * such an expression does not change the code that the expression denotes, so the operand is what
+   * {@link #checkFunctionalArgument} checks.
+   *
+   * <p>A cast of any other expression is left in place, so that the argument is checked against the
+   * functional method of the cast's type. That is the type of the value that the call receives,
+   * just as for an argument that is not cast.
+   *
+   * @param expr an expression
+   * @return {@code expr} without parentheses, and without casts of an expression that denotes code
+   */
+  private static ExpressionTree withoutCastsOfCode(ExpressionTree expr) {
+    ExpressionTree withoutParens = TreeUtils.withoutParens(expr);
+    ExpressionTree operand = TreeUtils.withoutParensOrCasts(withoutParens);
+    return operand instanceof LambdaExpressionTree
+            || operand instanceof MemberReferenceTree
+            || operand instanceof ConditionalExpressionTree
+            || operand instanceof SwitchExpressionTree
+        ? operand
+        : withoutParens;
+  }
+
+  /**
    * Checks that one argument to a functional-interface parameter has the given purity.
    *
    * @param arg the argument
@@ -1584,7 +1609,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       VariableElement param,
       ExecutableElement callee) {
     ProcessingEnvironment env = atypeFactory.getProcessingEnv();
-    ExpressionTree argument = TreeUtils.withoutParens(arg);
+    ExpressionTree argument = withoutCastsOfCode(arg);
 
     if (argument instanceof LambdaExpressionTree lambda) {
       TreePath lambdaPath = new TreePath(getCurrentPath(), argument);
