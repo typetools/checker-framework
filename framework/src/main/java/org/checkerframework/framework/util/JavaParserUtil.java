@@ -108,7 +108,7 @@ public final class JavaParserUtil {
 
   /**
    * Returns the element for the given JavaParser type, as {@link #resolveTypeName(Elements,
-   * ClassOrInterfaceType, Map)} does. This method also reads and writes a cache, for efficiency.
+   * ClassOrInterfaceType, Map)} does. This method also memoizes its recursive calls.
    *
    * @param elements used for looking up names
    * @param type a JavaParser class or interface type
@@ -156,6 +156,16 @@ public final class JavaParserUtil {
     for (Node ancestor = type.getParentNode().orElse(null);
         ancestor != null;
         child = ancestor, ancestor = ancestor.getParentNode().orElse(null)) {
+      // A local type declaration is a block statement, so only a block or a switch entry can
+      // directly contain one.
+      if ((ancestor instanceof BlockStmt || ancestor instanceof SwitchEntry)
+          && declaresLocalType(ancestor, firstComponent, child)) {
+        // `name` names a local class, or is nested within one.  A local class shadows any type of
+        // the same name, including a type parameter, and `Elements` cannot look up a local class
+        // by name.
+        return null;
+      }
+
       if (ancestor instanceof NodeWithTypeParameters<?> genericDeclaration) {
         for (TypeParameter typeParameter : genericDeclaration.getTypeParameters()) {
           if (typeParameter.getNameAsString().equals(firstComponent)) {
@@ -164,15 +174,6 @@ public final class JavaParserUtil {
             return null;
           }
         }
-      }
-
-      // A local type declaration is a block statement, so only a block or a switch entry can
-      // directly contain one.
-      if ((ancestor instanceof BlockStmt || ancestor instanceof SwitchEntry)
-          && declaresLocalType(ancestor, firstComponent, child)) {
-        // `name` names a local class, or is nested within one.  A local class shadows any type of
-        // the same name, and `Elements` cannot look up a local class by name.
-        return null;
       }
 
       if (ancestor instanceof EnumConstantDeclaration enumConstant
@@ -227,6 +228,8 @@ public final class JavaParserUtil {
             result =
                 resolveMemberType(
                     elements,
+                    // Every member type that `enclosingElement` declares is a member of it,
+                    // whatever its access modifier is.
                     new SearchedType(enclosingElement, true, true, true),
                     firstComponent,
                     suffix,
@@ -965,8 +968,8 @@ public final class JavaParserUtil {
 
   /**
    * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined. It
-   * cannot be determined for an intersection type, a union type, {@code var}, a wildcard, a type
-   * parameter declaration, or a type that is not on the classpath.
+   * cannot be determined for a use of a type variable, an intersection type, a union type, {@code
+   * var}, a wildcard, a type parameter declaration, or a type that is not on the classpath.
    *
    * @param elements used for looking up names
    * @param types used for creating types

@@ -3,7 +3,6 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.ParameterizedTypeTree;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
@@ -53,7 +52,7 @@ public class ParameterizedTypeNode extends Node {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getTree());
+    return getTree().hashCode();
   }
 
   @Override
