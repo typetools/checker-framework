@@ -6156,6 +6156,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         List<String> typeSystems =
             AnnotationUtils.getElementValueArray(
                 am, doesNotUnrefineReceiverValueElement, String.class);
+        if (typeSystems.contains("allcheckers")) {
+          return true;
+        }
         for (String prefix : checker.getSuppressWarningsPrefixes()) {
           if (typeSystems.contains(prefix)) {
             return true;
