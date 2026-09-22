@@ -27,7 +27,7 @@ public class PurityChecker extends BaseTypeChecker {
   public Map<String, String> getOptions() {
     Map<String, String> options = super.getOptions();
     if (!options.containsKey("checkPurityAnnotations")) {
-      options.put("checkPurityAnnotations", null);
+      options.put("checkPurityAnnotations", "true");
     }
     return options;
   }
