@@ -1,6 +1,5 @@
 /*
  * @test
- * @ignore This test fails; the slowness it guards against has not been fixed.
  * @summary Type-checking-performance regression test for the Value Checker on a large `switch`
  * statement.  Method `getConstants` is a doubly-nested loop whose innermost statement is a `switch`
  * on an integer with about 200 `case` labels, all compile-time integer constants.  Distilled from
@@ -8,6 +7,12 @@
  * https://github.com/randoop/randoop/pull/1846 ("Extract method to make type checking faster").
  * That PR moved the body of the `switch` into a method of its own, purely to make type-checking
  * faster; this file keeps the pre-PR shape.
+ *
+ * The `switch` gives the block that follows it about 200 predecessors, and each `case Const.XXX`
+ * puts an entry for the constant field `Const.XXX` into the dataflow store, so the store holds
+ * about 200 field entries by the end of the `switch`.  Merging the stores at that one join point
+ * therefore dominates the analysis, and the cost of merging two abstract values is what this file
+ * measures.
  *
  * Everything randoop depended on -- Apache BCEL, plume-lib, and randoop's own classes -- is stubbed
  * at the bottom of this file, so the test is self-contained.  The stubs are deliberately trivial:
@@ -18,9 +23,10 @@
  *
  * -AslowTypecheckingSeconds is set low enough that a performance regression produces a
  * "slow.typechecking" warning, and -Werror turns that warning into a test failure.  Measured
- * through jtreg on an otherwise idle machine: 21 seconds.  Extracting the `switch` into its own
- * method, as randoop PR #1846 did, brings that down to about 3 seconds, so the threshold below is
- * far above a fixed implementation and far below the current one.
+ * through jtreg on an otherwise idle machine: 5 seconds, versus 14 seconds before the store-merging
+ * optimizations that this test guards, the main one being that an upper bound of an abstract value
+ * and itself is that value.  The threshold below is double the 5 seconds, and is also well below
+ * the 14 seconds.
  *
  * @compile/timeout=600 -Werror -processor org.checkerframework.common.value.ValueChecker -AslowTypecheckingSeconds=10 RandoopClassFileConstants.java
  */
