@@ -1842,7 +1842,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return the most specific SuppressWarnings string for the warning/error being printed
    */
   private String suppressWarningsString(Set<String> allPrefixes, String messageKey) {
-    Collection<String> prefixes = new TreeSet<>(allPrefixes);
+    NavigableSet<String> prefixes = new TreeSet<>(allPrefixes);
     prefixes.remove(SUPPRESS_ALL_PREFIX);
     if (showSuppressWarningsStrings) {
       List<String> list = new ArrayList<>(prefixes);
@@ -1858,7 +1858,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       if (prefixes.contains(defaultPrefix)) {
         return defaultPrefix + ":" + messageKey;
       } else {
-        String firstKey = prefixes.iterator().next();
+        String firstKey = prefixes.first();
         return firstKey + ":" + messageKey;
       }
     } else {

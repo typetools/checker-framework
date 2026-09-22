@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.NavigableSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -1425,9 +1426,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     List<Boolean> boolValues =
         AnnotationUtils.getElementValueArray(boolAnno, boolValValueElement, Boolean.class);
-    Set<Boolean> boolSet = new TreeSet<>(boolValues);
+    NavigableSet<Boolean> boolSet = new TreeSet<>(boolValues);
     if (boolSet.size() == 1) {
-      return boolSet.iterator().next();
+      return boolSet.first();
     }
     return null;
   }
