@@ -396,6 +396,7 @@ public final class AnnotationUtils {
    * @param a2 the second annotation
    * @return an ordering over AnnotationMirrors based on their name and values
    */
+  @Pure
   public static int compareAnnotationMirrors(AnnotationMirror a1, AnnotationMirror a2) {
     int nameComparison = compareByName(a1, a2);
     if (nameComparison != 0) {

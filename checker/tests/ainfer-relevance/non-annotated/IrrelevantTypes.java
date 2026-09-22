@@ -1,8 +1,7 @@
-// Inference infers annotations for types that this checker treats as irrelevant:  `double`, which
-// is not listed in the checker's `@RelevantJavaTypes` and is not related to a listed type by
-// subtyping; and arrays, because `Object[].class` is not listed.  The goal file records that
-// inference currently writes those annotations into the .ajava file.  They are clutter:  because
-// the checker treats these types as irrelevant, omitting them would not change the result of
+// Inference must not write, into the .ajava file, an annotation that it infers for an irrelevant
+// type:  `double`, which is not listed in the checker's `@RelevantJavaTypes` and is not related to
+// a listed type by subtyping; or an array, because `Object[].class` is not listed.  Because the
+// checker treats these types as irrelevant, omitting the annotations does not change the result of
 // type-checking.
 public class IrrelevantTypes {
 
