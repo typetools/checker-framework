@@ -2239,17 +2239,20 @@ public final class AnnotationFileParser {
    */
   private boolean sameTypeArguments(TypeMirror javacType, ClassOrInterfaceType javaParserType) {
     NodeList<Type> javaParserTypeArgs = javaParserType.getTypeArguments().orElse(null);
-    ClassOrInterfaceType javaParserScope = javaParserType.getScope().orElse(null);
-    // If no enclosing type is written with type arguments, then the enclosing types need not be
-    // compared, just as a type with no type arguments matches any type arguments.
-    boolean compareScope = javaParserScope != null && writesTypeArguments(javaParserScope);
-    if (javaParserTypeArgs == null && !compareScope) {
+    // The enclosing type, if it or one of its own enclosing types is written with type arguments;
+    // otherwise null.  If no enclosing type is written with type arguments, then the enclosing
+    // types need not be compared, just as a type with no type arguments matches any type
+    // arguments.
+    ClassOrInterfaceType javaParserScope =
+        javaParserType.getScope().filter(AnnotationFileParser::writesTypeArguments).orElse(null);
+    if (javaParserTypeArgs == null && javaParserScope == null) {
       return true;
     }
     if (!(javacType instanceof DeclaredType javacDeclaredType)) {
       return false;
     }
-    if (compareScope && !sameTypeArguments(javacDeclaredType.getEnclosingType(), javaParserScope)) {
+    if (javaParserScope != null
+        && !sameTypeArguments(javacDeclaredType.getEnclosingType(), javaParserScope)) {
       return false;
     }
     if (javaParserTypeArgs == null) {
