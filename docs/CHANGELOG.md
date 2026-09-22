@@ -7,22 +7,19 @@
 
 ### User-visible changes
 
-Renamed message keys `purity.not.deterministic.X`,
-`purity.not.sideeffectfree.X`, and
-`purity.not.deterministic.not.sideeffectfree.X` to `purity.X`.
-A suppression that uses an old key, such as
-`@SuppressWarnings("purity.not.deterministic.call")` or
-`-AsuppressWarnings=purity.not.sideeffectfree`, no longer has any effect, and no
-error is issued for the obsolete key; use the new key instead.  Because three
-old keys were collapsed into one new key, a suppression can no longer
-distinguish which purity property the method failed to have.
-
-The Checker Framework runs noticeably faster, due to performance tuning.
-
 New `wpi2.sh` script does whole-program inference, but requires buildfile edits.
 
-The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
-warnings that it did not previously.
+Purity Checker:
+
+* Renamed message keys `purity.not.deterministic.X`,
+  `purity.not.sideeffectfree.X`, and
+  `purity.not.deterministic.not.sideeffectfree.X` to `purity.X`.
+* The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
+  warnings that it did not previously.
+
+The Checker Framework runs under JDK 27 -- that is, it runs on a version 27 JVM.
+
+The Checker Framework runs noticeably faster, due to performance tuning.
 
 ### Changes for type system implementers
 

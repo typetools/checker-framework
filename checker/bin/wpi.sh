@@ -87,11 +87,11 @@ if [ "${JAVA25_HOME}" = "" ]; then
 else
   has_java25="yes"
 fi
-# shellcheck disable=SC2153 # testing for JAVA26_HOME, not a typo of JAVA_HOME
-if [ "${JAVA26_HOME}" = "" ]; then
-  has_java26="no"
+# shellcheck disable=SC2153 # testing for JAVA27_HOME, not a typo of JAVA_HOME
+if [ "${JAVA27_HOME}" = "" ]; then
+  has_java27="no"
 else
-  has_java26="yes"
+  has_java27="yes"
 fi
 
 if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
@@ -125,9 +125,9 @@ if [ "${has_java_home}" = "yes" ]; then
     export JAVA25_HOME="${JAVA_HOME}"
     has_java25="yes"
   fi
-  if [ "${has_java26}" = "no" ] && [ "${java_version}" = 26 ]; then
-    export JAVA26_HOME="${JAVA_HOME}"
-    has_java26="yes"
+  if [ "${has_java27}" = "no" ] && [ "${java_version}" = 27 ]; then
+    export JAVA27_HOME="${JAVA_HOME}"
+    has_java27="yes"
   fi
 fi
 
@@ -155,16 +155,16 @@ if [ "${has_java25}" = "yes" ] && [ ! -d "${JAVA25_HOME}" ]; then
   echo "JAVA25_HOME is set to a non-existent directory ${JAVA25_HOME}"
   exit 1
 fi
-if [ "${has_java26}" = "yes" ] && [ ! -d "${JAVA26_HOME}" ]; then
-  echo "JAVA26_HOME is set to a non-existent directory ${JAVA26_HOME}"
+if [ "${has_java27}" = "yes" ] && [ ! -d "${JAVA27_HOME}" ]; then
+  echo "JAVA27_HOME is set to a non-existent directory ${JAVA27_HOME}"
   exit 1
 fi
 
-if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java21}" = "no" ] && [ "${has_java24}" = "no" ] && [ "${has_java25}" = "no" ] && [ "${has_java26}" = "no" ]; then
+if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java21}" = "no" ] && [ "${has_java24}" = "no" ] && [ "${has_java25}" = "no" ] && [ "${has_java27}" = "no" ]; then
   if [ "${has_java_home}" = "yes" ]; then
     echo "Cannot determine Java version from JAVA_HOME"
   else
-    echo "No Java 8, 11, 17, 21, 24, 25, or 26 JDK found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, JAVA21_HOME, JAVA24_HOME, or JAVA25_HOME must be set."
+    echo "No Java 8, 11, 17, 21, 24, 25, or 27 JDK found. At least one of JAVA_HOME or JAVANN_HOME (where NN is 8, 11, 17, ...) must be set."
   fi
   echo "JAVA_HOME = ${JAVA_HOME}"
   echo "JAVA8_HOME = ${JAVA8_HOME}"
@@ -173,7 +173,7 @@ if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" 
   echo "JAVA21_HOME = ${JAVA21_HOME}"
   echo "JAVA24_HOME = ${JAVA24_HOME}"
   echo "JAVA25_HOME = ${JAVA25_HOME}"
-  echo "JAVA26_HOME = ${JAVA26_HOME}"
+  echo "JAVA27_HOME = ${JAVA27_HOME}"
   command -v java
   java -version
   exit 1
