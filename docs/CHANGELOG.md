@@ -3,16 +3,19 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 4.2.4 (2026-10-01)
+## Version 4.3.0 (2026-10-01)
 
 ### User-visible changes
 
-The Checker Framework runs noticeably faster, due to performance tuning.
-
 New `wpi2.sh` script does whole-program inference, but requires buildfile edits.
 
-The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
-warnings that it did not previously.
+Purity Checker:
+
+* `-AcheckPurityAnnotations` issues warnings that it missed previously.
+
+The Checker Framework runs under JDK 27 -- that is, it runs on a version 27 JVM.
+
+The Checker Framework runs noticeably faster, due to performance tuning.
 
 ### Changes for type system implementers
 
@@ -23,6 +26,9 @@ Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
 
 Removed the unused method
 `WholeProgramInferenceScenesStorage.updateAnnotationSetInScene()`.
+
+Methods that used to return (or accept) an `IPair` now use a record with
+meaningful component names.
 
 ### Closed issues
 

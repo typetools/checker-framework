@@ -26,7 +26,6 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.CollectionsP;
-import org.plumelib.util.IPair;
 
 /**
  * An implementation of a forward analysis to solve a org.checkerframework.dataflow problem given a
@@ -212,9 +211,10 @@ public class ForwardAnalysisImpl<
   @Override
   @SuppressWarnings("nullness:contracts.precondition.override") // implementation field
   @RequiresNonNull("cfg")
-  public List<IPair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores() {
-    return CollectionsP.<ReturnNode, IPair<ReturnNode, @Nullable TransferResult<V, S>>>mapList(
-        returnNode -> IPair.of(returnNode, storesAtReturnStatements.get(returnNode)),
+  public List<ReturnStatementStore<V, S>> getReturnStatementStores() {
+    return CollectionsP.<ReturnNode, ReturnStatementStore<V, S>>mapList(
+        returnNode ->
+            new ReturnStatementStore<>(returnNode, storesAtReturnStatements.get(returnNode)),
         cfg.getReturnNodes());
   }
 

@@ -14,8 +14,8 @@ import org.checkerframework.afu.scenelib.type.ArrayType;
 import org.checkerframework.afu.scenelib.type.BoundedType;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.objectweb.asm.TypePath;
-import org.plumelib.util.IPair;
 import org.plumelib.util.StringsP;
 
 /**
@@ -255,13 +255,20 @@ public abstract class Insertion {
   public abstract Kind getKind();
 
   /**
+   * An annotation, split into its package name and the rest of it.
+   *
+   * @param packageName the annotation's package name, or null if the package was not removed
+   * @param annotation the annotation without its package name
+   */
+  public record PackageAndAnnotation(@Nullable String packageName, String annotation) {}
+
+  /**
    * Removes and returns the leading package.
    *
    * @param s the string representation of an annotation
-   * @return given {@code @com.foo.bar(baz)} it returns a pair of {@code com.foo} and
-   *     {@code @bar(baz)}
+   * @return given {@code @com.foo.bar(baz)} it returns {@code com.foo} and {@code @bar(baz)}
    */
-  public static IPair<String, String> removePackage(String s) {
+  public static PackageAndAnnotation removePackage(String s) {
     int nameEnd = s.indexOf('(');
     if (nameEnd == -1) {
       nameEnd = s.length();
@@ -272,13 +279,13 @@ public abstract class Insertion {
       if (!alwaysQualify.contains(basename)) {
         String packageName = s.substring(0, nameEnd);
         if (packageName.startsWith("@")) {
-          return IPair.of(packageName.substring(1), "@" + basename);
+          return new PackageAndAnnotation(packageName.substring(1), "@" + basename);
         } else {
-          return IPair.of(packageName, basename);
+          return new PackageAndAnnotation(packageName, basename);
         }
       }
     }
-    return IPair.of((String) null, s);
+    return new PackageAndAnnotation(null, s);
   }
 
   /**
