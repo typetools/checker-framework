@@ -84,8 +84,8 @@ public class PurityFunctionalArgumentKinds {
     sideEffectFreeCallee(t -> deterministicOnly(t), s);
   }
 
-  // A functional method that returns no value is deterministic, whatever implements it, so a @Pure
-  // callee requires only side-effect-freeness of it.
+  // A side-effect-free functional method that returns no value is deterministic, whatever
+  // implements it, so a @Pure callee requires only side-effect-freeness of it.
 
   @Pure
   static int pureRunnableCallee(Runnable r) {
@@ -95,6 +95,11 @@ public class PurityFunctionalArgumentKinds {
   @SideEffectFree
   void sideEffectFreeVoid() {}
 
+  @SideEffectFree
+  int sideEffectFreeNotDeterministic() {
+    return count;
+  }
+
   void impureVoid() {
     count++;
   }
@@ -102,10 +107,38 @@ public class PurityFunctionalArgumentKinds {
   void voidFunctionalMethod() {
     pureRunnableCallee(() -> sideEffectFreeVoid());
     pureRunnableCallee(this::sideEffectFreeVoid);
+    // The lambda is not deterministic, but as a side-effect-free void callback it is.
+    pureRunnableCallee(() -> sideEffectFreeNotDeterministic());
     // :: error: [purity.not.sideeffectfree.call]
     pureRunnableCallee(() -> impureVoid());
     // :: error: [purity.functional.argument]
     pureRunnableCallee(this::impureVoid);
+  }
+
+  // A @Deterministic callee does not require side-effect-freeness of its functional arguments, so
+  // determinism is still required of a void callback:  the callback's side effects could make a
+  // later call to the callee compute a different value.
+
+  @Deterministic
+  static int deterministicRunnableCallee(Runnable r) {
+    return 0;
+  }
+
+  void voidFunctionalMethodDeterministicCallee() {
+    deterministicRunnableCallee(() -> sideEffectFreeVoid());
+    deterministicRunnableCallee(this::sideEffectFreeVoid);
+    // :: error: [purity.not.deterministic.call]
+    deterministicRunnableCallee(() -> impureVoid());
+    // :: error: [purity.functional.argument]
+    deterministicRunnableCallee(this::impureVoid);
+    // :: error: [purity.not.deterministic.assign.field]
+    deterministicRunnableCallee(() -> count++);
+    // Conservative:  the callback discards the value, so a side-effect-free callback is
+    // deterministic, but the requirement is checked against the code that the argument denotes.
+    // :: error: [purity.not.deterministic.call]
+    deterministicRunnableCallee(() -> sideEffectFreeNotDeterministic());
+    // :: error: [purity.functional.argument]
+    deterministicRunnableCallee(this::sideEffectFreeNotDeterministic);
   }
 
   // A method reference's annotations must cover the callee's.

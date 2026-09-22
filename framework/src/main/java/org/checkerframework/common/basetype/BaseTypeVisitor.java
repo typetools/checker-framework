@@ -1516,7 +1516,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Returns the purity that a method whose purity is {@code methodKinds} requires of the argument
    * that is passed to a functional-interface parameter whose functional method is {@code
-   * paramFunction}: the kinds that {@code paramFunction} does not already promise.
+   * paramFunction}: the kinds that {@code paramFunction} does not already promise, less determinism
+   * when the argument is a side-effect-free method that returns no value.
    *
    * @param paramFunction the functional method of a parameter's type
    * @param methodKinds the purity that a method requires of its functional-interface arguments
@@ -1524,10 +1525,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   private EnumSet<PurityKind> purityRequiredOfArgument(
       ExecutableElement paramFunction, EnumSet<PurityKind> methodKinds) {
+    EnumSet<PurityKind> paramKinds = PurityUtils.getPurityKinds(atypeFactory, paramFunction);
     EnumSet<PurityKind> required = EnumSet.copyOf(methodKinds);
-    required.removeAll(PurityUtils.getPurityKinds(atypeFactory, paramFunction));
-    if (paramFunction.getReturnType().getKind() == TypeKind.VOID) {
-      // A functional method that returns no value is deterministic, whatever implements it.
+    required.removeAll(paramKinds);
+    if (paramFunction.getReturnType().getKind() == TypeKind.VOID
+        && (assumeSideEffectFree
+            || paramKinds.contains(PurityKind.SIDE_EFFECT_FREE)
+            || methodKinds.contains(PurityKind.SIDE_EFFECT_FREE))) {
+      // A side-effect-free method that returns no value is deterministic:  two calls return the
+      // same (absent) value.  The argument is side-effect-free either because the functional
+      // method promises it or because it is required here.  Without that guarantee the argument
+      // must still be checked for determinism, since its side effects can make a later call
+      // compute a different value.
       required.remove(PurityKind.DETERMINISTIC);
     }
     return required;
@@ -1731,17 +1740,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Returns the purity of a method that implements a functional method: its declared purity, plus
-   * determinism if it returns no value, plus whatever the command-line assumptions grant it.
+   * whatever the command-line assumptions grant it, plus determinism if it is side-effect-free and
+   * returns no value.
    *
    * @param method a method or constructor
    * @return the purity kinds of {@code method}
    */
   private EnumSet<PurityKind> implementationPurityKinds(ExecutableElement method) {
     EnumSet<PurityKind> result = EnumSet.copyOf(PurityUtils.getPurityKinds(atypeFactory, method));
-    if (method.getKind() != ElementKind.CONSTRUCTOR
-        && method.getReturnType().getKind() == TypeKind.VOID) {
-      result.add(PurityKind.DETERMINISTIC);
-    }
     // Like PurityChecker, apply each assumption to every method, including one with no purity
     // annotation, so that a method reference is treated exactly like a lambda whose body calls
     // the referenced method.
@@ -1753,6 +1759,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     if (assumePureGetters && ElementUtils.isGetter(method)) {
       result.add(PurityKind.SIDE_EFFECT_FREE);
+      result.add(PurityKind.DETERMINISTIC);
+    }
+    if (method.getKind() != ElementKind.CONSTRUCTOR
+        && method.getReturnType().getKind() == TypeKind.VOID
+        && result.contains(PurityKind.SIDE_EFFECT_FREE)) {
+      // Like PurityChecker, treat a side-effect-free method that returns no value as
+      // deterministic:  two calls return the same (absent) value.
       result.add(PurityKind.DETERMINISTIC);
     }
     return result;
