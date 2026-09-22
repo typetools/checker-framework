@@ -218,6 +218,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   @SuppressWarnings({"interning:not.interned", "TypeEquals"}) // efficiency pre-test
   @Override
   public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    }
     if (!(obj instanceof CFAbstractValue<?> other)) {
       return false;
     }
@@ -529,6 +532,14 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    */
   private V upperBound(@Nullable V other, boolean shouldWiden) {
     if (other == null) {
+      @SuppressWarnings("unchecked")
+      V v = (V) this;
+      return v;
+    }
+    // An upper bound of a value and itself is that value.  Testing for this is worthwhile because
+    // merging the stores at a control-flow join point computes an upper bound for every expression
+    // in the store, and most of those expressions have the same value along both branches.
+    if (this.equals(other)) {
       @SuppressWarnings("unchecked")
       V v = (V) this;
       return v;
