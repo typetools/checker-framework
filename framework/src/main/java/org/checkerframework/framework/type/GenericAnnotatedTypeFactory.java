@@ -1055,6 +1055,9 @@ public abstract class GenericAnnotatedTypeFactory<
       return null;
     }
     Store store = getStoreBefore(tree);
+    if (store == null) {
+      return null;
+    }
     Value value = store.getValue(je);
     return value != null ? value.getAnnotations().first() : null;
   }
