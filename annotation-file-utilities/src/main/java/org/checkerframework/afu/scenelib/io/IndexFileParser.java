@@ -63,7 +63,6 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.objectweb.asm.TypePath;
 import org.plumelib.util.ArraysP;
 import org.plumelib.util.FileIOException;
-import org.plumelib.util.IPair;
 
 /**
  * IndexFileParser provides static methods {@link #parse(LineNumberReader, String, AScene)}, {@link
@@ -1287,16 +1286,12 @@ public final class IndexFileParser {
         // parseAnnotations(i);
         // parseInnerTypes(i);
         int offset = 0;
-        IPair<ASTPath, TypePath> pair = splitNewArrayType(astPath); // handle special case
-        ATypeElement i;
-        if (pair == null) {
-          i = decl.insertAnnotations.getVivify(astPath);
-        } else {
-          i = decl.insertAnnotations.getVivify(pair.first);
-          if (pair.second != null) {
-            i = i.innerTypes.getVivify(TypePathEntry.typePathToList(pair.second));
-            offset = pair.second.getLength();
-          }
+        NewArrayPath newArrayPath = splitNewArrayType(astPath); // handle special case
+        ATypeElement i = decl.insertAnnotations.getVivify(newArrayPath.outerPath());
+        TypePath innerTypePath = newArrayPath.innerTypePath();
+        if (innerTypePath != null) {
+          i = i.innerTypes.getVivify(TypePathEntry.typePathToList(innerTypePath));
+          offset = innerTypePath.getLength();
         }
         parseAnnotations(i);
         parseInnerTypes(i, offset);
@@ -1322,9 +1317,9 @@ public final class IndexFileParser {
    * invariant by separating out the inner type information.
    *
    * @param astPath the ASTPath to process
-   * @return IPair of modified ASTPath and extracted TypePath
+   * @return the modified ASTPath and the extracted TypePath
    */
-  private IPair<ASTPath, TypePath> splitNewArrayType(ASTPath astPath) {
+  private NewArrayPath splitNewArrayType(ASTPath astPath) {
     ASTPath outerPath = astPath;
     TypePath loc = null;
     int last = astPath.size() - 1;
@@ -1340,8 +1335,16 @@ public final class IndexFileParser {
         }
       }
     }
-    return IPair.of(outerPath, loc);
+    return new NewArrayPath(outerPath, loc);
   }
+
+  /**
+   * An ASTPath for a new array expression, with the inner type information separated out.
+   *
+   * @param outerPath the ASTPath without the inner type information
+   * @param innerTypePath the extracted inner type information, or null if there is none
+   */
+  private record NewArrayPath(ASTPath outerPath, @Nullable TypePath innerTypePath) {}
 
   /**
    * Parses an AST path.
