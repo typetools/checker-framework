@@ -1,0 +1,72 @@
+# Delete the CodeQL caches that nothing can reach any more.
+#
+# CodeQL looks up both of its caches by restore key, which is a key prefix:
+#
+#   Looking in Actions cache for overlay-base database with restore key
+#     codeql-overlay-base-database-1-<confighash>-java-<codeqlversion>-
+#   Downloading cache for java with key codeql-dependencies-1-Linux-java-<hash>
+#     and restore keys codeql-dependencies-1-Linux-java-
+#
+# A restore key selects the most recently created cache that it matches, so
+# only the newest cache of each kind is ever read.  The older ones are
+# unreachable, and deleting them therefore costs nothing.
+#
+# They accumulate because the key that CodeQL saves under is not the key that
+# it looks up.  It computes the lookup key before extraction and the save key
+# after, and the Gradle build writes files that the key's hash covers, so the
+# two differ.  Every analysis thus stores about 1GB that no later analysis can
+# find by its primary key.  A day of them crowds every other cache out of the
+# repository's 10GB quota, whereupon GitHub evicts caches that are in use.
+name: Prune CodeQL caches
+
+"on":
+  schedule:
+    # Hourly.  CodeQL adds about 1GB per analysis, so a day of them exceeds
+    # the entire 10GB quota.  Pruning daily would leave most of each day
+    # over quota, which is when GitHub evicts caches that are in use.  A run
+    # with nothing to delete costs one API request.
+    - cron: "17 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: List what would be deleted, without deleting it.
+        type: boolean
+        default: false
+
+permissions:
+  # "contents: read" is what actions/checkout authenticates its fetch with.
+  contents: read
+  actions: write
+
+# A run recomputes which caches to delete, so a queued run needs no state from
+# the one before it; it only needs not to race it and delete what it listed.
+concurrency:
+  group: prune-codeql-caches
+  cancel-in-progress: false
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/workflows/prune-codeql-caches.py
+          sparse-checkout-cone-mode: false
+          show-progress: false
+          persist-credentials: false
+      - name: Delete every CodeQL cache but the newest of each kind
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Sort by creation, which no concurrent job changes; the default
+          # sort is by last access, under which paging can repeat or skip a
+          # cache while other jobs restore caches.
+          gh api --paginate \
+            "repos/${GH_REPO}/actions/caches?per_page=100&sort=created_at&direction=desc" \
+            --jq '.actions_caches[]' > "${RUNNER_TEMP}/caches.jsonl"
+          # "-u" because Actions gives the step a pipe, which block-buffers
+          # output; a run that hits the timeout would log nothing at all.
+          python3 -u .github/workflows/prune-codeql-caches.py "${RUNNER_TEMP}/caches.jsonl"

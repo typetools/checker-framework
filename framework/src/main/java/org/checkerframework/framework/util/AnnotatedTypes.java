@@ -48,6 +48,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AsSuperVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SyntheticArrays;
+import org.checkerframework.framework.util.TypeArgumentMapper.TypeParameterMapping;
 import org.checkerframework.framework.util.typeinference8.InferenceResult;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -56,7 +57,6 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsP;
-import org.plumelib.util.IPair;
 import org.plumelib.util.StringsP;
 
 /**
@@ -191,7 +191,7 @@ public final class AnnotatedTypes {
       return;
     }
 
-    Set<IPair<Integer, Integer>> typeArgMap =
+    Set<TypeParameterMapping> typeArgMap =
         TypeArgumentMapper.mapTypeArgumentIndices(
             (TypeElement) declaredSubtype.getUnderlyingType().asElement(),
             (TypeElement) declaredAsSuper.getUnderlyingType().asElement(),
@@ -201,14 +201,14 @@ public final class AnnotatedTypes {
       return;
     }
 
-    List<IPair<Integer, Integer>> orderedByDestination = new ArrayList<>(typeArgMap);
-    orderedByDestination.sort(Comparator.comparingInt(o -> o.second));
+    List<TypeParameterMapping> orderedByDestination = new ArrayList<>(typeArgMap);
+    orderedByDestination.sort(Comparator.comparingInt(TypeParameterMapping::supertypeIndex));
 
     if (typeArgMap.size() == ((AnnotatedDeclaredType) supertype).getTypeArguments().size()) {
       List<? extends AnnotatedTypeMirror> subTypeArgs = declaredSubtype.getTypeArguments();
       List<AnnotatedTypeMirror> newTypeArgs =
           CollectionsP.mapList(
-              mapping -> subTypeArgs.get(mapping.first).deepCopy(), orderedByDestination);
+              mapping -> subTypeArgs.get(mapping.subtypeIndex()).deepCopy(), orderedByDestination);
       declaredAsSuper.setTypeArguments(newTypeArgs);
     } else {
       declaredAsSuper.setTypeArguments(Collections.emptyList());

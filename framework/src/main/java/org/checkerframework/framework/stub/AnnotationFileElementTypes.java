@@ -39,6 +39,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.AnnotationFileParser.AnnotationFileAnnotations;
+import org.checkerframework.framework.stub.AnnotationFileParser.FakeOverride;
 import org.checkerframework.framework.stub.AnnotationFileParser.RecordComponentStub;
 import org.checkerframework.framework.stub.AnnotationFileUtil.AnnotationFileType;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -50,7 +51,6 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsP;
-import org.plumelib.util.IPair;
 
 /**
  * Holds information about types parsed from annotation files (stub files or ajava files). When
@@ -592,10 +592,8 @@ public class AnnotationFileElementTypes {
 
     ExecutableElement method = (ExecutableElement) elt;
 
-    // This is a list of pairs of (where defined, method type) for fake overrides.  The second
-    // element of each pair is currently always an AnnotatedExecutableType.
-    List<IPair<TypeMirror, AnnotatedTypeMirror>> candidates =
-        annotationFileAnnos.fakeOverrides.get(method);
+    // The method type of each fake override is currently always an AnnotatedExecutableType.
+    List<FakeOverride> candidates = annotationFileAnnos.fakeOverrides.get(method);
 
     if (candidates == null || candidates.isEmpty()) {
       return null;
@@ -606,9 +604,9 @@ public class AnnotationFileElementTypes {
     // A list of fake receiver types.
     List<TypeMirror> applicableClasses = new ArrayList<>();
     List<TypeMirror> applicableInterfaces = new ArrayList<>();
-    for (IPair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
-      TypeMirror fakeLocation = candidatePair.first;
-      AnnotatedExecutableType candidate = (AnnotatedExecutableType) candidatePair.second;
+    for (FakeOverride fakeOverride : candidates) {
+      TypeMirror fakeLocation = fakeOverride.location();
+      AnnotatedExecutableType candidate = (AnnotatedExecutableType) fakeOverride.methodType();
       if (factory.types.isSameType(receiverTypeMirror, fakeLocation)) {
         return candidate;
       } else if (factory.types.isSubtype(receiverTypeMirror, fakeLocation)) {
@@ -647,10 +645,10 @@ public class AnnotationFileElementTypes {
       throw new BugInCF(message.toString());
     }
 
-    for (IPair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
-      TypeMirror candidateReceiverType = candidatePair.first;
+    for (FakeOverride fakeOverride : candidates) {
+      TypeMirror candidateReceiverType = fakeOverride.location();
       if (factory.types.isSameType(fakeReceiverType, candidateReceiverType)) {
-        return (AnnotatedExecutableType) candidatePair.second;
+        return (AnnotatedExecutableType) fakeOverride.methodType();
       }
     }
 

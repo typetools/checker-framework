@@ -441,7 +441,7 @@ public class TypeInformationPresenter {
       // the declared type of the functional interface
       reportTreeType(tree, factory.getAnnotatedType(tree), MessageKind.DECLARED_TYPE);
       // the use type of the functional interface
-      reportTreeType(tree, factory.getFnInterfaceFromTree(tree).first);
+      reportTreeType(tree, factory.getFnInterfaceFromTree(tree).functionalInterfaceType());
       return super.visitMemberReference(tree, unused);
     }
 

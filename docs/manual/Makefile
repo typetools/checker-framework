@@ -35,16 +35,16 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 	rm -f manual.html.bak
 
 ../../checker/bin-devel/.git-scripts:
-	cd ../.. && ./gradlew getGitScripts
+	../../checker/bin-devel/clone-or-update.sh https://github.com/plume-lib/git-scripts.git ../../checker/bin-devel/.git-scripts
 
 ../../checker/bin-devel/.plume-scripts:
-	cd ../.. && ./gradlew -q getPlumeScripts
+	../../checker/bin-devel/clone-plume-scripts.sh
 
 # Because `contributors.tex` is .PHONY, any target that depends on it is always remade.
 .PHONY: contributors.tex
 contributors.tex:
 # Update git-scripts even if it is already cloned.
-	cd ../.. && (./gradlew --stacktrace getGitScripts || (sleep 60 && ./gradlew --stacktrace getGitScripts))
+	../../checker/bin-devel/clone-or-update.sh https://github.com/plume-lib/git-scripts.git ../../checker/bin-devel/.git-scripts
 	../../checker/bin-devel/.git-scripts/git-authors --latex --punctuation > $@
 
 ../api:
@@ -63,7 +63,7 @@ check-labels:
 
 export BIBINPUTS = $BIBINPUTS:.:plume-bib
 plume-bib:
-	cd ../.. && ./gradlew getPlumeBib
+	../../checker/bin-devel/clone-or-update.sh https://github.com/mernst/plume-bib.git plume-bib
 
 
 # Leaves manual.html, and .svg files that it references.
@@ -97,6 +97,6 @@ TAGS: tags
 # This target always runs because contributors.tex is always updated.
 tags: *.tex ../../checker/bin-devel/.plume-scripts
 # Update plume-scripts even if it is already cloned.
-	cd ../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60 && ./gradlew --stacktrace getPlumeScripts))
+	../../checker/bin-devel/clone-plume-scripts.sh
 # This is better than using "*.tex" because this command puts the files in the appropriate order.
 	etags $(shell ../../checker/bin-devel/.plume-scripts/latex-process-inputs -list manual.tex)

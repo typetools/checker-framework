@@ -1,4 +1,4 @@
-// This class should not issues any errors from the value checker.
+// This class should not issue any errors from the value checker.
 // The index checker should issue the errors instead.
 
 // There is a copy of this test at checker/tests/index/MethodOverrides.java,

@@ -36,6 +36,11 @@ public class Stub {
   int x33;
   int x34;
   int x35;
+  int x36;
+  int x37;
+  int x38;
+  int x39;
+  int x40;
 
   public class InnerStub {
     int x20;

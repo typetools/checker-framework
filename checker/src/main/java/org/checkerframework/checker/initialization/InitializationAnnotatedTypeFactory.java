@@ -63,7 +63,6 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.IPair;
 
 /**
  * The annotated type factory for the freedom-before-commitment type-system. The
@@ -560,21 +559,26 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Returns the fields that are not yet initialized in a given store. The result is a pair of
-   * lists:
+   * Fields that are not yet initialized, partitioned by whether they have the invariant annotation.
    *
-   * <ul>
-   *   <li>fields that are not yet initialized and have the invariant annotation
-   *   <li>fields that are not yet initialized and do not have the invariant annotation
-   * </ul>
+   * @param withInvariantAnno fields that are not yet initialized and have the invariant annotation
+   * @param withoutInvariantAnno fields that are not yet initialized and do not have the invariant
+   *     annotation
+   */
+  public record UninitializedFields(
+      List<VariableTree> withInvariantAnno, List<VariableTree> withoutInvariantAnno) {}
+
+  /**
+   * Returns the fields that are not yet initialized in a given store, partitioned by whether they
+   * have the invariant annotation.
    *
    * @param store a store
    * @param path the current path, used to determine the current class
    * @param isStatic if true, report static fields; if false, report instance fields
    * @param receiverAnnotations the annotations on the receiver
-   * @return the fields that are not yet initialized in a given store (a pair of lists)
+   * @return the fields that are not yet initialized in a given store
    */
-  public IPair<List<VariableTree>, List<VariableTree>> getUninitializedFields(
+  public UninitializedFields getUninitializedFields(
       Store store,
       TreePath path,
       boolean isStatic,
@@ -600,7 +604,7 @@ public abstract class InitializationAnnotatedTypeFactory<
         }
       }
     }
-    return IPair.of(uninitWithInvariantAnno, uninitWithoutInvariantAnno);
+    return new UninitializedFields(uninitWithInvariantAnno, uninitWithoutInvariantAnno);
   }
 
   /**
@@ -619,7 +623,7 @@ public abstract class InitializationAnnotatedTypeFactory<
       TreePath path,
       boolean isStatic,
       List<? extends AnnotationMirror> receiverAnnotations) {
-    return getUninitializedFields(store, path, isStatic, receiverAnnotations).first;
+    return getUninitializedFields(store, path, isStatic, receiverAnnotations).withInvariantAnno();
   }
 
   /**
