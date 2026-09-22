@@ -208,7 +208,7 @@ public final class JavaParserUtil {
 
   /**
    * Returns what the given JavaParser type's name refers to, as {@link #resolveName(Elements,
-   * ClassOrInterfaceType, Map)} does. This method also reads and writes a cache, for efficiency.
+   * ClassOrInterfaceType, Map)} does. This method also memoizes its recursive calls.
    *
    * @param elements used for looking up names
    * @param type a JavaParser class or interface type
@@ -1096,8 +1096,8 @@ public final class JavaParserUtil {
 
   /**
    * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined. It
-   * cannot be determined for an intersection type, a union type, {@code var}, a wildcard, a type
-   * parameter declaration, or a type that is not on the classpath.
+   * cannot be determined for a use of a type variable, an intersection type, a union type, {@code
+   * var}, a wildcard, a type parameter declaration, or a type that is not on the classpath.
    *
    * @param elements used for looking up names
    * @param types used for creating types
