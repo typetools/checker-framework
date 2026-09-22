@@ -100,6 +100,6 @@ public class IndexRefinementInfo {
           "%s: Found %d tops, but expected one.%nFound: %s",
           IndexRefinementInfo.class, tops.size(), tops);
     }
-    return hierarchy.findAnnotationInHierarchy(set, tops.iterator().next());
+    return hierarchy.findAnnotationInHierarchy(set, tops.first());
   }
 }

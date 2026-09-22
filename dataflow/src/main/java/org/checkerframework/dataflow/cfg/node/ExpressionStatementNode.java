@@ -4,7 +4,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -60,6 +59,6 @@ public class ExpressionStatementNode extends Node {
 
   @Override
   public int hashCode() {
-    return Objects.hash(toString());
+    return toString().hashCode();
   }
 }
