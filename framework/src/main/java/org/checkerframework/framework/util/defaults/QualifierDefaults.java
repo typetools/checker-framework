@@ -1368,9 +1368,6 @@ public class QualifierDefaults {
       /** Creates a {@code DefaultApplierElementImpl}. */
       protected DefaultApplierElementImpl() {}
 
-      /** Creates a {@code DefaultApplierElementImpl}. */
-      protected DefaultApplierElementImpl() {}
-
       @Override
       public Void scan(@FindDistinct AnnotatedTypeMirror t, Void p) {
         if (!shouldBeAnnotated(t, t == defaultableTypeVar)) {
