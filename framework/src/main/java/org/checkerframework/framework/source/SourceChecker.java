@@ -1842,7 +1842,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return the most specific SuppressWarnings string for the warning/error being printed
    */
   private String suppressWarningsString(Set<String> allPrefixes, String messageKey) {
-    Collection<String> prefixes = new TreeSet<>(allPrefixes);
+    NavigableSet<String> prefixes = new TreeSet<>(allPrefixes);
     prefixes.remove(SUPPRESS_ALL_PREFIX);
     if (showSuppressWarningsStrings) {
       List<String> list = new ArrayList<>(prefixes);
@@ -1858,7 +1858,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       if (prefixes.contains(defaultPrefix)) {
         return defaultPrefix + ":" + messageKey;
       } else {
-        String firstKey = prefixes.iterator().next();
+        String firstKey = prefixes.first();
         return firstKey + ":" + messageKey;
       }
     } else {
@@ -2959,22 +2959,29 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       if (colonPos == -1) {
         // `currentSuppressWarningsInEffect` has no colon, so it is not of the form
         // prefix:partial-message-key.
-        if (prefixes.contains(currentSuppressWarningsInEffect)
-            || (!requirePrefixInWarningSuppressions
-                && (currentSuppressWarningsInEffect.equals("all")
-                    || currentSuppressWarningsInEffect.equals("allcheckers")))) {
-          // The value in the @SuppressWarnings is exactly a prefix, or -- when prefixes
-          // aren't required -- is the messagekey "all" or the checkername "allcheckers".
-          // Such a value suppresses every warning except "unneeded.suppression".  For that
-          // message key, examine the remaining values, so that a later value such as
-          // "unneeded.suppression" still has an effect.
+        if (prefixes.contains(currentSuppressWarningsInEffect)) {
+          // The value in the @SuppressWarnings is exactly a prefix.
           if (!messageKey.equals("unneeded.suppression")) {
             return true;
           }
+          // An "unneeded.suppression" warning is suppressed only by the exact message key, so
+          // this prefix does not suppress it.  Proceed to the next SuppressWarnings string,
+          // which might be the exact message key.
           continue;
         } else if (requirePrefixInWarningSuppressions) {
           // A prefix is required, but this SuppressWarnings string does not have a
           // prefix.
+          continue;
+        } else if (currentSuppressWarningsInEffect.equals("all")
+            || currentSuppressWarningsInEffect.equals("allcheckers")) {
+          // Prefixes aren't required and the whole SuppressWarnings string is
+          // the messagekey "all" or the checkername "allcheckers".
+          if (!messageKey.equals("unneeded.suppression")) {
+            return true;
+          }
+          // An "unneeded.suppression" warning is suppressed only by the exact message key, so
+          // "all" and "allcheckers" do not suppress it.  Proceed to the next SuppressWarnings
+          // string, which might be the exact message key.
           continue;
         }
         // The currentSuppressWarningsInEffect is not a checker name, so
