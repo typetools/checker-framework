@@ -65,7 +65,6 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.IPair;
 
 /** Factory that creates AbstractTypes. */
 public class InferenceFactory {
@@ -889,18 +888,25 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns the pair of {@code a} as the least upper bound of {@code a} and {@code b} and {@code b}
-   * as the least upper bound of {@code a} and {@code b}. Returns null if that least upper bound is
-   * not a parameterized type or if either {@code a} or {@code b} has no supertype that is the same
-   * class as that least upper bound.
+   * Two types viewed as their least upper bound.
+   *
+   * @param aAsSuper the first type, viewed as the least upper bound of the two types
+   * @param bAsSuper the second type, viewed as the least upper bound of the two types
+   */
+  public record ParameterizedSupers(AbstractType aAsSuper, AbstractType bAsSuper) {}
+
+  /**
+   * Returns {@code a} as the least upper bound of {@code a} and {@code b}, and {@code b} as the
+   * least upper bound of {@code a} and {@code b}. Returns null if that least upper bound is not a
+   * parameterized type or if either {@code a} or {@code b} has no supertype that is the same class
+   * as that least upper bound.
    *
    * @param a type
    * @param b type
-   * @return the pair of {@code a} as the least upper bound of {@code a} and {@code b} and {@code b}
-   *     as the least upper bound of {@code a} and {@code b}, or null
+   * @return {@code a} and {@code b}, each as the least upper bound of {@code a} and {@code b}, or
+   *     null
    */
-  public @Nullable IPair<AbstractType, AbstractType> getParameterizedSupers(
-      AbstractType a, AbstractType b) {
+  public @Nullable ParameterizedSupers getParameterizedSupers(AbstractType a, AbstractType b) {
     TypeMirror aTypeMirror = a.getJavaType();
     TypeMirror bTypeMirror = b.getJavaType();
     // com.sun.tools.javac.comp.Infer#getParameterizedSupers
@@ -921,7 +927,7 @@ public class InferenceFactory {
       return null;
     }
 
-    return IPair.of(aAsSuper, bAsSuper);
+    return new ParameterizedSupers(aAsSuper, bAsSuper);
   }
 
   /**

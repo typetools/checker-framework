@@ -1,0 +1,19 @@
+// A stub file that contains more than one package declaration, with a different annotation
+// imported after each one.  Every import applies to the whole file, not just to the package
+// declaration that precedes it.
+
+package java.net;
+
+import org.checkerframework.checker.tainting.qual.Tainted;
+
+public class IDN {
+    public static @Tainted String toASCII(String input);
+}
+
+package java.util;
+
+import org.checkerframework.checker.tainting.qual.Untainted;
+
+public class UUID {
+    public @Untainted String toString();
+}

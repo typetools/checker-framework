@@ -16,9 +16,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.framework.util.TypeArgumentMapper;
+import org.checkerframework.framework.util.TypeArgumentMapper.TypeParameterMapping;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.IPair;
 
 /**
  * KeyForPropagator is used to move nested KeyFor annotations in type arguments from one side of a
@@ -117,15 +117,15 @@ public class KeyForPropagator {
       return;
     }
 
-    Set<IPair<Integer, Integer>> typeParamMappings =
+    Set<TypeParameterMapping> typeParamMappings =
         TypeArgumentMapper.mapTypeArgumentIndices(subtypeElement, supertypeElement, types);
 
     List<AnnotatedTypeMirror> subtypeArgs = subtype.getTypeArguments();
     List<AnnotatedTypeMirror> supertypeArgs = supertype.getTypeArguments();
 
-    for (IPair<Integer, Integer> path : typeParamMappings) {
-      AnnotatedTypeMirror subtypeArg = subtypeArgs.get(path.first);
-      AnnotatedTypeMirror supertypeArg = supertypeArgs.get(path.second);
+    for (TypeParameterMapping path : typeParamMappings) {
+      AnnotatedTypeMirror subtypeArg = subtypeArgs.get(path.subtypeIndex());
+      AnnotatedTypeMirror supertypeArg = supertypeArgs.get(path.supertypeIndex());
 
       if (subtypeArg.getKind() == TypeKind.WILDCARD
           || supertypeArg.getKind() == TypeKind.WILDCARD) {
