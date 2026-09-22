@@ -1472,8 +1472,35 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   @Override
   public int hashCode() {
-    // What is a good hash code to use?
-    return 22;
+    // `equals` is mutual containment of the five maps, so equal stores have equal key sets --
+    // except that a subclass may ignore some entries of `fieldValues`, which is why the keys of
+    // `fieldValues` are hashed by the overridable `fieldValuesKeysHashCode`.  `Set.hashCode` does
+    // not depend on iteration order.
+    // This hashes only the keys, not the values, because `CFAbstractValue.hashCode` is not
+    // consistent with `CFAbstractValue.equals`: `equals` compares underlying types with
+    // `Types.isSameType` and annotations with `AnnotationUtils.areSame`, but `hashCode` uses the
+    // identity hash codes of the javac `Type` and of each javac annotation mirror.
+    return Objects.hash(
+        localVariableValues.keySet(),
+        fieldValuesKeysHashCode(),
+        arrayValues.keySet(),
+        methodCallExpressions.keySet(),
+        classValues.keySet());
+  }
+
+  /**
+   * Returns the contribution of the keys of {@link #fieldValues} to {@link #hashCode}. The result
+   * is the hash code of a set of field accesses, as defined by {@link java.util.Set#hashCode}: the
+   * sum of the hash codes of its elements.
+   *
+   * <p>A subclass whose {@code supersetOf} ignores some entries of {@code fieldValues} must
+   * override this method to ignore the same entries, so that {@code hashCode} remains consistent
+   * with {@code equals}.
+   *
+   * @return the contribution of the keys of {@code fieldValues} to {@code hashCode}
+   */
+  protected int fieldValuesKeysHashCode() {
+    return fieldValues.keySet().hashCode();
   }
 
   @SideEffectFree

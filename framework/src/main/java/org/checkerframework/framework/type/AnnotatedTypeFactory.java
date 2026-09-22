@@ -185,7 +185,7 @@ import org.plumelib.util.SystemP;
 public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /** If true, output verbose, low-level debugging messages about {@link #getAnnotatedType}. */
-  private static final boolean debugGat = false;
+  public static final boolean debugGat = false;
 
   /** If true, print verbose debugging messages about stub files. */
   private final boolean debugStubParser;
@@ -1475,7 +1475,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the annotated type of {@code tree}
    */
   public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
-    logGat("getAnnotatedType(%s)%n", tree);
+    if (debugGat) {
+      logGat("getAnnotatedType(%s)%n", tree);
+    }
 
     if (tree == null) {
       throw new BugInCF("AnnotatedTypeFactory.getAnnotatedType: null tree");
@@ -1492,19 +1494,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     } else if (TreeUtils.isExpressionTree(tree)) {
       tree = TreeUtils.withoutParens((ExpressionTree) tree);
       type = fromExpression((ExpressionTree) tree);
-      logGat("getAnnotatedType(%s): fromExpression=>%s%n", tree, type);
+      if (debugGat) {
+        logGat("getAnnotatedType(%s): fromExpression=>%s%n", tree, type);
+      }
     } else {
       throw new BugInCF(
           "AnnotatedTypeFactory.getAnnotatedType: query of annotated type for tree "
               + tree.getKind());
     }
 
-    logGat("getAnnotatedType(%s): before addComputedTypeAnnotations, type=%s%n", tree, type);
+    if (debugGat) {
+      logGat("getAnnotatedType(%s): before addComputedTypeAnnotations, type=%s%n", tree, type);
+    }
     addComputedTypeAnnotations(tree, type);
     if (tree instanceof TypeCastTree) {
       type = applyCaptureConversion(type);
     }
-    logGat("getAnnotatedType(%s): after addComputedTypeAnnotations, type=%s%n", tree, type);
+    if (debugGat) {
+      logGat("getAnnotatedType(%s): after addComputedTypeAnnotations, type=%s%n", tree, type);
+    }
 
     if (TreeUtils.isClassTree(tree) || tree instanceof MethodTree) {
       // Don't cache VARIABLE
@@ -1848,9 +1856,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @see TypeFromExpressionVisitor
    */
   private AnnotatedTypeMirror fromExpression(ExpressionTree tree) {
-    logGat("fromExpression(%s) of kind %s%n", tree, tree.getKind());
+    if (debugGat) {
+      logGat("fromExpression(%s) of kind %s%n", tree, tree.getKind());
+    }
     if (shouldCache && fromExpressionTreeCache.containsKey(tree)) {
-      logGat("fromExpression(%s) => [cached] %s%n", tree, fromExpressionTreeCache.get(tree));
+      if (debugGat) {
+        logGat("fromExpression(%s) => [cached] %s%n", tree, fromExpressionTreeCache.get(tree));
+      }
       return fromExpressionTreeCache.get(tree).deepCopy();
     }
 
@@ -1864,7 +1876,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         && !(tree instanceof ConditionalExpressionTree)) {
       fromExpressionTreeCache.put(tree, result.deepCopy());
     }
-    logGat("fromExpression(%s) => %s%n", tree, result);
+    if (debugGat) {
+      logGat("fromExpression(%s) => %s%n", tree, result);
+    }
     return result;
   }
 
@@ -2275,7 +2289,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the type of {@code this} at the location of {@code tree}, or null if there is none
    */
   public @Nullable AnnotatedDeclaredType getSelfType(Tree tree) {
-    logGat("getSelfType(%s) of kind %s%n", tree, tree.getKind());
+    if (debugGat) {
+      logGat("getSelfType(%s) of kind %s%n", tree, tree.getKind());
+    }
     if (TreeUtils.isClassTree(tree)) {
       TypeElement classElt = TreeUtils.elementFromDeclaration((ClassTree) tree);
       if (classElt == null) {
@@ -4054,15 +4070,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   @Override
   public final @Nullable AnnotationMirror getDeclAnnotation(
       Element elt, Class<? extends Annotation> annoClass) {
-    logGat("entering getDeclAnnotation(%s [%s], %s)%n", elt, elt.getKind(), annoClass);
     if (debugGat) {
+      logGat("entering getDeclAnnotation(%s [%s], %s)%n", elt, elt.getKind(), annoClass);
       if (elt.toString().equals("java.lang.CharSequence")) {
         new Error("stack trace").printStackTrace();
       }
     }
     AnnotationMirror result = getDeclAnnotation(elt, annoClass, true);
-    logGat(
-        "  exiting getDeclAnnotation(%s [%s], %s) => %s%n", elt, elt.getKind(), annoClass, result);
+    if (debugGat) {
+      logGat(
+          "  exiting getDeclAnnotation(%s [%s], %s) => %s%n",
+          elt, elt.getKind(), annoClass, result);
+    }
     return result;
   }
 
