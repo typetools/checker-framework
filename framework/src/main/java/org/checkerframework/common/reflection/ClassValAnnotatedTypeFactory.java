@@ -272,8 +272,9 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (isGetClassMethodInvocation(tree)) {
         // exp.getClass(): @ClassBound(fully qualified class name of exp)
         Type clType;
-        if (TreeUtils.getReceiverTree(tree) != null) {
-          clType = (Type) TreeUtils.typeOf(TreeUtils.getReceiverTree(tree));
+        ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
+        if (receiver != null) {
+          clType = (Type) TreeUtils.typeOf(receiver);
         } else { // receiver is null, so it is implicitly "this"
           ClassTree classTree = TreePathUtil.enclosingClass(getPath(tree));
           clType = (Type) TreeUtils.typeOf(classTree);
