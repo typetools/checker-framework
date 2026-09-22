@@ -122,9 +122,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /**
    * Package name that is active at the current point in the input file. Changes as package
-   * declarations are encountered.
+   * declarations are encountered. Null if the input file has no package declaration.
    */
-  private final @DotSeparatedIdentifiers String pkgName;
+  private final @Nullable @DotSeparatedIdentifiers String pkgName;
 
   /** Single-type imports that appear in the stub file, such as {@code import p.Foo;}. */
   private final List<String> singleTypeImports;
