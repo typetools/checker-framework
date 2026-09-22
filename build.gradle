@@ -535,6 +535,15 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
       "-AwarnRedundantAnnotations",
     ]
     options.compilerArgs += args
+    if (args.contains("-Awarns")) {
+      // `-Awarns` downgrades the checker's errors to warnings, but every JavaCompile task is
+      // given `-Werror`, which would turn the warnings back into errors and would halt
+      // compilation before most of the source code has been checked.  This runs in `doFirst`
+      // so that it takes effect no matter when `-Werror` was added.
+      doFirst {
+        options.compilerArgs -= "-Werror"
+      }
+    }
     options.forkOptions.jvmArgs += ["-Xmx4g"]
 
     options.fork = true
