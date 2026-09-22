@@ -14,10 +14,16 @@ New `wpi2.sh` script does whole-program inference, but requires buildfile edits.
 The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
 warnings that it did not previously.
 
-When a `@DefaultQualifier` annotation on a nested element and one on an
-enclosing element apply at the same location, the annotation on the nested
-element now wins, as the manual specifies.  Previously, which of the two won
-depended on the annotations' names.
+A `@DefaultQualifier` annotation on a nested element now takes precedence over
+one on an enclosing element, as the manual specifies.  Previously, an
+annotation on an enclosing element could win: when the two applied at the same
+location, the winner depended on the annotations' names, and when the
+annotation on the enclosing element named a more specific location than the one
+on the nested element did, the annotation on the enclosing element won.  For
+example, if a package is annotated `@DefaultQualifier(value = NonNull.class,
+locations = TypeUseLocation.RETURN)` and a class in that package is annotated
+`@DefaultQualifier(Nullable.class)`, then the class's method return types now
+default to `@Nullable` rather than to `@NonNull`.
 
 ### Changes for type system implementers
 

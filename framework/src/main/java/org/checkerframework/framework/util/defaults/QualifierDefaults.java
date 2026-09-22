@@ -11,6 +11,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -29,6 +30,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -911,7 +913,7 @@ public class QualifierDefaults {
       list.addAll(uncheckedCodeDefaults);
     }
     list.addAll(checkedCodeDefaults);
-    PrecedenceList result = new PrecedenceList(minimizeDefaults(list));
+    PrecedenceList result = makePrecedenceList(list);
 
     if (atypeFactory.shouldCache && !atypeFactory.isParsingAnnotationFiles()) {
       precedenceListCache.put(annotationScope, result);
@@ -927,8 +929,7 @@ public class QualifierDefaults {
    */
   private PrecedenceList getCheckedCodeDefaultsArray() {
     if (checkedCodeDefaultsArray == null) {
-      checkedCodeDefaultsArray =
-          new PrecedenceList(minimizeDefaults(new ArrayList<>(checkedCodeDefaults)));
+      checkedCodeDefaultsArray = makePrecedenceList(new ArrayList<>(checkedCodeDefaults));
     }
     return checkedCodeDefaultsArray;
   }
@@ -944,9 +945,19 @@ public class QualifierDefaults {
     if (uncheckedThenCheckedArray == null) {
       List<Default> list = new ArrayList<>(uncheckedCodeDefaults);
       list.addAll(checkedCodeDefaults);
-      uncheckedThenCheckedArray = new PrecedenceList(minimizeDefaults(list));
+      uncheckedThenCheckedArray = makePrecedenceList(list);
     }
     return uncheckedThenCheckedArray;
+  }
+
+  /**
+   * Creates a {@link PrecedenceList} for the defaults that apply to a scope.
+   *
+   * @param defaults every default that applies to the scope, in the order in which to apply them
+   * @return a precedence list for {@code defaults}
+   */
+  private PrecedenceList makePrecedenceList(List<Default> defaults) {
+    return new PrecedenceList(defaults, minimizeDefaults(defaults));
   }
 
   /**
@@ -1028,8 +1039,19 @@ public class QualifierDefaults {
    */
   protected static class PrecedenceList {
 
-    /** The defaults, in the order in which to apply them. Callers must not modify this array. */
+    /**
+     * The defaults, in the order in which to apply them, without the ones that {@link
+     * QualifierDefaults#minimizeDefaults} removed. Callers must not modify this array.
+     */
     public final Default[] defaults;
+
+    /**
+     * Every default that applies to the scope, in the order in which to apply them. This differs
+     * from {@link #defaults} only if {@link QualifierDefaults#minimizeDefaults} removed something.
+     * It is used for an applier that customizes how a default is applied, for which the assumptions
+     * that justify removing a default do not hold. Callers must not modify this array.
+     */
+    public final Default[] allDefaults;
 
     /** True if one traversal of the type suffices for all of {@link #defaults}. */
     public final boolean singlePassSafe;
@@ -1037,10 +1059,19 @@ public class QualifierDefaults {
     /**
      * Creates a PrecedenceList.
      *
-     * @param defaults the defaults, in the order in which to apply them
+     * @param allDefaults every default that applies to the scope, in the order in which to apply
+     *     them
+     * @param defaults {@code allDefaults} without the entries that {@link
+     *     QualifierDefaults#minimizeDefaults} removed; its elements must appear in {@code
+     *     allDefaults}, in the same order
      */
-    public PrecedenceList(List<Default> defaults) {
+    public PrecedenceList(List<Default> allDefaults, List<Default> defaults) {
       this.defaults = defaults.toArray(new Default[0]);
+      // minimizeDefaults only removes entries, so equal sizes mean equal contents.
+      this.allDefaults =
+          allDefaults.size() == defaults.size()
+              ? this.defaults
+              : allDefaults.toArray(new Default[0]);
       boolean safe = true;
       boolean sawDescendantLocation = false;
       for (Default def : this.defaults) {
@@ -1070,14 +1101,20 @@ public class QualifierDefaults {
    * <p>A {@link Default} whose qualifier is not a qualifier of this type system is never redundant,
    * because applying it does nothing at all.
    *
-   * <p>A subclass that overrides {@link DefaultApplierElement#addAnnotation} with semantics other
-   * than "fill the hierarchy if the hierarchy is empty" should override this method to return its
-   * argument unchanged.
+   * <p>This method removes nothing if the type system's canonicalization depends on the type being
+   * annotated, because then which hierarchy a {@link Default} lands in is not known here. An
+   * applier that overrides {@link DefaultApplierElement#addAnnotation} does not use this method's
+   * result; see {@link DefaultApplierElement#applyDefaults}.
    *
    * @param defaults a precedence list
    * @return the precedence list, without the redundant entries
    */
   protected List<Default> minimizeDefaults(List<Default> defaults) {
+    if (canonicalAnnotationIsTypeDependent()) {
+      // Two defaults that are in the same hierarchy here might be in different hierarchies at
+      // some node of the type, where each of them would be applied, so neither is redundant.
+      return defaults;
+    }
     QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
     EnumMap<TypeUseLocation, AnnotationMirrorSet> seen = new EnumMap<>(TypeUseLocation.class);
     List<Default> result = new ArrayList<>(defaults.size());
@@ -1101,34 +1138,81 @@ public class QualifierDefaults {
 
   /**
    * For each class of applier that has been used, whether it overrides {@link
-   * DefaultApplierElement#applyDefault}.
+   * DefaultApplierElement#applyDefault} or {@link DefaultApplierElement#addAnnotation}.
    */
-  private static final Map<Class<?>, Boolean> applyDefaultIsOverriddenCache =
+  private static final Map<Class<?>, Boolean> applierIsCustomizedCache = new ConcurrentHashMap<>();
+
+  /**
+   * Returns true if the given class overrides {@link DefaultApplierElement#applyDefault} or {@link
+   * DefaultApplierElement#addAnnotation}, either of which may apply a default other than in the way
+   * that {@link #minimizeDefaults} and the single-traversal optimization assume. Such an applier is
+   * given every default and one traversal of the type per default.
+   *
+   * @param applierClass {@link DefaultApplierElement} or a subclass of it
+   * @return true if {@code applierClass} overrides {@code applyDefault} or {@code addAnnotation}
+   */
+  private static boolean applierIsCustomized(Class<?> applierClass) {
+    return applierIsCustomizedCache.computeIfAbsent(
+        applierClass,
+        c ->
+            isOverridden(c, DefaultApplierElement.class, "applyDefault", Default.class)
+                || isOverridden(
+                    c,
+                    DefaultApplierElement.class,
+                    "addAnnotation",
+                    AnnotatedTypeMirror.class,
+                    AnnotationMirror.class));
+  }
+
+  /**
+   * For each type factory class that has been used, whether it overrides {@link
+   * AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror, TypeMirror)}.
+   */
+  private static final Map<Class<?>, Boolean> canonicalAnnotationIsTypeDependentCache =
       new ConcurrentHashMap<>();
 
   /**
-   * Returns true if the given class overrides {@link DefaultApplierElement#applyDefault}. Such an
-   * applier is given one traversal of the type per {@link Default}, so that the override runs for
-   * each default.
+   * Returns true if this type system canonicalizes an annotation differently depending on the type
+   * that the annotation is applied to; that is, if the type factory overrides {@link
+   * AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror, TypeMirror)}. If it does, then the
+   * qualifier hierarchy that a {@link Default} lands in cannot be determined from the {@link
+   * Default} alone.
    *
-   * @param applierClass a subclass of {@link DefaultApplierElement}
-   * @return true if {@code applierClass} overrides {@code applyDefault}
+   * @return true if canonicalization depends on the type being annotated
    */
-  private static boolean applyDefaultIsOverridden(Class<?> applierClass) {
-    Boolean cached = applyDefaultIsOverriddenCache.get(applierClass);
-    if (cached != null) {
-      return cached;
+  private boolean canonicalAnnotationIsTypeDependent() {
+    return canonicalAnnotationIsTypeDependentCache.computeIfAbsent(
+        atypeFactory.getClass(),
+        c ->
+            isOverridden(
+                c,
+                AnnotatedTypeFactory.class,
+                "canonicalAnnotation",
+                AnnotationMirror.class,
+                TypeMirror.class));
+  }
+
+  /**
+   * Returns true if the given method is overridden; that is, if some class that is {@code subclass}
+   * or a proper subclass of {@code baseClass} declares the method.
+   *
+   * @param subclass {@code baseClass} or a subclass of it
+   * @param baseClass the class that declares the method being overridden
+   * @param methodName the name of the method
+   * @param parameterTypes the erased parameter types of the method
+   * @return true if {@code subclass} overrides the method
+   */
+  private static boolean isOverridden(
+      Class<?> subclass, Class<?> baseClass, String methodName, Class<?>... parameterTypes) {
+    for (Class<?> c = subclass; c != null && c != baseClass; c = c.getSuperclass()) {
+      try {
+        Method unused = c.getDeclaredMethod(methodName, parameterTypes);
+        return true;
+      } catch (NoSuchMethodException e) {
+        // Class c does not declare the method; look in the superclass of c.
+      }
     }
-    boolean result;
-    try {
-      result =
-          applierClass.getMethod("applyDefault", Default.class).getDeclaringClass()
-              != DefaultApplierElement.class;
-    } catch (NoSuchMethodException e) {
-      throw new BugInCF(e, "No applyDefault method in %s", applierClass);
-    }
-    applyDefaultIsOverriddenCache.put(applierClass, result);
-    return result;
+    return false;
   }
 
   /**
@@ -1217,14 +1301,22 @@ public class QualifierDefaults {
      * Apply every default in a precedence list to the type.
      *
      * <p>When the precedence list permits, this traverses the type once and applies every default
-     * at each node, rather than traversing the type once per default. It does not do so if this
-     * object's class overrides {@link #applyDefault}, because that override must be called once per
-     * default.
+     * at each node, rather than traversing the type once per default.
+     *
+     * <p>It does not do so if this object's class overrides {@link #applyDefault} or {@link
+     * #addAnnotation}. Such an applier is instead given one traversal of the type per default, so
+     * that the override runs for each default, and is given even the defaults that {@link
+     * QualifierDefaults#minimizeDefaults} removed, because the override may not have the semantics
+     * that removing them assumes.
      *
      * @param precedenceList the defaults to apply, in the order in which to apply them
      */
     public void applyDefaults(PrecedenceList precedenceList) {
-      if (precedenceList.singlePassSafe && !applyDefaultIsOverridden(getClass())) {
+      if (applierIsCustomized(getClass())) {
+        for (Default def : precedenceList.allDefaults) {
+          applyDefault(def);
+        }
+      } else if (precedenceList.singlePassSafe) {
         this.defaults = precedenceList.defaults;
         impl.visit(type, null);
       } else {
