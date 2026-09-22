@@ -4299,7 +4299,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       this.overriddenReturnType = overriddenReturnType;
 
       this.isMethodReference = overriderTree instanceof MemberReferenceTree;
-      this.typeVarMapping = createTypeVarMapping();
+      this.typeVarMapping = createTypeVarMapping(isMethodReference, overrider, overridden);
     }
 
     /**
@@ -4307,10 +4307,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * variable of the overridden method, or null if the two methods have no corresponding type
      * variables. Always returns null for a method reference.
      *
+     * @param isMethodReference true if the overrider is a method reference
+     * @param overrider the type of the overriding method
+     * @param overridden the type of the overridden method
      * @return a mapping from the overriding method's type variables to the overridden method's, or
      *     null
      */
-    private @Nullable Map<TypeVariable, AnnotatedTypeMirror> createTypeVarMapping() {
+    private static @Nullable Map<TypeVariable, AnnotatedTypeMirror> createTypeVarMapping(
+        boolean isMethodReference,
+        AnnotatedExecutableType overrider,
+        AnnotatedExecutableType overridden) {
       if (isMethodReference) {
         // The type variables of the method reference's compile-time declaration, when any remain
         // after type argument inference, do not correspond to those of the functional interface's
