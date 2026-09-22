@@ -225,9 +225,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** Helper class that holds references to special methods. */
   private final ValueMethodIdentifier methods;
 
+  /**
+   * Creates a ValueAnnotatedTypeFactory.
+   *
+   * @param checker the type-checker associated with this type factory
+   */
   @SuppressWarnings({
     "StaticAssignmentInConstructor", // static Range.ignoreOverflow is gross
-    "this-escape"
+    "this-escape",
+    "nullness:method.invocation" // addAliasedTypeAnnotation() is called from a constructor
   })
   public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
@@ -1574,6 +1580,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * <p>Note that this routine handles actual {@link MinLen} annotations, because it is called by
    * {@link ValueAnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)}, which transforms
    * {@link MinLen} annotations into {@link ArrayLenRange} annotations.
+   *
+   * @param annotation an annotation
+   * @return the minimum length of an array specified by the provided annotation, or null
    */
   private @Nullable Integer getSpecifiedMinLenValue(@Nullable AnnotationMirror annotation) {
     if (annotation == null) {
@@ -1596,6 +1605,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * <p>Note that this routine handles actual {@link MinLen} annotations, because it is called by
    * {@link ValueAnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)}, which transforms
    * {@link MinLen} annotations into {@link ArrayLenRange} annotations.
+   *
+   * @param annotation an annotation
+   * @return the minimum length of an array specified by the provided annotation, or zero
    */
   public int getMinLenValue(@Nullable AnnotationMirror annotation) {
     Integer minLen = getSpecifiedMinLenValue(annotation);

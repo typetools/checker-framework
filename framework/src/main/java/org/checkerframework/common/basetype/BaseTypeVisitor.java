@@ -1500,6 +1500,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         stringExpr -> StringToJavaExpression.atMethodBody(stringExpr, methodTree, checker);
     for (Contract contract : contracts) {
       String expressionString = contract.expressionString;
+      // This also reports errors in the annotation's dependent type expressions, for every
+      // contract -- including preconditions and the contracts of abstract methods, whose
+      // qualifiers are not checked below.
       AnnotationMirror annotation =
           contract.viewpointAdaptDependentTypeAnnotation(
               atypeFactory, stringToJavaExpr, methodTree);
@@ -1518,7 +1521,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (!abstractMethod && contract.kind != Contract.Kind.PRECONDITION) {
         // Check the contract, which is a postcondition.
         // Preconditions are checked at method invocations, not declarations.
-
         switch (contract.kind) {
           case POSTCONDITION -> checkPostcondition(methodTree, annotation, exprJe);
           case CONDITIONALPOSTCONDITION ->
@@ -1600,6 +1602,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   protected void checkPostcondition(
       MethodTree methodTree, AnnotationMirror annotation, JavaExpression expression) {
+    @SuppressWarnings("nullness:assignment") // capture conversion of a @Nullable type variable
     CFAbstractStore<?, ?> exitStore = atypeFactory.getRegularExitStore(methodTree);
     if (exitStore == null) {
       // If there is no regular exitStore, then the method cannot reach the regular exit and
@@ -2207,6 +2210,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return;
       }
 
+      @SuppressWarnings("nullness:assignment") // capture conversion of a @Nullable type variable
       CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
       CFAbstractValue<?> value = null;
       if (CFAbstractStore.canInsertJavaExpression(exprJe)) {
