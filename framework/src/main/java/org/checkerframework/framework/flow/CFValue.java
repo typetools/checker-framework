@@ -23,4 +23,14 @@ public class CFValue extends CFAbstractValue<CFValue> {
       TypeMirror underlyingType) {
     super(analysis, annotations, underlyingType);
   }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>A CFValue has no state beyond what {@link #equals} accounts for.
+   */
+  @Override
+  protected boolean upperBoundOfEqualValuesIsThis() {
+    return true;
+  }
 }

@@ -32,6 +32,13 @@ public class ValueAnalysis extends CFAnalysis {
     this.valueAtypeFactory = factory;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>This conversion bounds an {@code IntRangeFrom*} alias by the maximum value of {@code
+   * underlyingType}, whereas {@code ValueQualifierHierarchy.leastUpperBoundQualifiers} bounds it by
+   * {@code Long.MAX_VALUE}. The bound here is the more precise of the two.
+   */
   @Override
   public @Nullable CFValue createAbstractValue(
       AnnotationMirrorSet annotations, TypeMirror underlyingType) {

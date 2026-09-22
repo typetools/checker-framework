@@ -507,7 +507,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * <ul>
    *   <li>Does not change {@code this}.
    *   <li>Does not change {@code previous}.
-   *   <li>Returns a fresh object which is not aliased yet.
+   *   <li>Returns {@code this}, {@code previous}, or a fresh object which is not aliased yet. A
+   *       caller must not side-effect the result, because the result might be aliased.
    *   <li>Returns an object of the same (dynamic) type as {@code this}, even if the signature is
    *       more permissive.
    *   <li>Is commutative.
@@ -560,14 +561,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * merging the stores at a control-flow join point computes an upper bound for every expression in
    * the store.
    *
-   * <p>A subclass that holds state that {@code equals} ignores, and that its {@link
-   * #upperBound(CFAbstractValue, TypeMirror, boolean)} combines, must override this method to
-   * return false whenever it holds such state.
+   * <p>This implementation returns false, which is always sound. A subclass should override this
+   * method to return true whenever {@code equals} accounts for all the state that its {@link
+   * #upperBound(CFAbstractValue, TypeMirror, boolean)} combines; otherwise, the upper bound would
+   * discard the state that {@code equals} ignores.
    *
    * @return true if an upper bound of this value and a value equal to it is this value
    */
   protected boolean upperBoundOfEqualValuesIsThis() {
-    return true;
+    return false;
   }
 
   /**

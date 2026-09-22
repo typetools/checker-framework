@@ -20,6 +20,9 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class NullnessValue extends CFAbstractValue<NullnessValue> {
 
+  // Set these two fields only on a value that is not yet aliased; a value can be shared by
+  // multiple stores and nodes.  NullnessTransfer#withPolyNull copies a value when necessary.
+
   /** True if, at this point, {@link PolyNull} is known to be {@link NonNull}. */
   protected boolean isPolyNullNonNull;
 
