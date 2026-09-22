@@ -1,11 +1,13 @@
 package org.checkerframework.checker.modifiability;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.modifiability.qual.PreservesModifiability;
+import org.checkerframework.checker.modifiability.qual.ThrowsUnsupportedOperation;
 import org.checkerframework.checker.modifiability.qual.UnmodifiableParam;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -42,15 +44,16 @@ public class ModifiabilityVisitor extends SourceVisitor<Void, Void> {
    * that {@link #visitAnnotation} can distinguish an allowed {@code @UnmodifiableParam} in a
    * parameter type from a disallowed one elsewhere in the same method.
    *
-   * <p>The field needs no save-and-restore discipline, because a method declaration cannot appear
-   * within a formal parameter. It is reset in a {@code finally} clause because this visitor is
-   * reused for every compilation unit, and a stale true value would suppress every subsequent
-   * {@code unmodparam.location} error.
+   * <p>The field needs no save-and-restore discipline, because neither a method declaration nor a
+   * lambda expression can appear within a formal parameter. It is reset in a {@code finally} clause
+   * because this visitor is reused for every compilation unit, and a stale true value would
+   * suppress every subsequent {@code unmodparam.location} error.
    */
   @Override
   public Void visitMethod(MethodTree tree, Void p) {
     storeSuppressWarningsAnno(tree);
     checkPreservesModifiabilityLocation(tree);
+    checkThrowsUnsupportedOperation(tree);
     scan(tree.getModifiers(), p);
     scan(tree.getReturnType(), p);
     scan(tree.getTypeParameters(), p);
@@ -65,6 +68,47 @@ public class ModifiabilityVisitor extends SourceVisitor<Void, Void> {
     scan(tree.getBody(), p);
     scan(tree.getDefaultValue(), p);
     return null;
+  }
+
+  /**
+   * Sets {@link #inParameterType} while scanning this lambda's formal parameters, so that an
+   * explicitly-typed lambda parameter may be annotated {@code @UnmodifiableParam}, just as a method
+   * formal parameter may. An implicitly-typed lambda parameter has no type to annotate.
+   */
+  @Override
+  public Void visitLambdaExpression(LambdaExpressionTree tree, Void p) {
+    inParameterType = true;
+    try {
+      scan(tree.getParameters(), p);
+    } finally {
+      inParameterType = false;
+    }
+    scan(tree.getBody(), p);
+    return null;
+  }
+
+  /**
+   * Issues an error if {@code tree} is annotated {@code @ThrowsUnsupportedOperation} but its body
+   * is not exactly {@code throw new UnsupportedOperationException(...)}.
+   *
+   * <p>The annotation is a promise that other classes rely on: a class that inherits the method
+   * without overriding it does not support the operation. A method with no body, such as an
+   * abstract method, has no implementation to make the promise about, so it is an error too.
+   *
+   * <p>This check is in the aggregate checker rather than in {@link ModifiabilityBaseVisitor}
+   * because it does not depend on a modifiability hierarchy; running it in each sub-checker would
+   * issue the same error five times.
+   *
+   * @param tree a method declaration
+   */
+  private void checkThrowsUnsupportedOperation(MethodTree tree) {
+    ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
+    if (methodElt == null || methodElt.getAnnotation(ThrowsUnsupportedOperation.class) == null) {
+      return;
+    }
+    if (!ModifiabilityBaseVisitor.implIsUOE(tree, types, elements)) {
+      checker.reportError(tree, "throwsuoe.implementation.not.uoe");
+    }
   }
 
   /**

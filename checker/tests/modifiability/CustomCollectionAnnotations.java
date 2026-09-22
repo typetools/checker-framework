@@ -20,7 +20,7 @@ import org.checkerframework.checker.modifiability.qual.Shrinkable;
 import org.checkerframework.checker.modifiability.qual.Ungrowable;
 import org.checkerframework.checker.modifiability.qual.Unmodifiable;
 
-public class CustomModifiabilityAnnotationWarning {
+public class CustomCollectionAnnotations {
 
   static class ExtendsAbstractList extends AbstractList<String> {
     @Override
@@ -44,6 +44,8 @@ public class CustomModifiabilityAnnotationWarning {
 
   static class NonModifiabilityType {}
 
+  // :: error: [inherited.implementation.uoe] :: error: [inherited.implementation.uoe] :: error:
+  // [inherited.implementation.uoe]
   static @Modifiable class ClassLevelModifiableList extends AbstractList<String> {
     @Override
     public String get(int index) {
@@ -72,6 +74,7 @@ public class CustomModifiabilityAnnotationWarning {
       throw new UnsupportedOperationException();
     }
 
+    // :: error: [inherited.implementation.uoe]
     class KeySet extends AbstractSet<String> {
 
       public @Modifiable KeySet() {}
@@ -91,6 +94,7 @@ public class CustomModifiabilityAnnotationWarning {
   abstract static @IteratorPolyMod class ClassLevelIteratorPolyModIterator
       implements Iterator<String> {}
 
+  // :: error: [inherited.implementation.uoe]
   static class ConstructorLevelShrinkableList extends AbstractList<String> {
     @Shrinkable ConstructorLevelShrinkableList() {}
 
@@ -151,6 +155,8 @@ public class CustomModifiabilityAnnotationWarning {
     }
   }
 
+  // :: error: [inherited.implementation.uoe] :: error: [inherited.implementation.uoe] :: error:
+  // [inherited.implementation.uoe]
   static @Modifiable class SuppressedList extends AbstractList<String> {
     @Override
     public String get(int index) {

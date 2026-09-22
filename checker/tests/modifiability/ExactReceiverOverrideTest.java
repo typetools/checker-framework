@@ -9,7 +9,6 @@ import org.checkerframework.checker.modifiability.qual.Replaceable;
 import org.checkerframework.checker.modifiability.qual.Shrinkable;
 import org.checkerframework.checker.modifiability.qual.Unmodifiable;
 
-@SuppressWarnings("class.unverified")
 public class ExactReceiverOverrideTest {
 
   static class GrowParent extends ArrayList<String> {

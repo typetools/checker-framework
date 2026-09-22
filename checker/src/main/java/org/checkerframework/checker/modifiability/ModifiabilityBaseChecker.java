@@ -35,7 +35,8 @@ public abstract class ModifiabilityBaseChecker extends BaseTypeChecker {
   private static final List<String> SHARED_STUB_FILES =
       List.of(
           "/org/checkerframework/checker/modifiability/ical4j.astub",
-          "/org/checkerframework/checker/modifiability/javaparser.astub");
+          "/org/checkerframework/checker/modifiability/javaparser.astub",
+          "/org/checkerframework/checker/modifiability/jdk.astub");
 
   /** Creates a new ModifiabilityBaseChecker. */
   protected ModifiabilityBaseChecker() {}

@@ -9,7 +9,6 @@ import org.checkerframework.checker.modifiability.qual.SeqUngrowable;
  *
  * <p>Also see regex/GenericsEnclosing for a test case for the Regex Checker.
  */
-@SuppressWarnings("class.unverified")
 public @Growable @Replaceable @SeqUngrowable class GenericsEnclosing
     extends TreeMap<String, String> {
   class Inner {

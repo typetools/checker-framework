@@ -16,7 +16,11 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.modifiability.qual.ThrowsUnsupportedOperation;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -25,6 +29,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -43,6 +48,8 @@ import org.checkerframework.javacutil.TypesUtils;
  *       requiring the body of each method that requires the capability -- either on its own
  *       receiver parameter or from a method that it overrides -- to agree with that qualifier about
  *       whether the method throws {@link UnsupportedOperationException}.
+ *   <li>Requiring a class that claims the capability not to inherit, without overriding, a method
+ *       whose implementation always throws {@link UnsupportedOperationException}.
  *   <li>Requiring an override to preserve a positive receiver capability of the method it
  *       overrides.
  * </ul>
@@ -71,9 +78,8 @@ public class ModifiabilityBaseVisitor
    *
    * <p>What makes the suppression less unsafe is that the declared modifiability of a class is
    * checked against its method bodies; see {@link #processClassMembers}. That check is not
-   * complete, so the suppression does permit some unsound code. The check does nothing unless some
-   * constructor of the class declares a qualifier in this hierarchy, and it examines only the
-   * methods that the class declares, not those that it inherits without overriding.
+   * complete, so the suppression does permit some unsound code: it does nothing unless some
+   * constructor of the class declares a qualifier in this hierarchy.
    */
   @Override
   protected void checkThisOrSuperConstructorCall(
@@ -163,6 +169,85 @@ public class ModifiabilityBaseVisitor
         checkImplOK(method, receiverAnno, constructorAnno);
       }
     }
+
+    checkInheritedImplementations(tree, classElement, constructorAnno);
+  }
+
+  /**
+   * Issues an error if the class claims this checker's capability, but inherits without overriding
+   * a method whose implementation always throws {@link UnsupportedOperationException}.
+   *
+   * <p>The body of an inherited method is usually not available -- it is compiled separately, and
+   * the checker sees only its signature -- so the implementation is known to throw only if it is
+   * annotated {@code @}{@link ThrowsUnsupportedOperation}, as {@code AbstractList.set()} is, or if
+   * it is declared in a class whose constructors declare the negative qualifier, in which case
+   * {@link #checkImplOK} verified that it throws.
+   *
+   * @param tree a class
+   * @param classElement the element for {@code tree}
+   * @param constructorAnno the result qualifier that the class's constructors declare
+   */
+  private void checkInheritedImplementations(
+      ClassTree tree, TypeElement classElement, AnnotationMirror constructorAnno) {
+    if (!atypeFactory.hasNegativeCapability()
+        || !AnnotationUtils.areSameByName(constructorAnno, positiveCapability())) {
+      // The class does not claim the capability, so an inherited implementation that throws
+      // UnsupportedOperationException agrees with what the class says about itself.  (In the
+      // Iterator hierarchy, which has no negative qualifier, no implementation throws
+      // UnsupportedOperationException on account of this checker's capability.)
+      return;
+    }
+    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(classElement))) {
+      TypeElement declaringClass = ElementUtils.enclosingTypeElement(method);
+      if (declaringClass == null || declaringClass.equals(classElement)) {
+        // A method that this class declares was checked against its own body, above.
+        continue;
+      }
+      if (!implementationThrowsUOE(method, declaringClass)) {
+        continue;
+      }
+      AnnotatedDeclaredType receiverType = atypeFactory.getAnnotatedType(method).getReceiverType();
+      if (receiverType == null || !receiverType.hasPrimaryAnnotation(positiveCapability())) {
+        continue;
+      }
+      checker.reportError(
+          tree,
+          "inherited.implementation.uoe",
+          method,
+          declaringClass,
+          constructorAnno.getAnnotationType().asElement().getSimpleName());
+    }
+  }
+
+  /**
+   * Returns true if the implementation of {@code method}, which {@code declaringClass} declares,
+   * always throws {@link UnsupportedOperationException}.
+   *
+   * @param method a method that some other class inherits
+   * @param declaringClass the class that declares {@code method}
+   * @return true if the implementation of {@code method} always throws {@link
+   *     UnsupportedOperationException}
+   */
+  private boolean implementationThrowsUOE(ExecutableElement method, TypeElement declaringClass) {
+    if (atypeFactory.getDeclAnnotation(method, ThrowsUnsupportedOperation.class) != null) {
+      return true;
+    }
+    // A class whose constructors declare the negative qualifier, such as @Ungrowable, was itself
+    // checked: every method of it that requires the capability throws
+    // UnsupportedOperationException.  A class that declares nothing, such as AbstractList, says
+    // nothing about its methods, and only the @ThrowsUnsupportedOperation annotation does.
+    for (ExecutableElement constructor :
+        ElementFilter.constructorsIn(declaringClass.getEnclosedElements())) {
+      AnnotationMirror resultAnno =
+          atypeFactory
+              .getAnnotatedType(constructor)
+              .getReturnType()
+              .getPrimaryAnnotationInHierarchy(atypeFactory.topAnnotation());
+      if (resultAnno != null && isNegativeCapability(resultAnno)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -267,11 +352,11 @@ public class ModifiabilityBaseVisitor
     String constructorAnnoName =
         constructorAnno.getAnnotationType().asElement().getSimpleName().toString();
     if (isNegativeCapability(constructorAnno)) {
-      if (!implIsUOE(method)) {
+      if (!implIsUOE(method, types, elements)) {
         checker.reportError(method, "method.implementation.not.uoe", constructorAnnoName);
       }
     } else if (AnnotationUtils.areSameByName(constructorAnno, positiveCapability())) {
-      if (implIsUOE(method)) {
+      if (implIsUOE(method, types, elements)) {
         checker.reportError(method, "method.implementation.is.uoe", constructorAnnoName);
       }
     }
@@ -294,12 +379,15 @@ public class ModifiabilityBaseVisitor
 
   /**
    * Returns true if the method body is exactly {@code throw new
-   * UnsupportedOperationException(...)}.
+   * UnsupportedOperationException(...)}, where the exception is {@link
+   * UnsupportedOperationException} or a subclass of it.
    *
    * @param method a method declaration
+   * @param types the type utilities
+   * @param elements the element utilities
    * @return true if the method body is exactly {@code throw new UnsupportedOperationException(...)}
    */
-  private boolean implIsUOE(MethodTree method) {
+  static boolean implIsUOE(MethodTree method, Types types, Elements elements) {
     BlockTree body = method.getBody();
     if (body == null) {
       // The method is abstract or native, so it has no body.
@@ -317,8 +405,13 @@ public class ModifiabilityBaseVisitor
     if (!(exception instanceof NewClassTree)) {
       return false;
     }
-    return TypesUtils.isDeclaredOfName(
-        TreeUtils.typeOf(exception), "java.lang.UnsupportedOperationException");
+    // Compare the type rather than the name, so that a class that shadows
+    // java.lang.UnsupportedOperationException does not satisfy the check, but a subclass of
+    // java.lang.UnsupportedOperationException does.
+    TypeMirror unsupportedOperationException =
+        TypesUtils.typeFromClass(UnsupportedOperationException.class, types, elements);
+    return types.isSubtype(
+        types.erasure(TreeUtils.typeOf(exception)), types.erasure(unsupportedOperationException));
   }
 
   /**

@@ -4,7 +4,6 @@ import org.checkerframework.checker.modifiability.qual.Modifiable;
 
 class Component {}
 
-@SuppressWarnings("class.unverified")
 @Modifiable class Components extends ArrayList {}
 
 // If we include a type parameter in the superclass, then there is no error below.

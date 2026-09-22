@@ -1,5 +1,9 @@
 // Tests the `method.implementation.is.uoe` and `method.implementation.not.uoe` checks, which
 // compare a method body against the modifiability annotation on the class's constructors.
+//
+// A class below whose constructors are @Growable also gets an `inherited.implementation.uoe`
+// error, because it extends AbstractList without overriding `add(int, E)`, whose implementation
+// throws UnsupportedOperationException.  See InheritedImplementationTest.java.
 
 import java.util.AbstractList;
 import org.checkerframework.checker.modifiability.qual.Growable;
@@ -35,6 +39,7 @@ public class UoeImplementationTest {
 
   // All constructors are @Growable, so a method with a @Growable receiver must not throw
   // UnsupportedOperationException.
+  // :: error: [inherited.implementation.uoe]
   static class GrowableList extends AbstractList<String> {
     @Growable GrowableList() {}
 
@@ -59,6 +64,7 @@ public class UoeImplementationTest {
   // `add()` states no requirement on its own receiver, but it inherits one from `List.add()`,
   // which it overrides.  All the constructors are @Growable, so `add()` must not throw
   // UnsupportedOperationException.
+  // :: error: [inherited.implementation.uoe]
   static @Growable class ClassLevelGrowableList extends AbstractList<String> {
     @Growable ClassLevelGrowableList() {}
 

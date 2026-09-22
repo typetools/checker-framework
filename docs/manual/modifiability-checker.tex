@@ -460,7 +460,55 @@ declarations.  The formal parameter may not be a varargs parameter, because
 the first argument of a call to a varargs method is an element of the varargs
 array rather than the sole formal parameter.
 
+\item[\refqualclass{checker/modifiability/qual}{ThrowsUnsupportedOperation}]
+Indicates that the method's implementation always throws
+\UnsupportedOperationException.  Write it on a skeletal implementation, such
+as one in \<java.util.AbstractList>, that a subclass is expected to override.
+
+A subclass that inherits the implementation, without overriding it, does not
+support the operation, even if the subclass declares that it does.  The
+Modifiability Checker issues an error for such a subclass; see
+Section~\ref{modifiability-inherited-implementations}.  Without the
+annotation, it could not, because the body of an inherited method is compiled
+separately and the checker sees only its signature.
+
+The Modifiability Checker verifies the annotation on every method that it
+compiles:  the body must be exactly
+\<throw new UnsupportedOperationException(...)>.
+
+Do not write the annotation on a method that throws
+\UnsupportedOperationException\ only because some other method does, such as
+\<AbstractList.add(E)>, whose body is \<add(size(), e)>.  A subclass that
+overrides the other method makes such a method work.
+
 \end{description}
+
+\subsectionAndLabel{Inherited implementations}{modifiability-inherited-implementations}
+
+The Modifiability Checker requires the constructors of a class to agree with
+the class's method bodies:  if the constructors are \<@Ungrowable>, then every
+method with a \<@Growable> receiver must throw \UnsupportedOperationException,
+and if the constructors are \<@Growable>, then no such method may.
+
+A class does not escape the requirement by inheriting a method rather than
+declaring it.  For example, this class does not support \<add()>, because
+\<AbstractList> implements \<add(int, E)> by throwing
+\UnsupportedOperationException:
+
+\begin{Verbatim}
+  // error: the inherited implementation of add(int, E) throws
+  class GrowableList extends AbstractList<String> {
+    @Growable GrowableList() {}
+    ...
+  }
+\end{Verbatim}
+
+The checker knows that an inherited implementation throws
+\UnsupportedOperationException\ if the method is annotated
+\<@ThrowsUnsupportedOperation>, or if the method's class declares the negative
+qualifier on its constructors, in which case the checker already verified that
+the method throws.  The checker cannot tell for any other inherited method, so
+it says nothing about one.
 
 \sectionAndLabel{\<@Modifiable> and \<@Unmodifiable> for types without grow, seq-grow, shrink, and/or replace methods}{modifiability-types-lacking-methods}
 
@@ -620,35 +668,6 @@ Here are examples of its use:
   @MaybeShrinkable Iterator<String> it3 = list3.iterator();
   it3.remove();  // Error: list3 does not have @IteratorPolyMod
 \end{Verbatim}
-
-% \sectionAndLabel{Unverified collection implementation annotations}{modifiability-class-unverified}
-%
-% The Modifiability Checker verifies uses of collection modifiability annotations,
-% but it does not verify collection implementations.
-%
-% When a user-defined collection-like class (a \<Collection>, \<Map>,
-% \<Iterator>, or subtype) explicitly writes a concrete modifiability qualifier
-% on the class declaration or on a constructor, the checker issues a
-% \<class.unverified> warning.  The warning means that the
-% annotation is a trusted specification of the custom implementation, not a fact
-% verified from the implementation's method bodies.  After examining the
-% implementation, suppress the warning with
-% \<@SuppressWarnings("class.unverified")>.
-%
-% For example, the class-level \<@Growable> annotation below triggers
-% \<class.unverified>. It is up to the programmer to verify that
-% the implementation of \<TestMod> is not \@Growable and remove it from the class declaration.
-% \begin{Verbatim}
-% public @Growable class TestMod extends ArrayList<String> {
-%
-%   @Override
-%   public boolean add(@Growable TestMod this, String s) {
-%     throw new UnsupportedOperationException();
-%   }
-% }
-% \end{Verbatim}
-
-
 
 \sectionAndLabel{Examples of Modifiability Checker warnings}{modifiability-examples}
 

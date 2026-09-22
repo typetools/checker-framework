@@ -18,7 +18,6 @@ class UnmodParamLocationTest<
 
   void nestedParameter(List<@UnmodifiableParam List<String>> parameter) {}
 
-  @SuppressWarnings("class.unverified")
   abstract static class RelevantReceiver implements List<String> {
     void receiver(@UnmodifiableParam RelevantReceiver this) {}
   }
@@ -40,8 +39,17 @@ class UnmodParamLocationTest<
   }
 
   void lambda() {
-    // :: error: [unmodparam.location]
     Consumer<List<String>> consumer = (@UnmodifiableParam List<String> parameter) -> {};
+    consumer.accept(null);
+  }
+
+  void lambdaBody() {
+    Consumer<List<String>> consumer =
+        (List<String> parameter) -> {
+          // :: error: [unmodparam.location]
+          @UnmodifiableParam List<String> local = null;
+          local = null;
+        };
     consumer.accept(null);
   }
 
