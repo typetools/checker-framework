@@ -176,6 +176,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     // effect is the same as if the programmer had written `this` in the annotation, which is also
     // permitted.
     ExecutableElement constructorElt = TreeUtils.elementFromDeclaration(methodTree);
+    assert constructorElt != null
+        : "@AssumeAssertion(nullness): a constructor being visited has an element";
     List<JavaExpression> seOnlyExpressions = new ArrayList<>(sideEffectsOnlyExpressions);
     seOnlyExpressions.add(new ThisReference(constructorElt.getEnclosingElement().asType()));
 

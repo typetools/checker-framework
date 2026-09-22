@@ -1180,6 +1180,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, tree);
 
     ExecutableElement methodDeclElem = TreeUtils.elementFromDeclaration(tree);
+    assert methodDeclElem != null
+        : "@AssumeAssertion(nullness): a method being visited has an element";
     // The `@SideEffectsOnly` expressions that apply to the method, which the method may inherit
     // rather than declare.  `purityKinds` does not account for an inherited `@SideEffectsOnly`,
     // because `@SideEffectsOnly` is not inherited as an annotation; see
