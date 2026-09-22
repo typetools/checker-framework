@@ -2990,6 +2990,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         }
         messageKeyInEffect = currentSuppressWarningsInEffect.substring(colonPos + 1);
       }
+      if (messageKey.equals("unneeded.suppression")) {
+        // An "unneeded.suppression" warning is suppressed only by the exact message key, not by
+        // a partial message key such as "suppression".  Otherwise, a @SuppressWarnings string
+        // that the programmer wrote for some other warning would silently disable
+        // -AwarnUnneededSuppressions.
+        if (messageKeyInEffect.equals("unneeded.suppression")) {
+          return true;
+        }
+        continue;
+      }
       // Check if the message key in the warning suppression is part of the message key that
       // the checker is emitting.
       if (messageKeyMatches(messageKey, messageKeyInEffect)) {
