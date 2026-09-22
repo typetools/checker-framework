@@ -245,9 +245,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
   protected Map<@Interned @CanonicalName String, DefaultQualifierKind> createQualifierKinds(
       @UnderInitialization DefaultQualifierKindHierarchy this,
       Collection<Class<? extends Annotation>> qualifierClasses) {
-    // This is a HashMap, not a TreeMap, because getQualifierKind() looks up in it on every
-    // operation on a qualifier, and the keys are long names with a long shared prefix, which makes
-    // the string comparisons that a TreeMap performs expensive.
+    // This is a HashMap, not a TreeMap, because the keys are long names with a long shared prefix.
     HashMap<@Interned @CanonicalName String, DefaultQualifierKind> nameToQualifierKind =
         new HashMap<>(MapsP.mapCapacity(qualifierClasses.size()));
     for (Class<? extends Annotation> clazz : qualifierClasses) {

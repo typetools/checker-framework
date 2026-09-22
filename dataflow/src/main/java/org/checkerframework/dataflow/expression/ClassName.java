@@ -66,7 +66,6 @@ public class ClassName extends JavaExpression {
 
   @Override
   public int hashCode() {
-    // Do not use Objects.hash(), which allocates an array.  String caches its own hash code.
     return typeString.hashCode();
   }
 
