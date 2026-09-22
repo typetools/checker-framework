@@ -539,7 +539,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     // An upper bound of a value and itself is that value.  Testing for this is worthwhile because
     // merging the stores at a control-flow join point computes an upper bound for every expression
     // in the store, and most of those expressions have the same value along both branches.
-    if (this.equals(other)) {
+    if (upperBoundOfEqualValuesIsThis() && this.equals(other)) {
       @SuppressWarnings("unchecked")
       V v = (V) this;
       return v;
@@ -549,6 +549,25 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         TypesUtils.leastUpperBound(
             this.getUnderlyingType(), other.getUnderlyingType(), processingEnv);
     return upperBound(other, lubTypeMirror, shouldWiden);
+  }
+
+  /**
+   * Returns true if an upper bound of this value and a value that {@link #equals} it is this value.
+   *
+   * <p>That holds for a value all of whose state {@link #equals} accounts for, which is the common
+   * case. It lets {@link #leastUpperBound(CFAbstractValue)} and {@link #widenUpperBound} return the
+   * receiver instead of computing and allocating an equal value, which is worthwhile because
+   * merging the stores at a control-flow join point computes an upper bound for every expression in
+   * the store.
+   *
+   * <p>A subclass that holds state that {@code equals} ignores, and that its {@link
+   * #upperBound(CFAbstractValue, TypeMirror, boolean)} combines, must override this method to
+   * return false whenever it holds such state.
+   *
+   * @return true if an upper bound of this value and a value equal to it is this value
+   */
+  protected boolean upperBoundOfEqualValuesIsThis() {
+    return true;
   }
 
   /**

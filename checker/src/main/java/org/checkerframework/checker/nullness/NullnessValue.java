@@ -40,6 +40,18 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
     super(analysis, annotations, underlyingType);
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>A NullnessValue whose poly-null fields are both false has no state beyond what {@link
+   * #equals} accounts for: the poly-null block in {@link #upperBound} cannot apply when this
+   * value's fields are both false, and a newly created NullnessValue has both fields false.
+   */
+  @Override
+  protected boolean upperBoundOfEqualValuesIsThis() {
+    return !isPolyNullNonNull && !isPolyNullNull;
+  }
+
   @Override
   protected NullnessValue upperBound(
       @Nullable NullnessValue other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
