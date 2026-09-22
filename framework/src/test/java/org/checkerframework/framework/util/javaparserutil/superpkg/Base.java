@@ -14,6 +14,13 @@ public class Base {
   /** A public member type, which every subtype inherits. */
   public static class Visible {}
 
+  /**
+   * A package-private member type whose simple name is also the simple name of a top-level type in
+   * the {@code subpkg} package. A class in that package does not inherit this type, so the simple
+   * name {@code Shadowed} refers there to the top-level type instead.
+   */
+  static class Shadowed {}
+
   /** A private member type, which no subtype inherits. */
   private static class Secret {}
 
