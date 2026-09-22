@@ -358,7 +358,7 @@ if [ "${DLJC}" = "" ]; then
   # The user did not set the DLJC environment variable.
   DLJC="${SCRIPT_DIR}/.do-like-javac/dljc"
   if [ ! -f "${DLJC}" ]; then
-    (cd "$SCRIPT_DIR"/../.. && ./gradlew getDoLikeJavac)
+    "$SCRIPT_DIR"/../bin-devel/clone-or-update.sh https://github.com/kelloggm/do-like-javac.git "$SCRIPT_DIR"/.do-like-javac
   fi
 else
   # The user did set the DLJC environment variable.

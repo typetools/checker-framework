@@ -31,7 +31,8 @@ echo "SHELLOPTS=${SHELLOPTS}"
 
 # Runs "./gradlew" with the arguments after the first, in the current
 # directory.  Retries if the failure looks like a transient network problem,
-# such as HTTP status code 429 ("Too Many Requests") from Maven Central.  The
+# such as HTTP status code 429 ("Too Many Requests") or 403 ("Forbidden") from
+# Maven Central, both of which it returns when it is throttling a client.  The
 # pattern below matches only messages that indicate a network problem; in
 # particular it does not match Gradle's "Could not resolve".
 # The first argument is a space-separated list of the delays, in seconds,
@@ -56,7 +57,7 @@ gradle_retry_with_delays() {
       return 0
     fi
     if [ "$delay" -eq 0 ] \
-      || ! grep -q -E '(status|response) code:? (429|5[0-9][0-9])|Connect(ion)? timed out|Connection (reset|refused)|Read timed out|Network is unreachable|UnknownHostException|Temporary failure in name resolution|Premature end of Content-Length|Remote host terminated the handshake' "$log"; then
+      || ! grep -q -E '(status|response) code:? (403|429|5[0-9][0-9])|Connect(ion)? timed out|Connection (reset|refused)|Read timed out|Network is unreachable|UnknownHostException|Temporary failure in name resolution|Premature end of Content-Length|Remote host terminated the handshake' "$log"; then
       rm -f "$log"
       return "$status"
     fi
@@ -89,13 +90,7 @@ echo "JAVA_HOME=${JAVA_HOME}"
 
 # Using `(cd "$CHECKERFRAMEWORK" && ./gradlew getGitScripts -q)` leads to infinite regress.
 GIT_SCRIPTS="${SCRIPT_DIR}/.git-scripts"
-if [ -d "$GIT_SCRIPTS" ]; then
-  (cd "$GIT_SCRIPTS" && (git pull -q || true))
-else
-  (cd "${SCRIPT_DIR}" \
-    && (git clone --depth=1 -q https://github.com/plume-lib/git-scripts.git .git-scripts \
-      || (sleep 60 && git clone --depth=1 -q https://github.com/plume-lib/git-scripts.git .git-scripts)))
-fi
+"${SCRIPT_DIR}"/clone-or-update.sh https://github.com/plume-lib/git-scripts.git "$GIT_SCRIPTS"
 
 # Clone the annotated JDK into ../jdk .
 "$GIT_SCRIPTS/git-clone-related" ${DEBUG_FLAG} typetools jdk

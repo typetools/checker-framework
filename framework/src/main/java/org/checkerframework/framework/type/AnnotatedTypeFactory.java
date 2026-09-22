@@ -146,7 +146,6 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
 import org.plumelib.util.CollectionsP;
-import org.plumelib.util.IPair;
 import org.plumelib.util.ImmutableTypes;
 import org.plumelib.util.MapsP;
 import org.plumelib.util.StringsP;
@@ -491,12 +490,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * The annotation mirror to use for a canonical declaration annotation, and the classes of the
+   * annotations that are aliases for it.
+   *
+   * @param annotationToUse the annotation mirror to use in place of any of the aliases
+   * @param aliases the classes of the annotations that are aliases for the canonical annotation
+   */
+  private record DeclAliasInfo(
+      AnnotationMirror annotationToUse, Set<Class<? extends Annotation>> aliases) {}
+
+  /**
    * A map from the class of an annotation to the set of classes for annotations with the same
    * meaning, as well as the annotation mirror that should be used.
    */
-  private final Map<
-          Class<? extends Annotation>, IPair<AnnotationMirror, Set<Class<? extends Annotation>>>>
-      declAliases = new HashMap<>();
+  private final Map<Class<? extends Annotation>, DeclAliasInfo> declAliases = new HashMap<>();
 
   /** Unique ID counter; for debugging purposes. */
   private static int uidCounter = 0;
@@ -3296,13 +3303,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * The types of the two arguments to a binary operation.
+   *
+   * @param left the type of the left argument
+   * @param right the type of the right argument
+   */
+  public record BinaryArgTypes(AnnotatedTypeMirror left, AnnotatedTypeMirror right) {}
+
+  /**
    * Returns the types of the two arguments to the BinaryTree, accounting for widening and unboxing
    * if applicable.
    *
    * @param tree a binary tree
    * @return the types of the two arguments
    */
-  public IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> binaryTreeArgTypes(BinaryTree tree) {
+  public BinaryArgTypes binaryTreeArgTypes(BinaryTree tree) {
     return binaryTreeArgTypes(
         getAnnotatedType(tree.getLeftOperand()), getAnnotatedType(tree.getRightOperand()));
   }
@@ -3314,8 +3329,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param tree a compound assignment tree
    * @return the types of the two arguments
    */
-  public IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> compoundAssignmentTreeArgTypes(
-      CompoundAssignmentTree tree) {
+  public BinaryArgTypes compoundAssignmentTreeArgTypes(CompoundAssignmentTree tree) {
     return binaryTreeArgTypes(
         getAnnotatedType(tree.getVariable()), getAnnotatedType(tree.getExpression()));
   }
@@ -3328,8 +3342,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param right the type of the right argument of a binary operation
    * @return the types of the two arguments
    */
-  public IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> binaryTreeArgTypes(
-      AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
+  public BinaryArgTypes binaryTreeArgTypes(AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
     TypeKind resultTypeKind =
         TypeKindUtils.widenedNumericType(left.getUnderlyingType(), right.getUnderlyingType());
     if (TypeKindUtils.isNumeric(resultTypeKind)) {
@@ -3344,9 +3357,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           (rightUnboxed.getKind() == resultTypeKind
               ? rightUnboxed
               : getWidenedPrimitive(rightUnboxed, resultTypeMirror));
-      return IPair.of(leftWidened, rightWidened);
+      return new BinaryArgTypes(leftWidened, rightWidened);
     } else {
-      return IPair.of(left, right);
+      return new BinaryArgTypes(left, right);
     }
   }
 
@@ -3679,18 +3692,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       Class<? extends Annotation> alias,
       Class<? extends Annotation> annotationClass,
       AnnotationMirror annotationToUse) {
-    IPair<AnnotationMirror, Set<Class<? extends Annotation>>> pair =
-        declAliases.get(annotationClass);
-    if (pair != null) {
-      if (!AnnotationUtils.areSame(annotationToUse, pair.first)) {
-        throw new BugInCF("annotationToUse should be the same: %s %s", pair.first, annotationToUse);
+    DeclAliasInfo declAlias = declAliases.get(annotationClass);
+    if (declAlias != null) {
+      if (!AnnotationUtils.areSame(annotationToUse, declAlias.annotationToUse())) {
+        throw new BugInCF(
+            "annotationToUse should be the same: %s %s",
+            declAlias.annotationToUse(), annotationToUse);
       }
     } else {
-      pair = IPair.of(annotationToUse, new HashSet<>());
-      declAliases.put(annotationClass, pair);
+      declAlias = new DeclAliasInfo(annotationToUse, new HashSet<>());
+      declAliases.put(annotationClass, declAlias);
     }
-    Set<Class<? extends Annotation>> aliasSet = pair.second;
-    aliasSet.add(alias);
+    declAlias.aliases().add(alias);
   }
 
   /**
@@ -4145,16 +4158,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return null;
     }
     // Look through aliases.
-    IPair<AnnotationMirror, Set<Class<? extends Annotation>>> aliasPair =
-        declAliases.get(annoClass);
-    if (aliasPair == null) {
+    DeclAliasInfo declAlias = declAliases.get(annoClass);
+    if (declAlias == null) {
       return null;
     }
-    for (Class<? extends Annotation> alias : aliasPair.second) {
+    for (Class<? extends Annotation> alias : declAlias.aliases()) {
       for (AnnotationMirror am : declAnnos) {
         if (areSameByClass(am, alias)) {
           // TODO: need to copy over elements/fields
-          return aliasPair.first;
+          return declAlias.annotationToUse();
         }
       }
     }
@@ -4449,13 +4461,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param element the element for which to determine annotations
    * @param metaAnnotationClass the class of the meta-annotation that needs to be present
-   * @return a list of pairs {@code (anno, metaAnno)} where {@code anno} is the annotation mirror at
-   *     {@code element}, and {@code metaAnno} is the annotation mirror (of type {@code
-   *     metaAnnotationClass}) used to meta-annotate the declaration of {@code anno}
+   * @return the annotation mirrors at {@code element}, each paired with the annotation mirror (of
+   *     type {@code metaAnnotationClass}) used to meta-annotate its declaration
    */
-  public List<IPair<AnnotationMirror, AnnotationMirror>> getDeclAnnotationWithMetaAnnotation(
+  public List<AnnotationWithMetaAnnotation> getDeclAnnotationWithMetaAnnotation(
       Element element, Class<? extends Annotation> metaAnnotationClass) {
-    List<IPair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
+    List<AnnotationWithMetaAnnotation> result = new ArrayList<>();
     AnnotationMirrorSet annotationMirrors = getDeclAnnotations(element);
 
     for (AnnotationMirror candidate : annotationMirrors) {
@@ -4486,10 +4497,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotationUtils.getElementValueArray(
                     candidate, "value", AnnotationMirror.class, false);
             for (AnnotationMirror wrappedCandidate : wrappedCandidates) {
-              result.add(IPair.of(wrappedCandidate, ma));
+              result.add(new AnnotationWithMetaAnnotation(wrappedCandidate, ma));
             }
           } else {
-            result.add(IPair.of(candidate, ma));
+            result.add(new AnnotationWithMetaAnnotation(candidate, ma));
           }
         }
       }
@@ -4545,11 +4556,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param element the element at which to look for annotations
    * @param metaAnnotationClass the class of the meta-annotation that needs to be present
-   * @return a list of pairs {@code (anno, metaAnno)} where {@code anno} is the annotation mirror at
-   *     {@code element}, and {@code metaAnno} is the annotation mirror used to annotate {@code
-   *     anno}.
+   * @return the annotation mirrors at {@code element}, each paired with the annotation mirror used
+   *     to annotate it
    */
-  public List<IPair<AnnotationMirror, AnnotationMirror>> getAnnotationWithMetaAnnotation(
+  public List<AnnotationWithMetaAnnotation> getAnnotationWithMetaAnnotation(
       Element element, Class<? extends Annotation> metaAnnotationClass) {
 
     AnnotationMirrorSet annotationMirrors = new AnnotationMirrorSet();
@@ -4558,7 +4568,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Consider declaration annotations
     annotationMirrors.addAll(getDeclAnnotations(element));
 
-    List<IPair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
+    List<AnnotationWithMetaAnnotation> result = new ArrayList<>();
 
     // Go through all annotations found.
     for (AnnotationMirror annotation : annotationMirrors) {
@@ -4566,12 +4576,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           annotation.getAnnotationType().asElement().getAnnotationMirrors();
       for (AnnotationMirror a : annotationsOnAnnotation) {
         if (areSameByClass(a, metaAnnotationClass)) {
-          result.add(IPair.of(annotation, a));
+          result.add(new AnnotationWithMetaAnnotation(annotation, a));
         }
       }
     }
     return result;
   }
+
+  /**
+   * An annotation and a meta-annotation on the declaration of that annotation.
+   *
+   * @param annotation an annotation
+   * @param metaAnnotation an annotation on the declaration of {@code annotation}
+   */
+  public record AnnotationWithMetaAnnotation(
+      AnnotationMirror annotation, AnnotationMirror metaAnnotation) {}
 
   /**
    * Returns true if the {@code annotatedTypeMirror} has a qualifier parameter.
@@ -4805,7 +4824,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the function type that this method reference targets
    */
   public AnnotatedExecutableType getFunctionTypeFromTree(MemberReferenceTree tree) {
-    return getFnInterfaceFromTree(tree).second;
+    return getFnInterfaceFromTree(tree).functionType();
   }
 
   /**
@@ -4820,7 +4839,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the function type that this lambda targets
    */
   public AnnotatedExecutableType getFunctionTypeFromTree(LambdaExpressionTree tree) {
-    return getFnInterfaceFromTree(tree).second;
+    return getFnInterfaceFromTree(tree).functionType();
   }
 
   /**
@@ -4837,7 +4856,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the functional interface and the function type that this method reference or lambda
    *     targets
    */
-  public IPair<AnnotatedTypeMirror, AnnotatedExecutableType> getFnInterfaceFromTree(Tree tree) {
+  public FnInterfaceAndType getFnInterfaceFromTree(Tree tree) {
 
     // Functional interface
     // This is the target type of `tree`.
@@ -4855,8 +4874,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Function type
     AnnotatedExecutableType functionType =
         AnnotatedTypes.asMemberOf(types, this, functionalInterfaceType, fnElement);
-    return IPair.of(functionalInterfaceType, functionType);
+    return new FnInterfaceAndType(functionalInterfaceType, functionType);
   }
+
+  /**
+   * A functional interface type and its function type.
+   *
+   * @param functionalInterfaceType the functional interface type
+   * @param functionType the type of the single method declared in {@code functionalInterfaceType},
+   *     adapted as if it were invoked using the functional interface as the receiver expression
+   */
+  public record FnInterfaceAndType(
+      AnnotatedTypeMirror functionalInterfaceType, AnnotatedExecutableType functionType) {}
 
   /**
    * Returns the AnnotatedDeclaredType for the FunctionalInterface from assignment context of the
@@ -5673,7 +5702,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   // TODO: generalize.  There is no reason this couldn't handle arbitrary addition and subtraction
   // expressions, given the Index Checker's support for OffsetEquation.  That might even make its
   // implementation simpler.
-  public static IPair<String, String> getExpressionAndOffset(String expression) {
+  public static ExpressionAndOffset getExpressionAndOffset(String expression) {
     String expr = expression;
     String offset = "0";
 
@@ -5702,8 +5731,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     expr = expr.intern();
     offset = offset.intern();
 
-    return IPair.of(expr, offset);
+    return new ExpressionAndOffset(expr, offset);
   }
+
+  /**
+   * An expression and a constant offset that is added to it.
+   *
+   * @param expression an expression
+   * @param offset a constant offset, as a string; "0" means no offset
+   */
+  public record ExpressionAndOffset(String expression, String offset) {}
 
   /**
    * Given an expression string, returns its negation.

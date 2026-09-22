@@ -37,6 +37,7 @@ import org.checkerframework.afu.annotator.find.Insertions;
 import org.checkerframework.afu.annotator.find.NewInsertion;
 import org.checkerframework.afu.annotator.find.ReceiverInsertion;
 import org.checkerframework.afu.annotator.find.TreeFinder;
+import org.checkerframework.afu.annotator.find.TreeFinder.PositionAndASTPath;
 import org.checkerframework.afu.annotator.find.TypedInsertion;
 import org.checkerframework.afu.annotator.scanner.LocalVariableScanner;
 import org.checkerframework.afu.annotator.scanner.TreePathUtil;
@@ -75,7 +76,6 @@ import org.plumelib.options.Options;
 import org.plumelib.reflection.ReflectionP;
 import org.plumelib.util.FileIOException;
 import org.plumelib.util.FilesP;
-import org.plumelib.util.IPair;
 
 /**
  * This is the main class for the annotator, which inserts annotations in Java source code. You can
@@ -776,7 +776,7 @@ public final class Main {
 
         // Create a finder, and use it to get positions.
         TreeFinder finder = new TreeFinder(tree);
-        SetMultimap<IPair<Integer, ASTPath>, Insertion> positions =
+        SetMultimap<PositionAndASTPath, Insertion> positions =
             finder.getPositions(tree, insertions);
         if (dbug.isEnabled()) {
           dbug.debug("In org.checkerframework.afu.annotator.Main:%n");
@@ -817,20 +817,20 @@ public final class Main {
               positions.size(), javafilename);
         }
 
-        Set<IPair<Integer, ASTPath>> positionKeysUnsorted = positions.keySet();
-        Set<IPair<Integer, ASTPath>> positionKeysSorted =
+        Set<PositionAndASTPath> positionKeysUnsorted = positions.keySet();
+        Set<PositionAndASTPath> positionKeysSorted =
             new TreeSet<>(
                 (p1, p2) -> {
-                  int c = Integer.compare(p2.first, p1.first);
+                  int c = Integer.compare(p2.pos(), p1.pos());
                   if (c != 0) {
                     return c;
                   }
-                  return p2.second == null
-                      ? (p1.second == null ? 0 : -1)
-                      : (p1.second == null ? 1 : p2.second.compareTo(p1.second));
+                  return p2.astPath() == null
+                      ? (p1.astPath() == null ? 0 : -1)
+                      : (p1.astPath() == null ? 1 : p2.astPath().compareTo(p1.astPath()));
                 });
         positionKeysSorted.addAll(positionKeysUnsorted);
-        for (IPair<Integer, ASTPath> pair : positionKeysSorted) {
+        for (PositionAndASTPath pair : positionKeysSorted) {
           boolean receiverInserted = false;
           boolean newInserted = false;
           boolean constructorInserted = false;
@@ -839,15 +839,15 @@ public final class Main {
           // The Multimap interface doesn't seem to have a way to specify the order of elements in
           // the collection, so sort them here.
           toInsertList.sort(insertionSorter);
-          dbug.debug("insertion pos: %d%n", pair.first);
+          dbug.debug("insertion pos: %d%n", pair.pos());
           dbug.debug("insertions sorted: %s%n", toInsertList);
-          assert pair.first >= 0
-              : "pos is negative: " + pair.first + " " + toInsertList.get(0) + " " + javafilename;
+          assert pair.pos() >= 0
+              : "pos is negative: " + pair.pos() + " " + toInsertList.get(0) + " " + javafilename;
           for (Insertion iToInsert : toInsertList) {
             // Possibly add whitespace after the insertion
             String trailingWhitespace = "";
             boolean gotSeparateLine = false;
-            int pos = pair.first; // reset each iteration in case of dyn adjustment
+            int pos = pair.pos(); // reset each iteration in case of dyn adjustment
             if (iToInsert.isSeparateLine()) {
               // System.out.printf("isSeparateLine=true for insertion at pos %d: %s%n", pos,
               // iToInsert);
@@ -1278,15 +1278,23 @@ public final class Main {
   }
 
   /**
+   * An annotation, split into its class and its arguments.
+   *
+   * @param annotationClass the annotation class, such as {@code @foo}
+   * @param args the annotation's arguments, such as {@code (bar)}, or null if it has none
+   */
+  public record AnnotationAndArgs(String annotationClass, @Nullable String args) {}
+
+  /**
    * Separates the annotation class from its arguments.
    *
    * @param s the string representation of an annotation
-   * @return given {@code @foo(bar)} it returns the pair <code>{ @foo, (bar) }</code>
+   * @return given {@code @foo(bar)} it returns {@code @foo} and {@code (bar)}
    */
-  public static IPair<String, @Nullable String> removeArgs(String s) {
+  public static AnnotationAndArgs removeArgs(String s) {
     int pidx = s.indexOf('(');
     return (pidx == -1)
-        ? IPair.of(s, (String) null)
-        : IPair.of(s.substring(0, pidx), s.substring(pidx));
+        ? new AnnotationAndArgs(s, null)
+        : new AnnotationAndArgs(s.substring(0, pidx), s.substring(pidx));
   }
 }

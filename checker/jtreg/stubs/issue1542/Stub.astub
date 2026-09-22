@@ -60,6 +60,14 @@ public class Stub {
     @DoubleExample(-1.5) int x34;
     @DoubleArrayExample({-1.5, -1.5f}) int x35;
 
+    // A literal with an `f` suffix denotes a float, whose value differs from that of the
+    // literal without the suffix.
+    @FloatExample(1.1f) int x36;
+    @FloatExample(-1.1f) int x37;
+    @DoubleExample(1.1f) int x38;
+    @FloatArrayExample({1.1f, -1.1F}) int x39;
+    @DoubleExample(1_0.5f) int x40;
+
     class InnerStub {
         @ClassArrayExample({InnerStub.class, Stub.class, InnerStub2.class}) int x20;
         class InnerInnerStub {
