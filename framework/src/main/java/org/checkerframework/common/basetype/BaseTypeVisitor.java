@@ -1240,6 +1240,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (infer) {
         WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
         ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
+        if (wpi == null || methodElt == null) {
+          throw new BugInCF("No WPI or no element while inferring purity of " + tree);
+        }
         // Do not infer a kind that would newly constrain the arguments at call sites.
         additionalKinds = kindsSafeToInfer(methodElt, additionalKinds);
         inferPurityAnno(additionalKinds, wpi, methodElt);
@@ -1684,8 +1687,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         ExecutableElement referenced = (ExecutableElement) TreeUtils.elementFromUse(argument);
         argKinds = implementationPurityKinds(referenced);
         MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
-        if (PurityChecker.isFunctionalMethodOfParameter(
-            memberReference.getQualifierExpression(), referenced, enclosingMethod, env)) {
+        if (enclosingMethod != null
+            && PurityChecker.isFunctionalMethodOfParameter(
+                memberReference.getQualifierExpression(), referenced, enclosingMethod, env)) {
           // `f::apply`, where `f` is a functional-interface parameter of the enclosing method,
           // denotes the code that the caller of that method was required to check.
           argKinds.addAll(
@@ -1703,7 +1707,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
       argKinds = implementationPurityKinds(argFunction);
       MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
-      if (PurityChecker.isFunctionalInterfaceParameter(argument, enclosingMethod, env)) {
+      if (enclosingMethod != null
+          && PurityChecker.isFunctionalInterfaceParameter(argument, enclosingMethod, env)) {
         argKinds.addAll(
             PurityChecker.functionalParameterKinds(
                 atypeFactory, TreeUtils.elementFromDeclaration(enclosingMethod)));
@@ -2909,6 +2914,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // Do not infer a kind that would newly constrain the arguments at call sites.
       lambdaKinds = kindsSafeToInfer(functionalMethod, lambdaKinds);
       WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+      if (wpi == null) {
+        throw new BugInCF("No WPI while inferring purity of " + tree);
+      }
       inferPurityAnno(lambdaKinds, wpi, functionalMethod);
       for (ExecutableElement overriddenElt :
           ElementUtils.getOverriddenMethods(functionalMethod, types)) {
