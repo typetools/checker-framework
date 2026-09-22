@@ -1241,7 +1241,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
         ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
         // Do not infer a kind that would newly constrain the arguments at call sites.
-        additionalKinds.removeAll(kindsRequiredOfArguments(methodElt, additionalKinds));
+        additionalKinds = kindsSafeToInfer(methodElt, additionalKinds);
         inferPurityAnno(additionalKinds, wpi, methodElt);
         // The purity of overridden methods is impacted by the purity of this method. If
         // a superclass method is pure, but an implementation in a subclass is not, WPI
@@ -1544,27 +1544,36 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns the subset of {@code kinds} that {@code method} would require of the arguments at its
-   * call sites, if {@code method} were annotated with {@code kinds}: those that the functional
-   * method of some functional-interface parameter does not already promise. See {@link
-   * #checkFunctionalArguments}.
+   * Returns the subset of {@code kinds} that whole-program inference may infer for {@code method}:
+   * those that no call to {@code method} would require of an argument that is passed to a
+   * functional-interface parameter. See {@link #checkFunctionalArguments}.
    *
-   * <p>Whole-program inference does not infer such a kind. It cannot annotate a lambda expression
-   * or a method reference, so it cannot make an argument meet the requirement, and inferring the
-   * kind would introduce errors at call sites.
+   * <p>Inference cannot annotate a lambda expression or a method reference, so it cannot make an
+   * argument meet such a requirement; inferring the kind would introduce errors at call sites.
+   *
+   * <p>Discarding one kind can make another one required: determinism is required of an argument
+   * that returns no value only when the argument is known to be side-effect-free. The computation
+   * therefore repeats until what remains requires nothing.
    *
    * @param method a method or constructor
    * @param kinds the purity kinds that might be inferred for {@code method}
-   * @return the subset of {@code kinds} that calls to {@code method} would require of arguments
+   * @return the subset of {@code kinds} that calls to {@code method} would not require of arguments
    */
-  private EnumSet<PurityKind> kindsRequiredOfArguments(
+  private EnumSet<PurityKind> kindsSafeToInfer(
       ExecutableElement method, EnumSet<PurityKind> kinds) {
-    EnumSet<PurityKind> result = EnumSet.noneOf(PurityKind.class);
-    for (int i = 0; i < method.getParameters().size(); i++) {
-      ExecutableElement paramFunction = parameterFunctionalMethod(method, i);
-      if (paramFunction != null) {
-        result.addAll(purityRequiredOfArgument(paramFunction, kinds));
+    EnumSet<PurityKind> result = EnumSet.copyOf(kinds);
+    while (!result.isEmpty()) {
+      EnumSet<PurityKind> required = EnumSet.noneOf(PurityKind.class);
+      for (int i = 0; i < method.getParameters().size(); i++) {
+        ExecutableElement paramFunction = parameterFunctionalMethod(method, i);
+        if (paramFunction != null) {
+          required.addAll(purityRequiredOfArgument(paramFunction, result));
+        }
       }
+      if (required.isEmpty()) {
+        break;
+      }
+      result.removeAll(required);
     }
     return result;
   }
@@ -2898,7 +2907,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         lambdaKinds.remove(PurityKind.DETERMINISTIC);
       }
       // Do not infer a kind that would newly constrain the arguments at call sites.
-      lambdaKinds.removeAll(kindsRequiredOfArguments(functionalMethod, lambdaKinds));
+      lambdaKinds = kindsSafeToInfer(functionalMethod, lambdaKinds);
       WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
       inferPurityAnno(lambdaKinds, wpi, functionalMethod);
       for (ExecutableElement overriddenElt :
