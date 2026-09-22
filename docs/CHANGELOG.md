@@ -14,8 +14,7 @@ Purity Checker:
 * Renamed message keys `purity.not.deterministic.X`,
   `purity.not.sideeffectfree.X`, and
   `purity.not.deterministic.not.sideeffectfree.X` to `purity.X`.
-* The Purity Checker has been improved, so `-AcheckPurityAnnotations` may issue
-  warnings that it did not previously.
+* `-AcheckPurityAnnotations` issues warnings that it missed previously.
 
 The Checker Framework runs under JDK 27 -- that is, it runs on a version 27 JVM.
 
