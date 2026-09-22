@@ -237,9 +237,9 @@ jobs:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
 
-  junit_jdk26:
+  junit_jdk27:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk26'
+      - image: 'mdernst/cf-ubuntu-jdk27'
     resource_class: large
     environment:
       TERM: dumb
@@ -270,7 +270,7 @@ jobs:
           command: ./checker/bin-devel/test-cftests-junit.sh
           no_output_timeout: "30m"
           environment:
-            ORG_GRADLE_PROJECT_jdkTestVersion: 26
+            ORG_GRADLE_PROJECT_jdkTestVersion: 27
       - run:
           name: Prune Gradle cache
           command: |
@@ -554,9 +554,9 @@ jobs:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
 
-  misc_jdk26:
+  misc_jdk27:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk26-plus'
+      - image: 'mdernst/cf-ubuntu-jdk27-plus'
     resource_class: large
     environment:
       TERM: dumb
@@ -590,7 +590,7 @@ jobs:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
           environment:
-            ORG_GRADLE_PROJECT_jdkTestVersion: 26
+            ORG_GRADLE_PROJECT_jdkTestVersion: 27
       - run:
           name: Prune Gradle cache
           command: |
@@ -970,7 +970,7 @@ workflows:
             - typecheck_part1_jdk25
             - typecheck_part2_jdk25
             - misc_jdk25
-            - misc_jdk26
+            - misc_jdk27
 
       - ci_info
 
@@ -978,7 +978,7 @@ workflows:
       - junit_part2_jdk25
       - nonjunit_jdk25
       - misc_jdk25
-      - misc_jdk26
+      - misc_jdk27
       - inference_part1_jdk25
       - inference_part2_jdk25
       - typecheck_part1_jdk25
@@ -1006,7 +1006,7 @@ workflows:
             - junit_part1_jdk25
             - junit_part2_jdk25
 
-      - junit_jdk26:
+      - junit_jdk27:
           requires:
             - canary_jobs
             - junit_part1_jdk25
@@ -1042,7 +1042,7 @@ workflows:
             - nonjunit_jdk21
             - junit_jdk17
             - junit_jdk21
-            - junit_jdk26
+            - junit_jdk27
             - daikon_part1_jdk25
             - daikon_part2_jdk25
             - daikon_part3_jdk25
