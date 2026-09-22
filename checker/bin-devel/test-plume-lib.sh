@@ -12,17 +12,20 @@ echo "GROUPARG=$GROUPARG"
 # These are all the Java projects at https://github.com/plume-lib as of Dec 2022.
 if [[ "${GROUPARG}" == "bcel-util" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "bibtex-clean" ]]; then PACKAGES=("${GROUPARG}"); fi
+if [[ "${GROUPARG}" == "hashmap-util" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "html-pretty-print" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "icalavailable" ]]; then PACKAGES=("${GROUPARG}"); fi
+if [[ "${GROUPARG}" == "javac-parse" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "javadoc-lookup" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "lookup" ]]; then PACKAGES=("${GROUPARG}"); fi
+if [[ "${GROUPARG}" == "merging" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "multi-version-control" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "options" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "plume-util" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "reflection-util" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "require-javadoc" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "all" ]] || [[ "${GROUPARG}" == "" ]]; then
-  PACKAGES=(bcel-util bibtex-clean html-pretty-print icalavailable javadoc-lookup lookup multi-version-control options plume-util reflection-util require-javadoc)
+  PACKAGES=(bcel-util bibtex-clean hashmap-util html-pretty-print icalavailable javac-parse javadoc-lookup lookup merging multi-version-control options plume-util reflection-util require-javadoc)
 fi
 if [ -z ${PACKAGES+x} ]; then
   echo "Bad group argument '${GROUPARG}'"

@@ -2,12 +2,12 @@
  * @test
  * @summary Test -AwarnUnneededSuppressions
  *
- * @compile/ref=UnneededSuppressionsTest.goal -XDrawDiagnostics -processor org.checkerframework.checker.index.IndexChecker -AwarnUnneededSuppressions UnneededSuppressionsTest.java
+ * @compile/ref=UnneededSuppressionsIndexTest.goal -XDrawDiagnostics -processor org.checkerframework.checker.index.IndexChecker -AwarnUnneededSuppressions UnneededSuppressionsIndexTest.java
  */
 
 import org.checkerframework.checker.index.qual.NonNegative;
 
-public class UnneededSuppressionsTest {
+public class UnneededSuppressionsIndexTest {
 
   void method(@NonNegative int i) {
     @SuppressWarnings("index")
