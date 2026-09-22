@@ -14,6 +14,9 @@ public class PurityChecker extends BaseTypeChecker {
   // It uses functionality from BaseTypeChecker, which itself calls
   // dataflow's purity implementation.
 
+  /** Creates a PurityChecker. */
+  public PurityChecker() {}
+
   /**
    * {@inheritDoc}
    *
