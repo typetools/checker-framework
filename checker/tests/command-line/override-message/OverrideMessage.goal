@@ -1,4 +1,4 @@
-OverrideMessage.java:15: error: [override.param] Incompatible parameter type for p.
+OverrideMessage.java:14: error: [override.param] Incompatible parameter type for p.
     <S extends @Nullable Object> void f(@NonNull S p) {}
                                                    ^
   found   : @org.checkerframework.checker.nullness.qual.NonNull S extends @Initialized @NonNull Object
