@@ -39,6 +39,12 @@ import org.checkerframework.javacutil.TreeUtils;
  * org.checkerframework.dataflow.qual.Pure}) of a statement or expression. The entry point is method
  * {@link #checkPurity}.
  *
+ * <p>This class does not check {@link org.checkerframework.dataflow.qual.SideEffectsOnly}, which is
+ * the other purity annotation. Verifying {@code @SideEffectsOnly} requires parsing the Java
+ * expressions in the annotation and viewpoint-adapting them at each call site, which this module
+ * cannot do. {@code org.checkerframework.common.basetype.DisallowedSideEffects}, which {@code
+ * BaseTypeVisitor} calls, checks {@code @SideEffectsOnly}.
+ *
  * @see SideEffectFree
  * @see Deterministic
  * @see Pure
