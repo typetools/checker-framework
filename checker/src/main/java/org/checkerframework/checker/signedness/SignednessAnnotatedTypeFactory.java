@@ -184,10 +184,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     ValueAnnotatedTypeFactory valueFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
     AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
     // These annotations are trusted rather than checked.  Maybe have an option to
-    // disable using them?
-    if ((valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
-            || valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_POSITIVE))
-        && type.hasPrimaryAnnotation(SIGNED)) {
+    // disable using them?  A value that satisfies them has its most significant bit clear, whether
+    // its type is @Signed or @Unsigned.  The Value Checker's dataflow analysis converts them to
+    // @IntRange, so this test matters only for trees that have no dataflow value.
+    if (valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
+        || valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_POSITIVE)) {
       type.replaceAnnotation(SIGNED_POSITIVE);
     } else {
       Range treeRange = ValueCheckerUtils.getPossibleValues(valueATM, valueFactory);
