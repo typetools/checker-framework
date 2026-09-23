@@ -39,7 +39,7 @@ public class PurityVarargsArgument {
   void expandedForm(String s) {
     callee(() -> {});
     callee(this::pureVoid);
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     callee(() -> count++);
     // :: error: [purity.functional.argument]
     callee(this::impureVoid);
@@ -60,7 +60,7 @@ public class PurityVarargsArgument {
     callee(new Runnable[] {this::pureVoid});
     // :: error: [purity.functional.argument]
     callee(new Runnable[] {this::impureVoid});
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     callee(new Runnable[] {() -> count++});
     // An array that the call receives from elsewhere says nothing about its elements.
     callee(rs);

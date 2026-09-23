@@ -19,7 +19,7 @@ public class AssumeSideEffectFreeArguments {
   @Deterministic
   int deterministicLength(String s) {
     // The method's own body is still checked against its own annotation.
-    // :: error: [purity.not.deterministic.assign.field]
+    // :: error: [purity.assign.field]
     count++;
     return s.length();
   }
@@ -59,7 +59,7 @@ public class AssumeSideEffectFreeArguments {
 
   /** The assumption is that a called method has no side effect, not that this code has none. */
   void theAssumptionIsAboutCalls(String s) {
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     callee(t -> count++, s);
   }
 }

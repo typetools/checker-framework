@@ -57,20 +57,20 @@ public class PurityFunctionalParameter {
 
   @SideEffectFree
   int callsField(String s) {
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     return field.apply(s);
   }
 
   @SideEffectFree
   int callsLocalAlias(Function<String, Integer> f, String s) {
     Function<String, Integer> g = f;
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     return g.apply(s);
   }
 
   @SideEffectFree
   int callsCallResult(String s) {
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     return lengthFunction().apply(s);
   }
 
@@ -98,14 +98,14 @@ public class PurityFunctionalParameter {
   @SideEffectFree
   Function<String, Integer> callsNonFunctionalMethod(
       Function<String, Integer> f, Function<Integer, Integer> g) {
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     return f.andThen(g);
   }
 
   /** The rest of the body is checked as usual. */
   @SideEffectFree
   int otherEffectsAreReported(Function<String, Integer> f, String s) {
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     count++;
     return f.apply(s);
   }
@@ -119,7 +119,7 @@ public class PurityFunctionalParameter {
   }
 
   PureFunc unannotatedMethodsLambdaCallsParameter(Function<String, Integer> f) {
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     return () -> "" + f.apply("x");
   }
 

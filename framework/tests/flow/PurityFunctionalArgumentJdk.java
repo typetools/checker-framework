@@ -18,7 +18,7 @@ public class PurityFunctionalArgumentJdk {
 
   void optionalMap(Optional<String> o) {
     o.map(s -> s.length());
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     o.map(s -> count++);
   }
 
@@ -45,7 +45,7 @@ public class PurityFunctionalArgumentJdk {
    */
   void comparatorWrittenHere(List<String> l) {
     l.sort((a, b) -> a.length() - b.length());
-    // :: error: [purity.not.deterministic.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     l.sort((a, b) -> count++);
   }
 

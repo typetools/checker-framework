@@ -64,9 +64,9 @@ public class PurityFunctionalArgument {
 
   void lambdaArguments(String s) {
     callee(t -> t.length(), s);
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     callee(t -> count++, s);
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     callee(t -> impureLength(t), s);
     callee(
         t -> {
@@ -92,7 +92,7 @@ public class PurityFunctionalArgument {
 
   void conditionalArguments(boolean b, String s) {
     callee(b ? t -> t.length() : t -> 0, s);
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     callee(b ? t -> count++ : t -> 0, s);
     callee(b ? this::pureLength : String::length, s);
     // :: error: [purity.functional.argument]
@@ -108,7 +108,7 @@ public class PurityFunctionalArgument {
         s);
     callee(
         switch (i) {
-          // :: error: [purity.not.sideeffectfree.assign.field]
+          // :: error: [purity.assign.field]
           case 1 -> t -> count++;
           default -> t -> 0;
         },
@@ -142,7 +142,7 @@ public class PurityFunctionalArgument {
 
   void parenthesizedArguments(boolean b, String s) {
     callee((t -> t.length()), s);
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     callee((t -> count++), s);
     // :: error: [purity.functional.argument]
     callee((this::impureLength), s);
@@ -154,7 +154,7 @@ public class PurityFunctionalArgument {
 
   void castArguments(String s) {
     callee((Function<String, Integer>) t -> t.length(), s);
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     callee((Function<String, Integer>) t -> count++, s);
     callee((Function<String, Integer>) this::pureLength, s);
     // :: error: [purity.functional.argument]
@@ -306,7 +306,7 @@ public class PurityFunctionalArgument {
   }
 
   int unannotatedMethodsLambdaCallsParameter(Function<String, Integer> f, String s) {
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     return callee(t -> f.apply(t), s);
   }
 
@@ -318,7 +318,7 @@ public class PurityFunctionalArgument {
           // :: error: [purity.functional.argument]
           callee(g, s);
         };
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     c.accept(f);
   }
 

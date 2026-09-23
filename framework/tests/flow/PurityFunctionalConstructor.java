@@ -26,7 +26,7 @@ public class PurityFunctionalConstructor {
 
   void constructorCallSites() {
     new Holder(t -> t.length());
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     new Holder(t -> count++);
     new UnannotatedHolder(t -> count++);
   }
@@ -34,7 +34,7 @@ public class PurityFunctionalConstructor {
   /** An anonymous class's arguments are passed to the super constructor. */
   void anonymousSubclass() {
     new Holder(t -> t.length()) {};
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     new Holder(t -> count++) {};
   }
 
@@ -47,9 +47,9 @@ public class PurityFunctionalConstructor {
   /** A varargs constructor checks each argument that the call passes to its array. */
   void varargsConstructorCallSites() {
     new VarargsHolder(() -> {});
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     new VarargsHolder(() -> count++);
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     new VarargsHolder(() -> {}, () -> count++) {};
   }
 

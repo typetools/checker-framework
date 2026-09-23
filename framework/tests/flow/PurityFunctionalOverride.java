@@ -39,13 +39,13 @@ public class PurityFunctionalOverride {
 
   void callsThroughSupertype(Super receiver, String s) {
     receiver.m(t -> t.length(), s);
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     receiver.m(t -> count++, s);
   }
 
   void callsThroughSubtype(Sub receiver, String s) {
     receiver.m(t -> t.length(), s);
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     receiver.m(t -> count++, s);
   }
 
@@ -74,7 +74,7 @@ public class PurityFunctionalOverride {
   static class GenericSub extends GenericSuper<Function<String, Integer>> {
     @Override
     int m(Function<String, Integer> f, String s) {
-      // :: error: [purity.not.sideeffectfree.call]
+      // :: error: [purity.call]
       return f.apply(s);
     }
   }
@@ -88,7 +88,7 @@ public class PurityFunctionalOverride {
     @Override
     @SideEffectFree
     int m(Function<String, Integer> f, String s) {
-      // :: error: [purity.not.sideeffectfree.call]
+      // :: error: [purity.call]
       return f.apply(s);
     }
   }
