@@ -200,7 +200,11 @@ public final class PurityChecker {
     if (parameter == null) {
       return EnumSet.noneOf(PurityKind.class);
     }
+    assert method != null
+        : "@AssumeAssertion(nullness): effectivelyFinalParameter returns null if method is null";
     ExecutableElement methodElt = TreeUtils.elementFromDeclaration(method);
+    assert methodElt != null
+        : "@AssumeAssertion(nullness): method has been entered, since its parameter has an element";
     return functionalParameterPurity(
         annoProvider, methodElt, methodElt.getParameters().indexOf(parameter), env);
   }
