@@ -4742,11 +4742,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       List<JavaExpression> seOnlySuperExpressions = parseSideEffectsOnly(seOnlySuperStrings);
       List<JavaExpression> seOnlySubExpressions = parseSideEffectsOnly(seOnlySubStrings);
       if (seOnlySuperExpressions == null || seOnlySubExpressions == null) {
-        // An argument could not be parsed, so compare the annotations' strings.  The parse error
-        // itself is reported at the declaration that contains it, if that declaration is being
-        // compiled; if it appears in a stub file or in another compilation unit, it is reported
-        // nowhere.  Either way, this comparison is conservative.
-        return allExpressions(seOnlySuperStrings).containsAll(allExpressions(seOnlySubStrings));
+        // An argument could not be parsed, so the annotations cannot be compared.  The strings
+        // cannot be compared instead, because the two methods' parameters need not correspond
+        // positionally.  The parse error itself is reported at the declaration that contains it,
+        // if that declaration is being compiled; if it appears in a stub file or in another
+        // compilation unit, it is reported nowhere.
+        return false;
       }
 
       seOnlySubExpressions = atFunctionalInterfaceMethod(seOnlySubExpressions);
@@ -4793,7 +4794,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // For an unbound reference, the interface method has one extra leading parameter, which is
       // the referenced method's receiver.
       int shift = methodRefKind.isUnbound() ? 1 : 0;
-      if (superParameters.size() != overrider.getElement().getParameters().size() + shift) {
+      // The parameter correspondence matters only if some expression that is not dropped refers to
+      // a parameter or to the receiver.
+      boolean needsCorrespondence =
+          subExpressions.stream()
+              .anyMatch(
+                  e ->
+                      methodRefKind.isConstructorReference()
+                          ? !e.containsOfClass(ThisReference.class)
+                              && e.containsOfClass(FormalParameter.class)
+                          : e.containsOfClass(FormalParameter.class)
+                              || e.containsOfClass(ThisReference.class));
+      if (needsCorrespondence
+          && superParameters.size() != overrider.getElement().getParameters().size() + shift) {
         // The parameters do not correspond one-to-one, as when a varargs method implements a
         // fixed-arity interface method.  Do not guess at a correspondence.
         checker.reportWarning(
@@ -4836,21 +4849,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           return null;
         }
         result.add(converted);
-      }
-      return result;
-    }
-
-    /**
-     * Returns all the expression strings in the given map, ignoring which method declares each.
-     *
-     * @param expressionStrings a map from a method declaration to the {@code @SideEffectsOnly}
-     *     expressions written on it
-     * @return every expression string in {@code expressionStrings}
-     */
-    private List<String> allExpressions(Map<ExecutableElement, List<String>> expressionStrings) {
-      List<String> result = new ArrayList<>();
-      for (List<String> strings : expressionStrings.values()) {
-        result.addAll(strings);
       }
       return result;
     }

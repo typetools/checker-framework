@@ -78,6 +78,10 @@ public class MethodRefSideEffectsOnly {
     void mutatesArgument(Collection<Integer> c) {
       c.add(1);
     }
+
+    @SideEffectsOnly({"#1", "#1.noSuchMethod()"})
+    // :: error: (flowexpr.parse.error.sideeffectsonly)
+    void unparseable(Collection<Integer> c) {}
   }
 
   interface CellMutator {
@@ -98,6 +102,19 @@ public class MethodRefSideEffectsOnly {
     CellMutator m = Cell::mutatesOwnField;
   }
 
+  interface UnparseableCellMutator {
+    @SideEffectsOnly({"#1", "#1.noSuchMethod()"})
+    // :: error: (flowexpr.parse.error.sideeffectsonly)
+    void apply(Cell cell, Collection<Integer> c);
+  }
+
+  void unparseableNotOk() {
+    // The two annotations are written identically, but `#1` of `unparseable` is `#2` of
+    // `UnparseableCellMutator.apply`.  An annotation that cannot be parsed cannot be compared.
+    // :: error: (purity.methodref)
+    UnparseableCellMutator m = Cell::unparseable;
+  }
+
   interface TwoMutator {
     @SideEffectsOnly({"#1", "#2"})
     void apply(StringBuilder sb1, StringBuilder sb2);
@@ -111,6 +128,21 @@ public class MethodRefSideEffectsOnly {
     // `@SideEffectsOnly` annotations cannot be compared.
     // :: warning: (purity.parameters.sideeffectsonly) :: error: (purity.methodref)
     TwoMutator m = MethodRefSideEffectsOnly::mutatesVarargs;
+  }
+
+  static StringBuilder staticSb = new StringBuilder();
+
+  interface StaticMutator {
+    @SideEffectsOnly("MethodRefSideEffectsOnly.staticSb")
+    void apply(StringBuilder sb1, StringBuilder sb2);
+  }
+
+  @SideEffectsOnly("MethodRefSideEffectsOnly.staticSb")
+  static void mutatesStaticVarargs(StringBuilder... sbs) {}
+
+  void varargsArityStaticOk() {
+    // The annotation mentions no parameter, so the parameters need not correspond.
+    StaticMutator m = MethodRefSideEffectsOnly::mutatesStaticVarargs;
   }
 
   void boundNotOk() {
