@@ -45,14 +45,15 @@ token), the step cancels the workflow, so the untested commit shows as
 "canceled" rather than as passing. Otherwise, or if cancellation fails,
 "circleci-agent step halt" ends the job successfully, and the commit's status
 is green although it was not tested. The step does nothing if "git ls-remote"
-fails or finds no such branch, as for a pull request from a fork, whose
+stalls (transfers under 1000 bytes/second for 30 seconds) or otherwise
+fails, or finds no such branch, as for a pull request from a fork, whose
 CIRCLE_BRANCH is "pull/NNNN".])dnl
 define([halt_if_superseded_step], [dnl
       - run:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \

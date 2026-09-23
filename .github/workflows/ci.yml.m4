@@ -15,7 +15,7 @@ name: CI
 
 # Auto-cancel any in-progress jobs from the same branch or PR.
 # A push to a branch that has a pull request triggers two runs, in different
-# groups; every job's "if:" skips the redundant "pull_request" run.
+# groups; every job's "if:" skips the "pull_request" run (see defs.m4).
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -86,7 +86,7 @@ include([../../.azure/jobs.m4])dnl
     # "all_green" is a required check. A job that "if:" skips reports success,
     # so the skipped job has a different name, lest it satisfy the requirement
     # before the other run's "all_green" finishes.
-    name: ${{ (run_condition) && 'all_green' || 'all_green (redundant)' }}
+    name: ${{ (run_condition) && 'all_green' || 'all_green (skipped)' }}
     if: always() && (run_condition)
     needs:
       - junit_jdk17

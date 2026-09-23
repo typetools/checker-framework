@@ -69,7 +69,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -131,7 +131,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -193,7 +193,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -254,7 +254,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -316,7 +316,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -378,7 +378,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -439,7 +439,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -501,7 +501,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -561,7 +561,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -622,7 +622,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -687,7 +687,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -752,7 +752,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -817,7 +817,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -877,7 +877,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -938,7 +938,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -999,7 +999,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -1060,7 +1060,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -1122,7 +1122,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -1183,7 +1183,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
@@ -1245,7 +1245,7 @@ jobs:
           name: halt-if-superseded
           command: |
             if test -n "${CIRCLE_BRANCH:-}"; then
-              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
                 echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
                 if test -n "${CIRCLE_TOKEN:-}" \
