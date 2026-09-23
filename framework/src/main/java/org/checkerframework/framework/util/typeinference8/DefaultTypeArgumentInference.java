@@ -223,7 +223,15 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           return tree;
         }
         ExecutableElement constructor = TreeUtils.elementFromUse(newClassTree);
-        if (TypesUtils.isRawCall(TreeUtils.typeOf(newClassTree), constructor, env)) {
+        // A diamond is never a raw call.  JLS 4.8 says "It is a compile-time error to pass type
+        // arguments to a non-static member class or interface of a raw type", and javac rejects a
+        // diamond on such a class too, so a diamond invocation that compiles never has an erased
+        // constructor type.  The only way `typeOf(newClassTree)` is raw for a diamond is JLS
+        // 18.5.2's erasure of the *return* type when unchecked conversion was necessary.  That
+        // erasure leaves the constructor's parameter types parameterized, so the type arguments
+        // still need to be inferred.
+        if (!TreeUtils.isDiamondTree(newClassTree)
+            && TypesUtils.isRawCall(TreeUtils.typeOf(newClassTree), constructor, env)) {
           return tree;
         }
         if (argumentNeedsInference(constructor, newClassTree.getArguments(), tree, newClassTree)) {
