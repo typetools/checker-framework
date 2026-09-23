@@ -1862,14 +1862,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         ExecutableElement referenced = (ExecutableElement) TreeUtils.elementFromUse(argument);
         argKinds = implementationPurityKinds(referenced);
         MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
-        if (enclosingMethod != null
-            && PurityChecker.isFunctionalMethodOfParameter(
-                memberReference.getQualifierExpression(), referenced, enclosingMethod, env)) {
+        ExpressionTree qualifier = memberReference.getQualifierExpression();
+        if (PurityChecker.isFunctionalMethodOfParameter(
+            qualifier, referenced, enclosingMethod, env)) {
           // `f::apply`, where `f` is a functional-interface parameter of the enclosing method,
           // denotes the code that the caller of that method was required to check.
           argKinds.addAll(
-              PurityChecker.functionalParameterKinds(
-                  atypeFactory, TreeUtils.elementFromDeclaration(enclosingMethod)));
+              PurityChecker.functionalParameterPurity(
+                  atypeFactory, qualifier, enclosingMethod, env));
         }
       }
     } else {
@@ -1881,13 +1881,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return;
       }
       argKinds = implementationPurityKinds(argFunction);
-      MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
-      if (enclosingMethod != null
-          && PurityChecker.isFunctionalInterfaceParameter(argument, enclosingMethod, env)) {
-        argKinds.addAll(
-            PurityChecker.functionalParameterKinds(
-                atypeFactory, TreeUtils.elementFromDeclaration(enclosingMethod)));
-      }
+      argKinds.addAll(
+          PurityChecker.functionalParameterPurity(
+              atypeFactory, argument, TreePathUtil.enclosingMethod(getCurrentPath()), env));
     }
 
     if (!argKinds.containsAll(required)) {
@@ -5083,6 +5079,64 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             overriddenType,
             purityKindsToString(superPurity),
             overridden);
+      }
+      checkMethodReferenceFunctionalParameters();
+    }
+
+    /**
+     * Check that a call through the functional method passes, to each functional-interface
+     * parameter of the referenced method, code with the purity that the referenced method's body
+     * assumes of it; see {@link PurityChecker#functionalParameterPurity(
+     * org.checkerframework.javacutil.AnnotationProvider, ExecutableElement, int,
+     * ProcessingEnvironment)}.
+     *
+     * <p>A call through the functional method checks its arguments against the functional method's
+     * declaration, not the referenced method's. That check may require less, or nothing at all, as
+     * when the functional method's parameter type is a type variable.
+     */
+    private void checkMethodReferenceFunctionalParameters() {
+      ExecutableElement referenced = overrider.getElement();
+      ExecutableElement functionalMethod = overridden.getElement();
+      ProcessingEnvironment env = atypeFactory.getProcessingEnv();
+      // For an unbound reference such as `C::m`, the functional method's first parameter is the
+      // receiver of the referenced method.
+      int offset =
+          MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree)
+                  .isUnbound()
+              ? 1
+              : 0;
+      List<? extends VariableElement> referencedParams = referenced.getParameters();
+      for (int i = 0; i < referencedParams.size(); i++) {
+        EnumSet<PurityKind> assumed =
+            PurityChecker.functionalParameterPurity(atypeFactory, referenced, i, env);
+        if (assumed.isEmpty()) {
+          continue;
+        }
+        int j = i + offset;
+        EnumSet<PurityKind> provided = EnumSet.noneOf(PurityKind.class);
+        if (j < functionalMethod.getParameters().size()) {
+          ExecutableElement paramFunction = parameterFunctionalMethod(functionalMethod, j);
+          if (paramFunction != null) {
+            provided =
+                PurityChecker.functionalParameterPurity(atypeFactory, functionalMethod, j, env);
+            provided.addAll(PurityUtils.getPurityKinds(atypeFactory, paramFunction));
+            if (paramFunction.getReturnType().getKind() == TypeKind.VOID
+                && provided.contains(PurityKind.SIDE_EFFECT_FREE)) {
+              // A side-effect-free method that returns no value is deterministic.
+              provided.add(PurityKind.DETERMINISTIC);
+            }
+          }
+        }
+        if (!provided.containsAll(assumed)) {
+          checker.reportError(
+              overriderTree,
+              "purity.methodref.functional.parameter",
+              referencedParams.get(i).getSimpleName(),
+              overrider,
+              purityKindsToString(assumed),
+              overridden,
+              purityKindsToString(provided));
+        }
       }
     }
 

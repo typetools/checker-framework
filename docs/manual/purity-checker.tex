@@ -1,8 +1,9 @@
 \htmlhr
 \chapterAndLabel{Purity Checker}{purity-checker}
 
-A \emph{side-effect-free} method is one that changes no object that exists
-when it is called.
+A \emph{side-effect-free} method is one that has no externally-visible side
+effects:  it changes no object that exists when it is called, except in ways
+that no caller can observe, such as updating a private cache.
 A \emph{deterministic} method returns the same value each time it is called
 on the same arguments.
 A \emph{pure} method is both side-effect-free and deterministic.
@@ -128,10 +129,20 @@ method of the parameter's type other than its functional method, such as
   }
 \end{Verbatim}
 
+The assumption also does not apply if the method overrides a method that does
+not make the same promise for that parameter, such as one whose parameter at
+that position has a type variable as its type, because a call through the
+overridden method does not check the argument.  For the same reason, a method
+reference to such a method is an error if a call through the functional
+method that it implements would not check the argument.
+
 At each call to such a method, every argument passed to a functional-interface
 parameter must have the purity that the method promises (side-effect-free for
-a \<@SideEffectsOnly> method).  How the argument is checked depends on its
-form:
+a \<@SideEffectsOnly> method).  For a varargs parameter whose element type is
+a functional interface, such as \<Runnable...>, each argument that the call
+passes as an element of the array is checked, as is each initializer of an
+array literal such as \<new Runnable[] \{...\}> that the call passes.  How the
+argument is checked depends on its form:
 
 \begin{itemize}
 \item

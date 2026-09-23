@@ -59,4 +59,37 @@ public class PurityFunctionalOverride {
   void callsUnannotated(Unrelated receiver, String s) {
     receiver.m(t -> count++, s);
   }
+
+  static class GenericSuper<T> {
+    @SideEffectFree
+    int m(T f, String s) {
+      return 0;
+    }
+  }
+
+  /**
+   * A call through GenericSuper checks nothing about the argument, whose declared type is a type
+   * variable, so this body cannot assume that the argument is side-effect-free.
+   */
+  static class GenericSub extends GenericSuper<Function<String, Integer>> {
+    @Override
+    int m(Function<String, Integer> f, String s) {
+      // :: error: [purity.not.sideeffectfree.call]
+      return f.apply(s);
+    }
+  }
+
+  void callsThroughGenericSupertype(GenericSuper<Function<String, Integer>> receiver, String s) {
+    receiver.m(t -> count++, s);
+  }
+
+  /** A call through Unrelated checks nothing, so the override cannot assume anything. */
+  static class AnnotatedSubOfUnrelated extends Unrelated {
+    @Override
+    @SideEffectFree
+    int m(Function<String, Integer> f, String s) {
+      // :: error: [purity.not.sideeffectfree.call]
+      return f.apply(s);
+    }
+  }
 }
