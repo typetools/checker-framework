@@ -56,4 +56,15 @@ public class AliasedLocalSeonly {
       alias.add(1);
     }
   }
+
+  @SideEffectsOnly("this")
+  void loopVariableReassigned(List<List<Integer>> lists) {
+    // Each iteration assigns the loop variable, so assigning a covered expression to it in the
+    // body does not make it an alias.
+    for (List<Integer> alias : lists) {
+      // :: error: (purity.incorrect.sideeffectsonly)
+      alias.add(1);
+      alias = covered;
+    }
+  }
 }

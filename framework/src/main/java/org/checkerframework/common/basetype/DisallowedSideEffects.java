@@ -1108,14 +1108,14 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
 
     /**
      * The values assigned to each local variable, by a declaration's initializer or by an
-     * assignment. A local variable that is never so assigned, such as the variable of an enhanced
-     * {@code for} loop, is absent.
+     * assignment. A local variable that is never so assigned is absent.
      */
     final Map<VariableElement, List<ExpressionTree>> assignedValues = new HashMap<>(2);
 
     /**
-     * The local variables that are the target of a compound assignment, whose value is not recorded
-     * in {@link #assignedValues}.
+     * The local variables that are assigned a value that is not recorded in {@link
+     * #assignedValues}: the target of a compound assignment, and the variable of an enhanced {@code
+     * for} loop, which each iteration assigns.
      */
     final Set<VariableElement> otherwiseAssigned = new HashSet<>(2);
 
@@ -1136,6 +1136,19 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         record(TreeUtils.elementFromDeclaration(node), initializer);
       }
       return super.visitVariable(node, aVoid);
+    }
+
+    @Override
+    public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void aVoid) {
+      // The loop variable's declaration has no initializer, so `visitVariable` records nothing for
+      // it.  If this scanner did not note the variable here, an assignment in the loop body would
+      // be the variable's only recorded value, and the variable would be treated as fresh or as
+      // covered even before that assignment.
+      VariableElement local = localVariable(TreeUtils.elementFromDeclaration(node.getVariable()));
+      if (local != null) {
+        otherwiseAssigned.add(local);
+      }
+      return super.visitEnhancedForLoop(node, aVoid);
     }
 
     @Override
