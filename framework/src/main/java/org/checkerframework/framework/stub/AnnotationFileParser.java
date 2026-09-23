@@ -438,9 +438,6 @@ public final class AnnotationFileParser {
     Map<String, String> options = processingEnv.getOptions();
     boolean stubWarnIfNotFoundOption = options.containsKey("stubWarnIfNotFound");
     boolean stubNoWarnIfNotFoundOption = options.containsKey("stubNoWarnIfNotFound");
-    if (stubWarnIfNotFoundOption && stubNoWarnIfNotFoundOption) {
-      throw new UserError("Do not supply both -AstubWarnIfNotFound and -AstubNoWarnIfNotFound.");
-    }
     this.warnIfNotFound =
         stubWarnIfNotFoundOption || (fileType.isCommandLine() && !stubNoWarnIfNotFoundOption);
 
@@ -727,6 +724,7 @@ public final class AnnotationFileParser {
    * @param processingEnv the processing environment
    * @param atypeFactory the type factory; used only for diagnostic messages
    * @return the AST of the annotation file, or null if it could not be parsed
+   * @throws UserError if mutually exclusive command-line options were supplied
    */
   private static @Nullable StubUnit parseStubUnit(
       String filename,
@@ -734,7 +732,11 @@ public final class AnnotationFileParser {
       InputStream inputStream,
       ProcessingEnvironment processingEnv,
       AnnotatedTypeFactory atypeFactory) {
-    boolean debugAnnotationFileParser = processingEnv.getOptions().containsKey("stubDebug");
+    Map<String, String> options = processingEnv.getOptions();
+    if (options.containsKey("stubWarnIfNotFound") && options.containsKey("stubNoWarnIfNotFound")) {
+      throw new UserError("Do not supply both -AstubWarnIfNotFound and -AstubNoWarnIfNotFound.");
+    }
+    boolean debugAnnotationFileParser = options.containsKey("stubDebug");
     if (debugAnnotationFileParser) {
       stubDebugStatic(
           processingEnv,
