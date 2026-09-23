@@ -721,7 +721,8 @@ Type-checking modes:  enable/disable functionality
   An \<unneeded.suppression> warning can be suppressed only by
   \<@SuppressWarnings("unneeded.suppression")>
   or \<@SuppressWarnings("\emph{checkername}:unneeded.suppression")>,
-  not by \<@SuppressWarnings("\emph{checkername}")>.
+  not by \<@SuppressWarnings("\emph{checkername}")> and not by a partial
+  message key such as \<@SuppressWarnings("suppression")>.
 \item \<-AwarnUnneededSuppressionsExceptions=\emph{regex}> disables
   \<-AwarnUnneededSuppressions> for \<@SuppressWarnings> strings that
   contain a match for the regular expression.  Most users don't need this.

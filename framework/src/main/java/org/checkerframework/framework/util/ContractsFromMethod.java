@@ -19,11 +19,11 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.QualifierArgument;
 import org.checkerframework.framework.qual.RequiresQualifier;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.AnnotationWithMetaAnnotation;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.IPair;
 
 /**
  * A utility class to retrieve pre- and postconditions from a method.
@@ -146,13 +146,13 @@ public class ContractsFromMethod {
     // Check for type-system specific annotations.  These are the annotations that are
     // meta-annotated by `kind.metaAnnotation`, which is PreconditionAnnotation,
     // PostconditionAnnotation, or ConditionalPostconditionAnnotation.
-    List<IPair<AnnotationMirror, AnnotationMirror>> declAnnotations =
+    List<AnnotationWithMetaAnnotation> declAnnotations =
         factory.getDeclAnnotationWithMetaAnnotation(executableElement, kind.metaAnnotation);
-    for (IPair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
-      AnnotationMirror anno = r.first;
+    for (AnnotationWithMetaAnnotation r : declAnnotations) {
+      AnnotationMirror anno = r.annotation();
       // contractAnno is the meta-annotation on anno, such as PreconditionAnnotation,
       // PostconditionAnnotation, or ConditionalPostconditionAnnotation.
-      AnnotationMirror contractAnno = r.second;
+      AnnotationMirror contractAnno = r.metaAnnotation();
       AnnotationMirror enforcedQualifier =
           getQualifierEnforcedByContractAnnotation(contractAnno, anno);
       if (enforcedQualifier == null) {
@@ -255,7 +255,8 @@ public class ContractsFromMethod {
    * @param argumentRenaming renaming of argument names, which maps from names in {@code
    *     argumentAnno} to names used in the returned annotation, or {@code null}
    * @return a qualifier whose type is that of {@code contractAnno.qualifier}, or an alias for it,
-   *     or null if it is not a supported qualifier of the type system
+   *     or null if the qualifier could not be loaded or is not a supported qualifier of the type
+   *     system
    */
   private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno,
@@ -273,6 +274,11 @@ public class ContractsFromMethod {
       AnnotationBuilder builder = new AnnotationBuilder(factory.getProcessingEnv(), c);
       builder.copyRenameElementValuesFromAnnotation(argumentAnno, argumentRenaming);
       anno = builder.build();
+    }
+
+    if (anno == null) {
+      // The annotation class could not be loaded.
+      return null;
     }
 
     anno = factory.canonicalAnnotation(anno);
